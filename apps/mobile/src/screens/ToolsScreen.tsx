@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
-import { TOOLS_PARITY, analyzeQuickRatio, genId, type ParityTodoItem } from '@baristaclaw/shared';
+import { TOOLS_PARITY, analyzeQuickRatio, genId, type ParityTodoItem } from '@baristachaw/shared';
 import {
   ActionButton,
   AppShell,

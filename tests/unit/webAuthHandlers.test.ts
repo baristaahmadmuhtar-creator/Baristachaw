@@ -100,7 +100,7 @@ test('auth url uses the active request host when APP_URL and VERCEL_URL are miss
     method: 'GET',
     query: {},
     headers: {
-      host: 'preview.baristaclaw.local:3100',
+      host: 'preview.baristachaw.local:3100',
       'x-forwarded-proto': 'https',
     },
     socket: {
@@ -128,7 +128,7 @@ test('auth url uses the active request host when APP_URL and VERCEL_URL are miss
   const payload = JSON.parse(res.body) as { url: string };
   assert.equal(
     new URL(payload.url).searchParams.get('redirect_uri'),
-    'https://preview.baristaclaw.local:3100/api/auth/callback',
+    'https://preview.baristachaw.local:3100/api/auth/callback',
   );
 });
 
@@ -186,7 +186,7 @@ test('auth callback success page uses the active request host when APP_URL and V
       state: 'oauth-state-123',
     },
     headers: {
-      host: 'preview.baristaclaw.local:3100',
+      host: 'preview.baristachaw.local:3100',
       'x-forwarded-proto': 'https',
       cookie: `oauth_state=${encodeURIComponent('oauth-state-123')}; oauth_return_to=${encodeURIComponent('/chat?draft=1')}`,
     },
@@ -245,8 +245,8 @@ test('auth callback success page uses the active request host when APP_URL and V
   }
 
   assert.equal(res.statusCode, 200);
-  assert.match(tokenRequestBody, /redirect_uri=https%3A%2F%2Fpreview\.baristaclaw\.local%3A3100%2Fapi%2Fauth%2Fcallback/);
-  assert.match(res.body, /data-target-origin="https%3A%2F%2Fpreview\.baristaclaw\.local%3A3100"/);
+  assert.match(tokenRequestBody, /redirect_uri=https%3A%2F%2Fpreview\.baristachaw\.local%3A3100%2Fapi%2Fauth%2Fcallback/);
+  assert.match(res.body, /data-target-origin="https%3A%2F%2Fpreview\.baristachaw\.local%3A3100"/);
   assert.match(res.body, /data-return-to="%2Fchat%3Fdraft%3D1"/);
 });
 
@@ -264,8 +264,8 @@ test('auth callback handles signed mobile OAuth state and returns app deep link'
   process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
   process.env.GOOGLE_CLIENT_ID = 'unit-test-google-client-id';
   process.env.GOOGLE_CLIENT_SECRET = 'unit-test-google-client-secret';
-  process.env.MOBILE_APP_SCHEME = 'baristaclaw';
-  process.env.MOBILE_APP_ANDROID_PACKAGE = 'com.baristaclaw.mobile';
+  process.env.MOBILE_APP_SCHEME = 'baristachaw';
+  process.env.MOBILE_APP_ANDROID_PACKAGE = 'com.baristachaw.mobile';
   const state = `mobile.${jwt.sign(
     { purpose: 'mobile_oauth', nonce: 'unit-test' },
     process.env.JWT_SECRET,
@@ -331,7 +331,7 @@ test('auth callback handles signed mobile OAuth state and returns app deep link'
 
   assert.equal(res.statusCode, 200);
   assert.match(tokenRequestBody, /redirect_uri=https%3A%2F%2Fbaristaclaw\.vercel\.app%2Fapi%2Fauth%2Fcallback/);
-  assert.match(res.body, /baristaclaw:\/\/auth\?grant=/);
+  assert.match(res.body, /baristachaw:\/\/auth\?grant=/);
   assert.match(res.body, /intent:\/\/auth\?grant=/);
-  assert.match(res.body, /package=com\.baristaclaw\.mobile/);
+  assert.match(res.body, /package=com\.baristachaw\.mobile/);
 });

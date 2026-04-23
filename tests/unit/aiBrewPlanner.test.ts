@@ -2535,7 +2535,7 @@ test('ai brew catalog snapshot storage restores the last cached catalog', () => 
 
 test('ai brew catalog snapshot storage rejects stale snapshots that miss target profiles', () => {
   installLocalStorageMock();
-  localStorage.setItem('BARISTACLAW_AI_BREW_CATALOG_SNAPSHOT_V5', JSON.stringify({
+  localStorage.setItem('BARISTACHAW_AI_BREW_CATALOG_SNAPSHOT_V5', JSON.stringify({
     schemaVersion: 5,
     savedAt: Date.now(),
     payload: {

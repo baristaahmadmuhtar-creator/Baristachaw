@@ -1,5 +1,5 @@
 {
-  "name": "@baristaclaw/web",
+  "name": "@baristachaw/web",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -10,8 +10,8 @@
     "lint": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@baristaclaw/design-tokens": "*",
-    "@baristaclaw/shared": "*",
+    "@baristachaw/design-tokens": "*",
+    "@baristachaw/shared": "*",
     "@google/genai": "^1.29.0",
     "clsx": "^2.1.1",
     "dompurify": "^3.3.1",

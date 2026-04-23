@@ -32,7 +32,7 @@ import {
 } from './_contracts.js';
 
 /**
- * BaristaClaw Multi-Provider AI Chat API
+ * Baristachaw Multi-Provider AI Chat API
  * 
  * Adapted from Istok's OmniRace + SmartRouter patterns:
  * - Races multiple providers in parallel (fastest response wins)
@@ -345,7 +345,7 @@ async function fetchOpenAICompatible(
 
     if (config.provider === 'OPENROUTER') {
         headers['HTTP-Referer'] = 'https://baristaclaw.vercel.app';
-        headers['X-Title'] = 'BaristaClaw AI';
+        headers['X-Title'] = 'Baristachaw AI';
     }
 
     const res = await fetch(config.url, {
@@ -599,7 +599,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
         }
 
-        const BARISTA_SYSTEM_PROMPT = `You are BaristaClaw — the world's most advanced AI barista assistant, built for professional baristas, coffee shop owners, and serious coffee enthusiasts.
+        const BARISTA_SYSTEM_PROMPT = `You are Baristachaw — the world's most advanced AI barista assistant, built for professional baristas, coffee shop owners, and serious coffee enthusiasts.
 
 ## CORE IDENTITY
 - You are an SCA (Specialty Coffee Association) certified-level expert

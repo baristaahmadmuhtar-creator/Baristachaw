@@ -1,4 +1,4 @@
-# BaristaClaw
+# Baristachaw
 
 Production-focused AI assistant for barista workflows (chat, fast/deep modes, attachments, voice note, scanner).
 

@@ -45,7 +45,7 @@ export function CoffeeBuilder() {
       const methodLabel = brewMethods.find((option) => option.id === method)?.promptLabel || "Pour Over";
       const roastLabel = roasts.find((option) => option.id === roast)?.promptLabel || "Light";
       const flavorLabel = flavorProfiles.find((option) => option.id === flavor)?.promptLabel || "Fruity";
-      const prompt = `As BaristaClaw, a world-class barista adhering strictly to SCA standards, create a highly detailed, professional coffee recipe using the ${methodLabel} method, with a ${roastLabel} roast coffee that has ${flavorLabel} notes. Include precise grind size (in microns or common grinder settings), water temperature, coffee-to-water ratio, total brew time, and step-by-step pouring/brewing instructions. Explain the 'why' behind the technique.`;
+      const prompt = `As Baristachaw, a world-class barista adhering strictly to SCA standards, create a highly detailed, professional coffee recipe using the ${methodLabel} method, with a ${roastLabel} roast coffee that has ${flavorLabel} notes. Include precise grind size (in microns or common grinder settings), water temperature, coffee-to-water ratio, total brew time, and step-by-step pouring/brewing instructions. Explain the 'why' behind the technique.`;
       const res = await deepThinkingResponse(prompt);
       setResult(res);
     } catch (error) {

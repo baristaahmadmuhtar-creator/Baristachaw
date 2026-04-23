@@ -10,11 +10,11 @@ import {
   type CollectionFolderRecord,
   type CollectionItemRecord,
   type ParityTodoItem,
-} from '@baristaclaw/shared';
+} from '@baristachaw/shared';
 import type { MobileQuickSavePayload, MobileStoreState } from '../types';
 
-const STORE_KEY = 'BARISTACLAW_MOBILE_STATE_V2';
-const LEGACY_COLLECTION_STORAGE_KEY = 'BARISTACLAW_MOBILE_COLLECTION_V1';
+const STORE_KEY = 'BARISTACHAW_MOBILE_STATE_V2';
+const LEGACY_COLLECTION_STORAGE_KEY = 'BARISTACHAW_MOBILE_COLLECTION_V1';
 
 const now = () => Date.now();
 

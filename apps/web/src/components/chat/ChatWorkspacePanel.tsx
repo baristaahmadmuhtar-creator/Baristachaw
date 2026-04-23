@@ -19,7 +19,7 @@ import { generateImage } from '../../services/gemini';
 import { getAgentProfileMemory, resetAgentProfileMemory, saveAgentProfileMemory } from '../../services/storageService';
 import { useGlobalState } from '../../context/GlobalState';
 import { useAuthModal } from '../../context/AuthModalContext';
-import { isReusableDraftSession, normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentBaristaSkillFocus, type AgentProfileMemory } from '@baristaclaw/shared';
+import { isReusableDraftSession, normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentBaristaSkillFocus, type AgentProfileMemory } from '@baristachaw/shared';
 import type { ChatSession } from '../../types';
 import type { ChatWorkspaceTab } from './types';
 import { SessionItem } from './SessionItem';

@@ -117,7 +117,7 @@ test('language switch updates guest search placeholder copy for arabic', async (
 test('navigates to all primary routes from home cards', async ({ page }) => {
   const homeContent = page.locator('.page-container').first();
 
-  await clickHomeCard(page, homeContent.locator('a[href="/chat"]').filter({ hasText: 'Ask BaristaClaw' }).first());
+  await clickHomeCard(page, homeContent.locator('a[href="/chat"]').filter({ hasText: 'Ask Baristachaw' }).first());
   await expect(page).toHaveURL(/\/chat$/);
 
   await page.goto('/');

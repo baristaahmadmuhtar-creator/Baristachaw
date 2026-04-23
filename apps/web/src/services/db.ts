@@ -1,4 +1,4 @@
-const DB_NAME = 'baristaclaw_v1';
+const DB_NAME = 'baristachaw_v1';
 const DB_VERSION = 2;
 
 const STORES = {

@@ -19,7 +19,7 @@ import {
     normalizeAgentProfileMemory,
     resolveAgentProfileNamespace,
     type AgentProfileMemory,
-} from '@baristaclaw/shared';
+} from '@baristachaw/shared';
 import { DB_STORES, idbClear, idbDelete, idbGet, idbGetAll, idbGetAllByIndex, idbPut, idbPutMany } from './db';
 
 // ─── Helpers ───
@@ -77,8 +77,8 @@ const DEFAULT_ALLOWED_EMOJIS = ['☕', '🙂', '🔥', '✅', '😄', '🤝', '�
 const DEFAULT_BLOCKED_WORDS = ['bro', 'siap', 'gua', 'gue', 'lu', 'lo', 'mantap'];
 
 // ─── Collection Event System ───
-const COLLECTION_UPDATED_EVENT = 'baristaclaw:collection-updated';
-const AGENT_PROFILE_UPDATED_EVENT = 'baristaclaw:agent-profile-updated';
+const COLLECTION_UPDATED_EVENT = 'baristachaw:collection-updated';
+const AGENT_PROFILE_UPDATED_EVENT = 'baristachaw:agent-profile-updated';
 
 export function emitCollectionUpdated(
     entity: CollectionUpdateEntity,
@@ -124,7 +124,7 @@ export function normalizeAgentCalibration(value?: Partial<AgentCalibration> | nu
         userName: v.userName || '',
         callName: v.callName || '',
         alternateName: v.alternateName || '',
-        aiName: v.aiName || 'BaristaClaw',
+        aiName: v.aiName || 'Baristachaw',
         preferredLanguage: v.preferredLanguage || 'en',
         timeZone: v.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone,
         responseStyle: v.responseStyle || '',
@@ -544,7 +544,7 @@ export function deleteRecipe(id: string): void {
 
 // ─── Agent Calibration Memory ───
 const CALIBRATION_KEY = 'BARISTA_AGENT_CALIBRATION';
-const AGENT_PROFILE_MEMORY_KEY_PREFIX = 'BARISTACLAW_AGENT_PROFILE_MEMORY::';
+const AGENT_PROFILE_MEMORY_KEY_PREFIX = 'BARISTACHAW_AGENT_PROFILE_MEMORY::';
 
 function getAgentProfileStorageKey(namespace: string) {
     return `${AGENT_PROFILE_MEMORY_KEY_PREFIX}${namespace}`;
@@ -614,7 +614,7 @@ export async function getAgentProfileMemory(namespace = resolveAgentProfileNames
                 ? migrateCalibrationToAgentProfile(JSON.parse(legacyRaw))
                 : normalizeAgentProfileMemory({
                     preferredLanguage: 'en',
-                    assistantName: 'BaristaClaw',
+                    assistantName: 'Baristachaw',
                 });
             localStorage.setItem(storageKey, JSON.stringify(migrated));
             emitAgentProfileUpdated(namespace, migrated);
@@ -626,7 +626,7 @@ export async function getAgentProfileMemory(namespace = resolveAgentProfileNames
 
     return normalizeAgentProfileMemory({
         preferredLanguage: 'en',
-        assistantName: 'BaristaClaw',
+        assistantName: 'Baristachaw',
     });
 }
 
@@ -651,7 +651,7 @@ export async function resetAgentProfileMemory(
 ): Promise<AgentProfileMemory> {
     const next = normalizeAgentProfileMemory({
         preferredLanguage: 'en',
-        assistantName: 'BaristaClaw',
+        assistantName: 'Baristachaw',
         ...(seed || {}),
         updatedAt: now(),
     });

@@ -6,7 +6,7 @@ test('mobile main routes render', async ({ page }) => {
   await expect(page.getByText('What would you like to do today?')).toBeVisible();
 
   await page.goto('/chat');
-  await expect(page.getByRole('heading', { name: 'BaristaClaw' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Baristachaw' })).toBeVisible();
 
   await page.goto('/scanner');
   await expect(page.getByRole('heading', { name: 'Vision Scan' })).toBeVisible();

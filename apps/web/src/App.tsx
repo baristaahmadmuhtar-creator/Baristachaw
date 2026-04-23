@@ -39,7 +39,7 @@ function RouteLoadingFallback() {
         <div className="max-w-xl rounded-[2rem] border border-white/70 bg-white/85 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
           <div className="inline-flex items-center gap-3 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
             <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-blue-500" />
-            BaristaClaw
+            Baristachaw
           </div>
           <h1 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950">
             Loading your barista workspace

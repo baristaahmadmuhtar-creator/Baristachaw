@@ -27,15 +27,15 @@ function buildNativeShellBootstrap(platform: 'ios' | 'android', authSession?: Au
 
   return `
     (function () {
-      window.__BARISTACLAW_NATIVE_SHELL__ = { platform: '${platform}', container: 'webview' };
-      window.__BARISTACLAW_NATIVE_SESSION__ = ${JSON.stringify(nativeAuthPayload)};
+      window.__BARISTACHAW_NATIVE_SHELL__ = { platform: '${platform}', container: 'webview' };
+      window.__BARISTACHAW_NATIVE_SESSION__ = ${JSON.stringify(nativeAuthPayload)};
       document.documentElement.setAttribute('data-native-${platform}-shell', '');
       document.documentElement.setAttribute('data-native-auth-bridge', ${nativeAuthPayload ? "'active'" : "'guest'"});
-      if (window.__BARISTACLAW_NATIVE_SESSION__ && window.__BARISTACLAW_NATIVE_SESSION__.accessToken) {
-        var nativeSession = window.__BARISTACLAW_NATIVE_SESSION__;
+      if (window.__BARISTACHAW_NATIVE_SESSION__ && window.__BARISTACHAW_NATIVE_SESSION__.accessToken) {
+        var nativeSession = window.__BARISTACHAW_NATIVE_SESSION__;
         var originalFetch = window.fetch ? window.fetch.bind(window) : null;
-        if (originalFetch && !window.__BARISTACLAW_NATIVE_FETCH_PATCHED__) {
-          window.__BARISTACLAW_NATIVE_FETCH_PATCHED__ = true;
+        if (originalFetch && !window.__BARISTACHAW_NATIVE_FETCH_PATCHED__) {
+          window.__BARISTACHAW_NATIVE_FETCH_PATCHED__ = true;
           window.fetch = function (input, init) {
             var requestUrl = '';
             try {
@@ -286,7 +286,7 @@ export function WebParityScreen({
         source={{ uri: parityUrl }}
         style={styles.webview}
         containerStyle={styles.webviewContainer}
-        originWhitelist={['https://*', 'baristaclaw://*']}
+        originWhitelist={['https://*', 'baristachaw://*']}
         injectedJavaScriptBeforeContentLoaded={nativeShellBootstrap}
         onLoadStart={() => {
           if (!didReportReady.current) {

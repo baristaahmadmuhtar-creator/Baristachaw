@@ -17,7 +17,7 @@ import type {
   ResponseProfile,
   StructuredAiResponse,
   UserProfile,
-} from '@baristaclaw/shared';
+} from '@baristachaw/shared';
 
 export type {
   AgentProfileMemory,

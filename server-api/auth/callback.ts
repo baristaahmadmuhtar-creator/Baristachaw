@@ -64,7 +64,7 @@ function sanitizeReturnToPath(raw: string): string {
   const value = String(raw || '').trim();
   if (!value.startsWith('/') || value.startsWith('//')) return '/';
   try {
-    const parsed = new URL(value, 'http://baristaclaw.local');
+    const parsed = new URL(value, 'http://baristachaw.local');
     return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/';
   } catch {
     return '/';
@@ -122,8 +122,8 @@ async function handleMobileOAuthCallback(
 
     return sendMobileCallbackHtml(res, 200, `
       <h2>Sign-in complete</h2>
-      <p>Returning to BaristaClaw...</p>
-      <p>If you are not redirected automatically, <a href="${escapedDeepLink}">open BaristaClaw</a>.</p>
+      <p>Returning to Baristachaw...</p>
+      <p>If you are not redirected automatically, <a href="${escapedDeepLink}">open Baristachaw</a>.</p>
       <p style="margin-top: 8px; font-size: 14px; opacity: .72;">Android fallback: <a href="${escapedIntentUrl}">open installed app</a>.</p>
       <script>
         (function () {
@@ -181,7 +181,7 @@ function sendMobileCallbackHtml(res: VercelResponse, statusCode: number, body: s
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>BaristaClaw Sign In</title>
+        <title>Baristachaw Sign In</title>
       </head>
       <body style="font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif; padding: 24px; color: #111;">
         ${body}

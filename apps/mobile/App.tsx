@@ -7,7 +7,7 @@ import { NavigationContainer, type Theme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { PARITY_NAV_META } from '@baristaclaw/shared';
+import { PARITY_NAV_META } from '@baristachaw/shared';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { ChatScreen } from './src/screens/ChatScreen';
 import { ScannerScreen } from './src/screens/ScannerScreen';
@@ -599,7 +599,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
         appleUnavailable: 'Apple Sign-In belum diaktifkan pada build ini.',
         supabaseUnavailable: 'Masuk dengan email belum tersedia di perangkat ini. Gunakan Google untuk melanjutkan.',
         emailConfirmationTitle: 'Verifikasi email',
-        preparing: 'Menyiapkan BaristaClaw...',
+        preparing: 'Menyiapkan Baristachaw...',
       };
     }
     if (localeState.language === 'ar') {
@@ -615,7 +615,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
         appleUnavailable: 'تسجيل الدخول باستخدام Apple غير مفعّل في هذا الإصدار.',
         supabaseUnavailable: 'Email sign-in is not available on this device yet.',
         emailConfirmationTitle: 'Verify email',
-        preparing: 'جارٍ تجهيز BaristaClaw...',
+        preparing: 'جارٍ تجهيز Baristachaw...',
       };
     }
     return {
@@ -630,7 +630,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
       appleUnavailable: 'Apple Sign-In is not enabled in this build.',
       supabaseUnavailable: 'Email sign-in is not available on this device yet. Continue with Google.',
       emailConfirmationTitle: 'Verify email',
-      preparing: 'Preparing BaristaClaw...',
+      preparing: 'Preparing Baristachaw...',
     };
   }, [localeState.language]);
 

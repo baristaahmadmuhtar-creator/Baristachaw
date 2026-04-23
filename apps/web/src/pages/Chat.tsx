@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Send, Loader2, BrainCircuit, Volume2, Zap, Brain, Mic, Plus,
   History, Copy, Check, X, MessageSquare, Trash2,
-  AlertCircle, Bookmark, BookmarkCheck, Camera, FileText, LogIn, Image as ImageIcon, ArrowLeftRight, Home, ExternalLink,
+  AlertCircle, Bookmark, BookmarkCheck, Camera, FileText, Image as ImageIcon, ArrowLeftRight, Home, ExternalLink,
 } from 'lucide-react';
 import {
   createChatSession,
@@ -34,7 +34,7 @@ import {
   type AgentProfileMemory,
   type ResponseMode,
   type StructuredSearchSource,
-} from '@baristaclaw/shared';
+} from '@baristachaw/shared';
 import {
   saveChatSession,
   saveMessage,
@@ -67,6 +67,7 @@ import {
 } from '../utils/chatAttachments';
 import { resolveAudioPlaybackUrl } from '../utils/chatAudio';
 import { subscribeMediaQueryChange } from '../utils/mediaQuery';
+import { GoogleMark } from '../components/icons';
 
 const ChatWorkspacePanel = lazy(() =>
   import('../components/chat/ChatWorkspacePanel').then((module) => ({ default: module.ChatWorkspacePanel }))
@@ -98,7 +99,7 @@ const DEEP_THINKING_PHASE_KEYS = [
   'chatDeepThinkingPhaseTradeoff',
   'chatDeepThinkingPhaseFinalize',
 ] as const;
-const CHAT_MOBILE_SWIPE_HINT_STORAGE_KEY = 'baristaclaw_chat_mobile_swipe_hint_count_v1';
+const CHAT_MOBILE_SWIPE_HINT_STORAGE_KEY = 'baristachaw_chat_mobile_swipe_hint_count_v1';
 const CHAT_MOBILE_SWIPE_HINT_MAX_SHOWS = 3;
 
 function getDayKey(value: number) {
@@ -1563,7 +1564,16 @@ export function Chat() {
                 disabled={authBusy}
                 className="w-full glass-button-primary py-3.5 flex items-center justify-center gap-2 text-sm"
               >
-                {authBusy ? <><Loader2 size={16} className="animate-spin" /> {t.opening}</> : <><LogIn size={16} /> {t.continueWithGoogle}</>}
+                {authBusy ? (
+                  <><Loader2 size={16} className="animate-spin" /> {t.opening}</>
+                ) : (
+                  <>
+                    <span className="grid h-6 w-6 place-items-center rounded-full bg-white">
+                      <GoogleMark className="h-4 w-4" />
+                    </span>
+                    {t.continueWithGoogle}
+                  </>
+                )}
               </button>
             </div>
           </motion.div>
@@ -2070,7 +2080,6 @@ function AudioBubble({ url, isUser }: { url: string; isUser: boolean }) {
     </div>
   );
 }
-
 
 
 

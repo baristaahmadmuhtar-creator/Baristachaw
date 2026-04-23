@@ -1,4 +1,4 @@
-import { mobileSemanticColorTokens, layoutTokens, typographyScaleTokens } from '@baristaclaw/design-tokens';
+import { mobileSemanticColorTokens, layoutTokens, typographyScaleTokens } from '@baristachaw/design-tokens';
 import { DynamicColorIOS, Platform, type TextStyle, type ViewStyle } from 'react-native';
 
 export type MobileColorScheme = 'light' | 'dark';

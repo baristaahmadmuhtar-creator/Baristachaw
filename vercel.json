@@ -1,5 +1,5 @@
 {
-    "buildCommand": "npm run build --workspace @baristaclaw/web",
+    "buildCommand": "npm run build --workspace @baristachaw/web",
     "outputDirectory": "apps/web/dist",
     "framework": "vite",
     "functions": {

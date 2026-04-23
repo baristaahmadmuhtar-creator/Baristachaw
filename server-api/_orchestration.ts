@@ -789,7 +789,7 @@ function isToolCommandIntent(text: string): boolean {
 function isAppSupportIntent(text: string): boolean {
   const explicitLanguage = Boolean(detectExplicitLanguageSwitch(text));
   const appSurface = hasAny(text, [
-    /\b(app|aplikasi|baristaclaw|home|beranda|sidebar|navigation|navigasi|menu|halaman|page|screen|layar)\b/i,
+    /\b(app|aplikasi|baristachaw|home|beranda|sidebar|navigation|navigasi|menu|halaman|page|screen|layar)\b/i,
     /\b(settings|pengaturan|language|bahasa|theme|tema|memory|memori|persona|profile|profil)\b/i,
     /\b(collection|koleksi|scanner|scan|tools|alat|ai brew|brew timer|ratio calculator|save to collection)\b/i,
     /\b(login|sign in|masuk|akun|account|sync|offline|online)\b/i,
@@ -1060,7 +1060,7 @@ function formatAiChatFlowForPrompt(
     lines.push('  - Validation: what improvement should look, taste, or measure like.');
   } else if (intent === 'app_support') {
     lines.push('- App support template:');
-    lines.push('  - Act as BaristaClaw product support, not only a coffee advisor.');
+    lines.push('  - Act as Baristachaw product support, not only a coffee advisor.');
     lines.push('  - Give 1-3 exact in-app steps for the requested setting, navigation, save, scan, memory, or tool workflow.');
     lines.push('  - For language requests, reply in the requested language now; for a durable default, guide the user to Home language selector or Chat > Memory > Preferred language.');
     lines.push('  - State clearly when a change must be done by the user in the UI. Do not claim the app setting was changed unless an actual app action happened.');

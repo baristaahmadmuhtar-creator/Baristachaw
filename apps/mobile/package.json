@@ -1,5 +1,5 @@
 {
-  "name": "@baristaclaw/mobile",
+  "name": "@baristachaw/mobile",
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
@@ -18,8 +18,8 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@baristaclaw/design-tokens": "file:./packages/design-tokens",
-    "@baristaclaw/shared": "file:./packages/shared",
+    "@baristachaw/design-tokens": "file:./packages/design-tokens",
+    "@baristachaw/shared": "file:./packages/shared",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^6.5.20",
     "@react-navigation/native": "^6.1.17",

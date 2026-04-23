@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { PARITY_NAV_META } from "@baristaclaw/shared";
+import { PARITY_NAV_META } from "@baristachaw/shared";
 import { Home, ScanLine, Gauge, BookOpen, MessageSquare } from "lucide-react";
 import { motion } from "motion/react";
 import clsx from "clsx";

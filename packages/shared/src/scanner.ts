@@ -48,7 +48,7 @@ export function buildScannerPrompt(
   if (mode === 'auto') {
     if (useArabicPrompt) {
       return [
-        'أنت BaristaClaw لتحليل القهوة.',
+        'أنت Baristachaw لتحليل القهوة.',
         'حلّل وسائط القهوة كمراجع تشغيلية لباريستا محترف، وليس كوصف عام للصورة.',
         'أعد الأقسام بهذا الترتيب فقط:',
         '## Coffee Analysis',
@@ -66,7 +66,7 @@ export function buildScannerPrompt(
     }
     return useIndonesianPrompt
       ? [
-          'Anda adalah BaristaClaw Analisis Kopi.',
+          'Anda adalah Baristachaw Analisis Kopi.',
           'Analisis media kopi sebagai bahan keputusan operasional barista, bukan sekadar caption gambar.',
           'Kembalikan bagian hanya dalam urutan ini:',
           '## Coffee Analysis',
@@ -82,7 +82,7 @@ export function buildScannerPrompt(
           lock,
         ].join('\n')
       : [
-          'You are BaristaClaw Coffee Analysis.',
+          'You are Baristachaw Coffee Analysis.',
           'Analyze coffee media as an operational barista decision aid, not as a generic image caption.',
           'Return only these sections in this order:',
           '## Coffee Analysis',
@@ -101,7 +101,7 @@ export function buildScannerPrompt(
 
   if (useArabicPrompt) {
     return [
-      'أنت BaristaClaw لقراءة الملصقات.',
+      'أنت Baristachaw لقراءة الملصقات.',
       'نفّذ OCR أولًا، ثم حوّل النص المرئي إلى بيانات قهوة منظمة قابلة للحفظ.',
       'أعد الأقسام بهذا الترتيب فقط:',
       '## Read Label',
@@ -119,7 +119,7 @@ export function buildScannerPrompt(
 
   return useIndonesianPrompt
     ? [
-        'Anda adalah BaristaClaw Baca Label.',
+        'Anda adalah Baristachaw Baca Label.',
         'Jalankan OCR terlebih dahulu, lalu ubah teks terlihat menjadi data kopi terstruktur yang siap disimpan.',
         'Kembalikan bagian hanya dalam urutan ini:',
         '## Read Label',
@@ -134,7 +134,7 @@ export function buildScannerPrompt(
         lock,
       ].join('\n')
     : [
-        'You are BaristaClaw Read Label.',
+        'You are Baristachaw Read Label.',
         'Run OCR first, then convert visible text into structured coffee data ready to save.',
         'Return only these sections in this order:',
         '## Read Label',

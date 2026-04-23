@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import type { AuthSession } from '../types';
 
-const AUTH_SESSION_KEY = 'BARISTACLAW_MOBILE_AUTH_SESSION_V1';
+const AUTH_SESSION_KEY = 'BARISTACHAW_MOBILE_AUTH_SESSION_V1';
 
 export type AuthSessionReadResult =
   | { status: 'missing'; session: null }

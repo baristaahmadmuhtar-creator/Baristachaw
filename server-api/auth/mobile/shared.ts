@@ -23,19 +23,19 @@ export function resolveAppUrl(): string {
 }
 
 export function resolveMobileAppScheme(): string {
-  const raw = String(process.env.MOBILE_APP_SCHEME || 'baristaclaw').trim();
-  if (!raw) return 'baristaclaw';
+  const raw = String(process.env.MOBILE_APP_SCHEME || 'baristachaw').trim();
+  if (!raw) return 'baristachaw';
   const normalized = raw.toLowerCase();
   const valid = /^[a-z][a-z0-9+.-]*$/.test(normalized);
-  return valid ? normalized : 'baristaclaw';
+  return valid ? normalized : 'baristachaw';
 }
 
 export function resolveMobileAndroidPackage(): string {
-  const raw = String(process.env.MOBILE_APP_ANDROID_PACKAGE || 'com.baristaclaw.mobile').trim();
-  if (!raw) return 'com.baristaclaw.mobile';
+  const raw = String(process.env.MOBILE_APP_ANDROID_PACKAGE || 'com.baristachaw.mobile').trim();
+  if (!raw) return 'com.baristachaw.mobile';
   const normalized = raw.toLowerCase();
   const valid = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/.test(normalized);
-  return valid ? normalized : 'com.baristaclaw.mobile';
+  return valid ? normalized : 'com.baristachaw.mobile';
 }
 
 export function resolveMobileOAuthConfig(redirectPath = '/api/auth/callback'): MobileOAuthConfig {
@@ -192,7 +192,7 @@ export async function fetchSupabaseProfile(accessToken: string, config = resolve
   const name =
     readString(userMetadata.full_name) ||
     readString(userMetadata.name) ||
-    (email ? email.split('@')[0] : 'BaristaClaw User');
+    (email ? email.split('@')[0] : 'Baristachaw User');
   const picture = readString(userMetadata.avatar_url) || readString(userMetadata.picture);
   const id = readString(userData.id);
 

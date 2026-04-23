@@ -8,7 +8,7 @@ function resolveSuggestionLogPath(): { path: string; durability: CatalogSuggesti
   if (override) return { path: override, durability: 'file' };
 
   if (process.env.VERCEL) {
-    return { path: '/tmp/baristaclaw-brand-suggestions.ndjson', durability: 'ephemeral' };
+    return { path: '/tmp/baristachaw-brand-suggestions.ndjson', durability: 'ephemeral' };
   }
 
   return {

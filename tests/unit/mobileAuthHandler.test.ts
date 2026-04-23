@@ -41,7 +41,7 @@ test('mobile auth start uses the Google-registered web callback redirect', async
   process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
   process.env.GOOGLE_CLIENT_ID = 'unit-test-google-client-id';
   process.env.GOOGLE_CLIENT_SECRET = 'unit-test-google-client-secret';
-  process.env.MOBILE_APP_SCHEME = 'baristaclaw';
+  process.env.MOBILE_APP_SCHEME = 'baristachaw';
 
   const req = {
     method: 'GET',
@@ -96,8 +96,8 @@ test('mobile auth callback page includes deep link and android intent fallback',
   process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
   process.env.GOOGLE_CLIENT_ID = 'unit-test-google-client-id';
   process.env.GOOGLE_CLIENT_SECRET = 'unit-test-google-client-secret';
-  process.env.MOBILE_APP_SCHEME = 'baristaclaw';
-  process.env.MOBILE_APP_ANDROID_PACKAGE = 'com.baristaclaw.mobile';
+  process.env.MOBILE_APP_SCHEME = 'baristachaw';
+  process.env.MOBILE_APP_ANDROID_PACKAGE = 'com.baristachaw.mobile';
 
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
@@ -158,9 +158,9 @@ test('mobile auth callback page includes deep link and android intent fallback',
 
   assert.equal(res.statusCode, 200);
   assert.match(tokenRequestBody, /redirect_uri=https%3A%2F%2Fbaristaclaw\.vercel\.app%2Fapi%2Fauth%2Fmobile%2Fcallback/);
-  assert.match(res.body, /baristaclaw:\/\/auth\?grant=/);
+  assert.match(res.body, /baristachaw:\/\/auth\?grant=/);
   assert.match(res.body, /intent:\/\/auth\?grant=/);
-  assert.match(res.body, /package=com\.baristaclaw\.mobile/);
+  assert.match(res.body, /package=com\.baristachaw\.mobile/);
   assert.match(res.body, /open installed app/i);
 });
 

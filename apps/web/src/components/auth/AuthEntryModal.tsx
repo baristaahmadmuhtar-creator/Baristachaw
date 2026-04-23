@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { AlertCircle, Info, Loader2, LogIn, X } from 'lucide-react';
+import { AlertCircle, Info, Loader2, X } from 'lucide-react';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
 import { getLanguageDirection } from '../../constants';
+import { GoogleMark } from '../icons';
 
 function resolveSourceLabel(source: string, t: Record<string, string>) {
   const sourceLabelMap: Record<string, string> = {
@@ -119,7 +120,13 @@ export function AuthEntryModal() {
                   className="w-full rounded-2xl bg-blue-500 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-500/90 disabled:cursor-not-allowed disabled:opacity-55"
                 >
                   <span className="flex items-center justify-center gap-2">
-                    {authBusy ? <Loader2 size={16} className="animate-spin" /> : <LogIn size={16} />}
+                    {authBusy ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <span className="grid h-6 w-6 place-items-center rounded-full bg-white">
+                        <GoogleMark className="h-4 w-4" />
+                      </span>
+                    )}
                     {authBusy ? t.opening : t.continueWithGoogle}
                   </span>
                 </button>

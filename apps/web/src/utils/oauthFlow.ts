@@ -32,10 +32,10 @@ function openWarmupPopup() {
       const isId = /^id(?:-|$)/i.test(lang);
       const isAr = /^ar(?:-|$)/i.test(lang);
       popup.document.title = isId
-        ? 'BaristaClaw Masuk'
+        ? 'Baristachaw Masuk'
         : isAr
-          ? 'BaristaClaw ????? ??????'
-          : 'BaristaClaw Sign In';
+          ? 'Baristachaw ????? ??????'
+          : 'Baristachaw Sign In';
 
       const body = popup.document.body;
       body.style.margin = '0';

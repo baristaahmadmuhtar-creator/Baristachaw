@@ -36,6 +36,7 @@ type AuthMode = EmailAuthPayload['mode'] | 'resetPassword' | 'accountHelp';
 type ActiveAuthMode = AuthMode | 'newPassword';
 
 const AUTH_BRAND_ICON = require('../../assets/splash-icon.png');
+const GOOGLE_MARK_ICON = require('../../assets/google-g.png');
 
 type WebParityAuthTheme = {
   bgBase: string;
@@ -50,6 +51,9 @@ type WebParityAuthTheme = {
   blue: string;
   blueBorder: string;
   blueShadow: string;
+  brandTileBg: string;
+  brandTileBorder: string;
+  brandTileShadow: string;
   white: string;
   danger: string;
   dangerBg: string;
@@ -79,6 +83,9 @@ const WEB_AUTH_THEMES: Record<'light' | 'dark', WebParityAuthTheme> = {
     blue: 'rgba(29, 78, 216, 0.96)',
     blueBorder: 'rgba(59, 130, 246, 0.42)',
     blueShadow: 'rgba(29, 78, 216, 0.24)',
+    brandTileBg: 'rgba(255, 255, 255, 0.86)',
+    brandTileBorder: 'rgba(0, 0, 0, 0.06)',
+    brandTileShadow: 'rgba(0, 0, 0, 0.08)',
     white: '#FFFFFF',
     danger: '#DC2626',
     dangerBg: 'rgba(239, 68, 68, 0.10)',
@@ -106,6 +113,9 @@ const WEB_AUTH_THEMES: Record<'light' | 'dark', WebParityAuthTheme> = {
     blue: 'rgba(29, 78, 216, 0.96)',
     blueBorder: 'rgba(59, 130, 246, 0.42)',
     blueShadow: 'rgba(29, 78, 216, 0.32)',
+    brandTileBg: '#1D4ED8',
+    brandTileBorder: 'rgba(147, 197, 253, 0.22)',
+    brandTileShadow: 'rgba(29, 78, 216, 0.32)',
     white: '#FFFFFF',
     danger: '#F87171',
     dangerBg: 'rgba(239, 68, 68, 0.10)',
@@ -124,31 +134,31 @@ const WEB_AUTH_THEMES: Record<'light' | 'dark', WebParityAuthTheme> = {
 
 const COPY: Record<ActiveAuthMode, { title: string; subtitle: string; submit: string; submitting: string }> = {
   signIn: {
-    title: 'BaristaClaw',
+    title: 'Baristachaw',
     subtitle: 'Masuk untuk mengakses fitur AI yang dilindungi.',
     submit: 'Masuk dengan email',
     submitting: 'Memeriksa akun...',
   },
   signUp: {
-    title: 'BaristaClaw',
+    title: 'Baristachaw',
     subtitle: 'Daftar untuk menyimpan chat, koleksi, dan workflow.',
     submit: 'Buat akun',
     submitting: 'Membuat akun...',
   },
   resetPassword: {
-    title: 'BaristaClaw',
+    title: 'Baristachaw',
     subtitle: 'Pulihkan akses akun dengan tautan aman ke email.',
     submit: 'Kirim tautan pemulihan',
     submitting: 'Mengirim tautan...',
   },
   accountHelp: {
-    title: 'BaristaClaw',
+    title: 'Baristachaw',
     subtitle: 'Bantuan akun untuk menemukan cara masuk paling aman.',
     submit: 'Kembali masuk',
     submitting: 'Menyiapkan...',
   },
   newPassword: {
-    title: 'BaristaClaw',
+    title: 'Baristachaw',
     subtitle: 'Buat password baru untuk menyelesaikan pemulihan akun.',
     submit: 'Simpan password baru',
     submitting: 'Menyimpan password...',
@@ -330,6 +340,28 @@ export function MobileAuthGate({
     </Pressable>
   );
 
+  const renderGoogleButton = () => (
+    <Pressable
+      accessibilityRole="button"
+      disabled={!isOnline || busy}
+      onPress={() => void onLoginGoogle()}
+      style={({ pressed }) => [
+        styles.primaryButton,
+        (!isOnline || busy) ? styles.disabled : null,
+        pressed && !busy ? styles.pressed : null,
+      ]}
+    >
+      {googleBusy ? (
+        <ActivityIndicator color={theme.white} />
+      ) : (
+        <View style={styles.googleIconBadge}>
+          <Image source={GOOGLE_MARK_ICON} style={styles.googleIcon} resizeMode="contain" />
+        </View>
+      )}
+      <Text style={styles.primaryButtonText}>{googleBusy ? 'Membuka...' : 'Lanjutkan dengan Google'}</Text>
+    </Pressable>
+  );
+
   const renderInput = ({
     label,
     value,
@@ -440,7 +472,7 @@ export function MobileAuthGate({
           <View style={styles.infoCopy}>
             <Text style={styles.infoTitle}>Bantuan akun</Text>
             <Text style={styles.infoText}>
-              BaristaClaw memakai Google atau email, bukan username terpisah. Jika lupa email, coba Google dulu atau cari email verifikasi BaristaClaw.
+              Baristachaw memakai Google atau email, bukan username terpisah. Jika lupa email, coba Google dulu atau cari email verifikasi Baristachaw.
             </Text>
             <View style={styles.inlineActions}>
               <Pressable accessibilityRole="button" onPress={() => switchMode('signIn')} style={styles.inlineButton}>
@@ -616,13 +648,7 @@ export function MobileAuthGate({
           {!isOnline ? renderNotice('Anda sedang offline. Masuk tidak tersedia sampai koneksi kembali.', 'warning', 'cloud-offline-outline') : null}
 
           <View style={styles.card}>
-            {activeMode !== 'newPassword' ? renderPrimaryButton(
-              'Lanjutkan dengan Google',
-              'Membuka...',
-              googleBusy,
-              () => void onLoginGoogle(),
-              'log-in-outline',
-            ) : null}
+            {activeMode !== 'newPassword' ? renderGoogleButton() : null}
 
             {activeMode !== 'newPassword' && enableAppleSignIn ? (
               <Pressable
@@ -699,10 +725,10 @@ function createStyles(theme: WebParityAuthTheme) {
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 20,
-      backgroundColor: '#1D4ED8',
+      backgroundColor: theme.brandTileBg,
       borderWidth: 1,
-      borderColor: theme.blueBorder,
-      shadowColor: theme.blueShadow,
+      borderColor: theme.brandTileBorder,
+      shadowColor: theme.brandTileShadow,
       shadowOpacity: 1,
       shadowRadius: 32,
       shadowOffset: { width: 0, height: 8 },
@@ -711,6 +737,18 @@ function createStyles(theme: WebParityAuthTheme) {
     brandIcon: {
       width: 64,
       height: 64,
+    },
+    googleIconBadge: {
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.white,
+    },
+    googleIcon: {
+      width: 18,
+      height: 18,
     },
     title: {
       color: theme.textPrimary,

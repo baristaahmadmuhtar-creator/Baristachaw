@@ -6,7 +6,7 @@ import { clearClientState } from '../helpers/cleanup';
 
 test.describe.configure({ timeout: 180_000 });
 
-const LAST_PLAN_STORAGE_KEY = 'BARISTACLAW_AI_BREW_LAST_PLAN_V5';
+const LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
 
 test.afterEach(async ({ page }) => {
   await qaLogout(page.request);

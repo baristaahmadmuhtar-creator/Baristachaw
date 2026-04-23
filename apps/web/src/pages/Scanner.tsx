@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { AlertCircle, Bookmark, BookmarkCheck, Camera, Loader2, LogIn, RefreshCw, Sparkles, Wand2 } from "lucide-react";
+import { AlertCircle, Bookmark, BookmarkCheck, Camera, Loader2, RefreshCw, Sparkles, Wand2 } from "lucide-react";
 import Markdown from "react-markdown";
 import { analyzeImage, editLatteArtImage } from "../services/gemini";
 import { getByFeatureKey, setByFeatureKey } from "../services/offlineCache";
@@ -12,6 +12,7 @@ import { useRuntimeDisplayMode } from "../hooks/useRuntimeDisplayMode";
 import { ensureCameraPermission, type CameraPermissionResult } from "../utils/cameraPermission";
 import { getLanguageLocale, getLanguageMeta } from "../constants";
 import { buildScannerPrompt } from "../features/scanner/buildScannerPrompt";
+import { GoogleMark } from "../components/icons";
 
 type ScannerMode = "auto" | "ocr" | "latte";
 
@@ -431,7 +432,10 @@ export function Scanner() {
                 </>
               ) : (
                 <>
-                  <LogIn size={16} /> {t.continueWithGoogle}
+                  <span className="grid h-6 w-6 place-items-center rounded-full bg-white">
+                    <GoogleMark className="h-4 w-4" />
+                  </span>
+                  {t.continueWithGoogle}
                 </>
               )}
             </button>

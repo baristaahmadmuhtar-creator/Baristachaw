@@ -6,13 +6,13 @@
 - [ ] `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` set.
 - [ ] `APPLE_BUNDLE_ID` set and matches iOS bundle identifier.
 - [ ] `APP_URL=https://baristaclaw.vercel.app` set.
-- [ ] `MOBILE_APP_SCHEME=baristaclaw` set.
+- [ ] `MOBILE_APP_SCHEME=baristachaw` set.
 - [ ] `MOBILE_AUTH_GRANT_TTL_SEC` set (default 120).
 
 ## B. Mobile Config
 
 - [ ] `EXPO_PUBLIC_API_BASE_URL=https://baristaclaw.vercel.app`.
-- [ ] `EXPO_PUBLIC_APP_SCHEME=baristaclaw`.
+- [ ] `EXPO_PUBLIC_APP_SCHEME=baristachaw`.
 - [ ] `EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS=6000`.
 - [ ] `EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED=true`.
 - [ ] `EXPO_PUBLIC_ENABLE_GUEST_MODE=true`.

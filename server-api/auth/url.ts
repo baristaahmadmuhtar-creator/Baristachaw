@@ -31,7 +31,7 @@ function readReturnToQuery(raw: string | string[] | undefined): string {
   const text = String(value || '').trim();
   if (!text.startsWith('/') || text.startsWith('//')) return '/';
   try {
-    const parsed = new URL(text, 'http://baristaclaw.local');
+    const parsed = new URL(text, 'http://baristachaw.local');
     return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/';
   } catch {
     return '/';

@@ -337,7 +337,7 @@ export function shouldUseDeepGrounding(prompt: string): boolean {
 export function buildDeepTemplatePrompt(promptForModel: string, options?: { grounded?: boolean }): string {
   const grounded = Boolean(options?.grounded);
   return [
-    'You are BaristaClaw in Deep mode.',
+    'You are Baristachaw in Deep mode.',
     'Deliver a high-quality, deeply reasoned answer with minimal user mental effort.',
     'Always keep the response practical and decision-oriented.',
     'Output MUST use this exact section order and headings:',
@@ -1236,7 +1236,7 @@ async function callOpenAiCompatibleText(
   };
   if (config.provider === 'OPENROUTER') {
     headers['HTTP-Referer'] = 'https://baristaclaw.vercel.app';
-    headers['X-Title'] = 'BaristaClaw AI';
+    headers['X-Title'] = 'Baristachaw AI';
   }
 
   const response = await withTimeout(
@@ -1536,20 +1536,20 @@ function buildFallbackPrompts(
   const expectationLock = `Output style: verbosity=${resolved.expectation.verbosity}, format=${resolved.expectation.format}, tone=${resolved.expectation.tone}.`;
   if (action === 'fast') {
     return {
-      system: `You are BaristaClaw, an expert coffee assistant. Reply concise, practical, and direct. Do not roleplay as a cashier, POS bot, or take a drink order unless the user explicitly asks for an ordering simulation. For greetings or very short openers, greet back briefly and ask what they need. ${languageLock} ${expectationLock}`,
+      system: `You are Baristachaw, an expert coffee assistant. Reply concise, practical, and direct. Do not roleplay as a cashier, POS bot, or take a drink order unless the user explicitly asks for an ordering simulation. For greetings or very short openers, greet back briefly and ask what they need. ${languageLock} ${expectationLock}`,
       user: `Answer concisely and actionably:\n${prompt}`,
     };
   }
 
   if (action === 'balanced') {
     return {
-      system: `You are BaristaClaw, an expert coffee assistant. Stay tightly aligned to the latest user request, keep the answer practical, and use moderate detail. Do not roleplay as a cashier, POS bot, or take a drink order unless the user explicitly asks for an ordering simulation. For greetings or very short openers, greet back briefly and ask what they need. ${languageLock} ${expectationLock}`,
+      system: `You are Baristachaw, an expert coffee assistant. Stay tightly aligned to the latest user request, keep the answer practical, and use moderate detail. Do not roleplay as a cashier, POS bot, or take a drink order unless the user explicitly asks for an ordering simulation. For greetings or very short openers, greet back briefly and ask what they need. ${languageLock} ${expectationLock}`,
       user: `Answer clearly and keep the response scoped to the active request. Prefer compact paragraphs or short bullets only when they help:\n${prompt}`,
     };
   }
 
   return {
-    system: `You are BaristaClaw, an expert coffee assistant following SCA best practices. Do not roleplay as a cashier, POS bot, or take a drink order unless the user explicitly asks for an ordering simulation. For greetings or very short openers, greet back briefly and ask what they need. ${languageLock} ${expectationLock}`,
+    system: `You are Baristachaw, an expert coffee assistant following SCA best practices. Do not roleplay as a cashier, POS bot, or take a drink order unless the user explicitly asks for an ordering simulation. For greetings or very short openers, greet back briefly and ask what they need. ${languageLock} ${expectationLock}`,
     user: `Think deeply, provide structured recommendations and tradeoffs:\n${prompt}`,
   };
 }
@@ -2036,7 +2036,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         key =>
           callGeminiWithInlineData(
             key,
-            `As an expert barista AI (BaristaClaw) adhering to SCA standards, analyze this image. ${promptForModel}`,
+            `As an expert barista AI (Baristachaw) adhering to SCA standards, analyze this image. ${promptForModel}`,
             attachment.payload.data,
             attachment.payload.mimeType,
             visionModel,
@@ -2073,7 +2073,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         key =>
           callGeminiWithInlineData(
             key,
-            `As BaristaClaw, an expert barista AI adhering to SCA standards, analyze this attachment carefully. ${promptForModel}`,
+            `As Baristachaw, an expert barista AI adhering to SCA standards, analyze this attachment carefully. ${promptForModel}`,
             attachment.payload.data,
             attachment.payload.mimeType,
             visionModel,
@@ -2214,8 +2214,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ? (selectedModel || 'gemini-2.5-flash')
         : 'gemini-2.5-flash-lite-latest';
       const geminiPrompt = isBalancedAction
-        ? `As BaristaClaw, an expert coffee assistant, answer with practical, scoped guidance and moderate detail. Stay tightly aligned to the latest user request. Do not roleplay as a cashier, POS bot, or take a drink order unless the user explicitly asks for an ordering simulation. For greetings or very short openers, greet back briefly and ask what they need.\n\n${promptForModel}`
-        : `As BaristaClaw, an expert coffee assistant, answer concisely and helpfully. Do not roleplay as a cashier, POS bot, or take a drink order unless the user explicitly asks for an ordering simulation. For greetings or very short openers, greet back briefly and ask what they need.\n\n${promptForModel}`;
+        ? `As Baristachaw, an expert coffee assistant, answer with practical, scoped guidance and moderate detail. Stay tightly aligned to the latest user request. Do not roleplay as a cashier, POS bot, or take a drink order unless the user explicitly asks for an ordering simulation. For greetings or very short openers, greet back briefly and ask what they need.\n\n${promptForModel}`
+        : `As Baristachaw, an expert coffee assistant, answer concisely and helpfully. Do not roleplay as a cashier, POS bot, or take a drink order unless the user explicitly asks for an ordering simulation. For greetings or very short openers, greet back briefly and ask what they need.\n\n${promptForModel}`;
       const responseMode: ResponseMode = isBalancedAction ? 'normal' : 'fast';
       const fallbackAction = isBalancedAction ? 'balanced' : 'fast';
       try {

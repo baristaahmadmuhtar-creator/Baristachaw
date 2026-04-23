@@ -76,7 +76,7 @@ async function exchangeSupabaseSessionForApiSession(apiClient: ApiClient, fallba
 
   const exchange = await apiClient.exchangeMobileSupabaseToken({ accessToken });
   if (!exchange?.accessToken || !exchange?.user?.id) {
-    throw new Error('Sesi BaristaClaw belum bisa dibuat. Coba ulang.');
+    throw new Error('Sesi Baristachaw belum bisa dibuat. Coba ulang.');
   }
 
   return toSession(exchange, fallbackProvider);

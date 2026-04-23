@@ -6,12 +6,12 @@ test('resolveInternalBaseUrl prefers APP_URL when configured', () => {
   const previousAppUrl = process.env.APP_URL;
   const previousVercelUrl = process.env.VERCEL_URL;
 
-  process.env.APP_URL = 'https://baristaclaw.example/app';
+  process.env.APP_URL = 'https://baristachaw.example/app';
   delete process.env.VERCEL_URL;
 
   try {
     const result = resolveInternalBaseUrl({ headers: { host: '127.0.0.1:3000' } } as any);
-    assert.equal(result, 'https://baristaclaw.example');
+    assert.equal(result, 'https://baristachaw.example');
   } finally {
     if (previousAppUrl === undefined) delete process.env.APP_URL;
     else process.env.APP_URL = previousAppUrl;
@@ -48,11 +48,11 @@ test('resolveInternalBaseUrl falls back to request host with forwarded protocol'
   try {
     const result = resolveInternalBaseUrl({
       headers: {
-        host: 'preview.baristaclaw.local:3000',
+        host: 'preview.baristachaw.local:3000',
         'x-forwarded-proto': 'https',
       },
     } as any);
-    assert.equal(result, 'https://preview.baristaclaw.local:3000');
+    assert.equal(result, 'https://preview.baristachaw.local:3000');
   } finally {
     if (previousAppUrl === undefined) delete process.env.APP_URL;
     else process.env.APP_URL = previousAppUrl;

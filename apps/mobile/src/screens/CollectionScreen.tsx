@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
-import { genId, normalizeSearchValue } from '@baristaclaw/shared';
+import { genId, normalizeSearchValue } from '@baristachaw/shared';
 import { Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import {
   ActionButton,

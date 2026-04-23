@@ -13,7 +13,7 @@ export const PARITY_NAV_META: Record<ParityRouteName, {
     navId: 'home',
     path: '/',
     label: 'Home',
-    headerTitle: 'BaristaClaw',
+    headerTitle: 'Baristachaw',
   },
   Scanner: {
     navId: 'scanner',
@@ -37,7 +37,7 @@ export const PARITY_NAV_META: Record<ParityRouteName, {
     navId: 'chat',
     path: '/chat',
     label: 'Chat',
-    headerTitle: 'BaristaClaw',
+    headerTitle: 'Baristachaw',
   },
 };
 
@@ -47,9 +47,9 @@ export const PARITY_NAV_ITEMS = PARITY_NAV_ORDER.map((routeName) => ({
 }));
 
 export const HOME_PARITY = {
-  brand: 'BaristaClaw',
+  brand: 'Baristachaw',
   subtitle: 'What would you like to do today?',
-  searchSectionTitle: 'Ask BaristaClaw',
+  searchSectionTitle: 'Ask Baristachaw',
   signedInPlaceholder: 'Search the web...',
   signedOutPlaceholder: 'Sign in to search...',
   searchResultTitle: 'Search Result',
@@ -57,7 +57,7 @@ export const HOME_PARITY = {
   featureCards: [
     {
       routeName: 'Chat',
-      title: 'Ask BaristaClaw',
+      title: 'Ask Baristachaw',
       subtitle: 'Recipes, troubleshooting, and workflow help',
     },
     {
@@ -131,7 +131,7 @@ export const TOOLS_PARITY = {
 } as const;
 
 export const CHAT_PARITY = {
-  title: 'BaristaClaw',
+  title: 'Baristachaw',
   modes: {
     fast: 'Flash',
     normal: 'Normal',

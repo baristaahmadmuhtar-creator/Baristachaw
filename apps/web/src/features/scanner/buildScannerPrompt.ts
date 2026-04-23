@@ -1,1 +1,1 @@
-export { buildScannerPrompt } from '@baristaclaw/shared';
+export { buildScannerPrompt } from '@baristachaw/shared';

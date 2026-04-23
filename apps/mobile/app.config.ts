@@ -2,9 +2,9 @@ import type { ExpoConfig, ConfigContext } from 'expo/config';
 
 const DEFAULT_API_BASE_URL = 'https://baristaclaw.vercel.app';
 const DEFAULT_WEB_APP_URL = 'https://baristaclaw.vercel.app';
-const DEFAULT_SCHEME = 'baristaclaw';
-const DEFAULT_BUNDLE_ID = 'com.baristaclaw.app';
-const DEFAULT_ANDROID_PACKAGE = 'com.baristaclaw.mobile';
+const DEFAULT_SCHEME = 'baristachaw';
+const DEFAULT_BUNDLE_ID = 'com.baristachaw.app';
+const DEFAULT_ANDROID_PACKAGE = 'com.baristachaw.mobile';
 
 function isLocalHttpUrl(value: string): boolean {
   return /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(value.trim());
@@ -42,8 +42,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: 'BaristaClaw',
-    slug: 'baristaclaw-mobile',
+    name: 'Baristachaw',
+    slug: 'baristachaw-mobile',
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/icon.png',
@@ -52,15 +52,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     splash: {
       image: './assets/splash-icon.png',
       resizeMode: 'contain',
-      backgroundColor: '#1D4ED8',
+      backgroundColor: '#FFFFFF',
     },
     ios: {
       supportsTablet: true,
       bundleIdentifier: DEFAULT_BUNDLE_ID,
       infoPlist: {
-        NSCameraUsageDescription: 'BaristaClaw uses the camera for live Vision Scan and photo attachments.',
-        NSPhotoLibraryUsageDescription: 'BaristaClaw uses your photo library to pick coffee photos and videos for analysis.',
-        NSMicrophoneUsageDescription: 'BaristaClaw uses the microphone for voice note transcription in chat.',
+        NSCameraUsageDescription: 'Baristachaw uses the camera for live Vision Scan and photo attachments.',
+        NSPhotoLibraryUsageDescription: 'Baristachaw uses your photo library to pick coffee photos and videos for analysis.',
+        NSMicrophoneUsageDescription: 'Baristachaw uses the microphone for voice note transcription in chat.',
         NSAppTransportSecurity: atsPolicy,
         ITSAppUsesNonExemptEncryption: false,
         UIRequiresFullScreen: true,
@@ -91,7 +91,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         },
       ],
       adaptiveIcon: {
-        backgroundColor: '#1D4ED8',
+        backgroundColor: '#FFFFFF',
         foregroundImage: './assets/android-icon-foreground.png',
         backgroundImage: './assets/android-icon-background.png',
         monochromeImage: './assets/android-icon-monochrome.png',

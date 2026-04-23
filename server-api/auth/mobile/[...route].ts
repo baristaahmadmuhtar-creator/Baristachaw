@@ -192,12 +192,12 @@ async function handleCallback(req: VercelRequest, res: VercelResponse, requestId
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>BaristaClaw Sign In</title>
+    <title>Baristachaw Sign In</title>
   </head>
   <body style="font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif; padding: 24px; color: #111;">
     <h2>Sign-in complete</h2>
     <p>Returning to the app…</p>
-    <p>If you are not redirected automatically, <a href="${escapedDeepLink}">open BaristaClaw</a>.</p>
+    <p>If you are not redirected automatically, <a href="${escapedDeepLink}">open Baristachaw</a>.</p>
     <p style="margin-top: 8px; font-size: 14px; opacity: .72;">Android fallback: <a href="${escapedIntentUrl}">open installed app</a>.</p>
     <script>
       (function () {
@@ -238,7 +238,7 @@ async function handleCallback(req: VercelRequest, res: VercelResponse, requestId
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>BaristaClaw Sign In Failed</title>
+    <title>Baristachaw Sign In Failed</title>
   </head>
   <body style="font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif; padding: 24px; color: #111;">
     <h2>Sign-in failed</h2>
@@ -253,7 +253,7 @@ async function handleCallback(req: VercelRequest, res: VercelResponse, requestId
         500,
         `<!doctype html>
 <html>
-  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>BaristaClaw Sign In Failed</title></head>
+  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Baristachaw Sign In Failed</title></head>
   <body style="font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif; padding: 24px; color: #111;">
     <h2>Sign-in failed</h2>
     <p>${safeDetails}</p>

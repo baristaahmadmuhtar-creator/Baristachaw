@@ -7,7 +7,7 @@ import {
   SCANNER_PARITY,
   TOOLS_PARITY,
   type ParityNavId,
-} from '@baristaclaw/shared';
+} from '@baristachaw/shared';
 import type { LucideIcon } from 'lucide-react';
 import {
   ArrowUpRight,
@@ -472,7 +472,7 @@ function ChatConversationState() {
         <MessageBubble role="user" author="You" meta="09:39">
           Need a cleaner espresso dial-in plan for a washed Ethiopia.
         </MessageBubble>
-        <MessageBubble role="assistant" author="BaristaClaw" meta="09:40">
+        <MessageBubble role="assistant" author="Baristachaw" meta="09:40">
           Start at <strong>18g in / 38g out / 28 to 31 sec</strong>. If acidity is thin, grind finer. If bitterness rises first, reduce yield by 2g.
         </MessageBubble>
         <div className="nps-message-toolbar">
@@ -542,7 +542,7 @@ function ChatDeepState() {
         </div>
       </SectionCard>
 
-      <MessageBubble role="assistant" author="BaristaClaw" meta="Thinking">
+      <MessageBubble role="assistant" author="Baristachaw" meta="Thinking">
         Deep mode is preparing a structured training plan with drills, taste checkpoints, and end-of-week review.
       </MessageBubble>
 
@@ -589,7 +589,7 @@ function ChatHistoryState() {
       </div>
 
       <div className="nps-thread">
-        <MessageBubble role="assistant" author="BaristaClaw" meta="09:40">
+        <MessageBubble role="assistant" author="Baristachaw" meta="09:40">
           Last saved answer compared grinder retention tradeoffs and workflow fit for a low-volume espresso bar.
         </MessageBubble>
       </div>
@@ -1312,7 +1312,7 @@ export function NativeProductionShowcase() {
       <header className="nps-showcase__hero">
         <div className="nps-showcase__hero-copy">
           <p className="nps-showcase__eyebrow">Native Parity Route</p>
-          <h1 className="nps-showcase__title">BaristaClaw native UI aligned to web and PWA</h1>
+          <h1 className="nps-showcase__title">Baristachaw native UI aligned to web and PWA</h1>
           <p className="nps-showcase__subtitle">
             Static 390x844 artboards for Figma capture with the same feature names, screen order, and core flows as the current web/PWA product.
           </p>

@@ -3,9 +3,9 @@ import {
   normalizeAgentProfileMemory,
   resolveAgentProfileNamespace,
   type AgentProfileMemory,
-} from '@baristaclaw/shared';
+} from '@baristachaw/shared';
 
-const AGENT_PROFILE_MEMORY_KEY_PREFIX = 'BARISTACLAW_AGENT_PROFILE_MEMORY::';
+const AGENT_PROFILE_MEMORY_KEY_PREFIX = 'BARISTACHAW_AGENT_PROFILE_MEMORY::';
 
 function getStorageKey(userId?: string | null): string {
   return `${AGENT_PROFILE_MEMORY_KEY_PREFIX}${resolveAgentProfileNamespace(userId)}`;
@@ -14,7 +14,7 @@ function getStorageKey(userId?: string | null): string {
 function buildDefaultProfile(seed?: Partial<AgentProfileMemory>): AgentProfileMemory {
   return normalizeAgentProfileMemory({
     preferredLanguage: 'en',
-    assistantName: 'BaristaClaw',
+    assistantName: 'Baristachaw',
     ...(seed || {}),
     updatedAt: Date.now(),
   });

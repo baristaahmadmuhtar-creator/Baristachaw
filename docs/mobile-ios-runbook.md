@@ -37,16 +37,16 @@ GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 JWT_SECRET=...
 APP_URL=https://baristaclaw.vercel.app
-MOBILE_APP_SCHEME=baristaclaw
+MOBILE_APP_SCHEME=baristachaw
 MOBILE_AUTH_GRANT_TTL_SEC=120
-APPLE_BUNDLE_ID=com.baristaclaw.app
+APPLE_BUNDLE_ID=com.baristachaw.app
 ```
 
 ### Mobile (`apps/mobile/.env`)
 
 ```env
 EXPO_PUBLIC_API_BASE_URL=https://baristaclaw.vercel.app
-EXPO_PUBLIC_APP_SCHEME=baristaclaw
+EXPO_PUBLIC_APP_SCHEME=baristachaw
 EXPO_PUBLIC_MOBILE_UI_MODE=web_parity
 EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS=6000
 EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED=true
@@ -99,7 +99,7 @@ npx expo prebuild --platform ios --project-dir apps/mobile
 1. Google flow: app requests `/api/auth/mobile/start`.
 2. Browser opens Google consent.
 3. Google redirects to `/api/auth/mobile/callback`.
-4. Callback redirects to `baristaclaw://auth?grant=...`.
+4. Callback redirects to `baristachaw://auth?grant=...`.
 5. App exchanges grant at `/api/auth/mobile/exchange`.
 6. Apple flow (optional): enabled only when `EXPO_PUBLIC_ENABLE_APPLE_SIGNIN=true`; otherwise shown as maintenance state.
 7. App stores `accessToken` in `expo-secure-store`.

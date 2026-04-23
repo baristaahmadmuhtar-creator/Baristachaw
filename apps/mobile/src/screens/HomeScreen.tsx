@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, type NavigationProp, type ParamListBase } from '@react-navigation/native';
 import { Linking, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
-import { buildResponseOrchestration, getHomeGreeting, normalizeAgentProfileMemory, type AgentProfileMemory } from '@baristaclaw/shared';
+import { buildResponseOrchestration, getHomeGreeting, normalizeAgentProfileMemory, type AgentProfileMemory } from '@baristachaw/shared';
 import {
   ActionButton,
   AppShell,
@@ -123,7 +123,7 @@ export function HomeScreen({
   const [emailFormError, setEmailFormError] = useState('');
   const [agentProfile, setAgentProfile] = useState<AgentProfileMemory>(() => normalizeAgentProfileMemory({
     preferredLanguage,
-    assistantName: 'BaristaClaw',
+    assistantName: 'Baristachaw',
     userDisplayName: session?.user.name,
   }));
 
@@ -151,7 +151,7 @@ export function HomeScreen({
     void (async () => {
       const stored = await readAgentProfileMemory(session?.user.id, {
         preferredLanguage,
-        assistantName: 'BaristaClaw',
+        assistantName: 'Baristachaw',
         userDisplayName: session?.user.name,
       });
       if (!cancelled) setAgentProfile(stored);

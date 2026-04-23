@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2, CheckCircle, AlertCircle, LogIn } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuthModal } from '../context/AuthModalContext';
 import { useGlobalState } from '../context/GlobalState';
-import { AppIconBrand } from '../components/icons/AppIconBrand';
+import { AppIconBrand, GoogleMark } from '../components/icons';
 
 interface AuthScreenProps {
   onLogin: () => void;
@@ -43,7 +43,7 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="w-20 h-20 rounded-[1.5rem] bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto mb-5 shadow-[0_8px_32px_rgba(0,122,255,0.3)]"
+            className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-[1.5rem] border border-black/[0.06] bg-white/80 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:border-blue-300/20 dark:bg-gradient-to-br dark:from-blue-500 dark:to-indigo-600 dark:shadow-[0_8px_32px_rgba(0,122,255,0.3)]"
           >
             <AppIconBrand className="h-16 w-16 object-contain" />
           </motion.div>
@@ -89,7 +89,9 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
               </>
             ) : (
               <>
-                <LogIn size={18} />
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-white">
+                  <GoogleMark className="h-4 w-4" />
+                </span>
                 {t.continueWithGoogle}
               </>
             )}

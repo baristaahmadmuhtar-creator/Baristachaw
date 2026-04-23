@@ -41,7 +41,7 @@ import {
   type AgentProfileMemory,
   type ResponseMode,
   type StructuredSearchSource,
-} from '@baristaclaw/shared';
+} from '@baristachaw/shared';
 import {
   ActionButton,
   AppShell,
@@ -277,12 +277,12 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
   const [selectedAssistantMessage, setSelectedAssistantMessage] = useState<ChatMessageRecord | null>(null);
   const [agentProfile, setAgentProfile] = useState<AgentProfileMemory>(() => normalizeAgentProfileMemory({
     preferredLanguage: readDeviceLanguage().split('-')[0] || 'en',
-    assistantName: 'BaristaClaw',
+    assistantName: 'Baristachaw',
     userDisplayName: session?.user.name,
   }));
   const [savedAgentProfile, setSavedAgentProfile] = useState<AgentProfileMemory>(() => normalizeAgentProfileMemory({
     preferredLanguage: readDeviceLanguage().split('-')[0] || 'en',
-    assistantName: 'BaristaClaw',
+    assistantName: 'Baristachaw',
     userDisplayName: session?.user.name,
   }));
   const localeState = useMemo(() => getMobileLocalization(agentProfile.preferredLanguage), [agentProfile.preferredLanguage]);
@@ -332,7 +332,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         attachmentTooLarge: `Lampiran terlalu besar (maks ${MAX_INLINE_ATTACHMENT_LABEL}).`,
         signInForChatTools: 'Masuk untuk memakai alat chat.',
         offlineSend: 'Anda sedang offline. Sambungkan lagi untuk mengirim pesan.',
-        shareTitle: 'Respons Chat BaristaClaw',
+        shareTitle: 'Respons Chat Baristachaw',
         signInForImages: 'Masuk untuk memakai alat gambar.',
         offlineImages: 'Anda sedang offline. Sambungkan lagi untuk membuat gambar.',
         generatedImageReuseFailed: 'Gambar hasil tidak bisa dipakai ulang.',
@@ -363,7 +363,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         attachmentTooLarge: `المرفق كبير جدًا (الحد الأقصى ${MAX_INLINE_ATTACHMENT_LABEL}).`,
         signInForChatTools: 'سجّل الدخول لاستخدام أدوات المحادثة.',
         offlineSend: 'أنت غير متصل. أعد الاتصال لإرسال الرسائل.',
-        shareTitle: 'رد دردشة BaristaClaw',
+        shareTitle: 'رد دردشة Baristachaw',
         signInForImages: 'سجّل الدخول لاستخدام أدوات الصور.',
         offlineImages: 'أنت غير متصل. أعد الاتصال لإنشاء الصور.',
         generatedImageReuseFailed: 'تعذر إعادة استخدام الصورة المُنشأة.',
@@ -393,7 +393,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
       attachmentTooLarge: `Attachment too large (max ${MAX_INLINE_ATTACHMENT_LABEL}).`,
       signInForChatTools: 'Please sign in to use chat tools.',
       offlineSend: 'You are offline. Reconnect to send messages.',
-      shareTitle: 'BaristaClaw Chat Response',
+      shareTitle: 'Baristachaw Chat Response',
       signInForImages: 'Please sign in to use image tools.',
       offlineImages: 'You are offline. Reconnect to generate images.',
       generatedImageReuseFailed: 'Generated image could not be reused.',
@@ -420,7 +420,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         notSavedYet: 'Not saved yet',
         updated: 'Updated',
         loadHistoryFailed: 'Failed to load chat history.',
-        shareTitle: 'BaristaClaw Chat Response',
+        shareTitle: 'Baristachaw Chat Response',
         generatedImageReuseFailed: 'Generated image could not be reused.',
         offlineSpeech: 'You are offline. Reconnect to play speech audio.',
         voiceUnavailable: 'Voice note audio is unavailable on this device.',
@@ -437,7 +437,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         notSavedYet: 'Belum disimpan',
         updated: 'Diperbarui',
         loadHistoryFailed: 'Gagal memuat riwayat chat.',
-        shareTitle: 'Respons Chat BaristaClaw',
+        shareTitle: 'Respons Chat Baristachaw',
         generatedImageReuseFailed: 'Gambar hasil tidak bisa dipakai ulang.',
         offlineSpeech: 'Anda sedang offline. Sambungkan lagi untuk memutar audio suara.',
         voiceUnavailable: 'Audio catatan suara tidak tersedia di perangkat ini.',
@@ -454,7 +454,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         notSavedYet: 'لم يتم الحفظ بعد',
         updated: 'تم التحديث',
         loadHistoryFailed: 'تعذر تحميل سجل المحادثة.',
-        shareTitle: 'رد دردشة BaristaClaw',
+        shareTitle: 'رد دردشة Baristachaw',
         generatedImageReuseFailed: 'تعذر إعادة استخدام الصورة التي تم إنشاؤها.',
         offlineSpeech: 'أنت غير متصل. أعد الاتصال لتشغيل الصوت.',
         voiceUnavailable: 'صوت الملاحظة الصوتية غير متاح على هذا الجهاز.',
@@ -471,7 +471,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         notSavedYet: '尚未保存',
         updated: '已更新',
         loadHistoryFailed: '无法加载聊天记录。',
-        shareTitle: 'BaristaClaw 聊天回复',
+        shareTitle: 'Baristachaw 聊天回复',
         generatedImageReuseFailed: '无法复用已生成的图片。',
         offlineSpeech: '你当前离线。请重新连接后播放语音。',
         voiceUnavailable: '此设备不支持语音便笺音频。',
@@ -488,7 +488,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         notSavedYet: 'まだ保存されていません',
         updated: '更新済み',
         loadHistoryFailed: 'チャット履歴を読み込めませんでした。',
-        shareTitle: 'BaristaClaw チャット返信',
+        shareTitle: 'Baristachaw チャット返信',
         generatedImageReuseFailed: '生成した画像を再利用できませんでした。',
         offlineSpeech: 'オフラインです。音声を再生するには再接続してください。',
         voiceUnavailable: 'この端末では音声メモを再生できません。',
@@ -505,7 +505,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         notSavedYet: '아직 저장되지 않음',
         updated: '업데이트됨',
         loadHistoryFailed: '채팅 기록을 불러오지 못했습니다.',
-        shareTitle: 'BaristaClaw 채팅 응답',
+        shareTitle: 'Baristachaw 채팅 응답',
         generatedImageReuseFailed: '생성된 이미지를 다시 사용할 수 없습니다.',
         offlineSpeech: '오프라인 상태입니다. 음성을 재생하려면 다시 연결하세요.',
         voiceUnavailable: '이 기기에서는 음성 메모 오디오를 사용할 수 없습니다.',
@@ -522,7 +522,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         notSavedYet: 'ยังไม่บันทึก',
         updated: 'อัปเดตแล้ว',
         loadHistoryFailed: 'โหลดประวัติแชตไม่สำเร็จ',
-        shareTitle: 'คำตอบแชต BaristaClaw',
+        shareTitle: 'คำตอบแชต Baristachaw',
         generatedImageReuseFailed: 'ไม่สามารถนำภาพที่สร้างแล้วกลับมาใช้ได้',
         offlineSpeech: 'คุณออฟไลน์อยู่ เชื่อมต่ออีกครั้งเพื่อเล่นเสียง',
         voiceUnavailable: 'อุปกรณ์นี้ไม่รองรับเสียงบันทึกข้อความ',
@@ -539,7 +539,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         notSavedYet: 'Chưa lưu',
         updated: 'Đã cập nhật',
         loadHistoryFailed: 'Không thể tải lịch sử chat.',
-        shareTitle: 'Phản hồi chat BaristaClaw',
+        shareTitle: 'Phản hồi chat Baristachaw',
         generatedImageReuseFailed: 'Không thể dùng lại ảnh đã tạo.',
         offlineSpeech: 'Bạn đang ngoại tuyến. Hãy kết nối lại để phát âm thanh.',
         voiceUnavailable: 'Thiết bị này không hỗ trợ âm thanh ghi chú thoại.',
@@ -556,7 +556,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         notSavedYet: 'Belum disimpan',
         updated: 'Dikemas kini',
         loadHistoryFailed: 'Gagal memuatkan sejarah sembang.',
-        shareTitle: 'Respons sembang BaristaClaw',
+        shareTitle: 'Respons sembang Baristachaw',
         generatedImageReuseFailed: 'Imej yang dijana tidak dapat digunakan semula.',
         offlineSpeech: 'Anda di luar talian. Sambung semula untuk memainkan audio.',
         voiceUnavailable: 'Audio mesej suara tidak tersedia pada peranti ini.',
@@ -611,7 +611,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
     void (async () => {
       const stored = await readAgentProfileMemory(session?.user.id, {
         preferredLanguage: readDeviceLanguage().split('-')[0] || 'en',
-        assistantName: 'BaristaClaw',
+        assistantName: 'Baristachaw',
         userDisplayName: session?.user.name,
       });
       if (!cancelled) {
@@ -883,7 +883,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
     try {
       const next = await saveAgentProfileMemory(session?.user.id, {
         ...patch,
-        assistantName: patch.assistantName || agentProfile.assistantName || 'BaristaClaw',
+        assistantName: patch.assistantName || agentProfile.assistantName || 'Baristachaw',
         userDisplayName: patch.userDisplayName || agentProfile.userDisplayName || session?.user.name,
         preferredLanguage: patch.preferredLanguage || agentProfile.preferredLanguage || readDeviceLanguage().split('-')[0] || 'en',
       });
@@ -901,7 +901,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
     try {
       const next = await resetAgentProfileMemory(session?.user.id, {
         preferredLanguage: readDeviceLanguage().split('-')[0] || 'en',
-        assistantName: 'BaristaClaw',
+        assistantName: 'Baristachaw',
         userDisplayName: session?.user.name,
       });
       setAgentProfile(next);

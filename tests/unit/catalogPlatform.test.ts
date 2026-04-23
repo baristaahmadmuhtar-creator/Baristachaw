@@ -211,7 +211,7 @@ test('catalog build artifacts produce search exports and report counters', () =>
 });
 
 test('catalog suggestions persist to the configured log file', async () => {
-  const tempDir = await mkdtemp(path.join(os.tmpdir(), 'baristaclaw-catalog-'));
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), 'baristachaw-catalog-'));
   const tempFile = path.join(tempDir, 'suggestions.ndjson');
   process.env.CATALOG_SUGGESTION_LOG_PATH = tempFile;
 

@@ -19,7 +19,7 @@ import Markdown from "react-markdown";
 import { useRuntimeDisplayMode } from "../hooks/useRuntimeDisplayMode";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import { subscribeMediaQueryChange } from "../utils/mediaQuery";
-import { normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentProfileMemory } from "@baristaclaw/shared";
+import { normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentProfileMemory } from "@baristachaw/shared";
 import { getLanguageDirection, getLanguageLocale, LANGUAGE_OPTIONS } from "../constants";
 
 const genId = (prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;

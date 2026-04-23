@@ -20,7 +20,7 @@ type NativeShellSession = {
 
 declare global {
   interface Window {
-    __BARISTACLAW_NATIVE_SESSION__?: NativeShellSession | null;
+    __BARISTACHAW_NATIVE_SESSION__?: NativeShellSession | null;
   }
 }
 
@@ -73,7 +73,7 @@ function readStoredOauthCallbackResult(): StoredOauthCallbackResult | null {
 
 function readNativeShellSession(): NativeShellSession | null {
   if (typeof window === 'undefined') return null;
-  const session = window.__BARISTACLAW_NATIVE_SESSION__;
+  const session = window.__BARISTACHAW_NATIVE_SESSION__;
   if (!session?.accessToken || !session.user?.id) return null;
   const expiresAt = Number(session.expiresAt || 0);
   if (expiresAt > 0 && expiresAt <= Date.now()) return null;

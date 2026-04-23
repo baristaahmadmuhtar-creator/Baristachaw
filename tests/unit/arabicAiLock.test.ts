@@ -8,7 +8,7 @@ test('arabic system instruction enforces arabic-only response lock', () => {
   const instruction = getSystemInstructions({
     language: 'ar' as any,
     tone: 'Professional',
-    name: 'BaristaClaw',
+    name: 'Baristachaw',
   } as any);
 
   assert.match(instruction, /أجب باللغة العربية بالكامل/);
@@ -18,14 +18,14 @@ test('arabic system instruction enforces arabic-only response lock', () => {
 
 test('scanner prompt switches to arabic instructions when language=ar', () => {
   const prompt = buildScannerPrompt('auto', 'Arabic', 'ar');
-  assert.match(prompt, /أنت BaristaClaw لتحليل القهوة/);
+  assert.match(prompt, /أنت Baristachaw لتحليل القهوة/);
   assert.match(prompt, /أجب باللغة Arabic/);
-  assert.doesNotMatch(prompt, /You are BaristaClaw Coffee Analysis/);
+  assert.doesNotMatch(prompt, /You are Baristachaw Coffee Analysis/);
 });
 
 test('scanner prompt keeps english instructions for non-indonesian and non-arabic languages', () => {
   const prompt = buildScannerPrompt('ocr', 'English', 'en');
-  assert.match(prompt, /You are BaristaClaw Read Label/);
+  assert.match(prompt, /You are Baristachaw Read Label/);
   assert.match(prompt, /Respond in English/);
 });
 

@@ -12,7 +12,7 @@ Legend:
 | Guest Mode | Tools full access + AI read-only preview | DONE | Non-auth users can use Tools and see AI gating copy without empty screens. |
 | Startup Fallback | Parity default + timeout fallback native | DONE | 6s timeout, error fallback, 24h cooldown, manual retry action. |
 | Home Search | AI search + save result | DONE | Uses `/api/ai` `search`, persists to parity collection store. |
-| Chat Modes | normal/fast/deep | DONE | Prompt-mode normalization shared via `@baristaclaw/shared`. |
+| Chat Modes | normal/fast/deep | DONE | Prompt-mode normalization shared via `@baristachaw/shared`. |
 | Chat History | multi-session persistence | DONE | Session/message persistence in `mobileStore` schema v2. |
 | Chat Folders | create/rename/move session/delete folder | DONE | Folder CRUD + session assignment implemented. |
 | Chat Attachments | image/video/file/audio analysis | DONE | Image/camera/file pipeline + `analyze_attachment`/`analyze_text`/`transcribe`. |

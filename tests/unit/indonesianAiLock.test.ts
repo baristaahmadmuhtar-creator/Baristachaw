@@ -8,7 +8,7 @@ test('indonesian system instruction enforces indonesian-only response lock', () 
   const instruction = getSystemInstructions({
     language: 'id' as any,
     tone: 'Professional',
-    name: 'BaristaClaw',
+    name: 'Baristachaw',
   } as any);
 
   assert.match(instruction, /Bahasa Indonesia/);
@@ -18,14 +18,14 @@ test('indonesian system instruction enforces indonesian-only response lock', () 
 
 test('scanner prompt switches to indonesian instructions when language=id', () => {
   const prompt = buildScannerPrompt('auto', 'Bahasa Indonesia', 'id');
-  assert.match(prompt, /Anda adalah BaristaClaw Analisis Kopi/);
+  assert.match(prompt, /Anda adalah Baristachaw Analisis Kopi/);
   assert.match(prompt, /Jawab dalam Bahasa Indonesia/);
-  assert.doesNotMatch(prompt, /You are BaristaClaw Coffee Analysis/);
+  assert.doesNotMatch(prompt, /You are Baristachaw Coffee Analysis/);
 });
 
 test('scanner prompt keeps english instructions for non-indonesian languages', () => {
   const prompt = buildScannerPrompt('ocr', 'English', 'en');
-  assert.match(prompt, /You are BaristaClaw Read Label/);
+  assert.match(prompt, /You are Baristachaw Read Label/);
   assert.match(prompt, /Respond in English/);
 });
 

@@ -1,4 +1,4 @@
-# BaristaClaw iOS Web Wrapper Launch
+# Baristachaw iOS Web Wrapper Launch
 
 ## Runtime contract
 
@@ -28,7 +28,7 @@ npm run mobile:eas:submit:production
 ## Required production configuration
 
 - Apple Developer Program membership must be active.
-- App Store Connect app record must use bundle ID `com.baristaclaw.app`.
+- App Store Connect app record must use bundle ID `com.baristachaw.app`.
 - EAS must be logged in and able to manage iOS signing credentials.
 - Run one interactive EAS credentials setup if remote credentials are not ready:
 
@@ -47,12 +47,12 @@ Apple's current App Review Guidelines require final, tested builds, live backend
 
 Apple also requires an equivalent privacy-preserving login option when an app uses third-party/social login for a primary account. If the web app exposes Google login in the iOS wrapper, enable and verify Apple login before submitting.
 
-Pure website wrappers can be scrutinized under Minimum Functionality review. Keep native permissions, scanner/camera flows, offline handling, and review notes clear so the app is presented as the BaristaClaw mobile client, not just a bookmark.
+Pure website wrappers can be scrutinized under Minimum Functionality review. Keep native permissions, scanner/camera flows, offline handling, and review notes clear so the app is presented as the Baristachaw mobile client, not just a bookmark.
 
 ## Reviewer notes draft
 
 ```text
-BaristaClaw is an AI-powered coffee assistant. The iOS app uses a native Expo shell with WKWebView to deliver the same production BaristaClaw experience as the web app, including AI chat, Vision Scan, AI Brew planning, brew tools, and collection workflows.
+Baristachaw is an AI-powered coffee assistant. The iOS app uses a native Expo shell with WKWebView to deliver the same production Baristachaw experience as the web app, including AI chat, Vision Scan, AI Brew planning, brew tools, and collection workflows.
 
 Production backend:
 https://baristaclaw.vercel.app

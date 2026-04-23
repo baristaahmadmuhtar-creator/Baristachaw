@@ -1,5 +1,5 @@
 {
-  "name": "BaristaClaw",
+  "name": "Baristachaw",
   "description": "A premium AI assistant featuring vision, voice, and contextual intelligence.",
   "requestFramePermissions": ["camera", "microphone", "geolocation"]
 }

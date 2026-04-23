@@ -1,4 +1,4 @@
-import { analyzeQuickRatio } from '@baristaclaw/shared';
+import { analyzeQuickRatio } from '@baristachaw/shared';
 
 describe('analyzeQuickRatio', () => {
   test('returns expected ratio and extraction yield for valid inputs', () => {

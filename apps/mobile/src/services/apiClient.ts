@@ -102,7 +102,7 @@ function normalizeUnknownError(error: unknown, useAuth: boolean): ApiError {
   }
 
   if (error instanceof TypeError) {
-    return new ApiError('Unable to reach BaristaClaw. Check your connection and retry.', {
+    return new ApiError('Unable to reach Baristachaw. Check your connection and retry.', {
       status: 0,
       retryable: true,
       errorCode: 'network_unreachable',

@@ -1,4 +1,4 @@
-# BaristaClaw x BrewLogic — Integrasi & Peningkatan Akurasi
+# Baristachaw x BrewLogic — Integrasi & Peningkatan Akurasi
 
 ## Status
 - Data publik BrewLogic telah diekstrak dan disalin ke `data/brewlogic-extract/`.

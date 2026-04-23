@@ -8,7 +8,7 @@ test('chat container uses zero top padding and keeps header controls visible', a
   const paddingTop = await page.locator('.chat-container').evaluate((node) => getComputedStyle(node).paddingTop);
   expect(paddingTop).toBe('0px');
 
-  await expect(page.getByRole('heading', { name: 'BaristaClaw' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Baristachaw' })).toBeVisible();
   await expect(page.locator('.chat-liquid-header button[title="New Chat"], .chat-liquid-header button[title="Send your first message before creating another chat"]')).toBeVisible();
   await expect(page.getByLabel('Normal mode')).toBeVisible();
 });

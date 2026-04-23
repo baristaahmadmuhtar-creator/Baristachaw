@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
-import { isReusableDraftSession } from '@baristaclaw/shared';
+import { isReusableDraftSession } from '@baristachaw/shared';
 import {
     AiSettings,
     ChatFolder,
@@ -131,7 +131,7 @@ function loadAiSettings(): AiSettings {
         }
     } catch { }
     return {
-        name: 'BaristaClaw',
+        name: 'Baristachaw',
         tone: 'Professional',
         language: DEFAULT_LANGUAGE,
         chatEngine: 'default',
@@ -166,7 +166,7 @@ export function GlobalProvider({ children }: { children: ReactNode }) {
     const bootstrapped = useRef(false);
 
     const t = useMemo(() => getTranslations(language), [language]);
-    const userName = useMemo(() => getStoredUserName() || aiSettings.name || 'BaristaClaw', [aiSettings.name]);
+    const userName = useMemo(() => getStoredUserName() || aiSettings.name || 'Baristachaw', [aiSettings.name]);
 
     // Persist settings
     useEffect(() => {

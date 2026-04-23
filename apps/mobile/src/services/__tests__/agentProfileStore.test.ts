@@ -44,10 +44,10 @@ describe('agentProfileStore', () => {
 
   test('resetAgentProfileMemory restores a fresh seeded profile', async () => {
     await saveAgentProfileMemory('user-456', { preferredLanguage: 'id', userDisplayName: 'Raka' });
-    const reset = await resetAgentProfileMemory('user-456', { preferredLanguage: 'en', assistantName: 'BaristaClaw' });
+    const reset = await resetAgentProfileMemory('user-456', { preferredLanguage: 'en', assistantName: 'Baristachaw' });
 
     expect(reset.preferredLanguage).toBe('en');
-    expect(reset.assistantName).toBe('BaristaClaw');
+    expect(reset.assistantName).toBe('Baristachaw');
     expect(reset.userDisplayName).toBeUndefined();
   });
 });

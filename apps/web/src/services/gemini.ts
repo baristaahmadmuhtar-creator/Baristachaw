@@ -7,10 +7,10 @@ import type {
   DeepResponseMeta,
   ResponseProfile,
   StructuredSearchSource,
-} from '@baristaclaw/shared';
+} from '@baristachaw/shared';
 
 /**
- * BaristaClaw AI Service (Server-Only)
+ * Baristachaw AI Service (Server-Only)
  *
  * All AI operations must run through server endpoints:
  * - /api/chat for conversational messages
@@ -654,12 +654,12 @@ export function buildAttachmentSmartPrompt(
   const useAr = isArabicLanguage(appLanguage);
   if (caption) {
     if (useId) {
-      return `Anda adalah BaristaClaw, asisten kopi ahli yang mengikuti standar SCA. Analisis lampiran jenis ${kind} ini dan jawab permintaan pengguna secara presisi.\n\nPermintaan pengguna: ${caption}`;
+      return `Anda adalah Baristachaw, asisten kopi ahli yang mengikuti standar SCA. Analisis lampiran jenis ${kind} ini dan jawab permintaan pengguna secara presisi.\n\nPermintaan pengguna: ${caption}`;
     }
     if (useAr) {
-      return `أنت BaristaClaw، مساعد قهوة خبير يتبع معايير SCA. حلّل هذا المرفق من النوع ${kind} وأجب عن طلب المستخدم بدقة.\n\nطلب المستخدم: ${caption}`;
+      return `أنت Baristachaw، مساعد قهوة خبير يتبع معايير SCA. حلّل هذا المرفق من النوع ${kind} وأجب عن طلب المستخدم بدقة.\n\nطلب المستخدم: ${caption}`;
     }
-    return `You are BaristaClaw, an expert coffee assistant following SCA standards. Analyze this ${kind} attachment and answer the user's request precisely.\n\nUser request: ${caption}`;
+    return `You are Baristachaw, an expert coffee assistant following SCA standards. Analyze this ${kind} attachment and answer the user's request precisely.\n\nUser request: ${caption}`;
   }
 
   const subjectLabel = fileName
@@ -667,7 +667,7 @@ export function buildAttachmentSmartPrompt(
     : (useId ? "Lampiran pengguna" : useAr ? "مرفق المستخدم" : "User attachment");
   if (kind === "txt" || kind === "file" || kind === "pdf") {
     if (useId) {
-      return `Anda adalah BaristaClaw, asisten kopi ahli yang mengikuti standar SCA.
+      return `Anda adalah Baristachaw, asisten kopi ahli yang mengikuti standar SCA.
 Analisis dokumen terlampir dan berikan:
 1) ringkasan singkat
 2) poin penting / sorotan
@@ -678,7 +678,7 @@ Analisis dokumen terlampir dan berikan:
 ${subjectLabel}`;
     }
     if (useAr) {
-      return `أنت BaristaClaw، مساعد قهوة خبير يتبع معايير SCA.
+      return `أنت Baristachaw، مساعد قهوة خبير يتبع معايير SCA.
 حلّل المستند المرفق وقدّم:
 1) ملخصًا موجزًا
 2) النقاط الأساسية / أبرز الملاحظات
@@ -688,7 +688,7 @@ ${subjectLabel}`;
 
 ${subjectLabel}`;
     }
-    return `You are BaristaClaw, an expert coffee assistant following SCA standards.
+    return `You are Baristachaw, an expert coffee assistant following SCA standards.
 Analyze the attached document and provide:
 1) concise summary
 2) key points / highlights
@@ -700,7 +700,7 @@ ${subjectLabel}`;
   }
 
   if (useId) {
-    return `Anda adalah BaristaClaw, asisten kopi ahli yang mengikuti standar SCA.
+    return `Anda adalah Baristachaw, asisten kopi ahli yang mengikuti standar SCA.
 Analisis gambar terlampir secara teliti dan berikan:
 1) apa yang terlihat
 2) observasi kopi/barista yang relevan
@@ -710,7 +710,7 @@ Analisis gambar terlampir secara teliti dan berikan:
 ${subjectLabel}`;
   }
   if (useAr) {
-    return `أنت BaristaClaw، مساعد قهوة خبير يتبع معايير SCA.
+    return `أنت Baristachaw، مساعد قهوة خبير يتبع معايير SCA.
 حلّل الصورة المرفقة بعناية وقدّم:
 1) ما هو ظاهر في الصورة
 2) ملاحظات مرتبطة بالقهوة/الباريستا
@@ -719,7 +719,7 @@ ${subjectLabel}`;
 
 ${subjectLabel}`;
   }
-  return `You are BaristaClaw, an expert coffee assistant following SCA standards.
+  return `You are Baristachaw, an expert coffee assistant following SCA standards.
 Analyze the attached image carefully and provide:
 1) what is visible
 2) relevant coffee/barista observations

@@ -3,7 +3,7 @@ import { Image, Share, StyleSheet, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
-import { buildScannerPrompt } from '@baristaclaw/shared';
+import { buildScannerPrompt } from '@baristachaw/shared';
 import { CameraView, useCameraPermissions, type CameraType } from 'expo-camera';
 import {
   ActionButton,
@@ -332,7 +332,7 @@ export function ScannerScreen({ apiClient, session, isOnline, guestModeEnabled, 
       attachedFile: 'Attached file',
       attached: 'Attached',
       saved: 'Saved',
-      shareResultTitle: 'BaristaClaw Scan Result',
+      shareResultTitle: 'Baristachaw Scan Result',
       change: 'Change',
       videoBuildError: 'Use Files or Gallery for video scan in this build.',
       captureFrameFailed: 'Failed to capture camera frame.',
@@ -341,12 +341,12 @@ export function ScannerScreen({ apiClient, session, isOnline, guestModeEnabled, 
       cameraBack: 'Back',
       capture: 'Capture',
     };
-    if (language === 'zh') return { ...fallback, gallery: '相册', files: '文件', liveCamera: '实时相机', openCamera: '打开相机', preview: '预览', attachedFile: '已附文件', attached: '已附加', saved: '已保存', shareResultTitle: 'BaristaClaw 扫描结果', change: '更换', videoBuildError: '此版本的视频扫描请改用文件或相册。', captureFrameFailed: '无法捕捉相机画面。', captureImageFailed: '无法拍摄图片。', cameraFront: '前置', cameraBack: '后置', capture: '拍摄' };
-    if (language === 'ja') return { ...fallback, gallery: 'ギャラリー', files: 'ファイル', liveCamera: 'ライブカメラ', openCamera: 'カメラを開く', preview: 'プレビュー', attachedFile: '添付ファイル', attached: '添付済み', saved: '保存済み', shareResultTitle: 'BaristaClaw スキャン結果', change: '変更', videoBuildError: 'このビルドの動画スキャンではファイルまたはギャラリーを使ってください。', captureFrameFailed: 'カメラフレームを取得できませんでした。', captureImageFailed: '画像を撮影できませんでした。', cameraFront: '前面', cameraBack: '背面', capture: '撮影' };
-    if (language === 'ko') return { ...fallback, gallery: '갤러리', files: '파일', liveCamera: '실시간 카메라', openCamera: '카메라 열기', preview: '미리보기', attachedFile: '첨부 파일', attached: '첨부됨', saved: '저장됨', shareResultTitle: 'BaristaClaw 스캔 결과', change: '변경', videoBuildError: '이 빌드의 영상 스캔은 파일 또는 갤러리를 사용하세요.', captureFrameFailed: '카메라 프레임을 캡처할 수 없습니다.', captureImageFailed: '이미지를 캡처할 수 없습니다.', cameraFront: '전면', cameraBack: '후면', capture: '캡처' };
-    if (language === 'th') return { ...fallback, gallery: 'แกลเลอรี', files: 'ไฟล์', liveCamera: 'กล้องสด', openCamera: 'เปิดกล้อง', preview: 'ตัวอย่าง', attachedFile: 'ไฟล์ที่แนบ', attached: 'แนบแล้ว', saved: 'บันทึกแล้ว', shareResultTitle: 'ผลการสแกน BaristaClaw', change: 'เปลี่ยน', videoBuildError: 'การสแกนวิดีโอในบิลด์นี้ให้ใช้ไฟล์หรือแกลเลอรี', captureFrameFailed: 'จับภาพจากกล้องไม่สำเร็จ', captureImageFailed: 'ถ่ายภาพไม่สำเร็จ', cameraFront: 'หน้า', cameraBack: 'หลัง', capture: 'ถ่ายภาพ' };
-    if (language === 'vi') return { ...fallback, gallery: 'Thư viện', files: 'Tệp', liveCamera: 'Camera trực tiếp', openCamera: 'Mở camera', preview: 'Xem trước', attachedFile: 'Tệp đính kèm', attached: 'Đã đính kèm', saved: 'Đã lưu', shareResultTitle: 'Kết quả quét BaristaClaw', change: 'Thay đổi', videoBuildError: 'Quét video trong bản dựng này hãy dùng Tệp hoặc Thư viện.', captureFrameFailed: 'Không thể chụp khung hình từ camera.', captureImageFailed: 'Không thể chụp ảnh.', cameraFront: 'Trước', cameraBack: 'Sau', capture: 'Chụp' };
-    if (language === 'ms') return { ...fallback, gallery: 'Galeri', files: 'Fail', liveCamera: 'Kamera Langsung', openCamera: 'Buka Kamera', preview: 'Pratonton', attachedFile: 'Fail dilampirkan', attached: 'Dilampirkan', saved: 'Disimpan', shareResultTitle: 'Hasil imbasan BaristaClaw', change: 'Tukar', videoBuildError: 'Imbasan video dalam binaan ini perlu menggunakan Fail atau Galeri.', captureFrameFailed: 'Gagal menangkap bingkai kamera.', captureImageFailed: 'Gagal menangkap imej.', cameraFront: 'Depan', cameraBack: 'Belakang', capture: 'Tangkap' };
+    if (language === 'zh') return { ...fallback, gallery: '相册', files: '文件', liveCamera: '实时相机', openCamera: '打开相机', preview: '预览', attachedFile: '已附文件', attached: '已附加', saved: '已保存', shareResultTitle: 'Baristachaw 扫描结果', change: '更换', videoBuildError: '此版本的视频扫描请改用文件或相册。', captureFrameFailed: '无法捕捉相机画面。', captureImageFailed: '无法拍摄图片。', cameraFront: '前置', cameraBack: '后置', capture: '拍摄' };
+    if (language === 'ja') return { ...fallback, gallery: 'ギャラリー', files: 'ファイル', liveCamera: 'ライブカメラ', openCamera: 'カメラを開く', preview: 'プレビュー', attachedFile: '添付ファイル', attached: '添付済み', saved: '保存済み', shareResultTitle: 'Baristachaw スキャン結果', change: '変更', videoBuildError: 'このビルドの動画スキャンではファイルまたはギャラリーを使ってください。', captureFrameFailed: 'カメラフレームを取得できませんでした。', captureImageFailed: '画像を撮影できませんでした。', cameraFront: '前面', cameraBack: '背面', capture: '撮影' };
+    if (language === 'ko') return { ...fallback, gallery: '갤러리', files: '파일', liveCamera: '실시간 카메라', openCamera: '카메라 열기', preview: '미리보기', attachedFile: '첨부 파일', attached: '첨부됨', saved: '저장됨', shareResultTitle: 'Baristachaw 스캔 결과', change: '변경', videoBuildError: '이 빌드의 영상 스캔은 파일 또는 갤러리를 사용하세요.', captureFrameFailed: '카메라 프레임을 캡처할 수 없습니다.', captureImageFailed: '이미지를 캡처할 수 없습니다.', cameraFront: '전면', cameraBack: '후면', capture: '캡처' };
+    if (language === 'th') return { ...fallback, gallery: 'แกลเลอรี', files: 'ไฟล์', liveCamera: 'กล้องสด', openCamera: 'เปิดกล้อง', preview: 'ตัวอย่าง', attachedFile: 'ไฟล์ที่แนบ', attached: 'แนบแล้ว', saved: 'บันทึกแล้ว', shareResultTitle: 'ผลการสแกน Baristachaw', change: 'เปลี่ยน', videoBuildError: 'การสแกนวิดีโอในบิลด์นี้ให้ใช้ไฟล์หรือแกลเลอรี', captureFrameFailed: 'จับภาพจากกล้องไม่สำเร็จ', captureImageFailed: 'ถ่ายภาพไม่สำเร็จ', cameraFront: 'หน้า', cameraBack: 'หลัง', capture: 'ถ่ายภาพ' };
+    if (language === 'vi') return { ...fallback, gallery: 'Thư viện', files: 'Tệp', liveCamera: 'Camera trực tiếp', openCamera: 'Mở camera', preview: 'Xem trước', attachedFile: 'Tệp đính kèm', attached: 'Đã đính kèm', saved: 'Đã lưu', shareResultTitle: 'Kết quả quét Baristachaw', change: 'Thay đổi', videoBuildError: 'Quét video trong bản dựng này hãy dùng Tệp hoặc Thư viện.', captureFrameFailed: 'Không thể chụp khung hình từ camera.', captureImageFailed: 'Không thể chụp ảnh.', cameraFront: 'Trước', cameraBack: 'Sau', capture: 'Chụp' };
+    if (language === 'ms') return { ...fallback, gallery: 'Galeri', files: 'Fail', liveCamera: 'Kamera Langsung', openCamera: 'Buka Kamera', preview: 'Pratonton', attachedFile: 'Fail dilampirkan', attached: 'Dilampirkan', saved: 'Disimpan', shareResultTitle: 'Hasil imbasan Baristachaw', change: 'Tukar', videoBuildError: 'Imbasan video dalam binaan ini perlu menggunakan Fail atau Galeri.', captureFrameFailed: 'Gagal menangkap bingkai kamera.', captureImageFailed: 'Gagal menangkap imej.', cameraFront: 'Depan', cameraBack: 'Belakang', capture: 'Tangkap' };
     return fallback;
   }, [language]);
   const mediaTooLargeMessage = useMemo(() => {

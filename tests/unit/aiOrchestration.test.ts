@@ -19,7 +19,7 @@ import {
   isReusableDraftSession,
   resolveAgentProfileNamespace,
   resolveUserLanguage,
-} from '@baristaclaw/shared';
+} from '@baristachaw/shared';
 
 test('resolveUserLanguage detects Indonesian from user text', () => {
   const resolved = resolveUserLanguage('Tolong jawab ringkas dalam 2 poin tentang espresso.', 'en', 'en-US,en;q=0.9');
@@ -118,14 +118,14 @@ test('extractDurablePreferenceUpdates stores preferred name for later turns', ()
 test('formatAgentProfileForPrompt emits an identity memory block', () => {
   const prompt = formatAgentProfileForPrompt({
     preferredLanguage: 'id',
-    assistantName: 'BaristaClaw',
+    assistantName: 'Baristachaw',
     detailPreference: 'comprehensive',
     skillFocus: ['espresso_dial_in'],
     updatedAt: Date.now(),
   });
   assert.match(prompt, /Identity memory:/);
   assert.match(prompt, /Default reply language: id/);
-  assert.match(prompt, /Assistant identity: BaristaClaw/);
+  assert.match(prompt, /Assistant identity: Baristachaw/);
   assert.match(prompt, /Default barista skill focus: espresso dial-in/);
 });
 

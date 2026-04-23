@@ -1,0 +1,22 @@
+:root,
+:root.light {
+  --token-accent-primary: #007AFF;
+  --token-accent-secondary: #5856D6;
+  --token-bg-base-light: #F2F2F7;
+  --token-text-primary-light: #000000;
+  --token-text-secondary-light: #3C3C43;
+  --token-text-tertiary-light: rgba(60, 60, 67, 0.6);
+  --token-glass-bg-light: rgba(255, 255, 255, 0.6);
+  --token-glass-border-light: rgba(255, 255, 255, 0.6);
+  --token-nav-bg-light: rgba(245, 245, 250, 0.88);
+}
+
+:root.dark {
+  --token-bg-base-dark: #000000;
+  --token-text-primary-dark: #FFFFFF;
+  --token-text-secondary-dark: #EBEBF5;
+  --token-text-tertiary-dark: rgba(235, 235, 245, 0.75);
+  --token-glass-bg-dark: rgba(28, 28, 30, 0.6);
+  --token-glass-border-dark: rgba(255, 255, 255, 0.15);
+  --token-nav-bg-dark: rgba(20, 20, 22, 0.88);
+}

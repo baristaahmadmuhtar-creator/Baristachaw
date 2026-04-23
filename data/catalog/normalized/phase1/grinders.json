@@ -1,0 +1,2934 @@
+{
+  "version": "2026.03.10-asean-first-phase1",
+  "items": [
+    {
+      "id": "1",
+      "brand": "Vesper",
+      "model": "VS-3 FOLD",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "2 - 12 Klik",
+        "pour_over": "15 - 24 Klik",
+        "french_press": "25 - 30 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "vesper vs-3 fold klik (external) compact grinder platform positioned for enthusiast home setups.",
+      "aliases": [
+        "Vesper VS-3 FOLD",
+        "Vesper VS-3 FOLD"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "1zpresso-je-plus-grinder",
+      "brand": "1Zpresso",
+      "model": "JE-Plus Grinder",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "Reference official grinder chart",
+        "pour_over": "Reference official grinder chart",
+        "french_press": "Reference official grinder chart"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://1zpresso.coffee/grinder/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://1zpresso.coffee/grinder/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 50,
+      "availability_confidence": "high",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "1zpresso je-plus grinder official catalog listing ",
+      "aliases": [
+        "1Zpresso JE-Plus Grinder",
+        "1Zpresso JE-Plus Grinder"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ],
+        "completeness_score": 50
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "1zpresso-jx-pro-s",
+      "brand": "1Zpresso",
+      "model": "JX-Pro S",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "1.0 - 1.6 rotations",
+        "pour_over": "2.2 - 2.8 rotations",
+        "french_press": "3.0 - 3.6 rotations"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://1zpresso.coffee/grinder/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://1zpresso.coffee/grinder/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 50,
+      "availability_confidence": "high",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "1zpresso jx-pro s numbers + clicks (external) ",
+      "aliases": [
+        "1Zpresso JX-Pro S",
+        "1Zpresso JX-Pro S"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ],
+        "completeness_score": 50
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "1zpresso-k-max",
+      "brand": "1Zpresso",
+      "model": "K-Max",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "3.5 - 5.0 numbers",
+        "pour_over": "5.8 - 7.0 numbers",
+        "french_press": "7.0 - 8.5 numbers"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://1zpresso.coffee/grinder/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        },
+        {
+          "source_type": "community_reference",
+          "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://1zpresso.coffee/grinder/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "1zpresso k-max numbers + clicks (external) legacy 1zpresso k-series grinder still widely used in home and pro manual brew kits.",
+      "aliases": [
+        "1Zpresso K-Max",
+        "1Zpresso K-Max"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ],
+        "completeness_score": 50
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "brand": "Timemore",
+      "model": "C5 ESP PRO",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "25 - 60 Klik",
+        "pour_over": "75 - 100 Klik",
+        "french_press": "110 - 120 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "timemore c5 esp pro klik (internal) esp-focused timemore grinder variant aimed at upper entry-level users.",
+      "aliases": [
+        "Timemore C5 ESP PRO",
+        "Timemore C5 ESP PRO"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "32",
+      "brand": "1Zpresso",
+      "model": "J-Ultra",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "1.0 - 1.6 Putaran",
+        "pour_over": "2.5 - 3.5 Putaran",
+        "french_press": "3.5 - 4.5 Putaran"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "1zpresso j-ultra putaran (external) premium 1zpresso grinder with strong enthusiast adoption beyond espresso use.",
+      "aliases": [
+        "1Zpresso J-Ultra",
+        "1Zpresso J-Ultra"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "33",
+      "brand": "1Zpresso",
+      "model": "K-Ultra",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "Nomor 3 - 4.5",
+        "pour_over": "Nomor 6 - 7.5",
+        "french_press": "Nomor 8 - 9"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://1zpresso.coffee/grind-setting-reference/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://1zpresso.coffee/k-ultra/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://1zpresso.coffee/grind-setting-reference/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "1zpresso k-ultra nomor (external) widely used specialty hand grinder with official grind-setting reference support.",
+      "aliases": [
+        "1Zpresso K-Ultra",
+        "1Zpresso K-Ultra"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "34",
+      "brand": "1Zpresso",
+      "model": "Q Air / Q2",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "10 - 14 Klik",
+        "pour_over": "15 - 20 Klik",
+        "french_press": "22 - 26 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://1zpresso.coffee/grind-setting-reference/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://1zpresso.coffee/q/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://1zpresso.coffee/grind-setting-reference/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "1zpresso q air / q2 klik (internal) compact 1zpresso travel grinder platform with broad enthusiast use.",
+      "aliases": [
+        "1Zpresso Q Air / Q2",
+        "1Zpresso Q Air / Q2"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "35",
+      "brand": "1Zpresso",
+      "model": "X-Pro / X-Ultra",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "0.3 - 0.5 Putaran",
+        "pour_over": "1.2 - 1.5 Putaran",
+        "french_press": "2.0 - 2.4 Putaran"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://1zpresso.coffee/grind-setting-reference/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://1zpresso.coffee/x/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://1zpresso.coffee/grind-setting-reference/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "1zpresso x-pro / x-ultra putaran (external) specialty hand grinder platform with filter-oriented positioning.",
+      "aliases": [
+        "1Zpresso X-Pro / X-Ultra",
+        "1Zpresso X-Pro / X-Ultra"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "36",
+      "brand": "1Zpresso",
+      "model": "ZP6 Special",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "0 (Tidak Disarankan)",
+        "pour_over": "Nomor 3.5 - 5.5",
+        "french_press": "Nomor 6.0 - 7.5"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://1zpresso.coffee/grind-setting-reference/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://1zpresso.coffee/zp6/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://1zpresso.coffee/grind-setting-reference/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "1zpresso zp6 special nomor (external) high-clarity specialty grinder with official pour-over reference guidance.",
+      "aliases": [
+        "1Zpresso ZP6 Special",
+        "1Zpresso ZP6 Special"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "37",
+      "brand": "Breville",
+      "model": "Smart Grinder Pro",
+      "grinder_type": "electric",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "Setting 1 - 25",
+        "pour_over": "Setting 30 - 45",
+        "french_press": "Setting 50 - 60"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.breville.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.breville.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "breville smart grinder pro setting (electric) widely used electric grinder in home coffee setups.",
+      "aliases": [
+        "Breville Smart Grinder Pro",
+        "Breville Smart Grinder Pro"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "38",
+      "brand": "Comandante",
+      "model": "C40 MK4",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "10 - 15 Klik",
+        "pour_over": "18 - 24 Klik",
+        "french_press": "25 - 32 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.comandantegrinder.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://www.comandantegrinder.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "comandante c40 mk4 klik (internal) common specialty benchmark grinder with wide community calibration data.",
+      "aliases": [
+        "Comandante C40 MK4",
+        "Comandante C40 MK4"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "39",
+      "brand": "Comandante",
+      "model": "C60 Baracuda",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "10 - 18 Klik",
+        "pour_over": "20 - 30 Klik",
+        "french_press": "35 - 45 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "comandante c60 baracuda klik (internal) flagship comandante grinder positioned at the high end of manual brewing.",
+      "aliases": [
+        "Comandante C60 Baracuda",
+        "Comandante C60 Baracuda"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "40",
+      "brand": "Etzinger",
+      "model": "etz-I",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "Angka 4 - 8",
+        "pour_over": "Angka 12 - 16",
+        "french_press": "Angka 18 - 22"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "etzinger etz-i angka (external) swiss-designed grinder tracked in enthusiast specialty circles.",
+      "aliases": [
+        "Etzinger etz-I",
+        "Etzinger etz-I"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ],
+        "completeness_score": 50
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "41",
+      "brand": "Hario",
+      "model": "Canister (C-20)",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "1 Notch",
+        "pour_over": "2 - 3 Notch",
+        "french_press": "4 - 5 Notch"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "hario canister (c-20) notch (internal) legacy hario grinder with long-running home-market presence.",
+      "aliases": [
+        "Hario Canister (C-20)",
+        "Hario Canister (C-20)"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "42",
+      "brand": "Hario",
+      "model": "Mini Slim+",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "3 - 5 Klik",
+        "pour_over": "7 - 10 Klik",
+        "french_press": "10 - 13 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "hario mini slim+ klik (internal) compact hario grinder with broad entry-level household adoption.",
+      "aliases": [
+        "Hario Mini Slim+",
+        "Hario Mini Slim+"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "43",
+      "brand": "Hario",
+      "model": "Skerton Pro",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "1 - 4 Notch",
+        "pour_over": "5 - 7 Notch",
+        "french_press": "8 - 10 Notch"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "hario skerton pro notch (internal) large-capacity hario grinder familiar across home brewing setups.",
+      "aliases": [
+        "Hario Skerton Pro",
+        "Hario Skerton Pro"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "44",
+      "brand": "Kingrinder",
+      "model": "K6",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "30 - 50 Klik",
+        "pour_over": "60 - 90 Klik",
+        "french_press": "90 - 120 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.kingrinder.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://www.kingrinder.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "kingrinder k6 klik (external) high-value specialty grinder with strong enthusiast adoption.",
+      "aliases": [
+        "Kingrinder K6",
+        "Kingrinder K6"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "45",
+      "brand": "Kingrinder",
+      "model": "P0/P1/P2",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "15 - 20 Klik",
+        "pour_over": "20 - 30 Klik",
+        "french_press": "35 - 45 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "kingrinder p0/p1/p2 klik (internal) value-focused kingrinder line aimed at entry and mid-level manual brew users.",
+      "aliases": [
+        "Kingrinder P0/P1/P2",
+        "Kingrinder P0/P1/P2"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "46",
+      "brand": "Kinu",
+      "model": "M47",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "0.8 - 1.2 Putaran",
+        "pour_over": "2.5 - 3.5 Putaran",
+        "french_press": "4.0 - 5.0 Putaran"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "kinu m47 putaran (external) premium grinder platform with steady specialty enthusiast use.",
+      "aliases": [
+        "Kinu M47",
+        "Kinu M47"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "47",
+      "brand": "Latina",
+      "model": "Sumba / Sumbawa",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "3 - 5 Klik",
+        "pour_over": "7 - 10 Klik",
+        "french_press": "10 - 14 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "latina sumba / sumbawa klik (internal) affordable manual grinder line seen in regional home setups.",
+      "aliases": [
+        "Latina Sumba / Sumbawa",
+        "Latina Sumba / Sumbawa"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "48",
+      "brand": "Latina",
+      "model": "Sumo",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "8 - 12 Klik",
+        "pour_over": "15 - 20 Klik",
+        "french_press": "20 - 25 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "latina sumo klik (internal) affordable stepped grinder targeted at regional home brewers.",
+      "aliases": [
+        "Latina Sumo",
+        "Latina Sumo"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "49",
+      "brand": "Mazzer",
+      "model": "Omega",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "Angka 1 - 3",
+        "pour_over": "Angka 6 - 8",
+        "french_press": "Angka 9 - 11"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "mazzer omega angka (external) mazzer's hand grinder platform for premium home filter use.",
+      "aliases": [
+        "Mazzer Omega",
+        "Mazzer Omega"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ],
+        "completeness_score": 50
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "50",
+      "brand": "OE",
+      "model": "Lido 3 / OG",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "2 - 4 Mark",
+        "pour_over": "6 - 10 Mark",
+        "french_press": "12 - 15 Mark"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "oe lido 3 / og mark (external) established enthusiast grinder line with long-running niche adoption.",
+      "aliases": [
+        "OE Lido 3 / OG",
+        "OE Lido 3 / OG"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type"
+        ],
+        "completeness_score": 75
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "51",
+      "brand": "Pietro",
+      "model": "(Flat Burr)",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "Angka 1 - 2.5",
+        "pour_over": "Angka 5 - 7",
+        "french_press": "Angka 7 - 9"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "pietro (flat burr) angka (vertical) flat-burr manual grinder aimed at high-clarity specialty brewing.",
+      "aliases": [
+        "Pietro (Flat Burr)",
+        "Pietro (Flat Burr)"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ],
+        "completeness_score": 50
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "52",
+      "brand": "Porlex",
+      "model": "Mini II",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "3 - 5 Klik",
+        "pour_over": "7 - 9 Klik",
+        "french_press": "10 - 13 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "porlex mini ii klik (internal) travel-friendly porlex grinder with broad household familiarity.",
+      "aliases": [
+        "Porlex Mini II",
+        "Porlex Mini II"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "53",
+      "brand": "Starseeker",
+      "model": "Edge / Edge+",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "20 - 40 Klik",
+        "pour_over": "50 - 70 Klik",
+        "french_press": "80 - 100 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "starseeker edge / edge+ klik (external) niche grinder platform tracked in enthusiast specialty circles.",
+      "aliases": [
+        "Starseeker Edge / Edge+",
+        "Starseeker Edge / Edge+"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "55",
+      "brand": "Timemore",
+      "model": "C3 ESP",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "0.8 - 1.1 Putaran",
+        "pour_over": "14 - 18 Klik",
+        "french_press": "21 - 25 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "timemore c3 esp klik (multipoint) esp-tuned timemore grinder extending the mass-market c-series platform.",
+      "aliases": [
+        "Timemore C3 ESP",
+        "Timemore C3 ESP"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "56",
+      "brand": "Timemore",
+      "model": "Chestnut X",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "6 - 10 Mayor",
+        "pour_over": "14 - 18 Mayor",
+        "french_press": "20 - 24 Mayor"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "timemore chestnut x mayor (internal) premium timemore grinder with steady enthusiast adoption.",
+      "aliases": [
+        "Timemore Chestnut X",
+        "Timemore Chestnut X"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ],
+        "completeness_score": 50
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "57",
+      "brand": "Timemore",
+      "model": "Nano / Plus",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "10 - 12 Klik",
+        "pour_over": "14 - 18 Klik",
+        "french_press": "20 - 24 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "timemore nano / plus klik (internal) compact timemore grinder platform used for travel and home brewing.",
+      "aliases": [
+        "Timemore Nano / Plus",
+        "Timemore Nano / Plus"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "58",
+      "brand": "Timemore",
+      "model": "S3",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "Angka 1.5 - 3.0",
+        "pour_over": "Angka 4.5 - 6.5",
+        "french_press": "Angka 7.5 - 9.0"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "timemore s3 angka (external) newer timemore grinder positioned above entry-level hand grinders.",
+      "aliases": [
+        "Timemore S3",
+        "Timemore S3"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ],
+        "completeness_score": 50
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "59",
+      "brand": "Timemore",
+      "model": "Slim Plus",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "10 - 14 Klik",
+        "pour_over": "15 - 20 Klik",
+        "french_press": "22 - 26 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "timemore slim plus klik (internal) portable timemore grinder with established enthusiast use.",
+      "aliases": [
+        "Timemore Slim Plus",
+        "Timemore Slim Plus"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "60",
+      "brand": "Varia",
+      "model": "Hand Grinder",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "20 - 40 Klik",
+        "pour_over": "60 - 85 Klik",
+        "french_press": "90 - 110 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "varia hand grinder klik (external) specialty grinder positioned for enthusiast manual brew use.",
+      "aliases": [
+        "Varia Hand Grinder",
+        "Varia Hand Grinder"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "61",
+      "brand": "Wacaco",
+      "model": "Exagrind",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "0 - 20 Klik",
+        "pour_over": "1.0 - 1.3 Putaran",
+        "french_press": "1.5 - 2.0 Putaran"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.wacaco.com/products/exagrind",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://www.wacaco.com/products/exagrind",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "wacaco exagrind putaran/klik portable grinder with steady adoption among travel-focused specialty brewers.",
+      "aliases": [
+        "Wacaco Exagrind",
+        "Wacaco Exagrind"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "69",
+      "brand": "Timemore",
+      "model": "C5",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "2 - 8 Klik",
+        "pour_over": "9 - 14 Klik",
+        "french_press": "15 - 16 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.timemore.com/es/products/timemore-manual-coffee-grinder-chestnut-c5-series",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://www.timemore.com/es/products/timemore-manual-coffee-grinder-chestnut-c5-series",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "timemore c5 klik (internal) recent timemore c5 series positioned above entry-level c-series grinders.",
+      "aliases": [
+        "Timemore C5",
+        "Timemore C5"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "70",
+      "brand": "MHW-3BOMBER",
+      "model": "Blade R3",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "20 - 70 klik",
+        "pour_over": "90 - 130 klik",
+        "french_press": "110 - 165 klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "mhw-3bomber blade r3 klik (external) modern grinder platform from mhw-3bomber aimed at enthusiast users.",
+      "aliases": [
+        "MHW-3BOMBER Blade R3",
+        "MHW-3BOMBER Blade R3"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "71",
+      "brand": "Timemore",
+      "model": "x Millab M01",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "1 - 4 Klik",
+        "pour_over": "5 - 8 Klik",
+        "french_press": "9 - 10 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "timemore x millab m01 klik (external) collaboration grinder platform tracked for enthusiast home brewing.",
+      "aliases": [
+        "Timemore x Millab M01",
+        "Timemore x Millab M01"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "72",
+      "brand": "Timemore",
+      "model": "C3",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "2 - 10 Klik",
+        "pour_over": "11 - 20 Klik",
+        "french_press": "21 - 24 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.timemore.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        },
+        {
+          "source_type": "community_reference",
+          "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.timemore.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "timemore c3 klik (internal) mass-market hand grinder used heavily in entry and mid-level filter setups.",
+      "aliases": [
+        "Timemore C3",
+        "Timemore C3"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "73",
+      "brand": "Timemore",
+      "model": "C2",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "2 - 12 klik",
+        "pour_over": "13 - 24 Klik",
+        "french_press": "25 - 30 Klik"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.timemore.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        },
+        {
+          "source_type": "community_reference",
+          "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.timemore.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "timemore c2 klik (internal) entry-level grinder with very large market presence.",
+      "aliases": [
+        "Timemore C2",
+        "Timemore C2"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "74",
+      "brand": "Mavo",
+      "model": "Phantox Pro",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "Nomor 1 - 4",
+        "pour_over": "Nomor 6 - 10",
+        "french_press": "Nomor 10 - 12"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "mavo phantox pro nomor (external) numbered grinder platform tracked by brewlogic for manual brew planning.",
+      "aliases": [
+        "Mavo Phantox Pro",
+        "Mavo Phantox Pro"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "comandante-x25-trailmaster",
+      "brand": "Comandante",
+      "model": "X25 Trailmaster",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "12 - 16 clicks",
+        "pour_over": "18 - 24 clicks",
+        "french_press": "24 - 30 clicks"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.comandantegrinder.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        },
+        {
+          "source_type": "community_reference",
+          "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.comandantegrinder.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "comandante x25 trailmaster clicks (internal) trailmaster variant extends comandante geometry for durable travel and field brewing.",
+      "aliases": [
+        "Comandante X25 Trailmaster",
+        "Comandante X25 Trailmaster"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ],
+        "completeness_score": 50
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "hario-smart-g",
+      "brand": "HARIO",
+      "model": "Smart G",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "8 - 14 clicks",
+        "pour_over": "18 - 24 clicks",
+        "french_press": "24 - 30 clicks"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [],
+      "primary_source": null,
+      "source_type": null,
+      "confidence_score": 0.25,
+      "manual_brew_capable": true,
+      "filter_priority": 50,
+      "availability_confidence": "low",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "hario smart g clicks (internal) ",
+      "aliases": [
+        "HARIO Smart G",
+        "HARIO Smart G"
+      ],
+      "verification_status": "review_required",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ],
+        "completeness_score": 25
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "kingrinder-k2",
+      "brand": "KINGrinder",
+      "model": "K2",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "35 - 55 clicks",
+        "pour_over": "60 - 85 clicks",
+        "french_press": "85 - 115 clicks"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.kingrinder.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        },
+        {
+          "source_type": "community_reference",
+          "source_url": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.kingrinder.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "kingrinder k2 clicks (external) accessible kingrinder platform with broad manual-brew click-range compatibility.",
+      "aliases": [
+        "KINGrinder K2",
+        "KINGrinder K2"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ],
+        "completeness_score": 50
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "kingrinder-k4",
+      "brand": "KINGrinder",
+      "model": "K4",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "40 - 65 clicks",
+        "pour_over": "75 - 95 clicks",
+        "french_press": "95 - 120 clicks"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [],
+      "primary_source": null,
+      "source_type": null,
+      "confidence_score": 0.25,
+      "manual_brew_capable": true,
+      "filter_priority": 50,
+      "availability_confidence": "low",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "kingrinder k4 clicks (external) ",
+      "aliases": [
+        "KINGrinder K4",
+        "KINGrinder K4"
+      ],
+      "verification_status": "review_required",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ],
+        "completeness_score": 25
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "timemore-c3-max",
+      "brand": "TIMEMORE",
+      "model": "C3 Max",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "5 - 12 clicks",
+        "pour_over": "15 - 21 clicks",
+        "french_press": "22 - 28 clicks"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [],
+      "primary_source": null,
+      "source_type": null,
+      "confidence_score": 0.25,
+      "manual_brew_capable": true,
+      "filter_priority": 50,
+      "availability_confidence": "low",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "timemore c3 max clicks (internal) ",
+      "aliases": [
+        "TIMEMORE C3 Max",
+        "TIMEMORE C3 Max"
+      ],
+      "verification_status": "review_required",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ],
+        "completeness_score": 25
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "timemore-chestnut-c5-pro",
+      "brand": "TIMEMORE",
+      "model": "Chestnut C5 Pro",
+      "grinder_type": "hand",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "Official stepped settings",
+        "pour_over": "Official stepped settings",
+        "french_press": "Official stepped settings"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.timemore.com/es/products/timemore-manual-coffee-grinder-chestnut-c5-series",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://www.timemore.com/es/products/timemore-manual-coffee-grinder-chestnut-c5-series",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 50,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "timemore chestnut c5 pro stepped manual grinder ",
+      "aliases": [
+        "TIMEMORE Chestnut C5 Pro",
+        "TIMEMORE Chestnut C5 Pro"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "kingrinder-k0-k1",
+      "brand": "KINGrinder",
+      "model": "K0 / K1",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "45 - 68 clicks",
+        "pour_over": "70 - 95 clicks",
+        "french_press": "95 - 125 clicks"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [],
+      "primary_source": null,
+      "source_type": null,
+      "confidence_score": 0.25,
+      "manual_brew_capable": true,
+      "filter_priority": 50,
+      "availability_confidence": "low",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "kingrinder k0 / k1 clicks (external) ",
+      "aliases": [
+        "KINGrinder K0 / K1",
+        "KINGrinder K0 / K1"
+      ],
+      "verification_status": "review_required",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ],
+        "completeness_score": 25
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "kingrinder-k3",
+      "brand": "KINGrinder",
+      "model": "K3",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "38 - 60 clicks",
+        "pour_over": "64 - 90 clicks",
+        "french_press": "90 - 118 clicks"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [],
+      "primary_source": null,
+      "source_type": null,
+      "confidence_score": 0.25,
+      "manual_brew_capable": true,
+      "filter_priority": 50,
+      "availability_confidence": "low",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "kingrinder k3 clicks (external) ",
+      "aliases": [
+        "KINGrinder K3",
+        "KINGrinder K3"
+      ],
+      "verification_status": "review_required",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ],
+        "completeness_score": 25
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "1zpresso-k-plus",
+      "brand": "1Zpresso",
+      "model": "K-Plus",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "3.6 - 5.2 numbers",
+        "pour_over": "5.8 - 7.2 numbers",
+        "french_press": "7.2 - 8.8 numbers"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [],
+      "primary_source": null,
+      "source_type": null,
+      "confidence_score": 0.25,
+      "manual_brew_capable": true,
+      "filter_priority": 50,
+      "availability_confidence": "low",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "1zpresso k-plus numbers + clicks (external) ",
+      "aliases": [
+        "1Zpresso K-Plus",
+        "1Zpresso K-Plus"
+      ],
+      "verification_status": "review_required",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ],
+        "completeness_score": 25
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "1zpresso-j-max-s",
+      "brand": "1Zpresso",
+      "model": "J-Max S",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": null,
+      "recommended_range": {
+        "espresso": "1.0 - 1.6 turns",
+        "pour_over": "1.8 - 2.4 turns",
+        "french_press": "2.4 - 3.2 turns"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [],
+      "primary_source": null,
+      "source_type": null,
+      "confidence_score": 0.25,
+      "manual_brew_capable": true,
+      "filter_priority": 50,
+      "availability_confidence": "low",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "1zpresso j-max s turns (external) ",
+      "aliases": [
+        "1Zpresso J-Max S",
+        "1Zpresso J-Max S"
+      ],
+      "verification_status": "review_required",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ],
+        "completeness_score": 25
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "kinu-m47-phoenix",
+      "brand": "Kinu",
+      "model": "M47 Phoenix",
+      "grinder_type": null,
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepless",
+      "recommended_range": {
+        "espresso": "1.1 - 1.8 turns",
+        "pour_over": "1.9 - 2.5 turns",
+        "french_press": "2.5 - 3.3 turns"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [],
+      "primary_source": null,
+      "source_type": null,
+      "confidence_score": 0.25,
+      "manual_brew_capable": true,
+      "filter_priority": 50,
+      "availability_confidence": "low",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "kinu m47 phoenix turns (stepless) ",
+      "aliases": [
+        "Kinu M47 Phoenix",
+        "Kinu M47 Phoenix"
+      ],
+      "verification_status": "review_required",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "grinder_type",
+          "sources"
+        ],
+        "completeness_score": 50
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "timemore-sculptor-078s",
+      "brand": "TIMEMORE",
+      "model": "Sculptor 078S",
+      "grinder_type": "electric",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepless",
+      "recommended_range": {
+        "espresso": "2 - 5 numbers",
+        "pour_over": "6 - 9 numbers",
+        "french_press": "9 - 12 numbers"
+      },
+      "retention_notes": "Held in review_only until source-backed filter guidance is confirmed.",
+      "available_in": [
+        "Global"
+      ],
+      "sources": [],
+      "primary_source": null,
+      "source_type": null,
+      "confidence_score": 0.25,
+      "manual_brew_capable": true,
+      "filter_priority": 50,
+      "availability_confidence": "low",
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "timemore sculptor 078s numbers (stepless electric) ",
+      "aliases": [
+        "TIMEMORE Sculptor 078S",
+        "TIMEMORE Sculptor 078S"
+      ],
+      "verification_status": "review_required",
+      "data_quality": {
+        "is_estimated": true,
+        "missing_fields": [
+          "sources"
+        ],
+        "completeness_score": 75
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "feima-600n",
+      "brand": "Feima",
+      "model": "600N",
+      "grinder_type": "electric",
+      "burr_type": null,
+      "burr_material": null,
+      "burr_size_mm": null,
+      "step_type": "stepped",
+      "recommended_range": {
+        "espresso": "1.0 - 2.5 settings",
+        "pour_over": "3.5 - 4.5 settings",
+        "french_press": "6.5 - 8.0 settings"
+      },
+      "retention_notes": "Use the linked source panel as the grind reference baseline.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.costco.com.tw/Warehouse-Only/Exhibitions/Kitchen-Appliances/Yang-Chia-Coffee-Grinder-600N/p/88262",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        },
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.blibli.com/p/latina-feima-600n-electric-coffee-grinder-penggiling-kopi-elektrik600-putih-100-original/ps--PUA-70058-01532",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        },
+        {
+          "source_type": "community_reference",
+          "source_url": "https://lampungbaratkab.go.id/home/wp-content/uploads/2025/05/SK-SSH-2026.pdf",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.costco.com.tw/Warehouse-Only/Exhibitions/Kitchen-Appliances/Yang-Chia-Coffee-Grinder-600N/p/88262",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "feima 600n stepped (1 - 8, 16 clicks) electric widely used 600n electric grinder platform in southeast asia. regional listings commonly surface it as feima 600n and also as latina 600n, flying eagle 600n, murane b600bn, fomac cog-cg600b, kova 600n, n.fema 600n, ferratti fare 600n, and one two cups 600n.",
+      "aliases": [
+        "Feima 600N",
+        "Feima 600N"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    }
+  ]
+}

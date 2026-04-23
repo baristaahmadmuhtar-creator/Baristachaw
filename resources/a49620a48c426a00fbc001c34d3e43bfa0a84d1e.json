@@ -1,0 +1,1185 @@
+{
+  "catalogVersion": "2026.06.0-ai-brew-v2",
+  "equipment": [
+    {
+      "id": "1zpresso-j-ultra",
+      "kind": "grinder",
+      "description": "Premium 1Zpresso grinder with strong enthusiast adoption beyond espresso use.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "1zpresso-k-max",
+      "kind": "grinder",
+      "description": "Legacy 1Zpresso K-series grinder still widely used in home and pro manual brew kits.",
+      "source": "1zpresso-curated",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grinder/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "legacy",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "1zpresso-k-ultra",
+      "kind": "grinder",
+      "description": "Widely used specialty hand grinder with official grind-setting reference support.",
+      "source": "1zpresso-official",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grind-setting-reference/",
+        "https://1zpresso.coffee/k-ultra/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "1zpresso-q-air-q2",
+      "kind": "grinder",
+      "description": "Compact 1Zpresso travel grinder platform with broad enthusiast use.",
+      "source": "1zpresso-official",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grind-setting-reference/",
+        "https://1zpresso.coffee/q/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "1zpresso-x-pro-x-ultra",
+      "kind": "grinder",
+      "description": "Specialty hand grinder platform with filter-oriented positioning.",
+      "source": "1zpresso-official",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grind-setting-reference/",
+        "https://1zpresso.coffee/x/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "1zpresso-zp6-special",
+      "kind": "grinder",
+      "description": "High-clarity specialty grinder with official pour-over reference guidance.",
+      "source": "1zpresso-official",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grind-setting-reference/",
+        "https://1zpresso.coffee/zp6/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "april-brewer",
+      "kind": "dripper",
+      "description": "Specialty flat-bottom brewer tied closely to April style recipes.",
+      "defaultProfileId": "profile_april_brewer_hot",
+      "source": "april-official",
+      "sourceUrls": [
+        "https://www.aprilcoffeeroasters.com/pages/equipment"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "april-hybrid-brewer",
+      "kind": "dripper",
+      "description": "New April hybrid brewer combining portability with the April flat-bottom geometry.",
+      "defaultProfileId": "profile_april_hybrid_hot",
+      "source": "april-official",
+      "sourceUrls": [
+        "https://www.aprilcoffeeroasters.com/products/april-hybrid-brewer"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "high"
+    },
+    {
+      "id": "blue-bottle-dripper",
+      "kind": "dripper",
+      "description": "Flat-bottom dripper associated with Blue Bottle style pulse brewing.",
+      "defaultProfileId": "profile_blue_bottle_hot",
+      "source": "blue-bottle-curation",
+      "sourceUrls": [
+        "https://bluebottlecoffee.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "breville-smart-grinder-pro",
+      "kind": "grinder",
+      "description": "Widely used electric grinder in home coffee setups.",
+      "source": "breville-curation",
+      "sourceUrls": [
+        "https://www.breville.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "brewista-gem-series",
+      "kind": "dripper",
+      "description": "Faceted flat-bottom brewer used in specialty home setups.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "brewista-tornado",
+      "kind": "dripper",
+      "description": "Fast-flow dripper platform aimed at modern specialty pour-over.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "cafec-deep-27",
+      "kind": "dripper",
+      "description": "Deep cone dripper designed around smaller-volume extraction control.",
+      "defaultProfileId": "profile_cafec_deep27_hot",
+      "source": "cafec-curation",
+      "sourceUrls": [
+        "https://cafec-jp.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium"
+    },
+    {
+      "id": "cafec-flower-dripper",
+      "kind": "dripper",
+      "description": "Specialty cone dripper tied to CAFEC paper ecosystem.",
+      "defaultProfileId": "profile_cafec_flower_hot",
+      "source": "cafec-curation",
+      "sourceUrls": [
+        "https://cafec-jp.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "chemex",
+      "kind": "dripper",
+      "description": "Global glass brewer with thick-paper resistance and high clarity expectations.",
+      "defaultProfileId": "profile_chemex_hot",
+      "source": "chemex-curation",
+      "sourceUrls": [
+        "https://chemexcoffeemaker.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "clever-dripper",
+      "kind": "dripper",
+      "description": "Mass-market immersion dripper with strong cafe and home adoption.",
+      "defaultProfileId": "profile_clever_dripper_hot",
+      "source": "clever-curation",
+      "sourceUrls": [
+        "https://www.cleverbrewing.coffee/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "comandante-c40-mk4",
+      "kind": "grinder",
+      "description": "Common specialty benchmark grinder with wide community calibration data.",
+      "source": "comandante-official-curated",
+      "sourceUrls": [
+        "https://www.comandantegrinder.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "comandante-c60-baracuda",
+      "kind": "grinder",
+      "description": "Flagship Comandante grinder positioned at the high end of manual brewing.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "comandante-x25-trailmaster",
+      "kind": "grinder",
+      "description": "Trailmaster variant extends Comandante geometry for durable travel and field brewing.",
+      "source": "comandante-curated",
+      "sourceUrls": [
+        "https://www.comandantegrinder.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "etzinger-etz-i",
+      "kind": "grinder",
+      "description": "Swiss-designed grinder tracked in enthusiast specialty circles.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "fellow-stagg-x",
+      "kind": "dripper",
+      "description": "Flat-bottom brewer aimed at tighter pulse control.",
+      "defaultProfileId": "profile_stagg_x_hot",
+      "source": "fellow-official",
+      "sourceUrls": [
+        "https://fellowproducts.com/products/stagg-x-pour-over-set/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "fellow-stagg-xf-dripper",
+      "kind": "dripper",
+      "description": "Larger Stagg [XF] flat-bottom brewer for bigger filter batches.",
+      "defaultProfileId": "profile_stagg_xf_hot",
+      "source": "fellow-official",
+      "sourceUrls": [
+        "https://fellowproducts.com/products/stagg-xf-pour-over-set/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "hario-canister-c-20",
+      "kind": "grinder",
+      "description": "Legacy Hario grinder with long-running home-market presence.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "hario-mini-slim",
+      "kind": "grinder",
+      "description": "Compact Hario grinder with broad entry-level household adoption.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "hario-mugen",
+      "kind": "dripper",
+      "description": "Low-bypass one-pour Hario brewer.",
+      "defaultProfileId": "profile_hario_mugen_hot",
+      "source": "hario-official",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "hario-pegasus",
+      "kind": "dripper",
+      "description": "Hario trapezoid dripper suited for classic home bar workflow and easy filter sourcing.",
+      "defaultProfileId": "profile_hario_pegasus_hot",
+      "source": "hario-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "hario-skerton-pro",
+      "kind": "grinder",
+      "description": "Large-capacity Hario grinder familiar across home brewing setups.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "hario-switch",
+      "kind": "dripper",
+      "description": "Immersion-switch hybrid with large home and specialty adoption.",
+      "defaultProfileId": "profile_hario_switch_hot",
+      "source": "hario-official",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "hario-v60",
+      "kind": "dripper",
+      "description": "Global cone dripper baseline used as the reference point for manual filter brewing.",
+      "defaultProfileId": "profile_hario_v60_hot",
+      "source": "hario-official",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes",
+        "https://www.hario-europe.com/pages/hario-brewers-cup-rules"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "hero-variable-dripper",
+      "kind": "dripper",
+      "description": "Adjustable-flow dripper used by enthusiasts who tune drawdown speed.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "kalita-102",
+      "kind": "dripper",
+      "description": "Classic trapezoid brewer with broad home-market familiarity.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "kalita-wave-155-185",
+      "kind": "dripper",
+      "description": "Flat-bottom standard with broad use in cafes and home brewing.",
+      "defaultProfileId": "profile_kalita_wave_hot",
+      "source": "kalita-curation",
+      "sourceUrls": [
+        "https://www.kalita.co.jp/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "kingrinder-k2",
+      "kind": "grinder",
+      "description": "Accessible KINGrinder platform with broad manual-brew click-range compatibility.",
+      "source": "kingrinder-curated",
+      "sourceUrls": [
+        "https://www.kingrinder.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "kingrinder-k6",
+      "kind": "grinder",
+      "description": "High-value specialty grinder with strong enthusiast adoption.",
+      "source": "kingrinder-official-curated",
+      "sourceUrls": [
+        "https://www.kingrinder.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "kingrinder-p0-p1-p2",
+      "kind": "grinder",
+      "description": "Value-focused KINGrinder line aimed at entry and mid-level manual brew users.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "kinu-m47",
+      "kind": "grinder",
+      "description": "Premium grinder platform with steady specialty enthusiast use.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "kono-meimon",
+      "kind": "dripper",
+      "description": "Low-rib Japanese cone dripper common in specialty circles.",
+      "defaultProfileId": "profile_kono_meimon_hot",
+      "source": "kono-curation",
+      "sourceUrls": [
+        "https://kono1973.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "latina-cono",
+      "kind": "dripper",
+      "description": "Affordable cone dripper seen in regional home brew setups.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "latina-sumba-sumbawa",
+      "kind": "grinder",
+      "description": "Affordable manual grinder line seen in regional home setups.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "latina-sumo",
+      "kind": "grinder",
+      "description": "Affordable stepped grinder targeted at regional home brewers.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "latina-volcano",
+      "kind": "dripper",
+      "description": "Affordable patterned dripper positioned for entry-level manual brewing.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "loveramics",
+      "kind": "dripper",
+      "description": "Ceramic dripper line with multiple flow styles for specialty home use.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "mavo-phantox-pro",
+      "kind": "grinder",
+      "description": "Numbered grinder platform tracked by BrewLogic for manual brew planning.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "mazzer-omega",
+      "kind": "grinder",
+      "description": "Mazzer's hand grinder platform for premium home filter use.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "melitta",
+      "kind": "dripper",
+      "description": "Trapezoid classic with broad mass-market availability.",
+      "defaultProfileId": "profile_melitta_hot",
+      "source": "melitta-curation",
+      "sourceUrls": [
+        "https://www.melitta.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "mhw-3bomber-blade-r3",
+      "kind": "grinder",
+      "description": "Modern grinder platform from MHW-3BOMBER aimed at enthusiast users.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "mhw-3bomber-elf",
+      "kind": "dripper",
+      "description": "Modern specialty dripper aimed at enthusiast home brewing.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "nextlevel-pulsar",
+      "kind": "dripper",
+      "description": "Hybrid no-bypass brewer with immersion and controlled drawdown workflow for repeatable clarity.",
+      "defaultProfileId": "profile_nextlevel_pulsar_hot",
+      "source": "nextlevel-official",
+      "sourceUrls": [
+        "https://nextlevelbrewer.com/products/pulsar-brewer"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "oe-lido-3-og",
+      "kind": "grinder",
+      "description": "Established enthusiast grinder line with long-running niche adoption.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "orea-v3-v4",
+      "kind": "dripper",
+      "description": "Modern fast-flow flat-bottom dripper platform used in specialty competition and cafes.",
+      "defaultProfileId": "profile_orea_hot",
+      "source": "orea-official",
+      "sourceUrls": [
+        "https://orea.uk/guides"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "origami-dripper-air-s",
+      "kind": "dripper",
+      "description": "Recent lightweight ORIGAMI release aimed at travel and cafe flexibility.",
+      "defaultProfileId": "profile_origami_air_s_hot",
+      "source": "origami-official",
+      "sourceUrls": [
+        "https://origami-kai.com/en/products/origami_dripperair_s"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "high"
+    },
+    {
+      "id": "origami-dripper-s-m",
+      "kind": "dripper",
+      "description": "Highly adopted specialty dripper that supports cone and wave-style filters.",
+      "defaultProfileId": "profile_origami_hot",
+      "source": "origami-official",
+      "sourceUrls": [
+        "https://origami-kai.com/en/products/dripper"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "pietro-flat-burr",
+      "kind": "grinder",
+      "description": "Flat-burr manual grinder aimed at high-clarity specialty brewing.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "porlex-mini-ii",
+      "kind": "grinder",
+      "description": "Travel-friendly Porlex grinder with broad household familiarity.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "starseeker-edge-edge",
+      "kind": "grinder",
+      "description": "Niche grinder platform tracked in enthusiast specialty circles.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "suji-v60-dripper",
+      "kind": "dripper",
+      "description": "Budget cone dripper commonly used in entry-level manual brew setups.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "suji-wave-dripper",
+      "kind": "dripper",
+      "description": "Budget wave-style dripper used for approachable flat-bottom brewing.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "the-gabi-master-a-b",
+      "kind": "dripper",
+      "description": "Pulse-oriented dripper family known in enthusiast specialty circles.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "timemore-b75",
+      "kind": "dripper",
+      "description": "Fast flat-bottom brewer widely used in specialty home setups.",
+      "defaultProfileId": "profile_timemore_b75_hot",
+      "source": "timemore-curation",
+      "sourceUrls": [
+        "https://www.timemore.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "timemore-c2",
+      "kind": "grinder",
+      "description": "Entry-level grinder with very large market presence.",
+      "source": "timemore-community",
+      "sourceUrls": [
+        "https://www.timemore.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "timemore-c3",
+      "kind": "grinder",
+      "description": "Mass-market hand grinder used heavily in entry and mid-level filter setups.",
+      "source": "timemore-community",
+      "sourceUrls": [
+        "https://www.timemore.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "timemore-c3-esp",
+      "kind": "grinder",
+      "description": "ESP-tuned TIMEMORE grinder extending the mass-market C-series platform.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "timemore-c5",
+      "kind": "grinder",
+      "description": "Recent TIMEMORE C5 series positioned above entry-level C-series grinders.",
+      "source": "timemore-official",
+      "sourceUrls": [
+        "https://www.timemore.com/es/products/timemore-manual-coffee-grinder-chestnut-c5-series"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "high"
+    },
+    {
+      "id": "timemore-c5-esp-pro",
+      "kind": "grinder",
+      "description": "ESP-focused TIMEMORE grinder variant aimed at upper entry-level users.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "timemore-chestnut-x",
+      "kind": "grinder",
+      "description": "Premium TIMEMORE grinder with steady enthusiast adoption.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "timemore-crystal-eye",
+      "kind": "dripper",
+      "description": "Timemore cone dripper with strong specialty home adoption in Asia.",
+      "defaultProfileId": "profile_timemore_crystal_eye_hot",
+      "source": "timemore-curation",
+      "sourceUrls": [
+        "https://www.timemore.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "timemore-nano-plus",
+      "kind": "grinder",
+      "description": "Compact TIMEMORE grinder platform used for travel and home brewing.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "timemore-s3",
+      "kind": "grinder",
+      "description": "Newer TIMEMORE grinder positioned above entry-level hand grinders.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "timemore-slim-plus",
+      "kind": "grinder",
+      "description": "Portable TIMEMORE grinder with established enthusiast use.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "timemore-x-millab-m01",
+      "kind": "grinder",
+      "description": "Collaboration grinder platform tracked for enthusiast home brewing.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "torch-mountain",
+      "kind": "dripper",
+      "description": "Japanese ceramic dripper with steady niche specialty adoption.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "varia-hand-grinder",
+      "kind": "grinder",
+      "description": "Specialty grinder positioned for enthusiast manual brew use.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "vesper-vs-3-fold",
+      "kind": "grinder",
+      "description": "Compact grinder platform positioned for enthusiast home setups.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "vietnam-drip",
+      "kind": "dripper",
+      "description": "Traditional Vietnamese metal brewer with broad regional household use.",
+      "source": "brewlogic-curated",
+      "sourceUrls": [
+        "https://www.brewlogic.app/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-10",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "wacaco-exagrind",
+      "kind": "grinder",
+      "description": "Portable grinder with steady adoption among travel-focused specialty brewers.",
+      "source": "wacaco-official-curated",
+      "sourceUrls": [
+        "https://www.wacaco.com/products/exagrind",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "tricolate-brewer",
+      "kind": "dripper",
+      "description": "No-bypass flat-bottom dripper used for high-clarity but controlled high-extraction filter workflows.",
+      "source": "tricolate-official",
+      "sourceUrls": [
+        "https://tricolate.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    }
+  ]
+}

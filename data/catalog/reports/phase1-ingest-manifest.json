@@ -1,0 +1,59 @@
+{
+  "version": "2026.03.10-asean-first-phase1",
+  "generated_at": "2026-04-07T07:29:55.971Z",
+  "source_runs": [
+    {
+      "id": "water-wave-sg-01",
+      "datasetKind": "water",
+      "region": "Singapore",
+      "sourceType": "brand_site+distributor",
+      "evidenceCount": 7,
+      "publishableCount": 5,
+      "partialCount": 2,
+      "errorCount": 0,
+      "notes": "FairPrice and official source-backed waters prioritized for AI Brew autofill, with ready-brew shortlist promotion for clean picker UX."
+    },
+    {
+      "id": "water-wave-my-01",
+      "datasetKind": "water",
+      "region": "Malaysia",
+      "sourceType": "brand_site+distributor",
+      "evidenceCount": 6,
+      "publishableCount": 5,
+      "partialCount": 1,
+      "errorCount": 0,
+      "notes": "Jaya Grocer and official source-backed waters prioritized for market-specific variants and ready-brew promotion."
+    },
+    {
+      "id": "water-wave-id-bn-01",
+      "datasetKind": "water",
+      "region": "Indonesia/Brunei",
+      "sourceType": "brand_site+distributor",
+      "evidenceCount": 4,
+      "publishableCount": 0,
+      "partialCount": 4,
+      "errorCount": 0,
+      "notes": "Tracked priority-market brands with incomplete chemistry held in review_only."
+    },
+    {
+      "id": "water-wave-id-hydrokimia-01",
+      "datasetKind": "water",
+      "region": "Indonesia",
+      "sourceType": "curated_research+brand_site+retailer",
+      "evidenceCount": 18,
+      "publishableCount": 1,
+      "partialCount": 17,
+      "errorCount": 0,
+      "notes": "Expanded Indonesian water catalog with curated hydrokimia references from structured research. Only complete mineral panels are promoted to brew-ready."
+    }
+  ],
+  "totals": {
+    "waters_total": 37,
+    "waters_published": 11,
+    "waters_review_only": 26,
+    "drippers_total": 36,
+    "drippers_published": 36,
+    "grinders_total": 53,
+    "grinders_published": 33
+  }
+}

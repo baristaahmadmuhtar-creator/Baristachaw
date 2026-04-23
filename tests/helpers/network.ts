@@ -1,0 +1,121 @@
+import type { Page, Route } from '@playwright/test';
+
+function json(route: Route, payload: unknown, status = 200) {
+  return route.fulfill({
+    status,
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function mockAiApis(page: Page) {
+  await page.route('**/api/chat', async (route) => {
+    const request = route.request();
+    const body = request.postDataJSON() as { message?: string };
+    const text = body?.message?.includes('Smoke test ping')
+      ? 'Smoke pong'
+      : '## ☕ Mocked Response\nThis is a qa_e2e mocked response for UI flow validation.';
+    await route.fulfill({ status: 200, body: text, contentType: 'text/plain' });
+  });
+
+  await page.route('**/api/ai', async (route) => {
+    const body = (route.request().postDataJSON() || {}) as { action?: string };
+    switch (body.action) {
+      case 'search':
+        return json(route, {
+          ok: true,
+          text: '## Search Result\n- Fresh beans\n- Balanced extraction\n- qa_e2e source',
+          chunks: [
+            { web: { uri: 'https://example.com/qa_e2e', title: 'QA Source 1' } },
+            { web: { uri: 'https://example.org/qa_e2e', title: 'QA Source 2' } },
+          ],
+          sources: [
+            { uri: 'https://example.com/qa_e2e', title: 'QA Source 1', domain: 'example.com' },
+            { uri: 'https://example.org/qa_e2e', title: 'QA Source 2', domain: 'example.org' },
+          ],
+          sourceCount: 2,
+          retrievedAt: Date.now(),
+        });
+      case 'fast':
+      case 'balanced':
+      case 'deep':
+      case 'deep_think':
+      case 'analyze_text':
+      case 'analyze_image':
+      case 'analyze_attachment':
+      case 'analyze_video':
+      case 'transcribe':
+        if (body.action === 'deep_think') {
+          return json(route, {
+            ok: true,
+            action: 'deep_think',
+            text: [
+              '## TL;DR',
+              'Use a stable baseline, then optimize one variable at a time for repeatable extraction gains.',
+              '',
+              '## Core Analysis',
+              'Current cup profile indicates extraction variance likely from grind spread and pour inconsistency.',
+              '',
+              '## Options & Tradeoffs',
+              '1) Finer grind increases extraction but can amplify bitterness.',
+              '2) Hotter water improves solubility but can mute delicate notes.',
+              '3) Better pour control is slower to learn but most repeatable.',
+              '',
+              '## Recommended Action Plan',
+              '1. Lock ratio and dose for two baseline brews.',
+              '2. Adjust grind one step and compare sweetness and finish.',
+              '3. Validate with blind tasting notes and keep the better profile.',
+              '',
+              '## Risks & Validation',
+              'Track drawdown drift and keep agitation consistent to avoid false conclusions.',
+              '',
+              '## Sources',
+              '- [QA Source 1](https://example.com/qa_e2e)',
+              '- [QA Source 2](https://example.org/qa_e2e)',
+            ].join('\n'),
+            sources: [
+              { uri: 'https://example.com/qa_e2e', title: 'QA Source 1', domain: 'example.com' },
+              { uri: 'https://example.org/qa_e2e', title: 'QA Source 2', domain: 'example.org' },
+            ],
+            sourceCount: 2,
+            degraded: false,
+            deepMeta: {
+              mode: 'deep',
+              grounded: true,
+              degraded: false,
+              fallbackUsed: false,
+              qualityPass: true,
+              latencyMs: 1800,
+              sourceCount: 2,
+            },
+            audioDataUrl: undefined,
+          });
+        }
+        if (body.action === 'balanced') {
+          return json(route, {
+            ok: true,
+            action: 'balanced',
+            text: '## Normal Mode\nUse a clear baseline, keep the recipe scoped to the latest request, and adjust one variable at a time.',
+            provider: 'qa_balanced',
+          });
+        }
+        return json(route, {
+          ok: true,
+          text: '## ☕ Mocked AI\nAction completed for qa_e2e test.',
+          audioDataUrl: body.action === 'transcribe' ? 'data:audio/wav;base64,ZmFrZQ==' : undefined,
+        });
+      case 'generate_image':
+      case 'edit_latte_art':
+        return json(route, {
+          ok: true,
+          imageDataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=',
+        });
+      default:
+        return json(route, { ok: true, text: 'mock default' });
+    }
+  });
+
+  await page.route('**/api/auth/url', async (route) => {
+    await json(route, { url: 'https://accounts.google.com/o/oauth2/auth?mock=1' });
+  });
+}

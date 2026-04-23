@@ -1,0 +1,9 @@
+{
+  "routes": ["/", "/chat", "/scanner"],
+  "thresholds": {
+    "performance": 0.75,
+    "accessibility": 0.9,
+    "best-practices": 0.85,
+    "seo": 0.8
+  }
+}

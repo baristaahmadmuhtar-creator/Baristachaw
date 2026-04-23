@@ -1,0 +1,929 @@
+{
+  "version": "2026.03.10-asean-first-phase1",
+  "items": [
+    {
+      "id": "1",
+      "brand": "Vesper",
+      "model": "VS-3 FOLD",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "vesper vs-3 fold klik (external) compact grinder platform positioned for enthusiast home setups.",
+      "aliases": [
+        "Vesper VS-3 FOLD",
+        "Vesper VS-3 FOLD"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "brand": "Timemore",
+      "model": "C5 ESP PRO",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "timemore c5 esp pro klik (internal) esp-focused timemore grinder variant aimed at upper entry-level users.",
+      "aliases": [
+        "Timemore C5 ESP PRO",
+        "Timemore C5 ESP PRO"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "32",
+      "brand": "1Zpresso",
+      "model": "J-Ultra",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "1zpresso j-ultra putaran (external) premium 1zpresso grinder with strong enthusiast adoption beyond espresso use.",
+      "aliases": [
+        "1Zpresso J-Ultra",
+        "1Zpresso J-Ultra"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "33",
+      "brand": "1Zpresso",
+      "model": "K-Ultra",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "high",
+      "search_text": "1zpresso k-ultra nomor (external) widely used specialty hand grinder with official grind-setting reference support.",
+      "aliases": [
+        "1Zpresso K-Ultra",
+        "1Zpresso K-Ultra"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "34",
+      "brand": "1Zpresso",
+      "model": "Q Air / Q2",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "search_text": "1zpresso q air / q2 klik (internal) compact 1zpresso travel grinder platform with broad enthusiast use.",
+      "aliases": [
+        "1Zpresso Q Air / Q2",
+        "1Zpresso Q Air / Q2"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "35",
+      "brand": "1Zpresso",
+      "model": "X-Pro / X-Ultra",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "search_text": "1zpresso x-pro / x-ultra putaran (external) specialty hand grinder platform with filter-oriented positioning.",
+      "aliases": [
+        "1Zpresso X-Pro / X-Ultra",
+        "1Zpresso X-Pro / X-Ultra"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "36",
+      "brand": "1Zpresso",
+      "model": "ZP6 Special",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "search_text": "1zpresso zp6 special nomor (external) high-clarity specialty grinder with official pour-over reference guidance.",
+      "aliases": [
+        "1Zpresso ZP6 Special",
+        "1Zpresso ZP6 Special"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "37",
+      "brand": "Breville",
+      "model": "Smart Grinder Pro",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "breville smart grinder pro setting (electric) widely used electric grinder in home coffee setups.",
+      "aliases": [
+        "Breville Smart Grinder Pro",
+        "Breville Smart Grinder Pro"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "38",
+      "brand": "Comandante",
+      "model": "C40 MK4",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "comandante c40 mk4 klik (internal) common specialty benchmark grinder with wide community calibration data.",
+      "aliases": [
+        "Comandante C40 MK4",
+        "Comandante C40 MK4"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "39",
+      "brand": "Comandante",
+      "model": "C60 Baracuda",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "comandante c60 baracuda klik (internal) flagship comandante grinder positioned at the high end of manual brewing.",
+      "aliases": [
+        "Comandante C60 Baracuda",
+        "Comandante C60 Baracuda"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "41",
+      "brand": "Hario",
+      "model": "Canister (C-20)",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "hario canister (c-20) notch (internal) legacy hario grinder with long-running home-market presence.",
+      "aliases": [
+        "Hario Canister (C-20)",
+        "Hario Canister (C-20)"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "42",
+      "brand": "Hario",
+      "model": "Mini Slim+",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "hario mini slim+ klik (internal) compact hario grinder with broad entry-level household adoption.",
+      "aliases": [
+        "Hario Mini Slim+",
+        "Hario Mini Slim+"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "43",
+      "brand": "Hario",
+      "model": "Skerton Pro",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "hario skerton pro notch (internal) large-capacity hario grinder familiar across home brewing setups.",
+      "aliases": [
+        "Hario Skerton Pro",
+        "Hario Skerton Pro"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "44",
+      "brand": "Kingrinder",
+      "model": "K6",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "kingrinder k6 klik (external) high-value specialty grinder with strong enthusiast adoption.",
+      "aliases": [
+        "Kingrinder K6",
+        "Kingrinder K6"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "45",
+      "brand": "Kingrinder",
+      "model": "P0/P1/P2",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "kingrinder p0/p1/p2 klik (internal) value-focused kingrinder line aimed at entry and mid-level manual brew users.",
+      "aliases": [
+        "Kingrinder P0/P1/P2",
+        "Kingrinder P0/P1/P2"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "46",
+      "brand": "Kinu",
+      "model": "M47",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "kinu m47 putaran (external) premium grinder platform with steady specialty enthusiast use.",
+      "aliases": [
+        "Kinu M47",
+        "Kinu M47"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "47",
+      "brand": "Latina",
+      "model": "Sumba / Sumbawa",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "latina sumba / sumbawa klik (internal) affordable manual grinder line seen in regional home setups.",
+      "aliases": [
+        "Latina Sumba / Sumbawa",
+        "Latina Sumba / Sumbawa"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "48",
+      "brand": "Latina",
+      "model": "Sumo",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "latina sumo klik (internal) affordable stepped grinder targeted at regional home brewers.",
+      "aliases": [
+        "Latina Sumo",
+        "Latina Sumo"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "52",
+      "brand": "Porlex",
+      "model": "Mini II",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "porlex mini ii klik (internal) travel-friendly porlex grinder with broad household familiarity.",
+      "aliases": [
+        "Porlex Mini II",
+        "Porlex Mini II"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "53",
+      "brand": "Starseeker",
+      "model": "Edge / Edge+",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "starseeker edge / edge+ klik (external) niche grinder platform tracked in enthusiast specialty circles.",
+      "aliases": [
+        "Starseeker Edge / Edge+",
+        "Starseeker Edge / Edge+"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "55",
+      "brand": "Timemore",
+      "model": "C3 ESP",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "timemore c3 esp klik (multipoint) esp-tuned timemore grinder extending the mass-market c-series platform.",
+      "aliases": [
+        "Timemore C3 ESP",
+        "Timemore C3 ESP"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "57",
+      "brand": "Timemore",
+      "model": "Nano / Plus",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "timemore nano / plus klik (internal) compact timemore grinder platform used for travel and home brewing.",
+      "aliases": [
+        "Timemore Nano / Plus",
+        "Timemore Nano / Plus"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "59",
+      "brand": "Timemore",
+      "model": "Slim Plus",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "timemore slim plus klik (internal) portable timemore grinder with established enthusiast use.",
+      "aliases": [
+        "Timemore Slim Plus",
+        "Timemore Slim Plus"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "60",
+      "brand": "Varia",
+      "model": "Hand Grinder",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "varia hand grinder klik (external) specialty grinder positioned for enthusiast manual brew use.",
+      "aliases": [
+        "Varia Hand Grinder",
+        "Varia Hand Grinder"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "61",
+      "brand": "Wacaco",
+      "model": "Exagrind",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "wacaco exagrind putaran/klik portable grinder with steady adoption among travel-focused specialty brewers.",
+      "aliases": [
+        "Wacaco Exagrind",
+        "Wacaco Exagrind"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "69",
+      "brand": "Timemore",
+      "model": "C5",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "high",
+      "search_text": "timemore c5 klik (internal) recent timemore c5 series positioned above entry-level c-series grinders.",
+      "aliases": [
+        "Timemore C5",
+        "Timemore C5"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "70",
+      "brand": "MHW-3BOMBER",
+      "model": "Blade R3",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "mhw-3bomber blade r3 klik (external) modern grinder platform from mhw-3bomber aimed at enthusiast users.",
+      "aliases": [
+        "MHW-3BOMBER Blade R3",
+        "MHW-3BOMBER Blade R3"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "71",
+      "brand": "Timemore",
+      "model": "x Millab M01",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "timemore x millab m01 klik (external) collaboration grinder platform tracked for enthusiast home brewing.",
+      "aliases": [
+        "Timemore x Millab M01",
+        "Timemore x Millab M01"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "72",
+      "brand": "Timemore",
+      "model": "C3",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "timemore c3 klik (internal) mass-market hand grinder used heavily in entry and mid-level filter setups.",
+      "aliases": [
+        "Timemore C3",
+        "Timemore C3"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "73",
+      "brand": "Timemore",
+      "model": "C2",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "timemore c2 klik (internal) entry-level grinder with very large market presence.",
+      "aliases": [
+        "Timemore C2",
+        "Timemore C2"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "74",
+      "brand": "Mavo",
+      "model": "Phantox Pro",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "mavo phantox pro nomor (external) numbered grinder platform tracked by brewlogic for manual brew planning.",
+      "aliases": [
+        "Mavo Phantox Pro",
+        "Mavo Phantox Pro"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "timemore-chestnut-c5-pro",
+      "brand": "TIMEMORE",
+      "model": "Chestnut C5 Pro",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 50,
+      "availability_confidence": "high",
+      "search_text": "timemore chestnut c5 pro stepped manual grinder ",
+      "aliases": [
+        "TIMEMORE Chestnut C5 Pro",
+        "TIMEMORE Chestnut C5 Pro"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "feima-600n",
+      "brand": "Feima",
+      "model": "600N",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "feima 600n stepped (1 - 8, 16 clicks) electric widely used 600n electric grinder platform in southeast asia. regional listings commonly surface it as feima 600n and also as latina 600n, flying eagle 600n, murane b600bn, fomac cog-cg600b, kova 600n, n.fema 600n, ferratti fare 600n, and one two cups 600n.",
+      "aliases": [
+        "Feima 600N",
+        "Feima 600N"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    }
+  ]
+}

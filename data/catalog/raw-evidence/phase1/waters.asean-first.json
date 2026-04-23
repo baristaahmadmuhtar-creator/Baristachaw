@@ -1,0 +1,1477 @@
+{
+  "version": "2026.03.10-asean-first-wave1",
+  "sourceRuns": [
+    {
+      "id": "water-wave-sg-01",
+      "datasetKind": "water",
+      "region": "Singapore",
+      "sourceType": "brand_site+distributor",
+      "evidenceCount": 7,
+      "publishableCount": 5,
+      "partialCount": 2,
+      "errorCount": 0,
+      "notes": "FairPrice and official source-backed waters prioritized for AI Brew autofill, with ready-brew shortlist promotion for clean picker UX."
+    },
+    {
+      "id": "water-wave-my-01",
+      "datasetKind": "water",
+      "region": "Malaysia",
+      "sourceType": "brand_site+distributor",
+      "evidenceCount": 6,
+      "publishableCount": 5,
+      "partialCount": 1,
+      "errorCount": 0,
+      "notes": "Jaya Grocer and official source-backed waters prioritized for market-specific variants and ready-brew promotion."
+    },
+    {
+      "id": "water-wave-id-bn-01",
+      "datasetKind": "water",
+      "region": "Indonesia/Brunei",
+      "sourceType": "brand_site+distributor",
+      "evidenceCount": 4,
+      "publishableCount": 0,
+      "partialCount": 4,
+      "errorCount": 0,
+      "notes": "Tracked priority-market brands with incomplete chemistry held in review_only."
+    },
+    {
+      "id": "water-wave-id-hydrokimia-01",
+      "datasetKind": "water",
+      "region": "Indonesia",
+      "sourceType": "curated_research+brand_site+retailer",
+      "evidenceCount": 18,
+      "publishableCount": 1,
+      "partialCount": 17,
+      "errorCount": 0,
+      "notes": "Expanded Indonesian water catalog with curated hydrokimia references from structured research. Only complete mineral panels are promoted to brew-ready."
+    }
+  ],
+  "items": [
+    {
+      "id": "aqua-id",
+      "brand_group_id": "aqua",
+      "market_code": "id",
+      "sku_label": "Aqua natural mineral water",
+      "brand": "Aqua",
+      "aliases": ["AQUA"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 7.7,
+      "tds_ppm": 112,
+      "verification_status": "verified",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#aqua-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.aqua.co.id/en",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.9
+        }
+      ]
+    },
+    {
+      "id": "le-minerale-id",
+      "brand_group_id": "le-minerale",
+      "market_code": "id",
+      "sku_label": "Le Minerale natural mineral water",
+      "brand": "Le Minerale",
+      "aliases": ["Le Minerale"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 2.2,
+        "magnesium": 5.5,
+        "sodium": 48.5,
+        "potassium": null,
+        "bicarbonate": 120,
+        "sulfate": null,
+        "chloride": 2.7,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": null,
+      "verification_status": "verified",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#le-minerale-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.leminerale.com/en/news/Bikin-Airnya-Sehat-dan-Berkualitas-Ini-Rahasia-Produksi-Le-Minerale-",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.88
+        }
+      ]
+    },
+    {
+      "id": "le-minerale-my",
+      "brand_group_id": "le-minerale",
+      "market_code": "my",
+      "sku_label": "Le Minerale still water",
+      "brand": "Le Minerale",
+      "aliases": ["Le Minerale"],
+      "country_origin": "Indonesia",
+      "available_in": ["Malaysia"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 2.2,
+        "magnesium": 5.5,
+        "sodium": 48.5,
+        "potassium": null,
+        "bicarbonate": 120,
+        "sulfate": null,
+        "chloride": 2.7,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": null,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#le-minerale-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.leminerale.com/en/news/Bikin-Airnya-Sehat-dan-Berkualitas-Ini-Rahasia-Produksi-Le-Minerale-",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.88
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://jgfreshub.jayagrocer.com/collections/water",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.72
+        }
+      ]
+    },
+    {
+      "id": "evian-sg",
+      "brand_group_id": "evian",
+      "market_code": "sg",
+      "sku_label": "Evian natural mineral water Singapore",
+      "brand": "Evian",
+      "aliases": ["Evian", "Evian Singapore"],
+      "country_origin": "France",
+      "available_in": ["Singapore"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 80,
+        "magnesium": 26,
+        "sodium": 6.5,
+        "potassium": 1,
+        "bicarbonate": 360,
+        "sulfate": 14,
+        "chloride": 6.8,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": 345,
+      "verification_status": "verified",
+      "publish_state": "published",
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.evian.com/en_int/water-attributes",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.96
+        },
+        {
+          "source_type": "official_report",
+          "source_url": "https://www.evian.com/en_int/quality-report",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.97
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://www.fairprice.com.sg/product/ctn-evian-mineral-water-24s-x-500ml-11738836",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.82
+        }
+      ]
+    },
+    {
+      "id": "evian-my",
+      "brand_group_id": "evian",
+      "market_code": "my",
+      "sku_label": "Evian natural mineral water Malaysia",
+      "brand": "Evian",
+      "aliases": ["Evian", "Evian Malaysia"],
+      "country_origin": "France",
+      "available_in": ["Malaysia"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 80,
+        "magnesium": 26,
+        "sodium": 6.5,
+        "potassium": 1,
+        "bicarbonate": 360,
+        "sulfate": 14,
+        "chloride": 6.8,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": 345,
+      "verification_status": "verified",
+      "publish_state": "published",
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.evian.com/en_int/water-attributes",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.96
+        },
+        {
+          "source_type": "official_report",
+          "source_url": "https://www.evian.com/en_int/quality-report",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.97
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://jgsj.jayagrocer.com/products/evian-mineral-water-1-5l",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.82
+        }
+      ]
+    },
+    {
+      "id": "fiji-sg",
+      "brand_group_id": "fiji",
+      "market_code": "sg",
+      "sku_label": "FIJI natural artesian water Singapore",
+      "brand": "FIJI",
+      "aliases": ["Fiji", "FIJI Water"],
+      "country_origin": "Fiji",
+      "available_in": ["Singapore"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 18,
+        "magnesium": 15,
+        "sodium": 18,
+        "potassium": 5,
+        "bicarbonate": 153,
+        "sulfate": null,
+        "chloride": null,
+        "silica": 93
+      },
+      "ph": 7.7,
+      "tds_ppm": 230,
+      "verification_status": "verified",
+      "publish_state": "published",
+      "sources": [
+        {
+          "source_type": "official_report",
+          "source_url": "https://cdn.shopify.com/s/files/1/0286/6052/files/Fiji_Water_2023_Water_Quality_Report.pdf?v=1706305193",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.97
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://fijiwater.com/pages/store-locator?store-page=water-quality-report",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.94
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://www.fairprice.com.sg/product/fiji-natural-artesian-water-6-x-1-5l-90132036",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.82
+        }
+      ]
+    },
+    {
+      "id": "fiji-my",
+      "brand_group_id": "fiji",
+      "market_code": "my",
+      "sku_label": "FIJI natural artesian water Malaysia",
+      "brand": "FIJI",
+      "aliases": ["Fiji", "FIJI Water"],
+      "country_origin": "Fiji",
+      "available_in": ["Malaysia"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 18,
+        "magnesium": 15,
+        "sodium": 18,
+        "potassium": 5,
+        "bicarbonate": 153,
+        "sulfate": null,
+        "chloride": null,
+        "silica": 93
+      },
+      "ph": 7.7,
+      "tds_ppm": 230,
+      "verification_status": "verified",
+      "publish_state": "published",
+      "sources": [
+        {
+          "source_type": "official_report",
+          "source_url": "https://cdn.shopify.com/s/files/1/0286/6052/files/Fiji_Water_2023_Water_Quality_Report.pdf?v=1706305193",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.97
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://fijiwater.com/pages/store-locator?store-page=water-quality-report",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.94
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://jgsj.jayagrocer.com/products/fiji-natural-artesian-water-1l-1?pr_prod_strat=e5_desc&pr_rec_id=964832702&pr_rec_pid=7121301962919&pr_ref_pid=7121275191463&pr_seq=uniform",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.82
+        }
+      ]
+    },
+    {
+      "id": "acqua-panna-sg",
+      "brand_group_id": "acqua-panna",
+      "market_code": "sg",
+      "sku_label": "Acqua Panna natural mineral water Singapore",
+      "brand": "Acqua Panna",
+      "aliases": ["Acqua Panna", "Panna"],
+      "country_origin": "Italy",
+      "available_in": ["Singapore"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 32.1,
+        "magnesium": 6.5,
+        "sodium": 6.8,
+        "potassium": 1.2,
+        "bicarbonate": 106,
+        "sulfate": 22.4,
+        "chloride": 7.8,
+        "silica": null
+      },
+      "ph": 7.9,
+      "tds_ppm": 188,
+      "verification_status": "verified",
+      "publish_state": "published",
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.acquapanna.com/us/eng/products/plastic-bottles/1l",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://www.fairprice.com.sg/product/acqua-panna-natural-mineral-water-plastic-12-x-1l-90197308",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.82
+        }
+      ]
+    },
+    {
+      "id": "acqua-panna-my",
+      "brand_group_id": "acqua-panna",
+      "market_code": "my",
+      "sku_label": "Acqua Panna natural mineral water Malaysia",
+      "brand": "Acqua Panna",
+      "aliases": ["Acqua Panna", "Panna"],
+      "country_origin": "Italy",
+      "available_in": ["Malaysia"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 32.1,
+        "magnesium": 6.5,
+        "sodium": 6.8,
+        "potassium": 1.2,
+        "bicarbonate": 106,
+        "sulfate": 22.4,
+        "chloride": 7.8,
+        "silica": null
+      },
+      "ph": 7.9,
+      "tds_ppm": 188,
+      "verification_status": "verified",
+      "publish_state": "published",
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.acquapanna.com/us/eng/products/plastic-bottles/1l",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://jgsj.jayagrocer.com/collections/mineral-water/products/acqua-panna-natural-mineral-water-1l-1",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.82
+        }
+      ]
+    },
+    {
+      "id": "polar-sg",
+      "brand_group_id": "polar",
+      "market_code": "sg",
+      "sku_label": "Polar natural mineral water Singapore",
+      "brand": "Polar",
+      "aliases": ["Polar"],
+      "country_origin": "Singapore",
+      "available_in": ["Singapore"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 2.4,
+        "magnesium": 0.9,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": 25,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": null,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "distributor",
+          "source_url": "https://omni.fairprice.com.sg/product/polar-natural-mineral-bottle-water-10932741",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.72
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://www.fairprice.com.sg/water/mineral-water",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.65
+        }
+      ]
+    },
+    {
+      "id": "pure-life-sg",
+      "brand_group_id": "pure-life",
+      "market_code": "sg",
+      "sku_label": "Pure Life drinking water Singapore",
+      "brand": "Pure Life",
+      "aliases": ["Nestle Pure Life", "Nestlé Pure Life"],
+      "country_origin": "Singapore",
+      "available_in": ["Singapore"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": null,
+      "verification_status": "verified",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.nestlepurelife.com/uk/about-us/frequently-asked-questions",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.82
+        }
+      ]
+    },
+    {
+      "id": "pure-life-global",
+      "brand_group_id": "pure-life",
+      "market_code": "global",
+      "sku_label": "Pure Life balanced mineral reference profile",
+      "brand": "Pure Life",
+      "aliases": ["Nestle Pure Life", "Nestlé Pure Life"],
+      "country_origin": "Global",
+      "available_in": ["Indonesia", "Singapore", "Malaysia", "Brunei", "Global"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 37.6,
+        "magnesium": 5.3,
+        "sodium": 5.8,
+        "potassium": 1.3,
+        "bicarbonate": 22,
+        "sulfate": 7.6,
+        "chloride": 15.4,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": 150,
+      "verification_status": "verified",
+      "publish_state": "published",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#pure-life-global",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.72
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.nestlepurelife.com/uk/about-us/frequently-asked-questions",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.9
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.akasha.co.id/products/brands/water-pure-life.html",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.84
+        }
+      ]
+    },
+    {
+      "id": "amidis-id",
+      "brand_group_id": "amidis",
+      "market_code": "id",
+      "sku_label": "Amidis distilled water Indonesia",
+      "brand": "Amidis",
+      "aliases": ["Amidis"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": 0,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#amidis-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        }
+      ]
+    },
+    {
+      "id": "rivero-id",
+      "brand_group_id": "rivero",
+      "market_code": "id",
+      "sku_label": "Rivero drinking water Indonesia",
+      "brand": "Rivero",
+      "aliases": ["Rivero"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 7.5,
+      "tds_ppm": 0,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#rivero-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        }
+      ]
+    },
+    {
+      "id": "air-alfamart-id",
+      "brand_group_id": "air-alfamart",
+      "market_code": "id",
+      "sku_label": "Air Alfamart demineralized water",
+      "brand": "Air Alfamart",
+      "aliases": ["Alfamart Water"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 7.4,
+      "tds_ppm": 1,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#air-alfamart-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        }
+      ]
+    },
+    {
+      "id": "cleo-id",
+      "brand_group_id": "cleo",
+      "market_code": "id",
+      "sku_label": "Cleo ultra filtered water Indonesia",
+      "brand": "Cleo",
+      "aliases": ["Cleo"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 7.3,
+      "tds_ppm": null,
+      "verification_status": "verified",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#cleo-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://cleopurewater.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.82
+        }
+      ]
+    },
+    {
+      "id": "perfect-id",
+      "brand_group_id": "perfect",
+      "market_code": "id",
+      "sku_label": "Perfect alkaline water Indonesia",
+      "brand": "Perfect",
+      "aliases": ["Perfect Water"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "alkaline",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 9.5,
+      "tds_ppm": 29,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#perfect-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        }
+      ]
+    },
+    {
+      "id": "air-indomaret-id",
+      "brand_group_id": "air-indomaret",
+      "market_code": "id",
+      "sku_label": "Air Indomaret demineralized water",
+      "brand": "Air Indomaret",
+      "aliases": ["Indomaret Water"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 6.9,
+      "tds_ppm": 31,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#air-indomaret-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        }
+      ]
+    },
+    {
+      "id": "eternal-plus-id",
+      "brand_group_id": "eternal-plus",
+      "market_code": "id",
+      "sku_label": "Eternal Plus alkaline water Indonesia",
+      "brand": "Eternal Plus",
+      "aliases": ["Eternal Plus", "E+"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "alkaline",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 1.67,
+        "magnesium": 1,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": null,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#eternal-plus-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        }
+      ]
+    },
+    {
+      "id": "club-id",
+      "brand_group_id": "club",
+      "market_code": "id",
+      "sku_label": "Club drinking water Indonesia",
+      "brand": "Club",
+      "aliases": ["Club"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 8,
+      "tds_ppm": 52,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#club-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        }
+      ]
+    },
+    {
+      "id": "ades-id",
+      "brand_group_id": "ades",
+      "market_code": "id",
+      "sku_label": "Ades bottled water Indonesia",
+      "brand": "Ades",
+      "aliases": ["ADES"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 7.5,
+      "tds_ppm": 58,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#ades-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.coca-cola.com/id/id/brands/ades",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.8
+        }
+      ]
+    },
+    {
+      "id": "oasis-id",
+      "brand_group_id": "oasis",
+      "market_code": "id",
+      "sku_label": "Oasis bottled water Indonesia",
+      "brand": "Oasis",
+      "aliases": ["Oasis"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 7.8,
+      "tds_ppm": 64,
+      "verification_status": "verified",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#oasis-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://oasis.co.id/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.82
+        }
+      ]
+    },
+    {
+      "id": "prima-id",
+      "brand_group_id": "prima",
+      "market_code": "id",
+      "sku_label": "Prima bottled water Indonesia",
+      "brand": "Prima",
+      "aliases": ["Prima"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 7.9,
+      "tds_ppm": 67,
+      "verification_status": "verified",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#prima-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.primawater.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.82
+        }
+      ]
+    },
+    {
+      "id": "2tang-id",
+      "brand_group_id": "2tang",
+      "market_code": "id",
+      "sku_label": "2Tang bottled water Indonesia",
+      "brand": "2Tang",
+      "aliases": ["2 Tang", "2tang"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 8,
+      "tds_ppm": 68,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#2tang-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        }
+      ]
+    },
+    {
+      "id": "oasis-plus-id",
+      "brand_group_id": "oasis-plus",
+      "market_code": "id",
+      "sku_label": "Oasis+ alkaline water Indonesia",
+      "brand": "Oasis+",
+      "aliases": ["Oasis Plus", "Oasis+"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "alkaline",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 8.6,
+      "tds_ppm": 72,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#oasis-plus-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://oasis.co.id/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.74
+        }
+      ]
+    },
+    {
+      "id": "ron-88-id",
+      "brand_group_id": "ron-88",
+      "market_code": "id",
+      "sku_label": "Ron 88 bottled water Indonesia",
+      "brand": "Ron 88",
+      "aliases": ["Ron88", "Ron 88"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 7.7,
+      "tds_ppm": 74,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#ron-88-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        }
+      ]
+    },
+    {
+      "id": "frozen-id",
+      "brand_group_id": "frozen",
+      "market_code": "id",
+      "sku_label": "Frozen bottled water Indonesia",
+      "brand": "Frozen",
+      "aliases": ["Frozen"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 7.5,
+      "tds_ppm": 87,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#frozen-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        }
+      ]
+    },
+    {
+      "id": "crystalline-id",
+      "brand_group_id": "crystalline",
+      "market_code": "id",
+      "sku_label": "Crystalline bottled water Indonesia",
+      "brand": "Crystalline",
+      "aliases": ["Crystalline"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 7.5,
+      "tds_ppm": 95,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#crystalline-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        }
+      ]
+    },
+    {
+      "id": "total-8-plus-id",
+      "brand_group_id": "total-8-plus",
+      "market_code": "id",
+      "sku_label": "Total 8+ alkaline water Indonesia",
+      "brand": "Total 8+",
+      "aliases": ["Total 8+"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "alkaline",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 8.1,
+      "tds_ppm": 102,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#total-8-plus-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        }
+      ]
+    },
+    {
+      "id": "vit-id",
+      "brand_group_id": "vit",
+      "market_code": "id",
+      "sku_label": "Vit bottled water Indonesia",
+      "brand": "Vit",
+      "aliases": ["VIT", "Vit"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": 7.9,
+      "tds_ppm": 120,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#vit-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        }
+      ]
+    },
+    {
+      "id": "equil-id",
+      "brand_group_id": "equil",
+      "market_code": "id",
+      "sku_label": "Equil natural mineral water Indonesia",
+      "brand": "Equil",
+      "aliases": ["Equil"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia", "Singapore"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 9.5,
+        "magnesium": 8.2,
+        "sodium": 9,
+        "potassium": null,
+        "bicarbonate": 68.6,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": null,
+      "verification_status": "curated",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#equil-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://www.blibli.com/brand/equil",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.72
+        }
+      ]
+    },
+    {
+      "id": "pristine-8-plus-id",
+      "brand_group_id": "pristine-8-plus",
+      "market_code": "id",
+      "sku_label": "Pristine 8+ alkaline water Indonesia",
+      "brand": "Pristine 8+",
+      "aliases": ["Pristine 8+", "Pristine"],
+      "country_origin": "Indonesia",
+      "available_in": ["Indonesia"],
+      "water_type": "alkaline",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": null,
+      "verification_status": "verified",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#pristine-8-plus-id",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.62
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.pristine8plus.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.82
+        }
+      ]
+    },
+    {
+      "id": "suci-bn",
+      "brand_group_id": "suci",
+      "market_code": "bn",
+      "sku_label": "Suci drinking water Brunei",
+      "brand": "Suci",
+      "aliases": ["Suci Drinking Water"],
+      "country_origin": "Brunei",
+      "available_in": ["Brunei"],
+      "water_type": "spring",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": null,
+      "verification_status": "verified",
+      "publish_state": "review_only",
+      "sources": [
+        {
+          "source_type": "distributor",
+          "source_url": "https://tlt-ent.com/product/suci-drinking-water-1-5l/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.82
+        }
+      ]
+    },
+    {
+      "id": "volvic-sg",
+      "brand_group_id": "volvic",
+      "market_code": "sg",
+      "sku_label": "Volvic natural mineral water Singapore",
+      "brand": "Volvic",
+      "aliases": ["Volvic"],
+      "country_origin": "France",
+      "available_in": ["Singapore"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 11.5,
+        "magnesium": 8,
+        "sodium": 11.6,
+        "potassium": 6.2,
+        "bicarbonate": 71,
+        "sulfate": 8.1,
+        "chloride": 13.5,
+        "silica": null
+      },
+      "ph": 7,
+      "tds_ppm": 130,
+      "verification_status": "verified",
+      "publish_state": "published",
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.volvic.co.uk/volcanic-mineral-water/natural-mineral-water",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.96
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://www.fairprice.com.sg/product/volvic-natural-mineral-water-15lt-190330",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.8
+        }
+      ]
+    },
+    {
+      "id": "volvic-my",
+      "brand_group_id": "volvic",
+      "market_code": "my",
+      "sku_label": "Volvic natural mineral water Malaysia",
+      "brand": "Volvic",
+      "aliases": ["Volvic"],
+      "country_origin": "France",
+      "available_in": ["Malaysia"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 11.5,
+        "magnesium": 8,
+        "sodium": 11.6,
+        "potassium": 6.2,
+        "bicarbonate": 71,
+        "sulfate": 8.1,
+        "chloride": 13.5,
+        "silica": null
+      },
+      "ph": 7,
+      "tds_ppm": 130,
+      "verification_status": "verified",
+      "publish_state": "published",
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.volvic.co.uk/volcanic-mineral-water/natural-mineral-water",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.96
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://jgsj.jayagrocer.com/collections/mineral-water",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.76
+        }
+      ]
+    },
+    {
+      "id": "spritzer-sg",
+      "brand_group_id": "spritzer",
+      "market_code": "sg",
+      "sku_label": "Spritzer natural mineral water Singapore",
+      "brand": "Spritzer",
+      "aliases": ["Spritzer"],
+      "country_origin": "Malaysia",
+      "available_in": ["Singapore"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 31,
+        "magnesium": 2.7,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": 104,
+        "sulfate": null,
+        "chloride": null,
+        "silica": 44
+      },
+      "ph": 7.65,
+      "tds_ppm": 160,
+      "verification_status": "verified",
+      "publish_state": "published",
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.spritzer.com.my/story",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.93
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://www.fairprice.com.sg/product/spritzer-natural-mineral-water-24-x-350ml-90195661",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.8
+        }
+      ]
+    },
+    {
+      "id": "spritzer-my",
+      "brand_group_id": "spritzer",
+      "market_code": "my",
+      "sku_label": "Spritzer natural mineral water Malaysia",
+      "brand": "Spritzer",
+      "aliases": ["Spritzer"],
+      "country_origin": "Malaysia",
+      "available_in": ["Malaysia"],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "minerals_mg_l": {
+        "calcium": 31,
+        "magnesium": 2.7,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": 104,
+        "sulfate": null,
+        "chloride": null,
+        "silica": 44
+      },
+      "ph": 7.65,
+      "tds_ppm": 160,
+      "verification_status": "verified",
+      "publish_state": "published",
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.spritzer.com.my/story",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.93
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://jgsj.jayagrocer.com/collections/mineral-water",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.76
+        }
+      ]
+    }
+  ]
+}

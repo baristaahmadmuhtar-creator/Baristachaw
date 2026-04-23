@@ -1,0 +1,1013 @@
+{
+  "version": "2026.03.10-asean-first-phase1",
+  "items": [
+    {
+      "id": "31",
+      "brand": "April",
+      "model": "Brewer",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "search_text": "april brewer flat bottom dripper",
+      "aliases": [
+        "April Brewer",
+        "April Brewer"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "32",
+      "brand": "Blue Bottle",
+      "model": "Dripper",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "blue bottle dripper flat bottom dripper",
+      "aliases": [
+        "Blue Bottle Dripper",
+        "Blue Bottle Dripper"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "33",
+      "brand": "Brewista",
+      "model": "Gem Series",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "brewista gem series gem series dripper",
+      "aliases": [
+        "Brewista Gem Series",
+        "Brewista Gem Series"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "34",
+      "brand": "Brewista",
+      "model": "Tornado",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "brewista tornado tornado duo dripper",
+      "aliases": [
+        "Brewista Tornado",
+        "Brewista Tornado"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "35",
+      "brand": "Cafec",
+      "model": "Deep 27",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "cafec deep 27 deep 27 flower dripper",
+      "aliases": [
+        "Cafec Deep 27",
+        "Cafec Deep 27"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "36",
+      "brand": "Cafec",
+      "model": "Flower Dripper",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "cafec flower dripper flower dripper (cone)",
+      "aliases": [
+        "Cafec Flower Dripper",
+        "Cafec Flower Dripper"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "37",
+      "brand": "Chemex",
+      "model": "Chemex",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "chemex chemex pour-over glass coffeemaker",
+      "aliases": [
+        "Chemex",
+        "Chemex Chemex"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "38",
+      "brand": "Clever",
+      "model": "Dripper",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "clever dripper immersion dripper",
+      "aliases": [
+        "Clever Dripper",
+        "Clever Dripper"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "39",
+      "brand": "Fellow",
+      "model": "Stagg [X]",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "search_text": "fellow stagg [x] stagg [x] flat bottom",
+      "aliases": [
+        "Fellow Stagg [X]",
+        "Fellow Stagg [X]"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "40",
+      "brand": "Hario",
+      "model": "Mugen",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "search_text": "hario mugen v60 mugen (one pour)",
+      "aliases": [
+        "Hario Mugen",
+        "Hario Mugen"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "41",
+      "brand": "Hario",
+      "model": "Switch",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "search_text": "hario switch immersion switch",
+      "aliases": [
+        "Hario Switch",
+        "Hario Switch"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "42",
+      "brand": "Hario",
+      "model": "V60",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "high",
+      "search_text": "hario v60 v60 plastic/ceramic/glass",
+      "aliases": [
+        "Hario V60",
+        "Hario V60"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "43",
+      "brand": "Hero",
+      "model": "Variable Dripper",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "hero variable dripper variable flow dripper",
+      "aliases": [
+        "Hero Variable Dripper",
+        "Hero Variable Dripper"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "44",
+      "brand": "Kalita",
+      "model": "102",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "kalita 102 trapezoid dripper",
+      "aliases": [
+        "Kalita 102",
+        "Kalita 102"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "45",
+      "brand": "Kalita",
+      "model": "Wave 155 / 185",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "kalita wave 155 / 185 wave flat bottom",
+      "aliases": [
+        "Kalita Wave 155 / 185",
+        "Kalita Wave 155 / 185"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "46",
+      "brand": "Kono",
+      "model": "Meimon",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "kono meimon meimon dripper",
+      "aliases": [
+        "Kono Meimon",
+        "Kono Meimon"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "47",
+      "brand": "Latina",
+      "model": "Cono",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "latina cono cono dripper",
+      "aliases": [
+        "Latina Cono",
+        "Latina Cono"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "48",
+      "brand": "Latina",
+      "model": "Volcano",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "latina volcano volcano dripper",
+      "aliases": [
+        "Latina Volcano",
+        "Latina Volcano"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "49",
+      "brand": "Loveramics",
+      "model": "Loveramics",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "loveramics loveramics brewers (3 flow types)",
+      "aliases": [
+        "Loveramics",
+        "Loveramics Loveramics"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "50",
+      "brand": "Melitta",
+      "model": "Melitta",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "melitta melitta aromaboy / 1x2 trapezoid",
+      "aliases": [
+        "Melitta",
+        "Melitta Melitta"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "51",
+      "brand": "MHW-3Bomber",
+      "model": "Elf",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "mhw-3bomber elf elf dripper",
+      "aliases": [
+        "MHW-3Bomber Elf",
+        "MHW-3Bomber Elf"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "52",
+      "brand": "Orea",
+      "model": "V3 / V4",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "search_text": "orea v3 / v4 flat bottom brewer",
+      "aliases": [
+        "Orea V3 / V4",
+        "Orea V3 / V4"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "53",
+      "brand": "Origami",
+      "model": "Dripper (S/M)",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "search_text": "origami dripper (s/m) folded cone dripper",
+      "aliases": [
+        "Origami Dripper (S/M)",
+        "Origami Dripper (S/M)"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "54",
+      "brand": "Suji",
+      "model": "V60 Dripper",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "suji v60 dripper pourover dripper",
+      "aliases": [
+        "Suji V60 Dripper",
+        "Suji V60 Dripper"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "55",
+      "brand": "Suji",
+      "model": "Wave Dripper",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "search_text": "suji wave dripper wave dripper",
+      "aliases": [
+        "Suji Wave Dripper",
+        "Suji Wave Dripper"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "56",
+      "brand": "The Gabi",
+      "model": "Master A/B",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "the gabi master a/b master a/b dripper",
+      "aliases": [
+        "The Gabi Master A/B",
+        "The Gabi Master A/B"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "57",
+      "brand": "Timemore",
+      "model": "B75",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "timemore b75 b75 flat bottom",
+      "aliases": [
+        "Timemore B75",
+        "Timemore B75"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "58",
+      "brand": "Timemore",
+      "model": "Crystal Eye",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "timemore crystal eye crystal eye v60",
+      "aliases": [
+        "Timemore Crystal Eye",
+        "Timemore Crystal Eye"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "59",
+      "brand": "Torch",
+      "model": "Mountain",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "torch mountain mountain dripper",
+      "aliases": [
+        "Torch Mountain",
+        "Torch Mountain"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "60",
+      "brand": "No Brand",
+      "model": "Vietnam Drip",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "search_text": "no brand vietnam drip gravity insert dripper",
+      "aliases": [
+        "Vietnam Drip",
+        "No Brand Vietnam Drip"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "april-hybrid-brewer",
+      "brand": "April",
+      "model": "Hybrid Brewer",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "high",
+      "search_text": "april hybrid brewer hybrid flat bottom brewer",
+      "aliases": [
+        "April Hybrid Brewer",
+        "April Hybrid Brewer"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "fellow-stagg-xf-dripper",
+      "brand": "Fellow",
+      "model": "Stagg [XF] Dripper",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "high",
+      "search_text": "fellow stagg [xf] dripper pour-over set / flat bottom dripper",
+      "aliases": [
+        "Fellow Stagg [XF] Dripper",
+        "Fellow Stagg [XF] Dripper"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "hario-pegasus",
+      "brand": "Hario",
+      "model": "Pegasus",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "hario pegasus trapezoid dripper",
+      "aliases": [
+        "Hario Pegasus",
+        "Hario Pegasus"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "nextlevel-pulsar",
+      "brand": "NextLevel",
+      "model": "Pulsar",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "high",
+      "search_text": "nextlevel pulsar no-bypass hybrid brewer",
+      "aliases": [
+        "NextLevel Pulsar",
+        "NextLevel Pulsar"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "origami-dripper-air-s",
+      "brand": "ORIGAMI",
+      "model": "Dripper Air S",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "high",
+      "search_text": "origami dripper air s air resin cone dripper",
+      "aliases": [
+        "ORIGAMI Dripper Air S",
+        "ORIGAMI Dripper Air S"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "tricolate-brewer",
+      "brand": "Tricolate",
+      "model": "Brewer",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "publish_state": "published",
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "search_text": "tricolate brewer no-bypass flat bottom brewer",
+      "aliases": [
+        "Tricolate Brewer",
+        "Tricolate Brewer"
+      ],
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    }
+  ]
+}

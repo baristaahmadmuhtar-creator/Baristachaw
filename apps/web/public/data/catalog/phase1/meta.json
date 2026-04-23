@@ -1,0 +1,13 @@
+{
+  "version": "2026.03.10-asean-first-phase1",
+  "generated_at": "2026-04-07T07:33:40.051Z",
+  "counts": {
+    "waters_total": 106,
+    "waters_published": 80,
+    "waters_brew_ready": 80,
+    "drippers_total": 36,
+    "drippers_published": 36,
+    "grinders_total": 53,
+    "grinders_published": 33
+  }
+}

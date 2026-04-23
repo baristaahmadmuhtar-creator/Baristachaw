@@ -1,0 +1,269 @@
+{
+  "catalogVersion": "2026.03.09-ai-brew-v1",
+  "items": [
+    {
+      "id": 31,
+      "name": "April Brewer",
+      "brand": "April",
+      "type": "Flat Bottom Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 32,
+      "name": "Blue Bottle Dripper",
+      "brand": "Blue Bottle",
+      "type": "Flat Bottom Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 33,
+      "name": "Brewista Gem Series",
+      "brand": "Brewista",
+      "type": "Gem Series Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 34,
+      "name": "Brewista Tornado",
+      "brand": "Brewista",
+      "type": "Tornado Duo Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 35,
+      "name": "Cafec Deep 27",
+      "brand": "Cafec",
+      "type": "Deep 27 Flower Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 36,
+      "name": "Cafec Flower Dripper",
+      "brand": "Cafec",
+      "type": "Flower Dripper (Cone)",
+      "source": "user_dataset"
+    },
+    {
+      "id": 37,
+      "name": "Chemex",
+      "brand": "Chemex",
+      "type": "Pour-over Glass Coffeemaker",
+      "source": "user_dataset"
+    },
+    {
+      "id": 38,
+      "name": "Clever Dripper",
+      "brand": "Clever",
+      "type": "Immersion Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 39,
+      "name": "Fellow Stagg [X]",
+      "brand": "Fellow",
+      "type": "Stagg [X] Flat Bottom",
+      "source": "user_dataset"
+    },
+    {
+      "id": 40,
+      "name": "Hario Mugen",
+      "brand": "Hario",
+      "type": "V60 Mugen (One Pour)",
+      "source": "user_dataset"
+    },
+    {
+      "id": 41,
+      "name": "Hario Switch",
+      "brand": "Hario",
+      "type": "Immersion Switch",
+      "source": "user_dataset"
+    },
+    {
+      "id": 42,
+      "name": "Hario V60",
+      "brand": "Hario",
+      "type": "V60 Plastic/Ceramic/Glass",
+      "source": "user_dataset"
+    },
+    {
+      "id": 43,
+      "name": "Hero Variable Dripper",
+      "brand": "Hero",
+      "type": "Variable Flow Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 44,
+      "name": "Kalita 102",
+      "brand": "Kalita",
+      "type": "Trapezoid Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 45,
+      "name": "Kalita Wave 155 / 185",
+      "brand": "Kalita",
+      "type": "Wave Flat Bottom",
+      "source": "user_dataset"
+    },
+    {
+      "id": 46,
+      "name": "Kono Meimon",
+      "brand": "Kono",
+      "type": "Meimon Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 47,
+      "name": "Latina Cono",
+      "brand": "Latina",
+      "type": "Cono Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 48,
+      "name": "Latina Volcano",
+      "brand": "Latina",
+      "type": "Volcano Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 49,
+      "name": "Loveramics",
+      "brand": "Loveramics",
+      "type": "Brewers (3 Flow Types)",
+      "source": "user_dataset"
+    },
+    {
+      "id": 50,
+      "name": "Melitta",
+      "brand": "Melitta",
+      "type": "Aromaboy / 1x2 Trapezoid",
+      "source": "user_dataset"
+    },
+    {
+      "id": 51,
+      "name": "MHW-3Bomber Elf",
+      "brand": "MHW-3Bomber",
+      "type": "Elf Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 52,
+      "name": "Orea V3 / V4",
+      "brand": "Orea",
+      "type": "Flat Bottom Brewer",
+      "source": "user_dataset"
+    },
+    {
+      "id": 53,
+      "name": "Origami Dripper (S/M)",
+      "brand": "Origami",
+      "type": "Folded Cone Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 54,
+      "name": "Suji V60 Dripper",
+      "brand": "Suji",
+      "type": "Pourover Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 55,
+      "name": "Suji Wave Dripper",
+      "brand": "Suji",
+      "type": "Wave Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 56,
+      "name": "The Gabi Master A/B",
+      "brand": "The Gabi",
+      "type": "Master A/B Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 57,
+      "name": "Timemore B75",
+      "brand": "Timemore",
+      "type": "B75 Flat Bottom",
+      "source": "user_dataset"
+    },
+    {
+      "id": 58,
+      "name": "Timemore Crystal Eye",
+      "brand": "Timemore",
+      "type": "Crystal Eye V60",
+      "source": "user_dataset"
+    },
+    {
+      "id": 59,
+      "name": "Torch Mountain",
+      "brand": "Torch",
+      "type": "Mountain Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": 60,
+      "name": "Vietnam Drip",
+      "brand": "No Brand",
+      "type": "Gravity Insert Dripper",
+      "source": "user_dataset"
+    },
+    {
+      "id": "april-hybrid-brewer",
+      "name": "April Hybrid Brewer",
+      "brand": "April",
+      "type": "Hybrid Flat Bottom Brewer",
+      "source": "official_2026",
+      "sourceUrl": "https://www.aprilcoffeeroasters.com/products/april-hybrid-brewer",
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "fellow-stagg-xf-dripper",
+      "name": "Fellow Stagg [XF] Dripper",
+      "brand": "Fellow",
+      "type": "Pour-Over Set / Flat Bottom Dripper",
+      "source": "official_2026",
+      "sourceUrl": "https://fellowproducts.com/products/stagg-xf-pour-over-set/",
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "hario-pegasus",
+      "name": "Hario Pegasus",
+      "brand": "Hario",
+      "type": "Trapezoid Dripper",
+      "source": "official_2026",
+      "sourceUrl": "https://www.hario-europe.com/pages/v60-recipes",
+      "catalogVersion": "2026.03.11-ai-brew-v1.2"
+    },
+    {
+      "id": "nextlevel-pulsar",
+      "name": "NextLevel Pulsar",
+      "brand": "NextLevel",
+      "type": "No-Bypass Hybrid Brewer",
+      "source": "official_2026",
+      "sourceUrl": "https://nextlevelbrewer.com/products/pulsar-brewer",
+      "catalogVersion": "2026.03.11-ai-brew-v1.2"
+    },
+    {
+      "id": "origami-dripper-air-s",
+      "name": "ORIGAMI Dripper Air S",
+      "brand": "ORIGAMI",
+      "type": "Air Resin Cone Dripper",
+      "source": "official_2026",
+      "sourceUrl": "https://origami-kai.com/en/products/origami_dripperair_s",
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "tricolate-brewer",
+      "name": "Tricolate Brewer",
+      "brand": "Tricolate",
+      "type": "No-Bypass Flat Bottom Brewer",
+      "source": "official_2026",
+      "sourceUrl": "https://tricolate.com/",
+      "catalogVersion": "2026.03.11-ai-brew-v1.3"
+    }
+  ]
+}

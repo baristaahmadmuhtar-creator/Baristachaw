@@ -1,0 +1,108 @@
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Loader2, CheckCircle, AlertCircle, LogIn } from 'lucide-react';
+import { useAuthModal } from '../context/AuthModalContext';
+import { useGlobalState } from '../context/GlobalState';
+
+interface AuthScreenProps {
+  onLogin: () => void;
+}
+
+export function AuthScreen({ onLogin }: AuthScreenProps) {
+  const { t } = useGlobalState();
+  const { isAuthenticated, authBusy, authError, openAuthModal } = useAuthModal();
+  const [success, setSuccess] = useState('');
+  const brandInitials = (t.chatBrandName || '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || 'BC';
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    setSuccess(t.authSignedInSuccess);
+    const timeout = window.setTimeout(() => onLogin(), 300);
+    return () => window.clearTimeout(timeout);
+  }, [isAuthenticated, onLogin, t.authSignedInSuccess]);
+
+  return (
+    <div
+      className="flex items-center justify-center p-4 sm:p-6"
+      style={{
+        minHeight: 'var(--app-vh)',
+        paddingTop: 'max(1rem, calc(var(--safe-top, 0px) + 0.5rem))',
+        paddingBottom: 'max(1rem, calc(var(--bottom-safe-capped, 0px) + 0.5rem))',
+        paddingLeft: 'max(1rem, var(--safe-left, 0px))',
+        paddingRight: 'max(1rem, var(--safe-right, 0px))',
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+        className="w-full max-w-md"
+      >
+        <div className="text-center mb-10">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+            className="w-20 h-20 rounded-[1.5rem] bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto mb-5 shadow-[0_8px_32px_rgba(0,122,255,0.3)]"
+          >
+            <span className="text-3xl font-black text-white">{brandInitials}</span>
+          </motion.div>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">{t.chatBrandName}</h1>
+          <p className="text-secondary text-base">{t.authProtectedSubtitle}</p>
+        </div>
+
+        <AnimatePresence>
+          {authError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3"
+            >
+              <AlertCircle className="text-red-500 shrink-0" size={18} />
+              <span className="text-sm text-red-600 dark:text-red-400">{authError}</span>
+            </motion.div>
+          )}
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-4 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3"
+            >
+              <CheckCircle className="text-emerald-500 shrink-0" size={18} />
+              <span className="text-sm text-emerald-600 dark:text-emerald-400">{success}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="glass-card p-8">
+          <button
+            onClick={() => openAuthModal({ source: 'auth_screen' })}
+            disabled={authBusy}
+            className="w-full glass-button-primary py-4 px-6 flex items-center justify-center gap-3 text-base"
+          >
+            {authBusy ? (
+              <>
+                <Loader2 className="animate-spin" size={20} />
+                {t.opening}
+              </>
+            ) : (
+              <>
+                <LogIn size={18} />
+                {t.continueWithGoogle}
+              </>
+            )}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+

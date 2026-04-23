@@ -1,0 +1,260 @@
+{
+  "catalogVersion": "2026.07.0-ai-brew-v3",
+  "items": [
+    {
+      "id": "aqua-id",
+      "label": "Aqua",
+      "shortLabel": "Aqua",
+      "subtitle": "Indonesia · mass market",
+      "country": "Indonesia",
+      "markets": ["id"],
+      "searchText": "aqua indonesia bottled water mineral water",
+      "description": "Widely used bottled water in Indonesia. Full brew chemistry is not published in the source used here.",
+      "notes": [
+        "Brand preserved for provenance only.",
+        "Enter minerals manually before generating."
+      ],
+      "presetStatus": "manual_required",
+      "still": true,
+      "recommendedForFilter": true,
+      "chemistry": {},
+      "source": "official_brand_listing",
+      "sourceUrls": [
+        "https://www.aqua.co.id/en"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.07.0-ai-brew-v3"
+    },
+    {
+      "id": "le-minerale-id",
+      "label": "Le Minerale",
+      "shortLabel": "Le Minerale",
+      "subtitle": "Indonesia · mass market",
+      "country": "Indonesia",
+      "markets": ["id"],
+      "searchText": "le minerale indonesia bottled water mineral water",
+      "description": "Popular Indonesian bottled water. The official source confirms mineral composition exists but does not publish a full brewing-usable panel here.",
+      "notes": [
+        "Brand preserved for provenance only.",
+        "Enter minerals manually before generating."
+      ],
+      "presetStatus": "manual_required",
+      "still": true,
+      "recommendedForFilter": true,
+      "chemistry": {},
+      "source": "official_brand_article",
+      "sourceUrls": [
+        "https://www.leminerale.com/en/news/Bikin-Airnya-Sehat-dan-Berkualitas-Ini-Rahasia-Produksi-Le-Minerale-"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.07.0-ai-brew-v3"
+    },
+    {
+      "id": "evian-sg",
+      "label": "Evian",
+      "shortLabel": "Evian",
+      "subtitle": "France · Singapore specialty/import",
+      "country": "France",
+      "markets": ["sg"],
+      "searchText": "evian singapore filter coffee france mineral water",
+      "description": "Official composition is complete enough to autofill brew minerals.",
+      "notes": [
+        "Autofill uses published dissolved solids plus ion-derived hardness and alkalinity.",
+        "This profile is much harder and more buffered than common brew-water targets."
+      ],
+      "presetStatus": "autofill",
+      "still": true,
+      "recommendedForFilter": true,
+      "chemistry": {
+        "tdsPpm": 345,
+        "calciumMgL": 80,
+        "magnesiumMgL": 26,
+        "bicarbonateMgL": 360
+      },
+      "source": "official_water_attributes",
+      "sourceUrls": [
+        "https://www.evian.com/en_int/water-attributes",
+        "https://www.evian.com/en_int/quality-report"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.07.0-ai-brew-v3"
+    },
+    {
+      "id": "fiji-sg",
+      "label": "FIJI",
+      "shortLabel": "FIJI",
+      "subtitle": "Fiji · Singapore specialty/import",
+      "country": "Fiji",
+      "markets": ["sg"],
+      "searchText": "fiji singapore filter coffee artesian water",
+      "description": "Official quality report publishes enough chemistry to autofill brew minerals.",
+      "notes": [
+        "Hardness is derived from published calcium and magnesium.",
+        "Alkalinity uses the direct total alkalinity value from the official report."
+      ],
+      "presetStatus": "autofill",
+      "still": true,
+      "recommendedForFilter": true,
+      "chemistry": {
+        "tdsPpm": 230,
+        "alkalinityPpm": 125,
+        "calciumMgL": 18,
+        "magnesiumMgL": 15
+      },
+      "source": "official_quality_report",
+      "sourceUrls": [
+        "https://fijiwater.com/pages/store-locator?store-page=water-quality-report",
+        "https://cdn.shopify.com/s/files/1/0286/6052/files/Fiji_Water_2023_Water_Quality_Report.pdf?v=1706305193"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.07.0-ai-brew-v3"
+    },
+    {
+      "id": "acqua-panna-sg",
+      "label": "Acqua Panna",
+      "shortLabel": "Acqua Panna",
+      "subtitle": "Italy · Singapore specialty/import",
+      "country": "Italy",
+      "markets": ["sg"],
+      "searchText": "acqua panna singapore filter coffee italy mineral water",
+      "description": "Official composition is complete enough to autofill brew minerals.",
+      "notes": [
+        "Autofill uses published dry residue plus ion-derived hardness and alkalinity."
+      ],
+      "presetStatus": "autofill",
+      "still": true,
+      "recommendedForFilter": true,
+      "chemistry": {
+        "tdsPpm": 188,
+        "calciumMgL": 32.1,
+        "magnesiumMgL": 6.5,
+        "bicarbonateMgL": 106
+      },
+      "source": "official_product_page",
+      "sourceUrls": [
+        "https://www.acquapanna.com/us/eng/products/plastic-bottles/1l"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.07.0-ai-brew-v3"
+    },
+    {
+      "id": "polar-sg",
+      "label": "Polar",
+      "shortLabel": "Polar",
+      "subtitle": "Malaysia · Singapore market",
+      "country": "Malaysia",
+      "markets": ["sg"],
+      "searchText": "polar singapore mineral water malaysia",
+      "description": "Published label data is partial and does not include enough chemistry to autofill honestly.",
+      "notes": [
+        "Partial ion values are kept for reference only.",
+        "Enter minerals manually before generating."
+      ],
+      "presetStatus": "manual_required",
+      "still": true,
+      "recommendedForFilter": true,
+      "chemistry": {
+        "calciumMgL": 2.4,
+        "magnesiumMgL": 0.9,
+        "bicarbonateMgL": 25
+      },
+      "source": "retailer_label_copy",
+      "sourceUrls": [
+        "https://omni.fairprice.com.sg/product/polar-natural-mineral-bottle-water-10932741",
+        "https://www.fairprice.com.sg/water/mineral-water"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.07.0-ai-brew-v3"
+    },
+    {
+      "id": "pure-life-sg",
+      "label": "Pure Life",
+      "shortLabel": "Pure Life",
+      "subtitle": "Global · Singapore market",
+      "country": "Global",
+      "markets": ["sg"],
+      "searchText": "pure life singapore bottled water nestle",
+      "description": "Brand is kept in the catalog, but a matching source-backed mineral panel for this market path is not loaded here.",
+      "notes": [
+        "Brand preserved for provenance only.",
+        "Enter minerals manually before generating."
+      ],
+      "presetStatus": "info_only",
+      "still": true,
+      "recommendedForFilter": true,
+      "chemistry": {},
+      "source": "official_brand_faq",
+      "sourceUrls": [
+        "https://www.nestlepurelife.com/uk/about-us/frequently-asked-questions"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "low",
+      "catalogVersion": "2026.07.0-ai-brew-v3"
+    },
+    {
+      "id": "suci-bn",
+      "label": "Suci",
+      "shortLabel": "Suci",
+      "subtitle": "Brunei · distilled drinking water",
+      "country": "Brunei",
+      "markets": ["bn"],
+      "searchText": "suci brunei distilled drinking water",
+      "description": "Common Brunei distilled water reference. Not recommended as-is for filter brewing.",
+      "notes": [
+        "Distilled water is kept as a market reference only.",
+        "Use manual mineral input or remineralization before brewing."
+      ],
+      "presetStatus": "manual_required",
+      "still": true,
+      "recommendedForFilter": false,
+      "chemistry": {
+        "tdsPpm": 0
+      },
+      "source": "official_brand_listing",
+      "sourceUrls": [
+        "https://tlt-ent.com/product/suci-drinking-water-1-5l/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.07.0-ai-brew-v3"
+    }
+  ]
+}

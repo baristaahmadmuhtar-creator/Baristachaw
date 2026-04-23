@@ -1,0 +1,165 @@
+{
+  "catalogVersion": "2026.03.09-ai-brew-v1",
+  "items": [
+    {
+      "methodFamily": "v60",
+      "brewMode": "hot",
+      "bloomSeconds": 30,
+      "drawdownSeconds": 180,
+      "note": "Cone template tuned for high clarity and even drawdown.",
+      "catalogVersion": "2026.03.09-ai-brew-v1",
+      "steps": [
+        { "id": "bloom", "label": "Bloom", "share": 0.18, "startSeconds": 0, "note": "Saturate every dry pocket and let the bed dome slightly." },
+        { "id": "main", "label": "Main Pour", "share": 0.37, "startSeconds": 35, "note": "Pour in a steady spiral to maintain a centered bed." },
+        { "id": "finish", "label": "Finish Pour", "share": 0.45, "startSeconds": 80, "note": "Finish cleanly, then let the brew settle into drawdown." }
+      ]
+    },
+    {
+      "methodFamily": "v60",
+      "brewMode": "iced",
+      "bloomSeconds": 40,
+      "drawdownSeconds": 150,
+      "note": "Japanese iced variant using 60% hot water and 40% ice by total brew water.",
+      "catalogVersion": "2026.03.09-ai-brew-v1",
+      "steps": [
+        { "id": "bloom", "label": "Bloom", "share": 0.33, "startSeconds": 0, "note": "Use a full bloom to stabilize the fast iced extraction." },
+        { "id": "main", "label": "Second Pour", "share": 0.37, "startSeconds": 45, "note": "Keep the stream stable and centered to avoid over-agitation." },
+        { "id": "finish", "label": "Final Pour", "share": 0.3, "startSeconds": 90, "note": "Finish to the hot-water target, then serve straight over ice." }
+      ]
+    },
+    {
+      "methodFamily": "kalita_wave",
+      "brewMode": "hot",
+      "bloomSeconds": 35,
+      "drawdownSeconds": 195,
+      "note": "Flat-bottom template focused on broad sweetness and stable bed depth.",
+      "catalogVersion": "2026.03.09-ai-brew-v1",
+      "steps": [
+        { "id": "bloom", "label": "Bloom", "share": 0.2, "startSeconds": 0, "note": "Widen the bloom enough to wet the full bed." },
+        { "id": "pulse_1", "label": "Pulse One", "share": 0.3, "startSeconds": 40, "note": "Pulse evenly without chasing the filter walls." },
+        { "id": "pulse_2", "label": "Pulse Two", "share": 0.25, "startSeconds": 80, "note": "Let the bed flatten before the last pour." },
+        { "id": "finish", "label": "Finish Pour", "share": 0.25, "startSeconds": 120, "note": "Finish centrally so the bed stays level into drawdown." }
+      ]
+    },
+    {
+      "methodFamily": "kalita_wave",
+      "brewMode": "iced",
+      "bloomSeconds": 40,
+      "drawdownSeconds": 165,
+      "note": "Iced flat-bottom template to keep sweetness while preserving sparkle.",
+      "catalogVersion": "2026.03.09-ai-brew-v1",
+      "steps": [
+        { "id": "bloom", "label": "Bloom", "share": 0.32, "startSeconds": 0, "note": "Wet evenly and keep the filter walls clean." },
+        { "id": "pulse_1", "label": "Pulse One", "share": 0.38, "startSeconds": 45, "note": "Pulse with a controlled spiral, avoiding aggressive turbulence." },
+        { "id": "finish", "label": "Finish Pour", "share": 0.3, "startSeconds": 95, "note": "Finish to the hot-water target and chill immediately over ice." }
+      ]
+    },
+    {
+      "methodFamily": "chemex",
+      "brewMode": "hot",
+      "bloomSeconds": 40,
+      "drawdownSeconds": 240,
+      "note": "Chemex template accounting for the higher resistance paper and slower drain.",
+      "catalogVersion": "2026.03.09-ai-brew-v1",
+      "steps": [
+        { "id": "bloom", "label": "Bloom", "share": 0.16, "startSeconds": 0, "note": "Use enough water to fully swell the thicker paper-filter bed." },
+        { "id": "pour_1", "label": "First Main Pour", "share": 0.34, "startSeconds": 45, "note": "Build the first body of water without flooding the cone." },
+        { "id": "pour_2", "label": "Second Main Pour", "share": 0.25, "startSeconds": 100, "note": "Keep the kettle close and maintain a calm spiral." },
+        { "id": "finish", "label": "Finish Pour", "share": 0.25, "startSeconds": 150, "note": "Finish cleanly and let the paper drain without stirring." }
+      ]
+    },
+    {
+      "methodFamily": "chemex",
+      "brewMode": "iced",
+      "bloomSeconds": 45,
+      "drawdownSeconds": 205,
+      "note": "Chemex iced template emphasizing a controlled, lower-agitation brew bed.",
+      "catalogVersion": "2026.03.09-ai-brew-v1",
+      "steps": [
+        { "id": "bloom", "label": "Bloom", "share": 0.28, "startSeconds": 0, "note": "Give the thicker paper enough time to preheat and stabilize." },
+        { "id": "pour_1", "label": "First Main Pour", "share": 0.37, "startSeconds": 50, "note": "Pour steadily to avoid stalling the thick paper." },
+        { "id": "finish", "label": "Finish Pour", "share": 0.35, "startSeconds": 110, "note": "Finish to target and chill immediately over ice." }
+      ]
+    },
+    {
+      "methodFamily": "origami",
+      "brewMode": "hot",
+      "bloomSeconds": 30,
+      "drawdownSeconds": 180,
+      "note": "Origami template that keeps agility but stays close to cone-dripper clarity.",
+      "catalogVersion": "2026.03.09-ai-brew-v1",
+      "steps": [
+        { "id": "bloom", "label": "Bloom", "share": 0.18, "startSeconds": 0, "note": "Open the bed evenly before the first main pour." },
+        { "id": "main", "label": "Main Pour", "share": 0.34, "startSeconds": 35, "note": "Pour with moderate height to keep the bed active but controlled." },
+        { "id": "finish_1", "label": "Third Pour", "share": 0.24, "startSeconds": 75, "note": "Reset the bed level before finishing." },
+        { "id": "finish_2", "label": "Finish Pour", "share": 0.24, "startSeconds": 110, "note": "Finish centrally and let the filter do the cleanup." }
+      ]
+    },
+    {
+      "methodFamily": "origami",
+      "brewMode": "iced",
+      "bloomSeconds": 40,
+      "drawdownSeconds": 155,
+      "note": "Origami iced template with crisp aromatics and quick dilution control.",
+      "catalogVersion": "2026.03.09-ai-brew-v1",
+      "steps": [
+        { "id": "bloom", "label": "Bloom", "share": 0.32, "startSeconds": 0, "note": "Let the bed release gas before the larger pulses." },
+        { "id": "main", "label": "Main Pour", "share": 0.38, "startSeconds": 45, "note": "Use a smooth, narrow spiral to preserve brightness." },
+        { "id": "finish", "label": "Finish Pour", "share": 0.3, "startSeconds": 95, "note": "Finish and chill immediately over the measured ice dose." }
+      ]
+    },
+    {
+      "methodFamily": "april",
+      "brewMode": "hot",
+      "bloomSeconds": 30,
+      "drawdownSeconds": 165,
+      "note": "April-style lower agitation flat-bottom template with calm extraction pacing.",
+      "catalogVersion": "2026.03.09-ai-brew-v1",
+      "steps": [
+        { "id": "bloom", "label": "Bloom", "share": 0.19, "startSeconds": 0, "note": "Wet the bed quickly without stirring the slurry." },
+        { "id": "pulse_1", "label": "Second Pour", "share": 0.31, "startSeconds": 30, "note": "Pour centrally to keep the drawdown calm and even." },
+        { "id": "pulse_2", "label": "Third Pour", "share": 0.25, "startSeconds": 65, "note": "Keep the flow steady and the kettle close to the bed." },
+        { "id": "finish", "label": "Finish Pour", "share": 0.25, "startSeconds": 100, "note": "Finish with minimal agitation and allow the flat bed to settle." }
+      ]
+    },
+    {
+      "methodFamily": "april",
+      "brewMode": "iced",
+      "bloomSeconds": 35,
+      "drawdownSeconds": 150,
+      "note": "April-style iced template tuned for sweetness and clean dilution.",
+      "catalogVersion": "2026.03.09-ai-brew-v1",
+      "steps": [
+        { "id": "bloom", "label": "Bloom", "share": 0.33, "startSeconds": 0, "note": "Fully wet the bed, then let the gas release naturally." },
+        { "id": "pulse_1", "label": "Second Pour", "share": 0.37, "startSeconds": 40, "note": "Add the second pulse with the kettle kept low and centered." },
+        { "id": "finish", "label": "Finish Pour", "share": 0.3, "startSeconds": 85, "note": "Finish to target and pour onto the waiting ice immediately." }
+      ]
+    },
+    {
+      "methodFamily": "clever_dripper",
+      "brewMode": "hot",
+      "bloomSeconds": 0,
+      "drawdownSeconds": 180,
+      "note": "Immersion template using one full charge and a controlled release.",
+      "catalogVersion": "2026.03.09-ai-brew-v1",
+      "steps": [
+        { "id": "fill", "label": "Full Fill", "share": 1, "startSeconds": 0, "note": "Add the full brew water, stir lightly once, then steep." },
+        { "id": "stir", "label": "Steep", "share": 0, "startSeconds": 75, "note": "Let the slurry settle with the valve closed." },
+        { "id": "drawdown", "label": "Release Drawdown", "share": 0, "startSeconds": 135, "note": "Set the brewer on the server and let it draw down cleanly." }
+      ]
+    },
+    {
+      "methodFamily": "clever_dripper",
+      "brewMode": "iced",
+      "bloomSeconds": 0,
+      "drawdownSeconds": 150,
+      "note": "Immersion iced template using a shorter steep and a direct serve over ice.",
+      "catalogVersion": "2026.03.09-ai-brew-v1",
+      "steps": [
+        { "id": "fill", "label": "Full Fill", "share": 1, "startSeconds": 0, "note": "Add the full hot-water charge and stir once to break clumps." },
+        { "id": "steep", "label": "Steep", "share": 0, "startSeconds": 60, "note": "Hold the slurry quiet so the cup stays clean when chilled." },
+        { "id": "drawdown", "label": "Release Drawdown", "share": 0, "startSeconds": 110, "note": "Draw directly onto the measured ice for immediate chilling." }
+      ]
+    }
+  ]
+}

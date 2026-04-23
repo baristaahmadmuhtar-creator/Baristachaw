@@ -1,0 +1,4772 @@
+{
+  "catalogVersion": "2026.06.0-ai-brew-v2",
+  "items": [
+    {
+      "id": "profile_april_brewer_hot",
+      "label": "April Brewer Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "april-brewer"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -1,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": -20,
+      "grindBias": "coarser",
+      "note": "April profile recalibrated toward a tighter 240 ml service recipe with the simpler cadence often preferred behind the bar.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Charge evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Second Pour",
+          "share": 0.41,
+          "startSeconds": 30,
+          "note": "Pour to just past halfway with calm controlled circles."
+        },
+        {
+          "id": "pulse_3",
+          "label": "Final Pour",
+          "share": 0.4,
+          "startSeconds": 75,
+          "note": "Finish to target without aggressive agitation."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Let the bed finish draining and serve."
+        }
+      ],
+      "source": "april-official",
+      "sourceUrls": [
+        "https://www.aprilcoffeeroasters.com/pages/equipment"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_april_brewer_iced",
+      "label": "April Brewer Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "april-brewer"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.2,
+      "tempDeltaC": 0.6,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Iced April profile keeps pulse simplicity but tightens concentration over ice.",
+      "steps": [
+        {
+          "id": "pulse_1",
+          "label": "Pulse 1",
+          "share": 0.34,
+          "startSeconds": 0,
+          "note": "Charge evenly with a concentrated first pulse."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Pulse 2",
+          "share": 0.33,
+          "startSeconds": 45,
+          "note": "Keep agitation minimal."
+        },
+        {
+          "id": "pulse_3",
+          "label": "Pulse 3",
+          "share": 0.33,
+          "startSeconds": 88,
+          "note": "Finish to the hot-water target and chill immediately."
+        }
+      ],
+      "source": "april-curation",
+      "sourceUrls": [
+        "https://www.aprilcoffeeroasters.com/pages/equipment"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_april_hybrid_hot",
+      "label": "April Hybrid Brewer Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "april-hybrid-brewer"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": 0.25,
+      "tempDeltaC": -1,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "same",
+      "note": "Hybrid brewer stays close to April fundamentals while tightening the flow a little for travel-friendly stability.",
+      "steps": [
+        {
+          "id": "pulse_1",
+          "label": "Pulse 1",
+          "share": 0.34,
+          "startSeconds": 0,
+          "note": "Start with a calm even charge."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Pulse 2",
+          "share": 0.33,
+          "startSeconds": 42,
+          "note": "Repeat the pulse with the same height."
+        },
+        {
+          "id": "pulse_3",
+          "label": "Pulse 3",
+          "share": 0.33,
+          "startSeconds": 84,
+          "note": "Finish evenly and keep agitation low."
+        }
+      ],
+      "source": "april-official",
+      "sourceUrls": [
+        "https://www.aprilcoffeeroasters.com/products/april-hybrid-brewer"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_april_hybrid_iced",
+      "label": "April Hybrid Brewer Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "april-hybrid-brewer"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.3,
+      "tempDeltaC": 0.4,
+      "brewTimeDeltaSec": -20,
+      "grindBias": "finer",
+      "note": "Iced adaptation of April Hybrid Brewer Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "pulse_1",
+          "label": "Pulse 1",
+          "share": 0.34,
+          "startSeconds": 0,
+          "note": "Start with a calm even charge."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Pulse 2",
+          "share": 0.33,
+          "startSeconds": 42,
+          "note": "Repeat the pulse with the same height."
+        },
+        {
+          "id": "pulse_3",
+          "label": "Pulse 3",
+          "share": 0.33,
+          "startSeconds": 84,
+          "note": "Finish evenly and keep agitation low. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "april-official-iced-curated",
+      "sourceUrls": [
+        "https://www.aprilcoffeeroasters.com/products/april-hybrid-brewer"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_blue_bottle_hot",
+      "label": "Blue Bottle Dripper Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "blue-bottle-dripper"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.7,
+      "tempDeltaC": -0.6,
+      "brewTimeDeltaSec": -30,
+      "grindBias": "same",
+      "note": "Cafe-oriented flat-bottom profile recalibrated into a shorter, more repeatable service flow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even saturation and 30-second bloom."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with tidy circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target and keep the bed level."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown complete and serve."
+        }
+      ],
+      "source": "blue-bottle-curation",
+      "sourceUrls": [
+        "https://bluebottlecoffee.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_blue_bottle_iced",
+      "label": "Blue Bottle Dripper Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "blue-bottle-dripper"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.95,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": -40,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Blue Bottle Dripper Hot tuned for concentrated hot-phase extraction before chilling.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even saturation and 30-second bloom."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with tidy circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target and keep the bed level."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown complete and serve. Keep output concentrated before adding ice."
+        }
+      ],
+      "source": "blue-bottle-curation-iced-curated",
+      "sourceUrls": [
+        "https://bluebottlecoffee.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_brewista-gem-series_hot",
+      "label": "Brewista Gem Series Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "brewista-gem-series"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.8,
+      "tempDeltaC": -0.5,
+      "brewTimeDeltaSec": -25,
+      "grindBias": "coarser",
+      "note": "Curated exact profile mapped from Fast Flat-Bottom Family Hot behavior for Brewista Gem Series; tuned for deterministic service workflow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even bloom for 30 seconds."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target without over-agitating."
+        },
+        {
+          "id": "pulse_3",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target with the same calm cadence."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown complete and serve."
+        }
+      ],
+      "source": "catalog-curated-2026",
+      "sourceUrls": [
+        "https://www.aprilcoffeeroasters.com/pages/equipment"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_brewista-gem-series_iced",
+      "label": "Brewista Gem Series Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "brewista-gem-series"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.3,
+      "tempDeltaC": 0.4,
+      "brewTimeDeltaSec": -20,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Brewista Gem Series Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even bloom for 30 seconds."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target without over-agitating."
+        },
+        {
+          "id": "pulse_3",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target with the same calm cadence."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown complete and serve. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "catalog-curated-2026-iced-curated",
+      "sourceUrls": [
+        "https://www.aprilcoffeeroasters.com/pages/equipment"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_brewista-tornado_hot",
+      "label": "Brewista Tornado Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "brewista-tornado"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.8,
+      "tempDeltaC": -0.5,
+      "brewTimeDeltaSec": -25,
+      "grindBias": "coarser",
+      "note": "Curated exact profile mapped from Fast Flat-Bottom Family Hot behavior for Brewista Tornado; tuned for deterministic service workflow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even bloom for 30 seconds."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target without over-agitating."
+        },
+        {
+          "id": "pulse_3",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target with the same calm cadence."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown complete and serve."
+        }
+      ],
+      "source": "catalog-curated-2026",
+      "sourceUrls": [
+        "https://www.aprilcoffeeroasters.com/pages/equipment"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_brewista-tornado_iced",
+      "label": "Brewista Tornado Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "brewista-tornado"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.3,
+      "tempDeltaC": 0.4,
+      "brewTimeDeltaSec": -20,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Brewista Tornado Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even bloom for 30 seconds."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target without over-agitating."
+        },
+        {
+          "id": "pulse_3",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target with the same calm cadence."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown complete and serve. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "catalog-curated-2026-iced-curated",
+      "sourceUrls": [
+        "https://www.aprilcoffeeroasters.com/pages/equipment"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_cafec_deep27_hot",
+      "label": "Cafec Deep 27 Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "cafec-deep-27"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0.2,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": 20,
+      "grindBias": "coarser",
+      "note": "Deeper cone geometry usually wants a slightly looser grind and calmer pour pacing.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.18,
+          "startSeconds": 0,
+          "note": "Fully saturate the deeper bed."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.32,
+          "startSeconds": 40,
+          "note": "Build the slurry without over-flooding."
+        },
+        {
+          "id": "mid",
+          "label": "Mid Pour",
+          "share": 0.22,
+          "startSeconds": 92,
+          "note": "Keep pour height moderate."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.28,
+          "startSeconds": 148,
+          "note": "Finish gently and let the cone drain completely."
+        }
+      ],
+      "source": "cafec-curation",
+      "sourceUrls": [
+        "https://cafec-jp.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_cafec_deep27_iced",
+      "label": "Cafec Deep 27 Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "cafec-deep-27"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.6,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Cafec Deep 27 Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.18,
+          "startSeconds": 0,
+          "note": "Fully saturate the deeper bed."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.32,
+          "startSeconds": 40,
+          "note": "Build the slurry without over-flooding."
+        },
+        {
+          "id": "mid",
+          "label": "Mid Pour",
+          "share": 0.22,
+          "startSeconds": 92,
+          "note": "Keep pour height moderate."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.28,
+          "startSeconds": 148,
+          "note": "Finish gently and let the cone drain completely. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "cafec-curation-iced-curated",
+      "sourceUrls": [
+        "https://cafec-jp.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_cafec_flower_hot",
+      "label": "Cafec Flower Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "cafec-flower-dripper"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 5,
+      "grindBias": "same",
+      "note": "Cone profile tuned around CAFEC-style flow stability and paper pairing.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.18,
+          "startSeconds": 0,
+          "note": "Saturate fully."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.52,
+          "startSeconds": 35,
+          "note": "Use controlled spiral pulses."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.3,
+          "startSeconds": 115,
+          "note": "Finish cleanly and let the rib structure do the rest."
+        }
+      ],
+      "source": "cafec-curation",
+      "sourceUrls": [
+        "https://cafec-jp.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_cafec_flower_iced",
+      "label": "Cafec Flower Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "cafec-flower-dripper"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.6,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Cafec Flower Hot tuned for concentrated hot-phase extraction before chilling.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.18,
+          "startSeconds": 0,
+          "note": "Saturate fully."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.52,
+          "startSeconds": 35,
+          "note": "Use controlled spiral pulses."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.3,
+          "startSeconds": 115,
+          "note": "Finish cleanly and let the rib structure do the rest. Keep output concentrated before adding ice."
+        }
+      ],
+      "source": "cafec-curation-iced-curated",
+      "sourceUrls": [
+        "https://cafec-jp.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_chemex_hot",
+      "label": "Chemex Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "chemex"
+      ],
+      "methodFamily": "chemex",
+      "brewMethodId": "chemex",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.5,
+      "tempDeltaC": -1.2,
+      "brewTimeDeltaSec": -120,
+      "grindBias": "coarser",
+      "note": "Chemex profile shortened to a cleaner service rhythm while still respecting the thicker paper bed.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet all grounds fully and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.39,
+          "startSeconds": 30,
+          "note": "Pour to around 60% of total water with steady flow."
+        },
+        {
+          "id": "mid",
+          "label": "Final Pour",
+          "share": 0.42,
+          "startSeconds": 75,
+          "note": "Finish to target while keeping the bed stable."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let the thicker filter finish draining before service."
+        }
+      ],
+      "source": "chemex-curation",
+      "sourceUrls": [
+        "https://chemexcoffeemaker.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_chemex_iced",
+      "label": "Chemex Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "chemex"
+      ],
+      "methodFamily": "chemex",
+      "brewMethodId": "chemex",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.35,
+      "tempDeltaC": 0.5,
+      "brewTimeDeltaSec": -15,
+      "grindBias": "finer",
+      "note": "Iced Chemex profile with tighter grind to offset paper resistance and ice dilution.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.22,
+          "startSeconds": 0,
+          "note": "Compact bloom."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.36,
+          "startSeconds": 45,
+          "note": "Build concentration without over-flooding."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.42,
+          "startSeconds": 118,
+          "note": "Finish to the hot-water target and chill immediately over ice."
+        }
+      ],
+      "source": "chemex-curation",
+      "sourceUrls": [
+        "https://chemexcoffeemaker.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_clever_dripper_hot",
+      "label": "Clever Dripper Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "clever-dripper"
+      ],
+      "methodFamily": "clever_dripper",
+      "brewMethodId": "clever_dripper",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "ratioDelta": 0.45,
+      "tempDeltaC": -1,
+      "brewTimeDeltaSec": -25,
+      "grindBias": "coarser",
+      "note": "Immersion-release profile reshaped into a simpler multi-stage SOP with a clearer drain point.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet the bed evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "pour_1",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target water with gentle circles."
+        },
+        {
+          "id": "pour_2",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Top up to target before opening the valve."
+        },
+        {
+          "id": "release",
+          "label": "Open Valve",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Release and let the dripper drain cleanly."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Serve once drawdown is complete."
+        }
+      ],
+      "source": "clever-curation",
+      "sourceUrls": [
+        "https://www.cleverbrewing.coffee/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_clever_dripper_iced",
+      "label": "Clever Dripper Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "clever-dripper"
+      ],
+      "methodFamily": "clever_dripper",
+      "brewMethodId": "clever_dripper",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "ratioDelta": -0.22,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 10,
+      "grindBias": "same",
+      "note": "Iced immersion profile designed to land sweet and clean instead of spiky.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge and Release",
+          "share": 1,
+          "startSeconds": 0,
+          "note": "Charge full hot-water target, steep briefly, then release directly over ice."
+        }
+      ],
+      "source": "clever-curation",
+      "sourceUrls": [
+        "https://www.cleverbrewing.coffee/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_april_hot",
+      "label": "Fast Flat-Bottom Family Hot",
+      "brewMode": "hot",
+      "dripperIds": [],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": false,
+      "filterStyle": "flat",
+      "ratioDelta": -0.8,
+      "tempDeltaC": -0.5,
+      "brewTimeDeltaSec": -25,
+      "grindBias": "coarser",
+      "note": "Family fallback for fast flat-bottom brewers aligned to a tighter 240 ml service cadence.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even bloom for 30 seconds."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target without over-agitating."
+        },
+        {
+          "id": "pulse_3",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target with the same calm cadence."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown complete and serve."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://orea.uk/guides",
+        "https://www.aprilcoffeeroasters.com/pages/equipment"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_april_iced",
+      "label": "Fast Flat-Bottom Family Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": false,
+      "filterStyle": "flat",
+      "ratioDelta": -0.22,
+      "tempDeltaC": 0.5,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Family fallback for fast flat-bottom iced brewing.",
+      "steps": [
+        {
+          "id": "pulse_1",
+          "label": "Pulse 1",
+          "share": 0.34,
+          "startSeconds": 0,
+          "note": "Compact first pulse."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Pulse 2",
+          "share": 0.33,
+          "startSeconds": 42,
+          "note": "Repeat without excess agitation."
+        },
+        {
+          "id": "pulse_3",
+          "label": "Pulse 3",
+          "share": 0.33,
+          "startSeconds": 84,
+          "note": "Finish to the hot-water target and chill immediately."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://orea.uk/guides",
+        "https://www.aprilcoffeeroasters.com/pages/equipment"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_clever_hot",
+      "label": "Immersion Dripper Family Hot",
+      "brewMode": "hot",
+      "dripperIds": [],
+      "methodFamily": "clever_dripper",
+      "brewMethodId": "clever_dripper",
+      "exactMatch": false,
+      "filterStyle": "immersion",
+      "ratioDelta": 0.45,
+      "tempDeltaC": -1,
+      "brewTimeDeltaSec": -25,
+      "grindBias": "coarser",
+      "note": "Family fallback for immersion-release drippers with a clearer release step and shorter service rhythm.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "pour_1",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with gentle circles."
+        },
+        {
+          "id": "pour_2",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Top up to target before release."
+        },
+        {
+          "id": "release",
+          "label": "Open Valve",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Release and let the dripper drain cleanly."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Serve once drawdown is complete."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://www.cleverbrewing.coffee/"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_clever_iced",
+      "label": "Immersion Dripper Family Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [],
+      "methodFamily": "clever_dripper",
+      "brewMethodId": "clever_dripper",
+      "exactMatch": false,
+      "filterStyle": "immersion",
+      "ratioDelta": -0.2,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 10,
+      "grindBias": "same",
+      "note": "Family fallback for immersion-release drippers in iced mode.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge and Release",
+          "share": 1,
+          "startSeconds": 0,
+          "note": "Charge full hot-water target, steep briefly, and release over ice."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://www.cleverbrewing.coffee/"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_kalita_hot",
+      "label": "Flat-Bottom Family Hot",
+      "brewMode": "hot",
+      "dripperIds": [],
+      "methodFamily": "kalita_wave",
+      "brewMethodId": "kalita_wave",
+      "exactMatch": false,
+      "filterStyle": "flat",
+      "ratioDelta": 0,
+      "tempDeltaC": -1.2,
+      "brewTimeDeltaSec": -55,
+      "grindBias": "same",
+      "note": "Family fallback for flat-bottom brewers shifted toward a shorter SOP with clearer pulse landmarks.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even saturation and a 30-second bloom."
+        },
+        {
+          "id": "pulse_1",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target while keeping the bed flat."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Finish to target with low agitation."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Let drawdown complete and serve."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://www.kalita.co.jp/"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_kalita_iced",
+      "label": "Flat-Bottom Family Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [],
+      "methodFamily": "kalita_wave",
+      "brewMethodId": "kalita_wave",
+      "exactMatch": false,
+      "filterStyle": "flat",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.4,
+      "brewTimeDeltaSec": -8,
+      "grindBias": "finer",
+      "note": "Family fallback for flat-bottom iced brewers.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.22,
+          "startSeconds": 0,
+          "note": "Compact bloom."
+        },
+        {
+          "id": "pulse_1",
+          "label": "Pulse 1",
+          "share": 0.38,
+          "startSeconds": 40,
+          "note": "Keep the bed level."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.4,
+          "startSeconds": 88,
+          "note": "Finish to the hot-water target and chill immediately."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://www.kalita.co.jp/"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_kono_hot",
+      "label": "Low-Bypass Cone Family Hot",
+      "brewMode": "hot",
+      "dripperIds": [],
+      "methodFamily": "kono",
+      "brewMethodId": "v60",
+      "exactMatch": false,
+      "filterStyle": "cone",
+      "ratioDelta": -0.08,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 8,
+      "grindBias": "finer",
+      "note": "Family fallback for lower-bypass cone brewers such as Kono-style designs.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.18,
+          "startSeconds": 0,
+          "note": "Saturate evenly."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.52,
+          "startSeconds": 36,
+          "note": "Keep the pour compact and avoid edge washing."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.3,
+          "startSeconds": 112,
+          "note": "Finish with a calm steady flow."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://kono1973.com/"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_kono_iced",
+      "label": "Low-Bypass Cone Family Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [],
+      "methodFamily": "kono",
+      "brewMethodId": "v60",
+      "exactMatch": false,
+      "filterStyle": "cone",
+      "ratioDelta": -0.26,
+      "tempDeltaC": 0.5,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Family fallback for lower-bypass cone brewers in Japanese iced mode.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.22,
+          "startSeconds": 0,
+          "note": "Compact bloom and full saturation."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.36,
+          "startSeconds": 40,
+          "note": "Keep the pour narrow and centered to limit bypass."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.42,
+          "startSeconds": 90,
+          "note": "Finish to hot-water target and chill immediately."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://kono1973.com/"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_melitta_hot",
+      "label": "Trapezoid Family Hot",
+      "brewMode": "hot",
+      "dripperIds": [],
+      "methodFamily": "melitta",
+      "brewMethodId": "kalita_wave",
+      "exactMatch": false,
+      "filterStyle": "trapezoid",
+      "ratioDelta": 0,
+      "tempDeltaC": -1.8,
+      "brewTimeDeltaSec": -55,
+      "grindBias": "same",
+      "note": "Family fallback for trapezoid brewers tuned toward a quicker, easier service SOP.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Saturate fully and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with steady flow."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Finish to target while keeping the bed stable."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Let drawdown complete and serve."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://www.melitta.com/"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_melitta_iced",
+      "label": "Trapezoid Family Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [],
+      "methodFamily": "melitta",
+      "brewMethodId": "kalita_wave",
+      "exactMatch": false,
+      "filterStyle": "trapezoid",
+      "ratioDelta": -0.24,
+      "tempDeltaC": 0.4,
+      "brewTimeDeltaSec": -8,
+      "grindBias": "finer",
+      "note": "Family fallback for trapezoid brewers in Japanese iced mode.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.22,
+          "startSeconds": 0,
+          "note": "Compact bloom for controlled extraction."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.36,
+          "startSeconds": 40,
+          "note": "Keep a center-weighted pour to avoid bypass spikes."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.42,
+          "startSeconds": 92,
+          "note": "Finish to hot-water target, then chill over ice immediately."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://www.melitta.com/"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_origami_hot",
+      "label": "Origami Family Hot",
+      "brewMode": "hot",
+      "dripperIds": [],
+      "methodFamily": "origami",
+      "brewMethodId": "origami",
+      "exactMatch": false,
+      "filterStyle": "cone",
+      "ratioDelta": 0.15,
+      "tempDeltaC": -2.5,
+      "brewTimeDeltaSec": -45,
+      "grindBias": "same",
+      "note": "Family fallback for Origami-style brewers tuned toward a shorter, service-friendly cadence.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with gentle circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target while keeping the bed level."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://origami-kai.com/en/products/dripper"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_origami_iced",
+      "label": "Origami Family Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [],
+      "methodFamily": "origami",
+      "brewMethodId": "origami",
+      "exactMatch": false,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.5,
+      "brewTimeDeltaSec": -8,
+      "grindBias": "finer",
+      "note": "Family fallback for Origami-style iced brewing.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.22,
+          "startSeconds": 0,
+          "note": "Compact bloom."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.34,
+          "startSeconds": 40,
+          "note": "Keep the center of the bed active."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.44,
+          "startSeconds": 90,
+          "note": "Finish to the hot-water target."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://origami-kai.com/en/products/dripper"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_v60_hot",
+      "label": "Cone Family Hot",
+      "brewMode": "hot",
+      "dripperIds": [],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": false,
+      "filterStyle": "cone",
+      "ratioDelta": 0,
+      "tempDeltaC": -2.2,
+      "brewTimeDeltaSec": -40,
+      "grindBias": "same",
+      "note": "Family fallback for cone brewers calibrated toward a quicker service SOP.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_family_v60_iced",
+      "label": "Cone Family Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": false,
+      "filterStyle": "cone",
+      "ratioDelta": -0.28,
+      "tempDeltaC": 0.5,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Family fallback for cone brewers in Japanese iced mode.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.22,
+          "startSeconds": 0,
+          "note": "Compact bloom."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.36,
+          "startSeconds": 40,
+          "note": "Keep the center of the bed active."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.42,
+          "startSeconds": 90,
+          "note": "Finish to the hot-water target and chill immediately."
+        }
+      ],
+      "source": "fallback-family",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "fallback",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_hario_mugen_hot",
+      "label": "Hario Mugen Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "hario-mugen"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0,
+      "tempDeltaC": -2.3,
+      "brewTimeDeltaSec": -30,
+      "grindBias": "coarser",
+      "note": "Low-bypass Mugen profile reshaped into a simpler multi-pour SOP that matches fast service use better.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet all grounds evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "pour_1",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Build the slurry smoothly to most of the target volume."
+        },
+        {
+          "id": "pour_2",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Finish to target with a calm center-weighted pour."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve."
+        }
+      ],
+      "source": "hario-curation",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_hario_mugen_iced",
+      "label": "Hario Mugen Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "hario-mugen"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": -1.7,
+      "brewTimeDeltaSec": -40,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Hario Mugen Hot tuned for concentrated hot-phase extraction before chilling.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet all grounds evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "pour_1",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Build the slurry smoothly to most of the target volume."
+        },
+        {
+          "id": "pour_2",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Finish to target with a calm center-weighted pour."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve. Keep output concentrated before adding ice."
+        }
+      ],
+      "source": "hario-curation-iced-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_hario_pegasus_hot",
+      "label": "Hario Pegasus Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "hario-pegasus"
+      ],
+      "methodFamily": "melitta",
+      "brewMethodId": "kalita_wave",
+      "exactMatch": true,
+      "filterStyle": "trapezoid",
+      "ratioDelta": 0,
+      "tempDeltaC": -1.6,
+      "brewTimeDeltaSec": -48,
+      "grindBias": "same",
+      "note": "Trapezoid family profile tuned for practical home-service flow and stable drawdown.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.2,
+          "startSeconds": 0,
+          "note": "Saturate all grounds and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to roughly 70% target with steady center control."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.3,
+          "startSeconds": 92,
+          "note": "Top up to target with low agitation."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Let drawdown complete and serve."
+        }
+      ],
+      "source": "hario-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_hario_pegasus_iced",
+      "label": "Hario Pegasus Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "hario-pegasus"
+      ],
+      "methodFamily": "melitta",
+      "brewMethodId": "kalita_wave",
+      "exactMatch": true,
+      "filterStyle": "trapezoid",
+      "ratioDelta": -0.2,
+      "tempDeltaC": 0.3,
+      "brewTimeDeltaSec": -20,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Hario Pegasus Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.2,
+          "startSeconds": 0,
+          "note": "Saturate all grounds and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to roughly 70% target with steady center control."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.3,
+          "startSeconds": 92,
+          "note": "Top up to target with low agitation."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Let drawdown complete and serve. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "hario-curated-iced-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "specialty_common",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_hario_switch_hot",
+      "label": "Hario Switch Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "hario-switch"
+      ],
+      "methodFamily": "clever_dripper",
+      "brewMethodId": "clever_dripper",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "ratioDelta": 0.45,
+      "tempDeltaC": -2.2,
+      "brewTimeDeltaSec": -25,
+      "grindBias": "coarser",
+      "note": "Hybrid immersion profile shortened into a clearer service SOP with a defined release window.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Closed Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Valve closed. Wet all grounds evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "pour_1",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Still closed. Pour to most of the target while keeping turbulence gentle."
+        },
+        {
+          "id": "pour_2",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Top up to final brew water before release."
+        },
+        {
+          "id": "release",
+          "label": "Open Valve",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Open the valve and let the bed drain without extra stirring."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Serve once drawdown is complete."
+        }
+      ],
+      "source": "hario-curation",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_hario_switch_iced",
+      "label": "Hario Switch Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "hario-switch"
+      ],
+      "methodFamily": "clever_dripper",
+      "brewMethodId": "clever_dripper",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "ratioDelta": -0.22,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 12,
+      "grindBias": "same",
+      "note": "Immersion-assisted iced profile to keep sweetness from collapsing into sharpness.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge Closed",
+          "share": 1,
+          "startSeconds": 0,
+          "note": "Valve closed. Charge full hot-water target, stir once, steep briefly, then release over ice."
+        }
+      ],
+      "source": "hario-curation",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_hario_v60_hot",
+      "label": "Hario V60 Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "hario-v60"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0,
+      "tempDeltaC": -2.3,
+      "brewTimeDeltaSec": -42,
+      "grindBias": "same",
+      "note": "Service-friendly cone baseline tuned toward a shorter, easier SOP with clean drawdown timing.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet all grounds evenly and let bloom open for 30 seconds."
+        },
+        {
+          "id": "pour_1",
+          "label": "Second Pour",
+          "share": 0.4,
+          "startSeconds": 30,
+          "note": "Pour to roughly 60% of total water with calm centered circles."
+        },
+        {
+          "id": "pour_2",
+          "label": "Final Pour",
+          "share": 0.41,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown finish cleanly and serve."
+        }
+      ],
+      "source": "hario-official",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes",
+        "https://www.hario-europe.com/pages/hario-brewers-cup-rules"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_hario_v60_iced",
+      "label": "Hario V60 Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "hario-v60"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.35,
+      "tempDeltaC": 0.5,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Tighter hot-brew mass over ice, keeping the V60 drawdown controlled rather than rushing it.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.22,
+          "startSeconds": 0,
+          "note": "Fully saturate with a slightly concentrated bloom."
+        },
+        {
+          "id": "mid",
+          "label": "Center Pour",
+          "share": 0.34,
+          "startSeconds": 40,
+          "note": "Keep the pour centered to protect clarity."
+        },
+        {
+          "id": "finish",
+          "label": "Finish to Hot-Water Target",
+          "share": 0.44,
+          "startSeconds": 90,
+          "note": "Finish to target and serve over weighed ice immediately."
+        }
+      ],
+      "source": "hario-curated-iced",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_hero-variable-dripper_hot",
+      "label": "Hero Variable Dripper Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "hero-variable-dripper"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0,
+      "tempDeltaC": -2.2,
+      "brewTimeDeltaSec": -40,
+      "grindBias": "same",
+      "note": "Curated exact profile mapped from Cone Family Hot behavior for Hero Variable Dripper; tuned for deterministic service workflow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve."
+        }
+      ],
+      "source": "catalog-curated-2026",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_hero-variable-dripper_iced",
+      "label": "Hero Variable Dripper Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "hero-variable-dripper"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.6,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Hero Variable Dripper Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "catalog-curated-2026-iced-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_kalita_wave_hot",
+      "label": "Kalita Wave Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "kalita-wave-155-185"
+      ],
+      "methodFamily": "kalita_wave",
+      "brewMethodId": "kalita_wave",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": 0,
+      "tempDeltaC": -1.2,
+      "brewTimeDeltaSec": -55,
+      "grindBias": "same",
+      "note": "Flat-bottom pulse profile shortened into a steadier service recipe with clearer stage timing.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Saturate the bed evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "pulse_1",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target while keeping slurry height steady."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Finish to target with low agitation."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Let drawdown complete and serve."
+        }
+      ],
+      "source": "kalita-curation",
+      "sourceUrls": [
+        "https://www.kalita.co.jp/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_kalita_wave_iced",
+      "label": "Kalita Wave Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "kalita-wave-155-185"
+      ],
+      "methodFamily": "kalita_wave",
+      "brewMethodId": "kalita_wave",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.4,
+      "brewTimeDeltaSec": -8,
+      "grindBias": "finer",
+      "note": "Pulse-driven iced profile with slightly finer grind to preserve concentration over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.22,
+          "startSeconds": 0,
+          "note": "Compact bloom for concentration."
+        },
+        {
+          "id": "pulse_1",
+          "label": "Pulse 1",
+          "share": 0.34,
+          "startSeconds": 40,
+          "note": "Control slurry height and keep bed even."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.44,
+          "startSeconds": 88,
+          "note": "Finish to hot-water target and chill immediately."
+        }
+      ],
+      "source": "kalita-curation",
+      "sourceUrls": [
+        "https://www.kalita.co.jp/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_kalita-102_hot",
+      "label": "Kalita 102 Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "kalita-102"
+      ],
+      "methodFamily": "melitta",
+      "brewMethodId": "kalita_wave",
+      "exactMatch": true,
+      "filterStyle": "trapezoid",
+      "ratioDelta": 0,
+      "tempDeltaC": -1.8,
+      "brewTimeDeltaSec": -55,
+      "grindBias": "same",
+      "note": "Curated exact profile mapped from Trapezoid Family Hot behavior for Kalita 102; tuned for deterministic service workflow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Saturate fully and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with steady flow."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Finish to target while keeping the bed stable."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Let drawdown complete and serve."
+        }
+      ],
+      "source": "catalog-curated-2026",
+      "sourceUrls": [
+        "https://www.melitta.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_kalita-102_iced",
+      "label": "Kalita 102 Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "kalita-102"
+      ],
+      "methodFamily": "melitta",
+      "brewMethodId": "kalita_wave",
+      "exactMatch": true,
+      "filterStyle": "trapezoid",
+      "ratioDelta": -0.25,
+      "tempDeltaC": -1.2,
+      "brewTimeDeltaSec": -65,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Kalita 102 Hot tuned for concentrated hot-phase extraction before chilling.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Saturate fully and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with steady flow."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Finish to target while keeping the bed stable."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Let drawdown complete and serve. Keep output concentrated before adding ice."
+        }
+      ],
+      "source": "catalog-curated-2026-iced-curated",
+      "sourceUrls": [
+        "https://www.melitta.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_kono_meimon_hot",
+      "label": "Kono Meimon Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "kono-meimon"
+      ],
+      "methodFamily": "kono",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.1,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 10,
+      "grindBias": "finer",
+      "note": "Low-rib cone dripper profile that favors a more syrupy cone extraction than a wide-open V60.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.18,
+          "startSeconds": 0,
+          "note": "Careful saturation without collapsing the bed."
+        },
+        {
+          "id": "build",
+          "label": "Build",
+          "share": 0.27,
+          "startSeconds": 36,
+          "note": "Keep a compact spiral and avoid edge pouring."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.55,
+          "startSeconds": 92,
+          "note": "Finish in two calm pulses or one steady pour depending on flow."
+        }
+      ],
+      "source": "kono-curation",
+      "sourceUrls": [
+        "https://kono1973.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_kono_meimon_iced",
+      "label": "Kono Meimon Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "kono-meimon"
+      ],
+      "methodFamily": "kono",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.4,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Kono Meimon Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.18,
+          "startSeconds": 0,
+          "note": "Careful saturation without collapsing the bed."
+        },
+        {
+          "id": "build",
+          "label": "Build",
+          "share": 0.27,
+          "startSeconds": 36,
+          "note": "Keep a compact spiral and avoid edge pouring."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.55,
+          "startSeconds": 92,
+          "note": "Finish in two calm pulses or one steady pour depending on flow. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "kono-curation-iced-curated",
+      "sourceUrls": [
+        "https://kono1973.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_latina-cono_hot",
+      "label": "Latina Cono Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "latina-cono"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0,
+      "tempDeltaC": -2.2,
+      "brewTimeDeltaSec": -40,
+      "grindBias": "same",
+      "note": "Curated exact profile mapped from Cone Family Hot behavior for Latina Cono; tuned for deterministic service workflow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve."
+        }
+      ],
+      "source": "catalog-curated-2026",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_latina-cono_iced",
+      "label": "Latina Cono Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "latina-cono"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.6,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Latina Cono Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "catalog-curated-2026-iced-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_latina-volcano_hot",
+      "label": "Latina Volcano Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "latina-volcano"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0,
+      "tempDeltaC": -2.2,
+      "brewTimeDeltaSec": -40,
+      "grindBias": "same",
+      "note": "Curated exact profile mapped from Cone Family Hot behavior for Latina Volcano; tuned for deterministic service workflow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve."
+        }
+      ],
+      "source": "catalog-curated-2026",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_latina-volcano_iced",
+      "label": "Latina Volcano Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "latina-volcano"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.6,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Latina Volcano Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "catalog-curated-2026-iced-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_loveramics_hot",
+      "label": "Loveramics Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "loveramics"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0,
+      "tempDeltaC": -2.2,
+      "brewTimeDeltaSec": -40,
+      "grindBias": "same",
+      "note": "Curated exact profile mapped from Cone Family Hot behavior for Loveramics; tuned for deterministic service workflow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve."
+        }
+      ],
+      "source": "catalog-curated-2026",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_loveramics_iced",
+      "label": "Loveramics Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "loveramics"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.6,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Loveramics Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "catalog-curated-2026-iced-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_melitta_hot",
+      "label": "Melitta Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "melitta"
+      ],
+      "methodFamily": "melitta",
+      "brewMethodId": "kalita_wave",
+      "exactMatch": true,
+      "filterStyle": "trapezoid",
+      "ratioDelta": 0,
+      "tempDeltaC": -1.8,
+      "brewTimeDeltaSec": -55,
+      "grindBias": "same",
+      "note": "Trapezoid profile tightened into a shorter bar SOP with clearer step timing and less dead time.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Saturate the bed fully and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour steadily to most of the target water."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Finish to target without rushing the flow."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Let the trapezoid bed drain and serve."
+        }
+      ],
+      "source": "melitta-curation",
+      "sourceUrls": [
+        "https://www.melitta.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_melitta_iced",
+      "label": "Melitta Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "melitta"
+      ],
+      "methodFamily": "melitta",
+      "brewMethodId": "kalita_wave",
+      "exactMatch": true,
+      "filterStyle": "trapezoid",
+      "ratioDelta": -0.25,
+      "tempDeltaC": -1.2,
+      "brewTimeDeltaSec": -65,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Melitta Hot tuned for concentrated hot-phase extraction before chilling.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Saturate the bed fully and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour steadily to most of the target water."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Finish to target without rushing the flow."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Let the trapezoid bed drain and serve. Keep output concentrated before adding ice."
+        }
+      ],
+      "source": "melitta-curation-iced-curated",
+      "sourceUrls": [
+        "https://www.melitta.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_mhw-3bomber-elf_hot",
+      "label": "MHW-3Bomber Elf Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "mhw-3bomber-elf"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0,
+      "tempDeltaC": -2.2,
+      "brewTimeDeltaSec": -40,
+      "grindBias": "same",
+      "note": "Curated exact profile mapped from Cone Family Hot behavior for MHW-3Bomber Elf; tuned for deterministic service workflow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve."
+        }
+      ],
+      "source": "catalog-curated-2026",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_mhw-3bomber-elf_iced",
+      "label": "MHW-3Bomber Elf Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "mhw-3bomber-elf"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.6,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Iced adaptation of MHW-3Bomber Elf Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "catalog-curated-2026-iced-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_nextlevel_pulsar_hot",
+      "label": "NextLevel Pulsar Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "nextlevel-pulsar"
+      ],
+      "methodFamily": "clever_dripper",
+      "brewMethodId": "clever_dripper",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "ratioDelta": 0.35,
+      "tempDeltaC": -1.4,
+      "brewTimeDeltaSec": 20,
+      "grindBias": "coarser",
+      "note": "Hybrid no-bypass profile with short immersion window and controlled release for service consistency.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge",
+          "share": 0.35,
+          "startSeconds": 0,
+          "note": "Close valve, wet bed evenly, and saturate quickly."
+        },
+        {
+          "id": "steep",
+          "label": "Steep Build",
+          "share": 0.45,
+          "startSeconds": 35,
+          "note": "Keep valve closed and pour gently to main target."
+        },
+        {
+          "id": "release",
+          "label": "Release",
+          "share": 0.2,
+          "startSeconds": 110,
+          "note": "Open valve and finish top-up while drawdown starts."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 180,
+          "note": "Allow full drain and serve immediately."
+        }
+      ],
+      "source": "nextlevel-official",
+      "sourceUrls": [
+        "https://nextlevelbrewer.com/products/pulsar-brewer"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_nextlevel_pulsar_iced",
+      "label": "NextLevel Pulsar Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "nextlevel-pulsar"
+      ],
+      "methodFamily": "clever_dripper",
+      "brewMethodId": "clever_dripper",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "ratioDelta": -0.2,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 5,
+      "grindBias": "same",
+      "note": "Iced adaptation of NextLevel Pulsar Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge",
+          "share": 0.35,
+          "startSeconds": 0,
+          "note": "Close valve, wet bed evenly, and saturate quickly."
+        },
+        {
+          "id": "steep",
+          "label": "Steep Build",
+          "share": 0.45,
+          "startSeconds": 35,
+          "note": "Keep valve closed and pour gently to main target."
+        },
+        {
+          "id": "release",
+          "label": "Release",
+          "share": 0.2,
+          "startSeconds": 110,
+          "note": "Open valve and finish top-up while drawdown starts."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 180,
+          "note": "Allow full drain and serve immediately. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "nextlevel-official-iced-curated",
+      "sourceUrls": [
+        "https://nextlevelbrewer.com/products/pulsar-brewer"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_orea_hot",
+      "label": "Orea Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "orea-v3-v4"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.8,
+      "tempDeltaC": -0.7,
+      "brewTimeDeltaSec": -30,
+      "grindBias": "same",
+      "note": "Fast-flow flat-bottom profile simplified into a short service SOP with cleaner pulse landmarks.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even saturation and a 30-second bloom."
+        },
+        {
+          "id": "pulse_1",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour steadily to most of the target water."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target with minimal wall washing."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Allow drawdown to finish cleanly."
+        }
+      ],
+      "source": "orea-official",
+      "sourceUrls": [
+        "https://orea.uk/guides"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_orea_iced",
+      "label": "Orea Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "orea-v3-v4"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.5,
+      "brewTimeDeltaSec": -12,
+      "grindBias": "finer",
+      "note": "Faster flat-bottom iced profile designed to land sweet rather than watery.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.22,
+          "startSeconds": 0,
+          "note": "Keep bloom compact and even."
+        },
+        {
+          "id": "pulse_1",
+          "label": "Pulse 1",
+          "share": 0.38,
+          "startSeconds": 38,
+          "note": "Drive concentration with a calm centered pulse."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.4,
+          "startSeconds": 78,
+          "note": "Finish to the hot-water target and serve over ice immediately."
+        }
+      ],
+      "source": "orea-curation",
+      "sourceUrls": [
+        "https://orea.uk/guides"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_origami_air_s_hot",
+      "label": "Origami Air S Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "origami-dripper-air-s"
+      ],
+      "methodFamily": "origami",
+      "brewMethodId": "origami",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -4,
+      "grindBias": "same",
+      "note": "Air S stays close to the classic Origami baseline while acknowledging its lighter body and portability focus.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.18,
+          "startSeconds": 0,
+          "note": "Keep the bed fully saturated."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.52,
+          "startSeconds": 35,
+          "note": "Use two smooth pulses rather than many short bursts."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.3,
+          "startSeconds": 112,
+          "note": "Finish high enough to preserve clarity."
+        }
+      ],
+      "source": "origami-official",
+      "sourceUrls": [
+        "https://origami-kai.com/en/products/origami_dripperair_s"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_origami_air_s_iced",
+      "label": "Origami Air S Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "origami-dripper-air-s"
+      ],
+      "methodFamily": "origami",
+      "brewMethodId": "origami",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.5,
+      "brewTimeDeltaSec": -8,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Origami Air S Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.18,
+          "startSeconds": 0,
+          "note": "Keep the bed fully saturated."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.52,
+          "startSeconds": 35,
+          "note": "Use two smooth pulses rather than many short bursts."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.3,
+          "startSeconds": 112,
+          "note": "Finish high enough to preserve clarity. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "origami-official-iced-curated",
+      "sourceUrls": [
+        "https://origami-kai.com/en/products/origami_dripperair_s"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_origami_hot",
+      "label": "Origami Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "origami-dripper-s-m"
+      ],
+      "methodFamily": "origami",
+      "brewMethodId": "origami",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0.15,
+      "tempDeltaC": -2.5,
+      "brewTimeDeltaSec": -45,
+      "grindBias": "same",
+      "note": "Origami baseline tightened toward a faster, easier bar flow while keeping clarity and sweetness intact.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and hold the bloom for 30 seconds."
+        },
+        {
+          "id": "build",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to roughly two-thirds of target water with calm circles."
+        },
+        {
+          "id": "mid",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without bypass-heavy edge pouring."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let the bed settle and serve cleanly."
+        }
+      ],
+      "source": "origami-curation",
+      "sourceUrls": [
+        "https://origami-kai.com/en/products/dripper"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_origami_iced",
+      "label": "Origami Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "origami-dripper-s-m"
+      ],
+      "methodFamily": "origami",
+      "brewMethodId": "origami",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.5,
+      "brewTimeDeltaSec": -8,
+      "grindBias": "finer",
+      "note": "Slightly tighter than the hot Origami baseline, built for sweetness retention over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.22,
+          "startSeconds": 0,
+          "note": "Use a compact bloom to build concentration."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.34,
+          "startSeconds": 40,
+          "note": "Keep the center flowing cleanly."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.44,
+          "startSeconds": 90,
+          "note": "Finish to the hot-water target and chill immediately over ice."
+        }
+      ],
+      "source": "origami-curation",
+      "sourceUrls": [
+        "https://origami-kai.com/en/products/dripper"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_stagg_x_hot",
+      "label": "Fellow Stagg X Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "fellow-stagg-x"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.8,
+      "tempDeltaC": -0.7,
+      "brewTimeDeltaSec": -25,
+      "grindBias": "same",
+      "note": "Smaller fast flat-bottom bed tuned toward a tighter, cleaner service SOP.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even saturation and 30-second bloom."
+        },
+        {
+          "id": "pulse_1",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour steadily to most of the target."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target with low agitation."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown complete and serve."
+        }
+      ],
+      "source": "fellow-curation",
+      "sourceUrls": [
+        "https://fellowproducts.com/products/stagg-x-pour-over-set/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_stagg_x_iced",
+      "label": "Fellow Stagg X Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "fellow-stagg-x"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -1.05,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -35,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Fellow Stagg X Hot tuned for concentrated hot-phase extraction before chilling.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even saturation and 30-second bloom."
+        },
+        {
+          "id": "pulse_1",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour steadily to most of the target."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target with low agitation."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown complete and serve. Keep output concentrated before adding ice."
+        }
+      ],
+      "source": "fellow-curation-iced-curated",
+      "sourceUrls": [
+        "https://fellowproducts.com/products/stagg-x-pour-over-set/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_stagg_xf_hot",
+      "label": "Fellow Stagg XF Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "fellow-stagg-xf-dripper"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": 0.35,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": 12,
+      "grindBias": "same",
+      "note": "Larger Stagg XF bed needs slightly more water and a touch more time than Stagg X.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.2,
+          "startSeconds": 0,
+          "note": "Even saturation."
+        },
+        {
+          "id": "pulse_1",
+          "label": "Pulse 1",
+          "share": 0.34,
+          "startSeconds": 40,
+          "note": "Keep the pulse centered."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Pulse 2",
+          "share": 0.22,
+          "startSeconds": 95,
+          "note": "Short stabilizing pulse."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.24,
+          "startSeconds": 145,
+          "note": "Finish cleanly and let drawdown complete."
+        }
+      ],
+      "source": "fellow-official",
+      "sourceUrls": [
+        "https://fellowproducts.com/products/stagg-xf-pour-over-set/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_stagg_xf_iced",
+      "label": "Fellow Stagg XF Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "fellow-stagg-xf-dripper"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.3,
+      "tempDeltaC": 0.4,
+      "brewTimeDeltaSec": -20,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Fellow Stagg XF Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.2,
+          "startSeconds": 0,
+          "note": "Even saturation."
+        },
+        {
+          "id": "pulse_1",
+          "label": "Pulse 1",
+          "share": 0.34,
+          "startSeconds": 40,
+          "note": "Keep the pulse centered."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Pulse 2",
+          "share": 0.22,
+          "startSeconds": 95,
+          "note": "Short stabilizing pulse."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.24,
+          "startSeconds": 145,
+          "note": "Finish cleanly and let drawdown complete. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "fellow-official-iced-curated",
+      "sourceUrls": [
+        "https://fellowproducts.com/products/stagg-xf-pour-over-set/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_suji-v60-dripper_hot",
+      "label": "Suji V60 Dripper Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "suji-v60-dripper"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0,
+      "tempDeltaC": -2.2,
+      "brewTimeDeltaSec": -40,
+      "grindBias": "same",
+      "note": "Curated exact profile mapped from Cone Family Hot behavior for Suji V60 Dripper; tuned for deterministic service workflow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve."
+        }
+      ],
+      "source": "catalog-curated-2026",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_suji-v60-dripper_iced",
+      "label": "Suji V60 Dripper Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "suji-v60-dripper"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.6,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Suji V60 Dripper Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "catalog-curated-2026-iced-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_suji-wave-dripper_hot",
+      "label": "Suji Wave Dripper Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "suji-wave-dripper"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.8,
+      "tempDeltaC": -0.5,
+      "brewTimeDeltaSec": -25,
+      "grindBias": "coarser",
+      "note": "Curated exact profile mapped from Fast Flat-Bottom Family Hot behavior for Suji Wave Dripper; tuned for deterministic service workflow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even bloom for 30 seconds."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target without over-agitating."
+        },
+        {
+          "id": "pulse_3",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target with the same calm cadence."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown complete and serve."
+        }
+      ],
+      "source": "catalog-curated-2026",
+      "sourceUrls": [
+        "https://www.aprilcoffeeroasters.com/pages/equipment"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_suji-wave-dripper_iced",
+      "label": "Suji Wave Dripper Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "suji-wave-dripper"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.3,
+      "tempDeltaC": 0.4,
+      "brewTimeDeltaSec": -20,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Suji Wave Dripper Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even bloom for 30 seconds."
+        },
+        {
+          "id": "pulse_2",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target without over-agitating."
+        },
+        {
+          "id": "pulse_3",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target with the same calm cadence."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown complete and serve. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "catalog-curated-2026-iced-curated",
+      "sourceUrls": [
+        "https://www.aprilcoffeeroasters.com/pages/equipment"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_the-gabi-master-a-b_hot",
+      "label": "The Gabi Master A/B Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "the-gabi-master-a-b"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0,
+      "tempDeltaC": -2.2,
+      "brewTimeDeltaSec": -40,
+      "grindBias": "same",
+      "note": "Curated exact profile mapped from Cone Family Hot behavior for The Gabi Master A/B; tuned for deterministic service workflow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve."
+        }
+      ],
+      "source": "catalog-curated-2026",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_the-gabi-master-a-b_iced",
+      "label": "The Gabi Master A/B Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "the-gabi-master-a-b"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.6,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "finer",
+      "note": "Iced adaptation of The Gabi Master A/B Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "catalog-curated-2026-iced-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_timemore_b75_hot",
+      "label": "Timemore B75 Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "timemore-b75"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.9,
+      "tempDeltaC": -0.7,
+      "brewTimeDeltaSec": -30,
+      "grindBias": "coarser",
+      "note": "B75 profile tightened into a shorter, more repeatable SOP for fast flat-bottom service.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Even bloom for 30 seconds."
+        },
+        {
+          "id": "pulse_1",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target while keeping the bed flat."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without extra swirl."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown complete and serve."
+        }
+      ],
+      "source": "timemore-curation",
+      "sourceUrls": [
+        "https://www.timemore.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_timemore_b75_iced",
+      "label": "Timemore B75 Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "timemore-b75"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.5,
+      "brewTimeDeltaSec": -14,
+      "grindBias": "finer",
+      "note": "Concentrated B75 iced profile that keeps the fast drawdown from under-extracting.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.2,
+          "startSeconds": 0,
+          "note": "Short compact bloom."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.4,
+          "startSeconds": 32,
+          "note": "One steady pulse to drive extraction."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.4,
+          "startSeconds": 70,
+          "note": "Finish to the hot-water target and chill over ice."
+        }
+      ],
+      "source": "timemore-curation",
+      "sourceUrls": [
+        "https://www.timemore.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_timemore_crystal_eye_hot",
+      "label": "Timemore Crystal Eye Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "timemore-crystal-eye"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 5,
+      "grindBias": "same",
+      "note": "Cone profile close to V60 behavior with a slight bias toward calmer flow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.18,
+          "startSeconds": 0,
+          "note": "Fully wet the bed."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.52,
+          "startSeconds": 35,
+          "note": "Use disciplined spiral pulses."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.3,
+          "startSeconds": 118,
+          "note": "Finish neatly and let the cone finish the drawdown."
+        }
+      ],
+      "source": "timemore-curation",
+      "sourceUrls": [
+        "https://www.timemore.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_timemore_crystal_eye_iced",
+      "label": "Timemore Crystal Eye Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "timemore-crystal-eye"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": 0.6,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Timemore Crystal Eye Hot tuned for concentrated hot-phase extraction before chilling.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.18,
+          "startSeconds": 0,
+          "note": "Fully wet the bed."
+        },
+        {
+          "id": "main",
+          "label": "Main Pour",
+          "share": 0.52,
+          "startSeconds": 35,
+          "note": "Use disciplined spiral pulses."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0.3,
+          "startSeconds": 118,
+          "note": "Finish neatly and let the cone finish the drawdown. Keep output concentrated before adding ice."
+        }
+      ],
+      "source": "timemore-curation-iced-curated",
+      "sourceUrls": [
+        "https://www.timemore.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_torch-mountain_hot",
+      "label": "Torch Mountain Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "torch-mountain"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": 0,
+      "tempDeltaC": -2.2,
+      "brewTimeDeltaSec": -40,
+      "grindBias": "same",
+      "note": "Curated exact profile mapped from Cone Family Hot behavior for Torch Mountain; tuned for deterministic service workflow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve."
+        }
+      ],
+      "source": "catalog-curated-2026",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_torch-mountain_iced",
+      "label": "Torch Mountain Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "torch-mountain"
+      ],
+      "methodFamily": "v60",
+      "brewMethodId": "v60",
+      "exactMatch": true,
+      "filterStyle": "cone",
+      "ratioDelta": -0.25,
+      "tempDeltaC": -1.6,
+      "brewTimeDeltaSec": -50,
+      "grindBias": "finer",
+      "note": "Iced adaptation of Torch Mountain Hot tuned for concentrated hot-phase extraction before chilling.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "main",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with calm circles."
+        },
+        {
+          "id": "finish_pour",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 75,
+          "note": "Finish to target without washing the wall."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown settle and serve. Keep output concentrated before adding ice."
+        }
+      ],
+      "source": "catalog-curated-2026-iced-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/pages/v60-recipes"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_tricolate-brewer_hot",
+      "label": "Tricolate Brewer Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "tricolate-brewer"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": 0.3,
+      "tempDeltaC": -0.5,
+      "brewTimeDeltaSec": 35,
+      "grindBias": "finer",
+      "note": "No-bypass Tricolate profile uses tighter grind and longer contact to avoid under-extraction while keeping flow stable.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.2,
+          "startSeconds": 0,
+          "note": "Wet bed evenly and allow a 35-second bloom."
+        },
+        {
+          "id": "pour_1",
+          "label": "Main Pour",
+          "share": 0.5,
+          "startSeconds": 35,
+          "note": "Pour steadily to around 70% target volume."
+        },
+        {
+          "id": "pour_2",
+          "label": "Final Pour",
+          "share": 0.3,
+          "startSeconds": 95,
+          "note": "Top up gently and avoid excess agitation."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 215,
+          "note": "Allow full drawdown before serve."
+        }
+      ],
+      "source": "tricolate-official-curated",
+      "sourceUrls": [
+        "https://tricolate.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_tricolate-brewer_iced",
+      "label": "Tricolate Brewer Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "tricolate-brewer"
+      ],
+      "methodFamily": "april",
+      "brewMethodId": "april",
+      "exactMatch": true,
+      "filterStyle": "flat",
+      "ratioDelta": 0.45,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 45,
+      "grindBias": "finer",
+      "note": "Iced Tricolate profile keeps no-bypass extraction stable while targeting concentrate strength before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.18,
+          "startSeconds": 0,
+          "note": "Bloom for 35 seconds with full bed saturation."
+        },
+        {
+          "id": "pour_1",
+          "label": "Main Pour",
+          "share": 0.52,
+          "startSeconds": 35,
+          "note": "Pour to most of the concentrate volume."
+        },
+        {
+          "id": "pour_2",
+          "label": "Final Pour",
+          "share": 0.3,
+          "startSeconds": 100,
+          "note": "Top up gently to final hot-water target."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 230,
+          "note": "Complete drawdown before adding ice."
+        }
+      ],
+      "source": "tricolate-official-curated",
+      "sourceUrls": [
+        "https://tricolate.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_vietnam-drip_hot",
+      "label": "Vietnam Drip Hot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "vietnam-drip"
+      ],
+      "methodFamily": "clever_dripper",
+      "brewMethodId": "clever_dripper",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "ratioDelta": 0.45,
+      "tempDeltaC": -1,
+      "brewTimeDeltaSec": -25,
+      "grindBias": "coarser",
+      "note": "Curated exact profile mapped from Immersion Dripper Family Hot behavior for Vietnam Drip; tuned for deterministic service workflow.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "pour_1",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with gentle circles."
+        },
+        {
+          "id": "pour_2",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Top up to target before release."
+        },
+        {
+          "id": "release",
+          "label": "Open Valve",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Release and let the dripper drain cleanly."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Serve once drawdown is complete."
+        }
+      ],
+      "source": "catalog-curated-2026",
+      "sourceUrls": [
+        "https://www.cleverbrewing.coffee/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_vietnam-drip_iced",
+      "label": "Vietnam Drip Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "vietnam-drip"
+      ],
+      "methodFamily": "clever_dripper",
+      "brewMethodId": "clever_dripper",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "ratioDelta": -0.2,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 5,
+      "grindBias": "same",
+      "note": "Iced adaptation of Vietnam Drip Hot with concentrated hot-phase extraction before dilution over ice.",
+      "steps": [
+        {
+          "id": "bloom",
+          "label": "Bloom",
+          "share": 0.19,
+          "startSeconds": 0,
+          "note": "Wet evenly and bloom for 30 seconds."
+        },
+        {
+          "id": "pour_1",
+          "label": "Second Pour",
+          "share": 0.5,
+          "startSeconds": 30,
+          "note": "Pour to most of the target with gentle circles."
+        },
+        {
+          "id": "pour_2",
+          "label": "Final Pour",
+          "share": 0.31,
+          "startSeconds": 90,
+          "note": "Top up to target before release."
+        },
+        {
+          "id": "release",
+          "label": "Open Valve",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Release and let the dripper drain cleanly."
+        },
+        {
+          "id": "finish",
+          "label": "Finish",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Serve once drawdown is complete. Keep concentrate stable before combining with measured ice."
+        }
+      ],
+      "source": "catalog-curated-2026-iced-curated",
+      "sourceUrls": [
+        "https://www.cleverbrewing.coffee/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    }
+  ]
+}

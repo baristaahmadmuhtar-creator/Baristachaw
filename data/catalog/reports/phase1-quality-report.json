@@ -1,0 +1,2162 @@
+{
+  "generated_at": "2026-04-07T07:33:40.019Z",
+  "version": "2026.03.10-asean-first-phase1",
+  "waters": {
+    "total": 106,
+    "published": 80,
+    "brew_ready": 80,
+    "complete": 79,
+    "incomplete": 27,
+    "estimated": [
+      "evian-bn",
+      "heysong-water-global",
+      "heysong-water-sg",
+      "highland-spring-sg",
+      "icelandic-glacial-bn",
+      "jeju-samdasoo-global",
+      "jeju-samdasoo-sg",
+      "la-vie-global",
+      "la-vie-sg",
+      "mont-fleur-global",
+      "mont-fleur-sg",
+      "natures-spring-global",
+      "natures-spring-sg",
+      "nongfu-spring-global",
+      "nongfu-spring-sg",
+      "san-pellegrino-sg",
+      "spritzer-bn",
+      "spritzer-sg",
+      "suntory-tennensui-global",
+      "suntory-tennensui-sg",
+      "volvic-bn",
+      "watsons-water-global",
+      "watsons-water-sg"
+    ],
+    "by_country": {
+      "Brunei": 1,
+      "China": 2,
+      "Fiji": 3,
+      "France": 9,
+      "Germany": 1,
+      "Global": 2,
+      "Hong Kong": 2,
+      "Iceland": 3,
+      "Indonesia": 56,
+      "Italy": 4,
+      "Japan": 2,
+      "Malaysia": 3,
+      "Philippines": 2,
+      "Singapore": 2,
+      "South Korea": 2,
+      "Taiwan": 2,
+      "Thailand": 2,
+      "UK": 2,
+      "USA": 4,
+      "Vietnam": 2
+    },
+    "by_market": {
+      "bn": 5,
+      "global": 22,
+      "id": 55,
+      "my": 6,
+      "sg": 18
+    },
+    "by_publish_state": {
+      "published": 80,
+      "review_only": 26,
+      "rejected": 0
+    },
+    "top_recommended_by_region": {
+      "Indonesia": [
+        {
+          "id": "pure-life-global",
+          "brand": "Pure Life",
+          "score": 64
+        }
+      ],
+      "Brunei": [
+        {
+          "id": "pure-life-global",
+          "brand": "Pure Life",
+          "score": 64
+        }
+      ],
+      "Singapore": [
+        {
+          "id": "volvic-sg",
+          "brand": "Volvic",
+          "score": 100
+        },
+        {
+          "id": "pure-life-global",
+          "brand": "Pure Life",
+          "score": 64
+        },
+        {
+          "id": "acqua-panna-sg",
+          "brand": "Acqua Panna",
+          "score": 56
+        },
+        {
+          "id": "fiji-sg",
+          "brand": "FIJI",
+          "score": 25
+        },
+        {
+          "id": "evian-sg",
+          "brand": "Evian",
+          "score": 0
+        }
+      ],
+      "Malaysia": [
+        {
+          "id": "volvic-my",
+          "brand": "Volvic",
+          "score": 100
+        },
+        {
+          "id": "spritzer-my",
+          "brand": "Spritzer",
+          "score": 82
+        },
+        {
+          "id": "pure-life-global",
+          "brand": "Pure Life",
+          "score": 64
+        },
+        {
+          "id": "acqua-panna-my",
+          "brand": "Acqua Panna",
+          "score": 56
+        },
+        {
+          "id": "fiji-my",
+          "brand": "FIJI",
+          "score": 25
+        }
+      ]
+    },
+    "source_coverage": [
+      {
+        "id": "2tang-id",
+        "brand": "2Tang",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#2tang-id",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "acqua-panna-global",
+        "brand": "Acqua Panna",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "acqua-panna-my",
+        "brand": "Acqua Panna",
+        "sources": [
+          "https://www.acquapanna.com/us/eng/products/plastic-bottles/1l",
+          "https://jgsj.jayagrocer.com/collections/mineral-water/products/acqua-panna-natural-mineral-water-1l-1",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "acqua-panna-sg",
+        "brand": "Acqua Panna",
+        "sources": [
+          "https://www.acquapanna.com/us/eng/products/plastic-bottles/1l",
+          "https://www.fairprice.com.sg/product/acqua-panna-natural-mineral-water-plastic-12-x-1l-90197308",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "ades-id",
+        "brand": "Ades",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#ades-id",
+          "https://www.coca-cola.com/id/id/brands/ades",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "aetra-id",
+        "brand": "Aetra",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "air-alfamart-id",
+        "brand": "Air Alfamart",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#air-alfamart-id",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "air-indomaret-id",
+        "brand": "Air Indomaret",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#air-indomaret-id",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "airku-id",
+        "brand": "Airku",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "alfa-spring-id",
+        "brand": "Alfa Spring",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "amidis-id",
+        "brand": "Amidis",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#amidis-id",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "aqua-id",
+        "brand": "Aqua",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#aqua-id",
+          "https://www.aqua.co.id/en",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "arjuna-id",
+        "brand": "Arjuna",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "arrowhead-global",
+        "brand": "Arrowhead",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "banyu-sehat-id",
+        "brand": "Banyu Sehat",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "bayu-id",
+        "brand": "Bayu",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "biru-id",
+        "brand": "Biru",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "cendana-id",
+        "brand": "Cendana",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "cleo-id",
+        "brand": "Cleo",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#cleo-id",
+          "https://cleopurewater.com/",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "club-id",
+        "brand": "Club",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#club-id",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "crystal-geyser-global",
+        "brand": "Crystal Geyser",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "crystaline-plus-id",
+        "brand": "Crystaline Plus",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "crystalline-id",
+        "brand": "Crystalline",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#crystalline-id",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "dasani-global",
+        "brand": "Dasani",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "diamond-id",
+        "brand": "Diamond",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "elok-water-id",
+        "brand": "Elok Water",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "equil-id",
+        "brand": "Equil",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#equil-id",
+          "https://www.blibli.com/brand/equil",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "eternal-plus-id",
+        "brand": "Eternal Plus",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#eternal-plus-id",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "evian-bn",
+        "brand": "Evian",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#evian-bn"
+        ]
+      },
+      {
+        "id": "evian-global",
+        "brand": "Evian",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "evian-my",
+        "brand": "Evian",
+        "sources": [
+          "https://www.evian.com/en_int/water-attributes",
+          "https://www.evian.com/en_int/quality-report",
+          "https://jgsj.jayagrocer.com/products/evian-mineral-water-1-5l",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "evian-sg",
+        "brand": "Evian",
+        "sources": [
+          "https://www.evian.com/en_int/water-attributes",
+          "https://www.evian.com/en_int/quality-report",
+          "https://www.fairprice.com.sg/product/ctn-evian-mineral-water-24s-x-500ml-11738836",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "fiji-global",
+        "brand": "Fiji",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "fiji-my",
+        "brand": "FIJI",
+        "sources": [
+          "https://cdn.shopify.com/s/files/1/0286/6052/files/Fiji_Water_2023_Water_Quality_Report.pdf?v=1706305193",
+          "https://fijiwater.com/pages/store-locator?store-page=water-quality-report",
+          "https://jgsj.jayagrocer.com/products/fiji-natural-artesian-water-1l-1?pr_prod_strat=e5_desc&pr_rec_id=964832702&pr_rec_pid=7121301962919&pr_ref_pid=7121275191463&pr_seq=uniform",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "fiji-sg",
+        "brand": "FIJI",
+        "sources": [
+          "https://cdn.shopify.com/s/files/1/0286/6052/files/Fiji_Water_2023_Water_Quality_Report.pdf?v=1706305193",
+          "https://fijiwater.com/pages/store-locator?store-page=water-quality-report",
+          "https://www.fairprice.com.sg/product/fiji-natural-artesian-water-6-x-1-5l-90132036",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "frozen-id",
+        "brand": "Frozen",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#frozen-id",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "gerolsteiner-global",
+        "brand": "Gerolsteiner",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "gilang-id",
+        "brand": "Gilang",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "heysong-water-global",
+        "brand": "HeySong Water",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#heysong-water-global"
+        ]
+      },
+      {
+        "id": "heysong-water-sg",
+        "brand": "HeySong Water",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#heysong-water-sg"
+        ]
+      },
+      {
+        "id": "highland-spring-global",
+        "brand": "Highland Spring",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "highland-spring-sg",
+        "brand": "Highland Spring",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#highland-spring-sg"
+        ]
+      },
+      {
+        "id": "hydromed-id",
+        "brand": "Hydromed",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "icelandic-glacial-bn",
+        "brand": "Icelandic Glacial",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#icelandic-glacial-bn"
+        ]
+      },
+      {
+        "id": "icelandic-glacial-global",
+        "brand": "Icelandic Glacial",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "icelandic-glacial-sg",
+        "brand": "Icelandic Glacial",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "ion-plus-id",
+        "brand": "Ion+",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "jeju-samdasoo-global",
+        "brand": "Jeju Samdasoo",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#jeju-samdasoo-global"
+        ]
+      },
+      {
+        "id": "jeju-samdasoo-sg",
+        "brand": "Jeju Samdasoo",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#jeju-samdasoo-sg"
+        ]
+      },
+      {
+        "id": "la-vie-global",
+        "brand": "La Vie",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#la-vie-global"
+        ]
+      },
+      {
+        "id": "la-vie-sg",
+        "brand": "La Vie",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#la-vie-sg"
+        ]
+      },
+      {
+        "id": "le-minerale-id",
+        "brand": "Le Minerale",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#le-minerale-id",
+          "https://www.leminerale.com/en/news/Bikin-Airnya-Sehat-dan-Berkualitas-Ini-Rahasia-Produksi-Le-Minerale-",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "le-minerale-my",
+        "brand": "Le Minerale",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#le-minerale-id",
+          "https://www.leminerale.com/en/news/Bikin-Airnya-Sehat-dan-Berkualitas-Ini-Rahasia-Produksi-Le-Minerale-",
+          "https://jgfreshub.jayagrocer.com/collections/water",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "lontar-id",
+        "brand": "Lontar",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "mahkota-id",
+        "brand": "Mahkota",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "mayora-sparkling-id",
+        "brand": "Mayora Sparkling",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "mont-fleur-global",
+        "brand": "Mont Fleur",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#mont-fleur-global"
+        ]
+      },
+      {
+        "id": "mont-fleur-sg",
+        "brand": "Mont Fleur",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#mont-fleur-sg"
+        ]
+      },
+      {
+        "id": "natures-spring-global",
+        "brand": "Nature's Spring",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#natures-spring-global"
+        ]
+      },
+      {
+        "id": "natures-spring-sg",
+        "brand": "Nature's Spring",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#natures-spring-sg"
+        ]
+      },
+      {
+        "id": "neo-aqua-id",
+        "brand": "Neo Aqua",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "nestle-pure-life-global",
+        "brand": "Nestle Pure Life",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "nestle-pure-life-id",
+        "brand": "Nestle Pure Life",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "nirwana-id",
+        "brand": "Nirwana",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "nongfu-spring-global",
+        "brand": "Nongfu Spring",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#nongfu-spring-global"
+        ]
+      },
+      {
+        "id": "nongfu-spring-sg",
+        "brand": "Nongfu Spring",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#nongfu-spring-sg"
+        ]
+      },
+      {
+        "id": "oasis-id",
+        "brand": "Oasis",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#oasis-id",
+          "https://oasis.co.id/",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "oasis-plus-id",
+        "brand": "Oasis+",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#oasis-plus-id",
+          "https://oasis.co.id/"
+        ]
+      },
+      {
+        "id": "oxywater-id",
+        "brand": "Oxywater",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "perfect-id",
+        "brand": "Perfect",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#perfect-id",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "poland-spring-global",
+        "brand": "Poland Spring",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "polar-id",
+        "brand": "Polar",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "polar-sg",
+        "brand": "Polar",
+        "sources": [
+          "https://omni.fairprice.com.sg/product/polar-natural-mineral-bottle-water-10932741",
+          "https://www.fairprice.com.sg/water/mineral-water",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "prima-id",
+        "brand": "Prima",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#prima-id",
+          "https://www.primawater.com/",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "pristine-8-6-plus-id",
+        "brand": "Pristine 8.6+",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "pristine-8-plus-id",
+        "brand": "Pristine 8+",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#pristine-8-plus-id",
+          "https://www.pristine8plus.com/"
+        ]
+      },
+      {
+        "id": "pure-life-global",
+        "brand": "Pure Life",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#pure-life-global",
+          "https://www.nestlepurelife.com/uk/about-us/frequently-asked-questions",
+          "https://www.akasha.co.id/products/brands/water-pure-life.html"
+        ]
+      },
+      {
+        "id": "pure-life-sg",
+        "brand": "Pure Life",
+        "sources": [
+          "https://www.nestlepurelife.com/uk/about-us/frequently-asked-questions"
+        ]
+      },
+      {
+        "id": "rivero-id",
+        "brand": "Rivero",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#rivero-id",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "ron-88-id",
+        "brand": "Ron 88",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#ron-88-id",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "rona-id",
+        "brand": "Rona",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "san-pellegrino-sg",
+        "brand": "San Pellegrino",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#san-pellegrino-sg"
+        ]
+      },
+      {
+        "id": "segar-id",
+        "brand": "Segar",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "sejuk-id",
+        "brand": "Sejuk",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "spritzer-bn",
+        "brand": "Spritzer",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#spritzer-bn"
+        ]
+      },
+      {
+        "id": "spritzer-my",
+        "brand": "Spritzer",
+        "sources": [
+          "https://www.spritzer.com.my/story",
+          "https://jgsj.jayagrocer.com/collections/mineral-water"
+        ]
+      },
+      {
+        "id": "spritzer-sg",
+        "brand": "Spritzer",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#spritzer-sg"
+        ]
+      },
+      {
+        "id": "suci-bn",
+        "brand": "Suci",
+        "sources": [
+          "https://tlt-ent.com/product/suci-drinking-water-1-5l/",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "suci-id",
+        "brand": "Suci",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "sumber-air-sehat-id",
+        "brand": "Sumber Air Sehat",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "sumurup-id",
+        "brand": "Sumurup",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "suntory-tennensui-global",
+        "brand": "Suntory Tennensui",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#suntory-tennensui-global"
+        ]
+      },
+      {
+        "id": "suntory-tennensui-sg",
+        "brand": "Suntory Tennensui",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#suntory-tennensui-sg"
+        ]
+      },
+      {
+        "id": "super-o2-id",
+        "brand": "Super O2",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "tirta-fresh-id",
+        "brand": "Tirta Fresh",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "tirtone-id",
+        "brand": "Tirtone",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "total-8-plus-id",
+        "brand": "Total 8+",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#total-8-plus-id",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "vit-id",
+        "brand": "Vit",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#vit-id",
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "vittel-global",
+        "brand": "Vittel",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "volvic-bn",
+        "brand": "Volvic",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#volvic-bn"
+        ]
+      },
+      {
+        "id": "volvic-global",
+        "brand": "Volvic",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "volvic-my",
+        "brand": "Volvic",
+        "sources": [
+          "https://www.volvic.co.uk/volcanic-mineral-water/natural-mineral-water",
+          "https://jgsj.jayagrocer.com/collections/mineral-water",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "volvic-sg",
+        "brand": "Volvic",
+        "sources": [
+          "https://www.volvic.co.uk/volcanic-mineral-water/natural-mineral-water",
+          "https://www.fairprice.com.sg/product/volvic-natural-mineral-water-15lt-190330",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "watersan-id",
+        "brand": "Watersan",
+        "sources": [
+          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+        ]
+      },
+      {
+        "id": "watsons-water-global",
+        "brand": "Watsons Water",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#watsons-water-global"
+        ]
+      },
+      {
+        "id": "watsons-water-sg",
+        "brand": "Watsons Water",
+        "sources": [
+          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#watsons-water-sg"
+        ]
+      }
+    ],
+    "data_gaps": [
+      {
+        "id": "dasani-global",
+        "brand": "Dasani",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "evian-bn",
+        "brand": "Evian",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "heysong-water-global",
+        "brand": "HeySong Water",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "heysong-water-sg",
+        "brand": "HeySong Water",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "highland-spring-sg",
+        "brand": "Highland Spring",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "icelandic-glacial-bn",
+        "brand": "Icelandic Glacial",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "jeju-samdasoo-global",
+        "brand": "Jeju Samdasoo",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "jeju-samdasoo-sg",
+        "brand": "Jeju Samdasoo",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "la-vie-global",
+        "brand": "La Vie",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "la-vie-sg",
+        "brand": "La Vie",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "mont-fleur-global",
+        "brand": "Mont Fleur",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "mont-fleur-sg",
+        "brand": "Mont Fleur",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "natures-spring-global",
+        "brand": "Nature's Spring",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "natures-spring-sg",
+        "brand": "Nature's Spring",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "nestle-pure-life-global",
+        "brand": "Nestle Pure Life",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "nongfu-spring-global",
+        "brand": "Nongfu Spring",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "nongfu-spring-sg",
+        "brand": "Nongfu Spring",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "oasis-plus-id",
+        "brand": "Oasis+",
+        "missing_fields": [
+          "calcium",
+          "magnesium",
+          "bicarbonate"
+        ]
+      },
+      {
+        "id": "pristine-8-plus-id",
+        "brand": "Pristine 8+",
+        "missing_fields": [
+          "calcium",
+          "magnesium",
+          "bicarbonate",
+          "tds_ppm",
+          "ph"
+        ]
+      },
+      {
+        "id": "pure-life-global",
+        "brand": "Pure Life",
+        "missing_fields": [
+          "ph"
+        ]
+      },
+      {
+        "id": "pure-life-sg",
+        "brand": "Pure Life",
+        "missing_fields": [
+          "calcium",
+          "magnesium",
+          "bicarbonate",
+          "tds_ppm",
+          "ph"
+        ]
+      },
+      {
+        "id": "spritzer-bn",
+        "brand": "Spritzer",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "spritzer-sg",
+        "brand": "Spritzer",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "suntory-tennensui-global",
+        "brand": "Suntory Tennensui",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "suntory-tennensui-sg",
+        "brand": "Suntory Tennensui",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "vittel-global",
+        "brand": "Vittel",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "volvic-bn",
+        "brand": "Volvic",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "watsons-water-global",
+        "brand": "Watsons Water",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "watsons-water-sg",
+        "brand": "Watsons Water",
+        "missing_fields": [
+          "tds",
+          "hardness",
+          "alkalinity"
+        ]
+      }
+    ],
+    "manual_only": [
+      "evian-bn",
+      "heysong-water-global",
+      "heysong-water-sg",
+      "highland-spring-sg",
+      "icelandic-glacial-bn",
+      "jeju-samdasoo-global",
+      "jeju-samdasoo-sg",
+      "la-vie-global",
+      "la-vie-sg",
+      "mont-fleur-global",
+      "mont-fleur-sg",
+      "natures-spring-global",
+      "natures-spring-sg",
+      "nongfu-spring-global",
+      "nongfu-spring-sg",
+      "oasis-plus-id",
+      "pristine-8-plus-id",
+      "pure-life-sg",
+      "san-pellegrino-sg",
+      "spritzer-bn",
+      "spritzer-sg",
+      "suntory-tennensui-global",
+      "suntory-tennensui-sg",
+      "volvic-bn",
+      "watsons-water-global",
+      "watsons-water-sg"
+    ]
+  },
+  "drippers": {
+    "total": 36,
+    "published": 36,
+    "by_publish_state": {
+      "published": 36,
+      "review_only": 0,
+      "rejected": 0
+    },
+    "by_brand": {
+      "April": 2,
+      "Blue Bottle": 1,
+      "Brewista": 2,
+      "Cafec": 2,
+      "Chemex": 1,
+      "Clever": 1,
+      "Fellow": 2,
+      "Hario": 4,
+      "Hero": 1,
+      "Kalita": 2,
+      "Kono": 1,
+      "Latina": 2,
+      "Loveramics": 1,
+      "Melitta": 1,
+      "MHW-3Bomber": 1,
+      "NextLevel": 1,
+      "No Brand": 1,
+      "Orea": 1,
+      "Origami": 1,
+      "ORIGAMI": 1,
+      "Suji": 2,
+      "The Gabi": 1,
+      "Timemore": 2,
+      "Torch": 1,
+      "Tricolate": 1
+    },
+    "review_required": [],
+    "source_coverage": [
+      {
+        "id": "31",
+        "label": "April Brewer",
+        "sources": [
+          "https://www.aprilcoffeeroasters.com/pages/equipment"
+        ]
+      },
+      {
+        "id": "32",
+        "label": "Blue Bottle Dripper",
+        "sources": [
+          "https://bluebottlecoffee.com/"
+        ]
+      },
+      {
+        "id": "33",
+        "label": "Brewista Gem Series",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "34",
+        "label": "Brewista Tornado",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "35",
+        "label": "Cafec Deep 27",
+        "sources": [
+          "https://cafec-jp.com/"
+        ]
+      },
+      {
+        "id": "36",
+        "label": "Cafec Flower Dripper",
+        "sources": [
+          "https://cafec-jp.com/"
+        ]
+      },
+      {
+        "id": "37",
+        "label": "Chemex Chemex",
+        "sources": [
+          "https://chemexcoffeemaker.com/"
+        ]
+      },
+      {
+        "id": "38",
+        "label": "Clever Dripper",
+        "sources": [
+          "https://www.cleverbrewing.coffee/"
+        ]
+      },
+      {
+        "id": "39",
+        "label": "Fellow Stagg [X]",
+        "sources": [
+          "https://fellowproducts.com/products/stagg-x-pour-over-set/"
+        ]
+      },
+      {
+        "id": "40",
+        "label": "Hario Mugen",
+        "sources": [
+          "https://www.hario-europe.com/pages/v60-recipes"
+        ]
+      },
+      {
+        "id": "41",
+        "label": "Hario Switch",
+        "sources": [
+          "https://www.hario-europe.com/pages/v60-recipes"
+        ]
+      },
+      {
+        "id": "42",
+        "label": "Hario V60",
+        "sources": [
+          "https://www.hario-europe.com/pages/v60-recipes",
+          "https://www.hario-europe.com/pages/hario-brewers-cup-rules"
+        ]
+      },
+      {
+        "id": "43",
+        "label": "Hero Variable Dripper",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "44",
+        "label": "Kalita 102",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "45",
+        "label": "Kalita Wave 155 / 185",
+        "sources": [
+          "https://www.kalita.co.jp/"
+        ]
+      },
+      {
+        "id": "46",
+        "label": "Kono Meimon",
+        "sources": [
+          "https://kono1973.com/"
+        ]
+      },
+      {
+        "id": "47",
+        "label": "Latina Cono",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "48",
+        "label": "Latina Volcano",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "49",
+        "label": "Loveramics Loveramics",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "50",
+        "label": "Melitta Melitta",
+        "sources": [
+          "https://www.melitta.com/"
+        ]
+      },
+      {
+        "id": "51",
+        "label": "MHW-3Bomber Elf",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "52",
+        "label": "Orea V3 / V4",
+        "sources": [
+          "https://orea.uk/guides"
+        ]
+      },
+      {
+        "id": "53",
+        "label": "Origami Dripper (S/M)",
+        "sources": [
+          "https://origami-kai.com/en/products/dripper"
+        ]
+      },
+      {
+        "id": "54",
+        "label": "Suji V60 Dripper",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "55",
+        "label": "Suji Wave Dripper",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "56",
+        "label": "The Gabi Master A/B",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "57",
+        "label": "Timemore B75",
+        "sources": [
+          "https://www.timemore.com/"
+        ]
+      },
+      {
+        "id": "58",
+        "label": "Timemore Crystal Eye",
+        "sources": [
+          "https://www.timemore.com/"
+        ]
+      },
+      {
+        "id": "59",
+        "label": "Torch Mountain",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "60",
+        "label": "No Brand Vietnam Drip",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "april-hybrid-brewer",
+        "label": "April Hybrid Brewer",
+        "sources": [
+          "https://www.aprilcoffeeroasters.com/products/april-hybrid-brewer"
+        ]
+      },
+      {
+        "id": "fellow-stagg-xf-dripper",
+        "label": "Fellow Stagg [XF] Dripper",
+        "sources": [
+          "https://fellowproducts.com/products/stagg-xf-pour-over-set/"
+        ]
+      },
+      {
+        "id": "hario-pegasus",
+        "label": "Hario Pegasus",
+        "sources": [
+          "https://www.hario-europe.com/pages/v60-recipes"
+        ]
+      },
+      {
+        "id": "nextlevel-pulsar",
+        "label": "NextLevel Pulsar",
+        "sources": [
+          "https://nextlevelbrewer.com/products/pulsar-brewer"
+        ]
+      },
+      {
+        "id": "origami-dripper-air-s",
+        "label": "ORIGAMI Dripper Air S",
+        "sources": [
+          "https://origami-kai.com/en/products/origami_dripperair_s"
+        ]
+      },
+      {
+        "id": "tricolate-brewer",
+        "label": "Tricolate Brewer",
+        "sources": [
+          "https://tricolate.com/"
+        ]
+      }
+    ],
+    "data_gaps": []
+  },
+  "grinders": {
+    "total": 53,
+    "published": 33,
+    "by_publish_state": {
+      "published": 33,
+      "review_only": 20,
+      "rejected": 0
+    },
+    "by_brand": {
+      "1Zpresso": 10,
+      "Breville": 1,
+      "Comandante": 3,
+      "Etzinger": 1,
+      "Feima": 1,
+      "Hario": 3,
+      "HARIO": 1,
+      "Kingrinder": 2,
+      "KINGrinder": 4,
+      "Kinu": 2,
+      "Latina": 2,
+      "Mavo": 1,
+      "Mazzer": 1,
+      "MHW-3BOMBER": 1,
+      "OE": 1,
+      "Pietro": 1,
+      "Porlex": 1,
+      "Starseeker": 1,
+      "Timemore": 10,
+      "TIMEMORE": 3,
+      "Varia": 1,
+      "Vesper": 1,
+      "Wacaco": 1
+    },
+    "review_required": [
+      "hario-smart-g",
+      "kingrinder-k4",
+      "timemore-c3-max",
+      "kingrinder-k0-k1",
+      "kingrinder-k3",
+      "1zpresso-k-plus",
+      "1zpresso-j-max-s",
+      "kinu-m47-phoenix",
+      "timemore-sculptor-078s"
+    ],
+    "source_coverage": [
+      {
+        "id": "1",
+        "label": "Vesper VS-3 FOLD",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "1zpresso-je-plus-grinder",
+        "label": "1Zpresso JE-Plus Grinder",
+        "sources": [
+          "https://1zpresso.coffee/grinder/"
+        ]
+      },
+      {
+        "id": "1zpresso-jx-pro-s",
+        "label": "1Zpresso JX-Pro S",
+        "sources": [
+          "https://1zpresso.coffee/grinder/"
+        ]
+      },
+      {
+        "id": "1zpresso-k-max",
+        "label": "1Zpresso K-Max",
+        "sources": [
+          "https://1zpresso.coffee/grinder/",
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        ]
+      },
+      {
+        "id": "2",
+        "label": "Timemore C5 ESP PRO",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "32",
+        "label": "1Zpresso J-Ultra",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "33",
+        "label": "1Zpresso K-Ultra",
+        "sources": [
+          "https://1zpresso.coffee/grind-setting-reference/",
+          "https://1zpresso.coffee/k-ultra/"
+        ]
+      },
+      {
+        "id": "34",
+        "label": "1Zpresso Q Air / Q2",
+        "sources": [
+          "https://1zpresso.coffee/grind-setting-reference/",
+          "https://1zpresso.coffee/q/"
+        ]
+      },
+      {
+        "id": "35",
+        "label": "1Zpresso X-Pro / X-Ultra",
+        "sources": [
+          "https://1zpresso.coffee/grind-setting-reference/",
+          "https://1zpresso.coffee/x/"
+        ]
+      },
+      {
+        "id": "36",
+        "label": "1Zpresso ZP6 Special",
+        "sources": [
+          "https://1zpresso.coffee/grind-setting-reference/",
+          "https://1zpresso.coffee/zp6/"
+        ]
+      },
+      {
+        "id": "37",
+        "label": "Breville Smart Grinder Pro",
+        "sources": [
+          "https://www.breville.com/"
+        ]
+      },
+      {
+        "id": "38",
+        "label": "Comandante C40 MK4",
+        "sources": [
+          "https://www.comandantegrinder.com/",
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        ]
+      },
+      {
+        "id": "39",
+        "label": "Comandante C60 Baracuda",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "40",
+        "label": "Etzinger etz-I",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "41",
+        "label": "Hario Canister (C-20)",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "42",
+        "label": "Hario Mini Slim+",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "43",
+        "label": "Hario Skerton Pro",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "44",
+        "label": "Kingrinder K6",
+        "sources": [
+          "https://www.kingrinder.com/",
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        ]
+      },
+      {
+        "id": "45",
+        "label": "Kingrinder P0/P1/P2",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "46",
+        "label": "Kinu M47",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "47",
+        "label": "Latina Sumba / Sumbawa",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "48",
+        "label": "Latina Sumo",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "49",
+        "label": "Mazzer Omega",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "50",
+        "label": "OE Lido 3 / OG",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "51",
+        "label": "Pietro (Flat Burr)",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "52",
+        "label": "Porlex Mini II",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "53",
+        "label": "Starseeker Edge / Edge+",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "55",
+        "label": "Timemore C3 ESP",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "56",
+        "label": "Timemore Chestnut X",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "57",
+        "label": "Timemore Nano / Plus",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "58",
+        "label": "Timemore S3",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "59",
+        "label": "Timemore Slim Plus",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "60",
+        "label": "Varia Hand Grinder",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "61",
+        "label": "Wacaco Exagrind",
+        "sources": [
+          "https://www.wacaco.com/products/exagrind",
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        ]
+      },
+      {
+        "id": "69",
+        "label": "Timemore C5",
+        "sources": [
+          "https://www.timemore.com/es/products/timemore-manual-coffee-grinder-chestnut-c5-series"
+        ]
+      },
+      {
+        "id": "70",
+        "label": "MHW-3BOMBER Blade R3",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "71",
+        "label": "Timemore x Millab M01",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "72",
+        "label": "Timemore C3",
+        "sources": [
+          "https://www.timemore.com/",
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        ]
+      },
+      {
+        "id": "73",
+        "label": "Timemore C2",
+        "sources": [
+          "https://www.timemore.com/",
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        ]
+      },
+      {
+        "id": "74",
+        "label": "Mavo Phantox Pro",
+        "sources": [
+          "https://www.brewlogic.app/"
+        ]
+      },
+      {
+        "id": "comandante-x25-trailmaster",
+        "label": "Comandante X25 Trailmaster",
+        "sources": [
+          "https://www.comandantegrinder.com/",
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        ]
+      },
+      {
+        "id": "hario-smart-g",
+        "label": "HARIO Smart G",
+        "sources": []
+      },
+      {
+        "id": "kingrinder-k2",
+        "label": "KINGrinder K2",
+        "sources": [
+          "https://www.kingrinder.com/",
+          "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        ]
+      },
+      {
+        "id": "kingrinder-k4",
+        "label": "KINGrinder K4",
+        "sources": []
+      },
+      {
+        "id": "timemore-c3-max",
+        "label": "TIMEMORE C3 Max",
+        "sources": []
+      },
+      {
+        "id": "timemore-chestnut-c5-pro",
+        "label": "TIMEMORE Chestnut C5 Pro",
+        "sources": [
+          "https://www.timemore.com/es/products/timemore-manual-coffee-grinder-chestnut-c5-series"
+        ]
+      },
+      {
+        "id": "kingrinder-k0-k1",
+        "label": "KINGrinder K0 / K1",
+        "sources": []
+      },
+      {
+        "id": "kingrinder-k3",
+        "label": "KINGrinder K3",
+        "sources": []
+      },
+      {
+        "id": "1zpresso-k-plus",
+        "label": "1Zpresso K-Plus",
+        "sources": []
+      },
+      {
+        "id": "1zpresso-j-max-s",
+        "label": "1Zpresso J-Max S",
+        "sources": []
+      },
+      {
+        "id": "kinu-m47-phoenix",
+        "label": "Kinu M47 Phoenix",
+        "sources": []
+      },
+      {
+        "id": "timemore-sculptor-078s",
+        "label": "TIMEMORE Sculptor 078S",
+        "sources": []
+      },
+      {
+        "id": "feima-600n",
+        "label": "Feima 600N",
+        "sources": [
+          "https://www.costco.com.tw/Warehouse-Only/Exhibitions/Kitchen-Appliances/Yang-Chia-Coffee-Grinder-600N/p/88262",
+          "https://www.blibli.com/p/latina-feima-600n-electric-coffee-grinder-penggiling-kopi-elektrik600-putih-100-original/ps--PUA-70058-01532",
+          "https://lampungbaratkab.go.id/home/wp-content/uploads/2025/05/SK-SSH-2026.pdf"
+        ]
+      }
+    ],
+    "data_gaps": [
+      {
+        "id": "1zpresso-je-plus-grinder",
+        "label": "1Zpresso JE-Plus Grinder",
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ]
+      },
+      {
+        "id": "1zpresso-jx-pro-s",
+        "label": "1Zpresso JX-Pro S",
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ]
+      },
+      {
+        "id": "1zpresso-k-max",
+        "label": "1Zpresso K-Max",
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ]
+      },
+      {
+        "id": "40",
+        "label": "Etzinger etz-I",
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ]
+      },
+      {
+        "id": "49",
+        "label": "Mazzer Omega",
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ]
+      },
+      {
+        "id": "50",
+        "label": "OE Lido 3 / OG",
+        "missing_fields": [
+          "grinder_type"
+        ]
+      },
+      {
+        "id": "51",
+        "label": "Pietro (Flat Burr)",
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ]
+      },
+      {
+        "id": "56",
+        "label": "Timemore Chestnut X",
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ]
+      },
+      {
+        "id": "58",
+        "label": "Timemore S3",
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ]
+      },
+      {
+        "id": "comandante-x25-trailmaster",
+        "label": "Comandante X25 Trailmaster",
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ]
+      },
+      {
+        "id": "hario-smart-g",
+        "label": "HARIO Smart G",
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ]
+      },
+      {
+        "id": "kingrinder-k2",
+        "label": "KINGrinder K2",
+        "missing_fields": [
+          "grinder_type",
+          "step_type"
+        ]
+      },
+      {
+        "id": "kingrinder-k4",
+        "label": "KINGrinder K4",
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ]
+      },
+      {
+        "id": "timemore-c3-max",
+        "label": "TIMEMORE C3 Max",
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ]
+      },
+      {
+        "id": "kingrinder-k0-k1",
+        "label": "KINGrinder K0 / K1",
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ]
+      },
+      {
+        "id": "kingrinder-k3",
+        "label": "KINGrinder K3",
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ]
+      },
+      {
+        "id": "1zpresso-k-plus",
+        "label": "1Zpresso K-Plus",
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ]
+      },
+      {
+        "id": "1zpresso-j-max-s",
+        "label": "1Zpresso J-Max S",
+        "missing_fields": [
+          "grinder_type",
+          "step_type",
+          "sources"
+        ]
+      },
+      {
+        "id": "kinu-m47-phoenix",
+        "label": "Kinu M47 Phoenix",
+        "missing_fields": [
+          "grinder_type",
+          "sources"
+        ]
+      },
+      {
+        "id": "timemore-sculptor-078s",
+        "label": "TIMEMORE Sculptor 078S",
+        "missing_fields": [
+          "sources"
+        ]
+      }
+    ]
+  }
+}

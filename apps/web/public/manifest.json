@@ -1,0 +1,54 @@
+{
+  "name": "BaristaClaw",
+  "short_name": "BaristaClaw",
+  "description": "AI-powered barista assistant - scan beans, get expert recipes, brew like a pro",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "prefer_related_applications": false,
+  "categories": [
+    "food",
+    "utilities",
+    "lifestyle"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png?v=20260325a",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192-maskable.png?v=20260325a",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512.png?v=20260325a",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png?v=20260325a",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-1024.png?v=20260325a",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

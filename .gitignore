@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+.vercel/
+credentials.json
+*.pem
+*.key
+*.p8
+*.p12
+*.jks
+*.keystore
+keystores/
+
+# Expo / native generated output
+.expo/
+dist/
+web-build/
+.metro-health-check*
+apps/mobile/.expo/
+apps/mobile/node_modules/
+apps/mobile/ios/
+apps/mobile/android/
+apps/mobile/keystores/
+apps/mobile/credentials.json
+
+# Test and report artifacts
+playwright-report/
+test-results/
+lighthouse-report/
+output/
+.playwright-cli/
+
+# Local/private data extracts
+data/brewlogic-extract/
+
+# Logs, traces, and temporary generated files
+*.log
+*.trace
+*.stacks
+*.network
+tmp-*.png
+
+# OS artifacts
+.DS_Store
+__MACOSX/
+
+# Local backups of nested Git metadata
+**/.git-backup*/

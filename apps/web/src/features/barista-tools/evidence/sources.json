@@ -1,0 +1,114 @@
+[
+  {
+    "id": "sca_towards_chart",
+    "title": "Towards a New Brewing Chart",
+    "org": "Specialty Coffee Association",
+    "url": "https://sca.coffee/sca-news/25/issue-15/towards-a-new-brewing-chart",
+    "publishedAt": "2025-01-01",
+    "versionTag": "issue-15",
+    "tags": [
+      "core_standard"
+    ]
+  },
+  {
+    "id": "sca_cva_update",
+    "title": "SCA New CVA Cupping Standards",
+    "org": "Specialty Coffee Association",
+    "url": "https://sca.coffee/sca-news/sca-new-cva-cupping-standards",
+    "publishedAt": "2026-01-01",
+    "versionTag": "cva-standard",
+    "tags": [
+      "core_standard"
+    ]
+  },
+  {
+    "id": "wbrc_2025",
+    "title": "WBrC Rules & Regulations 2025",
+    "org": "World Coffee Championships",
+    "url": "https://worldcoffeechampionship.com/wp-content/uploads/2025/06/2025-WBrC-Rules-Regulations-Final.pdf",
+    "publishedAt": "2025-06-01",
+    "versionTag": "2025-final",
+    "tags": [
+      "competition_rule"
+    ]
+  },
+  {
+    "id": "wbc_2026",
+    "title": "WBC Rules & Regulations 2026",
+    "org": "World Coffee Championships",
+    "url": "https://worldcoffeechampionship.com/wp-content/uploads/2026/02/2026-WBC-Rules-Regulations-v2.pdf",
+    "publishedAt": "2026-02-01",
+    "versionTag": "v2",
+    "tags": [
+      "competition_rule"
+    ]
+  },
+  {
+    "id": "paper_roast_2024",
+    "title": "Impact of roast degree on extraction outcomes",
+    "org": "Scientific Reports",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/39582028/",
+    "publishedAt": "2024-11-14",
+    "versionTag": "SciRep-2024",
+    "tags": [
+      "peer_review"
+    ]
+  },
+  {
+    "id": "paper_physicochem_2020",
+    "title": "Physicochemical characteristics of brewed coffee and extraction variables",
+    "org": "Peer-reviewed (PMC)",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7404565/",
+    "publishedAt": "2020-08-01",
+    "versionTag": "PMC7404565",
+    "tags": [
+      "peer_review"
+    ]
+  },
+  {
+    "id": "sca_indonesia_collab_2025",
+    "title": "SCA Collaborates with Specialty Coffee Association of Indonesia",
+    "org": "Specialty Coffee Association",
+    "url": "https://sca.coffee/sca-news/sca-collaborates-with-specialty-coffee-association-of-indonesia-to-host-the-indonesian-coffee-championships",
+    "publishedAt": "2025-05-16",
+    "versionTag": "news-2025-05-16",
+    "tags": [
+      "regional_context"
+    ]
+  },
+  {
+    "id": "scai_icc_2025",
+    "title": "Indonesia Coffee Championship 2025 Rules and Event Updates",
+    "org": "Specialty Coffee Association of Indonesia",
+    "url": "https://icc.scai.or.id/",
+    "publishedAt": "2025-01-01",
+    "versionTag": "icc-2025",
+    "tags": [
+      "regional_context",
+      "competition_rule"
+    ]
+  },
+  {
+    "id": "sca_woc_jakarta_2025",
+    "title": "Announcing World of Coffee Jakarta 2025",
+    "org": "Specialty Coffee Association",
+    "url": "https://sca.coffee/sca-news/announcing-world-of-coffee-jakarta-2025",
+    "publishedAt": "2024-05-03",
+    "versionTag": "woc-jakarta-2025-announcement",
+    "tags": [
+      "regional_context"
+    ]
+  },
+  {
+    "id": "sca_wcc_2025_three_continents",
+    "title": "2025 World Coffee Championships to Take Place Across Three Continents",
+    "org": "Specialty Coffee Association",
+    "url": "https://sca.coffee/sca-news/2025-world-coffee-championships-to-take-place-across-three-continents",
+    "publishedAt": "2024-06-26",
+    "versionTag": "wcc-2025-host-cities",
+    "tags": [
+      "competition_rule",
+      "regional_context"
+    ]
+  }
+]

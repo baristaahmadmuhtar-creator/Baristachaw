@@ -1,0 +1,908 @@
+{
+  "catalogVersion": "2026.06.0-ai-brew-v2",
+  "items": [
+    {
+      "id": "aerobic_fermentation",
+      "label": "Aerobic Fermentation",
+      "group": "fermented",
+      "aliases": [
+        "open-air fermentation"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Open or oxygen-rich fermentation process context commonly used as counterpart to anaerobic descriptors."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Global",
+        "Latin America",
+        "Africa",
+        "Asia"
+      ]
+    },
+    {
+      "id": "anaerobic",
+      "label": "Anaerobic",
+      "group": "fermented",
+      "aliases": [
+        "anaerobic fermentation"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Use cup feedback before tightening ratio or pushing temperature; descriptors vary a lot producer to producer."
+      ],
+      "origins": [
+        "Global",
+        "Latin America",
+        "Africa",
+        "Asia",
+        "Vietnam",
+        "Thailand",
+        "China",
+        "Taiwan",
+        "Indonesia"
+      ]
+    },
+    {
+      "id": "anaerobic_honey",
+      "label": "Anaerobic Honey",
+      "group": "fermented",
+      "aliases": [
+        "honey anaerobic",
+        "anaerobic pulped natural"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Hybrid honey + sealed fermentation process often found in modern competition lots.",
+        "Treat as high-variability process and prioritize cup feedback before numeric tightening."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Latin America",
+        "Indonesia",
+        "Thailand",
+        "Vietnam"
+      ]
+    },
+    {
+      "id": "anaerobic_natural",
+      "label": "Anaerobic Natural",
+      "group": "fermented",
+      "aliases": [
+        "natural anaerobic"
+      ],
+      "searchText": "anaerobic natural natural anaerobic",
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Common specialty descriptor for natural lots fermented in low-oxygen environments."
+      ],
+      "origins": [
+        "Latin America",
+        "Ethiopia",
+        "Indonesia",
+        "China",
+        "Vietnam",
+        "Thailand",
+        "Taiwan"
+      ]
+    },
+    {
+      "id": "anaerobic_thermal_shock",
+      "label": "Anaerobic Thermal Shock",
+      "group": "experimental",
+      "aliases": [
+        "thermal shock anaerobic"
+      ],
+      "source": "curated-reference",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "notes": [
+        "Combination descriptor for sealed fermentation followed by temperature-shock finishing. Prioritize cup feedback before major brew adjustments."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Colombia",
+        "Costa Rica",
+        "Panama",
+        "Indonesia"
+      ]
+    },
+    {
+      "id": "anaerobic_washed",
+      "label": "Anaerobic Washed",
+      "group": "fermented",
+      "aliases": [
+        "washed anaerobic"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Hybrid descriptor combining controlled anaerobic fermentation with washed finishing."
+      ],
+      "searchText": "anaerobic washed washed anaerobic",
+      "verifiedAt": "2026-03-11",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Latin America",
+        "Indonesia",
+        "Rwanda",
+        "Kenya",
+        "Vietnam",
+        "Thailand",
+        "China"
+      ]
+    },
+    {
+      "id": "black_honey",
+      "label": "Black Honey",
+      "group": "classic",
+      "aliases": [
+        "dark honey"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Higher mucilage retention variant of honey processing; use cup feedback before aggressive extraction shifts."
+      ],
+      "searchText": "black honey dark honey",
+      "verifiedAt": "2026-03-11",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Costa Rica",
+        "El Salvador",
+        "Nicaragua",
+        "Panama"
+      ]
+    },
+    {
+      "id": "carbonic_maceration",
+      "label": "Carbonic Maceration",
+      "group": "fermented",
+      "aliases": [
+        "cm"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Often intense aromatically; numeric brew changes are not auto-applied without stronger evidence."
+      ],
+      "origins": [
+        "Colombia",
+        "Costa Rica",
+        "Panama",
+        "Ethiopia",
+        "China",
+        "Thailand",
+        "Taiwan"
+      ]
+    },
+    {
+      "id": "coferment",
+      "label": "Co-Ferment",
+      "group": "experimental",
+      "aliases": [
+        "co-fermented",
+        "fruit coferment"
+      ],
+      "source": "curated-reference",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "notes": [
+        "Experimental co-fermentation descriptor with high sensory variability; do not auto-apply aggressive numeric shifts."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Colombia",
+        "China",
+        "Indonesia",
+        "Panama"
+      ]
+    },
+    {
+      "id": "decaf",
+      "label": "Decaf",
+      "group": "special",
+      "aliases": [
+        "decaffeinated"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "notes": [
+        "Processing method varies; use roast and cup result as the primary adjustment anchor."
+      ],
+      "origins": [
+        "Global",
+        "Colombia",
+        "Mexico",
+        "Brazil"
+      ]
+    },
+    {
+      "id": "double_fermentation",
+      "label": "Double Fermentation",
+      "group": "fermented",
+      "aliases": [
+        "two-stage fermentation",
+        "double ferment"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Two-stage fermentation workflows appear across experimental producers in Latin America and Asia."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Colombia",
+        "Costa Rica",
+        "Ethiopia",
+        "Indonesia"
+      ]
+    },
+    {
+      "id": "enzyme_fermentation",
+      "label": "Enzyme Fermentation",
+      "group": "experimental",
+      "aliases": [
+        "enzymatic fermentation",
+        "enzyme processed"
+      ],
+      "source": "curated-reference",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "notes": [
+        "Experimental process descriptor seen in limited lots; keep brew moves conservative until cup confirms direction."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Colombia",
+        "Panama",
+        "China",
+        "Indonesia"
+      ]
+    },
+    {
+      "id": "extended_fermentation",
+      "label": "Extended Fermentation",
+      "group": "fermented",
+      "aliases": [
+        "long fermentation"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Treat as sensory context rather than a guaranteed numeric rule."
+      ],
+      "origins": [
+        "Colombia",
+        "Ethiopia",
+        "Kenya",
+        "Indonesia"
+      ]
+    },
+    {
+      "id": "honey",
+      "label": "Honey",
+      "group": "classic",
+      "aliases": [
+        "pulped natural",
+        "mucilage-dried"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "notes": [
+        "Usually sits between washed clarity and natural sweetness."
+      ],
+      "origins": [
+        "Costa Rica",
+        "El Salvador",
+        "Nicaragua",
+        "Panama",
+        "Thailand",
+        "Vietnam",
+        "Taiwan",
+        "Malaysia"
+      ]
+    },
+    {
+      "id": "koji_fermentation",
+      "label": "Koji Fermentation",
+      "group": "experimental",
+      "aliases": [
+        "koji processed"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "notes": [
+        "Experimental fermentation pathway; keep recipe moves conservative until cup confirms direction."
+      ],
+      "searchText": "koji fermentation koji processed",
+      "verifiedAt": "2026-03-11",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Japan",
+        "China",
+        "South Korea",
+        "Indonesia"
+      ]
+    },
+    {
+      "id": "lactic",
+      "label": "Lactic Fermentation",
+      "group": "fermented",
+      "aliases": [
+        "lactic"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "High-aroma process; keep brew moves small until taste confirms direction."
+      ],
+      "origins": [
+        "Colombia",
+        "Costa Rica",
+        "Ethiopia",
+        "Kenya"
+      ]
+    },
+    {
+      "id": "lactic_anaerobic",
+      "label": "Lactic Anaerobic",
+      "group": "fermented",
+      "aliases": [
+        "anaerobic lactic",
+        "lactic anaerobic fermentation"
+      ],
+      "source": "curated-reference",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Used by modern producers to signal anaerobic fermentation emphasizing lactic acidity; treat as high-variability context."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Colombia",
+        "Panama",
+        "Indonesia",
+        "China"
+      ]
+    },
+    {
+      "id": "low_oxygen_natural",
+      "label": "Low Oxygen Natural",
+      "group": "fermented",
+      "aliases": [
+        "oxygen-limited natural",
+        "sealed natural"
+      ],
+      "source": "curated-reference",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "notes": [
+        "Used as taxonomy context for modern sealed-container natural processing claims."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Brazil",
+        "Ethiopia",
+        "Indonesia",
+        "Yemen"
+      ]
+    },
+    {
+      "id": "monsooned",
+      "label": "Monsooned",
+      "group": "regional",
+      "aliases": [
+        "monsoon process"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Regional post-harvest conditioning process; treat as sensory context rather than deterministic numeric shift."
+      ],
+      "searchText": "monsooned monsoon process",
+      "verifiedAt": "2026-03-11",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "India",
+        "Indonesia",
+        "Myanmar"
+      ]
+    },
+    {
+      "id": "natural",
+      "label": "Natural",
+      "group": "classic",
+      "aliases": [
+        "dry process",
+        "sun-dried"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "notes": [
+        "Often expresses heavier fruit and fermentation risk if extraction is pushed too far."
+      ],
+      "origins": [
+        "Ethiopia",
+        "Brazil",
+        "Yemen",
+        "Indonesia",
+        "Vietnam",
+        "Thailand",
+        "Philippines",
+        "Laos"
+      ]
+    },
+    {
+      "id": "pulped_natural",
+      "label": "Pulped Natural",
+      "group": "classic",
+      "aliases": [
+        "semi-washed"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Common in Latin America and often overlaps with honey-style descriptions."
+      ],
+      "origins": [
+        "Brazil",
+        "India",
+        "Indonesia"
+      ]
+    },
+    {
+      "id": "red_honey",
+      "label": "Red Honey",
+      "group": "classic",
+      "aliases": [
+        "honey red"
+      ],
+      "searchText": "red honey honey red",
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Honey sub-style often associated with higher mucilage retention and sweetness-forward cups."
+      ],
+      "origins": [
+        "Costa Rica",
+        "El Salvador",
+        "Nicaragua",
+        "Panama"
+      ]
+    },
+    {
+      "id": "semi_washed",
+      "label": "Semi Washed",
+      "group": "regional",
+      "aliases": [
+        "semi-washed",
+        "semi washed",
+        "semi-basah"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Regional descriptor often used across Indonesia and Southeast Asia as a practical alias around wet-hulled and pulped transitions."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Indonesia",
+        "India",
+        "Brazil",
+        "Vietnam",
+        "Laos"
+      ]
+    },
+    {
+      "id": "sequential_fermentation",
+      "label": "Sequential Fermentation",
+      "group": "fermented",
+      "aliases": [
+        "multi-stage fermentation",
+        "staged fermentation"
+      ],
+      "source": "curated-reference",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Used when producers explicitly separate fermentation into discrete stages with different oxygen or temperature control."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Colombia",
+        "Costa Rica",
+        "Panama",
+        "Indonesia"
+      ]
+    },
+    {
+      "id": "thermal_shock",
+      "label": "Thermal Shock",
+      "group": "experimental",
+      "aliases": [
+        "hot-cold thermal shock"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Treat as a producer-process descriptor first, not as a fixed brew target."
+      ],
+      "origins": [
+        "Colombia",
+        "Panama",
+        "Ecuador",
+        "Indonesia"
+      ]
+    },
+    {
+      "id": "washed",
+      "label": "Washed",
+      "group": "classic",
+      "aliases": [
+        "fully washed",
+        "wet process"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "notes": [
+        "Classic clean-cup processing baseline with high repeatability.",
+        "No automatic numeric modifier is applied unless a curated rule is attached."
+      ],
+      "origins": [
+        "Global",
+        "Ethiopia",
+        "Kenya",
+        "Colombia",
+        "Vietnam",
+        "Thailand",
+        "Taiwan",
+        "Myanmar"
+      ]
+    },
+    {
+      "id": "wet_hulled",
+      "label": "Wet Hulled",
+      "group": "regional",
+      "aliases": [
+        "giling basah"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "notes": [
+        "Regional process strongly associated with Indonesia; body and earthy depth can dominate if brewed too hot."
+      ],
+      "origins": [
+        "Indonesia",
+        "Papua New Guinea",
+        "Timor-Leste",
+        "Malaysia"
+      ]
+    },
+    {
+      "id": "white_honey",
+      "label": "White Honey",
+      "group": "classic",
+      "aliases": [
+        "yellow honey"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Cleaner honey-process lane that often behaves closer to washed than black honey lots."
+      ],
+      "searchText": "white honey yellow honey",
+      "verifiedAt": "2026-03-11",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Costa Rica",
+        "El Salvador",
+        "Nicaragua"
+      ]
+    },
+    {
+      "id": "wine_yeast_fermentation",
+      "label": "Wine Yeast Fermentation",
+      "group": "experimental",
+      "aliases": [
+        "wine yeast",
+        "inoculated wine yeast"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Yeast inoculation style often emphasizes intense aromatics and can over-index fruit notes in light roasts."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "origins": [
+        "Colombia",
+        "Costa Rica",
+        "Panama",
+        "China"
+      ]
+    },
+    {
+      "id": "yeast_inoculated",
+      "label": "Yeast Inoculated",
+      "group": "fermented",
+      "aliases": [
+        "cultured yeast"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Fermentation expression depends heavily on producer protocol."
+      ],
+      "origins": [
+        "Global",
+        "Colombia",
+        "Costa Rica",
+        "Indonesia",
+        "Vietnam",
+        "Thailand",
+        "Malaysia"
+      ]
+    },
+    {
+      "id": "yellow_honey",
+      "label": "Yellow Honey",
+      "group": "classic",
+      "aliases": [
+        "honey yellow"
+      ],
+      "searchText": "yellow honey honey yellow",
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Often used to describe cleaner honey expression versus darker honey variants."
+      ],
+      "origins": [
+        "Costa Rica",
+        "El Salvador",
+        "Nicaragua",
+        "Brazil"
+      ]
+    }
+  ]
+}

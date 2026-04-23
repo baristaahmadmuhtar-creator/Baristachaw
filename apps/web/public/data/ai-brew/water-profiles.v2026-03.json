@@ -1,0 +1,98 @@
+{
+  "catalogVersion": "2026.03.09-ai-brew-v1",
+  "items": [
+    {
+      "id": "aqua",
+      "name": "Aqua (Danone)",
+      "region": "Indonesia",
+      "tdsPpm": 120,
+      "hardnessPpm": 70,
+      "alkalinityPpm": 40,
+      "style": "balanced",
+      "notes": "Balanced bottled-water baseline for sweet, clean brews.",
+      "source": "user_dataset",
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "le_minerale",
+      "name": "Le Minerale",
+      "region": "Indonesia",
+      "tdsPpm": 150,
+      "hardnessPpm": 85,
+      "alkalinityPpm": 50,
+      "style": "buffered",
+      "notes": "Slightly broader mineral profile that can read fuller and softer.",
+      "source": "user_dataset",
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "nestle",
+      "name": "Nestle Pure Life",
+      "region": "Global",
+      "tdsPpm": 95,
+      "hardnessPpm": 55,
+      "alkalinityPpm": 35,
+      "style": "balanced",
+      "notes": "A cleaner, lighter profile that keeps clarity and florals open.",
+      "source": "user_dataset",
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "cleo",
+      "name": "Cleo (Distilled/RO)",
+      "region": "Indonesia",
+      "tdsPpm": 18,
+      "hardnessPpm": 5,
+      "alkalinityPpm": 4,
+      "style": "distilled",
+      "notes": "Very low mineral water. Best when blended or remineralized for filter coffee.",
+      "source": "user_dataset",
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "amidis",
+      "name": "Amidis (Distilled)",
+      "region": "Indonesia",
+      "tdsPpm": 10,
+      "hardnessPpm": 3,
+      "alkalinityPpm": 2,
+      "style": "distilled",
+      "notes": "Ultra-low mineral baseline that needs careful recipe energy.",
+      "source": "user_dataset",
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "balanced_global",
+      "name": "Balanced Filter Water",
+      "region": "Global",
+      "tdsPpm": 110,
+      "hardnessPpm": 68,
+      "alkalinityPpm": 40,
+      "style": "balanced",
+      "notes": "Generic SCA-friendly profile for international cafes and home brewers.",
+      "source": "curated_internal",
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "soft_spring",
+      "name": "Soft Spring Water",
+      "region": "Global",
+      "tdsPpm": 75,
+      "hardnessPpm": 38,
+      "alkalinityPpm": 24,
+      "style": "soft",
+      "notes": "Soft water profile that rewards slightly higher temperature and a touch more extraction.",
+      "source": "curated_internal",
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "custom",
+      "name": "Custom ppm input",
+      "region": "User defined",
+      "style": "custom",
+      "notes": "Use when you know your own water or mineral recipe.",
+      "source": "user_input",
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    }
+  ]
+}

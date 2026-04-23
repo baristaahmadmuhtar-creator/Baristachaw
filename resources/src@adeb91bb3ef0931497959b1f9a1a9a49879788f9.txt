@@ -1,0 +1,514 @@
+import { test, expect } from '@playwright/test';
+import { qaLogin, qaLogout } from '../fixtures/auth';
+import { mockAiApis } from '../helpers/network';
+
+test.afterEach(async ({ page }) => {
+  await qaLogout(page.request);
+});
+
+async function openQuickBuilder(page: import('@playwright/test').Page) {
+  await page.goto('/tools');
+  await page.getByTestId('ai-brew-open-quick').click();
+  await expect(page.getByTestId('ai-brew-builder-quick')).toBeVisible();
+}
+
+async function pickWater(page: import('@playwright/test').Page, query: string, id: string) {
+  await page.getByTestId('ai-brew-water-picker').click();
+  await page.getByTestId('ai-brew-picker-search-water_brand').fill(query);
+  await page.getByTestId(`ai-brew-picker-option-water_brand-${id}`).first().click();
+}
+
+test('ai brew auto sequence keeps deterministic operational steps when mocked AI is generic', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await openQuickBuilder(page);
+  await page.getByTestId('ai-brew-coffee-name').fill('QA Hybrid Fallback');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible();
+  await expect(sequenceNote).toContainText('## Sequence');
+  await expect(sequenceNote).toContainText(/Bloom \(00:00\): pour/i);
+  await expect(sequenceNote).toContainText(/Keep final envelope locked/i);
+});
+
+test('ai brew auto sequence keeps deterministic sequence when AI responses timeout', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await page.route('**/api/ai', async (route) => {
+    const body = (route.request().postDataJSON() || {}) as { action?: string };
+    if (body.action === 'fast') {
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ ok: true, text: 'Request timed out after 30s. Please try again.' }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  await openQuickBuilder(page);
+  await page.getByTestId('ai-brew-coffee-name').fill('QA Hybrid Timeout Fallback');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible();
+  await expect(sequenceNote).toContainText('## Sequence');
+  await expect(sequenceNote).toContainText(/Pulse 1 \(00:40\): pour/i);
+  await expect(sequenceNote).toContainText(/Keep final envelope locked/i);
+});
+
+
+test('ai brew auto sequence falls back when mocked AI mixes conflicting method cues', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await page.route('**/api/ai', async (route) => {
+    const body = (route.request().postDataJSON() || {}) as { action?: string };
+    if (body.action === 'fast') {
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          ok: true,
+          text: [
+            '## Service Pattern',
+            '- Balanced Cone Clarity Arc for Hario V60 and Chemex profile.',
+            '- Hot mode active with Volvic constraints.',
+            '## Sequence',
+            '1. Bloom at 00:00: pour 60 ml to 60 ml for Hario V60 balance target with Volvic water and wait for bed expansion.',
+            '2. Pulse 1 at 00:40: pour 90 ml to 150 ml for Hario V60 balance target with Volvic water and hold stream calm.',
+            '3. Pulse 2 at 01:30: pour 120 ml to 270 ml for Hario V60 balance target with bean roast context and level gently.',
+            '## Watch',
+            '- Keep V60 flow stable for balance target while avoiding Chemex bypass.',
+            '- Keep Volvic mineral behavior and bean context stable.',
+          ].join('\n'),
+        }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  await openQuickBuilder(page);
+  await page.getByTestId('ai-brew-coffee-name').fill('QA Hybrid Method-Conflict Fallback');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible();
+  await expect(sequenceNote).toContainText('## Sequence');
+  await expect(sequenceNote).toContainText(/Bloom (00:00): pour/i);
+  await expect(sequenceNote).toContainText(/Keep final envelope locked/i);
+});
+
+test('ai brew iced sequence falls back when AI omits explicit hot-ice split pairing', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await page.route('**/api/ai', async (route) => {
+    const body = (route.request().postDataJSON() || {}) as { action?: string; prompt?: string };
+    if (body.action === 'fast') {
+      const prompt = body.prompt || '';
+      const dripper = /Dripper:\s*(.+)/i.exec(prompt)?.[1]?.trim() || 'Hario V60';
+      const targetProfile = /Target profile:\s*(.+)/i.exec(prompt)?.[1]?.trim() || 'Balance & Clean';
+      const waterBrand = /Water brand:\s*(.+)/i.exec(prompt)?.[1]?.trim() || 'Volvic';
+      const iceMl = /- ice:\s*(\d+(?:\.\d+)?)\s*ml/i.exec(prompt)?.[1] || '100';
+      const stepLines = Array.from(prompt.matchAll(/^(\d+)\.\s+(.+?)\s+at\s+(\d{2}:\d{2}):\s+pour\s+(\d+(?:\.\d+)?)\s+ml\s+to\s+(\d+(?:\.\d+)?)\s+ml\./gim));
+
+      const sequence = stepLines.slice(0, 3).map((entry) => {
+        const index = entry[1];
+        const label = entry[2];
+        const time = entry[3];
+        const pour = entry[4];
+        const target = entry[5];
+        const tail = index === '3'
+          ? `for ${dripper} ${targetProfile} with ${waterBrand} water, then level gently before adding ${iceMl} ml ice.`
+          : `for ${dripper} ${targetProfile} with ${waterBrand} water and hold stream calm.`;
+        return `${index}. ${label} at ${time}: pour ${pour} ml to ${target} ml ${tail}`;
+      });
+
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          ok: true,
+          text: [
+            '## Service Pattern',
+            `- Balanced Cone Clarity Arc for ${dripper}.`,
+            `- Iced mode active with ${waterBrand} constraints and ${targetProfile} target.`,
+            '## Sequence',
+            ...sequence,
+            '## Watch',
+            `- Keep ${dripper} flow stable for ${targetProfile} with ${waterBrand} water.`,
+            '- Keep bean and water constraints stable through extraction.',
+          ].join('\n'),
+        }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  await openQuickBuilder(page);
+  await page.getByTestId('ai-brew-builder-mode-iced').click();
+  await page.getByTestId('ai-brew-coffee-name').fill('QA Hybrid Iced Split Fallback');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible();
+  await expect(sequenceNote).toContainText('## Sequence');
+  await expect(sequenceNote).toContainText(/Keep final envelope locked/i);
+  await expect(sequenceNote).toContainText(/ml hot\s*\/\s*\d+(?:\.\d+)?\s*ml ice/i);
+});
+
+
+test('ai brew auto sequence falls back when AI wait timing exceeds deterministic cadence', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await page.route('**/api/ai', async (route) => {
+    const body = (route.request().postDataJSON() || {}) as { action?: string };
+    if (body.action === 'fast') {
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          ok: true,
+          text: [
+            '## Service Pattern',
+            '- Balanced Cone Clarity Arc for Hario V60.',
+            '- Hot mode active with Volvic constraints.',
+            '## Sequence',
+            '1. Bloom at 00:00: pour 60 ml to 60 ml for Hario V60 balance profile with Volvic water and wait for 95 seconds before next pulse.',
+            '2. Pulse 1 at 00:40: pour 90 ml to 150 ml for Hario V60 balance target with Volvic water and hold stream calm.',
+            '3. Pulse 2 at 01:30: pour 120 ml to 270 ml for Hario V60 balance profile with bean roast context and settle bed.',
+            '## Watch',
+            '- Keep V60 flow stable for balance target and Volvic water.',
+            '- Keep bean and water constraints stable through extraction.',
+          ].join('\n'),
+        }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  await openQuickBuilder(page);
+  await page.getByTestId('ai-brew-coffee-name').fill('QA Hybrid Cadence Fallback');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible();
+  await expect(sequenceNote).toContainText('## Sequence');
+  await expect(sequenceNote).toContainText(/Bloom (00:00): pour/i);
+  await expect(sequenceNote).toContainText(/Keep final envelope locked/i);
+});
+
+test('ai brew auto sequence falls back when AI repeats one template shell across all steps', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await page.route('**/api/ai', async (route) => {
+    const body = (route.request().postDataJSON() || {}) as { action?: string };
+    if (body.action === 'fast') {
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          ok: true,
+          text: [
+            '## Service Pattern',
+            '- Balanced Cone Clarity Arc for Hario V60.',
+            '- Hot mode active with Volvic constraints.',
+            '## Sequence',
+            '1. Bloom at 00:00: pour 60 ml to 60 ml for Hario V60 balance profile with Volvic water and hold stream calm before bed settle.',
+            '2. Pulse 1 at 00:40: pour 90 ml to 150 ml for Hario V60 balance profile with Volvic water and hold stream calm before bed settle.',
+            '3. Pulse 2 at 01:30: pour 120 ml to 270 ml for Hario V60 balance profile with Volvic water and hold stream calm before bed settle.',
+            '## Watch',
+            '- Keep Hario V60 flow stable for balance target with Volvic water.',
+            '- Keep bean roast and mineral context stable through extraction.',
+          ].join('\n'),
+        }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  await openQuickBuilder(page);
+  await page.getByTestId('ai-brew-coffee-name').fill('QA Hybrid Template-Shell Fallback');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible();
+  await expect(sequenceNote).toContainText('## Sequence');
+  await expect(sequenceNote).toContainText(/Bloom (00:00): pour/i);
+  await expect(sequenceNote).toContainText(/Keep final envelope locked/i);
+});
+
+test('ai brew auto sequence falls back when AI changes brew parameters mid-sequence', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await page.route('**/api/ai', async (route) => {
+    const body = (route.request().postDataJSON() || {}) as { action?: string };
+    if (body.action === 'fast') {
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          ok: true,
+          text: [
+            '## Service Pattern',
+            '- Balanced Cone Clarity Arc for Hario V60.',
+            '- Hot mode active with Volvic constraints.',
+            '## Sequence',
+            '1. Bloom at 00:00: pour 60 ml to 60 ml for Hario V60 balance profile with Volvic water and wait for bed expansion.',
+            '2. Pulse 1 at 00:40: pour 90 ml to 150 ml for Hario V60 balance profile with Volvic water and raise temperature to 95 C before next pulse.',
+            '3. Pulse 2 at 01:30: pour 120 ml to 270 ml for Hario V60 balance profile with bean roast context and settle bed.',
+            '## Watch',
+            '- Keep V60 flow stable for balance target and Volvic water.',
+            '- Keep bean and water constraints stable through extraction.',
+          ].join('\n'),
+        }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  await openQuickBuilder(page);
+  await page.getByTestId('ai-brew-coffee-name').fill('QA Hybrid Mid-Run Shift Fallback');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible();
+  await expect(sequenceNote).toContainText('## Sequence');
+  await expect(sequenceNote).toContainText(/Bloom \(00:00\): pour/i);
+  await expect(sequenceNote).toContainText(/Keep final envelope locked/i);
+});
+
+test('ai brew auto sequence falls back when AI chains second pour checkpoint inside one step', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await page.route('**/api/ai', async (route) => {
+    const body = (route.request().postDataJSON() || {}) as { action?: string };
+    if (body.action === 'fast') {
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          ok: true,
+          text: [
+            '## Service Pattern',
+            '- Balanced Cone Clarity Arc for Hario V60.',
+            '- Hot mode active with Volvic constraints.',
+            '## Sequence',
+            '1. Bloom at 00:00: pour 60 ml to 60 ml for Hario V60 balance profile with Volvic water and wait for bed expansion.',
+            '2. Pulse 1 at 00:40: pour 90 ml to 150 ml for Hario V60 balance profile with Volvic water, then pour 15 ml to 165 ml before leveling.',
+            '3. Pulse 2 at 01:30: pour 120 ml to 270 ml for Hario V60 balance profile with bean roast context and settle bed.',
+            '## Watch',
+            '- Keep V60 flow stable for balance target and Volvic water.',
+            '- Keep bean and water constraints stable through extraction.',
+          ].join('\n'),
+        }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  await openQuickBuilder(page);
+  await page.getByTestId('ai-brew-coffee-name').fill('QA Hybrid Multi-Pour Fallback');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible();
+  await expect(sequenceNote).toContainText('## Sequence');
+  await expect(sequenceNote).toContainText(/Bloom \(00:00\): pour/i);
+  await expect(sequenceNote).toContainText(/Keep final envelope locked/i);
+});
+
+
+test('ai brew auto sequence falls back when step 1 carries closure-phase wording', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await page.route('**/api/ai', async (route) => {
+    const body = (route.request().postDataJSON() || {}) as { action?: string };
+    if (body.action === 'fast') {
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          ok: true,
+          text: [
+            '## Service Pattern',
+            '- Balanced Cone Clarity Arc for Hario V60.',
+            '- Hot mode active with Volvic constraints.',
+            '## Sequence',
+            '1. Bloom at 00:00: pour 60 ml to 60 ml for Hario V60 balance profile with Volvic water and finish drawdown quickly before pulse start.',
+            '2. Pulse 1 at 00:40: pour 90 ml to 150 ml for Hario V60 balance profile with Volvic water and hold stream calm.',
+            '3. Pulse 2 at 01:30: pour 120 ml to 270 ml for Hario V60 balance profile with bean roast context and settle bed.',
+            '## Watch',
+            '- Keep V60 flow stable for balance target and Volvic water.',
+            '- Keep bean and water constraints stable through extraction.',
+          ].join('\n'),
+        }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  await openQuickBuilder(page);
+  await page.getByTestId('ai-brew-coffee-name').fill('QA Hybrid Phase Intent Fallback');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible();
+  await expect(sequenceNote).toContainText('## Sequence');
+  await expect(sequenceNote).toContainText(/Bloom \(00:00\): pour/i);
+  await expect(sequenceNote).toContainText(/Keep final envelope locked/i);
+});
+
+
+
+test('ai brew auto sequence repairs weak watch section while preserving valid AI steps', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await page.route('**/api/ai', async (route) => {
+    const body = (route.request().postDataJSON() || {}) as { action?: string };
+    if (body.action === 'fast') {
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          ok: true,
+          text: [
+            '## Service Pattern',
+            '- Balanced Cone Clarity Arc for Hario V60.',
+            '- Hot mode active with Volvic constraints.',
+            '## Sequence',
+            '1. Bloom at 00:00: pour 60 ml to 60 ml for Hario V60 balance profile with Volvic water and wait for bed expansion.',
+            '2. Pulse 1 at 00:40: pour 90 ml to 150 ml for Hario V60 balance target with Volvic water and hold stream calm.',
+            '3. Pulse 2 at 01:30: pour 120 ml to 270 ml for Hario V60 balance profile with bean roast context and spiral-lock settling.',
+            '## Watch',
+            '- Keep flow stable.',
+          ].join('\n'),
+        }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  await openQuickBuilder(page);
+  await page.getByTestId('ai-brew-coffee-name').fill('QA Hybrid Partial Repair');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible();
+  await expect(sequenceNote).toContainText(/spiral-lock settling/i);
+  await expect(sequenceNote).toContainText(/Keep final envelope locked/i);
+});
+
+test('ai brew auto sequence falls back when AI uses hedging language in sequence steps', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await page.route('**/api/ai', async (route) => {
+    const body = (route.request().postDataJSON() || {}) as { action?: string };
+    if (body.action === 'fast') {
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          ok: true,
+          text: [
+            '## Service Pattern',
+            '- Balanced Cone Clarity Arc for Hario V60.',
+            '- Hot mode active with Volvic constraints.',
+            '## Sequence',
+            '1. Bloom at 00:00: pour 60 ml to 60 ml for Hario V60 balance profile with Volvic water and wait for bed expansion.',
+            '2. Pulse 1 at 00:40: pour 90 ml to 150 ml for Hario V60 balance profile with Volvic water and hold stream calm if required by drawdown feel.',
+            '3. Pulse 2 at 01:30: pour 120 ml to 270 ml for Hario V60 balance profile with bean roast context and settle bed.',
+            '## Watch',
+            '- Keep Hario V60 flow stable for balance target with Volvic water.',
+            '- Keep bean roast and mineral context stable through extraction.',
+          ].join('\n'),
+        }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  await openQuickBuilder(page);
+  await page.getByTestId('ai-brew-coffee-name').fill('QA Hybrid Hedging Fallback');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible();
+  await expect(sequenceNote).toContainText('## Sequence');
+  await expect(sequenceNote).toContainText(/Bloom \(00:00\): pour/i);
+  await expect(sequenceNote).toContainText(/Keep final envelope locked/i);
+});
+
+test('ai brew auto sequence normalizes safe free-form AI steps into deterministic checkpoints', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await page.route('**/api/ai', async (route) => {
+    const body = (route.request().postDataJSON() || {}) as { action?: string };
+    if (body.action === 'fast') {
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          ok: true,
+          text: [
+            '## Service Pattern',
+            '- Balanced Cone Clarity Arc for Hario V60.',
+            '- Hot mode active with Volvic constraints.',
+            '## Sequence',
+            '1. Start pour and wait for bloom expansion while keeping flow calm.',
+            '2. Continue pour with centered cadence and hold stream steady for target profile.',
+            '3. Finish pour calmly and settle bed for clean drawdown.',
+            '## Watch',
+            '- Keep flow stable.',
+          ].join('\n'),
+        }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  await openQuickBuilder(page);
+  await page.getByTestId('ai-brew-coffee-name').fill('QA Hybrid Step Normalization Repair');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible();
+  await expect(sequenceNote).toContainText(/Bloom \(00:00\): pour/i);
+  await expect(sequenceNote).toContainText(/Pulse 1 \(00:40\): pour/i);
+  await expect(sequenceNote).toContainText(/Pulse 2 \(01:30\): pour/i);
+});

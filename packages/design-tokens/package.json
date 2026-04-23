@@ -1,0 +1,14 @@
+{
+  "name": "@baristaclaw/design-tokens",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./web.css": "./src/web.css"
+  },
+  "scripts": {
+    "lint": "tsc --noEmit -p tsconfig.json"
+  }
+}

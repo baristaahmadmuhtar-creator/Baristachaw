@@ -1,0 +1,57 @@
+{
+  "version": "2026.03.11-asia-expansion-wave1",
+  "notes": [
+    "Curated expansion candidates for East and Southeast Asia brand coverage in Singapore retail workflow.",
+    "These records are intentionally review_only until market-SKU label panels are verified end-to-end."
+  ],
+  "items": [
+    {
+      "id": "suntory-tennensui-sg",
+      "brand": "Suntory Tennensui",
+      "country_origin": "Japan",
+      "market_code": "sg",
+      "status": "review_only",
+      "confidence": 0.56
+    },
+    {
+      "id": "jeju-samdasoo-sg",
+      "brand": "Jeju Samdasoo",
+      "country_origin": "South Korea",
+      "market_code": "sg",
+      "status": "review_only",
+      "confidence": 0.58
+    },
+    {
+      "id": "heysong-sarsaparilla-water-sg",
+      "brand": "HeySong Water",
+      "country_origin": "Taiwan",
+      "market_code": "sg",
+      "status": "review_only",
+      "confidence": 0.52
+    },
+    {
+      "id": "mont-fleur-sg",
+      "brand": "Mont Fleur",
+      "country_origin": "Thailand",
+      "market_code": "sg",
+      "status": "review_only",
+      "confidence": 0.51
+    },
+    {
+      "id": "la-vie-sg",
+      "brand": "La Vie",
+      "country_origin": "Vietnam",
+      "market_code": "sg",
+      "status": "review_only",
+      "confidence": 0.53
+    },
+    {
+      "id": "natures-spring-sg",
+      "brand": "Nature's Spring",
+      "country_origin": "Philippines",
+      "market_code": "sg",
+      "status": "review_only",
+      "confidence": 0.5
+    }
+  ]
+}

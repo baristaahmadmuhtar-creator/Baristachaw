@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "allowJs": true
+  },
+  "include": [
+    "api",
+    "lib",
+    "server.ts",
+    "playwright.config.ts",
+    "scripts"
+  ],
+  "exclude": [
+    "apps/mobile",
+    "apps/web",
+    "dist",
+    "node_modules"
+  ]
+}

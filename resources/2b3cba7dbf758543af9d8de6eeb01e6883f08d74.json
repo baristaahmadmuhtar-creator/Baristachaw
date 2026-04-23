@@ -1,0 +1,2085 @@
+{
+  "catalogVersion": "2026.06.0-ai-brew-v2",
+  "items": [
+    {
+      "id": "gs_1zpresso_j_max_s_cone",
+      "grinderId": "1zpresso-j-max-s",
+      "rangeLabel": "1.8 - 2.4 turns",
+      "note": "Filter-focused cone baseline for J-Max S from community filter conversions.",
+      "source": "1zpresso-community-curated",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grinder/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot",
+        "profile_family_kono_iced"
+      ],
+      "brewMode": "both",
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_j_ultra_cone",
+      "grinderId": "1zpresso-j-ultra",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "2.3 - 3.0 turns",
+      "note": "Cone-focused baseline for J-Ultra using turn notation so baristas can map from espresso-oriented dial habits.",
+      "source": "1zpresso-community-curated",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grinder/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_j_ultra_flat",
+      "grinderId": "1zpresso-j-ultra",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "2.7 - 3.4 turns",
+      "note": "Flat-bottom and immersion recipes on J-Ultra generally run slightly coarser than cone baseline to avoid clogging.",
+      "source": "1zpresso-community-curated",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_je_plus_cone",
+      "grinderId": "1zpresso-je-plus-grinder",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "2.7 - 3.5 numbers",
+      "note": "Curated JE-Plus filter range using external-number indexing; always confirm burr zero before relying on numeric transfer.",
+      "source": "1zpresso-community-curated",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "low",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_je_plus_flat",
+      "grinderId": "1zpresso-je-plus-grinder",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "3.0 - 3.8 numbers",
+      "note": "Flat-bottom reference drifts slightly coarser than cone baseline to avoid drawdown stall on denser beds.",
+      "source": "1zpresso-community-curated",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "low",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_jx_pro_s_cone",
+      "grinderId": "1zpresso-jx-pro-s",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "2.2 - 2.8 rotations",
+      "note": "JX-Pro S pour-over baseline from external-number indexing; always zero the burr before transferring settings.",
+      "source": "1zpresso-curated",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grinder/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_jx_pro_s_flat",
+      "grinderId": "1zpresso-jx-pro-s",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "2.5 - 3.1 rotations",
+      "note": "Flat-bed and immersion recipes usually run a touch coarser than the JX-Pro S cone baseline.",
+      "source": "1zpresso-curated",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_k_max_filter",
+      "grinderId": "1zpresso-k-max",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_kalita_hot",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "5.8 - 7.0 numbers",
+      "note": "K-Max medium reference anchored to K-series numbering conventions for filter-first use.",
+      "source": "1zpresso-curated",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grinder/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "legacy",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_k_max_flat",
+      "grinderId": "1zpresso-k-max",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_melitta_iced",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "6.2 - 7.4 numbers",
+      "note": "Flat-bed and immersion baseline for K-Max, tuned slightly coarser than cone references for stable drawdown.",
+      "source": "1zpresso-curated",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grinder/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "legacy",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_k_plus_flat",
+      "grinderId": "1zpresso-k-plus",
+      "rangeLabel": "6.0 - 7.4 numbers",
+      "note": "Flat-bed baseline for K-Plus tuned slightly coarser than cone references.",
+      "source": "1zpresso-curated",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grinder/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_melitta_iced",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "brewMode": "both",
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_k_ultra_cone",
+      "grinderId": "1zpresso-k-ultra",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "8.0 - 9.0 numbers",
+      "note": "Official 1Zpresso reference baseline for pour over style brewing; adjust slightly finer for iced and slightly coarser for larger flat-bottom beds only after taste.",
+      "source": "1zpresso-official",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grind-setting-reference/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_k_ultra_flat",
+      "grinderId": "1zpresso-k-ultra",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "8.5 - 9.5 numbers",
+      "note": "Use the pour-over baseline and drift slightly coarser for flat-bottom or immersion-style beds.",
+      "source": "1zpresso-official",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grind-setting-reference/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_q_air_q2_cone",
+      "grinderId": "1zpresso-q-air-q2",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot",
+        "profile_family_kono_iced"
+      ],
+      "rangeLabel": "14 - 18 clicks",
+      "note": "Cone-focused Q Air/Q2 baseline for V60 and origami style brews with tighter clarity targeting.",
+      "source": "1zpresso-community-curated",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grinder/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_x_pro_x_ultra_flat",
+      "grinderId": "1zpresso-x-pro-x-ultra",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_melitta_iced",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "1.4 - 1.8 turns",
+      "note": "Flat and immersion baseline for X-Pro/X-Ultra with a slightly coarser target than cone references.",
+      "source": "1zpresso-curated",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grind-setting-reference/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_zp6_cone",
+      "grinderId": "1zpresso-zp6-special",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "4.0 - 5.0 numbers",
+      "note": "Official ZP6 pour-over reference favors clarity-focused grind spacing.",
+      "source": "1zpresso-official",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grind-setting-reference/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_1zpresso_zp6_flat",
+      "grinderId": "1zpresso-zp6-special",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced"
+      ],
+      "rangeLabel": "4.5 - 5.5 numbers",
+      "note": "Flat-bottom brewers usually want the ZP6 just a touch coarser than cone recipes.",
+      "source": "1zpresso-official",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grind-setting-reference/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_breville_sgp_filter",
+      "grinderId": "breville-smart-grinder-pro",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot"
+      ],
+      "rangeLabel": "40 - 50 settings",
+      "note": "Home filter baseline for the Smart Grinder Pro; burr zero and roast level still matter.",
+      "source": "breville-community",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_1zpresso-j-ultra_filter",
+      "grinderId": "1zpresso-j-ultra",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "2.5 - 3.5 Putaran",
+      "note": "Curated filter baseline imported from catalog medium band for 1Zpresso J-Ultra; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_1zpresso-q-air-q2_filter",
+      "grinderId": "1zpresso-q-air-q2",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "15 - 20 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for 1Zpresso Q Air / Q2; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_1zpresso-x-pro-x-ultra_filter",
+      "grinderId": "1zpresso-x-pro-x-ultra",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "1.2 - 1.5 Putaran",
+      "note": "Curated filter baseline imported from catalog medium band for 1Zpresso X-Pro / X-Ultra; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_comandante-c60-baracuda_filter",
+      "grinderId": "comandante-c60-baracuda",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "20 - 30 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Comandante C60 Baracuda; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_etzinger-etz-i_filter",
+      "grinderId": "etzinger-etz-i",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "Angka 12 - 16",
+      "note": "Curated filter baseline imported from catalog medium band for Etzinger etz-I; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_hario-canister-c-20_filter",
+      "grinderId": "hario-canister-c-20",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "2 - 3 Notch",
+      "note": "Curated filter baseline imported from catalog medium band for Hario Canister (C-20); verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_hario-mini-slim_filter",
+      "grinderId": "hario-mini-slim",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "7 - 10 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Hario Mini Slim+; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_hario-skerton-pro_filter",
+      "grinderId": "hario-skerton-pro",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "5 - 7 Notch",
+      "note": "Curated filter baseline imported from catalog medium band for Hario Skerton Pro; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_kingrinder-p0-p1-p2_filter",
+      "grinderId": "kingrinder-p0-p1-p2",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "20 - 30 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Kingrinder P0/P1/P2; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_kinu-m47_filter",
+      "grinderId": "kinu-m47",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "2.5 - 3.5 Putaran",
+      "note": "Curated filter baseline imported from catalog medium band for Kinu M47; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_latina-sumba-sumbawa_filter",
+      "grinderId": "latina-sumba-sumbawa",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "7 - 10 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Latina Sumba / Sumbawa; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_latina-sumo_filter",
+      "grinderId": "latina-sumo",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "15 - 20 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Latina Sumo; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_mavo-phantox-pro_filter",
+      "grinderId": "mavo-phantox-pro",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "Nomor 6 - 10",
+      "note": "Curated filter baseline imported from catalog medium band for Mavo Phantox Pro; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_mazzer-omega_filter",
+      "grinderId": "mazzer-omega",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "Angka 6 - 8",
+      "note": "Curated filter baseline imported from catalog medium band for Mazzer Omega; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_mhw-3bomber-blade-r3_filter",
+      "grinderId": "mhw-3bomber-blade-r3",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "90 - 130 klik",
+      "note": "Curated filter baseline imported from catalog medium band for MHW-3BOMBER Blade R3; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_oe-lido-3-og_filter",
+      "grinderId": "oe-lido-3-og",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "6 - 10 Mark",
+      "note": "Curated filter baseline imported from catalog medium band for OE Lido 3 / OG; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_pietro-flat-burr_filter",
+      "grinderId": "pietro-flat-burr",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "Angka 5 - 7",
+      "note": "Curated filter baseline imported from catalog medium band for Pietro (Flat Burr); verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_porlex-mini-ii_filter",
+      "grinderId": "porlex-mini-ii",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "7 - 9 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Porlex Mini II; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_starseeker-edge-edge_filter",
+      "grinderId": "starseeker-edge-edge",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "50 - 70 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Starseeker Edge / Edge+; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_timemore-c3-esp_filter",
+      "grinderId": "timemore-c3-esp",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "14 - 18 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Timemore C3 ESP; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_timemore-c5-esp-pro_filter",
+      "grinderId": "timemore-c5-esp-pro",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "75 - 100 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Timemore C5 ESP PRO; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_timemore-chestnut-x_filter",
+      "grinderId": "timemore-chestnut-x",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "14 - 18 Mayor",
+      "note": "Curated filter baseline imported from catalog medium band for Timemore Chestnut X; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_timemore-nano-plus_filter",
+      "grinderId": "timemore-nano-plus",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "14 - 18 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Timemore Nano / Plus; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_timemore-s3_filter",
+      "grinderId": "timemore-s3",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "Angka 4.5 - 6.5",
+      "note": "Curated filter baseline imported from catalog medium band for Timemore S3; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_timemore-slim-plus_filter",
+      "grinderId": "timemore-slim-plus",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "15 - 20 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Timemore Slim Plus; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_timemore-x-millab-m01_filter",
+      "grinderId": "timemore-x-millab-m01",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "5 - 8 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Timemore x Millab M01; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_varia-hand-grinder_filter",
+      "grinderId": "varia-hand-grinder",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "60 - 85 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Varia Hand Grinder; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_vesper-vs-3-fold_filter",
+      "grinderId": "vesper-vs-3-fold",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "15 - 24 Klik",
+      "note": "Curated filter baseline imported from catalog medium band for Vesper VS-3 FOLD; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_catalog_wacaco-exagrind_filter",
+      "grinderId": "wacaco-exagrind",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "1.0 - 1.3 Putaran",
+      "note": "Curated filter baseline imported from catalog medium band for Wacaco Exagrind; verify zero point and adjust by taste.",
+      "source": "catalog-curated-range",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_comandante_c40_cone",
+      "grinderId": "comandante-c40-mk4",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "22 - 28 clicks",
+      "note": "Community-verified filter baseline; absolute click depends on zero point.",
+      "source": "comandante-community",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_comandante_c40_flat",
+      "grinderId": "comandante-c40-mk4",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "24 - 30 clicks",
+      "note": "Go slightly coarser than cone recipes for flatter beds or immersion release brewers.",
+      "source": "comandante-community",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_comandante_c40_redclix_filter",
+      "grinderId": "comandante-c40-mk4",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "36 - 48 clicks (Red Clix)",
+      "note": "Red Clix mapping gives finer-granularity notation for C40 users who track doubled click counts.",
+      "source": "comandante-community-curated",
+      "sourceUrls": [
+        "https://www.comandantegrinder.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_comandante_c60_baracuda_cone",
+      "grinderId": "comandante-c60-baracuda",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot",
+        "profile_family_kono_iced"
+      ],
+      "rangeLabel": "18 - 26 clicks",
+      "note": "Cone-first C60 reference for pour-over clarity before moving to broader flat-bed bands.",
+      "source": "comandante-curated",
+      "sourceUrls": [
+        "https://www.comandantegrinder.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_comandante_x25_cone_flat_equiv",
+      "grinderId": "comandante-x25-trailmaster",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_kono_hot",
+        "profile_family_april_hot",
+        "profile_family_kalita_hot"
+      ],
+      "rangeLabel": "18 - 26 clicks (cone to flat band)",
+      "note": "One-line mapping for cafe handover between cone and flat recipes on X25 without switching grinder notation style.",
+      "source": "comandante-community-curated",
+      "sourceUrls": [
+        "https://www.comandantegrinder.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_comandante_x25_filter",
+      "grinderId": "comandante-x25-trailmaster",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_kono_hot",
+        "profile_family_april_hot"
+      ],
+      "rangeLabel": "18 - 24 clicks",
+      "note": "Trailmaster filter baseline aligned to C40 geometry with slightly wider travel tolerance.",
+      "source": "comandante-community-curated",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_hario_mini_slim_cone",
+      "grinderId": "hario-mini-slim",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "6 - 9 clicks",
+      "note": "Cone-first range for Mini Slim with practical home-barista click counting from burr lock.",
+      "source": "hario-community-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/products/mini-slim-plus",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_hario_mini_slim_flat",
+      "grinderId": "hario-mini-slim",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_kalita_hot",
+        "profile_family_melitta_hot",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "8 - 11 clicks",
+      "note": "Flat-bottom and immersion range for Mini Slim where slightly coarser settings reduce over-extraction risk.",
+      "source": "hario-community-curated",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_hario_smart_g_filter",
+      "grinderId": "hario-smart-g",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_melitta_hot",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "18 - 24 clicks",
+      "note": "HARIO Smart G baseline for daily filter use in home workflows; adjust by cup clarity before tightening grind.",
+      "source": "hario-curated",
+      "sourceUrls": [
+        "https://www.hario-europe.com/products/smart-g-coffee-grinder"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_hario_smart_g_flat",
+      "grinderId": "hario-smart-g",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_melitta_iced",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "20 - 27 clicks",
+      "note": "HARIO Smart G flat-bed baseline biased coarser to reduce stall risk on dense paper beds.",
+      "source": "hario-curated",
+      "sourceUrls": [
+        "https://www.hario.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_kingrinder_k0_k1_cone",
+      "grinderId": "kingrinder-k0-k1",
+      "rangeLabel": "70 - 92 clicks",
+      "note": "Cone baseline for K0/K1 aligned with manual pour-over flow control.",
+      "source": "kingrinder-curated",
+      "sourceUrls": [
+        "https://www.kingrinder.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot",
+        "profile_family_kono_iced"
+      ],
+      "brewMode": "both",
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_kingrinder_k2_cone_turn_equiv",
+      "grinderId": "kingrinder-k2",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "2.5 - 3.5 turns (60 - 84 clicks)",
+      "note": "Turn-equivalent mapping helps baristas move between click-count and rotation workflows on K2.",
+      "source": "kingrinder-curated",
+      "sourceUrls": [
+        "https://www.kingrinder.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_kingrinder_k2_filter",
+      "grinderId": "kingrinder-k2",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "60 - 85 clicks",
+      "note": "K2 medium band baseline for manual filter workflow; verify burr zero before transfer.",
+      "source": "kingrinder-curated",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_kingrinder_k3_cone",
+      "grinderId": "kingrinder-k3",
+      "rangeLabel": "64 - 86 clicks",
+      "note": "Cone baseline for K3 with medium-light roast service range.",
+      "source": "kingrinder-curated",
+      "sourceUrls": [
+        "https://www.kingrinder.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot",
+        "profile_family_kono_iced"
+      ],
+      "brewMode": "both",
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_kingrinder_k4_cone_turn_equiv",
+      "grinderId": "kingrinder-k4",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "3.1 - 4.0 turns (75 - 96 clicks)",
+      "note": "Turn-equivalent filter range for K4 keeps handoff consistent across dial notation styles.",
+      "source": "kingrinder-curated",
+      "sourceUrls": [
+        "https://www.kingrinder.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_kingrinder_k4_filter",
+      "grinderId": "kingrinder-k4",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "75 - 95 clicks",
+      "note": "K4 filter baseline mirrors medium hand-grinder spacing; confirm burr lock and zero point first.",
+      "source": "kingrinder-curated",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_kingrinder_k6_cone",
+      "grinderId": "kingrinder-k6",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "70 - 90 clicks",
+      "note": "Community-verified pour-over baseline; confirm zero point first.",
+      "source": "kingrinder-community",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_kingrinder_k6_flat",
+      "grinderId": "kingrinder-k6",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "78 - 98 clicks",
+      "note": "Flat-bottom brewers tend to prefer the K6 slightly coarser than cone baselines.",
+      "source": "kingrinder-community",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_kinu_m47_cone",
+      "grinderId": "kinu-m47",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "2.4 - 3.0 rotations",
+      "note": "Kinu M47 cone baseline for clearer pour-over profiles, assuming burr zero is locked consistently.",
+      "source": "kinu-curated",
+      "sourceUrls": [
+        "https://www.kinugrinders.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_kinu_m47_flat",
+      "grinderId": "kinu-m47",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "2.8 - 3.4 rotations",
+      "note": "Kinu M47 flat-bottom and immersion range to preserve flow and avoid over-extraction at dense doses.",
+      "source": "kinu-curated",
+      "sourceUrls": [
+        "https://www.kinugrinders.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_kinu_m47_phoenix_flat",
+      "grinderId": "kinu-m47-phoenix",
+      "rangeLabel": "2.0 - 2.8 turns",
+      "note": "Flat-bottom and immersion baseline for Kinu Phoenix with drawdown-safe range.",
+      "source": "kinu-curated",
+      "sourceUrls": [
+        "https://www.kinugrinders.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_melitta_iced",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "brewMode": "both",
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_timemore_c2_cone",
+      "grinderId": "timemore-c2",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "16 - 19 clicks",
+      "note": "Cone baseline for Timemore C2 after burr-zero calibration; start here for V60-style and tighten only after cup feedback.",
+      "source": "timemore-curated",
+      "sourceUrls": [
+        "https://www.timemore.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_timemore_c2_flat",
+      "grinderId": "timemore-c2",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "18 - 22 clicks",
+      "note": "Flat-bottom and immersion baseline for Timemore C2; slightly coarser than cone to reduce stall risk.",
+      "source": "timemore-curated",
+      "sourceUrls": [
+        "https://www.timemore.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_timemore_c3_cone",
+      "grinderId": "timemore-c3",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "14 - 17 clicks",
+      "note": "Timemore C3 cone range tuned around the S2C burr behavior for standard light-to-medium filter roast loads.",
+      "source": "timemore-curated",
+      "sourceUrls": [
+        "https://www.timemore.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_timemore_c3_esp_cone",
+      "grinderId": "timemore-c3-esp",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "10 - 14 clicks",
+      "note": "C3 ESP cone baseline adapted for filter use from tighter espresso-step geometry.",
+      "source": "timemore-community-curated",
+      "sourceUrls": [
+        "https://www.timemore.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_timemore_c3_esp_flat",
+      "grinderId": "timemore-c3-esp",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "12 - 16 clicks",
+      "note": "Flat-bed and immersion baseline for C3 ESP to protect flow rate on dense beds.",
+      "source": "timemore-community-curated",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_timemore_c3_flat",
+      "grinderId": "timemore-c3",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "16 - 20 clicks",
+      "note": "Timemore C3 flat-bottom and immersion range set slightly coarser than cone references for drawdown stability.",
+      "source": "timemore-curated",
+      "sourceUrls": [
+        "https://www.timemore.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_timemore_c3_max_cone",
+      "grinderId": "timemore-c3-max",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot",
+        "profile_family_kono_iced"
+      ],
+      "rangeLabel": "13 - 18 clicks",
+      "note": "Cone-focused C3 Max baseline for clarity-oriented pour-over workflows.",
+      "source": "timemore-curated",
+      "sourceUrls": [
+        "https://timemore.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_timemore_c3_max_filter",
+      "grinderId": "timemore-c3-max",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_clever_hot"
+      ],
+      "rangeLabel": "15 - 21 clicks",
+      "note": "C3 Max filter baseline aligned with C3 platform step geometry for manual brewers.",
+      "source": "timemore-curated",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_timemore_c5_cone",
+      "grinderId": "timemore-c5",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_april_hot"
+      ],
+      "rangeLabel": "9 - 14 clicks",
+      "note": "C5 series baseline anchored to manufacturer positioning plus curated filter references.",
+      "source": "timemore-curated",
+      "sourceUrls": [
+        "https://www.timemore.com/es/products/timemore-manual-coffee-grinder-chestnut-c5-series",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_timemore_chestnut_c5_pro_cone",
+      "grinderId": "timemore-chestnut-c5-pro",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot"
+      ],
+      "rangeLabel": "10 - 13 clicks",
+      "note": "Curated C5 Pro pour-over baseline mapped from stepped chestnut line behavior; verify zero point before service dial-in.",
+      "source": "timemore-community-curated",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_timemore_chestnut_c5_pro_flat",
+      "grinderId": "timemore-chestnut-c5-pro",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "12 - 15 clicks",
+      "note": "Flat-bottom and immersion brewers generally run slightly coarser than cone settings on C5 Pro.",
+      "source": "timemore-community-curated",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_timemore_sculptor_078s_filter",
+      "grinderId": "timemore-sculptor-078s",
+      "rangeLabel": "6 - 9 numbers",
+      "note": "Electric filter baseline for Sculptor 078S across cone and flat workflows.",
+      "source": "timemore-curated",
+      "sourceUrls": [
+        "https://www.timemore.com/",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot",
+        "profile_family_kono_iced",
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_melitta_iced",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "brewMode": "both",
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-12",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "gs_wacaco_exagrind_click_equiv",
+      "grinderId": "wacaco-exagrind",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced"
+      ],
+      "rangeLabel": "30 - 39 clicks (1.0 - 1.3 turns)",
+      "note": "Click-equivalent mapping mirrors Exagrind turn references for faster recipe sharing in service.",
+      "source": "wacaco-community-curated",
+      "sourceUrls": [
+        "https://www.wacaco.com/products/exagrind",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
+      "verificationLevel": "community_verified",
+      "verifiedAt": "2026-03-11",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    }
+  ]
+}

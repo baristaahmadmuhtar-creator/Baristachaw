@@ -1,0 +1,46 @@
+{
+  "catalogVersion": "2026.06.0-ai-brew-v2",
+  "item": {
+    "id": "sca-filter-water-guidance",
+    "label": "Manual Mineral Input",
+    "description": "Manual mineral targets for filter brewing based on common coffee-water guidance, with bottled-water catalog support when provenance and chemistry are sufficient.",
+    "recommended": {
+      "tdsPpm": [
+        60,
+        140
+      ],
+      "hardnessPpm": [
+        40,
+        80
+      ],
+      "alkalinityPpm": [
+        30,
+        60
+      ]
+    },
+    "caution": {
+      "tooSoft": "Water hardness is low. Expect less extraction power and consider a small temperature increase only after tasting.",
+      "tooHard": "Water hardness is high. Body may rise while clarity drops; avoid pushing temperature or contact time.",
+      "tooLowAlkalinity": "Low alkalinity can make acidity feel sharp. Keep agitation tidy before tightening grind.",
+      "tooHighAlkalinity": "High alkalinity can mute acidity and floral notes. Avoid compounding with very high temperature."
+    },
+    "notes": [
+      "Manual mineral entry remains the safest fallback, especially when market-SKU chemistry is incomplete.",
+      "TDS is total dissolved solids, while hardness and alkalinity should be entered separately when known.",
+      "Brand-water datasets include official, curated, and review-only records with confidence labels.",
+      "When a brand is flagged manual-required or review-only, prefer manual minerals over automatic trust."
+    ],
+    "source": "sca-water-best-practices",
+    "sourceUrls": [
+      "https://sca.coffee/research/water-and-the-cupping-and-brewing-of-coffee",
+      "https://sca.coffee/research/quality-water-for-coffee"
+    ],
+    "verificationLevel": "official",
+    "verifiedAt": "2026-03-09",
+    "popularityTier": "widely_used",
+    "marketSegment": "mass_market",
+    "releaseStatus": "established",
+    "confidence": "high",
+    "catalogVersion": "2026.06.0-ai-brew-v2"
+  }
+}

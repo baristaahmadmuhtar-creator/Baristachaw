@@ -1,0 +1,511 @@
+import type { AiBrewPromptContext, BrewPlan } from './types';
+import { buildExtractionFinisher } from './extractionFinisher';
+import { isIndonesianAiBrewLanguage } from './localization.ts';
+
+function formatSeconds(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function buildPourProgressionProfile(plan: BrewPlan) {
+  if (plan.steps.length === 0 || plan.hotWaterMl <= 0) return 'not_available';
+
+  const shares = plan.steps.map((step) => step.pourVolumeMl / plan.hotWaterMl);
+  const first = shares[0] || 0;
+  const last = shares[shares.length - 1] || 0;
+  const middle = shares.length > 2
+    ? shares.slice(1, -1).reduce((sum, value) => sum + value, 0)
+    : 0;
+
+  if (first >= middle + last * 0.15) return 'front_loaded';
+  if (last >= middle + first * 0.15) return 'back_loaded';
+  if (middle > Math.max(first, last)) return 'mid_loaded';
+  return 'even';
+}
+
+
+function buildCadenceProfile(plan: BrewPlan) {
+  if (plan.steps.length < 2) return 'not_available';
+
+  const checkpoints = plan.steps.map((step) => step.startSeconds);
+  const intervals: number[] = [];
+  for (let index = 0; index < checkpoints.length - 1; index += 1) {
+    intervals.push(Math.max(0, checkpoints[index + 1] - checkpoints[index]));
+  }
+  const finalWindow = Math.max(0, plan.totalTimeSeconds - checkpoints[checkpoints.length - 1]);
+  intervals.push(finalWindow);
+
+  const total = intervals.reduce((sum, value) => sum + value, 0);
+  if (total <= 0) return 'even_cadence';
+
+  const first = intervals[0] / total;
+  const last = intervals[intervals.length - 1] / total;
+  const middle = intervals.length > 2
+    ? intervals.slice(1, -1).reduce((sum, value) => sum + value, 0) / total
+    : 0;
+
+  if (first >= middle + last * 0.12) return 'front_cadence';
+  if (last >= middle + first * 0.12) return 'back_cadence';
+  if (middle > Math.max(first, last)) return 'mid_cadence';
+  return 'even_cadence';
+}
+function buildExtractionPressureProfile(plan: BrewPlan) {
+  let score = 0;
+  if (plan.beanProfile.roastDevelopment === 'underdeveloped') score += 1;
+  else if (plan.beanProfile.roastDevelopment === 'developed') score -= 1;
+  if (plan.beanProfile.solubility === 'low') score += 1;
+  else if (plan.beanProfile.solubility === 'high') score -= 1;
+  if (plan.waterMinerals.hardnessPpm >= 120) score += 0.4;
+  else if (plan.waterMinerals.hardnessPpm <= 45) score -= 0.3;
+  if (plan.waterMinerals.alkalinityPpm >= 80) score += 0.3;
+  else if (plan.waterMinerals.alkalinityPpm <= 30) score -= 0.2;
+
+  if (score >= 1.4) return 'resistant_extraction';
+  if (score <= -1.4) return 'easy_extraction';
+  return 'neutral_extraction';
+}
+function buildSharedContext(plan: BrewPlan) {
+  const steps = plan.steps
+    .map((step, index) => `${index + 1}. ${step.label} at ${formatSeconds(step.startSeconds)}: pour ${step.pourVolumeMl} ml to ${step.targetVolumeMl} ml. ${step.hybridInstruction || step.note}`)
+    .join('\n');
+
+  return [
+    `Coffee: ${plan.coffeeName}`,
+    `Mode: ${plan.brewMode}`,
+    `Target profile: ${plan.targetProfileLabel}`,
+    `Process: ${plan.process}`,
+    `Variety: ${plan.variety}`,
+    `Roast level: ${plan.roastLevel}`,
+    `Bean profile: ${plan.beanProfile.active ? plan.beanProfile.summary : 'neutral'}`,
+    `Dripper: ${plan.dripper.name}`,
+    `Method family: ${plan.methodFamily}`,
+    `Grinder: ${plan.grinder.name}`,
+    `Water mode: ${plan.waterMode}`,
+    `Water region: ${plan.waterRegion}`,
+    `Water brand: ${plan.waterBrandLabel || 'manual'}`,
+    `Water preset status: ${plan.waterPresetStatus || 'manual'}`,
+    `Water publish state: ${plan.waterPublishState || 'manual'}`,
+    `Water brew ready: ${plan.waterIsBrewReady ? 'yes' : 'no'}`,
+    `Water customized: ${plan.waterCustomized ? 'yes' : 'no'}`,
+    `Water minerals: TDS ${plan.waterMinerals.tdsPpm} ppm, hardness ${plan.waterMinerals.hardnessPpm} ppm, alkalinity ${plan.waterMinerals.alkalinityPpm} ppm (${plan.waterMinerals.styleLabel})`,
+    `Device profile: ${plan.deviceProfileLabel} (${plan.deviceProfileMode})`,
+    `Grinder setting reference: ${plan.grindSettingReference} (${plan.grindSettingMode}, ${plan.grindSettingVerification})`,
+    `Provenance attention needed: ${plan.provenanceAttentionNeeded ? 'yes' : 'no'}`,
+    `Dose: ${plan.doseG} g`,
+    `Ratio: 1:${plan.recommendedRatio}`,
+    `Water total: ${plan.totalWaterMl} ml`,
+    `Hot water: ${plan.hotWaterMl} ml`,
+    `Ice: ${plan.iceMl} ml`,
+    `Temperature: ${plan.waterTempC} C`,
+    `Target brew time: ${formatSeconds(plan.totalTimeSeconds)}`,
+    `Grind recommendation: ${plan.grindRecommendation}`,
+    `Warnings: ${plan.guardrails.warnings.join(' | ') || 'none'}`,
+    `Standards misses: ${plan.conformance.standardsMisses.join(' | ') || 'none'}`,
+    `Confidence notes: ${plan.confidenceNotes.join(' | ') || 'none'}`,
+    'Brew steps:',
+    steps,
+  ].join('\n');
+}
+
+function buildPlannerEnvelope(plan: BrewPlan) {
+  const stepEnvelope = plan.steps
+    .map((step) => `- ${step.label} @ ${formatSeconds(step.startSeconds)}: pour ${step.pourVolumeMl} ml -> ${step.targetVolumeMl} ml`)
+    .join('\n');
+
+  return [
+    'Deterministic envelope (source of truth):',
+    `- dose: ${plan.doseG} g`,
+    `- ratio: 1:${plan.recommendedRatio}`,
+    `- total water: ${plan.totalWaterMl} ml`,
+    `- hot water: ${plan.hotWaterMl} ml`,
+    `- ice: ${plan.iceMl} ml`,
+    `- temperature: ${plan.waterTempC} C`,
+    `- brew time: ${formatSeconds(plan.totalTimeSeconds)}`,
+    `- pour progression profile: ${buildPourProgressionProfile(plan)}`,
+    `- extraction pressure profile: ${buildExtractionPressureProfile(plan)}`,
+    `- cadence profile: ${buildCadenceProfile(plan)}`,
+    '- sequence checkpoints:',
+    stepEnvelope,
+  ].join('\n');
+}
+
+function buildStepRoleMap(plan: BrewPlan) {
+  const methodRole = plan.methodFamily === 'clever_dripper'
+    ? 'immersion-contact control'
+    : plan.methodFamily === 'chemex'
+      ? 'thick-filter flow stability'
+      : plan.methodFamily === 'kalita_wave' || plan.methodFamily === 'april' || plan.methodFamily === 'melitta'
+        ? 'flat-bed pulse stability'
+        : 'cone-flow clarity control';
+
+  const roleLines = plan.steps.map((step, index) => {
+    const role = index === 0
+      ? 'initiate full saturation and lock bed wetting uniformity'
+      : index === plan.steps.length - 1
+        ? 'close extraction and stabilize drawdown for clean finish'
+        : 'manage mid-brew cadence and slurry height before next checkpoint';
+    return `- ${step.label} @ ${formatSeconds(step.startSeconds)}: ${role}; keep ${methodRole}.`;
+  });
+
+  return [
+    'Operational role map (must change wording by step phase):',
+    ...roleLines,
+  ].join('\n');
+}
+
+function buildMethodCueChecklist(plan: BrewPlan) {
+  if (plan.methodFamily === 'clever_dripper') {
+    return [
+      'Method cue checklist (must appear in Sequence/Steps lines):',
+      '- Include immersion-contact cue in entry step (step 1).',
+      '- Include release cue in final step (last step).',
+    ].join('\n');
+  }
+
+  const lines = [
+    'Method cue checklist (must appear in Sequence/Steps lines):',
+    '- Include percolation flow cues (concentric/circle/pulse/center/bed settle) across multiple steps, not just one.',
+  ];
+
+  if (plan.methodFamily === 'chemex') {
+    lines.push('- Include thick-filter control cues (filter wall/bypass/steady flow) across at least two steps.');
+  }
+  if (plan.methodFamily === 'kalita_wave' || plan.methodFamily === 'april' || plan.methodFamily === 'melitta') {
+    lines.push('- Include flat-bed control cues (flat bed/bed height/low-spout/even bed) across at least two steps.');
+  }
+
+  return lines.join('\n');
+}
+
+function buildTargetIntentChecklist(plan: BrewPlan) {
+  const target = plan.targetProfileLabel.toLowerCase();
+
+  if (target.includes('acid')) {
+    return [
+      'Target-intent checklist (must appear in Sequence/Steps lines):',
+      '- Include acidity/clarity control cues in at least two steps (for example bright, crisp, clean finish).',
+      '- Avoid body-heavy wording as the dominant cue set.',
+    ].join('\n');
+  }
+
+  if (target.includes('body') || target.includes('depth')) {
+    return [
+      'Target-intent checklist (must appear in Sequence/Steps lines):',
+      '- Include body/depth control cues in at least two steps (for example texture, syrupy center, extraction depth).',
+      '- Avoid acidity-dominant wording as the dominant cue set.',
+    ].join('\n');
+  }
+
+  if (target.includes('sweet')) {
+    return [
+      'Target-intent checklist (must appear in Sequence/Steps lines):',
+      '- Include sweetness-preservation cues in at least two steps (for example sweetness, round finish, sugar development).',
+      '- Avoid harsh/dry/astringent cue language as the dominant direction.',
+    ].join('\n');
+  }
+
+  return [
+    'Target-intent checklist (must appear in Sequence/Steps lines):',
+    '- For balanced targets, avoid one-sided body-only or acidity-only phrasing across all steps.',
+    '- Keep cues mixed so clarity and sweetness stay aligned through entry, middle, and closure phases.',
+  ].join('\n');
+}
+
+export function buildExplainPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
+  return {
+    title: isIndonesianAiBrewLanguage(language) ? 'Jelaskan Resep' : 'Explain Plan',
+    body: [
+      'Explain why this brew plan should work.',
+      'Focus on extraction logic, roast fit, target profile, and why the chosen grind/temperature/ratio make sense.',
+      'Keep it practical for a barista and use short sections.',
+      '',
+      buildSharedContext(plan),
+    ].join('\n'),
+  };
+}
+
+export function buildGenerateBriefPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
+  return {
+    title: isIndonesianAiBrewLanguage(language) ? 'Asisten AI' : 'AI Brew Read',
+    body: [
+      'You are the AI Brew sequence composer.',
+      'Write a compact operational brief for a working barista, not a generic explanation.',
+      'Follow deterministic planner envelope exactly; do not change any numeric values.',
+      'Keep it concise, practical, and reproducible during service. Stay under 120 words total.',
+      'Use this structure exactly:',
+      '## Why It Fits',
+      '- one short paragraph under 55 words',
+      '## Focus',
+      '- point 1',
+      '- point 2',
+      'Requirements:',
+      '- Both focus points must be executable actions.',
+      '- Explicitly mention the active target profile and one method-specific control behavior.',
+      '- Explicitly mention at least one water/bean context constraint from the plan.',
+      '- Do not invent equipment, chemistry values, or placeholder text.',
+      '',
+      buildPlannerEnvelope(plan),
+      '',
+      buildSharedContext(plan),
+    ].join('\n'),
+  };
+}
+
+export function buildTroubleshootPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
+  return {
+    title: isIndonesianAiBrewLanguage(language) ? 'Perbaiki Rasa' : 'Fix Taste',
+    body: [
+      'Create a troubleshooting guide for this brew plan.',
+      'Cover sour, bitter, thin, muddy, hollow, and stalled drawdown outcomes.',
+      'Give concrete one-step adjustments first, then explain tradeoffs.',
+      '',
+      buildSharedContext(plan),
+    ].join('\n'),
+  };
+}
+
+export function buildSequenceGuidePrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
+  return {
+    title: isIndonesianAiBrewLanguage(language) ? 'Catatan AI' : 'AI Sequence',
+    body: [
+      'You are the AI Brew sequence composer.',
+      'Compose an operational sequence for bar service using deterministic checkpoints as fixed boundaries.',
+      'Include every deterministic checkpoint step in chronological order and do not add extra steps.',
+      `Use exactly ${plan.steps.length} numbered steps in the Sequence section.`,
+      'Use this structure exactly:',
+      '## Service Pattern',
+      '- one line naming the sequence style for this context',
+      '- one line describing mode behavior (hot/iced)',
+      '## Sequence',
+      '1. ...',
+      '2. ...',
+      '3. ...',
+      '## Watch',
+      '- point 1',
+      '- point 2',
+      'Requirements:',
+      '- Every sequence line must include executable action and timing reference.',
+      '- Service Pattern style line must explicitly include selected method/device and target profile anchors.',
+      '- Service Pattern style line must not use generic labels like "default pattern" or "flexible style".',
+      '- Service Pattern mode line must explicitly mention the active brew mode (hot or iced).',
+      '- Every sequence line must reference the deterministic step label (e.g., Bloom, Pulse 1, Finish) for that step index.',
+      '- Every sequence line must include deterministic pour volume and target cumulative volume on the same line.',
+      '- Start every sequence line with deterministic exact prefix "<step label> at exact planner time MM:SS: pour X ml to Y ml" before control instructions.',
+      '- Every sequence line must contain exactly one pour checkpoint and one cumulative target checkpoint (no chained second pour or alternate volume).',
+      '- Every sequence line must include at least one post-pour control action (wait/hold/level/swirl/etc).',
+      '- Any explicit wait/hold/pause/rest durations in one step must fit that step\'s deterministic cadence window to the next checkpoint.',
+      '- Do not add a second absolute clock timestamp (MM:SS) inside the same step line; only the deterministic prefix time is allowed.',
+      '- Avoid hedging terms in step lines (if needed/optional/approximate/to taste/at your discretion).',
+      '- Do not use simulated or hypothetical execution wording (simulate/pretend/imagine/hypothetical).',
+      '- Do not place next-cup troubleshooting phrases (if sour/if bitter/next cup/next brew) inside sequence steps; keep every step immediately executable in-run.',
+      '- Do not inject post-brew dilution or top-up instructions (add/top-up/bypass X ml water or ice) outside deterministic checkpoints.',
+      '- Do not reference unsupported hardware or tools (AeroPress/French press/moka pot/portafilter/espresso machine/steam wand) in sequence steps.',
+      '- Do not change grind, temperature, ratio, dose, total water, or brew time inside sequence steps; keep the envelope locked during the run.',
+      '- Sequence must reflect phase control: entry cue in step 1, cadence-flow cue in middle steps, and closure cue in final step.',
+      '- Keep operational intent aligned with deterministic pour progression profile (front_loaded/back_loaded/mid_loaded/even) from the planner envelope.',
+      '- Keep step intensity language aligned with extraction pressure profile (resistant_extraction/easy_extraction/neutral_extraction) from the planner envelope.',
+      '- Keep hold/wait emphasis aligned with cadence profile (front_cadence/back_cadence/mid_cadence/even_cadence) from the planner envelope.',
+      '- Step 1 must not include closure-phase words (finish/final/drawdown/release/drain).',
+      '- Final step must not reintroduce entry-phase words (bloom/initial saturation/immersion/soak).',
+      '- Sequence lines (not only Watch bullets) must include method/device, target-profile, and water/bean context anchors across the full step set.',
+      '- Spread method, target, and water/bean anchors across multiple steps (not concentrated in just one line).',
+      '- Avoid repetitive wording across all steps; vary operational verbs while keeping deterministic checkpoints fixed.',
+      '- Step phrasing must not share the same template shell across adjacent steps; change control intent by phase (entry/mid/final).',
+      '- Watch section must include at least one method+target anchored monitoring bullet (not generic wording).',
+      '- Watch section must include at least one deterministic envelope checkpoint with numeric anchors (dose/ratio/water/temp/time).',
+      '- Keep heading order fixed as written: Service Pattern -> Sequence -> Watch.',
+      '- Explicitly anchor to method/device, target profile, and at least one water/bean context constraint.',
+      '- Reflect context explicitly (method family, brew mode, target profile, and water/bean constraints) so structure changes when context changes.',
+      '- Operational steps must carry target-intent cues (acidity/body/sweetness/balance) and avoid drifting into opposite taste-direction language.',
+      '- Do not combine opposing taste-direction cues in the same step line (for example body-depth and bright-acidity in one instruction).',
+      '- If mentioning TDS/GH/KH or hardness/alkalinity values, copy the exact deterministic values only.',
+      '- For iced mode, explicitly include deterministic hot-water and ice split in the narrative.',
+      '- For iced mode, at least one Sequence line must state both hot and ice split values on the same line (X ml hot / Y ml ice).',
+      '- Keep all numbers inside deterministic envelope.',
+      '- Return markdown only, starting at the first required heading; do not add preface or code fences.',
+      '- Do not include immersion/release-only instructions for non-immersion drippers.',
+      '- Do not mention or imply another dripper/method family that conflicts with the deterministic plan.',
+      '- Do not invent extra steps, equipment, chemistry data, or placeholders.',
+      '',
+      buildPlannerEnvelope(plan),
+      '',
+      buildStepRoleMap(plan),
+      '',
+      buildMethodCueChecklist(plan),
+      '',
+      buildTargetIntentChecklist(plan),
+      '',
+      buildSharedContext(plan),
+    ].join('\n'),
+  };
+}
+
+export function buildAdjustPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
+  return {
+    title: isIndonesianAiBrewLanguage(language) ? 'Dorong Target' : 'Push Target',
+    body: [
+      'Suggest how to push this brew toward the selected target profile even harder without breaking balance.',
+      'Return only actionable adjustments to grind, temperature, pour structure, and ratio.',
+      '',
+      buildSharedContext(plan),
+    ].join('\n'),
+  };
+}
+
+export function buildSopPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
+  return {
+    title: isIndonesianAiBrewLanguage(language) ? 'SOP AI' : 'AI SOP',
+    body: [
+      'Rewrite this brew plan as a simple standard operating procedure for a barista.',
+      'Keep it short, practical, and consistent with manual-brew training language.',
+      'Keep output compact: Quick Dial 5 bullets, Service Pattern 2 bullets, Steps one sentence each, Control Points 5 bullets maximum.',
+      'Focus only on quick dial, service pattern, sequence execution, and extraction-finisher watchpoints.',
+      'Use this structure exactly:',
+      '## Quick Dial',
+      '- dose',
+      '- total water',
+      '- temperature',
+      '- grind',
+      '- total time',
+      '## Service Pattern',
+      '- one context-specific sequence style line',
+      '- one mode behavior line',
+      '## Steps',
+      '1. ...',
+      '2. ...',
+      '3. ...',
+      '## Control Points',
+      '- what to watch during pouring',
+      '- one method- or target-specific watchpoint tied to this plan context',
+      '- one water or bean-context watchpoint tied to this plan context',
+      '- one adjustment if the cup tastes sour',
+      '- one adjustment if the cup tastes bitter',
+      '- both sour and bitter adjustments must be actionable (verb + controllable knob: grind/temp/pour/ratio/time)',
+      '- include one concise extraction-finisher watchpoint from the plan context',
+      '- do not add extra sections, long explanations, or background education',
+      'Prefer concrete numbers already present in the plan. Do not invent new equipment or chemistry data.',
+      'Service Pattern style line must explicitly include selected method/device and target profile anchors.',
+      'Service Pattern style line must not use generic labels like "default pattern" or "flexible style".',
+      'Service Pattern mode line must explicitly mention the active brew mode (hot or iced).',
+      'Quick Dial must mirror deterministic values exactly for dose, total water (and iced split when present), temperature, grind recommendation, and total time.',
+      'Do not round, estimate, or substitute Quick Dial values with alternatives.',
+      `Use exactly ${plan.steps.length} numbered steps in the Steps section.`,
+      'Each step must include both deterministic pour volume and cumulative target volume on the same line.',
+      'Start every step with deterministic exact prefix "<step label> at exact planner time MM:SS: pour X ml to Y ml" before control instructions.',
+      'Each step must contain exactly one deterministic pour checkpoint and one cumulative target checkpoint (no chained second pour or alternate volume).',
+      'Each step must reference the deterministic step label for its index (e.g., Bloom, Pulse 1, Finish).',
+      'Each step must include at least one post-pour control action (wait/hold/level/swirl/etc).',
+      'Any explicit wait/hold/pause/rest durations in one step must fit that step\'s deterministic cadence window to the next checkpoint.',
+      'Do not add a second absolute clock timestamp (MM:SS) inside the same step line; only the deterministic prefix time is allowed.',
+      'Avoid hedging terms in step lines (if needed/optional/approximate/to taste/at your discretion).',
+      'Do not use simulated or hypothetical execution wording (simulate/pretend/imagine/hypothetical).',
+      'Do not place next-cup troubleshooting phrases (if sour/if bitter/next cup/next brew) inside Steps; keep every step immediately executable in-run.',
+      'Do not inject post-brew dilution or top-up instructions (add/top-up/bypass X ml water or ice) outside deterministic checkpoints.',
+      'Do not reference unsupported hardware or tools (AeroPress/French press/moka pot/portafilter/espresso machine/steam wand) in Steps.',
+      'Do not change grind, temperature, ratio, dose, total water, or brew time inside Steps; all parameter shifts belong to next-cup troubleshooting only.',
+      'Steps must reflect phase control: entry cue in step 1, cadence-flow cue in middle steps, and closure cue in final step.',
+      '- Keep operational intent aligned with deterministic pour progression profile (front_loaded/back_loaded/mid_loaded/even) from the planner envelope.',
+      '- Keep step intensity language aligned with extraction pressure profile (resistant_extraction/easy_extraction/neutral_extraction) from the planner envelope.',
+      '- Keep hold/wait emphasis aligned with cadence profile (front_cadence/back_cadence/mid_cadence/even_cadence) from the planner envelope.',
+      'Step 1 must not include closure-phase words (finish/final/drawdown/release/drain).',
+      'Final step must not reintroduce entry-phase words (bloom/initial saturation/immersion/soak).',
+      'Steps section must carry context anchors (method/device + target profile + water/bean) in operational lines, not only in Control Points.',
+      '- For iced mode, include deterministic hot/ice split explicitly in Steps or Control Points using both values (X ml hot / Y ml ice).',
+      'Spread method, target, and water/bean anchors across multiple step lines so SOP remains adaptive and non-template.',
+      'Avoid repetitive step phrasing; vary actionable verbs while preserving deterministic checkpoints.',
+      '- Keep heading order fixed as written: Quick Dial -> Service Pattern -> Steps -> Control Points.',
+      '- Return markdown only, starting at the first required heading; do not add preface or code fences.',
+      '- For non-immersion drippers, avoid immersion/release-only instructions inside Steps.',
+      '- Do not mention or imply another dripper/method family that conflicts with the deterministic plan.',
+      'If chemistry values are mentioned (TDS/GH/KH), they must match deterministic planner values exactly.',
+      'Do not use generic language like "adjust as needed"; every point must be executable in bar workflow.',
+      'Control Points must explicitly contain one sour corrective bullet and one bitter corrective bullet.',
+      'Each sour/bitter corrective bullet must include an actionable verb and a controllable brewing knob (grind/temp/pour/ratio/time/flow).',
+      'Operational steps must include target-intent cues and avoid opposite taste-direction language for the selected profile.',
+      'Do not combine opposing taste-direction cues in the same step line (for example body-depth and bright-acidity in one instruction).',
+      '- Step phrasing must change by phase and cannot reuse one template shell for all steps.',
+      '',
+      buildPlannerEnvelope(plan),
+      '',
+      buildStepRoleMap(plan),
+      '',
+      buildMethodCueChecklist(plan),
+      '',
+      buildTargetIntentChecklist(plan),
+      '',
+      buildSharedContext(plan),
+    ].join('\n'),
+  };
+}
+
+export function buildExtractionFinisherPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
+  const finisher = buildExtractionFinisher(plan, language);
+  return {
+    title: isIndonesianAiBrewLanguage(language) ? 'Finalisasi Ekstraksi' : 'Extraction Finisher',
+    body: [
+      'Create a concise extraction finisher for this brew plan.',
+      'Read the plan, water chemistry, roast, and bean profile before giving the final recommendation.',
+      'Stay inside the current recipe envelope. Only use micro-adjustments to grind, temperature, pour structure, or ratio.',
+      'Use this structure exactly:',
+      '## Final Read',
+      '- one compact paragraph under 70 words',
+      '## Recipe Reasoning',
+      '- point 1',
+      '- point 2',
+      '- point 3',
+      '## Control Points',
+      '- point 1',
+      '- point 2',
+      '- point 3',
+      '## Taste Rescue',
+      '### Sour',
+      '- First move: ...',
+      '- Why: ...',
+      '### Bitter',
+      '- First move: ...',
+      '- Why: ...',
+      '### Thin',
+      '- First move: ...',
+      '- Why: ...',
+      'Do not invent new equipment, water values, or sensory claims beyond the provided plan.',
+      '',
+      'Local baseline to preserve:',
+      `Final read: ${finisher.finalRead}`,
+      ...finisher.recipeReasoning.map((item) => `Reasoning: ${item}`),
+      ...finisher.controlPoints.map((item) => `Control point: ${item}`),
+      ...finisher.adjustments.map((item) => `${item.taste}: ${item.action} Why: ${item.why}`),
+      '',
+      buildSharedContext(plan),
+    ].join('\n'),
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

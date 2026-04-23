@@ -1,0 +1,1883 @@
+{
+  "version": "2026.03.10-asean-first-phase1",
+  "items": [
+    {
+      "id": "31",
+      "brand": "April",
+      "model": "Brewer",
+      "material": null,
+      "geometry": "flat_bottom",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Specialty flat-bottom brewer tied closely to April style recipes.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.aprilcoffeeroasters.com/pages/equipment",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://www.aprilcoffeeroasters.com/pages/equipment",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "april brewer flat bottom dripper",
+      "aliases": [
+        "April Brewer",
+        "April Brewer"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "32",
+      "brand": "Blue Bottle",
+      "model": "Dripper",
+      "material": null,
+      "geometry": "flat_bottom",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Flat-bottom dripper associated with Blue Bottle style pulse brewing.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://bluebottlecoffee.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://bluebottlecoffee.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "blue bottle dripper flat bottom dripper",
+      "aliases": [
+        "Blue Bottle Dripper",
+        "Blue Bottle Dripper"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "33",
+      "brand": "Brewista",
+      "model": "Gem Series",
+      "material": null,
+      "geometry": "flat_bottom",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Faceted flat-bottom brewer used in specialty home setups.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "brewista gem series gem series dripper",
+      "aliases": [
+        "Brewista Gem Series",
+        "Brewista Gem Series"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "34",
+      "brand": "Brewista",
+      "model": "Tornado",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Fast-flow dripper platform aimed at modern specialty pour-over.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "brewista tornado tornado duo dripper",
+      "aliases": [
+        "Brewista Tornado",
+        "Brewista Tornado"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "35",
+      "brand": "Cafec",
+      "model": "Deep 27",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Deep cone dripper designed around smaller-volume extraction control.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://cafec-jp.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://cafec-jp.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "cafec deep 27 deep 27 flower dripper",
+      "aliases": [
+        "Cafec Deep 27",
+        "Cafec Deep 27"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "36",
+      "brand": "Cafec",
+      "model": "Flower Dripper",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Specialty cone dripper tied to CAFEC paper ecosystem.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://cafec-jp.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://cafec-jp.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "cafec flower dripper flower dripper (cone)",
+      "aliases": [
+        "Cafec Flower Dripper",
+        "Cafec Flower Dripper"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "37",
+      "brand": "Chemex",
+      "model": "Chemex",
+      "material": "glass",
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Global glass brewer with thick-paper resistance and high clarity expectations.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://chemexcoffeemaker.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://chemexcoffeemaker.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "chemex chemex pour-over glass coffeemaker",
+      "aliases": [
+        "Chemex",
+        "Chemex Chemex"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "38",
+      "brand": "Clever",
+      "model": "Dripper",
+      "material": null,
+      "geometry": "hybrid",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Mass-market immersion dripper with strong cafe and home adoption.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.cleverbrewing.coffee/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.cleverbrewing.coffee/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "clever dripper immersion dripper",
+      "aliases": [
+        "Clever Dripper",
+        "Clever Dripper"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "39",
+      "brand": "Fellow",
+      "model": "Stagg [X]",
+      "material": null,
+      "geometry": "flat_bottom",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Flat-bottom brewer aimed at tighter pulse control.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://fellowproducts.com/products/stagg-x-pour-over-set/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://fellowproducts.com/products/stagg-x-pour-over-set/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "fellow stagg [x] stagg [x] flat bottom",
+      "aliases": [
+        "Fellow Stagg [X]",
+        "Fellow Stagg [X]"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "40",
+      "brand": "Hario",
+      "model": "Mugen",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Low-bypass one-pour Hario brewer.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.hario-europe.com/pages/v60-recipes",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://www.hario-europe.com/pages/v60-recipes",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "hario mugen v60 mugen (one pour)",
+      "aliases": [
+        "Hario Mugen",
+        "Hario Mugen"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "41",
+      "brand": "Hario",
+      "model": "Switch",
+      "material": null,
+      "geometry": "hybrid",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Immersion-switch hybrid with large home and specialty adoption.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.hario-europe.com/pages/v60-recipes",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://www.hario-europe.com/pages/v60-recipes",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "hario switch immersion switch",
+      "aliases": [
+        "Hario Switch",
+        "Hario Switch"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "42",
+      "brand": "Hario",
+      "model": "V60",
+      "material": "glass",
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Global cone dripper baseline used as the reference point for manual filter brewing.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.hario-europe.com/pages/v60-recipes",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.hario-europe.com/pages/hario-brewers-cup-rules",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://www.hario-europe.com/pages/v60-recipes",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "hario v60 v60 plastic/ceramic/glass",
+      "aliases": [
+        "Hario V60",
+        "Hario V60"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "43",
+      "brand": "Hero",
+      "model": "Variable Dripper",
+      "material": null,
+      "geometry": "hybrid",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Adjustable-flow dripper used by enthusiasts who tune drawdown speed.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "hero variable dripper variable flow dripper",
+      "aliases": [
+        "Hero Variable Dripper",
+        "Hero Variable Dripper"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "44",
+      "brand": "Kalita",
+      "model": "102",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Classic trapezoid brewer with broad home-market familiarity.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "kalita 102 trapezoid dripper",
+      "aliases": [
+        "Kalita 102",
+        "Kalita 102"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "45",
+      "brand": "Kalita",
+      "model": "Wave 155 / 185",
+      "material": null,
+      "geometry": "flat_bottom",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Flat-bottom standard with broad use in cafes and home brewing.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.kalita.co.jp/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.kalita.co.jp/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "kalita wave 155 / 185 wave flat bottom",
+      "aliases": [
+        "Kalita Wave 155 / 185",
+        "Kalita Wave 155 / 185"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "46",
+      "brand": "Kono",
+      "model": "Meimon",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Low-rib Japanese cone dripper common in specialty circles.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://kono1973.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://kono1973.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "kono meimon meimon dripper",
+      "aliases": [
+        "Kono Meimon",
+        "Kono Meimon"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "47",
+      "brand": "Latina",
+      "model": "Cono",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Affordable cone dripper seen in regional home brew setups.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "latina cono cono dripper",
+      "aliases": [
+        "Latina Cono",
+        "Latina Cono"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "48",
+      "brand": "Latina",
+      "model": "Volcano",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Affordable patterned dripper positioned for entry-level manual brewing.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "latina volcano volcano dripper",
+      "aliases": [
+        "Latina Volcano",
+        "Latina Volcano"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "49",
+      "brand": "Loveramics",
+      "model": "Loveramics",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Ceramic dripper line with multiple flow styles for specialty home use.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "loveramics loveramics brewers (3 flow types)",
+      "aliases": [
+        "Loveramics",
+        "Loveramics Loveramics"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "50",
+      "brand": "Melitta",
+      "model": "Melitta",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Trapezoid classic with broad mass-market availability.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.melitta.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.melitta.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "melitta melitta aromaboy / 1x2 trapezoid",
+      "aliases": [
+        "Melitta",
+        "Melitta Melitta"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "51",
+      "brand": "MHW-3Bomber",
+      "model": "Elf",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Modern specialty dripper aimed at enthusiast home brewing.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "mhw-3bomber elf elf dripper",
+      "aliases": [
+        "MHW-3Bomber Elf",
+        "MHW-3Bomber Elf"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "52",
+      "brand": "Orea",
+      "model": "V3 / V4",
+      "material": null,
+      "geometry": "flat_bottom",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Modern fast-flow flat-bottom dripper platform used in specialty competition and cafes.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://orea.uk/guides",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://orea.uk/guides",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "orea v3 / v4 flat bottom brewer",
+      "aliases": [
+        "Orea V3 / V4",
+        "Orea V3 / V4"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "53",
+      "brand": "Origami",
+      "model": "Dripper (S/M)",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Highly adopted specialty dripper that supports cone and wave-style filters.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://origami-kai.com/en/products/dripper",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://origami-kai.com/en/products/dripper",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "origami dripper (s/m) folded cone dripper",
+      "aliases": [
+        "Origami Dripper (S/M)",
+        "Origami Dripper (S/M)"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "54",
+      "brand": "Suji",
+      "model": "V60 Dripper",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Budget cone dripper commonly used in entry-level manual brew setups.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "suji v60 dripper pourover dripper",
+      "aliases": [
+        "Suji V60 Dripper",
+        "Suji V60 Dripper"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "55",
+      "brand": "Suji",
+      "model": "Wave Dripper",
+      "material": null,
+      "geometry": "flat_bottom",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Budget wave-style dripper used for approachable flat-bottom brewing.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "suji wave dripper wave dripper",
+      "aliases": [
+        "Suji Wave Dripper",
+        "Suji Wave Dripper"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "56",
+      "brand": "The Gabi",
+      "model": "Master A/B",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Pulse-oriented dripper family known in enthusiast specialty circles.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "the gabi master a/b master a/b dripper",
+      "aliases": [
+        "The Gabi Master A/B",
+        "The Gabi Master A/B"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "57",
+      "brand": "Timemore",
+      "model": "B75",
+      "material": null,
+      "geometry": "flat_bottom",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Fast flat-bottom brewer widely used in specialty home setups.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.timemore.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.timemore.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "timemore b75 b75 flat bottom",
+      "aliases": [
+        "Timemore B75",
+        "Timemore B75"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "58",
+      "brand": "Timemore",
+      "model": "Crystal Eye",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Timemore cone dripper with strong specialty home adoption in Asia.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.timemore.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.timemore.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "timemore crystal eye crystal eye v60",
+      "aliases": [
+        "Timemore Crystal Eye",
+        "Timemore Crystal Eye"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "59",
+      "brand": "Torch",
+      "model": "Mountain",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Japanese ceramic dripper with steady niche specialty adoption.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "torch mountain mountain dripper",
+      "aliases": [
+        "Torch Mountain",
+        "Torch Mountain"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "60",
+      "brand": "No Brand",
+      "model": "Vietnam Drip",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Traditional Vietnamese metal brewer with broad regional household use.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.brewlogic.app/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.brewlogic.app/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 95,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "no brand vietnam drip gravity insert dripper",
+      "aliases": [
+        "Vietnam Drip",
+        "No Brand Vietnam Drip"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "april-hybrid-brewer",
+      "brand": "April",
+      "model": "Hybrid Brewer",
+      "material": null,
+      "geometry": "hybrid",
+      "hole_count": null,
+      "rib_type": "hybrid",
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "New April hybrid brewer combining portability with the April flat-bottom geometry.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.aprilcoffeeroasters.com/products/april-hybrid-brewer",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://www.aprilcoffeeroasters.com/products/april-hybrid-brewer",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "april hybrid brewer hybrid flat bottom brewer",
+      "aliases": [
+        "April Hybrid Brewer",
+        "April Hybrid Brewer"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "fellow-stagg-xf-dripper",
+      "brand": "Fellow",
+      "model": "Stagg [XF] Dripper",
+      "material": null,
+      "geometry": "flat_bottom",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Larger Stagg [XF] flat-bottom brewer for bigger filter batches.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://fellowproducts.com/products/stagg-xf-pour-over-set/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://fellowproducts.com/products/stagg-xf-pour-over-set/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "fellow stagg [xf] dripper pour-over set / flat bottom dripper",
+      "aliases": [
+        "Fellow Stagg [XF] Dripper",
+        "Fellow Stagg [XF] Dripper"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "hario-pegasus",
+      "brand": "Hario",
+      "model": "Pegasus",
+      "material": null,
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Hario trapezoid dripper suited for classic home bar workflow and easy filter sourcing.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "community_reference",
+          "source_url": "https://www.hario-europe.com/pages/v60-recipes",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.66
+        }
+      ],
+      "primary_source": {
+        "source_type": "community_reference",
+        "source_url": "https://www.hario-europe.com/pages/v60-recipes",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.66
+      },
+      "source_type": "community_reference",
+      "confidence_score": 0.66,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "hario pegasus trapezoid dripper",
+      "aliases": [
+        "Hario Pegasus",
+        "Hario Pegasus"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "nextlevel-pulsar",
+      "brand": "NextLevel",
+      "model": "Pulsar",
+      "material": null,
+      "geometry": "hybrid",
+      "hole_count": null,
+      "rib_type": "hybrid",
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Hybrid no-bypass brewer with immersion and controlled drawdown workflow for repeatable clarity.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://nextlevelbrewer.com/products/pulsar-brewer",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://nextlevelbrewer.com/products/pulsar-brewer",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "nextlevel pulsar no-bypass hybrid brewer",
+      "aliases": [
+        "NextLevel Pulsar",
+        "NextLevel Pulsar"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "origami-dripper-air-s",
+      "brand": "ORIGAMI",
+      "model": "Dripper Air S",
+      "material": "plastic",
+      "geometry": "conical",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "Recent lightweight ORIGAMI release aimed at travel and cafe flexibility.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://origami-kai.com/en/products/origami_dripperair_s",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://origami-kai.com/en/products/origami_dripperair_s",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 68,
+      "availability_confidence": "high",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "origami dripper air s air resin cone dripper",
+      "aliases": [
+        "ORIGAMI Dripper Air S",
+        "ORIGAMI Dripper Air S"
+      ],
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "id": "tricolate-brewer",
+      "brand": "Tricolate",
+      "model": "Brewer",
+      "material": null,
+      "geometry": "flat_bottom",
+      "hole_count": null,
+      "rib_type": null,
+      "filter_type": "paper",
+      "capacity_cups": null,
+      "brew_style_notes": "No-bypass flat-bottom dripper used for high-clarity but controlled high-extraction filter workflows.",
+      "available_in": [
+        "Global",
+        "Indonesia",
+        "Brunei",
+        "Singapore",
+        "Malaysia"
+      ],
+      "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://tricolate.com/",
+          "collected_at": "2026-03-10T00:00:00.000Z",
+          "confidence_score": 0.95
+        }
+      ],
+      "primary_source": {
+        "source_type": "brand_site",
+        "source_url": "https://tricolate.com/",
+        "collected_at": "2026-03-10T00:00:00.000Z",
+        "confidence_score": 0.95
+      },
+      "source_type": "brand_site",
+      "confidence_score": 0.95,
+      "manual_brew_capable": true,
+      "filter_priority": 82,
+      "availability_confidence": "medium",
+      "published": true,
+      "publish_state": "published",
+      "search_text": "tricolate brewer no-bypass flat bottom brewer",
+      "aliases": [
+        "Tricolate Brewer",
+        "Tricolate Brewer"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "updated_at": "2026-03-10T00:00:00.000Z"
+    }
+  ]
+}

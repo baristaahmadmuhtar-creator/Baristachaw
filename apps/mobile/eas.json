@@ -1,0 +1,76 @@
+{
+  "cli": {
+    "version": ">= 12.6.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      }
+    },
+    "ios_internal": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
+        "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
+        "EXPO_PUBLIC_RELEASE": "ios-internal-qa"
+      },
+      "ios": {
+        "autoIncrement": "buildNumber"
+      }
+    },
+    "mvp_android": {
+      "credentialsSource": "local",
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
+        "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
+        "EXPO_PUBLIC_RELEASE": "android-mvp-production"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "distribution": "store",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
+        "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
+        "EXPO_PUBLIC_RELEASE": "ios-preview"
+      },
+      "ios": {
+        "autoIncrement": "buildNumber"
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
+        "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
+        "EXPO_PUBLIC_RELEASE": "ios-production"
+      },
+      "ios": {
+        "autoIncrement": "buildNumber"
+      }
+    }
+  },
+  "submit": {
+    "preview": {
+      "ios": {}
+    },
+    "production": {
+      "ios": {}
+    }
+  }
+}

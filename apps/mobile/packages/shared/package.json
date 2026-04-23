@@ -1,0 +1,17 @@
+{
+  "name": "@baristaclaw/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "lint": "tsc --noEmit -p tsconfig.json"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./domain": "./src/domain.ts",
+    "./ai": "./src/ai.ts",
+    "./parity": "./src/parity.ts",
+    "./scanner": "./src/scanner.ts"
+  }
+}

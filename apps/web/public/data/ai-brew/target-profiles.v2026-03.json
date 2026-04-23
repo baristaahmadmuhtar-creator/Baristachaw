@@ -1,0 +1,61 @@
+{
+  "catalogVersion": "2026.03.09-ai-brew-v1",
+  "items": [
+    {
+      "id": "balance_clean",
+      "label": "Balance & Clean",
+      "description": "Tight, reliable filter profile with even sweetness and a clean finish.",
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 0,
+      "grindBias": "same",
+      "notes": [
+        "Use as the baseline when dialing a new coffee.",
+        "Prioritize even agitation and repeatable pour height."
+      ],
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "more_sweetness",
+      "label": "More Sweetness",
+      "description": "Push extraction slightly deeper for rounder sweetness and softer acidity.",
+      "ratioDelta": -0.2,
+      "tempDeltaC": 0.6,
+      "brewTimeDeltaSec": 10,
+      "grindBias": "finer",
+      "notes": [
+        "Finer grind and slightly longer contact time raise sweetness.",
+        "Avoid over-agitation late in the brew."
+      ],
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "more_acidity",
+      "label": "More Acidity",
+      "description": "Open aromatics and brighter acids while keeping the cup transparent.",
+      "ratioDelta": 0.25,
+      "tempDeltaC": -0.5,
+      "brewTimeDeltaSec": -10,
+      "grindBias": "coarser",
+      "notes": [
+        "Coarser grind and a shorter brew highlight top notes and florals.",
+        "Keep the bloom disciplined to prevent channeling."
+      ],
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "more_body",
+      "label": "More Body",
+      "description": "Lean toward texture and structure with slightly denser extraction.",
+      "ratioDelta": -0.35,
+      "tempDeltaC": 0.3,
+      "brewTimeDeltaSec": 12,
+      "grindBias": "finer",
+      "notes": [
+        "Finer grind with slightly tighter ratio builds texture.",
+        "Control drawdown so the body feels syrupy, not muddy."
+      ],
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    }
+  ]
+}

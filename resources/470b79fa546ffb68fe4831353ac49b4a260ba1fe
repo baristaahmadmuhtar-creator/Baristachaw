@@ -1,0 +1,68 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - img [ref=e7]
+    - button "Collapse desktop navigation" [ref=e10]:
+      - img [ref=e11]
+    - navigation [ref=e14]:
+      - link "Home" [ref=e15] [cursor=pointer]:
+        - /url: /
+        - img [ref=e16]
+        - generic [ref=e19]: Home
+      - link "Scan" [ref=e20] [cursor=pointer]:
+        - /url: /scanner
+        - img [ref=e21]
+        - generic [ref=e26]: Scan
+      - link "Tools" [ref=e27] [cursor=pointer]:
+        - /url: /tools
+        - img [ref=e28]
+        - generic [ref=e30]: Tools
+      - link "Collection" [ref=e31] [cursor=pointer]:
+        - /url: /collection
+        - img [ref=e32]
+        - generic [ref=e36]: Collection
+      - link "Chat" [ref=e37] [cursor=pointer]:
+        - /url: /chat
+        - img [ref=e38]
+        - generic [ref=e40]: Chat
+  - generic [ref=e43]:
+    - banner [ref=e44]:
+      - img [ref=e46]
+      - heading "Barista Tools" [level=1] [ref=e49]
+      - paragraph [ref=e50]: AI Brew first, then timer, ratio analysis, and shift tasks in one workspace.
+    - tablist "Barista Tools sections" [ref=e51]:
+      - tab "AI Brew" [selected] [ref=e52]:
+        - img [ref=e53]
+        - generic [ref=e56]: AI Brew
+      - tab "Timer" [ref=e57]:
+        - img [ref=e58]
+        - generic [ref=e61]: Timer
+      - tab "Ratio" [ref=e62]:
+        - img [ref=e63]
+        - generic [ref=e65]: Ratio
+      - tab "Tasks" [ref=e66]:
+        - img [ref=e67]
+        - generic [ref=e70]: Tasks
+    - tabpanel "AI Brew" [ref=e71]:
+      - generic [ref=e73]:
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - img [ref=e77]
+            - heading "AI Brew" [level=2] [ref=e81]
+          - generic [ref=e83]:
+            - button "Quick" [disabled] [ref=e84]:
+              - generic [ref=e85]: Quick
+            - button "Pro" [disabled] [ref=e86]:
+              - generic [ref=e87]: Pro
+        - generic [ref=e88]:
+          - generic [ref=e89]:
+            - heading "Planned Output / Favorites / Recent Brews" [level=3] [ref=e91]
+            - generic [ref=e92]:
+              - button "Planned Output" [ref=e93]
+              - button "Favorites" [ref=e94]
+              - button "Recent Brews" [ref=e95]
+          - generic [ref=e97]: Complete the form and generate a plan to open the focus workspace.
+        - alert [ref=e99]: Cannot read properties of undefined (reading 'map')
+```

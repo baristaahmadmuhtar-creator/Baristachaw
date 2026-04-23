@@ -1,0 +1,37 @@
+import { expect, type APIRequestContext } from '@playwright/test';
+import { buildQaUser } from './test-data';
+
+function getBaseUrl(): string {
+  return process.env.PLAYWRIGHT_BASE_URL || process.env.BASE_URL || 'http://localhost:3000';
+}
+
+function testToken(): string {
+  return process.env.TEST_AUTH_TOKEN || 'local-test-token';
+}
+
+export async function qaLogin(request: APIRequestContext): Promise<void> {
+  const baseUrl = getBaseUrl();
+  const response = await request.post('/api/test-auth/login', {
+    headers: {
+      'x-test-token': testToken(),
+      origin: baseUrl,
+      'content-type': 'application/json',
+    },
+    data: buildQaUser(),
+  });
+
+  const body = await response.text();
+  expect(response.ok(), `qa login failed: ${response.status()} ${body}`).toBeTruthy();
+}
+
+export async function qaLogout(request: APIRequestContext): Promise<void> {
+  const baseUrl = getBaseUrl();
+  await request.post('/api/test-auth/logout', {
+    headers: {
+      'x-test-token': testToken(),
+      origin: baseUrl,
+      'content-type': 'application/json',
+    },
+    data: {},
+  });
+}

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -34,104 +35,121 @@ type MobileAuthGateProps = {
 type AuthMode = EmailAuthPayload['mode'] | 'resetPassword' | 'accountHelp';
 type ActiveAuthMode = AuthMode | 'newPassword';
 
-type AuthTheme = {
-  background: string;
-  backgroundAlt: string;
-  panel: string;
-  panelSoft: string;
-  text: string;
-  textSoft: string;
-  muted: string;
-  border: string;
-  input: string;
-  inputBorder: string;
-  accent: string;
-  accentStrong: string;
-  accentText: string;
-  success: string;
-  successSoft: string;
+const AUTH_BRAND_ICON = require('../../assets/splash-icon.png');
+
+type WebParityAuthTheme = {
+  bgBase: string;
+  textPrimary: string;
+  textSecondary: string;
+  textTertiary: string;
+  glassBg: string;
+  glassBgHover: string;
+  glassBorder: string;
+  panelBorderSoft: string;
+  surfaceAlpha: string;
+  blue: string;
+  blueBorder: string;
+  blueShadow: string;
+  white: string;
   danger: string;
-  dangerSoft: string;
+  dangerBg: string;
+  dangerBorder: string;
+  success: string;
+  successBg: string;
+  successBorder: string;
   warning: string;
-  warningSoft: string;
+  warningBg: string;
+  warningBorder: string;
+  glowBlue: string;
+  glowIndigo: string;
   shadow: string;
 };
 
-const AUTH_THEMES: Record<'light' | 'dark', AuthTheme> = {
+const WEB_AUTH_THEMES: Record<'light' | 'dark', WebParityAuthTheme> = {
   light: {
-    background: '#F8F2E7',
-    backgroundAlt: '#EFE1CF',
-    panel: '#FFF9F0',
-    panelSoft: '#F5EADB',
-    text: '#231A13',
-    textSoft: '#5D4B3B',
-    muted: '#8B7663',
-    border: 'rgba(86, 58, 38, 0.14)',
-    input: '#FFFCF7',
-    inputBorder: 'rgba(86, 58, 38, 0.18)',
-    accent: '#9C5B28',
-    accentStrong: '#613414',
-    accentText: '#FFFFFF',
-    success: '#27734D',
-    successSoft: 'rgba(39, 115, 77, 0.12)',
-    danger: '#B33A2B',
-    dangerSoft: 'rgba(179, 58, 43, 0.11)',
-    warning: '#946111',
-    warningSoft: 'rgba(148, 97, 17, 0.12)',
-    shadow: '#6B4120',
+    bgBase: '#F2F2F7',
+    textPrimary: '#000000',
+    textSecondary: '#3C3C43',
+    textTertiary: 'rgba(60, 60, 67, 0.6)',
+    glassBg: 'rgba(255, 255, 255, 0.6)',
+    glassBgHover: 'rgba(255, 255, 255, 0.75)',
+    glassBorder: 'rgba(255, 255, 255, 0.6)',
+    panelBorderSoft: 'rgba(15, 23, 42, 0.08)',
+    surfaceAlpha: 'rgba(0, 0, 0, 0.05)',
+    blue: 'rgba(29, 78, 216, 0.96)',
+    blueBorder: 'rgba(59, 130, 246, 0.42)',
+    blueShadow: 'rgba(29, 78, 216, 0.24)',
+    white: '#FFFFFF',
+    danger: '#DC2626',
+    dangerBg: 'rgba(239, 68, 68, 0.10)',
+    dangerBorder: 'rgba(239, 68, 68, 0.20)',
+    success: '#059669',
+    successBg: 'rgba(16, 185, 129, 0.10)',
+    successBorder: 'rgba(16, 185, 129, 0.20)',
+    warning: '#B45309',
+    warningBg: 'rgba(245, 158, 11, 0.12)',
+    warningBorder: 'rgba(245, 158, 11, 0.25)',
+    glowBlue: 'rgba(0, 122, 255, 0.06)',
+    glowIndigo: 'rgba(88, 86, 214, 0.06)',
+    shadow: 'rgba(0, 0, 0, 0.08)',
   },
   dark: {
-    background: '#10100D',
-    backgroundAlt: '#1D1711',
-    panel: '#1B1712',
-    panelSoft: '#251D16',
-    text: '#FFF3E3',
-    textSoft: '#D6C2AA',
-    muted: '#9B8770',
-    border: 'rgba(255, 228, 196, 0.14)',
-    input: '#13110E',
-    inputBorder: 'rgba(255, 228, 196, 0.18)',
-    accent: '#D88B45',
-    accentStrong: '#F2B06D',
-    accentText: '#1D120A',
-    success: '#79D39A',
-    successSoft: 'rgba(121, 211, 154, 0.13)',
-    danger: '#FF8A78',
-    dangerSoft: 'rgba(255, 138, 120, 0.12)',
-    warning: '#F3C06D',
-    warningSoft: 'rgba(243, 192, 109, 0.13)',
-    shadow: '#000000',
+    bgBase: '#000000',
+    textPrimary: '#FFFFFF',
+    textSecondary: '#EBEBF5',
+    textTertiary: 'rgba(235, 235, 245, 0.75)',
+    glassBg: 'rgba(28, 28, 30, 0.6)',
+    glassBgHover: 'rgba(44, 44, 46, 0.75)',
+    glassBorder: 'rgba(148, 163, 184, 0.10)',
+    panelBorderSoft: 'rgba(148, 163, 184, 0.12)',
+    surfaceAlpha: 'rgba(148, 163, 184, 0.08)',
+    blue: 'rgba(29, 78, 216, 0.96)',
+    blueBorder: 'rgba(59, 130, 246, 0.42)',
+    blueShadow: 'rgba(29, 78, 216, 0.32)',
+    white: '#FFFFFF',
+    danger: '#F87171',
+    dangerBg: 'rgba(239, 68, 68, 0.10)',
+    dangerBorder: 'rgba(239, 68, 68, 0.25)',
+    success: '#34D399',
+    successBg: 'rgba(16, 185, 129, 0.10)',
+    successBorder: 'rgba(16, 185, 129, 0.22)',
+    warning: '#FCD34D',
+    warningBg: 'rgba(245, 158, 11, 0.12)',
+    warningBorder: 'rgba(245, 158, 11, 0.25)',
+    glowBlue: 'transparent',
+    glowIndigo: 'transparent',
+    shadow: 'rgba(0, 0, 0, 0.42)',
   },
 };
 
 const COPY: Record<ActiveAuthMode, { title: string; subtitle: string; submit: string; submitting: string }> = {
   signIn: {
-    title: 'Masuk ke BaristaClaw',
-    subtitle: 'Lanjutkan pekerjaan, catatan, dan chat AI dari akun yang sama.',
+    title: 'BaristaClaw',
+    subtitle: 'Masuk untuk mengakses fitur AI yang dilindungi.',
     submit: 'Masuk dengan email',
     submitting: 'Memeriksa akun...',
   },
   signUp: {
-    title: 'Buat akun barista',
-    subtitle: 'Satu akun untuk menyimpan workflow, koleksi, dan riwayat kerja.',
+    title: 'BaristaClaw',
+    subtitle: 'Daftar untuk menyimpan chat, koleksi, dan workflow.',
     submit: 'Buat akun',
     submitting: 'Membuat akun...',
   },
   resetPassword: {
-    title: 'Pulihkan akses akun',
-    subtitle: 'Masukkan email akun. Tautan aman akan dikirim ke inbox Anda.',
+    title: 'BaristaClaw',
+    subtitle: 'Pulihkan akses akun dengan tautan aman ke email.',
     submit: 'Kirim tautan pemulihan',
     submitting: 'Mengirim tautan...',
   },
   accountHelp: {
-    title: 'Bantuan akun',
-    subtitle: 'Temukan cara masuk paling cepat tanpa menebak-nebak data akun.',
+    title: 'BaristaClaw',
+    subtitle: 'Bantuan akun untuk menemukan cara masuk paling aman.',
     submit: 'Kembali masuk',
     submitting: 'Menyiapkan...',
   },
   newPassword: {
-    title: 'Buat password baru',
-    subtitle: 'Gunakan password baru untuk menyelesaikan pemulihan akun.',
+    title: 'BaristaClaw',
+    subtitle: 'Buat password baru untuk menyelesaikan pemulihan akun.',
     submit: 'Simpan password baru',
     submitting: 'Menyimpan password...',
   },
@@ -161,7 +179,7 @@ export function MobileAuthGate({
 }: MobileAuthGateProps) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
-  const theme = AUTH_THEMES[colorScheme === 'dark' ? 'dark' : 'light'];
+  const theme = WEB_AUTH_THEMES[colorScheme === 'dark' ? 'dark' : 'light'];
   const styles = useMemo(() => createStyles(theme), [theme]);
   const [mode, setMode] = useState<AuthMode>('signIn');
   const [displayName, setDisplayName] = useState('');
@@ -177,17 +195,11 @@ export function MobileAuthGate({
 
   const activeMode: ActiveAuthMode = passwordRecoveryActive ? 'newPassword' : mode;
   const copy = COPY[activeMode];
-  const heroTitle = !supabaseAuthEnabled && activeMode === 'signIn' ? 'Masuk atau daftar' : copy.title;
-  const heroSubtitle = !supabaseAuthEnabled && activeMode === 'signIn'
-    ? 'Gunakan Google untuk membuka atau membuat akun BaristaClaw dengan aman.'
-    : copy.subtitle;
   const busy = Boolean(authBusyProvider);
   const googleBusy = authBusyProvider === 'google';
   const emailBusy = authBusyProvider === 'email';
   const appleBusy = authBusyProvider === 'apple';
-  const primaryBusy = activeMode === 'newPassword' || activeMode === 'resetPassword' || activeMode === 'signIn' || activeMode === 'signUp'
-    ? emailBusy
-    : busy;
+  const emailActionBusy = emailBusy && ['signIn', 'signUp', 'resetPassword', 'newPassword'].includes(activeMode);
 
   const switchMode = (nextMode: AuthMode) => {
     setMode(nextMode);
@@ -196,12 +208,8 @@ export function MobileAuthGate({
   };
 
   const validatePasswordPair = (value: string, confirmation: string) => {
-    if (value.length < 8) {
-      return 'Password minimal 8 karakter.';
-    }
-    if (value !== confirmation) {
-      return 'Konfirmasi password belum sama.';
-    }
+    if (value.length < 8) return 'Password minimal 8 karakter.';
+    if (value !== confirmation) return 'Konfirmasi password belum sama.';
     return '';
   };
 
@@ -232,6 +240,7 @@ export function MobileAuthGate({
       setFormError('Password minimal 8 karakter.');
       return;
     }
+
     if (activeMode === 'signUp') {
       if (!normalizedName) {
         setFormError('Nama tampilan wajib diisi.');
@@ -270,122 +279,117 @@ export function MobileAuthGate({
     }
   };
 
-  const renderEmailInput = () => (
+  const renderNotice = (
+    message: string,
+    tone: 'error' | 'success' | 'warning',
+    icon: keyof typeof Ionicons.glyphMap,
+  ) => {
+    const noticeStyle = tone === 'error'
+      ? styles.errorNotice
+      : tone === 'success'
+        ? styles.successNotice
+        : styles.warningNotice;
+    const textStyle = tone === 'error'
+      ? styles.errorNoticeText
+      : tone === 'success'
+        ? styles.successNoticeText
+        : styles.warningNoticeText;
+    const color = tone === 'error' ? theme.danger : tone === 'success' ? theme.success : theme.warning;
+
+    return (
+      <View style={[styles.notice, noticeStyle]}>
+        <Ionicons name={icon} size={18} color={color} />
+        <Text selectable style={[styles.noticeText, textStyle]}>{message}</Text>
+      </View>
+    );
+  };
+
+  const renderPrimaryButton = (
+    label: string,
+    busyLabel: string,
+    isBusy: boolean,
+    onPress: () => void,
+    icon: keyof typeof Ionicons.glyphMap,
+  ) => (
+    <Pressable
+      accessibilityRole="button"
+      disabled={!isOnline || busy}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.primaryButton,
+        (!isOnline || busy) ? styles.disabled : null,
+        pressed && !busy ? styles.pressed : null,
+      ]}
+    >
+      {isBusy ? (
+        <ActivityIndicator color={theme.white} />
+      ) : (
+        <Ionicons name={icon} size={18} color={theme.white} />
+      )}
+      <Text style={styles.primaryButtonText}>{isBusy ? busyLabel : label}</Text>
+    </Pressable>
+  );
+
+  const renderInput = ({
+    label,
+    value,
+    onChangeText,
+    placeholder,
+    icon,
+    keyboardType,
+    textContentType,
+    autoComplete,
+    secureTextEntry,
+    visible,
+    onToggleVisible,
+  }: {
+    label: string;
+    value: string;
+    onChangeText: (value: string) => void;
+    placeholder: string;
+    icon: keyof typeof Ionicons.glyphMap;
+    keyboardType?: 'default' | 'email-address';
+    textContentType?: 'emailAddress' | 'name' | 'password' | 'newPassword';
+    autoComplete?: 'email' | 'name' | 'password' | 'new-password';
+    secureTextEntry?: boolean;
+    visible?: boolean;
+    onToggleVisible?: () => void;
+  }) => (
     <View style={styles.fieldGroup}>
-      <Text style={styles.fieldLabel}>Email</Text>
+      <Text style={styles.fieldLabel}>{label}</Text>
       <View style={styles.inputWrap}>
-        <Ionicons name="mail-outline" size={18} color={theme.muted} />
+        <Ionicons name={icon} size={18} color={theme.textTertiary} />
         <TextInput
-          value={email}
-          onChangeText={setEmail}
-          placeholder="nama@email.com"
-          placeholderTextColor={theme.muted}
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          autoCapitalize="none"
-          autoComplete="email"
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={theme.textTertiary}
+          keyboardType={keyboardType || 'default'}
+          textContentType={textContentType}
+          autoComplete={autoComplete}
+          autoCapitalize={keyboardType === 'email-address' ? 'none' : 'words'}
           autoCorrect={false}
           editable={!emailBusy}
-          selectionColor={theme.accent}
+          secureTextEntry={secureTextEntry}
+          selectionColor="#3B82F6"
           style={styles.textInput}
         />
+        {onToggleVisible ? (
+          <Pressable
+            accessibilityRole="button"
+            disabled={emailBusy}
+            onPress={onToggleVisible}
+            style={styles.passwordToggle}
+          >
+            <Text style={styles.passwordToggleText}>{visible ? 'Sembunyikan' : 'Tampilkan'}</Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
 
-  const renderPasswordInput = (
-    value: string,
-    onChangeText: (value: string) => void,
-    visible: boolean,
-    onToggleVisible: () => void,
-    placeholder: string,
-    textContentType: 'password' | 'newPassword',
-    autoComplete: 'password' | 'new-password',
-  ) => (
-    <View style={styles.inputWrap}>
-      <Ionicons name="lock-closed-outline" size={18} color={theme.muted} />
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={theme.muted}
-        textContentType={textContentType}
-        autoCapitalize="none"
-        autoComplete={autoComplete}
-        autoCorrect={false}
-        secureTextEntry={!visible}
-        editable={!emailBusy}
-        selectionColor={theme.accent}
-        style={styles.textInput}
-      />
-      <Pressable
-        accessibilityRole="button"
-        disabled={emailBusy}
-        onPress={onToggleVisible}
-        style={styles.passwordToggle}
-      >
-        <Text style={styles.passwordToggleText}>{visible ? 'Sembunyikan' : 'Tampilkan'}</Text>
-      </Pressable>
-    </View>
-  );
-
-  const renderPrimaryProviders = () => {
-    if (activeMode === 'newPassword') return null;
-
-    return (
-      <>
-        <Pressable
-          accessibilityRole="button"
-          disabled={!isOnline || busy}
-          onPress={() => void onLoginGoogle()}
-          style={({ pressed }) => [
-            styles.googleButton,
-            (!isOnline || busy) ? styles.disabled : null,
-            pressed && !busy ? styles.pressed : null,
-          ]}
-        >
-          {googleBusy ? (
-            <ActivityIndicator color={theme.accentText} />
-          ) : (
-            <Ionicons name="logo-google" size={18} color={theme.accentText} />
-          )}
-          <Text style={styles.googleText}>
-            {googleBusy ? 'Membuka Google...' : (supabaseAuthEnabled ? 'Lanjutkan dengan Google' : 'Masuk / daftar dengan Google')}
-          </Text>
-        </Pressable>
-
-        {enableAppleSignIn ? (
-          <Pressable
-            accessibilityRole="button"
-            disabled={!isOnline || busy}
-            onPress={() => void onLoginApple()}
-            style={({ pressed }) => [
-              styles.appleButton,
-              (!isOnline || busy) ? styles.disabled : null,
-              pressed && !busy ? styles.pressed : null,
-            ]}
-          >
-            {appleBusy ? (
-              <ActivityIndicator color={theme.text} />
-            ) : (
-              <Ionicons name="logo-apple" size={18} color={theme.text} />
-            )}
-            <Text style={styles.appleText}>{appleBusy ? 'Membuka Apple...' : 'Masuk dengan Apple'}</Text>
-          </Pressable>
-        ) : null}
-
-        <View style={styles.dividerRow}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>atau gunakan email</Text>
-          <View style={styles.dividerLine} />
-        </View>
-      </>
-    );
-  };
-
   const renderModeTabs = () => {
-    if (activeMode === 'newPassword' || !supabaseAuthEnabled) return null;
-
+    if (!supabaseAuthEnabled || activeMode === 'newPassword') return null;
     const tabs: Array<{ value: AuthMode; label: string }> = [
       { value: 'signIn', label: 'Masuk' },
       { value: 'signUp', label: 'Daftar' },
@@ -414,46 +418,15 @@ export function MobileAuthGate({
     );
   };
 
-  const renderAccountHelp = () => (
-    <View style={styles.helpCard}>
-      <View style={styles.helpItem}>
-        <Ionicons name="person-circle-outline" size={18} color={theme.accent} />
-        <Text style={styles.helpText}>
-          BaristaClaw tidak memakai username terpisah. Akun dikenali dari Google atau email yang dipakai saat daftar.
-        </Text>
-      </View>
-      <View style={styles.helpItem}>
-        <Ionicons name="search-outline" size={18} color={theme.accent} />
-        <Text style={styles.helpText}>
-          Jika lupa email, coba masuk dengan Google terlebih dahulu atau cari email verifikasi dari BaristaClaw di inbox.
-        </Text>
-      </View>
-      <View style={styles.helpItem}>
-        <Ionicons name="shield-checkmark-outline" size={18} color={theme.accent} />
-        <Text style={styles.helpText}>
-          Demi keamanan, aplikasi tidak menampilkan daftar akun yang pernah dipakai di perangkat ini.
-        </Text>
-      </View>
-      <View style={styles.helpActions}>
-        <Pressable accessibilityRole="button" onPress={() => switchMode('signIn')} style={styles.secondaryButton}>
-          <Text style={styles.secondaryButtonText}>Kembali masuk</Text>
-        </Pressable>
-        <Pressable accessibilityRole="button" onPress={() => switchMode('resetPassword')} style={styles.secondaryButton}>
-          <Text style={styles.secondaryButtonText}>Pulihkan password</Text>
-        </Pressable>
-      </View>
-    </View>
-  );
-
   const renderEmailForm = () => {
     if (!supabaseAuthEnabled && activeMode !== 'newPassword') {
       return (
-        <View style={styles.infoCard}>
-          <Ionicons name="information-circle-outline" size={18} color={theme.accent} />
+        <View style={styles.infoPanel}>
+          <Ionicons name="information-circle-outline" size={16} color={theme.textSecondary} />
           <View style={styles.infoCopy}>
-            <Text style={styles.infoTitle}>Email belum tersedia untuk perangkat ini</Text>
+            <Text style={styles.infoTitle}>Email masuk/daftar belum aktif</Text>
             <Text style={styles.infoText}>
-              Gunakan Google untuk masuk cepat dan aman. Tim dapat mengaktifkan akses email untuk akun barista saat sudah siap.
+              Google tetap menjadi jalur masuk utama untuk build ini.
             </Text>
           </View>
         </View>
@@ -461,146 +434,131 @@ export function MobileAuthGate({
     }
 
     if (activeMode === 'accountHelp') {
-      return renderAccountHelp();
+      return (
+        <View style={styles.infoPanel}>
+          <Ionicons name="information-circle-outline" size={16} color={theme.textSecondary} />
+          <View style={styles.infoCopy}>
+            <Text style={styles.infoTitle}>Bantuan akun</Text>
+            <Text style={styles.infoText}>
+              BaristaClaw memakai Google atau email, bukan username terpisah. Jika lupa email, coba Google dulu atau cari email verifikasi BaristaClaw.
+            </Text>
+            <View style={styles.inlineActions}>
+              <Pressable accessibilityRole="button" onPress={() => switchMode('signIn')} style={styles.inlineButton}>
+                <Text style={styles.inlineButtonText}>Kembali masuk</Text>
+              </Pressable>
+              <Pressable accessibilityRole="button" onPress={() => switchMode('resetPassword')} style={styles.inlineButton}>
+                <Text style={styles.inlineButtonText}>Pulihkan password</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      );
     }
 
     if (activeMode === 'newPassword') {
       return (
-        <>
+        <View style={styles.formStack}>
           {recoveryEmail ? (
-            <View style={styles.recoveryBadge}>
-              <Ionicons name="mail-open-outline" size={16} color={theme.accent} />
-              <Text style={styles.recoveryBadgeText}>{recoveryEmail}</Text>
+            <View style={styles.infoPanel}>
+              <Ionicons name="mail-open-outline" size={16} color={theme.textSecondary} />
+              <Text style={styles.infoText}>{recoveryEmail}</Text>
             </View>
           ) : null}
-
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Password baru</Text>
-            {renderPasswordInput(
-              newPassword,
-              setNewPassword,
-              newPasswordVisible,
-              () => setNewPasswordVisible((value) => !value),
-              'Minimal 8 karakter',
-              'newPassword',
-              'new-password',
-            )}
-          </View>
-
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Konfirmasi password baru</Text>
-            {renderPasswordInput(
-              newPasswordConfirm,
-              setNewPasswordConfirm,
-              newPasswordVisible,
-              () => setNewPasswordVisible((value) => !value),
-              'Ulangi password baru',
-              'newPassword',
-              'new-password',
-            )}
-          </View>
-
-          <Pressable
-            accessibilityRole="button"
-            disabled={!isOnline || busy}
-            onPress={() => void submitNewPassword()}
-            style={({ pressed }) => [
-              styles.emailButton,
-              (!isOnline || busy) ? styles.disabled : null,
-              pressed && !busy ? styles.pressed : null,
-            ]}
-          >
-            {emailBusy ? <ActivityIndicator color={theme.accentText} /> : <Ionicons name="checkmark-circle-outline" size={18} color={theme.accentText} />}
-            <Text style={styles.emailButtonText}>{emailBusy ? copy.submitting : copy.submit}</Text>
-          </Pressable>
-        </>
+          {renderInput({
+            label: 'Password baru',
+            value: newPassword,
+            onChangeText: setNewPassword,
+            placeholder: 'Minimal 8 karakter',
+            icon: 'lock-closed-outline',
+            textContentType: 'newPassword',
+            autoComplete: 'new-password',
+            secureTextEntry: !newPasswordVisible,
+            visible: newPasswordVisible,
+            onToggleVisible: () => setNewPasswordVisible((value) => !value),
+          })}
+          {renderInput({
+            label: 'Konfirmasi password baru',
+            value: newPasswordConfirm,
+            onChangeText: setNewPasswordConfirm,
+            placeholder: 'Ulangi password baru',
+            icon: 'lock-closed-outline',
+            textContentType: 'newPassword',
+            autoComplete: 'new-password',
+            secureTextEntry: !newPasswordVisible,
+            visible: newPasswordVisible,
+            onToggleVisible: () => setNewPasswordVisible((value) => !value),
+          })}
+          {renderPrimaryButton(copy.submit, copy.submitting, emailBusy, () => void submitNewPassword(), 'checkmark-circle-outline')}
+        </View>
       );
     }
 
     return (
-      <>
-        {activeMode === 'signUp' ? (
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Nama tampilan</Text>
-            <View style={styles.inputWrap}>
-              <Ionicons name="person-outline" size={18} color={theme.muted} />
-              <TextInput
-                value={displayName}
-                onChangeText={setDisplayName}
-                placeholder="Nama Anda"
-                placeholderTextColor={theme.muted}
-                autoCapitalize="words"
-                autoComplete="name"
-                autoCorrect={false}
-                editable={!emailBusy}
-                selectionColor={theme.accent}
-                style={styles.textInput}
-              />
-            </View>
-          </View>
-        ) : null}
+      <View style={styles.formStack}>
+        {activeMode === 'signUp' ? renderInput({
+          label: 'Nama tampilan',
+          value: displayName,
+          onChangeText: setDisplayName,
+          placeholder: 'Nama Anda',
+          icon: 'person-outline',
+          textContentType: 'name',
+          autoComplete: 'name',
+        }) : null}
 
-        {renderEmailInput()}
+        {renderInput({
+          label: 'Email',
+          value: email,
+          onChangeText: setEmail,
+          placeholder: 'nama@email.com',
+          icon: 'mail-outline',
+          keyboardType: 'email-address',
+          textContentType: 'emailAddress',
+          autoComplete: 'email',
+        })}
 
         {activeMode !== 'resetPassword' ? (
-          <View style={styles.fieldGroup}>
-            <View style={styles.fieldHeaderRow}>
-              <Text style={styles.fieldLabel}>Password</Text>
-              {activeMode === 'signIn' ? (
-                <Pressable accessibilityRole="button" disabled={emailBusy} onPress={() => switchMode('resetPassword')}>
-                  <Text style={styles.linkText}>Lupa password?</Text>
-                </Pressable>
-              ) : null}
-            </View>
-            {renderPasswordInput(
-              password,
-              setPassword,
-              passwordVisible,
-              () => setPasswordVisible((value) => !value),
-              'Minimal 8 karakter',
-              activeMode === 'signUp' ? 'newPassword' : 'password',
-              activeMode === 'signUp' ? 'new-password' : 'password',
-            )}
-          </View>
+          <>
+            {renderInput({
+              label: 'Password',
+              value: password,
+              onChangeText: setPassword,
+              placeholder: 'Minimal 8 karakter',
+              icon: 'lock-closed-outline',
+              textContentType: activeMode === 'signUp' ? 'newPassword' : 'password',
+              autoComplete: activeMode === 'signUp' ? 'new-password' : 'password',
+              secureTextEntry: !passwordVisible,
+              visible: passwordVisible,
+              onToggleVisible: () => setPasswordVisible((value) => !value),
+            })}
+          </>
         ) : null}
 
-        {activeMode === 'signUp' ? (
-          <View style={styles.fieldGroup}>
-            <Text style={styles.fieldLabel}>Konfirmasi password</Text>
-            {renderPasswordInput(
-              confirmPassword,
-              setConfirmPassword,
-              passwordVisible,
-              () => setPasswordVisible((value) => !value),
-              'Ulangi password',
-              'newPassword',
-              'new-password',
-            )}
-          </View>
-        ) : null}
+        {activeMode === 'signUp' ? renderInput({
+          label: 'Konfirmasi password',
+          value: confirmPassword,
+          onChangeText: setConfirmPassword,
+          placeholder: 'Ulangi password',
+          icon: 'lock-closed-outline',
+          textContentType: 'newPassword',
+          autoComplete: 'new-password',
+          secureTextEntry: !passwordVisible,
+          visible: passwordVisible,
+          onToggleVisible: () => setPasswordVisible((value) => !value),
+        }) : null}
 
-        <Pressable
-          accessibilityRole="button"
-          disabled={!isOnline || busy}
-          onPress={() => void submitEmailFlow()}
-          style={({ pressed }) => [
-            styles.emailButton,
-            (!isOnline || busy) ? styles.disabled : null,
-            pressed && !busy ? styles.pressed : null,
-          ]}
-        >
-          {primaryBusy ? <ActivityIndicator color={theme.accentText} /> : <Ionicons name={activeMode === 'resetPassword' ? 'send-outline' : 'mail-outline'} size={18} color={theme.accentText} />}
-          <Text style={styles.emailButtonText}>{primaryBusy ? copy.submitting : copy.submit}</Text>
-        </Pressable>
+        {renderPrimaryButton(copy.submit, copy.submitting, emailActionBusy, () => void submitEmailFlow(), activeMode === 'resetPassword' ? 'send-outline' : 'mail-outline')}
 
-        <View style={styles.footLinks}>
+        <View style={styles.footerLinks}>
           {activeMode === 'signIn' ? (
             <>
+              <Pressable accessibilityRole="button" disabled={emailBusy} onPress={() => switchMode('resetPassword')}>
+                <Text style={styles.linkText}>Lupa password?</Text>
+              </Pressable>
               <Pressable accessibilityRole="button" disabled={emailBusy} onPress={() => switchMode('signUp')}>
                 <Text style={styles.linkText}>Belum punya akun? Daftar</Text>
               </Pressable>
               <Pressable accessibilityRole="button" disabled={emailBusy} onPress={() => switchMode('accountHelp')}>
-                <Text style={styles.linkText}>Lupa email atau butuh bantuan?</Text>
+                <Text style={styles.linkText}>Lupa email atau username?</Text>
               </Pressable>
             </>
           ) : null}
@@ -620,7 +578,7 @@ export function MobileAuthGate({
             </>
           ) : null}
         </View>
-      </>
+      </View>
     );
   };
 
@@ -629,70 +587,65 @@ export function MobileAuthGate({
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.root}
     >
-      <View pointerEvents="none" style={styles.backgroundGlowTop} />
-      <View pointerEvents="none" style={styles.backgroundGlowBottom} />
+      <View pointerEvents="none" style={styles.lightGlowOne} />
+      <View pointerEvents="none" style={styles.lightGlowTwo} />
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[
           styles.content,
           {
-            paddingTop: Math.max(30, insets.top + 24),
-            paddingBottom: Math.max(34, insets.bottom + 30),
-            paddingLeft: Math.max(20, insets.left + 20),
-            paddingRight: Math.max(20, insets.right + 20),
+            paddingTop: Math.max(16, insets.top + 12),
+            paddingBottom: Math.max(16, insets.bottom + 12),
+            paddingLeft: Math.max(16, insets.left + 16),
+            paddingRight: Math.max(16, insets.right + 16),
           },
         ]}
       >
-        <View style={styles.brandBlock}>
-          <View style={styles.brandRow}>
-            <View style={styles.brandMark}>
-              <Ionicons name="cafe" size={25} color={theme.accentText} />
+        <View style={styles.container}>
+          <View style={styles.hero}>
+            <View style={styles.brandTile}>
+              <Image source={AUTH_BRAND_ICON} style={styles.brandIcon} resizeMode="contain" />
             </View>
-            <View style={styles.brandCopy}>
-              <Text style={styles.brandName}>BaristaClaw</Text>
-              <Text style={styles.brandLabel}>Ruang kerja barista</Text>
-            </View>
+            <Text style={styles.title}>{copy.title}</Text>
+            <Text style={styles.subtitle}>{copy.subtitle}</Text>
           </View>
-          <Text style={styles.title}>{heroTitle}</Text>
-          <Text style={styles.subtitle}>{heroSubtitle}</Text>
-        </View>
 
-        {!isOnline ? (
-          <View style={styles.warningCard}>
-            <Ionicons name="cloud-offline-outline" size={17} color={theme.warning} />
-            <Text style={styles.warningText}>Tidak ada koneksi internet. Sambungkan dulu untuk masuk.</Text>
-          </View>
-        ) : null}
+          {authError ? renderNotice(authError, 'error', 'alert-circle-outline') : null}
+          {formError ? renderNotice(formError, 'error', 'alert-circle-outline') : null}
+          {successMessage ? renderNotice(successMessage, 'success', 'checkmark-circle-outline') : null}
+          {!isOnline ? renderNotice('Anda sedang offline. Masuk tidak tersedia sampai koneksi kembali.', 'warning', 'cloud-offline-outline') : null}
 
-        {authError ? (
-          <View style={styles.errorCard}>
-            <Ionicons name="alert-circle-outline" size={17} color={theme.danger} />
-            <Text selectable style={styles.errorText}>{authError}</Text>
-          </View>
-        ) : null}
+          <View style={styles.card}>
+            {activeMode !== 'newPassword' ? renderPrimaryButton(
+              'Lanjutkan dengan Google',
+              'Membuka...',
+              googleBusy,
+              () => void onLoginGoogle(),
+              'log-in-outline',
+            ) : null}
 
-        {formError ? (
-          <View style={styles.errorCard}>
-            <Ionicons name="alert-circle-outline" size={17} color={theme.danger} />
-            <Text selectable style={styles.errorText}>{formError}</Text>
-          </View>
-        ) : null}
+            {activeMode !== 'newPassword' && enableAppleSignIn ? (
+              <Pressable
+                accessibilityRole="button"
+                disabled={!isOnline || busy}
+                onPress={() => void onLoginApple()}
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  (!isOnline || busy) ? styles.disabled : null,
+                  pressed && !busy ? styles.pressed : null,
+                ]}
+              >
+                {appleBusy ? (
+                  <ActivityIndicator color={theme.textPrimary} />
+                ) : (
+                  <Ionicons name="logo-apple" size={17} color={theme.textPrimary} />
+                )}
+                <Text style={styles.secondaryButtonText}>{appleBusy ? 'Membuka Apple...' : 'Masuk dengan Apple'}</Text>
+              </Pressable>
+            ) : null}
 
-        {successMessage ? (
-          <View style={styles.successCard}>
-            <Ionicons name="checkmark-circle-outline" size={17} color={theme.success} />
-            <Text selectable style={styles.successText}>{successMessage}</Text>
-          </View>
-        ) : null}
-
-        <View style={styles.panel}>
-          {renderPrimaryProviders()}
-          {renderModeTabs()}
-          {renderEmailForm()}
-
-          <View style={styles.securityStrip}>
-            <Ionicons name="shield-checkmark-outline" size={16} color={theme.muted} />
-            <Text style={styles.securityText}>Sesi disimpan aman di perangkat ini dan bisa keluar kapan saja.</Text>
+            {renderModeTabs()}
+            {renderEmailForm()}
           </View>
         </View>
       </ScrollView>
@@ -700,220 +653,204 @@ export function MobileAuthGate({
   );
 }
 
-function createStyles(theme: AuthTheme) {
+function createStyles(theme: WebParityAuthTheme) {
   return StyleSheet.create({
     root: {
       flex: 1,
+      backgroundColor: theme.bgBase,
       overflow: 'hidden',
-      backgroundColor: theme.background,
     },
-    backgroundGlowTop: {
+    lightGlowOne: {
       position: 'absolute',
-      top: -150,
-      right: -130,
-      width: 300,
-      height: 300,
-      borderRadius: 150,
-      backgroundColor: theme.backgroundAlt,
-      opacity: 0.85,
-    },
-    backgroundGlowBottom: {
-      position: 'absolute',
+      top: -120,
       left: -120,
-      bottom: -170,
-      width: 320,
-      height: 320,
-      borderRadius: 160,
-      backgroundColor: theme.accent,
-      opacity: 0.13,
+      width: 290,
+      height: 290,
+      borderRadius: 145,
+      backgroundColor: theme.glowBlue,
+    },
+    lightGlowTwo: {
+      position: 'absolute',
+      right: -130,
+      bottom: -130,
+      width: 310,
+      height: 310,
+      borderRadius: 155,
+      backgroundColor: theme.glowIndigo,
     },
     content: {
       flexGrow: 1,
       justifyContent: 'center',
+    },
+    container: {
+      width: '100%',
+      maxWidth: 448,
+      alignSelf: 'center',
       gap: 16,
     },
-    brandBlock: {
-      gap: 14,
-    },
-    brandRow: {
-      flexDirection: 'row',
+    hero: {
       alignItems: 'center',
-      gap: 12,
+      marginBottom: 24,
     },
-    brandMark: {
-      width: 58,
-      height: 58,
-      borderRadius: 22,
+    brandTile: {
+      width: 80,
+      height: 80,
+      borderRadius: 24,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.accent,
-      shadowColor: theme.shadow,
-      shadowOpacity: 0.2,
-      shadowRadius: 18,
-      shadowOffset: { width: 0, height: 10 },
-      elevation: 4,
+      marginBottom: 20,
+      backgroundColor: '#1D4ED8',
+      borderWidth: 1,
+      borderColor: theme.blueBorder,
+      shadowColor: theme.blueShadow,
+      shadowOpacity: 1,
+      shadowRadius: 32,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 6,
     },
-    brandCopy: {
-      flex: 1,
-      gap: 2,
-    },
-    brandName: {
-      color: theme.text,
-      fontFamily: uiTokens.fontFamily.bold,
-      fontSize: 22,
-      lineHeight: 27,
-      fontWeight: '800',
-      letterSpacing: -0.5,
-    },
-    brandLabel: {
-      color: theme.muted,
-      fontFamily: uiTokens.fontFamily.medium,
-      fontSize: 13,
-      lineHeight: 18,
+    brandIcon: {
+      width: 64,
+      height: 64,
     },
     title: {
-      color: theme.text,
+      color: theme.textPrimary,
       fontFamily: uiTokens.fontFamily.bold,
-      fontSize: 34,
-      lineHeight: 39,
+      fontSize: 30,
+      lineHeight: 36,
       fontWeight: '800',
-      letterSpacing: -1,
+      letterSpacing: -0.8,
+      textAlign: 'center',
+      marginBottom: 8,
     },
     subtitle: {
-      color: theme.textSoft,
+      color: theme.textSecondary,
       fontFamily: uiTokens.fontFamily.medium,
-      fontSize: 15,
-      lineHeight: 22,
+      fontSize: 16,
+      lineHeight: 23,
+      textAlign: 'center',
       maxWidth: 340,
     },
-    panel: {
-      gap: 14,
+    card: {
+      gap: 12,
       borderWidth: 1,
-      borderColor: theme.border,
-      borderRadius: 30,
-      padding: 17,
-      backgroundColor: theme.panel,
+      borderColor: theme.glassBorder,
+      borderRadius: 32,
+      padding: 32,
+      backgroundColor: theme.glassBg,
       shadowColor: theme.shadow,
-      shadowOpacity: 0.16,
-      shadowRadius: 28,
-      shadowOffset: { width: 0, height: 16 },
+      shadowOpacity: 1,
+      shadowRadius: 32,
+      shadowOffset: { width: 0, height: 8 },
       elevation: 5,
     },
-    googleButton: {
-      minHeight: 54,
-      borderRadius: 18,
+    primaryButton: {
+      minHeight: 56,
+      borderWidth: 1,
+      borderColor: theme.blueBorder,
+      borderRadius: 20,
       alignItems: 'center',
       justifyContent: 'center',
       flexDirection: 'row',
-      gap: 10,
-      backgroundColor: theme.accent,
+      gap: 12,
+      backgroundColor: theme.blue,
+      shadowColor: theme.blueShadow,
+      shadowOpacity: 1,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 3,
     },
-    googleText: {
-      color: theme.accentText,
+    primaryButtonText: {
+      color: theme.white,
       fontFamily: uiTokens.fontFamily.semibold,
       fontSize: 16,
-      lineHeight: 20,
-      fontWeight: '800',
+      lineHeight: 21,
+      fontWeight: '700',
     },
-    appleButton: {
+    secondaryButton: {
       minHeight: 52,
       borderWidth: 1,
-      borderColor: theme.border,
-      borderRadius: 18,
+      borderColor: theme.glassBorder,
+      borderRadius: 20,
       alignItems: 'center',
       justifyContent: 'center',
       flexDirection: 'row',
       gap: 10,
-      backgroundColor: theme.panelSoft,
+      backgroundColor: theme.glassBgHover,
     },
-    appleText: {
-      color: theme.text,
+    secondaryButtonText: {
+      color: theme.textPrimary,
       fontFamily: uiTokens.fontFamily.semibold,
       fontSize: 15,
       lineHeight: 20,
-      fontWeight: '800',
-    },
-    dividerRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-    },
-    dividerLine: {
-      flex: 1,
-      height: 1,
-      backgroundColor: theme.border,
-    },
-    dividerText: {
-      color: theme.muted,
-      fontFamily: uiTokens.fontFamily.medium,
-      fontSize: 11,
-      lineHeight: 16,
+      fontWeight: '700',
     },
     modeTabs: {
       flexDirection: 'row',
       gap: 6,
-      padding: 4,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.panelBorderSoft,
       borderRadius: 18,
-      backgroundColor: theme.panelSoft,
+      padding: 4,
+      backgroundColor: theme.surfaceAlpha,
     },
     modeTab: {
       flex: 1,
-      minHeight: 42,
+      minHeight: 40,
       alignItems: 'center',
       justifyContent: 'center',
       borderRadius: 14,
     },
     modeTabActive: {
-      backgroundColor: theme.text,
+      backgroundColor: theme.glassBgHover,
+      borderWidth: 1,
+      borderColor: theme.glassBorder,
     },
     modeTabText: {
-      color: theme.textSoft,
+      color: theme.textSecondary,
       fontFamily: uiTokens.fontFamily.semibold,
       fontSize: 12,
       lineHeight: 16,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     modeTabTextActive: {
-      color: theme.background,
+      color: theme.textPrimary,
+    },
+    formStack: {
+      gap: 12,
     },
     fieldGroup: {
       gap: 7,
     },
-    fieldHeaderRow: {
-      minHeight: 20,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: 12,
-    },
     fieldLabel: {
-      color: theme.textSoft,
+      color: theme.textSecondary,
       fontFamily: uiTokens.fontFamily.semibold,
       fontSize: 12,
       lineHeight: 16,
-      fontWeight: '800',
+      fontWeight: '700',
     },
     inputWrap: {
-      minHeight: 52,
+      minHeight: 54,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 9,
       borderWidth: 1,
-      borderColor: theme.inputBorder,
-      borderRadius: 18,
-      backgroundColor: theme.input,
-      paddingHorizontal: 13,
+      borderColor: theme.glassBorder,
+      borderRadius: 24,
+      backgroundColor: theme.glassBgHover,
+      paddingHorizontal: 14,
+      shadowColor: theme.shadow,
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 2 },
     },
     textInput: {
       flex: 1,
-      minHeight: 50,
-      color: theme.text,
+      minHeight: 52,
+      color: theme.textPrimary,
       paddingVertical: 12,
       fontFamily: uiTokens.fontFamily.medium,
-      fontSize: 15,
-      lineHeight: 20,
+      fontSize: 16,
+      lineHeight: 22,
     },
     passwordToggle: {
       minHeight: 44,
@@ -922,204 +859,118 @@ function createStyles(theme: AuthTheme) {
       paddingLeft: 8,
     },
     passwordToggleText: {
-      color: theme.accent,
+      color: '#3B82F6',
       fontFamily: uiTokens.fontFamily.semibold,
       fontSize: 12,
       lineHeight: 16,
-      fontWeight: '800',
+      fontWeight: '700',
     },
-    emailButton: {
-      minHeight: 52,
-      borderRadius: 18,
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'row',
-      gap: 10,
-      backgroundColor: theme.accentStrong,
-    },
-    emailButtonText: {
-      color: theme.accentText,
-      fontFamily: uiTokens.fontFamily.semibold,
-      fontSize: 15,
-      lineHeight: 20,
-      fontWeight: '800',
-    },
-    footLinks: {
-      alignItems: 'center',
-      gap: 10,
-      paddingTop: 2,
-    },
-    linkText: {
-      color: theme.accent,
-      fontFamily: uiTokens.fontFamily.semibold,
-      fontSize: 13,
-      lineHeight: 18,
-      fontWeight: '800',
-      textAlign: 'center',
-    },
-    helpCard: {
-      gap: 12,
-      borderWidth: 1,
-      borderColor: theme.border,
-      borderRadius: 22,
-      padding: 14,
-      backgroundColor: theme.panelSoft,
-    },
-    helpItem: {
+    infoPanel: {
       flexDirection: 'row',
       alignItems: 'flex-start',
       gap: 10,
+      borderWidth: 1,
+      borderColor: theme.panelBorderSoft,
+      borderRadius: 20,
+      paddingHorizontal: 16,
+      paddingVertical: 13,
+      backgroundColor: theme.surfaceAlpha,
     },
-    helpText: {
+    infoCopy: {
       flex: 1,
-      color: theme.textSoft,
+      gap: 4,
+    },
+    infoTitle: {
+      color: theme.textPrimary,
+      fontFamily: uiTokens.fontFamily.semibold,
+      fontSize: 14,
+      lineHeight: 19,
+      fontWeight: '700',
+    },
+    infoText: {
+      flex: 1,
+      color: theme.textSecondary,
       fontFamily: uiTokens.fontFamily.medium,
       fontSize: 13,
       lineHeight: 19,
     },
-    helpActions: {
+    inlineActions: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: 8,
-      paddingTop: 2,
+      paddingTop: 8,
     },
-    secondaryButton: {
-      minHeight: 42,
-      flexGrow: 1,
-      alignItems: 'center',
+    inlineButton: {
+      minHeight: 38,
       justifyContent: 'center',
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor: theme.glassBorder,
       borderRadius: 14,
       paddingHorizontal: 12,
-      backgroundColor: theme.panel,
+      backgroundColor: theme.glassBgHover,
     },
-    secondaryButtonText: {
-      color: theme.text,
+    inlineButtonText: {
+      color: theme.textPrimary,
       fontFamily: uiTokens.fontFamily.semibold,
-      fontSize: 13,
-      lineHeight: 18,
-      fontWeight: '800',
-    },
-    infoCard: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: 10,
-      borderWidth: 1,
-      borderColor: theme.border,
-      borderRadius: 20,
-      padding: 13,
-      backgroundColor: theme.panelSoft,
-    },
-    infoCopy: {
-      flex: 1,
-      gap: 3,
-    },
-    infoTitle: {
-      color: theme.text,
-      fontFamily: uiTokens.fontFamily.semibold,
-      fontSize: 13,
-      lineHeight: 18,
-      fontWeight: '800',
-    },
-    infoText: {
-      color: theme.textSoft,
-      fontFamily: uiTokens.fontFamily.medium,
       fontSize: 12,
-      lineHeight: 18,
+      lineHeight: 16,
+      fontWeight: '700',
     },
-    recoveryBadge: {
-      minHeight: 42,
-      flexDirection: 'row',
+    footerLinks: {
       alignItems: 'center',
-      gap: 8,
-      borderWidth: 1,
-      borderColor: theme.border,
-      borderRadius: 14,
-      paddingHorizontal: 12,
-      backgroundColor: theme.panelSoft,
+      gap: 9,
+      paddingTop: 2,
     },
-    recoveryBadgeText: {
-      flex: 1,
-      color: theme.textSoft,
+    linkText: {
+      color: '#3B82F6',
       fontFamily: uiTokens.fontFamily.semibold,
       fontSize: 13,
       lineHeight: 18,
       fontWeight: '700',
+      textAlign: 'center',
     },
-    securityStrip: {
-      minHeight: 42,
+    notice: {
+      minHeight: 50,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
+      gap: 10,
+      borderWidth: 1,
       borderRadius: 16,
-      paddingHorizontal: 12,
+      paddingHorizontal: 14,
       paddingVertical: 10,
-      backgroundColor: theme.panelSoft,
     },
-    securityText: {
+    noticeText: {
       flex: 1,
-      color: theme.muted,
       fontFamily: uiTokens.fontFamily.medium,
-      fontSize: 12,
-      lineHeight: 17,
+      fontSize: 13,
+      lineHeight: 19,
     },
-    warningCard: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: 8,
-      borderWidth: 1,
-      borderColor: theme.border,
-      borderRadius: 18,
-      padding: 12,
-      backgroundColor: theme.warningSoft,
+    errorNotice: {
+      borderColor: theme.dangerBorder,
+      backgroundColor: theme.dangerBg,
     },
-    warningText: {
-      flex: 1,
-      color: theme.warning,
-      fontFamily: uiTokens.fontFamily.medium,
-      fontSize: 12,
-      lineHeight: 18,
-    },
-    errorCard: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: 8,
-      borderWidth: 1,
-      borderColor: theme.border,
-      borderRadius: 18,
-      padding: 12,
-      backgroundColor: theme.dangerSoft,
-    },
-    errorText: {
-      flex: 1,
+    errorNoticeText: {
       color: theme.danger,
-      fontFamily: uiTokens.fontFamily.medium,
-      fontSize: 12,
-      lineHeight: 18,
     },
-    successCard: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: 8,
-      borderWidth: 1,
-      borderColor: theme.border,
-      borderRadius: 18,
-      padding: 12,
-      backgroundColor: theme.successSoft,
+    successNotice: {
+      borderColor: theme.successBorder,
+      backgroundColor: theme.successBg,
     },
-    successText: {
-      flex: 1,
+    successNoticeText: {
       color: theme.success,
-      fontFamily: uiTokens.fontFamily.medium,
-      fontSize: 12,
-      lineHeight: 18,
+    },
+    warningNotice: {
+      borderColor: theme.warningBorder,
+      backgroundColor: theme.warningBg,
+    },
+    warningNoticeText: {
+      color: theme.warning,
     },
     disabled: {
       opacity: 0.55,
     },
     pressed: {
-      transform: [{ scale: 0.985 }],
+      transform: [{ scale: 0.97 }],
     },
   });
 }

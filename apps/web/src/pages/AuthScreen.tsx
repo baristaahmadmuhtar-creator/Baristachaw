@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Loader2, CheckCircle, AlertCircle, LogIn } from 'lucide-react';
 import { useAuthModal } from '../context/AuthModalContext';
 import { useGlobalState } from '../context/GlobalState';
+import { AppIconBrand } from '../components/icons/AppIconBrand';
 
 interface AuthScreenProps {
   onLogin: () => void;
@@ -12,13 +13,6 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
   const { t } = useGlobalState();
   const { isAuthenticated, authBusy, authError, openAuthModal } = useAuthModal();
   const [success, setSuccess] = useState('');
-  const brandInitials = (t.chatBrandName || '')
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase() || 'BC';
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -51,7 +45,7 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
             className="w-20 h-20 rounded-[1.5rem] bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto mb-5 shadow-[0_8px_32px_rgba(0,122,255,0.3)]"
           >
-            <span className="text-3xl font-black text-white">{brandInitials}</span>
+            <AppIconBrand className="h-16 w-16 object-contain" />
           </motion.div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">{t.chatBrandName}</h1>
           <p className="text-secondary text-base">{t.authProtectedSubtitle}</p>

@@ -1,6 +1,13 @@
 # Mobile Supabase Auth Runbook
 
-This runbook covers the Android native MVP auth flow.
+This runbook covers the Android MVP auth flow. The MVP strategy is a native APK shell with the production web parity UI as the primary surface.
+
+## MVP UI Strategy
+
+- `web_parity` is the permanent default for Android MVP.
+- The app is still a native Android app/APK, not a PWA.
+- Native screens stay in the repo as an opt-in fallback and future refinement path only.
+- Do not switch the default back to `native` until the native UI reaches parity with the web experience.
 
 ## Runtime Flow
 
@@ -33,7 +40,7 @@ https://baristaclaw.vercel.app/**
 Set these in `apps/mobile/.env` or the EAS build environment:
 
 ```text
-EXPO_PUBLIC_MOBILE_UI_MODE=native
+EXPO_PUBLIC_MOBILE_UI_MODE=web_parity
 EXPO_PUBLIC_APP_SCHEME=baristaclaw
 EXPO_PUBLIC_API_BASE_URL=https://baristaclaw.vercel.app
 EXPO_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
@@ -54,7 +61,8 @@ SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY
 
 ## Production Checks
 
-- Build Android native, not PWA, with `EXPO_PUBLIC_MOBILE_UI_MODE=native`.
+- Build Android native, not PWA, with `EXPO_PUBLIC_MOBILE_UI_MODE=web_parity`.
+- Confirm the installed Android app opens the web parity UI without a browser address bar.
 - Confirm `baristaclaw://auth` opens the installed app on Android.
 - Confirm email sign-up either creates a session or shows the email confirmation message.
 - Confirm Google sign-in returns to the app and `/api/auth/me` succeeds.

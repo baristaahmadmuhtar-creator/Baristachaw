@@ -14,7 +14,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || DEFAULT_API_BASE_URL;
   const webAppUrl = process.env.EXPO_PUBLIC_WEB_APP_URL || DEFAULT_WEB_APP_URL;
   const appScheme = process.env.EXPO_PUBLIC_APP_SCHEME || DEFAULT_SCHEME;
-  const mobileUiMode = process.env.EXPO_PUBLIC_MOBILE_UI_MODE || 'native';
+  // Keep Android MVP focused on the production web parity UI inside the native shell.
+  const mobileUiMode = process.env.EXPO_PUBLIC_MOBILE_UI_MODE || 'web_parity';
   const webParityTimeoutMs = process.env.EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS || '6000';
   const webParityFallbackEnabled = process.env.EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED || 'false';
   const enableGuestMode = process.env.EXPO_PUBLIC_ENABLE_GUEST_MODE || 'true';

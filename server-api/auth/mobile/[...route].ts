@@ -127,7 +127,16 @@ async function handleStart(req: VercelRequest, res: VercelResponse, requestId: s
   try {
     const config = resolveMobileOAuthConfig();
     const scheme = resolveMobileAppScheme();
-    const state = randomUUID();
+    const state = `mobile.${jwt.sign(
+      {
+        purpose: 'mobile_oauth',
+        nonce: randomUUID(),
+      },
+      config.jwtSecret,
+      {
+        expiresIn: '10m',
+      },
+    )}`;
     const url = buildGoogleAuthUrl(config, state);
 
     return res.status(200).json({
@@ -160,7 +169,7 @@ async function handleCallback(req: VercelRequest, res: VercelResponse, requestId
     const code = typeof req.query.code === 'string' ? req.query.code.trim() : '';
     if (!code) throw new Error('Missing OAuth code');
 
-    const config = resolveMobileOAuthConfig();
+    const config = resolveMobileOAuthConfig('/api/auth/mobile/callback');
     const accessToken = await exchangeGoogleCodeForToken(code, config);
     const user = await fetchGoogleProfile(accessToken);
     const grant = createMobileAuthGrant(user);

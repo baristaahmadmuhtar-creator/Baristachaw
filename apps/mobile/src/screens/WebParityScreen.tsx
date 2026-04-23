@@ -6,6 +6,7 @@ import { WebView } from 'react-native-webview';
 import { mobileEnv } from '../config/env';
 import { usePreferredMobileLanguage } from '../hooks/usePreferredMobileLanguage';
 import { uiTokens } from '../theme/tokens';
+import type { AuthSession } from '../types';
 import { getMobileLocalization } from '../utils/localization';
 
 const EXTERNAL_AUTH_HOSTS = new Set([
@@ -14,26 +15,76 @@ const EXTERNAL_AUTH_HOSTS = new Set([
   'appleid.apple.com',
 ]);
 
-function buildNativeShellBootstrap(platform: 'ios' | 'android') {
+function buildNativeShellBootstrap(platform: 'ios' | 'android', authSession?: AuthSession | null) {
+  const nativeAuthPayload = authSession
+    ? {
+        accessToken: authSession.accessToken,
+        expiresAt: authSession.expiresAt,
+        user: authSession.user,
+        provider: authSession.provider || authSession.user.provider || 'google',
+      }
+    : null;
+
   return `
     (function () {
       window.__BARISTACLAW_NATIVE_SHELL__ = { platform: '${platform}', container: 'webview' };
+      window.__BARISTACLAW_NATIVE_SESSION__ = ${JSON.stringify(nativeAuthPayload)};
       document.documentElement.setAttribute('data-native-${platform}-shell', '');
+      document.documentElement.setAttribute('data-native-auth-bridge', ${nativeAuthPayload ? "'active'" : "'guest'"});
+      if (window.__BARISTACLAW_NATIVE_SESSION__ && window.__BARISTACLAW_NATIVE_SESSION__.accessToken) {
+        var nativeSession = window.__BARISTACLAW_NATIVE_SESSION__;
+        var originalFetch = window.fetch ? window.fetch.bind(window) : null;
+        if (originalFetch && !window.__BARISTACLAW_NATIVE_FETCH_PATCHED__) {
+          window.__BARISTACLAW_NATIVE_FETCH_PATCHED__ = true;
+          window.fetch = function (input, init) {
+            var requestUrl = '';
+            try {
+              requestUrl = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+              var parsed = new URL(requestUrl || '/', window.location.href);
+              var sameOriginApi = parsed.origin === window.location.origin && parsed.pathname.indexOf('/api/') === 0;
+              if (sameOriginApi) {
+                var nextInit = Object.assign({}, init || {});
+                var headers = new Headers(nextInit.headers || (input && input.headers) || {});
+                if (!headers.has('Authorization')) {
+                  headers.set('Authorization', 'Bearer ' + nativeSession.accessToken);
+                }
+                nextInit.headers = headers;
+                return originalFetch(input, nextInit).then(function (response) {
+                  if (parsed.pathname === '/api/auth/logout' && response && response.ok) {
+                    try {
+                      window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'BARISTA_NATIVE_LOGOUT' }));
+                    } catch (error) {}
+                  }
+                  if (parsed.pathname === '/api/auth/me' && response && response.status === 401) {
+                    try {
+                      window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'BARISTA_NATIVE_AUTH_EXPIRED' }));
+                    } catch (error) {}
+                  }
+                  return response;
+                });
+              }
+            } catch (error) {}
+            return originalFetch(input, init);
+          };
+        }
+      }
     })();
     true;
   `;
 }
 
-function buildWebParityUrl(baseUrl: string, platform: 'ios' | 'android') {
+function buildWebParityUrl(baseUrl: string, platform: 'ios' | 'android', hostSafeBottom: number) {
+  const safeBottom = Math.max(0, Math.min(48, Math.round(hostSafeBottom)));
   try {
     const url = new URL(baseUrl);
     url.searchParams.set('runtime', 'web_parity');
-    url.searchParams.set('ui_profile', 'pwa');
+    url.searchParams.set('ui_profile', 'native_shell');
     url.searchParams.set('native_shell', platform);
+    url.searchParams.set('host_safe_bottom', String(safeBottom));
     return url.toString();
   } catch {
     const divider = baseUrl.includes('?') ? '&' : '?';
-    return `${baseUrl}${divider}runtime=web_parity&ui_profile=pwa&native_shell=${platform}`;
+    return `${baseUrl}${divider}runtime=web_parity&ui_profile=native_shell&native_shell=${platform}&host_safe_bottom=${safeBottom}`;
   }
 }
 
@@ -59,17 +110,33 @@ function isExternalAuthUrl(candidate: string) {
 }
 
 type WebParityScreenProps = {
+  authSession?: AuthSession | null;
   onParityReady?: () => void;
   onParityFailure?: (reason: 'error' | 'http_error' | 'load_error') => void;
+  onNativeLogout?: () => void;
+  onNativeAuthExpired?: () => void;
 };
 
-export function WebParityScreen({ onParityReady, onParityFailure }: WebParityScreenProps) {
+export function WebParityScreen({
+  authSession,
+  onParityReady,
+  onParityFailure,
+  onNativeLogout,
+  onNativeAuthExpired,
+}: WebParityScreenProps) {
   const insets = useSafeAreaInsets();
   const preferredLanguage = usePreferredMobileLanguage();
   const { language, direction } = useMemo(() => getMobileLocalization(preferredLanguage), [preferredLanguage]);
   const shellPlatform = Platform.OS === 'android' ? 'android' : 'ios';
-  const nativeShellBootstrap = useMemo(() => buildNativeShellBootstrap(shellPlatform), [shellPlatform]);
-  const parityUrl = useMemo(() => buildWebParityUrl(mobileEnv.webAppUrl, shellPlatform), [shellPlatform]);
+  const hostSafeBottom = Math.max(insets.bottom, Platform.OS === 'android' ? 28 : 0);
+  const nativeShellBootstrap = useMemo(
+    () => buildNativeShellBootstrap(shellPlatform, authSession),
+    [authSession, shellPlatform],
+  );
+  const parityUrl = useMemo(
+    () => buildWebParityUrl(mobileEnv.webAppUrl, shellPlatform, hostSafeBottom),
+    [hostSafeBottom, shellPlatform],
+  );
   const appOrigin = useMemo(() => {
     try {
       return new URL(mobileEnv.webAppUrl).origin;
@@ -238,6 +305,15 @@ export function WebParityScreen({ onParityReady, onParityFailure }: WebParityScr
         }}
         onNavigationStateChange={(state) => {
           if (state.url) setCurrentUrl(state.url);
+        }}
+        onMessage={({ nativeEvent }) => {
+          try {
+            const payload = JSON.parse(nativeEvent.data || '{}') as { type?: string };
+            if (payload.type === 'BARISTA_NATIVE_LOGOUT') onNativeLogout?.();
+            if (payload.type === 'BARISTA_NATIVE_AUTH_EXPIRED') onNativeAuthExpired?.();
+          } catch {
+            // Ignore unknown WebView messages.
+          }
         }}
         onShouldStartLoadWithRequest={(request) => {
           if (isExternalAuthUrl(request.url)) {

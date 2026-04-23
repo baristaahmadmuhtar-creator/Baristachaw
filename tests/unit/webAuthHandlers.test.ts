@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import jwt from 'jsonwebtoken';
 import callbackHandler from '../../server-api/auth/callback.ts';
 import authUrlHandler from '../../server-api/auth/url.ts';
 
@@ -247,4 +248,90 @@ test('auth callback success page uses the active request host when APP_URL and V
   assert.match(tokenRequestBody, /redirect_uri=https%3A%2F%2Fpreview\.baristaclaw\.local%3A3100%2Fapi%2Fauth%2Fcallback/);
   assert.match(res.body, /data-target-origin="https%3A%2F%2Fpreview\.baristaclaw\.local%3A3100"/);
   assert.match(res.body, /data-return-to="%2Fchat%3Fdraft%3D1"/);
+});
+
+test('auth callback handles signed mobile OAuth state and returns app deep link', async () => {
+  const originalAppUrl = process.env.APP_URL;
+  const originalJwtSecret = process.env.JWT_SECRET;
+  const originalGoogleClientId = process.env.GOOGLE_CLIENT_ID;
+  const originalGoogleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const originalMobileScheme = process.env.MOBILE_APP_SCHEME;
+  const originalAndroidPackage = process.env.MOBILE_APP_ANDROID_PACKAGE;
+  const originalFetch = globalThis.fetch;
+  let tokenRequestBody = '';
+
+  process.env.APP_URL = 'https://baristaclaw.vercel.app';
+  process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
+  process.env.GOOGLE_CLIENT_ID = 'unit-test-google-client-id';
+  process.env.GOOGLE_CLIENT_SECRET = 'unit-test-google-client-secret';
+  process.env.MOBILE_APP_SCHEME = 'baristaclaw';
+  process.env.MOBILE_APP_ANDROID_PACKAGE = 'com.baristaclaw.mobile';
+  const state = `mobile.${jwt.sign(
+    { purpose: 'mobile_oauth', nonce: 'unit-test' },
+    process.env.JWT_SECRET,
+    { expiresIn: '10m' },
+  )}`;
+
+  const req = {
+    method: 'GET',
+    query: {
+      code: 'oauth-code-123',
+      state,
+    },
+    headers: {
+      host: 'baristaclaw.vercel.app',
+      'x-forwarded-proto': 'https',
+    },
+    socket: {
+      remoteAddress: '203.0.113.45',
+    },
+  } as any;
+  const res = createMockRes() as any;
+
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    if (url === 'https://oauth2.googleapis.com/token') {
+      tokenRequestBody = String(init?.body || '');
+      return {
+        ok: true,
+        json: async () => ({ access_token: 'unit-access-token' }),
+      } as Response;
+    }
+    if (url === 'https://www.googleapis.com/oauth2/v2/userinfo') {
+      return {
+        ok: true,
+        json: async () => ({
+          id: 'google-user-1',
+          email: 'user@example.com',
+          name: 'Unit User',
+          picture: 'https://example.com/avatar.png',
+        }),
+      } as Response;
+    }
+    throw new Error(`Unexpected fetch URL: ${url}`);
+  }) as typeof fetch;
+
+  try {
+    await callbackHandler(req, res);
+  } finally {
+    if (typeof originalAppUrl === 'string') process.env.APP_URL = originalAppUrl;
+    else delete process.env.APP_URL;
+    if (typeof originalJwtSecret === 'string') process.env.JWT_SECRET = originalJwtSecret;
+    else delete process.env.JWT_SECRET;
+    if (typeof originalGoogleClientId === 'string') process.env.GOOGLE_CLIENT_ID = originalGoogleClientId;
+    else delete process.env.GOOGLE_CLIENT_ID;
+    if (typeof originalGoogleClientSecret === 'string') process.env.GOOGLE_CLIENT_SECRET = originalGoogleClientSecret;
+    else delete process.env.GOOGLE_CLIENT_SECRET;
+    if (typeof originalMobileScheme === 'string') process.env.MOBILE_APP_SCHEME = originalMobileScheme;
+    else delete process.env.MOBILE_APP_SCHEME;
+    if (typeof originalAndroidPackage === 'string') process.env.MOBILE_APP_ANDROID_PACKAGE = originalAndroidPackage;
+    else delete process.env.MOBILE_APP_ANDROID_PACKAGE;
+    globalThis.fetch = originalFetch;
+  }
+
+  assert.equal(res.statusCode, 200);
+  assert.match(tokenRequestBody, /redirect_uri=https%3A%2F%2Fbaristaclaw\.vercel\.app%2Fapi%2Fauth%2Fcallback/);
+  assert.match(res.body, /baristaclaw:\/\/auth\?grant=/);
+  assert.match(res.body, /intent:\/\/auth\?grant=/);
+  assert.match(res.body, /package=com\.baristaclaw\.mobile/);
 });

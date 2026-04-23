@@ -87,10 +87,13 @@ function initializeThemeAndPwa() {
   const nav = window.navigator as Navigator & { standalone?: boolean };
   const runtime = readRuntimeFlags();
   const runtimePwaProfile = runtime.isWebParity && runtime.uiProfile === 'pwa';
-  const isPwa = window.matchMedia('(display-mode: standalone)').matches
+  const runtimeNativeShellProfile = runtime.isWebParity && runtime.uiProfile === 'native_shell';
+  const isPwa = !runtimeNativeShellProfile && (
+    window.matchMedia('(display-mode: standalone)').matches
     || window.matchMedia('(display-mode: fullscreen)').matches
     || Boolean(nav.standalone)
-    || runtimePwaProfile;
+    || runtimePwaProfile
+  );
   const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
   root.removeAttribute('data-web-parity');
@@ -100,6 +103,8 @@ function initializeThemeAndPwa() {
     root.setAttribute('data-web-parity', '');
     root.style.setProperty('--host-safe-bottom', `${runtime.hostSafeBottom}px`);
   }
+  if (runtimeNativeShellProfile) root.setAttribute('data-native-shell-profile', '');
+  else root.removeAttribute('data-native-shell-profile');
   if (isIos) root.setAttribute('data-ios', '');
   if (isPwa) root.setAttribute('data-pwa', '');
   else root.removeAttribute('data-pwa');

@@ -2,6 +2,16 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
 import { applyRateLimitHeaders, checkRateLimit } from '../_shared.js';
 import { resolveAuthAppUrl } from './_origin.js';
+import { createMobileAuthGrant } from './mobile/grants.js';
+import {
+  buildGoogleAuthUrl,
+  escapeHtml,
+  exchangeGoogleCodeForToken,
+  fetchGoogleProfile,
+  resolveMobileAndroidPackage,
+  resolveMobileAppScheme,
+  resolveMobileOAuthConfig,
+} from './mobile/shared.js';
 
 const AUTH_CALLBACK_RATE_LIMIT = {
   maxRequests: 30,
@@ -71,8 +81,119 @@ function applyCallbackHtmlHeaders(res: VercelResponse): void {
   res.setHeader('Content-Security-Policy', "default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
 }
 
+function isMobileOAuthState(state: string): boolean {
+  return state.startsWith('mobile.') && state.length > 'mobile.'.length;
+}
+
+function verifyMobileOAuthState(state: string, jwtSecret: string): void {
+  const token = state.slice('mobile.'.length);
+  const decoded = jwt.verify(token, jwtSecret) as { purpose?: string };
+  if (decoded?.purpose !== 'mobile_oauth') {
+    throw new Error('Invalid mobile OAuth state');
+  }
+}
+
+async function handleMobileOAuthCallback(
+  req: VercelRequest,
+  res: VercelResponse,
+  params: {
+    code: string;
+    state: string;
+    jwtSecret: string;
+    appUrl: string;
+  },
+) {
+  try {
+    verifyMobileOAuthState(params.state, params.jwtSecret);
+    const config = resolveMobileOAuthConfig('/api/auth/callback');
+    const accessToken = await exchangeGoogleCodeForToken(params.code, config);
+    const user = await fetchGoogleProfile(accessToken);
+    const grant = createMobileAuthGrant(user);
+    const scheme = resolveMobileAppScheme();
+    const androidPackage = resolveMobileAndroidPackage();
+    const redirectParams = new URLSearchParams({
+      grant: grant.id,
+      expiresAt: String(grant.expiresAt),
+    });
+    const deepLink = `${scheme}://auth?${redirectParams.toString()}`;
+    const intentUrl = `intent://auth?${redirectParams.toString()}#Intent;scheme=${scheme};package=${androidPackage};end`;
+    const escapedDeepLink = escapeHtml(deepLink);
+    const escapedIntentUrl = escapeHtml(intentUrl);
+
+    return sendMobileCallbackHtml(res, 200, `
+      <h2>Sign-in complete</h2>
+      <p>Returning to BaristaClaw...</p>
+      <p>If you are not redirected automatically, <a href="${escapedDeepLink}">open BaristaClaw</a>.</p>
+      <p style="margin-top: 8px; font-size: 14px; opacity: .72;">Android fallback: <a href="${escapedIntentUrl}">open installed app</a>.</p>
+      <script>
+        (function () {
+          var deepLink = ${JSON.stringify(deepLink)};
+          var intentUrl = ${JSON.stringify(intentUrl)};
+          var launch = function (url) {
+            try {
+              window.location.replace(url);
+            } catch (error) {
+              window.location.href = url;
+            }
+          };
+          launch(deepLink);
+          window.setTimeout(function () {
+            var ua = navigator.userAgent || '';
+            if (/Android/i.test(ua)) launch(intentUrl);
+          }, 700);
+        })();
+      </script>
+    `);
+  } catch (error) {
+    const details = escapeHtml(error instanceof Error ? error.message : 'Mobile sign-in failed');
+    let retryUrl = '';
+    try {
+      const config = resolveMobileOAuthConfig('/api/auth/callback');
+      const retryState = `mobile.${jwt.sign(
+        { purpose: 'mobile_oauth', nonce: 'retry' },
+        config.jwtSecret,
+        { expiresIn: '10m' },
+      )}`;
+      retryUrl = buildGoogleAuthUrl(config, retryState);
+    } catch {
+      retryUrl = '';
+    }
+    const retryLink = retryUrl ? `<p><a href="${escapeHtml(retryUrl)}">Try sign-in again</a></p>` : '';
+    return sendMobileCallbackHtml(res, 500, `
+      <h2>Sign-in failed</h2>
+      <p>${details}</p>
+      ${retryLink}
+    `);
+  }
+}
+
+function sendMobileCallbackHtml(res: VercelResponse, statusCode: number, body: string) {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Content-Security-Policy', "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
+  return res.status(statusCode).send(`
+    <!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>BaristaClaw Sign In</title>
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif; padding: 24px; color: #111;">
+        ${body}
+      </body>
+    </html>
+  `);
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { code, state } = req.query;
+  const codeValue = typeof code === 'string' ? code.trim() : '';
+  const stateValue = typeof state === 'string' ? state.trim() : '';
   const jwtSecret = (process.env.JWT_SECRET || '').trim();
 
   const appUrl = resolveAuthAppUrl(req);
@@ -104,13 +225,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       throw new Error('Server authentication is not configured (JWT_SECRET missing).');
     }
 
-    if (typeof code !== 'string' || !code.trim()) {
+    if (!codeValue) {
       throw new Error('Missing OAuth code');
     }
 
+    if (isMobileOAuthState(stateValue)) {
+      return handleMobileOAuthCallback(req, res, {
+        code: codeValue,
+        state: stateValue,
+        jwtSecret,
+        appUrl,
+      });
+    }
+
     const expectedState = readCookie(req, 'oauth_state');
-    const receivedState = typeof state === 'string' ? state.trim() : '';
-    if (!expectedState || !receivedState || expectedState !== receivedState) {
+    if (!expectedState || !stateValue || expectedState !== stateValue) {
       throw new Error('Invalid OAuth state');
     }
 
@@ -122,7 +251,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        code: code.trim(),
+        code: codeValue,
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
         redirect_uri: redirectUri,

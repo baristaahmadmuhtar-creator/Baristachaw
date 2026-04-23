@@ -14,6 +14,7 @@ import { ScannerScreen } from './src/screens/ScannerScreen';
 import { CollectionScreen } from './src/screens/CollectionScreen';
 import { ToolsScreen } from './src/screens/ToolsScreen';
 import { WebParityScreen } from './src/screens/WebParityScreen';
+import { MobileAuthGate } from './src/screens/MobileAuthGate';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { usePreferredMobileLanguage } from './src/hooks/usePreferredMobileLanguage';
 import { useNetworkStatus } from './src/hooks/useNetworkStatus';
@@ -124,13 +125,364 @@ function AppRoot() {
   };
 
   if (rootMode === 'web_parity') {
-    return <WebParityScreen onParityReady={handleParityReady} onParityFailure={handleParityFailure} />;
+    return (
+      <WebParityShell
+        onBootReady={() => setSurfaceReady(true)}
+        onParityReady={handleParityReady}
+        onParityFailure={handleParityFailure}
+      />
+    );
   }
 
   return (
     <View style={styles.root}>
       <NativeApp onBootReady={() => setSurfaceReady(true)} />
     </View>
+  );
+}
+
+type WebParityShellProps = {
+  onBootReady: () => void;
+  onParityReady: () => void;
+  onParityFailure: (reason: 'error' | 'http_error' | 'load_error') => void;
+};
+
+function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebParityShellProps) {
+  const { isOnline } = useNetworkStatus();
+  const didReportBootReady = useRef(false);
+  const authBusyProviderRef = useRef<AuthProvider>(null);
+  const handledAuthUrlsRef = useRef<Set<string>>(new Set());
+  const [booting, setBooting] = useState(true);
+  const [authBusyProvider, setAuthBusyProvider] = useState<AuthProvider>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [session, setSession] = useState<AuthSession | null>(null);
+
+  const accessToken = session?.accessToken || null;
+  const apiClient = useMemo(() => new ApiClient({ getAccessToken: () => accessToken }), [accessToken]);
+
+  useEffect(() => {
+    authBusyProviderRef.current = authBusyProvider;
+  }, [authBusyProvider]);
+
+  useEffect(() => {
+    void initTelemetry({
+      dsn: mobileEnv.sentryDsn,
+      environment: mobileEnv.release.includes('prod') ? 'production' : 'local',
+      release: `mobile@${mobileEnv.release}`,
+    });
+  }, []);
+
+  useEffect(() => {
+    setTelemetryUser(session?.user
+      ? {
+          id: session.user.id,
+          email: session.user.email,
+          username: session.user.name,
+        }
+      : null);
+  }, [session?.user]);
+
+  const persistSession = useCallback(async (nextSession: AuthSession, provider: 'google' | 'apple' | 'email') => {
+    await saveAuthSession(nextSession);
+    setSession(nextSession);
+    setAuthError(null);
+    trackEvent('auth_success', { provider, surface: 'web_parity_gate' });
+    if (provider === 'google') {
+      trackEvent('auth_success_google', { surface: 'web_parity_gate' });
+    }
+  }, []);
+
+  const clearNativeSession = useCallback(async (reason: string, nextError?: string | null) => {
+    await clearSupabaseMobileSession().catch(() => undefined);
+    await clearAuthSession().catch(() => undefined);
+    setSession(null);
+    setAuthError(nextError || null);
+    trackEvent('auth_session_invalidated', { reason, surface: 'web_parity_gate' });
+  }, []);
+
+  const verifySession = useCallback(async (targetSession: AuthSession, phase: string): Promise<boolean> => {
+    if (!isOnline) return true;
+    try {
+      const bootstrapClient = new ApiClient({ getAccessToken: () => targetSession.accessToken });
+      await bootstrapClient.getAuthMe();
+      return true;
+    } catch (error) {
+      captureError(error, { phase, reason: 'web_parity_session_verify_failed' });
+      await clearNativeSession('server_rejected', 'Sesi login berakhir. Silakan masuk lagi.');
+      return false;
+    }
+  }, [clearNativeSession, isOnline]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const bootstrap = async () => {
+      try {
+        const storedState = await inspectAuthSession();
+        if (cancelled) return;
+
+        if (storedState.status === 'active') {
+          setSession(storedState.session);
+          if (isOnline) {
+            await verifySession(storedState.session, 'web_parity_bootstrap');
+          }
+          return;
+        }
+
+        if (isOnline && isSupabaseAuthConfigured) {
+          try {
+            const bootstrapClient = new ApiClient({ getAccessToken: () => null });
+            const restoredSession = await restoreSupabaseMobileSession(bootstrapClient);
+            if (restoredSession && !cancelled) {
+              await saveAuthSession(restoredSession);
+              setSession(restoredSession);
+              setAuthError(null);
+              trackEvent('auth_session_restored', { provider: restoredSession.provider || 'supabase', surface: 'web_parity_gate' });
+              return;
+            }
+          } catch (error) {
+            captureError(error, { phase: 'web_parity_supabase_restore' });
+          }
+        }
+
+        if (storedState.status === 'expired') {
+          await clearAuthSession().catch(() => undefined);
+          setAuthError('Sesi sebelumnya berakhir. Masuk lagi untuk melanjutkan.');
+        } else if (storedState.status === 'invalid') {
+          await clearAuthSession().catch(() => undefined);
+          setAuthError('Data login tersimpan direset. Silakan masuk lagi.');
+        } else {
+          setAuthError(null);
+        }
+        setSession(null);
+      } catch (error) {
+        captureError(error, { phase: 'web_parity_auth_bootstrap' });
+        setSession(null);
+        setAuthError('Gagal menyiapkan login. Coba muat ulang aplikasi.');
+      } finally {
+        if (!cancelled) {
+          setBooting(false);
+        }
+      }
+    };
+
+    void bootstrap();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOnline, verifySession]);
+
+  useEffect(() => {
+    if (!booting && !didReportBootReady.current) {
+      didReportBootReady.current = true;
+      trackEvent('screen_ready', {
+        screen: 'web_parity_auth_gate',
+        runtimePolicy: mobileEnv.runtimePolicy,
+        hasSession: Boolean(session),
+      });
+      onBootReady();
+    }
+  }, [booting, onBootReady, session]);
+
+  useEffect(() => {
+    if (!isOnline || !session?.accessToken || booting) return;
+    let cancelled = false;
+    const sync = async () => {
+      const ok = await verifySession(session, 'web_parity_foreground_sync');
+      if (!cancelled && ok) setAuthError(null);
+    };
+    void sync();
+    return () => {
+      cancelled = true;
+    };
+  }, [booting, isOnline, session, verifySession]);
+
+  useEffect(() => {
+    if (!session?.expiresAt) return;
+    const msUntilExpiry = session.expiresAt - Date.now();
+    if (msUntilExpiry <= 0) {
+      void clearNativeSession('expired_in_memory', 'Sesi login berakhir. Silakan masuk lagi.');
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      void clearNativeSession('expired_in_memory', 'Sesi login berakhir. Silakan masuk lagi.');
+    }, msUntilExpiry + 250);
+
+    return () => clearTimeout(timeout);
+  }, [clearNativeSession, session?.expiresAt]);
+
+  useEffect(() => {
+    if (!isSupabaseAuthConfigured) return;
+    let cancelled = false;
+
+    const consumeAuthUrl = async (url: string | null) => {
+      if (!url || cancelled || session || !isSupabaseMobileAuthUrl(url)) return;
+      if (handledAuthUrlsRef.current.has(url)) return;
+      handledAuthUrlsRef.current.add(url);
+      if (authBusyProviderRef.current) return;
+
+      if (!isOnline) {
+        setAuthError('Tidak ada koneksi internet. Sambungkan lagi untuk masuk.');
+        return;
+      }
+
+      setAuthBusyProvider('email');
+      setAuthError(null);
+
+      try {
+        const nextSession = await completeSupabaseDeepLink(apiClient, url);
+        if (!nextSession || cancelled) return;
+        const provider = nextSession.provider === 'google' ? 'google' : 'email';
+        await persistSession(nextSession, provider);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Gagal menyelesaikan login.';
+        setAuthError(message);
+        captureError(error, { phase: 'web_parity_supabase_deep_link' });
+        Alert.alert('Masuk gagal', message);
+      } finally {
+        if (!cancelled) setAuthBusyProvider(null);
+      }
+    };
+
+    void Linking.getInitialURL().then(consumeAuthUrl).catch((error) => {
+      captureError(error, { phase: 'web_parity_supabase_initial_url' });
+    });
+
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      void consumeAuthUrl(url);
+    });
+
+    return () => {
+      cancelled = true;
+      subscription.remove();
+    };
+  }, [apiClient, isOnline, persistSession, session]);
+
+  const handleGoogleLogin = async () => {
+    if (!isOnline) {
+      setAuthError('Tidak ada koneksi internet. Sambungkan lagi untuk masuk.');
+      return;
+    }
+
+    setAuthBusyProvider('google');
+    setAuthError(null);
+    trackEvent('auth_started', { provider: 'google', surface: 'web_parity_gate' });
+
+    try {
+      const nextSession = isSupabaseAuthConfigured
+        ? await startGoogleSupabaseOAuth(apiClient)
+        : await startGoogleMobileOAuth(apiClient);
+      await persistSession(nextSession, 'google');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Gagal masuk dengan Google.';
+      setAuthError(message);
+      captureError(error, { phase: 'web_parity_login_google' });
+      trackEvent('auth_fail_google', { message, surface: 'web_parity_gate' });
+      Alert.alert('Masuk gagal', message);
+    } finally {
+      setAuthBusyProvider(null);
+    }
+  };
+
+  const handleEmailAuth = async (payload: EmailAuthPayload) => {
+    if (!isSupabaseAuthConfigured) {
+      setAuthError('Supabase belum dikonfigurasi untuk email masuk/daftar.');
+      return;
+    }
+    if (!isOnline) {
+      setAuthError('Tidak ada koneksi internet. Sambungkan lagi untuk masuk.');
+      return;
+    }
+
+    setAuthBusyProvider('email');
+    setAuthError(null);
+    trackEvent('auth_started', { provider: 'email', mode: payload.mode, surface: 'web_parity_gate' });
+
+    try {
+      const result = await startEmailSupabaseAuth(apiClient, payload);
+      if (result.status === 'confirmation_required') {
+        setAuthError(result.message);
+        Alert.alert('Verifikasi email', result.message);
+        return;
+      }
+      await persistSession(result.session, 'email');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Gagal masuk dengan email.';
+      setAuthError(message);
+      captureError(error, { phase: `web_parity_email_${payload.mode}` });
+      Alert.alert('Masuk gagal', message);
+    } finally {
+      setAuthBusyProvider(null);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    if (!mobileEnv.enableAppleSignIn) {
+      setAuthError('Apple Sign-In belum diaktifkan pada build ini.');
+      return;
+    }
+    if (!isOnline) {
+      setAuthError('Tidak ada koneksi internet. Sambungkan lagi untuk masuk.');
+      return;
+    }
+
+    setAuthBusyProvider('apple');
+    setAuthError(null);
+    try {
+      const nextSession = await startAppleMobileOAuth(apiClient);
+      await persistSession(nextSession, 'apple');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Gagal masuk dengan Apple.';
+      setAuthError(message);
+      captureError(error, { phase: 'web_parity_login_apple' });
+      Alert.alert('Masuk gagal', message);
+    } finally {
+      setAuthBusyProvider(null);
+    }
+  };
+
+  const handleNativeLogout = useCallback(() => {
+    void clearNativeSession('web_logout');
+  }, [clearNativeSession]);
+
+  const handleNativeAuthExpired = useCallback(() => {
+    void clearNativeSession('web_auth_expired', 'Sesi login berakhir. Silakan masuk lagi.');
+  }, [clearNativeSession]);
+
+  if (booting) {
+    return (
+      <View style={styles.bootingPage}>
+        <ActivityIndicator size="large" color={uiTokens.colors.accent} />
+        <Text style={styles.bootingText}>Menyiapkan login aman...</Text>
+      </View>
+    );
+  }
+
+  if (!session) {
+    return (
+      <MobileAuthGate
+        authBusyProvider={authBusyProvider}
+        authError={authError}
+        isOnline={isOnline}
+        supabaseAuthEnabled={isSupabaseAuthConfigured}
+        enableAppleSignIn={mobileEnv.enableAppleSignIn}
+        onLoginGoogle={handleGoogleLogin}
+        onEmailAuth={handleEmailAuth}
+        onLoginApple={handleAppleLogin}
+      />
+    );
+  }
+
+  return (
+    <WebParityScreen
+      authSession={session}
+      onParityReady={onParityReady}
+      onParityFailure={onParityFailure}
+      onNativeLogout={handleNativeLogout}
+      onNativeAuthExpired={handleNativeAuthExpired}
+    />
   );
 }
 

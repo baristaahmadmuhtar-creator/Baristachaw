@@ -12,6 +12,18 @@ type AuthUser = {
   picture?: string;
 };
 
+type NativeShellSession = {
+  accessToken?: string;
+  expiresAt?: number;
+  user?: AuthUser | null;
+};
+
+declare global {
+  interface Window {
+    __BARISTACLAW_NATIVE_SESSION__?: NativeShellSession | null;
+  }
+}
+
 type OpenAuthModalOptions = {
   source?: string;
 };
@@ -57,6 +69,15 @@ function readStoredOauthCallbackResult(): StoredOauthCallbackResult | null {
   } catch {
     return null;
   }
+}
+
+function readNativeShellSession(): NativeShellSession | null {
+  if (typeof window === 'undefined') return null;
+  const session = window.__BARISTACLAW_NATIVE_SESSION__;
+  if (!session?.accessToken || !session.user?.id) return null;
+  const expiresAt = Number(session.expiresAt || 0);
+  if (expiresAt > 0 && expiresAt <= Date.now()) return null;
+  return session;
 }
 
 export function AuthModalProvider({ children }: { children: ReactNode }) {
@@ -110,7 +131,19 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!user;
 
+  const applyNativeShellSession = useCallback((session = readNativeShellSession()) => {
+    if (!session?.user) return false;
+    const nextUser = session.user;
+    setUser(nextUser);
+    if (nextUser.name) saveUserName(nextUser.name);
+    setAuthMode('server');
+    setAuthError(null);
+    setIsOpen(false);
+    return true;
+  }, []);
+
   const openAuthModal = useCallback((options?: OpenAuthModalOptions) => {
+    if (readNativeShellSession()) return;
     setSource(options?.source || 'general');
     setAuthError(null);
     setIsOpen(true);
@@ -143,6 +176,11 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     const requestId = refreshRequestIdRef.current + 1;
     refreshRequestIdRef.current = requestId;
     let authenticated = false;
+    const nativeSession = readNativeShellSession();
+    if (nativeSession) {
+      applyNativeShellSession(nativeSession);
+      authenticated = true;
+    }
 
     if (!silent && isMountedRef.current) setAuthChecking(true);
     try {
@@ -159,7 +197,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
         const timeoutId = window.setTimeout(() => controller.abort(), AUTH_REFRESH_TIMEOUT_MS);
 
         try {
-          const response = await fetch('/api/auth/me?soft=1', { credentials: 'same-origin', signal: controller.signal });
+          const response = await fetch(nativeSession ? '/api/auth/me' : '/api/auth/me?soft=1', { credentials: 'same-origin', signal: controller.signal });
           const payload = await response.json().catch(() => null);
           const isCurrentRequest =
             isMountedRef.current &&
@@ -175,12 +213,12 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
             return true;
           }
 
-          if (attempt === retryDelaysMs.length) {
+          if (attempt === retryDelaysMs.length && !nativeSession) {
             setUser(null);
           }
         } catch {
           if (!isMountedRef.current || requestId !== refreshRequestIdRef.current) return false;
-          if (!controller.signal.aborted && !isOffline && attempt === retryDelaysMs.length) {
+          if (!controller.signal.aborted && !isOffline && attempt === retryDelaysMs.length && !nativeSession) {
             setUser(null);
           }
         } finally {
@@ -196,7 +234,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
       }
     }
     return authenticated;
-  }, [isOffline]);
+  }, [applyNativeShellSession, isOffline]);
 
   useEffect(() => {
     void refreshAuthState({ retryDelaysMs: [...AUTH_BOOTSTRAP_RETRY_DELAYS_MS] });

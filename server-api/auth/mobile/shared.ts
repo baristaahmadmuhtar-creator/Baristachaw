@@ -6,6 +6,7 @@ interface MobileOAuthConfig {
   redirectUri: string;
   clientId: string;
   clientSecret: string;
+  jwtSecret: string;
 }
 
 interface SupabaseAuthConfig {
@@ -37,7 +38,7 @@ export function resolveMobileAndroidPackage(): string {
   return valid ? normalized : 'com.baristaclaw.mobile';
 }
 
-export function resolveMobileOAuthConfig(): MobileOAuthConfig {
+export function resolveMobileOAuthConfig(redirectPath = '/api/auth/callback'): MobileOAuthConfig {
   const appUrl = resolveAppUrl();
   const clientId = String(process.env.GOOGLE_CLIENT_ID || '').trim();
   const clientSecret = String(process.env.GOOGLE_CLIENT_SECRET || '').trim();
@@ -49,9 +50,10 @@ export function resolveMobileOAuthConfig(): MobileOAuthConfig {
 
   return {
     appUrl,
-    redirectUri: `${appUrl}/api/auth/mobile/callback`,
+    redirectUri: `${appUrl}${redirectPath}`,
     clientId,
     clientSecret,
+    jwtSecret,
   };
 }
 

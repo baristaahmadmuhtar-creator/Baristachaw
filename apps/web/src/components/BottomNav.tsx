@@ -32,7 +32,7 @@ function readKeyboardOpenFromRoot() {
 function readPwaFromRoot() {
   if (typeof window === 'undefined') return false;
   const root = document.documentElement;
-  return root.hasAttribute('data-pwa') || root.hasAttribute('data-ios-standalone');
+  return root.hasAttribute('data-pwa') || root.hasAttribute('data-ios-standalone') || root.hasAttribute('data-native-shell-profile');
 }
 
 export function BottomNav({ hidden = false }: BottomNavProps) {

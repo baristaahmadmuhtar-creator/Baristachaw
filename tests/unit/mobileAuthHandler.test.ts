@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import jwt from 'jsonwebtoken';
 import mobileAuthHandler from '../../server-api/auth/mobile/[...route].ts';
 
 function createMockRes() {
@@ -28,6 +29,58 @@ function createMockRes() {
     },
   };
 }
+
+test('mobile auth start uses the Google-registered web callback redirect', async () => {
+  const originalAppUrl = process.env.APP_URL;
+  const originalJwtSecret = process.env.JWT_SECRET;
+  const originalGoogleClientId = process.env.GOOGLE_CLIENT_ID;
+  const originalGoogleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const originalMobileScheme = process.env.MOBILE_APP_SCHEME;
+
+  process.env.APP_URL = 'https://baristaclaw.vercel.app';
+  process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
+  process.env.GOOGLE_CLIENT_ID = 'unit-test-google-client-id';
+  process.env.GOOGLE_CLIENT_SECRET = 'unit-test-google-client-secret';
+  process.env.MOBILE_APP_SCHEME = 'baristaclaw';
+
+  const req = {
+    method: 'GET',
+    query: { route: ['start'] },
+    headers: {
+      host: 'baristaclaw.vercel.app',
+      'x-forwarded-proto': 'https',
+    },
+    socket: {
+      remoteAddress: '203.0.113.59',
+    },
+  } as any;
+  const res = createMockRes() as any;
+
+  try {
+    await mobileAuthHandler(req, res);
+  } finally {
+    if (typeof originalAppUrl === 'string') process.env.APP_URL = originalAppUrl;
+    else delete process.env.APP_URL;
+    if (typeof originalJwtSecret === 'string') process.env.JWT_SECRET = originalJwtSecret;
+    else delete process.env.JWT_SECRET;
+    if (typeof originalGoogleClientId === 'string') process.env.GOOGLE_CLIENT_ID = originalGoogleClientId;
+    else delete process.env.GOOGLE_CLIENT_ID;
+    if (typeof originalGoogleClientSecret === 'string') process.env.GOOGLE_CLIENT_SECRET = originalGoogleClientSecret;
+    else delete process.env.GOOGLE_CLIENT_SECRET;
+    if (typeof originalMobileScheme === 'string') process.env.MOBILE_APP_SCHEME = originalMobileScheme;
+    else delete process.env.MOBILE_APP_SCHEME;
+  }
+
+  const body = JSON.parse(res.body);
+  const googleUrl = new URL(body.url);
+  const decodedState = jwt.verify(String(body.state).replace(/^mobile\./, ''), 'unit-test-secret-32-chars-minimum') as { purpose?: string };
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(body.redirectUri, 'https://baristaclaw.vercel.app/api/auth/callback');
+  assert.equal(googleUrl.searchParams.get('redirect_uri'), 'https://baristaclaw.vercel.app/api/auth/callback');
+  assert.equal(String(body.state).startsWith('mobile.'), true);
+  assert.equal(decodedState.purpose, 'mobile_oauth');
+});
 
 test('mobile auth callback page includes deep link and android intent fallback', async () => {
   const originalAppUrl = process.env.APP_URL;

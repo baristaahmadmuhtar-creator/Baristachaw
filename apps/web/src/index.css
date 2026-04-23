@@ -861,10 +861,12 @@ html[data-ios-standalone] .mobile-bottom-nav-active-pill {
 
 html[data-web-parity] {
   --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--host-safe-bottom, 0px));
-  --mobile-nav-floating-gap: max(var(--mobile-home-indicator-gap), min(var(--safe-bottom), 14px));
+  --mobile-nav-floating-gap: max(var(--mobile-home-indicator-gap), min(var(--safe-bottom), 32px));
   --mobile-nav-dock-offset: var(--mobile-nav-floating-gap);
   --bottom-nav-total-height: calc(var(--bottom-nav-height) + var(--mobile-nav-dock-offset));
   --page-padding-bottom: calc(var(--bottom-nav-total-height) + 0.2rem);
+  --composer-bottom-offset: var(--mobile-nav-floating-gap);
+  --composer-message-gap: var(--mobile-nav-floating-gap);
 }
 
 html[data-web-parity][data-keyboard-open="true"] {

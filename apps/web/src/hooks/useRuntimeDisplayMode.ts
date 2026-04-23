@@ -36,9 +36,11 @@ function detectRuntimeDisplayMode(): RuntimeDisplayMode {
   const uiProfile = profileFromQuery || profileFromStorage;
   const isWebParity = runtime === 'web_parity';
   const runtimeAsStandalone = isWebParity && uiProfile === 'pwa';
+  const runtimeAsNativeShell = isWebParity && uiProfile === 'native_shell';
 
   const nav = window.navigator as Navigator & { standalone?: boolean };
-  const isPwa = window.matchMedia('(display-mode: standalone)').matches
+  const isPwa = runtimeAsNativeShell
+    || window.matchMedia('(display-mode: standalone)').matches
     || window.matchMedia('(display-mode: fullscreen)').matches
     || Boolean(nav.standalone)
     || runtimeAsStandalone;

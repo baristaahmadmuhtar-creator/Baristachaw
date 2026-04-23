@@ -70,6 +70,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     android: {
       package: DEFAULT_ANDROID_PACKAGE,
+      newArchEnabled: false,
       permissions: [
         'CAMERA',
         'RECORD_AUDIO',
@@ -100,6 +101,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       favicon: './assets/favicon.png',
     },
     plugins: [
+      './plugins/with-android-monorepo-release-bundle',
       'expo-splash-screen',
       [
         'expo-web-browser',

@@ -64,6 +64,21 @@ export interface MobileAppleExchangeRequest {
   name?: string;
 }
 
+export interface MobileSupabaseExchangeRequest {
+  accessToken: string;
+}
+
+export interface EmailAuthPayload {
+  mode: 'signIn' | 'signUp';
+  email: string;
+  password: string;
+  displayName?: string;
+}
+
+export type EmailAuthResult =
+  | { status: 'signed_in'; session: AuthSession }
+  | { status: 'confirmation_required'; email: string; message: string };
+
 export interface MobileStoreState {
   schemaVersion: 2;
   chatSessions: ChatSessionRecord[];

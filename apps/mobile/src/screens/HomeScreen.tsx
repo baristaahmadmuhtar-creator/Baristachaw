@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, type NavigationProp, type ParamListBase } from '@react-navigation/native';
-import { Linking, Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { buildResponseOrchestration, getHomeGreeting, normalizeAgentProfileMemory, type AgentProfileMemory } from '@baristaclaw/shared';
 import {
   ActionButton,
@@ -18,7 +18,7 @@ import { readAgentProfileMemory } from '../services/agentProfileStore';
 import { hapticSuccess } from '../services/haptics';
 import { trackEvent } from '../services/telemetry';
 import { uiTokens } from '../theme/tokens';
-import type { AuthProvider, AuthSession, MobileQuickSavePayload } from '../types';
+import type { AuthProvider, AuthSession, EmailAuthPayload, MobileQuickSavePayload } from '../types';
 import { getMobileLocalization } from '../utils/localization';
 
 type SearchPhase = 'idle' | 'sending' | 'live_searching' | 'rendering' | 'failed';
@@ -40,7 +40,9 @@ type HomeScreenProps = {
   isOnline: boolean;
   guestModeEnabled: boolean;
   enableAppleSignIn: boolean;
+  supabaseAuthEnabled: boolean;
   onLoginGoogle: () => Promise<void>;
+  onEmailAuth: (payload: EmailAuthPayload) => Promise<void>;
   onLoginApple: () => Promise<void>;
   onLogout: () => Promise<void>;
   onSaveToCollection: (payload: MobileQuickSavePayload) => Promise<void>;
@@ -92,7 +94,9 @@ export function HomeScreen({
   isOnline,
   guestModeEnabled,
   enableAppleSignIn,
+  supabaseAuthEnabled,
   onLoginGoogle,
+  onEmailAuth,
   onLoginApple,
   onLogout,
   onSaveToCollection,
@@ -111,6 +115,12 @@ export function HomeScreen({
   const [saved, setSaved] = useState(false);
   const [lastActionLabel, setLastActionLabel] = useState('');
   const [resultSheetVisible, setResultSheetVisible] = useState(false);
+  const [emailAuthMode, setEmailAuthMode] = useState<EmailAuthPayload['mode']>('signIn');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [emailFormError, setEmailFormError] = useState('');
   const [agentProfile, setAgentProfile] = useState<AgentProfileMemory>(() => normalizeAgentProfileMemory({
     preferredLanguage,
     assistantName: 'BaristaClaw',
@@ -231,6 +241,85 @@ export function HomeScreen({
   const searchPlaceholder = session ? webT.homeSearchPlaceholderAuth : webT.homeSearchPlaceholderGuest;
   const greeting = getHomeGreeting();
   const resultPreview = buildPreview(result);
+  const authFormCopy = useMemo(() => {
+    if (localeState.language === 'id') {
+      return {
+        signInTab: 'Masuk',
+        signUpTab: 'Daftar',
+        nameLabel: 'Nama tampilan',
+        namePlaceholder: 'Nama Anda',
+        emailLabel: 'Email',
+        emailPlaceholder: 'nama@email.com',
+        passwordLabel: 'Password',
+        passwordPlaceholder: 'Minimal 8 karakter',
+        hidePassword: 'Sembunyikan',
+        showPassword: 'Tampilkan',
+        submitSignIn: 'Masuk dengan email',
+        submitSignUp: 'Buat akun',
+        submittingSignIn: 'Memproses masuk...',
+        submittingSignUp: 'Membuat akun...',
+        googleDivider: 'atau lanjut aman dengan Google',
+        googleFallback: 'Google OAuth lama akan dipakai sampai Supabase env aktif.',
+        supabaseMissing: 'Email masuk/daftar aktif setelah Supabase URL dan publishable key diisi.',
+        invalidEmail: 'Masukkan email yang valid.',
+        invalidPassword: 'Password minimal 8 karakter.',
+        requiredName: 'Nama tampilan wajib untuk daftar.',
+        trust: 'Token disimpan di SecureStore, tidak di AsyncStorage.',
+      };
+    }
+    return {
+      signInTab: 'Sign in',
+      signUpTab: 'Create account',
+      nameLabel: 'Display name',
+      namePlaceholder: 'Your name',
+      emailLabel: 'Email',
+      emailPlaceholder: 'name@email.com',
+      passwordLabel: 'Password',
+      passwordPlaceholder: 'At least 8 characters',
+      hidePassword: 'Hide',
+      showPassword: 'Show',
+      submitSignIn: 'Sign in with email',
+      submitSignUp: 'Create account',
+      submittingSignIn: 'Signing in...',
+      submittingSignUp: 'Creating account...',
+      googleDivider: 'or continue securely with Google',
+      googleFallback: 'Legacy Google OAuth is used until Supabase env is configured.',
+      supabaseMissing: 'Email sign-in is enabled after Supabase URL and publishable key are set.',
+      invalidEmail: 'Enter a valid email address.',
+      invalidPassword: 'Password must be at least 8 characters.',
+      requiredName: 'Display name is required to create an account.',
+      trust: 'Tokens are stored in SecureStore, not AsyncStorage.',
+    };
+  }, [localeState.language]);
+
+  const emailAuthBusy = authBusyProvider === 'email';
+  const googleAuthBusy = authBusyProvider === 'google';
+  const authBusy = Boolean(authBusyProvider);
+
+  const submitEmailAuth = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedName = displayName.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setEmailFormError(authFormCopy.invalidEmail);
+      return;
+    }
+    if (password.length < 8) {
+      setEmailFormError(authFormCopy.invalidPassword);
+      return;
+    }
+    if (emailAuthMode === 'signUp' && !normalizedName) {
+      setEmailFormError(authFormCopy.requiredName);
+      return;
+    }
+
+    setEmailFormError('');
+    await onEmailAuth({
+      mode: emailAuthMode,
+      email: normalizedEmail,
+      password,
+      displayName: normalizedName || undefined,
+    });
+  };
 
   useEffect(() => {
     if (!lastActionLabel) {
@@ -490,13 +579,124 @@ export function HomeScreen({
                 <ActionButton label={homeCopy.sections.logOut} tone="secondary" direction={direction} onPress={() => void onLogout()} />
               ) : (
                 <>
+                  {supabaseAuthEnabled ? (
+                    <>
+                      <View style={styles.authModeTabs}>
+                        {(['signIn', 'signUp'] as const).map((mode) => {
+                          const selected = emailAuthMode === mode;
+                          return (
+                            <Pressable
+                              key={mode}
+                              onPress={() => {
+                                setEmailAuthMode(mode);
+                                setEmailFormError('');
+                              }}
+                              style={[styles.authModeTab, selected ? styles.authModeTabActive : null]}
+                              disabled={emailAuthBusy}
+                            >
+                              <Text style={[styles.authModeTabText, selected ? styles.authModeTabTextActive : null]}>
+                                {mode === 'signIn' ? authFormCopy.signInTab : authFormCopy.signUpTab}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+
+                      {emailAuthMode === 'signUp' ? (
+                        <View style={styles.fieldGroup}>
+                          <Text style={styles.fieldLabel}>{authFormCopy.nameLabel}</Text>
+                          <TextInput
+                            value={displayName}
+                            onChangeText={setDisplayName}
+                            placeholder={authFormCopy.namePlaceholder}
+                            placeholderTextColor={uiTokens.colors.textMuted}
+                            autoCapitalize="words"
+                            autoCorrect={false}
+                            editable={!emailAuthBusy}
+                            style={styles.input}
+                          />
+                        </View>
+                      ) : null}
+
+                      <View style={styles.fieldGroup}>
+                        <Text style={styles.fieldLabel}>{authFormCopy.emailLabel}</Text>
+                        <TextInput
+                          value={email}
+                          onChangeText={setEmail}
+                          placeholder={authFormCopy.emailPlaceholder}
+                          placeholderTextColor={uiTokens.colors.textMuted}
+                          keyboardType="email-address"
+                          textContentType="emailAddress"
+                          autoCapitalize="none"
+                          autoComplete="email"
+                          autoCorrect={false}
+                          editable={!emailAuthBusy}
+                          style={styles.input}
+                        />
+                      </View>
+
+                      <View style={styles.fieldGroup}>
+                        <Text style={styles.fieldLabel}>{authFormCopy.passwordLabel}</Text>
+                        <View style={styles.passwordInputWrap}>
+                          <TextInput
+                            value={password}
+                            onChangeText={setPassword}
+                            placeholder={authFormCopy.passwordPlaceholder}
+                            placeholderTextColor={uiTokens.colors.textMuted}
+                            textContentType={emailAuthMode === 'signUp' ? 'newPassword' : 'password'}
+                            autoCapitalize="none"
+                            autoComplete={emailAuthMode === 'signUp' ? 'new-password' : 'password'}
+                            autoCorrect={false}
+                            secureTextEntry={!passwordVisible}
+                            editable={!emailAuthBusy}
+                            style={styles.passwordInput}
+                          />
+                          <Pressable
+                            onPress={() => setPasswordVisible((visible) => !visible)}
+                            style={styles.passwordToggle}
+                            hitSlop={8}
+                          >
+                            <Text style={styles.passwordToggleText}>
+                              {passwordVisible ? authFormCopy.hidePassword : authFormCopy.showPassword}
+                            </Text>
+                          </Pressable>
+                        </View>
+                      </View>
+
+                      {emailFormError ? <Text selectable style={styles.warningText}>{emailFormError}</Text> : null}
+
+                      <ActionButton
+                        label={
+                          emailAuthBusy
+                            ? (emailAuthMode === 'signUp' ? authFormCopy.submittingSignUp : authFormCopy.submittingSignIn)
+                            : (emailAuthMode === 'signUp' ? authFormCopy.submitSignUp : authFormCopy.submitSignIn)
+                        }
+                        tone="primary"
+                        fullWidth
+                        direction={direction}
+                        onPress={() => void submitEmailAuth()}
+                        disabled={!isOnline || authBusy}
+                      />
+
+                      <View style={styles.authDivider}>
+                        <View style={styles.authDividerLine} />
+                        <Text style={styles.authDividerText}>{authFormCopy.googleDivider}</Text>
+                        <View style={styles.authDividerLine} />
+                      </View>
+                    </>
+                  ) : (
+                    <Text selectable style={styles.warningText}>{authFormCopy.supabaseMissing}</Text>
+                  )}
+
                   <ActionButton
-                    label={authBusyProvider === 'google' ? homeCopy.sections.openingGoogle : webT.continueWithGoogle}
+                    label={googleAuthBusy ? homeCopy.sections.openingGoogle : webT.continueWithGoogle}
                     tone="primary"
+                    fullWidth
                     direction={direction}
                     onPress={() => void onLoginGoogle()}
-                    disabled={Boolean(authBusyProvider)}
+                    disabled={!isOnline || authBusy}
                   />
+                  {!supabaseAuthEnabled ? <Text selectable style={styles.accountHint}>{authFormCopy.googleFallback}</Text> : null}
                   {enableAppleSignIn ? (
                     <ActionButton
                       label={authBusyProvider === 'apple' ? homeCopy.sections.openingApple : webT.authModalAppleSoon}
@@ -514,7 +714,8 @@ export function HomeScreen({
           <Text style={styles.accountValue}>
             {session ? authSummary.body : homeCopy.sections.guestAccessBody}
           </Text>
-          {authError ? <Text style={styles.warningText}>{authError}</Text> : null}
+          {!session ? <Text style={styles.accountHint}>{authFormCopy.trust}</Text> : null}
+          {authError ? <Text selectable style={styles.warningText}>{authError}</Text> : null}
         </SectionCard>
 
         {result ? (
@@ -593,15 +794,117 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   authActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    width: '100%',
     gap: 10,
+  },
+  authModeTabs: {
+    flexDirection: 'row',
+    gap: 8,
+    padding: 4,
+    borderRadius: uiTokens.radius.pill,
+    borderWidth: 1,
+    borderColor: uiTokens.border.soft,
+    backgroundColor: uiTokens.surface.soft,
+  },
+  authModeTab: {
+    flex: 1,
+    minHeight: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: uiTokens.radius.pill,
+  },
+  authModeTabActive: {
+    backgroundColor: uiTokens.colors.accent,
+  },
+  authModeTabText: {
+    color: uiTokens.text.secondary,
+    fontFamily: uiTokens.fontFamily.semibold,
+    fontSize: uiTokens.typography.caption.fontSize,
+    lineHeight: uiTokens.typography.caption.lineHeight,
+    fontWeight: '600',
+  },
+  authModeTabTextActive: {
+    color: uiTokens.text.inverse,
+  },
+  fieldGroup: {
+    gap: 6,
+  },
+  fieldLabel: {
+    color: uiTokens.text.secondary,
+    fontFamily: uiTokens.fontFamily.semibold,
+    fontSize: uiTokens.typography.caption.fontSize,
+    lineHeight: uiTokens.typography.caption.lineHeight,
+    fontWeight: '600',
+  },
+  input: {
+    minHeight: 48,
+    borderRadius: uiTokens.radius.input,
+    borderWidth: 1,
+    borderColor: uiTokens.colors.fieldBorder,
+    backgroundColor: uiTokens.colors.field,
+    color: uiTokens.text.primary,
+    paddingHorizontal: 14,
+    fontFamily: uiTokens.fontFamily.medium,
+    fontSize: uiTokens.typography.body.fontSize,
+  },
+  passwordInputWrap: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: uiTokens.radius.input,
+    borderWidth: 1,
+    borderColor: uiTokens.colors.fieldBorder,
+    backgroundColor: uiTokens.colors.field,
+    overflow: 'hidden',
+  },
+  passwordInput: {
+    flex: 1,
+    color: uiTokens.text.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontFamily: uiTokens.fontFamily.medium,
+    fontSize: uiTokens.typography.body.fontSize,
+  },
+  passwordToggle: {
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+  },
+  passwordToggleText: {
+    color: uiTokens.colors.accent,
+    fontFamily: uiTokens.fontFamily.semibold,
+    fontSize: uiTokens.typography.caption.fontSize,
+    lineHeight: uiTokens.typography.caption.lineHeight,
+    fontWeight: '600',
+  },
+  authDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 4,
+  },
+  authDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: uiTokens.border.soft,
+  },
+  authDividerText: {
+    color: uiTokens.text.muted,
+    fontFamily: uiTokens.fontFamily.medium,
+    fontSize: uiTokens.typography.caption.fontSize,
+    lineHeight: uiTokens.typography.caption.lineHeight,
   },
   accountValue: {
     color: uiTokens.text.primary,
     fontFamily: uiTokens.fontFamily.medium,
     fontSize: uiTokens.typography.body.fontSize,
     lineHeight: uiTokens.typography.body.lineHeight,
+  },
+  accountHint: {
+    color: uiTokens.text.muted,
+    fontFamily: uiTokens.fontFamily.regular,
+    fontSize: uiTokens.typography.caption.fontSize,
+    lineHeight: uiTokens.typography.caption.lineHeight,
   },
   warningText: {
     color: uiTokens.colors.warning,

@@ -14,11 +14,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || DEFAULT_API_BASE_URL;
   const webAppUrl = process.env.EXPO_PUBLIC_WEB_APP_URL || DEFAULT_WEB_APP_URL;
   const appScheme = process.env.EXPO_PUBLIC_APP_SCHEME || DEFAULT_SCHEME;
-  const mobileUiMode = process.env.EXPO_PUBLIC_MOBILE_UI_MODE || 'web_parity';
+  const mobileUiMode = process.env.EXPO_PUBLIC_MOBILE_UI_MODE || 'native';
   const webParityTimeoutMs = process.env.EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS || '6000';
   const webParityFallbackEnabled = process.env.EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED || 'false';
   const enableGuestMode = process.env.EXPO_PUBLIC_ENABLE_GUEST_MODE || 'true';
   const enableAppleSignIn = process.env.EXPO_PUBLIC_ENABLE_APPLE_SIGNIN || 'false';
+  const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+  const supabasePublishableKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
   const sentryDsn = process.env.EXPO_PUBLIC_SENTRY_DSN || '';
   const release = process.env.EXPO_PUBLIC_RELEASE || 'mobile-local';
   const allowLocalHttp = isLocalHttpUrl(apiBaseUrl) || isLocalHttpUrl(webAppUrl);
@@ -115,6 +117,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       webParityFallbackEnabled,
       enableGuestMode,
       enableAppleSignIn,
+      supabaseUrl,
+      supabasePublishableKey,
       sentryDsn,
       release,
       eas: {

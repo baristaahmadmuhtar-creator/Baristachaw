@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFonts } from 'expo-font';
-import { ActivityIndicator, Alert, StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Alert, Linking, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, type Theme } from '@react-navigation/native';
@@ -19,13 +19,22 @@ import { usePreferredMobileLanguage } from './src/hooks/usePreferredMobileLangua
 import { useNetworkStatus } from './src/hooks/useNetworkStatus';
 import { ApiClient } from './src/services/apiClient';
 import { clearAuthSession, inspectAuthSession, saveAuthSession } from './src/services/authStore';
-import { startAppleMobileOAuth, startGoogleMobileOAuth } from './src/services/authFlow';
+import {
+  clearSupabaseMobileSession,
+  completeSupabaseDeepLink,
+  isSupabaseMobileAuthUrl,
+  restoreSupabaseMobileSession,
+  startAppleMobileOAuth,
+  startEmailSupabaseAuth,
+  startGoogleMobileOAuth,
+  startGoogleSupabaseOAuth,
+} from './src/services/authFlow';
 import { quickSaveInsight } from './src/services/mobileStore';
-import { mobileEnv } from './src/config/env';
+import { isSupabaseAuthConfigured, mobileEnv } from './src/config/env';
 import { captureError, captureMessage, initTelemetry, setTelemetryUser, trackEvent } from './src/services/telemetry';
 import { uiTokenPalettes, uiTokens } from './src/theme/tokens';
 import { getMobileLocalization } from './src/utils/localization';
-import type { AuthSession, MobileQuickSavePayload } from './src/types';
+import type { AuthSession, EmailAuthPayload, MobileQuickSavePayload } from './src/types';
 
 void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -35,7 +44,7 @@ type IoniconName = keyof typeof Ionicons.glyphMap;
 
 type RootMode = 'web_parity' | 'native';
 
-type AuthProvider = 'google' | 'apple' | null;
+type AuthProvider = 'google' | 'apple' | 'email' | null;
 
 const TAB_ICONS: Record<string, { active: IoniconName; idle: IoniconName }> = {
   Home: { active: 'home', idle: 'home-outline' },
@@ -134,6 +143,8 @@ function NativeApp({ onBootReady }: NativeAppProps) {
   const colorScheme = useColorScheme();
   const { isOnline } = useNetworkStatus();
   const didReportBootReady = useRef(false);
+  const authBusyProviderRef = useRef<AuthProvider>(null);
+  const handledAuthUrlsRef = useRef<Set<string>>(new Set());
   const [booting, setBooting] = useState(true);
   const [authBusyProvider, setAuthBusyProvider] = useState<AuthProvider>(null);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -153,8 +164,11 @@ function NativeApp({ onBootReady }: NativeAppProps) {
         offlineSignIn: 'Tidak ada koneksi internet. Sambungkan lagi untuk masuk.',
         signInFailed: 'Gagal masuk.',
         signInFailedApple: 'Gagal masuk dengan Apple.',
+        signInFailedEmail: 'Gagal masuk dengan email.',
         signInFailedTitle: 'Masuk gagal',
         appleUnavailable: 'Apple Sign-In belum diaktifkan pada build ini.',
+        supabaseUnavailable: 'Supabase belum dikonfigurasi. Isi EXPO_PUBLIC_SUPABASE_URL dan EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY untuk mengaktifkan masuk/daftar email dan Google Supabase.',
+        emailConfirmationTitle: 'Verifikasi email',
         preparing: 'Menyiapkan BaristaClaw...',
       };
     }
@@ -166,8 +180,11 @@ function NativeApp({ onBootReady }: NativeAppProps) {
         offlineSignIn: 'لا يوجد اتصال بالإنترنت. أعد الاتصال لتسجيل الدخول.',
         signInFailed: 'فشل تسجيل الدخول.',
         signInFailedApple: 'فشل تسجيل الدخول باستخدام Apple.',
+        signInFailedEmail: 'Email sign-in failed.',
         signInFailedTitle: 'فشل تسجيل الدخول',
         appleUnavailable: 'تسجيل الدخول باستخدام Apple غير مفعّل في هذا الإصدار.',
+        supabaseUnavailable: 'Supabase Auth is not configured for this build.',
+        emailConfirmationTitle: 'Verify email',
         preparing: 'جارٍ تجهيز BaristaClaw...',
       };
     }
@@ -178,11 +195,18 @@ function NativeApp({ onBootReady }: NativeAppProps) {
       offlineSignIn: 'No internet connection. Reconnect to sign in.',
       signInFailed: 'Failed to sign in.',
       signInFailedApple: 'Failed to sign in with Apple.',
+      signInFailedEmail: 'Failed to sign in with email.',
       signInFailedTitle: 'Sign In Failed',
       appleUnavailable: 'Apple Sign-In is not enabled in this build.',
+      supabaseUnavailable: 'Supabase Auth is not configured. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY to enable email sign-in and Supabase Google.',
+      emailConfirmationTitle: 'Verify email',
       preparing: 'Preparing BaristaClaw...',
     };
   }, [localeState.language]);
+
+  useEffect(() => {
+    authBusyProviderRef.current = authBusyProvider;
+  }, [authBusyProvider]);
 
   useEffect(() => {
     void initTelemetry({
@@ -238,6 +262,25 @@ function NativeApp({ onBootReady }: NativeAppProps) {
             await verifySession(storedState.session, 'bootstrap');
           }
         } else {
+          let restoredFromSupabase = false;
+          if (isOnline && isSupabaseAuthConfigured) {
+            try {
+              const bootstrapClient = new ApiClient({ getAccessToken: () => null });
+              const restoredSession = await restoreSupabaseMobileSession(bootstrapClient);
+              if (restoredSession) {
+                await saveAuthSession(restoredSession);
+                setSession(restoredSession);
+                setAuthError(null);
+                restoredFromSupabase = true;
+                trackEvent('auth_session_restored', { provider: restoredSession.provider || 'supabase' });
+              }
+            } catch (error) {
+              captureError(error, { phase: 'bootstrap_supabase_restore' });
+            }
+          }
+
+          if (restoredFromSupabase) return;
+
           setSession(null);
           if (storedState.status === 'expired') {
             await clearAuthSession().catch(() => undefined);
@@ -313,7 +356,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
     }
   }, [booting, onBootReady, session]);
 
-  const persistSession = async (nextSession: AuthSession, provider: 'google' | 'apple') => {
+  const persistSession = useCallback(async (nextSession: AuthSession, provider: 'google' | 'apple' | 'email') => {
     await saveAuthSession(nextSession);
     setSession(nextSession);
     setAuthError(null);
@@ -322,7 +365,65 @@ function NativeApp({ onBootReady }: NativeAppProps) {
     if (provider === 'google') {
       trackEvent('auth_success_google', { surface: 'auth' });
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!isSupabaseAuthConfigured) return;
+    let cancelled = false;
+
+    const consumeAuthUrl = async (url: string | null) => {
+      if (!url || cancelled || session || !isSupabaseMobileAuthUrl(url)) return;
+      if (handledAuthUrlsRef.current.has(url)) return;
+      handledAuthUrlsRef.current.add(url);
+      if (authBusyProviderRef.current) return;
+
+      if (!isOnline) {
+        setAuthError(shellCopy.offlineSignIn);
+        return;
+      }
+
+      setAuthBusyProvider('email');
+      setAuthError(null);
+
+      try {
+        const nextSession = await completeSupabaseDeepLink(apiClient, url);
+        if (!nextSession || cancelled) return;
+        const provider = nextSession.provider === 'google' ? 'google' : 'email';
+        await persistSession(nextSession, provider);
+        trackEvent('auth_session_restored', { provider, source: 'deep_link' });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : shellCopy.signInFailedEmail;
+        setAuthError(message);
+        captureError(error, { phase: 'supabase_deep_link' });
+        Alert.alert(shellCopy.signInFailedTitle, message);
+      } finally {
+        if (!cancelled) {
+          setAuthBusyProvider(null);
+        }
+      }
+    };
+
+    void Linking.getInitialURL().then(consumeAuthUrl).catch((error) => {
+      captureError(error, { phase: 'supabase_initial_url' });
+    });
+
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      void consumeAuthUrl(url);
+    });
+
+    return () => {
+      cancelled = true;
+      subscription.remove();
+    };
+  }, [
+    apiClient,
+    isOnline,
+    persistSession,
+    session,
+    shellCopy.offlineSignIn,
+    shellCopy.signInFailedEmail,
+    shellCopy.signInFailedTitle,
+  ]);
 
   const handleGoogleLogin = async () => {
     if (!isOnline) {
@@ -337,7 +438,9 @@ function NativeApp({ onBootReady }: NativeAppProps) {
     trackEvent('auth_started_google', { surface: 'auth' });
 
     try {
-      const nextSession = await startGoogleMobileOAuth(apiClient);
+      const nextSession = isSupabaseAuthConfigured
+        ? await startGoogleSupabaseOAuth(apiClient)
+        : await startGoogleMobileOAuth(apiClient);
       await persistSession(nextSession, 'google');
     } catch (error) {
       const message = error instanceof Error ? error.message : shellCopy.signInFailed;
@@ -345,6 +448,43 @@ function NativeApp({ onBootReady }: NativeAppProps) {
       captureError(error, { phase: 'login_google' });
       trackEvent('auth_fail_google', { message });
       trackEvent('action_failed', { action: 'auth_login', provider: 'google', message });
+      Alert.alert(shellCopy.signInFailedTitle, message);
+    } finally {
+      setAuthBusyProvider(null);
+    }
+  };
+
+  const handleEmailAuth = async (payload: EmailAuthPayload) => {
+    if (!isSupabaseAuthConfigured) {
+      setAuthError(shellCopy.supabaseUnavailable);
+      return;
+    }
+
+    if (!isOnline) {
+      setAuthError(shellCopy.offlineSignIn);
+      trackEvent('offline_gate_seen', { surface: 'auth', provider: 'email' });
+      return;
+    }
+
+    setAuthBusyProvider('email');
+    setAuthError(null);
+    trackEvent('auth_started', { provider: 'email', mode: payload.mode });
+
+    try {
+      const result = await startEmailSupabaseAuth(apiClient, payload);
+      if (result.status === 'confirmation_required') {
+        setAuthError(result.message);
+        Alert.alert(shellCopy.emailConfirmationTitle, result.message);
+        trackEvent('auth_email_confirmation_required', { mode: payload.mode });
+        return;
+      }
+
+      await persistSession(result.session, 'email');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : shellCopy.signInFailedEmail;
+      setAuthError(message);
+      captureError(error, { phase: `login_email_${payload.mode}` });
+      trackEvent('action_failed', { action: 'auth_login', provider: 'email', mode: payload.mode, message });
       Alert.alert(shellCopy.signInFailedTitle, message);
     } finally {
       setAuthBusyProvider(null);
@@ -390,6 +530,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
       captureError(error, { phase: 'logout' });
       trackEvent('action_failed', { action: 'logout', message: error instanceof Error ? error.message : 'logout_failed' });
     } finally {
+      await clearSupabaseMobileSession().catch(() => undefined);
       await clearAuthSession();
       setSession(null);
       setAuthError(null);
@@ -464,7 +605,9 @@ function NativeApp({ onBootReady }: NativeAppProps) {
                 authState={authState}
                 guestModeEnabled={mobileEnv.enableGuestMode}
                 enableAppleSignIn={mobileEnv.enableAppleSignIn}
+                supabaseAuthEnabled={isSupabaseAuthConfigured}
                 onLoginGoogle={handleGoogleLogin}
+                onEmailAuth={handleEmailAuth}
                 onLoginApple={handleAppleLogin}
                 onLogout={handleLogout}
                 onSaveToCollection={handleSaveToCollection}

@@ -8,6 +8,7 @@ import type {
   ConversationContext,
   MobileOAuthExchangeResponse,
   MobileOAuthStartResponse,
+  MobileSupabaseExchangeRequest,
   ResponseProfile,
   ClientContext,
   StructuredAiResponse,
@@ -221,6 +222,17 @@ export class ApiClient {
   async exchangeMobileAppleToken(payload: MobileAppleExchangeRequest): Promise<MobileOAuthExchangeResponse> {
     return this.requestJson<MobileOAuthExchangeResponse>(
       '/api/auth/mobile/apple/exchange',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      },
+      { useAuth: false, retries: 0 },
+    );
+  }
+
+  async exchangeMobileSupabaseToken(payload: MobileSupabaseExchangeRequest): Promise<MobileOAuthExchangeResponse> {
+    return this.requestJson<MobileOAuthExchangeResponse>(
+      '/api/auth/mobile/supabase/exchange',
       {
         method: 'POST',
         body: JSON.stringify(payload),

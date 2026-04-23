@@ -110,3 +110,73 @@ test('mobile auth callback page includes deep link and android intent fallback',
   assert.match(res.body, /package=com\.baristaclaw\.mobile/);
   assert.match(res.body, /open installed app/i);
 });
+
+test('mobile auth exchanges a verified Supabase session for API JWT', async () => {
+  const originalJwtSecret = process.env.JWT_SECRET;
+  const originalSupabaseUrl = process.env.SUPABASE_URL;
+  const originalSupabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+  const originalFetch = globalThis.fetch;
+  let userInfoAuthorization = '';
+  let userInfoApiKey = '';
+
+  process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
+  process.env.SUPABASE_URL = 'https://unit-project.supabase.co';
+  process.env.SUPABASE_PUBLISHABLE_KEY = 'unit-publishable-key';
+
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    if (url === 'https://unit-project.supabase.co/auth/v1/user') {
+      const headers = new Headers(init?.headers);
+      userInfoAuthorization = headers.get('Authorization') || '';
+      userInfoApiKey = headers.get('apikey') || '';
+      return {
+        ok: true,
+        json: async () => ({
+          id: 'supabase-user-1',
+          email: 'supabase@example.com',
+          app_metadata: { provider: 'google' },
+          user_metadata: {
+            full_name: 'Supabase User',
+            avatar_url: 'https://example.com/avatar.png',
+          },
+        }),
+      } as Response;
+    }
+    throw new Error(`Unexpected fetch URL: ${url}`);
+  }) as typeof fetch;
+
+  const req = {
+    method: 'POST',
+    query: { route: ['supabase', 'exchange'] },
+    body: { accessToken: 'supabase-access-token' },
+    headers: {
+      host: 'baristaclaw.vercel.app',
+      'x-forwarded-proto': 'https',
+    },
+    socket: {
+      remoteAddress: '203.0.113.61',
+    },
+  } as any;
+  const res = createMockRes() as any;
+
+  try {
+    await mobileAuthHandler(req, res);
+  } finally {
+    if (typeof originalJwtSecret === 'string') process.env.JWT_SECRET = originalJwtSecret;
+    else delete process.env.JWT_SECRET;
+    if (typeof originalSupabaseUrl === 'string') process.env.SUPABASE_URL = originalSupabaseUrl;
+    else delete process.env.SUPABASE_URL;
+    if (typeof originalSupabaseKey === 'string') process.env.SUPABASE_PUBLISHABLE_KEY = originalSupabaseKey;
+    else delete process.env.SUPABASE_PUBLISHABLE_KEY;
+    globalThis.fetch = originalFetch;
+  }
+
+  const body = JSON.parse(res.body);
+  assert.equal(res.statusCode, 200);
+  assert.equal(userInfoAuthorization, 'Bearer supabase-access-token');
+  assert.equal(userInfoApiKey, 'unit-publishable-key');
+  assert.equal(body.ok, true);
+  assert.equal(body.user.id, 'supabase-user-1');
+  assert.equal(body.user.provider, 'google');
+  assert.equal(typeof body.accessToken, 'string');
+});

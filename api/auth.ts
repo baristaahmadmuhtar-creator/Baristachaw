@@ -26,6 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     || path === 'mobile/callback'
     || path === 'mobile/exchange'
     || path === 'mobile/apple/exchange'
+    || path === 'mobile/supabase/exchange'
   ) target = mobileAuthHandler as Handler;
 
   if (!target) {

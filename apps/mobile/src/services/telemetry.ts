@@ -15,6 +15,8 @@ type TelemetryEventName =
   | 'auth_success_google'
   | 'auth_fail_google'
   | 'auth_session_invalidated'
+  | 'auth_session_restored'
+  | 'auth_email_confirmation_required'
   | 'auth_gate_seen'
   | 'action_succeeded'
   | 'action_failed'

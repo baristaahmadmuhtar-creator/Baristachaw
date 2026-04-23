@@ -2,7 +2,7 @@ const DEFAULT_API_BASE_URL = 'https://baristaclaw.vercel.app';
 const DEFAULT_WEB_APP_URL = 'https://baristaclaw.vercel.app';
 const DEFAULT_APP_SCHEME = 'baristaclaw';
 const DEFAULT_RELEASE_CHANNEL = 'mobile-local';
-const DEFAULT_MOBILE_UI_MODE = 'web_parity';
+const DEFAULT_MOBILE_UI_MODE = 'native';
 const DEFAULT_PARITY_TIMEOUT_MS = 6_000;
 const DEFAULT_ENABLE_PARITY_FALLBACK = false;
 const DEFAULT_ENABLE_DEBUG_WEB_PARITY = false;
@@ -17,6 +17,11 @@ function normalizeBaseUrl(raw: string): string {
   const trimmed = raw.trim();
   if (!trimmed) return DEFAULT_API_BASE_URL;
   return trimmed.replace(/\/+$/, '');
+}
+
+function normalizeOptionalBaseUrl(raw: string | undefined): string {
+  const trimmed = (raw || '').trim();
+  return trimmed ? trimmed.replace(/\/+$/, '') : '';
 }
 
 function normalizeScheme(raw: string): string {
@@ -72,6 +77,8 @@ export const mobileEnv = {
   apiBaseUrl: normalizeBaseUrl(process.env.EXPO_PUBLIC_API_BASE_URL || DEFAULT_API_BASE_URL),
   webAppUrl: normalizeBaseUrl(process.env.EXPO_PUBLIC_WEB_APP_URL || DEFAULT_WEB_APP_URL),
   appScheme: normalizeScheme(process.env.EXPO_PUBLIC_APP_SCHEME || DEFAULT_APP_SCHEME),
+  supabaseUrl: normalizeOptionalBaseUrl(process.env.EXPO_PUBLIC_SUPABASE_URL),
+  supabasePublishableKey: (process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '').trim(),
   uiMode,
   runtimePolicy,
   webParityTimeoutMs: normalizeTimeoutMs(process.env.EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS),
@@ -83,3 +90,9 @@ export const mobileEnv = {
   sentryDsn: (process.env.EXPO_PUBLIC_SENTRY_DSN || '').trim(),
   release: (process.env.EXPO_PUBLIC_RELEASE || '').trim() || DEFAULT_RELEASE_CHANNEL,
 } as const;
+
+export const isSupabaseAuthConfigured = Boolean(
+  mobileEnv.supabaseUrl &&
+  mobileEnv.supabasePublishableKey &&
+  /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(mobileEnv.supabaseUrl),
+);

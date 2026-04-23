@@ -9,6 +9,7 @@ import {
   escapeHtml,
   exchangeGoogleCodeForToken,
   fetchGoogleProfile,
+  fetchSupabaseProfile,
   resolveMobileAndroidPackage,
   resolveMobileAppScheme,
   resolveMobileOAuthConfig,
@@ -107,6 +108,14 @@ function toAppleUser(payload: Record<string, unknown>, body: any): MobileAuthUse
 
 function applyMobileCors(req: VercelRequest, res: VercelResponse) {
   applyCors(req, res, 'GET, POST, OPTIONS');
+}
+
+function signMobileAccessToken(user: MobileAuthUser, jwtSecret: string): { accessToken: string; expiresAt: number } {
+  const accessToken = jwt.sign({ user }, jwtSecret, { expiresIn: ACCESS_TOKEN_TTL_SEC });
+  return {
+    accessToken,
+    expiresAt: Date.now() + ACCESS_TOKEN_TTL_SEC * 1000,
+  };
 }
 
 async function handleStart(req: VercelRequest, res: VercelResponse, requestId: string) {
@@ -285,14 +294,13 @@ async function handleExchange(req: VercelRequest, res: VercelResponse, requestId
       });
     }
 
-    const accessToken = jwt.sign({ user: grant.user }, jwtSecret, { expiresIn: ACCESS_TOKEN_TTL_SEC });
-    const expiresAt = Date.now() + ACCESS_TOKEN_TTL_SEC * 1000;
+    const token = signMobileAccessToken(grant.user, jwtSecret);
 
     return res.status(200).json({
       ok: true,
       requestId,
-      accessToken,
-      expiresAt,
+      accessToken: token.accessToken,
+      expiresAt: token.expiresAt,
       user: grant.user,
     });
   } catch (error) {
@@ -351,14 +359,13 @@ async function handleAppleExchange(req: VercelRequest, res: VercelResponse, requ
     });
 
     const user = toAppleUser(payload as Record<string, unknown>, req.body);
-    const accessToken = jwt.sign({ user }, jwtSecret, { expiresIn: ACCESS_TOKEN_TTL_SEC });
-    const expiresAt = Date.now() + ACCESS_TOKEN_TTL_SEC * 1000;
+    const token = signMobileAccessToken(user, jwtSecret);
 
     return res.status(200).json({
       ok: true,
       requestId,
-      accessToken,
-      expiresAt,
+      accessToken: token.accessToken,
+      expiresAt: token.expiresAt,
       user,
     });
   } catch (error) {
@@ -368,6 +375,58 @@ async function handleAppleExchange(req: VercelRequest, res: VercelResponse, requ
       error: 'Failed to verify Apple identity token',
       errorCode: 'apple_token_invalid',
       details: sanitizeErrorDetails(error, 200),
+    });
+  }
+}
+
+async function handleSupabaseExchange(req: VercelRequest, res: VercelResponse, requestId: string) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ ok: false, requestId, error: 'Method not allowed' });
+  }
+  if (!enforceMobileAuthRateLimit(req, res, '/api/auth/mobile/supabase/exchange')) return;
+
+  const jwtSecret = String(process.env.JWT_SECRET || '').trim();
+  if (!jwtSecret) {
+    return res.status(500).json({
+      ok: false,
+      requestId,
+      error: 'Server authentication is not configured',
+      errorCode: 'server_misconfigured',
+      hint: 'Set JWT_SECRET in the active environment.',
+    });
+  }
+
+  try {
+    const accessToken = typeof req.body?.accessToken === 'string' ? req.body.accessToken.trim() : '';
+    if (!accessToken) {
+      return res.status(400).json({
+        ok: false,
+        requestId,
+        error: 'accessToken is required',
+        errorCode: 'validation_error',
+      });
+    }
+
+    const user = await fetchSupabaseProfile(accessToken);
+    const token = signMobileAccessToken(user, jwtSecret);
+
+    return res.status(200).json({
+      ok: true,
+      requestId,
+      accessToken: token.accessToken,
+      expiresAt: token.expiresAt,
+      user,
+    });
+  } catch (error) {
+    const details = sanitizeErrorDetails(error, 220);
+    const isConfigError = /supabase auth not configured|invalid supabase url|hosted https/i.test(details);
+    return res.status(isConfigError ? 503 : 401).json({
+      ok: false,
+      requestId,
+      error: isConfigError ? 'Supabase Auth is not configured' : 'Failed to verify Supabase session',
+      errorCode: isConfigError ? 'supabase_not_configured' : 'supabase_token_invalid',
+      details,
+      hint: isConfigError ? 'Set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY in the active environment.' : undefined,
     });
   }
 }
@@ -389,6 +448,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (routeKey === 'callback') return handleCallback(req, res, requestId);
   if (routeKey === 'exchange') return handleExchange(req, res, requestId);
   if (routeKey === 'apple/exchange') return handleAppleExchange(req, res, requestId);
+  if (routeKey === 'supabase/exchange') return handleSupabaseExchange(req, res, requestId);
 
   return res.status(404).json({
     ok: false,

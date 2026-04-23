@@ -1,20 +1,21 @@
-const SHELL_CACHE = 'baristachaw-shell-v15';
-const API_CACHE = 'baristachaw-api-v15';
+const SHELL_CACHE = 'baristachaw-shell-v16';
+const API_CACHE = 'baristachaw-api-v16';
 
 const SHELL_ASSETS = [
   '/',
   '/index.html',
-  '/favicon.ico?v=20260423b',
-  '/favicon.svg?v=20260423b',
-  '/manifest.json?v=20260423b',
-  '/icons/favicon-16x16.png?v=20260423b',
-  '/icons/favicon-32x32.png?v=20260423b',
-  '/icons/apple-touch-icon.png?v=20260423b',
-  '/icons/icon-192.png?v=20260423b',
-  '/icons/icon-192-maskable.png?v=20260423b',
-  '/icons/icon-512.png?v=20260423b',
-  '/icons/icon-512-maskable.png?v=20260423b',
-  '/icons/icon-1024.png?v=20260423b',
+  '/favicon.ico?v=20260423c',
+  '/favicon.svg?v=20260423c',
+  '/manifest.json?v=20260423c',
+  '/icons/favicon-16x16.png?v=20260423c',
+  '/icons/favicon-32x32.png?v=20260423c',
+  '/icons/apple-touch-icon.png?v=20260423c',
+  '/icons/icon-192.png?v=20260423c',
+  '/icons/icon-192-maskable.png?v=20260423c',
+  '/icons/icon-512.png?v=20260423c',
+  '/icons/icon-512-maskable.png?v=20260423c',
+  '/icons/icon-1024.png?v=20260423c',
+  '/icons/google-g.png?v=20260423c',
   '/data/ai-brew/drippers.v2026-03.json',
   '/data/ai-brew/grinders.v2026-03.json',
   '/data/ai-brew/target-profiles.v2026-03.json',

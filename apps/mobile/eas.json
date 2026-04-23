@@ -16,6 +16,7 @@
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",
         "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
         "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
         "EXPO_PUBLIC_RELEASE": "ios-internal-qa"
@@ -30,6 +31,7 @@
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",
         "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
         "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
         "EXPO_PUBLIC_RELEASE": "android-mvp-production"
@@ -43,6 +45,7 @@
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",
         "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
         "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
         "EXPO_PUBLIC_RELEASE": "ios-preview"
@@ -56,6 +59,7 @@
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",
         "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
         "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
         "EXPO_PUBLIC_RELEASE": "ios-production"

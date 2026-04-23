@@ -14,6 +14,45 @@
   <meta id="theme-color-meta" name="theme-color" content="#000000" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="color-scheme" content="dark light" />
+  <style>
+    html,
+    body,
+    #root {
+      min-height: 100%;
+      background: #F2F2F7;
+      color-scheme: light;
+    }
+
+    @media (prefers-color-scheme: dark) {
+
+      html:not(.light),
+      html:not(.light) body,
+      html:not(.light) #root {
+        background: #000000;
+        color-scheme: dark;
+      }
+    }
+  </style>
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var nativeSystemTheme = params.get('theme') === 'system'
+          || (params.get('runtime') === 'web_parity' && params.get('ui_profile') === 'native_shell');
+        var storedTheme = window.localStorage && window.localStorage.getItem('BARISTA_THEME');
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var theme = nativeSystemTheme ? (prefersDark ? 'dark' : 'light') : (storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : (prefersDark ? 'dark' : 'light'));
+        document.documentElement.classList.remove('dark', 'light');
+        document.documentElement.classList.add(theme);
+        document.documentElement.style.backgroundColor = theme === 'dark' ? '#000000' : '#F2F2F7';
+        document.documentElement.style.colorScheme = theme;
+        var themeMeta = document.getElementById('theme-color-meta');
+        if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#000000' : '#F2F2F7');
+      } catch (error) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
 
   <!-- Prevent text-size-adjust on rotation -->
   <meta name="format-detection" content="telephone=no" />

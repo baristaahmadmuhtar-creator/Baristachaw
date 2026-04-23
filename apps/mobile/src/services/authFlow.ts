@@ -13,6 +13,18 @@ import type {
 
 WebBrowser.maybeCompleteAuthSession();
 
+const MIGRATION_AUTH_SCHEMES = ['baristachaw', 'baristaclaw'] as const;
+
+function normalizeAuthScheme(value: unknown): string {
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (!raw || !/^[a-z][a-z0-9+.-]*$/.test(raw)) return mobileEnv.appScheme;
+  return raw;
+}
+
+function getAcceptedAuthSchemes(): Set<string> {
+  return new Set([mobileEnv.appScheme, ...MIGRATION_AUTH_SCHEMES].map(normalizeAuthScheme));
+}
+
 function toSession(exchange: { accessToken: string; expiresAt: number; user: AuthSession['user'] }, fallbackProvider: 'google' | 'apple' | 'email'): AuthSession {
   const provider = exchange.user.provider || fallbackProvider;
   return {
@@ -117,7 +129,7 @@ export function isSupabaseMobileAuthUrl(url: string): boolean {
     const parsed = new URL(url);
     const scheme = parsed.protocol.replace(/:$/, '').toLowerCase();
     const hostOrPath = parsed.hostname || parsed.pathname.replace(/^\/+/, '');
-    if (scheme !== mobileEnv.appScheme || hostOrPath !== 'auth') return false;
+    if (!getAcceptedAuthSchemes().has(scheme) || hostOrPath !== 'auth') return false;
 
     const params = parseAuthCallbackParams(url);
     return Boolean(
@@ -158,7 +170,8 @@ export async function startGoogleMobileOAuth(apiClient: ApiClient): Promise<Auth
       throw new Error('Login belum siap. Coba ulang beberapa saat lagi.');
     }
 
-    const callbackUrl = `${mobileEnv.appScheme}://auth`;
+    const callbackScheme = normalizeAuthScheme(start.appScheme);
+    const callbackUrl = `${callbackScheme}://auth`;
     const authResult = await WebBrowser.openAuthSessionAsync(start.url, callbackUrl);
 
     if (authResult.type !== 'success' || !authResult.url) {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFonts } from 'expo-font';
 import { ActivityIndicator, Alert, Linking, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
+import * as SystemUI from 'expo-system-ui';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, type Theme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -57,6 +58,20 @@ const TAB_ICONS: Record<string, { active: IoniconName; idle: IoniconName }> = {
   Tools: { active: 'speedometer', idle: 'speedometer-outline' },
 };
 
+function resolveSystemPalette(colorScheme: ReturnType<typeof useColorScheme>) {
+  return colorScheme === 'dark'
+    ? {
+        bgBase: uiTokenPalettes.dark.bgBase,
+        accent: uiTokenPalettes.dark.accent,
+        textSecondary: '#EBEBF5',
+      }
+    : {
+        bgBase: uiTokenPalettes.light.bgBase,
+        accent: uiTokenPalettes.light.accent,
+        textSecondary: '#3C3C43',
+      };
+}
+
 function buildNavigationTheme(colorScheme: ReturnType<typeof useColorScheme>): Theme {
   const palette = colorScheme === 'dark' ? uiTokenPalettes.dark : uiTokenPalettes.light;
   return {
@@ -82,6 +97,8 @@ export default function App() {
 }
 
 function AppRoot() {
+  const colorScheme = useColorScheme();
+  const systemPalette = useMemo(() => resolveSystemPalette(colorScheme), [colorScheme]);
   const bootToWebParity = mobileEnv.uiMode === 'web_parity'
     || mobileEnv.runtimePolicy === 'native_hard_fail_to_debug_parity';
   const [rootMode, setRootMode] = useState<RootMode>(bootToWebParity ? 'web_parity' : 'native');
@@ -102,6 +119,10 @@ function AppRoot() {
       void SplashScreen.hideAsync().catch(() => undefined);
     }
   }, [assetsReady, surfaceReady]);
+
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(systemPalette.bgBase).catch(() => undefined);
+  }, [systemPalette.bgBase]);
 
   const handleParityReady = () => {
     trackEvent('screen_ready', { screen: 'web_parity', runtimePolicy: mobileEnv.runtimePolicy });
@@ -137,7 +158,7 @@ function AppRoot() {
   }
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: systemPalette.bgBase }]}>
       <NativeApp onBootReady={() => setSurfaceReady(true)} />
     </View>
   );
@@ -150,6 +171,8 @@ type WebParityShellProps = {
 };
 
 function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebParityShellProps) {
+  const colorScheme = useColorScheme();
+  const systemPalette = useMemo(() => resolveSystemPalette(colorScheme), [colorScheme]);
   const { isOnline } = useNetworkStatus();
   const didReportBootReady = useRef(false);
   const authBusyProviderRef = useRef<AuthProvider>(null);
@@ -527,9 +550,9 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
 
   if (booting) {
     return (
-      <View style={styles.bootingPage}>
-        <ActivityIndicator size="large" color={uiTokens.colors.accent} />
-        <Text style={styles.bootingText}>Menyiapkan login aman...</Text>
+      <View style={[styles.bootingPage, { backgroundColor: systemPalette.bgBase }]}>
+        <ActivityIndicator size="large" color={systemPalette.accent} />
+        <Text style={[styles.bootingText, { color: systemPalette.textSecondary }]}>Menyiapkan login aman...</Text>
       </View>
     );
   }
@@ -984,9 +1007,11 @@ function NativeApp({ onBootReady }: NativeAppProps) {
 
   if (booting) {
     return (
-      <View style={styles.bootingPage}>
-        <ActivityIndicator size="large" color={uiTokens.colors.accent} />
-        <Text style={styles.bootingText}>{shellCopy.preparing}</Text>
+      <View style={[styles.bootingPage, { backgroundColor: navTheme.colors.background }]}>
+        <ActivityIndicator size="large" color={navTheme.colors.primary} />
+        <Text style={[styles.bootingText, { color: colorScheme === 'dark' ? '#EBEBF5' : '#3C3C43' }]}>
+          {shellCopy.preparing}
+        </Text>
       </View>
     );
   }

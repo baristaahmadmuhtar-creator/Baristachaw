@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
@@ -15,6 +15,31 @@ const EXTERNAL_AUTH_HOSTS = new Set([
   'appleid.apple.com',
 ]);
 
+const WEB_PARITY_NATIVE_THEMES = {
+  light: {
+    bgBase: '#F2F2F7',
+    textPrimary: '#000000',
+    textSecondary: '#3C3C43',
+    accent: '#1D4ED8',
+    overlay: '#F2F2F7',
+    panel: 'rgba(255, 255, 255, 0.92)',
+    panelBorder: 'rgba(15, 23, 42, 0.10)',
+    field: 'rgba(255, 255, 255, 0.78)',
+    fieldBorder: 'rgba(15, 23, 42, 0.12)',
+  },
+  dark: {
+    bgBase: '#000000',
+    textPrimary: '#FFFFFF',
+    textSecondary: '#EBEBF5',
+    accent: '#60A5FA',
+    overlay: '#000000',
+    panel: 'rgba(28, 28, 30, 0.94)',
+    panelBorder: 'rgba(148, 163, 184, 0.16)',
+    field: 'rgba(44, 44, 46, 0.88)',
+    fieldBorder: 'rgba(148, 163, 184, 0.18)',
+  },
+} as const;
+
 function buildNativeShellBootstrap(platform: 'ios' | 'android', authSession?: AuthSession | null) {
   const nativeAuthPayload = authSession
     ? {
@@ -29,8 +54,23 @@ function buildNativeShellBootstrap(platform: 'ios' | 'android', authSession?: Au
     (function () {
       window.__BARISTACHAW_NATIVE_SHELL__ = { platform: '${platform}', container: 'webview' };
       window.__BARISTACHAW_NATIVE_SESSION__ = ${JSON.stringify(nativeAuthPayload)};
+      window.__BARISTACHAW_NATIVE_THEME__ = 'system';
       document.documentElement.setAttribute('data-native-${platform}-shell', '');
       document.documentElement.setAttribute('data-native-auth-bridge', ${nativeAuthPayload ? "'active'" : "'guest'"});
+      try {
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var bg = prefersDark ? '#000000' : '#F2F2F7';
+        document.documentElement.style.backgroundColor = bg;
+        document.documentElement.style.colorScheme = prefersDark ? 'dark' : 'light';
+        var applyBodyBg = function () {
+          if (document.body) {
+            document.body.style.backgroundColor = bg;
+            document.body.style.colorScheme = prefersDark ? 'dark' : 'light';
+          }
+        };
+        applyBodyBg();
+        document.addEventListener('DOMContentLoaded', applyBodyBg, { once: true });
+      } catch (error) {}
       if (window.__BARISTACHAW_NATIVE_SESSION__ && window.__BARISTACHAW_NATIVE_SESSION__.accessToken) {
         var nativeSession = window.__BARISTACHAW_NATIVE_SESSION__;
         var originalFetch = window.fetch ? window.fetch.bind(window) : null;
@@ -81,10 +121,11 @@ function buildWebParityUrl(baseUrl: string, platform: 'ios' | 'android', hostSaf
     url.searchParams.set('ui_profile', 'native_shell');
     url.searchParams.set('native_shell', platform);
     url.searchParams.set('host_safe_bottom', String(safeBottom));
+    url.searchParams.set('theme', 'system');
     return url.toString();
   } catch {
     const divider = baseUrl.includes('?') ? '&' : '?';
-    return `${baseUrl}${divider}runtime=web_parity&ui_profile=native_shell&native_shell=${platform}&host_safe_bottom=${safeBottom}`;
+    return `${baseUrl}${divider}runtime=web_parity&ui_profile=native_shell&native_shell=${platform}&host_safe_bottom=${safeBottom}&theme=system`;
   }
 }
 
@@ -125,6 +166,9 @@ export function WebParityScreen({
   onNativeAuthExpired,
 }: WebParityScreenProps) {
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const theme = WEB_PARITY_NATIVE_THEMES[colorScheme === 'dark' ? 'dark' : 'light'];
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const preferredLanguage = usePreferredMobileLanguage();
   const { language, direction } = useMemo(() => getMobileLocalization(preferredLanguage), [preferredLanguage]);
   const shellPlatform = Platform.OS === 'android' ? 'android' : 'ios';
@@ -286,7 +330,7 @@ export function WebParityScreen({
         source={{ uri: parityUrl }}
         style={styles.webview}
         containerStyle={styles.webviewContainer}
-        originWhitelist={['https://*', 'baristachaw://*']}
+        originWhitelist={['https://*', 'baristachaw://*', 'baristaclaw://*']}
         injectedJavaScriptBeforeContentLoaded={nativeShellBootstrap}
         onLoadStart={() => {
           if (!didReportReady.current) {
@@ -352,7 +396,7 @@ export function WebParityScreen({
 
       {loading && !didReportReady.current ? (
         <View pointerEvents="none" style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={uiTokens.colors.accent} />
+          <ActivityIndicator size="large" color={theme.accent} />
           <Text style={[styles.loadingText, direction === 'rtl' ? styles.textRight : null]}>{copy.loading}</Text>
         </View>
       ) : null}
@@ -375,18 +419,19 @@ export function WebParityScreen({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(theme: (typeof WEB_PARITY_NATIVE_THEMES)['light' | 'dark']) {
+  return StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: uiTokens.colors.bgBase,
+    backgroundColor: theme.bgBase,
   },
   webview: {
     flex: 1,
-    backgroundColor: uiTokens.colors.bgBase,
+    backgroundColor: theme.bgBase,
   },
   webviewContainer: {
     flex: 1,
-    backgroundColor: uiTokens.colors.bgBase,
+    backgroundColor: theme.bgBase,
   },
   loadingOverlay: {
     position: 'absolute',
@@ -396,11 +441,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(242, 242, 247, 0.76)',
+    backgroundColor: theme.overlay,
     gap: 10,
   },
   loadingText: {
-    color: uiTokens.colors.textSecondary,
+    color: theme.textSecondary,
     fontSize: 13,
     fontWeight: '600',
   },
@@ -414,19 +459,19 @@ const styles = StyleSheet.create({
     bottom: 18,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: uiTokens.colors.panelStroke,
-    backgroundColor: uiTokens.colors.panelSoft,
+    borderColor: theme.panelBorder,
+    backgroundColor: theme.panel,
     padding: 14,
     gap: 8,
     ...uiTokens.shadow.card,
   },
   errorTitle: {
-    color: uiTokens.colors.textPrimary,
+    color: theme.textPrimary,
     fontSize: 15,
     fontWeight: '700',
   },
   errorText: {
-    color: uiTokens.colors.textSecondary,
+    color: theme.textSecondary,
     fontSize: 13,
   },
   actionRow: {
@@ -439,7 +484,7 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     borderRadius: uiTokens.radius.button,
-    backgroundColor: uiTokens.colors.accent,
+    backgroundColor: theme.accent,
     alignItems: 'center',
     justifyContent: 'center',
     height: 40,
@@ -453,15 +498,16 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: uiTokens.radius.button,
     borderWidth: 1,
-    borderColor: uiTokens.colors.fieldBorder,
-    backgroundColor: uiTokens.colors.field,
+    borderColor: theme.fieldBorder,
+    backgroundColor: theme.field,
     alignItems: 'center',
     justifyContent: 'center',
     height: 40,
   },
   secondaryActionText: {
-    color: uiTokens.colors.textPrimary,
+    color: theme.textPrimary,
     fontSize: 13,
     fontWeight: '700',
   },
-});
+  });
+}

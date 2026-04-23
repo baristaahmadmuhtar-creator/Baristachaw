@@ -20,6 +20,7 @@ const IOS_KEYBOARD_CLOSE_THRESHOLD = 40;
 const RUNTIME_STORAGE_KEY = 'BARISTA_RUNTIME_MODE';
 const RUNTIME_UI_PROFILE_KEY = 'BARISTA_RUNTIME_UI_PROFILE';
 const RUNTIME_HOST_SAFE_BOTTOM_KEY = 'BARISTA_RUNTIME_HOST_SAFE_BOTTOM';
+const RUNTIME_THEME_MODE_KEY = 'BARISTA_RUNTIME_THEME_MODE';
 let lastKeyboardOpenState = false;
 let baselineLayoutHeight = 0;
 let baselineVisualBottom = 0;
@@ -64,13 +65,16 @@ function readRuntimeFlags() {
   const runtimeQuery = params.get('runtime');
   const profileQuery = params.get('ui_profile');
   const hostSafeBottomQuery = params.get('host_safe_bottom');
+  const themeModeQuery = params.get('theme');
 
   if (runtimeQuery) sessionSet(RUNTIME_STORAGE_KEY, runtimeQuery);
   if (profileQuery) sessionSet(RUNTIME_UI_PROFILE_KEY, profileQuery);
   if (hostSafeBottomQuery) sessionSet(RUNTIME_HOST_SAFE_BOTTOM_KEY, hostSafeBottomQuery);
+  if (themeModeQuery) sessionSet(RUNTIME_THEME_MODE_KEY, themeModeQuery);
 
   const runtime = runtimeQuery || sessionGet(RUNTIME_STORAGE_KEY);
   const uiProfile = profileQuery || sessionGet(RUNTIME_UI_PROFILE_KEY);
+  const themeMode = themeModeQuery || sessionGet(RUNTIME_THEME_MODE_KEY);
   const hostSafeBottom = parseRuntimeHostSafeBottom(
     hostSafeBottomQuery || sessionGet(RUNTIME_HOST_SAFE_BOTTOM_KEY)
   );
@@ -79,7 +83,23 @@ function readRuntimeFlags() {
     isWebParity: runtime === 'web_parity',
     uiProfile,
     hostSafeBottom,
+    themeMode,
   };
+}
+
+function applyResolvedTheme(preferSystem: boolean) {
+  const root = document.documentElement;
+  const theme = ensureStoredTheme(localStorage, { preferSystem });
+  root.classList.remove('dark', 'light');
+  root.classList.add(theme);
+  root.style.backgroundColor = theme === 'dark' ? '#000000' : '#F2F2F7';
+  root.style.colorScheme = theme;
+  if (document.body) {
+    document.body.style.backgroundColor = theme === 'dark' ? '#000000' : '#F2F2F7';
+    document.body.style.colorScheme = theme;
+  }
+  const themeMeta = document.getElementById('theme-color-meta');
+  if (themeMeta) themeMeta.setAttribute('content', theme === 'dark' ? '#000000' : '#F2F2F7');
 }
 
 function initializeThemeAndPwa() {
@@ -88,6 +108,7 @@ function initializeThemeAndPwa() {
   const runtime = readRuntimeFlags();
   const runtimePwaProfile = runtime.isWebParity && runtime.uiProfile === 'pwa';
   const runtimeNativeShellProfile = runtime.isWebParity && runtime.uiProfile === 'native_shell';
+  const preferSystemTheme = runtimeNativeShellProfile || runtime.themeMode === 'system';
   const isPwa = !runtimeNativeShellProfile && (
     window.matchMedia('(display-mode: standalone)').matches
     || window.matchMedia('(display-mode: fullscreen)').matches
@@ -111,11 +132,18 @@ function initializeThemeAndPwa() {
   if (isPwa && isIos) root.setAttribute('data-ios-standalone', '');
   else root.removeAttribute('data-ios-standalone');
 
-  const storedTheme = ensureStoredTheme(localStorage);
+  root.dataset.themeMode = preferSystemTheme ? 'system' : 'stored';
+  applyResolvedTheme(preferSystemTheme);
 
-  root.classList.remove('dark', 'light');
-  if (storedTheme === 'dark') root.classList.add('dark');
-  else root.classList.add('light');
+  if (preferSystemTheme && window.matchMedia) {
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const onThemeChange = () => applyResolvedTheme(true);
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', onThemeChange);
+    } else if (typeof media.addListener === 'function') {
+      media.addListener(onThemeChange);
+    }
+  }
 }
 
 /**

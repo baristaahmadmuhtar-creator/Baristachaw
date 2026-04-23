@@ -259,12 +259,12 @@ export function HomeScreen({
         submittingSignIn: 'Memproses masuk...',
         submittingSignUp: 'Membuat akun...',
         googleDivider: 'atau lanjut aman dengan Google',
-        googleFallback: 'Google OAuth lama akan dipakai sampai Supabase env aktif.',
-        supabaseMissing: 'Email masuk/daftar aktif setelah Supabase URL dan publishable key diisi.',
+        googleFallback: 'Gunakan Google untuk masuk cepat dan aman.',
+        supabaseMissing: 'Masuk dengan email belum tersedia di perangkat ini. Gunakan Google untuk melanjutkan.',
         invalidEmail: 'Masukkan email yang valid.',
         invalidPassword: 'Password minimal 8 karakter.',
         requiredName: 'Nama tampilan wajib untuk daftar.',
-        trust: 'Token disimpan di SecureStore, tidak di AsyncStorage.',
+        trust: 'Sesi disimpan aman di perangkat ini dan bisa keluar kapan saja.',
       };
     }
     return {
@@ -283,12 +283,12 @@ export function HomeScreen({
       submittingSignIn: 'Signing in...',
       submittingSignUp: 'Creating account...',
       googleDivider: 'or continue securely with Google',
-      googleFallback: 'Legacy Google OAuth is used until Supabase env is configured.',
-      supabaseMissing: 'Email sign-in is enabled after Supabase URL and publishable key are set.',
+      googleFallback: 'Use Google for quick and secure access.',
+      supabaseMissing: 'Email sign-in is not available on this device yet. Continue with Google.',
       invalidEmail: 'Enter a valid email address.',
       invalidPassword: 'Password must be at least 8 characters.',
       requiredName: 'Display name is required to create an account.',
-      trust: 'Tokens are stored in SecureStore, not AsyncStorage.',
+      trust: 'Your session is stored safely on this device and you can sign out anytime.',
     };
   }, [localeState.language]);
 

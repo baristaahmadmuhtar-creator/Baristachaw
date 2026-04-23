@@ -37,6 +37,7 @@
         "mobile:start:dev-client": "npm run start:dev-client --workspace @baristaclaw/mobile",
         "mobile:ios": "npm run ios --workspace @baristaclaw/mobile",
         "mobile:doctor": "npm run doctor --workspace @baristaclaw/mobile",
+        "mobile:auth:check": "node scripts/check-mobile-auth-env.mjs",
         "mobile:test": "npm run test --workspace @baristaclaw/mobile",
         "mobile:lint": "npm run lint --workspace @baristaclaw/mobile",
         "mobile:eas:build:preview": "npm run eas:build:preview --workspace @baristaclaw/mobile",

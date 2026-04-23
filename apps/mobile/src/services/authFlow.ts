@@ -4,7 +4,12 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { mobileEnv } from '../config/env';
 import { ApiClient } from './apiClient';
 import { getSupabaseClient, getSupabaseRedirectUri, signOutSupabaseClient } from './supabaseClient';
-import type { AuthSession, EmailAuthPayload, EmailAuthResult } from '../types';
+import type {
+  AuthSession,
+  EmailAuthPayload,
+  EmailAuthResult,
+  SupabaseDeepLinkResult,
+} from '../types';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -37,16 +42,16 @@ function parseAuthCallbackParams(url: string): URLSearchParams {
 function normalizeSupabaseAuthError(error: unknown, fallback: string): string {
   const message = error instanceof Error ? error.message.trim() : '';
   if (isOfflineLikeError(error)) {
-    return 'Authentication needs a stable internet connection. Please reconnect and retry.';
+    return 'Koneksi internet belum stabil. Sambungkan lagi lalu coba ulang.';
   }
   if (/invalid login credentials/i.test(message)) {
-    return 'Email or password is incorrect.';
+    return 'Email atau password belum sesuai.';
   }
   if (/email not confirmed/i.test(message)) {
-    return 'Please confirm your email before signing in.';
+    return 'Email belum diverifikasi. Buka email verifikasi lalu masuk lagi.';
   }
   if (/password/i.test(message) && /short|weak|characters/i.test(message)) {
-    return 'Use a stronger password with at least 8 characters.';
+    return 'Gunakan password minimal 8 karakter.';
   }
   return message || fallback;
 }
@@ -66,18 +71,18 @@ async function exchangeSupabaseSessionForApiSession(apiClient: ApiClient, fallba
 
   const accessToken = supabaseSession?.access_token?.trim();
   if (!accessToken) {
-    throw new Error('Supabase session was not established.');
+    throw new Error('Sesi login belum terbentuk. Coba masuk ulang.');
   }
 
   const exchange = await apiClient.exchangeMobileSupabaseToken({ accessToken });
   if (!exchange?.accessToken || !exchange?.user?.id) {
-    throw new Error('Failed to establish BaristaClaw session.');
+    throw new Error('Sesi BaristaClaw belum bisa dibuat. Coba ulang.');
   }
 
   return toSession(exchange, fallbackProvider);
 }
 
-async function completeSupabaseOAuthCallback(url: string): Promise<void> {
+async function completeSupabaseOAuthCallback(url: string): Promise<{ type: string }> {
   const supabase = getSupabaseClient();
   const params = parseAuthCallbackParams(url);
   const error = params.get('error_description') || params.get('error');
@@ -85,11 +90,12 @@ async function completeSupabaseOAuthCallback(url: string): Promise<void> {
     throw new Error(error);
   }
 
+  const type = (params.get('type') || '').trim().toLowerCase();
   const code = params.get('code');
   if (code) {
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
     if (exchangeError) throw exchangeError;
-    return;
+    return { type };
   }
 
   const accessToken = params.get('access_token');
@@ -100,10 +106,10 @@ async function completeSupabaseOAuthCallback(url: string): Promise<void> {
       refresh_token: refreshToken,
     });
     if (sessionError) throw sessionError;
-    return;
+    return { type };
   }
 
-  throw new Error('Supabase did not return an authorization code.');
+  throw new Error('Login belum bisa diselesaikan. Coba buka tautan dari HP ini sekali lagi.');
 }
 
 export function isSupabaseMobileAuthUrl(url: string): boolean {
@@ -133,41 +139,41 @@ function isOfflineLikeError(error: unknown): boolean {
 
 function toGoogleErrorMessage(error: unknown): string {
   if (isOfflineLikeError(error)) {
-    return 'Google sign-in needs a stable internet connection. Please reconnect and retry.';
+    return 'Koneksi internet belum stabil. Sambungkan lagi lalu coba ulang.';
   }
   const message = error instanceof Error ? error.message.trim() : '';
   if (/cancel/i.test(message)) {
-    return 'Google sign-in was cancelled before completion.';
+    return 'Masuk dengan Google dibatalkan sebelum selesai.';
   }
   if (/grant/i.test(message)) {
-    return 'Google sign-in finished, but the mobile auth grant was missing. Please retry.';
+    return 'Masuk dengan Google belum lengkap. Coba ulang sekali lagi.';
   }
-  return message || 'Failed to sign in with Google.';
+  return message || 'Gagal masuk dengan Google.';
 }
 
 export async function startGoogleMobileOAuth(apiClient: ApiClient): Promise<AuthSession> {
   try {
     const start = await apiClient.startMobileOAuth();
     if (!start?.url) {
-      throw new Error('Server did not return OAuth URL.');
+      throw new Error('Login belum siap. Coba ulang beberapa saat lagi.');
     }
 
     const callbackUrl = `${mobileEnv.appScheme}://auth`;
     const authResult = await WebBrowser.openAuthSessionAsync(start.url, callbackUrl);
 
     if (authResult.type !== 'success' || !authResult.url) {
-      throw new Error('Login was cancelled or did not complete.');
+      throw new Error('Login dibatalkan atau belum selesai.');
     }
 
     const parsed = Linking.parse(authResult.url);
     const grantId = typeof parsed.queryParams?.grant === 'string' ? parsed.queryParams.grant.trim() : '';
     if (!grantId) {
-      throw new Error('Missing mobile auth grant from callback URL.');
+      throw new Error('Login belum lengkap. Coba ulang sekali lagi.');
     }
 
     const exchange = await apiClient.exchangeMobileGrant(grantId);
     if (!exchange?.accessToken || !exchange?.user?.id) {
-      throw new Error('Failed to establish authenticated session.');
+      throw new Error('Sesi login belum bisa dibuat. Coba ulang.');
     }
 
     return toSession(exchange, 'google');
@@ -194,7 +200,7 @@ export async function startGoogleSupabaseOAuth(apiClient: ApiClient): Promise<Au
 
     if (error) throw error;
     if (!data?.url) {
-      throw new Error('Supabase did not return Google OAuth URL.');
+      throw new Error('Login Google belum siap. Coba ulang beberapa saat lagi.');
     }
 
     const authResult = await WebBrowser.openAuthSessionAsync(data.url, redirectTo, {
@@ -203,13 +209,13 @@ export async function startGoogleSupabaseOAuth(apiClient: ApiClient): Promise<Au
     });
 
     if (authResult.type !== 'success' || !authResult.url) {
-      throw new Error('Google sign-in was cancelled before completion.');
+      throw new Error('Masuk dengan Google dibatalkan sebelum selesai.');
     }
 
     await completeSupabaseOAuthCallback(authResult.url);
     return await exchangeSupabaseSessionForApiSession(apiClient, 'google');
   } catch (error) {
-    throw new Error(normalizeSupabaseAuthError(error, 'Failed to sign in with Google.'));
+    throw new Error(normalizeSupabaseAuthError(error, 'Gagal masuk dengan Google.'));
   }
 }
 
@@ -220,10 +226,10 @@ export async function startEmailSupabaseAuth(apiClient: ApiClient, payload: Emai
   const displayName = payload.displayName?.trim();
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new Error('Enter a valid email address.');
+    throw new Error('Masukkan email yang valid.');
   }
   if (password.length < 8) {
-    throw new Error('Use a password with at least 8 characters.');
+    throw new Error('Gunakan password minimal 8 karakter.');
   }
 
   try {
@@ -241,7 +247,7 @@ export async function startEmailSupabaseAuth(apiClient: ApiClient, payload: Emai
         return {
           status: 'confirmation_required',
           email,
-          message: 'Account created. Please confirm your email, then sign in.',
+          message: 'Akun sudah dibuat. Buka email verifikasi, lalu masuk kembali.',
         };
       }
     } else {
@@ -254,7 +260,45 @@ export async function startEmailSupabaseAuth(apiClient: ApiClient, payload: Emai
       session: await exchangeSupabaseSessionForApiSession(apiClient, 'email'),
     };
   } catch (error) {
-    throw new Error(normalizeSupabaseAuthError(error, payload.mode === 'signUp' ? 'Failed to create account.' : 'Failed to sign in.'));
+    throw new Error(normalizeSupabaseAuthError(error, payload.mode === 'signUp' ? 'Gagal membuat akun.' : 'Gagal masuk.'));
+  }
+}
+
+export async function sendPasswordResetSupabaseEmail(emailInput: string): Promise<{ message: string }> {
+  const supabase = getSupabaseClient();
+  const email = emailInput.trim().toLowerCase();
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error('Masukkan email yang valid.');
+  }
+
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: getSupabaseRedirectUri(),
+    });
+    if (error) throw error;
+
+    return {
+      message: 'Jika email terdaftar, tautan pemulihan sudah dikirim. Buka email tersebut dari HP ini.',
+    };
+  } catch (error) {
+    throw new Error(normalizeSupabaseAuthError(error, 'Gagal mengirim tautan pemulihan.'));
+  }
+}
+
+export async function updateSupabasePassword(apiClient: ApiClient, password: string): Promise<AuthSession> {
+  if (password.length < 8) {
+    throw new Error('Gunakan password minimal 8 karakter.');
+  }
+
+  try {
+    const supabase = getSupabaseClient();
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+
+    return await exchangeSupabaseSessionForApiSession(apiClient, 'email');
+  } catch (error) {
+    throw new Error(normalizeSupabaseAuthError(error, 'Gagal menyimpan password baru.'));
   }
 }
 
@@ -268,14 +312,20 @@ export async function restoreSupabaseMobileSession(apiClient: ApiClient): Promis
   return exchangeSupabaseSessionForApiSession(apiClient, provider);
 }
 
-export async function completeSupabaseDeepLink(apiClient: ApiClient, url: string): Promise<AuthSession | null> {
+export async function completeSupabaseDeepLink(apiClient: ApiClient, url: string): Promise<SupabaseDeepLinkResult> {
   if (!isSupabaseMobileAuthUrl(url)) return null;
-  await completeSupabaseOAuthCallback(url);
+  const callback = await completeSupabaseOAuthCallback(url);
   const supabase = getSupabaseClient();
   const { data, error } = await supabase.auth.getSession();
   if (error) throw error;
+
+  if (callback.type === 'recovery') {
+    return { kind: 'passwordRecovery', email: data.session?.user?.email || undefined };
+  }
+
   const provider = data.session?.user?.app_metadata?.provider === 'google' ? 'google' : 'email';
-  return exchangeSupabaseSessionForApiSession(apiClient, provider);
+  const session = await exchangeSupabaseSessionForApiSession(apiClient, provider);
+  return { kind: 'signIn', session };
 }
 
 export async function clearSupabaseMobileSession(): Promise<void> {
@@ -295,18 +345,18 @@ function buildAppleDisplayName(fullName: AppleAuthentication.AppleAuthentication
 function toAppleErrorMessage(error: unknown): string {
   const rawCode = typeof error === 'object' && error && 'code' in error ? String((error as any).code) : '';
   if (rawCode === 'ERR_REQUEST_CANCELED') {
-    return 'Apple sign-in was canceled.';
+    return 'Masuk dengan Apple dibatalkan.';
   }
   if (error instanceof Error && error.message.trim()) {
     return error.message;
   }
-  return 'Failed to sign in with Apple.';
+  return 'Gagal masuk dengan Apple.';
 }
 
 export async function startAppleMobileOAuth(apiClient: ApiClient): Promise<AuthSession> {
   const available = await AppleAuthentication.isAvailableAsync();
   if (!available) {
-    throw new Error('Sign in with Apple is not available on this device.');
+    throw new Error('Masuk dengan Apple tidak tersedia di perangkat ini.');
   }
 
   try {
@@ -319,7 +369,7 @@ export async function startAppleMobileOAuth(apiClient: ApiClient): Promise<AuthS
 
     const identityToken = (credential.identityToken || '').trim();
     if (!identityToken) {
-      throw new Error('Apple sign-in did not return a valid identity token.');
+      throw new Error('Masuk dengan Apple belum mengembalikan identitas yang valid.');
     }
 
     const exchange = await apiClient.exchangeMobileAppleToken({
@@ -330,7 +380,7 @@ export async function startAppleMobileOAuth(apiClient: ApiClient): Promise<AuthS
     });
 
     if (!exchange?.accessToken || !exchange?.user?.id) {
-      throw new Error('Failed to establish authenticated session.');
+      throw new Error('Sesi login belum bisa dibuat. Coba ulang.');
     }
 
     return toSession(exchange, 'apple');

@@ -25,17 +25,19 @@ import {
   completeSupabaseDeepLink,
   isSupabaseMobileAuthUrl,
   restoreSupabaseMobileSession,
+  sendPasswordResetSupabaseEmail,
   startAppleMobileOAuth,
   startEmailSupabaseAuth,
   startGoogleMobileOAuth,
   startGoogleSupabaseOAuth,
+  updateSupabasePassword,
 } from './src/services/authFlow';
 import { quickSaveInsight } from './src/services/mobileStore';
 import { isSupabaseAuthConfigured, mobileEnv } from './src/config/env';
 import { captureError, captureMessage, initTelemetry, setTelemetryUser, trackEvent } from './src/services/telemetry';
 import { uiTokenPalettes, uiTokens } from './src/theme/tokens';
 import { getMobileLocalization } from './src/utils/localization';
-import type { AuthSession, EmailAuthPayload, MobileQuickSavePayload } from './src/types';
+import type { AuthSession, EmailAuthPayload, MobileQuickSavePayload, PasswordResetPayload, PasswordUpdatePayload } from './src/types';
 
 void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -155,6 +157,8 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
   const [booting, setBooting] = useState(true);
   const [authBusyProvider, setAuthBusyProvider] = useState<AuthProvider>(null);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [passwordRecoveryActive, setPasswordRecoveryActive] = useState(false);
+  const [passwordRecoveryEmail, setPasswordRecoveryEmail] = useState<string | undefined>(undefined);
   const [session, setSession] = useState<AuthSession | null>(null);
 
   const accessToken = session?.accessToken || null;
@@ -186,6 +190,8 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
     await saveAuthSession(nextSession);
     setSession(nextSession);
     setAuthError(null);
+    setPasswordRecoveryActive(false);
+    setPasswordRecoveryEmail(undefined);
     trackEvent('auth_success', { provider, surface: 'web_parity_gate' });
     if (provider === 'google') {
       trackEvent('auth_success_google', { surface: 'web_parity_gate' });
@@ -197,6 +203,8 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
     await clearAuthSession().catch(() => undefined);
     setSession(null);
     setAuthError(nextError || null);
+    setPasswordRecoveryActive(false);
+    setPasswordRecoveryEmail(undefined);
     trackEvent('auth_session_invalidated', { reason, surface: 'web_parity_gate' });
   }, []);
 
@@ -223,6 +231,8 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
 
         if (storedState.status === 'active') {
           setSession(storedState.session);
+          setPasswordRecoveryActive(false);
+          setPasswordRecoveryEmail(undefined);
           if (isOnline) {
             await verifySession(storedState.session, 'web_parity_bootstrap');
           }
@@ -237,6 +247,8 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
               await saveAuthSession(restoredSession);
               setSession(restoredSession);
               setAuthError(null);
+              setPasswordRecoveryActive(false);
+              setPasswordRecoveryEmail(undefined);
               trackEvent('auth_session_restored', { provider: restoredSession.provider || 'supabase', surface: 'web_parity_gate' });
               return;
             }
@@ -332,15 +344,22 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       setAuthError(null);
 
       try {
-        const nextSession = await completeSupabaseDeepLink(apiClient, url);
-        if (!nextSession || cancelled) return;
-        const provider = nextSession.provider === 'google' ? 'google' : 'email';
-        await persistSession(nextSession, provider);
+        const result = await completeSupabaseDeepLink(apiClient, url);
+        if (!result || cancelled) return;
+        if (result.kind === 'passwordRecovery') {
+          setPasswordRecoveryActive(true);
+          setPasswordRecoveryEmail(result.email);
+          setSession(null);
+          setAuthError(null);
+          trackEvent('auth_password_recovery_opened', { surface: 'web_parity_gate' });
+          return;
+        }
+        const provider = result.session.provider === 'google' ? 'google' : 'email';
+        await persistSession(result.session, provider);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Gagal menyelesaikan login.';
         setAuthError(message);
         captureError(error, { phase: 'web_parity_supabase_deep_link' });
-        Alert.alert('Masuk gagal', message);
       } finally {
         if (!cancelled) setAuthBusyProvider(null);
       }
@@ -380,7 +399,6 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       setAuthError(message);
       captureError(error, { phase: 'web_parity_login_google' });
       trackEvent('auth_fail_google', { message, surface: 'web_parity_gate' });
-      Alert.alert('Masuk gagal', message);
     } finally {
       setAuthBusyProvider(null);
     }
@@ -388,7 +406,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
 
   const handleEmailAuth = async (payload: EmailAuthPayload) => {
     if (!isSupabaseAuthConfigured) {
-      setAuthError('Supabase belum dikonfigurasi untuk email masuk/daftar.');
+      setAuthError('Masuk dengan email belum tersedia di perangkat ini. Gunakan Google untuk melanjutkan.');
       return;
     }
     if (!isOnline) {
@@ -404,7 +422,6 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       const result = await startEmailSupabaseAuth(apiClient, payload);
       if (result.status === 'confirmation_required') {
         setAuthError(result.message);
-        Alert.alert('Verifikasi email', result.message);
         return;
       }
       await persistSession(result.session, 'email');
@@ -412,7 +429,65 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       const message = error instanceof Error ? error.message : 'Gagal masuk dengan email.';
       setAuthError(message);
       captureError(error, { phase: `web_parity_email_${payload.mode}` });
-      Alert.alert('Masuk gagal', message);
+    } finally {
+      setAuthBusyProvider(null);
+    }
+  };
+
+  const handlePasswordReset = async (payload: PasswordResetPayload): Promise<string> => {
+    if (!isSupabaseAuthConfigured) {
+      const message = 'Pemulihan email belum tersedia di perangkat ini. Gunakan Google untuk melanjutkan.';
+      setAuthError(message);
+      throw new Error(message);
+    }
+    if (!isOnline) {
+      const message = 'Tidak ada koneksi internet. Sambungkan lagi untuk memulihkan akun.';
+      setAuthError(message);
+      throw new Error(message);
+    }
+
+    setAuthBusyProvider('email');
+    setAuthError(null);
+    trackEvent('auth_password_reset_requested', { surface: 'web_parity_gate' });
+
+    try {
+      const result = await sendPasswordResetSupabaseEmail(payload.email);
+      return result.message;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Tautan pemulihan belum bisa dikirim.';
+      setAuthError(message);
+      captureError(error, { phase: 'web_parity_password_reset' });
+      throw new Error(message);
+    } finally {
+      setAuthBusyProvider(null);
+    }
+  };
+
+  const handlePasswordUpdate = async (payload: PasswordUpdatePayload): Promise<void> => {
+    if (!passwordRecoveryActive) {
+      const message = 'Tautan pemulihan belum aktif. Buka ulang tautan dari email Anda.';
+      setAuthError(message);
+      throw new Error(message);
+    }
+    if (!isOnline) {
+      const message = 'Tidak ada koneksi internet. Sambungkan lagi untuk menyimpan password.';
+      setAuthError(message);
+      throw new Error(message);
+    }
+
+    setAuthBusyProvider('email');
+    setAuthError(null);
+    trackEvent('auth_password_update_started', { surface: 'web_parity_gate' });
+
+    try {
+      const nextSession = await updateSupabasePassword(apiClient, payload.password);
+      await persistSession(nextSession, 'email');
+      trackEvent('auth_password_update_succeeded', { surface: 'web_parity_gate' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Password baru belum bisa disimpan.';
+      setAuthError(message);
+      captureError(error, { phase: 'web_parity_password_update' });
+      throw new Error(message);
     } finally {
       setAuthBusyProvider(null);
     }
@@ -437,7 +512,6 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       const message = error instanceof Error ? error.message : 'Gagal masuk dengan Apple.';
       setAuthError(message);
       captureError(error, { phase: 'web_parity_login_apple' });
-      Alert.alert('Masuk gagal', message);
     } finally {
       setAuthBusyProvider(null);
     }
@@ -468,8 +542,12 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
         isOnline={isOnline}
         supabaseAuthEnabled={isSupabaseAuthConfigured}
         enableAppleSignIn={mobileEnv.enableAppleSignIn}
+        passwordRecoveryActive={passwordRecoveryActive}
+        recoveryEmail={passwordRecoveryEmail}
         onLoginGoogle={handleGoogleLogin}
         onEmailAuth={handleEmailAuth}
+        onPasswordReset={handlePasswordReset}
+        onPasswordUpdate={handlePasswordUpdate}
         onLoginApple={handleAppleLogin}
       />
     );
@@ -519,7 +597,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
         signInFailedEmail: 'Gagal masuk dengan email.',
         signInFailedTitle: 'Masuk gagal',
         appleUnavailable: 'Apple Sign-In belum diaktifkan pada build ini.',
-        supabaseUnavailable: 'Supabase belum dikonfigurasi. Isi EXPO_PUBLIC_SUPABASE_URL dan EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY untuk mengaktifkan masuk/daftar email dan Google Supabase.',
+        supabaseUnavailable: 'Masuk dengan email belum tersedia di perangkat ini. Gunakan Google untuk melanjutkan.',
         emailConfirmationTitle: 'Verifikasi email',
         preparing: 'Menyiapkan BaristaClaw...',
       };
@@ -535,7 +613,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
         signInFailedEmail: 'Email sign-in failed.',
         signInFailedTitle: 'فشل تسجيل الدخول',
         appleUnavailable: 'تسجيل الدخول باستخدام Apple غير مفعّل في هذا الإصدار.',
-        supabaseUnavailable: 'Supabase Auth is not configured for this build.',
+        supabaseUnavailable: 'Email sign-in is not available on this device yet.',
         emailConfirmationTitle: 'Verify email',
         preparing: 'جارٍ تجهيز BaristaClaw...',
       };
@@ -550,7 +628,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
       signInFailedEmail: 'Failed to sign in with email.',
       signInFailedTitle: 'Sign In Failed',
       appleUnavailable: 'Apple Sign-In is not enabled in this build.',
-      supabaseUnavailable: 'Supabase Auth is not configured. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY to enable email sign-in and Supabase Google.',
+      supabaseUnavailable: 'Email sign-in is not available on this device yet. Continue with Google.',
       emailConfirmationTitle: 'Verify email',
       preparing: 'Preparing BaristaClaw...',
     };
@@ -738,10 +816,15 @@ function NativeApp({ onBootReady }: NativeAppProps) {
       setAuthError(null);
 
       try {
-        const nextSession = await completeSupabaseDeepLink(apiClient, url);
-        if (!nextSession || cancelled) return;
-        const provider = nextSession.provider === 'google' ? 'google' : 'email';
-        await persistSession(nextSession, provider);
+        const result = await completeSupabaseDeepLink(apiClient, url);
+        if (!result || cancelled) return;
+        if (result.kind === 'passwordRecovery') {
+          setAuthError('Buka aplikasi dalam mode utama untuk menyimpan password baru.');
+          trackEvent('auth_password_recovery_opened', { surface: 'native_fallback' });
+          return;
+        }
+        const provider = result.session.provider === 'google' ? 'google' : 'email';
+        await persistSession(result.session, provider);
         trackEvent('auth_session_restored', { provider, source: 'deep_link' });
       } catch (error) {
         const message = error instanceof Error ? error.message : shellCopy.signInFailedEmail;

@@ -79,6 +79,19 @@ export type EmailAuthResult =
   | { status: 'signed_in'; session: AuthSession }
   | { status: 'confirmation_required'; email: string; message: string };
 
+export interface PasswordResetPayload {
+  email: string;
+}
+
+export interface PasswordUpdatePayload {
+  password: string;
+}
+
+export type SupabaseDeepLinkResult =
+  | { kind: 'signIn'; session: AuthSession }
+  | { kind: 'passwordRecovery'; email?: string }
+  | null;
+
 export interface MobileStoreState {
   schemaVersion: 2;
   chatSessions: ChatSessionRecord[];

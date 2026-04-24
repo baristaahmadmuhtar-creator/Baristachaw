@@ -10,6 +10,8 @@ type AuthUser = {
   name?: string;
   email?: string;
   picture?: string;
+  role?: string;
+  isAdmin?: boolean;
 };
 
 type NativeShellSession = {
@@ -442,7 +444,6 @@ export function useAuthModal() {
   }
   return context;
 }
-
 
 
 

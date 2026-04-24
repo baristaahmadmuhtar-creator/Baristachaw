@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { applyCors, applyRateLimitHeaders, checkRateLimit, createRequestId, sanitizeErrorDetails } from '../../_shared.js';
+import { decorateUserWithAdminClaims } from '../../admin/_access.js';
 import { consumeMobileAuthGrant, createMobileAuthGrant, type MobileAuthUser } from './grants.js';
 import {
   buildGoogleAuthUrl,
@@ -111,7 +112,7 @@ function applyMobileCors(req: VercelRequest, res: VercelResponse) {
 }
 
 function signMobileAccessToken(user: MobileAuthUser, jwtSecret: string): { accessToken: string; expiresAt: number } {
-  const accessToken = jwt.sign({ user }, jwtSecret, { expiresIn: ACCESS_TOKEN_TTL_SEC });
+  const accessToken = jwt.sign({ user: decorateUserWithAdminClaims(user) }, jwtSecret, { expiresIn: ACCESS_TOKEN_TTL_SEC });
   return {
     accessToken,
     expiresAt: Date.now() + ACCESS_TOKEN_TTL_SEC * 1000,
@@ -465,7 +466,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     error: `Unknown mobile auth route: ${routeKey || '(empty)'}`,
   });
 }
-
 
 
 

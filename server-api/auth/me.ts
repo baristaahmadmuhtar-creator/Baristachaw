@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { applyCors, requireAuth } from '../_shared.js';
+import { getAdminAccess } from '../admin/_access.js';
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
     applyCors(req, res, 'GET, OPTIONS');
@@ -32,6 +33,14 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         });
     }
 
-    const user = authResult.auth.user || { id: authResult.auth.userId };
+    const baseUser = authResult.auth.user || { id: authResult.auth.userId };
+    const admin = getAdminAccess(authResult.auth);
+    const user = admin.isAdmin
+        ? {
+            ...baseUser,
+            role: admin.role,
+            isAdmin: true,
+        }
+        : baseUser;
     return res.json({ authenticated: true, user });
 }

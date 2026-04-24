@@ -12,6 +12,7 @@ import type {
   ResponseProfile,
   ClientContext,
   StructuredAiResponse,
+  AccountStatusResponse,
   UserProfile,
 } from '../types';
 
@@ -244,6 +245,10 @@ export class ApiClient {
   async getAuthMe(): Promise<UserProfile> {
     const data = await this.requestJson<{ user: UserProfile }>('/api/auth/me', { method: 'GET' });
     return data.user;
+  }
+
+  async getAccountStatus(): Promise<AccountStatusResponse> {
+    return this.requestJson<AccountStatusResponse>('/api/account/status?surface=mobile', { method: 'GET' }, { retries: 1, timeoutMs: 12_000 });
   }
 
   async logout(): Promise<void> {

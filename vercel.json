@@ -76,6 +76,14 @@
             "destination": "/api/test-auth?path=$1"
         },
         {
+            "source": "/api/account/(.*)",
+            "destination": "/api/account?path=$1"
+        },
+        {
+            "source": "/api/admin/(.*)",
+            "destination": "/api/admin?path=$1"
+        },
+        {
             "source": "/auth/callback",
             "destination": "/api/auth/callback"
         },

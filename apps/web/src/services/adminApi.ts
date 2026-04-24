@@ -1,0 +1,234 @@
+export type AdminRole = 'owner' | 'admin' | 'support' | 'analyst' | 'user';
+export type AccountStatus = 'active' | 'trialing' | 'past_due' | 'suspended' | 'deleted';
+export type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
+export type CheckStatus = 'pass' | 'warn' | 'fail';
+export type DataMode = 'supabase' | 'runtime_fallback';
+export type FeatureFlagStatus = 'available' | 'maintenance' | 'disabled';
+export type FeatureSurface = 'global' | 'web' | 'pwa' | 'mobile' | 'admin';
+
+export type AdminPlan = {
+  code: PlanCode;
+  name: string;
+  description: string;
+  priceMonthlyUsd: number;
+  aiDailyLimit: number;
+  deepDailyLimit: number;
+  scannerDailyLimit: number;
+  storageMb: number;
+  seats: number;
+  supportSlaHours: number;
+  features: string[];
+  recommended?: boolean;
+  activeUsers: number;
+};
+
+export type AdminUserRecord = {
+  id: string;
+  email: string;
+  name: string;
+  picture?: string;
+  provider: 'google' | 'apple' | 'email' | 'guest' | 'unknown';
+  role: AdminRole;
+  status: AccountStatus;
+  planCode: PlanCode;
+  planName: string;
+  createdAt: string;
+  lastSeenAt: string;
+  locale?: string;
+  platform?: 'web' | 'pwa' | 'mobile' | 'unknown';
+  country?: string;
+  usage: {
+    aiRequestsToday: number;
+    deepRequestsToday: number;
+    scannerRunsToday: number;
+    collectionWritesToday: number;
+    totalTokensToday: number;
+  };
+  riskScore: number;
+  flags: string[];
+  notes?: string;
+  isSample?: boolean;
+};
+
+export type AdminAuditEvent = {
+  id: string;
+  actor: string;
+  target: string;
+  action: string;
+  createdAt: string;
+  detail: string;
+  severity: 'info' | 'warning' | 'critical';
+};
+
+export type AdminFeatureFlag = {
+  key: string;
+  label: string;
+  status: FeatureFlagStatus;
+  message: string;
+  surfaces: FeatureSurface[];
+  updatedAt: string;
+};
+
+export type AdminSystemCheck = {
+  id: string;
+  label: string;
+  status: CheckStatus;
+  owner: 'Security' | 'Data' | 'Billing' | 'Operations' | 'Mobile' | 'AI' | 'Backend';
+  detail: string;
+  nextAction?: string;
+};
+
+export type LaunchChecklistItem = {
+  id: string;
+  label: string;
+  status: CheckStatus;
+  due: 'now' | 'this_week' | 'post_launch';
+  owner: 'Admin' | 'Backend' | 'Mobile' | 'Growth' | 'Support';
+  action: string;
+};
+
+export type AdminSnapshot = {
+  ok: true;
+  requestId: string;
+  generatedAt: string;
+  dataMode: DataMode;
+  dataFreshnessSec: number;
+  degraded: boolean;
+  admin: {
+    userId: string;
+    email?: string;
+    role: AdminRole;
+    source: 'claim' | 'email_allowlist' | 'user_id_allowlist' | 'none';
+  };
+  metrics: {
+    totalUsers: number;
+    activeUsers: number;
+    paidUsers: number;
+    trialUsers: number;
+    suspendedUsers: number;
+    riskAccounts: number;
+    aiRequestsToday: number;
+    deepRequestsToday: number;
+    scannerRunsToday: number;
+    collectionWritesToday: number;
+    planConversionRate: number;
+  };
+  plans: AdminPlan[];
+  users: AdminUserRecord[];
+  audit: AdminAuditEvent[];
+  checks: AdminSystemCheck[];
+  launchChecklist: LaunchChecklistItem[];
+  featureFlags: AdminFeatureFlag[];
+  recommendations: string[];
+  warnings: string[];
+  realtime: {
+    strategy: 'polling';
+    intervalSec: number;
+    sequence: number;
+  };
+};
+
+export type AdminUserPatch = Partial<{
+  role: AdminRole;
+  status: AccountStatus;
+  planCode: PlanCode;
+  notes: string;
+}>;
+
+export type AdminFeatureFlagPatch = Partial<{
+  status: FeatureFlagStatus;
+  message: string;
+  surfaces: FeatureSurface[];
+}>;
+
+export class AdminApiError extends Error {
+  status: number;
+  errorCode?: string;
+  details?: string;
+  requestId?: string;
+
+  constructor(message: string, params: { status: number; errorCode?: string; details?: string; requestId?: string }) {
+    super(message);
+    this.name = 'AdminApiError';
+    this.status = params.status;
+    this.errorCode = params.errorCode;
+    this.details = params.details;
+    this.requestId = params.requestId;
+  }
+}
+
+async function parseJson(response: Response): Promise<any> {
+  const text = await response.text().catch(() => '');
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { error: text };
+  }
+}
+
+async function adminRequest<T>(path: string, init: RequestInit = {}, timeoutMs = 15_000): Promise<T> {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(path, {
+      ...init,
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(init.headers || {}),
+      },
+      signal: controller.signal,
+    });
+    const payload = await parseJson(response);
+    if (!response.ok || payload?.ok === false) {
+      throw new AdminApiError(payload?.error || `Admin request failed with HTTP ${response.status}`, {
+        status: response.status,
+        errorCode: payload?.errorCode,
+        details: payload?.details || payload?.hint,
+        requestId: payload?.requestId || response.headers.get('x-request-id') || undefined,
+      });
+    }
+    return payload as T;
+  } catch (error) {
+    if (error instanceof AdminApiError) throw error;
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new AdminApiError('Admin request timed out.', {
+        status: 0,
+        errorCode: 'timeout',
+      });
+    }
+    throw new AdminApiError(error instanceof Error ? error.message : 'Admin network request failed.', {
+      status: 0,
+      errorCode: 'network_error',
+    });
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+export function fetchAdminSnapshot(): Promise<AdminSnapshot> {
+  return adminRequest<AdminSnapshot>('/api/admin/management', { method: 'GET' }, 18_000);
+}
+
+export function updateAdminUser(userId: string, patch: AdminUserPatch): Promise<AdminSnapshot> {
+  return adminRequest<AdminSnapshot>('/api/admin/management', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      action: 'update_user',
+      userId,
+      patch,
+    }),
+  }, 18_000);
+}
+
+export function updateFeatureFlag(key: string, patch: AdminFeatureFlagPatch): Promise<AdminSnapshot> {
+  return adminRequest<AdminSnapshot>('/api/admin/management', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      action: 'update_feature_flag',
+      key,
+      patch,
+    }),
+  }, 18_000);
+}

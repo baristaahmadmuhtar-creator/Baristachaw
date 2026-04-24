@@ -4,9 +4,11 @@ import { BottomNav } from './components/BottomNav';
 import { DesktopSidebar } from './components/DesktopSidebar';
 import { AuthEntryModal } from './components/auth/AuthEntryModal';
 import { OfflineBanner } from './components/system/OfflineBanner';
+import { MaintenanceBanner } from './components/system/MaintenanceBanner';
 import { GlobalProvider } from './context/GlobalState';
 import { NavbarProvider, useNavbar } from './context/NavbarContext';
 import { AuthModalProvider } from './context/AuthModalContext';
+import { AccountStatusProvider } from './context/AccountStatusContext';
 import { MotionConfig } from 'motion/react';
 import { useRuntimeDisplayMode } from './hooks/useRuntimeDisplayMode';
 import { subscribeMediaQueryChange } from './utils/mediaQuery';
@@ -26,6 +28,7 @@ const Chat = lazy(() => import('./pages/Chat').then((module) => ({ default: modu
 const Collection = lazy(() => import('./pages/Collection').then((module) => ({ default: module.Collection })));
 const BaristaTools = lazy(() => import('./pages/BaristaTools').then((module) => ({ default: module.BaristaTools })));
 const NativeProductionShowcase = lazy(() => import('./pages/design/NativeProductionShowcase').then((module) => ({ default: module.NativeProductionShowcase })));
+const AdminManagement = lazy(() => import('./pages/AdminManagement').then((module) => ({ default: module.AdminManagement })));
 
 function RouteLoadingFallback() {
   return (
@@ -108,6 +111,7 @@ function AppContent() {
   const currentPathRef = useRef(location.pathname);
   const isDesignRoute = location.pathname === DESIGN_ROUTE;
   const isChatRoute = location.pathname === '/chat';
+  const isAdminRoute = location.pathname.startsWith('/admin');
   const desktopChatPanelWidth = isChatRoute && desktopChatNavOpen
     ? (
         desktopChatSidebarCollapsed
@@ -227,6 +231,7 @@ function AppContent() {
         <Route path="/collection" element={<Collection />} />
         <Route path="/tools" element={<BaristaTools />} />
         <Route path="/coffee" element={<BaristaTools />} />
+        <Route path="/admin" element={<AdminManagement />} />
         <Route path={DESIGN_ROUTE} element={<NativeProductionShowcase />} />
       </Routes>
     </Suspense>
@@ -255,11 +260,12 @@ function AppContent() {
       }}
     >
       <OfflineBanner />
+      <MaintenanceBanner />
       <DesktopSidebar />
       <div ref={routeLayerRef} data-testid="app-route-layer" className="app-route-layer app-route-layer-desktop">
         {routes}
       </div>
-      {!isMobileChatRoute && <BottomNav hidden={navHidden} />}
+      {!isMobileChatRoute && !isAdminRoute && <BottomNav hidden={navHidden} />}
     </div>
   );
 }
@@ -271,11 +277,13 @@ export default function App() {
     <Router>
       <GlobalProvider>
         <AuthModalProvider>
-          <NavbarProvider>
-            <MotionConfig reducedMotion={isIosStandalone ? 'always' : 'user'}>
-              <AppContent />
-            </MotionConfig>
-          </NavbarProvider>
+          <AccountStatusProvider>
+            <NavbarProvider>
+              <MotionConfig reducedMotion={isIosStandalone ? 'always' : 'user'}>
+                <AppContent />
+              </MotionConfig>
+            </NavbarProvider>
+          </AccountStatusProvider>
           <AuthEntryModal />
         </AuthModalProvider>
       </GlobalProvider>

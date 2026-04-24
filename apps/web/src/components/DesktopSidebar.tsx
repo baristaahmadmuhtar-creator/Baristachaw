@@ -3,9 +3,11 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { PARITY_NAV_META } from '@baristachaw/shared';
 import {
   Home,
+  ArrowLeft,
   ScanLine,
   Gauge,
   BookOpen,
+  BookOpenCheck,
   MessageSquare,
   Coffee,
   PanelLeftClose,
@@ -17,14 +19,28 @@ import {
   Image as ImageIcon,
   Brain,
   X,
+  Database,
+  ListChecks,
+  ShieldCheck,
+  WalletCards,
+  Wrench,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useNavbar } from '../context/NavbarContext';
 import { useGlobalState } from '../context/GlobalState';
+import { useAuthModal } from '../context/AuthModalContext';
 import { ChatWorkspacePanel } from './chat/ChatWorkspacePanel';
+
+type SidebarNavItem = {
+  path: string;
+  icon: typeof Home;
+  label: string;
+  adminTab?: string;
+};
 
 export function DesktopSidebar() {
   const { t } = useGlobalState();
+  const { user } = useAuthModal();
   const {
     desktopRailCollapsed,
     setDesktopRailCollapsed,
@@ -37,6 +53,9 @@ export function DesktopSidebar() {
   } = useNavbar();
   const location = useLocation();
   const isChatRoute = location.pathname === '/chat';
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const isAdminNavigation = isAdminRoute && Boolean(user?.isAdmin);
+  const activeAdminTab = new URLSearchParams(location.search).get('tab') || 'overview';
   const wasChatRouteRef = useRef(false);
   const railRef = useRef<HTMLElement | null>(null);
   const chatPanelRef = useRef<HTMLElement | null>(null);
@@ -91,13 +110,27 @@ export function DesktopSidebar() {
     return () => window.removeEventListener('mousedown', handlePointerDown);
   }, [closeChatWorkspace, desktopChatNavOpen, desktopRailCollapsed, isChatRoute]);
 
-  const navItems = [
+  const appNavItems: SidebarNavItem[] = [
     { path: PARITY_NAV_META.Home.path, icon: Home, label: t.home || PARITY_NAV_META.Home.label },
     { path: PARITY_NAV_META.Scanner.path, icon: ScanLine, label: t.scanner || PARITY_NAV_META.Scanner.label },
     { path: PARITY_NAV_META.Tools.path, icon: Gauge, label: t.tools || PARITY_NAV_META.Tools.label },
     { path: PARITY_NAV_META.Collection.path, icon: BookOpen, label: t.collection || PARITY_NAV_META.Collection.label },
     { path: PARITY_NAV_META.Chat.path, icon: MessageSquare, label: t.chat || PARITY_NAV_META.Chat.label },
+    ...(user?.isAdmin ? [{ path: '/admin', icon: ShieldCheck, label: 'Admin' }] : []),
   ];
+
+  const adminNavItems: SidebarNavItem[] = [
+    { path: '/admin?tab=overview', icon: Gauge, label: 'Command', adminTab: 'overview' },
+    { path: '/admin?tab=users', icon: ShieldCheck, label: 'Users', adminTab: 'users' },
+    { path: '/admin?tab=plans', icon: WalletCards, label: 'Plans', adminTab: 'plans' },
+    { path: '/admin?tab=maintenance', icon: Wrench, label: 'Maintenance', adminTab: 'maintenance' },
+    { path: '/admin?tab=database', icon: Database, label: 'Database', adminTab: 'database' },
+    { path: '/admin?tab=audit', icon: BookOpenCheck, label: 'Audit', adminTab: 'audit' },
+    { path: '/admin?tab=launch', icon: ListChecks, label: 'Launch', adminTab: 'launch' },
+    { path: '/', icon: ArrowLeft, label: 'Back to app' },
+  ];
+
+  const navItems = isAdminNavigation ? adminNavItems : appNavItems;
 
   const compactWorkspaceTabs = [
     { id: 'history' as const, icon: History, label: t.chatWorkspaceTabHistory },
@@ -120,7 +153,7 @@ export function DesktopSidebar() {
       >
         <div className={clsx('px-3 flex items-center', desktopRailCollapsed ? 'justify-center' : 'justify-between')}>
           <div className="w-11 h-11 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center shadow-inner">
-            <Coffee size={20} />
+            {isAdminNavigation ? <ShieldCheck size={20} /> : <Coffee size={20} />}
           </div>
         </div>
 
@@ -137,7 +170,7 @@ export function DesktopSidebar() {
         </div>
 
         <nav className="flex-1 w-full px-2 py-4 flex flex-col gap-2">
-          {navItems.map(({ path, icon: Icon, label }) => (
+          {navItems.map(({ path, icon: Icon, label, adminTab }) => (
             <NavLink
               key={path}
               to={path}
@@ -158,15 +191,16 @@ export function DesktopSidebar() {
                   setDesktopChatSidebarCollapsed(false);
                 }
               }}
-              className={({ isActive }) =>
-                clsx(
+              className={({ isActive }) => {
+                const adminActive = isAdminNavigation && adminTab ? activeAdminTab === adminTab : false;
+                return clsx(
                   'w-full min-h-[52px] rounded-2xl flex items-center transition-all',
                   desktopRailCollapsed ? 'justify-center px-2' : 'justify-start gap-2.5 px-3',
-                  isActive
+                  (adminActive || (!isAdminNavigation && isActive))
                     ? 'bg-blue-500/12 text-blue-500 shadow-[0_6px_16px_rgba(0,122,255,0.16)]'
                     : 'text-tertiary hover:text-primary hover:bg-surface-alpha',
-                )
-              }
+                );
+              }}
               title={label}
               aria-label={label}
             >

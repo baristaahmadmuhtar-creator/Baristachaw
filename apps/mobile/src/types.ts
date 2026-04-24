@@ -128,6 +128,61 @@ export interface ApiRequestOptions {
   useAuth?: boolean;
 }
 
+export type AccountStatusValue = 'active' | 'trialing' | 'past_due' | 'suspended' | 'deleted';
+export type AccountPlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
+export type AccountFeatureFlagStatus = 'available' | 'maintenance' | 'disabled';
+export type AccountFeatureSurface = 'global' | 'web' | 'pwa' | 'mobile' | 'admin';
+
+export interface AccountFeatureFlag {
+  key: string;
+  label: string;
+  status: AccountFeatureFlagStatus;
+  message: string;
+  surfaces: AccountFeatureSurface[];
+  updatedAt: string;
+}
+
+export interface AccountStatusResponse {
+  ok: true;
+  requestId: string;
+  generatedAt: string;
+  dataMode: 'supabase' | 'runtime_fallback';
+  user: {
+    id: string;
+    email?: string;
+    name: string;
+    picture?: string;
+    role: string;
+    status: AccountStatusValue;
+    planCode: AccountPlanCode;
+    planName: string;
+    lastSeenAt: string;
+  };
+  plan: {
+    code: AccountPlanCode;
+    name: string;
+    description: string;
+    aiDailyLimit: number;
+    deepDailyLimit: number;
+    scannerDailyLimit: number;
+    storageMb: number;
+    seats: number;
+    supportSlaHours: number;
+    features: string[];
+  };
+  featureFlags: AccountFeatureFlag[];
+  maintenance: AccountFeatureFlag[];
+  appAccess: {
+    status: 'ok' | 'limited' | 'blocked';
+    message: string;
+  };
+  warnings: string[];
+  realtime: {
+    strategy: 'polling';
+    intervalSec: number;
+  };
+}
+
 export interface AiActionRequest {
   action: AiAction;
   prompt: string;

@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
 import { applyRateLimitHeaders, checkRateLimit } from '../_shared.js';
+import { decorateUserWithAdminClaims } from '../admin/_access.js';
 import { resolveAuthAppUrl } from './_origin.js';
 import { createMobileAuthGrant } from './mobile/grants.js';
 import {
@@ -273,13 +274,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       throw new Error('Failed to fetch user info');
     }
 
-    const user = {
+    const user = decorateUserWithAdminClaims({
       id: userData.id,
       email: userData.email,
       name: userData.name,
       picture: userData.picture,
       provider: 'google',
-    };
+    });
 
     const token = jwt.sign({ user }, jwtSecret, { expiresIn: '7d' });
 

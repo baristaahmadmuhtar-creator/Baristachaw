@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { PARITY_NAV_META } from "@baristachaw/shared";
-import { Home, ScanLine, Gauge, BookOpen, MessageSquare } from "lucide-react";
+import { Home, ScanLine, Gauge, BookOpen, MessageSquare, ShieldCheck } from "lucide-react";
 import { motion } from "motion/react";
 import clsx from "clsx";
 import { useGlobalState } from "../context/GlobalState";
@@ -9,6 +9,7 @@ import { subscribeMediaQueryChange } from "../utils/mediaQuery";
 
 interface BottomNavProps {
   hidden?: boolean;
+  showAdmin?: boolean;
 }
 
 type ViewportMetricsDetail = {
@@ -35,7 +36,7 @@ function readPwaFromRoot() {
   return root.hasAttribute('data-pwa') || root.hasAttribute('data-ios-standalone') || root.hasAttribute('data-native-shell-profile');
 }
 
-export function BottomNav({ hidden = false }: BottomNavProps) {
+export function BottomNav({ hidden = false, showAdmin = false }: BottomNavProps) {
   const { t } = useGlobalState();
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [autoHidden, setAutoHidden] = useState(false);
@@ -170,6 +171,7 @@ export function BottomNav({ hidden = false }: BottomNavProps) {
     { path: PARITY_NAV_META.Tools.path, icon: Gauge, label: t.tools || PARITY_NAV_META.Tools.label },
     { path: PARITY_NAV_META.Collection.path, icon: BookOpen, label: t.collection || PARITY_NAV_META.Collection.label },
     { path: PARITY_NAV_META.Chat.path, icon: MessageSquare, label: t.chat || PARITY_NAV_META.Chat.label },
+    ...(showAdmin ? [{ path: '/admin', icon: ShieldCheck, label: 'Admin' }] : []),
   ];
 
   return (
@@ -192,7 +194,7 @@ export function BottomNav({ hidden = false }: BottomNavProps) {
         data-testid="mobile-bottom-nav-surface"
         className="mobile-bottom-nav-surface flex items-center justify-center gap-1 pointer-events-auto w-auto"
         style={{
-          width: 'clamp(286px, 90vw, 360px)',
+          width: showAdmin ? 'clamp(326px, 94vw, 420px)' : 'clamp(286px, 90vw, 360px)',
           paddingTop: '0.36rem',
           paddingBottom: '0.36rem',
         }}
@@ -234,4 +236,3 @@ export function BottomNav({ hidden = false }: BottomNavProps) {
     </div>
   );
 }
-

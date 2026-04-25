@@ -54,8 +54,8 @@ async function postTestAuthWithRetry(
   throw lastError instanceof Error ? lastError : new Error(`Failed to POST ${path}`);
 }
 
-export async function qaLogin(request: APIRequestContext): Promise<void> {
-  const response = await postTestAuthWithRetry(request, '/api/test-auth/login', buildQaUser());
+export async function qaLogin(request: APIRequestContext, user: ReturnType<typeof buildQaUser> = buildQaUser()): Promise<void> {
+  const response = await postTestAuthWithRetry(request, '/api/test-auth/login', user);
   const body = await response.text();
   expect(response.ok(), `qa login failed: ${response.status()} ${body}`).toBeTruthy();
 }

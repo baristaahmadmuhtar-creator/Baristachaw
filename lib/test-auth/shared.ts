@@ -6,6 +6,8 @@ export type TestAuthUser = {
   email: string;
   name: string;
   picture: string;
+  role?: 'owner' | 'admin' | 'support' | 'analyst' | 'user';
+  isAdmin?: boolean;
 };
 
 function parseBooleanEnv(name: string): boolean {
@@ -104,15 +106,28 @@ function buildDefaultUser(): TestAuthUser {
   };
 }
 
+function sanitizeRole(value: unknown): TestAuthUser['role'] | undefined {
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'owner' || normalized === 'admin' || normalized === 'support' || normalized === 'analyst' || normalized === 'user') {
+    return normalized;
+  }
+  return undefined;
+}
+
 function sanitizeBodyUser(input: unknown): Partial<TestAuthUser> {
   if (!input || typeof input !== 'object') return {};
   const body = input as Record<string, unknown>;
   const pick = (key: keyof TestAuthUser) => (typeof body[key] === 'string' ? body[key].trim() : '');
+  const role = sanitizeRole(body.role);
+  const isAdmin = body.isAdmin === true || body.isAdmin === 'true' || body.isAdmin === '1';
   return {
     id: pick('id'),
     email: pick('email'),
     name: pick('name'),
     picture: pick('picture'),
+    ...(role ? { role } : {}),
+    ...(isAdmin ? { isAdmin: true } : {}),
   };
 }
 
@@ -124,6 +139,8 @@ export function resolveTestUser(body: unknown): TestAuthUser {
     email: incoming.email || defaults.email,
     name: incoming.name || defaults.name,
     picture: incoming.picture || defaults.picture,
+    ...(incoming.role ? { role: incoming.role } : {}),
+    ...(incoming.isAdmin ? { isAdmin: true } : {}),
   };
 }
 

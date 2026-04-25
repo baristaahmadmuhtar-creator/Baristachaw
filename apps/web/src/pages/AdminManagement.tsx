@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Activity,
   AlertTriangle,
+  ArrowLeft,
   AtSign,
   BadgeCheck,
   BookOpenCheck,
@@ -2323,6 +2324,16 @@ export function AdminManagement() {
                   {formatDate(snapshot.generatedAt)}
                 </span>
               ) : null}
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-surface-alpha px-3 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
+                aria-label="Kembali ke aplikasi"
+                title="Kembali ke aplikasi"
+              >
+                <ArrowLeft size={16} />
+                <span>App</span>
+              </button>
               <button
                 type="button"
                 onClick={toggleTheme}

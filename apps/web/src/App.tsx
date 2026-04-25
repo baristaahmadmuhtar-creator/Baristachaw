@@ -118,7 +118,7 @@ function AppContent() {
   } = useNavbar();
   const location = useLocation();
   const navigate = useNavigate();
-  const { authChecking, isAuthenticated } = useAuthModal();
+  const { authChecking, isAuthenticated, user } = useAuthModal();
   const { snapshot: accountSnapshot, maintenance } = useAccountStatus();
   const routeLayerRef = useRef<HTMLDivElement | null>(null);
   const currentPathRef = useRef(location.pathname);
@@ -304,7 +304,7 @@ function AppContent() {
       >
         {routes}
       </div>
-      {!isMobileChatRoute && !isAdminRoute && !isAuthSurface && <BottomNav hidden={navHidden} />}
+      {!isMobileChatRoute && !isAdminRoute && !isAuthSurface && <BottomNav hidden={navHidden} showAdmin={Boolean(user?.isAdmin)} />}
     </div>
   );
 }

@@ -8,3 +8,14 @@ export function buildQaUser() {
     picture: process.env.QA_TEST_USER_PICTURE || 'https://via.placeholder.com/64',
   };
 }
+
+export function buildQaAdminUser() {
+  return {
+    ...buildQaUser(),
+    id: process.env.QA_TEST_ADMIN_USER_ID || `qa-admin-${Date.now()}`,
+    email: process.env.QA_TEST_ADMIN_EMAIL || 'qa-admin@example.com',
+    name: process.env.QA_TEST_ADMIN_NAME || 'QA Admin',
+    role: 'admin' as const,
+    isAdmin: true,
+  };
+}

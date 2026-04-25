@@ -797,7 +797,7 @@ export function Home() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={accountBlocked ? 'Account access is paused' : isAuthenticated ? t.homeSearchPlaceholderAuth : t.homeSearchPlaceholderGuest}
+            placeholder={accountBlocked ? t.homeSearchBlockedPlaceholder : isAuthenticated ? t.homeSearchPlaceholderAuth : t.homeSearchPlaceholderGuest}
             disabled={!isAuthenticated || accountBlocked}
             className={`w-full glass-input py-5 text-lg font-medium ${isRtl ? 'pr-16 pl-16 text-right' : 'pl-16 pr-16 text-left'}`}
           />

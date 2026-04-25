@@ -1,4 +1,4 @@
-export function resolveAuthInitError(payload: any, fallback = 'Failed to initiate sign-in.') {
+export function resolveAuthInitError(payload: any, fallback = 'Gagal memulai proses masuk.') {
   const code = typeof payload?.errorCode === 'string' ? payload.errorCode : '';
   const hint = typeof payload?.hint === 'string' ? payload.hint : '';
 

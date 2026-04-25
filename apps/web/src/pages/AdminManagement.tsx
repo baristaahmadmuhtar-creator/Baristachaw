@@ -1986,7 +1986,7 @@ export function AdminManagement() {
       setAccountErrorUserId(null);
     } catch (err) {
       if (err instanceof AdminApiError) setError(err);
-      else setError(new AdminApiError('Failed to load admin snapshot.', { status: 0 }));
+      else setError(new AdminApiError('Gagal memuat snapshot admin.', { status: 0 }));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -2191,13 +2191,13 @@ export function AdminManagement() {
       setSnapshot(next);
       setError(null);
       setAccountErrorUserId(null);
-      setToast('Admin change saved');
+      setToast('Perubahan admin tersimpan');
     } catch (err) {
       if (err instanceof AdminApiError) {
         setError(err);
         setAccountErrorUserId(userId);
       }
-      setToast('Admin change failed');
+      setToast('Perubahan admin gagal');
     } finally {
       setBusyUserId(null);
     }
@@ -2239,10 +2239,10 @@ export function AdminManagement() {
       const next = await updateFeatureFlag(key, patch);
       setSnapshot(next);
       setError(null);
-      setToast('Maintenance control saved');
+      setToast('Kontrol pemeliharaan tersimpan');
     } catch (err) {
       if (err instanceof AdminApiError) setError(err);
-      setToast('Maintenance control failed');
+      setToast('Kontrol pemeliharaan gagal');
     } finally {
       setBusyFlagKey(null);
     }

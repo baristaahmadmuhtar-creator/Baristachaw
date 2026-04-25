@@ -350,6 +350,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         sendFailed: 'Gagal mengirim pesan.',
         share: 'Bagikan',
         deep: 'Deep',
+        noResponseReturned: 'Tidak ada respons yang dikembalikan.',
       };
     }
     if (localeState.language === 'ar') {
@@ -408,10 +409,11 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
       offlineVoice: 'You are offline. Voice note needs internet to process.',
       microphonePermission: 'Microphone permission is required for voice note.',
       startRecordingFailed: 'Unable to start recording.',
-      sendFailed: 'Failed to send message.',
-      share: 'Share',
-      deep: 'Deep',
-    };
+        sendFailed: 'Failed to send message.',
+        share: 'Share',
+        deep: 'Deep',
+        noResponseReturned: 'No response returned.',
+      };
   }, [localeState.language]);
   void legacyChatUi;
   const chatUi = useMemo(() => {
@@ -432,6 +434,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         share: 'Share',
         create: 'Create',
         reuseDraft: 'Reuse Draft',
+        noResponseReturned: 'No response returned.',
       },
       id: {
         notSavedYet: 'Belum disimpan',
@@ -449,6 +452,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         share: 'Bagikan',
         create: 'Buat',
         reuseDraft: 'Pakai Draft',
+        noResponseReturned: 'Tidak ada respons yang dikembalikan.',
       },
       ar: {
         notSavedYet: 'لم يتم الحفظ بعد',
@@ -591,6 +595,9 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
       deep: webT.deepThink || 'Deep',
     };
   }, [localeState.language, webT]);
+  const noResponseReturned = localeState.language === 'id'
+    ? 'Tidak ada respons yang dikembalikan.'
+    : 'No response returned.';
   const [memoryStatus, setMemoryStatus] = useState('');
   const [memorySaving, setMemorySaving] = useState(false);
   const [openMemorySection, setOpenMemorySection] = useState<MemorySection | null>(null);
@@ -991,7 +998,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
       } catch (error) {
         const fallbackText = await apiClient.sendChatWithProfile(boundedSourceText, 'race', payload);
         return {
-          text: fallbackText.trim() || 'No response returned.',
+          text: fallbackText.trim() || noResponseReturned,
           provider: 'chat_race',
           degraded: true,
           details: `balanced_fallback:${error instanceof Error ? error.message : 'request_failed'}`,
@@ -1008,7 +1015,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
       const fallbackPayload = payloadOverride || requestPayload;
       const fallbackText = await apiClient.sendChatWithProfile(boundedSourceText, 'race', fallbackPayload);
       return {
-        text: fallbackText.trim() || 'No response returned.',
+        text: fallbackText.trim() || noResponseReturned,
         provider: 'chat_race',
         degraded: true,
         details: `deep_fallback:${reason}`,
@@ -1037,7 +1044,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
           ...requestPayload,
         });
         return {
-          text: response.text?.trim() || response.error || 'No response returned.',
+          text: response.text?.trim() || response.error || noResponseReturned,
           preferredLanguage: requestPayload.conversationContext?.preferredLanguage,
         };
       }
@@ -1110,7 +1117,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         ...requestPayload,
       });
       return {
-        text: response.text?.trim() || response.error || 'No response returned.',
+        text: response.text?.trim() || response.error || noResponseReturned,
         preferredLanguage: requestPayload.conversationContext?.preferredLanguage,
       };
     }
@@ -1131,7 +1138,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
     }
     if (action !== 'deep_think') {
       return {
-        text: response.text?.trim() || response.error || 'No response returned.',
+        text: response.text?.trim() || response.error || noResponseReturned,
         preferredLanguage: requestPayload.conversationContext?.preferredLanguage,
       };
     }
@@ -1142,7 +1149,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
       ? response.sources.filter((source) => typeof source?.uri === 'string' && source.uri.trim().length > 0)
       : [];
     return {
-      text: response.text?.trim() || response.error || 'No response returned.',
+      text: response.text?.trim() || response.error || noResponseReturned,
       provider: response.provider,
       degraded: response.degraded,
       details: response.details,

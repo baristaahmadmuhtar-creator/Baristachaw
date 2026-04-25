@@ -77,7 +77,7 @@ function buildReturnTo() {
 
 export async function startServerOAuthLogin({
   endpoint = '/api/auth/url',
-  fallbackMessage = 'Failed to start OAuth login',
+  fallbackMessage = 'Gagal memulai login OAuth',
 }: StartServerOAuthLoginOptions = {}): Promise<StartServerOAuthLoginResult> {
   const popup = shouldUseRedirectOnly() ? null : openWarmupPopup();
   try {

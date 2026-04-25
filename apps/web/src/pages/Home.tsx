@@ -439,9 +439,11 @@ export function Home() {
         errorCode: 'billing_not_configured',
       });
     } catch (error) {
-      const message = error instanceof BillingApiError
-        ? `${error.message}${error.details ? ` ${error.details}` : ''}`
-        : 'Billing is temporarily unavailable.';
+      const message = error instanceof BillingApiError && error.errorCode === 'billing_not_configured'
+        ? t.homeBillingUnavailable
+        : error instanceof BillingApiError
+          ? error.message
+          : t.homeBillingUnavailable;
       setActiveQuery('Plan & billing');
       setSearchError(message);
       setShowResultModal(true);
@@ -1155,4 +1157,3 @@ export function Home() {
     </motion.div>
   );
 }
-

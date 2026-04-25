@@ -97,7 +97,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       requestId,
       error: 'Billing checkout is not configured yet',
       errorCode: 'billing_not_configured',
-      details: `Set BILLING_CHECKOUT_URL_${planCode.toUpperCase()} or provider checkout URL env before enabling paid checkout.`,
+      details: 'Payments are being prepared for this plan. The Free plan remains available.',
     });
   }
 

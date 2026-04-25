@@ -278,6 +278,7 @@ const EN_TRANSLATIONS: Translations = {
     homeRetrievedAt: 'Retrieved at {time}',
     homeNoSources: 'No valid live sources available in this result.',
     homeSavedToCollection: 'Saved to Collection',
+    homeBillingUnavailable: 'Payments are being prepared. Your Free plan remains active; try again after the payment provider is enabled.',
     homeSourceSingle: '{count} source',
     homeSourcePlural: '{count} sources',
     homeOfflineSearchUnavailable: 'You are offline. Live web search is unavailable.',
@@ -752,6 +753,7 @@ const ID_TRANSLATIONS: Partial<Translations> = {
     homeRetrievedAt: 'Diambil pada {time}',
     homeNoSources: 'Tidak ada sumber langsung yang valid pada hasil ini.',
     homeSavedToCollection: 'Disimpan ke Koleksi',
+    homeBillingUnavailable: 'Pembayaran sedang disiapkan. Paket Gratis tetap aktif; coba lagi setelah provider pembayaran diaktifkan.',
     homeSourceSingle: '{count} sumber',
     homeSourcePlural: '{count} sumber',
     homeOfflineSearchUnavailable: 'Anda sedang offline. Pencarian web langsung tidak tersedia.',
@@ -2163,4 +2165,3 @@ export function getTranslations(language: Language): Translations {
 }
 
 export type TranslationKey = string;
-

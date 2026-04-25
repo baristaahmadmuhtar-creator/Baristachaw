@@ -85,6 +85,7 @@ const GlobalStateContext = createContext<GlobalStateContextType | undefined>(und
 const ACTIVE_SESSION_KEY = 'BARISTA_ACTIVE_SESSION_ID';
 const AI_SETTINGS_KEY = 'BARISTA_AI_SETTINGS';
 const LANGUAGE_KEY = 'BARISTA_LANGUAGE';
+const LANGUAGE_ID_DEFAULT_MIGRATION_KEY = 'BARISTA_LANGUAGE_ID_DEFAULT_MIGRATED';
 
 const genId = (prefix: string) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 function safeGetLocalStorageItem(key: string): string | null {
@@ -140,6 +141,12 @@ function loadAiSettings(): AiSettings {
 
 function loadLanguage(): Language {
     const stored = safeGetLocalStorageItem(LANGUAGE_KEY);
+    const alreadyMigrated = safeGetLocalStorageItem(LANGUAGE_ID_DEFAULT_MIGRATION_KEY) === '1';
+    if (DEFAULT_LANGUAGE === 'id' && stored === 'en' && !alreadyMigrated) {
+        safeSetLocalStorageItem(LANGUAGE_KEY, DEFAULT_LANGUAGE);
+        safeSetLocalStorageItem(LANGUAGE_ID_DEFAULT_MIGRATION_KEY, '1');
+        return DEFAULT_LANGUAGE;
+    }
     if (isSupportedLanguage(stored)) return stored;
     try {
         const rawSettings = safeGetLocalStorageItem(AI_SETTINGS_KEY);
@@ -405,7 +412,6 @@ export function useGlobalState() {
     }
     return context;
 }
-
 
 
 

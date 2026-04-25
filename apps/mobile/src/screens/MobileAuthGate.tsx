@@ -36,6 +36,7 @@ type MobileAuthGateProps = {
 
 type AuthMode = EmailAuthPayload['mode'] | 'resetPassword' | 'accountHelp';
 type ActiveAuthMode = AuthMode | 'newPassword';
+export type MobileAuthActiveMode = ActiveAuthMode;
 
 const AUTH_BRAND_ICON = require('../../assets/splash-icon.png');
 const GOOGLE_MARK_ICON = require('../../assets/google-g.png');
@@ -137,13 +138,13 @@ const WEB_AUTH_THEMES: Record<'light' | 'dark', WebParityAuthTheme> = {
 const COPY: Record<ActiveAuthMode, { title: string; subtitle: string; submit: string; submitting: string }> = {
   signIn: {
     title: 'Baristachaw',
-    subtitle: 'Masuk untuk mengakses fitur AI yang dilindungi.',
+    subtitle: 'Gunakan Google untuk fitur AI terlindungi, atau lanjut sebagai tamu untuk ruang kerja gratis.',
     submit: 'Masuk dengan email',
     submitting: 'Memeriksa akun...',
   },
   signUp: {
     title: 'Baristachaw',
-    subtitle: 'Daftar untuk menyimpan chat, koleksi, dan workflow.',
+    subtitle: 'Mulai dengan Google atau mode tamu. Akun bisa ditingkatkan saat pembayaran sudah aktif.',
     submit: 'Buat akun',
     submitting: 'Membuat akun...',
   },
@@ -166,6 +167,18 @@ const COPY: Record<ActiveAuthMode, { title: string; subtitle: string; submit: st
     submitting: 'Menyimpan password...',
   },
 };
+
+export function resolveMobileAuthCopy(activeMode: MobileAuthActiveMode) {
+  return COPY[activeMode];
+}
+
+export function resolveMobileAuthUnavailableCopy(activeMode: MobileAuthActiveMode) {
+  const copy = resolveMobileAuthCopy(activeMode);
+  return {
+    title: activeMode === 'signUp' ? 'Daftar ke Baristachaw' : 'Masuk ke Baristachaw',
+    subtitle: copy.subtitle,
+  };
+}
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -476,13 +489,14 @@ export function MobileAuthGate({
 
   const renderEmailForm = () => {
     if (!supabaseAuthEnabled && activeMode !== 'newPassword') {
+      const unavailableCopy = resolveMobileAuthUnavailableCopy(activeMode);
       return (
         <View style={styles.infoPanel}>
           <Ionicons name="information-circle-outline" size={16} color={theme.textSecondary} />
           <View style={styles.infoCopy}>
-            <Text style={styles.infoTitle}>Email masuk/daftar belum aktif</Text>
+            <Text style={styles.infoTitle}>{unavailableCopy.title}</Text>
             <Text style={styles.infoText}>
-              Google tetap menjadi jalur masuk utama untuk build ini.
+              {unavailableCopy.subtitle}
             </Text>
           </View>
         </View>
@@ -638,6 +652,35 @@ export function MobileAuthGate({
     );
   };
 
+  const renderAuthRouteSwitch = () => {
+    if (
+      supabaseAuthEnabled
+      || activeMode === 'newPassword'
+      || activeMode === 'resetPassword'
+      || activeMode === 'accountHelp'
+    ) {
+      return null;
+    }
+    const isSignUpMode = activeMode === 'signUp';
+
+    return (
+      <Pressable
+        accessibilityRole="button"
+        disabled={busy}
+        onPress={() => switchMode(isSignUpMode ? 'signIn' : 'signUp')}
+        style={({ pressed }) => [
+          styles.authRouteSwitch,
+          busy ? styles.disabled : null,
+          pressed && !busy ? styles.pressed : null,
+        ]}
+      >
+        <Text style={styles.authRouteSwitchText}>
+          {isSignUpMode ? 'Sudah punya akses? Masuk' : 'Belum punya akun? Buka daftar'}
+        </Text>
+      </Pressable>
+    );
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -697,6 +740,7 @@ export function MobileAuthGate({
             {renderModeTabs()}
             {renderEmailForm()}
             {renderGuestButton()}
+            {renderAuthRouteSwitch()}
           </View>
         </View>
       </ScrollView>
@@ -989,6 +1033,21 @@ function createStyles(theme: WebParityAuthTheme) {
       fontFamily: uiTokens.fontFamily.semibold,
       fontSize: 13,
       lineHeight: 18,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    authRouteSwitch: {
+      minHeight: 42,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 10,
+      paddingTop: 2,
+    },
+    authRouteSwitchText: {
+      color: '#3B82F6',
+      fontFamily: uiTokens.fontFamily.semibold,
+      fontSize: 15,
+      lineHeight: 20,
       fontWeight: '700',
       textAlign: 'center',
     },

@@ -10,6 +10,7 @@ type TelemetryEventName =
   | 'screen_error'
   | 'feature_used'
   | 'auth_started'
+  | 'auth_guest_started'
   | 'auth_success'
   | 'auth_started_google'
   | 'auth_success_google'

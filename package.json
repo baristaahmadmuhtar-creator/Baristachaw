@@ -44,6 +44,11 @@
         "mobile:eas:submit:preview": "npm run eas:submit:preview --workspace @baristachaw/mobile",
         "mobile:eas:build:production": "npm run eas:build:production --workspace @baristachaw/mobile",
         "mobile:eas:submit:production": "npm run eas:submit:production --workspace @baristachaw/mobile",
+        "mobile:eas:build:android-mvp": "npm run eas:build:android-mvp --workspace @baristachaw/mobile",
+        "mobile:eas:build:android-preview": "npm run eas:build:android-preview --workspace @baristachaw/mobile",
+        "mobile:eas:build:android-production": "npm run eas:build:android-production --workspace @baristachaw/mobile",
+        "mobile:eas:build:ios-preview": "npm run eas:build:ios-preview --workspace @baristachaw/mobile",
+        "mobile:eas:build:ios-production": "npm run eas:build:ios-production --workspace @baristachaw/mobile",
         "catalog:import:id-water": "tsx scripts/catalog/import-indonesia-water-dataset.ts",
         "catalog:import:global-water": "tsx scripts/catalog/import-global-water-gh-kh.ts"
     },

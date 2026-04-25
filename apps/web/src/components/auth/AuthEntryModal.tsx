@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { AlertCircle, Info, Loader2, X } from 'lucide-react';
+import { AlertCircle, Info, Loader2, UserRound, X } from 'lucide-react';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
 import { getLanguageDirection } from '../../constants';
@@ -42,6 +42,7 @@ export function AuthEntryModal() {
     closeAuthModal,
     clearAuthError,
     startGoogleAuth,
+    continueAsGuest,
   } = useAuthModal();
   const direction = getLanguageDirection(language);
   const isRtl = direction === 'rtl';
@@ -128,6 +129,21 @@ export function AuthEntryModal() {
                       </span>
                     )}
                     {authBusy ? t.opening : t.continueWithGoogle}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => void continueAsGuest()}
+                  disabled={authBusy || isOffline}
+                  className="w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3 text-sm font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    {authBusy ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <UserRound size={17} />
+                    )}
+                    {authBusy ? t.authGuestStarting : t.continueAsGuest}
                   </span>
                 </button>
 

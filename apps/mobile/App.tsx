@@ -183,6 +183,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
   const [passwordRecoveryActive, setPasswordRecoveryActive] = useState(false);
   const [passwordRecoveryEmail, setPasswordRecoveryEmail] = useState<string | undefined>(undefined);
   const [session, setSession] = useState<AuthSession | null>(null);
+  const [guestParityRequested, setGuestParityRequested] = useState(false);
 
   const accessToken = session?.accessToken || null;
   const apiClient = useMemo(() => new ApiClient({ getAccessToken: () => accessToken }), [accessToken]);
@@ -548,6 +549,12 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
     void clearNativeSession('web_auth_expired', 'Sesi login berakhir. Silakan masuk lagi.');
   }, [clearNativeSession]);
 
+  const handleContinueGuestParity = useCallback(() => {
+    setAuthError(null);
+    setGuestParityRequested(true);
+    trackEvent('auth_guest_started', { surface: 'web_parity_gate', runtimePolicy: mobileEnv.runtimePolicy });
+  }, []);
+
   if (booting) {
     return (
       <View style={[styles.bootingPage, { backgroundColor: systemPalette.bgBase }]}>
@@ -557,7 +564,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
     );
   }
 
-  if (!session) {
+  if (!session && !guestParityRequested) {
     return (
       <MobileAuthGate
         authBusyProvider={authBusyProvider}
@@ -565,6 +572,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
         isOnline={isOnline}
         supabaseAuthEnabled={isSupabaseAuthConfigured}
         enableAppleSignIn={mobileEnv.enableAppleSignIn}
+        guestModeEnabled={mobileEnv.enableGuestMode}
         passwordRecoveryActive={passwordRecoveryActive}
         recoveryEmail={passwordRecoveryEmail}
         onLoginGoogle={handleGoogleLogin}
@@ -572,6 +580,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
         onPasswordReset={handlePasswordReset}
         onPasswordUpdate={handlePasswordUpdate}
         onLoginApple={handleAppleLogin}
+        onContinueGuest={handleContinueGuestParity}
       />
     );
   }
@@ -583,6 +592,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       onParityFailure={onParityFailure}
       onNativeLogout={handleNativeLogout}
       onNativeAuthExpired={handleNativeAuthExpired}
+      guestModeRequested={guestParityRequested && !session}
     />
   );
 }

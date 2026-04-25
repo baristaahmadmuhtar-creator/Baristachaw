@@ -112,6 +112,7 @@ test('admin management returns runtime snapshot for allowlisted owner', async ()
   assert.equal(body.dataMode, 'runtime_fallback');
   assert.equal(body.admin.email, 'owner@example.com');
   assert.ok(body.users.length >= 1);
+  assert.ok(body.users.every((user: any) => typeof user.username === 'string'));
   assert.ok(body.plans.some((plan: any) => plan.code === 'pro'));
   assert.ok(body.featureFlags.some((flag: any) => flag.key === 'chat'));
   assert.ok(body.checks.some((check: any) => check.id === 'database_persistence' && check.status === 'fail'));
@@ -130,8 +131,13 @@ test('admin management patch updates runtime users and records audit', async () 
       action: 'update_user',
       userId: 'runtime_user_trial_review',
       patch: {
+        displayName: 'Review Captain',
+        username: 'Review Captain MVP',
         planCode: 'pro',
         status: 'active',
+        supportNote: 'Password reset verified by support.',
+        accountRecoveryStatus: 'requested',
+        passwordResetRequired: true,
       },
     },
   });
@@ -142,9 +148,278 @@ test('admin management patch updates runtime users and records audit', async () 
   assert.equal(res.statusCode, 200);
   const body = JSON.parse(res.body);
   const user = body.users.find((item: any) => item.id === 'runtime_user_trial_review');
+  assert.equal(user.name, 'Review Captain');
+  assert.equal(user.username, 'review-captain-mvp');
   assert.equal(user.planCode, 'pro');
   assert.equal(user.status, 'active');
+  assert.equal(user.supportNote, 'Password reset verified by support.');
+  assert.equal(user.accountRecoveryStatus, 'requested');
+  assert.equal(user.passwordResetRequired, true);
+  assert.ok(user.lastRecoveryRequestAt);
   assert.ok(body.audit.some((event: any) => event.action === 'user_updated'));
+  assert.ok(body.audit.some((event: any) => event.action === 'user_updated' && event.detail.includes('Support note: Password reset verified by support.')));
+});
+
+test('admin management prevents signed-in admin self lockout', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'owner-user',
+      patch: {
+        status: 'suspended',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 400);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'self_protection');
+});
+
+test('admin management requires operator reason for critical account changes', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_pro_barista',
+      patch: {
+        status: 'suspended',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 400);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'operator_reason_required');
+});
+
+test('admin management accepts critical account changes with operator reason', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_pro_barista',
+      patch: {
+        status: 'suspended',
+        supportNote: 'Operator reason: verified abuse report before suspension.',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  const user = body.users.find((item: any) => item.id === 'runtime_user_pro_barista');
+  assert.equal(user.status, 'suspended');
+  assert.equal(user.supportNote, 'Operator reason: verified abuse report before suspension.');
+  assert.ok(body.audit.some((event: any) => (
+    event.action === 'user_updated'
+    && event.severity === 'warning'
+    && event.detail.includes('Support note: Operator reason: verified abuse report')
+  )));
+});
+
+test('admin management rejects duplicate usernames', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_team_cafe',
+      patch: {
+        username: 'pro-barista',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 409);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'username_conflict');
+  assert.match(body.details, /pro\.barista@example\.com/);
+});
+
+test('admin management accepts unique username changes', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_past_due',
+      patch: {
+        username: 'billing-watch-launch',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  const user = body.users.find((item: any) => item.id === 'runtime_user_past_due');
+  assert.equal(user.username, 'billing-watch-launch');
+  assert.ok(body.audit.some((event: any) => (
+    event.action === 'user_updated'
+    && event.detail.includes('username')
+  )));
+});
+
+test('admin management rejects reserved usernames', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_team_cafe',
+      patch: {
+        username: 'admin',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 400);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'validation_error');
+  assert.equal(body.error, 'username is reserved');
+  assert.match(body.details, /@admin/);
+});
+
+test('admin management rejects invalid role values instead of defaulting them', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_team_cafe',
+      patch: {
+        role: 'superadmin',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 400);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'validation_error');
+  assert.equal(body.error, 'role is invalid');
+  assert.match(body.details, /owner, admin, support, analyst, user/);
+});
+
+test('admin management requires operator message for unavailable feature flags', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_feature_flag',
+      key: 'ai_brew',
+      patch: {
+        status: 'maintenance',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 400);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'feature_flag_message_required');
+});
+
+test('admin management accepts disabled feature flags with operator message', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_feature_flag',
+      key: 'collection',
+      patch: {
+        status: 'disabled',
+        message: 'Collection disabled during launch data migration.',
+        surfaces: ['web', 'pwa'],
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  const flag = body.featureFlags.find((item: any) => item.key === 'collection');
+  assert.equal(flag.status, 'disabled');
+  assert.equal(flag.message, 'Collection disabled during launch data migration.');
+  assert.deepEqual(flag.surfaces, ['web', 'pwa']);
+  assert.ok(body.audit.some((event: any) => (
+    event.action === 'feature_flag_updated'
+    && event.severity === 'critical'
+    && event.detail.includes('Message: Collection disabled during launch data migration.')
+  )));
 });
 
 test('admin management patch updates runtime maintenance flags', async () => {

@@ -228,6 +228,66 @@ async function runUnauthSecurityChecks(baseUrl, results, expectTestAuthDisabled)
   }
 }
 
+async function runGuestModeChecks(baseUrl, results) {
+  const origin = baseUrl.replace(/\/+$/, '');
+  const guest = await requestAny(baseUrl, '/api/auth/guest', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: origin,
+    },
+    body: '{}',
+  });
+
+  if (
+    guest.response.status === 200
+    && guest.json?.authenticated === true
+    && guest.json?.user?.isGuest === true
+    && guest.json?.user?.provider === 'guest'
+  ) {
+    pass(results, 'POST /api/auth/guest', `guest=${String(guest.json.user.id).slice(0, 48)}`);
+  } else {
+    fail(results, 'POST /api/auth/guest', `http=${guest.response.status} body=${guest.text.slice(0, 160)}`);
+    return;
+  }
+
+  const guestCookie = extractCookieHeader(guest.response);
+  if (!guestCookie || !/auth_token=/.test(guestCookie)) {
+    fail(results, 'guest auth cookie', 'missing auth_token cookie from guest login');
+    return;
+  }
+  pass(results, 'guest auth cookie', 'auth_token issued');
+
+  const me = await requestAny(baseUrl, '/api/auth/me?soft=1', {
+    method: 'GET',
+    headers: {
+      Cookie: guestCookie,
+      Origin: origin,
+    },
+  });
+
+  if (me.response.status === 200 && me.json?.authenticated === true && me.json?.user?.isGuest === true) {
+    pass(results, 'GET /api/auth/me guest-cookie', `user=${String(me.json.user.id).slice(0, 48)}`);
+  } else {
+    fail(results, 'GET /api/auth/me guest-cookie', `http=${me.response.status} body=${me.text.slice(0, 160)}`);
+    return;
+  }
+
+  const logout = await requestAny(baseUrl, '/api/auth/logout', {
+    method: 'POST',
+    headers: {
+      Cookie: guestCookie,
+      Origin: origin,
+    },
+  });
+
+  if (logout.response.status === 200 && logout.json?.success === true) {
+    pass(results, 'POST /api/auth/logout guest-cookie', '200 guest auth cookie cleared');
+  } else {
+    fail(results, 'POST /api/auth/logout guest-cookie', `http=${logout.response.status} body=${logout.text.slice(0, 160)}`);
+  }
+}
+
 async function runAuthenticatedModeChecks({
   baseUrl,
   results,
@@ -872,6 +932,7 @@ export async function runSmoke({
   }
 
   await runUnauthSecurityChecks(baseUrl, results, Boolean(expectTestAuthDisabled));
+  await runGuestModeChecks(baseUrl, results);
 
   if (bearerToken && String(bearerToken).trim()) {
     await runAuthenticatedModeChecks({

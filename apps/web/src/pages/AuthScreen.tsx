@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, UserRound } from 'lucide-react';
 import { useAuthModal } from '../context/AuthModalContext';
 import { useGlobalState } from '../context/GlobalState';
 import { AppIconBrand, GoogleMark } from '../components/icons';
@@ -11,7 +11,7 @@ interface AuthScreenProps {
 
 export function AuthScreen({ onLogin }: AuthScreenProps) {
   const { t } = useGlobalState();
-  const { isAuthenticated, authBusy, authError, openAuthModal } = useAuthModal();
+  const { isAuthenticated, authBusy, authError, openAuthModal, continueAsGuest } = useAuthModal();
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
@@ -95,6 +95,14 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
                 {t.continueWithGoogle}
               </>
             )}
+          </button>
+          <button
+            onClick={() => void continueAsGuest()}
+            disabled={authBusy}
+            className="mt-3 w-full rounded-2xl border border-glass bg-surface-alpha py-4 px-6 flex items-center justify-center gap-3 text-base font-semibold text-primary disabled:cursor-not-allowed disabled:opacity-55"
+          >
+            {authBusy ? <Loader2 className="animate-spin" size={20} /> : <UserRound size={20} />}
+            {authBusy ? t.authGuestStarting : t.continueAsGuest}
           </button>
         </div>
       </motion.div>

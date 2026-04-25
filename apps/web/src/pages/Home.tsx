@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { Sparkles, Camera, Coffee, Search, Moon, Sun, LogIn, LogOut, X, Bookmark, Check, Copy, ExternalLink, BookOpen, Globe, ChevronDown } from "lucide-react";
+import { AlertTriangle, Camera, Check, ChevronDown, Coffee, Copy, ExternalLink, Globe, LogIn, LogOut, Moon, RefreshCcw, Search, ShieldCheck, Sparkles, Sun, Wrench, X, Bookmark, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { searchWithGemini, SearchWebError, type SearchResultPayload } from "../services/gemini";
 import {
@@ -19,6 +19,9 @@ import Markdown from "react-markdown";
 import { useRuntimeDisplayMode } from "../hooks/useRuntimeDisplayMode";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import { subscribeMediaQueryChange } from "../utils/mediaQuery";
+import { useAccountStatus } from "../context/AccountStatusContext";
+import type { AccountFeatureFlag } from "../services/accountStatus";
+import { isDisplayableAvatarUrl } from "../utils/avatarUrl";
 import { normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentProfileMemory } from "@baristachaw/shared";
 import { getLanguageDirection, getLanguageLocale, LANGUAGE_OPTIONS } from "../constants";
 
@@ -29,6 +32,36 @@ type HomeSearchResult = SearchResultPayload & {
   query: string;
   fromCache?: boolean;
 };
+
+function formatCompactNumber(value: number): string {
+  return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+}
+
+function featureUnavailableMessage(flag: AccountFeatureFlag): string {
+  return flag.message || `${flag.label} is currently ${flag.status}. Please try again after maintenance is finished.`;
+}
+
+function featureCardStateClass(flag?: AccountFeatureFlag | null): string {
+  if (!flag || flag.status === 'available') return '';
+  if (flag.status === 'disabled') return 'opacity-70 grayscale-[0.15] ring-1 ring-rose-500/25';
+  return 'ring-1 ring-amber-500/25';
+}
+
+function FeatureStatusBadge({ flag }: { flag?: AccountFeatureFlag | null }) {
+  if (!flag || flag.status === 'available') return null;
+  const tone = flag.status === 'disabled'
+    ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+    : 'bg-amber-500/10 text-amber-700 dark:text-amber-300';
+  return (
+    <span
+      className={`inline-flex min-h-6 items-center gap-1 rounded-full px-2 text-[11px] font-semibold ${tone}`}
+      title={featureUnavailableMessage(flag)}
+    >
+      <Wrench size={12} />
+      {flag.status === 'disabled' ? 'Unavailable' : 'Maintenance'}
+    </span>
+  );
+}
 
 export function Home() {
   const { t, language, setLanguage } = useGlobalState();
@@ -42,6 +75,7 @@ export function Home() {
   const [isDark, setIsDark] = useState(false);
   const [statusIdx, setStatusIdx] = useState(0);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [userPictureFailed, setUserPictureFailed] = useState(false);
   const statusIntervalRef = useRef<number | null>(null);
   const savedResetTimeoutRef = useRef<number | null>(null);
   const copiedResetTimeoutRef = useRef<number | null>(null);
@@ -55,10 +89,19 @@ export function Home() {
   const { hideNav, showNav } = useNavbar();
   const { user, isAuthenticated, openAuthModal, logout } = useAuthModal();
   const { isOffline } = useNetworkStatus();
+  const {
+    snapshot: accountSnapshot,
+    loading: accountStatusLoading,
+    error: accountStatusError,
+    maintenance,
+    surface,
+    refreshAccountStatus,
+  } = useAccountStatus();
   const agentProfileNamespace = useMemo(() => resolveAgentProfileNamespace(user?.id), [user?.id]);
   const locale = useMemo(() => getLanguageLocale(language), [language]);
   const direction = useMemo(() => getLanguageDirection(language), [language]);
   const isRtl = direction === 'rtl';
+  const userAvatarUrl = user?.picture && isDisplayableAvatarUrl(user.picture) ? user.picture : '';
   const mergeProfileWithUiLanguage = useCallback((profile?: Partial<AgentProfileMemory> | null, nextLanguage?: string) => (
     normalizeAgentProfileMemory({
       ...(profile || {}),
@@ -76,6 +119,31 @@ export function Home() {
     t.homeStatusCrafting,
     t.homeStatusBrewing,
   ];
+
+  const accountAccessStatus = accountSnapshot?.appAccess.status || 'ok';
+  const accountBlocked = isAuthenticated && accountAccessStatus === 'blocked';
+  const accountLimited = isAuthenticated && (accountAccessStatus === 'limited' || maintenance.length > 0);
+  const workspaceStatusTone = accountBlocked
+    ? 'border-rose-500/25 bg-rose-500/10 text-rose-700 dark:text-rose-300'
+    : accountLimited
+      ? 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+      : 'border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300';
+  const workspaceStatusIcon = accountBlocked ? AlertTriangle : accountLimited ? Wrench : ShieldCheck;
+  const WorkspaceStatusIcon = workspaceStatusIcon;
+  const workspaceStatusLabel = accountBlocked ? 'Blocked' : accountLimited ? 'Limited' : 'Ready';
+  const featureFlagByKey = useMemo(() => {
+    const map = new Map<string, AccountFeatureFlag>();
+    for (const flag of accountSnapshot?.featureFlags || []) {
+      map.set(flag.key, flag);
+    }
+    return map;
+  }, [accountSnapshot?.featureFlags]);
+  const globalFeatureFlag = featureFlagByKey.get('global_app');
+  const chatFeatureFlag = [featureFlagByKey.get('chat'), globalFeatureFlag].find((flag) => flag && flag.status !== 'available') || null;
+  const scannerFeatureFlag = [featureFlagByKey.get('scanner'), globalFeatureFlag].find((flag) => flag && flag.status !== 'available') || null;
+  const aiBrewFeatureFlag = [featureFlagByKey.get('ai_brew'), globalFeatureFlag].find((flag) => flag && flag.status !== 'available') || null;
+  const collectionFeatureFlag = [featureFlagByKey.get('collection'), globalFeatureFlag].find((flag) => flag && flag.status !== 'available') || null;
+  const toolsFeatureFlag = globalFeatureFlag && globalFeatureFlag.status !== 'available' ? globalFeatureFlag : null;
 
   const clearStatusTicker = () => {
     if (statusIntervalRef.current !== null) {
@@ -134,6 +202,10 @@ export function Home() {
     const unsubscribe = subscribeMediaQueryChange(media, updateViewportMode);
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    setUserPictureFailed(false);
+  }, [user?.picture]);
 
   useEffect(() => {
     if (!showLanguageMenu) return;
@@ -253,6 +325,14 @@ export function Home() {
       openAuthModal({ source: 'home_search' });
       return;
     }
+
+    if (accountBlocked) {
+      setActiveQuery(searchQuery.trim());
+      setSearchError(accountSnapshot?.appAccess.message || 'Your account is blocked. Contact support or review your billing status.');
+      setShowResultModal(true);
+      return;
+    }
+
     const trimmedQuery = searchQuery.trim();
     if (!trimmedQuery) return;
     const requestId = ++searchRequestIdRef.current;
@@ -335,6 +415,19 @@ export function Home() {
     const target = activeQuery || query;
     if (!target.trim()) return;
     await executeSearch(target);
+  };
+
+  const handleFeatureNavigation = (event: React.MouseEvent<HTMLAnchorElement>, flag?: AccountFeatureFlag | null) => {
+    if (!flag || flag.status !== 'disabled') return;
+    event.preventDefault();
+    searchRequestIdRef.current += 1;
+    clearStatusTicker();
+    setActiveQuery(flag.label);
+    setResult(null);
+    setCachedResult(null);
+    setLoading(false);
+    setSearchError(featureUnavailableMessage(flag));
+    setShowResultModal(true);
   };
 
   const handleViewCachedResult = () => {
@@ -528,8 +621,14 @@ export function Home() {
       >
         {user ? (
           <div className={`flex items-center gap-3 panel-soft px-3 py-1.5 rounded-full ${isRtl ? 'flex-row-reverse' : ''}`}>
-            {user.picture ? (
-              <img src={user.picture} alt={user.name || t.signedIn} className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
+            {userAvatarUrl && !userPictureFailed ? (
+              <img
+                src={userAvatarUrl}
+                alt={user.name || t.signedIn}
+                className="w-6 h-6 rounded-full object-cover"
+                referrerPolicy="no-referrer"
+                onError={() => setUserPictureFailed(true)}
+              />
             ) : (
               <div className="w-6 h-6 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center text-[11px] font-semibold">
                 {(user.name || user.email || 'U').slice(0, 1).toUpperCase()}
@@ -593,8 +692,8 @@ export function Home() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={isAuthenticated ? t.homeSearchPlaceholderAuth : t.homeSearchPlaceholderGuest}
-            disabled={!isAuthenticated}
+            placeholder={accountBlocked ? 'Account access is paused' : isAuthenticated ? t.homeSearchPlaceholderAuth : t.homeSearchPlaceholderGuest}
+            disabled={!isAuthenticated || accountBlocked}
             className={`w-full glass-input py-5 text-lg font-medium ${isRtl ? 'pr-16 pl-16 text-right' : 'pl-16 pr-16 text-left'}`}
           />
           {loading && (
@@ -608,6 +707,61 @@ export function Home() {
       </form>
 
       {/* Feature Cards — always visible */}
+      {isAuthenticated ? (
+        <section
+          dir={direction}
+          className={`mb-6 max-w-xl lg:max-w-6xl mx-auto w-full rounded-[1.35rem] border px-4 py-4 shadow-[var(--panel-elev-1)] ${workspaceStatusTone}`}
+        >
+          <div className={`flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between ${isRtl ? 'lg:flex-row-reverse' : ''}`}>
+            <div className={`flex min-w-0 items-start gap-3 ${isRtl ? 'flex-row-reverse text-right' : 'text-left'}`}>
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--bg-base)]/70">
+                <WorkspaceStatusIcon size={18} />
+              </span>
+              <div className="min-w-0">
+                <div className={`flex flex-wrap items-center gap-2 ${isRtl ? 'justify-end' : ''}`}>
+                  <h2 className="text-sm font-semibold text-primary">Workspace status</h2>
+                  <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-0.5 text-[11px] font-semibold">
+                    {workspaceStatusLabel}
+                  </span>
+                  <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-0.5 text-[11px] font-semibold capitalize">
+                    {surface}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm leading-5 text-secondary">
+                  {accountStatusError
+                    ? 'Account status is temporarily unavailable; cached app tools remain available.'
+                    : accountSnapshot?.appAccess.message
+                      || (accountSnapshot ? `${accountSnapshot.plan.name} plan, ${formatCompactNumber(accountSnapshot.plan.aiDailyLimit)} AI requests/day, ${formatCompactNumber(accountSnapshot.plan.scannerDailyLimit)} scanner runs/day.` : 'Checking current plan and app access...')}
+                </p>
+                {maintenance.length ? (
+                  <div className={`mt-2 flex flex-wrap gap-1.5 ${isRtl ? 'justify-end' : ''}`}>
+                    {maintenance.slice(0, 3).map((flag) => (
+                      <span key={flag.key} className="rounded-full bg-[var(--bg-base)]/70 px-2 py-1 text-[11px] font-semibold">
+                        {flag.label}: {flag.status}
+                      </span>
+                    ))}
+                    {maintenance.length > 3 ? (
+                      <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-1 text-[11px] font-semibold">
+                        +{maintenance.length - 3} more
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => void refreshAccountStatus()}
+              disabled={accountStatusLoading}
+              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-current/15 bg-[var(--bg-base)]/70 px-3 text-sm font-semibold text-primary transition-colors hover:bg-[var(--bg-base)] disabled:opacity-50"
+            >
+              <RefreshCcw size={15} className={accountStatusLoading ? 'animate-spin' : ''} />
+              Sync status
+            </button>
+          </div>
+        </section>
+      ) : null}
+
       <motion.div
         initial="hidden"
         animate="visible"
@@ -615,15 +769,18 @@ export function Home() {
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5 max-w-xl md:max-w-3xl lg:max-w-6xl mx-auto items-stretch w-full"
       >
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }} className="md:col-span-2 lg:col-span-3">
-          <Link to="/chat" className="block h-full">
-            <div className="glass-card-interactive min-h-[9.75rem] lg:min-h-[10.75rem] p-6 lg:p-7 relative overflow-hidden group">
+          <Link to="/chat" onClick={(event) => handleFeatureNavigation(event, chatFeatureFlag)} aria-disabled={chatFeatureFlag?.status === 'disabled'} className="block h-full">
+            <div className={`glass-card-interactive min-h-[9.75rem] lg:min-h-[10.75rem] p-6 lg:p-7 relative overflow-hidden group ${featureCardStateClass(chatFeatureFlag)}`}>
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className={`flex h-full items-center gap-5 lg:gap-6 relative z-10 ${isRtl ? 'flex-row-reverse' : ''}`}>
                 <div className="w-16 h-16 rounded-[1.25rem] bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0 shadow-inner group-hover:scale-110 transition-transform duration-300 ease-out">
                   <Sparkles size={32} />
                 </div>
                 <div className={`min-w-0 flex-1 ${isRtl ? 'text-right' : 'text-left'}`}>
-                  <h2 className="text-2xl font-semibold mb-1">{t.homeAskTitle}</h2>
+                  <div className={`mb-1 flex flex-wrap items-center gap-2 ${isRtl ? 'justify-end' : ''}`}>
+                    <h2 className="text-2xl font-semibold">{t.homeAskTitle}</h2>
+                    <FeatureStatusBadge flag={chatFeatureFlag} />
+                  </div>
                   <p className="text-secondary text-base max-w-2xl">{t.homeAskSubtitle}</p>
                 </div>
               </div>
@@ -632,13 +789,16 @@ export function Home() {
         </motion.div>
 
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }}>
-          <Link to="/scanner" className="block h-full">
-            <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'}`}>
+          <Link to="/scanner" onClick={(event) => handleFeatureNavigation(event, scannerFeatureFlag)} aria-disabled={scannerFeatureFlag?.status === 'disabled'} className="block h-full">
+            <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'} ${featureCardStateClass(scannerFeatureFlag)}`}>
               <div className="w-14 h-14 rounded-[1.25rem] bg-orange-500/10 flex items-center justify-center text-orange-500 shadow-inner group-hover:scale-110 transition-transform duration-300 ease-out">
                 <Camera size={28} />
               </div>
               <div className="w-full">
-                <h3 className="font-semibold text-lg">{t.homeScannerTitle}</h3>
+                <div className={`flex flex-wrap items-center justify-center gap-2 ${isRtl ? 'lg:justify-end' : 'lg:justify-start'}`}>
+                  <h3 className="font-semibold text-lg">{t.homeScannerTitle}</h3>
+                  <FeatureStatusBadge flag={scannerFeatureFlag} />
+                </div>
                 <p className="text-sm text-secondary mt-1">{t.homeScannerSubtitle}</p>
               </div>
             </div>
@@ -646,13 +806,16 @@ export function Home() {
         </motion.div>
 
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }}>
-          <Link to="/tools?tab=ai-brew" className="block h-full">
-            <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'}`}>
+          <Link to="/tools?tab=ai-brew" onClick={(event) => handleFeatureNavigation(event, aiBrewFeatureFlag)} aria-disabled={aiBrewFeatureFlag?.status === 'disabled'} className="block h-full">
+            <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'} ${featureCardStateClass(aiBrewFeatureFlag)}`}>
               <div className="w-14 h-14 rounded-[1.25rem] bg-blue-500/10 flex items-center justify-center text-blue-500 shadow-inner group-hover:scale-110 transition-transform duration-300 ease-out">
                 <Sparkles size={28} />
               </div>
               <div className="w-full">
-                <h3 className="font-semibold text-lg">{t.homeAiBrewTitle}</h3>
+                <div className={`flex flex-wrap items-center justify-center gap-2 ${isRtl ? 'lg:justify-end' : 'lg:justify-start'}`}>
+                  <h3 className="font-semibold text-lg">{t.homeAiBrewTitle}</h3>
+                  <FeatureStatusBadge flag={aiBrewFeatureFlag} />
+                </div>
                 <p className="text-sm text-secondary mt-1">{t.homeAiBrewSubtitle}</p>
               </div>
             </div>
@@ -660,13 +823,16 @@ export function Home() {
         </motion.div>
 
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }}>
-          <Link to="/tools" className="block h-full">
-            <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'}`}>
+          <Link to="/tools" onClick={(event) => handleFeatureNavigation(event, toolsFeatureFlag)} aria-disabled={toolsFeatureFlag?.status === 'disabled'} className="block h-full">
+            <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'} ${featureCardStateClass(toolsFeatureFlag)}`}>
               <div className="w-14 h-14 rounded-[1.25rem] bg-amber-500/10 flex items-center justify-center text-amber-500 shadow-inner group-hover:scale-110 transition-transform duration-300 ease-out">
                 <Coffee size={28} />
               </div>
               <div className="w-full">
-                <h3 className="font-semibold text-lg">{t.homeToolsTitle}</h3>
+                <div className={`flex flex-wrap items-center justify-center gap-2 ${isRtl ? 'lg:justify-end' : 'lg:justify-start'}`}>
+                  <h3 className="font-semibold text-lg">{t.homeToolsTitle}</h3>
+                  <FeatureStatusBadge flag={toolsFeatureFlag} />
+                </div>
                 <p className="text-sm text-secondary mt-1">{t.homeToolsSubtitle}</p>
               </div>
             </div>
@@ -674,13 +840,16 @@ export function Home() {
         </motion.div>
 
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }} className="md:col-span-2 lg:col-span-3">
-          <Link to="/collection" className="block h-full">
-            <div className={`glass-card-interactive min-h-[9rem] lg:min-h-[9.75rem] p-6 lg:p-7 flex items-center gap-5 group ${isRtl ? 'flex-row-reverse' : ''}`}>
+          <Link to="/collection" onClick={(event) => handleFeatureNavigation(event, collectionFeatureFlag)} aria-disabled={collectionFeatureFlag?.status === 'disabled'} className="block h-full">
+            <div className={`glass-card-interactive min-h-[9rem] lg:min-h-[9.75rem] p-6 lg:p-7 flex items-center gap-5 group ${isRtl ? 'flex-row-reverse' : ''} ${featureCardStateClass(collectionFeatureFlag)}`}>
               <div className="w-14 h-14 rounded-[1.25rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0 shadow-inner group-hover:scale-110 transition-transform duration-300 ease-out">
                 <BookOpen size={28} />
               </div>
               <div className={`min-w-0 ${isRtl ? 'text-right' : 'text-left'}`}>
-                <h3 className="font-semibold text-lg">{t.homeCollectionTitle}</h3>
+                <div className={`flex flex-wrap items-center gap-2 ${isRtl ? 'justify-end' : ''}`}>
+                  <h3 className="font-semibold text-lg">{t.homeCollectionTitle}</h3>
+                  <FeatureStatusBadge flag={collectionFeatureFlag} />
+                </div>
                 <p className="text-sm text-secondary mt-1">{t.homeCollectionSubtitle}</p>
               </div>
             </div>
@@ -924,20 +1093,6 @@ export function Home() {
     </motion.div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

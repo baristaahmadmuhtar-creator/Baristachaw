@@ -1,5 +1,6 @@
 export type AdminRole = 'owner' | 'admin' | 'support' | 'analyst' | 'user';
 export type AccountStatus = 'active' | 'trialing' | 'past_due' | 'suspended' | 'deleted';
+export type AccountRecoveryStatus = 'none' | 'requested' | 'verified' | 'resolved' | 'rejected';
 export type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
 export type CheckStatus = 'pass' | 'warn' | 'fail';
 export type DataMode = 'supabase' | 'runtime_fallback';
@@ -26,6 +27,7 @@ export type AdminUserRecord = {
   id: string;
   email: string;
   name: string;
+  username: string;
   picture?: string;
   provider: 'google' | 'apple' | 'email' | 'guest' | 'unknown';
   role: AdminRole;
@@ -47,6 +49,11 @@ export type AdminUserRecord = {
   riskScore: number;
   flags: string[];
   notes?: string;
+  supportNote?: string;
+  accountRecoveryStatus: AccountRecoveryStatus;
+  supportLockedUntil?: string;
+  lastRecoveryRequestAt?: string;
+  passwordResetRequired?: boolean;
   isSample?: boolean;
 };
 
@@ -132,7 +139,12 @@ export type AdminUserPatch = Partial<{
   role: AdminRole;
   status: AccountStatus;
   planCode: PlanCode;
+  displayName: string;
+  username: string;
   notes: string;
+  supportNote: string;
+  accountRecoveryStatus: AccountRecoveryStatus;
+  passwordResetRequired: boolean;
 }>;
 
 export type AdminFeatureFlagPatch = Partial<{

@@ -58,6 +58,7 @@ create table if not exists public.app_users (
   id text primary key,
   email text not null,
   display_name text not null default '',
+  username text not null default '',
   avatar_url text not null default '',
   provider text not null default 'unknown' check (provider in ('google', 'apple', 'email', 'guest', 'unknown')),
   role text not null default 'user' check (role in ('owner', 'admin', 'support', 'analyst', 'user')),
@@ -75,16 +76,19 @@ create table if not exists public.app_users (
   support_note text not null default '',
   support_locked_until timestamptz,
   last_recovery_request_at timestamptz,
+  password_reset_required boolean not null default false,
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
 alter table public.app_users
+  add column if not exists username text not null default '',
   add column if not exists account_recovery_status text not null default 'none' check (account_recovery_status in ('none', 'requested', 'verified', 'resolved', 'rejected')),
   add column if not exists support_note text not null default '',
   add column if not exists support_locked_until timestamptz,
-  add column if not exists last_recovery_request_at timestamptz;
+  add column if not exists last_recovery_request_at timestamptz,
+  add column if not exists password_reset_required boolean not null default false;
 
 create table if not exists public.app_usage_daily (
   id uuid primary key default gen_random_uuid(),
@@ -160,6 +164,8 @@ create table if not exists public.admin_audit_events (
 );
 
 create index if not exists app_users_email_idx on public.app_users (lower(email));
+create index if not exists app_users_username_idx on public.app_users (lower(username));
+create unique index if not exists app_users_username_unique_idx on public.app_users (lower(username)) where username <> '';
 create index if not exists app_users_status_plan_idx on public.app_users (status, plan_code, updated_at desc);
 create index if not exists app_users_role_idx on public.app_users (role, updated_at desc);
 create index if not exists app_users_recovery_idx on public.app_users (account_recovery_status, updated_at desc);

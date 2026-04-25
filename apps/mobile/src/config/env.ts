@@ -2,8 +2,8 @@ const DEFAULT_API_BASE_URL = 'https://baristaclaw.vercel.app';
 const DEFAULT_WEB_APP_URL = 'https://baristaclaw.vercel.app';
 const DEFAULT_APP_SCHEME = 'baristachaw';
 const DEFAULT_RELEASE_CHANNEL = 'mobile-local';
-// MVP Android ships the native APK shell with web parity as the primary UI.
-// Native screens remain available only when explicitly opted in through env.
+// MVP mobile ships web parity as the primary Android UI. Native screens remain
+// available for explicit non-production builds, not as an automatic production fallback.
 const DEFAULT_MOBILE_UI_MODE = 'web_parity';
 const DEFAULT_PARITY_TIMEOUT_MS = 6_000;
 const DEFAULT_ENABLE_PARITY_FALLBACK = false;

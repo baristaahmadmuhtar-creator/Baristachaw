@@ -23,6 +23,7 @@ type MobileAuthGateProps = {
   isOnline: boolean;
   supabaseAuthEnabled: boolean;
   enableAppleSignIn: boolean;
+  guestModeEnabled?: boolean;
   passwordRecoveryActive?: boolean;
   recoveryEmail?: string;
   onLoginGoogle: () => Promise<void>;
@@ -30,6 +31,7 @@ type MobileAuthGateProps = {
   onPasswordReset: (payload: PasswordResetPayload) => Promise<string>;
   onPasswordUpdate: (payload: PasswordUpdatePayload) => Promise<void>;
   onLoginApple: () => Promise<void>;
+  onContinueGuest?: () => void;
 };
 
 type AuthMode = EmailAuthPayload['mode'] | 'resetPassword' | 'accountHelp';
@@ -179,6 +181,7 @@ export function MobileAuthGate({
   isOnline,
   supabaseAuthEnabled,
   enableAppleSignIn,
+  guestModeEnabled = false,
   passwordRecoveryActive = false,
   recoveryEmail,
   onLoginGoogle,
@@ -186,6 +189,7 @@ export function MobileAuthGate({
   onPasswordReset,
   onPasswordUpdate,
   onLoginApple,
+  onContinueGuest,
 }: MobileAuthGateProps) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
@@ -361,6 +365,26 @@ export function MobileAuthGate({
       <Text style={styles.primaryButtonText}>{googleBusy ? 'Membuka...' : 'Lanjutkan dengan Google'}</Text>
     </Pressable>
   );
+
+  const renderGuestButton = () => {
+    if (!guestModeEnabled || !onContinueGuest || activeMode === 'newPassword') return null;
+
+    return (
+      <Pressable
+        accessibilityRole="button"
+        disabled={busy}
+        onPress={onContinueGuest}
+        style={({ pressed }) => [
+          styles.secondaryButton,
+          busy ? styles.disabled : null,
+          pressed && !busy ? styles.pressed : null,
+        ]}
+      >
+        <Ionicons name="person-circle-outline" size={18} color={theme.textPrimary} />
+        <Text style={styles.secondaryButtonText}>Lanjutkan sebagai tamu</Text>
+      </Pressable>
+    );
+  };
 
   const renderInput = ({
     label,
@@ -672,6 +696,7 @@ export function MobileAuthGate({
 
             {renderModeTabs()}
             {renderEmailForm()}
+            {renderGuestButton()}
           </View>
         </View>
       </ScrollView>

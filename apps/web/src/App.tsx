@@ -8,7 +8,7 @@ import { MaintenanceBanner } from './components/system/MaintenanceBanner';
 import { GlobalProvider } from './context/GlobalState';
 import { NavbarProvider, useNavbar } from './context/NavbarContext';
 import { AuthModalProvider } from './context/AuthModalContext';
-import { AccountStatusProvider } from './context/AccountStatusContext';
+import { AccountStatusProvider, useAccountStatus } from './context/AccountStatusContext';
 import { MotionConfig } from 'motion/react';
 import { useRuntimeDisplayMode } from './hooks/useRuntimeDisplayMode';
 import { subscribeMediaQueryChange } from './utils/mediaQuery';
@@ -107,11 +107,15 @@ function AppContent() {
   } = useNavbar();
   const location = useLocation();
   const navigate = useNavigate();
+  const { snapshot: accountSnapshot, maintenance } = useAccountStatus();
   const routeLayerRef = useRef<HTMLDivElement | null>(null);
   const currentPathRef = useRef(location.pathname);
   const isDesignRoute = location.pathname === DESIGN_ROUTE;
   const isChatRoute = location.pathname === '/chat';
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const hasMaintenanceBanner = !isAdminRoute
+    && Boolean(accountSnapshot)
+    && (accountSnapshot?.appAccess.status !== 'ok' || maintenance.length > 0);
   const desktopChatPanelWidth = isChatRoute && desktopChatNavOpen
     ? (
         desktopChatSidebarCollapsed
@@ -262,7 +266,12 @@ function AppContent() {
       <OfflineBanner />
       <MaintenanceBanner />
       <DesktopSidebar />
-      <div ref={routeLayerRef} data-testid="app-route-layer" className="app-route-layer app-route-layer-desktop">
+      <div
+        ref={routeLayerRef}
+        data-testid="app-route-layer"
+        className="app-route-layer app-route-layer-desktop"
+        style={hasMaintenanceBanner ? { paddingTop: '7.5rem' } : undefined}
+      >
         {routes}
       </div>
       {!isMobileChatRoute && !isAdminRoute && <BottomNav hidden={navHidden} />}

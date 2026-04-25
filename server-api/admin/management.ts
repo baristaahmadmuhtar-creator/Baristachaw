@@ -19,6 +19,7 @@ import {
 
 type AdminRole = 'owner' | 'admin' | 'support' | 'analyst' | 'user';
 type AccountStatus = 'active' | 'trialing' | 'past_due' | 'suspended' | 'deleted';
+type AccountRecoveryStatus = 'none' | 'requested' | 'verified' | 'resolved' | 'rejected';
 type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
 type CheckStatus = 'pass' | 'warn' | 'fail';
 type DataMode = 'supabase' | 'runtime_fallback';
@@ -43,6 +44,7 @@ type AdminUserRecord = {
   id: string;
   email: string;
   name: string;
+  username: string;
   picture?: string;
   provider: 'google' | 'apple' | 'email' | 'guest' | 'unknown';
   role: AdminRole;
@@ -64,6 +66,11 @@ type AdminUserRecord = {
   riskScore: number;
   flags: string[];
   notes?: string;
+  supportNote?: string;
+  accountRecoveryStatus: AccountRecoveryStatus;
+  supportLockedUntil?: string;
+  lastRecoveryRequestAt?: string;
+  passwordResetRequired?: boolean;
   isSample?: boolean;
 };
 
@@ -140,7 +147,14 @@ type UserPatch = Partial<{
   role: AdminRole;
   status: AccountStatus;
   planCode: PlanCode;
+  displayName: string;
+  username: string;
   notes: string;
+  supportNote: string;
+  accountRecoveryStatus: AccountRecoveryStatus;
+  supportLockedUntil: string;
+  lastRecoveryRequestAt: string;
+  passwordResetRequired: boolean;
 }>;
 
 type SupabaseConfig = {
@@ -150,6 +164,39 @@ type SupabaseConfig = {
 } | {
   configured: false;
 };
+
+const VALID_ADMIN_ROLES = new Set<AdminRole>(['owner', 'admin', 'support', 'analyst', 'user']);
+const VALID_ACCOUNT_STATUSES = new Set<AccountStatus>(['active', 'trialing', 'past_due', 'suspended', 'deleted']);
+const VALID_ACCOUNT_RECOVERY_STATUSES = new Set<AccountRecoveryStatus>(['none', 'requested', 'verified', 'resolved', 'rejected']);
+const VALID_PLAN_CODES = new Set<PlanCode>(['free', 'starter', 'pro', 'team', 'enterprise']);
+const RESERVED_USERNAMES = new Set([
+  'account',
+  'admin',
+  'administrator',
+  'api',
+  'app',
+  'baristachaw',
+  'billing',
+  'help',
+  'login',
+  'logout',
+  'me',
+  'owner',
+  'root',
+  'security',
+  'settings',
+  'signup',
+  'staff',
+  'support',
+  'system',
+  'user',
+  'users',
+]);
+const DISPLAY_NAME_MAX_LENGTH = 96;
+const USERNAME_MAX_LENGTH = 32;
+const USERNAME_INPUT_MAX_LENGTH = 96;
+const NOTES_MAX_LENGTH = 500;
+const SUPPORT_NOTE_MAX_LENGTH = 800;
 
 const ADMIN_RATE_LIMIT = {
   maxRequests: 120,
@@ -274,6 +321,125 @@ function normalizePlanCode(value: unknown): PlanCode {
   return 'free';
 }
 
+function normalizeAccountRecoveryStatus(value: unknown): AccountRecoveryStatus {
+  const raw = normalizeText(value).toLowerCase();
+  if (raw === 'requested' || raw === 'verified' || raw === 'resolved' || raw === 'rejected') return raw;
+  return 'none';
+}
+
+function normalizeUsername(value: unknown, fallback: string): string {
+  const raw = normalizeText(value, fallback).toLowerCase();
+  const cleaned = raw
+    .replace(/^@+/, '')
+    .replace(/@.*$/, '')
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/[._-]{2,}/g, '.')
+    .replace(/^[._-]+|[._-]+$/g, '')
+    .slice(0, 32);
+  if (cleaned.length >= 3) return cleaned;
+  const fallbackSeed = normalizeText(fallback, 'user')
+    .toLowerCase()
+    .replace(/@.*$/, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 24);
+  return fallbackSeed.length >= 3 ? fallbackSeed : 'user-account';
+}
+
+type ValidationError = { ok: false; error: string; details?: string };
+
+function validateEnumValue<T extends string>(value: unknown, field: string, allowed: Set<T>): { ok: true; value: T } | ValidationError {
+  if (typeof value !== 'string') {
+    return { ok: false, error: `${field} must be a string` };
+  }
+  const normalized = value.trim().toLowerCase() as T;
+  if (!allowed.has(normalized)) {
+    return {
+      ok: false,
+      error: `${field} is invalid`,
+      details: `Allowed values: ${Array.from(allowed).join(', ')}`,
+    };
+  }
+  return { ok: true, value: normalized };
+}
+
+function validatePatchText(
+  value: unknown,
+  field: string,
+  maxLength: number,
+  options: { required?: boolean } = {},
+): { ok: true; value: string } | ValidationError {
+  if (typeof value !== 'string') {
+    return { ok: false, error: `${field} must be a string` };
+  }
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  if (options.required && !normalized) {
+    return { ok: false, error: `${field} is required` };
+  }
+  if (normalized.length > maxLength) {
+    return {
+      ok: false,
+      error: `${field} is too long`,
+      details: `${field} must be ${maxLength} characters or fewer.`,
+    };
+  }
+  return { ok: true, value: normalized };
+}
+
+function validateUsernamePatch(value: unknown): { ok: true; value: string } | ValidationError {
+  if (typeof value !== 'string') {
+    return { ok: false, error: 'username must be a string' };
+  }
+  const raw = value.trim();
+  if (!raw) return { ok: false, error: 'username is required' };
+  if (raw.length > USERNAME_INPUT_MAX_LENGTH) {
+    return {
+      ok: false,
+      error: 'username is too long',
+      details: `Username input must be ${USERNAME_INPUT_MAX_LENGTH} characters or fewer.`,
+    };
+  }
+
+  const username = raw
+    .toLowerCase()
+    .replace(/^@+/, '')
+    .replace(/@.*$/, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/[._-]{2,}/g, '-')
+    .replace(/^[._-]+|[._-]+$/g, '');
+
+  if (username.length < 3) {
+    return {
+      ok: false,
+      error: 'username is too short',
+      details: 'Username must be at least 3 letters or numbers after normalization.',
+    };
+  }
+  if (username.length > USERNAME_MAX_LENGTH) {
+    return {
+      ok: false,
+      error: 'username is too long',
+      details: `Username must be ${USERNAME_MAX_LENGTH} characters or fewer after normalization.`,
+    };
+  }
+  if (RESERVED_USERNAMES.has(username)) {
+    return {
+      ok: false,
+      error: 'username is reserved',
+      details: `@${username} is reserved for Baristachaw system routes or support operations.`,
+    };
+  }
+  return { ok: true, value: username };
+}
+
+function validateBooleanPatch(value: unknown, field: string): { ok: true; value: boolean } | ValidationError {
+  if (typeof value === 'boolean') return { ok: true, value };
+  if (value === 1 || value === 'true') return { ok: true, value: true };
+  if (value === 0 || value === 'false') return { ok: true, value: false };
+  return { ok: false, error: `${field} must be boolean` };
+}
+
 function planName(code: PlanCode): string {
   return PLAN_BLUEPRINTS.find((plan) => plan.code === code)?.name || 'Free';
 }
@@ -329,10 +495,14 @@ function readUsage(raw: any): AdminUserRecord['usage'] {
 function userFromSupabase(row: any): AdminUserRecord {
   const planCode = normalizePlanCode(row.plan_code || row.planCode);
   const metadata = row.metadata && typeof row.metadata === 'object' ? row.metadata : {};
+  const id = normalizeText(row.id || row.user_id, 'unknown-user');
+  const email = normalizeText(row.email, 'unknown@example.com');
+  const accountRecoveryStatus = normalizeAccountRecoveryStatus(row.account_recovery_status || row.accountRecoveryStatus);
   return {
-    id: normalizeText(row.id || row.user_id, 'unknown-user'),
-    email: normalizeText(row.email, 'unknown@example.com'),
-    name: normalizeText(row.display_name || row.name, normalizeText(row.email, 'User').split('@')[0]),
+    id,
+    email,
+    name: normalizeText(row.display_name || row.name, email.split('@')[0]),
+    username: normalizeUsername(row.username || metadata.username, email || id),
     picture: normalizeText(row.avatar_url || row.picture),
     provider: normalizeProvider(row.provider),
     role: normalizeRole(row.role),
@@ -348,6 +518,11 @@ function userFromSupabase(row: any): AdminUserRecord {
     riskScore: Math.max(0, Math.min(100, Number(row.risk_score ?? metadata.riskScore ?? 0) || 0)),
     flags: Array.isArray(row.flags) ? row.flags.map((item: unknown) => normalizeText(item)).filter(Boolean) : [],
     notes: normalizeText(row.notes),
+    supportNote: normalizeText(row.support_note || row.supportNote),
+    accountRecoveryStatus,
+    supportLockedUntil: normalizeText(row.support_locked_until || row.supportLockedUntil),
+    lastRecoveryRequestAt: normalizeText(row.last_recovery_request_at || row.lastRecoveryRequestAt),
+    passwordResetRequired: Boolean(row.password_reset_required ?? metadata.passwordResetRequired ?? accountRecoveryStatus === 'requested'),
   };
 }
 
@@ -390,6 +565,7 @@ function currentAuthUser(admin: AdminAccess, rawUser?: Record<string, unknown>):
     id,
     email,
     name: normalizeText(rawUser?.name || rawUser?.displayName, email.split('@')[0]),
+    username: normalizeUsername(rawUser?.username, email || id),
     picture: normalizeText(rawUser?.picture || rawUser?.avatarUrl),
     provider: normalizeProvider(rawUser?.provider),
     role: admin.role,
@@ -409,6 +585,10 @@ function currentAuthUser(admin: AdminAccess, rawUser?: Record<string, unknown>):
     },
     riskScore: 0,
     flags: ['admin_verified'],
+    notes: '',
+    supportNote: '',
+    accountRecoveryStatus: 'none',
+    passwordResetRequired: false,
   };
 }
 
@@ -419,6 +599,7 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
       id: 'runtime_user_trial_review',
       email: 'trial.review@example.com',
       name: 'Trial Review',
+      username: 'trial-review',
       provider: 'email',
       role: 'user',
       status: 'trialing',
@@ -438,12 +619,15 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
       },
       riskScore: 12,
       flags: ['trial'],
+      accountRecoveryStatus: 'none',
+      passwordResetRequired: false,
       isSample: true,
     },
     {
       id: 'runtime_user_pro_barista',
       email: 'pro.barista@example.com',
       name: 'Pro Barista',
+      username: 'pro-barista',
       provider: 'google',
       role: 'user',
       status: 'active',
@@ -463,12 +647,15 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
       },
       riskScore: 4,
       flags: ['power_user'],
+      accountRecoveryStatus: 'none',
+      passwordResetRequired: false,
       isSample: true,
     },
     {
       id: 'runtime_user_team_cafe',
       email: 'manager.cafe@example.com',
       name: 'Cafe Manager',
+      username: 'cafe-manager',
       provider: 'google',
       role: 'admin',
       status: 'active',
@@ -488,12 +675,15 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
       },
       riskScore: 8,
       flags: ['team_owner'],
+      accountRecoveryStatus: 'none',
+      passwordResetRequired: false,
       isSample: true,
     },
     {
       id: 'runtime_user_past_due',
       email: 'billing.watch@example.com',
       name: 'Billing Watch',
+      username: 'billing-watch',
       provider: 'email',
       role: 'user',
       status: 'past_due',
@@ -514,6 +704,10 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
       riskScore: 68,
       flags: ['billing_attention'],
       notes: 'Payment retry window open.',
+      supportNote: 'Confirm payment method before restoring higher quota.',
+      accountRecoveryStatus: 'requested',
+      lastRecoveryRequestAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+      passwordResetRequired: true,
       isSample: true,
     },
   ];
@@ -522,9 +716,11 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
     const patch = RUNTIME_USER_PATCHES.get(user.id);
     if (!patch) return user;
     const planCode = patch.planCode || user.planCode;
+    const { displayName, ...recordPatch } = patch;
     return {
       ...user,
-      ...patch,
+      ...recordPatch,
+      name: displayName || user.name,
       planCode,
       planName: planName(planCode),
       flags: user.flags,
@@ -783,10 +979,13 @@ async function upsertSupabaseAdminUser(
     id: admin.userId,
     email: admin.email || normalizeText(rawUser?.email),
     display_name: normalizeText(rawUser?.name || rawUser?.displayName),
+    username: normalizeUsername(rawUser?.username, admin.email || admin.userId),
     avatar_url: normalizeText(rawUser?.picture || rawUser?.avatarUrl),
     provider: normalizeProvider(rawUser?.provider),
     role: admin.role,
     last_seen_at: nowIso(),
+    account_recovery_status: 'none',
+    password_reset_required: false,
     metadata: {
       adminAccessSource: admin.source,
       platform: 'web',
@@ -889,27 +1088,142 @@ async function buildAdminSnapshot(
   };
 }
 
-function validatePatch(body: any): { ok: true; userId: string; patch: UserPatch } | { ok: false; error: string } {
+function validatePatch(body: any): { ok: true; userId: string; patch: UserPatch } | ValidationError {
   const userId = normalizeText(body?.userId);
   if (!userId) return { ok: false, error: 'userId is required' };
   const rawPatch = body?.patch && typeof body.patch === 'object' ? body.patch : {};
   const patch: UserPatch = {};
 
-  if ('role' in rawPatch) patch.role = normalizeRole(rawPatch.role);
-  if ('status' in rawPatch) patch.status = normalizeStatus(rawPatch.status);
-  if ('planCode' in rawPatch) patch.planCode = normalizePlanCode(rawPatch.planCode);
-  if ('notes' in rawPatch) patch.notes = normalizeText(rawPatch.notes).slice(0, 500);
+  if ('role' in rawPatch) {
+    const validated = validateEnumValue(rawPatch.role, 'role', VALID_ADMIN_ROLES);
+    if (validated.ok === false) return validated;
+    patch.role = validated.value;
+  }
+  if ('status' in rawPatch) {
+    const validated = validateEnumValue(rawPatch.status, 'status', VALID_ACCOUNT_STATUSES);
+    if (validated.ok === false) return validated;
+    patch.status = validated.value;
+  }
+  if ('planCode' in rawPatch) {
+    const validated = validateEnumValue(rawPatch.planCode, 'planCode', VALID_PLAN_CODES);
+    if (validated.ok === false) return validated;
+    patch.planCode = validated.value;
+  }
+  if ('displayName' in rawPatch) {
+    const validated = validatePatchText(rawPatch.displayName, 'displayName', DISPLAY_NAME_MAX_LENGTH, { required: true });
+    if (validated.ok === false) return validated;
+    patch.displayName = validated.value;
+  }
+  if ('username' in rawPatch) {
+    const validated = validateUsernamePatch(rawPatch.username);
+    if (validated.ok === false) return validated;
+    patch.username = validated.value;
+  }
+  if ('notes' in rawPatch) {
+    const validated = validatePatchText(rawPatch.notes, 'notes', NOTES_MAX_LENGTH);
+    if (validated.ok === false) return validated;
+    patch.notes = validated.value;
+  }
+  if ('supportNote' in rawPatch) {
+    const validated = validatePatchText(rawPatch.supportNote, 'supportNote', SUPPORT_NOTE_MAX_LENGTH);
+    if (validated.ok === false) return validated;
+    patch.supportNote = validated.value;
+  }
+  if ('accountRecoveryStatus' in rawPatch) {
+    const validated = validateEnumValue(rawPatch.accountRecoveryStatus, 'accountRecoveryStatus', VALID_ACCOUNT_RECOVERY_STATUSES);
+    if (validated.ok === false) return validated;
+    patch.accountRecoveryStatus = validated.value;
+    if (patch.accountRecoveryStatus === 'requested') {
+      patch.lastRecoveryRequestAt = nowIso();
+      if (!('passwordResetRequired' in rawPatch)) patch.passwordResetRequired = true;
+    } else if (!('passwordResetRequired' in rawPatch)) {
+      patch.passwordResetRequired = false;
+    }
+  }
+  if ('passwordResetRequired' in rawPatch) {
+    const validated = validateBooleanPatch(rawPatch.passwordResetRequired, 'passwordResetRequired');
+    if (validated.ok === false) return validated;
+    patch.passwordResetRequired = validated.value;
+    if (patch.passwordResetRequired && !patch.accountRecoveryStatus) {
+      patch.accountRecoveryStatus = 'requested';
+      patch.lastRecoveryRequestAt = nowIso();
+    }
+  }
 
   if (Object.keys(patch).length === 0) return { ok: false, error: 'patch is empty' };
   return { ok: true, userId, patch };
 }
 
-function validateFeatureFlagPatch(body: any): { ok: true; key: string; patch: FeatureFlagPatch } | { ok: false; error: string } {
+function validateFeatureFlagPatch(body: any): { ok: true; key: string; patch: FeatureFlagPatch } | ValidationError {
   const key = normalizeFeatureFlagKey(body?.key);
   if (!key) return { ok: false, error: 'key is required' };
   const patch = normalizeFeatureFlagPatch(body?.patch);
   if (Object.keys(patch).length === 0) return { ok: false, error: 'patch is empty' };
   return { ok: true, key, patch };
+}
+
+function featureFlagPatchRequiresMessage(patch: FeatureFlagPatch): boolean {
+  return patch.status === 'maintenance' || patch.status === 'disabled';
+}
+
+function featureFlagPatchHasMessage(patch: FeatureFlagPatch): boolean {
+  return typeof patch.message === 'string' && patch.message.replace(/\s+/g, ' ').trim().length >= 12;
+}
+
+function featureFlagPatchSeverity(patch: FeatureFlagPatch): AdminAuditEvent['severity'] {
+  if (patch.status === 'disabled') return 'critical';
+  if (patch.status === 'maintenance') return 'warning';
+  return 'info';
+}
+
+function featureFlagPatchAuditDetail(prefix: string, patch: FeatureFlagPatch): string {
+  const keys = Object.keys(patch).join(', ');
+  const messagePreview = typeof patch.message === 'string'
+    ? patch.message.replace(/\s+/g, ' ').trim().slice(0, 160)
+    : '';
+  return messagePreview ? `${prefix}: ${keys}. Message: ${messagePreview}` : `${prefix}: ${keys}`;
+}
+
+function findUsernameConflict(users: AdminUserRecord[], userId: string, username: string): AdminUserRecord | null {
+  const normalized = username.trim().toLowerCase();
+  if (!normalized) return null;
+  return users.find((user) => user.id !== userId && user.username.trim().toLowerCase() === normalized) || null;
+}
+
+async function findCurrentUsernameConflict(
+  admin: AdminAccess,
+  rawUser: Record<string, unknown> | undefined,
+  userId: string,
+  username: string,
+): Promise<AdminUserRecord | null> {
+  const snapshot = await buildAdminSnapshot(`admin_username_validate_${Date.now()}`, admin, rawUser);
+  return findUsernameConflict(snapshot.users, userId, username);
+}
+
+function userPatchRequiresOperatorReason(patch: UserPatch): boolean {
+  return patch.status === 'suspended' || patch.status === 'deleted' || patch.role === 'owner';
+}
+
+function userPatchHasOperatorReason(patch: UserPatch): boolean {
+  return typeof patch.supportNote === 'string' && patch.supportNote.replace(/\s+/g, ' ').trim().length >= 12;
+}
+
+function userPatchSeverity(patch: UserPatch): AdminAuditEvent['severity'] {
+  if (patch.status === 'deleted' || patch.role === 'owner') {
+    return 'critical';
+  }
+  if (patch.status === 'suspended' || patch.passwordResetRequired) {
+    return 'warning';
+  }
+  return 'info';
+}
+
+function userPatchAuditDetail(prefix: string, patch: UserPatch): string {
+  const keys = Object.keys(patch).join(', ');
+  const notePreview = typeof patch.supportNote === 'string'
+    ? patch.supportNote.replace(/\s+/g, ' ').trim().slice(0, 160)
+    : '';
+  return notePreview ? `${prefix}: ${keys}. Support note: ${notePreview}` : `${prefix}: ${keys}`;
 }
 
 function auditRuntimeMutation(admin: AdminAccess, userId: string, patch: UserPatch): void {
@@ -919,8 +1233,8 @@ function auditRuntimeMutation(admin: AdminAccess, userId: string, patch: UserPat
     target: userId,
     action: 'user_updated',
     createdAt: nowIso(),
-    detail: `Runtime user patch: ${Object.keys(patch).join(', ')}`,
-    severity: patch.status === 'suspended' || patch.role === 'owner' ? 'warning' : 'info',
+    detail: userPatchAuditDetail('Runtime user patch', patch),
+    severity: userPatchSeverity(patch),
   });
   RUNTIME_AUDIT.splice(RUNTIME_AUDIT_LIMIT);
 }
@@ -932,8 +1246,8 @@ function auditRuntimeFeatureFlagMutation(admin: AdminAccess, key: string, patch:
     target: key,
     action: 'feature_flag_updated',
     createdAt: nowIso(),
-    detail: `Runtime feature flag patch: ${Object.keys(patch).join(', ')}`,
-    severity: patch.status === 'disabled' || patch.status === 'maintenance' ? 'warning' : 'info',
+    detail: featureFlagPatchAuditDetail('Runtime feature flag patch', patch),
+    severity: featureFlagPatchSeverity(patch),
   });
   RUNTIME_AUDIT.splice(RUNTIME_AUDIT_LIMIT);
 }
@@ -950,7 +1264,13 @@ async function patchSupabaseUser(
   if (patch.role) body.role = patch.role;
   if (patch.status) body.status = patch.status;
   if (patch.planCode) body.plan_code = patch.planCode;
+  if (patch.displayName) body.display_name = patch.displayName;
+  if (patch.username) body.username = patch.username;
   if (typeof patch.notes === 'string') body.notes = patch.notes;
+  if (typeof patch.supportNote === 'string') body.support_note = patch.supportNote;
+  if (patch.accountRecoveryStatus) body.account_recovery_status = patch.accountRecoveryStatus;
+  if (typeof patch.passwordResetRequired === 'boolean') body.password_reset_required = patch.passwordResetRequired;
+  if (patch.lastRecoveryRequestAt) body.last_recovery_request_at = patch.lastRecoveryRequestAt;
 
   await supabaseRest(config, `app_users?id=eq.${encodeURIComponent(userId)}`, {
     method: 'PATCH',
@@ -967,9 +1287,9 @@ async function patchSupabaseUser(
       target_type: 'user',
       target_id: userId,
       action: 'user_updated',
-      detail: `Updated ${Object.keys(patch).join(', ')}`,
+      detail: userPatchAuditDetail('Updated', patch),
       after: patch,
-      severity: patch.status === 'suspended' || patch.role === 'owner' ? 'warning' : 'info',
+      severity: userPatchSeverity(patch),
     }]),
   });
 }
@@ -1005,9 +1325,9 @@ async function patchSupabaseFeatureFlag(
       target_type: 'feature_flag',
       target_id: key,
       action: 'feature_flag_updated',
-      detail: `Updated ${Object.keys(patch).join(', ')}`,
+      detail: featureFlagPatchAuditDetail('Updated', patch),
       after: patch,
-      severity: patch.status === 'disabled' || patch.status === 'maintenance' ? 'warning' : 'info',
+      severity: featureFlagPatchSeverity(patch),
     }]),
   });
 }
@@ -1133,6 +1453,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             requestId,
             error: validated.error,
             errorCode: 'validation_error',
+            details: validated.details,
+          });
+        }
+        if (featureFlagPatchRequiresMessage(validated.patch) && !featureFlagPatchHasMessage(validated.patch)) {
+          return res.status(400).json({
+            ok: false,
+            requestId,
+            error: 'Maintenance and disabled feature flags require an operator message',
+            errorCode: 'feature_flag_message_required',
           });
         }
         const snapshot = await updateFeatureFlag(access.admin, access.auth.user, validated.key, validated.patch);
@@ -1148,7 +1477,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           requestId,
           error: validated.error,
           errorCode: 'validation_error',
+          details: validated.details,
         });
+      }
+      if (
+        validated.userId === access.admin.userId
+        && (
+          (validated.patch.role && validated.patch.role !== access.admin.role)
+          || validated.patch.status === 'suspended'
+          || validated.patch.status === 'deleted'
+        )
+      ) {
+        return res.status(400).json({
+          ok: false,
+          requestId,
+          error: 'Refusing to lock out the signed-in admin account',
+          errorCode: 'self_protection',
+        });
+      }
+      if (userPatchRequiresOperatorReason(validated.patch) && !userPatchHasOperatorReason(validated.patch)) {
+        return res.status(400).json({
+          ok: false,
+          requestId,
+          error: 'Critical account changes require an operator reason in supportNote',
+          errorCode: 'operator_reason_required',
+        });
+      }
+      if (validated.patch.username) {
+        const conflict = await findCurrentUsernameConflict(access.admin, access.auth.user, validated.userId, validated.patch.username);
+        if (conflict) {
+          return res.status(409).json({
+            ok: false,
+            requestId,
+            error: `Username @${validated.patch.username} is already assigned`,
+            errorCode: 'username_conflict',
+            details: `Conflicts with ${conflict.email || conflict.id}`,
+          });
+        }
       }
       const snapshot = await updateUser(access.admin, access.auth.user, validated.userId, validated.patch);
       return res.status(200).json({

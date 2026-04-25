@@ -192,7 +192,7 @@ export function BottomNav({ hidden = false }: BottomNavProps) {
         data-testid="mobile-bottom-nav-surface"
         className="mobile-bottom-nav-surface flex items-center justify-center gap-1 pointer-events-auto w-auto"
         style={{
-          width: 'clamp(274px, 78vw, 352px)',
+          width: 'clamp(286px, 90vw, 360px)',
           paddingTop: '0.36rem',
           paddingBottom: '0.36rem',
         }}
@@ -234,5 +234,4 @@ export function BottomNav({ hidden = false }: BottomNavProps) {
     </div>
   );
 }
-
 

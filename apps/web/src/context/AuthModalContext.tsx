@@ -11,6 +11,9 @@ type AuthUser = {
   email?: string;
   picture?: string;
   role?: string;
+  provider?: 'google' | 'apple' | 'email' | 'guest' | string;
+  planCode?: string;
+  isGuest?: boolean;
   isAdmin?: boolean;
 };
 
@@ -46,11 +49,13 @@ type AuthModalContextValue = {
   authBusy: boolean;
   authError: string | null;
   isOffline: boolean;
+  isGuest: boolean;
   openAuthModal: (options?: OpenAuthModalOptions) => void;
   closeAuthModal: () => void;
   clearAuthError: () => void;
   refreshAuthState: (options?: { silent?: boolean; retryDelaysMs?: number[] }) => Promise<boolean>;
   startGoogleAuth: () => Promise<void>;
+  continueAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -82,6 +87,24 @@ function readNativeShellSession(): NativeShellSession | null {
   return session;
 }
 
+function consumeGuestModeRequest(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const url = new URL(window.location.href);
+    const requested = url.searchParams.get('guest_mode') === '1';
+    if (!requested) return false;
+    url.searchParams.delete('guest_mode');
+    window.history.replaceState(window.history.state, document.title, `${url.pathname}${url.search}${url.hash}`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isGuestUser(user: AuthUser | null): boolean {
+  return Boolean(user?.isGuest || user?.provider === 'guest' || user?.id?.startsWith('guest_'));
+}
+
 export function AuthModalProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [source, setSource] = useState('general');
@@ -95,6 +118,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   const oauthPopupRef = useRef<Window | null>(null);
   const oauthPopupMonitorRef = useRef<number | null>(null);
   const oauthResultHandledRef = useRef(false);
+  const guestBootstrapHandledRef = useRef(false);
   const { isOffline } = useNetworkStatus();
 
   const getLocalizedCopy = useCallback(() => {
@@ -132,6 +156,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const isAuthenticated = !!user;
+  const isGuest = isGuestUser(user);
 
   const applyNativeShellSession = useCallback((session = readNativeShellSession()) => {
     if (!session?.user) return false;
@@ -382,6 +407,53 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     }
   }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline, startOauthPopupMonitor]);
 
+  const continueAsGuest = useCallback(async () => {
+    oauthResultHandledRef.current = true;
+    clearOauthPopupMonitor({ closePopup: true });
+    setAuthBusy(true);
+    setAuthError(null);
+
+    if (isOffline) {
+      setAuthBusy(false);
+      const copy = getLocalizedCopy();
+      setAuthError(copy.authGuestOffline || copy.connectionFailed || copy.error);
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/guest', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload?.user) {
+        throw new Error(String(payload?.error || payload?.message || 'Guest mode is unavailable.'));
+      }
+      const nextUser = payload.user as AuthUser;
+      setUser(nextUser);
+      if (nextUser.name) saveUserName(nextUser.name);
+      setAuthMode('server');
+      setAuthChecking(false);
+      setAuthError(null);
+      setIsOpen(false);
+    } catch (error) {
+      const copy = getLocalizedCopy();
+      const message = error instanceof Error ? error.message : (copy.authGuestUnavailable || copy.error);
+      setAuthError(message);
+      setIsOpen(true);
+    } finally {
+      setAuthBusy(false);
+    }
+  }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline]);
+
+  useEffect(() => {
+    if (guestBootstrapHandledRef.current || authChecking || user) return;
+    if (!consumeGuestModeRequest()) return;
+    guestBootstrapHandledRef.current = true;
+    void continueAsGuest();
+  }, [authChecking, continueAsGuest, user]);
+
   const logout = useCallback(async () => {
     oauthResultHandledRef.current = true;
     refreshRequestIdRef.current += 1;
@@ -407,11 +479,13 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     authBusy,
     authError,
     isOffline,
+    isGuest,
     openAuthModal,
     closeAuthModal,
     clearAuthError,
     refreshAuthState,
     startGoogleAuth,
+    continueAsGuest,
     logout,
   }), [
     authBusy,
@@ -421,11 +495,13 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     clearAuthError,
     isAuthenticated,
     isOffline,
+    isGuest,
     isOpen,
     openAuthModal,
     refreshAuthState,
     source,
     startGoogleAuth,
+    continueAsGuest,
     logout,
     user,
   ]);
@@ -444,7 +520,6 @@ export function useAuthModal() {
   }
   return context;
 }
-
 
 
 

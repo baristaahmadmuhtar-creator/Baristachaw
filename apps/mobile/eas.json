@@ -48,10 +48,14 @@
         "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
         "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
-        "EXPO_PUBLIC_RELEASE": "ios-preview"
+        "EXPO_PUBLIC_RELEASE": "mobile-preview"
       },
       "ios": {
         "autoIncrement": "buildNumber"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "autoIncrement": "versionCode"
       }
     },
     "production": {
@@ -62,10 +66,14 @@
         "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
         "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
-        "EXPO_PUBLIC_RELEASE": "ios-production"
+        "EXPO_PUBLIC_RELEASE": "mobile-production"
       },
       "ios": {
         "autoIncrement": "buildNumber"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "autoIncrement": "versionCode"
       }
     }
   },

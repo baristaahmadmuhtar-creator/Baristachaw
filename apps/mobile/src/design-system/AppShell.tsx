@@ -46,6 +46,7 @@ export function AppShell({
       {scrollable ? (
         <ScrollView
           style={styles.scroll}
+          contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={[
             styles.content,
             {
@@ -56,6 +57,7 @@ export function AppShell({
             contentStyle,
           ]}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
           showsVerticalScrollIndicator={false}
         >
           {header}

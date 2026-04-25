@@ -113,7 +113,7 @@ function buildNativeShellBootstrap(platform: 'ios' | 'android', authSession?: Au
   `;
 }
 
-function buildWebParityUrl(baseUrl: string, platform: 'ios' | 'android', hostSafeBottom: number) {
+function buildWebParityUrl(baseUrl: string, platform: 'ios' | 'android', hostSafeBottom: number, guestModeRequested: boolean) {
   const safeBottom = Math.max(0, Math.min(48, Math.round(hostSafeBottom)));
   try {
     const url = new URL(baseUrl);
@@ -122,10 +122,12 @@ function buildWebParityUrl(baseUrl: string, platform: 'ios' | 'android', hostSaf
     url.searchParams.set('native_shell', platform);
     url.searchParams.set('host_safe_bottom', String(safeBottom));
     url.searchParams.set('theme', 'system');
+    if (guestModeRequested) url.searchParams.set('guest_mode', '1');
     return url.toString();
   } catch {
     const divider = baseUrl.includes('?') ? '&' : '?';
-    return `${baseUrl}${divider}runtime=web_parity&ui_profile=native_shell&native_shell=${platform}&host_safe_bottom=${safeBottom}&theme=system`;
+    const guestParam = guestModeRequested ? '&guest_mode=1' : '';
+    return `${baseUrl}${divider}runtime=web_parity&ui_profile=native_shell&native_shell=${platform}&host_safe_bottom=${safeBottom}&theme=system${guestParam}`;
   }
 }
 
@@ -156,6 +158,7 @@ type WebParityScreenProps = {
   onParityFailure?: (reason: 'error' | 'http_error' | 'load_error') => void;
   onNativeLogout?: () => void;
   onNativeAuthExpired?: () => void;
+  guestModeRequested?: boolean;
 };
 
 export function WebParityScreen({
@@ -164,6 +167,7 @@ export function WebParityScreen({
   onParityFailure,
   onNativeLogout,
   onNativeAuthExpired,
+  guestModeRequested = false,
 }: WebParityScreenProps) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
@@ -178,8 +182,8 @@ export function WebParityScreen({
     [authSession, shellPlatform],
   );
   const parityUrl = useMemo(
-    () => buildWebParityUrl(mobileEnv.webAppUrl, shellPlatform, hostSafeBottom),
-    [hostSafeBottom, shellPlatform],
+    () => buildWebParityUrl(mobileEnv.webAppUrl, shellPlatform, hostSafeBottom, guestModeRequested),
+    [guestModeRequested, hostSafeBottom, shellPlatform],
   );
   const appOrigin = useMemo(() => {
     try {
@@ -287,6 +291,20 @@ export function WebParityScreen({
     setLoading(true);
   }, [parityUrl]);
 
+  useEffect(() => {
+    if (!loading || didReportReady.current || loadFailed.current) return;
+
+    const timeout = setTimeout(() => {
+      if (didReportReady.current || loadFailed.current) return;
+      loadFailed.current = true;
+      setLoading(false);
+      setError(copy.loadError);
+      onParityFailure?.('load_error');
+    }, mobileEnv.webParityTimeoutMs);
+
+    return () => clearTimeout(timeout);
+  }, [copy.loadError, loading, onParityFailure, parityUrl]);
+
   const handleReload = () => {
     setError('');
     setLoading(true);
@@ -379,6 +397,12 @@ export function WebParityScreen({
           setLoading(false);
           setError(copy.httpError);
           onParityFailure?.('http_error');
+        }}
+        onContentProcessDidTerminate={() => {
+          loadFailed.current = true;
+          setLoading(false);
+          setError(copy.loadError);
+          onParityFailure?.('load_error');
         }}
         allowsInlineMediaPlayback
         setSupportMultipleWindows={false}

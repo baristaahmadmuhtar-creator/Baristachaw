@@ -126,3 +126,29 @@ test('auth me handler returns authenticated user from cookie token', () => {
     },
   });
 });
+
+test('auth me handler accepts a guest session token', () => {
+  const guestUser = {
+    id: 'guest_me_session',
+    name: 'Guest Barista',
+    role: 'user',
+    provider: 'guest',
+    planCode: 'free',
+    isGuest: true,
+  };
+  const token = createToken({ user: guestUser });
+  const req = makeReq({
+    cookies: {
+      auth_token: token,
+    },
+  });
+  const res = createMockRes();
+
+  authMeHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(JSON.parse(res.body), {
+    authenticated: true,
+    user: guestUser,
+  });
+});

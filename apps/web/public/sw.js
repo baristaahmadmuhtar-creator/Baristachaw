@@ -1,5 +1,5 @@
-const SHELL_CACHE = 'baristachaw-shell-v16';
-const API_CACHE = 'baristachaw-api-v16';
+const SHELL_CACHE = 'baristachaw-shell-v17';
+const API_CACHE = 'baristachaw-api-v17';
 
 const SHELL_ASSETS = [
   '/',

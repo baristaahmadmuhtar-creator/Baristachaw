@@ -40,6 +40,11 @@ export function ActionButton({
     <Pressable
       {...props}
       disabled={disabled}
+      accessibilityRole={props.accessibilityRole || 'button'}
+      accessibilityState={{
+        ...props.accessibilityState,
+        disabled,
+      }}
       style={({ pressed }) => [
         styles.base,
         compact ? styles.compact : null,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { Loader2, CheckCircle, AlertCircle, UserRound } from 'lucide-react';
+import { Info, Loader2, CheckCircle, AlertCircle, UserRound } from 'lucide-react';
 import { useAuthModal } from '../context/AuthModalContext';
 import { useGlobalState } from '../context/GlobalState';
 import { AppIconBrand, GoogleMark } from '../components/icons';
@@ -13,17 +13,9 @@ interface AuthScreenProps {
 
 export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
   const { t } = useGlobalState();
-  const { isAuthenticated, authBusy, authError, openAuthModal, continueAsGuest } = useAuthModal();
+  const { isAuthenticated, authBusy, authError, isOffline, startGoogleAuth, continueAsGuest } = useAuthModal();
   const [success, setSuccess] = useState('');
   const isSignUp = intent === 'signUp';
-
-  useEffect(() => {
-    if (isAuthenticated) return;
-    const timeout = window.setTimeout(() => {
-      openAuthModal({ source: isSignUp ? 'registration' : 'auth_screen' });
-    }, 180);
-    return () => window.clearTimeout(timeout);
-  }, [isAuthenticated, isSignUp, openAuthModal]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -59,7 +51,7 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
             <AppIconBrand className="h-16 w-16 object-contain" />
           </motion.div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">
-            {isSignUp ? t.authRouteSignupTitle : t.authRouteSigninTitle}
+            Baristachaw
           </h1>
           <p className="text-secondary text-base">
             {isSignUp ? t.authRouteSignupSubtitle : t.authRouteSigninSubtitle}
@@ -92,12 +84,14 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
         </AnimatePresence>
 
         <div className="glass-card p-8">
-          <p className="mb-4 rounded-2xl border border-blue-500/15 bg-blue-500/10 px-4 py-3 text-sm font-medium text-blue-700 dark:text-blue-200">
-            {t.authRouteAutoOpening}
-          </p>
+          {isOffline ? (
+            <div className="mb-4 rounded-2xl border border-amber-500/25 bg-amber-500/12 px-4 py-3 text-sm font-medium text-amber-700 dark:text-amber-300">
+              {t.authModalOffline}
+            </div>
+          ) : null}
           <button
-            onClick={() => openAuthModal({ source: isSignUp ? 'registration' : 'auth_screen' })}
-            disabled={authBusy}
+            onClick={() => void startGoogleAuth()}
+            disabled={authBusy || isOffline}
             className="w-full glass-button-primary py-4 px-6 flex items-center justify-center gap-3 text-base"
           >
             {authBusy ? (
@@ -110,17 +104,28 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
                 <span className="grid h-6 w-6 place-items-center rounded-full bg-white">
                   <GoogleMark className="h-4 w-4" />
                 </span>
-                {isSignUp ? t.authRouteSignupCta : t.authRouteSigninCta}
+                {t.continueWithGoogle}
               </>
             )}
           </button>
+          <div className="mt-3 flex items-start gap-3 rounded-2xl border border-glass bg-surface-alpha px-4 py-3 text-sm text-secondary">
+            <Info size={16} className="mt-0.5 shrink-0" />
+            <span>
+              <span className="block font-semibold text-primary">
+                {isSignUp ? t.authRouteSignupTitle : t.authRouteSigninTitle}
+              </span>
+              <span className="mt-1 block text-xs">
+                {isSignUp ? t.authRouteSignupSubtitle : t.authRouteSigninSubtitle}
+              </span>
+            </span>
+          </div>
           <button
             onClick={() => void continueAsGuest()}
             disabled={authBusy}
             className="mt-3 w-full rounded-2xl border border-glass bg-surface-alpha py-4 px-6 flex items-center justify-center gap-3 text-base font-semibold text-primary disabled:cursor-not-allowed disabled:opacity-55"
           >
             {authBusy ? <Loader2 className="animate-spin" size={20} /> : <UserRound size={20} />}
-            {authBusy ? t.authGuestStarting : t.authRouteGuestCta}
+            {authBusy ? t.authGuestStarting : t.continueAsGuest}
           </button>
           <Link
             to={isSignUp ? '/masuk' : '/daftar'}

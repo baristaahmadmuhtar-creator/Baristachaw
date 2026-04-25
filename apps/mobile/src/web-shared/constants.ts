@@ -295,7 +295,7 @@ const EN_TRANSLATIONS: Translations = {
     homeWorkspaceReady: 'Ready',
     homeWorkspaceLimited: 'Limited',
     homeWorkspaceBlocked: 'Blocked',
-    homeBillingStatus: 'Billing {status}',
+    homeBillingStatus: 'Pembayaran {status}',
     homeAccountStatusUnavailable: 'Account status is temporarily unavailable; cached app tools remain available.',
     homeAccountBlocked: 'Your account is blocked. Contact support or review your billing status.',
     homeCheckingPlanAccess: 'Checking current plan and app access...',

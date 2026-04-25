@@ -20,7 +20,7 @@ import { useRuntimeDisplayMode } from "../hooks/useRuntimeDisplayMode";
 import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import { subscribeMediaQueryChange } from "../utils/mediaQuery";
 import { useAccountStatus } from "../context/AccountStatusContext";
-import type { AccountFeatureFlag } from "../services/accountStatus";
+import type { AccountFeatureFlag, AccountStatusSnapshot } from "../services/accountStatus";
 import { BillingApiError, openBillingPortal, startBillingCheckout } from "../services/billing";
 import { isDisplayableAvatarUrl } from "../utils/avatarUrl";
 import { normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentProfileMemory } from "@baristachaw/shared";
@@ -52,11 +52,46 @@ function formatStatusValue(value: string, language: string): string {
     available: 'tersedia',
     maintenance: 'pemeliharaan',
     disabled: 'nonaktif',
-    web: 'web',
+    web: 'Web',
     pwa: 'PWA',
-    mobile: 'mobile',
+    mobile: 'seluler',
   };
   return idMap[value] || normalized;
+}
+
+function formatPlanName(value: string, language: string): string {
+  if (language !== 'id') return value;
+  const normalized = value.trim().toLowerCase();
+  const idMap: Record<string, string> = {
+    free: 'Gratis',
+    starter: 'Starter',
+    pro: 'Pro',
+    team: 'Tim',
+    enterprise: 'Enterprise',
+  };
+  return idMap[normalized] || value;
+}
+
+function formatRecommendedUpgradeReason(
+  snapshot: AccountStatusSnapshot | null,
+  language: string,
+  locale: string,
+): string {
+  const upgrade = snapshot?.recommendedUpgrade;
+  if (!upgrade?.reason) return '';
+  if (language !== 'id') return upgrade.reason;
+  const plan = snapshot?.plans.find((item) => item.code === upgrade.planCode);
+  if (!plan) return upgrade.reason;
+  if (upgrade.action === 'checkout') {
+    return `Paket ${formatPlanName(plan.name, language)} membuka ${formatCompactNumber(plan.aiDailyLimit, locale)} permintaan AI/hari dan ${formatCompactNumber(plan.deepDailyLimit, locale)} permintaan Deep/hari.`;
+  }
+  if (upgrade.action === 'manage') {
+    return `Kelola pembayaran untuk menjaga akses paket ${formatPlanName(plan.name, language)} tetap aktif.`;
+  }
+  if (upgrade.action === 'contact_support') {
+    return `Hubungi dukungan untuk mengaktifkan paket ${formatPlanName(plan.name, language)}.`;
+  }
+  return upgrade.reason;
 }
 
 function featureUnavailableMessage(flag: AccountFeatureFlag, t: Record<string, string>): string {
@@ -158,6 +193,10 @@ export function Home() {
   const workspaceStatusLabel = accountBlocked ? t.homeWorkspaceBlocked : accountLimited ? t.homeWorkspaceLimited : t.homeWorkspaceReady;
   const billingStatusLabel = accountSnapshot?.billing.status || 'none';
   const recommendedUpgrade = accountSnapshot?.recommendedUpgrade;
+  const recommendedUpgradeReason = useMemo(
+    () => formatRecommendedUpgradeReason(accountSnapshot, language, locale),
+    [accountSnapshot, language, locale],
+  );
   const featureFlagByKey = useMemo(() => {
     const map = new Map<string, AccountFeatureFlag>();
     for (const flag of accountSnapshot?.featureFlags || []) {
@@ -804,15 +843,15 @@ export function Home() {
                     : accountSnapshot?.appAccess.message
                       || (accountSnapshot
                         ? formatText(t.homePlanStatus, {
-                          plan: accountSnapshot.plan.name,
+                          plan: formatPlanName(accountSnapshot.plan.name, language),
                           ai: formatCompactNumber(accountSnapshot.plan.aiDailyLimit, locale),
                           scanner: formatCompactNumber(accountSnapshot.plan.scannerDailyLimit, locale),
                         })
                         : t.homeCheckingPlanAccess)}
                 </p>
-                {recommendedUpgrade?.reason ? (
+                {recommendedUpgradeReason ? (
                   <p className="mt-1 text-xs leading-5 text-secondary">
-                    {recommendedUpgrade.reason}
+                    {recommendedUpgradeReason}
                   </p>
                 ) : null}
                 {maintenance.length ? (

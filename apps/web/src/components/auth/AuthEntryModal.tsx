@@ -13,6 +13,7 @@ function resolveSourceLabel(source: string, t: Record<string, string>) {
     chat_image_generation: t.authSourceImageGeneration,
     scanner: t.authSourceScanner,
     auth_screen: t.authSourceAuthentication,
+    registration: t.authSourceRegistration,
     general: t.authSourceGeneral,
   };
   return sourceLabelMap[source] || sourceLabelMap.general;

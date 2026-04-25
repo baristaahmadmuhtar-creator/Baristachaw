@@ -101,11 +101,6 @@ const DEFAULT_TOOLS_COPY: ToolsCopy = {
 };
 
 const TIMER_PRESETS = [120, 150, 180, 240];
-const TAB_ITEMS: Array<{ value: ToolsTab; label: string }> = [
-  { value: 'timer', label: TOOLS_PARITY.tabs.timer },
-  { value: 'ratio', label: TOOLS_PARITY.tabs.ratio },
-  { value: 'todo', label: TOOLS_PARITY.tabs.todo },
-];
 
 function formatClock(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
@@ -147,8 +142,8 @@ export function ToolsScreen() {
         paused: 'Dijeda',
         ready: 'Siap',
         recipeMismatch: 'Resep tidak cocok',
-        yieldReady: 'Yield siap',
-        yieldPending: 'Yield menunggu',
+        yieldReady: 'Hasil ekstraksi siap',
+        yieldPending: 'Hasil ekstraksi menunggu',
         ratioSubtitle: 'Analisis rasio cepat berbasis SCA dengan peringatan yang lebih rapi.',
         todoSubtitle: 'Tugas shift tetap terlihat dan ringkas di sela-sela seduhan.',
         timerSurface: 'Satu permukaan fokus untuk waktu dan progres.',
@@ -161,13 +156,13 @@ export function ToolsScreen() {
         water: 'Air (ml)',
         output: 'Hasil (ml)',
         result: 'Hasil',
-        addInputs: 'Masukkan input lengkap untuk membuka yield.',
+        addInputs: 'Masukkan data lengkap untuk menghitung hasil ekstraksi.',
         coherentRecipe: 'Resep terlihat konsisten. Rasio perkiraan ada di sekitar',
-        enterInputs: 'Masukkan dosis, air, rasio, TDS, dan hasil untuk menghitung extraction yield.',
+        enterInputs: 'Masukkan dosis, air, rasio, TDS, dan hasil untuk menghitung hasil ekstraksi.',
         taskSyncIssue: 'Masalah sinkronisasi tugas',
         deleteTask: 'Hapus',
         noTasks: 'Belum ada tugas',
-        addTaskHint: 'Tambahkan tugas shift dari dock.',
+        addTaskHint: 'Tambahkan tugas giliran dari panel bawah.',
         addTask: 'Tambah Tugas',
         taskSubtitle: 'Tambah satu tugas setiap kali.',
         taskCardTitle: 'Tugas',
@@ -175,8 +170,8 @@ export function ToolsScreen() {
         restart: 'Mulai ulang',
         tasksCount: (count: number) => `${count} tugas`,
         ratioLabel: 'Rasio',
-        eyPending: 'EY menunggu',
-        extractionYield: 'Extraction Yield',
+        eyPending: 'Hasil ekstraksi menunggu',
+        extractionYield: 'Hasil Ekstraksi',
         loadTasksFailed: 'Tugas tersimpan belum bisa dimuat sekarang.',
         saveTasksFailed: 'Tugas belum bisa disimpan sekarang.',
       };
@@ -256,6 +251,41 @@ export function ToolsScreen() {
     };
   }, [language]);
   const copy: ToolsCopy = { ...DEFAULT_TOOLS_COPY, ...copyDraft };
+  const toolsLabels = useMemo(() => {
+    if (language === 'id') {
+      return {
+        title: 'Alat Barista',
+        subtitle: 'Seduh AI, pewaktu, rasio, dan tugas shift.',
+        tabs: {
+          timer: 'Pewaktu',
+          ratio: 'Rasio',
+          todo: 'Tugas',
+        },
+        timerTitle: 'Pewaktu Seduh',
+        ratioTitle: 'Kalkulator Rasio',
+        taskTitle: 'Tugas',
+        taskPlaceholder: 'Tambahkan tugas...',
+      };
+    }
+    return {
+      title: TOOLS_PARITY.title,
+      subtitle: TOOLS_PARITY.subtitle,
+      tabs: {
+        timer: TOOLS_PARITY.tabs.timer,
+        ratio: TOOLS_PARITY.tabs.ratio,
+        todo: TOOLS_PARITY.tabs.todo,
+      },
+      timerTitle: TOOLS_PARITY.timerTitle,
+      ratioTitle: TOOLS_PARITY.ratioTitle,
+      taskTitle: TOOLS_PARITY.taskTitle,
+      taskPlaceholder: TOOLS_PARITY.taskPlaceholder,
+    };
+  }, [language]);
+  const tabItems = useMemo<Array<{ value: ToolsTab; label: string }>>(() => [
+    { value: 'timer', label: toolsLabels.tabs.timer },
+    { value: 'ratio', label: toolsLabels.tabs.ratio },
+    { value: 'todo', label: toolsLabels.tabs.todo },
+  ], [toolsLabels]);
 
   useEffect(() => {
     if (!running) {
@@ -373,9 +403,9 @@ export function ToolsScreen() {
       case 'todo':
         return copy.todoSubtitle;
       default:
-        return TOOLS_PARITY.subtitle;
+        return toolsLabels.subtitle;
     }
-  }, [activeTab, copy.ratioSubtitle, copy.todoSubtitle]);
+  }, [activeTab, copy.ratioSubtitle, copy.todoSubtitle, toolsLabels.subtitle]);
 
   const bottomDock = useMemo(() => {
     if (activeTab === 'timer') {
@@ -421,8 +451,8 @@ export function ToolsScreen() {
       <AppShell
         header={(
           <HeroHeader
-            eyebrow={TOOLS_PARITY.title}
-            title={TOOLS_PARITY.title}
+            eyebrow={toolsLabels.title}
+            title={toolsLabels.title}
             subtitle={headerSubtitle}
             direction={direction}
             status={(
@@ -441,11 +471,11 @@ export function ToolsScreen() {
         )}
         bottomDock={bottomDock}
       >
-        <SegmentedControl items={TAB_ITEMS} value={activeTab} onChange={setActiveTab} direction={direction} />
+        <SegmentedControl items={tabItems} value={activeTab} onChange={setActiveTab} direction={direction} />
 
         {activeTab === 'timer' ? (
           <>
-            <SectionCard title={TOOLS_PARITY.timerTitle} subtitle={copy.timerSurface} tone="accent">
+            <SectionCard title={toolsLabels.timerTitle} subtitle={copy.timerSurface} tone="accent">
               <View style={styles.badgeRow}>
                 <InfoPill label={timerStateLabel} tone={running ? 'success' : elapsed >= duration ? 'warning' : 'accent'} />
                 <InfoPill label={`${copy.target} ${formatClock(duration)}`} />
@@ -481,7 +511,7 @@ export function ToolsScreen() {
 
         {activeTab === 'ratio' ? (
           <>
-            <SectionCard title={TOOLS_PARITY.ratioTitle} subtitle={copy.ratioSurface} tone="accent">
+            <SectionCard title={toolsLabels.ratioTitle} subtitle={copy.ratioSurface} tone="accent">
               <View style={styles.badgeRow}>
                 <InfoPill label={`${copy.expected} ${ratioAnalysis.expectedRatio || '—'}:1`} tone="accent" />
                 <InfoPill label={ratioAnalysis.extractionYield ? `EY ${ratioAnalysis.extractionYield.toFixed(2)}%` : copy.eyPending} tone={ratioAnalysis.extractionYield ? 'success' : 'neutral'} />
@@ -597,7 +627,7 @@ export function ToolsScreen() {
       <ResultSheet
         visible={todoSheetOpen}
         direction={direction}
-        title={TOOLS_PARITY.taskTitle}
+        title={toolsLabels.taskTitle}
         subtitle={copy.taskSubtitle}
         onClose={() => setTodoSheetOpen(false)}
         actions={[
@@ -614,7 +644,7 @@ export function ToolsScreen() {
               value={newTodo}
               onChangeText={setNewTodo}
               style={styles.input}
-              placeholder={TOOLS_PARITY.taskPlaceholder}
+              placeholder={toolsLabels.taskPlaceholder}
               placeholderTextColor={uiTokens.text.muted}
             />
           </SectionCard>

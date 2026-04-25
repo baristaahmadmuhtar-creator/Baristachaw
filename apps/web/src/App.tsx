@@ -27,6 +27,7 @@ const Scanner = lazy(() => import('./pages/Scanner').then((module) => ({ default
 const Chat = lazy(() => import('./pages/Chat').then((module) => ({ default: module.Chat })));
 const Collection = lazy(() => import('./pages/Collection').then((module) => ({ default: module.Collection })));
 const BaristaTools = lazy(() => import('./pages/BaristaTools').then((module) => ({ default: module.BaristaTools })));
+const AuthScreen = lazy(() => import('./pages/AuthScreen').then((module) => ({ default: module.AuthScreen })));
 const NativeProductionShowcase = lazy(() => import('./pages/design/NativeProductionShowcase').then((module) => ({ default: module.NativeProductionShowcase })));
 const AdminManagement = lazy(() => import('./pages/AdminManagement').then((module) => ({ default: module.AdminManagement })));
 
@@ -45,10 +46,10 @@ function RouteLoadingFallback() {
             Baristachaw
           </div>
           <h1 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
-            Loading your barista workspace
+            Memuat ruang kerja barista
           </h1>
           <p className="mt-3 max-w-lg text-sm leading-6 text-slate-600 dark:text-white/70">
-            Preparing brew tools, chat context, and saved workspace state.
+            Menyiapkan alat seduh, konteks obrolan, dan status ruang kerja tersimpan.
           </p>
           <div className="mt-8 space-y-3">
             <div className="h-3 w-40 animate-pulse rounded-full bg-slate-200 dark:bg-white/12" />
@@ -235,6 +236,12 @@ function AppContent() {
         <Route path="/collection" element={<Collection />} />
         <Route path="/tools" element={<BaristaTools />} />
         <Route path="/coffee" element={<BaristaTools />} />
+        <Route path="/login" element={<AuthScreen intent="signIn" onLogin={() => navigate('/')} />} />
+        <Route path="/masuk" element={<AuthScreen intent="signIn" onLogin={() => navigate('/')} />} />
+        <Route path="/signin" element={<AuthScreen intent="signIn" onLogin={() => navigate('/')} />} />
+        <Route path="/register" element={<AuthScreen intent="signUp" onLogin={() => navigate('/')} />} />
+        <Route path="/signup" element={<AuthScreen intent="signUp" onLogin={() => navigate('/')} />} />
+        <Route path="/daftar" element={<AuthScreen intent="signUp" onLogin={() => navigate('/')} />} />
         <Route path="/admin" element={<AdminManagement />} />
         <Route path={DESIGN_ROUTE} element={<NativeProductionShowcase />} />
       </Routes>

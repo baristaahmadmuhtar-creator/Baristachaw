@@ -4,6 +4,7 @@ import {
   resolveAgentProfileNamespace,
   type AgentProfileMemory,
 } from '@baristachaw/shared';
+import { DEFAULT_LANGUAGE } from '../web-shared/constants';
 
 const AGENT_PROFILE_MEMORY_KEY_PREFIX = 'BARISTACHAW_AGENT_PROFILE_MEMORY::';
 
@@ -13,11 +14,32 @@ function getStorageKey(userId?: string | null): string {
 
 function buildDefaultProfile(seed?: Partial<AgentProfileMemory>): AgentProfileMemory {
   return normalizeAgentProfileMemory({
-    preferredLanguage: 'en',
+    preferredLanguage: DEFAULT_LANGUAGE,
+    languageSource: 'global',
     assistantName: 'Baristachaw',
     ...(seed || {}),
     updatedAt: Date.now(),
   });
+}
+
+function migrateLegacyDefaultLanguage(
+  profile: AgentProfileMemory,
+  seed?: Partial<AgentProfileMemory>,
+): { profile: AgentProfileMemory; changed: boolean } {
+  const seedLanguage = seed?.preferredLanguage || DEFAULT_LANGUAGE;
+  const isLegacyImplicitEnglish = profile.preferredLanguage === 'en' && !profile.languageSource;
+  if (DEFAULT_LANGUAGE === 'id' && seedLanguage === DEFAULT_LANGUAGE && isLegacyImplicitEnglish) {
+    return {
+      profile: normalizeAgentProfileMemory({
+        ...profile,
+        preferredLanguage: DEFAULT_LANGUAGE,
+        languageSource: 'global',
+        updatedAt: Date.now(),
+      }),
+      changed: true,
+    };
+  }
+  return { profile, changed: false };
 }
 
 export async function readAgentProfileMemory(
@@ -28,7 +50,11 @@ export async function readAgentProfileMemory(
   try {
     const raw = await AsyncStorage.getItem(key);
     if (raw) {
-      return normalizeAgentProfileMemory(JSON.parse(raw));
+      const migrated = migrateLegacyDefaultLanguage(normalizeAgentProfileMemory(JSON.parse(raw)), seed);
+      if (migrated.changed) {
+        await AsyncStorage.setItem(key, JSON.stringify(migrated.profile));
+      }
+      return migrated.profile;
     }
   } catch {
     // Ignore broken local data and return a fresh profile.
@@ -41,9 +67,12 @@ export async function saveAgentProfileMemory(
   patch?: Partial<AgentProfileMemory>,
 ): Promise<AgentProfileMemory> {
   const current = await readAgentProfileMemory(userId);
+  const normalizedPatch = patch?.preferredLanguage
+    ? { languageSource: 'manual' as const, ...patch }
+    : patch;
   const next = normalizeAgentProfileMemory({
     ...current,
-    ...(patch || {}),
+    ...(normalizedPatch || {}),
     updatedAt: Date.now(),
   });
   await AsyncStorage.setItem(getStorageKey(userId), JSON.stringify(next));

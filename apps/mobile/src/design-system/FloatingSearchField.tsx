@@ -19,6 +19,8 @@ export interface FloatingSearchFieldProps {
   disabled?: boolean;
   chips?: FloatingSearchFieldChip[];
   statusLabel?: string;
+  submitLabel?: string;
+  loadingLabel?: string;
 }
 
 export function FloatingSearchField({
@@ -30,6 +32,8 @@ export function FloatingSearchField({
   disabled = false,
   chips = [],
   statusLabel,
+  submitLabel = 'Search',
+  loadingLabel = 'Searching...',
 }: FloatingSearchFieldProps) {
   return (
     <View style={styles.shell}>
@@ -50,7 +54,7 @@ export function FloatingSearchField({
           onSubmitEditing={onSubmit}
         />
         <ActionButton
-          label={loading ? 'Searching...' : 'Search'}
+          label={loading ? loadingLabel : submitLabel}
           tone="primary"
           compact
           onPress={onSubmit}

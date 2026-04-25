@@ -1,25 +1,18 @@
 import { useEffect, useState } from 'react';
 
 import { readAgentProfileMemory } from '../services/agentProfileStore';
+import { DEFAULT_LANGUAGE } from '../web-shared/constants';
 import { resolveMobileLanguage } from '../utils/localization';
 
-function readDeviceLanguage(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().locale || 'en';
-  } catch {
-    return 'en';
-  }
-}
-
 export function usePreferredMobileLanguage(userId?: string | null): string {
-  const [language, setLanguage] = useState(() => resolveMobileLanguage(readDeviceLanguage()));
+  const [language, setLanguage] = useState(() => resolveMobileLanguage(DEFAULT_LANGUAGE));
 
   useEffect(() => {
     let cancelled = false;
 
     void (async () => {
       const stored = await readAgentProfileMemory(userId, {
-        preferredLanguage: readDeviceLanguage().split(/[-_]/)[0] || 'en',
+        preferredLanguage: DEFAULT_LANGUAGE,
       });
       if (!cancelled) {
         setLanguage(resolveMobileLanguage(stored.preferredLanguage));

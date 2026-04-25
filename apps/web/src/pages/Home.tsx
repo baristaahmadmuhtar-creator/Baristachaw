@@ -34,12 +34,35 @@ type HomeSearchResult = SearchResultPayload & {
   fromCache?: boolean;
 };
 
-function formatCompactNumber(value: number): string {
-  return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+function formatCompactNumber(value: number, locale = 'en'): string {
+  return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(value);
 }
 
-function featureUnavailableMessage(flag: AccountFeatureFlag): string {
-  return flag.message || `${flag.label} is currently ${flag.status}. Please try again after maintenance is finished.`;
+function formatStatusValue(value: string, language: string): string {
+  const normalized = value.replace(/_/g, ' ').trim();
+  if (language !== 'id') return normalized;
+  const idMap: Record<string, string> = {
+    none: 'tidak ada',
+    active: 'aktif',
+    trialing: 'uji coba',
+    past_due: 'tertunggak',
+    cancelled: 'dibatalkan',
+    expired: 'kedaluwarsa',
+    refunded: 'dikembalikan',
+    available: 'tersedia',
+    maintenance: 'pemeliharaan',
+    disabled: 'nonaktif',
+    web: 'web',
+    pwa: 'PWA',
+    mobile: 'mobile',
+  };
+  return idMap[value] || normalized;
+}
+
+function featureUnavailableMessage(flag: AccountFeatureFlag, t: Record<string, string>): string {
+  return flag.message || t.homeFeatureUnavailableMessage
+    .replace('{feature}', flag.label)
+    .replace('{status}', flag.status);
 }
 
 function featureCardStateClass(flag?: AccountFeatureFlag | null): string {
@@ -48,7 +71,7 @@ function featureCardStateClass(flag?: AccountFeatureFlag | null): string {
   return 'ring-1 ring-amber-500/25';
 }
 
-function FeatureStatusBadge({ flag }: { flag?: AccountFeatureFlag | null }) {
+function FeatureStatusBadge({ flag, t }: { flag?: AccountFeatureFlag | null; t: Record<string, string> }) {
   if (!flag || flag.status === 'available') return null;
   const tone = flag.status === 'disabled'
     ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
@@ -56,10 +79,10 @@ function FeatureStatusBadge({ flag }: { flag?: AccountFeatureFlag | null }) {
   return (
     <span
       className={`inline-flex min-h-6 items-center gap-1 rounded-full px-2 text-[11px] font-semibold ${tone}`}
-      title={featureUnavailableMessage(flag)}
+      title={featureUnavailableMessage(flag, t)}
     >
       <Wrench size={12} />
-      {flag.status === 'disabled' ? 'Unavailable' : 'Maintenance'}
+      {flag.status === 'disabled' ? t.homeFeatureUnavailable : t.homeFeatureMaintenance}
     </span>
   );
 }
@@ -132,7 +155,7 @@ export function Home() {
       : 'border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300';
   const workspaceStatusIcon = accountBlocked ? AlertTriangle : accountLimited ? Wrench : ShieldCheck;
   const WorkspaceStatusIcon = workspaceStatusIcon;
-  const workspaceStatusLabel = accountBlocked ? 'Blocked' : accountLimited ? 'Limited' : 'Ready';
+  const workspaceStatusLabel = accountBlocked ? t.homeWorkspaceBlocked : accountLimited ? t.homeWorkspaceLimited : t.homeWorkspaceReady;
   const billingStatusLabel = accountSnapshot?.billing.status || 'none';
   const recommendedUpgrade = accountSnapshot?.recommendedUpgrade;
   const featureFlagByKey = useMemo(() => {
@@ -332,7 +355,7 @@ export function Home() {
 
     if (accountBlocked) {
       setActiveQuery(searchQuery.trim());
-      setSearchError(accountSnapshot?.appAccess.message || 'Your account is blocked. Contact support or review your billing status.');
+      setSearchError(accountSnapshot?.appAccess.message || t.homeAccountBlocked);
       setShowResultModal(true);
       return;
     }
@@ -418,7 +441,7 @@ export function Home() {
   const handleBillingAction = async () => {
     if (!accountSnapshot || !recommendedUpgrade || recommendedUpgrade.action === 'none') return;
     if (recommendedUpgrade.action === 'contact_support') {
-      setActiveQuery('Plan & billing');
+      setActiveQuery(t.homeBillingSubtitle);
       setSearchError(recommendedUpgrade.reason);
       setShowResultModal(true);
       return;
@@ -444,7 +467,7 @@ export function Home() {
         : error instanceof BillingApiError
           ? error.message
           : t.homeBillingUnavailable;
-      setActiveQuery('Plan & billing');
+      setActiveQuery(t.homeBillingSubtitle);
       setSearchError(message);
       setShowResultModal(true);
     } finally {
@@ -467,7 +490,7 @@ export function Home() {
     setResult(null);
     setCachedResult(null);
     setLoading(false);
-    setSearchError(featureUnavailableMessage(flag));
+    setSearchError(featureUnavailableMessage(flag, t));
     setShowResultModal(true);
   };
 
@@ -646,7 +669,7 @@ export function Home() {
     )
     : null;
 
-  const isBillingModal = activeQuery === 'Plan & billing' && Boolean(searchError) && !result;
+  const isBillingModal = activeQuery === t.homeBillingSubtitle && Boolean(searchError) && !result;
 
   return (
     <motion.div
@@ -762,24 +785,30 @@ export function Home() {
               </span>
               <div className="min-w-0">
                 <div className={`flex flex-wrap items-center gap-2 ${isRtl ? 'justify-end' : ''}`}>
-                  <h2 className="text-sm font-semibold text-primary">Workspace status</h2>
+                  <h2 className="text-sm font-semibold text-primary">{t.homeWorkspaceStatus}</h2>
                   <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-0.5 text-[11px] font-semibold">
                     {workspaceStatusLabel}
                   </span>
                   <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-0.5 text-[11px] font-semibold capitalize">
-                    {surface}
+                    {formatStatusValue(surface, language)}
                   </span>
                   {accountSnapshot ? (
                     <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-0.5 text-[11px] font-semibold capitalize">
-                      Billing {billingStatusLabel.replace(/_/g, ' ')}
+                      {formatText(t.homeBillingStatus, { status: formatStatusValue(billingStatusLabel, language) })}
                     </span>
                   ) : null}
                 </div>
                 <p className="mt-1 text-sm leading-5 text-secondary">
                   {accountStatusError
-                    ? 'Account status is temporarily unavailable; cached app tools remain available.'
+                    ? t.homeAccountStatusUnavailable
                     : accountSnapshot?.appAccess.message
-                      || (accountSnapshot ? `${accountSnapshot.plan.name} plan, ${formatCompactNumber(accountSnapshot.plan.aiDailyLimit)} AI requests/day, ${formatCompactNumber(accountSnapshot.plan.scannerDailyLimit)} scanner runs/day.` : 'Checking current plan and app access...')}
+                      || (accountSnapshot
+                        ? formatText(t.homePlanStatus, {
+                          plan: accountSnapshot.plan.name,
+                          ai: formatCompactNumber(accountSnapshot.plan.aiDailyLimit, locale),
+                          scanner: formatCompactNumber(accountSnapshot.plan.scannerDailyLimit, locale),
+                        })
+                        : t.homeCheckingPlanAccess)}
                 </p>
                 {recommendedUpgrade?.reason ? (
                   <p className="mt-1 text-xs leading-5 text-secondary">
@@ -790,12 +819,12 @@ export function Home() {
                   <div className={`mt-2 flex flex-wrap gap-1.5 ${isRtl ? 'justify-end' : ''}`}>
                     {maintenance.slice(0, 3).map((flag) => (
                       <span key={flag.key} className="rounded-full bg-[var(--bg-base)]/70 px-2 py-1 text-[11px] font-semibold">
-                        {flag.label}: {flag.status}
+                        {flag.label}: {formatStatusValue(flag.status, language)}
                       </span>
                     ))}
                     {maintenance.length > 3 ? (
                       <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-1 text-[11px] font-semibold">
-                        +{maintenance.length - 3} more
+                        {formatText(t.homeMoreFlags, { count: maintenance.length - 3 })}
                       </span>
                     ) : null}
                   </div>
@@ -811,7 +840,13 @@ export function Home() {
                   className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-blue-500 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-600 disabled:opacity-50"
                 >
                   <CreditCard size={15} />
-                  {billingBusy ? 'Opening...' : recommendedUpgrade.ctaLabel}
+                  {billingBusy
+                    ? t.opening
+                    : recommendedUpgrade.action === 'manage'
+                      ? t.homeManageBilling
+                      : recommendedUpgrade.action === 'contact_support'
+                        ? t.homeContactSupport
+                        : t.homeUpgradePlan}
                 </button>
               ) : null}
               <button
@@ -821,7 +856,7 @@ export function Home() {
                 className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-current/15 bg-[var(--bg-base)]/70 px-3 text-sm font-semibold text-primary transition-colors hover:bg-[var(--bg-base)] disabled:opacity-50"
               >
                 <RefreshCcw size={15} className={accountStatusLoading ? 'animate-spin' : ''} />
-                Sync status
+                {t.homeSyncStatus}
               </button>
             </div>
           </div>
@@ -845,7 +880,7 @@ export function Home() {
                 <div className={`min-w-0 flex-1 ${isRtl ? 'text-right' : 'text-left'}`}>
                   <div className={`mb-1 flex flex-wrap items-center gap-2 ${isRtl ? 'justify-end' : ''}`}>
                     <h2 className="text-2xl font-semibold">{t.homeAskTitle}</h2>
-                    <FeatureStatusBadge flag={chatFeatureFlag} />
+                    <FeatureStatusBadge flag={chatFeatureFlag} t={t} />
                   </div>
                   <p className="text-secondary text-base max-w-2xl">{t.homeAskSubtitle}</p>
                 </div>
@@ -863,7 +898,7 @@ export function Home() {
               <div className="w-full">
                 <div className={`flex flex-wrap items-center justify-center gap-2 ${isRtl ? 'lg:justify-end' : 'lg:justify-start'}`}>
                   <h3 className="font-semibold text-lg">{t.homeScannerTitle}</h3>
-                  <FeatureStatusBadge flag={scannerFeatureFlag} />
+                  <FeatureStatusBadge flag={scannerFeatureFlag} t={t} />
                 </div>
                 <p className="text-sm text-secondary mt-1">{t.homeScannerSubtitle}</p>
               </div>
@@ -880,7 +915,7 @@ export function Home() {
               <div className="w-full">
                 <div className={`flex flex-wrap items-center justify-center gap-2 ${isRtl ? 'lg:justify-end' : 'lg:justify-start'}`}>
                   <h3 className="font-semibold text-lg">{t.homeAiBrewTitle}</h3>
-                  <FeatureStatusBadge flag={aiBrewFeatureFlag} />
+                  <FeatureStatusBadge flag={aiBrewFeatureFlag} t={t} />
                 </div>
                 <p className="text-sm text-secondary mt-1">{t.homeAiBrewSubtitle}</p>
               </div>
@@ -897,7 +932,7 @@ export function Home() {
               <div className="w-full">
                 <div className={`flex flex-wrap items-center justify-center gap-2 ${isRtl ? 'lg:justify-end' : 'lg:justify-start'}`}>
                   <h3 className="font-semibold text-lg">{t.homeToolsTitle}</h3>
-                  <FeatureStatusBadge flag={toolsFeatureFlag} />
+                  <FeatureStatusBadge flag={toolsFeatureFlag} t={t} />
                 </div>
                 <p className="text-sm text-secondary mt-1">{t.homeToolsSubtitle}</p>
               </div>
@@ -914,7 +949,7 @@ export function Home() {
               <div className={`min-w-0 ${isRtl ? 'text-right' : 'text-left'}`}>
                 <div className={`flex flex-wrap items-center gap-2 ${isRtl ? 'justify-end' : ''}`}>
                   <h3 className="font-semibold text-lg">{t.homeCollectionTitle}</h3>
-                  <FeatureStatusBadge flag={collectionFeatureFlag} />
+                  <FeatureStatusBadge flag={collectionFeatureFlag} t={t} />
                 </div>
                 <p className="text-sm text-secondary mt-1">{t.homeCollectionSubtitle}</p>
               </div>

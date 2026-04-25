@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, type NavigationProp, type ParamListBase } from '@react-navigation/native';
 import { Linking, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
-import { buildResponseOrchestration, getHomeGreeting, normalizeAgentProfileMemory, type AgentProfileMemory } from '@baristachaw/shared';
+import { buildResponseOrchestration, normalizeAgentProfileMemory, type AgentProfileMemory } from '@baristachaw/shared';
 import {
   ActionButton,
   AppShell,
@@ -239,7 +239,12 @@ export function HomeScreen({
   }, [homeCopy.searchStatus, searchPhase, session]);
 
   const searchPlaceholder = session ? webT.homeSearchPlaceholderAuth : webT.homeSearchPlaceholderGuest;
-  const greeting = getHomeGreeting();
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return webT.goodMorning;
+    if (hour < 18) return webT.goodAfternoon;
+    return webT.goodEvening;
+  }, [webT]);
   const resultPreview = buildPreview(result);
   const authFormCopy = useMemo(() => {
     if (localeState.language === 'id') {
@@ -250,7 +255,7 @@ export function HomeScreen({
         namePlaceholder: 'Nama Anda',
         emailLabel: 'Email',
         emailPlaceholder: 'nama@email.com',
-        passwordLabel: 'Password',
+        passwordLabel: 'Kata sandi',
         passwordPlaceholder: 'Minimal 8 karakter',
         hidePassword: 'Sembunyikan',
         showPassword: 'Tampilkan',
@@ -262,7 +267,7 @@ export function HomeScreen({
         googleFallback: 'Gunakan Google untuk masuk cepat dan aman.',
         supabaseMissing: 'Masuk dengan email belum tersedia di perangkat ini. Gunakan Google untuk melanjutkan.',
         invalidEmail: 'Masukkan email yang valid.',
-        invalidPassword: 'Password minimal 8 karakter.',
+        invalidPassword: 'Kata sandi minimal 8 karakter.',
         requiredName: 'Nama tampilan wajib untuk daftar.',
         trust: 'Sesi disimpan aman di perangkat ini dan bisa keluar kapan saja.',
       };
@@ -535,6 +540,8 @@ export function HomeScreen({
           placeholder={searchPlaceholder}
           onChangeText={setQuery}
           onSubmit={() => void runSearch()}
+          submitLabel={localeState.language === 'id' ? 'Cari' : 'Search'}
+          loadingLabel={localeState.language === 'id' ? 'Mencari...' : 'Searching...'}
           loading={searchPhase !== 'idle' && searchPhase !== 'failed'}
           chips={quickPrompts.map((prompt) => ({
             key: prompt,
@@ -996,7 +1003,5 @@ const styles = StyleSheet.create({
     lineHeight: uiTokens.typography.caption.lineHeight,
   },
 });
-
-
 
 

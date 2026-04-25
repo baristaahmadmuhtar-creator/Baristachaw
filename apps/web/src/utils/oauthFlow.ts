@@ -67,6 +67,9 @@ function openWarmupPopup() {
 function buildReturnTo() {
   if (typeof window === 'undefined') return '/';
   const { pathname, search, hash } = window.location;
+  if (/^\/(?:login|signin|masuk|register|signup|daftar)\/?$/i.test(pathname || '/')) {
+    return '/';
+  }
   const next = `${pathname || '/'}${search || ''}${hash || ''}`.trim();
   if (!next.startsWith('/') || next.startsWith('//')) return '/';
   return next || '/';

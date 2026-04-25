@@ -1,18 +1,29 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Link } from 'react-router-dom';
 import { Loader2, CheckCircle, AlertCircle, UserRound } from 'lucide-react';
 import { useAuthModal } from '../context/AuthModalContext';
 import { useGlobalState } from '../context/GlobalState';
 import { AppIconBrand, GoogleMark } from '../components/icons';
 
 interface AuthScreenProps {
+  intent?: 'signIn' | 'signUp';
   onLogin: () => void;
 }
 
-export function AuthScreen({ onLogin }: AuthScreenProps) {
+export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
   const { t } = useGlobalState();
   const { isAuthenticated, authBusy, authError, openAuthModal, continueAsGuest } = useAuthModal();
   const [success, setSuccess] = useState('');
+  const isSignUp = intent === 'signUp';
+
+  useEffect(() => {
+    if (isAuthenticated) return;
+    const timeout = window.setTimeout(() => {
+      openAuthModal({ source: isSignUp ? 'registration' : 'auth_screen' });
+    }, 180);
+    return () => window.clearTimeout(timeout);
+  }, [isAuthenticated, isSignUp, openAuthModal]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -47,8 +58,12 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
           >
             <AppIconBrand className="h-16 w-16 object-contain" />
           </motion.div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">{t.chatBrandName}</h1>
-          <p className="text-secondary text-base">{t.authProtectedSubtitle}</p>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">
+            {isSignUp ? t.authRouteSignupTitle : t.authRouteSigninTitle}
+          </h1>
+          <p className="text-secondary text-base">
+            {isSignUp ? t.authRouteSignupSubtitle : t.authRouteSigninSubtitle}
+          </p>
         </div>
 
         <AnimatePresence>
@@ -77,8 +92,11 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
         </AnimatePresence>
 
         <div className="glass-card p-8">
+          <p className="mb-4 rounded-2xl border border-blue-500/15 bg-blue-500/10 px-4 py-3 text-sm font-medium text-blue-700 dark:text-blue-200">
+            {t.authRouteAutoOpening}
+          </p>
           <button
-            onClick={() => openAuthModal({ source: 'auth_screen' })}
+            onClick={() => openAuthModal({ source: isSignUp ? 'registration' : 'auth_screen' })}
             disabled={authBusy}
             className="w-full glass-button-primary py-4 px-6 flex items-center justify-center gap-3 text-base"
           >
@@ -92,7 +110,7 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
                 <span className="grid h-6 w-6 place-items-center rounded-full bg-white">
                   <GoogleMark className="h-4 w-4" />
                 </span>
-                {t.continueWithGoogle}
+                {isSignUp ? t.authRouteSignupCta : t.authRouteSigninCta}
               </>
             )}
           </button>
@@ -102,8 +120,14 @@ export function AuthScreen({ onLogin }: AuthScreenProps) {
             className="mt-3 w-full rounded-2xl border border-glass bg-surface-alpha py-4 px-6 flex items-center justify-center gap-3 text-base font-semibold text-primary disabled:cursor-not-allowed disabled:opacity-55"
           >
             {authBusy ? <Loader2 className="animate-spin" size={20} /> : <UserRound size={20} />}
-            {authBusy ? t.authGuestStarting : t.continueAsGuest}
+            {authBusy ? t.authGuestStarting : t.authRouteGuestCta}
           </button>
+          <Link
+            to={isSignUp ? '/masuk' : '/daftar'}
+            className="mt-4 block text-center text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300"
+          >
+            {isSignUp ? t.authRouteSwitchToSignin : t.authRouteSwitchToSignup}
+          </Link>
         </div>
       </motion.div>
     </div>

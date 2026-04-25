@@ -52,7 +52,7 @@ import {
   SectionCard,
   SegmentedControl,
 } from '../design-system';
-import { LANGUAGE_META } from '../web-shared/constants';
+import { DEFAULT_LANGUAGE, LANGUAGE_META } from '../web-shared/constants';
 import { ApiClient, ApiError } from '../services/apiClient';
 import { readAgentProfileMemory, resetAgentProfileMemory, saveAgentProfileMemory } from '../services/agentProfileStore';
 import {
@@ -176,9 +176,9 @@ function toResponseMode(mode: ChatMode): ResponseMode {
 function readDeviceLanguage(): string {
   try {
     const locale = Intl.DateTimeFormat().resolvedOptions().locale;
-    return locale || 'en';
+    return locale || DEFAULT_LANGUAGE;
   } catch {
-    return 'en';
+    return DEFAULT_LANGUAGE;
   }
 }
 
@@ -276,12 +276,12 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
   const [activeSurface, setActiveSurface] = useState<ChatSurface>('none');
   const [selectedAssistantMessage, setSelectedAssistantMessage] = useState<ChatMessageRecord | null>(null);
   const [agentProfile, setAgentProfile] = useState<AgentProfileMemory>(() => normalizeAgentProfileMemory({
-    preferredLanguage: readDeviceLanguage().split('-')[0] || 'en',
+    preferredLanguage: DEFAULT_LANGUAGE,
     assistantName: 'Baristachaw',
     userDisplayName: session?.user.name,
   }));
   const [savedAgentProfile, setSavedAgentProfile] = useState<AgentProfileMemory>(() => normalizeAgentProfileMemory({
-    preferredLanguage: readDeviceLanguage().split('-')[0] || 'en',
+    preferredLanguage: DEFAULT_LANGUAGE,
     assistantName: 'Baristachaw',
     userDisplayName: session?.user.name,
   }));
@@ -610,7 +610,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
     let cancelled = false;
     void (async () => {
       const stored = await readAgentProfileMemory(session?.user.id, {
-        preferredLanguage: readDeviceLanguage().split('-')[0] || 'en',
+        preferredLanguage: DEFAULT_LANGUAGE,
         assistantName: 'Baristachaw',
         userDisplayName: session?.user.name,
       });
@@ -885,7 +885,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         ...patch,
         assistantName: patch.assistantName || agentProfile.assistantName || 'Baristachaw',
         userDisplayName: patch.userDisplayName || agentProfile.userDisplayName || session?.user.name,
-        preferredLanguage: patch.preferredLanguage || agentProfile.preferredLanguage || readDeviceLanguage().split('-')[0] || 'en',
+        preferredLanguage: patch.preferredLanguage || agentProfile.preferredLanguage || DEFAULT_LANGUAGE,
       });
       setAgentProfile(next);
       setSavedAgentProfile(next);
@@ -900,7 +900,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
     setMemorySaving(true);
     try {
       const next = await resetAgentProfileMemory(session?.user.id, {
-        preferredLanguage: readDeviceLanguage().split('-')[0] || 'en',
+        preferredLanguage: DEFAULT_LANGUAGE,
         assistantName: 'Baristachaw',
         userDisplayName: session?.user.name,
       });

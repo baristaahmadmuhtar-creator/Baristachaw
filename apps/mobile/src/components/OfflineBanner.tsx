@@ -4,7 +4,7 @@ import { uiTokens } from '../theme/tokens';
 export function OfflineBanner() {
   return (
     <View style={styles.banner}>
-      <Text style={styles.text}>You are offline. Tools still work, live search and chat need internet.</Text>
+      <Text style={styles.text}>Anda sedang offline. Fitur lokal tetap tersedia; pencarian langsung dan obrolan membutuhkan internet.</Text>
     </View>
   );
 }

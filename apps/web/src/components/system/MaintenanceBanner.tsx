@@ -2,9 +2,11 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Wrench } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { useAccountStatus } from '../../context/AccountStatusContext';
+import { useGlobalState } from '../../context/GlobalState';
 
 export function MaintenanceBanner() {
   const location = useLocation();
+  const { t } = useGlobalState();
   const { snapshot, maintenance } = useAccountStatus();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const shouldShow = !isAdminRoute && snapshot && (snapshot.appAccess.status !== 'ok' || maintenance.length > 0);
@@ -12,12 +14,12 @@ export function MaintenanceBanner() {
   const primaryFlag = maintenance[0];
   const message = snapshot?.appAccess.message
     || primaryFlag?.message
-    || (primaryFlag ? `${primaryFlag.label} is temporarily unavailable.` : '');
+    || (primaryFlag ? t.homeFeatureUnavailableMessage.replace('{feature}', primaryFlag.label).replace('{status}', primaryFlag.status) : '');
   const statusLabel = snapshot?.appAccess.status === 'blocked'
-    ? 'Account blocked'
+    ? t.homeWorkspaceBlocked
     : primaryFlag?.status === 'disabled'
-      ? 'Feature disabled'
-      : 'Maintenance';
+      ? t.homeFeatureUnavailable
+      : t.homeFeatureMaintenance;
 
   return (
     <AnimatePresence>
@@ -36,7 +38,7 @@ export function MaintenanceBanner() {
             <div className="min-w-0">
               <p className="font-semibold">{statusLabel}</p>
               {message ? <p className="mt-0.5 leading-5">{message}</p> : null}
-              {maintenance.length > 1 ? <p className="mt-0.5 text-xs opacity-80">{maintenance.length} active operational flags</p> : null}
+              {maintenance.length > 1 ? <p className="mt-0.5 text-xs opacity-80">{t.homeActiveOperationalFlags.replace('{count}', String(maintenance.length))}</p> : null}
             </div>
           </div>
         </motion.div>

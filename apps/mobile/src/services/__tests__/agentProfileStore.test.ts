@@ -1,10 +1,13 @@
 // @ts-nocheck
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { resolveAgentProfileNamespace } from '@baristachaw/shared';
 import {
   readAgentProfileMemory,
   resetAgentProfileMemory,
   saveAgentProfileMemory,
 } from '../agentProfileStore';
+
+const AGENT_PROFILE_MEMORY_KEY_PREFIX = 'BARISTACHAW_AGENT_PROFILE_MEMORY::';
 
 jest.mock('@react-native-async-storage/async-storage', () => {
   const store = new Map();
@@ -40,6 +43,38 @@ describe('agentProfileStore', () => {
 
     expect(guest.preferredLanguage).toBe('id');
     expect(user.preferredLanguage).toBe('en');
+  });
+
+  test('defaults fresh local profiles to Indonesian', async () => {
+    const profile = await readAgentProfileMemory();
+
+    expect(profile.preferredLanguage).toBe('id');
+    expect(profile.languageSource).toBe('global');
+  });
+
+  test('migrates legacy implicit English guest profiles to Indonesian', async () => {
+    await AsyncStorage.setItem(
+      `${AGENT_PROFILE_MEMORY_KEY_PREFIX}${resolveAgentProfileNamespace(null)}`,
+      JSON.stringify({
+        preferredLanguage: 'en',
+        assistantName: 'Baristachaw',
+        updatedAt: 1,
+      }),
+    );
+
+    const profile = await readAgentProfileMemory(null, { preferredLanguage: 'id' });
+
+    expect(profile.preferredLanguage).toBe('id');
+    expect(profile.languageSource).toBe('global');
+  });
+
+  test('preserves explicit manual English preference', async () => {
+    await saveAgentProfileMemory(null, { preferredLanguage: 'en' });
+
+    const profile = await readAgentProfileMemory(null, { preferredLanguage: 'id' });
+
+    expect(profile.preferredLanguage).toBe('en');
+    expect(profile.languageSource).toBe('manual');
   });
 
   test('resetAgentProfileMemory restores a fresh seeded profile', async () => {

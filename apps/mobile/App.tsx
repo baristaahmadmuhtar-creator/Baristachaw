@@ -618,6 +618,24 @@ function NativeApp({ onBootReady }: NativeAppProps) {
   const navTheme = useMemo(() => buildNavigationTheme(colorScheme), [colorScheme]);
   const preferredLanguage = usePreferredMobileLanguage(session?.user.id);
   const localeState = useMemo(() => getMobileLocalization(preferredLanguage), [preferredLanguage]);
+  const navTitles = useMemo(() => {
+    if (localeState.language === 'id') {
+      return {
+        Home: 'Beranda',
+        Scanner: 'Pemindai',
+        Tools: 'Alat',
+        Collection: 'Koleksi',
+        Chat: 'Obrolan',
+      };
+    }
+    return {
+      Home: PARITY_NAV_META.Home.headerTitle,
+      Scanner: PARITY_NAV_META.Scanner.headerTitle,
+      Tools: PARITY_NAV_META.Tools.headerTitle,
+      Collection: PARITY_NAV_META.Collection.headerTitle,
+      Chat: PARITY_NAV_META.Chat.headerTitle,
+    };
+  }, [localeState.language]);
   const shellCopy = useMemo(() => {
     if (localeState.language === 'id') {
       return {
@@ -1064,7 +1082,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
             };
           }}
         >
-          <Tab.Screen name="Home" options={{ title: PARITY_NAV_META.Home.headerTitle }}>
+          <Tab.Screen name="Home" options={{ title: navTitles.Home }}>
             {() => (
               <HomeScreen
                 apiClient={apiClient}
@@ -1086,7 +1104,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
           </Tab.Screen>
           <Tab.Screen
             name="Scanner"
-            options={{ title: PARITY_NAV_META.Scanner.headerTitle }}
+            options={{ title: navTitles.Scanner }}
           >
             {() => (
               <ScannerScreen
@@ -1101,11 +1119,11 @@ function NativeApp({ onBootReady }: NativeAppProps) {
           <Tab.Screen
             name="Tools"
             component={ToolsScreen}
-            options={{ title: PARITY_NAV_META.Tools.headerTitle }}
+            options={{ title: navTitles.Tools }}
           />
           <Tab.Screen
             name="Collection"
-            options={{ title: PARITY_NAV_META.Collection.headerTitle }}
+            options={{ title: navTitles.Collection }}
           >
             {() => (
               <CollectionScreen
@@ -1117,7 +1135,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
           <Tab.Screen
             name="Chat"
             options={{
-              title: PARITY_NAV_META.Chat.headerTitle,
+              title: navTitles.Chat,
             }}
           >
             {() => (

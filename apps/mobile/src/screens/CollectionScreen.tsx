@@ -332,7 +332,7 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
     }
     if (language === 'id') {
       return {
-        filterTitle: 'Filter',
+        filterTitle: 'Penyaring',
         filterSubtitle: 'Cari dan sempitkan daftar.',
         foldersTitle: 'Folder',
         browseOnly: 'Hanya lihat.',
@@ -341,7 +341,7 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
         folderFallback: 'Folder',
         recipe: 'Resep',
         note: 'Catatan',
-        canvas: 'Canvas',
+        canvas: 'Kanvas',
         updated: 'Diperbarui',
         emptyTitle: 'Belum ada apa-apa',
         emptyPreview: 'Belum ada pratinjau.',
@@ -357,19 +357,19 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
         rename: 'Ubah nama',
         delete: 'Hapus',
         renameFolder: 'Ubah nama folder',
-        selectFolderHint: 'Pilih chip folder di halaman untuk mengubah nama atau menghapusnya di sini.',
+        selectFolderHint: 'Pilih label folder di halaman untuk mengubah nama atau menghapusnya di sini.',
         tip: 'Tip',
-        selectFolderTip: 'Pilih chip folder di halaman untuk mengelolanya.',
-        createFolderHint: 'Anda tetap bisa membuat folder baru dari sheet ini.',
+        selectFolderTip: 'Pilih label folder di halaman untuk mengelolanya.',
+        createFolderHint: 'Anda tetap bisa membuat folder baru dari panel ini.',
         emptySearch: 'Tidak ada item tersimpan yang cocok dengan pencarian ini.',
         emptyUncategorized: 'Belum ada item tanpa kategori.',
         emptyFolder: 'Belum ada item tersimpan di folder ini.',
         readOnlyBody: 'Item tersimpan tetap terlihat di sini. Masuk untuk mengedit.',
-        emptyDefault: 'Belum ada item tersimpan. Simpan dari Beranda, Chat, atau Scan.',
+        emptyDefault: 'Belum ada item tersimpan. Simpan dari Beranda, Obrolan, atau Pindai.',
         quickNote: 'Catatan Cepat',
         recipeItem: 'Item resep',
-        loadError: 'Collection belum bisa dimuat sekarang.',
-        updateError: 'Collection belum bisa diperbarui sekarang.',
+        loadError: 'Koleksi belum bisa dimuat sekarang.',
+        updateError: 'Koleksi belum bisa diperbarui sekarang.',
       };
     }
     if (language === 'ar') {

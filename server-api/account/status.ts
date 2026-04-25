@@ -21,6 +21,10 @@ import {
 type AccountStatus = 'active' | 'trialing' | 'past_due' | 'suspended' | 'deleted';
 type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
 type DataMode = 'supabase' | 'runtime_fallback';
+type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual';
+type BillingStatus = 'none' | 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'refunded';
+type BillingMarket = 'indonesia' | 'brunei' | 'global' | 'unknown';
+type CheckoutMode = 'disabled' | 'external' | 'stripe_checkout' | 'play_billing' | 'app_store' | 'manual_invoice';
 
 type AccountPlan = {
   code: PlanCode;
@@ -33,6 +37,20 @@ type AccountPlan = {
   seats: number;
   supportSlaHours: number;
   features: string[];
+  priceMonthlyUsd: number;
+  displayPrice: string;
+  checkoutMode: CheckoutMode;
+};
+
+type AccountBilling = {
+  status: BillingStatus;
+  provider: BillingProvider;
+  market: BillingMarket;
+  paymentAction: 'none' | 'checkout' | 'manage' | 'contact_support';
+  paymentActionRequired: boolean;
+  message: string;
+  checkoutUrl?: string;
+  manageUrl?: string;
 };
 
 type AccountUser = {
@@ -54,6 +72,15 @@ type AccountStatusResponse = {
   dataMode: DataMode;
   user: AccountUser;
   plan: AccountPlan;
+  plans: AccountPlan[];
+  billing: AccountBilling;
+  recommendedUpgrade: {
+    planCode: PlanCode;
+    planName: string;
+    ctaLabel: string;
+    reason: string;
+    action: AccountBilling['paymentAction'];
+  };
   featureFlags: AdminFeatureFlag[];
   maintenance: AdminFeatureFlag[];
   appAccess: {
@@ -96,6 +123,9 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     seats: 1,
     supportSlaHours: 72,
     features: ['Chat', 'basic scanner', 'local collection'],
+    priceMonthlyUsd: 0,
+    displayPrice: 'Free',
+    checkoutMode: 'disabled',
   },
   {
     code: 'starter',
@@ -108,6 +138,9 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     seats: 1,
     supportSlaHours: 48,
     features: ['Higher AI quota', 'AI Brew journal', 'scanner history'],
+    priceMonthlyUsd: 4.99,
+    displayPrice: '$4.99 / Rp79k / B$7 monthly',
+    checkoutMode: 'external',
   },
   {
     code: 'pro',
@@ -120,6 +153,9 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     seats: 1,
     supportSlaHours: 24,
     features: ['Deep mode', 'latte art edit', 'advanced collections', 'priority AI'],
+    priceMonthlyUsd: 9.99,
+    displayPrice: '$9.99 / Rp159k / B$14 monthly',
+    checkoutMode: 'external',
   },
   {
     code: 'team',
@@ -132,6 +168,9 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     seats: 8,
     supportSlaHours: 12,
     features: ['Team seats', 'training notes', 'manager controls', 'audit export'],
+    priceMonthlyUsd: 29.99,
+    displayPrice: '$29.99 / Rp479k / B$42 monthly',
+    checkoutMode: 'external',
   },
   {
     code: 'enterprise',
@@ -144,6 +183,9 @@ const PLAN_BLUEPRINTS: AccountPlan[] = [
     seats: 50,
     supportSlaHours: 4,
     features: ['Custom quota', 'dedicated support', 'SLA review', 'private rollout'],
+    priceMonthlyUsd: 0,
+    displayPrice: 'Custom invoice',
+    checkoutMode: 'manual_invoice',
   },
 ];
 
@@ -206,6 +248,32 @@ function normalizeProvider(value: unknown): string {
   return 'unknown';
 }
 
+function normalizeBillingProvider(value: unknown): BillingProvider {
+  const raw = normalizeText(value).toLowerCase();
+  if (raw === 'admin' || raw === 'google_play' || raw === 'app_store' || raw === 'stripe' || raw === 'revenuecat' || raw === 'manual') return raw;
+  return 'none';
+}
+
+function normalizeBillingStatus(value: unknown, fallback: BillingStatus = 'none'): BillingStatus {
+  const raw = normalizeText(value).toLowerCase();
+  if (raw === 'active' || raw === 'trialing' || raw === 'past_due' || raw === 'cancelled' || raw === 'expired' || raw === 'refunded') return raw;
+  return fallback;
+}
+
+function normalizeBillingMarket(value: unknown, country?: string): BillingMarket {
+  const raw = normalizeText(value || country).toLowerCase();
+  if (raw === 'id' || raw === 'idn' || raw === 'indonesia') return 'indonesia';
+  if (raw === 'bn' || raw === 'brn' || raw === 'brunei' || raw === 'brunei darussalam') return 'brunei';
+  if (raw === 'global') return 'global';
+  return country ? 'global' : 'unknown';
+}
+
+function normalizeCheckoutMode(value: unknown, fallback: CheckoutMode): CheckoutMode {
+  const raw = normalizeText(value).toLowerCase();
+  if (raw === 'disabled' || raw === 'external' || raw === 'stripe_checkout' || raw === 'play_billing' || raw === 'app_store' || raw === 'manual_invoice') return raw;
+  return fallback;
+}
+
 function planByCode(code: PlanCode): AccountPlan {
   return PLAN_BLUEPRINTS.find((plan) => plan.code === code) || PLAN_BLUEPRINTS[0];
 }
@@ -224,6 +292,9 @@ function planFromSupabase(row: any): AccountPlan {
     seats: Number(row.seats ?? fallback.seats) || fallback.seats,
     supportSlaHours: Number(row.support_sla_hours ?? row.supportSlaHours ?? fallback.supportSlaHours) || fallback.supportSlaHours,
     features: Array.isArray(row.features) ? row.features.map((item: unknown) => normalizeText(item)).filter(Boolean) : fallback.features,
+    priceMonthlyUsd: Number(row.price_monthly_usd ?? row.priceMonthlyUsd ?? fallback.priceMonthlyUsd) || fallback.priceMonthlyUsd,
+    displayPrice: normalizeText(row.display_price || row.displayPrice, fallback.displayPrice),
+    checkoutMode: normalizeCheckoutMode(row.checkout_mode || row.checkoutMode, fallback.checkoutMode),
   };
 }
 
@@ -258,6 +329,108 @@ function userFromSupabase(row: any, auth: AuthContext): AccountUser {
     planCode,
     planName: planByCode(planCode).name,
     lastSeenAt: normalizeText(row.last_seen_at || row.updated_at, nowIso()),
+  };
+}
+
+function defaultBillingStatus(planCode: PlanCode, status: AccountStatus): BillingStatus {
+  if (status === 'trialing') return 'trialing';
+  if (status === 'past_due') return 'past_due';
+  if (status === 'suspended' || status === 'deleted') return 'none';
+  return planCode === 'free' ? 'none' : 'active';
+}
+
+function readPublicUrl(...names: string[]): string {
+  for (const name of names) {
+    const value = String(process.env[name] || '').trim();
+    if (/^https:\/\//i.test(value)) return value;
+  }
+  return '';
+}
+
+function billingFromRow(row: any, user: AccountUser): AccountBilling {
+  const metadata = row?.metadata && typeof row.metadata === 'object' ? row.metadata : {};
+  const status = normalizeBillingStatus(row?.billing_status ?? metadata.billingStatus, defaultBillingStatus(user.planCode, user.status));
+  const provider = normalizeBillingProvider(row?.billing_provider ?? metadata.billingProvider);
+  const paymentActionRequired = Boolean(row?.payment_action_required ?? metadata.paymentActionRequired ?? status === 'past_due');
+  const manageUrl = readPublicUrl('BILLING_PORTAL_URL', 'STRIPE_CUSTOMER_PORTAL_URL', 'REVENUECAT_CUSTOMER_CENTER_URL');
+  const checkoutUrl = readPublicUrl(`BILLING_CHECKOUT_URL_${user.planCode.toUpperCase()}`, `STRIPE_CHECKOUT_URL_${user.planCode.toUpperCase()}`, `REVENUECAT_CHECKOUT_URL_${user.planCode.toUpperCase()}`, 'BILLING_CHECKOUT_URL');
+  const paymentAction: AccountBilling['paymentAction'] = paymentActionRequired || status === 'past_due'
+    ? 'manage'
+    : user.planCode === 'free'
+      ? 'checkout'
+      : provider === 'manual'
+        ? 'contact_support'
+        : 'none';
+  const message = status === 'past_due'
+    ? 'Your payment needs attention. Update billing to keep paid limits active.'
+    : status === 'cancelled' || status === 'expired'
+      ? 'Your paid entitlement is no longer active. Choose a plan to restore paid features.'
+      : user.planCode === 'free'
+        ? 'Upgrade when you need higher AI, Deep, scanner, and storage limits.'
+        : '';
+
+  return {
+    status,
+    provider,
+    market: normalizeBillingMarket(row?.billing_market ?? metadata.billingMarket, row?.country ?? metadata.country),
+    paymentAction,
+    paymentActionRequired,
+    message,
+    checkoutUrl: checkoutUrl || undefined,
+    manageUrl: manageUrl || undefined,
+  };
+}
+
+function runtimeBilling(user: AccountUser): AccountBilling {
+  return {
+    status: defaultBillingStatus(user.planCode, user.status),
+    provider: 'none',
+    market: 'unknown',
+    paymentAction: user.planCode === 'free' ? 'checkout' : 'none',
+    paymentActionRequired: false,
+    message: user.planCode === 'free'
+      ? 'Upgrade when you need higher AI, Deep, scanner, and storage limits.'
+      : '',
+    checkoutUrl: readPublicUrl('BILLING_CHECKOUT_URL') || undefined,
+    manageUrl: readPublicUrl('BILLING_PORTAL_URL') || undefined,
+  };
+}
+
+function buildRecommendedUpgrade(user: AccountUser, plans: AccountPlan[], billing: AccountBilling): AccountStatusResponse['recommendedUpgrade'] {
+  const pro = plans.find((plan) => plan.code === 'pro') || planByCode('pro');
+  if (billing.paymentActionRequired || billing.status === 'past_due') {
+    return {
+      planCode: user.planCode,
+      planName: user.planName,
+      ctaLabel: 'Manage billing',
+      reason: billing.message || 'Payment action is required to keep paid access active.',
+      action: 'manage',
+    };
+  }
+  if (user.planCode === 'free') {
+    return {
+      planCode: pro.code,
+      planName: pro.name,
+      ctaLabel: 'Upgrade plan',
+      reason: `${pro.name} unlocks ${pro.aiDailyLimit} AI requests/day and ${pro.deepDailyLimit} Deep requests/day.`,
+      action: 'checkout',
+    };
+  }
+  if (user.planCode === 'enterprise') {
+    return {
+      planCode: user.planCode,
+      planName: user.planName,
+      ctaLabel: 'Contact support',
+      reason: 'Enterprise billing is managed manually by support.',
+      action: 'contact_support',
+    };
+  }
+  return {
+    planCode: user.planCode,
+    planName: user.planName,
+    ctaLabel: 'View plan',
+    reason: `${user.planName} is active.`,
+    action: 'none',
   };
 }
 
@@ -299,7 +472,7 @@ async function loadSupabaseAccount(
   config: Extract<SupabaseConfig, { configured: true }>,
   auth: AuthContext,
   surface: FeatureSurface,
-): Promise<{ user: AccountUser; plans: AccountPlan[]; flags: AdminFeatureFlag[]; warnings: string[] }> {
+): Promise<{ user: AccountUser; billing: AccountBilling; plans: AccountPlan[]; flags: AdminFeatureFlag[]; warnings: string[] }> {
   const warnings: string[] = [];
   await upsertSupabaseAccountUser(config, auth, surface).catch((error) => {
     warnings.push(`Account profile upsert skipped: ${sanitizeErrorDetails(error, 160)}`);
@@ -307,6 +480,7 @@ async function loadSupabaseAccount(
 
   const userRows = await supabaseRest<any[]>(config, `app_users?id=eq.${encodeURIComponent(auth.userId)}&select=*&limit=1`);
   const user = Array.isArray(userRows) && userRows[0] ? userFromSupabase(userRows[0], auth) : userFromAuth(auth);
+  const billing = Array.isArray(userRows) && userRows[0] ? billingFromRow(userRows[0], user) : runtimeBilling(user);
 
   const planRows = await supabaseRest<any[]>(config, 'app_plans?select=*&order=display_order.asc').catch((error) => {
     warnings.push(`Plan catalog fallback used: ${sanitizeErrorDetails(error, 140)}`);
@@ -320,10 +494,10 @@ async function loadSupabaseAccount(
   });
   const flags = Array.isArray(flagRows) && flagRows.length ? flagRows.map(featureFlagFromSupabase) : buildRuntimeFeatureFlags(RUNTIME_FEATURE_FLAG_PATCHES);
 
-  return { user, plans, flags, warnings };
+  return { user, billing, plans, flags, warnings };
 }
 
-function buildAppAccess(user: AccountUser, maintenance: AdminFeatureFlag[]): AccountStatusResponse['appAccess'] {
+function buildAppAccess(user: AccountUser, billing: AccountBilling, maintenance: AdminFeatureFlag[]): AccountStatusResponse['appAccess'] {
   if (user.status === 'deleted') {
     return {
       status: 'blocked',
@@ -342,11 +516,11 @@ function buildAppAccess(user: AccountUser, maintenance: AdminFeatureFlag[]): Acc
       message: 'Baristachaw is temporarily unavailable while maintenance is active.',
     };
   }
-  if (user.status === 'past_due' || maintenance.length > 0) {
+  if (user.status === 'past_due' || billing.status === 'past_due' || billing.paymentActionRequired || maintenance.length > 0) {
     return {
       status: 'limited',
-      message: user.status === 'past_due'
-        ? 'Your billing status needs attention. Some paid limits may be restricted.'
+      message: user.status === 'past_due' || billing.status === 'past_due' || billing.paymentActionRequired
+        ? billing.message || 'Your billing status needs attention. Some paid limits may be restricted.'
         : 'Some features are temporarily in maintenance.',
     };
   }
@@ -361,6 +535,7 @@ async function buildAccountStatus(
   const config = getSupabaseConfig();
   let dataMode: DataMode = 'runtime_fallback';
   let user = userFromAuth(auth);
+  let billing = runtimeBilling(user);
   let plans = PLAN_BLUEPRINTS;
   let featureFlags = buildRuntimeFeatureFlags(RUNTIME_FEATURE_FLAG_PATCHES);
   const warnings: string[] = [];
@@ -369,6 +544,7 @@ async function buildAccountStatus(
     try {
       const supabaseAccount = await loadSupabaseAccount(config, auth, surface);
       user = supabaseAccount.user;
+      billing = supabaseAccount.billing;
       plans = supabaseAccount.plans;
       featureFlags = supabaseAccount.flags;
       warnings.push(...supabaseAccount.warnings);
@@ -383,6 +559,10 @@ async function buildAccountStatus(
   const plan = plans.find((item) => item.code === user.planCode) || planByCode(user.planCode);
   const normalizedUser = { ...user, planName: plan.name };
   const maintenance = activeOperationalFlags(featureFlags, surface);
+  const normalizedBilling = {
+    ...billing,
+    paymentAction: billing.paymentAction === 'checkout' && !billing.checkoutUrl ? 'checkout' as const : billing.paymentAction,
+  };
 
   return {
     ok: true,
@@ -391,9 +571,12 @@ async function buildAccountStatus(
     dataMode,
     user: normalizedUser,
     plan,
+    plans,
+    billing: normalizedBilling,
+    recommendedUpgrade: buildRecommendedUpgrade(normalizedUser, plans, normalizedBilling),
     featureFlags,
     maintenance,
-    appAccess: buildAppAccess(normalizedUser, maintenance),
+    appAccess: buildAppAccess(normalizedUser, normalizedBilling, maintenance),
     warnings,
     realtime: {
       strategy: 'polling',

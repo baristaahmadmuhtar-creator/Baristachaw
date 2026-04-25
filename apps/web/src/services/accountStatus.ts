@@ -3,6 +3,10 @@ export type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
 export type FeatureFlagStatus = 'available' | 'maintenance' | 'disabled';
 export type FeatureSurface = 'global' | 'web' | 'pwa' | 'mobile' | 'admin';
 export type DataMode = 'supabase' | 'runtime_fallback';
+export type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual';
+export type BillingStatus = 'none' | 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'refunded';
+export type BillingMarket = 'indonesia' | 'brunei' | 'global' | 'unknown';
+export type CheckoutMode = 'disabled' | 'external' | 'stripe_checkout' | 'play_billing' | 'app_store' | 'manual_invoice';
 
 export type AccountFeatureFlag = {
   key: string;
@@ -24,6 +28,20 @@ export type AccountPlan = {
   seats: number;
   supportSlaHours: number;
   features: string[];
+  priceMonthlyUsd: number;
+  displayPrice: string;
+  checkoutMode: CheckoutMode;
+};
+
+export type AccountBilling = {
+  status: BillingStatus;
+  provider: BillingProvider;
+  market: BillingMarket;
+  paymentAction: 'none' | 'checkout' | 'manage' | 'contact_support';
+  paymentActionRequired: boolean;
+  message: string;
+  checkoutUrl?: string;
+  manageUrl?: string;
 };
 
 export type AccountStatusSnapshot = {
@@ -43,6 +61,15 @@ export type AccountStatusSnapshot = {
     lastSeenAt: string;
   };
   plan: AccountPlan;
+  plans: AccountPlan[];
+  billing: AccountBilling;
+  recommendedUpgrade: {
+    planCode: PlanCode;
+    planName: string;
+    ctaLabel: string;
+    reason: string;
+    action: AccountBilling['paymentAction'];
+  };
   featureFlags: AccountFeatureFlag[];
   maintenance: AccountFeatureFlag[];
   appAccess: {

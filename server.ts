@@ -19,6 +19,8 @@ import authMeHandler from "./server-api/auth/me";
 import authLogoutHandler from "./server-api/auth/logout";
 import accountStatusHandler from "./server-api/account/status";
 import adminManagementHandler from "./server-api/admin/management";
+import billingCheckoutHandler from "./server-api/billing/checkout";
+import billingPortalHandler from "./server-api/billing/portal";
 import { handleTestAuthLogin, handleTestAuthLogout } from "./lib/test-auth/handlers";
 import { buildLocalRuntimeAuthDefaults } from "./lib/test-auth/runtime-defaults";
 
@@ -132,6 +134,8 @@ app.all("/api/auth/me", wrapVercelHandler(authMeHandler as unknown as LocalApiHa
 app.all("/api/auth/logout", wrapVercelHandler(authLogoutHandler as unknown as LocalApiHandler));
 app.all("/api/account/status", wrapVercelHandler(accountStatusHandler as unknown as LocalApiHandler));
 app.all("/api/admin/management", wrapVercelHandler(adminManagementHandler as unknown as LocalApiHandler));
+app.all("/api/billing/checkout", wrapVercelHandler(billingCheckoutHandler as unknown as LocalApiHandler));
+app.all("/api/billing/portal", wrapVercelHandler(billingPortalHandler as unknown as LocalApiHandler));
 
 // Also handle /auth/callback as alias (for older redirect URIs)
 app.get("/auth/callback", (req, res) => {

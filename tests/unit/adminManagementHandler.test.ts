@@ -113,7 +113,11 @@ test('admin management returns runtime snapshot for allowlisted owner', async ()
   assert.equal(body.admin.email, 'owner@example.com');
   assert.ok(body.users.length >= 1);
   assert.ok(body.users.every((user: any) => typeof user.username === 'string'));
+  assert.ok(body.users.every((user: any) => user.billing && typeof user.billing.status === 'string'));
   assert.ok(body.plans.some((plan: any) => plan.code === 'pro'));
+  assert.ok(body.plans.some((plan: any) => plan.code === 'pro' && plan.billingProvider === 'revenuecat'));
+  assert.equal(body.billing.mode, 'not_configured');
+  assert.ok(Array.isArray(body.billing.gaps));
   assert.ok(body.featureFlags.some((flag: any) => flag.key === 'chat'));
   assert.ok(body.checks.some((check: any) => check.id === 'database_persistence' && check.status === 'fail'));
 });
@@ -158,6 +162,43 @@ test('admin management patch updates runtime users and records audit', async () 
   assert.ok(user.lastRecoveryRequestAt);
   assert.ok(body.audit.some((event: any) => event.action === 'user_updated'));
   assert.ok(body.audit.some((event: any) => event.action === 'user_updated' && event.detail.includes('Support note: Password reset verified by support.')));
+});
+
+test('admin management patch updates runtime billing controls', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_trial_review',
+      patch: {
+        planCode: 'starter',
+        billingStatus: 'past_due',
+        billingProvider: 'stripe',
+        billingMarket: 'indonesia',
+        paymentActionRequired: true,
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  const user = body.users.find((item: any) => item.id === 'runtime_user_trial_review');
+  assert.equal(user.planCode, 'starter');
+  assert.equal(user.status, 'past_due');
+  assert.equal(user.billing.status, 'past_due');
+  assert.equal(user.billing.provider, 'stripe');
+  assert.equal(user.billing.market, 'indonesia');
+  assert.equal(user.billing.paymentActionRequired, true);
+  assert.ok(body.billing.attentionUsers >= 1);
 });
 
 test('admin management prevents signed-in admin self lockout', async () => {

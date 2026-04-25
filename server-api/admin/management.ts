@@ -23,6 +23,10 @@ type AccountRecoveryStatus = 'none' | 'requested' | 'verified' | 'resolved' | 'r
 type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
 type CheckStatus = 'pass' | 'warn' | 'fail';
 type DataMode = 'supabase' | 'runtime_fallback';
+type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual';
+type BillingStatus = 'none' | 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'refunded';
+type BillingMarket = 'indonesia' | 'brunei' | 'global' | 'unknown';
+type CheckoutMode = 'disabled' | 'external' | 'stripe_checkout' | 'play_billing' | 'app_store' | 'manual_invoice';
 
 type AdminPlan = {
   code: PlanCode;
@@ -38,6 +42,28 @@ type AdminPlan = {
   features: string[];
   recommended?: boolean;
   activeUsers: number;
+  billingProvider: BillingProvider;
+  billingProductId: string;
+  billingPriceId: string;
+  revenuecatEntitlementId: string;
+  market: BillingMarket;
+  displayPrice: string;
+  checkoutMode: CheckoutMode;
+  paymentMethods: string[];
+};
+
+type AdminUserBilling = {
+  status: BillingStatus;
+  provider: BillingProvider;
+  market: BillingMarket;
+  source: BillingProvider;
+  customerId: string;
+  subscriptionId: string;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  lastEventAt?: string;
+  paymentActionRequired: boolean;
+  recommendedAction: string;
 };
 
 type AdminUserRecord = {
@@ -71,6 +97,7 @@ type AdminUserRecord = {
   supportLockedUntil?: string;
   lastRecoveryRequestAt?: string;
   passwordResetRequired?: boolean;
+  billing: AdminUserBilling;
   isSample?: boolean;
 };
 
@@ -134,6 +161,19 @@ type AdminSnapshot = {
   checks: AdminSystemCheck[];
   launchChecklist: LaunchChecklistItem[];
   featureFlags: AdminFeatureFlag[];
+  billing: {
+    ready: boolean;
+    mode: 'not_configured' | 'test' | 'live_ready';
+    connectedProviders: BillingProvider[];
+    activeSubscriptions: number;
+    trialingSubscriptions: number;
+    pastDueSubscriptions: number;
+    revenueMonthlyUsd: number;
+    attentionUsers: number;
+    supportedMarkets: BillingMarket[];
+    realtimeTables: string[];
+    gaps: string[];
+  };
   recommendations: string[];
   warnings: string[];
   realtime: {
@@ -155,6 +195,10 @@ type UserPatch = Partial<{
   supportLockedUntil: string;
   lastRecoveryRequestAt: string;
   passwordResetRequired: boolean;
+  billingStatus: BillingStatus;
+  billingProvider: BillingProvider;
+  billingMarket: BillingMarket;
+  paymentActionRequired: boolean;
 }>;
 
 type SupabaseConfig = {
@@ -169,6 +213,9 @@ const VALID_ADMIN_ROLES = new Set<AdminRole>(['owner', 'admin', 'support', 'anal
 const VALID_ACCOUNT_STATUSES = new Set<AccountStatus>(['active', 'trialing', 'past_due', 'suspended', 'deleted']);
 const VALID_ACCOUNT_RECOVERY_STATUSES = new Set<AccountRecoveryStatus>(['none', 'requested', 'verified', 'resolved', 'rejected']);
 const VALID_PLAN_CODES = new Set<PlanCode>(['free', 'starter', 'pro', 'team', 'enterprise']);
+const VALID_BILLING_STATUSES = new Set<BillingStatus>(['none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded']);
+const VALID_BILLING_PROVIDERS = new Set<BillingProvider>(['none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual']);
+const VALID_BILLING_MARKETS = new Set<BillingMarket>(['indonesia', 'brunei', 'global', 'unknown']);
 const RESERVED_USERNAMES = new Set([
   'account',
   'admin',
@@ -224,6 +271,14 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
     seats: 1,
     supportSlaHours: 72,
     features: ['Chat', 'basic scanner', 'local collection'],
+    billingProvider: 'none',
+    billingProductId: '',
+    billingPriceId: '',
+    revenuecatEntitlementId: '',
+    market: 'global',
+    displayPrice: 'Free',
+    checkoutMode: 'disabled',
+    paymentMethods: [],
   },
   {
     code: 'starter',
@@ -237,6 +292,14 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
     seats: 1,
     supportSlaHours: 48,
     features: ['Higher AI quota', 'AI Brew journal', 'scanner history'],
+    billingProvider: 'revenuecat',
+    billingProductId: 'baristachaw_starter_monthly',
+    billingPriceId: 'STRIPE_PRICE_STARTER_MONTHLY',
+    revenuecatEntitlementId: 'starter',
+    market: 'global',
+    displayPrice: '$4.99 / Rp79k / B$7 monthly',
+    checkoutMode: 'external',
+    paymentMethods: ['Google Play', 'App Store', 'Stripe Checkout'],
   },
   {
     code: 'pro',
@@ -251,6 +314,14 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
     supportSlaHours: 24,
     features: ['Deep mode', 'latte art edit', 'advanced collections', 'priority AI'],
     recommended: true,
+    billingProvider: 'revenuecat',
+    billingProductId: 'baristachaw_pro_monthly',
+    billingPriceId: 'STRIPE_PRICE_PRO_MONTHLY',
+    revenuecatEntitlementId: 'pro',
+    market: 'global',
+    displayPrice: '$9.99 / Rp159k / B$14 monthly',
+    checkoutMode: 'external',
+    paymentMethods: ['Google Play', 'App Store', 'Stripe Checkout'],
   },
   {
     code: 'team',
@@ -264,6 +335,14 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
     seats: 8,
     supportSlaHours: 12,
     features: ['Team seats', 'training notes', 'manager controls', 'audit export'],
+    billingProvider: 'revenuecat',
+    billingProductId: 'baristachaw_team_monthly',
+    billingPriceId: 'STRIPE_PRICE_TEAM_MONTHLY',
+    revenuecatEntitlementId: 'team',
+    market: 'global',
+    displayPrice: '$29.99 / Rp479k / B$42 monthly',
+    checkoutMode: 'external',
+    paymentMethods: ['Google Play', 'App Store', 'Stripe Checkout', 'Manual invoice'],
   },
   {
     code: 'enterprise',
@@ -277,6 +356,14 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
     seats: 50,
     supportSlaHours: 4,
     features: ['Custom quota', 'dedicated support', 'SLA review', 'private rollout'],
+    billingProvider: 'manual',
+    billingProductId: 'baristachaw_enterprise',
+    billingPriceId: '',
+    revenuecatEntitlementId: 'enterprise',
+    market: 'global',
+    displayPrice: 'Custom invoice',
+    checkoutMode: 'manual_invoice',
+    paymentMethods: ['Manual invoice', 'Bank transfer'],
   },
 ];
 
@@ -456,6 +543,95 @@ function normalizePlatform(value: unknown): AdminUserRecord['platform'] {
   return 'unknown';
 }
 
+function normalizeBillingProvider(value: unknown): BillingProvider {
+  const raw = normalizeText(value).toLowerCase();
+  if (raw === 'admin' || raw === 'google_play' || raw === 'app_store' || raw === 'stripe' || raw === 'revenuecat' || raw === 'manual') {
+    return raw;
+  }
+  return 'none';
+}
+
+function normalizeBillingStatus(value: unknown, fallback: BillingStatus = 'none'): BillingStatus {
+  const raw = normalizeText(value).toLowerCase();
+  if (raw === 'active' || raw === 'trialing' || raw === 'past_due' || raw === 'cancelled' || raw === 'expired' || raw === 'refunded') {
+    return raw;
+  }
+  return fallback;
+}
+
+function normalizeBillingMarket(value: unknown, country?: string): BillingMarket {
+  const raw = normalizeText(value || country).toLowerCase();
+  if (raw === 'id' || raw === 'idn' || raw === 'indonesia') return 'indonesia';
+  if (raw === 'bn' || raw === 'brn' || raw === 'brunei' || raw === 'brunei darussalam') return 'brunei';
+  if (raw === 'global') return 'global';
+  return country ? 'global' : 'unknown';
+}
+
+function normalizeCheckoutMode(value: unknown, fallback: CheckoutMode): CheckoutMode {
+  const raw = normalizeText(value).toLowerCase();
+  if (raw === 'disabled' || raw === 'external' || raw === 'stripe_checkout' || raw === 'play_billing' || raw === 'app_store' || raw === 'manual_invoice') {
+    return raw;
+  }
+  return fallback;
+}
+
+function defaultBillingStatus(planCode: PlanCode, status: AccountStatus): BillingStatus {
+  if (status === 'trialing') return 'trialing';
+  if (status === 'past_due') return 'past_due';
+  if (status === 'deleted' || status === 'suspended') return 'none';
+  return planCode === 'free' ? 'none' : 'active';
+}
+
+function billingRecommendedAction(billing: Pick<AdminUserBilling, 'status' | 'provider' | 'paymentActionRequired'>, planCode: PlanCode): string {
+  if (billing.paymentActionRequired || billing.status === 'past_due') return 'Open payment retry or downgrade to Free until resolved.';
+  if (billing.status === 'cancelled' || billing.status === 'expired') return 'Confirm cancellation, then move user to Free or restore entitlement.';
+  if (billing.status === 'refunded') return 'Review refund reason and remove paid entitlement if access should stop.';
+  if (planCode !== 'free' && (billing.provider === 'none' || billing.provider === 'admin')) return 'Admin override active; connect provider entitlement before public paid launch.';
+  if (planCode === 'free') return 'Offer Pro upgrade when the user hits AI Brew or Deep limits.';
+  return 'No payment action required.';
+}
+
+function billingFromRaw(row: any, metadata: Record<string, unknown>, planCode: PlanCode, status: AccountStatus): AdminUserBilling {
+  const provider = normalizeBillingProvider(row.billing_provider ?? metadata.billingProvider);
+  const fallbackStatus = defaultBillingStatus(planCode, status);
+  const billingStatus = normalizeBillingStatus(row.billing_status ?? metadata.billingStatus, fallbackStatus);
+  const paymentActionRequired = Boolean(row.payment_action_required ?? metadata.paymentActionRequired ?? billingStatus === 'past_due');
+  const billing: AdminUserBilling = {
+    status: billingStatus,
+    provider,
+    market: normalizeBillingMarket(row.billing_market ?? metadata.billingMarket, normalizeText(row.country || metadata.country)),
+    source: normalizeBillingProvider(row.billing_source ?? row.entitlement_source ?? metadata.billingSource ?? provider),
+    customerId: normalizeText(row.billing_customer_id || row.external_customer_id || metadata.billingCustomerId),
+    subscriptionId: normalizeText(row.billing_subscription_id || row.external_subscription_id || metadata.billingSubscriptionId),
+    currentPeriodStart: normalizeText(row.billing_period_start || row.current_period_start || metadata.billingPeriodStart) || undefined,
+    currentPeriodEnd: normalizeText(row.billing_period_end || row.current_period_end || metadata.billingPeriodEnd) || undefined,
+    lastEventAt: normalizeText(row.billing_last_event_at || metadata.billingLastEventAt) || undefined,
+    paymentActionRequired,
+    recommendedAction: '',
+  };
+  return {
+    ...billing,
+    recommendedAction: billingRecommendedAction(billing, planCode),
+  };
+}
+
+function mergeBillingPatch(user: AdminUserRecord, patch: UserPatch, nextPlanCode: PlanCode, nextStatus: AccountStatus): AdminUserBilling {
+  const billing: AdminUserBilling = {
+    ...user.billing,
+    status: patch.billingStatus || user.billing.status || defaultBillingStatus(nextPlanCode, nextStatus),
+    provider: patch.billingProvider || user.billing.provider,
+    market: patch.billingMarket || user.billing.market,
+    source: patch.billingProvider || user.billing.source,
+    paymentActionRequired: typeof patch.paymentActionRequired === 'boolean'
+      ? patch.paymentActionRequired
+      : user.billing.paymentActionRequired,
+  };
+  return {
+    ...billing,
+    recommendedAction: billingRecommendedAction(billing, nextPlanCode),
+  };
+}
+
 function getSupabaseConfig(): SupabaseConfig {
   const url = readEnv('SUPABASE_URL', 'EXPO_PUBLIC_SUPABASE_URL').replace(/\/+$/, '');
   const serviceRoleKey = readEnv('SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SERVICE_KEY', 'SUPABASE_SECRET_KEY');
@@ -498,6 +674,7 @@ function userFromSupabase(row: any): AdminUserRecord {
   const id = normalizeText(row.id || row.user_id, 'unknown-user');
   const email = normalizeText(row.email, 'unknown@example.com');
   const accountRecoveryStatus = normalizeAccountRecoveryStatus(row.account_recovery_status || row.accountRecoveryStatus);
+  const status = normalizeStatus(row.status);
   return {
     id,
     email,
@@ -506,7 +683,7 @@ function userFromSupabase(row: any): AdminUserRecord {
     picture: normalizeText(row.avatar_url || row.picture),
     provider: normalizeProvider(row.provider),
     role: normalizeRole(row.role),
-    status: normalizeStatus(row.status),
+    status,
     planCode,
     planName: planName(planCode),
     createdAt: normalizeText(row.created_at, nowIso()),
@@ -523,6 +700,7 @@ function userFromSupabase(row: any): AdminUserRecord {
     supportLockedUntil: normalizeText(row.support_locked_until || row.supportLockedUntil),
     lastRecoveryRequestAt: normalizeText(row.last_recovery_request_at || row.lastRecoveryRequestAt),
     passwordResetRequired: Boolean(row.password_reset_required ?? metadata.passwordResetRequired ?? accountRecoveryStatus === 'requested'),
+    billing: billingFromRaw(row, metadata, planCode, status),
   };
 }
 
@@ -542,6 +720,16 @@ function planFromSupabase(row: any, activeUsers: number): AdminPlan {
     features: Array.isArray(row.features) ? row.features.map((item: unknown) => normalizeText(item)).filter(Boolean) : [],
     recommended: Boolean(row.recommended),
     activeUsers,
+    billingProvider: normalizeBillingProvider(row.billing_provider || row.billingProvider || PLAN_BLUEPRINTS.find((plan) => plan.code === code)?.billingProvider),
+    billingProductId: normalizeText(row.billing_product_id || row.billingProductId || PLAN_BLUEPRINTS.find((plan) => plan.code === code)?.billingProductId),
+    billingPriceId: normalizeText(row.billing_price_id || row.billingPriceId || PLAN_BLUEPRINTS.find((plan) => plan.code === code)?.billingPriceId),
+    revenuecatEntitlementId: normalizeText(row.revenuecat_entitlement_id || row.revenuecatEntitlementId || PLAN_BLUEPRINTS.find((plan) => plan.code === code)?.revenuecatEntitlementId),
+    market: normalizeBillingMarket(row.market || row.billing_market || row.billingMarket || PLAN_BLUEPRINTS.find((plan) => plan.code === code)?.market),
+    displayPrice: normalizeText(row.display_price || row.displayPrice || PLAN_BLUEPRINTS.find((plan) => plan.code === code)?.displayPrice),
+    checkoutMode: normalizeCheckoutMode(row.checkout_mode || row.checkoutMode, PLAN_BLUEPRINTS.find((plan) => plan.code === code)?.checkoutMode || 'disabled'),
+    paymentMethods: Array.isArray(row.payment_methods)
+      ? row.payment_methods.map((item: unknown) => normalizeText(item)).filter(Boolean)
+      : (PLAN_BLUEPRINTS.find((plan) => plan.code === code)?.paymentMethods || []),
   };
 }
 
@@ -554,6 +742,32 @@ function auditFromSupabase(row: any): AdminAuditEvent {
     createdAt: normalizeText(row.created_at, nowIso()),
     detail: normalizeText(row.detail || row.summary, 'Administrative event recorded.'),
     severity: row.severity === 'critical' || row.severity === 'warning' ? row.severity : 'info',
+  };
+}
+
+function runtimeBilling(
+  planCode: PlanCode,
+  status: AccountStatus,
+  provider: BillingProvider,
+  market: BillingMarket,
+  overrides: Partial<AdminUserBilling> = {},
+): AdminUserBilling {
+  const billing: AdminUserBilling = {
+    status: overrides.status || defaultBillingStatus(planCode, status),
+    provider,
+    market,
+    source: overrides.source || provider,
+    customerId: overrides.customerId || '',
+    subscriptionId: overrides.subscriptionId || '',
+    currentPeriodStart: overrides.currentPeriodStart,
+    currentPeriodEnd: overrides.currentPeriodEnd,
+    lastEventAt: overrides.lastEventAt,
+    paymentActionRequired: Boolean(overrides.paymentActionRequired || status === 'past_due'),
+    recommendedAction: '',
+  };
+  return {
+    ...billing,
+    recommendedAction: billingRecommendedAction(billing, planCode),
   };
 }
 
@@ -589,6 +803,10 @@ function currentAuthUser(admin: AdminAccess, rawUser?: Record<string, unknown>):
     supportNote: '',
     accountRecoveryStatus: 'none',
     passwordResetRequired: false,
+    billing: runtimeBilling(planCode, 'active', 'manual', 'global', {
+      customerId: 'manual_owner',
+      subscriptionId: 'manual_enterprise_owner',
+    }),
   };
 }
 
@@ -621,6 +839,7 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
       flags: ['trial'],
       accountRecoveryStatus: 'none',
       passwordResetRequired: false,
+      billing: runtimeBilling('free', 'trialing', 'none', 'indonesia'),
       isSample: true,
     },
     {
@@ -649,6 +868,11 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
       flags: ['power_user'],
       accountRecoveryStatus: 'none',
       passwordResetRequired: false,
+      billing: runtimeBilling('pro', 'active', 'revenuecat', 'global', {
+        customerId: 'rc_customer_pro_barista',
+        subscriptionId: 'sub_pro_monthly',
+        currentPeriodEnd: new Date(Date.now() + 19 * 24 * 60 * 60 * 1000).toISOString(),
+      }),
       isSample: true,
     },
     {
@@ -677,6 +901,11 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
       flags: ['team_owner'],
       accountRecoveryStatus: 'none',
       passwordResetRequired: false,
+      billing: runtimeBilling('team', 'active', 'manual', 'global', {
+        customerId: 'invoice_cafe_manager',
+        subscriptionId: 'manual_team_2026_04',
+        currentPeriodEnd: new Date(Date.now() + 27 * 24 * 60 * 60 * 1000).toISOString(),
+      }),
       isSample: true,
     },
     {
@@ -708,6 +937,13 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
       accountRecoveryStatus: 'requested',
       lastRecoveryRequestAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
       passwordResetRequired: true,
+      billing: runtimeBilling('starter', 'past_due', 'stripe', 'indonesia', {
+        customerId: 'cus_billing_watch',
+        subscriptionId: 'sub_starter_retry',
+        currentPeriodEnd: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        lastEventAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+        paymentActionRequired: true,
+      }),
       isSample: true,
     },
   ];
@@ -716,13 +952,27 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
     const patch = RUNTIME_USER_PATCHES.get(user.id);
     if (!patch) return user;
     const planCode = patch.planCode || user.planCode;
-    const { displayName, ...recordPatch } = patch;
+    const status = patch.status || user.status;
+    const {
+      displayName,
+      billingStatus,
+      billingProvider,
+      billingMarket,
+      paymentActionRequired,
+      ...recordPatch
+    } = patch;
     return {
       ...user,
       ...recordPatch,
       name: displayName || user.name,
       planCode,
       planName: planName(planCode),
+      billing: mergeBillingPatch(user, {
+        billingStatus,
+        billingProvider,
+        billingMarket,
+        paymentActionRequired,
+      }, planCode, status),
       flags: user.flags,
     };
   });
@@ -754,12 +1004,58 @@ function metricsFromUsers(users: AdminUserRecord[]): AdminSnapshot['metrics'] {
   };
 }
 
+function connectedBillingProviders(): BillingProvider[] {
+  const providers: BillingProvider[] = [];
+  if (readEnv('REVENUECAT_API_KEY', 'REVENUECAT_WEBHOOK_SECRET')) providers.push('revenuecat');
+  if (readEnv('GOOGLE_PLAY_PACKAGE_NAME', 'GOOGLE_PLAY_SERVICE_ACCOUNT_JSON', 'GOOGLE_PLAY_SERVICE_ACCOUNT_KEY')) providers.push('google_play');
+  if (readEnv('APP_STORE_CONNECT_ISSUER_ID', 'APP_STORE_SHARED_SECRET', 'APPLE_APP_ID')) providers.push('app_store');
+  if (readEnv('STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'BILLING_CHECKOUT_URL')) providers.push('stripe');
+  return providers;
+}
+
+function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataMode: DataMode): AdminSnapshot['billing'] {
+  const connectedProviders = connectedBillingProviders();
+  const activeStatuses = new Set<BillingStatus>(['active', 'trialing']);
+  const paidUsers = users.filter((user) => user.planCode !== 'free' && user.status !== 'deleted');
+  const revenueMonthlyUsd = paidUsers
+    .filter((user) => activeStatuses.has(user.billing.status))
+    .reduce((sum, user) => sum + (plans.find((plan) => plan.code === user.planCode)?.priceMonthlyUsd || 0), 0);
+  const gaps: string[] = [];
+
+  if (dataMode !== 'supabase') {
+    gaps.push('Supabase billing tables are not live yet; runtime billing controls are preview-only.');
+  }
+  if (!connectedProviders.length) {
+    gaps.push('No payment provider env is configured. Add RevenueCat/Google Play/App Store/Stripe before paid launch.');
+  }
+  if (!connectedProviders.includes('google_play')) {
+    gaps.push('Google Play Billing package/service account is not configured for Android purchases.');
+  }
+  if (!connectedProviders.includes('app_store')) {
+    gaps.push('App Store purchase credentials are not configured for iOS parity.');
+  }
+
+  return {
+    ready: dataMode === 'supabase' && connectedProviders.length > 0,
+    mode: connectedProviders.length ? (envEnabled('BILLING_LIVE_MODE') ? 'live_ready' : 'test') : 'not_configured',
+    connectedProviders,
+    activeSubscriptions: users.filter((user) => user.planCode !== 'free' && user.billing.status === 'active').length,
+    trialingSubscriptions: users.filter((user) => user.billing.status === 'trialing').length,
+    pastDueSubscriptions: users.filter((user) => user.billing.status === 'past_due').length,
+    revenueMonthlyUsd: Math.round(revenueMonthlyUsd * 100) / 100,
+    attentionUsers: users.filter((user) => user.billing.paymentActionRequired || user.billing.status === 'past_due' || user.billing.status === 'refunded').length,
+    supportedMarkets: ['indonesia', 'brunei', 'global'],
+    realtimeTables: ['app_users', 'user_entitlements', 'admin_audit_events', 'app_feature_flags'],
+    gaps,
+  };
+}
+
 function buildChecks(dataMode: DataMode): AdminSystemCheck[] {
   const supabase = getSupabaseConfig();
   const adminConfigured = Boolean(readEnv('ADMIN_EMAILS', 'ADMIN_BOOTSTRAP_EMAILS', 'ADMIN_USER_IDS', 'ADMIN_BOOTSTRAP_USER_IDS'));
   const jwtConfigured = Boolean(readEnv('JWT_SECRET'));
   const aiConfigured = Boolean(readEnv('GEMINI_API_KEY', 'GOOGLE_GENAI_API_KEY', 'OPENAI_API_KEY'));
-  const billingConfigured = Boolean(readEnv('STRIPE_SECRET_KEY', 'REVENUECAT_API_KEY', 'GOOGLE_PLAY_PACKAGE_NAME'));
+  const billingConfigured = connectedBillingProviders().length > 0;
   const sentryConfigured = Boolean(readEnv('SENTRY_DSN', 'EXPO_PUBLIC_SENTRY_DSN', 'VITE_SENTRY_DSN'));
 
   return [
@@ -1055,8 +1351,12 @@ async function buildAdminSnapshot(
 
   const metrics = metricsFromUsers(users);
   const checks = buildChecks(dataMode);
+  const billing = buildBillingSummary(users, plans, dataMode);
   const launchChecklist = buildLaunchChecklist(checks);
   const recommendations = buildRecommendations({ dataMode, metrics, checks });
+  if (!billing.ready) {
+    recommendations.unshift('Finish billing provider and Supabase entitlement setup before opening paid plans to real users.');
+  }
 
   return {
     ok: true,
@@ -1078,6 +1378,7 @@ async function buildAdminSnapshot(
     checks,
     launchChecklist,
     featureFlags,
+    billing,
     recommendations,
     warnings,
     realtime: {
@@ -1149,6 +1450,30 @@ function validatePatch(body: any): { ok: true; userId: string; patch: UserPatch 
       patch.lastRecoveryRequestAt = nowIso();
     }
   }
+  if ('billingStatus' in rawPatch) {
+    const validated = validateEnumValue(rawPatch.billingStatus, 'billingStatus', VALID_BILLING_STATUSES);
+    if (validated.ok === false) return validated;
+    patch.billingStatus = validated.value;
+    if (validated.value === 'past_due' && !patch.status) patch.status = 'past_due';
+    if ((validated.value === 'active' || validated.value === 'trialing') && !('paymentActionRequired' in rawPatch)) {
+      patch.paymentActionRequired = false;
+    }
+  }
+  if ('billingProvider' in rawPatch) {
+    const validated = validateEnumValue(rawPatch.billingProvider, 'billingProvider', VALID_BILLING_PROVIDERS);
+    if (validated.ok === false) return validated;
+    patch.billingProvider = validated.value;
+  }
+  if ('billingMarket' in rawPatch) {
+    const validated = validateEnumValue(rawPatch.billingMarket, 'billingMarket', VALID_BILLING_MARKETS);
+    if (validated.ok === false) return validated;
+    patch.billingMarket = validated.value;
+  }
+  if ('paymentActionRequired' in rawPatch) {
+    const validated = validateBooleanPatch(rawPatch.paymentActionRequired, 'paymentActionRequired');
+    if (validated.ok === false) return validated;
+    patch.paymentActionRequired = validated.value;
+  }
 
   if (Object.keys(patch).length === 0) return { ok: false, error: 'patch is empty' };
   return { ok: true, userId, patch };
@@ -1215,6 +1540,9 @@ function userPatchSeverity(patch: UserPatch): AdminAuditEvent['severity'] {
   if (patch.status === 'suspended' || patch.passwordResetRequired) {
     return 'warning';
   }
+  if (patch.billingStatus === 'past_due' || patch.billingStatus === 'refunded' || patch.paymentActionRequired) {
+    return 'warning';
+  }
   return 'info';
 }
 
@@ -1271,6 +1599,13 @@ async function patchSupabaseUser(
   if (patch.accountRecoveryStatus) body.account_recovery_status = patch.accountRecoveryStatus;
   if (typeof patch.passwordResetRequired === 'boolean') body.password_reset_required = patch.passwordResetRequired;
   if (patch.lastRecoveryRequestAt) body.last_recovery_request_at = patch.lastRecoveryRequestAt;
+  if (patch.billingStatus) {
+    body.billing_status = patch.billingStatus;
+    body.billing_last_event_at = nowIso();
+  }
+  if (patch.billingProvider) body.billing_provider = patch.billingProvider;
+  if (patch.billingMarket) body.billing_market = patch.billingMarket;
+  if (typeof patch.paymentActionRequired === 'boolean') body.payment_action_required = patch.paymentActionRequired;
 
   await supabaseRest(config, `app_users?id=eq.${encodeURIComponent(userId)}`, {
     method: 'PATCH',

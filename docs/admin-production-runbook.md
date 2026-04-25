@@ -9,7 +9,8 @@ This release adds the `/admin` web console, `/api/admin/management` backend rout
 - `SUPABASE_URL`: hosted Supabase project URL.
 - `SUPABASE_SERVICE_ROLE_KEY`: server-only key for admin tables.
 - `GEMINI_API_KEY`: AI provider capacity for protected AI routes.
-- Billing provider env before paid launch: `REVENUECAT_API_KEY`, `STRIPE_SECRET_KEY`, or Google Play billing integration env.
+- Billing provider env before paid launch: `REVENUECAT_API_KEY`, `GOOGLE_PLAY_PACKAGE_NAME`, Apple/App Store Connect env, or Stripe/checkout URL env.
+- Optional web checkout links for MVP: `BILLING_CHECKOUT_URL_PRO`, `BILLING_CHECKOUT_URL_STARTER`, `BILLING_CHECKOUT_URL_TEAM`, and `BILLING_PORTAL_URL`.
 - Telemetry before Play Store rollout: `SENTRY_DSN` or platform-specific public DSN.
 
 Never expose `SUPABASE_SERVICE_ROLE_KEY` to Expo `EXPO_PUBLIC_*` or Vite `VITE_*`.
@@ -45,6 +46,8 @@ Before Play Store launch, the admin console should show:
 ## Operations
 
 - Use the Users tab for status, plan, and role overrides.
+- Use the Users tab Billing section for payment status, provider, market, and payment-action overrides. Past-due changes are reflected in `/api/account/status`.
+- Use the Plans tab for provider/product/entitlement mapping and billing readiness gaps.
 - Use the Maintenance tab before risky deploys to mark web/PWA/mobile features as `maintenance` or `disabled`.
 - Use the Audit tab to review every account mutation.
 - Use the Database tab after deploys to catch missing env or schema drift.
@@ -68,4 +71,16 @@ The admin console includes plan management and quota definitions. Paid launch st
 - scanner/image edit routes
 - speech/transcription routes
 
-Use `app_users.plan_code`, `app_plans.*_daily_limit`, and `app_usage_daily` as the source of truth.
+Use `app_users.plan_code`, `app_users.billing_status`, `app_plans.*_daily_limit`, `user_entitlements`, and `app_usage_daily` as the source of truth.
+
+## Supabase and Payment Setup Notes
+
+For Indonesia and Brunei launch prep, keep Google Play Billing and App Store subscriptions as the primary mobile purchase path. Use RevenueCat as the entitlement aggregator if you want one webhook to sync Android and iOS into `user_entitlements`. For web/PWA, Stripe Checkout or static provider checkout links can be wired through `/api/billing/checkout`.
+
+Minimum setup order:
+
+1. Create Supabase project, run `supabase/admin_management.sql`, then set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` on Vercel.
+2. Set `ADMIN_EMAILS` to the owner/support emails.
+3. Create products using the plan product ids in `/admin` Plans: `baristachaw_starter_monthly`, `baristachaw_pro_monthly`, `baristachaw_team_monthly`.
+4. Add provider env values, then set `BILLING_LIVE_MODE=true` only after test purchases sync correctly.
+5. Keep `Free` and guest mode enabled for app review and first-run trust.

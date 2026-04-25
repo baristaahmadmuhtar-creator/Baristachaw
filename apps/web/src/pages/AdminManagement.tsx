@@ -53,6 +53,9 @@ import {
   type AdminSystemCheck,
   type AdminUserPatch,
   type AdminUserRecord,
+  type BillingMarket,
+  type BillingProvider,
+  type BillingStatus,
   type CheckStatus,
   type FeatureFlagStatus,
   type FeatureSurface,
@@ -71,7 +74,7 @@ const TABS = [
 ] as const;
 
 type AdminTab = (typeof TABS)[number]['id'];
-type UserQueueFilter = 'all' | 'risk' | 'recovery' | 'paid' | 'sample';
+type UserQueueFilter = 'all' | 'risk' | 'recovery' | 'billing' | 'paid' | 'sample';
 type UserMutationRiskLevel = 'warning' | 'critical';
 
 type UserMutationRisk = {
@@ -104,10 +107,14 @@ const USER_QUEUE_OPTIONS: Array<{ value: UserQueueFilter; label: string }> = [
   { value: 'all', label: 'All queues' },
   { value: 'risk', label: 'Risk queue' },
   { value: 'recovery', label: 'Recovery queue' },
+  { value: 'billing', label: 'Billing attention' },
   { value: 'paid', label: 'Paid users' },
   { value: 'sample', label: 'Preview data' },
 ];
 const PLAN_OPTIONS: PlanCode[] = ['free', 'starter', 'pro', 'team', 'enterprise'];
+const BILLING_STATUS_OPTIONS: BillingStatus[] = ['none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded'];
+const BILLING_PROVIDER_OPTIONS: BillingProvider[] = ['none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual'];
+const BILLING_MARKET_OPTIONS: BillingMarket[] = ['indonesia', 'brunei', 'global', 'unknown'];
 const FEATURE_STATUS_OPTIONS: FeatureFlagStatus[] = ['available', 'maintenance', 'disabled'];
 const FEATURE_SURFACE_OPTIONS: FeatureSurface[] = ['global', 'web', 'pwa', 'mobile', 'admin'];
 const ROLE_WEIGHT: Record<AdminRole, number> = {
@@ -158,7 +165,7 @@ function formatShortId(value: string): string {
 function statusTone(status: string): string {
   if (status === 'pass' || status === 'active' || status === 'verified' || status === 'resolved') return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300';
   if (status === 'warn' || status === 'trialing' || status === 'past_due' || status === 'requested') return 'bg-amber-500/10 text-amber-700 dark:text-amber-300';
-  if (status === 'fail' || status === 'suspended' || status === 'deleted' || status === 'rejected') return 'bg-rose-500/10 text-rose-700 dark:text-rose-300';
+  if (status === 'fail' || status === 'suspended' || status === 'deleted' || status === 'rejected' || status === 'cancelled' || status === 'expired' || status === 'refunded') return 'bg-rose-500/10 text-rose-700 dark:text-rose-300';
   if (status === 'supabase') return 'bg-blue-500/10 text-blue-700 dark:text-blue-300';
   return 'bg-surface-alpha text-secondary';
 }
@@ -210,6 +217,10 @@ function usersToCsv(snapshot: AdminSnapshot): string {
       'status',
       'plan_code',
       'plan_name',
+      'billing_status',
+      'billing_provider',
+      'billing_market',
+      'payment_action_required',
       'recovery_status',
       'password_reset_required',
       'risk_score',
@@ -238,6 +249,10 @@ function usersToCsv(snapshot: AdminSnapshot): string {
       user.status,
       user.planCode,
       user.planName,
+      user.billing.status,
+      user.billing.provider,
+      user.billing.market,
+      user.billing.paymentActionRequired ? 'yes' : 'no',
       user.accountRecoveryStatus || 'none',
       Boolean(user.passwordResetRequired),
       user.riskScore,
@@ -318,9 +333,18 @@ function isRecoveryUser(user: AdminUserRecord): boolean {
   return Boolean(user.passwordResetRequired) || (user.accountRecoveryStatus || 'none') === 'requested';
 }
 
+function isBillingAttentionUser(user: AdminUserRecord): boolean {
+  return Boolean(user.billing.paymentActionRequired)
+    || user.billing.status === 'past_due'
+    || user.billing.status === 'refunded'
+    || user.billing.status === 'expired'
+    || user.status === 'past_due';
+}
+
 function matchesUserQueue(user: AdminUserRecord, queue: UserQueueFilter): boolean {
   if (queue === 'risk') return isRiskUser(user);
   if (queue === 'recovery') return isRecoveryUser(user);
+  if (queue === 'billing') return isBillingAttentionUser(user);
   if (queue === 'paid') return user.planCode !== 'free' && user.status !== 'deleted';
   if (queue === 'sample') return Boolean(user.isSample);
   return true;
@@ -331,6 +355,12 @@ function describeUserPatch(user: AdminUserRecord, patch: AdminUserPatch): string
   if (patch.status && patch.status !== user.status) changes.push(`Status: ${user.status} -> ${patch.status}`);
   if (patch.role && patch.role !== user.role) changes.push(`Role: ${user.role} -> ${patch.role}`);
   if (patch.planCode && patch.planCode !== user.planCode) changes.push(`Plan: ${user.planName} -> ${patch.planCode}`);
+  if (patch.billingStatus && patch.billingStatus !== user.billing.status) changes.push(`Billing: ${user.billing.status} -> ${patch.billingStatus}`);
+  if (patch.billingProvider && patch.billingProvider !== user.billing.provider) changes.push(`Provider: ${user.billing.provider} -> ${patch.billingProvider}`);
+  if (patch.billingMarket && patch.billingMarket !== user.billing.market) changes.push(`Market: ${user.billing.market} -> ${patch.billingMarket}`);
+  if (typeof patch.paymentActionRequired === 'boolean' && patch.paymentActionRequired !== user.billing.paymentActionRequired) {
+    changes.push(`Payment action: ${patch.paymentActionRequired ? 'required' : 'cleared'}`);
+  }
   if (typeof patch.passwordResetRequired === 'boolean' && patch.passwordResetRequired !== Boolean(user.passwordResetRequired)) {
     changes.push(`Password reset: ${patch.passwordResetRequired ? 'required' : 'cleared'}`);
   }
@@ -414,6 +444,16 @@ function classifyUserPatchRisk(user: AdminUserRecord, patch: AdminUserPatch): Us
     impacts.push(nextWeight < currentWeight
       ? 'Plan downgrade can reduce AI, scanner, storage, and seat limits.'
       : 'Plan upgrade can increase quotas and commercial entitlement.');
+  }
+
+  if (patch.billingStatus && patch.billingStatus !== user.billing.status) {
+    level = level === 'critical' ? level : 'warning';
+    impacts.push('Billing status changes affect user plan access, renewal support, and payment messaging.');
+  }
+
+  if (typeof patch.paymentActionRequired === 'boolean' && patch.paymentActionRequired !== user.billing.paymentActionRequired) {
+    level = level === 'critical' ? level : 'warning';
+    impacts.push('Payment action flags are reflected in the user workspace status.');
   }
 
   if (patch.passwordResetRequired && !user.passwordResetRequired) {
@@ -596,6 +636,7 @@ function ChecksPanel({ checks }: { checks: AdminSystemCheck[] }) {
 type AdminQueueSummary = {
   riskUsers: AdminUserRecord[];
   recoveryUsers: AdminUserRecord[];
+  billingUsers: AdminUserRecord[];
   pastDueUsers: AdminUserRecord[];
   paidUsers: AdminUserRecord[];
   maintenanceFlags: AdminFeatureFlag[];
@@ -616,7 +657,7 @@ function AdminCommandCenter({
   onOpenMaintenance: () => void;
   onOpenUser: (userId: string, queue: UserQueueFilter) => void;
 }) {
-  const handoffUsers = [...queues.recoveryUsers, ...queues.riskUsers]
+  const handoffUsers = [...queues.billingUsers, ...queues.recoveryUsers, ...queues.riskUsers]
     .filter((user, index, list) => list.findIndex((item) => item.id === user.id) === index)
     .slice(0, 3);
 
@@ -633,7 +674,7 @@ function AdminCommandCenter({
           <StatusBadge value={snapshot.degraded ? 'warn' : 'pass'} />
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <button
             type="button"
             onClick={() => onOpenQueue('risk')}
@@ -653,6 +694,16 @@ function AdminCommandCenter({
             <p className="mt-3 text-2xl font-semibold text-primary">{queues.recoveryUsers.length}</p>
             <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">Recovery</p>
             <p className="mt-2 text-xs leading-5 text-secondary">Password reset and account recovery requests.</p>
+          </button>
+          <button
+            type="button"
+            onClick={() => onOpenQueue('billing')}
+            className="rounded-2xl border border-glass bg-surface-alpha p-4 text-left transition-colors hover:bg-[var(--bg-base)]"
+          >
+            <WalletCards size={18} className="text-blue-500" />
+            <p className="mt-3 text-2xl font-semibold text-primary">{queues.billingUsers.length}</p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">Billing</p>
+            <p className="mt-2 text-xs leading-5 text-secondary">Payment action, refund, expired, and past-due reviews.</p>
           </button>
           <button
             type="button"
@@ -690,7 +741,7 @@ function AdminCommandCenter({
             <button
               key={user.id}
               type="button"
-              onClick={() => onOpenUser(user.id, isRecoveryUser(user) ? 'recovery' : 'risk')}
+              onClick={() => onOpenUser(user.id, isBillingAttentionUser(user) ? 'billing' : isRecoveryUser(user) ? 'recovery' : 'risk')}
               className="flex w-full items-center justify-between gap-3 rounded-2xl bg-surface-alpha px-3 py-3 text-left transition-colors hover:bg-[var(--bg-base)]"
             >
               <span className="min-w-0">
@@ -698,7 +749,7 @@ function AdminCommandCenter({
                 <span className="mt-1 block truncate text-xs text-tertiary">{user.email}</span>
               </span>
               <span className="shrink-0 text-right">
-                <StatusBadge value={isRecoveryUser(user) ? 'requested' : user.status} />
+                <StatusBadge value={isBillingAttentionUser(user) ? user.billing.status : isRecoveryUser(user) ? 'requested' : user.status} />
                 <span className="mt-1 block text-[11px] font-semibold text-secondary">{user.planName}</span>
               </span>
             </button>
@@ -1172,6 +1223,7 @@ function UsersTable({
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[var(--bg-base)] px-3 py-2">
                 <div className="flex items-center gap-2">
                   <StatusBadge value={user.passwordResetRequired ? 'requested' : (user.accountRecoveryStatus || 'none')} />
+                  <StatusBadge value={user.billing.status} />
                   <span className="text-xs text-tertiary">{user.provider}</span>
                 </div>
                 <p className="text-xs font-semibold text-secondary">{formatNumber(user.usage.aiRequestsToday)} AI / risk {user.riskScore}</p>
@@ -1190,6 +1242,7 @@ function UsersTable({
               <th className="px-4 py-3 font-semibold">Account</th>
               <th className="px-4 py-3 font-semibold">Status</th>
               <th className="px-4 py-3 font-semibold">Plan</th>
+              <th className="px-4 py-3 font-semibold">Billing</th>
               <th className="px-4 py-3 font-semibold">Role</th>
               <th className="px-4 py-3 font-semibold">Recovery</th>
               {!selectedUserId ? (
@@ -1274,6 +1327,13 @@ function UsersTable({
                   </select>
                 </td>
                 <td className="px-4 py-4 align-top">
+                  <div className="flex flex-col gap-1.5">
+                    <StatusBadge value={user.billing.status} />
+                    <p className="text-[11px] capitalize text-tertiary">{user.billing.provider.replace(/_/g, ' ')} / {user.billing.market}</p>
+                    {user.billing.paymentActionRequired ? <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-300">Action required</p> : null}
+                  </div>
+                </td>
+                <td className="px-4 py-4 align-top">
                   <select
                     value={user.role}
                     disabled={busyUserId === user.id}
@@ -1350,6 +1410,10 @@ function AccountInspector({
   const [role, setRole] = useState<AdminRole>(user.role);
   const [status, setStatus] = useState<AccountStatus>(user.status);
   const [planCode, setPlanCode] = useState<PlanCode>(user.planCode);
+  const [billingStatus, setBillingStatus] = useState<BillingStatus>(user.billing.status);
+  const [billingProvider, setBillingProvider] = useState<BillingProvider>(user.billing.provider);
+  const [billingMarket, setBillingMarket] = useState<BillingMarket>(user.billing.market);
+  const [paymentActionRequired, setPaymentActionRequired] = useState(Boolean(user.billing.paymentActionRequired));
   const [recoveryStatus, setRecoveryStatus] = useState<AccountRecoveryStatus>(user.accountRecoveryStatus || 'none');
   const [passwordResetRequired, setPasswordResetRequired] = useState(Boolean(user.passwordResetRequired));
   const [notes, setNotes] = useState(user.notes || '');
@@ -1361,6 +1425,10 @@ function AccountInspector({
     setRole(user.role);
     setStatus(user.status);
     setPlanCode(user.planCode);
+    setBillingStatus(user.billing.status);
+    setBillingProvider(user.billing.provider);
+    setBillingMarket(user.billing.market);
+    setPaymentActionRequired(Boolean(user.billing.paymentActionRequired));
     setRecoveryStatus(user.accountRecoveryStatus || 'none');
     setPasswordResetRequired(Boolean(user.passwordResetRequired));
     setNotes(user.notes || '');
@@ -1372,6 +1440,10 @@ function AccountInspector({
     || role !== user.role
     || status !== user.status
     || planCode !== user.planCode
+    || billingStatus !== user.billing.status
+    || billingProvider !== user.billing.provider
+    || billingMarket !== user.billing.market
+    || paymentActionRequired !== Boolean(user.billing.paymentActionRequired)
     || recoveryStatus !== user.accountRecoveryStatus
     || passwordResetRequired !== Boolean(user.passwordResetRequired)
     || notes.trim() !== (user.notes || '')
@@ -1386,6 +1458,10 @@ function AccountInspector({
     if (role !== user.role) patch.role = role;
     if (status !== user.status) patch.status = status;
     if (planCode !== user.planCode) patch.planCode = planCode;
+    if (billingStatus !== user.billing.status) patch.billingStatus = billingStatus;
+    if (billingProvider !== user.billing.provider) patch.billingProvider = billingProvider;
+    if (billingMarket !== user.billing.market) patch.billingMarket = billingMarket;
+    if (paymentActionRequired !== Boolean(user.billing.paymentActionRequired)) patch.paymentActionRequired = paymentActionRequired;
     if (recoveryStatus !== user.accountRecoveryStatus) patch.accountRecoveryStatus = recoveryStatus;
     if (passwordResetRequired !== Boolean(user.passwordResetRequired)) patch.passwordResetRequired = passwordResetRequired;
     if (notes.trim() !== (user.notes || '')) patch.notes = notes.trim();
@@ -1404,6 +1480,24 @@ function AccountInspector({
     onPatch(user.id, {
       accountRecoveryStatus: 'resolved',
       passwordResetRequired: false,
+    });
+  };
+
+  const markBillingResolved = () => {
+    onPatch(user.id, {
+      billingStatus: planCode === 'free' ? 'none' : 'active',
+      status: status === 'past_due' ? 'active' : status,
+      paymentActionRequired: false,
+      supportNote: 'Operator reason: payment issue resolved and billing access refreshed.',
+    });
+  };
+
+  const markBillingPastDue = () => {
+    onPatch(user.id, {
+      billingStatus: 'past_due',
+      status: 'past_due',
+      paymentActionRequired: true,
+      supportNote: 'Operator reason: payment provider reported past-due renewal.',
     });
   };
 
@@ -1486,6 +1580,60 @@ function AccountInspector({
           </label>
         </div>
 
+        <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-primary">Billing and entitlement</p>
+              <p className="mt-1 text-xs leading-5 text-secondary">{user.billing.recommendedAction}</p>
+            </div>
+            <StatusBadge value={user.billing.status} />
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+            <label className="grid gap-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Billing status</span>
+              <select value={billingStatus} onChange={(event) => setBillingStatus(event.currentTarget.value as BillingStatus)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+                {BILLING_STATUS_OPTIONS.map((item) => <option key={item} value={item}>{item}</option>)}
+              </select>
+            </label>
+            <label className="grid gap-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Provider</span>
+              <select value={billingProvider} onChange={(event) => setBillingProvider(event.currentTarget.value as BillingProvider)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+                {BILLING_PROVIDER_OPTIONS.map((item) => <option key={item} value={item}>{item.replace(/_/g, ' ')}</option>)}
+              </select>
+            </label>
+            <label className="grid gap-1.5">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Market</span>
+              <select value={billingMarket} onChange={(event) => setBillingMarket(event.currentTarget.value as BillingMarket)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+                {BILLING_MARKET_OPTIONS.map((item) => <option key={item} value={item}>{item}</option>)}
+              </select>
+            </label>
+            <label className="flex min-h-10 items-center justify-between gap-3 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-secondary">
+              <span>Payment action required</span>
+              <input
+                type="checkbox"
+                checked={paymentActionRequired}
+                onChange={(event) => setPaymentActionRequired(event.currentTarget.checked)}
+                className="h-4 w-4 accent-blue-500"
+              />
+            </label>
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+            <button type="button" onClick={markBillingResolved} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300">
+              <CheckCircle2 size={14} />
+              Mark paid
+            </button>
+            <button type="button" onClick={markBillingPastDue} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300">
+              <AlertTriangle size={14} />
+              Mark past due
+            </button>
+          </div>
+          <div className="mt-3 grid gap-1 text-[11px] text-tertiary">
+            {user.billing.customerId ? <button type="button" onClick={() => onCopy(user.billing.customerId, 'Customer ID')} className="truncate text-left hover:text-primary">Customer: {user.billing.customerId}</button> : null}
+            {user.billing.subscriptionId ? <button type="button" onClick={() => onCopy(user.billing.subscriptionId, 'Subscription ID')} className="truncate text-left hover:text-primary">Subscription: {user.billing.subscriptionId}</button> : null}
+            {user.billing.currentPeriodEnd ? <span>Renews/ends {formatDate(user.billing.currentPeriodEnd)}</span> : null}
+          </div>
+        </div>
+
         <label className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-glass bg-surface-alpha px-3 text-sm text-secondary">
           <span className="inline-flex items-center gap-2"><KeyRound size={15} /> Require password reset</span>
           <input
@@ -1556,6 +1704,54 @@ function AccountInspector({
   );
 }
 
+function BillingReadinessPanel({ snapshot }: { snapshot: AdminSnapshot }) {
+  return (
+    <div className="mb-4 grid gap-3 lg:grid-cols-[1fr_1fr_1fr]">
+      <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-primary">Payment readiness</p>
+            <p className="mt-1 text-xs text-secondary">{snapshot.billing.mode.replace(/_/g, ' ')}</p>
+          </div>
+          <StatusBadge value={snapshot.billing.ready ? 'pass' : 'warn'} />
+        </div>
+        <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+          <div className="rounded-xl bg-[var(--bg-base)] p-2">
+            <p className="text-lg font-semibold text-primary">{snapshot.billing.activeSubscriptions}</p>
+            <p className="text-tertiary">active</p>
+          </div>
+          <div className="rounded-xl bg-[var(--bg-base)] p-2">
+            <p className="text-lg font-semibold text-primary">{snapshot.billing.pastDueSubscriptions}</p>
+            <p className="text-tertiary">past due</p>
+          </div>
+          <div className="rounded-xl bg-[var(--bg-base)] p-2">
+            <p className="text-lg font-semibold text-primary">{formatUsd(snapshot.billing.revenueMonthlyUsd)}</p>
+            <p className="text-tertiary">MRR</p>
+          </div>
+        </div>
+      </div>
+      <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
+        <p className="text-sm font-semibold text-primary">Connected providers</p>
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {snapshot.billing.connectedProviders.length ? snapshot.billing.connectedProviders.map((provider) => (
+            <StatusBadge key={provider} value={provider} />
+          )) : <StatusBadge value="not_configured" />}
+        </div>
+        <p className="mt-3 text-xs leading-5 text-secondary">Markets prepared: {snapshot.billing.supportedMarkets.join(', ')}.</p>
+      </div>
+      <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
+        <p className="text-sm font-semibold text-primary">Realtime contract</p>
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {snapshot.billing.realtimeTables.map((table) => (
+            <span key={table} className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[10px] font-semibold text-tertiary">{table}</span>
+          ))}
+        </div>
+        {snapshot.billing.gaps[0] ? <p className="mt-3 text-xs leading-5 text-secondary">{snapshot.billing.gaps[0]}</p> : null}
+      </div>
+    </div>
+  );
+}
+
 function PlansPanel({ plans }: { plans: AdminPlan[] }) {
   return (
     <div className="grid gap-3 lg:grid-cols-5">
@@ -1569,6 +1765,11 @@ function PlansPanel({ plans }: { plans: AdminPlan[] }) {
             {plan.recommended ? <BadgeCheck size={18} className="text-blue-500" /> : null}
           </div>
           <p className="mt-4 min-h-[3rem] text-xs leading-5 text-secondary">{plan.description}</p>
+          <div className="mt-3 rounded-xl bg-[var(--bg-base)] px-3 py-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-tertiary">Checkout</p>
+            <p className="mt-1 text-xs font-semibold capitalize text-primary">{plan.checkoutMode.replace(/_/g, ' ')}</p>
+            <p className="mt-1 break-words text-[11px] leading-4 text-secondary">{plan.displayPrice}</p>
+          </div>
           <div className="mt-4 space-y-2 text-xs text-secondary">
             <div className="flex justify-between gap-3"><span>AI/day</span><strong className="text-primary">{formatNumber(plan.aiDailyLimit)}</strong></div>
             <div className="flex justify-between gap-3"><span>Deep/day</span><strong className="text-primary">{formatNumber(plan.deepDailyLimit)}</strong></div>
@@ -1582,6 +1783,11 @@ function PlansPanel({ plans }: { plans: AdminPlan[] }) {
                 {feature}
               </span>
             ))}
+          </div>
+          <div className="mt-3 space-y-1 text-[11px] text-tertiary">
+            <p className="truncate">Provider: {plan.billingProvider.replace(/_/g, ' ')}</p>
+            {plan.billingProductId ? <p className="truncate">Product: {plan.billingProductId}</p> : null}
+            {plan.revenuecatEntitlementId ? <p className="truncate">Entitlement: {plan.revenuecatEntitlementId}</p> : null}
           </div>
         </div>
       ))}
@@ -1867,6 +2073,7 @@ export function AdminManagement() {
     return {
       riskUsers: users.filter(isRiskUser),
       recoveryUsers: users.filter(isRecoveryUser),
+      billingUsers: users.filter(isBillingAttentionUser),
       pastDueUsers: users.filter((user) => user.status === 'past_due'),
       paidUsers: users.filter((user) => user.planCode !== 'free' && user.status !== 'deleted'),
       maintenanceFlags: (snapshot?.featureFlags || []).filter((flag) => flag.status !== 'available'),
@@ -1954,15 +2161,17 @@ export function AdminManagement() {
     setRecoveryFilter(queue === 'recovery' ? 'requested' : 'all');
     setQuery('');
     const source = queue === 'risk'
-      ? adminQueues.riskUsers
-      : queue === 'recovery'
-        ? adminQueues.recoveryUsers
-        : queue === 'paid'
-          ? adminQueues.paidUsers
-          : snapshot?.users || [];
+        ? adminQueues.riskUsers
+        : queue === 'recovery'
+          ? adminQueues.recoveryUsers
+          : queue === 'billing'
+            ? adminQueues.billingUsers
+            : queue === 'paid'
+              ? adminQueues.paidUsers
+              : snapshot?.users || [];
     setSelectedUserId(source[0]?.id || null);
     selectTab('users');
-  }, [adminQueues.paidUsers, adminQueues.recoveryUsers, adminQueues.riskUsers, selectTab, snapshot?.users]);
+  }, [adminQueues.billingUsers, adminQueues.paidUsers, adminQueues.recoveryUsers, adminQueues.riskUsers, selectTab, snapshot?.users]);
 
   const openUserFromCommandCenter = useCallback((userId: string, queue: UserQueueFilter) => {
     setUserQueueFilter(queue);
@@ -2307,10 +2516,11 @@ export function AdminManagement() {
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div>
                       <h2 className="text-base font-semibold text-primary">Plan catalog</h2>
-                      <p className="mt-1 text-sm text-secondary">Commercial tiers, quota ceilings, storage, seats, and active user count.</p>
+                      <p className="mt-1 text-sm text-secondary">Commercial tiers, quota ceilings, provider mapping, entitlement IDs, and launch billing readiness.</p>
                     </div>
                     <SlidersHorizontal size={18} className="text-blue-500" />
                   </div>
+                  <BillingReadinessPanel snapshot={snapshot} />
                   <PlansPanel plans={snapshot.plans} />
                 </motion.section>
               ) : null}

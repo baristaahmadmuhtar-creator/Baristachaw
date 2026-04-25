@@ -6,6 +6,10 @@ export type CheckStatus = 'pass' | 'warn' | 'fail';
 export type DataMode = 'supabase' | 'runtime_fallback';
 export type FeatureFlagStatus = 'available' | 'maintenance' | 'disabled';
 export type FeatureSurface = 'global' | 'web' | 'pwa' | 'mobile' | 'admin';
+export type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual';
+export type BillingStatus = 'none' | 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'refunded';
+export type BillingMarket = 'indonesia' | 'brunei' | 'global' | 'unknown';
+export type CheckoutMode = 'disabled' | 'external' | 'stripe_checkout' | 'play_billing' | 'app_store' | 'manual_invoice';
 
 export type AdminPlan = {
   code: PlanCode;
@@ -21,6 +25,28 @@ export type AdminPlan = {
   features: string[];
   recommended?: boolean;
   activeUsers: number;
+  billingProvider: BillingProvider;
+  billingProductId: string;
+  billingPriceId: string;
+  revenuecatEntitlementId: string;
+  market: BillingMarket;
+  displayPrice: string;
+  checkoutMode: CheckoutMode;
+  paymentMethods: string[];
+};
+
+export type AdminUserBilling = {
+  status: BillingStatus;
+  provider: BillingProvider;
+  market: BillingMarket;
+  source: BillingProvider;
+  customerId: string;
+  subscriptionId: string;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  lastEventAt?: string;
+  paymentActionRequired: boolean;
+  recommendedAction: string;
 };
 
 export type AdminUserRecord = {
@@ -54,6 +80,7 @@ export type AdminUserRecord = {
   supportLockedUntil?: string;
   lastRecoveryRequestAt?: string;
   passwordResetRequired?: boolean;
+  billing: AdminUserBilling;
   isSample?: boolean;
 };
 
@@ -126,6 +153,19 @@ export type AdminSnapshot = {
   checks: AdminSystemCheck[];
   launchChecklist: LaunchChecklistItem[];
   featureFlags: AdminFeatureFlag[];
+  billing: {
+    ready: boolean;
+    mode: 'not_configured' | 'test' | 'live_ready';
+    connectedProviders: BillingProvider[];
+    activeSubscriptions: number;
+    trialingSubscriptions: number;
+    pastDueSubscriptions: number;
+    revenueMonthlyUsd: number;
+    attentionUsers: number;
+    supportedMarkets: BillingMarket[];
+    realtimeTables: string[];
+    gaps: string[];
+  };
   recommendations: string[];
   warnings: string[];
   realtime: {
@@ -145,6 +185,10 @@ export type AdminUserPatch = Partial<{
   supportNote: string;
   accountRecoveryStatus: AccountRecoveryStatus;
   passwordResetRequired: boolean;
+  billingStatus: BillingStatus;
+  billingProvider: BillingProvider;
+  billingMarket: BillingMarket;
+  paymentActionRequired: boolean;
 }>;
 
 export type AdminFeatureFlagPatch = Partial<{

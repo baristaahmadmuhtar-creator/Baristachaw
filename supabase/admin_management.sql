@@ -13,11 +13,29 @@ create table if not exists public.app_plans (
   support_sla_hours integer not null default 72,
   features text[] not null default '{}',
   recommended boolean not null default false,
+  billing_provider text not null default 'none' check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual')),
+  billing_product_id text not null default '',
+  billing_price_id text not null default '',
+  revenuecat_entitlement_id text not null default '',
+  market text not null default 'global' check (market in ('indonesia', 'brunei', 'global', 'unknown')),
+  display_price text not null default '',
+  checkout_mode text not null default 'disabled' check (checkout_mode in ('disabled', 'external', 'stripe_checkout', 'play_billing', 'app_store', 'manual_invoice')),
+  payment_methods text[] not null default '{}',
   display_order integer not null default 100,
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.app_plans
+  add column if not exists billing_provider text not null default 'none' check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual')),
+  add column if not exists billing_product_id text not null default '',
+  add column if not exists billing_price_id text not null default '',
+  add column if not exists revenuecat_entitlement_id text not null default '',
+  add column if not exists market text not null default 'global' check (market in ('indonesia', 'brunei', 'global', 'unknown')),
+  add column if not exists display_price text not null default '',
+  add column if not exists checkout_mode text not null default 'disabled' check (checkout_mode in ('disabled', 'external', 'stripe_checkout', 'play_billing', 'app_store', 'manual_invoice')),
+  add column if not exists payment_methods text[] not null default '{}';
 
 insert into public.app_plans (
   code,
@@ -32,13 +50,21 @@ insert into public.app_plans (
   support_sla_hours,
   features,
   recommended,
+  billing_provider,
+  billing_product_id,
+  billing_price_id,
+  revenuecat_entitlement_id,
+  market,
+  display_price,
+  checkout_mode,
+  payment_methods,
   display_order
 ) values
-  ('free', 'Free', 'Protected trial surface for app review and new users.', 0, 12, 2, 2, 64, 1, 72, array['Chat', 'basic scanner', 'local collection'], false, 10),
-  ('starter', 'Starter', 'Entry paid plan for serious home baristas.', 4.99, 60, 10, 12, 512, 1, 48, array['Higher AI quota', 'AI Brew journal', 'scanner history'], false, 20),
-  ('pro', 'Pro', 'Full workflow plan for baristas and creators.', 9.99, 180, 40, 60, 2048, 1, 24, array['Deep mode', 'latte art edit', 'advanced collections', 'priority AI'], true, 30),
-  ('team', 'Team', 'Cafe teams with shared operations and training.', 29.99, 800, 160, 240, 10240, 8, 12, array['Team seats', 'training notes', 'manager controls', 'audit export'], false, 40),
-  ('enterprise', 'Enterprise', 'Custom commercial deployment and support.', 0, 5000, 1000, 1000, 102400, 50, 4, array['Custom quota', 'dedicated support', 'SLA review', 'private rollout'], false, 50)
+  ('free', 'Free', 'Protected trial surface for app review and new users.', 0, 12, 2, 2, 64, 1, 72, array['Chat', 'basic scanner', 'local collection'], false, 'none', '', '', '', 'global', 'Free', 'disabled', '{}', 10),
+  ('starter', 'Starter', 'Entry paid plan for serious home baristas.', 4.99, 60, 10, 12, 512, 1, 48, array['Higher AI quota', 'AI Brew journal', 'scanner history'], false, 'revenuecat', 'baristachaw_starter_monthly', 'STRIPE_PRICE_STARTER_MONTHLY', 'starter', 'global', '$4.99 / Rp79k / B$7 monthly', 'external', array['Google Play', 'App Store', 'Stripe Checkout'], 20),
+  ('pro', 'Pro', 'Full workflow plan for baristas and creators.', 9.99, 180, 40, 60, 2048, 1, 24, array['Deep mode', 'latte art edit', 'advanced collections', 'priority AI'], true, 'revenuecat', 'baristachaw_pro_monthly', 'STRIPE_PRICE_PRO_MONTHLY', 'pro', 'global', '$9.99 / Rp159k / B$14 monthly', 'external', array['Google Play', 'App Store', 'Stripe Checkout'], 30),
+  ('team', 'Team', 'Cafe teams with shared operations and training.', 29.99, 800, 160, 240, 10240, 8, 12, array['Team seats', 'training notes', 'manager controls', 'audit export'], false, 'revenuecat', 'baristachaw_team_monthly', 'STRIPE_PRICE_TEAM_MONTHLY', 'team', 'global', '$29.99 / Rp479k / B$42 monthly', 'external', array['Google Play', 'App Store', 'Stripe Checkout', 'Manual invoice'], 40),
+  ('enterprise', 'Enterprise', 'Custom commercial deployment and support.', 0, 5000, 1000, 1000, 102400, 50, 4, array['Custom quota', 'dedicated support', 'SLA review', 'private rollout'], false, 'manual', 'baristachaw_enterprise', '', 'enterprise', 'global', 'Custom invoice', 'manual_invoice', array['Manual invoice', 'Bank transfer'], 50)
 on conflict (code) do update set
   name = excluded.name,
   description = excluded.description,
@@ -51,6 +77,14 @@ on conflict (code) do update set
   support_sla_hours = excluded.support_sla_hours,
   features = excluded.features,
   recommended = excluded.recommended,
+  billing_provider = excluded.billing_provider,
+  billing_product_id = excluded.billing_product_id,
+  billing_price_id = excluded.billing_price_id,
+  revenuecat_entitlement_id = excluded.revenuecat_entitlement_id,
+  market = excluded.market,
+  display_price = excluded.display_price,
+  checkout_mode = excluded.checkout_mode,
+  payment_methods = excluded.payment_methods,
   display_order = excluded.display_order,
   updated_at = now();
 
@@ -67,6 +101,15 @@ create table if not exists public.app_users (
   locale text,
   platform text check (platform in ('web', 'pwa', 'mobile', 'unknown')),
   country text,
+  billing_status text not null default 'none' check (billing_status in ('none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded')),
+  billing_provider text not null default 'none' check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual')),
+  billing_market text not null default 'unknown' check (billing_market in ('indonesia', 'brunei', 'global', 'unknown')),
+  billing_customer_id text not null default '',
+  billing_subscription_id text not null default '',
+  billing_period_start timestamptz,
+  billing_period_end timestamptz,
+  billing_last_event_at timestamptz,
+  payment_action_required boolean not null default false,
   last_seen_at timestamptz not null default now(),
   usage_today jsonb not null default '{}'::jsonb,
   risk_score integer not null default 0 check (risk_score >= 0 and risk_score <= 100),
@@ -88,7 +131,16 @@ alter table public.app_users
   add column if not exists support_note text not null default '',
   add column if not exists support_locked_until timestamptz,
   add column if not exists last_recovery_request_at timestamptz,
-  add column if not exists password_reset_required boolean not null default false;
+  add column if not exists password_reset_required boolean not null default false,
+  add column if not exists billing_status text not null default 'none' check (billing_status in ('none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded')),
+  add column if not exists billing_provider text not null default 'none' check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual')),
+  add column if not exists billing_market text not null default 'unknown' check (billing_market in ('indonesia', 'brunei', 'global', 'unknown')),
+  add column if not exists billing_customer_id text not null default '',
+  add column if not exists billing_subscription_id text not null default '',
+  add column if not exists billing_period_start timestamptz,
+  add column if not exists billing_period_end timestamptz,
+  add column if not exists billing_last_event_at timestamptz,
+  add column if not exists payment_action_required boolean not null default false;
 
 create table if not exists public.app_usage_daily (
   id uuid primary key default gen_random_uuid(),
@@ -112,7 +164,7 @@ create table if not exists public.user_entitlements (
   id uuid primary key default gen_random_uuid(),
   user_id text not null references public.app_users(id) on delete cascade,
   plan_code text not null references public.app_plans(code),
-  source text not null default 'admin' check (source in ('admin', 'google_play', 'stripe', 'revenuecat', 'manual')),
+  source text not null default 'admin' check (source in ('admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual')),
   status text not null default 'active' check (status in ('active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded')),
   current_period_start timestamptz,
   current_period_end timestamptz,
@@ -122,6 +174,13 @@ create table if not exists public.user_entitlements (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.user_entitlements
+  drop constraint if exists user_entitlements_source_check;
+
+alter table public.user_entitlements
+  add constraint user_entitlements_source_check
+  check (source in ('admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual'));
 
 create table if not exists public.app_feature_flags (
   key text primary key,
@@ -169,8 +228,11 @@ create unique index if not exists app_users_username_unique_idx on public.app_us
 create index if not exists app_users_status_plan_idx on public.app_users (status, plan_code, updated_at desc);
 create index if not exists app_users_role_idx on public.app_users (role, updated_at desc);
 create index if not exists app_users_recovery_idx on public.app_users (account_recovery_status, updated_at desc);
+create index if not exists app_users_billing_idx on public.app_users (billing_status, billing_provider, updated_at desc);
+create index if not exists app_users_payment_action_idx on public.app_users (payment_action_required, updated_at desc) where payment_action_required = true;
 create index if not exists app_usage_daily_user_date_idx on public.app_usage_daily (user_id, usage_date desc);
 create index if not exists user_entitlements_user_status_idx on public.user_entitlements (user_id, status, updated_at desc);
+create index if not exists user_entitlements_external_subscription_idx on public.user_entitlements (external_subscription_id) where external_subscription_id is not null;
 create index if not exists app_feature_flags_status_idx on public.app_feature_flags (status, updated_at desc);
 create index if not exists admin_audit_events_created_idx on public.admin_audit_events (created_at desc);
 create index if not exists admin_audit_events_target_idx on public.admin_audit_events (target_type, target_id, created_at desc);
@@ -273,6 +335,24 @@ $$;
 do $$
 begin
   alter publication supabase_realtime add table public.admin_audit_events;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end;
+$$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.user_entitlements;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end;
+$$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.app_plans;
 exception
   when duplicate_object then null;
   when undefined_object then null;

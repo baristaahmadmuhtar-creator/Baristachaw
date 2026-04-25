@@ -42,6 +42,8 @@ const ROUTE_LOADERS: Record<string, () => Promise<{ default: Handler }>> = {
   'auth/logout': () => import('../server-api/auth/logout.js'),
   'account/status': () => import('../server-api/account/status.js'),
   'admin/management': () => import('../server-api/admin/management.js'),
+  'billing/checkout': () => import('../server-api/billing/checkout.js'),
+  'billing/portal': () => import('../server-api/billing/portal.js'),
   'test-auth/login': () => import('../server-api/test-auth/login.js'),
   'test-auth/logout': () => import('../server-api/test-auth/logout.js'),
 };

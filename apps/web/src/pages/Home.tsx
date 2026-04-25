@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertTriangle, Camera, Check, ChevronDown, Coffee, Copy, ExternalLink, Globe, LogIn, LogOut, Moon, RefreshCcw, Search, ShieldCheck, Sparkles, Sun, Wrench, X, Bookmark, BookOpen } from "lucide-react";
+import { AlertTriangle, Camera, Check, ChevronDown, Coffee, Copy, CreditCard, ExternalLink, Globe, LogIn, LogOut, Moon, RefreshCcw, Search, ShieldCheck, Sparkles, Sun, Wrench, X, Bookmark, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { searchWithGemini, SearchWebError, type SearchResultPayload } from "../services/gemini";
 import {
@@ -21,6 +21,7 @@ import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import { subscribeMediaQueryChange } from "../utils/mediaQuery";
 import { useAccountStatus } from "../context/AccountStatusContext";
 import type { AccountFeatureFlag } from "../services/accountStatus";
+import { BillingApiError, openBillingPortal, startBillingCheckout } from "../services/billing";
 import { isDisplayableAvatarUrl } from "../utils/avatarUrl";
 import { normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentProfileMemory } from "@baristachaw/shared";
 import { getLanguageDirection, getLanguageLocale, LANGUAGE_OPTIONS } from "../constants";
@@ -74,6 +75,7 @@ export function Home() {
   const [showResultModal, setShowResultModal] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [statusIdx, setStatusIdx] = useState(0);
+  const [billingBusy, setBillingBusy] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [userPictureFailed, setUserPictureFailed] = useState(false);
   const statusIntervalRef = useRef<number | null>(null);
@@ -131,6 +133,8 @@ export function Home() {
   const workspaceStatusIcon = accountBlocked ? AlertTriangle : accountLimited ? Wrench : ShieldCheck;
   const WorkspaceStatusIcon = workspaceStatusIcon;
   const workspaceStatusLabel = accountBlocked ? 'Blocked' : accountLimited ? 'Limited' : 'Ready';
+  const billingStatusLabel = accountSnapshot?.billing.status || 'none';
+  const recommendedUpgrade = accountSnapshot?.recommendedUpgrade;
   const featureFlagByKey = useMemo(() => {
     const map = new Map<string, AccountFeatureFlag>();
     for (const flag of accountSnapshot?.featureFlags || []) {
@@ -409,6 +413,41 @@ export function Home() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     await executeSearch(query);
+  };
+
+  const handleBillingAction = async () => {
+    if (!accountSnapshot || !recommendedUpgrade || recommendedUpgrade.action === 'none') return;
+    if (recommendedUpgrade.action === 'contact_support') {
+      setActiveQuery('Plan & billing');
+      setSearchError(recommendedUpgrade.reason);
+      setShowResultModal(true);
+      return;
+    }
+    setBillingBusy(true);
+    try {
+      const response = recommendedUpgrade.action === 'manage'
+        ? await openBillingPortal()
+        : recommendedUpgrade.action === 'checkout' && recommendedUpgrade.planCode !== 'free'
+          ? await startBillingCheckout(recommendedUpgrade.planCode)
+          : null;
+      if (response?.url) {
+        window.location.assign(response.url);
+        return;
+      }
+      throw new BillingApiError('Billing support is not configured yet.', {
+        status: 0,
+        errorCode: 'billing_not_configured',
+      });
+    } catch (error) {
+      const message = error instanceof BillingApiError
+        ? `${error.message}${error.details ? ` ${error.details}` : ''}`
+        : 'Billing is temporarily unavailable.';
+      setActiveQuery('Plan & billing');
+      setSearchError(message);
+      setShowResultModal(true);
+    } finally {
+      setBillingBusy(false);
+    }
   };
 
   const handleRetrySearch = async () => {
@@ -726,6 +765,11 @@ export function Home() {
                   <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-0.5 text-[11px] font-semibold capitalize">
                     {surface}
                   </span>
+                  {accountSnapshot ? (
+                    <span className="rounded-full bg-[var(--bg-base)]/70 px-2 py-0.5 text-[11px] font-semibold capitalize">
+                      Billing {billingStatusLabel.replace(/_/g, ' ')}
+                    </span>
+                  ) : null}
                 </div>
                 <p className="mt-1 text-sm leading-5 text-secondary">
                   {accountStatusError
@@ -733,6 +777,11 @@ export function Home() {
                     : accountSnapshot?.appAccess.message
                       || (accountSnapshot ? `${accountSnapshot.plan.name} plan, ${formatCompactNumber(accountSnapshot.plan.aiDailyLimit)} AI requests/day, ${formatCompactNumber(accountSnapshot.plan.scannerDailyLimit)} scanner runs/day.` : 'Checking current plan and app access...')}
                 </p>
+                {recommendedUpgrade?.reason ? (
+                  <p className="mt-1 text-xs leading-5 text-secondary">
+                    {recommendedUpgrade.reason}
+                  </p>
+                ) : null}
                 {maintenance.length ? (
                   <div className={`mt-2 flex flex-wrap gap-1.5 ${isRtl ? 'justify-end' : ''}`}>
                     {maintenance.slice(0, 3).map((flag) => (
@@ -749,15 +798,28 @@ export function Home() {
                 ) : null}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => void refreshAccountStatus()}
-              disabled={accountStatusLoading}
-              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-current/15 bg-[var(--bg-base)]/70 px-3 text-sm font-semibold text-primary transition-colors hover:bg-[var(--bg-base)] disabled:opacity-50"
-            >
-              <RefreshCcw size={15} className={accountStatusLoading ? 'animate-spin' : ''} />
-              Sync status
-            </button>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              {recommendedUpgrade && recommendedUpgrade.action !== 'none' ? (
+                <button
+                  type="button"
+                  onClick={() => void handleBillingAction()}
+                  disabled={billingBusy}
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-blue-500 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-600 disabled:opacity-50"
+                >
+                  <CreditCard size={15} />
+                  {billingBusy ? 'Opening...' : recommendedUpgrade.ctaLabel}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => void refreshAccountStatus()}
+                disabled={accountStatusLoading}
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-current/15 bg-[var(--bg-base)]/70 px-3 text-sm font-semibold text-primary transition-colors hover:bg-[var(--bg-base)] disabled:opacity-50"
+              >
+                <RefreshCcw size={15} className={accountStatusLoading ? 'animate-spin' : ''} />
+                Sync status
+              </button>
+            </div>
           </div>
         </section>
       ) : null}
@@ -1093,10 +1155,4 @@ export function Home() {
     </motion.div>
   );
 }
-
-
-
-
-
-
 

@@ -646,6 +646,8 @@ export function Home() {
     )
     : null;
 
+  const isBillingModal = activeQuery === 'Plan & billing' && Boolean(searchError) && !result;
+
   return (
     <motion.div
       dir={direction}
@@ -956,32 +958,36 @@ export function Home() {
               <div className="px-6 py-4 border-b border-glass flex items-center justify-between shrink-0">
                 <div className={`flex items-center gap-3 min-w-0 flex-1 ${isRtl ? 'flex-row-reverse' : ''}`}>
                   <div className="w-8 h-8 rounded-[0.75rem] bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
-                    <Search size={16} />
+                    {isBillingModal ? <CreditCard size={16} /> : <Search size={16} />}
                   </div>
                   <div className={`min-w-0 flex-1 ${isRtl ? 'text-right' : 'text-left'}`}>
                     <h2 className="font-semibold text-sm truncate">{result?.query || activeQuery || query}</h2>
-                    <p className="text-[11px] text-tertiary">{t.homeSearchResult}</p>
+                    <p className="text-[11px] text-tertiary">{isBillingModal ? t.homeBillingSubtitle : t.homeSearchResult}</p>
                   </div>
                 </div>
                 <div className={`flex items-center gap-1.5 shrink-0 ${isRtl ? 'flex-row-reverse' : ''}`}>
                   {/* Copy */}
-                  <button
-                    onClick={handleCopyResult}
-                    disabled={!result || loading}
-                    className="p-2 rounded-xl text-secondary hover:text-primary hover:bg-surface-alpha transition-all disabled:opacity-40"
-                    title={t.copySummary}
-                  >
-                    {copied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
-                  </button>
+                  {!isBillingModal ? (
+                    <button
+                      onClick={handleCopyResult}
+                      disabled={!result || loading}
+                      className="p-2 rounded-xl text-secondary hover:text-primary hover:bg-surface-alpha transition-all disabled:opacity-40"
+                      title={t.copySummary}
+                    >
+                      {copied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
+                    </button>
+                  ) : null}
                   {/* Save to Collection */}
-                  <button
-                    onClick={handleSaveToCollection}
-                    disabled={!result || loading || saved}
-                    className={`p-2 rounded-xl transition-all disabled:opacity-40 ${saved ? 'text-emerald-500 bg-emerald-500/10' : 'text-secondary hover:text-primary hover:bg-surface-alpha'}`}
-                    title={t.saveToCollection}
-                  >
-                    {saved ? <Check size={16} /> : <Bookmark size={16} />}
-                  </button>
+                  {!isBillingModal ? (
+                    <button
+                      onClick={handleSaveToCollection}
+                      disabled={!result || loading || saved}
+                      className={`p-2 rounded-xl transition-all disabled:opacity-40 ${saved ? 'text-emerald-500 bg-emerald-500/10' : 'text-secondary hover:text-primary hover:bg-surface-alpha'}`}
+                      title={t.saveToCollection}
+                    >
+                      {saved ? <Check size={16} /> : <Bookmark size={16} />}
+                    </button>
+                  ) : null}
                   {/* Close */}
                   <button
                     type="button"
@@ -1047,20 +1053,26 @@ export function Home() {
                     <p className="text-sm font-medium text-primary">{searchError}</p>
                     <div className="flex flex-wrap items-center justify-center gap-2">
                       <button
-                        onClick={handleRetrySearch}
-                        className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-colors"
+                        onClick={() => {
+                          if (isBillingModal) void handleBillingAction();
+                          else void handleRetrySearch();
+                        }}
+                        disabled={isBillingModal && billingBusy}
+                        className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
                       >
-                        {t.homeRetryLiveSearch}
+                        {isBillingModal ? (billingBusy ? t.opening : t.homeBillingRetry) : t.homeRetryLiveSearch}
                       </button>
-                      <button
-                        onClick={handleViewCachedResult}
-                        disabled={!cachedResult}
-                        className="px-4 py-2 rounded-xl text-sm font-medium border border-glass text-secondary hover:text-primary disabled:opacity-40"
-                      >
-                        {t.homeViewCachedResult}
-                      </button>
+                      {!isBillingModal ? (
+                        <button
+                          onClick={handleViewCachedResult}
+                          disabled={!cachedResult}
+                          className="px-4 py-2 rounded-xl text-sm font-medium border border-glass text-secondary hover:text-primary disabled:opacity-40"
+                        >
+                          {t.homeViewCachedResult}
+                        </button>
+                      ) : null}
                     </div>
-                    {cachedResult?.retrievedAt ? (
+                    {!isBillingModal && cachedResult?.retrievedAt ? (
                       <p className="text-xs text-tertiary">
                         {formatText(t.homeCachedFrom, { time: new Date(cachedResult.retrievedAt).toLocaleString(locale) })}
                       </p>

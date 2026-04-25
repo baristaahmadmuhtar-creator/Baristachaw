@@ -2,12 +2,14 @@ import { test, expect } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
 import { mockAiApis } from '../helpers/network';
 import { clearClientState } from '../helpers/cleanup';
+import { continueAsGuestFromAuthGate } from '../helpers/authGate';
 
 test.beforeEach(async ({ page }) => {
   await qaLogout(page.request);
   await page.goto('/tools');
   await clearClientState(page);
   await page.goto('/tools', { waitUntil: 'domcontentloaded' });
+  await continueAsGuestFromAuthGate(page);
 });
 
 test.afterEach(async ({ page }) => {

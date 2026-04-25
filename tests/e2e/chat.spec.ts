@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
 import { mockAiApis } from '../helpers/network';
 import { clearClientState } from '../helpers/cleanup';
+import { expectFirstRunAuthGate } from '../helpers/authGate';
 
 const isLive = String(process.env.LIVE_E2E || '').trim() === '1';
 
@@ -18,7 +19,7 @@ test.afterEach(async ({ page }) => {
 });
 
 test('shows sign in gate when not authenticated', async ({ page }) => {
-  await expect(page.getByText('Sign In Required')).toBeVisible({ timeout: 30_000 });
+  await expectFirstRunAuthGate(page);
 });
 
 test('supports send message, mode switch, save/copy actions', async ({ page }) => {

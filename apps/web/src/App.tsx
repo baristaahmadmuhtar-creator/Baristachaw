@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState, type ReactElement } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { BottomNav } from './components/BottomNav';
 import { DesktopSidebar } from './components/DesktopSidebar';
@@ -7,7 +7,7 @@ import { OfflineBanner } from './components/system/OfflineBanner';
 import { MaintenanceBanner } from './components/system/MaintenanceBanner';
 import { GlobalProvider } from './context/GlobalState';
 import { NavbarProvider, useNavbar } from './context/NavbarContext';
-import { AuthModalProvider } from './context/AuthModalContext';
+import { AuthModalProvider, useAuthModal } from './context/AuthModalContext';
 import { AccountStatusProvider, useAccountStatus } from './context/AccountStatusContext';
 import { MotionConfig } from 'motion/react';
 import { useRuntimeDisplayMode } from './hooks/useRuntimeDisplayMode';
@@ -15,6 +15,8 @@ import { subscribeMediaQueryChange } from './utils/mediaQuery';
 
 const MOBILE_ROUTE_ORDER = ['/', '/scanner', '/tools', '/collection', '/chat'] as const;
 const DESIGN_ROUTE = '/design/native-production-showcase';
+const AUTH_ROUTE_PATHS = new Set(['/login', '/masuk', '/signin', '/register', '/signup', '/daftar']);
+const ENTRY_AUTH_GATE_PATHS = new Set(['/', '/scanner', '/tools', '/coffee', '/collection', '/chat']);
 const SWIPE_MIN_DISTANCE = 84;
 const SWIPE_STRONG_DISTANCE = 122;
 const SWIPE_MAX_VERTICAL = 68;
@@ -30,6 +32,11 @@ const BaristaTools = lazy(() => import('./pages/BaristaTools').then((module) => 
 const AuthScreen = lazy(() => import('./pages/AuthScreen').then((module) => ({ default: module.AuthScreen })));
 const NativeProductionShowcase = lazy(() => import('./pages/design/NativeProductionShowcase').then((module) => ({ default: module.NativeProductionShowcase })));
 const AdminManagement = lazy(() => import('./pages/AdminManagement').then((module) => ({ default: module.AdminManagement })));
+
+function normalizeRoutePath(pathname: string): string {
+  if (pathname.length > 1 && pathname.endsWith('/')) return pathname.slice(0, -1);
+  return pathname;
+}
 
 function RouteLoadingFallback() {
   return (
@@ -67,16 +74,19 @@ function RouteLoadingFallback() {
 }
 
 function normalizePath(pathname: string): (typeof MOBILE_ROUTE_ORDER)[number] | null {
-  if (pathname === '/coffee') return '/tools';
-  if (pathname.length > 1 && pathname.endsWith('/')) {
-    const trimmed = pathname.slice(0, -1);
-    return MOBILE_ROUTE_ORDER.includes(trimmed as (typeof MOBILE_ROUTE_ORDER)[number])
-      ? (trimmed as (typeof MOBILE_ROUTE_ORDER)[number])
-      : null;
-  }
-  return MOBILE_ROUTE_ORDER.includes(pathname as (typeof MOBILE_ROUTE_ORDER)[number])
-    ? (pathname as (typeof MOBILE_ROUTE_ORDER)[number])
+  const normalized = normalizeRoutePath(pathname);
+  if (normalized === '/coffee') return '/tools';
+  return MOBILE_ROUTE_ORDER.includes(normalized as (typeof MOBILE_ROUTE_ORDER)[number])
+    ? (normalized as (typeof MOBILE_ROUTE_ORDER)[number])
     : null;
+}
+
+function isAuthRoutePath(pathname: string): boolean {
+  return AUTH_ROUTE_PATHS.has(normalizeRoutePath(pathname));
+}
+
+function isEntryAuthGatePath(pathname: string): boolean {
+  return ENTRY_AUTH_GATE_PATHS.has(normalizeRoutePath(pathname));
 }
 
 function hasHorizontalScrollableAncestor(target: Element | null) {
@@ -108,13 +118,20 @@ function AppContent() {
   } = useNavbar();
   const location = useLocation();
   const navigate = useNavigate();
+  const { authChecking, isAuthenticated } = useAuthModal();
   const { snapshot: accountSnapshot, maintenance } = useAccountStatus();
   const routeLayerRef = useRef<HTMLDivElement | null>(null);
   const currentPathRef = useRef(location.pathname);
   const isDesignRoute = location.pathname === DESIGN_ROUTE;
   const isChatRoute = location.pathname === '/chat';
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isAuthRoute = isAuthRoutePath(location.pathname);
+  const shouldGateEntryRoute = isEntryAuthGatePath(location.pathname) && !isAuthenticated && !isAuthRoute && !isAdminRoute && !isDesignRoute;
+  const isWaitingForEntryAuthCheck = shouldGateEntryRoute && authChecking;
+  const isEntryAuthGateRoute = shouldGateEntryRoute && !authChecking;
+  const isAuthSurface = isAuthRoute || isEntryAuthGateRoute || isWaitingForEntryAuthCheck;
   const hasMaintenanceBanner = !isAdminRoute
+    && !isAuthSurface
     && Boolean(accountSnapshot)
     && (accountSnapshot?.appAccess.status !== 'ok' || maintenance.length > 0);
   const desktopChatPanelWidth = isChatRoute && desktopChatNavOpen
@@ -227,15 +244,21 @@ function AppContent() {
 
   const normalizedPath = normalizePath(location.pathname);
   const isMobileChatRoute = !isDesktop && normalizedPath === '/chat';
+  const entryAuthElement = isWaitingForEntryAuthCheck
+    ? <RouteLoadingFallback />
+    : <AuthScreen intent="signIn" onLogin={() => navigate('/')} />;
+  const renderEntryRoute = (element: ReactElement) => (
+    shouldGateEntryRoute ? entryAuthElement : element
+  );
   const routes = (
     <Suspense fallback={<RouteLoadingFallback />}>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/scanner" element={<Scanner />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/collection" element={<Collection />} />
-        <Route path="/tools" element={<BaristaTools />} />
-        <Route path="/coffee" element={<BaristaTools />} />
+        <Route path="/" element={renderEntryRoute(<Home />)} />
+        <Route path="/scanner" element={renderEntryRoute(<Scanner />)} />
+        <Route path="/chat" element={renderEntryRoute(<Chat />)} />
+        <Route path="/collection" element={renderEntryRoute(<Collection />)} />
+        <Route path="/tools" element={renderEntryRoute(<BaristaTools />)} />
+        <Route path="/coffee" element={renderEntryRoute(<BaristaTools />)} />
         <Route path="/login" element={<AuthScreen intent="signIn" onLogin={() => navigate('/')} />} />
         <Route path="/masuk" element={<AuthScreen intent="signIn" onLogin={() => navigate('/')} />} />
         <Route path="/signin" element={<AuthScreen intent="signIn" onLogin={() => navigate('/')} />} />
@@ -271,17 +294,17 @@ function AppContent() {
       }}
     >
       <OfflineBanner />
-      <MaintenanceBanner />
-      <DesktopSidebar />
+      {!isAuthSurface && <MaintenanceBanner />}
+      {!isAuthSurface && <DesktopSidebar />}
       <div
         ref={routeLayerRef}
         data-testid="app-route-layer"
-        className="app-route-layer app-route-layer-desktop"
+        className={`app-route-layer ${isAuthSurface ? '' : 'app-route-layer-desktop'}`}
         style={hasMaintenanceBanner ? { paddingTop: '7.5rem' } : undefined}
       >
         {routes}
       </div>
-      {!isMobileChatRoute && !isAdminRoute && <BottomNav hidden={navHidden} />}
+      {!isMobileChatRoute && !isAdminRoute && !isAuthSurface && <BottomNav hidden={navHidden} />}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
 import { mockAiApis } from '../helpers/network';
 import { clearClientState } from '../helpers/cleanup';
+import { continueAsGuestFromAuthGate, expectFirstRunAuthGate } from '../helpers/authGate';
 
 const isLive = String(process.env.LIVE_E2E || '').trim() === '1';
 
@@ -9,8 +10,9 @@ async function waitForHomeAuthState(page: import('@playwright/test').Page) {
   await page.waitForFunction(
     () => {
       const signOut = document.querySelector('[aria-label="Sign Out"]');
-      const signIn = Array.from(document.querySelectorAll('button')).some((button) => button.textContent?.includes('Sign In'));
-      return Boolean(signOut || signIn);
+      const localizedSignOut = document.querySelector('[aria-label="Keluar"]');
+      const signIn = Array.from(document.querySelectorAll('button')).some((button) => /Sign In|Masuk/.test(button.textContent || ''));
+      return Boolean(signOut || localizedSignOut || signIn);
     },
     undefined,
     { timeout: 20_000 },
@@ -34,10 +36,10 @@ test.afterEach(async ({ page }) => {
   await qaLogout(page.request);
 });
 
-test('shows unauthenticated home state', async ({ page }) => {
-  await expect(page.getByRole('button', { name: 'Sign In' })).toBeVisible();
-  const search = page.getByPlaceholder('Sign in to use AI search...');
-  await expect(search).toBeDisabled();
+test('shows first-run auth gate and keeps guest entry available', async ({ page }) => {
+  await expectFirstRunAuthGate(page);
+  await continueAsGuestFromAuthGate(page);
+  await expect(page.getByPlaceholder(/Cari di web dengan AI|Search the web with AI/i)).toBeEnabled({ timeout: 30_000 });
 });
 
 test('supports authenticated search, copy, save, and theme toggle', async ({ page, context, browserName }) => {
@@ -46,27 +48,27 @@ test('supports authenticated search, copy, save, and theme toggle', async ({ pag
   await qaLogin(page.request);
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await waitForHomeAuthState(page);
-  await expect(page.getByLabel('Sign Out')).toBeVisible();
+  await expect(page.getByLabel(/Sign Out|Keluar/i)).toBeVisible();
 
-  const search = page.getByPlaceholder('Search the web with AI...');
+  const search = page.getByPlaceholder(/Search the web with AI|Cari di web dengan AI/i);
   await expect(search).toBeEnabled();
 
   await search.fill('qa_e2e espresso tips');
   await search.press('Enter');
 
-  await expect(page.getByText('AI Search Result').first()).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Live Web Sources' })).toBeVisible();
-  await expect(page.getByText('2 sources')).toBeVisible();
+  await expect(page.getByText(/AI Search Result|Hasil Pencarian AI/i).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Live Web Sources|Sumber Web Langsung/i })).toBeVisible();
+  await expect(page.getByText(/2 sources|2 sumber/i)).toBeVisible();
   await expect(page.getByRole('link', { name: /QA Source 1/i })).toBeVisible();
   await expect(page.getByRole('link', { name: /QA Source 2/i })).toBeVisible();
 
-  await page.getByRole('button', { name: 'Copy Summary' }).click();
-  await page.getByRole('button', { name: 'Save to Collection' }).click();
+  await page.getByRole('button', { name: /Copy Summary|Salin Ringkasan/i }).click();
+  await page.getByRole('button', { name: /Save to Collection|Simpan ke Koleksi/i }).click();
 
-  await expect(page.getByText('Saved to Collection')).toBeVisible();
-  await page.getByRole('button', { name: 'Close' }).click();
+  await expect(page.getByText(/Saved to Collection|Disimpan ke Koleksi/i)).toBeVisible();
+  await page.getByRole('button', { name: /Close|Tutup/i }).click();
 
-  await page.getByLabel('Toggle theme').click();
+  await page.getByLabel(/Toggle theme|Ubah tema/i).click();
   const hasDark = await page.evaluate(() => document.documentElement.classList.contains('dark'));
   const hasLight = await page.evaluate(() => document.documentElement.classList.contains('light'));
   expect(hasDark || hasLight).toBeTruthy();
@@ -76,6 +78,7 @@ test('supports authenticated search, copy, save, and theme toggle', async ({ pag
 });
 
 test('language switch updates guest search placeholder copy', async ({ page }) => {
+  await continueAsGuestFromAuthGate(page);
   const menuButton = page.getByRole('button', { name: /Open language menu|Buka menu bahasa/i }).first();
   await expect(menuButton).toBeVisible();
   await menuButton.click();
@@ -84,10 +87,11 @@ test('language switch updates guest search placeholder copy', async ({ page }) =
   await expect(indonesianOption).toBeVisible();
   await indonesianOption.click();
 
-  await expect(page.getByPlaceholder('Masuk untuk menggunakan pencarian AI...')).toBeDisabled();
+  await expect(page.getByPlaceholder('Cari di web dengan AI...')).toBeEnabled();
 });
 
 test('arabic language option is fully visible in language menu', async ({ page }) => {
+  await continueAsGuestFromAuthGate(page);
   const menuButton = page.getByRole('button', { name: /Open language menu|Buka menu bahasa/i }).first();
   await expect(menuButton).toBeVisible();
   await menuButton.click();
@@ -101,6 +105,7 @@ test('arabic language option is fully visible in language menu', async ({ page }
 });
 
 test('language switch updates guest search placeholder copy for arabic', async ({ page }) => {
+  await continueAsGuestFromAuthGate(page);
   const menuButton = page.getByRole('button', { name: /Open language menu|Buka menu bahasa/i }).first();
   await expect(menuButton).toBeVisible();
   await menuButton.click();
@@ -111,30 +116,30 @@ test('language switch updates guest search placeholder copy for arabic', async (
 
   await expect(
     page.locator('input[placeholder*="\u0627\u0644\u0630\u0643\u0627\u0621 \u0627\u0644\u0627\u0635\u0637\u0646\u0627\u0639\u064a"]')
-  ).toBeDisabled();
+  ).toBeEnabled();
 });
 
 test('navigates to all primary routes from home cards', async ({ page }) => {
+  await continueAsGuestFromAuthGate(page);
   const homeContent = page.locator('.page-container').first();
 
-  await clickHomeCard(page, homeContent.locator('a[href="/chat"]').filter({ hasText: 'Ask Baristachaw' }).first());
+  await clickHomeCard(page, homeContent.locator('a[href="/chat"]').first());
   await expect(page).toHaveURL(/\/chat$/);
 
   await page.goto('/');
-  await clickHomeCard(page, homeContent.locator('a[href="/scanner"]').filter({ hasText: 'Vision Scan' }).first());
+  await clickHomeCard(page, homeContent.locator('a[href="/scanner"]').first());
   await expect(page).toHaveURL(/\/scanner$/);
 
   await page.goto('/');
-  await clickHomeCard(page, homeContent.locator('a[href="/tools?tab=ai-brew"]').filter({ hasText: 'AI Brew' }).first());
+  await clickHomeCard(page, homeContent.locator('a[href="/tools?tab=ai-brew"]').first());
   await expect(page).toHaveURL(/\/tools\?tab=ai-brew$/);
   await expect(page.getByTestId('ai-brew-panel')).toBeVisible();
 
   await page.goto('/');
-  await clickHomeCard(page, homeContent.locator('a[href="/tools"]').filter({ hasText: 'Barista Tools' }).first());
+  await clickHomeCard(page, homeContent.locator('a[href="/tools"]').first());
   await expect(page).toHaveURL(/\/(tools|coffee)$/);
 
   await page.goto('/');
-  await clickHomeCard(page, homeContent.locator('a[href="/collection"]').filter({ hasText: 'Collection' }).first());
+  await clickHomeCard(page, homeContent.locator('a[href="/collection"]').first());
   await expect(page).toHaveURL(/\/collection$/);
 });
-

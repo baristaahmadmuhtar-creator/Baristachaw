@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
 import { mockAiApis } from '../helpers/network';
+import { expectFirstRunAuthGate } from '../helpers/authGate';
 
 const isLive = String(process.env.LIVE_E2E || '').trim() === '1';
 const tinyPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
@@ -16,7 +17,7 @@ test.afterEach(async ({ page }) => {
 });
 
 test('shows sign in gate while unauthenticated', async ({ page }) => {
-  await expect(page.getByText('Sign In Required')).toBeVisible();
+  await expectFirstRunAuthGate(page);
 });
 
 test('scans image and saves result to collection', async ({ page }) => {

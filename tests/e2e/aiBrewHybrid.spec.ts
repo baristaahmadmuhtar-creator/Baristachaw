@@ -98,7 +98,7 @@ function readStoredSequenceWatch(plan: BrewPlan) {
 function formatPlanTime(totalSeconds: number) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
 async function expectCanonicalSequencePrefixes(sequenceNote: Locator) {
@@ -1336,5 +1336,4 @@ test('ai brew auto sequence repairs watch section without deterministic envelope
   const plan = await readStoredPlan(page);
   expect(readStoredSequenceWatch(plan)).toMatch(/Keep final envelope locked:/i);
 });
-
 

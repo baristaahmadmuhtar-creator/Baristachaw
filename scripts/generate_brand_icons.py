@@ -3,16 +3,16 @@ from __future__ import annotations
 from collections import deque
 from pathlib import Path
 
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, ImageOps
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = Path(r"C:\Users\Alpha\Downloads\IMG_7014.PNG")
+SOURCE = Path(r"C:\Users\Alpha\Downloads\IMG_7094 (1).PNG")
 GOOGLE_SOURCE = Path(r"C:\Users\Alpha\Downloads\Logo-google-icon-PNG.png")
 WEB_ICONS = ROOT / "apps" / "web" / "public" / "icons"
 WEB_PUBLIC = ROOT / "apps" / "web" / "public"
 MOBILE_ASSETS = ROOT / "apps" / "mobile" / "assets"
-ASSET_VERSION = "20260423c"
+ASSET_VERSION = "20260426a"
 
 APP_ICON_PADDING = 0.20
 APP_MASKABLE_PADDING = 0.26
@@ -89,6 +89,17 @@ def original_icon(logo: Image.Image, size: int, padding: float = 0.12) -> Image.
     return canvas
 
 
+def full_artwork_icon(source: Image.Image, size: int) -> Image.Image:
+    return ImageOps.fit(source.convert("RGBA"), (size, size), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
+
+
+def sampled_background(source: Image.Image, size: int = 1024) -> Image.Image:
+    image = source.convert("RGBA")
+    width, height = image.size
+    red, green, blue, _ = image.getpixel((width // 2, max(0, height // 4)))
+    return Image.new("RGBA", (size, size), (red, green, blue, 255))
+
+
 def transparent_icon(logo: Image.Image, size: int, padding: float = 0.12) -> Image.Image:
     return fit_logo(logo, size, padding)
 
@@ -135,36 +146,37 @@ def main() -> None:
     if not GOOGLE_SOURCE.exists():
         raise FileNotFoundError(f"Google source image not found: {GOOGLE_SOURCE}")
 
-    logo = remove_outer_white(Image.open(SOURCE))
+    source_image = Image.open(SOURCE)
+    logo = remove_outer_white(source_image)
     google_logo = Image.open(GOOGLE_SOURCE)
 
     web_outputs = {
-        "pwa-source-blue-cup.png": original_icon(logo, 1024, APP_ICON_PADDING),
-        "icon-1024.png": original_icon(logo, 1024, APP_ICON_PADDING),
-        "icon-512.png": original_icon(logo, 512, APP_ICON_PADDING),
-        "icon-512-maskable.png": original_icon(logo, 512, APP_MASKABLE_PADDING),
-        "icon-192.png": original_icon(logo, 192, APP_ICON_PADDING),
-        "icon-192-maskable.png": original_icon(logo, 192, APP_MASKABLE_PADDING),
-        "apple-touch-icon.png": original_icon(logo, 180, APP_ICON_PADDING),
-        "favicon-32x32.png": original_icon(logo, 32, FAVICON_PADDING),
-        "favicon-16x16.png": original_icon(logo, 16, FAVICON_PADDING),
+        "pwa-source-blue-cup.png": full_artwork_icon(source_image, 1024),
+        "icon-1024.png": full_artwork_icon(source_image, 1024),
+        "icon-512.png": full_artwork_icon(source_image, 512),
+        "icon-512-maskable.png": full_artwork_icon(source_image, 512),
+        "icon-192.png": full_artwork_icon(source_image, 192),
+        "icon-192-maskable.png": full_artwork_icon(source_image, 192),
+        "apple-touch-icon.png": full_artwork_icon(source_image, 180),
+        "favicon-32x32.png": full_artwork_icon(source_image, 32),
+        "favicon-16x16.png": full_artwork_icon(source_image, 16),
         "brand-mark-transparent.png": transparent_icon(logo, 1024, BRAND_MARK_PADDING),
         "google-g.png": google_mark(google_logo),
     }
     for name, image in web_outputs.items():
         save_png(image, WEB_ICONS / name)
 
-    save_ico(original_icon(logo, 256, FAVICON_PADDING), WEB_PUBLIC / "favicon.ico")
+    save_ico(full_artwork_icon(source_image, 256), WEB_PUBLIC / "favicon.ico")
     (WEB_PUBLIC / "favicon.svg").write_text(svg_wrapper("/icons/icon-1024.png"), encoding="utf-8")
     (WEB_ICONS / "icon-192.svg").write_text(svg_wrapper("/icons/icon-192.png"), encoding="utf-8")
     (WEB_ICONS / "icon-512.svg").write_text(svg_wrapper("/icons/icon-512.png"), encoding="utf-8")
     (WEB_ICONS / "icon-master.svg").write_text(svg_wrapper("/icons/icon-1024.png"), encoding="utf-8")
 
     mobile_outputs = {
-        "icon.png": original_icon(logo, 1024, APP_ICON_PADDING),
-        "favicon.png": original_icon(logo, 512, APP_ICON_PADDING),
+        "icon.png": full_artwork_icon(source_image, 1024),
+        "favicon.png": full_artwork_icon(source_image, 512),
         "splash-icon.png": transparent_icon(logo, 1024, BRAND_MARK_PADDING),
-        "android-icon-background.png": Image.new("RGBA", (1024, 1024), WHITE),
+        "android-icon-background.png": sampled_background(source_image, 1024),
         "android-icon-foreground.png": transparent_icon(logo, 1024, APP_MASKABLE_PADDING),
         "android-icon-monochrome.png": monochrome_icon(logo, 1024, APP_MASKABLE_PADDING),
         "google-g.png": google_mark(google_logo),

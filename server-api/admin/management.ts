@@ -1045,7 +1045,7 @@ function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataM
     revenueMonthlyUsd: Math.round(revenueMonthlyUsd * 100) / 100,
     attentionUsers: users.filter((user) => user.billing.paymentActionRequired || user.billing.status === 'past_due' || user.billing.status === 'refunded').length,
     supportedMarkets: ['indonesia', 'brunei', 'global'],
-    realtimeTables: ['app_users', 'user_entitlements', 'admin_audit_events', 'app_feature_flags'],
+    realtimeTables: ['app_users', 'user_entitlements', 'payment_receipts', 'admin_audit_events', 'app_feature_flags'],
     gaps,
   };
 }
@@ -1526,7 +1526,11 @@ async function findCurrentUsernameConflict(
 }
 
 function userPatchRequiresOperatorReason(patch: UserPatch): boolean {
-  return patch.status === 'suspended' || patch.status === 'deleted' || patch.role === 'owner';
+  const activatesPaidBilling = patch.billingStatus === 'active' || patch.billingStatus === 'trialing';
+  return patch.status === 'suspended'
+    || patch.status === 'deleted'
+    || patch.role === 'owner'
+    || activatesPaidBilling;
 }
 
 function userPatchHasOperatorReason(patch: UserPatch): boolean {

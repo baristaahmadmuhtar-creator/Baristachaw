@@ -182,6 +182,21 @@ alter table public.user_entitlements
   add constraint user_entitlements_source_check
   check (source in ('admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual'));
 
+create table if not exists public.payment_receipts (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null references public.app_users(id) on delete cascade,
+  requested_plan_code text not null references public.app_plans(code),
+  receipt_url text not null default '',
+  receipt_reference text not null default '',
+  status text not null default 'queued' check (status in ('queued', 'auto_accepted', 'manual_review', 'rejected', 'applied')),
+  reviewed_by text,
+  reviewed_at timestamptz,
+  apply_error text,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.app_feature_flags (
   key text primary key,
   label text not null,
@@ -233,6 +248,8 @@ create index if not exists app_users_payment_action_idx on public.app_users (pay
 create index if not exists app_usage_daily_user_date_idx on public.app_usage_daily (user_id, usage_date desc);
 create index if not exists user_entitlements_user_status_idx on public.user_entitlements (user_id, status, updated_at desc);
 create index if not exists user_entitlements_external_subscription_idx on public.user_entitlements (external_subscription_id) where external_subscription_id is not null;
+create index if not exists payment_receipts_user_status_idx on public.payment_receipts (user_id, status, updated_at desc);
+create index if not exists payment_receipts_review_queue_idx on public.payment_receipts (status, created_at desc) where status in ('queued', 'auto_accepted', 'manual_review');
 create index if not exists app_feature_flags_status_idx on public.app_feature_flags (status, updated_at desc);
 create index if not exists admin_audit_events_created_idx on public.admin_audit_events (created_at desc);
 create index if not exists admin_audit_events_target_idx on public.admin_audit_events (target_type, target_id, created_at desc);
@@ -267,6 +284,11 @@ create trigger user_entitlements_updated_at
 before update on public.user_entitlements
 for each row execute function public.set_admin_management_updated_at();
 
+drop trigger if exists payment_receipts_updated_at on public.payment_receipts;
+create trigger payment_receipts_updated_at
+before update on public.payment_receipts
+for each row execute function public.set_admin_management_updated_at();
+
 drop trigger if exists app_feature_flags_updated_at on public.app_feature_flags;
 create trigger app_feature_flags_updated_at
 before update on public.app_feature_flags
@@ -276,6 +298,7 @@ alter table public.app_plans enable row level security;
 alter table public.app_users enable row level security;
 alter table public.app_usage_daily enable row level security;
 alter table public.user_entitlements enable row level security;
+alter table public.payment_receipts enable row level security;
 alter table public.app_feature_flags enable row level security;
 alter table public.admin_audit_events enable row level security;
 
@@ -293,6 +316,10 @@ create policy "service role manages app usage" on public.app_usage_daily
 
 drop policy if exists "service role manages entitlements" on public.user_entitlements;
 create policy "service role manages entitlements" on public.user_entitlements
+  for all to service_role using (true) with check (true);
+
+drop policy if exists "service role manages payment receipts" on public.payment_receipts;
+create policy "service role manages payment receipts" on public.payment_receipts
   for all to service_role using (true) with check (true);
 
 drop policy if exists "service role manages feature flags" on public.app_feature_flags;
@@ -317,6 +344,16 @@ drop policy if exists "authenticated users read own entitlements" on public.user
 create policy "authenticated users read own entitlements" on public.user_entitlements
   for select to authenticated
   using (user_id = auth.uid()::text);
+
+drop policy if exists "authenticated users read own payment receipts" on public.payment_receipts;
+create policy "authenticated users read own payment receipts" on public.payment_receipts
+  for select to authenticated
+  using (user_id = auth.uid()::text);
+
+drop policy if exists "authenticated users create own payment receipts" on public.payment_receipts;
+create policy "authenticated users create own payment receipts" on public.payment_receipts
+  for insert to authenticated
+  with check (user_id = auth.uid()::text);
 
 drop policy if exists "authenticated users read feature flags" on public.app_feature_flags;
 create policy "authenticated users read feature flags" on public.app_feature_flags
@@ -344,6 +381,15 @@ $$;
 do $$
 begin
   alter publication supabase_realtime add table public.user_entitlements;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end;
+$$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.payment_receipts;
 exception
   when duplicate_object then null;
   when undefined_object then null;

@@ -741,6 +741,34 @@ function formatTime(totalSeconds: number) {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
+function formatGuideTime(totalSeconds: number) {
+  const safeSeconds = Math.max(0, Math.round(totalSeconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  const seconds = safeSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+function formatDisplayNumber(value: number, maxFractionDigits = 0) {
+  if (!Number.isFinite(value)) return '--';
+  return new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: maxFractionDigits,
+  }).format(value);
+}
+
+function formatRoundedMl(value: number) {
+  return `${formatDisplayNumber(Math.round(value))} ml`;
+}
+
+function formatRoundedGrams(value: number) {
+  const rounded = Math.round(value * 10) / 10;
+  const maxFractionDigits = Number.isInteger(rounded) ? 0 : 1;
+  return `${formatDisplayNumber(rounded, maxFractionDigits)} g`;
+}
+
+function formatRoundedTemperature(value: number) {
+  return `${formatDisplayNumber(Math.round(value))}\u00b0C`;
+}
+
 function getAiCoachTitle(copy: CopySet, mode: AiCoachMode) {
   switch (mode) {
     case 'explain':
@@ -998,9 +1026,9 @@ function buildRecipeFromPlan(plan: BrewPlan, locale?: string): Recipe {
     steps: buildLocalizedPlanRecipeSteps(plan, locale),
     difficulty: 'Medium',
     time: formatTime(plan.totalTimeSeconds),
-    dose: `${plan.doseG} g`,
-    water: `${plan.totalWaterMl} ml`,
-    temperature: `${plan.waterTempC}°C`,
+    dose: formatRoundedGrams(plan.doseG),
+    water: formatRoundedMl(plan.totalWaterMl),
+    temperature: formatRoundedTemperature(plan.waterTempC),
     grind: plan.grindRecommendation,
     brewStyle: 'manual_brew',
     aiBrew: buildPlanRecipeMetadata(plan),
@@ -1084,9 +1112,9 @@ function getGenerationStageDetail(
   const { metrics } = progress;
   const targetLabel = localizeAiBrewTargetProfile(metrics.targetProfileId, metrics.targetProfileLabel, language);
   const ratioLabel = formatGenerationRatio(metrics.ratio);
-  const waterLabel = typeof metrics.totalWaterMl === 'number' ? `${metrics.totalWaterMl} ml` : '--';
-  const tempLabel = typeof metrics.waterTempC === 'number' ? `${metrics.waterTempC}C` : '--';
-  const timeLabel = typeof metrics.totalTimeSeconds === 'number' ? formatTime(metrics.totalTimeSeconds) : '--';
+  const waterLabel = typeof metrics.totalWaterMl === 'number' ? formatRoundedMl(metrics.totalWaterMl) : '--';
+  const tempLabel = typeof metrics.waterTempC === 'number' ? formatRoundedTemperature(metrics.waterTempC) : '--';
+  const timeLabel = typeof metrics.totalTimeSeconds === 'number' ? formatGuideTime(metrics.totalTimeSeconds) : '--';
   const verificationLabel = metrics.grinderVerification
     ? formatVerification(copy, metrics.grinderVerification)
     : (id ? 'menunggu referensi grinder' : 'waiting for grinder reference');
@@ -1133,12 +1161,33 @@ function normalizeAiBrewInstructionText(value: string) {
 
 function buildAiBrewStepActionText(step: BrewPlan['steps'][number], language: string) {
   return isIndonesianAiBrewLanguage(language)
-    ? `Tuang ${step.pourVolumeMl} ml hingga target ${step.targetVolumeMl} ml.`
-    : `Pour ${step.pourVolumeMl} ml to reach ${step.targetVolumeMl} ml.`;
+    ? `Tuang ${formatRoundedMl(step.pourVolumeMl)} hingga target ${formatRoundedMl(step.targetVolumeMl)}.`
+    : `Pour ${formatRoundedMl(step.pourVolumeMl)} to reach ${formatRoundedMl(step.targetVolumeMl)}.`;
 }
 
-function buildAiBrewFlowStepSummary(step: BrewPlan['steps'][number]) {
-  return `${formatTime(step.startSeconds)} · ${step.pourVolumeMl} ml -> ${step.targetVolumeMl} ml`;
+function buildAiBrewFlowStepSummary(step: BrewPlan['steps'][number], language: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  return id
+    ? `${formatGuideTime(step.startSeconds)} | tuang +${formatRoundedMl(step.pourVolumeMl)} | target ${formatRoundedMl(step.targetVolumeMl)}`
+    : `${formatGuideTime(step.startSeconds)} | pour +${formatRoundedMl(step.pourVolumeMl)} | target ${formatRoundedMl(step.targetVolumeMl)}`;
+}
+
+function buildAiBrewStepPrimaryCue(step: BrewPlan['steps'][number], language: string) {
+  return isIndonesianAiBrewLanguage(language)
+    ? `Tuang +${formatRoundedMl(step.pourVolumeMl)} sekarang`
+    : `Pour +${formatRoundedMl(step.pourVolumeMl)} now`;
+}
+
+function buildAiBrewStepTargetCue(step: BrewPlan['steps'][number], language: string) {
+  return isIndonesianAiBrewLanguage(language)
+    ? `Berhenti di target ${formatRoundedMl(step.targetVolumeMl)}`
+    : `Stop at ${formatRoundedMl(step.targetVolumeMl)}`;
+}
+
+function buildAiBrewNextStepCue(step: BrewPlan['steps'][number], remainingSeconds: number, language: string) {
+  return isIndonesianAiBrewLanguage(language)
+    ? `Tuangan berikutnya dalam ${formatGuideTime(remainingSeconds)}`
+    : `Next pour in ${formatGuideTime(remainingSeconds)}`;
 }
 
 function buildAiBrewStepQuickNote(step: BrewPlan['steps'][number], language: string) {
@@ -1167,15 +1216,15 @@ function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: strin
   return [
     {
       label: id ? 'Mulai' : 'Start',
-      value: formatTime(step.startSeconds),
+      value: formatGuideTime(step.startSeconds),
     },
     {
       label: id ? 'Tuang' : 'Pour',
-      value: `${step.pourVolumeMl} ml`,
+      value: formatRoundedMl(step.pourVolumeMl),
     },
     {
       label: id ? 'Target' : 'Target',
-      value: `${step.targetVolumeMl} ml`,
+      value: formatRoundedMl(step.targetVolumeMl),
     },
   ];
 }
@@ -1215,7 +1264,7 @@ function renderAiBrewSequenceStepCard(
               <p className="mt-1 text-sm text-secondary">{stepActionText}</p>
             </div>
             <span className="rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-primary">
-              +{step.pourVolumeMl} ml
+              +{formatRoundedMl(step.pourVolumeMl)}
             </span>
           </div>
 
@@ -1761,6 +1810,9 @@ function PlanResultDialog({
   const flowCurrentStep = plan.steps[flowActiveStepIndex] || null;
   const flowNextStep = flowActiveStepIndex >= 0 ? plan.steps[flowActiveStepIndex + 1] || null : plan.steps[0] || null;
   const flowRemainingSeconds = Math.max(0, plan.totalTimeSeconds - flowProgressSeconds);
+  const flowStepRemainingSeconds = flowNextStep
+    ? Math.max(0, flowNextStep.startSeconds - flowProgressSeconds)
+    : flowRemainingSeconds;
   const flowStatusLabel = flowRunning
     ? copy.flowRunning
     : flowProgressSeconds >= plan.totalTimeSeconds && plan.totalTimeSeconds > 0
@@ -1845,7 +1897,10 @@ function PlanResultDialog({
                   </span>
                 </div>
                 <h3 className="text-lg font-semibold tracking-tight text-primary sm:text-xl">{buildLocalizedPlanRecipeName(plan, language)}</h3>
-                <p id={descriptionId} className="mt-1 text-sm text-secondary">
+                <p className="mt-1 text-sm text-secondary">
+                  {formatRoundedGrams(plan.doseG)} | {formatRoundedMl(plan.totalWaterMl)} | {formatGuideTime(plan.totalTimeSeconds)} | {formatRoundedTemperature(plan.waterTempC)}
+                </p>
+                <p id={descriptionId} className="sr-only">
                   {plan.doseG} g · {plan.totalWaterMl} ml · {formatTime(plan.totalTimeSeconds)} · {plan.waterTempC}°C
                 </p>
               </div>
@@ -1936,25 +1991,25 @@ function PlanResultDialog({
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 xl:grid-cols-6">
                 <div className={resultMetricCardClass}>
                   <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.totalWater}</p>
-                  <p className="mt-1 text-xl font-semibold text-primary sm:text-2xl">{plan.totalWaterMl} ml</p>
+                  <p className="mt-1 text-xl font-semibold text-primary sm:text-2xl">{formatRoundedMl(plan.totalWaterMl)}</p>
                 </div>
                 <div className={resultMetricCardClass}>
                   <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.cupOutput}</p>
-                  <p className="mt-1 text-xl font-semibold text-primary sm:text-2xl">{plan.estimatedCupOutputMl} ml</p>
+                  <p className="mt-1 text-xl font-semibold text-primary sm:text-2xl">{formatRoundedMl(plan.estimatedCupOutputMl)}</p>
                 </div>
                 <div className={resultMetricCardClass}>
                   <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
                     <Thermometer size={12} />
                     <span>{copy.temp}</span>
                   </div>
-                  <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{plan.waterTempC}°C</p>
+                  <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{formatRoundedTemperature(plan.waterTempC)}</p>
                 </div>
                 <div className={resultMetricCardClass}>
                   <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
                     <Clock3 size={12} />
                     <span>{copy.time}</span>
                   </div>
-                  <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{formatTime(plan.totalTimeSeconds)}</p>
+                  <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{formatGuideTime(plan.totalTimeSeconds)}</p>
                 </div>
                 <div className={resultMetricCardClass}>
                   <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
@@ -1969,9 +2024,9 @@ function PlanResultDialog({
                     <Droplets size={12} />
                     <span>{plan.brewMode === 'iced' ? copy.hotWater : copy.totalWater}</span>
                   </div>
-                  <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{plan.hotWaterMl} ml</p>
+                  <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{formatRoundedMl(plan.hotWaterMl)}</p>
                   {plan.iceMl > 0 && (
-                    <p className="mt-1 text-xs text-secondary">{copy.ice}: {plan.iceMl} ml</p>
+                    <p className="mt-1 text-xs text-secondary">{copy.ice}: {formatRoundedMl(plan.iceMl)}</p>
                   )}
                 </div>
               </div>
@@ -2026,16 +2081,16 @@ function PlanResultDialog({
                         </p>
                         <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-secondary">
                           <span className={resultChipClass}>
-                            {plan.doseG} g
+                            {formatRoundedGrams(plan.doseG)}
                           </span>
                           <span className={resultChipClass}>
-                            {plan.totalWaterMl} ml
+                            {formatRoundedMl(plan.totalWaterMl)}
                           </span>
                           <span className={resultChipClass}>
-                            {formatTime(plan.totalTimeSeconds)}
+                            {formatGuideTime(plan.totalTimeSeconds)}
                           </span>
                           <span className={resultChipClass}>
-                            {plan.waterTempC}°C
+                            {formatRoundedTemperature(plan.waterTempC)}
                           </span>
                         </div>
                       </div>
@@ -2200,25 +2255,48 @@ function PlanResultDialog({
                     <div className="mt-4 grid grid-cols-2 gap-2.5">
                       <div className="rounded-2xl bg-[var(--bg-base)]/82 p-3">
                         <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowElapsed}</p>
-                        <p className="mt-1 text-2xl font-semibold text-primary">{formatTime(flowProgressSeconds)}</p>
+                        <p className="mt-1 text-3xl font-semibold text-primary">{formatGuideTime(flowProgressSeconds)}</p>
                       </div>
                       <div className="rounded-2xl bg-[var(--bg-base)]/82 p-3">
                         <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowRemaining}</p>
-                        <p className="mt-1 text-2xl font-semibold text-primary">{formatTime(flowRemainingSeconds)}</p>
+                        <p className="mt-1 text-3xl font-semibold text-primary">{formatGuideTime(flowRemainingSeconds)}</p>
                       </div>
                     </div>
 
-                    <div className="mt-4 rounded-2xl bg-[var(--bg-base)]/82 p-3.5">
+                    <div className="mt-4 rounded-2xl bg-[var(--bg-base)]/88 p-3.5 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
                       <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowCurrentStep}</p>
-                      <p className="mt-1 text-base font-semibold text-primary">
+                      <p className="mt-1 text-sm font-semibold text-primary">
                         {flowCurrentStep ? localizeAiBrewStepLabel(flowCurrentStep.label, language) : buildLocalizedPlanRecipeName(plan, language)}
                       </p>
-                      <p className="mt-1 text-sm font-medium text-secondary">
+                      <p className="mt-2 text-2xl font-semibold leading-tight text-primary sm:text-3xl">
                         {flowCurrentStep
-                          ? buildAiBrewFlowStepSummary(flowCurrentStep)
+                          ? buildAiBrewStepPrimaryCue(flowCurrentStep, language)
                           : `${plan.steps.length} ${copy.stepCountSuffix}`}
                       </p>
-                      <p className="mt-2 text-sm text-secondary">
+                      <p className="mt-1 text-base font-semibold text-blue-700 dark:text-blue-300">
+                        {flowCurrentStep
+                          ? buildAiBrewStepTargetCue(flowCurrentStep, language)
+                          : localizedSummary}
+                      </p>
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 xl:grid-cols-2">
+                        <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">Dose</span>
+                          <span className="font-semibold text-primary">{formatRoundedGrams(plan.doseG)}</span>
+                        </span>
+                        <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">Water</span>
+                          <span className="font-semibold text-primary">{formatRoundedMl(plan.totalWaterMl)}</span>
+                        </span>
+                        <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">Next</span>
+                          <span className="font-semibold text-primary">{formatGuideTime(flowStepRemainingSeconds)}</span>
+                        </span>
+                        <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">Total</span>
+                          <span className="font-semibold text-primary">{formatGuideTime(plan.totalTimeSeconds)}</span>
+                        </span>
+                      </div>
+                      <p className="mt-3 text-sm leading-5 text-secondary">
                         {flowCurrentStep
                           ? buildAiBrewStepQuickNote(flowCurrentStep, language)
                           : localizedSummary}
@@ -2258,12 +2336,12 @@ function PlanResultDialog({
                       <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowNextStep}</p>
                       <p className="mt-1 text-sm font-semibold text-primary">
                         {flowNextStep
-                          ? `${formatTime(flowNextStep.startSeconds)} · ${localizeAiBrewStepLabel(flowNextStep.label, language)}`
+                          ? `${formatGuideTime(flowNextStep.startSeconds)} | ${localizeAiBrewStepLabel(flowNextStep.label, language)}`
                           : copy.flowFinished}
                       </p>
                       <p className="mt-1 text-sm text-secondary">
                         {flowNextStep
-                          ? buildAiBrewFlowStepSummary(flowNextStep)
+                          ? buildAiBrewNextStepCue(flowNextStep, flowStepRemainingSeconds, language)
                           : (id
                             ? 'Seduh selesai. Cicipi hasilnya lalu simpan kalau sudah pas.'
                             : 'The brew is complete. Taste it, then save it if it lands well.')}
@@ -2308,7 +2386,7 @@ function PlanResultDialog({
                               </span>
                               <p className="text-sm font-semibold text-primary">{localizeAiBrewStepLabel(step.label, language)}</p>
                             </div>
-                            <p className="text-sm text-secondary">{buildAiBrewFlowStepSummary(step)}</p>
+                            <p className="text-sm text-secondary">{buildAiBrewFlowStepSummary(step, language)}</p>
                           </div>
                           <div className="space-y-1 text-right">
                             <span className="inline-flex rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-primary">

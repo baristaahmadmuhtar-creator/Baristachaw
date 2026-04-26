@@ -201,6 +201,73 @@ test('admin management patch updates runtime billing controls', async () => {
   assert.ok(body.billing.attentionUsers >= 1);
 });
 
+test('admin management applies receipt-received billing as provisional manual review', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_trial_review',
+      patch: {
+        planCode: 'pro',
+        status: 'active',
+        billingStatus: 'trialing',
+        billingProvider: 'manual',
+        billingMarket: 'indonesia',
+        paymentActionRequired: true,
+        supportNote: 'Receipt received: provisional Pro token limits applied. Admin must verify subscription manually.',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  const user = body.users.find((item: any) => item.id === 'runtime_user_trial_review');
+  assert.equal(user.planCode, 'pro');
+  assert.equal(user.status, 'active');
+  assert.equal(user.billing.status, 'trialing');
+  assert.equal(user.billing.provider, 'manual');
+  assert.equal(user.billing.market, 'indonesia');
+  assert.equal(user.billing.paymentActionRequired, true);
+  assert.match(user.supportNote, /Receipt received/);
+  assert.ok(body.billing.trialingSubscriptions >= 1);
+});
+
+test('admin management requires support note before activating paid billing', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_trial_review',
+      patch: {
+        billingStatus: 'active',
+        billingProvider: 'manual',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 400);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'operator_reason_required');
+});
+
 test('admin management prevents signed-in admin self lockout', async () => {
   const token = createToken({
     id: 'owner-user',

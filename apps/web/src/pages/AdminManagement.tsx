@@ -1450,6 +1450,13 @@ function AccountInspector({
     || notes.trim() !== (user.notes || '')
     || supportNote.trim() !== (user.supportNote || '');
 
+  const selectedPlan = plans.find((plan) => plan.code === planCode) || plans.find((plan) => plan.code === user.planCode) || plans[0];
+  const provisionalPlanCode = planCode === 'free' ? 'starter' : planCode;
+  const provisionalPlan = plans.find((plan) => plan.code === provisionalPlanCode) || selectedPlan;
+  const provisionalLimitLabel = provisionalPlan
+    ? `${formatNumber(provisionalPlan.aiDailyLimit)} AI / ${formatNumber(provisionalPlan.deepDailyLimit)} deep / ${formatNumber(provisionalPlan.scannerDailyLimit)} scans daily`
+    : 'plan limits pending';
+
   const saveAccount = () => {
     const patch: AdminUserPatch = {};
     const nextDisplayName = displayName.trim();
@@ -1490,6 +1497,20 @@ function AccountInspector({
       status: status === 'past_due' ? 'active' : status,
       paymentActionRequired: false,
       supportNote: 'Operator reason: payment issue resolved and billing access refreshed.',
+    });
+  };
+
+  const markReceiptReceived = () => {
+    const targetPlanCode = provisionalPlanCode;
+    const targetPlanName = provisionalPlan?.name || targetPlanCode;
+    onPatch(user.id, {
+      planCode: targetPlanCode,
+      billingStatus: 'trialing',
+      billingProvider: 'manual',
+      billingMarket,
+      status: status === 'suspended' || status === 'deleted' ? status : 'active',
+      paymentActionRequired: true,
+      supportNote: `Receipt received: provisional ${targetPlanName} token limits applied (${provisionalLimitLabel}). Admin must verify the subscription manually before marking paid.`,
     });
   };
 
@@ -1586,6 +1607,9 @@ function AccountInspector({
             <div className="min-w-0">
               <p className="text-sm font-semibold text-primary">Billing and entitlement</p>
               <p className="mt-1 text-xs leading-5 text-secondary">{user.billing.recommendedAction}</p>
+              <p className="mt-1 text-[11px] leading-5 text-tertiary">
+                Receipt mode applies {provisionalLimitLabel} immediately, then keeps manual review required until the subscription is verified.
+              </p>
             </div>
             <StatusBadge value={user.billing.status} />
           </div>
@@ -1619,6 +1643,10 @@ function AccountInspector({
             </label>
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+            <button type="button" onClick={markReceiptReceived} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-500/15 disabled:opacity-50 dark:text-blue-300">
+              <ClipboardCheck size={14} />
+              Receipt received
+            </button>
             <button type="button" onClick={markBillingResolved} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300">
               <CheckCircle2 size={14} />
               Mark paid

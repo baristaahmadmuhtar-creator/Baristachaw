@@ -23,19 +23,29 @@ function createToken(user: Record<string, unknown>) {
   return jwt.sign({ user }, process.env.JWT_SECRET!, { expiresIn: '1h' });
 }
 
+let requestSequence = 0;
+
 function makeReq(overrides: Record<string, unknown> = {}) {
+  requestSequence += 1;
+  const ip = `203.0.113.${80 + requestSequence}`;
+  const baseHeaders = {
+    origin: 'http://127.0.0.1:3000',
+    'x-forwarded-for': ip,
+  };
   return {
     method: 'GET',
     query: {},
     body: {},
-    headers: {
-      origin: 'http://127.0.0.1:3000',
-    },
+    headers: baseHeaders,
     cookies: {},
     socket: {
-      remoteAddress: '203.0.113.88',
+      remoteAddress: ip,
     },
     ...overrides,
+    headers: {
+      ...baseHeaders,
+      ...((overrides.headers as Record<string, string>) || {}),
+    },
   } as any;
 }
 
@@ -414,6 +424,175 @@ test('admin management fails closed when Supabase user write fails', async () =>
   assert.equal(res.statusCode, 503);
   const body = JSON.parse(res.body);
   assert.equal(body.errorCode, 'supabase_update_failed');
+});
+
+test('admin management updates runtime plan catalog and records audit', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_plan',
+      planCode: 'starter',
+      patch: {
+        name: 'Starter Indonesia',
+        aiDailyLimit: 72,
+        displayPrice: 'Rp89k monthly',
+        features: ['Higher AI quota', 'AI Brew journal', 'Indonesia launch support'],
+        operatorNote: 'Operator reason: align Starter catalog for Indonesia launch.',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  const plan = body.plans.find((item: any) => item.code === 'starter');
+  assert.equal(plan.name, 'Starter Indonesia');
+  assert.equal(plan.aiDailyLimit, 72);
+  assert.equal(plan.displayPrice, 'Rp89k monthly');
+  assert.deepEqual(plan.features, ['Higher AI quota', 'AI Brew journal', 'Indonesia launch support']);
+  assert.ok(body.audit.some((event: any) => (
+    event.action === 'plan_updated'
+    && event.target === 'starter'
+    && event.detail.includes('Operator reason: align Starter catalog')
+  )));
+});
+
+test('admin management requires operator note for plan catalog changes', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_plan',
+      planCode: 'pro',
+      patch: {
+        aiDailyLimit: 220,
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 400);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'operator_reason_required');
+});
+
+test('admin management denies analyst plan catalog mutations', async () => {
+  const token = createToken({
+    id: 'analyst-user',
+    email: 'analyst@example.com',
+    name: 'Analyst User',
+    role: 'analyst',
+    isAdmin: true,
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_plan',
+      planCode: 'team',
+      patch: {
+        seats: 12,
+        operatorNote: 'Operator reason: analyst should not mutate plan catalog.',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 403);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'admin_role_forbidden');
+});
+
+test('admin management fails closed when Supabase plan write fails', async () => {
+  const originalFetch = globalThis.fetch;
+  process.env.SUPABASE_URL = 'https://unit-project.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  globalThis.fetch = (async () => new Response('database unavailable', { status: 500 })) as typeof fetch;
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_plan',
+      planCode: 'pro',
+      patch: {
+        displayPrice: 'Rp159k monthly',
+        operatorNote: 'Operator reason: verify Supabase failure path for plan catalog.',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  try {
+    await adminManagementHandler(req, res as any);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+
+  assert.equal(res.statusCode, 503);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'supabase_update_failed');
+});
+
+test('admin management queues runtime catalog database requests', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'create_catalog_request',
+      patch: {
+        kind: 'grinder',
+        title: 'Timemore C3S launch catalog',
+        entityId: 'timemore-c3s',
+        sourceUrl: 'https://example.com/timemore-c3s',
+        payload: {
+          brand: 'Timemore',
+          model: 'Chestnut C3S',
+          region: 'Indonesia',
+        },
+        operatorNote: 'Operator reason: add popular Indonesia grinder candidate.',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.catalog.reviewQueue.queued >= 1, true);
+  assert.ok(body.catalog.recentRequests.some((item: any) => (
+    item.kind === 'grinder'
+    && item.title === 'Timemore C3S launch catalog'
+    && item.payloadPreview.includes('Timemore')
+  )));
+  assert.ok(body.audit.some((event: any) => event.action === 'catalog_request_created'));
 });
 
 test('admin management requires operator reason for critical account changes', async () => {

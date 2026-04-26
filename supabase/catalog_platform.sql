@@ -282,3 +282,48 @@ create policy "service role manages ingest runs" on public.ingest_runs
   to service_role
   using (true)
   with check (true);
+
+do $$
+begin
+  alter publication supabase_realtime add table public.catalog_review_queue;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end;
+$$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.brand_suggestions;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end;
+$$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.grinders;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end;
+$$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.drippers;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end;
+$$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.waters;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end;
+$$;

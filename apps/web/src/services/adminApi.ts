@@ -10,6 +10,8 @@ export type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | '
 export type BillingStatus = 'none' | 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'refunded';
 export type BillingMarket = 'indonesia' | 'brunei' | 'global' | 'unknown';
 export type CheckoutMode = 'disabled' | 'external' | 'stripe_checkout' | 'play_billing' | 'app_store' | 'manual_invoice';
+export type AdminCatalogKind = 'water' | 'dripper' | 'grinder';
+export type AdminCatalogReviewStatus = 'queued' | 'approved' | 'published' | 'rejected' | 'needs_source';
 
 export type AdminPlan = {
   code: PlanCode;
@@ -33,6 +35,18 @@ export type AdminPlan = {
   displayPrice: string;
   checkoutMode: CheckoutMode;
   paymentMethods: string[];
+};
+
+export type AdminCatalogRequest = {
+  id: string;
+  kind: AdminCatalogKind;
+  entityId: string;
+  title: string;
+  reviewStatus: AdminCatalogReviewStatus;
+  sourceUrl: string;
+  operatorNote: string;
+  payloadPreview: string;
+  createdAt: string;
 };
 
 export type AdminUserBilling = {
@@ -166,6 +180,21 @@ export type AdminSnapshot = {
     realtimeTables: string[];
     gaps: string[];
   };
+  catalog: {
+    ready: boolean;
+    supportedKinds: AdminCatalogKind[];
+    tables: string[];
+    publishedCounts: Record<AdminCatalogKind, number>;
+    reviewQueue: {
+      total: number;
+      queued: number;
+      needsSource: number;
+      approved: number;
+      rejected: number;
+    };
+    recentRequests: AdminCatalogRequest[];
+    gaps: string[];
+  };
   recommendations: string[];
   warnings: string[];
   realtime: {
@@ -196,6 +225,38 @@ export type AdminFeatureFlagPatch = Partial<{
   message: string;
   surfaces: FeatureSurface[];
 }>;
+
+export type AdminPlanPatch = Partial<{
+  name: string;
+  description: string;
+  priceMonthlyUsd: number;
+  aiDailyLimit: number;
+  deepDailyLimit: number;
+  scannerDailyLimit: number;
+  storageMb: number;
+  seats: number;
+  supportSlaHours: number;
+  features: string[];
+  recommended: boolean;
+  billingProvider: BillingProvider;
+  billingProductId: string;
+  billingPriceId: string;
+  revenuecatEntitlementId: string;
+  market: BillingMarket;
+  displayPrice: string;
+  checkoutMode: CheckoutMode;
+  paymentMethods: string[];
+  operatorNote: string;
+}>;
+
+export type AdminCatalogRequestPatch = {
+  kind: AdminCatalogKind;
+  title: string;
+  entityId?: string;
+  sourceUrl?: string;
+  payload: Record<string, unknown>;
+  operatorNote: string;
+};
 
 export class AdminApiError extends Error {
   status: number;
@@ -284,6 +345,27 @@ export function updateFeatureFlag(key: string, patch: AdminFeatureFlagPatch): Pr
     body: JSON.stringify({
       action: 'update_feature_flag',
       key,
+      patch,
+    }),
+  }, 18_000);
+}
+
+export function updateAdminPlan(planCode: PlanCode, patch: AdminPlanPatch): Promise<AdminSnapshot> {
+  return adminRequest<AdminSnapshot>('/api/admin/management', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      action: 'update_plan',
+      planCode,
+      patch,
+    }),
+  }, 18_000);
+}
+
+export function createCatalogRequest(patch: AdminCatalogRequestPatch): Promise<AdminSnapshot> {
+  return adminRequest<AdminSnapshot>('/api/admin/management', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      action: 'create_catalog_request',
       patch,
     }),
   }, 18_000);

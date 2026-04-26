@@ -27,6 +27,8 @@ type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe'
 type BillingStatus = 'none' | 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'refunded';
 type BillingMarket = 'indonesia' | 'brunei' | 'global' | 'unknown';
 type CheckoutMode = 'disabled' | 'external' | 'stripe_checkout' | 'play_billing' | 'app_store' | 'manual_invoice';
+type CatalogKind = 'water' | 'dripper' | 'grinder';
+type CatalogReviewStatus = 'queued' | 'approved' | 'published' | 'rejected' | 'needs_source';
 
 type AdminPlan = {
   code: PlanCode;
@@ -50,6 +52,18 @@ type AdminPlan = {
   displayPrice: string;
   checkoutMode: CheckoutMode;
   paymentMethods: string[];
+};
+
+type AdminCatalogRequest = {
+  id: string;
+  kind: CatalogKind;
+  entityId: string;
+  title: string;
+  reviewStatus: CatalogReviewStatus;
+  sourceUrl: string;
+  operatorNote: string;
+  payloadPreview: string;
+  createdAt: string;
 };
 
 type AdminUserBilling = {
@@ -174,6 +188,21 @@ type AdminSnapshot = {
     realtimeTables: string[];
     gaps: string[];
   };
+  catalog: {
+    ready: boolean;
+    supportedKinds: CatalogKind[];
+    tables: string[];
+    publishedCounts: Record<CatalogKind, number>;
+    reviewQueue: {
+      total: number;
+      queued: number;
+      needsSource: number;
+      approved: number;
+      rejected: number;
+    };
+    recentRequests: AdminCatalogRequest[];
+    gaps: string[];
+  };
   recommendations: string[];
   warnings: string[];
   realtime: {
@@ -201,6 +230,38 @@ type UserPatch = Partial<{
   paymentActionRequired: boolean;
 }>;
 
+type PlanPatch = Partial<{
+  name: string;
+  description: string;
+  priceMonthlyUsd: number;
+  aiDailyLimit: number;
+  deepDailyLimit: number;
+  scannerDailyLimit: number;
+  storageMb: number;
+  seats: number;
+  supportSlaHours: number;
+  features: string[];
+  recommended: boolean;
+  billingProvider: BillingProvider;
+  billingProductId: string;
+  billingPriceId: string;
+  revenuecatEntitlementId: string;
+  market: BillingMarket;
+  displayPrice: string;
+  checkoutMode: CheckoutMode;
+  paymentMethods: string[];
+  operatorNote: string;
+}>;
+
+type CatalogRequestPatch = {
+  kind: CatalogKind;
+  title: string;
+  entityId?: string;
+  sourceUrl?: string;
+  payload: Record<string, unknown>;
+  operatorNote: string;
+};
+
 type SupabaseConfig = {
   configured: true;
   url: string;
@@ -216,6 +277,8 @@ const VALID_PLAN_CODES = new Set<PlanCode>(['free', 'starter', 'pro', 'team', 'e
 const VALID_BILLING_STATUSES = new Set<BillingStatus>(['none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded']);
 const VALID_BILLING_PROVIDERS = new Set<BillingProvider>(['none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual']);
 const VALID_BILLING_MARKETS = new Set<BillingMarket>(['indonesia', 'brunei', 'global', 'unknown']);
+const VALID_CHECKOUT_MODES = new Set<CheckoutMode>(['disabled', 'external', 'stripe_checkout', 'play_billing', 'app_store', 'manual_invoice']);
+const VALID_CATALOG_KINDS = new Set<CatalogKind>(['water', 'dripper', 'grinder']);
 const RESERVED_USERNAMES = new Set([
   'account',
   'admin',
@@ -244,6 +307,17 @@ const USERNAME_MAX_LENGTH = 32;
 const USERNAME_INPUT_MAX_LENGTH = 96;
 const NOTES_MAX_LENGTH = 500;
 const SUPPORT_NOTE_MAX_LENGTH = 800;
+const PLAN_NAME_MAX_LENGTH = 64;
+const PLAN_DESCRIPTION_MAX_LENGTH = 240;
+const PLAN_DISPLAY_PRICE_MAX_LENGTH = 120;
+const PLAN_EXTERNAL_ID_MAX_LENGTH = 160;
+const PLAN_LIST_ITEM_MAX_LENGTH = 60;
+const PLAN_OPERATOR_NOTE_MAX_LENGTH = 240;
+const CATALOG_TITLE_MAX_LENGTH = 120;
+const CATALOG_ENTITY_ID_MAX_LENGTH = 120;
+const CATALOG_SOURCE_URL_MAX_LENGTH = 320;
+const CATALOG_OPERATOR_NOTE_MAX_LENGTH = 300;
+const CATALOG_PAYLOAD_MAX_LENGTH = 5000;
 
 const ADMIN_RATE_LIMIT = {
   maxRequests: 120,
@@ -256,6 +330,8 @@ const LIVE_POLL_INTERVAL_SEC = 12;
 const RUNTIME_AUDIT_LIMIT = 80;
 let snapshotSequence = 0;
 const RUNTIME_USER_PATCHES = new Map<string, UserPatch>();
+const RUNTIME_PLAN_PATCHES = new Map<PlanCode, Omit<PlanPatch, 'operatorNote'>>();
+const RUNTIME_CATALOG_REQUESTS: AdminCatalogRequest[] = [];
 const RUNTIME_AUDIT: AdminAuditEvent[] = [];
 
 const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
@@ -546,8 +622,67 @@ function validateBooleanPatch(value: unknown, field: string): { ok: true; value:
   return { ok: false, error: `${field} must be boolean` };
 }
 
+function validateNumberPatch(
+  value: unknown,
+  field: string,
+  options: { min: number; max: number; integer?: boolean },
+): { ok: true; value: number } | ValidationError {
+  const parsed = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(parsed)) return { ok: false, error: `${field} must be a number` };
+  const normalized = options.integer ? Math.round(parsed) : Math.round(parsed * 100) / 100;
+  if (normalized < options.min || normalized > options.max) {
+    return {
+      ok: false,
+      error: `${field} is out of range`,
+      details: `${field} must be between ${options.min} and ${options.max}.`,
+    };
+  }
+  return { ok: true, value: normalized };
+}
+
+function validateStringListPatch(
+  value: unknown,
+  field: string,
+  options: { maxItems: number; maxItemLength: number },
+): { ok: true; value: string[] } | ValidationError {
+  const source = Array.isArray(value)
+    ? value
+    : typeof value === 'string'
+      ? value.split(/[\n,]+/g)
+      : null;
+  if (!source) return { ok: false, error: `${field} must be a string list` };
+  const items: string[] = [];
+  for (const item of source) {
+    const normalized = normalizeText(item);
+    if (!normalized) continue;
+    if (normalized.length > options.maxItemLength) {
+      return {
+        ok: false,
+        error: `${field} item is too long`,
+        details: `${field} items must be ${options.maxItemLength} characters or fewer.`,
+      };
+    }
+    if (!items.includes(normalized)) items.push(normalized);
+  }
+  if (items.length > options.maxItems) {
+    return {
+      ok: false,
+      error: `${field} has too many items`,
+      details: `${field} supports up to ${options.maxItems} items.`,
+    };
+  }
+  return { ok: true, value: items };
+}
+
+function runtimePlanBlueprints(): Omit<AdminPlan, 'activeUsers'>[] {
+  return PLAN_BLUEPRINTS.map((plan) => ({
+    ...plan,
+    ...(RUNTIME_PLAN_PATCHES.get(plan.code) || {}),
+  }));
+}
+
 function planName(code: PlanCode): string {
-  return PLAN_BLUEPRINTS.find((plan) => plan.code === code)?.name || 'Free';
+  return runtimePlanBlueprints().find((plan) => plan.code === code)?.name || 'Free';
 }
 
 function normalizeProvider(value: unknown): AdminUserRecord['provider'] {
@@ -997,10 +1132,18 @@ function runtimeSeedUsers(admin: AdminAccess, rawUser?: Record<string, unknown>)
   });
 }
 
-function withActiveCounts(users: AdminUserRecord[], plans = PLAN_BLUEPRINTS): AdminPlan[] {
+function withActiveCounts(users: AdminUserRecord[], plans = runtimePlanBlueprints()): AdminPlan[] {
   return plans.map((plan) => ({
     ...plan,
     activeUsers: users.filter((user) => user.planCode === plan.code && user.status !== 'deleted').length,
+  }));
+}
+
+function applyPlanNamesToUsers(users: AdminUserRecord[], plans: AdminPlan[]): AdminUserRecord[] {
+  const names = new Map(plans.map((plan) => [plan.code, plan.name]));
+  return users.map((user) => ({
+    ...user,
+    planName: names.get(user.planCode) || user.planName,
   }));
 }
 
@@ -1064,8 +1207,113 @@ function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataM
     revenueMonthlyUsd: Math.round(revenueMonthlyUsd * 100) / 100,
     attentionUsers: users.filter((user) => user.billing.paymentActionRequired || user.billing.status === 'past_due' || user.billing.status === 'refunded').length,
     supportedMarkets: ['indonesia', 'brunei', 'global'],
-    realtimeTables: ['app_users', 'user_entitlements', 'payment_receipts', 'admin_audit_events', 'app_feature_flags'],
+    realtimeTables: ['app_users', 'app_plans', 'user_entitlements', 'payment_receipts', 'admin_audit_events', 'app_feature_flags', 'catalog_review_queue'],
     gaps,
+  };
+}
+
+function emptyCatalogCounts(): Record<CatalogKind, number> {
+  return {
+    water: 0,
+    dripper: 0,
+    grinder: 0,
+  };
+}
+
+function normalizeCatalogReviewStatus(value: unknown): CatalogReviewStatus {
+  const raw = normalizeText(value).toLowerCase();
+  if (raw === 'approved' || raw === 'published' || raw === 'rejected' || raw === 'needs_source') return raw;
+  return 'queued';
+}
+
+function catalogPayloadPreview(payload: unknown): string {
+  if (!payload || typeof payload !== 'object') return '';
+  const record = payload as Record<string, unknown>;
+  const brand = normalizeText(record.brand);
+  const model = normalizeText(record.model || record.name || record.sku_label);
+  const region = normalizeText(record.region || record.market || record.available_in);
+  const summary = [brand, model, region].filter(Boolean).join(' / ');
+  return summary || JSON.stringify(record).slice(0, 180);
+}
+
+function catalogRequestFromSupabase(row: any): AdminCatalogRequest {
+  const payload = row.payload && typeof row.payload === 'object' ? row.payload as Record<string, unknown> : {};
+  return {
+    id: normalizeText(row.id, `catalog_${Date.now()}`),
+    kind: VALID_CATALOG_KINDS.has(normalizeText(row.kind).toLowerCase() as CatalogKind)
+      ? normalizeText(row.kind).toLowerCase() as CatalogKind
+      : 'grinder',
+    entityId: normalizeText(row.entity_id || payload.entityId),
+    title: normalizeText(payload.title || row.title || payload.brand || payload.model, 'Catalog request'),
+    reviewStatus: normalizeCatalogReviewStatus(row.review_status || payload.reviewStatus),
+    sourceUrl: normalizeText(payload.sourceUrl || payload.source_url),
+    operatorNote: normalizeText(payload.operatorNote || payload.operator_note),
+    payloadPreview: catalogPayloadPreview(payload),
+    createdAt: normalizeText(row.created_at, nowIso()),
+  };
+}
+
+async function loadSupabaseCatalogSummary(config: Extract<SupabaseConfig, { configured: true }>): Promise<AdminSnapshot['catalog']> {
+  const publishedCounts = emptyCatalogCounts();
+  const gaps: string[] = [];
+  const tableByKind: Record<CatalogKind, string> = {
+    water: 'waters',
+    dripper: 'drippers',
+    grinder: 'grinders',
+  };
+
+  for (const [kind, table] of Object.entries(tableByKind) as Array<[CatalogKind, string]>) {
+    try {
+      const rows = await supabaseRest<any[]>(config, `${table}?select=id,published&published=eq.true&limit=1000`);
+      publishedCounts[kind] = Array.isArray(rows) ? rows.length : 0;
+    } catch (error) {
+      gaps.push(`${table} belum siap atau belum dimigrasikan: ${sanitizeErrorDetails(error, 120)}`);
+    }
+  }
+
+  let recentRequests: AdminCatalogRequest[] = [];
+  try {
+    const rows = await supabaseRest<any[]>(config, 'catalog_review_queue?select=*&order=created_at.desc&limit=50');
+    recentRequests = Array.isArray(rows) ? rows.map(catalogRequestFromSupabase) : [];
+  } catch (error) {
+    gaps.push(`catalog_review_queue belum siap: ${sanitizeErrorDetails(error, 120)}`);
+  }
+
+  const reviewQueue = {
+    total: recentRequests.length,
+    queued: recentRequests.filter((request) => request.reviewStatus === 'queued').length,
+    needsSource: recentRequests.filter((request) => request.reviewStatus === 'needs_source').length,
+    approved: recentRequests.filter((request) => request.reviewStatus === 'approved' || request.reviewStatus === 'published').length,
+    rejected: recentRequests.filter((request) => request.reviewStatus === 'rejected').length,
+  };
+
+  return {
+    ready: gaps.length === 0,
+    supportedKinds: ['water', 'dripper', 'grinder'],
+    tables: ['waters', 'drippers', 'grinders', 'catalog_review_queue', 'brand_suggestions', 'ingest_runs'],
+    publishedCounts,
+    reviewQueue,
+    recentRequests,
+    gaps,
+  };
+}
+
+function buildRuntimeCatalogSummary(): AdminSnapshot['catalog'] {
+  const reviewQueue = {
+    total: RUNTIME_CATALOG_REQUESTS.length,
+    queued: RUNTIME_CATALOG_REQUESTS.filter((request) => request.reviewStatus === 'queued').length,
+    needsSource: RUNTIME_CATALOG_REQUESTS.filter((request) => request.reviewStatus === 'needs_source').length,
+    approved: RUNTIME_CATALOG_REQUESTS.filter((request) => request.reviewStatus === 'approved' || request.reviewStatus === 'published').length,
+    rejected: RUNTIME_CATALOG_REQUESTS.filter((request) => request.reviewStatus === 'rejected').length,
+  };
+  return {
+    ready: false,
+    supportedKinds: ['water', 'dripper', 'grinder'],
+    tables: ['waters', 'drippers', 'grinders', 'catalog_review_queue', 'brand_suggestions', 'ingest_runs'],
+    publishedCounts: emptyCatalogCounts(),
+    reviewQueue,
+    recentRequests: RUNTIME_CATALOG_REQUESTS.slice(0, 20),
+    gaps: ['Supabase catalog_platform.sql belum aktif; request katalog runtime hanya preview sampai database produksi tersambung.'],
   };
 }
 
@@ -1115,7 +1363,17 @@ function buildChecks(dataMode: DataMode): AdminSystemCheck[] {
       label: 'Plan catalog',
       status: 'pass',
       owner: 'Billing',
-      detail: 'Free, Starter, Pro, Team, and Enterprise plan definitions are available to admin.',
+      detail: 'Free, Starter, Pro, Team, and Enterprise plan definitions are editable from admin.',
+    },
+    {
+      id: 'catalog_platform',
+      label: 'Brew catalog database',
+      status: dataMode === 'supabase' ? 'pass' : 'warn',
+      owner: 'Data',
+      detail: dataMode === 'supabase'
+        ? 'Catalog tables can power water, dripper, and grinder review operations.'
+        : 'Catalog search uses bundled data until Supabase catalog_platform.sql is applied.',
+      nextAction: dataMode === 'supabase' ? undefined : 'Run supabase/catalog_platform.sql and import curated catalog data before public scale.',
     },
     {
       id: 'feature_flags',
@@ -1200,6 +1458,14 @@ function buildLaunchChecklist(checks: AdminSystemCheck[]): LaunchChecklistItem[]
       action: 'Use admin maintenance flags before disabling risky web, PWA, or mobile features.',
     },
     {
+      id: 'catalog_ready',
+      label: 'Brew catalog review queue ready',
+      status: statusFor('catalog_platform'),
+      due: 'this_week',
+      owner: 'Backend',
+      action: 'Apply catalog_platform.sql, import grinder/water/dripper data, and review queued additions before launch.',
+    },
+    {
       id: 'billing_ready',
       label: 'Billing lifecycle sync',
       status: statusFor('billing_provider'),
@@ -1248,6 +1514,9 @@ function buildRecommendations(snapshot: {
   }
   if (snapshot.checks.some((check) => check.id === 'feature_flags' && check.status !== 'pass')) {
     recommendations.push('Persist maintenance flags so user-facing web/PWA/mobile banners match admin changes.');
+  }
+  if (snapshot.checks.some((check) => check.id === 'catalog_platform' && check.status !== 'pass')) {
+    recommendations.push('Move grinder, dripper, and water catalog review into Supabase before adding new public catalog data.');
   }
   if (snapshot.metrics.riskAccounts > 0) {
     recommendations.push('Review past_due and suspended accounts daily during the first launch week.');
@@ -1339,6 +1608,7 @@ async function buildAdminSnapshot(
   let plans: AdminPlan[] = [];
   let audit: AdminAuditEvent[] = [];
   let featureFlags: AdminFeatureFlag[] = [];
+  let catalog: AdminSnapshot['catalog'] = buildRuntimeCatalogSummary();
   const warnings: string[] = [];
 
   if (config.configured) {
@@ -1351,8 +1621,10 @@ async function buildAdminSnapshot(
         users.unshift(currentAuthUser(admin, rawUser));
       }
       plans = await loadSupabasePlans(config, users);
+      users = applyPlanNamesToUsers(users, plans);
       audit = await loadSupabaseAudit(config);
       featureFlags = await loadSupabaseFeatureFlags(config);
+      catalog = await loadSupabaseCatalogSummary(config);
       dataMode = 'supabase';
     } catch (error) {
       warnings.push(`Supabase admin read failed: ${sanitizeErrorDetails(error, 180)}`);
@@ -1364,8 +1636,10 @@ async function buildAdminSnapshot(
   if (dataMode !== 'supabase') {
     users = runtimeSeedUsers(admin, rawUser);
     plans = withActiveCounts(users);
+    users = applyPlanNamesToUsers(users, plans);
     audit = buildRuntimeAudit(admin);
     featureFlags = buildRuntimeFeatureFlags(RUNTIME_FEATURE_FLAG_PATCHES);
+    catalog = buildRuntimeCatalogSummary();
   }
 
   const metrics = metricsFromUsers(users);
@@ -1398,6 +1672,7 @@ async function buildAdminSnapshot(
     launchChecklist,
     featureFlags,
     billing,
+    catalog,
     recommendations,
     warnings,
     realtime: {
@@ -1507,6 +1782,158 @@ function validateFeatureFlagPatch(body: any): { ok: true; key: string; patch: Fe
   return { ok: true, key, patch };
 }
 
+function validatePlanPatch(body: any): { ok: true; planCode: PlanCode; patch: PlanPatch } | ValidationError {
+  const planCodeRaw = normalizeText(body?.planCode || body?.code).toLowerCase();
+  const codeValidation = validateEnumValue(planCodeRaw, 'planCode', VALID_PLAN_CODES);
+  if (codeValidation.ok === false) return codeValidation;
+  const rawPatch = body?.patch && typeof body.patch === 'object' ? body.patch : {};
+  const patch: PlanPatch = {};
+
+  if ('name' in rawPatch) {
+    const validated = validatePatchText(rawPatch.name, 'name', PLAN_NAME_MAX_LENGTH, { required: true });
+    if (validated.ok === false) return validated;
+    patch.name = validated.value;
+  }
+  if ('description' in rawPatch) {
+    const validated = validatePatchText(rawPatch.description, 'description', PLAN_DESCRIPTION_MAX_LENGTH, { required: true });
+    if (validated.ok === false) return validated;
+    patch.description = validated.value;
+  }
+  if ('priceMonthlyUsd' in rawPatch) {
+    const validated = validateNumberPatch(rawPatch.priceMonthlyUsd, 'priceMonthlyUsd', { min: 0, max: 10000 });
+    if (validated.ok === false) return validated;
+    patch.priceMonthlyUsd = validated.value;
+  }
+  if ('aiDailyLimit' in rawPatch) {
+    const validated = validateNumberPatch(rawPatch.aiDailyLimit, 'aiDailyLimit', { min: 0, max: 100000, integer: true });
+    if (validated.ok === false) return validated;
+    patch.aiDailyLimit = validated.value;
+  }
+  if ('deepDailyLimit' in rawPatch) {
+    const validated = validateNumberPatch(rawPatch.deepDailyLimit, 'deepDailyLimit', { min: 0, max: 100000, integer: true });
+    if (validated.ok === false) return validated;
+    patch.deepDailyLimit = validated.value;
+  }
+  if ('scannerDailyLimit' in rawPatch) {
+    const validated = validateNumberPatch(rawPatch.scannerDailyLimit, 'scannerDailyLimit', { min: 0, max: 100000, integer: true });
+    if (validated.ok === false) return validated;
+    patch.scannerDailyLimit = validated.value;
+  }
+  if ('storageMb' in rawPatch) {
+    const validated = validateNumberPatch(rawPatch.storageMb, 'storageMb', { min: 0, max: 1048576, integer: true });
+    if (validated.ok === false) return validated;
+    patch.storageMb = validated.value;
+  }
+  if ('seats' in rawPatch) {
+    const validated = validateNumberPatch(rawPatch.seats, 'seats', { min: 1, max: 10000, integer: true });
+    if (validated.ok === false) return validated;
+    patch.seats = validated.value;
+  }
+  if ('supportSlaHours' in rawPatch) {
+    const validated = validateNumberPatch(rawPatch.supportSlaHours, 'supportSlaHours', { min: 1, max: 720, integer: true });
+    if (validated.ok === false) return validated;
+    patch.supportSlaHours = validated.value;
+  }
+  if ('features' in rawPatch) {
+    const validated = validateStringListPatch(rawPatch.features, 'features', { maxItems: 24, maxItemLength: PLAN_LIST_ITEM_MAX_LENGTH });
+    if (validated.ok === false) return validated;
+    patch.features = validated.value;
+  }
+  if ('recommended' in rawPatch) {
+    const validated = validateBooleanPatch(rawPatch.recommended, 'recommended');
+    if (validated.ok === false) return validated;
+    patch.recommended = validated.value;
+  }
+  if ('billingProvider' in rawPatch) {
+    const validated = validateEnumValue(rawPatch.billingProvider, 'billingProvider', VALID_BILLING_PROVIDERS);
+    if (validated.ok === false) return validated;
+    patch.billingProvider = validated.value;
+  }
+  if ('billingProductId' in rawPatch) {
+    const validated = validatePatchText(rawPatch.billingProductId, 'billingProductId', PLAN_EXTERNAL_ID_MAX_LENGTH);
+    if (validated.ok === false) return validated;
+    patch.billingProductId = validated.value;
+  }
+  if ('billingPriceId' in rawPatch) {
+    const validated = validatePatchText(rawPatch.billingPriceId, 'billingPriceId', PLAN_EXTERNAL_ID_MAX_LENGTH);
+    if (validated.ok === false) return validated;
+    patch.billingPriceId = validated.value;
+  }
+  if ('revenuecatEntitlementId' in rawPatch) {
+    const validated = validatePatchText(rawPatch.revenuecatEntitlementId, 'revenuecatEntitlementId', PLAN_EXTERNAL_ID_MAX_LENGTH);
+    if (validated.ok === false) return validated;
+    patch.revenuecatEntitlementId = validated.value;
+  }
+  if ('market' in rawPatch) {
+    const validated = validateEnumValue(rawPatch.market, 'market', VALID_BILLING_MARKETS);
+    if (validated.ok === false) return validated;
+    patch.market = validated.value;
+  }
+  if ('displayPrice' in rawPatch) {
+    const validated = validatePatchText(rawPatch.displayPrice, 'displayPrice', PLAN_DISPLAY_PRICE_MAX_LENGTH);
+    if (validated.ok === false) return validated;
+    patch.displayPrice = validated.value;
+  }
+  if ('checkoutMode' in rawPatch) {
+    const validated = validateEnumValue(rawPatch.checkoutMode, 'checkoutMode', VALID_CHECKOUT_MODES);
+    if (validated.ok === false) return validated;
+    patch.checkoutMode = validated.value;
+  }
+  if ('paymentMethods' in rawPatch) {
+    const validated = validateStringListPatch(rawPatch.paymentMethods, 'paymentMethods', { maxItems: 12, maxItemLength: PLAN_LIST_ITEM_MAX_LENGTH });
+    if (validated.ok === false) return validated;
+    patch.paymentMethods = validated.value;
+  }
+  if ('operatorNote' in rawPatch) {
+    const validated = validatePatchText(rawPatch.operatorNote, 'operatorNote', PLAN_OPERATOR_NOTE_MAX_LENGTH);
+    if (validated.ok === false) return validated;
+    patch.operatorNote = validated.value;
+  }
+
+  if (Object.keys(patch).filter((key) => key !== 'operatorNote').length === 0) return { ok: false, error: 'patch is empty' };
+  return { ok: true, planCode: codeValidation.value, patch };
+}
+
+function validateCatalogRequestPatch(body: any): { ok: true; patch: CatalogRequestPatch } | ValidationError {
+  const rawPatch = body?.patch && typeof body.patch === 'object' ? body.patch : {};
+  const kindValidation = validateEnumValue(rawPatch.kind, 'kind', VALID_CATALOG_KINDS);
+  if (kindValidation.ok === false) return kindValidation;
+  const titleValidation = validatePatchText(rawPatch.title, 'title', CATALOG_TITLE_MAX_LENGTH, { required: true });
+  if (titleValidation.ok === false) return titleValidation;
+  const noteValidation = validatePatchText(rawPatch.operatorNote, 'operatorNote', CATALOG_OPERATOR_NOTE_MAX_LENGTH, { required: true });
+  if (noteValidation.ok === false) return noteValidation;
+  const entityIdValidation = 'entityId' in rawPatch
+    ? validatePatchText(rawPatch.entityId, 'entityId', CATALOG_ENTITY_ID_MAX_LENGTH)
+    : { ok: true as const, value: '' };
+  if (entityIdValidation.ok === false) return entityIdValidation;
+  const sourceUrlValidation = 'sourceUrl' in rawPatch
+    ? validatePatchText(rawPatch.sourceUrl, 'sourceUrl', CATALOG_SOURCE_URL_MAX_LENGTH)
+    : { ok: true as const, value: '' };
+  if (sourceUrlValidation.ok === false) return sourceUrlValidation;
+  if (!rawPatch.payload || typeof rawPatch.payload !== 'object' || Array.isArray(rawPatch.payload)) {
+    return { ok: false, error: 'payload must be an object' };
+  }
+  const payloadJson = JSON.stringify(rawPatch.payload);
+  if (payloadJson.length > CATALOG_PAYLOAD_MAX_LENGTH) {
+    return {
+      ok: false,
+      error: 'payload is too large',
+      details: `payload must be ${CATALOG_PAYLOAD_MAX_LENGTH} characters or fewer.`,
+    };
+  }
+  return {
+    ok: true,
+    patch: {
+      kind: kindValidation.value,
+      title: titleValidation.value,
+      entityId: entityIdValidation.value,
+      sourceUrl: sourceUrlValidation.value,
+      payload: rawPatch.payload,
+      operatorNote: noteValidation.value,
+    },
+  };
+}
+
 function featureFlagPatchRequiresMessage(patch: FeatureFlagPatch): boolean {
   return patch.status === 'maintenance' || patch.status === 'disabled';
 }
@@ -1527,6 +1954,47 @@ function featureFlagPatchAuditDetail(prefix: string, patch: FeatureFlagPatch): s
     ? patch.message.replace(/\s+/g, ' ').trim().slice(0, 160)
     : '';
   return messagePreview ? `${prefix}: ${keys}. Message: ${messagePreview}` : `${prefix}: ${keys}`;
+}
+
+function planPatchHasOperatorReason(patch: PlanPatch): boolean {
+  return typeof patch.operatorNote === 'string' && patch.operatorNote.replace(/\s+/g, ' ').trim().length >= 12;
+}
+
+function planWritePatch(patch: PlanPatch): Omit<PlanPatch, 'operatorNote'> {
+  const { operatorNote: _operatorNote, ...writePatch } = patch;
+  return writePatch;
+}
+
+function planPatchSeverity(patch: PlanPatch): AdminAuditEvent['severity'] {
+  if (
+    typeof patch.priceMonthlyUsd === 'number'
+    || patch.billingProvider
+    || patch.billingProductId
+    || patch.billingPriceId
+    || patch.revenuecatEntitlementId
+    || patch.checkoutMode
+    || patch.market
+  ) {
+    return 'warning';
+  }
+  return 'info';
+}
+
+function planPatchAuditDetail(prefix: string, planCode: PlanCode, patch: PlanPatch): string {
+  const keys = Object.keys(patch).filter((key) => key !== 'operatorNote').join(', ');
+  const notePreview = typeof patch.operatorNote === 'string'
+    ? patch.operatorNote.replace(/\s+/g, ' ').trim().slice(0, 180)
+    : '';
+  return `${prefix} ${planCode}: ${keys}. Operator note: ${notePreview}`;
+}
+
+function catalogPatchHasOperatorReason(patch: CatalogRequestPatch): boolean {
+  return patch.operatorNote.replace(/\s+/g, ' ').trim().length >= 12;
+}
+
+function catalogPatchAuditDetail(prefix: string, patch: CatalogRequestPatch): string {
+  const notePreview = patch.operatorNote.replace(/\s+/g, ' ').trim().slice(0, 180);
+  return `${prefix} ${patch.kind}: ${patch.title}. Operator note: ${notePreview}`;
 }
 
 function findUsernameConflict(users: AdminUserRecord[], userId: string, username: string): AdminUserRecord | null {
@@ -1621,6 +2089,26 @@ function authorizeFeatureFlagMutation(admin: AdminAccess): AuthorizationError | 
   };
 }
 
+function authorizePlanMutation(admin: AdminAccess): AuthorizationError | null {
+  if (admin.role === 'owner' || admin.role === 'admin') return null;
+  return {
+    ok: false,
+    statusCode: 403,
+    error: 'Only owner and admin roles can change plan catalog controls',
+    errorCode: 'admin_role_forbidden',
+  };
+}
+
+function authorizeCatalogMutation(admin: AdminAccess): AuthorizationError | null {
+  if (admin.role === 'owner' || admin.role === 'admin' || admin.role === 'support') return null;
+  return {
+    ok: false,
+    statusCode: 403,
+    error: 'Only owner, admin, and support roles can queue catalog database changes',
+    errorCode: 'admin_role_forbidden',
+  };
+}
+
 function userPatchRequiresOperatorReason(patch: UserPatch): boolean {
   const activatesPaidBilling = patch.billingStatus === 'active' || patch.billingStatus === 'trialing';
   const changesPlan = Boolean(patch.planCode);
@@ -1678,6 +2166,32 @@ function auditRuntimeFeatureFlagMutation(admin: AdminAccess, key: string, patch:
     createdAt: nowIso(),
     detail: featureFlagPatchAuditDetail('Runtime feature flag patch', patch),
     severity: featureFlagPatchSeverity(patch),
+  });
+  RUNTIME_AUDIT.splice(RUNTIME_AUDIT_LIMIT);
+}
+
+function auditRuntimePlanMutation(admin: AdminAccess, planCode: PlanCode, patch: PlanPatch): void {
+  RUNTIME_AUDIT.unshift({
+    id: `runtime_audit_plan_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    actor: admin.email || admin.userId || 'admin',
+    target: planCode,
+    action: 'plan_updated',
+    createdAt: nowIso(),
+    detail: planPatchAuditDetail('Runtime plan patch', planCode, patch),
+    severity: planPatchSeverity(patch),
+  });
+  RUNTIME_AUDIT.splice(RUNTIME_AUDIT_LIMIT);
+}
+
+function auditRuntimeCatalogMutation(admin: AdminAccess, request: AdminCatalogRequest, patch: CatalogRequestPatch): void {
+  RUNTIME_AUDIT.unshift({
+    id: `runtime_audit_catalog_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    actor: admin.email || admin.userId || 'admin',
+    target: request.id,
+    action: 'catalog_request_created',
+    createdAt: nowIso(),
+    detail: catalogPatchAuditDetail('Runtime catalog request', patch),
+    severity: 'info',
   });
   RUNTIME_AUDIT.splice(RUNTIME_AUDIT_LIMIT);
 }
@@ -1769,6 +2283,113 @@ async function patchSupabaseFeatureFlag(
   });
 }
 
+function planToSupabaseRow(planCode: PlanCode, patch: PlanPatch): Record<string, unknown> {
+  const base = runtimePlanBlueprints().find((plan) => plan.code === planCode) || PLAN_BLUEPRINTS[0];
+  const merged = {
+    ...base,
+    ...planWritePatch(patch),
+  };
+  return {
+    code: planCode,
+    name: merged.name,
+    description: merged.description,
+    price_monthly_usd: merged.priceMonthlyUsd,
+    ai_daily_limit: merged.aiDailyLimit,
+    deep_daily_limit: merged.deepDailyLimit,
+    scanner_daily_limit: merged.scannerDailyLimit,
+    storage_mb: merged.storageMb,
+    seats: merged.seats,
+    support_sla_hours: merged.supportSlaHours,
+    features: merged.features,
+    recommended: Boolean(merged.recommended),
+    billing_provider: merged.billingProvider,
+    billing_product_id: merged.billingProductId,
+    billing_price_id: merged.billingPriceId,
+    revenuecat_entitlement_id: merged.revenuecatEntitlementId,
+    market: merged.market,
+    display_price: merged.displayPrice,
+    checkout_mode: merged.checkoutMode,
+    payment_methods: merged.paymentMethods,
+    updated_at: nowIso(),
+  };
+}
+
+async function patchSupabasePlan(
+  config: Extract<SupabaseConfig, { configured: true }>,
+  admin: AdminAccess,
+  planCode: PlanCode,
+  patch: PlanPatch,
+): Promise<void> {
+  if (patch.recommended === true) {
+    await supabaseRest(config, `app_plans?code=neq.${encodeURIComponent(planCode)}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({ recommended: false, updated_at: nowIso() }),
+    });
+  }
+
+  await supabaseRest(config, 'app_plans?on_conflict=code', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify([planToSupabaseRow(planCode, patch)]),
+  });
+
+  await supabaseRest(config, 'admin_audit_events', {
+    method: 'POST',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify([{
+      actor_user_id: admin.userId,
+      actor_email: admin.email,
+      target_type: 'plan',
+      target_id: planCode,
+      action: 'plan_updated',
+      detail: planPatchAuditDetail('Updated', planCode, patch),
+      after: planWritePatch(patch),
+      severity: planPatchSeverity(patch),
+    }]),
+  });
+}
+
+async function insertSupabaseCatalogRequest(
+  config: Extract<SupabaseConfig, { configured: true }>,
+  admin: AdminAccess,
+  patch: CatalogRequestPatch,
+): Promise<void> {
+  const payload = {
+    ...patch.payload,
+    title: patch.title,
+    sourceUrl: patch.sourceUrl || '',
+    operatorNote: patch.operatorNote,
+    requestedBy: admin.email || admin.userId || 'admin',
+  };
+
+  await supabaseRest(config, 'catalog_review_queue', {
+    method: 'POST',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify([{
+      kind: patch.kind,
+      entity_id: patch.entityId || '',
+      payload,
+      review_status: patch.sourceUrl ? 'queued' : 'needs_source',
+    }]),
+  });
+
+  await supabaseRest(config, 'admin_audit_events', {
+    method: 'POST',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify([{
+      actor_user_id: admin.userId,
+      actor_email: admin.email,
+      target_type: 'catalog',
+      target_id: patch.entityId || patch.title,
+      action: 'catalog_request_created',
+      detail: catalogPatchAuditDetail('Created', patch),
+      after: payload,
+      severity: 'info',
+    }]),
+  });
+}
+
 async function updateUser(
   admin: AdminAccess,
   rawUser: Record<string, unknown> | undefined,
@@ -1847,6 +2468,103 @@ async function updateFeatureFlag(
   return buildAdminSnapshot(requestId, admin, rawUser);
 }
 
+async function updatePlan(
+  admin: AdminAccess,
+  rawUser: Record<string, unknown> | undefined,
+  planCode: PlanCode,
+  patch: PlanPatch,
+): Promise<AdminSnapshot> {
+  const config = getSupabaseConfig();
+  const requestId = `admin_plan_${Date.now()}`;
+  if (config.configured) {
+    try {
+      await patchSupabasePlan(config, admin, planCode, patch);
+      return buildAdminSnapshot(requestId, admin, rawUser);
+    } catch (error) {
+      const details = sanitizeErrorDetails(error, 180);
+      RUNTIME_AUDIT.unshift({
+        id: `runtime_supabase_plan_failure_${Date.now()}`,
+        actor: admin.email || admin.userId || 'admin',
+        target: planCode,
+        action: 'supabase_plan_update_failed',
+        createdAt: nowIso(),
+        detail: details,
+        severity: 'critical',
+      });
+      if (!runtimeMutationFallbackEnabled()) {
+        throw new AdminMutationError('Supabase plan update failed; no runtime fallback write was applied', {
+          statusCode: 503,
+          errorCode: 'supabase_update_failed',
+          details,
+        });
+      }
+    }
+  }
+
+  const writePatch = planWritePatch(patch);
+  if (writePatch.recommended === true) {
+    for (const code of VALID_PLAN_CODES) {
+      if (code !== planCode) {
+        const previous = RUNTIME_PLAN_PATCHES.get(code) || {};
+        RUNTIME_PLAN_PATCHES.set(code, { ...previous, recommended: false });
+      }
+    }
+  }
+  const previous = RUNTIME_PLAN_PATCHES.get(planCode) || {};
+  RUNTIME_PLAN_PATCHES.set(planCode, { ...previous, ...writePatch });
+  auditRuntimePlanMutation(admin, planCode, patch);
+  return buildAdminSnapshot(requestId, admin, rawUser);
+}
+
+async function createCatalogRequest(
+  admin: AdminAccess,
+  rawUser: Record<string, unknown> | undefined,
+  patch: CatalogRequestPatch,
+): Promise<AdminSnapshot> {
+  const config = getSupabaseConfig();
+  const requestId = `admin_catalog_${Date.now()}`;
+  if (config.configured) {
+    try {
+      await insertSupabaseCatalogRequest(config, admin, patch);
+      return buildAdminSnapshot(requestId, admin, rawUser);
+    } catch (error) {
+      const details = sanitizeErrorDetails(error, 180);
+      RUNTIME_AUDIT.unshift({
+        id: `runtime_supabase_catalog_failure_${Date.now()}`,
+        actor: admin.email || admin.userId || 'admin',
+        target: patch.entityId || patch.title,
+        action: 'supabase_catalog_request_failed',
+        createdAt: nowIso(),
+        detail: details,
+        severity: 'critical',
+      });
+      if (!runtimeMutationFallbackEnabled()) {
+        throw new AdminMutationError('Supabase catalog request failed; no runtime fallback write was applied', {
+          statusCode: 503,
+          errorCode: 'supabase_update_failed',
+          details,
+        });
+      }
+    }
+  }
+
+  const request: AdminCatalogRequest = {
+    id: `runtime_catalog_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    kind: patch.kind,
+    entityId: patch.entityId || '',
+    title: patch.title,
+    reviewStatus: patch.sourceUrl ? 'queued' : 'needs_source',
+    sourceUrl: patch.sourceUrl || '',
+    operatorNote: patch.operatorNote,
+    payloadPreview: catalogPayloadPreview(patch.payload),
+    createdAt: nowIso(),
+  };
+  RUNTIME_CATALOG_REQUESTS.unshift(request);
+  RUNTIME_CATALOG_REQUESTS.splice(30);
+  auditRuntimeCatalogMutation(admin, request, patch);
+  return buildAdminSnapshot(requestId, admin, rawUser);
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const requestId = createRequestId(req);
   applyCors(req, res, 'GET, PATCH, OPTIONS');
@@ -1890,12 +2608,82 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === 'PATCH') {
       const action = normalizeText(req.body?.action);
-      if (action !== 'update_user' && action !== 'update_feature_flag') {
+      if (action !== 'update_user' && action !== 'update_feature_flag' && action !== 'update_plan' && action !== 'create_catalog_request') {
         return res.status(400).json({
           ok: false,
           requestId,
           error: 'Unsupported admin action',
           errorCode: 'validation_error',
+        });
+      }
+      if (action === 'update_plan') {
+        const validated = validatePlanPatch(req.body);
+        if (validated.ok === false) {
+          return res.status(400).json({
+            ok: false,
+            requestId,
+            error: validated.error,
+            errorCode: 'validation_error',
+            details: validated.details,
+          });
+        }
+        const authorization = authorizePlanMutation(access.admin);
+        if (authorization) {
+          return res.status(authorization.statusCode).json({
+            ok: false,
+            requestId,
+            error: authorization.error,
+            errorCode: authorization.errorCode,
+            details: authorization.details,
+          });
+        }
+        if (!planPatchHasOperatorReason(validated.patch)) {
+          return res.status(400).json({
+            ok: false,
+            requestId,
+            error: 'Plan catalog changes require an operator note',
+            errorCode: 'operator_reason_required',
+          });
+        }
+        const snapshot = await updatePlan(access.admin, access.auth.user, validated.planCode, validated.patch);
+        return res.status(200).json({
+          ...snapshot,
+          requestId,
+        });
+      }
+      if (action === 'create_catalog_request') {
+        const validated = validateCatalogRequestPatch(req.body);
+        if (validated.ok === false) {
+          return res.status(400).json({
+            ok: false,
+            requestId,
+            error: validated.error,
+            errorCode: 'validation_error',
+            details: validated.details,
+          });
+        }
+        const authorization = authorizeCatalogMutation(access.admin);
+        if (authorization) {
+          return res.status(authorization.statusCode).json({
+            ok: false,
+            requestId,
+            error: authorization.error,
+            errorCode: authorization.errorCode,
+            details: authorization.details,
+          });
+        }
+        if (!catalogPatchHasOperatorReason(validated.patch)) {
+          return res.status(400).json({
+            ok: false,
+            requestId,
+            error: 'Catalog changes require an operator note',
+            errorCode: 'operator_reason_required',
+          });
+        }
+        const snapshot = await createCatalogRequest(access.admin, access.auth.user, validated.patch);
+        return res.status(200).json({
+          ...snapshot,
+          requestId,
         });
       }
       if (action === 'update_feature_flag') {

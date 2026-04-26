@@ -44,3 +44,19 @@ test('admin mobile manage opens account control without scrolling', async ({ pag
   await expect(page.getByText('Plan quick control')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Apply provisional' }).first()).toBeVisible();
 });
+
+test('admin mobile exposes editable plans and catalog operations', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await qaLogin(page.request, buildQaAdminUser());
+
+  await page.goto('/admin?tab=plans', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'Admin Management' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText('Plan catalog')).toBeVisible();
+  await expect(page.getByLabel('Operator note').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save' }).first()).toBeVisible();
+
+  await page.goto('/admin?tab=database', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByText('Catalog operations')).toBeVisible();
+  await expect(page.getByText('New catalog request')).toBeVisible();
+  await expect(page.getByLabel('Payload JSON')).toBeVisible();
+});

@@ -41,14 +41,19 @@ import { isDisplayableAvatarUrl } from '../utils/avatarUrl';
 import { subscribeMediaQueryChange } from '../utils/mediaQuery';
 import {
   AdminApiError,
+  createCatalogRequest,
   fetchAdminSnapshot,
+  updateAdminPlan,
   updateAdminUser,
   updateFeatureFlag,
   type AccountRecoveryStatus,
   type AccountStatus,
+  type AdminCatalogKind,
+  type AdminCatalogRequestPatch,
   type AdminFeatureFlag,
   type AdminFeatureFlagPatch,
   type AdminPlan,
+  type AdminPlanPatch,
   type AdminRole,
   type AdminSnapshot,
   type AdminSystemCheck,
@@ -58,6 +63,7 @@ import {
   type BillingProvider,
   type BillingStatus,
   type CheckStatus,
+  type CheckoutMode,
   type FeatureFlagStatus,
   type FeatureSurface,
   type LaunchChecklistItem,
@@ -116,6 +122,8 @@ const PLAN_OPTIONS: PlanCode[] = ['free', 'starter', 'pro', 'team', 'enterprise'
 const BILLING_STATUS_OPTIONS: BillingStatus[] = ['none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded'];
 const BILLING_PROVIDER_OPTIONS: BillingProvider[] = ['none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual'];
 const BILLING_MARKET_OPTIONS: BillingMarket[] = ['indonesia', 'brunei', 'global', 'unknown'];
+const CHECKOUT_MODE_OPTIONS: CheckoutMode[] = ['disabled', 'external', 'stripe_checkout', 'play_billing', 'app_store', 'manual_invoice'];
+const CATALOG_KIND_OPTIONS: AdminCatalogKind[] = ['grinder', 'water', 'dripper'];
 const FEATURE_STATUS_OPTIONS: FeatureFlagStatus[] = ['available', 'maintenance', 'disabled'];
 const FEATURE_SURFACE_OPTIONS: FeatureSurface[] = ['global', 'web', 'pwa', 'mobile', 'admin'];
 const ROLE_WEIGHT: Record<AdminRole, number> = {
@@ -150,6 +158,115 @@ function formatUsd(value: number): string {
 function formatPlanLimitLabel(plan?: AdminPlan): string {
   if (!plan) return 'plan limits pending';
   return `${formatNumber(plan.aiDailyLimit)} AI / ${formatNumber(plan.deepDailyLimit)} deep / ${formatNumber(plan.scannerDailyLimit)} scans daily`;
+}
+
+type PlanEditorDraft = {
+  name: string;
+  description: string;
+  priceMonthlyUsd: string;
+  aiDailyLimit: string;
+  deepDailyLimit: string;
+  scannerDailyLimit: string;
+  storageMb: string;
+  seats: string;
+  supportSlaHours: string;
+  featuresText: string;
+  recommended: boolean;
+  billingProvider: BillingProvider;
+  billingProductId: string;
+  billingPriceId: string;
+  revenuecatEntitlementId: string;
+  market: BillingMarket;
+  displayPrice: string;
+  checkoutMode: CheckoutMode;
+  paymentMethodsText: string;
+  operatorNote: string;
+};
+
+function planToDraft(plan: AdminPlan): PlanEditorDraft {
+  return {
+    name: plan.name,
+    description: plan.description,
+    priceMonthlyUsd: String(plan.priceMonthlyUsd),
+    aiDailyLimit: String(Math.round(plan.aiDailyLimit)),
+    deepDailyLimit: String(Math.round(plan.deepDailyLimit)),
+    scannerDailyLimit: String(Math.round(plan.scannerDailyLimit)),
+    storageMb: String(Math.round(plan.storageMb)),
+    seats: String(Math.round(plan.seats)),
+    supportSlaHours: String(Math.round(plan.supportSlaHours)),
+    featuresText: plan.features.join('\n'),
+    recommended: Boolean(plan.recommended),
+    billingProvider: plan.billingProvider,
+    billingProductId: plan.billingProductId,
+    billingPriceId: plan.billingPriceId,
+    revenuecatEntitlementId: plan.revenuecatEntitlementId,
+    market: plan.market,
+    displayPrice: plan.displayPrice,
+    checkoutMode: plan.checkoutMode,
+    paymentMethodsText: plan.paymentMethods.join('\n'),
+    operatorNote: '',
+  };
+}
+
+function parseAdminList(value: string): string[] {
+  return value
+    .split(/[\n,]+/g)
+    .map((item) => item.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .filter((item, index, list) => list.indexOf(item) === index);
+}
+
+function normalizedNumber(value: string, integer = true): number | null {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  return integer ? Math.round(parsed) : Math.round(parsed * 100) / 100;
+}
+
+function sameStringList(left: string[], right: string[]): boolean {
+  return left.length === right.length && left.every((item, index) => item === right[index]);
+}
+
+function buildPlanEditorPatch(plan: AdminPlan, draft: PlanEditorDraft): AdminPlanPatch {
+  const patch: AdminPlanPatch = {};
+  const stringFields: Array<[keyof AdminPlanPatch, string, string]> = [
+    ['name', draft.name.trim(), plan.name],
+    ['description', draft.description.trim(), plan.description],
+    ['billingProductId', draft.billingProductId.trim(), plan.billingProductId],
+    ['billingPriceId', draft.billingPriceId.trim(), plan.billingPriceId],
+    ['revenuecatEntitlementId', draft.revenuecatEntitlementId.trim(), plan.revenuecatEntitlementId],
+    ['displayPrice', draft.displayPrice.trim(), plan.displayPrice],
+  ];
+  for (const [key, next, current] of stringFields) {
+    if (next !== current) {
+      (patch as Record<string, unknown>)[key] = next;
+    }
+  }
+
+  const numericFields: Array<[keyof AdminPlanPatch, number | null, number]> = [
+    ['priceMonthlyUsd', normalizedNumber(draft.priceMonthlyUsd, false), plan.priceMonthlyUsd],
+    ['aiDailyLimit', normalizedNumber(draft.aiDailyLimit), plan.aiDailyLimit],
+    ['deepDailyLimit', normalizedNumber(draft.deepDailyLimit), plan.deepDailyLimit],
+    ['scannerDailyLimit', normalizedNumber(draft.scannerDailyLimit), plan.scannerDailyLimit],
+    ['storageMb', normalizedNumber(draft.storageMb), plan.storageMb],
+    ['seats', normalizedNumber(draft.seats), plan.seats],
+    ['supportSlaHours', normalizedNumber(draft.supportSlaHours), plan.supportSlaHours],
+  ];
+  for (const [key, next, current] of numericFields) {
+    if (next !== null && next !== current) {
+      (patch as Record<string, unknown>)[key] = next;
+    }
+  }
+
+  const features = parseAdminList(draft.featuresText);
+  if (!sameStringList(features, plan.features)) patch.features = features;
+  const paymentMethods = parseAdminList(draft.paymentMethodsText);
+  if (!sameStringList(paymentMethods, plan.paymentMethods)) patch.paymentMethods = paymentMethods;
+  if (draft.recommended !== Boolean(plan.recommended)) patch.recommended = draft.recommended;
+  if (draft.billingProvider !== plan.billingProvider) patch.billingProvider = draft.billingProvider;
+  if (draft.market !== plan.market) patch.market = draft.market;
+  if (draft.checkoutMode !== plan.checkoutMode) patch.checkoutMode = draft.checkoutMode;
+  if (Object.keys(patch).length > 0) patch.operatorNote = draft.operatorNote.trim();
+  return patch;
 }
 
 function billingProviderForPlan(plan: AdminPlan): BillingProvider {
@@ -2033,45 +2150,339 @@ function BillingReadinessPanel({ snapshot }: { snapshot: AdminSnapshot }) {
   );
 }
 
-function PlansPanel({ plans }: { plans: AdminPlan[] }) {
+function PlanEditorCard({
+  plan,
+  busy,
+  onPatch,
+}: {
+  plan: AdminPlan;
+  busy: boolean;
+  onPatch: (planCode: PlanCode, patch: AdminPlanPatch) => void;
+}) {
+  const [draft, setDraft] = useState<PlanEditorDraft>(() => planToDraft(plan));
+
+  useEffect(() => {
+    setDraft(planToDraft(plan));
+  }, [plan]);
+
+  const patch = useMemo(() => buildPlanEditorPatch(plan, draft), [draft, plan]);
+  const changedKeys = Object.keys(patch).filter((key) => key !== 'operatorNote');
+  const invalidNumber = [
+    draft.priceMonthlyUsd,
+    draft.aiDailyLimit,
+    draft.deepDailyLimit,
+    draft.scannerDailyLimit,
+    draft.storageMb,
+    draft.seats,
+    draft.supportSlaHours,
+  ].some((value) => normalizedNumber(value, value !== draft.priceMonthlyUsd) === null);
+  const canSave = changedKeys.length > 0 && hasOperatorReasonText(draft.operatorNote) && !invalidNumber && !busy;
+
+  const setField = <K extends keyof PlanEditorDraft>(key: K, value: PlanEditorDraft[K]) => {
+    setDraft((current) => ({ ...current, [key]: value }));
+  };
+
+  const save = () => {
+    if (!canSave) return;
+    onPatch(plan.code, patch);
+  };
+
   return (
-    <div className="grid gap-3 lg:grid-cols-5">
-      {plans.map((plan) => (
-        <div key={plan.code} className="rounded-2xl border border-glass bg-surface-alpha p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-primary">{plan.name}</p>
-              <p className="mt-1 text-xs text-tertiary">{formatUsd(plan.priceMonthlyUsd)}</p>
-            </div>
-            {plan.recommended ? <BadgeCheck size={18} className="text-blue-500" /> : null}
+    <article className="rounded-2xl border border-glass bg-surface-alpha p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold text-primary">{plan.name}</p>
+            {plan.recommended ? <BadgeCheck size={17} className="text-blue-500" /> : null}
           </div>
-          <p className="mt-4 min-h-[3rem] text-xs leading-5 text-secondary">{plan.description}</p>
-          <div className="mt-3 rounded-xl bg-[var(--bg-base)] px-3 py-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-tertiary">Checkout</p>
-            <p className="mt-1 text-xs font-semibold capitalize text-primary">{plan.checkoutMode.replace(/_/g, ' ')}</p>
-            <p className="mt-1 break-words text-[11px] leading-4 text-secondary">{plan.displayPrice}</p>
-          </div>
-          <div className="mt-4 space-y-2 text-xs text-secondary">
-            <div className="flex justify-between gap-3"><span>AI/day</span><strong className="text-primary">{formatNumber(plan.aiDailyLimit)}</strong></div>
-            <div className="flex justify-between gap-3"><span>Deep/day</span><strong className="text-primary">{formatNumber(plan.deepDailyLimit)}</strong></div>
-            <div className="flex justify-between gap-3"><span>Scans/day</span><strong className="text-primary">{formatNumber(plan.scannerDailyLimit)}</strong></div>
-            <div className="flex justify-between gap-3"><span>Seats</span><strong className="text-primary">{formatNumber(plan.seats)}</strong></div>
-            <div className="flex justify-between gap-3"><span>Users</span><strong className="text-primary">{formatNumber(plan.activeUsers)}</strong></div>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {plan.features.slice(0, 4).map((feature) => (
-              <span key={feature} className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[10px] font-semibold text-tertiary">
-                {feature}
-              </span>
-            ))}
-          </div>
-          <div className="mt-3 space-y-1 text-[11px] text-tertiary">
-            <p className="truncate">Provider: {plan.billingProvider.replace(/_/g, ' ')}</p>
-            {plan.billingProductId ? <p className="truncate">Product: {plan.billingProductId}</p> : null}
-            {plan.revenuecatEntitlementId ? <p className="truncate">Entitlement: {plan.revenuecatEntitlementId}</p> : null}
-          </div>
+          <p className="mt-1 text-xs text-tertiary">{plan.code} / {formatUsd(plan.priceMonthlyUsd)} / {formatNumber(plan.activeUsers)} users</p>
         </div>
+        <div className="flex shrink-0 gap-2">
+          <button
+            type="button"
+            onClick={() => setDraft(planToDraft(plan))}
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-xs font-semibold text-secondary transition-colors hover:text-primary"
+            disabled={busy}
+            title="Reset draft"
+          >
+            <RefreshCcw size={14} />
+            Reset
+          </button>
+          <button
+            type="button"
+            onClick={save}
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-500 px-3 text-xs font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!canSave}
+            title="Save plan"
+          >
+            <Save size={14} />
+            {busy ? 'Saving' : 'Save'}
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <label className="text-xs font-semibold text-secondary">
+          Name
+          <input value={draft.name} onChange={(event) => setField('name', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
+        </label>
+        <label className="text-xs font-semibold text-secondary">
+          Display price
+          <input value={draft.displayPrice} onChange={(event) => setField('displayPrice', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
+        </label>
+      </div>
+
+      <label className="mt-3 block text-xs font-semibold text-secondary">
+        Description
+        <textarea value={draft.description} onChange={(event) => setField('description', event.currentTarget.value)} className="glass-input mt-1 min-h-20 w-full rounded-xl px-3 py-2 text-sm" />
+      </label>
+
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          ['Price USD', 'priceMonthlyUsd'],
+          ['AI/day', 'aiDailyLimit'],
+          ['Deep/day', 'deepDailyLimit'],
+          ['Scans/day', 'scannerDailyLimit'],
+          ['Storage MB', 'storageMb'],
+          ['Seats', 'seats'],
+          ['SLA hours', 'supportSlaHours'],
+        ].map(([label, key]) => (
+          <label key={key} className="text-xs font-semibold text-secondary">
+            {label}
+            <input
+              type="number"
+              min={key === 'seats' || key === 'supportSlaHours' ? 1 : 0}
+              value={draft[key as keyof PlanEditorDraft] as string}
+              onChange={(event) => setField(key as keyof PlanEditorDraft, event.currentTarget.value as never)}
+              className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm"
+            />
+          </label>
+        ))}
+      </div>
+
+      <div className="mt-3 grid gap-3 md:grid-cols-3">
+        <label className="text-xs font-semibold text-secondary">
+          Provider
+          <select value={draft.billingProvider} onChange={(event) => setField('billingProvider', event.currentTarget.value as BillingProvider)} className="mt-1 min-h-10 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+            {BILLING_PROVIDER_OPTIONS.map((provider) => <option key={provider} value={provider}>{provider}</option>)}
+          </select>
+        </label>
+        <label className="text-xs font-semibold text-secondary">
+          Market
+          <select value={draft.market} onChange={(event) => setField('market', event.currentTarget.value as BillingMarket)} className="mt-1 min-h-10 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+            {BILLING_MARKET_OPTIONS.map((market) => <option key={market} value={market}>{market}</option>)}
+          </select>
+        </label>
+        <label className="text-xs font-semibold text-secondary">
+          Checkout
+          <select value={draft.checkoutMode} onChange={(event) => setField('checkoutMode', event.currentTarget.value as CheckoutMode)} className="mt-1 min-h-10 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+            {CHECKOUT_MODE_OPTIONS.map((mode) => <option key={mode} value={mode}>{mode}</option>)}
+          </select>
+        </label>
+      </div>
+
+      <div className="mt-3 grid gap-3 md:grid-cols-3">
+        <label className="text-xs font-semibold text-secondary">
+          Product ID
+          <input value={draft.billingProductId} onChange={(event) => setField('billingProductId', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
+        </label>
+        <label className="text-xs font-semibold text-secondary">
+          Price ID
+          <input value={draft.billingPriceId} onChange={(event) => setField('billingPriceId', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
+        </label>
+        <label className="text-xs font-semibold text-secondary">
+          Entitlement ID
+          <input value={draft.revenuecatEntitlementId} onChange={(event) => setField('revenuecatEntitlementId', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
+        </label>
+      </div>
+
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        <label className="text-xs font-semibold text-secondary">
+          Features
+          <textarea value={draft.featuresText} onChange={(event) => setField('featuresText', event.currentTarget.value)} className="glass-input mt-1 min-h-24 w-full rounded-xl px-3 py-2 text-sm" />
+        </label>
+        <label className="text-xs font-semibold text-secondary">
+          Payment methods
+          <textarea value={draft.paymentMethodsText} onChange={(event) => setField('paymentMethodsText', event.currentTarget.value)} className="glass-input mt-1 min-h-24 w-full rounded-xl px-3 py-2 text-sm" />
+        </label>
+      </div>
+
+      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <label className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-xs font-semibold text-secondary">
+          <input type="checkbox" checked={draft.recommended} onChange={(event) => setField('recommended', event.currentTarget.checked)} />
+          Recommended
+        </label>
+        <span className={clsx('text-xs font-semibold', changedKeys.length ? 'text-blue-600 dark:text-blue-300' : 'text-tertiary')}>
+          {changedKeys.length ? `${changedKeys.length} pending changes` : 'No pending changes'}
+        </span>
+      </div>
+
+      <label className="mt-3 block text-xs font-semibold text-secondary">
+        Operator note
+        <textarea
+          value={draft.operatorNote}
+          onChange={(event) => setField('operatorNote', event.currentTarget.value)}
+          placeholder="Operator reason for audit trail"
+          className="glass-input mt-1 min-h-20 w-full rounded-xl px-3 py-2 text-sm"
+        />
+      </label>
+      {invalidNumber ? <p className="mt-2 text-xs font-semibold text-rose-600 dark:text-rose-300">Numeric fields must be valid numbers.</p> : null}
+    </article>
+  );
+}
+
+function PlansPanel({
+  plans,
+  busyPlanCode,
+  onPatch,
+}: {
+  plans: AdminPlan[];
+  busyPlanCode: PlanCode | null;
+  onPatch: (planCode: PlanCode, patch: AdminPlanPatch) => void;
+}) {
+  return (
+    <div className="grid gap-3 xl:grid-cols-2">
+      {plans.map((plan) => (
+        <PlanEditorCard
+          key={plan.code}
+          plan={plan}
+          busy={busyPlanCode === plan.code}
+          onPatch={onPatch}
+        />
       ))}
+    </div>
+  );
+}
+
+function CatalogDatabasePanel({
+  snapshot,
+  busy,
+  onCreate,
+}: {
+  snapshot: AdminSnapshot;
+  busy: boolean;
+  onCreate: (patch: AdminCatalogRequestPatch) => void;
+}) {
+  const [kind, setKind] = useState<AdminCatalogKind>('grinder');
+  const [title, setTitle] = useState('');
+  const [entityId, setEntityId] = useState('');
+  const [sourceUrl, setSourceUrl] = useState('');
+  const [operatorNote, setOperatorNote] = useState('');
+  const [payloadText, setPayloadText] = useState('{\n  "brand": "",\n  "model": "",\n  "region": "Indonesia"\n}');
+  const [parseError, setParseError] = useState('');
+
+  const submit = () => {
+    try {
+      const payload = JSON.parse(payloadText) as Record<string, unknown>;
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        setParseError('Payload must be a JSON object.');
+        return;
+      }
+      setParseError('');
+      onCreate({
+        kind,
+        title: title.trim(),
+        entityId: entityId.trim() || undefined,
+        sourceUrl: sourceUrl.trim() || undefined,
+        payload,
+        operatorNote: operatorNote.trim(),
+      });
+      setTitle('');
+      setEntityId('');
+      setSourceUrl('');
+      setOperatorNote('');
+    } catch {
+      setParseError('Payload JSON is invalid.');
+    }
+  };
+
+  const canSubmit = Boolean(title.trim()) && hasOperatorReasonText(operatorNote) && !busy;
+
+  return (
+    <div className="mb-4 grid gap-3 xl:grid-cols-[1fr_1.1fr]">
+      <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-primary">Catalog operations</p>
+            <p className="mt-1 text-xs text-secondary">Water, dripper, and grinder review queue.</p>
+          </div>
+          <StatusBadge value={snapshot.catalog.ready ? 'pass' : 'warn'} />
+        </div>
+        <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+          {snapshot.catalog.supportedKinds.map((item) => (
+            <div key={item} className="rounded-xl bg-[var(--bg-base)] p-2">
+              <p className="text-lg font-semibold text-primary">{formatNumber(snapshot.catalog.publishedCounts[item])}</p>
+              <p className="text-tertiary">{item}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 rounded-xl bg-[var(--bg-base)] p-3 text-xs text-secondary">
+          <div className="flex flex-wrap gap-2">
+            <StatusBadge value={`${snapshot.catalog.reviewQueue.queued} queued`} />
+            <StatusBadge value={`${snapshot.catalog.reviewQueue.needsSource} needs source`} />
+            <StatusBadge value={`${snapshot.catalog.reviewQueue.approved} approved`} />
+          </div>
+          {snapshot.catalog.gaps[0] ? <p className="mt-3 leading-5">{snapshot.catalog.gaps[0]}</p> : null}
+        </div>
+        <div className="mt-3 space-y-2">
+          {snapshot.catalog.recentRequests.slice(0, 5).map((request) => (
+            <div key={request.id} className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="truncate text-xs font-semibold text-primary">{request.title}</p>
+                <StatusBadge value={request.reviewStatus} />
+              </div>
+              <p className="mt-1 truncate text-[11px] text-tertiary">{request.kind} / {request.payloadPreview || request.entityId || 'draft'}</p>
+            </div>
+          ))}
+          {!snapshot.catalog.recentRequests.length ? <p className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-xs text-tertiary">No catalog requests yet.</p> : null}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-primary">New catalog request</p>
+          <button
+            type="button"
+            onClick={submit}
+            disabled={!canSubmit}
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-500 px-3 text-xs font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Save size={14} />
+            {busy ? 'Saving' : 'Queue'}
+          </button>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <label className="text-xs font-semibold text-secondary">
+            Kind
+            <select value={kind} onChange={(event) => setKind(event.currentTarget.value as AdminCatalogKind)} className="mt-1 min-h-10 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+              {CATALOG_KIND_OPTIONS.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </label>
+          <label className="text-xs font-semibold text-secondary md:col-span-2">
+            Title
+            <input value={title} onChange={(event) => setTitle(event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
+          </label>
+        </div>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          <label className="text-xs font-semibold text-secondary">
+            Entity ID
+            <input value={entityId} onChange={(event) => setEntityId(event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
+          </label>
+          <label className="text-xs font-semibold text-secondary">
+            Source URL
+            <input value={sourceUrl} onChange={(event) => setSourceUrl(event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
+          </label>
+        </div>
+        <label className="mt-3 block text-xs font-semibold text-secondary">
+          Payload JSON
+          <textarea value={payloadText} onChange={(event) => setPayloadText(event.currentTarget.value)} className="glass-input mt-1 min-h-36 w-full rounded-xl px-3 py-2 font-mono text-xs" />
+        </label>
+        <label className="mt-3 block text-xs font-semibold text-secondary">
+          Operator note
+          <textarea value={operatorNote} onChange={(event) => setOperatorNote(event.currentTarget.value)} className="glass-input mt-1 min-h-20 w-full rounded-xl px-3 py-2 text-sm" />
+        </label>
+        {parseError ? <p className="mt-2 text-xs font-semibold text-rose-600 dark:text-rose-300">{parseError}</p> : null}
+      </div>
     </div>
   );
 }
@@ -2234,6 +2645,8 @@ export function AdminManagement() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [busyUserId, setBusyUserId] = useState<string | null>(null);
   const [busyFlagKey, setBusyFlagKey] = useState<string | null>(null);
+  const [busyPlanCode, setBusyPlanCode] = useState<PlanCode | null>(null);
+  const [busyCatalogRequest, setBusyCatalogRequest] = useState(false);
   const [pendingUserPatch, setPendingUserPatch] = useState<PendingUserPatch | null>(null);
   const [pendingFeatureFlagPatch, setPendingFeatureFlagPatch] = useState<PendingFeatureFlagPatch | null>(null);
   const [toast, setToast] = useState('');
@@ -2529,6 +2942,38 @@ export function AdminManagement() {
     }
   };
 
+  const commitPlanPatch = async (planCode: PlanCode, patch: AdminPlanPatch) => {
+    setBusyPlanCode(planCode);
+    setAccountErrorUserId(null);
+    try {
+      const next = await updateAdminPlan(planCode, patch);
+      setSnapshot(next);
+      setError(null);
+      setToast('Plan catalog tersimpan');
+    } catch (err) {
+      if (err instanceof AdminApiError) setError(err);
+      setToast('Plan catalog gagal disimpan');
+    } finally {
+      setBusyPlanCode(null);
+    }
+  };
+
+  const commitCatalogRequest = async (patch: AdminCatalogRequestPatch) => {
+    setBusyCatalogRequest(true);
+    setAccountErrorUserId(null);
+    try {
+      const next = await createCatalogRequest(patch);
+      setSnapshot(next);
+      setError(null);
+      setToast('Request katalog tersimpan');
+    } catch (err) {
+      if (err instanceof AdminApiError) setError(err);
+      setToast('Request katalog gagal');
+    } finally {
+      setBusyCatalogRequest(false);
+    }
+  };
+
   const handleFeatureFlagPatch = (key: string, patch: AdminFeatureFlagPatch) => {
     const flag = snapshotRef.current?.featureFlags.find((item) => item.key === key);
     if (!flag) {
@@ -2812,7 +3257,7 @@ export function AdminManagement() {
                     <SlidersHorizontal size={18} className="text-blue-500" />
                   </div>
                   <BillingReadinessPanel snapshot={snapshot} />
-                  <PlansPanel plans={snapshot.plans} />
+                  <PlansPanel plans={snapshot.plans} busyPlanCode={busyPlanCode} onPatch={(planCode, patch) => void commitPlanPatch(planCode, patch)} />
                 </motion.section>
               ) : null}
 
@@ -2838,6 +3283,7 @@ export function AdminManagement() {
                     </div>
                     <StatusBadge value={snapshot.dataMode} />
                   </div>
+                  <CatalogDatabasePanel snapshot={snapshot} busy={busyCatalogRequest} onCreate={(patch) => void commitCatalogRequest(patch)} />
                   <ChecksPanel checks={snapshot.checks} />
                 </motion.section>
               ) : null}

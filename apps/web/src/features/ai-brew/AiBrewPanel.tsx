@@ -4520,7 +4520,7 @@ export function AiBrewPanel({
   }
 
   return (
-    <div className="space-y-5" data-testid="ai-brew-panel">
+    <div className="space-y-5 pb-28 lg:pb-0" data-testid="ai-brew-panel">
       <div aria-hidden={activeBuilderModal !== null || resultOpen} className="mx-auto max-w-4xl space-y-5">
         <div className="glass-card p-5 lg:p-6">
           <div className="flex items-start gap-4">

@@ -769,6 +769,52 @@ function formatRoundedTemperature(value: number) {
   return `${formatDisplayNumber(Math.round(value))}\u00b0C`;
 }
 
+function formatGrindSettingValue(value: string) {
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed)) return value;
+  const rounded = Math.round(parsed);
+  return String(rounded);
+}
+
+function localizeGrindUnitLabel(value: string, language?: string) {
+  const unit = value.toLowerCase();
+  if (isIndonesianAiBrewLanguage(language || '')) {
+    if (unit.startsWith('click')) return 'klik';
+    if (unit.startsWith('turn')) return 'putaran';
+    if (unit.startsWith('number')) return 'nomor';
+    if (unit.startsWith('setting')) return 'setting';
+    if (unit.startsWith('step')) return 'step';
+    if (unit.startsWith('notch')) return 'notch';
+  }
+  if (unit === 'notches') return 'notches';
+  if (unit === 'notch') return 'notch';
+  return unit;
+}
+
+function formatGrindTextForDisplay(value: string, language?: string) {
+  const id = isIndonesianAiBrewLanguage(language || '');
+  return value
+    .replace(
+      /(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*(clicks|turns|numbers|settings|steps|notches|notch)\b/gi,
+      (_match, min: string, max: string, unit: string) => {
+        const label = localizeGrindUnitLabel(unit, language);
+        const range = `${formatGrindSettingValue(min)}-${formatGrindSettingValue(max)}`;
+        return id ? `${label} ${range}` : `${range} ${label}`;
+      },
+    )
+    .replace(
+      /\b(clicks|turns|numbers|settings|steps|notches|notch)\s+(\d+(?:\.\d+)?)(?!\s*-)/gi,
+      (_match, unit: string, setting: string) => {
+        const label = localizeGrindUnitLabel(unit, language);
+        const formatted = formatGrindSettingValue(setting);
+        return id ? `${label} ${formatted}` : `${formatted} ${label}`;
+      },
+    )
+    .replace(/\b(clicks|turns|numbers|settings|steps|notches|notch)\b/gi, (unit) =>
+      localizeGrindUnitLabel(unit, language),
+    );
+}
+
 function getAiCoachTitle(copy: CopySet, mode: AiCoachMode) {
   switch (mode) {
     case 'explain':
@@ -1029,7 +1075,7 @@ function buildRecipeFromPlan(plan: BrewPlan, locale?: string): Recipe {
     dose: formatRoundedGrams(plan.doseG),
     water: formatRoundedMl(plan.totalWaterMl),
     temperature: formatRoundedTemperature(plan.waterTempC),
-    grind: plan.grindRecommendation,
+    grind: formatGrindTextForDisplay(plan.grindRecommendation, locale),
     brewStyle: 'manual_brew',
     aiBrew: buildPlanRecipeMetadata(plan),
   };
@@ -1801,6 +1847,9 @@ function PlanResultDialog({
   const localizedTargetProfileLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language);
   const localizedSummary = localizeAiBrewSummary(plan, language);
   const localizedWaterStyle = localizeAiBrewWaterStyle(plan.waterMinerals.styleLabel, language);
+  const localizedGrindRecommendation = formatGrindTextForDisplay(plan.grindRecommendation, language);
+  const localizedGrindBandLabel = formatGrindTextForDisplay(plan.grindBandLabel, language);
+  const localizedGrindSettingReference = formatGrindTextForDisplay(plan.grindSettingReference, language);
   const localizedWarnings = [
     ...plan.guardrails.errors.map((item) => localizeAiBrewDynamicText(item, language)),
     ...plan.warnings.map((item) => localizeAiBrewDynamicText(item, language)),
@@ -1933,7 +1982,7 @@ function PlanResultDialog({
                   ))}
                 </div>
                 <div className={`${resultChipClass} rounded-xl px-3 py-2 text-xs`}>
-                  {copy.grind}: {plan.grindRecommendation}
+                  {copy.grind}: {localizedGrindRecommendation}
                 </div>
               </div>
 
@@ -2016,8 +2065,8 @@ function PlanResultDialog({
                     <Gauge size={12} />
                     <span>{copy.grind}</span>
                   </div>
-                  <p className="mt-1 text-sm font-semibold text-primary">{plan.grindRecommendation}</p>
-                  <p className="mt-1 text-xs text-secondary">{plan.grindBandLabel}</p>
+                  <p className="mt-1 text-sm font-semibold text-primary">{localizedGrindRecommendation}</p>
+                  <p className="mt-1 text-xs text-secondary">{localizedGrindBandLabel}</p>
                 </div>
                 <div className={resultMetricCardClass}>
                   <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
@@ -2040,7 +2089,7 @@ function PlanResultDialog({
                     <div className="mt-3 space-y-2 text-sm text-secondary">
                       <p>{plan.doseG} g coffee</p>
                       <p>{plan.totalWaterMl} ml water at {plan.waterTempC}°C</p>
-                      <p>{copy.grind}: {plan.grindRecommendation}</p>
+                      <p>{copy.grind}: {localizedGrindRecommendation}</p>
                       <p>{copy.time}: {formatTime(plan.totalTimeSeconds)}</p>
                       <p>{plan.waterBrandLabel || copy.waterSelectedManual} · TDS {plan.waterMinerals.tdsPpm} · GH {plan.waterMinerals.hardnessPpm} · KH {plan.waterMinerals.alkalinityPpm}</p>
                     </div>
@@ -2173,7 +2222,7 @@ function PlanResultDialog({
                         </div>
                         <div className="rounded-xl bg-surface-alpha px-3 py-3">
                           <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grindSource}</p>
-                          <p className="mt-1 font-medium text-primary">{plan.grindSettingReference}</p>
+                          <p className="mt-1 font-medium text-primary">{localizedGrindSettingReference}</p>
                           <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} · {formatVerification(copy, plan.grindSettingVerification)}</p>
                         </div>
                         <div className="rounded-xl bg-surface-alpha px-3 py-3">
@@ -2508,7 +2557,7 @@ function PlanResultDialog({
                     </div>
                     <div className="rounded-xl bg-surface-alpha px-3 py-3">
                       <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grindSource}</p>
-                      <p className="mt-1 font-medium text-primary">{plan.grindSettingReference}</p>
+                      <p className="mt-1 font-medium text-primary">{localizedGrindSettingReference}</p>
                       <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} · {formatVerification(copy, plan.grindSettingVerification)}</p>
                     </div>
                     <div className="rounded-xl bg-surface-alpha px-3 py-3">

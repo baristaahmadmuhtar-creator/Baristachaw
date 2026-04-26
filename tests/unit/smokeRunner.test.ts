@@ -79,6 +79,29 @@ test('runSmoke uses QA test-auth cookie flow when bearer token is absent', async
       });
     }
 
+    if (path === '/api/auth/guest' && method === 'POST') {
+      return new Response(JSON.stringify({
+        authenticated: true,
+        user: { id: 'guest-smoke-user', isGuest: true, provider: 'guest' },
+      }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+          'set-cookie': 'auth_token=guest.jwt.token; Path=/; HttpOnly; SameSite=Lax',
+        },
+      });
+    }
+
+    if (path === '/api/auth/me?soft=1' && method === 'GET' && headers.cookie === 'auth_token=guest.jwt.token') {
+      return new Response(JSON.stringify({
+        authenticated: true,
+        user: { id: 'guest-smoke-user', isGuest: true, provider: 'guest' },
+      }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
     if (path === '/api/auth/me' && method === 'GET' && headers.cookie === 'auth_token=fake.jwt.token') {
       return new Response(JSON.stringify({
         authenticated: true,
@@ -208,6 +231,16 @@ test('runSmoke uses QA test-auth cookie flow when bearer token is absent', async
       });
     }
 
+    if (path === '/api/auth/logout' && method === 'POST' && headers.cookie === 'auth_token=guest.jwt.token') {
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+          'set-cookie': 'auth_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
+        },
+      });
+    }
+
     throw new Error(`Unhandled fetch: ${method} ${path}`);
   }) as typeof fetch;
 
@@ -247,6 +280,7 @@ test('runSmoke uses QA test-auth cookie flow when bearer token is absent', async
     ) {
       continue;
     }
+    if (call.headers.cookie === 'auth_token=guest.jwt.token') continue;
     assert.equal(call.headers.cookie, 'auth_token=fake.jwt.token');
   }
 
@@ -323,6 +357,39 @@ test('runSmoke auto-skips QA test-auth probe when local endpoint is unavailable'
       });
     }
 
+    if (path === '/api/auth/guest' && method === 'POST') {
+      return new Response(JSON.stringify({
+        authenticated: true,
+        user: { id: 'guest-smoke-user', isGuest: true, provider: 'guest' },
+      }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+          'set-cookie': 'auth_token=guest.jwt.token; Path=/; HttpOnly; SameSite=Lax',
+        },
+      });
+    }
+
+    if (path === '/api/auth/me?soft=1' && method === 'GET' && headers.cookie === 'auth_token=guest.jwt.token') {
+      return new Response(JSON.stringify({
+        authenticated: true,
+        user: { id: 'guest-smoke-user', isGuest: true, provider: 'guest' },
+      }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    if (path === '/api/auth/logout' && method === 'POST' && headers.cookie === 'auth_token=guest.jwt.token') {
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+          'set-cookie': 'auth_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
+        },
+      });
+    }
+
     throw new Error(`Unhandled fetch: ${method} ${path}`);
   }) as typeof fetch;
 
@@ -347,7 +414,7 @@ test('runSmoke auto-skips QA test-auth probe when local endpoint is unavailable'
   assert.equal(loginCall.headers['x-test-token'], 'local-test-token');
 
   const protectedCalls = calls.filter(call =>
-    call.path === '/api/auth/me'
+    (call.path === '/api/auth/me' && call.headers.cookie !== 'auth_token=guest.jwt.token')
     || (call.path === '/api/chat' && call.headers.cookie)
     || (call.path === '/api/ai' && call.headers.cookie)
     || call.path === '/api/test-auth/logout',

@@ -9,6 +9,7 @@ const ORIGINAL_ENV = {
   ADMIN_USER_IDS: process.env.ADMIN_USER_IDS,
   SUPABASE_URL: process.env.SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  ADMIN_RUNTIME_WRITE_FALLBACK: process.env.ADMIN_RUNTIME_WRITE_FALLBACK,
 };
 
 function restoreEnv() {
@@ -68,6 +69,7 @@ test.beforeEach(() => {
   delete process.env.ADMIN_USER_IDS;
   delete process.env.SUPABASE_URL;
   delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  delete process.env.ADMIN_RUNTIME_WRITE_FALLBACK;
 });
 
 test.after(() => {
@@ -182,6 +184,7 @@ test('admin management patch updates runtime billing controls', async () => {
         billingProvider: 'stripe',
         billingMarket: 'indonesia',
         paymentActionRequired: true,
+        supportNote: 'Operator reason: moved user into Starter past-due billing review.',
       },
     },
   });
@@ -241,6 +244,63 @@ test('admin management applies receipt-received billing as provisional manual re
   assert.ok(body.billing.trialingSubscriptions >= 1);
 });
 
+test('admin management requires support note for direct plan overrides', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_team_cafe',
+      patch: {
+        planCode: 'pro',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 400);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'operator_reason_required');
+});
+
+test('admin management makes direct paid plan overrides billing coherent', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_team_cafe',
+      patch: {
+        planCode: 'pro',
+        supportNote: 'Operator reason: applied direct Pro review entitlement.',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  const user = body.users.find((item: any) => item.id === 'runtime_user_team_cafe');
+  assert.equal(user.planCode, 'pro');
+  assert.equal(user.billing.status, 'trialing');
+  assert.equal(user.billing.provider, 'manual');
+  assert.equal(user.billing.paymentActionRequired, true);
+});
+
 test('admin management requires support note before activating paid billing', async () => {
   const token = createToken({
     id: 'owner-user',
@@ -292,6 +352,68 @@ test('admin management prevents signed-in admin self lockout', async () => {
   assert.equal(res.statusCode, 400);
   const body = JSON.parse(res.body);
   assert.equal(body.errorCode, 'self_protection');
+});
+
+test('admin management denies analyst mutations', async () => {
+  const token = createToken({
+    id: 'analyst-user',
+    email: 'analyst@example.com',
+    name: 'Analyst User',
+    role: 'analyst',
+    isAdmin: true,
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_trial_review',
+      patch: {
+        notes: 'Read-only analyst should not write.',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 403);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'admin_role_forbidden');
+});
+
+test('admin management fails closed when Supabase user write fails', async () => {
+  const originalFetch = globalThis.fetch;
+  process.env.SUPABASE_URL = 'https://unit-project.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  globalThis.fetch = (async () => new Response('database unavailable', { status: 500 })) as typeof fetch;
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_trial_review',
+      patch: {
+        notes: 'Should not fall back to runtime when Supabase is configured.',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  try {
+    await adminManagementHandler(req, res as any);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+
+  assert.equal(res.statusCode, 503);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'supabase_update_failed');
 });
 
 test('admin management requires operator reason for critical account changes', async () => {

@@ -147,6 +147,33 @@ function formatUsd(value: number): string {
   return new Intl.NumberFormat('en', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(value);
 }
 
+function formatPlanLimitLabel(plan?: AdminPlan): string {
+  if (!plan) return 'plan limits pending';
+  return `${formatNumber(plan.aiDailyLimit)} AI / ${formatNumber(plan.deepDailyLimit)} deep / ${formatNumber(plan.scannerDailyLimit)} scans daily`;
+}
+
+function billingProviderForPlan(plan: AdminPlan): BillingProvider {
+  if (plan.code === 'free') return 'none';
+  if (plan.billingProvider === 'none' || plan.billingProvider === 'admin') return 'manual';
+  return plan.billingProvider;
+}
+
+function billingMarketForPlan(plan: AdminPlan, fallback: BillingMarket): BillingMarket {
+  return plan.market && plan.market !== 'unknown' ? plan.market : fallback;
+}
+
+function hasOperatorReasonText(value: unknown): boolean {
+  return typeof value === 'string' && value.replace(/\s+/g, ' ').trim().length >= 12;
+}
+
+function userPatchRequiresOperatorReasonOnClient(patch: AdminUserPatch): boolean {
+  return patch.status === 'suspended'
+    || patch.status === 'deleted'
+    || patch.role === 'owner'
+    || patch.billingStatus === 'active'
+    || patch.billingStatus === 'trialing';
+}
+
 function formatDate(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return 'Unknown';
@@ -351,6 +378,21 @@ function matchesUserQueue(user: AdminUserRecord, queue: UserQueueFilter): boolea
   return true;
 }
 
+function buildPlanOverridePatch(user: AdminUserRecord, plan: AdminPlan): AdminUserPatch {
+  const freePlan = plan.code === 'free';
+  return {
+    planCode: plan.code,
+    billingStatus: freePlan ? 'none' : 'trialing',
+    billingProvider: freePlan ? 'none' : 'manual',
+    billingMarket: billingMarketForPlan(plan, user.billing.market),
+    status: user.status === 'suspended' || user.status === 'deleted' ? user.status : 'active',
+    paymentActionRequired: !freePlan,
+    supportNote: freePlan
+      ? `Operator reason: changed ${user.email} to Free and cleared paid entitlement. Limits: ${formatPlanLimitLabel(plan)}.`
+      : `Operator reason: applied provisional ${plan.name} for ${user.email}. Manual receipt/provider verification required. Limits: ${formatPlanLimitLabel(plan)}.`,
+  };
+}
+
 function describeUserPatch(user: AdminUserRecord, patch: AdminUserPatch): string[] {
   const changes: string[] = [];
   if (patch.status && patch.status !== user.status) changes.push(`Status: ${user.status} -> ${patch.status}`);
@@ -450,6 +492,9 @@ function classifyUserPatchRisk(user: AdminUserRecord, patch: AdminUserPatch): Us
   if (patch.billingStatus && patch.billingStatus !== user.billing.status) {
     level = level === 'critical' ? level : 'warning';
     impacts.push('Billing status changes affect user plan access, renewal support, and payment messaging.');
+    if (patch.billingStatus === 'active' || patch.billingStatus === 'trialing') {
+      impacts.push('Paid billing activation must include a support note so the audit trail explains the entitlement source.');
+    }
   }
 
   if (typeof patch.paymentActionRequired === 'boolean' && patch.paymentActionRequired !== user.billing.paymentActionRequired) {
@@ -468,12 +513,13 @@ function classifyUserPatchRisk(user: AdminUserRecord, patch: AdminUserPatch): Us
   }
 
   if (!level) return null;
+  const requiresReason = userPatchRequiresOperatorReasonOnClient(patch) && !hasOperatorReasonText(patch.supportNote);
   return {
     level,
     title,
     detail,
     confirmLabel,
-    requiresReason: level === 'critical',
+    requiresReason,
     impacts: impacts.length ? impacts : ['This change affects user access and should be reviewed before saving.'],
   };
 }
@@ -1194,7 +1240,11 @@ function UsersTable({
                 <select
                   value={user.planCode}
                   disabled={busyUserId === user.id}
-                  onChange={(event) => onPatch(user.id, { planCode: event.currentTarget.value as PlanCode })}
+                  onChange={(event) => {
+                    const nextPlanCode = event.currentTarget.value as PlanCode;
+                    const nextPlan = plans.find((plan) => plan.code === nextPlanCode);
+                    if (nextPlan) onPatch(user.id, buildPlanOverridePatch(user, nextPlan));
+                  }}
                   className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
                   aria-label={`Change plan for ${user.email}`}
                 >
@@ -1320,7 +1370,11 @@ function UsersTable({
                   <select
                     value={user.planCode}
                     disabled={busyUserId === user.id}
-                    onChange={(event) => onPatch(user.id, { planCode: event.currentTarget.value as PlanCode })}
+                    onChange={(event) => {
+                      const nextPlanCode = event.currentTarget.value as PlanCode;
+                      const nextPlan = plans.find((plan) => plan.code === nextPlanCode);
+                      if (nextPlan) onPatch(user.id, buildPlanOverridePatch(user, nextPlan));
+                    }}
                     className={clsx(selectedUserId ? 'w-28' : 'w-32', 'rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary')}
                     aria-label={`Change plan for ${user.email}`}
                   >
@@ -1384,6 +1438,85 @@ function UsersTable({
       </div>
       </div>
     </>
+  );
+}
+
+function PlanQuickControl({
+  plans,
+  selectedPlanCode,
+  busy,
+  onSelectPlan,
+  onApplyPlan,
+}: {
+  plans: AdminPlan[];
+  selectedPlanCode: PlanCode;
+  busy: boolean;
+  onSelectPlan: (plan: AdminPlan) => void;
+  onApplyPlan: (plan: AdminPlan) => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-primary">Plan quick control</p>
+          <p className="mt-1 text-xs leading-5 text-secondary">Pick a tier, see the quota, then apply entitlement with a review-ready support note.</p>
+        </div>
+        <WalletCards size={18} className="mt-0.5 shrink-0 text-blue-500" />
+      </div>
+      <div className="mt-3 grid gap-2">
+        {plans.map((plan) => {
+          const selected = plan.code === selectedPlanCode;
+          const paidPlan = plan.code !== 'free';
+          return (
+            <div
+              key={plan.code}
+              className={clsx(
+                'grid gap-2 rounded-xl border px-3 py-3 transition-colors',
+                selected ? 'border-blue-500/35 bg-blue-500/10' : 'border-glass bg-[var(--bg-base)]',
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => onSelectPlan(plan)}
+                aria-pressed={selected}
+                className="grid gap-2 text-left"
+              >
+                <span className="flex items-start justify-between gap-3">
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-primary">{plan.name}</span>
+                      {plan.recommended ? <BadgeCheck size={14} className="text-blue-500" /> : null}
+                    </span>
+                    <span className="mt-1 block text-[11px] font-semibold uppercase tracking-[0.12em] text-tertiary">
+                      {plan.displayPrice || formatUsd(plan.priceMonthlyUsd)}
+                    </span>
+                  </span>
+                  <StatusBadge value={selected ? 'selected' : plan.checkoutMode.replace(/_/g, ' ')} />
+                </span>
+                <span className="text-xs leading-5 text-secondary">{formatPlanLimitLabel(plan)}</span>
+                <span className="text-[11px] leading-5 text-tertiary">
+                  Provider {billingProviderForPlan(plan).replace(/_/g, ' ')} / {billingMarketForPlan(plan, 'unknown')} / {plan.paymentMethods.length ? plan.paymentMethods.join(', ') : 'manual review'}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onApplyPlan(plan)}
+                disabled={busy}
+                className={clsx(
+                  'inline-flex min-h-9 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold transition-colors disabled:opacity-50',
+                  paidPlan
+                    ? 'border border-blue-500/30 bg-blue-500/10 text-blue-700 hover:bg-blue-500/15 dark:text-blue-300'
+                    : 'border border-glass bg-surface-alpha text-secondary hover:bg-[var(--bg-base)] hover:text-primary',
+                )}
+              >
+                {paidPlan ? <ClipboardCheck size={14} /> : <CheckCircle2 size={14} />}
+                {paidPlan ? 'Apply provisional' : 'Apply free'}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -1453,9 +1586,31 @@ function AccountInspector({
   const selectedPlan = plans.find((plan) => plan.code === planCode) || plans.find((plan) => plan.code === user.planCode) || plans[0];
   const provisionalPlanCode = planCode === 'free' ? 'starter' : planCode;
   const provisionalPlan = plans.find((plan) => plan.code === provisionalPlanCode) || selectedPlan;
-  const provisionalLimitLabel = provisionalPlan
-    ? `${formatNumber(provisionalPlan.aiDailyLimit)} AI / ${formatNumber(provisionalPlan.deepDailyLimit)} deep / ${formatNumber(provisionalPlan.scannerDailyLimit)} scans daily`
-    : 'plan limits pending';
+  const selectedPlanLimitLabel = formatPlanLimitLabel(selectedPlan);
+  const provisionalLimitLabel = formatPlanLimitLabel(provisionalPlan);
+  const canRestoreAccount = status === 'suspended' || status === 'past_due' || recoveryStatus === 'requested' || passwordResetRequired;
+  const entitlementTouched = planCode !== user.planCode
+    || billingStatus !== user.billing.status
+    || billingProvider !== user.billing.provider
+    || billingMarket !== user.billing.market
+    || paymentActionRequired !== Boolean(user.billing.paymentActionRequired);
+  const saveBlockedByReason = dirty
+    && entitlementTouched
+    && (planCode !== user.planCode || billingStatus === 'active' || billingStatus === 'trialing')
+    && !hasOperatorReasonText(supportNote);
+
+  const selectPlanPreset = (plan: AdminPlan) => {
+    setPlanCode(plan.code);
+    setBillingProvider(billingProviderForPlan(plan));
+    setBillingMarket(billingMarketForPlan(plan, billingMarket));
+    if (plan.code === 'free') {
+      setBillingStatus('none');
+      setPaymentActionRequired(false);
+    } else {
+      setBillingStatus(user.planCode === plan.code && user.billing.status === 'active' ? 'active' : 'trialing');
+      setPaymentActionRequired(true);
+    }
+  };
 
   const saveAccount = () => {
     const patch: AdminUserPatch = {};
@@ -1474,6 +1629,9 @@ function AccountInspector({
     if (passwordResetRequired !== Boolean(user.passwordResetRequired)) patch.passwordResetRequired = passwordResetRequired;
     if (notes.trim() !== (user.notes || '')) patch.notes = notes.trim();
     if (supportNote.trim() !== (user.supportNote || '')) patch.supportNote = supportNote.trim();
+    if (userPatchRequiresOperatorReasonOnClient(patch) && !hasOperatorReasonText(patch.supportNote) && hasOperatorReasonText(supportNote)) {
+      patch.supportNote = supportNote.trim();
+    }
     if (Object.keys(patch).length > 0) onPatch(user.id, patch);
   };
 
@@ -1492,11 +1650,34 @@ function AccountInspector({
   };
 
   const markBillingResolved = () => {
+    const provider = selectedPlan?.code === 'free'
+      ? 'none'
+      : billingProvider === 'none' || billingProvider === 'admin'
+        ? 'manual'
+        : billingProvider;
     onPatch(user.id, {
+      planCode,
       billingStatus: planCode === 'free' ? 'none' : 'active',
-      status: status === 'past_due' ? 'active' : status,
+      billingProvider: provider,
+      billingMarket,
+      status: status === 'past_due' || status === 'trialing' ? 'active' : status,
       paymentActionRequired: false,
-      supportNote: 'Operator reason: payment issue resolved and billing access refreshed.',
+      supportNote: `Operator reason: verified ${selectedPlan?.name || planCode} billing and refreshed entitlement. Limits: ${selectedPlanLimitLabel}.`,
+    });
+  };
+
+  const applyPlanEntitlement = (plan: AdminPlan) => {
+    const freePlan = plan.code === 'free';
+    onPatch(user.id, {
+      planCode: plan.code,
+      billingStatus: freePlan ? 'none' : 'trialing',
+      billingProvider: freePlan ? 'none' : 'manual',
+      billingMarket: billingMarketForPlan(plan, billingMarket),
+      status: status === 'suspended' || status === 'deleted' ? status : 'active',
+      paymentActionRequired: !freePlan,
+      supportNote: freePlan
+        ? `Operator reason: moved account to Free and cleared paid entitlement. Limits: ${formatPlanLimitLabel(plan)}.`
+        : `Operator reason: applied provisional ${plan.name} entitlement for manual receipt review. Limits: ${formatPlanLimitLabel(plan)}.`,
     });
   };
 
@@ -1517,14 +1698,33 @@ function AccountInspector({
   const markBillingPastDue = () => {
     onPatch(user.id, {
       billingStatus: 'past_due',
+      billingProvider: billingProvider === 'none' ? 'manual' : billingProvider,
+      billingMarket,
       status: 'past_due',
       paymentActionRequired: true,
       supportNote: 'Operator reason: payment provider reported past-due renewal.',
     });
   };
 
+  const restoreAccount = () => {
+    onPatch(user.id, {
+      status: 'active',
+      accountRecoveryStatus: recoveryStatus === 'requested' ? 'resolved' : recoveryStatus,
+      passwordResetRequired: false,
+      supportNote: 'Operator reason: restored account after admin review and cleared recovery lock.',
+    });
+  };
+
+  const suspendAccount = () => {
+    onPatch(user.id, {
+      status: 'suspended',
+      paymentActionRequired: true,
+      supportNote: 'Operator reason: suspended account for admin review.',
+    });
+  };
+
   return (
-    <aside className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/82 p-4 shadow-[var(--panel-elev-1)]">
+    <aside className="fixed inset-x-3 bottom-3 z-[70] max-h-[86dvh] overflow-y-auto overscroll-contain rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/94 p-4 shadow-[var(--panel-elev-2)] backdrop-blur-xl xl:sticky xl:inset-auto xl:top-4 xl:z-auto xl:max-h-[calc(100dvh-8rem)] xl:bg-[var(--bg-base)]/82 xl:shadow-[var(--panel-elev-1)]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -1559,6 +1759,25 @@ function AccountInspector({
         <div className="flex min-h-10 items-center justify-between gap-3 rounded-xl border border-glass bg-surface-alpha px-3 text-secondary">
           <span className="inline-flex min-w-0 items-center gap-2"><Clock3 size={14} /> <span className="truncate">{formatDate(user.createdAt)}</span></span>
           <span className="font-semibold text-primary">Created</span>
+        </div>
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+        <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2">
+          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">Current plan</p>
+          <p className="mt-1 truncate font-semibold text-primary">{user.planName}</p>
+        </div>
+        <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2">
+          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">Billing</p>
+          <p className="mt-1 truncate font-semibold text-primary">{user.billing.status} / {user.billing.provider}</p>
+        </div>
+        <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2">
+          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">Usage today</p>
+          <p className="mt-1 truncate font-semibold text-primary">{formatNumber(user.usage.aiRequestsToday)} AI / {formatNumber(user.usage.scannerRunsToday)} scans</p>
+        </div>
+        <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2">
+          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">Risk</p>
+          <p className={clsx('mt-1 font-semibold', user.riskScore >= 60 ? 'text-rose-500' : user.riskScore >= 30 ? 'text-amber-500' : 'text-emerald-500')}>{user.riskScore}</p>
         </div>
       </div>
 
@@ -1601,6 +1820,34 @@ function AccountInspector({
             </select>
           </label>
         </div>
+
+        <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-primary">Admin quick actions</p>
+              <p className="mt-1 text-xs leading-5 text-secondary">Use these for the common launch-support flows without hunting through every field.</p>
+            </div>
+            <ShieldCheck size={18} className="mt-0.5 shrink-0 text-emerald-500" />
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+            <button type="button" onClick={restoreAccount} disabled={busy || !canRestoreAccount} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300">
+              <CheckCircle2 size={14} />
+              Restore active
+            </button>
+            <button type="button" onClick={suspendAccount} disabled={busy || status === 'suspended' || status === 'deleted'} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300">
+              <Lock size={14} />
+              Suspend review
+            </button>
+          </div>
+        </div>
+
+        <PlanQuickControl
+          plans={plans}
+          selectedPlanCode={planCode}
+          busy={busy}
+          onSelectPlan={selectPlanPreset}
+          onApplyPlan={applyPlanEntitlement}
+        />
 
         <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
           <div className="flex items-start justify-between gap-3">
@@ -1709,10 +1956,15 @@ function AccountInspector({
       ) : null}
 
       <div className="mt-4 grid gap-2">
+        {saveBlockedByReason ? (
+          <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-800 dark:text-amber-200">
+            Paid entitlement needs a support note with at least 12 characters before saving.
+          </div>
+        ) : null}
         <button
           type="button"
           onClick={saveAccount}
-          disabled={!dirty || busy}
+          disabled={!dirty || busy || saveBlockedByReason}
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-500 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Save size={16} />

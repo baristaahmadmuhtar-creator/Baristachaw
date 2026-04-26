@@ -114,3 +114,63 @@ test('account status returns plan and runtime maintenance flags for mobile', asy
   assert.ok(body.maintenance.some((flag: any) => flag.key === 'scanner' && flag.status === 'maintenance'));
   assert.equal(body.appAccess.status, 'limited');
 });
+
+test('account status limits paid plan when billing provider is missing', async () => {
+  const originalFetch = globalThis.fetch;
+  process.env.SUPABASE_URL = 'https://unit-project.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+  const token = createToken({
+    id: 'paid-user',
+    email: 'paid@example.com',
+    name: 'Paid User',
+    provider: 'email',
+  });
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    if (url.includes('app_users?on_conflict=')) {
+      return new Response('', { status: 201 });
+    }
+    if (url.includes('app_users?id=eq.paid-user')) {
+      return new Response(JSON.stringify([{
+        id: 'paid-user',
+        email: 'paid@example.com',
+        display_name: 'Paid User',
+        provider: 'email',
+        status: 'active',
+        plan_code: 'pro',
+        billing_status: 'active',
+        billing_provider: 'none',
+        billing_market: 'indonesia',
+        payment_action_required: false,
+        updated_at: new Date().toISOString(),
+      }]), { status: 200 });
+    }
+    if (url.includes('app_plans?') || url.includes('app_feature_flags?')) {
+      return new Response(JSON.stringify([]), { status: 200 });
+    }
+    throw new Error(`Unexpected fetch ${url} ${init?.method || 'GET'}`);
+  }) as typeof fetch;
+  const req = makeReq({
+    headers: {
+      origin: 'http://127.0.0.1:3000',
+      authorization: `Bearer ${token}`,
+    },
+  });
+  const res = createMockRes();
+
+  try {
+    await accountStatusHandler(req, res as any);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.dataMode, 'supabase');
+  assert.equal(body.user.planCode, 'pro');
+  assert.equal(body.billing.status, 'trialing');
+  assert.equal(body.billing.paymentAction, 'contact_support');
+  assert.equal(body.billing.paymentActionRequired, true);
+  assert.equal(body.recommendedUpgrade.action, 'contact_support');
+  assert.equal(body.appAccess.status, 'limited');
+});

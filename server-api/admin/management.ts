@@ -388,6 +388,10 @@ function envEnabled(name: string): boolean {
   return raw === '1' || raw === 'true' || raw === 'yes' || raw === 'on';
 }
 
+function runtimeMutationFallbackEnabled(): boolean {
+  return envEnabled('ADMIN_RUNTIME_WRITE_FALLBACK') || envEnabled('ALLOW_RUNTIME_ADMIN_WRITE_FALLBACK');
+}
+
 function normalizeRole(value: unknown): AdminRole {
   const raw = normalizeText(value).toLowerCase();
   if (raw === 'owner' || raw === 'admin' || raw === 'support' || raw === 'analyst') return raw;
@@ -434,6 +438,21 @@ function normalizeUsername(value: unknown, fallback: string): string {
 }
 
 type ValidationError = { ok: false; error: string; details?: string };
+type AuthorizationError = { ok: false; statusCode: 403; error: string; errorCode: 'admin_role_forbidden'; details?: string };
+
+class AdminMutationError extends Error {
+  statusCode: number;
+  errorCode: string;
+  details?: string;
+
+  constructor(message: string, params: { statusCode: number; errorCode: string; details?: string }) {
+    super(message);
+    this.name = 'AdminMutationError';
+    this.statusCode = params.statusCode;
+    this.errorCode = params.errorCode;
+    this.details = params.details;
+  }
+}
 
 function validateEnumValue<T extends string>(value: unknown, field: string, allowed: Set<T>): { ok: true; value: T } | ValidationError {
   if (typeof value !== 'string') {
@@ -1475,6 +1494,7 @@ function validatePatch(body: any): { ok: true; userId: string; patch: UserPatch 
     patch.paymentActionRequired = validated.value;
   }
 
+  normalizePlanBillingPatch(patch);
   if (Object.keys(patch).length === 0) return { ok: false, error: 'patch is empty' };
   return { ok: true, userId, patch };
 }
@@ -1525,9 +1545,87 @@ async function findCurrentUsernameConflict(
   return findUsernameConflict(snapshot.users, userId, username);
 }
 
+function normalizePlanBillingPatch(patch: UserPatch): void {
+  if (patch.planCode === 'free') {
+    if (!patch.billingStatus) patch.billingStatus = 'none';
+    if (!patch.billingProvider) patch.billingProvider = 'none';
+    if (typeof patch.paymentActionRequired !== 'boolean') patch.paymentActionRequired = false;
+    return;
+  }
+  if (patch.planCode) {
+    if (!patch.billingStatus) patch.billingStatus = 'trialing';
+    if (!patch.billingProvider || patch.billingProvider === 'none' || patch.billingProvider === 'admin') {
+      patch.billingProvider = 'manual';
+    }
+    if (typeof patch.paymentActionRequired !== 'boolean') patch.paymentActionRequired = true;
+    return;
+  }
+  if ((patch.billingStatus === 'active' || patch.billingStatus === 'trialing') && (!patch.billingProvider || patch.billingProvider === 'none' || patch.billingProvider === 'admin')) {
+    patch.billingProvider = 'manual';
+  }
+  if (patch.billingStatus === 'past_due' && typeof patch.paymentActionRequired !== 'boolean') {
+    patch.paymentActionRequired = true;
+  }
+}
+
+function authorizeUserMutation(admin: AdminAccess, patch: UserPatch): AuthorizationError | null {
+  if (admin.role === 'owner' || admin.role === 'admin') return null;
+  if (admin.role === 'analyst') {
+    return {
+      ok: false,
+      statusCode: 403,
+      error: 'Analyst admins are read-only',
+      errorCode: 'admin_role_forbidden',
+    };
+  }
+  if (admin.role === 'support') {
+    const allowedFields = new Set([
+      'status',
+      'notes',
+      'supportNote',
+      'accountRecoveryStatus',
+      'lastRecoveryRequestAt',
+      'passwordResetRequired',
+      'billingStatus',
+      'billingProvider',
+      'billingMarket',
+      'paymentActionRequired',
+    ]);
+    const forbidden = Object.keys(patch).filter((key) => !allowedFields.has(key));
+    if (forbidden.length > 0 || patch.status === 'deleted' || patch.billingStatus === 'active' || patch.billingStatus === 'trialing') {
+      return {
+        ok: false,
+        statusCode: 403,
+        error: 'Support admins can only manage recovery, notes, and billing attention states',
+        errorCode: 'admin_role_forbidden',
+        details: forbidden.length ? `Forbidden fields: ${forbidden.join(', ')}` : undefined,
+      };
+    }
+    return null;
+  }
+  return {
+    ok: false,
+    statusCode: 403,
+    error: 'This admin role cannot mutate account management',
+    errorCode: 'admin_role_forbidden',
+  };
+}
+
+function authorizeFeatureFlagMutation(admin: AdminAccess): AuthorizationError | null {
+  if (admin.role === 'owner' || admin.role === 'admin') return null;
+  return {
+    ok: false,
+    statusCode: 403,
+    error: 'Only owner and admin roles can change platform feature controls',
+    errorCode: 'admin_role_forbidden',
+  };
+}
+
 function userPatchRequiresOperatorReason(patch: UserPatch): boolean {
   const activatesPaidBilling = patch.billingStatus === 'active' || patch.billingStatus === 'trialing';
-  return patch.status === 'suspended'
+  const changesPlan = Boolean(patch.planCode);
+  return changesPlan
+    || patch.status === 'suspended'
     || patch.status === 'deleted'
     || patch.role === 'owner'
     || activatesPaidBilling;
@@ -1684,15 +1782,23 @@ async function updateUser(
       await patchSupabaseUser(config, admin, userId, patch);
       return buildAdminSnapshot(requestId, admin, rawUser);
     } catch (error) {
+      const details = sanitizeErrorDetails(error, 180);
       RUNTIME_AUDIT.unshift({
         id: `runtime_supabase_failure_${Date.now()}`,
         actor: admin.email || admin.userId || 'admin',
         target: userId,
         action: 'supabase_update_failed',
         createdAt: nowIso(),
-        detail: sanitizeErrorDetails(error, 180),
+        detail: details,
         severity: 'critical',
       });
+      if (!runtimeMutationFallbackEnabled()) {
+        throw new AdminMutationError('Supabase user update failed; no runtime fallback write was applied', {
+          statusCode: 503,
+          errorCode: 'supabase_update_failed',
+          details,
+        });
+      }
     }
   }
 
@@ -1715,15 +1821,23 @@ async function updateFeatureFlag(
       await patchSupabaseFeatureFlag(config, admin, key, patch);
       return buildAdminSnapshot(requestId, admin, rawUser);
     } catch (error) {
+      const details = sanitizeErrorDetails(error, 180);
       RUNTIME_AUDIT.unshift({
         id: `runtime_supabase_flag_failure_${Date.now()}`,
         actor: admin.email || admin.userId || 'admin',
         target: key,
         action: 'supabase_feature_flag_update_failed',
         createdAt: nowIso(),
-        detail: sanitizeErrorDetails(error, 180),
+        detail: details,
         severity: 'critical',
       });
+      if (!runtimeMutationFallbackEnabled()) {
+        throw new AdminMutationError('Supabase feature flag update failed; no runtime fallback write was applied', {
+          statusCode: 503,
+          errorCode: 'supabase_update_failed',
+          details,
+        });
+      }
     }
   }
 
@@ -1803,6 +1917,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             errorCode: 'feature_flag_message_required',
           });
         }
+        const authorization = authorizeFeatureFlagMutation(access.admin);
+        if (authorization) {
+          return res.status(authorization.statusCode).json({
+            ok: false,
+            requestId,
+            error: authorization.error,
+            errorCode: authorization.errorCode,
+            details: authorization.details,
+          });
+        }
         const snapshot = await updateFeatureFlag(access.admin, access.auth.user, validated.key, validated.patch);
         return res.status(200).json({
           ...snapshot,
@@ -1834,6 +1958,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           errorCode: 'self_protection',
         });
       }
+      const authorization = authorizeUserMutation(access.admin, validated.patch);
+      if (authorization) {
+        return res.status(authorization.statusCode).json({
+          ok: false,
+          requestId,
+          error: authorization.error,
+          errorCode: authorization.errorCode,
+          details: authorization.details,
+        });
+      }
       if (userPatchRequiresOperatorReason(validated.patch) && !userPatchHasOperatorReason(validated.patch)) {
         return res.status(400).json({
           ok: false,
@@ -1863,6 +1997,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(405).json({ ok: false, requestId, error: 'Method not allowed' });
   } catch (error) {
+    if (error instanceof AdminMutationError) {
+      return res.status(error.statusCode).json({
+        ok: false,
+        requestId,
+        error: error.message,
+        errorCode: error.errorCode,
+        details: error.details,
+      });
+    }
     return res.status(500).json({
       ok: false,
       requestId,

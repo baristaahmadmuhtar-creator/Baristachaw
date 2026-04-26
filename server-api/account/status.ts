@@ -349,19 +349,28 @@ function readPublicUrl(...names: string[]): string {
 
 function billingFromRow(row: any, user: AccountUser): AccountBilling {
   const metadata = row?.metadata && typeof row.metadata === 'object' ? row.metadata : {};
-  const status = normalizeBillingStatus(row?.billing_status ?? metadata.billingStatus, defaultBillingStatus(user.planCode, user.status));
+  const rawStatus = normalizeBillingStatus(row?.billing_status ?? metadata.billingStatus, defaultBillingStatus(user.planCode, user.status));
   const provider = normalizeBillingProvider(row?.billing_provider ?? metadata.billingProvider);
-  const paymentActionRequired = Boolean(row?.payment_action_required ?? metadata.paymentActionRequired ?? status === 'past_due');
+  const unverifiedPaidPlan = user.planCode !== 'free'
+    && (provider === 'none' || provider === 'admin')
+    && rawStatus !== 'past_due'
+    && rawStatus !== 'cancelled'
+    && rawStatus !== 'expired'
+    && rawStatus !== 'refunded';
+  const status = unverifiedPaidPlan ? 'trialing' : rawStatus;
+  const paymentActionRequired = Boolean(row?.payment_action_required ?? metadata.paymentActionRequired ?? (status === 'past_due')) || unverifiedPaidPlan;
   const manageUrl = readPublicUrl('BILLING_PORTAL_URL', 'STRIPE_CUSTOMER_PORTAL_URL', 'REVENUECAT_CUSTOMER_CENTER_URL');
   const checkoutUrl = readPublicUrl(`BILLING_CHECKOUT_URL_${user.planCode.toUpperCase()}`, `STRIPE_CHECKOUT_URL_${user.planCode.toUpperCase()}`, `REVENUECAT_CHECKOUT_URL_${user.planCode.toUpperCase()}`, 'BILLING_CHECKOUT_URL');
   const paymentAction: AccountBilling['paymentAction'] = paymentActionRequired || status === 'past_due'
-    ? 'manage'
+    ? unverifiedPaidPlan ? 'contact_support' : 'manage'
     : user.planCode === 'free'
       ? 'checkout'
       : provider === 'manual'
         ? 'contact_support'
         : 'none';
-  const message = status === 'past_due'
+  const message = unverifiedPaidPlan
+    ? 'Your paid plan is waiting for admin billing verification. Contact support before relying on paid limits.'
+    : status === 'past_due'
     ? 'Your payment needs attention. Update billing to keep paid limits active.'
     : status === 'cancelled' || status === 'expired'
       ? 'Your paid entitlement is no longer active. Choose a plan to restore paid features.'
@@ -382,15 +391,16 @@ function billingFromRow(row: any, user: AccountUser): AccountBilling {
 }
 
 function runtimeBilling(user: AccountUser): AccountBilling {
+  const unverifiedPaidPlan = user.planCode !== 'free';
   return {
-    status: defaultBillingStatus(user.planCode, user.status),
+    status: unverifiedPaidPlan ? 'trialing' : defaultBillingStatus(user.planCode, user.status),
     provider: 'none',
     market: 'unknown',
-    paymentAction: user.planCode === 'free' ? 'checkout' : 'none',
-    paymentActionRequired: false,
+    paymentAction: user.planCode === 'free' ? 'checkout' : 'contact_support',
+    paymentActionRequired: unverifiedPaidPlan,
     message: user.planCode === 'free'
       ? 'Upgrade when you need higher AI, Deep, scanner, and storage limits.'
-      : '',
+      : 'Your paid plan is waiting for admin billing verification. Contact support before relying on paid limits.',
     checkoutUrl: readPublicUrl('BILLING_CHECKOUT_URL') || undefined,
     manageUrl: readPublicUrl('BILLING_PORTAL_URL') || undefined,
   };
@@ -399,12 +409,13 @@ function runtimeBilling(user: AccountUser): AccountBilling {
 function buildRecommendedUpgrade(user: AccountUser, plans: AccountPlan[], billing: AccountBilling): AccountStatusResponse['recommendedUpgrade'] {
   const pro = plans.find((plan) => plan.code === 'pro') || planByCode('pro');
   if (billing.paymentActionRequired || billing.status === 'past_due') {
+    const action = billing.paymentAction === 'contact_support' ? 'contact_support' : 'manage';
     return {
       planCode: user.planCode,
       planName: user.planName,
-      ctaLabel: 'Manage billing',
+      ctaLabel: action === 'contact_support' ? 'Contact support' : 'Manage billing',
       reason: billing.message || 'Payment action is required to keep paid access active.',
-      action: 'manage',
+      action,
     };
   }
   if (user.planCode === 'free') {

@@ -14,6 +14,7 @@ test.afterEach(async ({ page }) => {
 });
 
 test('admin users get a mobile Admin entry and can return to the app', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await qaLogin(page.request, buildQaAdminUser());
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 
@@ -29,4 +30,17 @@ test('admin users get a mobile Admin entry and can return to the app', async ({ 
 
   await page.getByRole('button', { name: 'Kembali ke aplikasi' }).click();
   await expect(page).toHaveURL(/\/$/);
+});
+
+test('admin mobile manage opens account control without scrolling', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await qaLogin(page.request, buildQaAdminUser());
+  await page.goto('/admin?tab=users', { waitUntil: 'domcontentloaded' });
+
+  await expect(page.getByRole('heading', { name: 'Admin Management' })).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: 'Manage' }).first().click();
+
+  await expect(page.getByRole('heading', { name: 'Account control' })).toBeVisible();
+  await expect(page.getByText('Plan quick control')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Apply provisional' }).first()).toBeVisible();
 });

@@ -1,7 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
-import { applyCors, checkRateLimit, getAllowedOrigin, getAllowedOrigins, requireAuth } from '../../server-api/_shared.ts';
+import {
+  applyCors,
+  checkRateLimit,
+  enforceTrustedRequestOrigin,
+  getAllowedOrigin,
+  getAllowedOrigins,
+  requireAuth,
+} from '../../server-api/_shared.ts';
 
 const ORIGINAL_JWT_SECRET = process.env.JWT_SECRET;
 const ORIGINAL_APP_URL = process.env.APP_URL;
@@ -181,4 +188,69 @@ test('applyCors does not reflect disallowed origin', () => {
   assert.equal(headers.get('Access-Control-Allow-Credentials'), 'true');
   assert.equal(headers.get('Access-Control-Allow-Methods'), 'GET,OPTIONS');
   assert.equal(headers.get('Vary'), 'Origin');
+});
+
+test('enforceTrustedRequestOrigin allows same host origin without explicit APP_URL', () => {
+  const res = {
+    statusCode: 0,
+    body: null as unknown,
+    status(code: number) {
+      this.statusCode = code;
+      return this;
+    },
+    json(body: unknown) {
+      this.body = body;
+      return this;
+    },
+  };
+
+  const allowed = enforceTrustedRequestOrigin(
+    {
+      method: 'POST',
+      headers: {
+        host: 'baristaclaw.vercel.app',
+        origin: 'https://baristaclaw.vercel.app',
+        'x-forwarded-proto': 'https',
+      },
+    } as any,
+    res as any,
+    'req_same_host',
+  );
+
+  assert.equal(allowed, true);
+  assert.equal(res.statusCode, 0);
+});
+
+test('enforceTrustedRequestOrigin rejects cross-site browser writes', () => {
+  process.env.APP_URL = 'https://baristaclaw.vercel.app';
+  const res = {
+    statusCode: 0,
+    body: null as any,
+    status(code: number) {
+      this.statusCode = code;
+      return this;
+    },
+    json(body: unknown) {
+      this.body = body;
+      return this;
+    },
+  };
+
+  const allowed = enforceTrustedRequestOrigin(
+    {
+      method: 'POST',
+      headers: {
+        host: 'baristaclaw.vercel.app',
+        origin: 'https://evil.example',
+        'sec-fetch-site': 'cross-site',
+        'x-forwarded-proto': 'https',
+      },
+    } as any,
+    res as any,
+    'req_blocked',
+  );
+
+  assert.equal(allowed, false);
+  assert.equal(res.statusCode, 403);
+  assert.equal(res.body.errorCode, 'csrf_origin_denied');
 });

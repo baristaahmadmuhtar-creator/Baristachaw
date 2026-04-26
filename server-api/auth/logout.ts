@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { applyCors } from '../_shared.js';
+import { applyCors, createRequestId, enforceTrustedRequestOrigin } from '../_shared.js';
 
 function buildCookieAttributes(options: {
     maxAgeSeconds: number;
@@ -23,15 +23,18 @@ function buildCookieAttributes(options: {
 }
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
+    const requestId = createRequestId(req);
     applyCors(req, res, 'POST, OPTIONS');
+    res.setHeader('X-Request-Id', requestId);
 
     if (req.method === 'OPTIONS') {
         return res.status(204).end();
     }
 
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+        return res.status(405).json({ ok: false, requestId, error: 'Method not allowed' });
     }
+    if (!enforceTrustedRequestOrigin(req, res, requestId)) return;
 
     const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     res.setHeader('Set-Cookie', [
@@ -51,5 +54,5 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
             sameSite: 'lax',
         })}`,
     ]);
-    res.json({ success: true });
+    res.json({ ok: true, requestId, success: true });
 }

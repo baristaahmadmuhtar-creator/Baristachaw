@@ -76,6 +76,10 @@ function getContentSecurityPolicy() {
       "frame-src https://accounts.google.com https://*.firebaseapp.com",
       "object-src 'none'",
       "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "manifest-src 'self'",
+      "worker-src 'self'",
     ].join("; ");
   }
 
@@ -90,6 +94,10 @@ function getContentSecurityPolicy() {
     "frame-src https://accounts.google.com https://*.firebaseapp.com",
     "object-src 'none'",
     "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "manifest-src 'self'",
+    "worker-src 'self'",
   ].join("; ");
 }
 

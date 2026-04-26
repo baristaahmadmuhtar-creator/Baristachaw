@@ -74,7 +74,10 @@ test('auth logout handler clears auth and oauth cookies in development', () => {
   logoutHandler(req, res as any);
 
   assert.equal(res.statusCode, 200);
-  assert.deepEqual(JSON.parse(res.body), { success: true });
+  const body = JSON.parse(res.body);
+  assert.equal(body.ok, true);
+  assert.equal(body.success, true);
+  assert.equal(typeof body.requestId, 'string');
 
   const cookies = res.headers.get('set-cookie');
   assert.ok(Array.isArray(cookies));
@@ -90,7 +93,9 @@ test('auth logout handler keeps secure cookie attributes in production', () => {
 
   const req = makeReq({
     headers: {
+      host: 'baristaclaw.vercel.app',
       origin: 'https://baristaclaw.vercel.app',
+      'x-forwarded-proto': 'https',
     },
   });
   const res = createMockRes();

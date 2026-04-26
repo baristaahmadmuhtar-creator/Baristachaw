@@ -11,6 +11,7 @@ import {
     applyRateLimitHeaders,
     checkRateLimit,
     createRequestId,
+    enforceTrustedRequestOrigin,
     isE2eMockRequest,
     isEnvFlagEnabled,
     parseClientContext,
@@ -511,6 +512,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {
         return res.status(405).json({ requestId, error: 'Method not allowed' });
     }
+    if (!enforceTrustedRequestOrigin(req, res, requestId)) return;
 
     const authResult = requireAuth(req);
     if (authResult.ok === false) {
@@ -916,5 +918,4 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
         }
     }
 }
-
 

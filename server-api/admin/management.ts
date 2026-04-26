@@ -4,6 +4,7 @@ import {
   applyRateLimitHeaders,
   checkRateLimit,
   createRequestId,
+  enforceTrustedRequestOrigin,
   sanitizeErrorDetails,
 } from '../_shared.js';
 import { requireAdmin, type AdminAccess } from './_access.js';
@@ -2574,6 +2575,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
   }
+  if (!enforceTrustedRequestOrigin(req, res, requestId)) return;
 
   const access = requireAdmin(req);
   if (access.ok === false) {

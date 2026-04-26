@@ -6,6 +6,7 @@ import {
   applyRateLimitHeaders,
   checkRateLimit,
   createRequestId,
+  enforceTrustedRequestOrigin,
   requireAuth,
   sanitizeErrorDetails,
 } from '../_shared.js';
@@ -80,6 +81,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, requestId, error: 'Method not allowed' });
   }
+  if (!enforceTrustedRequestOrigin(req, res, requestId)) return;
 
   const limit = checkRateLimit(req, '/api/auth/guest', 'anonymous', GUEST_AUTH_RATE_LIMIT);
   applyRateLimitHeaders(res, limit);

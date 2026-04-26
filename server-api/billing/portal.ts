@@ -4,6 +4,7 @@ import {
   applyRateLimitHeaders,
   checkRateLimit,
   createRequestId,
+  enforceTrustedRequestOrigin,
   requireAuth,
 } from '../_shared.js';
 
@@ -30,6 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ ok: false, requestId, error: 'Method not allowed' });
+  if (!enforceTrustedRequestOrigin(req, res, requestId)) return;
 
   const authResult = requireAuth(req);
   if (authResult.ok === false) {

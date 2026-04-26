@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { persistCatalogSuggestion } from '../../lib/catalog/suggestions.js';
 import { initCatalogRequest } from '../_catalog.js';
+import { enforceTrustedRequestOrigin } from '../_shared.js';
 
 type SuggestionBody = {
   kind?: 'water' | 'dripper' | 'grinder';
@@ -22,6 +23,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, requestId: init.requestId, error: 'Method not allowed' });
   }
+  if (!enforceTrustedRequestOrigin(req, res, init.requestId)) return;
 
   const body = parseBody(req.body);
   const brand = (body.brand || '').trim();

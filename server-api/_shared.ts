@@ -239,6 +239,53 @@ export function applyCors(req: VercelRequest, res: VercelResponse, methods: stri
   res.setHeader('Vary', 'Origin');
 }
 
+function getRequestHostOrigin(req: VercelRequest): string | null {
+  const forwardedHost = firstHeaderValue(req.headers['x-forwarded-host']);
+  const host = (forwardedHost || firstHeaderValue(req.headers.host)).trim();
+  if (!host) return null;
+  const forwardedProto = firstHeaderValue(req.headers['x-forwarded-proto']).trim().toLowerCase();
+  const proto = forwardedProto === 'http' || forwardedProto === 'https'
+    ? forwardedProto
+    : /^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(host)
+      ? 'http'
+      : 'https';
+  return normalizeOrigin(`${proto}://${host}`);
+}
+
+function isTrustedBrowserOrigin(req: VercelRequest): boolean {
+  const allowed = new Set(getAllowedOrigins());
+  const requestHostOrigin = getRequestHostOrigin(req);
+  if (requestHostOrigin) allowed.add(requestHostOrigin);
+
+  const origin = normalizeOrigin(firstHeaderValue(req.headers.origin));
+  if (origin) return allowed.has(origin);
+
+  const referer = normalizeOrigin(firstHeaderValue(req.headers.referer) || firstHeaderValue(req.headers.referrer));
+  if (referer) return allowed.has(referer);
+
+  const fetchSite = firstHeaderValue(req.headers['sec-fetch-site']).trim().toLowerCase();
+  if (fetchSite === 'cross-site') return false;
+  return true;
+}
+
+export function enforceTrustedRequestOrigin(
+  req: VercelRequest,
+  res: VercelResponse,
+  requestId: string,
+): boolean {
+  const method = String(req.method || '').toUpperCase();
+  if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') return true;
+  if (isTrustedBrowserOrigin(req)) return true;
+
+  res.status(403).json({
+    ok: false,
+    requestId,
+    error: 'Untrusted request origin',
+    errorCode: 'csrf_origin_denied',
+  });
+  return false;
+}
+
 export function createRequestId(req: VercelRequest): string {
   const incoming = req.headers['x-request-id'];
   if (typeof incoming === 'string' && incoming.trim()) return incoming.trim().slice(0, 64);

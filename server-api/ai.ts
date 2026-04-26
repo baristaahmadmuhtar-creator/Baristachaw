@@ -24,6 +24,7 @@ import {
   classifyProviderError,
   createApiError,
   createRequestId,
+  enforceTrustedRequestOrigin,
   isE2eMockRequest,
   isEnvFlagEnabled,
   isApiOperationalError,
@@ -1851,6 +1852,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, requestId, error: 'Method not allowed' });
   }
+  if (!enforceTrustedRequestOrigin(req, res, requestId)) return;
 
   const actionLabel = typeof req.body?.action === 'string' ? req.body.action.slice(0, 40) : 'unknown';
   const contentLength = readContentLength(req);

@@ -11,16 +11,22 @@ import {
   updateCollectionItem,
   moveCollectionItemToFolder,
   saveCollectionItem,
+  softDeleteCollectionFolder,
 } from '../services/storageService';
 import { useGlobalState } from '../context/GlobalState';
 import { useNavbar } from '../context/NavbarContext';
 import { useIOSKeyboardFix } from '../hooks/useIOSKeyboardFix';
 import { useRuntimeDisplayMode } from '../hooks/useRuntimeDisplayMode';
+import { ConfirmActionDialog } from '../components/ConfirmActionDialog';
 import Markdown from 'react-markdown';
 import type { CollectionItem } from '../types';
 import { parseNoteDraftFromStorage, sanitizeNoteDraftForStorage, type NoteDraftState } from '../features/collection/noteDraftState';
 
 type FilterType = 'all' | 'recipe' | 'ai_canvas' | 'note';
+type PendingDeleteTarget =
+  | { kind: 'item'; id: string; label: string }
+  | { kind: 'recipe'; id: string; label: string }
+  | { kind: 'folder'; id: string; label: string };
 const NOTE_DRAFT_STORAGE_KEY = 'BARISTA_COLLECTION_NOTE_DRAFT_V1';
 
 const normalizeSearchValue = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ');
@@ -34,7 +40,7 @@ function isLatteArtItem(item: CollectionItem) {
 }
 
 export function Collection() {
-  const { t, folders, refreshFolders, addFolder, removeFolder, editFolder } = useGlobalState();
+  const { t, folders, refreshFolders, addFolder, editFolder } = useGlobalState();
   const { hideNav, showNav } = useNavbar();
   const { isIosStandalone } = useRuntimeDisplayMode();
   const disableEntranceMotion = isIosStandalone || (typeof navigator !== 'undefined' && navigator.webdriver);
@@ -68,12 +74,16 @@ export function Collection() {
   const newFolderFormRef = useRef<HTMLDivElement | null>(null);
   const newFolderInputRef = useRef<HTMLInputElement | null>(null);
   const noteEditorRef = useRef<HTMLDivElement | null>(null);
+  const itemDetailRef = useRef<HTMLDivElement | null>(null);
   const pageTopAnchorRef = useRef<HTMLDivElement | null>(null);
   const collectionKeyboardFix = useIOSKeyboardFix({
-    focusScopeRef: showNoteEditor ? noteEditorRef : newFolderFormRef,
-    enableScrollIntoViewOnFocus: showNewFolder || showNoteEditor,
+    focusScopeRef: selectedItem ? itemDetailRef : showNoteEditor ? noteEditorRef : newFolderFormRef,
+    enableScrollIntoViewOnFocus: showNewFolder || showNoteEditor || isNoteEditingInModal,
     scrollIntoViewBlock: 'center',
   });
+  const [pendingDelete, setPendingDelete] = useState<PendingDeleteTarget | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [optimisticDeletedFolderIds, setOptimisticDeletedFolderIds] = useState<Set<string>>(() => new Set());
 
   const refresh = useCallback(async () => {
     const [collectionItems, recipes] = await Promise.all([
@@ -82,8 +92,17 @@ export function Collection() {
     ]);
     setItems(collectionItems);
     setSavedRecipes(recipes);
-    await refreshFolders();
+    void refreshFolders().catch(() => undefined);
   }, [refreshFolders]);
+
+  useEffect(() => {
+    setOptimisticDeletedFolderIds((previous) => {
+      if (previous.size === 0) return previous;
+      const existingFolderIds = new Set(folders.map((folder) => folder.id));
+      const next = new Set([...previous].filter((id) => existingFolderIds.has(id)));
+      return next.size === previous.size ? previous : next;
+    });
+  }, [folders]);
 
   useEffect(() => {
     refresh();
@@ -137,14 +156,20 @@ export function Collection() {
     setSavingModalNote(false);
   }, [selectedItem?.id]);
 
-  const handleDeleteItem = async (id: string) => {
-    await softDeleteCollectionItem(id);
-    await refresh();
+  useEffect(() => {
+    if (!selectedItem) return;
+    const timer = window.setTimeout(() => {
+      itemDetailRef.current?.focus();
+    }, 40);
+    return () => window.clearTimeout(timer);
+  }, [selectedItem]);
+
+  const requestDeleteItem = (item: CollectionItem) => {
+    setPendingDelete({ kind: 'item', id: item.id, label: item.title || t.aiCanvas });
   };
 
-  const handleDeleteRecipe = (id: string) => {
-    deleteRecipe(id);
-    refresh();
+  const requestDeleteRecipe = (recipe: any) => {
+    setPendingDelete({ kind: 'recipe', id: recipe.id, label: recipe.name || t.untitledRecipe });
   };
 
   const closeCreateFolder = useCallback(() => {
@@ -198,11 +223,58 @@ export function Collection() {
     });
   }, [focusCreateFolderInput]);
 
-  const handleDeleteFolder = async (id: string) => {
-    await removeFolder(id);
+  const requestDeleteFolder = (id: string, label: string) => {
+    setPendingDelete({ kind: 'folder', id, label });
     setFolderMenuId(null);
-    if (selectedFolderId === id) {
-      setSelectedFolderId(null);
+  };
+
+  const confirmPendingDelete = async () => {
+    if (!pendingDelete || deleteBusy) return;
+    const target = pendingDelete;
+    setDeleteBusy(true);
+    try {
+      if (target.kind === 'item') {
+        setItems((currentItems) => currentItems.filter((item) => item.id !== target.id));
+        if (selectedItem?.id === target.id) {
+          setSelectedItem(null);
+          setIsNoteEditingInModal(false);
+          setModalNoteTitleDraft('');
+          setModalNoteBodyDraft('');
+          setModalNoteFolderDraft('');
+        }
+        setPendingDelete(null);
+        setDeleteBusy(false);
+        void softDeleteCollectionItem(target.id)
+          .then(() => {
+            void refresh().catch(() => undefined);
+          })
+          .catch(() => {
+            void refresh().catch(() => undefined);
+          });
+        return;
+      } else if (target.kind === 'recipe') {
+        deleteRecipe(target.id);
+        setSavedRecipes((currentRecipes) => currentRecipes.filter((recipe: any) => recipe.id !== target.id));
+      } else {
+        setOptimisticDeletedFolderIds((currentIds) => new Set(currentIds).add(target.id));
+        if (selectedFolderId === target.id) setSelectedFolderId(null);
+        setPendingDelete(null);
+        setDeleteBusy(false);
+        void softDeleteCollectionFolder(target.id)
+          .then(() => {
+            void refreshFolders().catch(() => undefined);
+            void refresh().catch(() => undefined);
+          })
+          .catch(() => {
+            void refreshFolders().catch(() => undefined);
+            void refresh().catch(() => undefined);
+          });
+        return;
+      }
+      setPendingDelete(null);
+      void refresh().catch(() => undefined);
+    } finally {
+      setDeleteBusy(false);
     }
   };
 
@@ -376,7 +448,11 @@ export function Collection() {
     return item.type === 'recipe' ? (t.recipes) : (t.aiCanvas);
   };
 
-  const hasContent = items.length > 0 || savedRecipes.length > 0 || folders.length > 0;
+  const visibleFolders = useMemo(
+    () => folders.filter((folder) => !optimisticDeletedFolderIds.has(folder.id)),
+    [folders, optimisticDeletedFolderIds]
+  );
+  const hasContent = items.length > 0 || savedRecipes.length > 0 || visibleFolders.length > 0;
   const noteCount = items.filter((item) => isNoteItem(item)).length;
   const isInFolder = selectedFolderId !== null;
 
@@ -393,8 +469,10 @@ export function Collection() {
         <div className="flex items-center gap-3">
           {isInFolder && (
             <button
+              type="button"
               onClick={() => { setSelectedFolderId(null); setSelectedItem(null); }}
               className="p-2 rounded-xl glass-button"
+              aria-label={t.folderBack || t.close}
             >
               <ArrowLeft size={20} />
             </button>
@@ -405,12 +483,13 @@ export function Collection() {
             </div>
             <h1 className="text-2xl font-semibold tracking-tight mb-1">{t.collection}</h1>
             <p className="text-secondary text-base">
-              {isInFolder ? folders.find((f) => f.id === selectedFolderId)?.name || t.folderLabel : t.collectionSubtitle}
+              {isInFolder ? visibleFolders.find((f) => f.id === selectedFolderId)?.name || t.folderLabel : t.collectionSubtitle}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={openCreateNote}
             className="h-11 px-4 rounded-xl glass-button hover:scale-105 transition-transform inline-flex items-center gap-2 text-sm font-medium"
             title={t.newNote}
@@ -419,9 +498,11 @@ export function Collection() {
             <span>{t.newNote}</span>
           </button>
           <button
+            type="button"
             onClick={openCreateFolder}
             className="icon-touch-button glass-button hover:scale-105 transition-transform"
             title={t.createFolder}
+            aria-label={t.createFolder}
           >
             <FolderPlus size={20} />
           </button>
@@ -430,22 +511,25 @@ export function Collection() {
 
       {/* Filter Tabs */}
       <div className="flex gap-2 mb-4 overflow-x-auto hide-scrollbar pb-2 shrink-0 panel-soft rounded-2xl px-2 py-2">
-        <button onClick={() => setFilter('all')} className={`${filterBtnClass('all')} whitespace-nowrap`}>{t.allItems}</button>
-        <button onClick={() => setFilter('recipe')} className={`${filterBtnClass('recipe')} whitespace-nowrap`}>{t.recipes}</button>
-        <button onClick={() => setFilter('ai_canvas')} className={`${filterBtnClass('ai_canvas')} whitespace-nowrap`}>{t.aiCanvas}</button>
-        <button onClick={() => setFilter('note')} className={`${filterBtnClass('note')} whitespace-nowrap`}>{t.notes} ({noteCount})</button>
+        <button type="button" onClick={() => setFilter('all')} className={`${filterBtnClass('all')} whitespace-nowrap`}>{t.allItems}</button>
+        <button type="button" onClick={() => setFilter('recipe')} className={`${filterBtnClass('recipe')} whitespace-nowrap`}>{t.recipes}</button>
+        <button type="button" onClick={() => setFilter('ai_canvas')} className={`${filterBtnClass('ai_canvas')} whitespace-nowrap`}>{t.aiCanvas}</button>
+        <button type="button" onClick={() => setFilter('note')} className={`${filterBtnClass('note')} whitespace-nowrap`}>{t.notes} ({noteCount})</button>
       </div>
 
       <div className="mb-4 panel-soft rounded-2xl px-3 py-2">
         <label className="relative flex items-center">
           <Search size={15} className="absolute left-3 text-tertiary" />
-          <input
-            type="search"
-            value={noteSearchQuery}
-            onChange={(e) => setNoteSearchQuery(e.target.value)}
-            placeholder={t.searchNotes}
-            className="w-full glass-input h-11 pl-10 pr-12 text-sm"
-          />
+            <input
+              type="search"
+              name="collection-search"
+              value={noteSearchQuery}
+              onChange={(e) => setNoteSearchQuery(e.target.value)}
+              placeholder={t.searchNotes}
+              aria-label={t.searchNotes}
+              enterKeyHint="search"
+              className="w-full glass-input h-11 pl-10 pr-12 text-sm"
+            />
           {noteSearchQuery.trim().length > 0 && (
             <button
               type="button"
@@ -470,38 +554,45 @@ export function Collection() {
         >
           <div className="panel-soft-strong rounded-3xl p-5 border panel-divider-subtle space-y-3">
             <p className="text-xs uppercase tracking-wide text-secondary">{editingNoteId ? t.editNote : t.newNote}</p>
-            <input
-              type="text"
-              value={noteTitle}
-              onChange={(e) => setNoteTitle(e.target.value)}
-              placeholder={t.noteTitle}
-              className="w-full glass-input h-11 px-4 text-base"
-            />
-            <textarea
-              value={noteMarkdown}
-              onChange={(e) => setNoteMarkdown(e.target.value)}
-              placeholder={t.noteContent}
-              className="w-full glass-input px-4 py-3 text-base min-h-[160px] resize-y"
-            />
+              <input
+                type="text"
+                name="note-title"
+                value={noteTitle}
+                onChange={(e) => setNoteTitle(e.target.value)}
+                placeholder={t.noteTitle}
+                aria-label={t.noteTitle}
+                enterKeyHint="next"
+                className="w-full glass-input h-11 px-4 text-base"
+              />
+              <textarea
+                name="note-content"
+                value={noteMarkdown}
+                onChange={(e) => setNoteMarkdown(e.target.value)}
+                placeholder={t.noteContent}
+                aria-label={t.noteContent}
+                className="w-full glass-input px-4 py-3 text-base min-h-[160px] resize-y"
+              />
             <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
               <select
                 value={noteFolderId}
                 onChange={(e) => setNoteFolderId(e.target.value)}
+                aria-label={t.moveToFolder}
                 className="glass-input h-11 px-3 text-sm"
               >
                 <option value="">{t.noFolder}</option>
-                {folders.map((folder) => (
+                {visibleFolders.map((folder) => (
                   <option key={folder.id} value={folder.id}>{folder.name}</option>
                 ))}
               </select>
               <button
+                type="button"
                 onClick={() => { void handleSaveNote(); }}
                 disabled={savingNote || !noteTitle.trim() || !noteMarkdown.trim()}
                 className="h-11 px-5 rounded-xl bg-emerald-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center min-w-[120px]"
               >
                 {savingNote ? <Loader2 size={16} className="animate-spin" /> : (editingNoteId ? t.updateNote : t.saveNote)}
               </button>
-              <button onClick={closeNoteEditor} className="icon-touch-button glass-button" aria-label={t.closeNoteEditor || t.close}>
+              <button type="button" onClick={closeNoteEditor} className="icon-touch-button glass-button" aria-label={t.closeNoteEditor || t.close}>
                 <X size={18} />
               </button>
             </div>
@@ -525,6 +616,7 @@ export function Collection() {
               <input
                 ref={newFolderInputRef}
                 type="text"
+                name="collection-folder-name"
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
                 onKeyDown={(e) => {
@@ -533,17 +625,20 @@ export function Collection() {
                   }
                 }}
                 placeholder={t.folderName}
+                aria-label={t.folderName}
+                enterKeyHint="done"
                 className="flex-1 glass-input h-11 px-4 text-base"
                 autoFocus
               />
               <button
+                type="button"
                 onClick={() => { void handleCreateFolder(); }}
                 disabled={!newFolderName.trim() || isCreatingFolder}
                 className="h-11 px-5 rounded-xl bg-emerald-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed min-w-[88px] flex items-center justify-center"
               >
                 {isCreatingFolder ? <Loader2 size={16} className="animate-spin" /> : (t.save)}
               </button>
-              <button onClick={closeCreateFolder} className="icon-touch-button glass-button" aria-label={t.closeCreateFolder}>
+              <button type="button" onClick={closeCreateFolder} className="icon-touch-button glass-button" aria-label={t.closeCreateFolder}>
                 <X size={18} />
               </button>
             </div>
@@ -555,9 +650,9 @@ export function Collection() {
       {!isInFolder && (
         <motion.div initial={disableEntranceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }}>
           {/* Folder Grid */}
-          {folders.length > 0 && (
+          {visibleFolders.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-              {folders.map((folder) => (
+              {visibleFolders.map((folder) => (
                 <div
                   key={folder.id}
                   className={`relative group ${renamingFolderId === folder.id ? 'z-20' : ''}`}
@@ -565,6 +660,7 @@ export function Collection() {
                   <button
                     onClick={() => setSelectedFolderId(folder.id)}
                     className="w-full glass-card p-5 text-left"
+                    type="button"
                   >
                     <div className="flex items-center justify-between mb-3">
                       <Folder size={24} className="text-amber-500" />
@@ -576,8 +672,11 @@ export function Collection() {
 
                   {/* Folder hover actions */}
                   <button
+                    type="button"
                     onClick={(e) => { e.stopPropagation(); setFolderMenuId(folderMenuId === folder.id ? null : folder.id); }}
                     className="absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-1.5 rounded-lg bg-surface-alpha text-tertiary hover:text-primary transition-all z-10"
+                    aria-label={(t.openFolderOptions || 'Open folder options') + ` ${folder.name}`}
+                    aria-expanded={folderMenuId === folder.id}
                   >
                     <MoreHorizontal size={14} />
                   </button>
@@ -586,6 +685,7 @@ export function Collection() {
                   {folderMenuId === folder.id && (
                     <div className="absolute top-12 right-3 z-30 p-1 bg-[var(--bg-base)] rounded-xl border border-glass shadow-lg text-sm min-w-[140px]">
                       <button
+                        type="button"
                         onClick={() => {
                           setShowNewFolder(false);
                           setRenamingFolderId(folder.id);
@@ -597,7 +697,8 @@ export function Collection() {
                         <Edit3 size={13} /> {t.collectionRename}
                       </button>
                       <button
-                        onClick={() => handleDeleteFolder(folder.id)}
+                        type="button"
+                        onClick={() => requestDeleteFolder(folder.id, folder.name)}
                         className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-500/10 text-red-500"
                       >
                         <Trash2 size={13} /> {t.delete}
@@ -615,8 +716,8 @@ export function Collection() {
                         className="flex-1 glass-input px-3 py-2 text-sm"
                         autoFocus
                       />
-                      <button onClick={() => handleRenameFolder(folder.id)} className="px-3 py-2 rounded-xl bg-emerald-500 text-white text-sm font-medium">{t.confirm}</button>
-                      <button onClick={() => { setRenamingFolderId(null); setRenameFolderValue(''); }} className="icon-touch-button icon-touch-button-sm glass-button" aria-label={t.cancel}><X size={14} /></button>
+                      <button type="button" onClick={() => handleRenameFolder(folder.id)} className="px-3 py-2 rounded-xl bg-emerald-500 text-white text-sm font-medium">{t.confirm}</button>
+                      <button type="button" onClick={() => { setRenamingFolderId(null); setRenameFolderValue(''); }} className="icon-touch-button icon-touch-button-sm glass-button" aria-label={t.cancel}><X size={14} /></button>
                     </div>
                   )}
                 </div>
@@ -624,6 +725,7 @@ export function Collection() {
 
               {/* Uncategorized card */}
               <button
+                type="button"
                 onClick={() => setSelectedFolderId('')}
                 className="glass-card p-5 text-left group border-dashed border-2"
               >
@@ -652,11 +754,11 @@ export function Collection() {
                       <p className="text-xs text-secondary mt-0.5">{getItemLabel(item)}</p>
                     </div>
                     {isNoteItem(item) && (
-                      <button onClick={(e) => { e.stopPropagation(); openEditNote(item); }} className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-tertiary hover:text-primary transition-all">
+                      <button type="button" onClick={(e) => { e.stopPropagation(); openEditNote(item); }} className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-tertiary hover:text-primary transition-all" aria-label={(t.editNote || 'Edit note') + ` ${item.title}`}>
                         <Edit3 size={16} />
                       </button>
                     )}
-                    <button onClick={(e) => { e.stopPropagation(); handleDeleteItem(item.id); }} className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-tertiary hover:text-red-500 transition-all">
+                    <button type="button" onClick={(e) => { e.stopPropagation(); requestDeleteItem(item); }} className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-tertiary hover:text-red-500 transition-all" aria-label={(t.delete || 'Delete') + ` ${item.title}`}>
                       <Trash2 size={16} />
                     </button>
                   </motion.div>
@@ -685,7 +787,7 @@ export function Collection() {
                       <h3 className="font-medium text-sm truncate">{recipe.name || t.untitledRecipe}</h3>
                       <p className="text-xs text-secondary mt-0.5">{recipe.difficulty || t.recipes}</p>
                     </div>
-                    <button onClick={() => handleDeleteRecipe(recipe.id)} className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-tertiary hover:text-red-500 transition-all">
+                    <button type="button" onClick={() => requestDeleteRecipe(recipe)} className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-tertiary hover:text-red-500 transition-all" aria-label={(t.delete || 'Delete') + ` ${recipe.name || t.untitledRecipe}`}>
                       <Trash2 size={16} />
                     </button>
                   </motion.div>
@@ -743,13 +845,17 @@ export function Collection() {
                       <button
                         onClick={(e) => { e.stopPropagation(); openEditNote(item); }}
                         className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-tertiary hover:text-primary transition-all"
+                        type="button"
+                        aria-label={(t.editNote || 'Edit note') + ` ${item.title}`}
                       >
                         <Edit3 size={16} />
                       </button>
                     )}
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleDeleteItem(item.id); }}
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); requestDeleteItem(item); }}
                       className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-tertiary hover:text-red-500 transition-all"
+                      aria-label={(t.delete || 'Delete') + ` ${item.title}`}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -765,15 +871,37 @@ export function Collection() {
       <AnimatePresence>
         {selectedItem && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50" onClick={closeSelectedItem} />
             <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              onClick={() => {
+                if (!savingModalNote) closeSelectedItem();
+              }}
+            />
+            <motion.div
+              ref={itemDetailRef}
               initial={{ opacity: 0, y: 100 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 100 }}
               className="fixed z-50 glass-card overflow-hidden flex flex-col"
+              role="dialog"
+              aria-modal="true"
+              aria-label={selectedItem.title || t.closeItemDetails || t.collection}
+              tabIndex={-1}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape' && !savingModalNote) {
+                  event.preventDefault();
+                  if (isNoteEditingInModal) cancelModalNoteEdit();
+                  else closeSelectedItem();
+                }
+              }}
               style={{
                 top: 'max(calc(var(--safe-top, 0px) + 1rem), 4.25rem)',
-                bottom: 'max(calc(var(--bottom-safe-capped, 0px) + 0.75rem), 1rem)',
+                bottom: collectionKeyboardFix.isKeyboardOpen
+                  ? `calc(${collectionKeyboardFix.keyboardOffset}px + 0.5rem)`
+                  : 'max(calc(var(--bottom-safe-capped, 0px) + 0.75rem), 1rem)',
                 left: 'max(calc(var(--safe-left, 0px) + 0.75rem), 1rem)',
                 right: 'max(calc(var(--safe-right, 0px) + 0.75rem), 1rem)',
                 maxWidth: '42rem',
@@ -789,12 +917,12 @@ export function Collection() {
                 </div>
                 <div className="flex items-center gap-2">
                   {isNoteItem(selectedItem) && !isNoteEditingInModal && (
-                    <button onClick={() => beginModalNoteEdit(selectedItem)} className="h-11 px-3 rounded-xl glass-button inline-flex items-center gap-2 text-sm">
+                    <button type="button" onClick={() => beginModalNoteEdit(selectedItem)} className="h-11 px-3 rounded-xl glass-button inline-flex items-center gap-2 text-sm">
                       <Edit3 size={15} />
                       <span>{t.editNote}</span>
                     </button>
                   )}
-                  <button onClick={closeSelectedItem} className="icon-touch-button glass-button" aria-label={t.closeItemDetails || t.close}>
+                  <button type="button" onClick={closeSelectedItem} className="icon-touch-button glass-button" aria-label={t.closeItemDetails || t.close}>
                     <X size={18} />
                   </button>
                 </div>
@@ -806,24 +934,30 @@ export function Collection() {
                       <label className="text-xs text-secondary block">{t.editNote}</label>
                       <input
                         type="text"
+                        name="modal-note-title"
                         value={modalNoteTitleDraft}
                         onChange={(e) => setModalNoteTitleDraft(e.target.value)}
                         placeholder={t.noteTitle}
+                        aria-label={t.noteTitle}
+                        enterKeyHint="next"
                         className="w-full glass-input h-11 px-4 text-base"
                       />
                       <textarea
+                        name="modal-note-content"
                         value={modalNoteBodyDraft}
                         onChange={(e) => setModalNoteBodyDraft(e.target.value)}
                         placeholder={t.noteContent}
+                        aria-label={t.noteContent}
                         className="w-full glass-input px-4 py-3 text-base min-h-[180px] resize-y"
                       />
                       <select
                         value={modalNoteFolderDraft}
                         onChange={(e) => setModalNoteFolderDraft(e.target.value)}
+                        aria-label={t.moveToFolder}
                         className="glass-input h-11 px-3 text-sm w-full"
                       >
                         <option value="">{t.noFolder}</option>
-                        {folders.map((folder) => (
+                        {visibleFolders.map((folder) => (
                           <option key={folder.id} value={folder.id}>{folder.name}</option>
                         ))}
                       </select>
@@ -855,10 +989,11 @@ export function Collection() {
                           await refresh();
                           setSelectedItem((prev) => prev ? { ...prev, folderId: e.target.value || undefined, updatedAt: Date.now() } as CollectionItem : prev);
                         }}
+                        aria-label={t.moveToFolder}
                         className="glass-input h-11 px-3 text-sm w-full"
                       >
                         <option value="">{t.noFolder}</option>
-                        {folders.map((folder) => (
+                        {visibleFolders.map((folder) => (
                           <option key={folder.id} value={folder.id}>{folder.name}</option>
                         ))}
                       </select>
@@ -868,7 +1003,16 @@ export function Collection() {
               )}
               <div
                 className="prose prose-sm max-w-none text-primary px-6 pb-6 flex-1 overflow-y-auto"
-                style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', paddingBottom: 'calc(var(--bottom-safe-capped, 0px) + 1.5rem)' }}
+                style={{
+                  WebkitOverflowScrolling: 'touch',
+                  overscrollBehavior: 'contain',
+                  paddingBottom: collectionKeyboardFix.isKeyboardOpen
+                    ? `calc(${collectionKeyboardFix.keyboardOffset}px + 1.25rem)`
+                    : 'calc(var(--bottom-safe-capped, 0px) + 1.5rem)',
+                  scrollPaddingBottom: collectionKeyboardFix.isKeyboardOpen
+                    ? `calc(${collectionKeyboardFix.keyboardOffset}px + 1rem)`
+                    : 'calc(var(--bottom-safe-capped, 0px) + 1rem)',
+                }}
               >
                 {isNoteItem(selectedItem) && isNoteEditingInModal ? null : selectedItem.type === 'ai_canvas' ? (
                   <div className="space-y-5">
@@ -901,6 +1045,28 @@ export function Collection() {
           </>
         )}
       </AnimatePresence>
+      <ConfirmActionDialog
+        open={Boolean(pendingDelete)}
+        title={
+          pendingDelete?.kind === 'folder'
+            ? (t.deleteFolderConfirm || t.deleteFolder || t.delete)
+            : pendingDelete?.kind === 'recipe'
+              ? (t.deleteRecipeConfirm || t.delete)
+              : (t.deleteItemConfirm || t.delete)
+        }
+        description={
+          pendingDelete
+            ? `${pendingDelete.label}. ${t.deleteActionCannotUndo || 'This cannot be undone.'}`
+            : ''
+        }
+        confirmLabel={t.confirmDelete || t.delete}
+        cancelLabel={t.cancel}
+        busy={deleteBusy}
+        onConfirm={confirmPendingDelete}
+        onCancel={() => {
+          if (!deleteBusy) setPendingDelete(null);
+        }}
+      />
     </motion.div>
   );
 }

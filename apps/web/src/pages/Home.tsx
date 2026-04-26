@@ -136,6 +136,7 @@ export function Home() {
   const [billingBusy, setBillingBusy] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [userPictureFailed, setUserPictureFailed] = useState(false);
+  const [savingResult, setSavingResult] = useState(false);
   const statusIntervalRef = useRef<number | null>(null);
   const savedResetTimeoutRef = useRef<number | null>(null);
   const copiedResetTimeoutRef = useRef<number | null>(null);
@@ -144,6 +145,7 @@ export function Home() {
     assistantName: t.chatBrandName,
   }));
   const languageMenuRef = useRef<HTMLDivElement | null>(null);
+  const resultModalRef = useRef<HTMLDivElement | null>(null);
   const isMountedRef = useRef(true);
   const searchRequestIdRef = useRef(0);
   const { hideNav, showNav } = useNavbar();
@@ -224,6 +226,14 @@ export function Home() {
     else showNav();
     return () => showNav();
   }, [showResultModal, hideNav, showNav]);
+
+  useEffect(() => {
+    if (!showResultModal) return;
+    const timer = window.setTimeout(() => {
+      resultModalRef.current?.focus();
+    }, 40);
+    return () => window.clearTimeout(timer);
+  }, [showResultModal]);
 
   // Save-to-collection state
   const [saved, setSaved] = useState(false);
@@ -387,6 +397,7 @@ export function Home() {
   };
 
   const executeSearch = async (searchQuery: string) => {
+    if (loading) return;
     if (!isAuthenticated) {
       openAuthModal({ source: 'home_search' });
       return;
@@ -407,6 +418,7 @@ export function Home() {
     setLoading(true);
     setSaved(false);
     setCopied(false);
+    setSavingResult(false);
     setShowResultModal(true);
     setResult(null);
     setSearchError('');
@@ -540,7 +552,7 @@ export function Home() {
   };
 
   const handleSaveToCollection = async () => {
-    if (!result || saved) return;
+    if (!result || saved || savingResult) return;
     const item: CollectionItem = {
       id: genId('col'),
       title: result.query || t.homeSearchResult,
@@ -553,15 +565,20 @@ export function Home() {
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
-    await saveCollectionItem(item);
-    setSaved(true);
-    if (savedResetTimeoutRef.current !== null) {
-      window.clearTimeout(savedResetTimeoutRef.current);
+    setSavingResult(true);
+    try {
+      await saveCollectionItem(item);
+      setSaved(true);
+      if (savedResetTimeoutRef.current !== null) {
+        window.clearTimeout(savedResetTimeoutRef.current);
+      }
+      savedResetTimeoutRef.current = window.setTimeout(() => {
+        setSaved(false);
+        savedResetTimeoutRef.current = null;
+      }, 3000);
+    } finally {
+      setSavingResult(false);
     }
-    savedResetTimeoutRef.current = window.setTimeout(() => {
-      setSaved(false);
-      savedResetTimeoutRef.current = null;
-    }, 3000);
   };
 
   const handleCopyResult = async () => {
@@ -794,11 +811,15 @@ export function Home() {
             size={22}
           />
           <input
-            type="text"
+            type="search"
+            name="home-ai-search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={accountBlocked ? t.homeSearchBlockedPlaceholder : isAuthenticated ? t.homeSearchPlaceholderAuth : t.homeSearchPlaceholderGuest}
-            disabled={!isAuthenticated || accountBlocked}
+            disabled={!isAuthenticated || accountBlocked || loading}
+            aria-label={t.homeAskTitle}
+            enterKeyHint="search"
+            autoComplete="off"
             className={`w-full glass-input py-5 text-lg font-medium ${isRtl ? 'pr-16 pl-16 text-right' : 'pl-16 pr-16 text-left'}`}
           />
           {loading && (
@@ -1009,16 +1030,29 @@ export function Home() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
-              onClick={closeModal}
+              onClick={() => {
+                if (!savingResult) closeModal();
+              }}
             />
 
             {/* Modal */}
             <motion.div
+              ref={resultModalRef}
               initial={{ opacity: 0, y: 50, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 50, scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="fixed z-50 flex flex-col glass-card overflow-hidden"
+              role="dialog"
+              aria-modal="true"
+              aria-label={isBillingModal ? t.homeBillingSubtitle : t.homeSearchResult}
+              tabIndex={-1}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape' && !savingResult) {
+                  event.preventDefault();
+                  closeModal();
+                }
+              }}
               style={{
                 top: 'max(calc(var(--safe-top, 0px) + 0.5rem), 1rem)',
                 bottom: 'max(calc(var(--bottom-safe-capped, 0px) + 0.5rem), 1rem)',
@@ -1043,9 +1077,11 @@ export function Home() {
                   {/* Copy */}
                   {!isBillingModal ? (
                     <button
+                      type="button"
                       onClick={handleCopyResult}
                       disabled={!result || loading}
                       className="p-2 rounded-xl text-secondary hover:text-primary hover:bg-surface-alpha transition-all disabled:opacity-40"
+                      aria-label={t.copySummary}
                       title={t.copySummary}
                     >
                       {copied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
@@ -1054,12 +1090,14 @@ export function Home() {
                   {/* Save to Collection */}
                   {!isBillingModal ? (
                     <button
+                      type="button"
                       onClick={handleSaveToCollection}
-                      disabled={!result || loading || saved}
+                      disabled={!result || loading || saved || savingResult}
                       className={`p-2 rounded-xl transition-all disabled:opacity-40 ${saved ? 'text-emerald-500 bg-emerald-500/10' : 'text-secondary hover:text-primary hover:bg-surface-alpha'}`}
+                      aria-label={saved ? t.homeSavedToCollection : t.saveToCollection}
                       title={t.saveToCollection}
                     >
-                      {saved ? <Check size={16} /> : <Bookmark size={16} />}
+                      {saved ? <Check size={16} /> : savingResult ? <RefreshCcw size={16} className="animate-spin" /> : <Bookmark size={16} />}
                     </button>
                   ) : null}
                   {/* Close */}

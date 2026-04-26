@@ -16,8 +16,11 @@ interface SessionItemProps {
   onRenameSubmit: (id: string) => void;
   onRenameChange: (value: string) => void;
   onDelete: (id: string) => void;
+  onDeleteCancel?: () => void;
   onMoveStart: (id: string) => void;
   onMoveToFolder: (sessionId: string, folderId?: string) => void;
+  pendingDelete?: boolean;
+  deleting?: boolean;
   indent?: boolean;
 }
 
@@ -35,8 +38,11 @@ export function SessionItem({
   onRenameSubmit,
   onRenameChange,
   onDelete,
+  onDeleteCancel,
   onMoveStart,
   onMoveToFolder,
+  pendingDelete = false,
+  deleting = false,
   indent = false,
 }: SessionItemProps) {
   const { t } = useGlobalState();
@@ -51,7 +57,7 @@ export function SessionItem({
   return (
     <div className={indent ? 'pl-4' : ''}>
       <div className={`flex items-center gap-1 px-2 py-2 rounded-xl transition-all group ${isActive ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'hover:bg-surface-alpha text-primary'}`}>
-        <button onClick={onSelect} className="flex items-center gap-2 flex-1 min-w-0 text-left">
+        <button type="button" onClick={onSelect} className="flex items-center gap-2 flex-1 min-w-0 text-left">
           <MessageSquare size={13} className="shrink-0 text-secondary" />
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
@@ -62,8 +68,10 @@ export function SessionItem({
           </div>
         </button>
         <button
+          type="button"
           onClick={(e) => { e.stopPropagation(); onContextMenu(session.id); }}
           className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-1 rounded-lg text-tertiary hover:text-primary transition-all shrink-0"
+          aria-expanded={showMenu}
           aria-label={t.chatOpenSessionOptions}
           title={t.chatOpenSessionOptions}
         >
@@ -72,17 +80,45 @@ export function SessionItem({
       </div>
 
       {showMenu && (
-        <div className="mx-2 mb-1 p-1 bg-surface-alpha rounded-xl border border-glass text-sm animate-in fade-in zoom-in-95 duration-200">
-          <button onClick={() => onRename(session.id, session.title)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-alpha-hover text-primary"><Edit3 size={13} /> {t.collectionRename || t.edit}</button>
-          <button onClick={() => onMoveStart(session.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-alpha-hover text-primary"><FolderInput size={13} /> {t.moveToFolder}</button>
-          <button onClick={() => onDelete(session.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-500/10 text-red-500"><Trash2 size={13} /> {t.delete}</button>
+        <div className="mx-2 mb-1 p-1 bg-surface-alpha rounded-xl border border-glass text-sm animate-in fade-in zoom-in-95 duration-200" role="menu">
+          {pendingDelete ? (
+            <div className="space-y-2 p-2" role="alert">
+              <p className="text-xs leading-5 text-secondary">
+                {(t.deleteChatSessionConfirm || 'Delete this chat?') + ' ' + (t.deleteActionCannotUndo || 'This cannot be undone.')}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={onDeleteCancel}
+                  disabled={deleting}
+                  className="rounded-lg border border-glass bg-surface-alpha px-2 py-2 text-xs font-semibold text-primary disabled:opacity-50"
+                >
+                  {t.cancel}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDelete(session.id)}
+                  disabled={deleting}
+                  className="rounded-lg bg-red-600 px-2 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                >
+                  {deleting ? t.loading : (t.confirmDelete || t.delete)}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <button type="button" role="menuitem" onClick={() => onRename(session.id, session.title)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-alpha-hover text-primary"><Edit3 size={13} /> {t.collectionRename || t.edit}</button>
+              <button type="button" role="menuitem" onClick={() => onMoveStart(session.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-alpha-hover text-primary"><FolderInput size={13} /> {t.moveToFolder}</button>
+              <button type="button" role="menuitem" onClick={() => onDelete(session.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-500/10 text-red-500"><Trash2 size={13} /> {t.delete}</button>
+            </>
+          )}
         </div>
       )}
 
       {isRenaming && (
         <div className="mx-2 mb-1 flex gap-1">
           <input value={renameValue} onChange={(e) => onRenameChange(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && onRenameSubmit(session.id)} className="flex-1 bg-surface-alpha rounded-lg px-3 py-1.5 text-sm border-none focus:ring-1 focus:ring-blue-500/30" autoFocus />
-          <button onClick={() => onRenameSubmit(session.id)} className="px-2 py-1.5 rounded-lg bg-blue-500 text-white text-xs">{t.confirm}</button>
+          <button type="button" onClick={() => onRenameSubmit(session.id)} className="px-2 py-1.5 rounded-lg bg-blue-500 text-white text-xs">{t.confirm}</button>
         </div>
       )}
 
@@ -90,12 +126,12 @@ export function SessionItem({
         <div className="mx-2 mb-1 p-1 bg-surface-alpha rounded-xl border border-glass text-sm">
           <div className="px-3 py-1.5 text-[10px] font-semibold text-tertiary uppercase tracking-widest">{t.moveToFolder}</div>
           {chatFolders.map((folder) => (
-            <button key={folder.id} onClick={() => onMoveToFolder(session.id, folder.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-alpha-hover text-primary">
+            <button key={folder.id} type="button" onClick={() => onMoveToFolder(session.id, folder.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-alpha-hover text-primary">
               <Folder size={13} className="text-amber-500" /> {folder.name}
             </button>
           ))}
           {session.folderId && (
-            <button onClick={() => onMoveToFolder(session.id, undefined)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-alpha-hover text-secondary">
+            <button type="button" onClick={() => onMoveToFolder(session.id, undefined)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-alpha-hover text-secondary">
               <X size={13} /> {t.chatRemoveFromFolder}
             </button>
           )}

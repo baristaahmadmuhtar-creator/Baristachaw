@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ChevronDown,
@@ -155,6 +155,10 @@ export function ChatWorkspacePanel({
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const [movingSessionId, setMovingSessionId] = useState<string | null>(null);
+  const [pendingDeleteSessionId, setPendingDeleteSessionId] = useState<string | null>(null);
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
+  const [pendingDeleteFolderId, setPendingDeleteFolderId] = useState<string | null>(null);
+  const [deletingFolderId, setDeletingFolderId] = useState<string | null>(null);
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
@@ -200,6 +204,8 @@ export function ChatWorkspacePanel({
   const resetTransientState = useCallback(() => {
     setContextMenuId(null);
     setMovingSessionId(null);
+    setPendingDeleteSessionId(null);
+    setPendingDeleteFolderId(null);
     setShowNewFolder(false);
     setNewFolderName('');
   }, []);
@@ -234,8 +240,21 @@ export function ChatWorkspacePanel({
   };
 
   const handleDelete = async (id: string) => {
-    await removeSession(id);
-    setContextMenuId(null);
+    if (pendingDeleteSessionId !== id) {
+      setPendingDeleteSessionId(id);
+      setMovingSessionId(null);
+      setRenamingId(null);
+      return;
+    }
+
+    setDeletingSessionId(id);
+    try {
+      await removeSession(id);
+      setContextMenuId(null);
+      setPendingDeleteSessionId(null);
+    } finally {
+      setDeletingSessionId(null);
+    }
   };
 
   const handleMoveToFolder = async (sessionId: string, folderId?: string) => {
@@ -249,6 +268,24 @@ export function ChatWorkspacePanel({
     await addChatFolder(newFolderName.trim());
     setNewFolderName('');
     setShowNewFolder(false);
+  };
+
+  const handleFolderDelete = async (id: string) => {
+    if (pendingDeleteFolderId !== id) {
+      setPendingDeleteFolderId(id);
+      setContextMenuId(`f_${id}`);
+      setRenamingId(null);
+      return;
+    }
+
+    setDeletingFolderId(id);
+    try {
+      await removeChatFolder(id);
+      setContextMenuId(null);
+      setPendingDeleteFolderId(null);
+    } finally {
+      setDeletingFolderId(null);
+    }
   };
 
   const toggleFolderExpand = (id: string) => {
@@ -416,31 +453,64 @@ export function ChatWorkspacePanel({
       onRenameSubmit={(id) => { void handleRename(id); }}
       onRenameChange={setRenameValue}
       onDelete={(id) => { void handleDelete(id); }}
+      onDeleteCancel={() => {
+        setPendingDeleteSessionId(null);
+        setContextMenuId(null);
+      }}
       onMoveStart={(id) => { setMovingSessionId(id); setContextMenuId(null); }}
       onMoveToFolder={(sessionId, folderId) => { void handleMoveToFolder(sessionId, folderId); }}
+      pendingDelete={pendingDeleteSessionId === session.id}
+      deleting={deletingSessionId === session.id}
       indent={indent}
     />
   );
 
+  const handleWorkspaceKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Escape') return;
+
+    if (contextMenuId || renamingId || movingSessionId || showNewFolder || pendingDeleteSessionId || pendingDeleteFolderId) {
+      event.preventDefault();
+      resetTransientState();
+      setRenamingId(null);
+      setRenameValue('');
+      return;
+    }
+
+    if (!isDesktop && onRequestClose) {
+      event.preventDefault();
+      onRequestClose();
+    }
+  };
+
   return (
-    <div className={`flex flex-col min-h-0 ${className ?? ''}`}>
+    <div className={`flex flex-col min-h-0 ${className ?? ''}`} onKeyDown={handleWorkspaceKeyDown}>
       <div className="p-3 border-b panel-divider-subtle flex items-center justify-between gap-2">
-        <div className="flex gap-1 p-1 bg-surface-alpha rounded-xl">
+        <div className="flex gap-1 p-1 bg-surface-alpha rounded-xl" role="tablist" aria-label={t.chatWorkspace}>
           <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'history'}
             onClick={() => onTabChange('history')}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all focus-soft ${tab === 'history' ? 'bg-white shadow-sm text-black dark:bg-white/20 dark:text-white' : 'text-secondary'}`}
           >{t.chatWorkspaceTabHistory}</button>
           <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'library'}
             onClick={() => onTabChange('library')}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all focus-soft ${tab === 'library' ? 'bg-white shadow-sm text-black dark:bg-white/20 dark:text-white' : 'text-secondary'}`}
           >{t.chatWorkspaceTabLibrary}</button>
           <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'memory'}
             onClick={() => onTabChange('memory')}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all focus-soft ${tab === 'memory' ? 'bg-white shadow-sm text-black dark:bg-white/20 dark:text-white' : 'text-secondary'}`}
           >{t.chatWorkspaceTabMemory}</button>
         </div>
         {!isDesktop && onRequestClose && (
           <button
+            type="button"
             onClick={onRequestClose}
             className="icon-touch-button icon-touch-button-sm text-secondary hover:bg-surface-alpha"
             aria-label={t.chatCloseSidebar || t.close}
@@ -467,6 +537,7 @@ export function ChatWorkspacePanel({
 
           <div className="px-3 flex gap-2 my-2">
             <button
+              type="button"
               onClick={() => { if (canCreateFreshChat) void handleNewChat(); }}
               disabled={!canCreateFreshChat}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all focus-soft ${canCreateFreshChat ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/15' : 'bg-surface-alpha text-tertiary cursor-not-allowed opacity-70'}`}
@@ -474,9 +545,11 @@ export function ChatWorkspacePanel({
               <Plus size={14} /> {t.newChat}
             </button>
             <button
+              type="button"
               onClick={() => setShowNewFolder(true)}
               className="p-2.5 rounded-xl bg-surface-alpha text-secondary hover:text-primary transition-all focus-soft"
               title={t.createFolder}
+              aria-label={t.createFolder}
             >
               <FolderPlus size={16} />
             </button>
@@ -494,8 +567,8 @@ export function ChatWorkspacePanel({
                     className="flex-1 bg-surface-alpha rounded-xl px-3 py-2 text-sm border-none focus-soft"
                     autoFocus
                   />
-                  <button onClick={() => { void handleCreateFolder(); }} disabled={!newFolderName.trim()} className="px-3 py-2 rounded-xl bg-blue-500 text-white text-sm font-medium disabled:opacity-50 focus-soft">{t.save}</button>
-                  <button onClick={() => setShowNewFolder(false)} className="icon-touch-button icon-touch-button-sm text-secondary hover:bg-surface-alpha focus-soft" aria-label={t.cancel}>
+                  <button type="button" onClick={() => { void handleCreateFolder(); }} disabled={!newFolderName.trim()} className="px-3 py-2 rounded-xl bg-blue-500 text-white text-sm font-medium disabled:opacity-50 focus-soft">{t.save}</button>
+                  <button type="button" onClick={() => setShowNewFolder(false)} className="icon-touch-button icon-touch-button-sm text-secondary hover:bg-surface-alpha focus-soft" aria-label={t.cancel}>
                     <X size={14} />
                   </button>
                 </div>
@@ -510,28 +583,52 @@ export function ChatWorkspacePanel({
               return (
                 <div key={folder.id}>
                   <div className="flex items-center gap-1 px-2 py-2 rounded-xl hover:bg-surface-alpha group">
-                    <button onClick={() => toggleFolderExpand(folder.id)} className="flex items-center gap-2 flex-1 min-w-0 focus-soft rounded-lg px-1">
+                    <button type="button" onClick={() => toggleFolderExpand(folder.id)} className="flex items-center gap-2 flex-1 min-w-0 focus-soft rounded-lg px-1">
                       {isExpanded ? <ChevronDown size={14} className="text-tertiary shrink-0" /> : <ChevronRight size={14} className="text-tertiary shrink-0" />}
                       <Folder size={14} className="text-amber-500 shrink-0" />
                       <span className="text-sm font-medium truncate">{folder.name}</span>
                       <span className="text-xs text-tertiary ml-auto shrink-0">{folderSessions.length}</span>
                     </button>
                     <button
-                      onClick={() => setContextMenuId(contextMenuId === `f_${folder.id}` ? null : `f_${folder.id}`)}
+                      type="button"
+                      onClick={() => {
+                        setPendingDeleteFolderId(null);
+                        setContextMenuId(contextMenuId === `f_${folder.id}` ? null : `f_${folder.id}`);
+                      }}
                       className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-1 rounded-lg text-tertiary hover:text-primary transition-all"
+                      aria-expanded={contextMenuId === `f_${folder.id}`}
+                      aria-label={t.chatOpenSessionOptions}
                     >
                       <MoreHorizontal size={14} />
                     </button>
                   </div>
 
                   {contextMenuId === `f_${folder.id}` && (
-                    <div className="mx-2 mb-1 p-1 bg-surface-alpha rounded-xl border panel-divider-subtle text-sm">
-                      <button onClick={() => { setRenamingId(`f_${folder.id}`); setRenameValue(folder.name); setContextMenuId(null); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-alpha-hover text-primary">
-                        <Edit3 size={13} /> {t.collectionRename}
-                      </button>
-                      <button onClick={() => { void removeChatFolder(folder.id); setContextMenuId(null); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-500/10 text-red-500">
-                        <Trash2 size={13} /> {t.delete}
-                      </button>
+                    <div className="mx-2 mb-1 p-1 bg-surface-alpha rounded-xl border panel-divider-subtle text-sm" role="menu">
+                      {pendingDeleteFolderId === folder.id ? (
+                        <div className="space-y-2 p-2" role="alert">
+                          <p className="text-xs leading-5 text-secondary">
+                            {(t.deleteFolderConfirm || 'Delete this folder?') + ' ' + (t.deleteActionCannotUndo || 'This cannot be undone.')}
+                          </p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button type="button" onClick={() => { setPendingDeleteFolderId(null); setContextMenuId(null); }} disabled={deletingFolderId === folder.id} className="rounded-lg border border-glass bg-surface-alpha px-2 py-2 text-xs font-semibold text-primary disabled:opacity-50">
+                              {t.cancel}
+                            </button>
+                            <button type="button" onClick={() => { void handleFolderDelete(folder.id); }} disabled={deletingFolderId === folder.id} className="rounded-lg bg-red-600 px-2 py-2 text-xs font-semibold text-white disabled:opacity-60">
+                              {deletingFolderId === folder.id ? t.loading : (t.confirmDelete || t.delete)}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <button type="button" role="menuitem" onClick={() => { setRenamingId(`f_${folder.id}`); setRenameValue(folder.name); setContextMenuId(null); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-surface-alpha-hover text-primary">
+                            <Edit3 size={13} /> {t.collectionRename}
+                          </button>
+                          <button type="button" role="menuitem" onClick={() => { void handleFolderDelete(folder.id); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-red-500/10 text-red-500">
+                            <Trash2 size={13} /> {t.delete}
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
 
@@ -544,7 +641,7 @@ export function ChatWorkspacePanel({
                         className="flex-1 bg-surface-alpha rounded-lg px-3 py-1.5 text-sm border-none focus-soft"
                         autoFocus
                       />
-                      <button onClick={() => { void editChatFolder(folder.id, renameValue.trim()); setRenamingId(null); }} className="px-2 py-1.5 rounded-lg bg-blue-500 text-white text-xs">{t.confirm}</button>
+                      <button type="button" onClick={() => { void editChatFolder(folder.id, renameValue.trim()); setRenamingId(null); }} className="px-2 py-1.5 rounded-lg bg-blue-500 text-white text-xs">{t.confirm}</button>
                     </div>
                   )}
 
@@ -841,6 +938,3 @@ export function ChatWorkspacePanel({
     </div>
   );
 }
-
-
-

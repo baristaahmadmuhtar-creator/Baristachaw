@@ -1,7 +1,13 @@
 import { test, expect } from '@playwright/test';
+import { qaLogin, qaLogout } from '../fixtures/auth';
 
 test.beforeEach(async ({ page }) => {
+  await qaLogin(page.request);
   await page.goto('/chat');
+});
+
+test.afterEach(async ({ page }) => {
+  await qaLogout(page.request);
 });
 
 test('chat container uses zero top padding and keeps header controls visible', async ({ page }) => {
@@ -9,8 +15,10 @@ test('chat container uses zero top padding and keeps header controls visible', a
   expect(paddingTop).toBe('0px');
 
   await expect(page.getByRole('heading', { name: 'Baristachaw' })).toBeVisible();
-  await expect(page.locator('.chat-liquid-header button[title="New Chat"], .chat-liquid-header button[title="Send your first message before creating another chat"]')).toBeVisible();
-  await expect(page.getByLabel('Normal mode')).toBeVisible();
+  await expect(page.locator('.chat-liquid-header').getByRole('button', {
+    name: /New Chat|Obrolan Baru|Current draft must be used before creating another chat|Draf saat ini harus dipakai sebelum membuat chat baru/i,
+  }).first()).toBeVisible();
+  await expect(page.getByLabel(/Normal mode|Mode normal/i)).toBeVisible();
 });
 
 test('mobile chat composer is flush to the bottom in pwa profile', async ({ page }, testInfo) => {

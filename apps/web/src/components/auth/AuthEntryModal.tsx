@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { AlertCircle, Info, Loader2, UserRound, X } from 'lucide-react';
+import { useEffect, useId, useRef } from 'react';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
 import { getLanguageDirection } from '../../constants';
@@ -47,6 +48,31 @@ export function AuthEntryModal() {
   } = useAuthModal();
   const direction = getLanguageDirection(language);
   const isRtl = direction === 'rtl';
+  const titleId = useId();
+  const bodyId = useId();
+  const googleButtonRef = useRef<HTMLButtonElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const focusTimer = window.setTimeout(() => {
+      if (isOffline) closeButtonRef.current?.focus();
+      else googleButtonRef.current?.focus();
+    }, 60);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !authBusy) {
+        event.preventDefault();
+        closeAuthModal();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [authBusy, closeAuthModal, isOffline, isOpen]);
 
   return (
     <AnimatePresence>
@@ -57,7 +83,9 @@ export function AuthEntryModal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[120] bg-black/40 backdrop-blur-sm"
-            onClick={closeAuthModal}
+            onClick={() => {
+              if (!authBusy) closeAuthModal();
+            }}
           />
           <div
             className="fixed inset-0 z-[121] flex items-center justify-center pointer-events-none"
@@ -77,17 +105,21 @@ export function AuthEntryModal() {
               className={`pointer-events-auto w-full max-w-md rounded-[1.8rem] border border-glass bg-[var(--bg-base)]/96 p-5 shadow-[0_18px_46px_rgba(0,0,0,0.24)] ${isRtl ? 'text-right' : 'text-left'}`}
               role="dialog"
               aria-modal="true"
-              aria-label={t.signIn}
+              aria-labelledby={titleId}
+              aria-describedby={bodyId}
             >
               <div className={`flex items-start justify-between gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
                 <div className={isRtl ? 'text-right' : 'text-left'}>
-                  <h2 className="text-lg font-semibold text-primary">{t.authModalTitle}</h2>
-                  <p className="mt-1 text-sm text-secondary">
+                  <h2 id={titleId} className="text-lg font-semibold text-primary">{t.authModalTitle}</h2>
+                  <p id={bodyId} className="mt-1 text-sm text-secondary">
                     {t.authModalBody.replace('{source}', resolveSourceLabel(source, t))}
                   </p>
                 </div>
                 <button
+                  ref={closeButtonRef}
+                  type="button"
                   onClick={closeAuthModal}
+                  disabled={authBusy}
                   className="rounded-full p-2 text-secondary hover:bg-surface-alpha hover:text-primary"
                   aria-label={t.authModalClose}
                 >
@@ -106,6 +138,7 @@ export function AuthEntryModal() {
                   <AlertCircle size={14} className="mt-0.5 shrink-0" />
                   <span className="flex-1">{authError}</span>
                   <button
+                    type="button"
                     onClick={clearAuthError}
                     className="rounded-full p-1 text-red-500/90 hover:bg-red-500/10"
                     aria-label={t.authModalDismissError}
@@ -117,6 +150,8 @@ export function AuthEntryModal() {
 
               <div className="mt-5 space-y-2">
                 <button
+                  ref={googleButtonRef}
+                  type="button"
                   onClick={() => void startGoogleAuth()}
                   disabled={authBusy || isOffline}
                   className="w-full rounded-2xl bg-blue-500 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-500/90 disabled:cursor-not-allowed disabled:opacity-55"
@@ -134,6 +169,7 @@ export function AuthEntryModal() {
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => void continueAsGuest()}
                   disabled={authBusy || isOffline}
                   className="w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3 text-sm font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55"

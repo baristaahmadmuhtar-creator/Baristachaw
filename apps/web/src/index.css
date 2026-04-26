@@ -894,16 +894,16 @@ html[data-web-parity] .chat-container {
 html[data-pwa],
 html[data-ios-standalone] {
   --pwa-bottom-bleed: 0px;
-  --edge-safe-bottom: 0px;
-  --safe-bottom: 0px;
-  --bottom-safe-capped: 0px;
-  --mobile-nav-floating-gap: 0px;
-  --mobile-nav-dock-offset: 0px;
-  --bottom-nav-total-height: var(--bottom-nav-height);
-  --page-padding-bottom: var(--bottom-nav-height);
-  --composer-bottom-offset: 0px;
+  --edge-safe-bottom: var(--device-safe-bottom);
+  --safe-bottom: var(--device-safe-bottom);
+  --bottom-safe-capped: min(var(--safe-bottom), 18px);
+  --mobile-nav-floating-gap: min(var(--safe-bottom), 18px);
+  --mobile-nav-dock-offset: var(--mobile-nav-floating-gap);
+  --bottom-nav-total-height: calc(var(--bottom-nav-height) + var(--mobile-nav-dock-offset));
+  --page-padding-bottom: var(--bottom-nav-total-height);
+  --composer-bottom-offset: var(--mobile-nav-floating-gap);
   --composer-bottom-padding: 0px;
-  --composer-message-gap: 0px;
+  --composer-message-gap: var(--mobile-nav-floating-gap);
   --composer-bottom-bg: transparent;
 }
 
@@ -992,6 +992,11 @@ select:focus-visible {
 
   html[data-pwa][data-keyboard-open="true"],
   html[data-ios-standalone][data-keyboard-open="true"] {
+    --mobile-nav-floating-gap: 0px;
+    --mobile-nav-dock-offset: 0px;
+    --bottom-nav-total-height: var(--bottom-nav-height);
+    --composer-bottom-offset: 0px;
+    --composer-message-gap: 0px;
     --page-padding-bottom: 0px;
   }
 
@@ -1009,7 +1014,7 @@ select:focus-visible {
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {
-    box-shadow: none;
+    box-shadow: 0 0 0 1px var(--focus-ring-color-soft), 0 0 0 3px color-mix(in srgb, var(--focus-ring-color-soft) 28%, transparent);
   }
 }
 

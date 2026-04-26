@@ -1,21 +1,32 @@
 import { test, expect } from '@playwright/test';
 import { clearClientState } from '../helpers/cleanup';
+import { qaLogin, qaLogout } from '../fixtures/auth';
+
+test.beforeEach(async ({ page }) => {
+  await qaLogin(page.request);
+});
+
+test.afterEach(async ({ page }) => {
+  await qaLogout(page.request);
+});
+
+const createFolderButton = /Create Folder|Buat Folder/i;
 
 test('mobile main routes render', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByText('What would you like to do today?')).toBeVisible();
+  await expect(page.getByText(/What would you like to do today\?|Apa yang ingin Anda lakukan hari ini\?/i)).toBeVisible();
 
   await page.goto('/chat');
   await expect(page.getByRole('heading', { name: 'Baristachaw' })).toBeVisible();
 
   await page.goto('/scanner');
-  await expect(page.getByRole('heading', { name: 'Vision Scan' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Vision Scan|Pemindai Visual/i })).toBeVisible();
 
   await page.goto('/collection');
-  await expect(page.getByRole('heading', { name: 'Collection' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Collection|Koleksi/i })).toBeVisible();
 
   await page.goto('/tools');
-  await expect(page.getByRole('heading', { name: 'Barista Tools' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Barista Tools|Alat Barista/i })).toBeVisible();
 });
 
 test('keyboard-open contracts reduce page bottom padding and keeps bottom filler disabled', async ({ page }) => {
@@ -46,7 +57,7 @@ test('keyboard-open contracts reduce page bottom padding and keeps bottom filler
 
 test('collection create-folder close button keeps iOS-friendly touch target', async ({ page }) => {
   await page.goto('/collection');
-  await page.getByTitle('Create Folder').click();
+  await page.getByRole('button', { name: createFolderButton }).click();
 
   const closeButton = page.locator('.icon-touch-button').filter({ has: page.locator('svg') }).first();
   await expect(closeButton).toBeVisible();
@@ -74,9 +85,10 @@ test('collection create-folder close button keeps iOS-friendly touch target', as
 test('mobile ai brew picker keeps dialog semantics and returns focus on close', async ({ page }) => {
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
+  await qaLogin(page.request);
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
-  const aiTab = page.getByRole('tab', { name: 'AI Brew' });
+  const aiTab = page.getByRole('tab', { name: /AI Brew|AI Seduh/i });
   const builderOpen = page.getByTestId('ai-brew-open-quick');
   await expect(aiTab).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByTestId('ai-brew-landing-mode-hot')).toHaveCount(0);
@@ -88,7 +100,7 @@ test('mobile ai brew picker keeps dialog semantics and returns focus on close', 
   const dialog = page.getByRole('dialog', { name: 'Dripper' });
   await expect(dialog).toBeVisible();
 
-  await dialog.getByRole('button', { name: 'Close picker' }).click();
+  await dialog.getByRole('button', { name: /Close picker|Tutup picker|Tutup/i }).click();
   await expect(dialog).toHaveCount(0);
   await page.waitForTimeout(100);
   await expect(pickerTrigger).toBeFocused();
@@ -99,6 +111,7 @@ test('mobile ai brew builder uses app fullscreen height in pwa profile', async (
 
   await page.goto('/');
   await clearClientState(page);
+  await qaLogin(page.request);
   await page.goto('/tools?tab=ai-brew&runtime=web_parity&ui_profile=pwa&host_safe_bottom=34', { waitUntil: 'domcontentloaded' });
   await page.getByTestId('ai-brew-open-quick').click();
   const builder = page.getByTestId('ai-brew-builder-quick');
@@ -127,6 +140,7 @@ test('mobile ai brew builder uses app fullscreen height in pwa profile', async (
 test('mobile ai brew result workspace keeps primary actions inside the viewport', async ({ page }) => {
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
+  await qaLogin(page.request);
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await page.getByTestId('ai-brew-open-quick').click();
@@ -192,6 +206,7 @@ test('mobile ai brew result stays legible in light theme', async ({ page }) => {
 
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
+  await qaLogin(page.request);
   await page.evaluate(() => {
     localStorage.setItem('BARISTA_THEME', 'light');
   });
@@ -277,6 +292,7 @@ test('mobile ai brew loading stays centered and keeps bottom nav hidden through 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
+  await qaLogin(page.request);
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await page.getByTestId('ai-brew-open-quick').click();
@@ -350,6 +366,7 @@ test('mobile ai brew builder keeps the action footer docked to the modal bottom'
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
+  await qaLogin(page.request);
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await page.getByTestId('ai-brew-open-quick').click();

@@ -80,9 +80,11 @@ function computeKeyboardOffsetFromViewport(args: {
     nextBaselineLayoutHeight - visualBottom,
     layoutHeight - visualBottom
   );
-  const keyboardOpen = nextLastOpen
-    ? rawOffset > IOS_KEYBOARD_CLOSE_THRESHOLD
-    : rawOffset > IOS_KEYBOARD_THRESHOLD;
+  const keyboardOpen = hasFocusedTextInput() && (
+    nextLastOpen
+      ? rawOffset > IOS_KEYBOARD_CLOSE_THRESHOLD
+      : rawOffset > IOS_KEYBOARD_THRESHOLD
+  );
   const keyboardOffset = keyboardOpen ? rawOffset : 0;
 
   if (!keyboardOpen) {
@@ -101,6 +103,11 @@ function computeKeyboardOffsetFromViewport(args: {
 
 function isTextInputLike(el: Element | null): el is HTMLElement {
   return !!el && el instanceof HTMLElement && el.matches('input, textarea, [contenteditable="true"]');
+}
+
+function hasFocusedTextInput() {
+  if (typeof document === 'undefined') return false;
+  return isTextInputLike(document.activeElement);
 }
 
 export function useIOSKeyboardFix({

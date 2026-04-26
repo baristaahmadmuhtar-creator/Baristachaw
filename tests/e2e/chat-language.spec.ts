@@ -13,16 +13,20 @@ test.afterEach(async ({ page }) => {
   await qaLogout(page.request);
 });
 
+const chatInputPlaceholder = /Type a message|Ketik pesan/i;
+const sendMessageButton = /Send message|Kirim pesan/i;
+const deepThinkButton = /Deep Think mode - thorough analysis|Mode Pikir Mendalam - analisis mendalam/i;
+
 async function sendChatMessage(
   page: import('@playwright/test').Page,
   text: string,
   endpointPath: '/api/chat' | '/api/ai',
 ) {
-  const input = page.getByPlaceholder('Type a message...');
+  const input = page.getByPlaceholder(chatInputPlaceholder);
   await expect(input).toBeVisible();
   await input.fill(text);
 
-  const sendButton = page.getByLabel('Send message');
+  const sendButton = page.getByLabel(sendMessageButton);
   await expect(sendButton).toBeEnabled();
 
   let sentRequest = await Promise.all([
@@ -101,8 +105,8 @@ test('deep mode uses /api/ai with response profile and deep action', async ({ pa
     });
   });
 
-  await expect(page.getByPlaceholder('Type a message...')).toBeVisible();
-  await page.getByLabel('Deep Think mode - thorough analysis').click({ force: true });
+  await expect(page.getByPlaceholder(chatInputPlaceholder)).toBeVisible();
+  await page.getByLabel(deepThinkButton).click({ force: true });
   await sendChatMessage(page, 'Berikan detail teknis dan alasan.', '/api/ai');
 
   await expect(page.locator('.chat-markdown').last()).toContainText('Analisis');
@@ -196,13 +200,14 @@ test('web chat includes the newest user turn in conversation context for follow-
   expect(chatHits).toBe(0);
 });
 
-test('pwa chat locks pinch zoom and restores viewport after leaving chat', async ({ page }) => {
+test('pwa chat preserves zoomable viewport and restores after leaving chat', async ({ page }) => {
   await page.setViewportSize({ width: 430, height: 932 });
   await page.goto('/chat?runtime=web_parity&ui_profile=pwa', { waitUntil: 'domcontentloaded' });
 
-  await expect.poll(async () => page.locator('meta[name="viewport"]').getAttribute('content')).toContain('maximum-scale=1');
-  const lockedViewport = await page.locator('meta[name="viewport"]').getAttribute('content');
-  expect(lockedViewport).toContain('user-scalable=no');
+  const chatViewport = await page.locator('meta[name="viewport"]').getAttribute('content');
+  expect(chatViewport).toContain('viewport-fit=cover');
+  expect(chatViewport).not.toContain('user-scalable=no');
+  expect(chatViewport).not.toContain('maximum-scale=1');
 
   await page.goto('/?runtime=web_parity&ui_profile=pwa', { waitUntil: 'domcontentloaded' });
   const restoredViewport = await page.locator('meta[name="viewport"]').getAttribute('content');

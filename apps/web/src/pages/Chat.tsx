@@ -192,6 +192,7 @@ export function Chat() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const copiedResetTimeoutRef = useRef<number | null>(null);
   const [savedMessageIds, setSavedMessageIds] = useState<Set<string>>(new Set());
+  const [savingMessageIds, setSavingMessageIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
@@ -1242,6 +1243,7 @@ export function Chat() {
   };
 
   const handleSaveToCollection = async (msg: ChatMessage) => {
+    if (savedMessageIds.has(msg.id) || savingMessageIds.has(msg.id)) return;
     const kind = detectContentKind(msg.text);
     const titleMatch = msg.text.match(/(?:^|\n)##\s*(?:[☕📋🔧📝]\s*)?(?:Recipe:|Brew Guide:|Troubleshooting:|SOP:)?\s*(.+)/i)
       || msg.text.match(/^(.{12,100})$/m);
@@ -1251,20 +1253,29 @@ export function Chat() {
       .replace('{date}', new Date().toLocaleDateString());
     const title = titleMatch?.[1]?.trim().slice(0, 100) || generatedTitle;
 
-    await saveCollectionItem({
-      id: `ai_${msg.id}_${Date.now()}`,
-      type: 'ai_canvas',
-      title,
-      content: {
-        markdown: msg.text,
-        kind,
-        sessionId: activeSessionId || undefined,
-        messageId: msg.id,
-      },
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-    setSavedMessageIds(prev => new Set([...prev, msg.id]));
+    setSavingMessageIds((prev) => new Set([...prev, msg.id]));
+    try {
+      await saveCollectionItem({
+        id: `ai_${msg.id}_${Date.now()}`,
+        type: 'ai_canvas',
+        title,
+        content: {
+          markdown: msg.text,
+          kind,
+          sessionId: activeSessionId || undefined,
+          messageId: msg.id,
+        },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      setSavedMessageIds(prev => new Set([...prev, msg.id]));
+    } finally {
+      setSavingMessageIds((prev) => {
+        const next = new Set(prev);
+        next.delete(msg.id);
+        return next;
+      });
+    }
   };
 
   // ─── Sidebar Actions ───
@@ -1485,6 +1496,9 @@ export function Chat() {
               dragConstraints={{ left: 0, right: 0 }}
               onDragEnd={handleSidebarDragEnd}
               className="fixed top-0 bottom-0 panel-soft-strong border-r panel-divider-subtle z-40 flex flex-col"
+              role="dialog"
+              aria-modal="true"
+              aria-label={t.chatWorkspace}
               style={{
                 left: 0,
                 width: 'min(22rem,92vw)',
@@ -1688,17 +1702,21 @@ export function Chat() {
                 <div className="mt-3 flex justify-end gap-1">
                   {isSaveableContent(msg.text) && (
                     <button
+                      type="button"
                       onClick={() => handleSaveToCollection(msg)}
-                      disabled={savedMessageIds.has(msg.id)}
+                      disabled={savedMessageIds.has(msg.id) || savingMessageIds.has(msg.id)}
                       className={`p-2 rounded-full transition-all duration-300 ease-out ${savedMessageIds.has(msg.id) ? 'text-emerald-500' : 'text-tertiary hover:text-blue-500 hover:bg-blue-500/10'}`}
+                      aria-label={savedMessageIds.has(msg.id) ? t.chatSavedToCollection : t.saveToCollection}
                       title={savedMessageIds.has(msg.id) ? t.chatSavedToCollection : t.saveToCollection}
                     >
-                      {savedMessageIds.has(msg.id) ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
+                      {savedMessageIds.has(msg.id) ? <BookmarkCheck size={14} /> : savingMessageIds.has(msg.id) ? <Loader2 size={14} className="animate-spin" /> : <Bookmark size={14} />}
                     </button>
                   )}
                   <button
+                    type="button"
                     onClick={() => handleCopyMessage(msg.id, msg.text)}
                     className="p-2 rounded-full transition-all duration-300 ease-out text-tertiary hover:text-secondary hover:bg-surface-alpha"
+                    aria-label={t.chatCopy}
                     title={t.chatCopy}
                   >
                     {copiedId === msg.id ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
@@ -2080,8 +2098,6 @@ function AudioBubble({ url, isUser }: { url: string; isUser: boolean }) {
     </div>
   );
 }
-
-
 
 
 

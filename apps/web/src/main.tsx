@@ -37,6 +37,12 @@ function getViewportOrientationKey() {
   return window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
 }
 
+function hasFocusedEditableTarget() {
+  const active = document.activeElement;
+  return active instanceof HTMLElement
+    && active.matches('input, textarea, select, [contenteditable="true"]');
+}
+
 function sessionGet(key: string) {
   try {
     return window.sessionStorage.getItem(key) || '';
@@ -185,9 +191,12 @@ function readViewportMetrics(): ViewportMetricsDetail {
     baselineLayoutHeight - visualBottom,
     layoutHeight - visualBottom
   );
-  const keyboardOpen = lastKeyboardOpenState
-    ? rawKeyboardOffset > IOS_KEYBOARD_CLOSE_THRESHOLD
-    : rawKeyboardOffset > IOS_KEYBOARD_THRESHOLD;
+  const focusedEditable = hasFocusedEditableTarget();
+  const keyboardOpen = focusedEditable && (
+    lastKeyboardOpenState
+      ? rawKeyboardOffset > IOS_KEYBOARD_CLOSE_THRESHOLD
+      : rawKeyboardOffset > IOS_KEYBOARD_THRESHOLD
+  );
   const keyboardOffset = keyboardOpen ? rawKeyboardOffset : 0;
   lastKeyboardOpenState = keyboardOpen;
 
@@ -310,13 +319,19 @@ if (typeof window !== 'undefined') {
 
   // Layout + keyboard metrics: resize / viewport / resume
   window.addEventListener('resize', scheduleViewportSync, { passive: true });
-  window.addEventListener('pageshow', scheduleViewportSyncBurst, { passive: true });
+  window.addEventListener('pageshow', () => {
+    if (!hasFocusedEditableTarget()) resetViewportBaseline();
+    scheduleViewportSyncBurst();
+  }, { passive: true });
+  window.addEventListener('focusin', scheduleViewportSyncBurst, { passive: true });
+  window.addEventListener('focusout', scheduleViewportSyncBurst, { passive: true });
   window.addEventListener('orientationchange', () => {
     resetViewportBaseline();
     scheduleViewportSyncBurst();
   });
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
+      if (!hasFocusedEditableTarget()) resetViewportBaseline();
       scheduleViewportSyncBurst();
     }
   });

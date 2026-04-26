@@ -3869,7 +3869,7 @@ export function AiBrewPanel({
             className="flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-3 lg:px-6 lg:pb-6 lg:pt-6"
             style={{
               paddingTop: 'calc(12px + var(--safe-top, 0px))',
-              paddingBottom: '12px',
+              paddingBottom: 'calc(28px + var(--bottom-safe-capped, 0px))',
             }}
           >
             <div className="space-y-4">

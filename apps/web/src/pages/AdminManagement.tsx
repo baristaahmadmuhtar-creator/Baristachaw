@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -37,8 +37,10 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuthModal } from '../context/AuthModalContext';
+import { useGlobalState } from '../context/GlobalState';
 import { isDisplayableAvatarUrl } from '../utils/avatarUrl';
 import { subscribeMediaQueryChange } from '../utils/mediaQuery';
+import { createAdminCopy, type AdminCopy } from './adminLocalization';
 import {
   AdminApiError,
   createCatalogRequest,
@@ -71,13 +73,13 @@ import {
 } from '../services/adminApi';
 
 const TABS = [
-  { id: 'overview', label: 'Command', icon: Gauge },
-  { id: 'users', label: 'Users', icon: Users },
-  { id: 'plans', label: 'Plans', icon: WalletCards },
-  { id: 'maintenance', label: 'Maintenance', icon: Wrench },
-  { id: 'database', label: 'Database', icon: Database },
-  { id: 'audit', label: 'Audit', icon: BookOpenCheck },
-  { id: 'launch', label: 'Launch', icon: ListChecks },
+  { id: 'overview', labelKey: 'tabOverview', icon: Gauge },
+  { id: 'users', labelKey: 'tabUsers', icon: Users },
+  { id: 'plans', labelKey: 'tabPlans', icon: WalletCards },
+  { id: 'maintenance', labelKey: 'tabMaintenance', icon: Wrench },
+  { id: 'database', labelKey: 'tabDatabase', icon: Database },
+  { id: 'audit', labelKey: 'tabAudit', icon: BookOpenCheck },
+  { id: 'launch', labelKey: 'tabLaunch', icon: ListChecks },
 ] as const;
 
 type AdminTab = (typeof TABS)[number]['id'];
@@ -110,13 +112,13 @@ const TAB_IDS = new Set<string>(TABS.map((tab) => tab.id));
 const ROLE_OPTIONS: AdminRole[] = ['owner', 'admin', 'support', 'analyst', 'user'];
 const STATUS_OPTIONS: AccountStatus[] = ['active', 'trialing', 'past_due', 'suspended', 'deleted'];
 const RECOVERY_OPTIONS: AccountRecoveryStatus[] = ['none', 'requested', 'verified', 'resolved', 'rejected'];
-const USER_QUEUE_OPTIONS: Array<{ value: UserQueueFilter; label: string }> = [
-  { value: 'all', label: 'All queues' },
-  { value: 'risk', label: 'Risk queue' },
-  { value: 'recovery', label: 'Recovery queue' },
-  { value: 'billing', label: 'Billing attention' },
-  { value: 'paid', label: 'Paid users' },
-  { value: 'sample', label: 'Preview data' },
+const USER_QUEUE_OPTIONS: Array<{ value: UserQueueFilter; labelKey: keyof AdminCopy['raw'] }> = [
+  { value: 'all', labelKey: 'queueAll' },
+  { value: 'risk', labelKey: 'queueRisk' },
+  { value: 'recovery', labelKey: 'queueRecovery' },
+  { value: 'billing', labelKey: 'queueBilling' },
+  { value: 'paid', labelKey: 'queuePaid' },
+  { value: 'sample', labelKey: 'queueSample' },
 ];
 const PLAN_OPTIONS: PlanCode[] = ['free', 'starter', 'pro', 'team', 'enterprise'];
 const BILLING_STATUS_OPTIONS: BillingStatus[] = ['none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded'];
@@ -141,23 +143,37 @@ const PLAN_WEIGHT: Record<PlanCode, number> = {
   free: 1,
 };
 
+const AdminCopyContext = createContext<AdminCopy>(createAdminCopy());
+
+function useAdminCopy() {
+  return useContext(AdminCopyContext);
+}
+
 function tabFromSearch(search: string): AdminTab {
   const requested = new URLSearchParams(search).get('tab') || 'overview';
   return TAB_IDS.has(requested) ? requested as AdminTab : 'overview';
 }
 
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat('en', { maximumFractionDigits: 1 }).format(value);
+function formatNumber(value: number, locale = 'en'): string {
+  return new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value);
 }
 
-function formatUsd(value: number): string {
-  if (value <= 0) return 'Custom';
-  return new Intl.NumberFormat('en', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(value);
+function formatUsd(value: number, locale = 'en', customLabel = 'Custom'): string {
+  if (value <= 0) return customLabel;
+  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(value);
 }
 
-function formatPlanLimitLabel(plan?: AdminPlan): string {
-  if (!plan) return 'plan limits pending';
-  return `${formatNumber(plan.aiDailyLimit)} AI / ${formatNumber(plan.deepDailyLimit)} deep / ${formatNumber(plan.scannerDailyLimit)} scans daily`;
+function formatPlanLimitLabel(plan?: AdminPlan, admin?: AdminCopy): string {
+  if (!plan) return admin?.text('planLimitsPending') || 'plan limits pending';
+  const number = admin?.number ?? formatNumber;
+  if (admin) {
+    return admin.format('aiDeepScanLimits', {
+      ai: number(plan.aiDailyLimit),
+      deep: number(plan.deepDailyLimit),
+      scans: number(plan.scannerDailyLimit),
+    });
+  }
+  return `${number(plan.aiDailyLimit)} AI / ${number(plan.deepDailyLimit)} deep / ${number(plan.scannerDailyLimit)} scans daily`;
 }
 
 type PlanEditorDraft = {
@@ -291,10 +307,10 @@ function userPatchRequiresOperatorReasonOnClient(patch: AdminUserPatch): boolean
     || patch.billingStatus === 'trialing';
 }
 
-function formatDate(value: string): string {
+function formatDate(value: string, locale = 'en', unknownLabel = 'Unknown'): string {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return 'Unknown';
-  return new Intl.DateTimeFormat('en', {
+  if (Number.isNaN(date.getTime())) return unknownLabel;
+  return new Intl.DateTimeFormat(locale, {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -554,26 +570,26 @@ function appendOperatorReasonToPatch(
   };
 }
 
-function classifyUserPatchRisk(user: AdminUserRecord, patch: AdminUserPatch): UserMutationRisk | null {
+function classifyUserPatchRisk(user: AdminUserRecord, patch: AdminUserPatch, admin?: AdminCopy): UserMutationRisk | null {
   const impacts: string[] = [];
   let level: UserMutationRiskLevel | null = null;
-  let title = 'Confirm account change';
-  let detail = 'This change affects account access or support state.';
-  let confirmLabel = 'Confirm change';
+  let title = admin?.text('confirmAccountChange') || 'Confirm account change';
+  let detail = admin?.text('confirmAccountChangeDetail') || 'This change affects account access or support state.';
+  let confirmLabel = admin?.text('confirmChange') || 'Confirm change';
 
   if (patch.status && patch.status !== user.status) {
     if (patch.status === 'deleted') {
       level = 'critical';
-      title = 'Confirm account deletion state';
-      detail = 'This marks the account as deleted and blocks normal app access.';
-      confirmLabel = 'Mark deleted';
+      title = admin?.text('confirmDeletion') || 'Confirm account deletion state';
+      detail = admin?.text('confirmDeletionDetail') || 'This marks the account as deleted and blocks normal app access.';
+      confirmLabel = admin?.text('markDeleted') || 'Mark deleted';
       impacts.push('The user may lose access to app workflows immediately.');
       impacts.push('Support should retain an audit reason before this is used for a real customer.');
     } else if (patch.status === 'suspended') {
       level = 'critical';
-      title = 'Confirm account suspension';
-      detail = 'This blocks the account from normal Baristachaw access until restored.';
-      confirmLabel = 'Suspend account';
+      title = admin?.text('confirmSuspension') || 'Confirm account suspension';
+      detail = admin?.text('confirmSuspensionDetail') || 'This blocks the account from normal Baristachaw access until restored.';
+      confirmLabel = admin?.text('suspendAccount') || 'Suspend account';
       impacts.push('The user will be blocked from protected app workflows.');
       impacts.push('The change is written to the admin audit trail.');
     } else if (patch.status === 'past_due') {
@@ -587,9 +603,9 @@ function classifyUserPatchRisk(user: AdminUserRecord, patch: AdminUserPatch): Us
     const nextWeight = ROLE_WEIGHT[patch.role];
     if (patch.role === 'owner' || user.role === 'owner') {
       level = 'critical';
-      title = 'Confirm privileged role change';
-      detail = 'Owner and admin role changes affect who can manage users, plans, and launch controls.';
-      confirmLabel = 'Confirm role change';
+      title = admin?.text('confirmRoleChange') || 'Confirm privileged role change';
+      detail = admin?.text('confirmRoleChangeDetail') || 'Owner and admin role changes affect who can manage users, plans, and launch controls.';
+      confirmLabel = admin?.text('confirmChange') || 'Confirm role change';
       impacts.push('A privileged role change can alter access to admin management.');
     } else if (nextWeight >= ROLE_WEIGHT.admin || nextWeight < currentWeight) {
       level = level === 'critical' ? level : 'warning';
@@ -660,10 +676,11 @@ function initialFeatureFlagMessage(flag: AdminFeatureFlag, patch: AdminFeatureFl
   return flag.message || '';
 }
 
-function StatusBadge({ value }: { value: string }) {
+function StatusBadge({ value, label }: { value: string; label?: string }) {
+  const admin = useAdminCopy();
   return (
     <span className={clsx('inline-flex min-h-7 items-center rounded-full px-2.5 text-[11px] font-semibold capitalize', statusTone(value))}>
-      {value.replace(/_/g, ' ')}
+      {label || admin.enumLabel(value)}
     </span>
   );
 }
@@ -707,26 +724,27 @@ function ProtectedGate({
   onRetry: () => void;
 }) {
   const isAuthRequired = error?.status === 401;
+  const admin = useAdminCopy();
   return (
     <div className="flex min-h-[var(--app-height)] items-center justify-center px-4 py-10">
       <div className="w-full max-w-xl rounded-[1.6rem] border border-glass bg-[var(--bg-base)]/94 p-6 shadow-[var(--panel-elev-2)]">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500">
           <Lock size={22} />
         </div>
-        <h1 className="mt-5 text-2xl font-semibold tracking-normal text-primary">Admin access required</h1>
+        <h1 className="mt-5 text-2xl font-semibold tracking-normal text-primary">{admin.text('accessRequiredTitle')}</h1>
         <p className="mt-3 text-sm leading-6 text-secondary">
           {isAuthRequired
-            ? 'Sign in with an owner account to open the management console.'
-            : error?.details || 'Your current account is not in ADMIN_EMAILS or ADMIN_USER_IDS.'}
+            ? admin.text('accessRequiredAuth')
+            : error?.details || admin.text('accessRequiredForbidden')}
         </p>
         <div className="mt-6 flex flex-wrap gap-2">
           {isAuthRequired ? (
             <button type="button" onClick={onSignIn} className="glass-button-primary px-4 py-2 text-sm">
-              Sign in
+              {admin.text('signIn')}
             </button>
           ) : null}
           <button type="button" onClick={onRetry} className="glass-button px-4 py-2 text-sm">
-            Retry
+            {admin.text('retry')}
           </button>
         </div>
       </div>
@@ -741,6 +759,7 @@ function AdminInlineError({
   error: AdminApiError;
   onDismiss: () => void;
 }) {
+  const admin = useAdminCopy();
   return (
     <section className="rounded-2xl border border-rose-500/25 bg-rose-500/10 px-4 py-3">
       <div className="flex items-start justify-between gap-3">
@@ -750,7 +769,7 @@ function AdminInlineError({
           </span>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-rose-800 dark:text-rose-200">
-              {error.errorCode ? error.errorCode.replace(/_/g, ' ') : 'Admin request failed'}
+              {error.errorCode ? admin.enumLabel(error.errorCode) : admin.text('adminRequestFailed')}
             </p>
             <p className="mt-1 text-sm leading-6 text-secondary">{error.message}</p>
             {error.details ? <p className="mt-1 text-xs leading-5 text-tertiary">{error.details}</p> : null}
@@ -760,7 +779,7 @@ function AdminInlineError({
           type="button"
           onClick={onDismiss}
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
-          aria-label="Dismiss admin error"
+          aria-label={admin.text('dismissAdminError')}
         >
           <X size={16} />
         </button>
@@ -821,6 +840,7 @@ function AdminCommandCenter({
   onOpenMaintenance: () => void;
   onOpenUser: (userId: string, queue: UserQueueFilter) => void;
 }) {
+  const admin = useAdminCopy();
   const handoffUsers = [...queues.billingUsers, ...queues.recoveryUsers, ...queues.riskUsers]
     .filter((user, index, list) => list.findIndex((item) => item.id === user.id) === index)
     .slice(0, 3);
@@ -830,9 +850,9 @@ function AdminCommandCenter({
       <div className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h2 className="text-base font-semibold text-primary">Operations command center</h2>
+            <h2 className="text-base font-semibold text-primary">{admin.text('commandCenterTitle')}</h2>
             <p className="mt-1 text-sm leading-6 text-secondary">
-              Prioritized queues for account support, launch blockers, and live maintenance response.
+              {admin.text('commandCenterSubtitle')}
             </p>
           </div>
           <StatusBadge value={snapshot.degraded ? 'warn' : 'pass'} />
@@ -846,8 +866,8 @@ function AdminCommandCenter({
           >
             <AlertTriangle size={18} className="text-rose-500" />
             <p className="mt-3 text-2xl font-semibold text-primary">{queues.riskUsers.length}</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">Risk queue</p>
-            <p className="mt-2 text-xs leading-5 text-secondary">{queues.pastDueUsers.length} past-due plus suspended or high-risk accounts.</p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('riskCardTitle')}</p>
+            <p className="mt-2 text-xs leading-5 text-secondary">{admin.format('riskCardDetail', { count: admin.number(queues.pastDueUsers.length) })}</p>
           </button>
           <button
             type="button"
@@ -856,8 +876,8 @@ function AdminCommandCenter({
           >
             <KeyRound size={18} className="text-amber-500" />
             <p className="mt-3 text-2xl font-semibold text-primary">{queues.recoveryUsers.length}</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">Recovery</p>
-            <p className="mt-2 text-xs leading-5 text-secondary">Password reset and account recovery requests.</p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('recoveryCardTitle')}</p>
+            <p className="mt-2 text-xs leading-5 text-secondary">{admin.text('recoveryCardDetail')}</p>
           </button>
           <button
             type="button"
@@ -866,8 +886,8 @@ function AdminCommandCenter({
           >
             <WalletCards size={18} className="text-blue-500" />
             <p className="mt-3 text-2xl font-semibold text-primary">{queues.billingUsers.length}</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">Billing</p>
-            <p className="mt-2 text-xs leading-5 text-secondary">Payment action, refund, expired, and past-due reviews.</p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('billingCardTitle')}</p>
+            <p className="mt-2 text-xs leading-5 text-secondary">{admin.text('billingCardDetail')}</p>
           </button>
           <button
             type="button"
@@ -876,8 +896,8 @@ function AdminCommandCenter({
           >
             <Wrench size={18} className="text-blue-500" />
             <p className="mt-3 text-2xl font-semibold text-primary">{queues.maintenanceFlags.length}</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">Flags</p>
-            <p className="mt-2 text-xs leading-5 text-secondary">Active web, PWA, mobile, or admin maintenance controls.</p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('flagsCardTitle')}</p>
+            <p className="mt-2 text-xs leading-5 text-secondary">{admin.text('flagsCardDetail')}</p>
           </button>
           <button
             type="button"
@@ -886,8 +906,8 @@ function AdminCommandCenter({
           >
             <WalletCards size={18} className="text-emerald-500" />
             <p className="mt-3 text-2xl font-semibold text-primary">{queues.paidUsers.length}</p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">Paid</p>
-            <p className="mt-2 text-xs leading-5 text-secondary">Starter, Pro, Team, and Enterprise accounts.</p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('paidCardTitle')}</p>
+            <p className="mt-2 text-xs leading-5 text-secondary">{admin.text('paidCardDetail')}</p>
           </button>
         </div>
       </div>
@@ -895,7 +915,7 @@ function AdminCommandCenter({
       <aside className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-base font-semibold text-primary">Operator handoff</h2>
+            <h2 className="text-base font-semibold text-primary">{admin.text('handoffTitle')}</h2>
             <p className="mt-1 text-sm text-secondary">{queues.criticalChecks.length} critical / {queues.warningChecks.length} warnings</p>
           </div>
           <StatusBadge value={queues.criticalChecks.length ? 'fail' : queues.warningChecks.length ? 'warn' : 'pass'} />
@@ -919,8 +939,8 @@ function AdminCommandCenter({
             </button>
           )) : (
             <div className="rounded-2xl bg-surface-alpha px-3 py-5 text-center">
-              <p className="text-sm font-semibold text-primary">No urgent handoff</p>
-              <p className="mt-1 text-xs text-secondary">Risk and recovery queues are clear.</p>
+              <p className="text-sm font-semibold text-primary">{admin.text('noUrgentHandoff')}</p>
+              <p className="mt-1 text-xs text-secondary">{admin.text('queuesClear')}</p>
             </div>
           )}
         </div>
@@ -942,13 +962,14 @@ function AdminOpsExportPanel({
   onExportAudit: () => void;
   onCopySummary: () => void;
 }) {
+  const admin = useAdminCopy();
   return (
     <section className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
-          <h2 className="text-base font-semibold text-primary">Operator export deck</h2>
+          <h2 className="text-base font-semibold text-primary">{admin.text('exportTitle')}</h2>
           <p className="mt-1 text-sm leading-6 text-secondary">
-            Download the current account roster, audit trail, or copy a launch handoff summary for support and founders.
+            {admin.text('exportSubtitle')}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -958,7 +979,7 @@ function AdminOpsExportPanel({
             className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-surface-alpha px-3 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
           >
             <Download size={15} />
-            Users CSV
+            {admin.text('usersCsv')}
           </button>
           <button
             type="button"
@@ -966,7 +987,7 @@ function AdminOpsExportPanel({
             className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-surface-alpha px-3 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
           >
             <Download size={15} />
-            Audit CSV
+            {admin.text('auditCsv')}
           </button>
           <button
             type="button"
@@ -974,26 +995,26 @@ function AdminOpsExportPanel({
             className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-500 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-600"
           >
             <ClipboardCheck size={15} />
-            Copy handoff
+            {admin.text('copyHandoff')}
           </button>
         </div>
       </div>
       <div className="mt-4 grid gap-3 text-xs text-secondary sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-2xl bg-surface-alpha p-3">
-          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">Snapshot</p>
+          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('snapshot')}</p>
           <p className="mt-2 truncate font-semibold text-primary">{formatShortId(snapshot.requestId)}</p>
         </div>
         <div className="rounded-2xl bg-surface-alpha p-3">
-          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">Freshness</p>
-          <p className="mt-2 font-semibold text-primary">{formatNumber(snapshot.dataFreshnessSec)}s / {snapshot.dataMode}</p>
+          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('freshness')}</p>
+          <p className="mt-2 font-semibold text-primary">{admin.number(snapshot.dataFreshnessSec)}s / {admin.enumLabel(snapshot.dataMode)}</p>
         </div>
         <div className="rounded-2xl bg-surface-alpha p-3">
-          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">Queues</p>
-          <p className="mt-2 font-semibold text-primary">{queues.riskUsers.length} risk / {queues.recoveryUsers.length} recovery</p>
+          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('queues')}</p>
+          <p className="mt-2 font-semibold text-primary">{admin.number(queues.riskUsers.length)} {admin.text('risk').toLowerCase()} / {admin.number(queues.recoveryUsers.length)} {admin.text('recovery').toLowerCase()}</p>
         </div>
         <div className="rounded-2xl bg-surface-alpha p-3">
-          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">Flags</p>
-          <p className="mt-2 font-semibold text-primary">{queues.maintenanceFlags.length} maintenance / {snapshot.audit.length} audit rows</p>
+          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('flags')}</p>
+          <p className="mt-2 font-semibold text-primary">{admin.number(queues.maintenanceFlags.length)} {admin.text('maintenanceControls').toLowerCase()} / {admin.number(snapshot.audit.length)} audit rows</p>
         </div>
       </div>
     </section>
@@ -1032,6 +1053,7 @@ function ConfirmUserMutationDialog({
   onCancel: () => void;
   onConfirm: (operatorReason: string) => void;
 }) {
+  const admin = useAdminCopy();
   const isCritical = pending.risk.level === 'critical';
   const [operatorReason, setOperatorReason] = useState('');
   const reasonReady = !pending.risk.requiresReason || operatorReason.trim().length >= 8;
@@ -1079,7 +1101,7 @@ function ConfirmUserMutationDialog({
             onClick={onCancel}
             disabled={busy}
             className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-secondary hover:bg-surface-alpha hover:text-primary disabled:opacity-50"
-            aria-label="Cancel account change"
+            aria-label={admin.text('cancel')}
           >
             <X size={17} />
           </button>
@@ -1107,7 +1129,7 @@ function ConfirmUserMutationDialog({
           isCritical ? 'border-rose-500/25 bg-rose-500/10' : 'border-amber-500/25 bg-amber-500/10',
         )}>
           <p className={clsx('text-xs font-semibold uppercase tracking-[0.14em]', isCritical ? 'text-rose-700 dark:text-rose-300' : 'text-amber-700 dark:text-amber-300')}>
-            Operator review
+            {admin.text('operatorReview')}
           </p>
           <ul className="mt-2 space-y-1.5">
             {pending.risk.impacts.map((impact) => (
@@ -1118,18 +1140,18 @@ function ConfirmUserMutationDialog({
 
         <label className="mt-3 grid gap-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
-            Operator reason{pending.risk.requiresReason ? ' required' : ''}
+            {admin.text('operatorReason')}{pending.risk.requiresReason ? ` ${admin.text('required')}` : ''}
           </span>
           <textarea
             value={operatorReason}
             onChange={(event) => setOperatorReason(event.currentTarget.value)}
             maxLength={220}
-            placeholder={pending.risk.requiresReason ? 'Reason for this account access change' : 'Optional note for support history'}
+            placeholder={pending.risk.requiresReason ? admin.text('operatorReasonRequiredPlaceholder') : admin.text('operatorReasonOptionalPlaceholder')}
             disabled={busy}
             className="min-h-20 resize-none rounded-xl border border-glass bg-surface-alpha px-3 py-2 text-sm leading-6 text-primary outline-none transition-colors placeholder:text-tertiary focus:border-blue-400 disabled:opacity-50"
           />
           <span className="text-xs text-tertiary">
-            {operatorReason.trim().length}/220 saved to support note
+            {admin.format('savedToSupportNote', { count: operatorReason.trim().length })}
           </span>
         </label>
 
@@ -1140,7 +1162,7 @@ function ConfirmUserMutationDialog({
             disabled={busy}
             className="inline-flex min-h-11 items-center justify-center rounded-xl border border-glass bg-surface-alpha px-4 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary disabled:opacity-50"
           >
-            Cancel
+            {admin.text('cancel')}
           </button>
           <button
             type="button"
@@ -1152,7 +1174,7 @@ function ConfirmUserMutationDialog({
             )}
           >
             <AlertTriangle size={16} />
-            {busy ? 'Saving...' : pending.risk.confirmLabel}
+            {busy ? admin.text('saving') : pending.risk.confirmLabel}
           </button>
         </div>
       </motion.div>
@@ -1171,6 +1193,7 @@ function ConfirmFeatureFlagMutationDialog({
   onCancel: () => void;
   onConfirm: (message: string) => void;
 }) {
+  const admin = useAdminCopy();
   const nextStatus = pending.patch.status || pending.flag.status;
   const isDisabled = nextStatus === 'disabled';
   const [message, setMessage] = useState(initialFeatureFlagMessage(pending.flag, pending.patch));
@@ -1211,10 +1234,10 @@ function ConfirmFeatureFlagMutationDialog({
             </span>
             <div className="min-w-0">
               <h2 id="confirm-feature-flag-title" className="text-lg font-semibold text-primary">
-                {isDisabled ? 'Confirm feature disable' : 'Confirm maintenance mode'}
+                {isDisabled ? admin.text('confirmFeatureDisable') : admin.text('confirmMaintenanceMode')}
               </h2>
               <p className="mt-1 text-sm leading-6 text-secondary">
-                This changes availability for Baristachaw surfaces and should include a clear operator message.
+                {admin.text('featureChangeDetail')}
               </p>
             </div>
           </div>
@@ -1223,7 +1246,7 @@ function ConfirmFeatureFlagMutationDialog({
             onClick={onCancel}
             disabled={busy}
             className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-secondary hover:bg-surface-alpha hover:text-primary disabled:opacity-50"
-            aria-label="Cancel feature flag change"
+            aria-label={admin.text('cancelFeatureChange')}
           >
             <X size={17} />
           </button>
@@ -1251,24 +1274,24 @@ function ConfirmFeatureFlagMutationDialog({
           isDisabled ? 'border-rose-500/25 bg-rose-500/10' : 'border-amber-500/25 bg-amber-500/10',
         )}>
           <p className={clsx('text-xs font-semibold uppercase tracking-[0.14em]', isDisabled ? 'text-rose-700 dark:text-rose-300' : 'text-amber-700 dark:text-amber-300')}>
-            User impact
+            {admin.text('userImpact')}
           </p>
           <p className="mt-2 text-sm leading-5 text-secondary">
-            Users on selected surfaces may see a blocked or degraded feature state until the flag returns to available.
+            {admin.text('userImpactDetail')}
           </p>
         </div>
 
         <label className="mt-3 grid gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Operator message required</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('operatorMessageRequired')}</span>
           <textarea
             value={message}
             onChange={(event) => setMessage(event.currentTarget.value)}
             maxLength={240}
-            placeholder="Short user-facing maintenance or disable reason"
+            placeholder={admin.text('maintenanceMessagePlaceholder')}
             disabled={busy}
             className="min-h-20 resize-none rounded-xl border border-glass bg-surface-alpha px-3 py-2 text-sm leading-6 text-primary outline-none transition-colors placeholder:text-tertiary focus:border-blue-400 disabled:opacity-50"
           />
-          <span className="text-xs text-tertiary">{message.trim().length}/240 saved to maintenance message</span>
+          <span className="text-xs text-tertiary">{admin.format('savedToMaintenanceMessage', { count: message.trim().length })}</span>
         </label>
 
         <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -1278,7 +1301,7 @@ function ConfirmFeatureFlagMutationDialog({
             disabled={busy}
             className="inline-flex min-h-11 items-center justify-center rounded-xl border border-glass bg-surface-alpha px-4 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary disabled:opacity-50"
           >
-            Cancel
+            {admin.text('cancel')}
           </button>
           <button
             type="button"
@@ -1290,7 +1313,7 @@ function ConfirmFeatureFlagMutationDialog({
             )}
           >
             <Wrench size={16} />
-            {busy ? 'Saving...' : isDisabled ? 'Disable feature' : 'Apply maintenance'}
+            {busy ? admin.text('saving') : isDisabled ? admin.text('disableFeature') : admin.text('applyMaintenance')}
           </button>
         </div>
       </motion.div>
@@ -1315,6 +1338,7 @@ function UsersTable({
   onSelect: (userId: string) => void;
   onCopy: (value: string, label: string) => void;
 }) {
+  const admin = useAdminCopy();
   return (
     <>
       <div className="grid gap-3 md:hidden">
@@ -1325,9 +1349,9 @@ function UsersTable({
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="truncate text-base font-semibold text-primary">{user.name}</h3>
-                  {user.isSample ? <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">preview</span> : null}
+                  {user.isSample ? <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">{admin.text('preview')}</span> : null}
                 </div>
-                <p className="truncate text-sm font-semibold text-blue-600 dark:text-blue-300">@{user.username || 'unassigned'}</p>
+                <p className="truncate text-sm font-semibold text-blue-600 dark:text-blue-300">@{user.username || admin.text('unassigned')}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-tertiary">
                   <span className="max-w-full truncate">{user.email}</span>
                   <button type="button" onClick={() => onCopy(user.email, 'Email')} className="inline-flex h-7 w-7 items-center justify-center rounded-lg hover:bg-[var(--bg-base)]" aria-label={`Copy email for ${user.email}`}>
@@ -1352,7 +1376,7 @@ function UsersTable({
                   className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
                   aria-label={`Change status for ${user.email}`}
                 >
-                  {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{status}</option>)}
+                  {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
                 </select>
                 <select
                   value={user.planCode}
@@ -1374,7 +1398,7 @@ function UsersTable({
                   className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
                   aria-label={`Change role for ${user.email}`}
                 >
-                  {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{role}</option>)}
+                  {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{admin.enumLabel(role)}</option>)}
                 </select>
                 <button
                   type="button"
@@ -1385,18 +1409,18 @@ function UsersTable({
                   )}
                 >
                   <PanelRightOpen size={15} />
-                  Manage
+                  {admin.text('manage')}
                 </button>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[var(--bg-base)] px-3 py-2">
                 <div className="flex items-center gap-2">
                   <StatusBadge value={user.passwordResetRequired ? 'requested' : (user.accountRecoveryStatus || 'none')} />
                   <StatusBadge value={user.billing.status} />
-                  <span className="text-xs text-tertiary">{user.provider}</span>
+                  <span className="text-xs text-tertiary">{admin.enumLabel(user.provider)}</span>
                 </div>
-                <p className="text-xs font-semibold text-secondary">{formatNumber(user.usage.aiRequestsToday)} AI / risk {user.riskScore}</p>
+                <p className="text-xs font-semibold text-secondary">{admin.number(user.usage.aiRequestsToday)} AI / {admin.text('risk').toLowerCase()} {user.riskScore}</p>
               </div>
-              {busyUserId === user.id ? <p className="text-xs font-semibold text-blue-500">Saving account...</p> : null}
+              {busyUserId === user.id ? <p className="text-xs font-semibold text-blue-500">{admin.text('savingAccount')}</p> : null}
             </div>
           </article>
         ))}
@@ -1407,17 +1431,17 @@ function UsersTable({
         <table className={clsx(selectedUserId ? 'min-w-full' : 'min-w-[68rem]', 'w-full border-collapse text-left')}>
           <thead className="border-b border-glass text-[11px] uppercase tracking-[0.14em] text-tertiary">
             <tr>
-              <th className="px-4 py-3 font-semibold">Account</th>
-              <th className="px-4 py-3 font-semibold">Status</th>
-              <th className="px-4 py-3 font-semibold">Plan</th>
-              <th className="px-4 py-3 font-semibold">Billing</th>
-              <th className="px-4 py-3 font-semibold">Role</th>
-              <th className="px-4 py-3 font-semibold">Recovery</th>
+              <th className="px-4 py-3 font-semibold">{admin.text('account')}</th>
+              <th className="px-4 py-3 font-semibold">{admin.text('status')}</th>
+              <th className="px-4 py-3 font-semibold">{admin.text('plan')}</th>
+              <th className="px-4 py-3 font-semibold">{admin.text('billing')}</th>
+              <th className="px-4 py-3 font-semibold">{admin.text('role')}</th>
+              <th className="px-4 py-3 font-semibold">{admin.text('recovery')}</th>
               {!selectedUserId ? (
                 <>
-                  <th className="px-4 py-3 font-semibold">Usage today</th>
-                  <th className="px-4 py-3 font-semibold">Risk</th>
-                  <th className="px-4 py-3 font-semibold">Last seen</th>
+                  <th className="px-4 py-3 font-semibold">{admin.text('usageToday')}</th>
+                  <th className="px-4 py-3 font-semibold">{admin.text('risk')}</th>
+                  <th className="px-4 py-3 font-semibold">{admin.text('lastSeen')}</th>
                 </>
               ) : null}
             </tr>
@@ -1431,9 +1455,9 @@ function UsersTable({
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="truncate text-sm font-semibold text-primary">{user.name}</p>
-                        {user.isSample ? <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">preview</span> : null}
+                        {user.isSample ? <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">{admin.text('preview')}</span> : null}
                       </div>
-                      <p className="truncate text-xs font-semibold text-blue-600 dark:text-blue-300">@{user.username || 'unassigned'}</p>
+                      <p className="truncate text-xs font-semibold text-blue-600 dark:text-blue-300">@{user.username || admin.text('unassigned')}</p>
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-tertiary">
                         <span className="max-w-[13rem] truncate">{user.email}</span>
                         <button
@@ -1467,7 +1491,7 @@ function UsersTable({
                         )}
                       >
                         <PanelRightOpen size={13} />
-                        Manage
+                        {admin.text('manage')}
                       </button>
                     </div>
                   </div>
@@ -1480,7 +1504,7 @@ function UsersTable({
                     className={clsx(selectedUserId ? 'w-28' : 'w-32', 'rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary')}
                     aria-label={`Change status for ${user.email}`}
                   >
-                    {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{status}</option>)}
+                    {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
                   </select>
                 </td>
                 <td className="px-4 py-4 align-top">
@@ -1501,8 +1525,8 @@ function UsersTable({
                 <td className="px-4 py-4 align-top">
                   <div className="flex flex-col gap-1.5">
                     <StatusBadge value={user.billing.status} />
-                    <p className="text-[11px] capitalize text-tertiary">{user.billing.provider.replace(/_/g, ' ')} / {user.billing.market}</p>
-                    {user.billing.paymentActionRequired ? <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-300">Action required</p> : null}
+                    <p className="text-[11px] capitalize text-tertiary">{admin.enumLabel(user.billing.provider)} / {admin.enumLabel(user.billing.market)}</p>
+                    {user.billing.paymentActionRequired ? <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-300">{admin.text('actionRequired')}</p> : null}
                   </div>
                 </td>
                 <td className="px-4 py-4 align-top">
@@ -1513,22 +1537,22 @@ function UsersTable({
                     className={clsx(selectedUserId ? 'w-28' : 'w-32', 'rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary')}
                     aria-label={`Change role for ${user.email}`}
                   >
-                    {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{role}</option>)}
+                    {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{admin.enumLabel(role)}</option>)}
                   </select>
                 </td>
                 <td className="px-4 py-4 align-top">
                   <div className="flex flex-col gap-1.5">
                     <StatusBadge value={user.passwordResetRequired ? 'requested' : (user.accountRecoveryStatus || 'none')} />
                     <p className="text-[11px] text-tertiary">
-                      {user.passwordResetRequired ? 'Password reset required' : user.provider}
+                      {user.passwordResetRequired ? admin.text('passwordResetRequired') : admin.enumLabel(user.provider)}
                     </p>
                   </div>
                 </td>
                 {!selectedUserId ? (
                   <>
                     <td className="px-4 py-4 align-top">
-                      <p className="text-sm font-semibold text-primary">{formatNumber(user.usage.aiRequestsToday)} AI</p>
-                      <p className="text-xs text-secondary">{formatNumber(user.usage.deepRequestsToday)} deep / {formatNumber(user.usage.scannerRunsToday)} scans</p>
+                      <p className="text-sm font-semibold text-primary">{admin.number(user.usage.aiRequestsToday)} AI</p>
+                      <p className="text-xs text-secondary">{admin.number(user.usage.deepRequestsToday)} deep / {admin.number(user.usage.scannerRunsToday)} scans</p>
                     </td>
                     <td className="px-4 py-4 align-top">
                       <div className="flex items-center gap-2">
@@ -1543,8 +1567,8 @@ function UsersTable({
                       {user.flags.length ? <p className="mt-1 text-[11px] text-tertiary">{user.flags.join(', ')}</p> : null}
                     </td>
                     <td className="px-4 py-4 align-top">
-                      <p className="text-xs text-secondary">{formatDate(user.lastSeenAt)}</p>
-                      {busyUserId === user.id ? <p className="mt-1 text-[11px] text-blue-500">Saving...</p> : null}
+                      <p className="text-xs text-secondary">{admin.date(user.lastSeenAt)}</p>
+                      {busyUserId === user.id ? <p className="mt-1 text-[11px] text-blue-500">{admin.text('saving')}</p> : null}
                     </td>
                   </>
                 ) : null}
@@ -1571,12 +1595,13 @@ function PlanQuickControl({
   onSelectPlan: (plan: AdminPlan) => void;
   onApplyPlan: (plan: AdminPlan) => void;
 }) {
+  const admin = useAdminCopy();
   return (
     <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-primary">Plan quick control</p>
-          <p className="mt-1 text-xs leading-5 text-secondary">Pick a tier, see the quota, then apply entitlement with a review-ready support note.</p>
+          <p className="text-sm font-semibold text-primary">{admin.text('planQuickControl')}</p>
+          <p className="mt-1 text-xs leading-5 text-secondary">{admin.text('planQuickControlSubtitle')}</p>
         </div>
         <WalletCards size={18} className="mt-0.5 shrink-0 text-blue-500" />
       </div>
@@ -1605,14 +1630,14 @@ function PlanQuickControl({
                       {plan.recommended ? <BadgeCheck size={14} className="text-blue-500" /> : null}
                     </span>
                     <span className="mt-1 block text-[11px] font-semibold uppercase tracking-[0.12em] text-tertiary">
-                      {plan.displayPrice || formatUsd(plan.priceMonthlyUsd)}
+                      {plan.displayPrice || admin.currencyUsd(plan.priceMonthlyUsd)}
                     </span>
                   </span>
-                  <StatusBadge value={selected ? 'selected' : plan.checkoutMode.replace(/_/g, ' ')} />
+                  <StatusBadge value={selected ? 'selected' : plan.checkoutMode} />
                 </span>
-                <span className="text-xs leading-5 text-secondary">{formatPlanLimitLabel(plan)}</span>
+                <span className="text-xs leading-5 text-secondary">{formatPlanLimitLabel(plan, admin)}</span>
                 <span className="text-[11px] leading-5 text-tertiary">
-                  Provider {billingProviderForPlan(plan).replace(/_/g, ' ')} / {billingMarketForPlan(plan, 'unknown')} / {plan.paymentMethods.length ? plan.paymentMethods.join(', ') : 'manual review'}
+                  {admin.text('provider')} {admin.enumLabel(billingProviderForPlan(plan))} / {admin.enumLabel(billingMarketForPlan(plan, 'unknown'))} / {plan.paymentMethods.length ? plan.paymentMethods.join(', ') : admin.text('manualReview')}
                 </span>
               </button>
               <button
@@ -1627,7 +1652,7 @@ function PlanQuickControl({
                 )}
               >
                 {paidPlan ? <ClipboardCheck size={14} /> : <CheckCircle2 size={14} />}
-                {paidPlan ? 'Apply provisional' : 'Apply free'}
+                {paidPlan ? admin.text('applyProvisional') : admin.text('applyFree')}
               </button>
             </div>
           );
@@ -1656,6 +1681,7 @@ function AccountInspector({
   onPatch: (userId: string, patch: AdminUserPatch) => void;
   onCopy: (value: string, label: string) => void;
 }) {
+  const admin = useAdminCopy();
   const [displayName, setDisplayName] = useState(user.name);
   const [username, setUsername] = useState(user.username);
   const [role, setRole] = useState<AdminRole>(user.role);
@@ -1703,8 +1729,8 @@ function AccountInspector({
   const selectedPlan = plans.find((plan) => plan.code === planCode) || plans.find((plan) => plan.code === user.planCode) || plans[0];
   const provisionalPlanCode = planCode === 'free' ? 'starter' : planCode;
   const provisionalPlan = plans.find((plan) => plan.code === provisionalPlanCode) || selectedPlan;
-  const selectedPlanLimitLabel = formatPlanLimitLabel(selectedPlan);
-  const provisionalLimitLabel = formatPlanLimitLabel(provisionalPlan);
+  const selectedPlanLimitLabel = formatPlanLimitLabel(selectedPlan, admin);
+  const provisionalLimitLabel = formatPlanLimitLabel(provisionalPlan, admin);
   const canRestoreAccount = status === 'suspended' || status === 'past_due' || recoveryStatus === 'requested' || passwordResetRequired;
   const entitlementTouched = planCode !== user.planCode
     || billingStatus !== user.billing.status
@@ -1849,8 +1875,8 @@ function AccountInspector({
               <UserCog size={18} />
             </span>
             <div className="min-w-0">
-              <h2 className="truncate text-base font-semibold text-primary">Account control</h2>
-              <p className="truncate text-xs text-tertiary">{user.provider} / {user.platform || 'unknown'} / {user.locale || 'locale n/a'}</p>
+              <h2 className="truncate text-base font-semibold text-primary">{admin.text('accountControl')}</h2>
+              <p className="truncate text-xs text-tertiary">{admin.enumLabel(user.provider)} / {user.platform || admin.text('unknown')} / {user.locale || admin.text('localeNA')}</p>
             </div>
           </div>
         </div>
@@ -1858,7 +1884,7 @@ function AccountInspector({
           type="button"
           onClick={onClose}
           className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-secondary hover:bg-surface-alpha hover:text-primary"
-          aria-label="Close account panel"
+          aria-label={admin.text('closeAccountPanel')}
         >
           <X size={17} />
         </button>
@@ -1874,37 +1900,37 @@ function AccountInspector({
           <span className="font-semibold text-primary">Email</span>
         </button>
         <div className="flex min-h-10 items-center justify-between gap-3 rounded-xl border border-glass bg-surface-alpha px-3 text-secondary">
-          <span className="inline-flex min-w-0 items-center gap-2"><Clock3 size={14} /> <span className="truncate">{formatDate(user.createdAt)}</span></span>
-          <span className="font-semibold text-primary">Created</span>
+          <span className="inline-flex min-w-0 items-center gap-2"><Clock3 size={14} /> <span className="truncate">{admin.date(user.createdAt)}</span></span>
+          <span className="font-semibold text-primary">{admin.text('created')}</span>
         </div>
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
         <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2">
-          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">Current plan</p>
+          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('currentPlan')}</p>
           <p className="mt-1 truncate font-semibold text-primary">{user.planName}</p>
         </div>
         <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2">
-          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">Billing</p>
-          <p className="mt-1 truncate font-semibold text-primary">{user.billing.status} / {user.billing.provider}</p>
+          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('billing')}</p>
+          <p className="mt-1 truncate font-semibold text-primary">{admin.enumLabel(user.billing.status)} / {admin.enumLabel(user.billing.provider)}</p>
         </div>
         <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2">
-          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">Usage today</p>
-          <p className="mt-1 truncate font-semibold text-primary">{formatNumber(user.usage.aiRequestsToday)} AI / {formatNumber(user.usage.scannerRunsToday)} scans</p>
+          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('usageToday')}</p>
+          <p className="mt-1 truncate font-semibold text-primary">{admin.number(user.usage.aiRequestsToday)} AI / {admin.number(user.usage.scannerRunsToday)} scans</p>
         </div>
         <div className="rounded-xl border border-glass bg-surface-alpha px-3 py-2">
-          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">Risk</p>
+          <p className="font-semibold uppercase tracking-[0.12em] text-tertiary">{admin.text('risk')}</p>
           <p className={clsx('mt-1 font-semibold', user.riskScore >= 60 ? 'text-rose-500' : user.riskScore >= 30 ? 'text-amber-500' : 'text-emerald-500')}>{user.riskScore}</p>
         </div>
       </div>
 
       <div className="mt-4 grid gap-3">
         <label className="grid gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Display name</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('displayName')}</span>
           <input value={displayName} onChange={(event) => setDisplayName(event.currentTarget.value)} className="glass-input min-h-10 rounded-xl px-3 text-sm" />
         </label>
         <label className="grid gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Username</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('username')}</span>
           <div className="relative">
             <AtSign size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" />
             <input value={username} onChange={(event) => setUsername(event.currentTarget.value)} className="glass-input min-h-10 w-full rounded-xl pl-9 pr-3 text-sm" />
@@ -1913,27 +1939,27 @@ function AccountInspector({
 
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
           <label className="grid gap-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Status</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('status')}</span>
             <select value={status} onChange={(event) => setStatus(event.currentTarget.value as AccountStatus)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-              {STATUS_OPTIONS.map((item) => <option key={item} value={item}>{item}</option>)}
+              {STATUS_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
             </select>
           </label>
           <label className="grid gap-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Role</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('role')}</span>
             <select value={role} onChange={(event) => setRole(event.currentTarget.value as AdminRole)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-              {ROLE_OPTIONS.map((item) => <option key={item} value={item}>{item}</option>)}
+              {ROLE_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
             </select>
           </label>
           <label className="grid gap-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Plan</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('plan')}</span>
             <select value={planCode} onChange={(event) => setPlanCode(event.currentTarget.value as PlanCode)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
               {plans.map((plan) => <option key={plan.code} value={plan.code}>{plan.name}</option>)}
             </select>
           </label>
           <label className="grid gap-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Recovery</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('recovery')}</span>
             <select value={recoveryStatus} onChange={(event) => setRecoveryStatus(event.currentTarget.value as AccountRecoveryStatus)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-              {RECOVERY_OPTIONS.map((item) => <option key={item} value={item}>{item}</option>)}
+              {RECOVERY_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
             </select>
           </label>
         </div>
@@ -1941,19 +1967,19 @@ function AccountInspector({
         <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-primary">Admin quick actions</p>
-              <p className="mt-1 text-xs leading-5 text-secondary">Use these for the common launch-support flows without hunting through every field.</p>
+              <p className="text-sm font-semibold text-primary">{admin.text('adminQuickActions')}</p>
+              <p className="mt-1 text-xs leading-5 text-secondary">{admin.text('adminQuickActionsSubtitle')}</p>
             </div>
             <ShieldCheck size={18} className="mt-0.5 shrink-0 text-emerald-500" />
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
             <button type="button" onClick={restoreAccount} disabled={busy || !canRestoreAccount} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300">
               <CheckCircle2 size={14} />
-              Restore active
+              {admin.text('restoreActive')}
             </button>
             <button type="button" onClick={suspendAccount} disabled={busy || status === 'suspended' || status === 'deleted'} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300">
               <Lock size={14} />
-              Suspend review
+              {admin.text('suspendReview')}
             </button>
           </div>
         </div>
@@ -1969,35 +1995,35 @@ function AccountInspector({
         <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-primary">Billing and entitlement</p>
+              <p className="text-sm font-semibold text-primary">{admin.text('billingEntitlement')}</p>
               <p className="mt-1 text-xs leading-5 text-secondary">{user.billing.recommendedAction}</p>
               <p className="mt-1 text-[11px] leading-5 text-tertiary">
-                Receipt mode applies {provisionalLimitLabel} immediately, then keeps manual review required until the subscription is verified.
+                {admin.format('receiptModeDetail', { limit: provisionalLimitLabel })}
               </p>
             </div>
             <StatusBadge value={user.billing.status} />
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
             <label className="grid gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Billing status</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('billingStatus')}</span>
               <select value={billingStatus} onChange={(event) => setBillingStatus(event.currentTarget.value as BillingStatus)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-                {BILLING_STATUS_OPTIONS.map((item) => <option key={item} value={item}>{item}</option>)}
+                {BILLING_STATUS_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
               </select>
             </label>
             <label className="grid gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Provider</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('provider')}</span>
               <select value={billingProvider} onChange={(event) => setBillingProvider(event.currentTarget.value as BillingProvider)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-                {BILLING_PROVIDER_OPTIONS.map((item) => <option key={item} value={item}>{item.replace(/_/g, ' ')}</option>)}
+                {BILLING_PROVIDER_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
               </select>
             </label>
             <label className="grid gap-1.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Market</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('market')}</span>
               <select value={billingMarket} onChange={(event) => setBillingMarket(event.currentTarget.value as BillingMarket)} className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-                {BILLING_MARKET_OPTIONS.map((item) => <option key={item} value={item}>{item}</option>)}
+                {BILLING_MARKET_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
               </select>
             </label>
             <label className="flex min-h-10 items-center justify-between gap-3 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-secondary">
-              <span>Payment action required</span>
+              <span>{admin.text('paymentActionRequired')}</span>
               <input
                 type="checkbox"
                 checked={paymentActionRequired}
@@ -2009,26 +2035,26 @@ function AccountInspector({
           <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
             <button type="button" onClick={markReceiptReceived} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-500/15 disabled:opacity-50 dark:text-blue-300">
               <ClipboardCheck size={14} />
-              Receipt received
+              {admin.text('receiptReceived')}
             </button>
             <button type="button" onClick={markBillingResolved} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300">
               <CheckCircle2 size={14} />
-              Mark paid
+              {admin.text('markPaid')}
             </button>
             <button type="button" onClick={markBillingPastDue} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300">
               <AlertTriangle size={14} />
-              Mark past due
+              {admin.text('markPastDue')}
             </button>
           </div>
           <div className="mt-3 grid gap-1 text-[11px] text-tertiary">
-            {user.billing.customerId ? <button type="button" onClick={() => onCopy(user.billing.customerId, 'Customer ID')} className="truncate text-left hover:text-primary">Customer: {user.billing.customerId}</button> : null}
-            {user.billing.subscriptionId ? <button type="button" onClick={() => onCopy(user.billing.subscriptionId, 'Subscription ID')} className="truncate text-left hover:text-primary">Subscription: {user.billing.subscriptionId}</button> : null}
-            {user.billing.currentPeriodEnd ? <span>Renews/ends {formatDate(user.billing.currentPeriodEnd)}</span> : null}
+            {user.billing.customerId ? <button type="button" onClick={() => onCopy(user.billing.customerId, 'Customer ID')} className="truncate text-left hover:text-primary">{admin.text('customer')}: {user.billing.customerId}</button> : null}
+            {user.billing.subscriptionId ? <button type="button" onClick={() => onCopy(user.billing.subscriptionId, 'Subscription ID')} className="truncate text-left hover:text-primary">{admin.text('subscription')}: {user.billing.subscriptionId}</button> : null}
+            {user.billing.currentPeriodEnd ? <span>{admin.format('renewsEnds', { date: admin.date(user.billing.currentPeriodEnd) })}</span> : null}
           </div>
         </div>
 
         <label className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-glass bg-surface-alpha px-3 text-sm text-secondary">
-          <span className="inline-flex items-center gap-2"><KeyRound size={15} /> Require password reset</span>
+          <span className="inline-flex items-center gap-2"><KeyRound size={15} /> {admin.text('requirePasswordReset')}</span>
           <input
             type="checkbox"
             checked={passwordResetRequired}
@@ -2038,11 +2064,11 @@ function AccountInspector({
         </label>
 
         <label className="grid gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Internal notes</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('internalNotes')}</span>
           <textarea value={notes} onChange={(event) => setNotes(event.currentTarget.value)} className="min-h-20 resize-none rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-sm leading-6 text-primary outline-none focus:border-blue-400" />
         </label>
         <label className="grid gap-1.5">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">Support note</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('supportNote')}</span>
           <textarea value={supportNote} onChange={(event) => setSupportNote(event.currentTarget.value)} className="min-h-20 resize-none rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-sm leading-6 text-primary outline-none focus:border-blue-400" />
         </label>
       </div>
@@ -2060,7 +2086,7 @@ function AccountInspector({
                   type="button"
                   onClick={onDismissError}
                   className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-rose-700 hover:bg-rose-500/10 dark:text-rose-200"
-                  aria-label="Dismiss account error"
+                  aria-label={admin.text('dismissAdminError')}
                 >
                   <X size={13} />
                 </button>
@@ -2075,7 +2101,7 @@ function AccountInspector({
       <div className="mt-4 grid gap-2">
         {saveBlockedByReason ? (
           <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-800 dark:text-amber-200">
-            Paid entitlement needs a support note with at least 12 characters before saving.
+            {admin.text('entitlementNeedsNote')}
           </div>
         ) : null}
         <button
@@ -2085,16 +2111,16 @@ function AccountInspector({
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-500 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Save size={16} />
-          {busy ? 'Saving...' : 'Save account'}
+          {busy ? admin.text('saving') : admin.text('saveAccount')}
         </button>
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
           <button type="button" onClick={requirePasswordReset} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300">
             <KeyRound size={14} />
-            Request reset
+            {admin.text('requestReset')}
           </button>
           <button type="button" onClick={clearRecovery} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-glass bg-surface-alpha px-3 text-xs font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary disabled:opacity-50">
             <CheckCircle2 size={14} />
-            Resolve recovery
+            {admin.text('resolveRecovery')}
           </button>
         </div>
       </div>
@@ -2103,42 +2129,43 @@ function AccountInspector({
 }
 
 function BillingReadinessPanel({ snapshot }: { snapshot: AdminSnapshot }) {
+  const admin = useAdminCopy();
   return (
     <div className="mb-4 grid gap-3 lg:grid-cols-[1fr_1fr_1fr]">
       <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-primary">Payment readiness</p>
-            <p className="mt-1 text-xs text-secondary">{snapshot.billing.mode.replace(/_/g, ' ')}</p>
+            <p className="text-sm font-semibold text-primary">{admin.text('paymentReadiness')}</p>
+            <p className="mt-1 text-xs text-secondary">{admin.enumLabel(snapshot.billing.mode)}</p>
           </div>
           <StatusBadge value={snapshot.billing.ready ? 'pass' : 'warn'} />
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
           <div className="rounded-xl bg-[var(--bg-base)] p-2">
             <p className="text-lg font-semibold text-primary">{snapshot.billing.activeSubscriptions}</p>
-            <p className="text-tertiary">active</p>
+            <p className="text-tertiary">{admin.text('active')}</p>
           </div>
           <div className="rounded-xl bg-[var(--bg-base)] p-2">
             <p className="text-lg font-semibold text-primary">{snapshot.billing.pastDueSubscriptions}</p>
-            <p className="text-tertiary">past due</p>
+            <p className="text-tertiary">{admin.text('pastDue')}</p>
           </div>
           <div className="rounded-xl bg-[var(--bg-base)] p-2">
-            <p className="text-lg font-semibold text-primary">{formatUsd(snapshot.billing.revenueMonthlyUsd)}</p>
+            <p className="text-lg font-semibold text-primary">{admin.currencyUsd(snapshot.billing.revenueMonthlyUsd)}</p>
             <p className="text-tertiary">MRR</p>
           </div>
         </div>
       </div>
       <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
-        <p className="text-sm font-semibold text-primary">Connected providers</p>
+        <p className="text-sm font-semibold text-primary">{admin.text('connectedProviders')}</p>
         <div className="mt-3 flex flex-wrap gap-1.5">
           {snapshot.billing.connectedProviders.length ? snapshot.billing.connectedProviders.map((provider) => (
             <StatusBadge key={provider} value={provider} />
-          )) : <StatusBadge value="not_configured" />}
+          )) : <StatusBadge value="not_configured" label={admin.text('notConfigured')} />}
         </div>
-        <p className="mt-3 text-xs leading-5 text-secondary">Markets prepared: {snapshot.billing.supportedMarkets.join(', ')}.</p>
+        <p className="mt-3 text-xs leading-5 text-secondary">{admin.format('marketsPrepared', { markets: snapshot.billing.supportedMarkets.map((market) => admin.enumLabel(market)).join(', ') })}</p>
       </div>
       <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
-        <p className="text-sm font-semibold text-primary">Realtime contract</p>
+        <p className="text-sm font-semibold text-primary">{admin.text('realtimeContract')}</p>
         <div className="mt-3 flex flex-wrap gap-1.5">
           {snapshot.billing.realtimeTables.map((table) => (
             <span key={table} className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[10px] font-semibold text-tertiary">{table}</span>
@@ -2159,6 +2186,7 @@ function PlanEditorCard({
   busy: boolean;
   onPatch: (planCode: PlanCode, patch: AdminPlanPatch) => void;
 }) {
+  const admin = useAdminCopy();
   const [draft, setDraft] = useState<PlanEditorDraft>(() => planToDraft(plan));
 
   useEffect(() => {
@@ -2195,7 +2223,7 @@ function PlanEditorCard({
             <p className="text-sm font-semibold text-primary">{plan.name}</p>
             {plan.recommended ? <BadgeCheck size={17} className="text-blue-500" /> : null}
           </div>
-          <p className="mt-1 text-xs text-tertiary">{plan.code} / {formatUsd(plan.priceMonthlyUsd)} / {formatNumber(plan.activeUsers)} users</p>
+          <p className="mt-1 text-xs text-tertiary">{admin.enumLabel(plan.code)} / {admin.currencyUsd(plan.priceMonthlyUsd)} / {admin.number(plan.activeUsers)} {admin.text('usersLabel')}</p>
         </div>
         <div className="flex shrink-0 gap-2">
           <button
@@ -2203,49 +2231,49 @@ function PlanEditorCard({
             onClick={() => setDraft(planToDraft(plan))}
             className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-xs font-semibold text-secondary transition-colors hover:text-primary"
             disabled={busy}
-            title="Reset draft"
+            title={admin.text('reset')}
           >
             <RefreshCcw size={14} />
-            Reset
+            {admin.text('reset')}
           </button>
           <button
             type="button"
             onClick={save}
             className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-500 px-3 text-xs font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!canSave}
-            title="Save plan"
+            title={admin.text('save')}
           >
             <Save size={14} />
-            {busy ? 'Saving' : 'Save'}
+            {busy ? admin.text('saving') : admin.text('save')}
           </button>
         </div>
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <label className="text-xs font-semibold text-secondary">
-          Name
+          {admin.text('name')}
           <input value={draft.name} onChange={(event) => setField('name', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
         </label>
         <label className="text-xs font-semibold text-secondary">
-          Display price
+          {admin.text('displayPrice')}
           <input value={draft.displayPrice} onChange={(event) => setField('displayPrice', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
         </label>
       </div>
 
       <label className="mt-3 block text-xs font-semibold text-secondary">
-        Description
+        {admin.text('description')}
         <textarea value={draft.description} onChange={(event) => setField('description', event.currentTarget.value)} className="glass-input mt-1 min-h-20 w-full rounded-xl px-3 py-2 text-sm" />
       </label>
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          ['Price USD', 'priceMonthlyUsd'],
-          ['AI/day', 'aiDailyLimit'],
-          ['Deep/day', 'deepDailyLimit'],
-          ['Scans/day', 'scannerDailyLimit'],
-          ['Storage MB', 'storageMb'],
-          ['Seats', 'seats'],
-          ['SLA hours', 'supportSlaHours'],
+          [admin.text('priceUsd'), 'priceMonthlyUsd'],
+          [admin.text('aiDay'), 'aiDailyLimit'],
+          [admin.text('deepDay'), 'deepDailyLimit'],
+          [admin.text('scansDay'), 'scannerDailyLimit'],
+          [admin.text('storageMb'), 'storageMb'],
+          [admin.text('seats'), 'seats'],
+          [admin.text('slaHours'), 'supportSlaHours'],
         ].map(([label, key]) => (
           <label key={key} className="text-xs font-semibold text-secondary">
             {label}
@@ -2262,47 +2290,47 @@ function PlanEditorCard({
 
       <div className="mt-3 grid gap-3 md:grid-cols-3">
         <label className="text-xs font-semibold text-secondary">
-          Provider
+          {admin.text('provider')}
           <select value={draft.billingProvider} onChange={(event) => setField('billingProvider', event.currentTarget.value as BillingProvider)} className="mt-1 min-h-10 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-            {BILLING_PROVIDER_OPTIONS.map((provider) => <option key={provider} value={provider}>{provider}</option>)}
+            {BILLING_PROVIDER_OPTIONS.map((provider) => <option key={provider} value={provider}>{admin.enumLabel(provider)}</option>)}
           </select>
         </label>
         <label className="text-xs font-semibold text-secondary">
-          Market
+          {admin.text('market')}
           <select value={draft.market} onChange={(event) => setField('market', event.currentTarget.value as BillingMarket)} className="mt-1 min-h-10 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-            {BILLING_MARKET_OPTIONS.map((market) => <option key={market} value={market}>{market}</option>)}
+            {BILLING_MARKET_OPTIONS.map((market) => <option key={market} value={market}>{admin.enumLabel(market)}</option>)}
           </select>
         </label>
         <label className="text-xs font-semibold text-secondary">
-          Checkout
+          {admin.text('checkout')}
           <select value={draft.checkoutMode} onChange={(event) => setField('checkoutMode', event.currentTarget.value as CheckoutMode)} className="mt-1 min-h-10 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-            {CHECKOUT_MODE_OPTIONS.map((mode) => <option key={mode} value={mode}>{mode}</option>)}
+            {CHECKOUT_MODE_OPTIONS.map((mode) => <option key={mode} value={mode}>{admin.enumLabel(mode)}</option>)}
           </select>
         </label>
       </div>
 
       <div className="mt-3 grid gap-3 md:grid-cols-3">
         <label className="text-xs font-semibold text-secondary">
-          Product ID
+          {admin.text('productId')}
           <input value={draft.billingProductId} onChange={(event) => setField('billingProductId', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
         </label>
         <label className="text-xs font-semibold text-secondary">
-          Price ID
+          {admin.text('priceId')}
           <input value={draft.billingPriceId} onChange={(event) => setField('billingPriceId', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
         </label>
         <label className="text-xs font-semibold text-secondary">
-          Entitlement ID
+          {admin.text('entitlementId')}
           <input value={draft.revenuecatEntitlementId} onChange={(event) => setField('revenuecatEntitlementId', event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
         </label>
       </div>
 
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         <label className="text-xs font-semibold text-secondary">
-          Features
+          {admin.text('features')}
           <textarea value={draft.featuresText} onChange={(event) => setField('featuresText', event.currentTarget.value)} className="glass-input mt-1 min-h-24 w-full rounded-xl px-3 py-2 text-sm" />
         </label>
         <label className="text-xs font-semibold text-secondary">
-          Payment methods
+          {admin.text('paymentMethods')}
           <textarea value={draft.paymentMethodsText} onChange={(event) => setField('paymentMethodsText', event.currentTarget.value)} className="glass-input mt-1 min-h-24 w-full rounded-xl px-3 py-2 text-sm" />
         </label>
       </div>
@@ -2310,23 +2338,23 @@ function PlanEditorCard({
       <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
         <label className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-xs font-semibold text-secondary">
           <input type="checkbox" checked={draft.recommended} onChange={(event) => setField('recommended', event.currentTarget.checked)} />
-          Recommended
+          {admin.text('recommended')}
         </label>
         <span className={clsx('text-xs font-semibold', changedKeys.length ? 'text-blue-600 dark:text-blue-300' : 'text-tertiary')}>
-          {changedKeys.length ? `${changedKeys.length} pending changes` : 'No pending changes'}
+          {changedKeys.length ? admin.format('pendingChanges', { count: changedKeys.length }) : admin.text('noPendingChanges')}
         </span>
       </div>
 
       <label className="mt-3 block text-xs font-semibold text-secondary">
-        Operator note
+        {admin.text('operatorNote')}
         <textarea
           value={draft.operatorNote}
           onChange={(event) => setField('operatorNote', event.currentTarget.value)}
-          placeholder="Operator reason for audit trail"
+          placeholder={admin.text('operatorNotePlaceholder')}
           className="glass-input mt-1 min-h-20 w-full rounded-xl px-3 py-2 text-sm"
         />
       </label>
-      {invalidNumber ? <p className="mt-2 text-xs font-semibold text-rose-600 dark:text-rose-300">Numeric fields must be valid numbers.</p> : null}
+      {invalidNumber ? <p className="mt-2 text-xs font-semibold text-rose-600 dark:text-rose-300">{admin.text('numericFieldsInvalid')}</p> : null}
     </article>
   );
 }
@@ -2363,6 +2391,7 @@ function CatalogDatabasePanel({
   busy: boolean;
   onCreate: (patch: AdminCatalogRequestPatch) => void;
 }) {
+  const admin = useAdminCopy();
   const [kind, setKind] = useState<AdminCatalogKind>('grinder');
   const [title, setTitle] = useState('');
   const [entityId, setEntityId] = useState('');
@@ -2375,7 +2404,7 @@ function CatalogDatabasePanel({
     try {
       const payload = JSON.parse(payloadText) as Record<string, unknown>;
       if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-        setParseError('Payload must be a JSON object.');
+        setParseError(admin.text('payloadMustObject'));
         return;
       }
       setParseError('');
@@ -2392,7 +2421,7 @@ function CatalogDatabasePanel({
       setSourceUrl('');
       setOperatorNote('');
     } catch {
-      setParseError('Payload JSON is invalid.');
+      setParseError(admin.text('payloadInvalid'));
     }
   };
 
@@ -2403,24 +2432,24 @@ function CatalogDatabasePanel({
       <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-primary">Catalog operations</p>
-            <p className="mt-1 text-xs text-secondary">Water, dripper, and grinder review queue.</p>
+            <p className="text-sm font-semibold text-primary">{admin.text('catalogOperations')}</p>
+            <p className="mt-1 text-xs text-secondary">{admin.text('catalogOperationsSubtitle')}</p>
           </div>
           <StatusBadge value={snapshot.catalog.ready ? 'pass' : 'warn'} />
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
           {snapshot.catalog.supportedKinds.map((item) => (
             <div key={item} className="rounded-xl bg-[var(--bg-base)] p-2">
-              <p className="text-lg font-semibold text-primary">{formatNumber(snapshot.catalog.publishedCounts[item])}</p>
-              <p className="text-tertiary">{item}</p>
+              <p className="text-lg font-semibold text-primary">{admin.number(snapshot.catalog.publishedCounts[item])}</p>
+              <p className="text-tertiary">{admin.enumLabel(item)}</p>
             </div>
           ))}
         </div>
         <div className="mt-3 rounded-xl bg-[var(--bg-base)] p-3 text-xs text-secondary">
           <div className="flex flex-wrap gap-2">
-            <StatusBadge value={`${snapshot.catalog.reviewQueue.queued} queued`} />
-            <StatusBadge value={`${snapshot.catalog.reviewQueue.needsSource} needs source`} />
-            <StatusBadge value={`${snapshot.catalog.reviewQueue.approved} approved`} />
+            <StatusBadge value="queued" label={admin.format('queuedCount', { count: admin.number(snapshot.catalog.reviewQueue.queued) })} />
+            <StatusBadge value="needs_source" label={admin.format('needsSourceCount', { count: admin.number(snapshot.catalog.reviewQueue.needsSource) })} />
+            <StatusBadge value="approved" label={admin.format('approvedCount', { count: admin.number(snapshot.catalog.reviewQueue.approved) })} />
           </div>
           {snapshot.catalog.gaps[0] ? <p className="mt-3 leading-5">{snapshot.catalog.gaps[0]}</p> : null}
         </div>
@@ -2431,16 +2460,16 @@ function CatalogDatabasePanel({
                 <p className="truncate text-xs font-semibold text-primary">{request.title}</p>
                 <StatusBadge value={request.reviewStatus} />
               </div>
-              <p className="mt-1 truncate text-[11px] text-tertiary">{request.kind} / {request.payloadPreview || request.entityId || 'draft'}</p>
+              <p className="mt-1 truncate text-[11px] text-tertiary">{admin.enumLabel(request.kind)} / {request.payloadPreview || request.entityId || 'draft'}</p>
             </div>
           ))}
-          {!snapshot.catalog.recentRequests.length ? <p className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-xs text-tertiary">No catalog requests yet.</p> : null}
+          {!snapshot.catalog.recentRequests.length ? <p className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-xs text-tertiary">{admin.text('noCatalogRequests')}</p> : null}
         </div>
       </div>
 
       <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-semibold text-primary">New catalog request</p>
+          <p className="text-sm font-semibold text-primary">{admin.text('newCatalogRequest')}</p>
           <button
             type="button"
             onClick={submit}
@@ -2448,37 +2477,37 @@ function CatalogDatabasePanel({
             className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-500 px-3 text-xs font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Save size={14} />
-            {busy ? 'Saving' : 'Queue'}
+            {busy ? admin.text('saving') : admin.text('queue')}
           </button>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <label className="text-xs font-semibold text-secondary">
-            Kind
+            {admin.text('kind')}
             <select value={kind} onChange={(event) => setKind(event.currentTarget.value as AdminCatalogKind)} className="mt-1 min-h-10 w-full rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-              {CATALOG_KIND_OPTIONS.map((item) => <option key={item} value={item}>{item}</option>)}
+              {CATALOG_KIND_OPTIONS.map((item) => <option key={item} value={item}>{admin.enumLabel(item)}</option>)}
             </select>
           </label>
           <label className="text-xs font-semibold text-secondary md:col-span-2">
-            Title
+            {admin.text('title')}
             <input value={title} onChange={(event) => setTitle(event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
           </label>
         </div>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <label className="text-xs font-semibold text-secondary">
-            Entity ID
+            {admin.text('entityId')}
             <input value={entityId} onChange={(event) => setEntityId(event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
           </label>
           <label className="text-xs font-semibold text-secondary">
-            Source URL
+            {admin.text('sourceUrl')}
             <input value={sourceUrl} onChange={(event) => setSourceUrl(event.currentTarget.value)} className="glass-input mt-1 min-h-10 w-full rounded-xl px-3 text-sm" />
           </label>
         </div>
         <label className="mt-3 block text-xs font-semibold text-secondary">
-          Payload JSON
+          {admin.text('payloadJson')}
           <textarea value={payloadText} onChange={(event) => setPayloadText(event.currentTarget.value)} className="glass-input mt-1 min-h-36 w-full rounded-xl px-3 py-2 font-mono text-xs" />
         </label>
         <label className="mt-3 block text-xs font-semibold text-secondary">
-          Operator note
+          {admin.text('operatorNote')}
           <textarea value={operatorNote} onChange={(event) => setOperatorNote(event.currentTarget.value)} className="glass-input mt-1 min-h-20 w-full rounded-xl px-3 py-2 text-sm" />
         </label>
         {parseError ? <p className="mt-2 text-xs font-semibold text-rose-600 dark:text-rose-300">{parseError}</p> : null}
@@ -2496,6 +2525,7 @@ function MaintenancePanel({
   busyFlagKey: string | null;
   onPatch: (key: string, patch: AdminFeatureFlagPatch) => void;
 }) {
+  const admin = useAdminCopy();
   const [draftMessages, setDraftMessages] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -2531,7 +2561,7 @@ function MaintenancePanel({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-primary">{flag.label}</p>
-                <p className="mt-1 text-xs text-tertiary">{flag.key} / updated {formatDate(flag.updatedAt)}</p>
+                <p className="mt-1 text-xs text-tertiary">{flag.key} / updated {admin.date(flag.updatedAt)}</p>
               </div>
               <select
                 value={flag.status}
@@ -2540,7 +2570,7 @@ function MaintenancePanel({
                 className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-xs font-semibold text-primary"
                 aria-label={`Change status for ${flag.label}`}
               >
-                {FEATURE_STATUS_OPTIONS.map((status) => <option key={status} value={status}>{status}</option>)}
+                {FEATURE_STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
               </select>
             </div>
 
@@ -2549,7 +2579,7 @@ function MaintenancePanel({
               disabled={busy}
               onChange={(event) => setDraftMessages((current) => ({ ...current, [flag.key]: event.currentTarget.value }))}
               onBlur={() => commitMessage(flag)}
-              placeholder="User-facing maintenance message"
+              placeholder={admin.text('userFacingMaintenanceMessage')}
               className="mt-4 min-h-20 w-full resize-none rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-sm leading-6 text-primary outline-none transition-colors focus:border-blue-400"
             />
 
@@ -2563,11 +2593,11 @@ function MaintenancePanel({
                     onChange={(event) => toggleSurface(flag, surface, event.currentTarget.checked)}
                     className="h-3.5 w-3.5 accent-blue-500"
                   />
-                  {surface}
+                  {admin.enumLabel(surface)}
                 </label>
               ))}
             </div>
-            {busy ? <p className="mt-3 text-xs font-semibold text-blue-500">Saving maintenance control...</p> : null}
+            {busy ? <p className="mt-3 text-xs font-semibold text-blue-500">{admin.text('savingMaintenanceControl')}</p> : null}
           </div>
         );
       })}
@@ -2576,11 +2606,12 @@ function MaintenancePanel({
 }
 
 function AuditPanel({ audit }: { audit: AdminSnapshot['audit'] }) {
+  const admin = useAdminCopy();
   return (
     <div className="rounded-2xl border border-glass bg-surface-alpha">
       {audit.map((event, index) => (
         <div key={event.id} className={clsx('grid gap-3 px-4 py-4 md:grid-cols-[11rem_1fr_8rem]', index > 0 && 'border-t border-glass')}>
-          <div className="text-xs text-tertiary">{formatDate(event.createdAt)}</div>
+          <div className="text-xs text-tertiary">{admin.date(event.createdAt)}</div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-primary">{event.action.replace(/_/g, ' ')}</p>
             <p className="mt-1 text-sm leading-5 text-secondary">{event.detail}</p>
@@ -2618,10 +2649,11 @@ function LaunchPanel({ checklist }: { checklist: LaunchChecklistItem[] }) {
 }
 
 function EmptyState() {
+  const admin = useAdminCopy();
   return (
     <div className="rounded-2xl border border-dashed border-glass bg-surface-alpha px-4 py-10 text-center">
-      <p className="text-sm font-semibold text-primary">No matching users</p>
-      <p className="mt-1 text-sm text-secondary">Adjust search, status, or plan filters.</p>
+      <p className="text-sm font-semibold text-primary">{admin.text('noMatchingUsers')}</p>
+      <p className="mt-1 text-sm text-secondary">{admin.text('noMatchingUsersSubtitle')}</p>
     </div>
   );
 }
@@ -2630,6 +2662,8 @@ export function AdminManagement() {
   const location = useLocation();
   const navigate = useNavigate();
   const { openAuthModal, refreshAuthState } = useAuthModal();
+  const { language } = useGlobalState();
+  const admin = useMemo(() => createAdminCopy(language), [language]);
   const [snapshot, setSnapshot] = useState<AdminSnapshot | null>(null);
   const snapshotRef = useRef<AdminSnapshot | null>(null);
   const [activeTab, setActiveTab] = useState<AdminTab>(() => tabFromSearch(location.search));
@@ -2814,11 +2848,11 @@ export function AdminManagement() {
   const handleCopy = useCallback(async (value: string, label: string) => {
     try {
       await navigator.clipboard.writeText(value);
-      setToast(`${label} copied`);
+      setToast(admin.format('usersCopied', { label }));
     } catch {
-      setToast('Copy failed');
+      setToast(admin.text('copyFailed'));
     }
-  }, []);
+  }, [admin]);
 
   const exportUsersCsv = useCallback(() => {
     const current = snapshotRef.current;
@@ -2828,8 +2862,8 @@ export function AdminManagement() {
       usersToCsv(current),
       'text/csv;charset=utf-8',
     );
-    setToast(exported ? 'Users CSV exported' : 'Export unavailable');
-  }, []);
+    setToast(exported ? admin.text('usersCsvExported') : admin.text('exportUnavailable'));
+  }, [admin]);
 
   const exportAuditCsv = useCallback(() => {
     const current = snapshotRef.current;
@@ -2839,14 +2873,14 @@ export function AdminManagement() {
       auditToCsv(current),
       'text/csv;charset=utf-8',
     );
-    setToast(exported ? 'Audit CSV exported' : 'Export unavailable');
-  }, []);
+    setToast(exported ? admin.text('auditCsvExported') : admin.text('exportUnavailable'));
+  }, [admin]);
 
   const copyLaunchSummary = useCallback(() => {
     const current = snapshotRef.current;
     if (!current) return;
-    void handleCopy(buildLaunchSummary(current), 'Launch handoff');
-  }, [handleCopy]);
+    void handleCopy(buildLaunchSummary(current), admin.text('launchHandoff'));
+  }, [admin, handleCopy]);
 
   const openUserQueue = useCallback((queue: UserQueueFilter) => {
     setUserQueueFilter(queue);
@@ -2885,13 +2919,13 @@ export function AdminManagement() {
       setSnapshot(next);
       setError(null);
       setAccountErrorUserId(null);
-      setToast('Perubahan admin tersimpan');
+      setToast(admin.text('adminChangesSaved'));
     } catch (err) {
       if (err instanceof AdminApiError) {
         setError(err);
         setAccountErrorUserId(userId);
       }
-      setToast('Perubahan admin gagal');
+      setToast(admin.text('adminChangesFailed'));
     } finally {
       setBusyUserId(null);
     }
@@ -2903,7 +2937,7 @@ export function AdminManagement() {
       void commitUserPatch(userId, patch);
       return;
     }
-    const risk = classifyUserPatchRisk(user, patch);
+    const risk = classifyUserPatchRisk(user, patch, admin);
     if (!risk) {
       void commitUserPatch(userId, patch);
       return;
@@ -2933,10 +2967,10 @@ export function AdminManagement() {
       const next = await updateFeatureFlag(key, patch);
       setSnapshot(next);
       setError(null);
-      setToast('Kontrol pemeliharaan tersimpan');
+      setToast(admin.text('maintenanceSaved'));
     } catch (err) {
       if (err instanceof AdminApiError) setError(err);
-      setToast('Kontrol pemeliharaan gagal');
+      setToast(admin.text('maintenanceFailed'));
     } finally {
       setBusyFlagKey(null);
     }
@@ -2949,10 +2983,10 @@ export function AdminManagement() {
       const next = await updateAdminPlan(planCode, patch);
       setSnapshot(next);
       setError(null);
-      setToast('Plan catalog tersimpan');
+      setToast(admin.text('planSaved'));
     } catch (err) {
       if (err instanceof AdminApiError) setError(err);
-      setToast('Plan catalog gagal disimpan');
+      setToast(admin.text('planFailed'));
     } finally {
       setBusyPlanCode(null);
     }
@@ -2965,10 +2999,10 @@ export function AdminManagement() {
       const next = await createCatalogRequest(patch);
       setSnapshot(next);
       setError(null);
-      setToast('Request katalog tersimpan');
+      setToast(admin.text('catalogSaved'));
     } catch (err) {
       if (err instanceof AdminApiError) setError(err);
-      setToast('Request katalog gagal');
+      setToast(admin.text('catalogFailed'));
     } finally {
       setBusyCatalogRequest(false);
     }
@@ -3003,11 +3037,13 @@ export function AdminManagement() {
 
   if (blockingError) {
     return (
-      <ProtectedGate
-        error={blockingError}
-        onSignIn={handleSignIn}
-        onRetry={() => void refresh()}
-      />
+      <AdminCopyContext.Provider value={admin}>
+        <ProtectedGate
+          error={blockingError}
+          onSignIn={handleSignIn}
+          onRetry={() => void refresh()}
+        />
+      </AdminCopyContext.Provider>
     );
   }
 
@@ -3015,6 +3051,7 @@ export function AdminManagement() {
   const warningChecks = snapshot?.checks.filter((check) => check.status === 'warn').length || 0;
 
   return (
+    <AdminCopyContext.Provider value={admin}>
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
@@ -3030,8 +3067,8 @@ export function AdminManagement() {
                   <ShieldCheck size={20} />
                 </span>
                 <div>
-                  <h1 className="text-2xl font-semibold tracking-normal text-primary">Admin Management</h1>
-                  <p className="mt-1 text-sm text-secondary">Users, plans, database readiness, audit, and launch control.</p>
+                  <h1 className="text-2xl font-semibold tracking-normal text-primary">{admin.text('pageTitle')}</h1>
+                  <p className="mt-1 text-sm text-secondary">{admin.text('pageSubtitle')}</p>
                 </div>
               </div>
             </div>
@@ -3040,34 +3077,34 @@ export function AdminManagement() {
               {snapshot ? (
                 <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-surface-alpha px-2.5 text-[11px] font-semibold text-secondary">
                   <Activity size={13} />
-                  Live {snapshot.realtime.intervalSec}s / #{snapshot.realtime.sequence}
+                  {admin.text('live')} {snapshot.realtime.intervalSec}s / #{snapshot.realtime.sequence}
                 </span>
               ) : null}
               {snapshot ? (
                 <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-surface-alpha px-2.5 text-[11px] font-semibold text-secondary">
                   <Clock3 size={13} />
-                  {formatDate(snapshot.generatedAt)}
+                  {admin.date(snapshot.generatedAt)}
                 </span>
               ) : null}
               <button
                 type="button"
                 onClick={() => navigate('/')}
                 className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-surface-alpha px-3 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
-                aria-label="Kembali ke aplikasi"
-                title="Kembali ke aplikasi"
+                aria-label={admin.text('backToAppTitle')}
+                title={admin.text('backToAppTitle')}
               >
                 <ArrowLeft size={16} />
-                <span>App</span>
+                <span>{admin.text('backToApp')}</span>
               </button>
               <button
                 type="button"
                 onClick={toggleTheme}
                 className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-glass bg-surface-alpha px-3 text-sm font-semibold text-secondary transition-colors hover:bg-[var(--bg-base)] hover:text-primary"
-                aria-label={isDark ? 'Switch admin to light mode' : 'Switch admin to dark mode'}
-                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                aria-label={isDark ? admin.text('switchToLight') : admin.text('switchToDark')}
+                title={isDark ? admin.text('switchToLight') : admin.text('switchToDark')}
               >
                 {isDark ? <Sun size={16} /> : <Moon size={16} />}
-                <span className="hidden sm:inline">{isDark ? 'Light' : 'Dark'}</span>
+                <span className="hidden sm:inline">{isDark ? admin.text('light') : admin.text('dark')}</span>
               </button>
               <button
                 type="button"
@@ -3076,7 +3113,7 @@ export function AdminManagement() {
                 disabled={refreshing}
               >
                 <RefreshCcw size={15} className={refreshing ? 'animate-spin' : ''} />
-                Refresh
+                {admin.text('refresh')}
               </button>
             </div>
           </div>
@@ -3093,10 +3130,10 @@ export function AdminManagement() {
         {snapshot ? (
           <>
             <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <MetricTile label="Total Users" value={formatNumber(snapshot.metrics.totalUsers)} detail={`${formatNumber(snapshot.metrics.activeUsers)} active accounts`} icon={Users} />
-              <MetricTile label="Paid Users" value={formatNumber(snapshot.metrics.paidUsers)} detail={`${snapshot.metrics.planConversionRate}% plan conversion`} icon={WalletCards} />
-              <MetricTile label="AI Today" value={formatNumber(snapshot.metrics.aiRequestsToday)} detail={`${formatNumber(snapshot.metrics.deepRequestsToday)} deep requests`} icon={Sparkles} />
-              <MetricTile label="Launch Gate" value={`${criticalChecks}/${warningChecks}`} detail="Critical failures / warnings" icon={AlertTriangle} />
+              <MetricTile label={admin.text('metricTotalUsers')} value={admin.number(snapshot.metrics.totalUsers)} detail={admin.format('activeAccounts', { count: admin.number(snapshot.metrics.activeUsers) })} icon={Users} />
+              <MetricTile label={admin.text('metricPaidUsers')} value={admin.number(snapshot.metrics.paidUsers)} detail={admin.format('planConversion', { count: snapshot.metrics.planConversionRate })} icon={WalletCards} />
+              <MetricTile label={admin.text('metricAiToday')} value={admin.number(snapshot.metrics.aiRequestsToday)} detail={admin.format('deepRequests', { count: admin.number(snapshot.metrics.deepRequestsToday) })} icon={Sparkles} />
+              <MetricTile label={admin.text('metricLaunchGate')} value={`${criticalChecks}/${warningChecks}`} detail={admin.text('criticalWarnings')} icon={AlertTriangle} />
             </section>
 
             {error && !accountErrorUserId ? <AdminInlineError error={error} onDismiss={() => setError(null)} /> : null}
@@ -3118,7 +3155,7 @@ export function AdminManagement() {
             />
 
             <nav className="flex gap-2 overflow-x-auto rounded-2xl border border-glass bg-surface-alpha p-1">
-              {TABS.map(({ id, label, icon: Icon }) => (
+              {TABS.map(({ id, labelKey, icon: Icon }) => (
                 <button
                   key={id}
                   type="button"
@@ -3131,7 +3168,7 @@ export function AdminManagement() {
                   )}
                 >
                   <Icon size={16} />
-                  {label}
+                  {admin.text(labelKey)}
                 </button>
               ))}
             </nav>
@@ -3151,15 +3188,15 @@ export function AdminManagement() {
                       <div className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
                         <div className="mb-4 flex items-center justify-between gap-3">
                           <div>
-                            <h2 className="text-base font-semibold text-primary">Production checks</h2>
-                            <p className="mt-1 text-sm text-secondary">Current backend, database, billing, and AI readiness.</p>
+                            <h2 className="text-base font-semibold text-primary">{admin.text('productionChecks')}</h2>
+                            <p className="mt-1 text-sm text-secondary">{admin.text('productionChecksSubtitle')}</p>
                           </div>
                           <StatusBadge value={snapshot.degraded ? 'warn' : 'pass'} />
                         </div>
                         <ChecksPanel checks={snapshot.checks.slice(0, 5)} />
                       </div>
                       <div className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
-                        <h2 className="text-base font-semibold text-primary">Plan mix</h2>
+                        <h2 className="text-base font-semibold text-primary">{admin.text('planMix')}</h2>
                         <div className="mt-4 grid gap-3 md:grid-cols-5">
                           {snapshot.plans.map((plan) => (
                             <div key={plan.code} className="rounded-2xl bg-surface-alpha p-3">
@@ -3171,7 +3208,7 @@ export function AdminManagement() {
                       </div>
                     </div>
                     <aside className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
-                      <h2 className="text-base font-semibold text-primary">Recommendations</h2>
+                      <h2 className="text-base font-semibold text-primary">{admin.text('recommendations')}</h2>
                       <div className="mt-4 space-y-3">
                         {snapshot.recommendations.map((item) => (
                           <div key={item} className="rounded-2xl bg-surface-alpha p-3">
@@ -3192,25 +3229,25 @@ export function AdminManagement() {
                       <input
                         value={query}
                         onChange={(event) => setQuery(event.currentTarget.value)}
-                        placeholder="Search name, username, email, or user id"
+                        placeholder={admin.text('usersSearchPlaceholder')}
                         className="glass-input min-h-11 w-full rounded-xl pl-9 pr-3 text-sm"
                       />
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <select value={userQueueFilter} onChange={(event) => setUserQueueFilter(event.currentTarget.value as UserQueueFilter)} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-                        {USER_QUEUE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                        {USER_QUEUE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{admin.text(option.labelKey)}</option>)}
                       </select>
                       <select value={statusFilter} onChange={(event) => setStatusFilter(event.currentTarget.value as AccountStatus | 'all')} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-                        <option value="all">All status</option>
-                        {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{status}</option>)}
+                        <option value="all">{admin.text('allStatus')}</option>
+                        {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
                       </select>
                       <select value={planFilter} onChange={(event) => setPlanFilter(event.currentTarget.value as PlanCode | 'all')} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-                        <option value="all">All plans</option>
-                        {PLAN_OPTIONS.map((plan) => <option key={plan} value={plan}>{plan}</option>)}
+                        <option value="all">{admin.text('allPlans')}</option>
+                        {PLAN_OPTIONS.map((plan) => <option key={plan} value={plan}>{admin.enumLabel(plan)}</option>)}
                       </select>
                       <select value={recoveryFilter} onChange={(event) => setRecoveryFilter(event.currentTarget.value as AccountRecoveryStatus | 'all')} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
-                        <option value="all">All recovery</option>
-                        {RECOVERY_OPTIONS.map((status) => <option key={status} value={status}>{status}</option>)}
+                        <option value="all">{admin.text('allRecovery')}</option>
+                        {RECOVERY_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
                       </select>
                     </div>
                   </div>
@@ -3251,8 +3288,8 @@ export function AdminManagement() {
                 <motion.section key="plans" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div>
-                      <h2 className="text-base font-semibold text-primary">Plan catalog</h2>
-                      <p className="mt-1 text-sm text-secondary">Commercial tiers, quota ceilings, provider mapping, entitlement IDs, and launch billing readiness.</p>
+                      <h2 className="text-base font-semibold text-primary">{admin.text('planCatalog')}</h2>
+                      <p className="mt-1 text-sm text-secondary">{admin.text('planCatalogSubtitle')}</p>
                     </div>
                     <SlidersHorizontal size={18} className="text-blue-500" />
                   </div>
@@ -3265,8 +3302,8 @@ export function AdminManagement() {
                 <motion.section key="maintenance" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
                   <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h2 className="text-base font-semibold text-primary">Maintenance controls</h2>
-                      <p className="mt-1 text-sm text-secondary">Feature availability flags consumed by web, PWA, and Android parity sessions.</p>
+                      <h2 className="text-base font-semibold text-primary">{admin.text('maintenanceControls')}</h2>
+                      <p className="mt-1 text-sm text-secondary">{admin.text('maintenanceControlsSubtitle')}</p>
                     </div>
                     <StatusBadge value={snapshot.featureFlags.some((flag) => flag.status !== 'available') ? 'warn' : 'pass'} />
                   </div>
@@ -3278,8 +3315,8 @@ export function AdminManagement() {
                 <motion.section key="database" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
                   <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h2 className="text-base font-semibold text-primary">Database readiness</h2>
-                      <p className="mt-1 text-sm text-secondary">Persistence, RLS, audit, and plan controls for production operations.</p>
+                      <h2 className="text-base font-semibold text-primary">{admin.text('databaseReadiness')}</h2>
+                      <p className="mt-1 text-sm text-secondary">{admin.text('databaseReadinessSubtitle')}</p>
                     </div>
                     <StatusBadge value={snapshot.dataMode} />
                   </div>
@@ -3291,8 +3328,8 @@ export function AdminManagement() {
               {activeTab === 'audit' ? (
                 <motion.section key="audit" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
                   <div className="mb-4">
-                    <h2 className="text-base font-semibold text-primary">Audit trail</h2>
-                    <p className="mt-1 text-sm text-secondary">Latest admin mutations and operational events.</p>
+                    <h2 className="text-base font-semibold text-primary">{admin.text('auditTrail')}</h2>
+                    <p className="mt-1 text-sm text-secondary">{admin.text('auditTrailSubtitle')}</p>
                   </div>
                   <AuditPanel audit={snapshot.audit} />
                 </motion.section>
@@ -3301,8 +3338,8 @@ export function AdminManagement() {
               {activeTab === 'launch' ? (
                 <motion.section key="launch" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
                   <div className="mb-4">
-                    <h2 className="text-base font-semibold text-primary">Launch gate</h2>
-                    <p className="mt-1 text-sm text-secondary">The one-week Play Store launch readiness list.</p>
+                    <h2 className="text-base font-semibold text-primary">{admin.text('launchGate')}</h2>
+                    <p className="mt-1 text-sm text-secondary">{admin.text('launchGateSubtitle')}</p>
                   </div>
                   <LaunchPanel checklist={snapshot.launchChecklist} />
                 </motion.section>
@@ -3347,5 +3384,6 @@ export function AdminManagement() {
         ) : null}
       </AnimatePresence>
     </motion.div>
+    </AdminCopyContext.Provider>
   );
 }

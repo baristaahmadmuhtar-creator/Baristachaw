@@ -34,7 +34,7 @@ function openWarmupPopup() {
       popup.document.title = isId
         ? 'Baristachaw Masuk'
         : isAr
-          ? 'Baristachaw ????? ??????'
+          ? 'Baristachaw تسجيل الدخول'
           : 'Baristachaw Sign In';
 
       const body = popup.document.body;
@@ -51,7 +51,7 @@ function openWarmupPopup() {
       message.textContent = isId
         ? 'Membuka masuk Google...'
         : isAr
-          ? '???? ??? ????? ?????? ??? Google...'
+          ? 'جار فتح تسجيل الدخول عبر Google...'
           : 'Opening Google sign-in...';
 
       body.replaceChildren(message);

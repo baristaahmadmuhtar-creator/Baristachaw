@@ -26,9 +26,9 @@ test('admin users get a mobile Admin entry and can return to the app', async ({ 
   await adminLink.click();
 
   await expect(page).toHaveURL(/\/admin(?:\?|$)/);
-  await expect(page.getByRole('heading', { name: 'Admin Management' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole('heading', { name: 'Manajemen Admin' })).toBeVisible({ timeout: 30_000 });
 
-  await page.getByRole('button', { name: 'Kembali ke aplikasi' }).click();
+  await page.getByRole('button', { name: 'Aplikasi' }).click();
   await expect(page).toHaveURL(/\/$/);
 });
 
@@ -37,12 +37,12 @@ test('admin mobile manage opens account control without scrolling', async ({ pag
   await qaLogin(page.request, buildQaAdminUser());
   await page.goto('/admin?tab=users', { waitUntil: 'domcontentloaded' });
 
-  await expect(page.getByRole('heading', { name: 'Admin Management' })).toBeVisible({ timeout: 30_000 });
-  await page.getByRole('button', { name: 'Manage' }).first().click();
+  await expect(page.getByRole('heading', { name: 'Manajemen Admin' })).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: 'Kelola' }).first().click();
 
-  await expect(page.getByRole('heading', { name: 'Account control' })).toBeVisible();
-  await expect(page.getByText('Plan quick control')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Apply provisional' }).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Kontrol akun' })).toBeVisible();
+  await expect(page.getByText('Kontrol plan cepat')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Terapkan sementara' }).first()).toBeVisible();
 });
 
 test('admin mobile exposes editable plans and catalog operations', async ({ page }) => {
@@ -50,13 +50,13 @@ test('admin mobile exposes editable plans and catalog operations', async ({ page
   await qaLogin(page.request, buildQaAdminUser());
 
   await page.goto('/admin?tab=plans', { waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('heading', { name: 'Admin Management' })).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText('Plan catalog')).toBeVisible();
-  await expect(page.getByLabel('Operator note').first()).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Save' }).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Manajemen Admin' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText('Katalog plan')).toBeVisible();
+  await expect(page.getByLabel('Catatan operator').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Simpan' }).first()).toBeVisible();
 
   await page.goto('/admin?tab=database', { waitUntil: 'domcontentloaded' });
-  await expect(page.getByText('Catalog operations')).toBeVisible();
-  await expect(page.getByText('New catalog request')).toBeVisible();
+  await expect(page.getByText('Operasi katalog')).toBeVisible();
+  await expect(page.getByText('Request katalog baru')).toBeVisible();
   await expect(page.getByLabel('Payload JSON')).toBeVisible();
 });

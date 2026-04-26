@@ -1,4 +1,5 @@
 import {
+  DEFAULT_LANGUAGE,
   getLanguageDirection,
   getLanguageLocale,
   getTranslations,
@@ -908,7 +909,7 @@ const MOBILE_LOCALE_BUNDLES: Record<Language, MobileLocaleBundle> = {
 export function resolveMobileLanguage(value?: string | null): Language {
   const normalized = String(value || '').trim();
   const short = normalized.toLowerCase().split(/[-_]/)[0];
-  return isSupportedLanguage(short) ? short : 'en';
+  return isSupportedLanguage(short) ? short : DEFAULT_LANGUAGE;
 }
 
 export function getMobileLocalization(value?: string | null): {

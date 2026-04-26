@@ -15,7 +15,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { uiTokens } from '../theme/tokens';
+import { usePreferredMobileLanguage } from '../hooks/usePreferredMobileLanguage';
+import {
+  resolveMobileAuthBundle,
+  resolveMobileAuthUnavailableCopy,
+} from '../utils/authLocalization';
 import type { AuthProvider, EmailAuthPayload, PasswordResetPayload, PasswordUpdatePayload } from '../types';
+
+export { resolveMobileAuthCopy, resolveMobileAuthUnavailableCopy } from '../utils/authLocalization';
 
 type MobileAuthGateProps = {
   authBusyProvider: AuthProvider | null;
@@ -135,51 +142,6 @@ const WEB_AUTH_THEMES: Record<'light' | 'dark', WebParityAuthTheme> = {
   },
 };
 
-const COPY: Record<ActiveAuthMode, { title: string; subtitle: string; submit: string; submitting: string }> = {
-  signIn: {
-    title: 'Baristachaw',
-    subtitle: 'Gunakan Google untuk fitur AI terlindungi, atau lanjut sebagai tamu untuk ruang kerja gratis.',
-    submit: 'Masuk dengan email',
-    submitting: 'Memeriksa akun...',
-  },
-  signUp: {
-    title: 'Baristachaw',
-    subtitle: 'Mulai dengan Google atau mode tamu. Akun bisa ditingkatkan saat pembayaran sudah aktif.',
-    submit: 'Buat akun',
-    submitting: 'Membuat akun...',
-  },
-  resetPassword: {
-    title: 'Baristachaw',
-    subtitle: 'Pulihkan akses akun dengan tautan aman ke email.',
-    submit: 'Kirim tautan pemulihan',
-    submitting: 'Mengirim tautan...',
-  },
-  accountHelp: {
-    title: 'Baristachaw',
-    subtitle: 'Bantuan akun untuk menemukan cara masuk paling aman.',
-    submit: 'Kembali masuk',
-    submitting: 'Menyiapkan...',
-  },
-  newPassword: {
-    title: 'Baristachaw',
-    subtitle: 'Buat password baru untuk menyelesaikan pemulihan akun.',
-    submit: 'Simpan password baru',
-    submitting: 'Menyimpan password...',
-  },
-};
-
-export function resolveMobileAuthCopy(activeMode: MobileAuthActiveMode) {
-  return COPY[activeMode];
-}
-
-export function resolveMobileAuthUnavailableCopy(activeMode: MobileAuthActiveMode) {
-  const copy = resolveMobileAuthCopy(activeMode);
-  return {
-    title: activeMode === 'signUp' ? 'Daftar ke Baristachaw' : 'Masuk ke Baristachaw',
-    subtitle: copy.subtitle,
-  };
-}
-
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
@@ -208,6 +170,8 @@ export function MobileAuthGate({
   const colorScheme = useColorScheme();
   const theme = WEB_AUTH_THEMES[colorScheme === 'dark' ? 'dark' : 'light'];
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const preferredLanguage = usePreferredMobileLanguage();
+  const authCopy = useMemo(() => resolveMobileAuthBundle(preferredLanguage), [preferredLanguage]);
   const [mode, setMode] = useState<AuthMode>('signIn');
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -221,7 +185,7 @@ export function MobileAuthGate({
   const [successMessage, setSuccessMessage] = useState('');
 
   const activeMode: ActiveAuthMode = passwordRecoveryActive ? 'newPassword' : mode;
-  const copy = COPY[activeMode];
+  const copy = authCopy.modes[activeMode];
   const busy = Boolean(authBusyProvider);
   const googleBusy = authBusyProvider === 'google';
   const emailBusy = authBusyProvider === 'email';
@@ -235,8 +199,8 @@ export function MobileAuthGate({
   };
 
   const validatePasswordPair = (value: string, confirmation: string) => {
-    if (value.length < 8) return 'Password minimal 8 karakter.';
-    if (value !== confirmation) return 'Konfirmasi password belum sama.';
+    if (value.length < 8) return authCopy.passwordMin;
+    if (value !== confirmation) return authCopy.passwordMismatch;
     return '';
   };
 
@@ -247,7 +211,7 @@ export function MobileAuthGate({
     const normalizedName = displayName.trim();
 
     if (!isValidEmail(normalizedEmail)) {
-      setFormError('Masukkan email yang valid.');
+      setFormError(authCopy.invalidEmail);
       return;
     }
 
@@ -258,19 +222,19 @@ export function MobileAuthGate({
         const result = await onPasswordReset({ email: normalizedEmail });
         setSuccessMessage(result);
       } catch (error) {
-        setFormError(error instanceof Error ? error.message : 'Tautan pemulihan belum bisa dikirim.');
+        setFormError(error instanceof Error ? error.message : authCopy.resetSendFailed);
       }
       return;
     }
 
     if (password.length < 8) {
-      setFormError('Password minimal 8 karakter.');
+      setFormError(authCopy.passwordMin);
       return;
     }
 
     if (activeMode === 'signUp') {
       if (!normalizedName) {
-        setFormError('Nama tampilan wajib diisi.');
+        setFormError(authCopy.displayNameRequired);
         return;
       }
       const passwordError = validatePasswordPair(password, confirmPassword);
@@ -302,7 +266,7 @@ export function MobileAuthGate({
     try {
       await onPasswordUpdate({ password: newPassword });
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Password baru belum bisa disimpan.');
+      setFormError(error instanceof Error ? error.message : authCopy.newPasswordSaveFailed);
     }
   };
 
@@ -375,7 +339,7 @@ export function MobileAuthGate({
           <Image source={GOOGLE_MARK_ICON} style={styles.googleIcon} resizeMode="contain" />
         </View>
       )}
-      <Text style={styles.primaryButtonText}>{googleBusy ? 'Membuka...' : 'Lanjutkan dengan Google'}</Text>
+      <Text style={styles.primaryButtonText}>{googleBusy ? authCopy.googleOpening : authCopy.googleContinue}</Text>
     </Pressable>
   );
 
@@ -394,7 +358,7 @@ export function MobileAuthGate({
         ]}
       >
         <Ionicons name="person-circle-outline" size={18} color={theme.textPrimary} />
-        <Text style={styles.secondaryButtonText}>Lanjutkan sebagai tamu</Text>
+        <Text style={styles.secondaryButtonText}>{authCopy.guestContinue}</Text>
       </Pressable>
     );
   };
@@ -450,7 +414,7 @@ export function MobileAuthGate({
             onPress={onToggleVisible}
             style={styles.passwordToggle}
           >
-            <Text style={styles.passwordToggleText}>{visible ? 'Sembunyikan' : 'Tampilkan'}</Text>
+            <Text style={styles.passwordToggleText}>{visible ? authCopy.hidePassword : authCopy.showPassword}</Text>
           </Pressable>
         ) : null}
       </View>
@@ -460,9 +424,9 @@ export function MobileAuthGate({
   const renderModeTabs = () => {
     if (!supabaseAuthEnabled || activeMode === 'newPassword') return null;
     const tabs: Array<{ value: AuthMode; label: string }> = [
-      { value: 'signIn', label: 'Masuk' },
-      { value: 'signUp', label: 'Daftar' },
-      { value: 'resetPassword', label: 'Pulihkan' },
+      { value: 'signIn', label: authCopy.tabSignIn },
+      { value: 'signUp', label: authCopy.tabSignUp },
+      { value: 'resetPassword', label: authCopy.tabReset },
     ];
 
     return (
@@ -489,7 +453,7 @@ export function MobileAuthGate({
 
   const renderEmailForm = () => {
     if (!supabaseAuthEnabled && activeMode !== 'newPassword') {
-      const unavailableCopy = resolveMobileAuthUnavailableCopy(activeMode);
+      const unavailableCopy = resolveMobileAuthUnavailableCopy(activeMode, preferredLanguage);
       return (
         <View style={styles.infoPanel}>
           <Ionicons name="information-circle-outline" size={16} color={theme.textSecondary} />
@@ -508,16 +472,16 @@ export function MobileAuthGate({
         <View style={styles.infoPanel}>
           <Ionicons name="information-circle-outline" size={16} color={theme.textSecondary} />
           <View style={styles.infoCopy}>
-            <Text style={styles.infoTitle}>Bantuan akun</Text>
+            <Text style={styles.infoTitle}>{authCopy.accountHelpTitle}</Text>
             <Text style={styles.infoText}>
-              Baristachaw memakai Google atau email, bukan username terpisah. Jika lupa email, coba Google dulu atau cari email verifikasi Baristachaw.
+              {authCopy.accountHelpBody}
             </Text>
             <View style={styles.inlineActions}>
               <Pressable accessibilityRole="button" onPress={() => switchMode('signIn')} style={styles.inlineButton}>
-                <Text style={styles.inlineButtonText}>Kembali masuk</Text>
+                <Text style={styles.inlineButtonText}>{authCopy.backSignIn}</Text>
               </Pressable>
               <Pressable accessibilityRole="button" onPress={() => switchMode('resetPassword')} style={styles.inlineButton}>
-                <Text style={styles.inlineButtonText}>Pulihkan password</Text>
+                <Text style={styles.inlineButtonText}>{authCopy.recoverPassword}</Text>
               </Pressable>
             </View>
           </View>
@@ -535,10 +499,10 @@ export function MobileAuthGate({
             </View>
           ) : null}
           {renderInput({
-            label: 'Password baru',
+            label: authCopy.newPasswordLabel,
             value: newPassword,
             onChangeText: setNewPassword,
-            placeholder: 'Minimal 8 karakter',
+            placeholder: authCopy.passwordMinPlaceholder,
             icon: 'lock-closed-outline',
             textContentType: 'newPassword',
             autoComplete: 'new-password',
@@ -547,10 +511,10 @@ export function MobileAuthGate({
             onToggleVisible: () => setNewPasswordVisible((value) => !value),
           })}
           {renderInput({
-            label: 'Konfirmasi password baru',
+            label: authCopy.confirmNewPasswordLabel,
             value: newPasswordConfirm,
             onChangeText: setNewPasswordConfirm,
-            placeholder: 'Ulangi password baru',
+            placeholder: authCopy.repeatNewPasswordPlaceholder,
             icon: 'lock-closed-outline',
             textContentType: 'newPassword',
             autoComplete: 'new-password',
@@ -566,20 +530,20 @@ export function MobileAuthGate({
     return (
       <View style={styles.formStack}>
         {activeMode === 'signUp' ? renderInput({
-          label: 'Nama tampilan',
+          label: authCopy.displayNameLabel,
           value: displayName,
           onChangeText: setDisplayName,
-          placeholder: 'Nama Anda',
+          placeholder: authCopy.displayNamePlaceholder,
           icon: 'person-outline',
           textContentType: 'name',
           autoComplete: 'name',
         }) : null}
 
         {renderInput({
-          label: 'Email',
+          label: authCopy.emailLabel,
           value: email,
           onChangeText: setEmail,
-          placeholder: 'nama@email.com',
+          placeholder: authCopy.emailPlaceholder,
           icon: 'mail-outline',
           keyboardType: 'email-address',
           textContentType: 'emailAddress',
@@ -589,10 +553,10 @@ export function MobileAuthGate({
         {activeMode !== 'resetPassword' ? (
           <>
             {renderInput({
-              label: 'Password',
+              label: authCopy.passwordLabel,
               value: password,
               onChangeText: setPassword,
-              placeholder: 'Minimal 8 karakter',
+              placeholder: authCopy.passwordMinPlaceholder,
               icon: 'lock-closed-outline',
               textContentType: activeMode === 'signUp' ? 'newPassword' : 'password',
               autoComplete: activeMode === 'signUp' ? 'new-password' : 'password',
@@ -604,10 +568,10 @@ export function MobileAuthGate({
         ) : null}
 
         {activeMode === 'signUp' ? renderInput({
-          label: 'Konfirmasi password',
+          label: authCopy.confirmPasswordLabel,
           value: confirmPassword,
           onChangeText: setConfirmPassword,
-          placeholder: 'Ulangi password',
+          placeholder: authCopy.repeatPasswordPlaceholder,
           icon: 'lock-closed-outline',
           textContentType: 'newPassword',
           autoComplete: 'new-password',
@@ -622,28 +586,28 @@ export function MobileAuthGate({
           {activeMode === 'signIn' ? (
             <>
               <Pressable accessibilityRole="button" disabled={emailBusy} onPress={() => switchMode('resetPassword')}>
-                <Text style={styles.linkText}>Lupa password?</Text>
+                <Text style={styles.linkText}>{authCopy.forgotPassword}</Text>
               </Pressable>
               <Pressable accessibilityRole="button" disabled={emailBusy} onPress={() => switchMode('signUp')}>
-                <Text style={styles.linkText}>Belum punya akun? Daftar</Text>
+                <Text style={styles.linkText}>{authCopy.signUpPrompt}</Text>
               </Pressable>
               <Pressable accessibilityRole="button" disabled={emailBusy} onPress={() => switchMode('accountHelp')}>
-                <Text style={styles.linkText}>Lupa email atau username?</Text>
+                <Text style={styles.linkText}>{authCopy.accountHelpPrompt}</Text>
               </Pressable>
             </>
           ) : null}
           {activeMode === 'signUp' ? (
             <Pressable accessibilityRole="button" disabled={emailBusy} onPress={() => switchMode('signIn')}>
-              <Text style={styles.linkText}>Sudah punya akun? Masuk</Text>
+              <Text style={styles.linkText}>{authCopy.alreadyHaveAccount}</Text>
             </Pressable>
           ) : null}
           {activeMode === 'resetPassword' ? (
             <>
               <Pressable accessibilityRole="button" disabled={emailBusy} onPress={() => switchMode('signIn')}>
-                <Text style={styles.linkText}>Ingat password? Masuk</Text>
+                <Text style={styles.linkText}>{authCopy.rememberPassword}</Text>
               </Pressable>
               <Pressable accessibilityRole="button" disabled={emailBusy} onPress={() => switchMode('accountHelp')}>
-                <Text style={styles.linkText}>Lupa email?</Text>
+                <Text style={styles.linkText}>{authCopy.forgotEmail}</Text>
               </Pressable>
             </>
           ) : null}
@@ -675,7 +639,7 @@ export function MobileAuthGate({
         ]}
       >
         <Text style={styles.authRouteSwitchText}>
-          {isSignUpMode ? 'Sudah punya akses? Masuk' : 'Belum punya akun? Buka daftar'}
+          {isSignUpMode ? authCopy.openSignIn : authCopy.openSignUp}
         </Text>
       </Pressable>
     );
@@ -712,7 +676,7 @@ export function MobileAuthGate({
           {authError ? renderNotice(authError, 'error', 'alert-circle-outline') : null}
           {formError ? renderNotice(formError, 'error', 'alert-circle-outline') : null}
           {successMessage ? renderNotice(successMessage, 'success', 'checkmark-circle-outline') : null}
-          {!isOnline ? renderNotice('Anda sedang offline. Masuk tidak tersedia sampai koneksi kembali.', 'warning', 'cloud-offline-outline') : null}
+          {!isOnline ? renderNotice(authCopy.offlineNotice, 'warning', 'cloud-offline-outline') : null}
 
           <View style={styles.card}>
             {activeMode !== 'newPassword' ? renderGoogleButton() : null}
@@ -733,7 +697,7 @@ export function MobileAuthGate({
                 ) : (
                   <Ionicons name="logo-apple" size={17} color={theme.textPrimary} />
                 )}
-                <Text style={styles.secondaryButtonText}>{appleBusy ? 'Membuka Apple...' : 'Masuk dengan Apple'}</Text>
+                <Text style={styles.secondaryButtonText}>{appleBusy ? authCopy.appleOpening : authCopy.appleSignIn}</Text>
               </Pressable>
             ) : null}
 

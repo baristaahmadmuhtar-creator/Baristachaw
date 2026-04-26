@@ -140,6 +140,15 @@ function loadAiSettings(): AiSettings {
 }
 
 function loadLanguage(): Language {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const requested = params.get('language') || params.get('lang') || params.get('locale');
+        const short = requested?.trim().toLowerCase().split(/[-_]/)[0];
+        if (isSupportedLanguage(short)) {
+            safeSetLocalStorageItem(LANGUAGE_KEY, short);
+            return short;
+        }
+    } catch { }
     const stored = safeGetLocalStorageItem(LANGUAGE_KEY);
     const alreadyMigrated = safeGetLocalStorageItem(LANGUAGE_ID_DEFAULT_MIGRATION_KEY) === '1';
     if (DEFAULT_LANGUAGE === 'id' && stored === 'en' && !alreadyMigrated) {
@@ -412,7 +421,6 @@ export function useGlobalState() {
     }
     return context;
 }
-
 
 
 

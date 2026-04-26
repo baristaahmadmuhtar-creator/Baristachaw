@@ -9,6 +9,36 @@ function json(route: Route, payload: unknown, status = 200) {
 }
 
 export async function mockAiApis(page: Page) {
+  let guestSession:
+    | {
+        id: string;
+        name: string;
+        email: string;
+        provider: 'guest';
+        isGuest: true;
+        planCode: string;
+      }
+    | null = null;
+
+  await page.route('**/api/auth/guest', async (route) => {
+    guestSession = {
+      id: `guest_e2e_${Date.now()}`,
+      name: 'Tamu QA',
+      email: 'guest@baristachaw.local',
+      provider: 'guest',
+      isGuest: true,
+      planCode: 'guest',
+    };
+    return json(route, { user: guestSession });
+  });
+
+  await page.route('**/api/auth/me**', async (route) => {
+    if (!guestSession) {
+      return route.continue();
+    }
+    return json(route, { user: guestSession });
+  });
+
   await page.route('**/api/chat', async (route) => {
     const request = route.request();
     const body = request.postDataJSON() as { message?: string };

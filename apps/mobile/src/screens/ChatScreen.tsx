@@ -72,6 +72,7 @@ import { hapticImpactLight, hapticSuccess } from '../services/haptics';
 import { ensureCameraPermission, ensureMediaLibraryPermission } from '../services/permissions';
 import { captureError, trackEvent } from '../services/telemetry';
 import { uiTokens } from '../theme/tokens';
+import { usePreferredMobileLanguage } from '../hooks/usePreferredMobileLanguage';
 import { getMobileLocalization } from '../utils/localization';
 import { CHAT_VOICE_NOTE_MAX_DURATION_MS, computeComposerBottomOffset } from './chatComposerLayout';
 import type {
@@ -173,15 +174,6 @@ function toResponseMode(mode: ChatMode): ResponseMode {
   return 'normal';
 }
 
-function readDeviceLanguage(): string {
-  try {
-    const locale = Intl.DateTimeFormat().resolvedOptions().locale;
-    return locale || DEFAULT_LANGUAGE;
-  } catch {
-    return DEFAULT_LANGUAGE;
-  }
-}
-
 function formatElapsed(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
   const minutes = Math.floor(totalSeconds / 60);
@@ -275,13 +267,16 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
   const [folderRenameValue, setFolderRenameValue] = useState('');
   const [activeSurface, setActiveSurface] = useState<ChatSurface>('none');
   const [selectedAssistantMessage, setSelectedAssistantMessage] = useState<ChatMessageRecord | null>(null);
+  const preferredMobileLanguage = usePreferredMobileLanguage(session?.user.id);
+  const preferredLocaleState = useMemo(() => getMobileLocalization(preferredMobileLanguage), [preferredMobileLanguage]);
+  const preferredLanguage = preferredLocaleState.language;
   const [agentProfile, setAgentProfile] = useState<AgentProfileMemory>(() => normalizeAgentProfileMemory({
-    preferredLanguage: DEFAULT_LANGUAGE,
+    preferredLanguage,
     assistantName: 'Baristachaw',
     userDisplayName: session?.user.name,
   }));
   const [savedAgentProfile, setSavedAgentProfile] = useState<AgentProfileMemory>(() => normalizeAgentProfileMemory({
-    preferredLanguage: DEFAULT_LANGUAGE,
+    preferredLanguage,
     assistantName: 'Baristachaw',
     userDisplayName: session?.user.name,
   }));
@@ -295,9 +290,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
     { value: 'deep' as const, label: webT.deepThink },
   ]), [webT.deepThink, webT.fastMode]);
   const memoryLanguageItems = useMemo(() => ([
-    { value: 'id', label: LANGUAGE_META.id.nativeLabel },
-    { value: 'en', label: LANGUAGE_META.en.nativeLabel },
-    { value: 'ja', label: LANGUAGE_META.ja.nativeLabel },
+    ...Object.entries(LANGUAGE_META).map(([value, meta]) => ({ value, label: meta.nativeLabel })),
   ]), []);
   const memoryDetailItems = useMemo(() => ([
     { value: 'short' as const, label: webT.chatBeConcise || chatCopy.helpers.beConcise },
@@ -617,7 +610,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
     let cancelled = false;
     void (async () => {
       const stored = await readAgentProfileMemory(session?.user.id, {
-        preferredLanguage: DEFAULT_LANGUAGE,
+        preferredLanguage,
         assistantName: 'Baristachaw',
         userDisplayName: session?.user.name,
       });
@@ -630,7 +623,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
     return () => {
       cancelled = true;
     };
-  }, [chatCopy.helpers.deviceOnly, session?.user.id, session?.user.name]);
+  }, [chatCopy.helpers.deviceOnly, preferredLanguage, session?.user.id, session?.user.name]);
 
   const lastAssistantMessage = useMemo(
     () => [...messages].reverse().find((message) => message.role === 'assistant' || message.role === 'model') || null,
@@ -928,8 +921,8 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
   ) => {
     const boundedSourceText = clampChatPayloadText(sourceText);
     const effectiveAgentProfile = normalizeAgentProfileMemory(profileOverride || agentProfile);
-    const acceptLanguage = readDeviceLanguage();
-    const appLanguage = acceptLanguage.split('-')[0] || acceptLanguage;
+    const acceptLanguage = localeState.locale;
+    const appLanguage = localeState.language;
     const conversationContext = buildConversationContext({
       messages: historyMessages,
       summary: activeSession?.summary,
@@ -965,7 +958,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
       },
       agentProfile: effectiveAgentProfile,
     };
-  }, [activeSession?.preferredResponseLanguage, activeSession?.summary, activeSession?.title, agentProfile]);
+  }, [activeSession?.preferredResponseLanguage, activeSession?.summary, activeSession?.title, agentProfile, localeState.language, localeState.locale]);
 
   const runAssistantResponse = async (
     userText: string,

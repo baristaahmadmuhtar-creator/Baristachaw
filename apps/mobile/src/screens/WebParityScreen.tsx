@@ -113,8 +113,9 @@ function buildNativeShellBootstrap(platform: 'ios' | 'android', authSession?: Au
   `;
 }
 
-function buildWebParityUrl(baseUrl: string, platform: 'ios' | 'android', hostSafeBottom: number, guestModeRequested: boolean) {
+function buildWebParityUrl(baseUrl: string, platform: 'ios' | 'android', hostSafeBottom: number, guestModeRequested: boolean, language: string) {
   const safeBottom = Math.max(0, Math.min(48, Math.round(hostSafeBottom)));
+  const languageParam = encodeURIComponent(language);
   try {
     const url = new URL(baseUrl);
     url.searchParams.set('runtime', 'web_parity');
@@ -122,12 +123,13 @@ function buildWebParityUrl(baseUrl: string, platform: 'ios' | 'android', hostSaf
     url.searchParams.set('native_shell', platform);
     url.searchParams.set('host_safe_bottom', String(safeBottom));
     url.searchParams.set('theme', 'system');
+    url.searchParams.set('language', language);
     if (guestModeRequested) url.searchParams.set('guest_mode', '1');
     return url.toString();
   } catch {
     const divider = baseUrl.includes('?') ? '&' : '?';
     const guestParam = guestModeRequested ? '&guest_mode=1' : '';
-    return `${baseUrl}${divider}runtime=web_parity&ui_profile=native_shell&native_shell=${platform}&host_safe_bottom=${safeBottom}&theme=system${guestParam}`;
+    return `${baseUrl}${divider}runtime=web_parity&ui_profile=native_shell&native_shell=${platform}&host_safe_bottom=${safeBottom}&theme=system&language=${languageParam}${guestParam}`;
   }
 }
 
@@ -182,8 +184,8 @@ export function WebParityScreen({
     [authSession, shellPlatform],
   );
   const parityUrl = useMemo(
-    () => buildWebParityUrl(mobileEnv.webAppUrl, shellPlatform, hostSafeBottom, guestModeRequested),
-    [guestModeRequested, hostSafeBottom, shellPlatform],
+    () => buildWebParityUrl(mobileEnv.webAppUrl, shellPlatform, hostSafeBottom, guestModeRequested, language),
+    [guestModeRequested, hostSafeBottom, language, shellPlatform],
   );
   const appOrigin = useMemo(() => {
     try {

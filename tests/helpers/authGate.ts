@@ -16,5 +16,5 @@ export async function continueAsGuestFromAuthGate(page: Page) {
   const guestButton = page.getByRole('button', { name: guestEntryButton }).first();
   await expect(guestButton).toBeVisible({ timeout: 10_000 });
   await guestButton.click();
-  await expect(page.getByRole('heading', { name: authGateHeading })).not.toBeVisible({ timeout: 30_000 });
+  await expect(guestButton).not.toBeVisible({ timeout: 30_000 });
 }

@@ -6,7 +6,9 @@ const ROOT = 'C:/Users/Alpha/Downloads/Baristachaw';
 
 const FILES = [
   'apps/mobile/App.tsx',
+  'apps/mobile/src/screens/MobileAuthGate.tsx',
   'apps/mobile/src/screens/HomeScreen.tsx',
+  'apps/mobile/src/screens/ChatScreen.tsx',
   'apps/mobile/src/screens/CollectionScreen.tsx',
   'apps/mobile/src/screens/ScannerScreen.tsx',
   'apps/mobile/src/screens/ToolsScreen.tsx',

@@ -197,8 +197,8 @@ export function DesktopSidebar() {
                   'w-full min-h-[52px] rounded-2xl flex items-center transition-all',
                   desktopRailCollapsed ? 'justify-center px-2' : 'justify-start gap-2.5 px-3',
                   (adminActive || (!isAdminNavigation && isActive))
-                    ? 'bg-blue-500/12 text-blue-500 shadow-[0_6px_16px_rgba(0,122,255,0.16)]'
-                    : 'text-tertiary hover:text-primary hover:bg-surface-alpha',
+                    ? 'bg-blue-500/12 text-blue-800 shadow-[0_6px_16px_rgba(0,122,255,0.16)] dark:text-blue-300'
+                    : 'text-secondary hover:text-primary hover:bg-surface-alpha',
                 );
               }}
               title={label}

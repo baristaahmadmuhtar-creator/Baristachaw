@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -324,10 +325,10 @@ function formatShortId(value: string): string {
 }
 
 function statusTone(status: string): string {
-  if (status === 'pass' || status === 'active' || status === 'verified' || status === 'resolved') return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300';
-  if (status === 'warn' || status === 'trialing' || status === 'past_due' || status === 'requested') return 'bg-amber-500/10 text-amber-700 dark:text-amber-300';
-  if (status === 'fail' || status === 'suspended' || status === 'deleted' || status === 'rejected' || status === 'cancelled' || status === 'expired' || status === 'refunded') return 'bg-rose-500/10 text-rose-700 dark:text-rose-300';
-  if (status === 'supabase') return 'bg-blue-500/10 text-blue-700 dark:text-blue-300';
+  if (status === 'pass' || status === 'active' || status === 'verified' || status === 'resolved') return 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-300';
+  if (status === 'warn' || status === 'trialing' || status === 'past_due' || status === 'requested') return 'bg-amber-500/10 text-amber-800 dark:text-amber-300';
+  if (status === 'fail' || status === 'suspended' || status === 'deleted' || status === 'rejected' || status === 'cancelled' || status === 'expired' || status === 'refunded') return 'bg-rose-500/10 text-rose-800 dark:text-rose-300';
+  if (status === 'supabase') return 'bg-blue-500/10 text-blue-800 dark:text-blue-300';
   return 'bg-surface-alpha text-secondary';
 }
 
@@ -509,6 +510,26 @@ function matchesUserQueue(user: AdminUserRecord, queue: UserQueueFilter): boolea
   if (queue === 'paid') return user.planCode !== 'free' && user.status !== 'deleted';
   if (queue === 'sample') return Boolean(user.isSample);
   return true;
+}
+
+function hasActiveUserFilters({
+  query,
+  statusFilter,
+  planFilter,
+  recoveryFilter,
+  userQueueFilter,
+}: {
+  query: string;
+  statusFilter: AccountStatus | 'all';
+  planFilter: PlanCode | 'all';
+  recoveryFilter: AccountRecoveryStatus | 'all';
+  userQueueFilter: UserQueueFilter;
+}) {
+  return Boolean(query.trim())
+    || statusFilter !== 'all'
+    || planFilter !== 'all'
+    || recoveryFilter !== 'all'
+    || userQueueFilter !== 'all';
 }
 
 function buildPlanOverridePatch(user: AdminUserRecord, plan: AdminPlan): AdminUserPatch {
@@ -992,7 +1013,7 @@ function AdminOpsExportPanel({
           <button
             type="button"
             onClick={onCopySummary}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-500 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-600"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-700"
           >
             <ClipboardCheck size={15} />
             {admin.text('copyHandoff')}
@@ -1018,6 +1039,139 @@ function AdminOpsExportPanel({
         </div>
       </div>
     </section>
+  );
+}
+
+function MobileAdminCommandBar({
+  activeTab,
+  snapshot,
+  queues,
+  refreshing,
+  onSelectTab,
+  onOpenQueue,
+  onRefresh,
+}: {
+  activeTab: AdminTab;
+  snapshot: AdminSnapshot;
+  queues: AdminQueueSummary;
+  refreshing: boolean;
+  onSelectTab: (tab: AdminTab) => void;
+  onOpenQueue: (queue: UserQueueFilter) => void;
+  onRefresh: () => void;
+}) {
+  const admin = useAdminCopy();
+  const activeTabLabel = admin.text(TABS.find((tab) => tab.id === activeTab)?.labelKey || 'tabOverview');
+  const attentionCount = queues.riskUsers.length + queues.recoveryUsers.length + queues.billingUsers.length;
+
+  return (
+    <section
+      className="sticky top-2 z-30 rounded-[1.2rem] border border-glass bg-[var(--bg-base)]/92 p-3 shadow-[var(--panel-elev-1)] backdrop-blur-xl lg:hidden"
+      aria-label={admin.text('mobileAdminDock')}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-primary">{activeTabLabel}</p>
+          <p className="mt-0.5 truncate text-[11px] text-tertiary">
+            {admin.enumLabel(snapshot.dataMode)} / {attentionCount} {admin.text('attentionItems')}
+          </p>
+        </div>
+        <div className="flex shrink-0 gap-2">
+          <button
+            type="button"
+            onClick={() => onOpenQueue('billing')}
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border border-glass bg-surface-alpha px-2.5 text-xs font-semibold text-secondary"
+          >
+            <WalletCards size={14} />
+            {queues.billingUsers.length}
+          </button>
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="inline-flex min-h-9 items-center justify-center rounded-xl bg-blue-600 px-3 text-xs font-semibold text-white disabled:opacity-60"
+            aria-label={admin.text('refresh')}
+          >
+            <RefreshCcw size={14} className={refreshing ? 'animate-spin' : ''} />
+          </button>
+        </div>
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        <button
+          type="button"
+          onClick={() => onSelectTab('users')}
+          className={clsx(
+            'inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl text-xs font-semibold transition-colors',
+            activeTab === 'users' ? 'bg-blue-600 text-white' : 'border border-glass bg-surface-alpha text-secondary',
+          )}
+        >
+          <Users size={14} />
+          {admin.text('tabUsers')}
+        </button>
+        <button
+          type="button"
+          onClick={() => onSelectTab('plans')}
+          className={clsx(
+            'inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl text-xs font-semibold transition-colors',
+            activeTab === 'plans' ? 'bg-blue-600 text-white' : 'border border-glass bg-surface-alpha text-secondary',
+          )}
+        >
+          <WalletCards size={14} />
+          {admin.text('tabPlans')}
+        </button>
+        <button
+          type="button"
+          onClick={() => onSelectTab('launch')}
+          className={clsx(
+            'inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl text-xs font-semibold transition-colors',
+            activeTab === 'launch' ? 'bg-blue-600 text-white' : 'border border-glass bg-surface-alpha text-secondary',
+          )}
+        >
+          <ListChecks size={14} />
+          {admin.text('tabLaunch')}
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function UserQueueChips({
+  value,
+  counts,
+  onChange,
+}: {
+  value: UserQueueFilter;
+  counts: Record<UserQueueFilter, number>;
+  onChange: (value: UserQueueFilter) => void;
+}) {
+  const admin = useAdminCopy();
+  return (
+    <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label={admin.text('queueFilterLabel')}>
+      {USER_QUEUE_OPTIONS.map((option) => {
+        const selected = value === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onChange(option.value)}
+            aria-pressed={selected}
+            className={clsx(
+              'inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-xs font-semibold transition-colors',
+              selected
+                ? 'bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.18)]'
+                : 'border border-glass bg-surface-alpha text-secondary hover:bg-[var(--bg-base)] hover:text-primary',
+            )}
+          >
+            <span>{admin.text(option.labelKey)}</span>
+            <span className={clsx(
+              'rounded-full px-2 py-0.5 text-[10px]',
+              selected ? 'bg-white/20 text-white' : 'bg-[var(--bg-base)] text-tertiary',
+            )}>
+              {admin.number(counts[option.value] || 0)}
+            </span>
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
@@ -1128,7 +1282,7 @@ function ConfirmUserMutationDialog({
           'mt-3 rounded-2xl border px-3 py-3',
           isCritical ? 'border-rose-500/25 bg-rose-500/10' : 'border-amber-500/25 bg-amber-500/10',
         )}>
-          <p className={clsx('text-xs font-semibold uppercase tracking-[0.14em]', isCritical ? 'text-rose-700 dark:text-rose-300' : 'text-amber-700 dark:text-amber-300')}>
+          <p className={clsx('text-xs font-semibold uppercase tracking-[0.14em]', isCritical ? 'text-rose-800 dark:text-rose-300' : 'text-amber-800 dark:text-amber-300')}>
             {admin.text('operatorReview')}
           </p>
           <ul className="mt-2 space-y-1.5">
@@ -1273,7 +1427,7 @@ function ConfirmFeatureFlagMutationDialog({
           'mt-3 rounded-2xl border px-3 py-3',
           isDisabled ? 'border-rose-500/25 bg-rose-500/10' : 'border-amber-500/25 bg-amber-500/10',
         )}>
-          <p className={clsx('text-xs font-semibold uppercase tracking-[0.14em]', isDisabled ? 'text-rose-700 dark:text-rose-300' : 'text-amber-700 dark:text-amber-300')}>
+          <p className={clsx('text-xs font-semibold uppercase tracking-[0.14em]', isDisabled ? 'text-rose-800 dark:text-rose-300' : 'text-amber-800 dark:text-amber-300')}>
             {admin.text('userImpact')}
           </p>
           <p className="mt-2 text-sm leading-5 text-secondary">
@@ -1349,7 +1503,7 @@ function UsersTable({
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="truncate text-base font-semibold text-primary">{user.name}</h3>
-                  {user.isSample ? <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">{admin.text('preview')}</span> : null}
+                  {user.isSample ? <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-800 dark:text-amber-300">{admin.text('preview')}</span> : null}
                 </div>
                 <p className="truncate text-sm font-semibold text-blue-600 dark:text-blue-300">@{user.username || admin.text('unassigned')}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-tertiary">
@@ -1367,46 +1521,56 @@ function UsersTable({
               </div>
             </div>
 
-            <div className="mt-4 grid gap-2">
+            <div className="mt-4 grid gap-2" aria-label={admin.text('userCardControls')}>
               <div className="grid grid-cols-2 gap-2">
-                <select
-                  value={user.status}
-                  disabled={busyUserId === user.id}
-                  onChange={(event) => onPatch(user.id, { status: event.currentTarget.value as AccountStatus })}
-                  className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
-                  aria-label={`Change status for ${user.email}`}
-                >
-                  {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
-                </select>
-                <select
-                  value={user.planCode}
-                  disabled={busyUserId === user.id}
-                  onChange={(event) => {
-                    const nextPlanCode = event.currentTarget.value as PlanCode;
-                    const nextPlan = plans.find((plan) => plan.code === nextPlanCode);
-                    if (nextPlan) onPatch(user.id, buildPlanOverridePatch(user, nextPlan));
-                  }}
-                  className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
-                  aria-label={`Change plan for ${user.email}`}
-                >
-                  {plans.map((plan) => <option key={plan.code} value={plan.code}>{plan.name}</option>)}
-                </select>
-                <select
-                  value={user.role}
-                  disabled={busyUserId === user.id}
-                  onChange={(event) => onPatch(user.id, { role: event.currentTarget.value as AdminRole })}
-                  className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold text-primary"
-                  aria-label={`Change role for ${user.email}`}
-                >
-                  {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{admin.enumLabel(role)}</option>)}
-                </select>
+                <label className="grid gap-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-tertiary">
+                  {admin.text('status')}
+                  <select
+                    value={user.status}
+                    disabled={busyUserId === user.id}
+                    onChange={(event) => onPatch(user.id, { status: event.currentTarget.value as AccountStatus })}
+                    className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold normal-case tracking-normal text-primary"
+                    aria-label={`Change status for ${user.email}`}
+                  >
+                    {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
+                  </select>
+                </label>
+                <label className="grid gap-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-tertiary">
+                  {admin.text('plan')}
+                  <select
+                    value={user.planCode}
+                    disabled={busyUserId === user.id}
+                    onChange={(event) => {
+                      const nextPlanCode = event.currentTarget.value as PlanCode;
+                      const nextPlan = plans.find((plan) => plan.code === nextPlanCode);
+                      if (nextPlan) onPatch(user.id, buildPlanOverridePatch(user, nextPlan));
+                    }}
+                    className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold normal-case tracking-normal text-primary"
+                    aria-label={`Change plan for ${user.email}`}
+                  >
+                    {plans.map((plan) => <option key={plan.code} value={plan.code}>{plan.name}</option>)}
+                  </select>
+                </label>
+                <label className="grid gap-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-tertiary">
+                  {admin.text('role')}
+                  <select
+                    value={user.role}
+                    disabled={busyUserId === user.id}
+                    onChange={(event) => onPatch(user.id, { role: event.currentTarget.value as AdminRole })}
+                    className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm font-semibold normal-case tracking-normal text-primary"
+                    aria-label={`Change role for ${user.email}`}
+                  >
+                    {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{admin.enumLabel(role)}</option>)}
+                  </select>
+                </label>
                 <button
                   type="button"
                   onClick={() => onSelect(user.id)}
                   className={clsx(
-                    'inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors',
-                    selectedUserId === user.id ? 'bg-blue-500 text-white' : 'border border-glass bg-[var(--bg-base)] text-secondary hover:text-primary',
+                    'mt-auto inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors',
+                    selectedUserId === user.id ? 'bg-blue-600 text-white' : 'border border-glass bg-[var(--bg-base)] text-secondary hover:text-primary',
                   )}
+                  aria-pressed={selectedUserId === user.id}
                 >
                   <PanelRightOpen size={15} />
                   {admin.text('manage')}
@@ -1416,7 +1580,7 @@ function UsersTable({
                 <div className="flex items-center gap-2">
                   <StatusBadge value={user.passwordResetRequired ? 'requested' : (user.accountRecoveryStatus || 'none')} />
                   <StatusBadge value={user.billing.status} />
-                  <span className="text-xs text-tertiary">{admin.enumLabel(user.provider)}</span>
+                  <span className="text-xs font-semibold text-secondary">{admin.enumLabel(user.provider)}</span>
                 </div>
                 <p className="text-xs font-semibold text-secondary">{admin.number(user.usage.aiRequestsToday)} AI / {admin.text('risk').toLowerCase()} {user.riskScore}</p>
               </div>
@@ -1429,6 +1593,7 @@ function UsersTable({
       <div className="hidden overflow-hidden rounded-2xl border border-glass bg-surface-alpha md:block">
       <div className="overflow-x-auto">
         <table className={clsx(selectedUserId ? 'min-w-full' : 'min-w-[68rem]', 'w-full border-collapse text-left')}>
+          <caption className="sr-only">{admin.text('usersTableCaption')}</caption>
           <thead className="border-b border-glass text-[11px] uppercase tracking-[0.14em] text-tertiary">
             <tr>
               <th className="px-4 py-3 font-semibold">{admin.text('account')}</th>
@@ -1455,7 +1620,7 @@ function UsersTable({
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="truncate text-sm font-semibold text-primary">{user.name}</p>
-                        {user.isSample ? <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">{admin.text('preview')}</span> : null}
+                        {user.isSample ? <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-800 dark:text-amber-300">{admin.text('preview')}</span> : null}
                       </div>
                       <p className="truncate text-xs font-semibold text-blue-600 dark:text-blue-300">@{user.username || admin.text('unassigned')}</p>
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-tertiary">
@@ -1486,7 +1651,7 @@ function UsersTable({
                         className={clsx(
                           'mt-2 inline-flex min-h-8 items-center gap-2 rounded-xl px-2.5 text-[11px] font-semibold transition-colors',
                           selectedUserId === user.id
-                            ? 'bg-blue-500 text-white'
+                            ? 'bg-blue-600 text-white'
                             : 'border border-glass bg-[var(--bg-base)] text-secondary hover:text-primary',
                         )}
                       >
@@ -1647,7 +1812,7 @@ function PlanQuickControl({
                 className={clsx(
                   'inline-flex min-h-9 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold transition-colors disabled:opacity-50',
                   paidPlan
-                    ? 'border border-blue-500/30 bg-blue-500/10 text-blue-700 hover:bg-blue-500/15 dark:text-blue-300'
+                    ? 'border border-blue-500/30 bg-blue-500/10 text-blue-800 hover:bg-blue-500/15 dark:text-blue-300'
                     : 'border border-glass bg-surface-alpha text-secondary hover:bg-[var(--bg-base)] hover:text-primary',
                 )}
               >
@@ -1682,6 +1847,7 @@ function AccountInspector({
   onCopy: (value: string, label: string) => void;
 }) {
   const admin = useAdminCopy();
+  const titleId = useId();
   const [displayName, setDisplayName] = useState(user.name);
   const [username, setUsername] = useState(user.username);
   const [role, setRole] = useState<AdminRole>(user.role);
@@ -1711,6 +1877,14 @@ function AccountInspector({
     setNotes(user.notes || '');
     setSupportNote(user.supportNote || '');
   }, [user]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
 
   const dirty = displayName.trim() !== user.name
     || username.trim() !== user.username
@@ -1867,15 +2041,20 @@ function AccountInspector({
   };
 
   return (
-    <aside className="fixed inset-x-3 bottom-3 z-[70] max-h-[86dvh] overflow-y-auto overscroll-contain rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/94 p-4 shadow-[var(--panel-elev-2)] backdrop-blur-xl xl:sticky xl:inset-auto xl:top-4 xl:z-auto xl:max-h-[calc(100dvh-8rem)] xl:bg-[var(--bg-base)]/82 xl:shadow-[var(--panel-elev-1)]">
-      <div className="flex items-start justify-between gap-3">
+    <aside
+      role="dialog"
+      aria-labelledby={titleId}
+      className="fixed inset-x-3 bottom-3 z-[70] max-h-[86dvh] overflow-y-auto overscroll-contain rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/94 p-4 shadow-[var(--panel-elev-2)] backdrop-blur-xl xl:sticky xl:inset-auto xl:top-4 xl:z-auto xl:max-h-[calc(100dvh-8rem)] xl:bg-[var(--bg-base)]/82 xl:shadow-[var(--panel-elev-1)]"
+    >
+      <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-surface-alpha xl:hidden" aria-hidden="true" />
+      <div className="sticky top-0 z-10 -mx-4 -mt-4 flex items-start justify-between gap-3 rounded-t-[1.4rem] border-b border-glass bg-[var(--bg-base)]/94 px-4 py-3 backdrop-blur-xl xl:static xl:mx-0 xl:mt-0 xl:border-b-0 xl:bg-transparent xl:px-0 xl:py-0 xl:backdrop-blur-0">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
               <UserCog size={18} />
             </span>
             <div className="min-w-0">
-              <h2 className="truncate text-base font-semibold text-primary">{admin.text('accountControl')}</h2>
+              <h2 id={titleId} className="truncate text-base font-semibold text-primary">{admin.text('accountControl')}</h2>
               <p className="truncate text-xs text-tertiary">{admin.enumLabel(user.provider)} / {user.platform || admin.text('unknown')} / {user.locale || admin.text('localeNA')}</p>
             </div>
           </div>
@@ -1973,11 +2152,11 @@ function AccountInspector({
             <ShieldCheck size={18} className="mt-0.5 shrink-0 text-emerald-500" />
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-            <button type="button" onClick={restoreAccount} disabled={busy || !canRestoreAccount} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300">
+            <button type="button" onClick={restoreAccount} disabled={busy || !canRestoreAccount} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-800 transition-colors hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300">
               <CheckCircle2 size={14} />
               {admin.text('restoreActive')}
             </button>
-            <button type="button" onClick={suspendAccount} disabled={busy || status === 'suspended' || status === 'deleted'} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300">
+            <button type="button" onClick={suspendAccount} disabled={busy || status === 'suspended' || status === 'deleted'} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 text-xs font-semibold text-rose-800 transition-colors hover:bg-rose-500/15 disabled:opacity-50 dark:text-rose-300">
               <Lock size={14} />
               {admin.text('suspendReview')}
             </button>
@@ -2033,15 +2212,15 @@ function AccountInspector({
             </label>
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-            <button type="button" onClick={markReceiptReceived} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-500/15 disabled:opacity-50 dark:text-blue-300">
+            <button type="button" onClick={markReceiptReceived} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 text-xs font-semibold text-blue-800 transition-colors hover:bg-blue-500/15 disabled:opacity-50 dark:text-blue-300">
               <ClipboardCheck size={14} />
               {admin.text('receiptReceived')}
             </button>
-            <button type="button" onClick={markBillingResolved} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300">
+            <button type="button" onClick={markBillingResolved} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-800 transition-colors hover:bg-emerald-500/15 disabled:opacity-50 dark:text-emerald-300">
               <CheckCircle2 size={14} />
               {admin.text('markPaid')}
             </button>
-            <button type="button" onClick={markBillingPastDue} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300">
+            <button type="button" onClick={markBillingPastDue} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 text-xs font-semibold text-amber-800 transition-colors hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300">
               <AlertTriangle size={14} />
               {admin.text('markPastDue')}
             </button>
@@ -2085,7 +2264,7 @@ function AccountInspector({
                 <button
                   type="button"
                   onClick={onDismissError}
-                  className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-rose-700 hover:bg-rose-500/10 dark:text-rose-200"
+                  className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-rose-800 hover:bg-rose-500/10 dark:text-rose-200"
                   aria-label={admin.text('dismissAdminError')}
                 >
                   <X size={13} />
@@ -2098,7 +2277,7 @@ function AccountInspector({
         </div>
       ) : null}
 
-      <div className="mt-4 grid gap-2">
+      <div className="sticky bottom-0 z-10 -mx-4 -mb-4 mt-4 grid gap-2 border-t border-glass bg-[var(--bg-base)]/94 p-4 backdrop-blur-xl xl:static xl:mx-0 xl:mb-0 xl:border-t-0 xl:bg-transparent xl:p-0 xl:backdrop-blur-0">
         {saveBlockedByReason ? (
           <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-800 dark:text-amber-200">
             {admin.text('entitlementNeedsNote')}
@@ -2108,13 +2287,13 @@ function AccountInspector({
           type="button"
           onClick={saveAccount}
           disabled={!dirty || busy || saveBlockedByReason}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-500 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)] transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Save size={16} />
           {busy ? admin.text('saving') : admin.text('saveAccount')}
         </button>
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-          <button type="button" onClick={requirePasswordReset} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300">
+          <button type="button" onClick={requirePasswordReset} disabled={busy} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 text-xs font-semibold text-amber-800 transition-colors hover:bg-amber-500/15 disabled:opacity-50 dark:text-amber-300">
             <KeyRound size={14} />
             {admin.text('requestReset')}
           </button>
@@ -2239,7 +2418,7 @@ function PlanEditorCard({
           <button
             type="button"
             onClick={save}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-500 px-3 text-xs font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-600 px-3 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!canSave}
             title={admin.text('save')}
           >
@@ -2474,7 +2653,7 @@ function CatalogDatabasePanel({
             type="button"
             onClick={submit}
             disabled={!canSubmit}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-500 px-3 text-xs font-semibold text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-600 px-3 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Save size={14} />
             {busy ? admin.text('saving') : admin.text('queue')}
@@ -2701,6 +2880,28 @@ export function AdminManagement() {
     navigate({ pathname: '/admin', search: `?${params.toString()}` });
   }, [location.search, navigate]);
 
+  const handleTabKeyDown = useCallback((event: ReactKeyboardEvent<HTMLButtonElement>, current: AdminTab) => {
+    const currentIndex = TABS.findIndex((tab) => tab.id === current);
+    if (currentIndex < 0) return;
+    const lastIndex = TABS.length - 1;
+    const nextIndex = event.key === 'ArrowRight' || event.key === 'ArrowDown'
+      ? Math.min(lastIndex, currentIndex + 1)
+      : event.key === 'ArrowLeft' || event.key === 'ArrowUp'
+        ? Math.max(0, currentIndex - 1)
+        : event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? lastIndex
+            : currentIndex;
+    if (nextIndex === currentIndex && event.key !== 'Home' && event.key !== 'End') return;
+    event.preventDefault();
+    const nextTab = TABS[nextIndex].id;
+    selectTab(nextTab);
+    window.requestAnimationFrame(() => {
+      document.getElementById(`admin-tab-${nextTab}`)?.focus();
+    });
+  }, [selectTab]);
+
   const refresh = useCallback(async (options?: { silent?: boolean }) => {
     if (!options?.silent) {
       const hasSnapshot = Boolean(snapshotRef.current);
@@ -2810,6 +3011,23 @@ export function AdminManagement() {
     };
   }, [snapshot?.checks, snapshot?.featureFlags, snapshot?.users]);
 
+  const userQueueCounts = useMemo<Record<UserQueueFilter, number>>(() => ({
+    all: snapshot?.users.length || 0,
+    risk: adminQueues.riskUsers.length,
+    recovery: adminQueues.recoveryUsers.length,
+    billing: adminQueues.billingUsers.length,
+    paid: adminQueues.paidUsers.length,
+    sample: (snapshot?.users || []).filter((user) => user.isSample).length,
+  }), [adminQueues.billingUsers.length, adminQueues.paidUsers.length, adminQueues.recoveryUsers.length, adminQueues.riskUsers.length, snapshot?.users]);
+
+  const userFiltersActive = hasActiveUserFilters({
+    query,
+    statusFilter,
+    planFilter,
+    recoveryFilter,
+    userQueueFilter,
+  });
+
   useEffect(() => {
     if (!selectedUserId || !snapshot?.users.length) return;
     if (!snapshot.users.some((user) => user.id === selectedUserId)) {
@@ -2818,6 +3036,14 @@ export function AdminManagement() {
   }, [selectedUserId, snapshot?.users]);
 
   const blockingError = error && (error.status === 401 || error.status === 403) ? error : null;
+
+  const resetUserFilters = useCallback(() => {
+    setQuery('');
+    setStatusFilter('all');
+    setPlanFilter('all');
+    setRecoveryFilter('all');
+    setUserQueueFilter('all');
+  }, []);
 
   const handleSignIn = () => {
     openAuthModal({ source: 'general' });
@@ -3057,7 +3283,14 @@ export function AdminManagement() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.32, ease: [0.23, 1, 0.32, 1] }}
       className="relative page-container desktop-noise-bg w-full"
+      aria-busy={loading || refreshing}
     >
+      <a
+        href="#admin-main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[90] focus:rounded-xl focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      >
+        {admin.text('skipToAdminContent')}
+      </a>
       <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 px-4 sm:px-6">
         <header className="rounded-[1.6rem] border border-glass bg-[var(--bg-base)]/88 px-4 py-4 shadow-[var(--panel-elev-1)] backdrop-blur-xl">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -3109,7 +3342,7 @@ export function AdminManagement() {
               <button
                 type="button"
                 onClick={() => void refresh()}
-                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-500 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.24)] transition-colors hover:bg-blue-600"
+                className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.24)] transition-colors hover:bg-blue-700"
                 disabled={refreshing}
               >
                 <RefreshCcw size={15} className={refreshing ? 'animate-spin' : ''} />
@@ -3129,6 +3362,16 @@ export function AdminManagement() {
 
         {snapshot ? (
           <>
+            <MobileAdminCommandBar
+              activeTab={activeTab}
+              snapshot={snapshot}
+              queues={adminQueues}
+              refreshing={refreshing}
+              onSelectTab={selectTab}
+              onOpenQueue={openUserQueue}
+              onRefresh={() => void refresh()}
+            />
+
             <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               <MetricTile label={admin.text('metricTotalUsers')} value={admin.number(snapshot.metrics.totalUsers)} detail={admin.format('activeAccounts', { count: admin.number(snapshot.metrics.activeUsers) })} icon={Users} />
               <MetricTile label={admin.text('metricPaidUsers')} value={admin.number(snapshot.metrics.paidUsers)} detail={admin.format('planConversion', { count: snapshot.metrics.planConversionRate })} icon={WalletCards} />
@@ -3154,16 +3397,21 @@ export function AdminManagement() {
               onCopySummary={copyLaunchSummary}
             />
 
-            <nav className="flex gap-2 overflow-x-auto rounded-2xl border border-glass bg-surface-alpha p-1">
+            <nav className="flex gap-2 overflow-x-auto rounded-2xl border border-glass bg-surface-alpha p-1" role="tablist" aria-label={admin.text('adminNavigation')}>
               {TABS.map(({ id, labelKey, icon: Icon }) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => selectTab(id)}
+                  onKeyDown={(event) => handleTabKeyDown(event, id)}
+                  id={`admin-tab-${id}`}
+                  role="tab"
+                  aria-selected={activeTab === id}
+                  aria-controls={`admin-panel-${id}`}
                   className={clsx(
                     'inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-semibold transition-colors',
                     activeTab === id
-                      ? 'bg-blue-500 text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)]'
+                      ? 'bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)]'
                       : 'text-secondary hover:bg-[var(--bg-base)] hover:text-primary',
                   )}
                 >
@@ -3173,9 +3421,10 @@ export function AdminManagement() {
               ))}
             </nav>
 
+            <main id="admin-main-content" className="min-w-0" aria-label={admin.text('adminContent')} tabIndex={-1}>
             <AnimatePresence mode="wait">
               {activeTab === 'overview' ? (
-                <motion.section key="overview" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-4">
+                <motion.section id="admin-panel-overview" aria-labelledby="admin-tab-overview" role="tabpanel" key="overview" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-4">
                   <AdminCommandCenter
                     snapshot={snapshot}
                     queues={adminQueues}
@@ -3222,33 +3471,63 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'users' ? (
-                <motion.section key="users" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-4">
-                  <div className="flex flex-col gap-3 rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4 lg:flex-row lg:items-center">
-                    <div className="relative flex-1">
+                <motion.section id="admin-panel-users" aria-labelledby="admin-tab-users" role="tabpanel" key="users" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-4">
+                  <div className="flex flex-col gap-3 rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4" role="search" aria-label={admin.text('userFilters')}>
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                    <label className="relative flex-1">
+                      <span className="sr-only">{admin.text('usersSearchLabel')}</span>
                       <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-tertiary" />
                       <input
                         value={query}
                         onChange={(event) => setQuery(event.currentTarget.value)}
                         placeholder={admin.text('usersSearchPlaceholder')}
-                        className="glass-input min-h-11 w-full rounded-xl pl-9 pr-3 text-sm"
+                        className="glass-input min-h-11 w-full rounded-xl pl-9 pr-10 text-sm"
                       />
-                    </div>
+                      {query ? (
+                        <button
+                          type="button"
+                          onClick={() => setQuery('')}
+                          className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-secondary hover:bg-surface-alpha hover:text-primary"
+                          aria-label={admin.text('clearSearch')}
+                        >
+                          <X size={15} />
+                        </button>
+                      ) : null}
+                    </label>
                     <div className="flex flex-wrap gap-2">
-                      <select value={userQueueFilter} onChange={(event) => setUserQueueFilter(event.currentTarget.value as UserQueueFilter)} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+                      <select value={userQueueFilter} onChange={(event) => setUserQueueFilter(event.currentTarget.value as UserQueueFilter)} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary" aria-label={admin.text('queueFilterLabel')}>
                         {USER_QUEUE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{admin.text(option.labelKey)}</option>)}
                       </select>
-                      <select value={statusFilter} onChange={(event) => setStatusFilter(event.currentTarget.value as AccountStatus | 'all')} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+                      <select value={statusFilter} onChange={(event) => setStatusFilter(event.currentTarget.value as AccountStatus | 'all')} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary" aria-label={admin.text('statusFilterLabel')}>
                         <option value="all">{admin.text('allStatus')}</option>
                         {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
                       </select>
-                      <select value={planFilter} onChange={(event) => setPlanFilter(event.currentTarget.value as PlanCode | 'all')} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+                      <select value={planFilter} onChange={(event) => setPlanFilter(event.currentTarget.value as PlanCode | 'all')} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary" aria-label={admin.text('planFilterLabel')}>
                         <option value="all">{admin.text('allPlans')}</option>
                         {PLAN_OPTIONS.map((plan) => <option key={plan} value={plan}>{admin.enumLabel(plan)}</option>)}
                       </select>
-                      <select value={recoveryFilter} onChange={(event) => setRecoveryFilter(event.currentTarget.value as AccountRecoveryStatus | 'all')} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary">
+                      <select value={recoveryFilter} onChange={(event) => setRecoveryFilter(event.currentTarget.value as AccountRecoveryStatus | 'all')} className="min-h-11 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm text-primary" aria-label={admin.text('recoveryFilterLabel')}>
                         <option value="all">{admin.text('allRecovery')}</option>
                         {RECOVERY_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
                       </select>
+                      {userFiltersActive ? (
+                        <button
+                          type="button"
+                          onClick={resetUserFilters}
+                          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-glass bg-surface-alpha px-3 text-sm font-semibold text-secondary hover:bg-[var(--bg-base)] hover:text-primary"
+                        >
+                          <RefreshCcw size={15} />
+                          {admin.text('clearFilters')}
+                        </button>
+                      ) : null}
+                    </div>
+                    </div>
+                    <UserQueueChips value={userQueueFilter} counts={userQueueCounts} onChange={setUserQueueFilter} />
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-surface-alpha px-3 py-2 text-xs text-secondary" aria-live="polite" aria-atomic="true">
+                      <span className="font-semibold text-primary">
+                        {admin.format('userResultsSummary', { shown: admin.number(filteredUsers.length), total: admin.number(snapshot.users.length) })}
+                      </span>
+                      {selectedUser ? <span>{admin.format('selectedUserSummary', { name: selectedUser.name || selectedUser.email })}</span> : <span>{admin.text('selectUserHint')}</span>}
                     </div>
                   </div>
                   {filteredUsers.length ? (
@@ -3285,7 +3564,7 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'plans' ? (
-                <motion.section key="plans" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                <motion.section id="admin-panel-plans" aria-labelledby="admin-tab-plans" role="tabpanel" key="plans" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div>
                       <h2 className="text-base font-semibold text-primary">{admin.text('planCatalog')}</h2>
@@ -3299,7 +3578,7 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'maintenance' ? (
-                <motion.section key="maintenance" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                <motion.section id="admin-panel-maintenance" aria-labelledby="admin-tab-maintenance" role="tabpanel" key="maintenance" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
                   <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h2 className="text-base font-semibold text-primary">{admin.text('maintenanceControls')}</h2>
@@ -3312,7 +3591,7 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'database' ? (
-                <motion.section key="database" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                <motion.section id="admin-panel-database" aria-labelledby="admin-tab-database" role="tabpanel" key="database" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
                   <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h2 className="text-base font-semibold text-primary">{admin.text('databaseReadiness')}</h2>
@@ -3326,7 +3605,7 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'audit' ? (
-                <motion.section key="audit" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                <motion.section id="admin-panel-audit" aria-labelledby="admin-tab-audit" role="tabpanel" key="audit" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
                   <div className="mb-4">
                     <h2 className="text-base font-semibold text-primary">{admin.text('auditTrail')}</h2>
                     <p className="mt-1 text-sm text-secondary">{admin.text('auditTrailSubtitle')}</p>
@@ -3336,7 +3615,7 @@ export function AdminManagement() {
               ) : null}
 
               {activeTab === 'launch' ? (
-                <motion.section key="launch" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                <motion.section id="admin-panel-launch" aria-labelledby="admin-tab-launch" role="tabpanel" key="launch" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
                   <div className="mb-4">
                     <h2 className="text-base font-semibold text-primary">{admin.text('launchGate')}</h2>
                     <p className="mt-1 text-sm text-secondary">{admin.text('launchGateSubtitle')}</p>
@@ -3345,6 +3624,7 @@ export function AdminManagement() {
                 </motion.section>
               ) : null}
             </AnimatePresence>
+            </main>
           </>
         ) : null}
       </div>
@@ -3378,6 +3658,9 @@ export function AdminManagement() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             className="fixed bottom-5 left-1/2 z-[80] -translate-x-1/2 rounded-full border border-glass bg-[var(--bg-base)]/94 px-4 py-2 text-sm font-semibold text-primary shadow-[var(--panel-elev-2)]"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
           >
             {toast}
           </motion.div>

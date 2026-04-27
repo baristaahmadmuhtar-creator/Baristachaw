@@ -197,6 +197,15 @@ export function Home() {
   const workspaceStatusLabel = accountBlocked ? t.homeWorkspaceBlocked : accountLimited ? t.homeWorkspaceLimited : t.homeWorkspaceReady;
   const billingStatusLabel = accountSnapshot?.billing.status || 'none';
   const recommendedUpgrade = accountSnapshot?.recommendedUpgrade;
+  const showWorkspaceStatusPanel = isAuthenticated && (
+    accountStatusLoading
+    || accountStatusError
+    || !accountSnapshot
+    || accountBlocked
+    || accountLimited
+    || recommendedUpgrade?.action === 'manage'
+    || recommendedUpgrade?.action === 'contact_support'
+  );
   const recommendedUpgradeReason = useMemo(
     () => formatRecommendedUpgradeReason(accountSnapshot, language, locale),
     [accountSnapshot, language, locale],
@@ -834,8 +843,8 @@ export function Home() {
         </div>
       </form>
 
-      {/* Feature Cards — always visible */}
-      {isAuthenticated ? (
+      {/* Operational status: only surface when it needs attention */}
+      {showWorkspaceStatusPanel ? (
         <section
           dir={direction}
           className={`mb-6 max-w-xl lg:max-w-6xl mx-auto w-full rounded-[1.35rem] border px-4 py-4 shadow-[var(--panel-elev-1)] ${workspaceStatusTone}`}
@@ -872,7 +881,7 @@ export function Home() {
                         })
                         : t.homeCheckingPlanAccess)}
                 </p>
-                {recommendedUpgradeReason ? (
+                {recommendedUpgradeReason && recommendedUpgrade?.action !== 'checkout' ? (
                   <p className="mt-1 text-xs leading-5 text-secondary">
                     {recommendedUpgradeReason}
                   </p>
@@ -894,7 +903,7 @@ export function Home() {
               </div>
             </div>
             <div className="flex shrink-0 flex-wrap gap-2">
-              {recommendedUpgrade && recommendedUpgrade.action !== 'none' ? (
+              {recommendedUpgrade && recommendedUpgrade.action !== 'none' && recommendedUpgrade.action !== 'checkout' ? (
                 <button
                   type="button"
                   onClick={() => void handleBillingAction()}

@@ -84,6 +84,7 @@ test('shows paid plan choices after sign-in without blocking free usage', async 
 
   const panel = page.getByTestId('home-plan-growth-panel');
   await expect(panel).toBeVisible();
+  await expect(page.getByText(/Workspace status|Status ruang kerja/i)).toHaveCount(0);
   await expect(panel.getByRole('button', { name: /View plan options|Lihat pilihan paket/i })).toBeVisible();
 
   await page.getByTestId('home-plan-open-catalog').click();

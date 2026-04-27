@@ -23,6 +23,7 @@ import { useAccountStatus } from "../context/AccountStatusContext";
 import type { AccountFeatureFlag, AccountStatusSnapshot } from "../services/accountStatus";
 import { BillingApiError, openBillingPortal } from "../services/billing";
 import { isDisplayableAvatarUrl } from "../utils/avatarUrl";
+import { useAiAccessGate } from "../components/billing/AiAccessGate";
 import { PlanGrowthSurface } from "../components/billing/PlanGrowthSurface";
 import { normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentProfileMemory } from "@baristachaw/shared";
 import { getLanguageDirection, getLanguageLocale, LANGUAGE_OPTIONS } from "../constants";
@@ -151,7 +152,7 @@ export function Home() {
   const isMountedRef = useRef(true);
   const searchRequestIdRef = useRef(0);
   const { hideNav, showNav } = useNavbar();
-  const { user, isAuthenticated, openAuthModal, logout } = useAuthModal();
+  const { user, isAuthenticated, isGuest, openAuthModal, logout } = useAuthModal();
   const { isOffline } = useNetworkStatus();
   const {
     snapshot: accountSnapshot,
@@ -161,6 +162,7 @@ export function Home() {
     surface,
     refreshAccountStatus,
   } = useAccountStatus();
+  const { ensureAiAccess, aiAccessGateModal } = useAiAccessGate('search');
   const agentProfileNamespace = useMemo(() => resolveAgentProfileNamespace(user?.id), [user?.id]);
   const locale = useMemo(() => getLanguageLocale(language), [language]);
   const direction = useMemo(() => getLanguageDirection(language), [language]);
@@ -409,8 +411,9 @@ export function Home() {
 
   const executeSearch = async (searchQuery: string) => {
     if (loading) return;
-    if (!isAuthenticated) {
-      openAuthModal({ source: 'home_search' });
+    const trimmedQuery = searchQuery.trim();
+    if (!trimmedQuery) return;
+    if (!ensureAiAccess('home_search')) {
       return;
     }
 
@@ -421,8 +424,6 @@ export function Home() {
       return;
     }
 
-    const trimmedQuery = searchQuery.trim();
-    if (!trimmedQuery) return;
     const requestId = ++searchRequestIdRef.current;
 
     setActiveQuery(trimmedQuery);
@@ -826,7 +827,7 @@ export function Home() {
             name="home-ai-search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={accountBlocked ? t.homeSearchBlockedPlaceholder : isAuthenticated ? t.homeSearchPlaceholderAuth : t.homeSearchPlaceholderGuest}
+            placeholder={accountBlocked ? t.homeSearchBlockedPlaceholder : isAuthenticated && !isGuest ? t.homeSearchPlaceholderAuth : t.homeSearchPlaceholderGuest}
             disabled={!isAuthenticated || accountBlocked || loading}
             aria-label={t.homeAskTitle}
             enterKeyHint="search"
@@ -1302,6 +1303,7 @@ export function Home() {
         )}
       </AnimatePresence>
       {languageSheet}
+      {aiAccessGateModal}
     </motion.div>
   );
 }

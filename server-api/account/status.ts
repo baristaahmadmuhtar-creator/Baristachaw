@@ -19,7 +19,7 @@ import {
 } from '../admin/_featureFlags.js';
 
 type AccountStatus = 'active' | 'trialing' | 'past_due' | 'suspended' | 'deleted';
-type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
+export type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
 type DataMode = 'supabase' | 'runtime_fallback';
 type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual';
 type BillingStatus = 'none' | 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'refunded';
@@ -65,7 +65,7 @@ type AccountUser = {
   lastSeenAt: string;
 };
 
-type AccountStatusResponse = {
+export type AccountStatusResponse = {
   ok: true;
   requestId: string;
   generatedAt: string;
@@ -302,6 +302,7 @@ function userFromAuth(auth: AuthContext): AccountUser {
   const rawUser = auth.user || {};
   const email = normalizeText(rawUser.email);
   const name = normalizeText(rawUser.name || rawUser.displayName, email ? email.split('@')[0] : 'Baristachaw user');
+  const planCode = normalizePlanCode(rawUser.planCode || rawUser.plan_code);
   return {
     id: auth.userId,
     email: email || undefined,
@@ -309,8 +310,8 @@ function userFromAuth(auth: AuthContext): AccountUser {
     picture: normalizeText(rawUser.picture || rawUser.avatarUrl) || undefined,
     role: normalizeText(rawUser.role, 'user'),
     status: 'active',
-    planCode: 'free',
-    planName: 'Free',
+    planCode,
+    planName: planByCode(planCode).name,
     lastSeenAt: nowIso(),
   };
 }
@@ -538,7 +539,7 @@ function buildAppAccess(user: AccountUser, billing: AccountBilling, maintenance:
   return { status: 'ok', message: '' };
 }
 
-async function buildAccountStatus(
+export async function buildAccountStatus(
   requestId: string,
   auth: AuthContext,
   surface: FeatureSurface,

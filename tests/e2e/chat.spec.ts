@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
+import { buildQaUser } from '../fixtures/test-data';
 import { mockAiApis } from '../helpers/network';
 import { clearClientState } from '../helpers/cleanup';
 import { expectFirstRunAuthGate } from '../helpers/authGate';
@@ -47,8 +48,21 @@ test('shows sign in gate when not authenticated', async ({ page }) => {
   await expectFirstRunAuthGate(page);
 });
 
-test('supports send message, mode switch, save/copy actions', async ({ page }) => {
+test('shows upgrade gate for free users before AI chat runs', async ({ page }) => {
   await qaLogin(page.request);
+  await page.goto('/chat', { waitUntil: 'domcontentloaded' });
+
+  const input = page.getByPlaceholder(chatInputPlaceholder);
+  await expect(input).toBeEnabled({ timeout: 30_000 });
+  await input.fill('qa_e2e free chat');
+  await page.getByLabel(sendMessageLabel).click();
+
+  await expect(page.getByTestId('ai-access-gate-modal')).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Obrolan AI dibuka mulai paket Starter|AI Chat starts on Starter/i })).toBeVisible();
+});
+
+test('supports send message, mode switch, save/copy actions', async ({ page }) => {
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
   await expect(page.getByLabel(flashModeLabel)).toBeVisible();
@@ -67,7 +81,7 @@ test('supports send message, mode switch, save/copy actions', async ({ page }) =
 });
 
 test('deep mode shows thinking phases, degraded badge, and source links', async ({ page }) => {
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
   await page.route('**/api/ai', async (route) => {

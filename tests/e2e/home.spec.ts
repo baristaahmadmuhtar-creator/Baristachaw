@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
+import { buildQaUser } from '../fixtures/test-data';
 import { mockAiApis } from '../helpers/network';
 import { clearClientState } from '../helpers/cleanup';
 import { continueAsGuestFromAuthGate, expectFirstRunAuthGate } from '../helpers/authGate';
@@ -39,13 +40,18 @@ test.afterEach(async ({ page }) => {
 test('shows first-run auth gate and keeps guest entry available', async ({ page }) => {
   await expectFirstRunAuthGate(page);
   await continueAsGuestFromAuthGate(page);
-  await expect(page.getByPlaceholder(/Cari di web dengan AI|Search the web with AI/i)).toBeEnabled({ timeout: 30_000 });
+  const search = page.getByPlaceholder(/Masuk untuk memakai pencarian AI|Sign in to use AI search/i);
+  await expect(search).toBeEnabled({ timeout: 30_000 });
+  await search.fill('qa_e2e guest search');
+  await search.press('Enter');
+  await expect(page.getByTestId('ai-access-gate-modal')).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Masuk untuk memakai Pencarian AI|Sign in to use AI Search/i })).toBeVisible();
 });
 
 test('supports authenticated search, copy, save, and theme toggle', async ({ page, context, browserName }) => {
   if (browserName === 'firefox') test.slow();
 
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await waitForHomeAuthState(page);
   await expect(page.getByLabel(/Sign Out|Keluar/i)).toBeVisible();
@@ -77,7 +83,7 @@ test('supports authenticated search, copy, save, and theme toggle', async ({ pag
   expect(JSON.stringify(lsState.origins)).toContain('BARISTA_THEME');
 });
 
-test('shows paid plan choices after sign-in without blocking free usage', async ({ page }) => {
+test('shows paid plan choices and upgrades free users when AI search is attempted', async ({ page }) => {
   await qaLogin(page.request);
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await waitForHomeAuthState(page);
@@ -97,7 +103,12 @@ test('shows paid plan choices after sign-in without blocking free usage', async 
 
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
-  await expect(page.getByPlaceholder(/Search the web with AI|Cari di web dengan AI/i)).toBeEnabled();
+  const search = page.getByPlaceholder(/Search the web with AI|Cari di web dengan AI/i);
+  await expect(search).toBeEnabled();
+  await search.fill('qa_e2e free search');
+  await search.press('Enter');
+  await expect(page.getByTestId('ai-access-gate-modal')).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Pencarian AI dibuka mulai paket Starter|AI Search starts on Starter/i })).toBeVisible();
 });
 
 test('language switch updates guest search placeholder copy', async ({ page }) => {
@@ -110,7 +121,7 @@ test('language switch updates guest search placeholder copy', async ({ page }) =
   await expect(indonesianOption).toBeVisible();
   await indonesianOption.click();
 
-  await expect(page.getByPlaceholder('Cari di web dengan AI...')).toBeEnabled();
+  await expect(page.getByPlaceholder('Masuk untuk memakai pencarian AI...')).toBeEnabled();
 });
 
 test('arabic language option is fully visible in language menu', async ({ page }) => {

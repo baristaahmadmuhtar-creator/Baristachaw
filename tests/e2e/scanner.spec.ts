@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
+import { buildQaUser } from '../fixtures/test-data';
 import { mockAiApis } from '../helpers/network';
 import { expectFirstRunAuthGate } from '../helpers/authGate';
 
@@ -25,8 +26,24 @@ test('shows sign in gate while unauthenticated', async ({ page }) => {
   await expectFirstRunAuthGate(page);
 });
 
-test('scans image and saves result to collection', async ({ page }) => {
+test('shows upgrade gate for free users before scan runs', async ({ page }) => {
   await qaLogin(page.request);
+  await page.goto('/scanner', { waitUntil: 'domcontentloaded' });
+
+  const fileInput = page.locator('input[type="file"]').first();
+  await fileInput.setInputFiles({
+    name: 'qa_e2e.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(tinyPngBase64, 'base64'),
+  });
+
+  await page.getByRole('button', { name: analyzeImageButton }).click();
+  await expect(page.getByTestId('ai-access-gate-modal')).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Pemindai AI dibuka mulai paket Starter|AI Scan starts on Starter/i })).toBeVisible();
+});
+
+test('scans image and saves result to collection', async ({ page }) => {
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/scanner', { waitUntil: 'domcontentloaded' });
 
   const fileInput = page.locator('input[type="file"]').first();
@@ -44,7 +61,7 @@ test('scans image and saves result to collection', async ({ page }) => {
 });
 
 test('generates ai latte art from an uploaded photo', async ({ page }) => {
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/scanner', { waitUntil: 'domcontentloaded' });
 
   await page.getByRole('button', { name: /AI Latte Art|Seni Latte AI/i }).click();
@@ -64,7 +81,7 @@ test('generates ai latte art from an uploaded photo', async ({ page }) => {
 });
 
 test('rejects non-image uploads before analysis starts', async ({ page }) => {
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/scanner', { waitUntil: 'domcontentloaded' });
 
   const fileInput = page.locator('input[type="file"]').first();

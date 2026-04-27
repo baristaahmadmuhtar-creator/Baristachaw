@@ -68,6 +68,7 @@ import {
 import { resolveAudioPlaybackUrl } from '../utils/chatAudio';
 import { subscribeMediaQueryChange } from '../utils/mediaQuery';
 import { GoogleMark } from '../components/icons';
+import { useAiAccessGate } from '../components/billing/AiAccessGate';
 
 const ChatWorkspacePanel = lazy(() =>
   import('../components/chat/ChatWorkspacePanel').then((module) => ({ default: module.ChatWorkspacePanel }))
@@ -165,6 +166,7 @@ export function Chat() {
     showNav,
   } = useNavbar();
   const { isAuthenticated, authChecking, authBusy, openAuthModal, user } = useAuthModal();
+  const { ensureAiAccess, aiAccessGateModal } = useAiAccessGate('chat');
   const { isOnline } = useNetworkStatus();
   const { isPwa } = useRuntimeDisplayMode();
   const navigate = useNavigate();
@@ -771,9 +773,7 @@ export function Chat() {
 
   const toggleRecording = async () => {
     setVoiceError(null);
-    if (!isAuthenticated) {
-      setAuthError(t.chatVoiceSigninRequired);
-      openAuthModal({ source: 'chat_send' });
+    if (!ensureAiAccess('chat_voice')) {
       return;
     }
     if (!isOnline) {
@@ -988,21 +988,19 @@ export function Chat() {
 
   // ─── Send ───
   const handleSend = async () => {
-    if (!isAuthenticated) {
-      setAuthError(t.chatSigninRequiredMessage);
-      openAuthModal({ source: 'chat_send' });
-      return;
-    }
-    if (!isOnline) {
-      setAuthError(t.chatOfflineSendUnavailable);
-      return;
-    }
     if (!chatSession) return;
 
     const trimmedInput = input.trim();
     const draftToSend = draftAttachment ? { ...draftAttachment, status: 'sent' as const } : null;
     const textPayloadForDraft = draftAttachmentAiText;
     if (!trimmedInput && !draftToSend) return;
+    if (!ensureAiAccess('chat_send')) {
+      return;
+    }
+    if (!isOnline) {
+      setAuthError(t.chatOfflineSendUnavailable);
+      return;
+    }
     if (trimmedInput.length > CHAT_INPUT_MAX_CHARS) {
       setInputLimitNotice(t.chatInputTooLong);
       return;
@@ -1319,9 +1317,7 @@ export function Chat() {
   };
 
   const handleGenerateImage = async () => {
-    if (!isAuthenticated) {
-      setAuthError(t.chatImageSigninRequired);
-      openAuthModal({ source: 'chat_image_generation' });
+    if (!ensureAiAccess('chat_image_generation')) {
       return;
     }
     if (!isOnline) {
@@ -2029,6 +2025,7 @@ export function Chat() {
         />
         </div>
       )}
+      {aiAccessGateModal}
     </div>
   );
 }
@@ -2098,14 +2095,6 @@ function AudioBubble({ url, isUser }: { url: string; isUser: boolean }) {
     </div>
   );
 }
-
-
-
-
-
-
-
-
 
 
 

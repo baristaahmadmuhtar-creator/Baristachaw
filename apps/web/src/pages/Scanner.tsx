@@ -13,6 +13,7 @@ import { ensureCameraPermission, type CameraPermissionResult } from "../utils/ca
 import { getLanguageLocale, getLanguageMeta } from "../constants";
 import { buildScannerPrompt } from "../features/scanner/buildScannerPrompt";
 import { GoogleMark } from "../components/icons";
+import { useAiAccessGate } from "../components/billing/AiAccessGate";
 
 type ScannerMode = "auto" | "ocr" | "latte";
 
@@ -123,6 +124,7 @@ export function Scanner() {
     clearAuthError,
     openAuthModal,
   } = useAuthModal();
+  const { ensureAiAccess, aiAccessGateModal } = useAiAccessGate("scanner");
   const { isOffline } = useNetworkStatus();
   const { isIosStandalone } = useRuntimeDisplayMode();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -220,8 +222,7 @@ export function Scanner() {
   };
 
   const handleScan = async () => {
-    if (!isAuthenticated) {
-      openAuthModal({ source: "scanner" });
+    if (!ensureAiAccess("scanner")) {
       return;
     }
     if (!file || !mimeType) return;
@@ -670,6 +671,7 @@ export function Scanner() {
           onChange={handleFileChange}
         />
       </div>
+      {aiAccessGateModal}
     </motion.div>
   );
 }

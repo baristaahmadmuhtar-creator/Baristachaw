@@ -19,6 +19,7 @@ import { generateImage } from '../../services/gemini';
 import { getAgentProfileMemory, resetAgentProfileMemory, saveAgentProfileMemory } from '../../services/storageService';
 import { useGlobalState } from '../../context/GlobalState';
 import { useAuthModal } from '../../context/AuthModalContext';
+import { useAiAccessGate } from '../billing/AiAccessGate';
 import { isReusableDraftSession, normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentBaristaSkillFocus, type AgentProfileMemory } from '@baristachaw/shared';
 import type { ChatSession } from '../../types';
 import type { ChatWorkspaceTab } from './types';
@@ -171,6 +172,7 @@ export function ChatWorkspacePanel({
   const [memoryFeedback, setMemoryFeedback] = useState(t.chatMemoryStoredDeviceOnly);
   const [openMemorySection, setOpenMemorySection] = useState<MemorySectionId | null>(null);
   const { isAuthenticated, authChecking, openAuthModal, user } = useAuthModal();
+  const { ensureAiAccess, aiAccessGateModal } = useAiAccessGate('chat');
   const agentProfileNamespace = resolveAgentProfileNamespace(user?.id);
   const memoryLanguageOptions = useMemo(
     () => LANGUAGE_OPTIONS.map((option) => ({
@@ -298,8 +300,7 @@ export function ChatWorkspacePanel({
   };
 
   const handleGenerateImage = async () => {
-    if (!isAuthenticated) {
-      openAuthModal({ source: 'chat_image_generation' });
+    if (!ensureAiAccess('chat_image_generation')) {
       return;
     }
     if (!imgPrompt.trim()) return;
@@ -935,6 +936,7 @@ export function ChatWorkspacePanel({
           </div>
         </div>
       )}
+      {aiAccessGateModal}
     </div>
   );
 }

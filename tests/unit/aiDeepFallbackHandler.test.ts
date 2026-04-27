@@ -83,7 +83,7 @@ test('deep_think falls back to internal chat proxy when compat providers are una
   delete process.env.VERCEL_URL;
 
   const authToken = jwt.sign(
-    { user: { id: 'qa-deep-fallback-user', email: 'qa@example.com', name: 'QA Deep Fallback' } },
+    { user: { id: 'qa-deep-fallback-user', email: 'qa@example.com', name: 'QA Deep Fallback', planCode: 'starter' } },
     process.env.JWT_SECRET,
     { expiresIn: '1h' },
   );

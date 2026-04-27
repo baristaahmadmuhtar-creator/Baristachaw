@@ -40,6 +40,7 @@ import {
   E2E_MOCK_MODEL,
   E2E_MOCK_PROVIDER,
 } from './_e2eMock.js';
+import { requirePaidAiAccess, type PaidAiFeature } from './account/aiAccess.js';
 
 type StructuredAiAction = AiAction;
 
@@ -1913,6 +1914,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `Unknown action: ${String(rawAction || 'undefined')}`,
       'unknown_action',
     );
+  }
+
+  const clientSurface = rawClientContext && typeof rawClientContext === 'object' && typeof (rawClientContext as { surface?: unknown }).surface === 'string'
+    ? String((rawClientContext as { surface?: string }).surface).trim().toLowerCase()
+    : '';
+  const paidFeature: PaidAiFeature | null = action === 'search'
+    ? 'search'
+    : action === 'analyze_image' || action === 'edit_latte_art'
+      ? 'scanner'
+      : action === 'generate_image' || action === 'analyze_attachment' || action === 'analyze_text' || action === 'transcribe'
+        ? 'chat'
+        : (clientSurface === 'chat' ? 'chat' : clientSurface === 'home' ? 'search' : null);
+  if (paidFeature) {
+    const aiAccess = await requirePaidAiAccess({
+      requestId,
+      auth: authResult.auth,
+      rawClientContext,
+      feature: paidFeature,
+    });
+    if (aiAccess.ok === false) {
+      return res.status(aiAccess.statusCode).json({
+        ok: false,
+        requestId,
+        action,
+        error: aiAccess.error,
+        errorCode: aiAccess.errorCode,
+        retryable: aiAccess.retryable,
+        minimumPlan: aiAccess.minimumPlan,
+      });
+    }
   }
 
   if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > 15000) {

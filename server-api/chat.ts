@@ -31,6 +31,7 @@ import {
     STRUCTURED_AI_PROMPT_MAX_CHARS,
     type ConversationContext,
 } from './_contracts.js';
+import { requirePaidAiAccess } from './account/aiAccess.js';
 
 /**
  * Baristachaw Multi-Provider AI Chat API
@@ -525,6 +526,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
     }
 
+    const aiAccess = await requirePaidAiAccess({
+        requestId,
+        auth: authResult.auth,
+        rawClientContext: req.body?.clientContext,
+        feature: 'chat',
+    });
+    if (aiAccess.ok === false) {
+        return res.status(aiAccess.statusCode).json({
+            ok: false,
+            requestId,
+            error: aiAccess.error,
+            errorCode: aiAccess.errorCode,
+            retryable: aiAccess.retryable,
+            minimumPlan: aiAccess.minimumPlan,
+        });
+    }
+
     const limit = checkRateLimit(req, '/api/chat', authResult.auth.userId, CHAT_RATE_LIMIT);
     applyRateLimitHeaders(res, limit);
     if (!limit.allowed) {
@@ -918,4 +936,3 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
         }
     }
 }
-

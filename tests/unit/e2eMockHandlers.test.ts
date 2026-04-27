@@ -26,7 +26,7 @@ function setBaseEnv() {
 
 function authToken() {
   return jwt.sign(
-    { user: { id: 'qa-e2e-mock-user', email: 'qa@example.com', name: 'QA Mock' } },
+    { user: { id: 'qa-e2e-mock-user', email: 'qa@example.com', name: 'QA Mock', planCode: 'starter' } },
     process.env.JWT_SECRET!,
     { expiresIn: '1h' },
   );

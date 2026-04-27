@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
+import { buildQaUser } from '../fixtures/test-data';
 import { clearClientState } from '../helpers/cleanup';
 
 test.beforeEach(async ({ page }) => {
@@ -46,7 +47,7 @@ async function sendChatMessage(
 }
 
 test('normal mode sends response profile + language context', async ({ page }) => {
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
   let capturedBody: any = null;
@@ -81,7 +82,7 @@ test('normal mode sends response profile + language context', async ({ page }) =
 });
 
 test('deep mode uses /api/ai with response profile and deep action', async ({ page }) => {
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
   let capturedBody: any = null;
@@ -117,10 +118,10 @@ test('deep mode uses /api/ai with response profile and deep action', async ({ pa
 });
 
 test('pwa runtime sends platform=pwa in client context', async ({ page }) => {
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/chat?runtime=web_parity&ui_profile=pwa', { waitUntil: 'domcontentloaded' });
   await clearClientState(page);
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/chat?runtime=web_parity&ui_profile=pwa', { waitUntil: 'domcontentloaded' });
 
   let capturedBody: any = null;
@@ -152,7 +153,7 @@ test('pwa runtime sends platform=pwa in client context', async ({ page }) => {
 });
 
 test('web chat includes the newest user turn in conversation context for follow-up requests', async ({ page }) => {
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
   const capturedBodies: any[] = [];

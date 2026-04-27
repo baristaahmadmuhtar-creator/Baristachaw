@@ -6,6 +6,7 @@ export type TestAuthUser = {
   email: string;
   name: string;
   picture: string;
+  planCode?: 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
   role?: 'owner' | 'admin' | 'support' | 'analyst' | 'user';
   isAdmin?: boolean;
 };
@@ -115,17 +116,28 @@ function sanitizeRole(value: unknown): TestAuthUser['role'] | undefined {
   return undefined;
 }
 
+function sanitizePlanCode(value: unknown): TestAuthUser['planCode'] | undefined {
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === 'free' || normalized === 'starter' || normalized === 'pro' || normalized === 'team' || normalized === 'enterprise') {
+    return normalized;
+  }
+  return undefined;
+}
+
 function sanitizeBodyUser(input: unknown): Partial<TestAuthUser> {
   if (!input || typeof input !== 'object') return {};
   const body = input as Record<string, unknown>;
   const pick = (key: keyof TestAuthUser) => (typeof body[key] === 'string' ? body[key].trim() : '');
   const role = sanitizeRole(body.role);
+  const planCode = sanitizePlanCode(body.planCode || body.plan_code);
   const isAdmin = body.isAdmin === true || body.isAdmin === 'true' || body.isAdmin === '1';
   return {
     id: pick('id'),
     email: pick('email'),
     name: pick('name'),
     picture: pick('picture'),
+    ...(planCode ? { planCode } : {}),
     ...(role ? { role } : {}),
     ...(isAdmin ? { isAdmin: true } : {}),
   };
@@ -139,6 +151,7 @@ export function resolveTestUser(body: unknown): TestAuthUser {
     email: incoming.email || defaults.email,
     name: incoming.name || defaults.name,
     picture: incoming.picture || defaults.picture,
+    planCode: incoming.planCode || 'free',
     ...(incoming.role ? { role: incoming.role } : {}),
     ...(incoming.isAdmin ? { isAdmin: true } : {}),
   };

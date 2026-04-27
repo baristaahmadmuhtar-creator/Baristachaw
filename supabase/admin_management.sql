@@ -237,6 +237,138 @@ create table if not exists public.admin_audit_events (
   created_at timestamptz not null default now()
 );
 
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'app_plans_limit_values_check'
+      and conrelid = 'public.app_plans'::regclass
+  ) then
+    alter table public.app_plans
+      add constraint app_plans_limit_values_check
+      check (
+        price_monthly_usd >= 0
+        and ai_daily_limit >= 0
+        and deep_daily_limit >= 0
+        and scanner_daily_limit >= 0
+        and storage_mb >= 0
+        and seats >= 1
+        and support_sla_hours >= 0
+        and display_order >= 0
+        and char_length(name) <= 80
+        and char_length(description) <= 400
+        and char_length(display_price) <= 160
+       ) not valid;
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'app_users_profile_text_check'
+      and conrelid = 'public.app_users'::regclass
+  ) then
+    alter table public.app_users
+      add constraint app_users_profile_text_check
+      check (
+        char_length(email) <= 320
+        and char_length(display_name) <= 120
+        and char_length(username) <= 48
+        and char_length(avatar_url) <= 2048
+        and char_length(notes) <= 2000
+        and char_length(support_note) <= 2000
+       ) not valid;
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'app_users_billing_period_check'
+      and conrelid = 'public.app_users'::regclass
+  ) then
+    alter table public.app_users
+      add constraint app_users_billing_period_check
+      check (billing_period_end is null or billing_period_start is null or billing_period_end > billing_period_start ) not valid;
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'app_usage_daily_nonnegative_check'
+      and conrelid = 'public.app_usage_daily'::regclass
+  ) then
+    alter table public.app_usage_daily
+      add constraint app_usage_daily_nonnegative_check
+      check (
+        ai_requests >= 0
+        and deep_requests >= 0
+        and scanner_runs >= 0
+        and collection_writes >= 0
+        and image_edits >= 0
+        and speech_seconds >= 0
+        and total_tokens >= 0
+        and cost_usd >= 0
+       ) not valid;
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'user_entitlements_period_check'
+      and conrelid = 'public.user_entitlements'::regclass
+  ) then
+    alter table public.user_entitlements
+      add constraint user_entitlements_period_check
+      check (current_period_end is null or current_period_start is null or current_period_end > current_period_start ) not valid;
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'payment_receipts_review_integrity_check'
+      and conrelid = 'public.payment_receipts'::regclass
+  ) then
+    alter table public.payment_receipts
+      add constraint payment_receipts_review_integrity_check
+      check (
+        char_length(receipt_url) <= 2048
+        and char_length(receipt_reference) <= 240
+        and char_length(apply_error) <= 1200
+        and (
+          status not in ('rejected', 'applied')
+          or (reviewed_by is not null and reviewed_at is not null)
+        )
+       ) not valid;
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'app_feature_flags_text_check'
+      and conrelid = 'public.app_feature_flags'::regclass
+  ) then
+    alter table public.app_feature_flags
+      add constraint app_feature_flags_text_check
+      check (
+        char_length(key) <= 80
+        and char_length(label) <= 120
+        and char_length(message) <= 500
+       ) not valid;
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'admin_audit_events_text_check'
+      and conrelid = 'public.admin_audit_events'::regclass
+  ) then
+    alter table public.admin_audit_events
+      add constraint admin_audit_events_text_check
+      check (
+        char_length(coalesce(actor_email, '')) <= 320
+        and char_length(target_type) <= 80
+        and char_length(target_id) <= 160
+        and char_length(action) <= 120
+        and char_length(detail) <= 4000
+        and char_length(coalesce(request_id, '')) <= 120
+        and char_length(coalesce(ip_hash, '')) <= 160
+       ) not valid;
+  end if;
+end;
+$$;
+
 create index if not exists app_users_email_idx on public.app_users (lower(email));
 create index if not exists app_users_username_idx on public.app_users (lower(username));
 create unique index if not exists app_users_username_unique_idx on public.app_users (lower(username)) where username <> '';
@@ -257,6 +389,7 @@ create index if not exists admin_audit_events_target_idx on public.admin_audit_e
 create or replace function public.set_admin_management_updated_at()
 returns trigger
 language plpgsql
+set search_path = public, pg_temp
 as $$
 begin
   new.updated_at = now();
@@ -264,10 +397,63 @@ begin
 end;
 $$;
 
+create or replace function public.normalize_app_user_row()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  new.email = lower(trim(new.email));
+  new.display_name = trim(new.display_name);
+  new.username = lower(trim(new.username));
+  new.avatar_url = trim(new.avatar_url);
+  new.provider = lower(trim(new.provider));
+  new.locale = nullif(lower(trim(coalesce(new.locale, ''))), '');
+  new.platform = nullif(lower(trim(coalesce(new.platform, ''))), '');
+  new.country = nullif(upper(trim(coalesce(new.country, ''))), '');
+  new.notes = trim(new.notes);
+  new.support_note = trim(new.support_note);
+  new.billing_customer_id = trim(new.billing_customer_id);
+  new.billing_subscription_id = trim(new.billing_subscription_id);
+  return new;
+end;
+$$;
+
+create or replace function public.normalize_payment_receipt_row()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+begin
+  new.receipt_url = trim(new.receipt_url);
+  new.receipt_reference = trim(new.receipt_reference);
+  new.apply_error = trim(new.apply_error);
+
+  if coalesce(auth.role(), '') = 'authenticated' then
+    new.user_id = (select auth.uid())::text;
+    new.status = 'queued';
+    new.reviewed_by = null;
+    new.reviewed_at = null;
+    new.apply_error = '';
+  end if;
+
+  return new;
+end;
+$$;
+
+revoke all on function public.set_admin_management_updated_at() from public;
+revoke all on function public.normalize_app_user_row() from public;
+revoke all on function public.normalize_payment_receipt_row() from public;
+
 drop trigger if exists app_plans_updated_at on public.app_plans;
 create trigger app_plans_updated_at
 before update on public.app_plans
 for each row execute function public.set_admin_management_updated_at();
+
+drop trigger if exists app_users_normalize on public.app_users;
+create trigger app_users_normalize
+before insert or update on public.app_users
+for each row execute function public.normalize_app_user_row();
 
 drop trigger if exists app_users_updated_at on public.app_users;
 create trigger app_users_updated_at
@@ -289,6 +475,11 @@ create trigger payment_receipts_updated_at
 before update on public.payment_receipts
 for each row execute function public.set_admin_management_updated_at();
 
+drop trigger if exists payment_receipts_normalize on public.payment_receipts;
+create trigger payment_receipts_normalize
+before insert or update on public.payment_receipts
+for each row execute function public.normalize_payment_receipt_row();
+
 drop trigger if exists app_feature_flags_updated_at on public.app_feature_flags;
 create trigger app_feature_flags_updated_at
 before update on public.app_feature_flags
@@ -302,9 +493,45 @@ alter table public.payment_receipts enable row level security;
 alter table public.app_feature_flags enable row level security;
 alter table public.admin_audit_events enable row level security;
 
+alter table public.app_plans force row level security;
+alter table public.app_users force row level security;
+alter table public.app_usage_daily force row level security;
+alter table public.user_entitlements force row level security;
+alter table public.payment_receipts force row level security;
+alter table public.app_feature_flags force row level security;
+alter table public.admin_audit_events force row level security;
+
+grant usage on schema public to anon, authenticated, service_role;
+
+revoke all on public.app_plans from anon, authenticated;
+revoke all on public.app_users from anon, authenticated;
+revoke all on public.app_usage_daily from anon, authenticated;
+revoke all on public.user_entitlements from anon, authenticated;
+revoke all on public.payment_receipts from anon, authenticated;
+revoke all on public.app_feature_flags from anon, authenticated;
+revoke all on public.admin_audit_events from anon, authenticated;
+
+grant select on public.app_plans to anon, authenticated;
+grant select on public.app_users to authenticated;
+grant select on public.app_usage_daily to authenticated;
+grant select on public.user_entitlements to authenticated;
+grant select, insert on public.payment_receipts to authenticated;
+grant select on public.app_feature_flags to anon, authenticated;
+grant all on public.app_plans to service_role;
+grant all on public.app_users to service_role;
+grant all on public.app_usage_daily to service_role;
+grant all on public.user_entitlements to service_role;
+grant all on public.payment_receipts to service_role;
+grant all on public.app_feature_flags to service_role;
+grant all on public.admin_audit_events to service_role;
+
 drop policy if exists "service role manages app plans" on public.app_plans;
 create policy "service role manages app plans" on public.app_plans
   for all to service_role using (true) with check (true);
+
+drop policy if exists "public reads app plans" on public.app_plans;
+create policy "public reads app plans" on public.app_plans
+  for select to anon, authenticated using (true);
 
 drop policy if exists "service role manages app users" on public.app_users;
 create policy "service role manages app users" on public.app_users
@@ -333,31 +560,37 @@ create policy "service role manages admin audit" on public.admin_audit_events
 drop policy if exists "authenticated users read own profile" on public.app_users;
 create policy "authenticated users read own profile" on public.app_users
   for select to authenticated
-  using (id = auth.uid()::text);
+  using (id = (select auth.uid())::text);
 
 drop policy if exists "authenticated users read own usage" on public.app_usage_daily;
 create policy "authenticated users read own usage" on public.app_usage_daily
   for select to authenticated
-  using (user_id = auth.uid()::text);
+  using (user_id = (select auth.uid())::text);
 
 drop policy if exists "authenticated users read own entitlements" on public.user_entitlements;
 create policy "authenticated users read own entitlements" on public.user_entitlements
   for select to authenticated
-  using (user_id = auth.uid()::text);
+  using (user_id = (select auth.uid())::text);
 
 drop policy if exists "authenticated users read own payment receipts" on public.payment_receipts;
 create policy "authenticated users read own payment receipts" on public.payment_receipts
   for select to authenticated
-  using (user_id = auth.uid()::text);
+  using (user_id = (select auth.uid())::text);
 
 drop policy if exists "authenticated users create own payment receipts" on public.payment_receipts;
 create policy "authenticated users create own payment receipts" on public.payment_receipts
   for insert to authenticated
-  with check (user_id = auth.uid()::text);
+  with check (
+    user_id = (select auth.uid())::text
+    and status = 'queued'
+    and reviewed_by is null
+    and reviewed_at is null
+    and apply_error = ''
+  );
 
 drop policy if exists "authenticated users read feature flags" on public.app_feature_flags;
 create policy "authenticated users read feature flags" on public.app_feature_flags
-  for select to authenticated
+  for select to anon, authenticated
   using (true);
 
 do $$
@@ -365,6 +598,7 @@ begin
   alter publication supabase_realtime add table public.app_users;
 exception
   when duplicate_object then null;
+  when undefined_table then null;
   when undefined_object then null;
 end;
 $$;
@@ -374,6 +608,7 @@ begin
   alter publication supabase_realtime add table public.admin_audit_events;
 exception
   when duplicate_object then null;
+  when undefined_table then null;
   when undefined_object then null;
 end;
 $$;
@@ -383,6 +618,7 @@ begin
   alter publication supabase_realtime add table public.user_entitlements;
 exception
   when duplicate_object then null;
+  when undefined_table then null;
   when undefined_object then null;
 end;
 $$;
@@ -392,6 +628,7 @@ begin
   alter publication supabase_realtime add table public.payment_receipts;
 exception
   when duplicate_object then null;
+  when undefined_table then null;
   when undefined_object then null;
 end;
 $$;
@@ -401,6 +638,7 @@ begin
   alter publication supabase_realtime add table public.app_plans;
 exception
   when duplicate_object then null;
+  when undefined_table then null;
   when undefined_object then null;
 end;
 $$;
@@ -410,6 +648,7 @@ begin
   alter publication supabase_realtime add table public.app_feature_flags;
 exception
   when duplicate_object then null;
+  when undefined_table then null;
   when undefined_object then null;
 end;
 $$;

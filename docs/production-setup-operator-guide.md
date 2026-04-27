@@ -38,9 +38,11 @@ Kalau browser sudah di halaman login, login sendiri lalu beri tahu saya "lanjut"
 ```text
 supabase/admin_management.sql
 supabase/catalog_platform.sql
+supabase/production_verification.sql
 ```
 
-6. Buka Table Editor dan pastikan tabel utama muncul:
+6. File verification hanya untuk cek hasil. Jika query verification menampilkan 16 tabel, RLS aktif, dan policy/grant sesuai, database siap lanjut ke env.
+7. Buka Table Editor dan pastikan tabel utama muncul:
 
 ```text
 app_plans

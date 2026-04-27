@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowRight, Camera, Check, CreditCard, Crown, Gauge, RefreshCcw, ShieldCheck, Sparkles, X, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Check, CreditCard, Crown, Gauge, RefreshCcw, ShieldCheck, Sparkles, X } from 'lucide-react';
 import type { AccountPlan, AccountStatusSnapshot, PlanCode } from '../../services/accountStatus';
 import { BillingApiError, startBillingCheckout } from '../../services/billing';
 
@@ -130,18 +130,6 @@ function resolveRecommendedPlan(snapshot: AccountStatusSnapshot): AccountPlan {
     || snapshot.plan;
 }
 
-function PlanMetric({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
-  return (
-    <div className="min-w-0 rounded-2xl border border-white/40 bg-white/55 px-3 py-3 shadow-sm dark:border-white/10 dark:bg-white/10">
-      <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-300">
-        <Icon size={16} />
-      </div>
-      <p className="text-xs font-semibold text-secondary">{label}</p>
-      <p className="mt-0.5 truncate text-sm font-bold text-primary">{value}</p>
-    </div>
-  );
-}
-
 function PlanCard({
   plan,
   currentPlanCode,
@@ -244,7 +232,6 @@ export function PlanGrowthSurface({
   const recommendedPlan = useMemo(() => snapshot ? resolveRecommendedPlan(snapshot) : null, [snapshot]);
   const currentPlanCode = snapshot?.user.planCode || snapshot?.plan.code || 'free';
   const currentPlan = displayPlans.find((plan) => plan.code === currentPlanCode) || snapshot?.plan || null;
-  const proPlan = displayPlans.find((plan) => plan.code === 'pro') || recommendedPlan;
   const showUpgradeFraming = currentPlanCode === 'free' || snapshot?.recommendedUpgrade.action === 'checkout';
 
   useEffect(() => {
@@ -413,56 +400,52 @@ export function PlanGrowthSurface({
     <>
       <section
         data-testid="home-plan-growth-panel"
-        className="mb-6 max-w-xl lg:max-w-6xl mx-auto w-full overflow-hidden rounded-[1.35rem] border border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-[var(--bg-elevated)] to-emerald-500/10 p-4 shadow-[var(--panel-elev-1)] sm:p-5"
+        className="mb-6 max-w-xl lg:max-w-6xl mx-auto w-full overflow-hidden rounded-[1.35rem] border border-blue-500/20 bg-[var(--bg-elevated)]/82 p-3 shadow-[var(--panel-elev-1)] sm:p-4"
         dir={direction}
       >
-        <div className={`grid gap-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-center ${isRtl ? 'lg:[direction:rtl]' : ''}`}>
-          <div className={isRtl ? 'text-right' : 'text-left'}>
-            <div className={`mb-3 flex flex-wrap items-center gap-2 ${isRtl ? 'justify-end' : ''}`}>
+        <div className={`flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between ${isRtl ? 'lg:flex-row-reverse' : ''}`}>
+          <div className={`min-w-0 ${isRtl ? 'text-right' : 'text-left'}`}>
+            <div className={`mb-2 flex flex-wrap items-center gap-2 ${isRtl ? 'justify-end' : ''}`}>
               <span className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-xs font-bold text-white">
                 <Sparkles size={13} />
                 {t.homePlanGrowthEyebrow}
               </span>
               <span className="rounded-full bg-[var(--bg-base)]/70 px-3 py-1 text-xs font-bold text-secondary">
-                {showUpgradeFraming ? t.homePlanGrowthProof : t.homePlanPaidProof}
+                {t.homePlanMetricCurrent}: {formatPlanName(currentPlan, language)}
+              </span>
+              <span className="rounded-full bg-[var(--bg-base)]/70 px-3 py-1 text-xs font-bold text-secondary">
+                {showUpgradeFraming ? `${t.homePlanRecommended}: ${formatPlanName(recommendedPlan, language)}` : t.homePlanPaidProof}
               </span>
             </div>
-            <h2 className="text-2xl font-black tracking-tight text-primary sm:text-3xl">
+            <h2 className="text-lg font-black tracking-tight text-primary sm:text-xl">
               {showUpgradeFraming ? t.homePlanGrowthTitle : t.homePlanPaidTitle}
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-secondary sm:text-base">
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-secondary">
               {(showUpgradeFraming ? t.homePlanGrowthBody : t.homePlanPaidBody)
                 .replace('{plan}', formatPlanName(currentPlan, language))
                 .replace('{recommendedPlan}', formatPlanName(recommendedPlan, language))}
             </p>
-
-            <div className={`mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap ${isRtl ? 'sm:justify-end' : ''}`}>
-              <button
-                type="button"
-                onClick={onOpen}
-                data-testid="home-plan-open-catalog"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-700"
-              >
-                <CreditCard size={17} />
-                {t.homePlanViewOptions}
-                <ArrowRight size={16} className={isRtl ? 'rotate-180' : ''} />
-              </button>
-              <button
-                type="button"
-                onClick={onOpen}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-glass bg-[var(--bg-base)]/70 px-4 text-sm font-bold text-primary transition-colors hover:bg-[var(--bg-base)]"
-              >
-                <Gauge size={17} />
-                {t.homePlanCompare}
-              </button>
-            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-2">
-            <PlanMetric icon={Sparkles} label={t.homePlanMetricAi} value={formatCompactNumber((proPlan || recommendedPlan).aiDailyLimit, locale)} />
-            <PlanMetric icon={Gauge} label={t.homePlanMetricDeep} value={formatCompactNumber((proPlan || recommendedPlan).deepDailyLimit, locale)} />
-            <PlanMetric icon={Camera} label={t.homePlanMetricScanner} value={formatCompactNumber((proPlan || recommendedPlan).scannerDailyLimit, locale)} />
-            <PlanMetric icon={ShieldCheck} label={t.homePlanMetricCurrent} value={formatPlanName(currentPlan, language)} />
+          <div className={`flex shrink-0 flex-col gap-2 sm:flex-row sm:flex-wrap ${isRtl ? 'sm:justify-end' : ''}`}>
+            <button
+              type="button"
+              onClick={onOpen}
+              data-testid="home-plan-open-catalog"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-700"
+            >
+              <CreditCard size={17} />
+              {t.homePlanViewOptions}
+              <ArrowRight size={16} className={isRtl ? 'rotate-180' : ''} />
+            </button>
+            <button
+              type="button"
+              onClick={onOpen}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-glass bg-[var(--bg-base)]/70 px-4 text-sm font-bold text-primary transition-colors hover:bg-[var(--bg-base)]"
+            >
+              <Gauge size={17} />
+              {t.homePlanCompare}
+            </button>
           </div>
         </div>
       </section>

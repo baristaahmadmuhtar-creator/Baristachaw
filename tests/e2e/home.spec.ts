@@ -92,7 +92,7 @@ test('shows paid plan choices after sign-in without blocking free usage', async 
   await expect(dialog).toBeVisible();
   await expect(page.getByTestId('plan-card-free')).toBeVisible();
   await expect(page.getByTestId('plan-card-pro')).toBeVisible();
-  await expect(page.getByText(/Recommended|Rekomendasi/i)).toBeVisible();
+  await expect(dialog.getByText(/Recommended|Rekomendasi/i).first()).toBeVisible();
   await expect(dialog.getByRole('button', { name: /Stay on Free|Tetap di Gratis/i })).toBeVisible();
 
   await page.keyboard.press('Escape');

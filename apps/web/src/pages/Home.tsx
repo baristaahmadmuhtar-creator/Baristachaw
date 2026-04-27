@@ -25,6 +25,7 @@ import { BillingApiError, openBillingPortal } from "../services/billing";
 import { isDisplayableAvatarUrl } from "../utils/avatarUrl";
 import { useAiAccessGate } from "../components/billing/AiAccessGate";
 import { PlanGrowthSurface } from "../components/billing/PlanGrowthSurface";
+import { AccountPrivacyPanel } from "../components/account/AccountPrivacyPanel";
 import { normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentProfileMemory } from "@baristachaw/shared";
 import { getLanguageDirection, getLanguageLocale, LANGUAGE_OPTIONS } from "../constants";
 
@@ -137,6 +138,7 @@ export function Home() {
   const [statusIdx, setStatusIdx] = useState(0);
   const [billingBusy, setBillingBusy] = useState(false);
   const [showPlanCatalog, setShowPlanCatalog] = useState(false);
+  const [showAccountPrivacy, setShowAccountPrivacy] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [userPictureFailed, setUserPictureFailed] = useState(false);
   const [savingResult, setSavingResult] = useState(false);
@@ -235,10 +237,10 @@ export function Home() {
 
   // Smart navbar: hide when a modal is open
   useEffect(() => {
-    if (showResultModal || showPlanCatalog) hideNav();
+    if (showResultModal || showPlanCatalog || showAccountPrivacy) hideNav();
     else showNav();
     return () => showNav();
-  }, [showResultModal, showPlanCatalog, hideNav, showNav]);
+  }, [showResultModal, showPlanCatalog, showAccountPrivacy, hideNav, showNav]);
 
   useEffect(() => {
     if (!showResultModal) return;
@@ -769,6 +771,9 @@ export function Home() {
               </div>
             )}
             <span className={`text-sm font-medium text-primary hidden sm:block ${isRtl ? 'text-right' : 'text-left'}`}>{user.name || user.email || t.signedIn}</span>
+            <button onClick={() => setShowAccountPrivacy(true)} className="p-1.5 text-secondary hover:text-primary transition-colors" aria-label={t.accountPrivacyTitle} title={t.accountPrivacyTitle}>
+              <ShieldCheck size={16} />
+            </button>
             <button onClick={handleLogout} className="p-1.5 text-secondary hover:text-primary transition-colors" aria-label={t.signOut}>
               <LogOut size={16} />
             </button>
@@ -1303,6 +1308,12 @@ export function Home() {
         )}
       </AnimatePresence>
       {languageSheet}
+      <AccountPrivacyPanel
+        isOpen={showAccountPrivacy}
+        onClose={() => setShowAccountPrivacy(false)}
+        t={t}
+        direction={direction}
+      />
       {aiAccessGateModal}
     </motion.div>
   );

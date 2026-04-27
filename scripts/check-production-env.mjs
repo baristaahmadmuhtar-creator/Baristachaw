@@ -126,6 +126,8 @@ if (!firstValue(serverEnv, portalKeys)) {
 const providerSecretKeys = [
   'STRIPE_SECRET_KEY',
   'STRIPE_WEBHOOK_SECRET',
+  'BILLING_SYNC_TOKEN',
+  'BILLING_WEBHOOK_SECRET',
   'MIDTRANS_SERVER_KEY',
   'MIDTRANS_WEBHOOK_SECRET',
   'XENDIT_SECRET_KEY',
@@ -139,6 +141,10 @@ if (!firstValue(serverEnv, providerSecretKeys)) {
     keys: providerSecretKeys,
     details: 'boleh untuk MVP link manual, wajib sebelum webhook live',
   });
+}
+
+if (hasValue(serverEnv, 'BILLING_LIVE_MODE') && String(serverEnv.BILLING_LIVE_MODE).trim().toLowerCase() === 'true') {
+  addMissing(errors, serverEnv, ['BILLING_SYNC_TOKEN', 'BILLING_WEBHOOK_SECRET', 'STRIPE_WEBHOOK_SECRET', 'REVENUECAT_WEBHOOK_SECRET', 'MIDTRANS_WEBHOOK_SECRET', 'XENDIT_WEBHOOK_TOKEN'], 'Billing lifecycle sync token', 'wajib saat billing live supaya webhook/sync provider aman');
 }
 
 addMissing(errors, mobileEnv, ['EXPO_PUBLIC_API_BASE_URL'], 'Mobile EXPO_PUBLIC_API_BASE_URL');

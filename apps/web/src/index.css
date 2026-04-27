@@ -15,6 +15,7 @@
   :root,
   :root.light {
     --bg-base: #F2F2F7;
+    --bg-elevated: #FFFFFF;
     --text-primary: #000000;
     --text-secondary: #3C3C43;
     --text-tertiary: rgba(60, 60, 67, 0.6);
@@ -83,6 +84,7 @@
 
   :root.dark {
     --bg-base: #000000;
+    --bg-elevated: #111318;
     --text-primary: #FFFFFF;
     --text-secondary: #EBEBF5;
     --text-tertiary: rgba(235, 235, 245, 0.75);
@@ -139,6 +141,7 @@
   @media (prefers-color-scheme: dark) {
     :root:not(.light) {
       --bg-base: #000000;
+      --bg-elevated: #111318;
       --text-primary: #FFFFFF;
       --text-secondary: #EBEBF5;
       --text-tertiary: rgba(235, 235, 245, 0.75);

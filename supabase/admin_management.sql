@@ -13,7 +13,7 @@ create table if not exists public.app_plans (
   support_sla_hours integer not null default 72,
   features text[] not null default '{}',
   recommended boolean not null default false,
-  billing_provider text not null default 'none' check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual')),
+  billing_provider text not null default 'none' check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit')),
   billing_product_id text not null default '',
   billing_price_id text not null default '',
   revenuecat_entitlement_id text not null default '',
@@ -28,7 +28,7 @@ create table if not exists public.app_plans (
 );
 
 alter table public.app_plans
-  add column if not exists billing_provider text not null default 'none' check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual')),
+  add column if not exists billing_provider text not null default 'none' check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit')),
   add column if not exists billing_product_id text not null default '',
   add column if not exists billing_price_id text not null default '',
   add column if not exists revenuecat_entitlement_id text not null default '',
@@ -36,6 +36,13 @@ alter table public.app_plans
   add column if not exists display_price text not null default '',
   add column if not exists checkout_mode text not null default 'disabled' check (checkout_mode in ('disabled', 'external', 'stripe_checkout', 'play_billing', 'app_store', 'manual_invoice')),
   add column if not exists payment_methods text[] not null default '{}';
+
+alter table public.app_plans
+  drop constraint if exists app_plans_billing_provider_check;
+
+alter table public.app_plans
+  add constraint app_plans_billing_provider_check
+  check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit')) not valid;
 
 insert into public.app_plans (
   code,
@@ -102,7 +109,7 @@ create table if not exists public.app_users (
   platform text check (platform in ('web', 'pwa', 'mobile', 'unknown')),
   country text,
   billing_status text not null default 'none' check (billing_status in ('none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded')),
-  billing_provider text not null default 'none' check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual')),
+  billing_provider text not null default 'none' check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit')),
   billing_market text not null default 'unknown' check (billing_market in ('indonesia', 'brunei', 'global', 'unknown')),
   billing_customer_id text not null default '',
   billing_subscription_id text not null default '',
@@ -133,7 +140,7 @@ alter table public.app_users
   add column if not exists last_recovery_request_at timestamptz,
   add column if not exists password_reset_required boolean not null default false,
   add column if not exists billing_status text not null default 'none' check (billing_status in ('none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded')),
-  add column if not exists billing_provider text not null default 'none' check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual')),
+  add column if not exists billing_provider text not null default 'none' check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit')),
   add column if not exists billing_market text not null default 'unknown' check (billing_market in ('indonesia', 'brunei', 'global', 'unknown')),
   add column if not exists billing_customer_id text not null default '',
   add column if not exists billing_subscription_id text not null default '',
@@ -141,6 +148,13 @@ alter table public.app_users
   add column if not exists billing_period_end timestamptz,
   add column if not exists billing_last_event_at timestamptz,
   add column if not exists payment_action_required boolean not null default false;
+
+alter table public.app_users
+  drop constraint if exists app_users_billing_provider_check;
+
+alter table public.app_users
+  add constraint app_users_billing_provider_check
+  check (billing_provider in ('none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit')) not valid;
 
 create table if not exists public.app_usage_daily (
   id uuid primary key default gen_random_uuid(),
@@ -164,7 +178,7 @@ create table if not exists public.user_entitlements (
   id uuid primary key default gen_random_uuid(),
   user_id text not null references public.app_users(id) on delete cascade,
   plan_code text not null references public.app_plans(code),
-  source text not null default 'admin' check (source in ('admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual')),
+  source text not null default 'admin' check (source in ('admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit')),
   status text not null default 'active' check (status in ('active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded')),
   current_period_start timestamptz,
   current_period_end timestamptz,
@@ -180,7 +194,7 @@ alter table public.user_entitlements
 
 alter table public.user_entitlements
   add constraint user_entitlements_source_check
-  check (source in ('admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual'));
+  check (source in ('admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit'));
 
 create table if not exists public.payment_receipts (
   id uuid primary key default gen_random_uuid(),

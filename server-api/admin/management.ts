@@ -24,7 +24,7 @@ type AccountRecoveryStatus = 'none' | 'requested' | 'verified' | 'resolved' | 'r
 type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
 type CheckStatus = 'pass' | 'warn' | 'fail';
 type DataMode = 'supabase' | 'runtime_fallback';
-type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual';
+type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual' | 'midtrans' | 'xendit';
 type BillingStatus = 'none' | 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'refunded';
 type BillingMarket = 'indonesia' | 'brunei' | 'global' | 'unknown';
 type CheckoutMode = 'disabled' | 'external' | 'stripe_checkout' | 'play_billing' | 'app_store' | 'manual_invoice';
@@ -276,7 +276,7 @@ const VALID_ACCOUNT_STATUSES = new Set<AccountStatus>(['active', 'trialing', 'pa
 const VALID_ACCOUNT_RECOVERY_STATUSES = new Set<AccountRecoveryStatus>(['none', 'requested', 'verified', 'resolved', 'rejected']);
 const VALID_PLAN_CODES = new Set<PlanCode>(['free', 'starter', 'pro', 'team', 'enterprise']);
 const VALID_BILLING_STATUSES = new Set<BillingStatus>(['none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded']);
-const VALID_BILLING_PROVIDERS = new Set<BillingProvider>(['none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual']);
+const VALID_BILLING_PROVIDERS = new Set<BillingProvider>(['none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit']);
 const VALID_BILLING_MARKETS = new Set<BillingMarket>(['indonesia', 'brunei', 'global', 'unknown']);
 const VALID_CHECKOUT_MODES = new Set<CheckoutMode>(['disabled', 'external', 'stripe_checkout', 'play_billing', 'app_store', 'manual_invoice']);
 const VALID_CATALOG_KINDS = new Set<CatalogKind>(['water', 'dripper', 'grinder']);
@@ -700,7 +700,7 @@ function normalizePlatform(value: unknown): AdminUserRecord['platform'] {
 
 function normalizeBillingProvider(value: unknown): BillingProvider {
   const raw = normalizeText(value).toLowerCase();
-  if (raw === 'admin' || raw === 'google_play' || raw === 'app_store' || raw === 'stripe' || raw === 'revenuecat' || raw === 'manual') {
+  if (raw === 'admin' || raw === 'google_play' || raw === 'app_store' || raw === 'stripe' || raw === 'revenuecat' || raw === 'manual' || raw === 'midtrans' || raw === 'xendit') {
     return raw;
   }
   return 'none';
@@ -1173,11 +1173,25 @@ function connectedBillingProviders(): BillingProvider[] {
   if (readEnv('GOOGLE_PLAY_PACKAGE_NAME', 'GOOGLE_PLAY_SERVICE_ACCOUNT_JSON', 'GOOGLE_PLAY_SERVICE_ACCOUNT_KEY')) providers.push('google_play');
   if (readEnv('APP_STORE_CONNECT_ISSUER_ID', 'APP_STORE_SHARED_SECRET', 'APPLE_APP_ID')) providers.push('app_store');
   if (readEnv('STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'BILLING_CHECKOUT_URL')) providers.push('stripe');
+  if (readEnv('MIDTRANS_SERVER_KEY', 'MIDTRANS_WEBHOOK_SECRET')) providers.push('midtrans');
+  if (readEnv('XENDIT_SECRET_KEY', 'XENDIT_WEBHOOK_TOKEN')) providers.push('xendit');
   return providers;
+}
+
+function billingSyncConfigured(): boolean {
+  return Boolean(readEnv(
+    'BILLING_SYNC_TOKEN',
+    'BILLING_WEBHOOK_SECRET',
+    'REVENUECAT_WEBHOOK_SECRET',
+    'STRIPE_WEBHOOK_SECRET',
+    'MIDTRANS_WEBHOOK_SECRET',
+    'XENDIT_WEBHOOK_TOKEN',
+  ));
 }
 
 function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataMode: DataMode): AdminSnapshot['billing'] {
   const connectedProviders = connectedBillingProviders();
+  const hasSyncToken = billingSyncConfigured();
   const activeStatuses = new Set<BillingStatus>(['active', 'trialing']);
   const paidUsers = users.filter((user) => user.planCode !== 'free' && user.status !== 'deleted');
   const revenueMonthlyUsd = paidUsers
@@ -1189,7 +1203,10 @@ function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataM
     gaps.push('Supabase billing tables are not live yet; runtime billing controls are preview-only.');
   }
   if (!connectedProviders.length) {
-    gaps.push('No payment provider env is configured. Add RevenueCat/Google Play/App Store/Stripe before paid launch.');
+    gaps.push('No payment provider env is configured. Add RevenueCat/Google Play/App Store/Stripe/Midtrans/Xendit before paid launch.');
+  }
+  if (!hasSyncToken) {
+    gaps.push('Billing lifecycle sync token is missing. Set BILLING_SYNC_TOKEN or provider webhook secret before live payments.');
   }
   if (!connectedProviders.includes('google_play')) {
     gaps.push('Google Play Billing package/service account is not configured for Android purchases.');
@@ -1199,7 +1216,7 @@ function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataM
   }
 
   return {
-    ready: dataMode === 'supabase' && connectedProviders.length > 0,
+    ready: dataMode === 'supabase' && connectedProviders.length > 0 && hasSyncToken,
     mode: connectedProviders.length ? (envEnabled('BILLING_LIVE_MODE') ? 'live_ready' : 'test') : 'not_configured',
     connectedProviders,
     activeSubscriptions: users.filter((user) => user.planCode !== 'free' && user.billing.status === 'active').length,
@@ -1324,6 +1341,7 @@ function buildChecks(dataMode: DataMode): AdminSystemCheck[] {
   const jwtConfigured = Boolean(readEnv('JWT_SECRET'));
   const aiConfigured = Boolean(readEnv('GEMINI_API_KEY', 'GOOGLE_GENAI_API_KEY', 'OPENAI_API_KEY'));
   const billingConfigured = connectedBillingProviders().length > 0;
+  const billingSyncReady = billingSyncConfigured();
   const sentryConfigured = Boolean(readEnv('SENTRY_DSN', 'EXPO_PUBLIC_SENTRY_DSN', 'VITE_SENTRY_DSN'));
 
   return [
@@ -1389,10 +1407,10 @@ function buildChecks(dataMode: DataMode): AdminSystemCheck[] {
     {
       id: 'billing_provider',
       label: 'Billing provider contract',
-      status: billingConfigured ? 'pass' : 'warn',
+      status: billingConfigured && billingSyncReady ? 'pass' : 'warn',
       owner: 'Billing',
-      detail: billingConfigured ? 'Billing provider env is present.' : 'No billing provider env detected.',
-      nextAction: billingConfigured ? undefined : 'Connect Google Play Billing/RevenueCat/Stripe before paid launch.',
+      detail: billingConfigured && billingSyncReady ? 'Billing provider env and lifecycle sync token are present.' : 'Billing provider or lifecycle sync token is missing.',
+      nextAction: billingConfigured && billingSyncReady ? undefined : 'Connect Google Play Billing/RevenueCat/Stripe/Midtrans/Xendit and set BILLING_SYNC_TOKEN before paid launch.',
     },
     {
       id: 'ai_capacity',

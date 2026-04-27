@@ -23,7 +23,7 @@ Kalau browser sudah di halaman login, login sendiri lalu beri tahu saya "lanjut"
 
 - Supabase menyimpan data admin, user, plan, receipt, audit, feature flag, dan katalog.
 - Vercel menjalankan API server Baristachaw dengan secret server-only.
-- Web/PWA memakai checkout link provider untuk MVP. Direct webhook bisa ditambahkan setelah akun payment live.
+- Web/PWA memakai checkout link provider untuk MVP. Lifecycle pembayaran bisa disinkronkan ke `/api/billing/sync` memakai token server-only.
 - Android/iOS store subscription memakai Google Play Billing dan App Store IAP, idealnya disatukan entitlement-nya lewat RevenueCat.
 - Admin tetap menjadi final reviewer untuk aktivasi subscription/token, walaupun receipt user boleh auto-accept sebagai status awal.
 
@@ -199,6 +199,7 @@ BILLING_CHECKOUT_URL_STARTER=<provider hosted link>
 BILLING_CHECKOUT_URL_PRO=<provider hosted link>
 BILLING_CHECKOUT_URL_TEAM=<provider hosted link>
 BILLING_PORTAL_URL=<provider customer portal jika ada>
+BILLING_SYNC_TOKEN=<random secret untuk provider webhook/lifecycle sync>
 ```
 
 Nyalakan ini hanya setelah receipt/admin flow dan quota sudah diuji:
@@ -229,12 +230,13 @@ Rekomendasi MVP paling realistis:
 
 1. User pilih plan.
 2. App membuka checkout provider dari `BILLING_CHECKOUT_URL_*`.
-3. Setelah bayar, user upload receipt atau isi nomor invoice.
-4. Sistem boleh memberi status receipt `auto_accepted` sebagai tanda receipt diterima.
-5. Admin tetap membuka `/admin` > Users/Plans/Receipts.
-6. Admin cek bukti di dashboard Midtrans/Xendit/Stripe/RevenueCat.
-7. Admin mengaktifkan `plan_code`, `billing_status=active`, masa aktif, dan token/quota.
-8. Semua perubahan wajib punya operator note agar masuk audit trail.
+3. Provider atau operator mengirim event lifecycle ke `/api/billing/sync` dengan header `x-billing-sync-token: BILLING_SYNC_TOKEN`.
+4. Event `active`, `trialing`, `past_due`, `cancelled`, `expired`, dan `refunded` akan memperbarui `user_entitlements`, `app_users`, dan audit.
+5. Jika user upload receipt atau isi nomor invoice, sistem boleh memberi status receipt `auto_accepted` sebagai tanda receipt diterima.
+6. Admin tetap membuka `/admin` > Users/Plans/Receipts untuk review manual.
+7. Admin cek bukti di dashboard Midtrans/Xendit/Stripe/RevenueCat.
+8. Admin hanya override manual jika sync provider belum cukup atau butuh koreksi support.
+9. Semua perubahan wajib punya operator note agar masuk audit trail.
 
 ### Midtrans
 
@@ -244,6 +246,7 @@ Gunakan Payment Link untuk MVP tanpa integrasi API berat. Setelah akun live:
 MIDTRANS_SERVER_KEY=<secret>
 MIDTRANS_CLIENT_KEY=<public client key>
 MIDTRANS_WEBHOOK_SECRET=<notification secret jika dipakai>
+BILLING_SYNC_TOKEN=<random secret yang juga dipakai adapter webhook>
 MIDTRANS_ENV=production
 BILLING_CHECKOUT_URL_STARTER=<Midtrans payment link Starter>
 BILLING_CHECKOUT_URL_PRO=<Midtrans payment link Pro>
@@ -256,6 +259,7 @@ Gunakan Payment Link/Invoice untuk QRIS, VA, e-wallet, dan bank transfer. Setela
 ```text
 XENDIT_SECRET_KEY=<secret>
 XENDIT_WEBHOOK_TOKEN=<webhook verification token>
+BILLING_SYNC_TOKEN=<random secret yang juga dipakai adapter webhook>
 XENDIT_ENV=production
 BILLING_CHECKOUT_URL_STARTER=<Xendit payment link Starter>
 BILLING_CHECKOUT_URL_PRO=<Xendit payment link Pro>
@@ -268,6 +272,7 @@ Gunakan Stripe Billing + Checkout Sessions untuk subscription web global. Untuk 
 ```text
 STRIPE_SECRET_KEY=<secret>
 STRIPE_WEBHOOK_SECRET=<webhook signing secret>
+BILLING_SYNC_TOKEN=<random secret jika memakai adapter sync internal>
 STRIPE_CHECKOUT_URL_STARTER=<Stripe hosted checkout link>
 STRIPE_CHECKOUT_URL_PRO=<Stripe hosted checkout link>
 STRIPE_CUSTOMER_PORTAL_URL=<Stripe customer portal link>
@@ -278,6 +283,7 @@ STRIPE_CUSTOMER_PORTAL_URL=<Stripe customer portal link>
 Minimum sebelum launch:
 
 - Sentry web/server aktif dengan release name.
+- Endpoint internal `/api/monitoring/error` aktif untuk mencatat crash web/PWA ke log dan `admin_audit_events`.
 - Sentry React Native/Expo aktif untuk Android/iOS build.
 - Vercel function logs dicek setelah deploy.
 - `/api/health` sukses.

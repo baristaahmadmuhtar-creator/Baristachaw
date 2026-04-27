@@ -47,15 +47,19 @@ Untuk MVP Indonesia, urutan paling aman:
 
 1. Mobile Android/iOS: pakai Google Play Billing dan App Store subscription.
 2. Sinkronkan entitlement mobile lewat RevenueCat.
-3. Web/PWA: pakai Stripe Checkout atau manual invoice sampai payment lokal final.
-4. Receipt yang diterima user boleh masuk sebagai akses provisional, tetapi admin tetap harus verifikasi manual sebelum mengubah billing ke `active`.
+3. Web/PWA Indonesia: pakai Midtrans/Xendit Payment Link atau Stripe Checkout sesuai market.
+4. Provider/adapter mengirim lifecycle ke `/api/billing/sync` dengan `x-billing-sync-token`.
+5. Receipt yang diterima user boleh masuk sebagai akses provisional, tetapi admin tetap harus verifikasi manual sebelum override billing ke `active`.
 
 Env yang perlu disiapkan sesuai provider:
 
 - RevenueCat: `REVENUECAT_API_KEY`, `REVENUECAT_WEBHOOK_SECRET`.
 - Google Play: `GOOGLE_PLAY_PACKAGE_NAME`, `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`.
 - App Store: `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_SHARED_SECRET`, `APPLE_APP_ID`.
+- Midtrans: `MIDTRANS_SERVER_KEY`, `MIDTRANS_WEBHOOK_SECRET`, `BILLING_CHECKOUT_URL_*`.
+- Xendit: `XENDIT_SECRET_KEY`, `XENDIT_WEBHOOK_TOKEN`, `BILLING_CHECKOUT_URL_*`.
 - Stripe/Web: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `BILLING_CHECKOUT_URL`.
+- Internal sync: `BILLING_SYNC_TOKEN` atau `BILLING_WEBHOOK_SECRET`.
 - Aktifkan `BILLING_LIVE_MODE=true` hanya setelah webhook dan refund/cancel/past_due sudah diuji.
 
 ## 4. Admin User Management
@@ -110,6 +114,7 @@ Tabel katalog produksi:
 - `Plan catalog` sudah sesuai harga Indonesia dan provider live/test.
 - Admin owner hanya email yang benar di `ADMIN_EMAILS`.
 - Billing webhook bisa mengubah `active`, `trialing`, `past_due`, `cancelled`, `expired`, dan `refunded`.
+- User bisa unduh data akun dan mengajukan penghapusan akun dari panel Akun dan Privasi.
 - Katalog utama minimal punya grinder/water/dripper yang paling sering dipakai user Indonesia.
-- Sentry/telemetry aktif untuk web, PWA, dan Android parity.
+- Sentry/telemetry atau `/api/monitoring/error` aktif untuk web, PWA, dan Android parity.
 - Test web/PWA mobile memastikan login, mode tamu, admin nav, AI Chat, AI Brew, scanner, dan checkout tidak crash.

@@ -123,7 +123,7 @@ const USER_QUEUE_OPTIONS: Array<{ value: UserQueueFilter; labelKey: keyof AdminC
 ];
 const PLAN_OPTIONS: PlanCode[] = ['free', 'starter', 'pro', 'team', 'enterprise'];
 const BILLING_STATUS_OPTIONS: BillingStatus[] = ['none', 'active', 'trialing', 'past_due', 'cancelled', 'expired', 'refunded'];
-const BILLING_PROVIDER_OPTIONS: BillingProvider[] = ['none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual'];
+const BILLING_PROVIDER_OPTIONS: BillingProvider[] = ['none', 'admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit'];
 const BILLING_MARKET_OPTIONS: BillingMarket[] = ['indonesia', 'brunei', 'global', 'unknown'];
 const CHECKOUT_MODE_OPTIONS: CheckoutMode[] = ['disabled', 'external', 'stripe_checkout', 'play_billing', 'app_store', 'manual_invoice'];
 const CATALOG_KIND_OPTIONS: AdminCatalogKind[] = ['grinder', 'water', 'dripper'];

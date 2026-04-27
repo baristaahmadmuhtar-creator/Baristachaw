@@ -174,3 +174,70 @@ test('account status limits paid plan when billing provider is missing', async (
   assert.equal(body.recommendedUpgrade.action, 'contact_support');
   assert.equal(body.appAccess.status, 'limited');
 });
+
+test('account status prefers active provider entitlement over app user fallback', async () => {
+  const originalFetch = globalThis.fetch;
+  process.env.SUPABASE_URL = 'https://unit-project.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+  const token = createToken({
+    id: 'entitled-user',
+    email: 'entitled@example.com',
+    name: 'Entitled User',
+    provider: 'email',
+  });
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    if (url.includes('app_users?on_conflict=')) {
+      return new Response('', { status: 201 });
+    }
+    if (url.includes('app_users?id=eq.entitled-user')) {
+      return new Response(JSON.stringify([{
+        id: 'entitled-user',
+        email: 'entitled@example.com',
+        display_name: 'Entitled User',
+        provider: 'email',
+        status: 'active',
+        plan_code: 'free',
+        billing_status: 'none',
+        billing_provider: 'none',
+        updated_at: new Date().toISOString(),
+      }]), { status: 200 });
+    }
+    if (url.includes('user_entitlements?user_id=eq.entitled-user')) {
+      return new Response(JSON.stringify([{
+        user_id: 'entitled-user',
+        plan_code: 'starter',
+        source: 'midtrans',
+        status: 'active',
+        external_subscription_id: 'midtrans-sub-1',
+        metadata: { market: 'indonesia' },
+        updated_at: new Date().toISOString(),
+      }]), { status: 200 });
+    }
+    if (url.includes('app_plans?') || url.includes('app_feature_flags?')) {
+      return new Response(JSON.stringify([]), { status: 200 });
+    }
+    throw new Error(`Unexpected fetch ${url} ${init?.method || 'GET'}`);
+  }) as typeof fetch;
+  const req = makeReq({
+    headers: {
+      origin: 'http://127.0.0.1:3000',
+      authorization: `Bearer ${token}`,
+    },
+  });
+  const res = createMockRes();
+
+  try {
+    await accountStatusHandler(req, res as any);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.dataMode, 'supabase');
+  assert.equal(body.user.planCode, 'starter');
+  assert.equal(body.billing.provider, 'midtrans');
+  assert.equal(body.billing.status, 'active');
+  assert.equal(body.appAccess.status, 'ok');
+});

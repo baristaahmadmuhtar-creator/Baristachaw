@@ -88,6 +88,10 @@
             "destination": "/api/billing?path=$1"
         },
         {
+            "source": "/api/monitoring/(.*)",
+            "destination": "/api/monitoring?path=$1"
+        },
+        {
             "source": "/auth/callback",
             "destination": "/api/auth/callback"
         },

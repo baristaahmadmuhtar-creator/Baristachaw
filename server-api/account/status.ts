@@ -21,7 +21,7 @@ import {
 type AccountStatus = 'active' | 'trialing' | 'past_due' | 'suspended' | 'deleted';
 export type PlanCode = 'free' | 'starter' | 'pro' | 'team' | 'enterprise';
 type DataMode = 'supabase' | 'runtime_fallback';
-type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual';
+type BillingProvider = 'none' | 'admin' | 'google_play' | 'app_store' | 'stripe' | 'revenuecat' | 'manual' | 'midtrans' | 'xendit';
 type BillingStatus = 'none' | 'active' | 'trialing' | 'past_due' | 'cancelled' | 'expired' | 'refunded';
 type BillingMarket = 'indonesia' | 'brunei' | 'global' | 'unknown';
 type CheckoutMode = 'disabled' | 'external' | 'stripe_checkout' | 'play_billing' | 'app_store' | 'manual_invoice';
@@ -250,7 +250,7 @@ function normalizeProvider(value: unknown): string {
 
 function normalizeBillingProvider(value: unknown): BillingProvider {
   const raw = normalizeText(value).toLowerCase();
-  if (raw === 'admin' || raw === 'google_play' || raw === 'app_store' || raw === 'stripe' || raw === 'revenuecat' || raw === 'manual') return raw;
+  if (raw === 'admin' || raw === 'google_play' || raw === 'app_store' || raw === 'stripe' || raw === 'revenuecat' || raw === 'manual' || raw === 'midtrans' || raw === 'xendit') return raw;
   return 'none';
 }
 
@@ -407,6 +407,46 @@ function runtimeBilling(user: AccountUser): AccountBilling {
   };
 }
 
+function userWithEntitlement(row: any, user: AccountUser): AccountUser {
+  const planCode = normalizePlanCode(row?.plan_code || row?.planCode);
+  const billingStatus = normalizeBillingStatus(row?.status, 'active');
+  const nextStatus: AccountStatus = billingStatus === 'past_due'
+    ? 'past_due'
+    : billingStatus === 'trialing'
+      ? 'trialing'
+      : user.status === 'suspended' || user.status === 'deleted'
+        ? user.status
+        : 'active';
+  return {
+    ...user,
+    planCode,
+    planName: planByCode(planCode).name,
+    status: nextStatus,
+  };
+}
+
+function billingFromEntitlement(row: any, appUserRow: any, user: AccountUser): AccountBilling {
+  const metadata = row?.metadata && typeof row.metadata === 'object' ? row.metadata : {};
+  return billingFromRow({
+    ...(appUserRow || {}),
+    billing_status: row?.status,
+    billing_provider: row?.source,
+    billing_market: metadata.market || appUserRow?.billing_market,
+    billing_customer_id: row?.external_customer_id,
+    billing_subscription_id: row?.external_subscription_id,
+    billing_period_start: row?.current_period_start,
+    billing_period_end: row?.current_period_end,
+    payment_action_required: row?.status === 'past_due' || appUserRow?.payment_action_required,
+    metadata: {
+      ...(appUserRow?.metadata && typeof appUserRow.metadata === 'object' ? appUserRow.metadata : {}),
+      billingStatus: row?.status,
+      billingProvider: row?.source,
+      billingMarket: metadata.market,
+      entitlementSource: 'user_entitlements',
+    },
+  }, user);
+}
+
 function buildRecommendedUpgrade(user: AccountUser, plans: AccountPlan[], billing: AccountBilling): AccountStatusResponse['recommendedUpgrade'] {
   const pro = plans.find((plan) => plan.code === 'pro') || planByCode('pro');
   if (billing.paymentActionRequired || billing.status === 'past_due') {
@@ -491,8 +531,20 @@ async function loadSupabaseAccount(
   });
 
   const userRows = await supabaseRest<any[]>(config, `app_users?id=eq.${encodeURIComponent(auth.userId)}&select=*&limit=1`);
-  const user = Array.isArray(userRows) && userRows[0] ? userFromSupabase(userRows[0], auth) : userFromAuth(auth);
-  const billing = Array.isArray(userRows) && userRows[0] ? billingFromRow(userRows[0], user) : runtimeBilling(user);
+  const appUserRow = Array.isArray(userRows) && userRows[0] ? userRows[0] : null;
+  const baseUser = appUserRow ? userFromSupabase(appUserRow, auth) : userFromAuth(auth);
+  const entitlementRows = await supabaseRest<any[]>(
+    config,
+    `user_entitlements?user_id=eq.${encodeURIComponent(auth.userId)}&status=in.(active,trialing,past_due)&select=*&order=updated_at.desc&limit=1`,
+  ).catch((error) => {
+    warnings.push(`Entitlement fallback used: ${sanitizeErrorDetails(error, 140)}`);
+    return [];
+  });
+  const entitlement = Array.isArray(entitlementRows) && entitlementRows[0] ? entitlementRows[0] : null;
+  const user = entitlement ? userWithEntitlement(entitlement, baseUser) : baseUser;
+  const billing = entitlement
+    ? billingFromEntitlement(entitlement, appUserRow, user)
+    : appUserRow ? billingFromRow(appUserRow, user) : runtimeBilling(user);
 
   const planRows = await supabaseRest<any[]>(config, 'app_plans?select=*&order=display_order.asc').catch((error) => {
     warnings.push(`Plan catalog fallback used: ${sanitizeErrorDetails(error, 140)}`);

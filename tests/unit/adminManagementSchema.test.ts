@@ -24,7 +24,7 @@ test('admin management schema includes billing-ready plan and user columns', () 
 
 test('admin management schema supports app store and realtime entitlement sync', () => {
   const sql = schemaText();
-  assert.match(sql, /source in \('admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual'\)/i);
+  assert.match(sql, /source in \('admin', 'google_play', 'app_store', 'stripe', 'revenuecat', 'manual', 'midtrans', 'xendit'\)/i);
   assert.match(sql, /create index if not exists user_entitlements_external_subscription_idx/i);
   assert.match(sql, /alter publication supabase_realtime add table public\.user_entitlements/i);
   assert.match(sql, /alter publication supabase_realtime add table public\.app_plans/i);

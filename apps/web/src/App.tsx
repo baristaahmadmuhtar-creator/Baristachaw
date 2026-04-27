@@ -12,6 +12,7 @@ import { AccountStatusProvider, useAccountStatus } from './context/AccountStatus
 import { MotionConfig } from 'motion/react';
 import { useRuntimeDisplayMode } from './hooks/useRuntimeDisplayMode';
 import { subscribeMediaQueryChange } from './utils/mediaQuery';
+import { installClientErrorReporting } from './services/errorReporting';
 
 const MOBILE_ROUTE_ORDER = ['/', '/scanner', '/tools', '/collection', '/chat'] as const;
 const DESIGN_ROUTE = '/design/native-production-showcase';
@@ -311,6 +312,10 @@ function AppContent() {
 
 export default function App() {
   const { isIosStandalone } = useRuntimeDisplayMode();
+
+  useEffect(() => {
+    return installClientErrorReporting();
+  }, []);
 
   return (
     <Router>

@@ -650,6 +650,7 @@ async function runQaCookieAuthChecks({
       id: 'smoke-local-qa',
       email: 'smoke-local@example.com',
       name: 'Smoke Local QA',
+      planCode: 'starter',
     }),
   });
 

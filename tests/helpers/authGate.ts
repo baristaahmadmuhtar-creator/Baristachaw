@@ -1,7 +1,7 @@
 import { expect, type Page } from '@playwright/test';
 
-export const authGateHeading = /^Baristachaw$/i;
-export const authGateCopy = /Masuk ke Baristachaw|Sign in to Baristachaw/i;
+export const authGateHeading = /Masuk ke Baristachaw|Sign in to Baristachaw/i;
+export const authGateCopy = /Coba gratis|Try free|Progres tersimpan|Saved progress/i;
 export const guestEntryButton = /Lanjut(?:kan)? sebagai tamu|Continue as guest/i;
 
 export async function expectFirstRunAuthGate(page: Page) {

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { AlertCircle, Info, Loader2, UserRound, X } from 'lucide-react';
+import { AlertCircle, Loader2, ShieldCheck, Sparkles, UserRound, WalletCards, X } from 'lucide-react';
 import { useEffect, useId, useRef } from 'react';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
@@ -18,19 +18,6 @@ function resolveSourceLabel(source: string, t: Record<string, string>) {
     general: t.authSourceGeneral,
   };
   return sourceLabelMap[source] || sourceLabelMap.general;
-}
-
-function AppleMark({ className = 'h-[15px] w-[15px]' }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-    >
-      <path d="M16.365 12.248c.02 2.106 1.85 2.808 1.87 2.817-.016.05-.292 1.001-.964 1.983-.581.848-1.184 1.692-2.135 1.711-.934.017-1.234-.554-2.304-.554-1.071 0-1.405.537-2.286.571-.918.035-1.619-.919-2.205-1.764-1.197-1.729-2.111-4.883-.884-7.016.61-1.061 1.701-1.732 2.885-1.749.9-.018 1.75.605 2.304.605.554 0 1.595-.748 2.688-.638.458.02 1.744.185 2.567 1.389-.066.041-1.533.896-1.536 2.645Zm-1.987-4.69c.487-.59.816-1.409.726-2.226-.702.029-1.552.467-2.056 1.057-.451.52-.845 1.352-.738 2.147.783.061 1.582-.397 2.068-.978Z" />
-    </svg>
-  );
 }
 
 export function AuthEntryModal() {
@@ -52,6 +39,11 @@ export function AuthEntryModal() {
   const bodyId = useId();
   const googleButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const benefits = [
+    { icon: UserRound, label: t.authModalBenefitGuest },
+    { icon: ShieldCheck, label: t.authModalBenefitSync },
+    { icon: WalletCards, label: t.authModalBenefitUpgrade },
+  ];
 
   useEffect(() => {
     if (!isOpen) return;
@@ -154,7 +146,7 @@ export function AuthEntryModal() {
                   type="button"
                   onClick={() => void startGoogleAuth()}
                   disabled={authBusy || isOffline}
-                  className="w-full rounded-2xl bg-blue-500 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-500/90 disabled:cursor-not-allowed disabled:opacity-55"
+                  className="w-full rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)] transition-all hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-55"
                 >
                   <span className="flex items-center justify-center gap-2">
                     {authBusy ? (
@@ -184,18 +176,22 @@ export function AuthEntryModal() {
                   </span>
                 </button>
 
-                <div className="rounded-2xl border border-glass bg-surface-alpha px-4 py-3 text-sm text-secondary">
-                  <span className={`flex items-start gap-2 ${isRtl ? 'flex-row-reverse text-right' : ''}`}>
-                    <Info size={15} className="mt-0.5 shrink-0" />
-                    <span className="flex-1">
-                      <span className={`flex items-center gap-2 font-medium text-primary ${isRtl ? 'flex-row-reverse justify-end' : ''}`}>
-                        <AppleMark />
-                        {t.authModalAppleSoon}
-                      </span>
-                      <span className="mt-1 block text-xs text-secondary">
-                        {t.authModalAppleBody}
-                      </span>
-                    </span>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {benefits.map(({ icon: Icon, label }) => (
+                    <div
+                      key={label}
+                      className={`flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-glass bg-[var(--bg-base)]/60 px-3 py-2 text-center text-xs font-semibold text-secondary ${isRtl ? 'flex-row-reverse' : ''}`}
+                    >
+                      <Icon size={14} className="shrink-0 text-blue-600 dark:text-blue-300" />
+                      <span>{label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className={`rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-secondary ${isRtl ? 'text-right' : ''}`}>
+                  <span className={`flex items-start gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
+                    <Sparkles size={15} className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-300" />
+                    <span>{t.authRoutePlanNote}</span>
                   </span>
                 </div>
               </div>

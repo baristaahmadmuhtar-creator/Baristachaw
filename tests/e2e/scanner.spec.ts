@@ -5,6 +5,11 @@ import { expectFirstRunAuthGate } from '../helpers/authGate';
 
 const isLive = String(process.env.LIVE_E2E || '').trim() === '1';
 const tinyPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
+const analyzeImageButton = /Analyze Image|Analisis Gambar/i;
+const scannerResultsText = /Results|Hasil/i;
+const saveResultButton = /Save to Collection|Save Result|Saved!|Simpan ke Koleksi|Simpan Hasil|Tersimpan!/i;
+const savedResultButton = /Saved!|Tersimpan!/i;
+const latteRequestLabel = /Latte art request|Permintaan latte art/i;
 
 test.beforeEach(async ({ page }) => {
   if (!isLive) await mockAiApis(page);
@@ -31,11 +36,11 @@ test('scans image and saves result to collection', async ({ page }) => {
     buffer: Buffer.from(tinyPngBase64, 'base64'),
   });
 
-  await page.getByRole('button', { name: /Analyze Image/i }).click();
-  await expect(page.getByText('Results')).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: analyzeImageButton }).click();
+  await expect(page.getByText(scannerResultsText)).toBeVisible({ timeout: 30_000 });
 
-  await page.getByRole('button', { name: /Save to Collection|Saved!/i }).click();
-  await expect(page.getByRole('button', { name: /Saved!/i })).toBeVisible();
+  await page.getByRole('button', { name: saveResultButton }).click();
+  await expect(page.getByRole('button', { name: savedResultButton })).toBeVisible();
 });
 
 test('generates ai latte art from an uploaded photo', async ({ page }) => {
@@ -51,7 +56,7 @@ test('generates ai latte art from an uploaded photo', async ({ page }) => {
     buffer: Buffer.from(tinyPngBase64, 'base64'),
   });
 
-  await page.getByLabel(/Latte art request/i).fill('Turn this into a clean symmetric tulip with realistic microfoam.');
+  await page.getByLabel(latteRequestLabel).fill('Turn this into a clean symmetric tulip with realistic microfoam.');
   await page.getByRole('button', { name: /Generate AI Latte Art|Buat AI Latte Art/i }).click();
 
   await expect(page.getByText(/AI latte art result|Hasil AI latte art/i)).toBeVisible({ timeout: 30_000 });

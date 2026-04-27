@@ -1,10 +1,35 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
 import { mockAiApis } from '../helpers/network';
 import { clearClientState } from '../helpers/cleanup';
 import { expectFirstRunAuthGate } from '../helpers/authGate';
 
 const isLive = String(process.env.LIVE_E2E || '').trim() === '1';
+const flashModeLabel = /Flash mode - fast concise responses|Mode Kilat - respons cepat dan ringkas/i;
+const normalModeLabel = /Normal mode|Mode normal/i;
+const deepModeLabel = /Deep Think mode - thorough analysis|Mode Pikir Mendalam - analisis mendalam/i;
+const chatInputPlaceholder = /Type a message|Ketik pesan/i;
+const sendMessageLabel = /Send message|Kirim pesan/i;
+const chatNavName = /Chat|Obrolan/i;
+const chatSearchSelector = 'input[placeholder="Search chats..."]:visible, input[placeholder="Cari chat..."]:visible';
+const createFolderTitle = /Create Folder|Buat Folder/i;
+const folderNamePlaceholder = /Folder Name|Nama Folder/i;
+const saveButtonName = /Save|Simpan/i;
+const libraryButtonName = /Library|Pustaka/i;
+const historyButtonName = /History|Riwayat/i;
+const describeImagePlaceholder = /Describe the image|Deskripsikan gambar/i;
+const collapseNavigationTitle = /Collapse navigation|Ciutkan navigasi/i;
+const toggleSidebarLabel = /Toggle chat history sidebar|Tampilkan\/sembunyikan sidebar riwayat chat/i;
+const closeSidebarLabel = /Close sidebar|Tutup sidebar/i;
+
+async function clickVisibleLibraryControl(page: Page) {
+  const libraryTab = page.getByRole('tab', { name: libraryButtonName });
+  if (await libraryTab.isVisible()) {
+    await libraryTab.click();
+    return;
+  }
+  await page.getByRole('button', { name: libraryButtonName }).click();
+}
 
 test.beforeEach(async ({ page }) => {
   if (!isLive) await mockAiApis(page);
@@ -26,19 +51,19 @@ test('supports send message, mode switch, save/copy actions', async ({ page }) =
   await qaLogin(page.request);
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
-  await expect(page.getByLabel('Flash mode - fast concise responses')).toBeVisible();
-  await page.getByLabel('Flash mode - fast concise responses').click();
-  await page.getByLabel('Normal mode').click();
-  await page.getByLabel('Deep Think mode - thorough analysis').click();
+  await expect(page.getByLabel(flashModeLabel)).toBeVisible();
+  await page.getByLabel(flashModeLabel).click();
+  await page.getByLabel(normalModeLabel).click();
+  await page.getByLabel(deepModeLabel).click();
 
-  const input = page.getByPlaceholder('Type a message...');
+  const input = page.getByPlaceholder(chatInputPlaceholder);
   await expect(input).toBeEnabled({ timeout: 30_000 });
   await input.fill('qa_e2e please provide recipe');
-  await page.getByLabel('Send message').click();
+  await page.getByLabel(sendMessageLabel).click();
 
   await expect(page.locator('.chat-markdown').last()).toContainText(/mock default|Mocked Response|Mocked AI|TL;DR/i, { timeout: 30_000 });
 
-  await page.locator('[title="Copy"]').last().click();
+  await page.locator('[title="Copy"], [title="Salin"]').last().click();
 });
 
 test('deep mode shows thinking phases, degraded badge, and source links', async ({ page }) => {
@@ -87,14 +112,14 @@ test('deep mode shows thinking phases, degraded badge, and source links', async 
     await route.fulfill({ status: 200, contentType: 'text/plain', body: 'mock' });
   });
 
-  await page.getByLabel('Deep Think mode - thorough analysis').click();
-  const input = page.getByPlaceholder('Type a message...');
+  await page.getByLabel(deepModeLabel).click();
+  const input = page.getByPlaceholder(chatInputPlaceholder);
   await expect(input).toBeEnabled({ timeout: 30_000 });
   await input.fill('qa_e2e deep status');
-  await page.getByLabel('Send message').click();
+  await page.getByLabel(sendMessageLabel).click();
 
   await expect(page.locator('.chat-markdown').last()).toContainText('Core Analysis', { timeout: 30_000 });
-  await expect(page.getByText('Sources').last()).toBeVisible();
+  await expect(page.getByText(/Sources|Sumber/i).last()).toBeVisible();
   await expect(page.getByRole('link', { name: 'Source 1' })).toBeVisible();
 });
 
@@ -102,9 +127,9 @@ test('supports sidebar folder flow', async ({ page }) => {
   await qaLogin(page.request);
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
-  const mobileToggle = page.getByLabel('Toggle chat history sidebar');
-  const desktopChatNavLink = page.getByRole('navigation').first().getByRole('link', { name: 'Chat' });
-  const visibleSearch = page.locator('[placeholder="Search chats..."]:visible').first();
+  const mobileToggle = page.getByLabel(toggleSidebarLabel);
+  const desktopChatNavLink = page.getByRole('navigation').first().getByRole('link', { name: chatNavName });
+  const visibleSearch = page.locator(chatSearchSelector).first();
   if (await mobileToggle.isVisible()) {
     await mobileToggle.click();
   } else {
@@ -116,33 +141,33 @@ test('supports sidebar folder flow', async ({ page }) => {
     }
   }
   await expect(visibleSearch).toBeVisible();
-  await page.locator('[title="Create Folder"]:visible').first().click();
-  await page.getByPlaceholder('Folder Name').fill('qa_e2e folder', { timeout: 30_000 });
-  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByTitle(createFolderTitle).first().click();
+  await page.getByPlaceholder(folderNamePlaceholder).fill('qa_e2e folder', { timeout: 30_000 });
+  await page.getByRole('button', { name: saveButtonName }).click();
   await expect(page.locator('span:text-is("qa_e2e folder"):visible').first()).toBeVisible();
 });
 
-test('desktop uses single nav sidebar with chat dropdown and collapsed flyout', async ({ page }, testInfo) => {
+test('desktop uses single nav sidebar with chat workspace tabs', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name.includes('Mobile'), 'desktop-only sidebar behavior');
 
   await qaLogin(page.request);
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
-  await expect(page.getByTitle('Collapse history')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Library' }).click();
-  await expect(page.getByPlaceholder('Describe the image...')).toBeVisible();
+  await expect(page.getByTitle(/Collapse history|Ciutkan riwayat/i)).toHaveCount(0);
+  await clickVisibleLibraryControl(page);
+  await expect(page.getByPlaceholder(describeImagePlaceholder)).toBeVisible();
 
-  await page.getByRole('navigation').first().getByRole('link', { name: 'Chat' }).click();
-  await expect(page.getByPlaceholder('Describe the image...')).not.toBeVisible();
-  await expect(page.getByPlaceholder('Search chats...')).not.toBeVisible();
+  await page.getByRole('navigation').first().getByRole('link', { name: chatNavName }).click();
+  await expect(page.getByPlaceholder(describeImagePlaceholder)).not.toBeVisible();
+  await expect(page.getByPlaceholder(chatInputPlaceholder)).toBeVisible();
 
-  await page.getByTitle('Collapse navigation').click();
-  await page.getByRole('navigation').first().getByRole('link', { name: 'Chat' }).click();
-  await expect(page.getByRole('button', { name: 'History', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Library', exact: true })).toBeVisible();
+  await page.getByTitle(collapseNavigationTitle).click();
+  await page.getByRole('navigation').first().getByRole('link', { name: chatNavName }).click();
+  await expect(page.getByRole('tab', { name: historyButtonName })).toBeVisible();
+  await expect(page.getByRole('tab', { name: libraryButtonName })).toBeVisible();
 
   await page.mouse.click(640, 280);
-  await expect(page.getByRole('button', { name: 'History', exact: true })).not.toBeVisible();
+  await expect(page.getByRole('tab', { name: historyButtonName })).not.toBeVisible();
 });
 
 test('mobile sidebar hide fully closes history and library panel', async ({ page }, testInfo) => {
@@ -151,13 +176,13 @@ test('mobile sidebar hide fully closes history and library panel', async ({ page
   await qaLogin(page.request);
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
-  await page.getByLabel('Toggle chat history sidebar').click();
-  await expect(page.getByRole('button', { name: 'Library' })).toBeVisible();
-  await page.getByRole('button', { name: 'Library' }).click();
-  await expect(page.getByPlaceholder('Describe the image...')).toBeVisible();
+  await page.getByLabel(toggleSidebarLabel).click();
+  await expect(page.getByRole('button', { name: libraryButtonName })).toBeVisible();
+  await clickVisibleLibraryControl(page);
+  await expect(page.getByPlaceholder(describeImagePlaceholder)).toBeVisible();
 
-  await page.getByLabel('Close sidebar').click();
-  await expect(page.getByRole('button', { name: 'Library' })).not.toBeVisible();
-  await expect(page.getByPlaceholder('Describe the image...')).not.toBeVisible();
+  await page.getByLabel(closeSidebarLabel).click();
+  await expect(page.getByRole('button', { name: libraryButtonName })).not.toBeVisible();
+  await expect(page.getByPlaceholder(describeImagePlaceholder)).not.toBeVisible();
 });
 

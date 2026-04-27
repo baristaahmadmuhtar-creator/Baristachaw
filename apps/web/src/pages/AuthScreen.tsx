@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuthModal } from '../context/AuthModalContext';
 import { useGlobalState } from '../context/GlobalState';
+import { EmailPasswordAuthForm } from '../components/auth/EmailPasswordAuthForm';
 import { AppIconBrand, GoogleMark } from '../components/icons';
 
 interface AuthScreenProps {
@@ -34,12 +35,12 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
       body: t.authRouteStepGoogleBody,
     },
     {
-      title: t.authRouteStepGuestTitle,
-      body: t.authRouteStepGuestBody,
+      title: t.authRouteStepEmailTitle,
+      body: t.authRouteStepEmailBody,
     },
     {
-      title: t.authRouteStepPlanTitle,
-      body: t.authRouteStepPlanBody,
+      title: t.authRouteStepGuestTitle,
+      body: t.authRouteStepGuestBody,
     },
   ];
   const trustPoints = [
@@ -190,10 +191,25 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
                   </>
                 )}
               </button>
+
+              <div className="my-5 flex items-center gap-3">
+                <span className="h-px flex-1 bg-[var(--glass-border)]" />
+                <span className="text-xs font-semibold uppercase tracking-[0.16em] text-secondary">{t.authUseEmailDivider}</span>
+                <span className="h-px flex-1 bg-[var(--glass-border)]" />
+              </div>
+
+              <EmailPasswordAuthForm initialMode={intent} />
+
+              <div className="my-5 flex items-center gap-3">
+                <span className="h-px flex-1 bg-[var(--glass-border)]" />
+                <span className="text-xs font-semibold uppercase tracking-[0.16em] text-secondary">{t.authGuestDivider}</span>
+                <span className="h-px flex-1 bg-[var(--glass-border)]" />
+              </div>
+
               <button
                 onClick={() => void continueAsGuest()}
                 disabled={authBusy}
-                className="mt-3 flex w-full items-center justify-center gap-3 rounded-2xl border border-glass bg-surface-alpha px-6 py-4 text-base font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55"
+                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-glass bg-surface-alpha px-6 py-4 text-base font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55"
               >
                 {authBusy ? <Loader2 className="animate-spin" size={20} /> : <UserRound size={20} />}
                 {authBusy ? t.authGuestStarting : t.continueAsGuest}

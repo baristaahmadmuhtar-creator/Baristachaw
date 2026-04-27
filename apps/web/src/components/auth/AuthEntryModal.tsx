@@ -4,6 +4,7 @@ import { useEffect, useId, useRef } from 'react';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
 import { getLanguageDirection } from '../../constants';
+import { EmailPasswordAuthForm } from './EmailPasswordAuthForm';
 import { GoogleMark } from '../icons';
 
 function resolveSourceLabel(source: string, t: Record<string, string>) {
@@ -94,7 +95,7 @@ export function AuthEntryModal() {
               exit={{ opacity: 0, y: 20, scale: 0.98 }}
               transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
               dir={direction}
-              className={`pointer-events-auto w-full max-w-md rounded-[1.8rem] border border-glass bg-[var(--bg-base)]/96 p-5 shadow-[0_18px_46px_rgba(0,0,0,0.24)] ${isRtl ? 'text-right' : 'text-left'}`}
+              className={`pointer-events-auto max-h-[calc(var(--app-vh)-2rem)] w-full max-w-md overflow-y-auto rounded-[1.8rem] border border-glass bg-[var(--bg-base)]/96 p-5 shadow-[0_18px_46px_rgba(0,0,0,0.24)] ${isRtl ? 'text-right' : 'text-left'}`}
               role="dialog"
               aria-modal="true"
               aria-labelledby={titleId}
@@ -159,6 +160,20 @@ export function AuthEntryModal() {
                     {authBusy ? t.opening : t.continueWithGoogle}
                   </span>
                 </button>
+
+                <div className="flex items-center gap-3 py-1">
+                  <span className="h-px flex-1 bg-[var(--glass-border)]" />
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-secondary">{t.authUseEmailDivider}</span>
+                  <span className="h-px flex-1 bg-[var(--glass-border)]" />
+                </div>
+
+                <EmailPasswordAuthForm compact initialMode={source === 'registration' ? 'signUp' : 'signIn'} />
+
+                <div className="flex items-center gap-3 py-1">
+                  <span className="h-px flex-1 bg-[var(--glass-border)]" />
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-secondary">{t.authGuestDivider}</span>
+                  <span className="h-px flex-1 bg-[var(--glass-border)]" />
+                </div>
 
                 <button
                   type="button"

@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import authCallbackHandler from '../server-api/auth/callback.js';
+import authEmailHandler from '../server-api/auth/email.js';
 import authGuestHandler from '../server-api/auth/guest.js';
 import authLogoutHandler from '../server-api/auth/logout.js';
 import authMeHandler from '../server-api/auth/me.js';
@@ -20,6 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (path === 'url') target = authUrlHandler as Handler;
   else if (path === 'callback') target = authCallbackHandler as Handler;
+  else if (path === 'email/signin' || path === 'email/signup') target = authEmailHandler as Handler;
   else if (path === 'guest') target = authGuestHandler as Handler;
   else if (path === 'me') target = authMeHandler as Handler;
   else if (path === 'logout') target = authLogoutHandler as Handler;

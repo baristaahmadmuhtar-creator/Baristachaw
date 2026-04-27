@@ -5,7 +5,7 @@ import { startServerOAuthLogin } from '../utils/oauthFlow';
 import { DEFAULT_LANGUAGE, getTranslations, isSupportedLanguage } from '../constants';
 import type { Language } from '../types';
 
-type AuthUser = {
+export type AuthUser = {
   id?: string;
   name?: string;
   email?: string;
@@ -15,6 +15,22 @@ type AuthUser = {
   planCode?: string;
   isGuest?: boolean;
   isAdmin?: boolean;
+};
+
+export type EmailAuthMode = 'signIn' | 'signUp';
+
+export type EmailAuthInput = {
+  mode: EmailAuthMode;
+  email: string;
+  password: string;
+  displayName?: string;
+};
+
+export type EmailAuthResult = {
+  authenticated: boolean;
+  emailConfirmationRequired?: boolean;
+  email?: string;
+  user?: AuthUser | null;
 };
 
 type NativeShellSession = {
@@ -55,6 +71,7 @@ type AuthModalContextValue = {
   clearAuthError: () => void;
   refreshAuthState: (options?: { silent?: boolean; retryDelaysMs?: number[] }) => Promise<boolean>;
   startGoogleAuth: () => Promise<void>;
+  authenticateWithEmail: (input: EmailAuthInput) => Promise<EmailAuthResult>;
   continueAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -103,6 +120,18 @@ function consumeGuestModeRequest(): boolean {
 
 function isGuestUser(user: AuthUser | null): boolean {
   return Boolean(user?.isGuest || user?.provider === 'guest' || user?.id?.startsWith('guest_'));
+}
+
+function resolveEmailAuthError(payload: Record<string, unknown>, fallback: string, copy: Record<string, string>): string {
+  const errorCode = typeof payload.errorCode === 'string' ? payload.errorCode : '';
+  if (errorCode === 'invalid_credentials') return copy.authEmailInvalidCredentials || fallback;
+  if (errorCode === 'email_confirmation_required') return copy.authEmailConfirmationRequired || fallback;
+  if (errorCode === 'email_already_registered') return copy.authEmailAlreadyRegistered || fallback;
+  if (errorCode === 'weak_password') return copy.authPasswordTooShort || fallback;
+  if (errorCode === 'rate_limited') return copy.authEmailRateLimited || fallback;
+  if (errorCode === 'server_misconfigured' || errorCode === 'supabase_not_configured') return copy.authEmailServerUnavailable || fallback;
+  const message = typeof payload.error === 'string' ? payload.error.trim() : '';
+  return message || fallback;
 }
 
 export function AuthModalProvider({ children }: { children: ReactNode }) {
@@ -407,6 +436,70 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     }
   }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline, startOauthPopupMonitor]);
 
+  const authenticateWithEmail = useCallback(async (input: EmailAuthInput): Promise<EmailAuthResult> => {
+    oauthResultHandledRef.current = true;
+    clearOauthPopupMonitor({ closePopup: true });
+    setAuthBusy(true);
+    setAuthError(null);
+
+    const copy = getLocalizedCopy();
+    if (isOffline) {
+      const message = copy.authEmailOffline || copy.connectionFailed || copy.error;
+      setAuthBusy(false);
+      setAuthError(message);
+      throw new Error(message);
+    }
+
+    try {
+      const endpoint = input.mode === 'signUp' ? '/api/auth/email/signup' : '/api/auth/email/signin';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: input.email,
+          password: input.password,
+          displayName: input.displayName,
+        }),
+      });
+      const payload = await response.json().catch(() => ({})) as Record<string, unknown>;
+      if (!response.ok || payload.ok === false) {
+        throw new Error(resolveEmailAuthError(payload, copy.authEmailUnavailable || copy.error, copy));
+      }
+
+      if (payload.emailConfirmationRequired) {
+        setAuthError(null);
+        return {
+          authenticated: false,
+          emailConfirmationRequired: true,
+          email: typeof payload.email === 'string' ? payload.email : input.email,
+        };
+      }
+
+      const nextUser = (payload.user || null) as AuthUser | null;
+      if (!payload.authenticated || !nextUser?.id) {
+        throw new Error(copy.authEmailUnavailable || copy.error);
+      }
+
+      setUser(nextUser);
+      if (nextUser.name) saveUserName(nextUser.name);
+      setAuthMode('server');
+      setAuthChecking(false);
+      setAuthError(null);
+      setIsOpen(false);
+      return {
+        authenticated: true,
+        user: nextUser,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : (copy.authEmailUnavailable || copy.error);
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setAuthBusy(false);
+    }
+  }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline]);
+
   const continueAsGuest = useCallback(async () => {
     oauthResultHandledRef.current = true;
     clearOauthPopupMonitor({ closePopup: true });
@@ -485,9 +578,11 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     clearAuthError,
     refreshAuthState,
     startGoogleAuth,
+    authenticateWithEmail,
     continueAsGuest,
     logout,
   }), [
+    authenticateWithEmail,
     authBusy,
     authChecking,
     authError,
@@ -520,6 +615,4 @@ export function useAuthModal() {
   }
   return context;
 }
-
-
 

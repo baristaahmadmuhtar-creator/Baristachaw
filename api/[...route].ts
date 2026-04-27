@@ -38,6 +38,9 @@ const ROUTE_LOADERS: Record<string, () => Promise<{ default: Handler }>> = {
   'auth/mobile': () => import('../server-api/auth/mobile/[...route].js'),
   'auth/url': () => import('../server-api/auth/url.js'),
   'auth/callback': () => import('../server-api/auth/callback.js'),
+  'auth/email/signin': () => import('../server-api/auth/email.js'),
+  'auth/email/signup': () => import('../server-api/auth/email.js'),
+  'auth/guest': () => import('../server-api/auth/guest.js'),
   'auth/me': () => import('../server-api/auth/me.js'),
   'auth/logout': () => import('../server-api/auth/logout.js'),
   'account/status': () => import('../server-api/account/status.js'),
@@ -71,6 +74,7 @@ function matchRoute(req: VercelRequest): RouteMatch | null {
     || joined === 'auth/mobile/callback'
     || joined === 'auth/mobile/exchange'
     || joined === 'auth/mobile/apple/exchange'
+    || joined === 'auth/mobile/supabase/exchange'
   ) {
     return { load: () => loadDefaultHandler(ROUTE_LOADERS['auth/mobile']) };
   }

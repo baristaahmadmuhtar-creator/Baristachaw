@@ -14,6 +14,7 @@ import brandSuggestionHandler from "./server-api/suggestions/brand";
 import authMobileHandler from "./server-api/auth/mobile/[...route]";
 import authUrlHandler from "./server-api/auth/url";
 import authCallbackHandler from "./server-api/auth/callback";
+import authEmailHandler from "./server-api/auth/email";
 import authGuestHandler from "./server-api/auth/guest";
 import authMeHandler from "./server-api/auth/me";
 import authLogoutHandler from "./server-api/auth/logout";
@@ -135,6 +136,8 @@ app.all("/api/test-auth/login", (req, res) => handleTestAuthLogin(req as any, re
 app.all("/api/test-auth/logout", (req, res) => handleTestAuthLogout(req as any, res as any));
 app.all("/api/auth/url", wrapVercelHandler(authUrlHandler as unknown as LocalApiHandler));
 app.all("/api/auth/callback", wrapVercelHandler(authCallbackHandler as unknown as LocalApiHandler));
+app.all("/api/auth/email/signin", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
+app.all("/api/auth/email/signup", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
 app.all("/api/auth/guest", wrapVercelHandler(authGuestHandler as unknown as LocalApiHandler));
 
 app.all("/api/auth/me", wrapVercelHandler(authMeHandler as unknown as LocalApiHandler));

@@ -142,13 +142,13 @@ export function EmailPasswordAuthForm({
               }}
               placeholder={t.authEmailPlaceholder}
               disabled={disabled}
-              className="min-w-0 flex-1 bg-transparent text-sm text-primary outline-none placeholder:text-tertiary disabled:opacity-60"
+              className="min-w-0 flex-1 bg-transparent text-base text-primary outline-none placeholder:text-tertiary disabled:opacity-60"
             />
           </div>
           <button
             type="submit"
             disabled={disabled}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-500/15 disabled:cursor-not-allowed disabled:opacity-55 dark:text-blue-200"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3 text-base font-semibold text-blue-700 transition-colors hover:bg-blue-500/15 disabled:cursor-not-allowed disabled:opacity-55 dark:text-blue-200"
           >
             {authBusy ? <Loader2 size={16} className="animate-spin" /> : <UserRound size={17} />}
             {t.authEmailContinue}
@@ -186,7 +186,7 @@ export function EmailPasswordAuthForm({
                 }}
                 placeholder={t.authNamePlaceholder}
                 disabled={disabled}
-                className="w-full rounded-2xl border border-glass bg-[var(--bg-base)]/72 px-4 py-3 text-sm text-primary outline-none placeholder:text-tertiary focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/15 disabled:opacity-60"
+                className="w-full rounded-2xl border border-glass bg-[var(--bg-base)]/72 px-4 py-3 text-base text-primary outline-none placeholder:text-tertiary focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/15 disabled:opacity-60"
               />
             </div>
           ) : null}
@@ -209,7 +209,7 @@ export function EmailPasswordAuthForm({
                 }}
                 placeholder={t.authPasswordPlaceholder}
                 disabled={disabled}
-                className="min-w-0 flex-1 bg-transparent text-sm text-primary outline-none placeholder:text-tertiary disabled:opacity-60"
+                className="min-w-0 flex-1 bg-transparent text-base text-primary outline-none placeholder:text-tertiary disabled:opacity-60"
               />
               <button
                 type="button"
@@ -225,7 +225,7 @@ export function EmailPasswordAuthForm({
           <button
             type="submit"
             disabled={disabled}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-500/15 disabled:cursor-not-allowed disabled:opacity-55 dark:text-blue-200"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3 text-base font-semibold text-blue-700 transition-colors hover:bg-blue-500/15 disabled:cursor-not-allowed disabled:opacity-55 dark:text-blue-200"
           >
             {authBusy ? <Loader2 size={16} className="animate-spin" /> : <Lock size={17} />}
             {isSignUp ? t.authCreateAccount : t.authSignInWithPassword}

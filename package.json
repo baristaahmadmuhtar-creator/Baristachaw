@@ -20,6 +20,7 @@
         "check": "npm run lint && npm run build",
         "smoke:local": "node scripts/smoke-local.mjs",
         "smoke:prod": "node scripts/smoke-prod.mjs",
+        "prod:env:check": "node scripts/check-production-env.mjs",
         "release:verify": "node scripts/check-release.mjs",
         "clean": "rm -rf dist apps/web/dist",
         "test:e2e:install": "playwright install --with-deps chromium firefox webkit",

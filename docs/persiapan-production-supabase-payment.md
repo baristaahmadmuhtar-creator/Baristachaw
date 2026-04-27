@@ -1,5 +1,7 @@
 # Persiapan Production Baristachaw: Supabase, Payment, Admin, dan Katalog
 
+Panduan step-by-step paling lengkap sekarang ada di `docs/production-setup-operator-guide.md`. Dokumen ini tetap dipertahankan sebagai ringkasan cepat untuk admin/operator.
+
 Dokumen ini dipakai sebelum launch Play Store/App Store. Targetnya: admin bisa mengelola user, plan, billing, audit, feature flag, dan queue katalog grinder/water/dripper dari `/admin`.
 
 ## 1. Supabase

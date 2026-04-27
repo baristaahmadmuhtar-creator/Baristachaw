@@ -30,6 +30,7 @@ apps/mobile/keystores/
 apps/mobile/credentials.json
 
 # Test and report artifacts
+artifacts/
 playwright-report/
 test-results/
 lighthouse-report/

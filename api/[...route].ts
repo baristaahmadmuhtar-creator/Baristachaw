@@ -40,6 +40,8 @@ const ROUTE_LOADERS: Record<string, () => Promise<{ default: Handler }>> = {
   'auth/callback': () => import('../server-api/auth/callback.js'),
   'auth/email/signin': () => import('../server-api/auth/email.js'),
   'auth/email/signup': () => import('../server-api/auth/email.js'),
+  'auth/email/reset': () => import('../server-api/auth/email.js'),
+  'auth/email/update-password': () => import('../server-api/auth/email.js'),
   'auth/guest': () => import('../server-api/auth/guest.js'),
   'auth/me': () => import('../server-api/auth/me.js'),
   'auth/logout': () => import('../server-api/auth/logout.js'),

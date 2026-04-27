@@ -33,6 +33,18 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
     return () => window.clearTimeout(timeout);
   }, [isAuthenticated, onLogin, t.authSignedInSuccess]);
 
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('confirmed') !== '1') return;
+      setSuccess(t.authEmailConfirmedBody);
+      url.searchParams.delete('confirmed');
+      window.history.replaceState(window.history.state, document.title, `${url.pathname}${url.search}${url.hash}`);
+    } catch {
+      // Non-blocking browser-only notice.
+    }
+  }, [t.authEmailConfirmedBody]);
+
   return (
     <div
       className="flex items-center justify-center overflow-x-hidden p-4 sm:p-6"

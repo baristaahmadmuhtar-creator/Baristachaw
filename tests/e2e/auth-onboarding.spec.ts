@@ -21,6 +21,20 @@ test('mobile sign-in keeps the auth actions first without marketing panel clutte
   await expect(page.getByText('Pilih jalur yang paling pas hari ini')).toHaveCount(0);
   await expect(page.getByText('Gratis cocok untuk mencoba ruang kerja. Pro dibuat untuk seduh harian, pemindaian, dan riset kopi.')).toHaveCount(0);
   await expect(page.getByText(/Segera tersedia di web|Google tetap menjadi jalur masuk utama/i)).toHaveCount(0);
+
+  await page.route('**/api/auth/email/reset', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, resetEmailSent: true, email: 'pemilik@example.com' }),
+    });
+  });
+  await page.getByLabel('Alamat email').fill('pemilik@example.com');
+  await emailButton.click();
+  await expect(page.locator('#auth-route-password')).toBeVisible();
+  await page.getByRole('button', { name: /Lupa password/i }).click();
+  await expect(page.getByText('Cek kotak masuk Anda')).toBeVisible();
+  await expect(page.getByText(/pemilik@example\.com/)).toBeVisible();
 });
 
 test('registration page uses the same low-friction flow', async ({ page }) => {
@@ -28,7 +42,7 @@ test('registration page uses the same low-friction flow', async ({ page }) => {
 
   await expect(page.getByRole('heading', { name: 'Daftar akun Baristachaw' })).toBeVisible();
   await expect(page.getByRole('button', { name: /Lanjutkan dengan Google/i })).toBeVisible();
-  await page.getByLabel('Email').fill('calon@example.com');
+  await page.getByLabel('Alamat email').fill('calon@example.com');
   await page.getByRole('button', { name: /Lanjut dengan email/i }).click();
   await expect(page.getByLabel('Nama')).toBeVisible();
   await expect(page.locator('#auth-route-password')).toBeVisible();

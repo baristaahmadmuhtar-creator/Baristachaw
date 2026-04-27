@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { AlertCircle, ArrowLeft, AtSign, CheckCircle, Eye, EyeOff, Loader2, Lock, UserRound } from 'lucide-react';
 import { useAuthModal, type EmailAuthMode } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
@@ -11,16 +11,41 @@ type EmailPasswordAuthFormProps = {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+type AuthFormStep = 'email' | 'password' | 'confirmation' | 'resetSent' | 'recovery';
+
+function readPasswordRecoveryRequest() {
+  if (typeof window === 'undefined') return { requested: false, accessToken: '' };
+  try {
+    const url = new URL(window.location.href);
+    const hash = new URLSearchParams(url.hash.replace(/^#/, ''));
+    const type = hash.get('type') || url.searchParams.get('type') || '';
+    const accessToken = hash.get('access_token') || url.searchParams.get('access_token') || '';
+    const requested = url.searchParams.get('recovery') === '1' || type === 'recovery';
+    return { requested, accessToken };
+  } catch {
+    return { requested: false, accessToken: '' };
+  }
+}
+
 export function EmailPasswordAuthForm({
   initialMode = 'signIn',
   compact = false,
   className = '',
 }: EmailPasswordAuthFormProps) {
   const { t } = useGlobalState();
-  const { authBusy, isOffline, authenticateWithEmail, clearAuthError } = useAuthModal();
+  const {
+    authBusy,
+    isOffline,
+    authenticateWithEmail,
+    sendPasswordResetEmail,
+    updateRecoveredPassword,
+    clearAuthError,
+  } = useAuthModal();
+  const [recoveryRequest] = useState(readPasswordRecoveryRequest);
   const [mode, setMode] = useState<EmailAuthMode>(initialMode);
-  const [step, setStep] = useState<'email' | 'password' | 'confirmation'>('email');
+  const [step, setStep] = useState<AuthFormStep>(recoveryRequest.requested ? 'recovery' : 'email');
   const [email, setEmail] = useState('');
+  const [resetSentEmail, setResetSentEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -28,6 +53,17 @@ export function EmailPasswordAuthForm({
 
   const isSignUp = mode === 'signUp';
   const disabled = authBusy || isOffline;
+
+  useEffect(() => {
+    if (!recoveryRequest.requested || !recoveryRequest.accessToken || typeof window === 'undefined') return;
+    try {
+      const url = new URL(window.location.href);
+      url.hash = '';
+      window.history.replaceState(window.history.state, document.title, `${url.pathname}${url.search}`);
+    } catch {
+      // Keep recovery usable even if history cleanup fails.
+    }
+  }, [recoveryRequest]);
 
   const validateEmail = () => {
     const normalized = email.trim().toLowerCase();
@@ -73,6 +109,44 @@ export function EmailPasswordAuthForm({
     }
   };
 
+  const handleSendPasswordReset = async () => {
+    const normalized = validateEmail();
+    if (!normalized) return;
+
+    setLocalError('');
+    try {
+      const result = await sendPasswordResetEmail(normalized);
+      setPassword('');
+      setResetSentEmail(result.email || normalized);
+      setStep('resetSent');
+    } catch {
+      // AuthModalContext surfaces the localized server error.
+    }
+  };
+
+  const handleRecoverySubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!recoveryRequest.accessToken) {
+      setLocalError(t.authRecoveryTokenMissing);
+      return;
+    }
+    if (password.length < 8) {
+      setLocalError(t.authPasswordTooShort);
+      return;
+    }
+
+    setLocalError('');
+    try {
+      await updateRecoveredPassword({
+        accessToken: recoveryRequest.accessToken,
+        password,
+      });
+      setPassword('');
+    } catch {
+      // AuthModalContext surfaces the localized server error.
+    }
+  };
+
   const switchMode = () => {
     setMode((current) => current === 'signIn' ? 'signUp' : 'signIn');
     setLocalError('');
@@ -102,6 +176,105 @@ export function EmailPasswordAuthForm({
             </button>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (step === 'resetSent') {
+    return (
+      <div className={`rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 ${className}`}>
+        <div className="flex items-start gap-3">
+          <CheckCircle className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-300" size={18} />
+          <div>
+            <h3 className="text-sm font-semibold text-primary">{t.authResetEmailSentTitle}</h3>
+            <p className="mt-1 text-sm leading-5 text-secondary">
+              {t.authResetEmailSentBody.replace('{email}', resetSentEmail || email)}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signIn');
+                setStep('password');
+              }}
+              className="mt-3 text-sm font-semibold text-blue-700 hover:text-blue-800 dark:text-blue-300"
+            >
+              {t.authResetEmailSentCta}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'recovery') {
+    return (
+      <div className={className}>
+        {!compact ? (
+          <div className="mb-3">
+            <h2 className="text-base font-semibold text-primary">{t.authRecoveryTitle}</h2>
+            <p className="mt-1 text-sm leading-5 text-secondary">{t.authRecoveryBody}</p>
+          </div>
+        ) : null}
+
+        {localError || !recoveryRequest.accessToken ? (
+          <div className="mb-3 flex items-start gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">
+            <AlertCircle size={14} className="mt-0.5 shrink-0" />
+            <span>{localError || t.authRecoveryTokenMissing}</span>
+          </div>
+        ) : null}
+
+        <form onSubmit={handleRecoverySubmit} className="space-y-3">
+          <label className="block text-sm font-semibold text-primary" htmlFor={compact ? 'auth-modal-recovery-password' : 'auth-route-recovery-password'}>
+            {t.authRecoveryPasswordLabel}
+          </label>
+          <div className="flex items-center gap-3 rounded-2xl border border-glass bg-[var(--bg-base)]/72 px-4 py-3 focus-within:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/15">
+            <Lock size={18} className="shrink-0 text-secondary" />
+            <input
+              id={compact ? 'auth-modal-recovery-password' : 'auth-route-recovery-password'}
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                setLocalError('');
+                clearAuthError();
+              }}
+              placeholder={t.authPasswordPlaceholder}
+              disabled={disabled || !recoveryRequest.accessToken}
+              className="min-w-0 flex-1 bg-transparent text-base text-primary outline-none placeholder:text-tertiary disabled:opacity-60"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((value) => !value)}
+              className="rounded-full p-1.5 text-secondary hover:bg-surface-alpha hover:text-primary"
+              aria-label={showPassword ? t.authHidePassword : t.authShowPassword}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            disabled={disabled || !recoveryRequest.accessToken}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3 text-base font-semibold text-blue-700 transition-colors hover:bg-blue-500/15 disabled:cursor-not-allowed disabled:opacity-55 dark:text-blue-200"
+          >
+            {authBusy ? <Loader2 size={16} className="animate-spin" /> : <Lock size={17} />}
+            {t.authRecoverySubmit}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMode('signIn');
+              setPassword('');
+              setLocalError('');
+              setStep('email');
+            }}
+            className="w-full rounded-xl px-3 py-2 text-center text-sm font-semibold text-secondary transition-colors hover:bg-surface-alpha hover:text-primary disabled:opacity-55"
+          >
+            {t.authResetEmailSentCta}
+          </button>
+        </form>
       </div>
     );
   }
@@ -230,6 +403,17 @@ export function EmailPasswordAuthForm({
             {authBusy ? <Loader2 size={16} className="animate-spin" /> : <Lock size={17} />}
             {isSignUp ? t.authCreateAccount : t.authSignInWithPassword}
           </button>
+
+          {!isSignUp ? (
+            <button
+              type="button"
+              onClick={() => void handleSendPasswordReset()}
+              disabled={disabled}
+              className="w-full rounded-xl px-3 py-2 text-center text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-500/10 hover:text-blue-800 disabled:opacity-55 dark:text-blue-300"
+            >
+              {authBusy ? t.authResetEmailSending : t.authForgotPassword}
+            </button>
+          ) : null}
 
           <button
             type="button"

@@ -33,6 +33,16 @@ export type EmailAuthResult = {
   user?: AuthUser | null;
 };
 
+export type EmailPasswordResetResult = {
+  resetEmailSent: boolean;
+  email?: string;
+};
+
+export type EmailPasswordUpdateInput = {
+  accessToken: string;
+  password: string;
+};
+
 type NativeShellSession = {
   accessToken?: string;
   expiresAt?: number;
@@ -72,6 +82,8 @@ type AuthModalContextValue = {
   refreshAuthState: (options?: { silent?: boolean; retryDelaysMs?: number[] }) => Promise<boolean>;
   startGoogleAuth: () => Promise<void>;
   authenticateWithEmail: (input: EmailAuthInput) => Promise<EmailAuthResult>;
+  sendPasswordResetEmail: (email: string) => Promise<EmailPasswordResetResult>;
+  updateRecoveredPassword: (input: EmailPasswordUpdateInput) => Promise<EmailAuthResult>;
   continueAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -129,6 +141,8 @@ function resolveEmailAuthError(payload: Record<string, unknown>, fallback: strin
   if (errorCode === 'email_already_registered') return copy.authEmailAlreadyRegistered || fallback;
   if (errorCode === 'weak_password') return copy.authPasswordTooShort || fallback;
   if (errorCode === 'rate_limited') return copy.authEmailRateLimited || fallback;
+  if (errorCode === 'recovery_token_invalid') return copy.authRecoveryTokenExpired || fallback;
+  if (errorCode === 'reset_rejected') return copy.authResetEmailUnavailable || fallback;
   if (errorCode === 'server_misconfigured' || errorCode === 'supabase_not_configured') return copy.authEmailServerUnavailable || fallback;
   const message = typeof payload.error === 'string' ? payload.error.trim() : '';
   return message || fallback;
@@ -500,6 +514,96 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     }
   }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline]);
 
+  const sendPasswordResetEmail = useCallback(async (email: string): Promise<EmailPasswordResetResult> => {
+    oauthResultHandledRef.current = true;
+    clearOauthPopupMonitor({ closePopup: true });
+    setAuthBusy(true);
+    setAuthError(null);
+
+    const copy = getLocalizedCopy();
+    if (isOffline) {
+      const message = copy.authEmailOffline || copy.connectionFailed || copy.error;
+      setAuthBusy(false);
+      setAuthError(message);
+      throw new Error(message);
+    }
+
+    try {
+      const response = await fetch('/api/auth/email/reset', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const payload = await response.json().catch(() => ({})) as Record<string, unknown>;
+      if (!response.ok || payload.ok === false) {
+        throw new Error(resolveEmailAuthError(payload, copy.authResetEmailUnavailable || copy.error, copy));
+      }
+
+      setAuthError(null);
+      return {
+        resetEmailSent: Boolean(payload.resetEmailSent ?? true),
+        email: typeof payload.email === 'string' ? payload.email : email,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : (copy.authResetEmailUnavailable || copy.error);
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setAuthBusy(false);
+    }
+  }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline]);
+
+  const updateRecoveredPassword = useCallback(async (input: EmailPasswordUpdateInput): Promise<EmailAuthResult> => {
+    oauthResultHandledRef.current = true;
+    clearOauthPopupMonitor({ closePopup: true });
+    setAuthBusy(true);
+    setAuthError(null);
+
+    const copy = getLocalizedCopy();
+    if (isOffline) {
+      const message = copy.authEmailOffline || copy.connectionFailed || copy.error;
+      setAuthBusy(false);
+      setAuthError(message);
+      throw new Error(message);
+    }
+
+    try {
+      const response = await fetch('/api/auth/email/update-password', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+      const payload = await response.json().catch(() => ({})) as Record<string, unknown>;
+      if (!response.ok || payload.ok === false) {
+        throw new Error(resolveEmailAuthError(payload, copy.authEmailUnavailable || copy.error, copy));
+      }
+
+      const nextUser = (payload.user || null) as AuthUser | null;
+      if (!payload.authenticated || !nextUser?.id) {
+        throw new Error(copy.authEmailUnavailable || copy.error);
+      }
+
+      setUser(nextUser);
+      if (nextUser.name) saveUserName(nextUser.name);
+      setAuthMode('server');
+      setAuthChecking(false);
+      setAuthError(null);
+      setIsOpen(false);
+      return {
+        authenticated: true,
+        user: nextUser,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : (copy.authEmailUnavailable || copy.error);
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setAuthBusy(false);
+    }
+  }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline]);
+
   const continueAsGuest = useCallback(async () => {
     oauthResultHandledRef.current = true;
     clearOauthPopupMonitor({ closePopup: true });
@@ -579,6 +683,8 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     refreshAuthState,
     startGoogleAuth,
     authenticateWithEmail,
+    sendPasswordResetEmail,
+    updateRecoveredPassword,
     continueAsGuest,
     logout,
   }), [
@@ -595,9 +701,11 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     openAuthModal,
     refreshAuthState,
     source,
+    sendPasswordResetEmail,
     startGoogleAuth,
     continueAsGuest,
     logout,
+    updateRecoveredPassword,
     user,
   ]);
 
@@ -615,4 +723,3 @@ export function useAuthModal() {
   }
   return context;
 }
-

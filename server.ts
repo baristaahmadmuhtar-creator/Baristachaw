@@ -138,6 +138,8 @@ app.all("/api/auth/url", wrapVercelHandler(authUrlHandler as unknown as LocalApi
 app.all("/api/auth/callback", wrapVercelHandler(authCallbackHandler as unknown as LocalApiHandler));
 app.all("/api/auth/email/signin", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
 app.all("/api/auth/email/signup", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
+app.all("/api/auth/email/reset", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
+app.all("/api/auth/email/update-password", wrapVercelHandler(authEmailHandler as unknown as LocalApiHandler));
 app.all("/api/auth/guest", wrapVercelHandler(authGuestHandler as unknown as LocalApiHandler));
 
 app.all("/api/auth/me", wrapVercelHandler(authMeHandler as unknown as LocalApiHandler));

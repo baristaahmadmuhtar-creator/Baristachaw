@@ -171,6 +171,78 @@ test('email signup returns confirmation required when Supabase does not issue a 
   assert.equal(res.headers.has('set-cookie'), false);
 });
 
+test('email password reset sends Supabase recovery email without creating a session', async () => {
+  const calls: Array<{ url: string; init?: RequestInit }> = [];
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    calls.push({ url: String(input), init });
+    return jsonResponse({});
+  }) as typeof fetch;
+
+  const res = createMockRes();
+  await authEmailHandler(makeReq({
+    query: { path: 'email/reset' },
+    body: {
+      email: 'owner@example.com',
+    },
+  }), res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.ok, true);
+  assert.equal(body.resetEmailSent, true);
+  assert.equal(body.email, 'owner@example.com');
+  assert.match(calls[0].url, /^https:\/\/unit-test\.supabase\.co\/auth\/v1\/recover\?redirect_to=/);
+  const redirectTo = new URL(calls[0].url).searchParams.get('redirect_to') || '';
+  const redirectUrl = new URL(redirectTo);
+  assert.match(redirectUrl.origin, /^https?:\/\/[a-z0-9.-]+(?::\d+)?$/i);
+  assert.equal(redirectUrl.pathname, '/masuk');
+  assert.equal(redirectUrl.searchParams.get('recovery'), '1');
+  assert.equal((calls[0].init?.headers as Record<string, string>).apikey, 'publishable-test-key');
+  assert.equal(res.headers.has('set-cookie'), false);
+});
+
+test('email recovery token can update password and receive an app session cookie', async () => {
+  const calls: Array<{ url: string; init?: RequestInit }> = [];
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    calls.push({ url, init });
+    if (url.includes('/auth/v1/user') && init?.method === 'PUT') {
+      assert.equal((init.headers as Record<string, string>).Authorization, 'Bearer recovery-access-token');
+      assert.equal(JSON.parse(String(init.body)).password, 'new-password-123');
+      return jsonResponse({ id: 'supabase-user-1' });
+    }
+    if (url.includes('/auth/v1/user')) {
+      return jsonResponse({
+        id: 'supabase-user-1',
+        email: 'owner@example.com',
+        user_metadata: { full_name: 'Owner Barista' },
+        app_metadata: { provider: 'email' },
+      });
+    }
+    throw new Error(`Unexpected fetch ${url}`);
+  }) as typeof fetch;
+
+  const res = createMockRes();
+  await authEmailHandler(makeReq({
+    query: { path: 'email/update-password' },
+    body: {
+      accessToken: 'recovery-access-token',
+      password: 'new-password-123',
+    },
+  }), res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.ok, true);
+  assert.equal(body.authenticated, true);
+  assert.equal(body.passwordUpdated, true);
+  assert.equal(body.user.id, 'supabase-user-1');
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].url, 'https://unit-test.supabase.co/auth/v1/user');
+  assert.equal(calls[1].url, 'https://unit-test.supabase.co/auth/v1/user');
+  assert.match(String(res.headers.get('set-cookie')), /auth_token=/);
+});
+
 test('email sign-in maps invalid Supabase credentials to a generic auth error', async () => {
   globalThis.fetch = (async () => jsonResponse({ message: 'Invalid login credentials' }, 400)) as typeof fetch;
 

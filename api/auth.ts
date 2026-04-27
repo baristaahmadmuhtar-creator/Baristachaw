@@ -21,7 +21,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (path === 'url') target = authUrlHandler as Handler;
   else if (path === 'callback') target = authCallbackHandler as Handler;
-  else if (path === 'email/signin' || path === 'email/signup') target = authEmailHandler as Handler;
+  else if (
+    path === 'email/signin'
+    || path === 'email/signup'
+    || path === 'email/reset'
+    || path === 'email/update-password'
+  ) target = authEmailHandler as Handler;
   else if (path === 'guest') target = authGuestHandler as Handler;
   else if (path === 'me') target = authMeHandler as Handler;
   else if (path === 'logout') target = authLogoutHandler as Handler;

@@ -21,8 +21,9 @@ import { useNetworkStatus } from "../hooks/useNetworkStatus";
 import { subscribeMediaQueryChange } from "../utils/mediaQuery";
 import { useAccountStatus } from "../context/AccountStatusContext";
 import type { AccountFeatureFlag, AccountStatusSnapshot } from "../services/accountStatus";
-import { BillingApiError, openBillingPortal, startBillingCheckout } from "../services/billing";
+import { BillingApiError, openBillingPortal } from "../services/billing";
 import { isDisplayableAvatarUrl } from "../utils/avatarUrl";
+import { PlanGrowthSurface } from "../components/billing/PlanGrowthSurface";
 import { normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentProfileMemory } from "@baristachaw/shared";
 import { getLanguageDirection, getLanguageLocale, LANGUAGE_OPTIONS } from "../constants";
 
@@ -134,6 +135,7 @@ export function Home() {
   const [isDark, setIsDark] = useState(false);
   const [statusIdx, setStatusIdx] = useState(0);
   const [billingBusy, setBillingBusy] = useState(false);
+  const [showPlanCatalog, setShowPlanCatalog] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [userPictureFailed, setUserPictureFailed] = useState(false);
   const [savingResult, setSavingResult] = useState(false);
@@ -220,12 +222,12 @@ export function Home() {
     }
   };
 
-  // Smart navbar: hide when search modal is open
+  // Smart navbar: hide when a modal is open
   useEffect(() => {
-    if (showResultModal) hideNav();
+    if (showResultModal || showPlanCatalog) hideNav();
     else showNav();
     return () => showNav();
-  }, [showResultModal, hideNav, showNav]);
+  }, [showResultModal, showPlanCatalog, hideNav, showNav]);
 
   useEffect(() => {
     if (!showResultModal) return;
@@ -497,13 +499,13 @@ export function Home() {
       setShowResultModal(true);
       return;
     }
+    if (recommendedUpgrade.action === 'checkout') {
+      setShowPlanCatalog(true);
+      return;
+    }
     setBillingBusy(true);
     try {
-      const response = recommendedUpgrade.action === 'manage'
-        ? await openBillingPortal()
-        : recommendedUpgrade.action === 'checkout' && recommendedUpgrade.planCode !== 'free'
-          ? await startBillingCheckout(recommendedUpgrade.planCode)
-          : null;
+      const response = recommendedUpgrade.action === 'manage' ? await openBillingPortal() : null;
       if (response?.url) {
         window.location.assign(response.url);
         return;
@@ -921,6 +923,19 @@ export function Home() {
             </div>
           </div>
         </section>
+      ) : null}
+
+      {isAuthenticated && accountSnapshot ? (
+        <PlanGrowthSurface
+          snapshot={accountSnapshot}
+          t={t}
+          language={language}
+          locale={locale}
+          direction={direction}
+          isOpen={showPlanCatalog}
+          onOpen={() => setShowPlanCatalog(true)}
+          onClose={() => setShowPlanCatalog(false)}
+        />
       ) : null}
 
       <motion.div

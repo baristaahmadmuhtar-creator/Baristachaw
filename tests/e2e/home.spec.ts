@@ -77,6 +77,28 @@ test('supports authenticated search, copy, save, and theme toggle', async ({ pag
   expect(JSON.stringify(lsState.origins)).toContain('BARISTA_THEME');
 });
 
+test('shows paid plan choices after sign-in without blocking free usage', async ({ page }) => {
+  await qaLogin(page.request);
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await waitForHomeAuthState(page);
+
+  const panel = page.getByTestId('home-plan-growth-panel');
+  await expect(panel).toBeVisible();
+  await expect(panel.getByRole('button', { name: /View plan options|Lihat pilihan paket/i })).toBeVisible();
+
+  await page.getByTestId('home-plan-open-catalog').click();
+  const dialog = page.getByRole('dialog', { name: /Pick the plan|Pilih paket/i });
+  await expect(dialog).toBeVisible();
+  await expect(page.getByTestId('plan-card-free')).toBeVisible();
+  await expect(page.getByTestId('plan-card-pro')).toBeVisible();
+  await expect(page.getByText(/Recommended|Rekomendasi/i)).toBeVisible();
+  await expect(dialog.getByRole('button', { name: /Stay on Free|Tetap di Gratis/i })).toBeVisible();
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(page.getByPlaceholder(/Search the web with AI|Cari di web dengan AI/i)).toBeEnabled();
+});
+
 test('language switch updates guest search placeholder copy', async ({ page }) => {
   await continueAsGuestFromAuthGate(page);
   const menuButton = page.getByRole('button', { name: /Open language menu|Buka menu bahasa/i }).first();

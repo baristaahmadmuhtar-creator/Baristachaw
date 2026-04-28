@@ -1711,7 +1711,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
     insetsBottom: insets.bottom,
     keyboardHeight,
     keyboardVisible,
-    dockedInset: 74,
+    dockedInset: keyboardVisible ? 0 : 74,
   });
   const listBottomPadding = composerBottomOffset + composerHeight + 28;
 
@@ -1721,6 +1721,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
     if (activeSession?.preview) return buildBodyPreview(activeSession.preview, 92);
     return chatCopy.header.ready;
   }, [activeSession?.preview, chatCopy.header, isOnline, session]);
+  const composerDisabled = loading || !isOnline || !session;
 
   const statusCard = useMemo(() => {
     if (error) {
@@ -1959,6 +1960,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
             onPress: openTools,
             accessibilityLabel: chatCopy.helpers.openChatTools,
             icon: <Ionicons name="add" size={uiTokens.icon.sm} color={uiTokens.text.primary} />,
+            disabled: composerDisabled,
           }}
           voiceAction={{
             onPress: () => { void toggleVoiceRecording(); },
@@ -1971,6 +1973,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
               />
             ),
             active: isVoiceRecording,
+            disabled: composerDisabled,
           }}
         />
       </View>

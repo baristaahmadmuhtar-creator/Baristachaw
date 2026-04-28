@@ -144,15 +144,18 @@ export function ComposerDock({
             {menuAction.icon}
           </Pressable>
         ) : null}
-        <TextInput
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor={uiTokens.text.muted}
-          style={styles.input}
-          multiline
-          maxLength={characterLimit}
-        />
+          <TextInput
+            value={value}
+            onChangeText={onChangeText}
+            placeholder={placeholder}
+            placeholderTextColor={uiTokens.text.muted}
+            style={styles.input}
+            multiline
+            maxLength={characterLimit}
+            returnKeyType="default"
+            blurOnSubmit={false}
+            accessibilityLabel={placeholder}
+          />
         {voiceAction ? (
           <Pressable
             style={({ pressed }) => [
@@ -305,8 +308,8 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   iconButton: {
-    width: 38,
-    height: 38,
+    width: 44,
+    height: 44,
     borderRadius: uiTokens.radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
@@ -322,8 +325,8 @@ const styles = StyleSheet.create({
     opacity: 0.46,
   },
   sendButton: {
-    width: 38,
-    height: 38,
+    width: 44,
+    height: 44,
     borderRadius: uiTokens.radius.pill,
     alignItems: 'center',
     justifyContent: 'center',

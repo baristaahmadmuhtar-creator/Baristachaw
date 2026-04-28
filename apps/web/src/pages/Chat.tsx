@@ -1,10 +1,10 @@
-import { Suspense, lazy, useState, useRef, useEffect, useCallback, useMemo, type ChangeEvent } from 'react';
+import { Suspense, lazy, useState, useRef, useEffect, useCallback, useMemo, type ChangeEvent, type CSSProperties } from 'react';
 import { motion, AnimatePresence, type PanInfo } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Send, Loader2, BrainCircuit, Volume2, Zap, Brain, Mic, Plus,
+  Loader2, BrainCircuit, Volume2, Zap, Brain, Plus,
   History, Copy, Check, X, MessageSquare, Trash2,
-  AlertCircle, Bookmark, BookmarkCheck, Camera, FileText, Image as ImageIcon, ArrowLeftRight, Home, ExternalLink,
+  AlertCircle, Bookmark, BookmarkCheck, FileText, ArrowLeftRight, ExternalLink,
 } from 'lucide-react';
 import {
   createChatSession,
@@ -68,6 +68,15 @@ import {
 import { resolveAudioPlaybackUrl } from '../utils/chatAudio';
 import { subscribeMediaQueryChange } from '../utils/mediaQuery';
 import { GoogleMark } from '../components/icons';
+import {
+  ArrowUp as AppArrowUpIcon,
+  Camera as AppCameraIcon,
+  FileText as AppFileTextIcon,
+  Home as AppHomeIcon,
+  ImagePlus as AppImagePlusIcon,
+  Mic as AppMicIcon,
+  Paperclip as AppPaperclipIcon,
+} from '../components/icons';
 import { useAiAccessGate } from '../components/billing/AiAccessGate';
 
 const ChatWorkspacePanel = lazy(() =>
@@ -1370,7 +1379,7 @@ export function Chat() {
   const mobileComposerMessageGap = 'var(--composer-message-gap, var(--mobile-nav-floating-gap, 0px))';
   const mobileComposerBottomOffset = 'var(--composer-bottom-offset, var(--mobile-nav-floating-gap, 0px))';
   const mobileMessageListBottomPadding = keyboardFix.isKeyboardOpen
-    ? `calc(${keyboardFix.composerHeight}px + ${keyboardFix.keyboardOffset}px + 0.75rem)`
+    ? `calc(${keyboardFix.composerHeight}px + 0.75rem)`
     : `calc(${keyboardFix.composerHeight}px + ${mobileComposerMessageGap} + 0.75rem)`;
   const messageListBottomPadding = isDesktop
     ? '7.25rem'
@@ -1389,6 +1398,10 @@ export function Chat() {
   const loadingLabel = loadingPhase === 'sending'
     ? (t.chatSending || t.connecting)
     : (deepRequestInFlight ? deepPhaseLabel : t.thinking);
+  const composerDisabledReason = !isOnline
+    ? t.chatOfflineSendUnavailable
+    : (!isAuthenticated ? t.signInRequired : null);
+  const showComposerMeta = Boolean(inputLimitNotice || input.length >= CHAT_INPUT_WARNING_CHARS || composerDisabledReason);
 
   // ─── Render ───
   return (
@@ -1773,7 +1786,8 @@ export function Chat() {
         <div
           ref={inputContainerRef}
           data-testid="chat-composer-dock"
-          className="relative shrink-0 px-4 pt-2 pb-2"
+          data-disable-page-swipe
+          className="relative shrink-0 px-3 pt-2 pb-2 sm:px-4"
           style={{
             position: 'fixed',
             left: isDesktop ? desktopShellOffset : 0,
@@ -1821,21 +1835,21 @@ export function Chat() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 6, scale: 0.98 }}
               transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-              className="absolute right-0 bottom-[calc(100%+0.45rem)] z-[70] pointer-events-auto"
+              className="absolute right-3 bottom-[calc(100%+0.55rem)] z-[70] pointer-events-auto sm:right-4"
             >
-              <div className="min-w-[12rem] rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/95 backdrop-blur-xl p-1.5 shadow-[0_14px_34px_rgba(0,0,0,0.22)]">
+              <div className="min-w-[13.25rem] rounded-[1.35rem] border panel-divider-subtle bg-[var(--bg-base)]/96 backdrop-blur-xl p-1.5 shadow-[0_16px_36px_rgba(0,0,0,0.22)]">
                 {COMPOSER_MENU_ITEMS.map((item) => (
                   <button
                     key={item}
                       type="button"
                       role="menuitem"
                       onClick={() => { void openAttachmentPicker(item); }}
-                      className="w-full min-h-[44px] text-left px-3 py-2.5 rounded-xl text-sm text-primary hover:bg-surface-alpha transition-colors flex items-center gap-2.5"
+                      className="w-full min-h-[48px] text-left px-3 py-2.5 rounded-[1rem] text-sm font-medium text-primary hover:bg-surface-alpha transition-colors flex items-center gap-3 focus-soft"
                     >
-                    <span className="inline-flex w-6 h-6 items-center justify-center rounded-lg bg-surface-alpha shrink-0">
-                      {item === 'photo' && <ImageIcon size={14} />}
-                      {item === 'file' && <FileText size={14} />}
-                      {item === 'camera' && <Camera size={14} />}
+                    <span className="inline-flex h-9 w-9 items-center justify-center shrink-0">
+                      {item === 'photo' && <AppImagePlusIcon size={36} variant="tile" tone="green" />}
+                      {item === 'file' && <AppFileTextIcon size={36} variant="tile" tone="ice" />}
+                      {item === 'camera' && <AppCameraIcon size={36} variant="tile" tone="amber" />}
                     </span>
                     {item === 'photo' ? t.chatComposerPhoto : item === 'file' ? t.chatComposerFile : t.chatComposerCamera}
                   </button>
@@ -1854,17 +1868,17 @@ export function Chat() {
         )}
 
         {draftAttachmentError && (
-          <div className="mb-2 flex items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-500">
+          <div className="mb-2 flex max-h-[72px] items-center gap-2 overflow-hidden rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-500">
             <AlertCircle size={14} />
             <span className="flex-1">{draftAttachmentError}</span>
-            <button type="button" onClick={() => setDraftAttachmentError(null)} className="p-1 rounded-full hover:bg-red-500/10">
+            <button type="button" onClick={() => setDraftAttachmentError(null)} className="min-h-8 min-w-8 rounded-full hover:bg-red-500/10 focus-soft">
               <X size={12} />
             </button>
           </div>
         )}
 
         {draftAttachment && (
-          <div className="mb-2 rounded-2xl border panel-divider-subtle bg-[var(--nav-bg)]/95 p-2">
+          <div className="mb-2 max-h-[104px] overflow-hidden rounded-2xl border panel-divider-subtle bg-[var(--nav-bg)]/95 p-2">
             <div className="flex items-center gap-2">
               {draftAttachment.previewDataUrl && draftAttachment.mimeType.startsWith('image/') ? (
                 <img
@@ -1908,16 +1922,16 @@ export function Chat() {
               navigate('/');
             }}
             aria-label={t.chatGoHome}
-            className="pointer-events-auto w-11 h-11 rounded-full border border-glass bg-surface-alpha text-primary flex items-center justify-center shrink-0 transition-all duration-200 hover:bg-surface-alpha-hover active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="pointer-events-auto h-12 w-12 rounded-full border border-glass bg-[var(--bg-base)]/82 text-primary flex items-center justify-center shrink-0 shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition-all duration-200 hover:bg-surface-alpha-hover active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed focus-soft"
           >
-            <Home size={18} />
+            <AppHomeIcon size={22} variant="glyph" tone="blue" />
           </button>
 
           <div
-            className="flex-1 min-w-0 rounded-[1.6rem] border panel-divider-subtle panel-soft shadow-[0_10px_26px_rgba(0,0,0,0.10)]"
+            className="flex-1 min-w-0 overflow-hidden rounded-[1.65rem] border panel-divider-subtle panel-soft shadow-[0_14px_32px_rgba(15,23,42,0.13)]"
             style={{ backgroundColor: 'var(--nav-bg)' }}
           >
-            <div className="flex items-end gap-2 px-2.5 py-2">
+            <div className="flex items-end gap-1.5 px-2 py-2 sm:gap-2 sm:px-2.5">
               <textarea
                 ref={composerTextareaRef}
                 value={input}
@@ -1942,13 +1956,17 @@ export function Chat() {
                   }
                 }}
                 placeholder={t.typeMessage}
-                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 resize-none py-2 px-3 text-base leading-6 text-primary placeholder:text-tertiary min-h-[24px] max-h-[112px]"
+                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 resize-none py-2.5 px-2.5 text-base leading-6 text-primary placeholder:text-tertiary min-h-[44px] max-h-[132px]"
                 rows={1}
                 maxLength={CHAT_INPUT_MAX_CHARS}
                 disabled={interactionDisabled}
+                enterKeyHint="send"
+                autoCorrect="on"
+                autoCapitalize="sentences"
+                spellCheck
               />
 
-              <div className="flex items-center gap-[5px] shrink-0 pb-0.5 pr-0.5">
+              <div className="flex items-center gap-1 shrink-0 pb-0.5 pr-0.5 sm:gap-1.5">
                 <button
                   type="button"
                   onClick={() => setIsComposerMenuOpen((prev) => !prev)}
@@ -1957,9 +1975,9 @@ export function Chat() {
                   aria-haspopup="menu"
                   aria-expanded={isComposerMenuOpen}
                   aria-controls="chat-composer-menu"
-                  className="w-9 h-9 rounded-full flex items-center justify-center border border-glass bg-surface-alpha text-secondary hover:bg-surface-alpha-hover hover:text-primary shrink-0 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-11 w-11 rounded-full flex items-center justify-center border border-glass bg-surface-alpha text-secondary hover:bg-surface-alpha-hover hover:text-primary shrink-0 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed focus-soft"
                 >
-                  <Plus size={15} />
+                  <AppPaperclipIcon size={19} variant="glyph" tone="neutral" />
                 </button>
 
                 <button
@@ -1967,12 +1985,17 @@ export function Chat() {
                   onClick={toggleRecording}
                   disabled={interactionDisabled}
                   aria-label={isRecording ? t.chatStopRecording : t.chatRecordVoice}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center border shrink-0 transition-all duration-200 ${isRecording
+                  className={`h-11 w-11 rounded-full flex items-center justify-center border shrink-0 transition-all duration-200 focus-soft disabled:opacity-50 disabled:cursor-not-allowed ${isRecording
                     ? 'border-red-400/30 bg-red-500 text-white shadow-[0_4px_14px_rgba(239,68,68,0.28)] animate-pulse'
                     : 'border-glass bg-surface-alpha text-secondary hover:bg-surface-alpha-hover hover:text-primary'
                     }`}
                 >
-                  <Mic size={15} />
+                  <AppMicIcon
+                    size={19}
+                    variant="glyph"
+                    tone={isRecording ? 'neutral' : 'purple'}
+                    style={isRecording ? ({ '--icon-glyph-color': '#ffffff' } as CSSProperties) : undefined}
+                  />
                 </button>
 
                 <button
@@ -1980,24 +2003,31 @@ export function Chat() {
                   onClick={handleComposerSend}
                   disabled={(!input.trim() && !draftAttachment) || interactionDisabled}
                   aria-label={t.chatSendMessageAria}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center border shrink-0 transition-all duration-200 ${(input.trim() || draftAttachment) && !interactionDisabled
-                    ? 'border-white/30 bg-white text-black shadow-[0_6px_16px_rgba(255,255,255,0.16)] hover:scale-105 active:scale-95'
+                  className={`h-11 w-11 rounded-full flex items-center justify-center border shrink-0 transition-all duration-200 focus-soft ${(input.trim() || draftAttachment) && !interactionDisabled
+                    ? 'border-blue-500/35 bg-blue-600 text-white shadow-[0_8px_20px_rgba(37,99,235,0.28)] hover:bg-blue-700 hover:scale-[1.03] active:scale-95'
                     : 'border-glass bg-surface-alpha text-tertiary'
                     } ${loadingPhase === 'sending' ? 'chat-send-morph' : ''}`}
                 >
                   {loadingPhase === 'sending' ? (
                     <Loader2 size={14} className="animate-spin" />
                   ) : (
-                    <Send size={14} className={(input.trim() || draftAttachment) && !interactionDisabled ? 'ml-0.5' : ''} />
+                    <AppArrowUpIcon
+                      size={18}
+                      variant="glyph"
+                      tone={(input.trim() || draftAttachment) && !interactionDisabled ? 'neutral' : 'blue'}
+                      style={(input.trim() || draftAttachment) && !interactionDisabled ? ({ '--icon-glyph-color': '#ffffff' } as CSSProperties) : undefined}
+                    />
                   )}
                 </button>
               </div>
             </div>
-            <div className="flex items-center gap-3 px-3 pb-2">
-              <span className={`text-[11px] ${inputLimitNotice || input.length >= CHAT_INPUT_WARNING_CHARS ? 'text-amber-600 dark:text-amber-400' : 'text-tertiary'}`}>
-                {inputLimitNotice || (input.length >= CHAT_INPUT_WARNING_CHARS ? t.chatNearLimit : ' ')}
-              </span>
-            </div>
+            {showComposerMeta && (
+              <div className="flex items-center gap-3 px-4 pb-2.5">
+                <span className={`text-[11px] leading-4 ${inputLimitNotice || input.length >= CHAT_INPUT_WARNING_CHARS ? 'text-amber-600 dark:text-amber-400' : 'text-tertiary'}`}>
+                  {inputLimitNotice || (input.length >= CHAT_INPUT_WARNING_CHARS ? t.chatNearLimit : composerDisabledReason)}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -2095,9 +2125,6 @@ function AudioBubble({ url, isUser }: { url: string; isUser: boolean }) {
     </div>
   );
 }
-
-
-
 
 
 

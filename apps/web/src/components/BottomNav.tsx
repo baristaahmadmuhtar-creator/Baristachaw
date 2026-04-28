@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { PARITY_NAV_META } from "@baristachaw/shared";
-import { Home, ScanLine, Gauge, BookOpen, MessageSquare, ShieldCheck } from "lucide-react";
 import { motion } from "motion/react";
 import clsx from "clsx";
 import { useGlobalState } from "../context/GlobalState";
 import { subscribeMediaQueryChange } from "../utils/mediaQuery";
+import { BookOpen, Gauge, Home, MessageSquare, ScanLine, ShieldCheck } from "./icons";
 
 interface BottomNavProps {
   hidden?: boolean;
@@ -20,6 +20,7 @@ type ViewportMetricsDetail = {
 const NAV_IDLE_HIDE_MS = 2600;
 const NAV_SCROLL_HIDE_DELTA = 14;
 const NAV_SCROLL_SHOW_DELTA = 10;
+const navIconCurrentColor = { '--icon-glyph-color': 'currentColor' } as CSSProperties;
 
 function readKeyboardOpenFromRoot() {
   if (typeof window === 'undefined') return false;
@@ -225,7 +226,13 @@ export function BottomNav({ hidden = false, showAdmin = false }: BottomNavProps)
                   animate={{ scale: isActive ? 1.08 : 1 }}
                   transition={{ type: 'spring', stiffness: 420, damping: 28, mass: 0.7 }}
                 >
-                  <Icon size={isActive ? 22 : 21} strokeWidth={isActive ? 2.55 : 2.2} />
+                  <Icon
+                    size={isActive ? 22 : 21}
+                    strokeWidth={isActive ? 2.55 : 2.2}
+                    variant="glyph"
+                    tone={isActive ? "blue" : "neutral"}
+                    style={navIconCurrentColor}
+                  />
                 </motion.span>
                 <span className="sr-only">{label}</span>
               </>

@@ -38,6 +38,7 @@ export function GlassIconTile({
   className,
   tileClassName,
   strokeWidth,
+  style,
   ...props
 }: GlassIconTileProps) {
   const baseSize = normalizeIconSize(size);
@@ -47,7 +48,7 @@ export function GlassIconTile({
     return (
       <span
         className={clsx('glass-icon-glyph', `icon-tone-${tone}`, className)}
-        style={{ width: baseSize, height: baseSize }}
+        style={{ width: baseSize, height: baseSize, ...style }}
       >
         <GlassGlyph icon={icon} size={Math.max(12, Math.round(baseSize * 0.82))} strokeWidth={strokeWidth} {...props} />
       </span>
@@ -57,7 +58,7 @@ export function GlassIconTile({
   return (
     <span
       className={clsx('glass-icon-tile', `icon-glass-${intensity}`, `icon-tone-${tone}`, className, tileClassName)}
-      style={{ width: baseSize, height: baseSize }}
+      style={{ width: baseSize, height: baseSize, ...style }}
     >
       <GlassGlyph icon={icon} size={glyphSize} strokeWidth={strokeWidth} {...props} />
     </span>

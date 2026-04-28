@@ -1,42 +1,46 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, type ComponentType, type CSSProperties } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { PARITY_NAV_META } from '@baristachaw/shared';
 import {
-  Home,
-  ArrowLeft,
-  ScanLine,
-  Gauge,
-  BookOpen,
-  BookOpenCheck,
-  MessageSquare,
-  Coffee,
   PanelLeftClose,
   PanelLeftOpen,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  History,
-  Image as ImageIcon,
-  Brain,
   X,
-  Database,
-  ListChecks,
-  ShieldCheck,
-  WalletCards,
-  Wrench,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useNavbar } from '../context/NavbarContext';
 import { useGlobalState } from '../context/GlobalState';
 import { useAuthModal } from '../context/AuthModalContext';
 import { ChatWorkspacePanel } from './chat/ChatWorkspacePanel';
+import {
+  ArrowLeft as AppArrowLeft,
+  BookOpen,
+  BookOpenCheck,
+  Brain,
+  Coffee,
+  Database,
+  Gauge,
+  History,
+  Home,
+  Image as ImageIcon,
+  ListChecks,
+  MessageSquare,
+  ScanLine,
+  ShieldCheck,
+  WalletCards,
+  Wrench,
+  type AppIconProps,
+} from './icons';
 
 type SidebarNavItem = {
   path: string;
-  icon: typeof Home;
+  icon: ComponentType<AppIconProps>;
   label: string;
   adminTab?: string;
 };
+const sidebarIconCurrentColor = { '--icon-glyph-color': 'currentColor' } as CSSProperties;
 
 export function DesktopSidebar() {
   const { t } = useGlobalState();
@@ -127,7 +131,7 @@ export function DesktopSidebar() {
     { path: '/admin?tab=database', icon: Database, label: 'Database', adminTab: 'database' },
     { path: '/admin?tab=audit', icon: BookOpenCheck, label: 'Audit', adminTab: 'audit' },
     { path: '/admin?tab=launch', icon: ListChecks, label: 'Launch', adminTab: 'launch' },
-    { path: '/', icon: ArrowLeft, label: 'Back to app' },
+    { path: '/', icon: AppArrowLeft, label: 'Back to app' },
   ];
 
   const navItems = isAdminNavigation ? adminNavItems : appNavItems;
@@ -153,7 +157,11 @@ export function DesktopSidebar() {
       >
         <div className={clsx('px-3 flex items-center', desktopRailCollapsed ? 'justify-center' : 'justify-between')}>
           <div className="w-11 h-11 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center shadow-inner">
-            {isAdminNavigation ? <ShieldCheck size={20} /> : <Coffee size={20} />}
+            {isAdminNavigation ? (
+              <ShieldCheck size={24} variant="glyph" tone="green" />
+            ) : (
+              <Coffee size={24} variant="glyph" tone="amber" />
+            )}
           </div>
         </div>
 
@@ -204,7 +212,7 @@ export function DesktopSidebar() {
               title={label}
               aria-label={label}
             >
-              <Icon size={18} />
+              <Icon size={20} variant="glyph" tone="neutral" style={sidebarIconCurrentColor} />
               {!desktopRailCollapsed && (
                 <span className="text-xs leading-none font-semibold truncate flex-1">{label}</span>
               )}
@@ -301,7 +309,12 @@ export function DesktopSidebar() {
                   aria-label={label}
                   title={label}
                 >
-                  <Icon size={18} />
+                  <Icon
+                    size={20}
+                    variant="glyph"
+                    tone={desktopChatNavTab === id ? 'blue' : 'neutral'}
+                    style={sidebarIconCurrentColor}
+                  />
                 </button>
               ))}
             </div>

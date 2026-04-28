@@ -330,6 +330,93 @@
     min-height: 2.25rem;
   }
 
+  .glass-icon-glyph,
+  .glass-icon-tile {
+    --icon-glyph-color: var(--text-secondary);
+    --icon-tile-bg: var(--surface-alpha);
+    --icon-tile-border: var(--panel-border-soft);
+    --icon-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--icon-glyph-color);
+    line-height: 1;
+    vertical-align: middle;
+  }
+
+  .glass-icon-glyph svg,
+  .glass-icon-tile svg {
+    display: block;
+  }
+
+  .glass-icon-tile {
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0) 48%),
+      var(--icon-tile-bg);
+    border: 1px solid var(--icon-tile-border);
+    box-shadow: var(--icon-tile-shadow);
+    overflow: hidden;
+    isolation: isolate;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+
+  .icon-glass-hero {
+    border-radius: 1.35rem;
+    box-shadow: var(--icon-tile-shadow), 0 14px 30px rgba(15, 23, 42, 0.12);
+  }
+
+  .icon-glass-standard {
+    border-radius: 1rem;
+  }
+
+  .icon-glass-micro {
+    border-radius: 0.75rem;
+  }
+
+  .icon-tone-blue {
+    --icon-glyph-color: #2563eb;
+    --icon-tile-bg: rgba(37, 99, 235, 0.12);
+    --icon-tile-border: rgba(37, 99, 235, 0.18);
+    --icon-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48), 0 8px 18px rgba(37, 99, 235, 0.12);
+  }
+
+  .icon-tone-amber {
+    --icon-glyph-color: #d97706;
+    --icon-tile-bg: rgba(245, 158, 11, 0.14);
+    --icon-tile-border: rgba(217, 119, 6, 0.2);
+    --icon-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48), 0 8px 18px rgba(217, 119, 6, 0.11);
+  }
+
+  .icon-tone-purple {
+    --icon-glyph-color: #7c3aed;
+    --icon-tile-bg: rgba(124, 58, 237, 0.12);
+    --icon-tile-border: rgba(124, 58, 237, 0.18);
+    --icon-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48), 0 8px 18px rgba(124, 58, 237, 0.1);
+  }
+
+  .icon-tone-green {
+    --icon-glyph-color: #059669;
+    --icon-tile-bg: rgba(5, 150, 105, 0.12);
+    --icon-tile-border: rgba(5, 150, 105, 0.18);
+    --icon-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48), 0 8px 18px rgba(5, 150, 105, 0.1);
+  }
+
+  .icon-tone-ice {
+    --icon-glyph-color: #0284c7;
+    --icon-tile-bg: rgba(14, 165, 233, 0.12);
+    --icon-tile-border: rgba(2, 132, 199, 0.18);
+    --icon-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48), 0 8px 18px rgba(14, 165, 233, 0.1);
+  }
+
+  .icon-tone-neutral {
+    --icon-glyph-color: var(--text-secondary);
+    --icon-tile-bg: var(--surface-alpha);
+    --icon-tile-border: var(--panel-border-soft);
+    --icon-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+
   .glass-button-primary {
     background-color: rgba(29, 78, 216, 0.96);
     backdrop-filter: blur(24px);
@@ -840,6 +927,7 @@ html[data-ios-standalone] .glass-card-interactive,
 html[data-ios-standalone] .glass-button,
 html[data-ios-standalone] .glass-button-primary,
 html[data-ios-standalone] .glass-input,
+html[data-ios-standalone] .glass-icon-tile,
 html[data-ios-standalone] .panel-soft,
 html[data-ios-standalone] .panel-soft-strong,
 html[data-ios-standalone] .chat-liquid-header {

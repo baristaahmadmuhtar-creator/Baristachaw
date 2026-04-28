@@ -52,7 +52,13 @@ export function computeComposerBottomOffset({
     return Math.max(0, insetsBottom + idleGap + dockedInset);
   }
 
-  const lift = Math.max(0, keyboardHeight - insetsBottom + keyboardGap);
+  const normalizedKeyboardHeight = Math.max(0, keyboardHeight);
+  const normalizedInset = Math.max(0, insetsBottom);
+  if (normalizedKeyboardHeight <= normalizedInset) {
+    return Math.max(idleGap, keyboardGap);
+  }
+
+  const lift = Math.max(0, normalizedKeyboardHeight - normalizedInset + keyboardGap);
   return Math.max(idleGap, lift);
 }
 

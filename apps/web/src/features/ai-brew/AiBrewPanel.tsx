@@ -3821,7 +3821,7 @@ export function AiBrewPanel({
         data-disable-page-swipe
       >
         <div
-          className="w-full max-w-md rounded-[1.5rem] border panel-divider-subtle bg-[var(--bg-base)] p-4 shadow-[0_24px_64px_rgba(15,23,42,0.28)] dark:shadow-[0_28px_72px_rgba(0,0,0,0.45)] lg:p-5"
+          className="w-full max-w-md rounded-[1.5rem] border border-slate-200 bg-white p-4 text-slate-950 shadow-[0_24px_64px_rgba(15,23,42,0.28)] dark:border-white/15 dark:bg-slate-950 dark:text-white dark:shadow-[0_28px_72px_rgba(0,0,0,0.45)] lg:p-5"
           data-testid="ai-brew-generation-card"
         >
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-300">
@@ -3829,14 +3829,14 @@ export function AiBrewPanel({
           </div>
 
           <div className="mt-4 text-center">
-            <p className="text-base font-semibold text-primary">
+            <p className="text-base font-semibold text-slate-950 dark:text-white">
               {id ? 'Menyiapkan recipe brew' : 'Preparing your brew plan'}
             </p>
-            <p className="mt-1 text-sm leading-6 text-secondary">{generationStageDetail}</p>
+            <p className="mt-1 text-sm leading-6 text-slate-700 dark:text-slate-200">{generationStageDetail}</p>
           </div>
 
           <div className="mt-4 space-y-2">
-            <div className="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-secondary">
+            <div className="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-700 dark:text-slate-200">
               <span>{id ? `Tahap ${currentStageNumber}/${totalStages}` : `Stage ${currentStageNumber}/${totalStages}`}</span>
               <span>{generationProgressPercent}%</span>
             </div>
@@ -3861,10 +3861,10 @@ export function AiBrewPanel({
                   key={step.key}
                   className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-sm ${
                     state === 'done'
-                      ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-400/30 dark:bg-emerald-950 dark:text-emerald-100'
                       : state === 'active'
-                        ? 'border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-200'
-                        : 'border-slate-200/80 bg-white/80 text-secondary dark:border-white/10 dark:bg-white/5'
+                        ? 'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-400/30 dark:bg-blue-950 dark:text-blue-100'
+                        : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200'
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -3889,7 +3889,7 @@ export function AiBrewPanel({
             })}
           </div>
 
-          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-secondary">
+          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-700 dark:text-slate-200">
             <Clock3 size={13} className="text-blue-500" />
             <span>
               {id

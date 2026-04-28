@@ -117,14 +117,15 @@ test('auth me handler returns authenticated user from cookie token', () => {
   authMeHandler(req, res as any);
 
   assert.equal(res.statusCode, 200);
-  assert.deepEqual(JSON.parse(res.body), {
-    authenticated: true,
-    user: {
-      id: 'qa-me-user',
-      email: 'qa-me@example.com',
-      name: 'QA Me User',
-    },
-  });
+  const body = JSON.parse(res.body);
+  assert.equal(body.authenticated, true);
+  assert.equal(body.user.id, 'qa-me-user');
+  assert.equal(body.user.email, 'qa-me@example.com');
+  assert.equal(body.user.name, 'QA Me User');
+  assert.equal(typeof body.user.sessionIssuedAt, 'number');
+  assert.equal(typeof body.user.sessionExpiresAt, 'number');
+  assert.equal(body.session.issuedAt, body.user.sessionIssuedAt);
+  assert.equal(body.session.expiresAt, body.user.sessionExpiresAt);
 });
 
 test('auth me handler accepts a guest session token', () => {
@@ -147,8 +148,10 @@ test('auth me handler accepts a guest session token', () => {
   authMeHandler(req, res as any);
 
   assert.equal(res.statusCode, 200);
-  assert.deepEqual(JSON.parse(res.body), {
-    authenticated: true,
-    user: guestUser,
-  });
+  const body = JSON.parse(res.body);
+  assert.equal(body.authenticated, true);
+  assert.equal(body.user.id, guestUser.id);
+  assert.equal(body.user.provider, 'guest');
+  assert.equal(typeof body.user.sessionIssuedAt, 'number');
+  assert.equal(typeof body.user.sessionExpiresAt, 'number');
 });

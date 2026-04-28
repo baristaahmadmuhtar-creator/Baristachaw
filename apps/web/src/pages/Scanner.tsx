@@ -27,7 +27,7 @@ const MAX_SCANNER_INLINE_IMAGE_BYTES = 2_500_000;
 const SCANNER_IMAGE_MAX_DIMENSION = 1600;
 const LATTE_REQUEST_MAX_CHARS = 420;
 const currentColorIconStyle = { '--icon-glyph-color': 'currentColor' } as CSSProperties;
-const scannerModeActiveStyle = { backgroundColor: '#ffffff', color: '#111827' } as CSSProperties;
+const scannerModeActiveStyle = { backgroundColor: '#dbeafe', color: '#111827' } as CSSProperties;
 const scannerModeActiveLabelStyle = { color: '#111827' } as CSSProperties;
 
 function formatFileSize(bytes: number) {

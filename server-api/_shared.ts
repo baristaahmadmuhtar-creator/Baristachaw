@@ -392,6 +392,8 @@ export function classifyProviderError(
 type JwtPayload = {
   user?: { id?: string; [key: string]: unknown };
   userId?: string;
+  iat?: number;
+  exp?: number;
   [key: string]: unknown;
 };
 
@@ -399,6 +401,8 @@ export interface AuthContext {
   userId: string;
   user?: Record<string, unknown>;
   tokenSource: 'cookie' | 'bearer';
+  sessionIssuedAt?: number;
+  sessionExpiresAt?: number;
 }
 
 type AuthFailureCode = 'auth_required' | 'server_misconfigured';
@@ -473,7 +477,9 @@ function verifyAuthToken(token: string, secret: string, source: 'cookie' | 'bear
       };
     }
     const user = decoded.user && typeof decoded.user === 'object' ? decoded.user : undefined;
-    return { ok: true, auth: { userId, user, tokenSource: source } };
+    const sessionIssuedAt = typeof decoded.iat === 'number' ? decoded.iat * 1000 : undefined;
+    const sessionExpiresAt = typeof decoded.exp === 'number' ? decoded.exp * 1000 : undefined;
+    return { ok: true, auth: { userId, user, tokenSource: source, sessionIssuedAt, sessionExpiresAt } };
   } catch {
     return {
       ok: false,

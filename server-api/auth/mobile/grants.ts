@@ -5,7 +5,7 @@ export interface MobileAuthUser {
   email: string;
   name: string;
   picture: string;
-  provider: 'google' | 'apple' | 'email' | 'guest';
+  provider: 'google' | 'facebook' | 'apple' | 'email' | 'guest';
   isPrivateEmail?: boolean;
 }
 

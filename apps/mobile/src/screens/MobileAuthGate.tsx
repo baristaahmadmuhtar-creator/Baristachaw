@@ -34,6 +34,7 @@ type MobileAuthGateProps = {
   passwordRecoveryActive?: boolean;
   recoveryEmail?: string;
   onLoginGoogle: () => Promise<void>;
+  onLoginFacebook: () => Promise<void>;
   onEmailAuth: (payload: EmailAuthPayload) => Promise<void>;
   onPasswordReset: (payload: PasswordResetPayload) => Promise<string>;
   onPasswordUpdate: (payload: PasswordUpdatePayload) => Promise<void>;
@@ -160,6 +161,7 @@ export function MobileAuthGate({
   passwordRecoveryActive = false,
   recoveryEmail,
   onLoginGoogle,
+  onLoginFacebook,
   onEmailAuth,
   onPasswordReset,
   onPasswordUpdate,
@@ -188,6 +190,7 @@ export function MobileAuthGate({
   const copy = authCopy.modes[activeMode];
   const busy = Boolean(authBusyProvider);
   const googleBusy = authBusyProvider === 'google';
+  const facebookBusy = authBusyProvider === 'facebook';
   const emailBusy = authBusyProvider === 'email';
   const appleBusy = authBusyProvider === 'apple';
   const emailActionBusy = emailBusy && ['signIn', 'signUp', 'resetPassword', 'newPassword'].includes(activeMode);
@@ -340,6 +343,28 @@ export function MobileAuthGate({
         </View>
       )}
       <Text style={styles.primaryButtonText}>{googleBusy ? authCopy.googleOpening : authCopy.googleContinue}</Text>
+    </Pressable>
+  );
+
+  const renderFacebookButton = () => (
+    <Pressable
+      accessibilityRole="button"
+      disabled={!isOnline || busy || !supabaseAuthEnabled}
+      onPress={() => void onLoginFacebook()}
+      style={({ pressed }) => [
+        styles.secondaryButton,
+        (!isOnline || busy || !supabaseAuthEnabled) ? styles.disabled : null,
+        pressed && !busy ? styles.pressed : null,
+      ]}
+    >
+      {facebookBusy ? (
+        <ActivityIndicator color={theme.textPrimary} />
+      ) : (
+        <View style={styles.facebookIconBadge}>
+          <Text style={styles.facebookIconText}>f</Text>
+        </View>
+      )}
+      <Text style={styles.secondaryButtonText}>{facebookBusy ? authCopy.facebookOpening : authCopy.facebookContinue}</Text>
     </Pressable>
   );
 
@@ -680,6 +705,7 @@ export function MobileAuthGate({
 
           <View style={styles.card}>
             {activeMode !== 'newPassword' ? renderGoogleButton() : null}
+            {activeMode !== 'newPassword' ? renderFacebookButton() : null}
 
             {activeMode !== 'newPassword' && enableAppleSignIn ? (
               <Pressable
@@ -782,6 +808,21 @@ function createStyles(theme: WebParityAuthTheme) {
     googleIcon: {
       width: 18,
       height: 18,
+    },
+    facebookIconBadge: {
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#1877F2',
+    },
+    facebookIconText: {
+      color: '#FFFFFF',
+      fontFamily: uiTokens.fontFamily.bold,
+      fontSize: 20,
+      lineHeight: 22,
+      fontWeight: '800',
     },
     title: {
       color: theme.textPrimary,

@@ -5,7 +5,7 @@ import { useAuthModal } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
 import { getLanguageDirection } from '../../constants';
 import { EmailPasswordAuthForm } from './EmailPasswordAuthForm';
-import { AlertCircle, GoogleMark, ShieldCheck, Sparkles, UserRound, WalletCards, X } from '../icons';
+import { AlertCircle, FacebookMark, GoogleMark, ShieldCheck, Sparkles, UserRound, WalletCards, X } from '../icons';
 
 function resolveSourceLabel(source: string, t: Record<string, string>) {
   const sourceLabelMap: Record<string, string> = {
@@ -32,6 +32,7 @@ export function AuthEntryModal() {
     closeAuthModal,
     clearAuthError,
     startGoogleAuth,
+    startFacebookAuth,
     continueAsGuest,
   } = useAuthModal();
   const direction = getLanguageDirection(language);
@@ -158,6 +159,22 @@ export function AuthEntryModal() {
                       </span>
                     )}
                     {authBusy ? t.opening : t.continueWithGoogle}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => void startFacebookAuth()}
+                  disabled={authBusy || isOffline}
+                  className="w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3 text-sm font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    {authBusy ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <FacebookMark className="h-6 w-6 shrink-0" />
+                    )}
+                    {authBusy ? t.opening : t.continueWithFacebook}
                   </span>
                 </button>
 

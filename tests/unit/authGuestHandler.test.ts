@@ -147,7 +147,11 @@ test('guest auth handler reuses an existing guest identity', () => {
 
   assert.equal(res.statusCode, 200);
   const body = JSON.parse(res.body);
-  assert.deepEqual(body.user, existingUser);
+  assert.equal(body.user.id, existingUser.id);
+  assert.equal(body.user.provider, existingUser.provider);
+  assert.equal(body.user.isGuest, true);
+  assert.equal(typeof body.user.sessionIssuedAt, 'number');
+  assert.equal(typeof body.user.sessionExpiresAt, 'number');
 });
 
 test('guest auth handler reports server misconfiguration when JWT secret is absent', () => {

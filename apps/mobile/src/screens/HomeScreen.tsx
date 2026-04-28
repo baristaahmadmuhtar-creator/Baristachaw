@@ -42,6 +42,7 @@ type HomeScreenProps = {
   enableAppleSignIn: boolean;
   supabaseAuthEnabled: boolean;
   onLoginGoogle: () => Promise<void>;
+  onLoginFacebook: () => Promise<void>;
   onEmailAuth: (payload: EmailAuthPayload) => Promise<void>;
   onLoginApple: () => Promise<void>;
   onLogout: () => Promise<void>;
@@ -96,6 +97,7 @@ export function HomeScreen({
   enableAppleSignIn,
   supabaseAuthEnabled,
   onLoginGoogle,
+  onLoginFacebook,
   onEmailAuth,
   onLoginApple,
   onLogout,
@@ -299,6 +301,7 @@ export function HomeScreen({
 
   const emailAuthBusy = authBusyProvider === 'email';
   const googleAuthBusy = authBusyProvider === 'google';
+  const facebookAuthBusy = authBusyProvider === 'facebook';
   const authBusy = Boolean(authBusyProvider);
 
   const submitEmailAuth = async () => {
@@ -703,6 +706,16 @@ export function HomeScreen({
                     onPress={() => void onLoginGoogle()}
                     disabled={!isOnline || authBusy}
                   />
+                  {supabaseAuthEnabled ? (
+                    <ActionButton
+                      label={facebookAuthBusy ? (webT.opening || 'Opening...') : webT.continueWithFacebook}
+                      tone="secondary"
+                      fullWidth
+                      direction={direction}
+                      onPress={() => void onLoginFacebook()}
+                      disabled={!isOnline || authBusy}
+                    />
+                  ) : null}
                   {!supabaseAuthEnabled ? <Text selectable style={styles.accountHint}>{authFormCopy.googleFallback}</Text> : null}
                   {enableAppleSignIn ? (
                     <ActionButton
@@ -1003,5 +1016,4 @@ const styles = StyleSheet.create({
     lineHeight: uiTokens.typography.caption.lineHeight,
   },
 });
-
 

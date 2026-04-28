@@ -23,6 +23,8 @@ export type MobileAuthCopy = {
   newPasswordSaveFailed: string;
   googleOpening: string;
   googleContinue: string;
+  facebookOpening: string;
+  facebookContinue: string;
   guestContinue: string;
   showPassword: string;
   hidePassword: string;
@@ -100,6 +102,8 @@ const EN_AUTH_COPY: MobileAuthCopy = {
   newPasswordSaveFailed: 'The new password could not be saved yet.',
   googleOpening: 'Opening...',
   googleContinue: 'Continue with Google',
+  facebookOpening: 'Opening Facebook...',
+  facebookContinue: 'Continue with Facebook',
   guestContinue: 'Continue as guest',
   showPassword: 'Show',
   hidePassword: 'Hide',
@@ -166,6 +170,8 @@ const AUTH_COPY: Record<Language, MobileAuthCopy> = {
     newPasswordSaveFailed: 'Password baru belum bisa disimpan.',
     googleOpening: 'Membuka...',
     googleContinue: 'Lanjutkan dengan Google',
+    facebookOpening: 'Membuka Facebook...',
+    facebookContinue: 'Lanjutkan dengan Facebook',
     guestContinue: 'Lanjutkan sebagai tamu',
     showPassword: 'Tampilkan',
     hidePassword: 'Sembunyikan',

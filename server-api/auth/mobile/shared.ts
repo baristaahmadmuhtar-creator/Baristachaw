@@ -161,10 +161,13 @@ function normalizeSupabaseProvider(userData: Record<string, unknown>): MobileAut
   const appMetadata = readObject(userData.app_metadata);
   const provider = readString(appMetadata.provider).toLowerCase();
   if (provider === 'google') return 'google';
+  if (provider === 'facebook') return 'facebook';
 
   const identities = Array.isArray(userData.identities) ? userData.identities : [];
   const hasGoogleIdentity = identities.some((identity) => readString(readObject(identity).provider).toLowerCase() === 'google');
-  return hasGoogleIdentity ? 'google' : 'email';
+  if (hasGoogleIdentity) return 'google';
+  const hasFacebookIdentity = identities.some((identity) => readString(readObject(identity).provider).toLowerCase() === 'facebook');
+  return hasFacebookIdentity ? 'facebook' : 'email';
 }
 
 export async function fetchSupabaseProfile(accessToken: string, config = resolveSupabaseAuthConfig()): Promise<MobileAuthUser> {
@@ -193,7 +196,11 @@ export async function fetchSupabaseProfile(accessToken: string, config = resolve
     readString(userMetadata.full_name) ||
     readString(userMetadata.name) ||
     (email ? email.split('@')[0] : 'Baristachaw User');
-  const picture = readString(userMetadata.avatar_url) || readString(userMetadata.picture);
+  const pictureData = readObject(readObject(userMetadata.picture).data);
+  const picture =
+    readString(userMetadata.avatar_url) ||
+    readString(userMetadata.picture) ||
+    readString(pictureData.url);
   const id = readString(userData.id);
 
   if (!id) {

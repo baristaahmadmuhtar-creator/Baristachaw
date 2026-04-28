@@ -27,6 +27,8 @@ type GuestUser = {
   provider: 'guest';
   planCode: 'free';
   isGuest: true;
+  sessionIssuedAt?: number;
+  sessionExpiresAt?: number;
 };
 
 function buildCookieAttributes(options: {
@@ -66,6 +68,15 @@ function isGuestUser(value: unknown): value is GuestUser {
   if (!value || typeof value !== 'object') return false;
   const user = value as Record<string, unknown>;
   return user.provider === 'guest' && typeof user.id === 'string' && user.id.startsWith('guest_');
+}
+
+function withSessionMetadata(user: GuestUser): GuestUser {
+  const sessionIssuedAt = Date.now();
+  return {
+    ...user,
+    sessionIssuedAt,
+    sessionExpiresAt: sessionIssuedAt + GUEST_SESSION_TTL_SECONDS * 1000,
+  };
 }
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
@@ -109,7 +120,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
 
     const existingAuth = requireAuth(req);
     const existingUser = existingAuth.ok ? existingAuth.auth.user : null;
-    const user = isGuestUser(existingUser) ? existingUser : createGuestUser();
+    const user = withSessionMetadata(isGuestUser(existingUser) ? existingUser : createGuestUser());
     const token = jwt.sign({ user }, secret, { expiresIn: GUEST_SESSION_TTL_SECONDS });
     const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
 

@@ -3,6 +3,7 @@ import { ICON_REGISTRY } from './IconRegistry';
 import { GlassIconTile, type IconIntensity, type IconTone, type IconVariant } from './GlassIconTile';
 export { AppIconBrand } from './AppIconBrand';
 export { GoogleMark } from './GoogleMark';
+export { FacebookMark } from './FacebookMark';
 
 export interface AppIconProps extends Omit<LucideProps, 'color'> {
   tone?: IconTone;

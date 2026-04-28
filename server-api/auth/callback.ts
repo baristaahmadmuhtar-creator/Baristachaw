@@ -21,6 +21,19 @@ const AUTH_CALLBACK_RATE_LIMIT = {
   burstWindowMs: 60 * 1000,
 } as const;
 const AUTH_CALLBACK_SCRIPT_PATH = '/auth-callback.js';
+const WEB_OAUTH_SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
+const DEFAULT_FACEBOOK_GRAPH_API_VERSION = 'v25.0';
+
+type WebOAuthProvider = 'google' | 'facebook';
+type AppUser = Record<string, unknown> & {
+  id: string;
+  email?: string;
+  name?: string;
+  picture?: string;
+  provider?: WebOAuthProvider | 'apple' | 'email' | 'guest';
+  sessionIssuedAt?: number;
+  sessionExpiresAt?: number;
+};
 
 function buildCookieAttributes(options: {
   maxAgeSeconds: number;
@@ -61,6 +74,11 @@ function readCookie(req: VercelRequest, key: string): string {
   return '';
 }
 
+function readOauthProvider(req: VercelRequest): WebOAuthProvider {
+  const value = readCookie(req, 'oauth_provider').toLowerCase();
+  return value === 'facebook' ? 'facebook' : 'google';
+}
+
 function sanitizeReturnToPath(raw: string): string {
   const value = String(raw || '').trim();
   if (!value.startsWith('/') || value.startsWith('//')) return '/';
@@ -70,6 +88,28 @@ function sanitizeReturnToPath(raw: string): string {
   } catch {
     return '/';
   }
+}
+
+function readFacebookGraphVersion(): string {
+  const raw = String(process.env.FACEBOOK_GRAPH_API_VERSION || DEFAULT_FACEBOOK_GRAPH_API_VERSION).trim();
+  return /^v\d+\.\d+$/.test(raw) ? raw : DEFAULT_FACEBOOK_GRAPH_API_VERSION;
+}
+
+function readRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function readText(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function withSessionMetadata<T extends AppUser>(user: T, ttlSeconds = WEB_OAUTH_SESSION_TTL_SECONDS): T {
+  const sessionIssuedAt = Date.now();
+  return {
+    ...user,
+    sessionIssuedAt,
+    sessionExpiresAt: sessionIssuedAt + ttlSeconds * 1000,
+  };
 }
 
 function applyCallbackHtmlHeaders(res: VercelResponse): void {
@@ -168,6 +208,63 @@ async function handleMobileOAuthCallback(
   }
 }
 
+async function exchangeFacebookCodeForToken(params: {
+  code: string;
+  clientId: string;
+  clientSecret: string;
+  redirectUri: string;
+}): Promise<string> {
+  const tokenUrl = new URL(`https://graph.facebook.com/${readFacebookGraphVersion()}/oauth/access_token`);
+  tokenUrl.searchParams.set('client_id', params.clientId);
+  tokenUrl.searchParams.set('redirect_uri', params.redirectUri);
+  tokenUrl.searchParams.set('client_secret', params.clientSecret);
+  tokenUrl.searchParams.set('code', params.code);
+
+  const tokenResponse = await fetch(tokenUrl.toString(), { method: 'GET' });
+  const tokenData = await tokenResponse.json().catch(() => ({}));
+  if (!tokenResponse.ok) {
+    const error = readText(tokenData?.error?.message) || readText(tokenData?.error_description) || 'Failed to exchange Facebook code';
+    throw new Error(error);
+  }
+
+  const accessToken = readText(tokenData?.access_token);
+  if (!accessToken) {
+    throw new Error('Facebook token exchange did not return access token');
+  }
+  return accessToken;
+}
+
+async function fetchFacebookProfile(accessToken: string): Promise<AppUser> {
+  const profileUrl = new URL(`https://graph.facebook.com/${readFacebookGraphVersion()}/me`);
+  profileUrl.searchParams.set('fields', 'id,name,email,picture.type(large)');
+  profileUrl.searchParams.set('access_token', accessToken);
+
+  const profileResponse = await fetch(profileUrl.toString(), { method: 'GET' });
+  const profileData = await profileResponse.json().catch(() => ({}));
+  if (!profileResponse.ok) {
+    const error = readText(profileData?.error?.message) || 'Failed to fetch Facebook profile';
+    throw new Error(error);
+  }
+
+  const pictureUrl = readText(readRecord(readRecord(profileData?.picture).data).url);
+  const id = readText(profileData?.id);
+  const email = readText(profileData?.email);
+  const name = readText(profileData?.name) || (email ? email.split('@')[0] : 'Facebook User');
+
+  if (!id) throw new Error('Facebook profile missing id');
+  if (!email) {
+    throw new Error('Facebook did not return an email. Enable the email permission and use a Facebook account with a confirmed email.');
+  }
+
+  return {
+    id: `facebook_${id}`,
+    email,
+    name,
+    picture: pictureUrl,
+    provider: 'facebook',
+  };
+}
+
 function sendMobileCallbackHtml(res: VercelResponse, statusCode: number, body: string) {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
@@ -202,6 +299,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const redirectUri = `${appUrl}/api/auth/callback`;
   const returnTo = sanitizeReturnToPath(readCookie(req, 'oauth_return_to'));
+  const oauthProvider = readOauthProvider(req);
 
   const limit = checkRateLimit(req, '/api/auth/callback', 'anonymous', AUTH_CALLBACK_RATE_LIMIT);
   applyRateLimitHeaders(res, limit);
@@ -226,6 +324,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       throw new Error('Server authentication is not configured (JWT_SECRET missing).');
     }
 
+    const providerError = typeof req.query.error_description === 'string'
+      ? req.query.error_description
+      : typeof req.query.error === 'string'
+        ? req.query.error
+        : '';
+    if (providerError) {
+      throw new Error(providerError);
+    }
+
     if (!codeValue) {
       throw new Error('Missing OAuth code');
     }
@@ -244,49 +351,67 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       throw new Error('Invalid OAuth state');
     }
 
-    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-      throw new Error('Google OAuth credentials not configured');
-    }
+    let user: AppUser;
+    if (oauthProvider === 'facebook') {
+      const facebookClientId = (process.env.FACEBOOK_CLIENT_ID || process.env.FACEBOOK_APP_ID || '').trim();
+      const facebookClientSecret = (process.env.FACEBOOK_CLIENT_SECRET || process.env.FACEBOOK_APP_SECRET || '').trim();
+      if (!facebookClientId || !facebookClientSecret) {
+        throw new Error('Facebook OAuth credentials not configured');
+      }
 
-    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
+      const facebookAccessToken = await exchangeFacebookCodeForToken({
         code: codeValue,
-        client_id: process.env.GOOGLE_CLIENT_ID,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: redirectUri,
-        grant_type: 'authorization_code',
-      }),
-    });
+        clientId: facebookClientId,
+        clientSecret: facebookClientSecret,
+        redirectUri,
+      });
+      user = decorateUserWithAdminClaims(await fetchFacebookProfile(facebookAccessToken)) as AppUser;
+    } else {
+      if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        throw new Error('Google OAuth credentials not configured');
+      }
 
-    const tokenData = await tokenResponse.json();
-    if (!tokenResponse.ok) {
-      throw new Error(tokenData.error_description || 'Failed to exchange code');
+      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          code: codeValue,
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          client_secret: process.env.GOOGLE_CLIENT_SECRET,
+          redirect_uri: redirectUri,
+          grant_type: 'authorization_code',
+        }),
+      });
+
+      const tokenData = await tokenResponse.json();
+      if (!tokenResponse.ok) {
+        throw new Error(tokenData.error_description || 'Failed to exchange code');
+      }
+
+      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` },
+      });
+
+      const userData = await userInfoResponse.json();
+      if (!userInfoResponse.ok) {
+        throw new Error('Failed to fetch user info');
+      }
+
+      user = decorateUserWithAdminClaims({
+        id: userData.id,
+        email: userData.email,
+        name: userData.name,
+        picture: userData.picture,
+        provider: 'google',
+      }) as AppUser;
     }
 
-    const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-      headers: { Authorization: `Bearer ${tokenData.access_token}` },
-    });
-
-    const userData = await userInfoResponse.json();
-    if (!userInfoResponse.ok) {
-      throw new Error('Failed to fetch user info');
-    }
-
-    const user = decorateUserWithAdminClaims({
-      id: userData.id,
-      email: userData.email,
-      name: userData.name,
-      picture: userData.picture,
-      provider: 'google',
-    });
-
-    const token = jwt.sign({ user }, jwtSecret, { expiresIn: '7d' });
+    const sessionUser = withSessionMetadata(user);
+    const token = jwt.sign({ user: sessionUser }, jwtSecret, { expiresIn: WEB_OAUTH_SESSION_TTL_SECONDS });
 
     const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
     const authCookie = `auth_token=${token}; ${buildCookieAttributes({
-      maxAgeSeconds: 7 * 24 * 60 * 60,
+      maxAgeSeconds: WEB_OAUTH_SESSION_TTL_SECONDS,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
     })}`;
@@ -300,9 +425,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       secure: isProduction,
       sameSite: 'lax',
     })}`;
-    res.setHeader('Set-Cookie', [authCookie, clearStateCookie, clearReturnToCookie]);
+    const clearProviderCookie = `oauth_provider=; ${buildCookieAttributes({
+      maxAgeSeconds: 0,
+      secure: isProduction,
+      sameSite: 'lax',
+    })}`;
+    res.setHeader('Set-Cookie', [authCookie, clearStateCookie, clearReturnToCookie, clearProviderCookie]);
 
-    const encodedUser = encodeURIComponent(JSON.stringify(user));
+    const encodedUser = encodeURIComponent(JSON.stringify(sessionUser));
     const encodedTargetOrigin = encodeURIComponent(appOrigin || '*');
     const encodedReturnTo = encodeURIComponent(returnTo);
 
@@ -338,7 +468,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       secure: isProduction,
       sameSite: 'lax',
     })}`;
-    res.setHeader('Set-Cookie', [clearStateCookie, clearReturnToCookie]);
+    const clearProviderCookie = `oauth_provider=; ${buildCookieAttributes({
+      maxAgeSeconds: 0,
+      secure: isProduction,
+      sameSite: 'lax',
+    })}`;
+    res.setHeader('Set-Cookie', [clearStateCookie, clearReturnToCookie, clearProviderCookie]);
     const encodedReturnTo = encodeURIComponent(returnTo);
 
     applyCallbackHtmlHeaders(res);

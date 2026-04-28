@@ -12,6 +12,7 @@ import {
   AppIconBrand,
   ArrowRight,
   CheckCircle,
+  FacebookMark,
   GoogleMark,
   UserRound,
 } from '../components/icons';
@@ -23,7 +24,7 @@ interface AuthScreenProps {
 
 export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
   const { t } = useGlobalState();
-  const { isAuthenticated, authBusy, authError, isOffline, startGoogleAuth, continueAsGuest } = useAuthModal();
+  const { isAuthenticated, authBusy, authError, isOffline, startGoogleAuth, startFacebookAuth, continueAsGuest } = useAuthModal();
   const [success, setSuccess] = useState('');
   const isSignUp = intent === 'signUp';
   const authTitle = isSignUp ? t.authRouteSignupTitle : t.authRouteSigninTitle;
@@ -130,6 +131,25 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
                       <GoogleMark className="h-4 w-4" />
                     </span>
                     {t.continueWithGoogle}
+                    <ArrowRight className="hidden sm:block" size={18} variant="glyph" tone="neutral" style={{ '--icon-glyph-color': 'currentColor' } as CSSProperties} />
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={() => void startFacebookAuth()}
+                disabled={authBusy || isOffline}
+                className="mt-3 flex w-full items-center justify-center gap-3 rounded-2xl border border-glass bg-surface-alpha px-5 py-3.5 text-base font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55 focus-soft"
+              >
+                {authBusy ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    {t.opening}
+                  </>
+                ) : (
+                  <>
+                    <FacebookMark className="h-6 w-6 shrink-0" />
+                    {t.continueWithFacebook}
                     <ArrowRight className="hidden sm:block" size={18} variant="glyph" tone="neutral" style={{ '--icon-glyph-color': 'currentColor' } as CSSProperties} />
                   </>
                 )}

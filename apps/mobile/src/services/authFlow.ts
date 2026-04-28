@@ -25,7 +25,7 @@ function getAcceptedAuthSchemes(): Set<string> {
   return new Set([mobileEnv.appScheme, ...MIGRATION_AUTH_SCHEMES].map(normalizeAuthScheme));
 }
 
-function toSession(exchange: { accessToken: string; expiresAt: number; user: AuthSession['user'] }, fallbackProvider: 'google' | 'apple' | 'email'): AuthSession {
+function toSession(exchange: { accessToken: string; expiresAt: number; user: AuthSession['user'] }, fallbackProvider: 'google' | 'facebook' | 'apple' | 'email'): AuthSession {
   const provider = exchange.user.provider || fallbackProvider;
   return {
     accessToken: exchange.accessToken,
@@ -68,7 +68,7 @@ function normalizeSupabaseAuthError(error: unknown, fallback: string): string {
   return message || fallback;
 }
 
-async function exchangeSupabaseSessionForApiSession(apiClient: ApiClient, fallbackProvider: 'google' | 'email'): Promise<AuthSession> {
+async function exchangeSupabaseSessionForApiSession(apiClient: ApiClient, fallbackProvider: 'google' | 'facebook' | 'email'): Promise<AuthSession> {
   const supabase = getSupabaseClient();
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
   if (sessionError) throw sessionError;
@@ -92,6 +92,13 @@ async function exchangeSupabaseSessionForApiSession(apiClient: ApiClient, fallba
   }
 
   return toSession(exchange, fallbackProvider);
+}
+
+function resolveSupabaseSessionProvider(provider: unknown): 'google' | 'facebook' | 'email' {
+  const value = typeof provider === 'string' ? provider.trim().toLowerCase() : '';
+  if (value === 'google') return 'google';
+  if (value === 'facebook') return 'facebook';
+  return 'email';
 }
 
 async function completeSupabaseOAuthCallback(url: string): Promise<{ type: string }> {
@@ -232,6 +239,40 @@ export async function startGoogleSupabaseOAuth(apiClient: ApiClient): Promise<Au
   }
 }
 
+export async function startFacebookSupabaseOAuth(apiClient: ApiClient): Promise<AuthSession> {
+  try {
+    const supabase = getSupabaseClient();
+    const redirectTo = getSupabaseRedirectUri();
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'facebook',
+      options: {
+        redirectTo,
+        skipBrowserRedirect: true,
+        scopes: 'public_profile,email',
+      },
+    });
+
+    if (error) throw error;
+    if (!data?.url) {
+      throw new Error('Login Facebook belum siap. Coba ulang beberapa saat lagi.');
+    }
+
+    const authResult = await WebBrowser.openAuthSessionAsync(data.url, redirectTo, {
+      createTask: false,
+      showTitle: false,
+    });
+
+    if (authResult.type !== 'success' || !authResult.url) {
+      throw new Error('Masuk dengan Facebook dibatalkan sebelum selesai.');
+    }
+
+    await completeSupabaseOAuthCallback(authResult.url);
+    return await exchangeSupabaseSessionForApiSession(apiClient, 'facebook');
+  } catch (error) {
+    throw new Error(normalizeSupabaseAuthError(error, 'Gagal masuk dengan Facebook.'));
+  }
+}
+
 export async function startEmailSupabaseAuth(apiClient: ApiClient, payload: EmailAuthPayload): Promise<EmailAuthResult> {
   const supabase = getSupabaseClient();
   const email = payload.email.trim().toLowerCase();
@@ -321,7 +362,7 @@ export async function restoreSupabaseMobileSession(apiClient: ApiClient): Promis
   if (error) throw error;
   if (!data.session?.access_token) return null;
 
-  const provider = data.session.user?.app_metadata?.provider === 'google' ? 'google' : 'email';
+  const provider = resolveSupabaseSessionProvider(data.session.user?.app_metadata?.provider);
   return exchangeSupabaseSessionForApiSession(apiClient, provider);
 }
 
@@ -336,7 +377,7 @@ export async function completeSupabaseDeepLink(apiClient: ApiClient, url: string
     return { kind: 'passwordRecovery', email: data.session?.user?.email || undefined };
   }
 
-  const provider = data.session?.user?.app_metadata?.provider === 'google' ? 'google' : 'email';
+  const provider = resolveSupabaseSessionProvider(data.session?.user?.app_metadata?.provider);
   const session = await exchangeSupabaseSessionForApiSession(apiClient, provider);
   return { kind: 'signIn', session };
 }

@@ -1,8 +1,11 @@
 import { resolveAuthInitError } from './authError';
 
+type OAuthProvider = 'google' | 'facebook';
+
 interface StartServerOAuthLoginOptions {
   endpoint?: string;
   fallbackMessage?: string;
+  provider?: OAuthProvider;
 }
 
 interface StartServerOAuthLoginResult {
@@ -23,19 +26,15 @@ function shouldUseRedirectOnly() {
   return standaloneByMedia || navigatorStandalone || isIOS || isSafari;
 }
 
-function openWarmupPopup() {
+function openWarmupPopup(provider: OAuthProvider) {
   try {
     const popup = window.open('', 'oauth_popup', 'width=600,height=700');
     if (!popup) return null;
     try {
       const lang = typeof document !== 'undefined' ? (document.documentElement.lang || '') : '';
       const isId = /^id(?:-|$)/i.test(lang);
-      const isAr = /^ar(?:-|$)/i.test(lang);
-      popup.document.title = isId
-        ? 'Baristachaw Masuk'
-        : isAr
-          ? 'Baristachaw تسجيل الدخول'
-          : 'Baristachaw Sign In';
+      const providerLabel = provider === 'facebook' ? 'Facebook' : 'Google';
+      popup.document.title = isId ? 'Baristachaw Masuk' : 'Baristachaw Sign In';
 
       const body = popup.document.body;
       body.style.margin = '0';
@@ -43,16 +42,14 @@ function openWarmupPopup() {
       body.style.display = 'grid';
       body.style.placeItems = 'center';
       body.style.minHeight = '100vh';
-      body.style.direction = isAr ? 'rtl' : 'ltr';
+      body.style.direction = /^ar(?:-|$)/i.test(lang) ? 'rtl' : 'ltr';
 
       const message = popup.document.createElement('p');
       message.style.opacity = '.72';
       message.style.fontSize = '14px';
       message.textContent = isId
-        ? 'Membuka masuk Google...'
-        : isAr
-          ? 'جار فتح تسجيل الدخول عبر Google...'
-          : 'Opening Google sign-in...';
+        ? `Membuka masuk ${providerLabel}...`
+        : `Opening ${providerLabel} sign-in...`;
 
       body.replaceChildren(message);
     } catch {
@@ -78,12 +75,14 @@ function buildReturnTo() {
 export async function startServerOAuthLogin({
   endpoint = '/api/auth/url',
   fallbackMessage = 'Gagal memulai login OAuth',
+  provider = 'google',
 }: StartServerOAuthLoginOptions = {}): Promise<StartServerOAuthLoginResult> {
-  const popup = shouldUseRedirectOnly() ? null : openWarmupPopup();
+  const popup = shouldUseRedirectOnly() ? null : openWarmupPopup(provider);
   try {
     const returnTo = buildReturnTo();
     const requestUrl = new URL(endpoint, window.location.origin);
     requestUrl.searchParams.set('returnTo', returnTo);
+    requestUrl.searchParams.set('provider', provider);
 
     const response = await fetch(requestUrl.toString(), { credentials: 'same-origin' });
     const payload = await response.json().catch(() => ({}));

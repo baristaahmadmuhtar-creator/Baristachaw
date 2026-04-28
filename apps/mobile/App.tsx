@@ -29,6 +29,7 @@ import {
   sendPasswordResetSupabaseEmail,
   startAppleMobileOAuth,
   startEmailSupabaseAuth,
+  startFacebookSupabaseOAuth,
   startGoogleMobileOAuth,
   startGoogleSupabaseOAuth,
   updateSupabasePassword,
@@ -48,7 +49,7 @@ type IoniconName = keyof typeof Ionicons.glyphMap;
 
 type RootMode = 'web_parity' | 'native';
 
-type AuthProvider = 'google' | 'apple' | 'email' | null;
+type AuthProvider = 'google' | 'facebook' | 'apple' | 'email' | null;
 
 const TAB_ICONS: Record<string, { active: IoniconName; idle: IoniconName }> = {
   Home: { active: 'home', idle: 'home-outline' },
@@ -210,7 +211,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       : null);
   }, [session?.user]);
 
-  const persistSession = useCallback(async (nextSession: AuthSession, provider: 'google' | 'apple' | 'email') => {
+  const persistSession = useCallback(async (nextSession: AuthSession, provider: 'google' | 'facebook' | 'apple' | 'email') => {
     await saveAuthSession(nextSession);
     setSession(nextSession);
     setAuthError(null);
@@ -428,6 +429,33 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
     }
   };
 
+  const handleFacebookLogin = async () => {
+    if (!isSupabaseAuthConfigured) {
+      setAuthError('Masuk dengan Facebook membutuhkan Supabase Auth. Aktifkan provider Facebook di Supabase untuk build ini.');
+      return;
+    }
+    if (!isOnline) {
+      setAuthError('Tidak ada koneksi internet. Sambungkan lagi untuk masuk.');
+      return;
+    }
+
+    setAuthBusyProvider('facebook');
+    setAuthError(null);
+    trackEvent('auth_started', { provider: 'facebook', surface: 'web_parity_gate' });
+
+    try {
+      const nextSession = await startFacebookSupabaseOAuth(apiClient);
+      await persistSession(nextSession, 'facebook');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Gagal masuk dengan Facebook.';
+      setAuthError(message);
+      captureError(error, { phase: 'web_parity_login_facebook' });
+      trackEvent('action_failed', { action: 'auth_login', provider: 'facebook', message, surface: 'web_parity_gate' });
+    } finally {
+      setAuthBusyProvider(null);
+    }
+  };
+
   const handleEmailAuth = async (payload: EmailAuthPayload) => {
     if (!isSupabaseAuthConfigured) {
       setAuthError('Masuk dengan email belum tersedia di perangkat ini. Gunakan Google untuk melanjutkan.');
@@ -576,6 +604,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
         passwordRecoveryActive={passwordRecoveryActive}
         recoveryEmail={passwordRecoveryEmail}
         onLoginGoogle={handleGoogleLogin}
+        onLoginFacebook={handleFacebookLogin}
         onEmailAuth={handleEmailAuth}
         onPasswordReset={handlePasswordReset}
         onPasswordUpdate={handlePasswordUpdate}
@@ -837,7 +866,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
     }
   }, [booting, onBootReady, session]);
 
-  const persistSession = useCallback(async (nextSession: AuthSession, provider: 'google' | 'apple' | 'email') => {
+  const persistSession = useCallback(async (nextSession: AuthSession, provider: 'google' | 'facebook' | 'apple' | 'email') => {
     await saveAuthSession(nextSession);
     setSession(nextSession);
     setAuthError(null);
@@ -934,6 +963,36 @@ function NativeApp({ onBootReady }: NativeAppProps) {
       captureError(error, { phase: 'login_google' });
       trackEvent('auth_fail_google', { message });
       trackEvent('action_failed', { action: 'auth_login', provider: 'google', message });
+      Alert.alert(shellCopy.signInFailedTitle, message);
+    } finally {
+      setAuthBusyProvider(null);
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    if (!isSupabaseAuthConfigured) {
+      setAuthError(shellCopy.supabaseUnavailable);
+      return;
+    }
+
+    if (!isOnline) {
+      setAuthError(shellCopy.offlineSignIn);
+      trackEvent('offline_gate_seen', { surface: 'auth', provider: 'facebook' });
+      return;
+    }
+
+    setAuthBusyProvider('facebook');
+    setAuthError(null);
+    trackEvent('auth_started', { provider: 'facebook' });
+
+    try {
+      const nextSession = await startFacebookSupabaseOAuth(apiClient);
+      await persistSession(nextSession, 'facebook');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Gagal masuk dengan Facebook.';
+      setAuthError(message);
+      captureError(error, { phase: 'login_facebook' });
+      trackEvent('action_failed', { action: 'auth_login', provider: 'facebook', message });
       Alert.alert(shellCopy.signInFailedTitle, message);
     } finally {
       setAuthBusyProvider(null);
@@ -1095,6 +1154,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
                 enableAppleSignIn={mobileEnv.enableAppleSignIn}
                 supabaseAuthEnabled={isSupabaseAuthConfigured}
                 onLoginGoogle={handleGoogleLogin}
+                onLoginFacebook={handleFacebookLogin}
                 onEmailAuth={handleEmailAuth}
                 onLoginApple={handleAppleLogin}
                 onLogout={handleLogout}

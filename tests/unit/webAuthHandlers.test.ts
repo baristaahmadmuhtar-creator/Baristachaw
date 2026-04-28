@@ -171,6 +171,48 @@ test('auth url falls back to the active local host with http when forwarded prot
   );
 });
 
+test('auth url can start Facebook OAuth with sanitized state cookies', async () => {
+  const originalFacebookClientId = process.env.FACEBOOK_CLIENT_ID;
+  const req = {
+    method: 'GET',
+    query: {
+      provider: 'facebook',
+      returnTo: '/scanner?mode=label',
+    },
+    headers: {
+      host: 'baristaclaw.vercel.app',
+      'x-forwarded-proto': 'https',
+    },
+    socket: {
+      remoteAddress: '203.0.113.46',
+    },
+  } as any;
+  const res = createMockRes() as any;
+
+  process.env.FACEBOOK_CLIENT_ID = 'unit-facebook-client-id';
+  try {
+    authUrlHandler(req, res);
+  } finally {
+    if (typeof originalFacebookClientId === 'string') process.env.FACEBOOK_CLIENT_ID = originalFacebookClientId;
+    else delete process.env.FACEBOOK_CLIENT_ID;
+  }
+
+  assert.equal(res.statusCode, 200);
+  const payload = JSON.parse(res.body) as { url: string; provider: string };
+  const url = new URL(payload.url);
+  assert.equal(payload.provider, 'facebook');
+  assert.equal(url.hostname, 'www.facebook.com');
+  assert.equal(url.searchParams.get('client_id'), 'unit-facebook-client-id');
+  assert.equal(url.searchParams.get('scope'), 'public_profile,email');
+  assert.equal(url.searchParams.get('redirect_uri'), 'https://baristaclaw.vercel.app/api/auth/callback');
+  const cookies = res.headers.get('set-cookie');
+  assert.ok(Array.isArray(cookies));
+  if (Array.isArray(cookies)) {
+    assert.ok(cookies.some((value) => value.startsWith('oauth_provider=facebook;')));
+    assert.ok(cookies.some((value) => value.startsWith('oauth_return_to=%2Fscanner%3Fmode%3Dlabel;')));
+  }
+});
+
 test('auth callback success page uses the active request host when APP_URL and VERCEL_URL are missing', async () => {
   const originalAppUrl = process.env.APP_URL;
   const originalVercelUrl = process.env.VERCEL_URL;
@@ -248,6 +290,86 @@ test('auth callback success page uses the active request host when APP_URL and V
   assert.match(tokenRequestBody, /redirect_uri=https%3A%2F%2Fpreview\.baristachaw\.local%3A3100%2Fapi%2Fauth%2Fcallback/);
   assert.match(res.body, /data-target-origin="https%3A%2F%2Fpreview\.baristachaw\.local%3A3100"/);
   assert.match(res.body, /data-return-to="%2Fchat%3Fdraft%3D1"/);
+});
+
+test('auth callback exchanges Facebook code and stores normalized profile', async () => {
+  const originalAppUrl = process.env.APP_URL;
+  const originalJwtSecret = process.env.JWT_SECRET;
+  const originalFacebookClientId = process.env.FACEBOOK_CLIENT_ID;
+  const originalFacebookClientSecret = process.env.FACEBOOK_CLIENT_SECRET;
+  const originalFetch = globalThis.fetch;
+  const req = {
+    method: 'GET',
+    query: {
+      code: 'facebook-code-123',
+      state: 'oauth-state-facebook',
+    },
+    headers: {
+      host: 'baristaclaw.vercel.app',
+      'x-forwarded-proto': 'https',
+      cookie: `oauth_state=${encodeURIComponent('oauth-state-facebook')}; oauth_provider=facebook; oauth_return_to=${encodeURIComponent('/chat')}`,
+    },
+    cookies: {
+      oauth_state: 'oauth-state-facebook',
+      oauth_provider: 'facebook',
+      oauth_return_to: '/chat',
+    },
+    socket: {
+      remoteAddress: '203.0.113.47',
+    },
+  } as any;
+  const res = createMockRes() as any;
+
+  delete process.env.APP_URL;
+  process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
+  process.env.FACEBOOK_CLIENT_ID = 'unit-facebook-client-id';
+  process.env.FACEBOOK_CLIENT_SECRET = 'unit-facebook-client-secret';
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    if (url.startsWith('https://graph.facebook.com/v25.0/oauth/access_token')) {
+      return {
+        ok: true,
+        json: async () => ({ access_token: 'facebook-access-token' }),
+      } as Response;
+    }
+    if (url.startsWith('https://graph.facebook.com/v25.0/me')) {
+      return {
+        ok: true,
+        json: async () => ({
+          id: 'fb-user-1',
+          email: 'facebook@example.com',
+          name: 'Facebook User',
+          picture: { data: { url: 'https://example.com/fb-avatar.jpg' } },
+        }),
+      } as Response;
+    }
+    throw new Error(`Unexpected fetch URL: ${url}`);
+  }) as typeof fetch;
+
+  try {
+    await callbackHandler(req, res);
+  } finally {
+    if (typeof originalAppUrl === 'string') process.env.APP_URL = originalAppUrl;
+    else delete process.env.APP_URL;
+    if (typeof originalJwtSecret === 'string') process.env.JWT_SECRET = originalJwtSecret;
+    else delete process.env.JWT_SECRET;
+    if (typeof originalFacebookClientId === 'string') process.env.FACEBOOK_CLIENT_ID = originalFacebookClientId;
+    else delete process.env.FACEBOOK_CLIENT_ID;
+    if (typeof originalFacebookClientSecret === 'string') process.env.FACEBOOK_CLIENT_SECRET = originalFacebookClientSecret;
+    else delete process.env.FACEBOOK_CLIENT_SECRET;
+    globalThis.fetch = originalFetch;
+  }
+
+  assert.equal(res.statusCode, 200);
+  assert.match(res.body, /facebook_fb-user-1/);
+  assert.match(res.body, /facebook%40example\.com/);
+  assert.match(res.body, /data-return-to="%2Fchat"/);
+  const cookies = res.headers.get('set-cookie');
+  assert.ok(Array.isArray(cookies));
+  if (Array.isArray(cookies)) {
+    assert.ok(cookies.some((value) => value.startsWith('auth_token=')));
+    assert.ok(cookies.some((value) => value.startsWith('oauth_provider=;')));
+  }
 });
 
 test('auth callback handles signed mobile OAuth state and returns app deep link', async () => {

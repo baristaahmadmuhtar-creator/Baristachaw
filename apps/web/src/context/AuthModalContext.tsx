@@ -11,10 +11,12 @@ export type AuthUser = {
   email?: string;
   picture?: string;
   role?: string;
-  provider?: 'google' | 'apple' | 'email' | 'guest' | string;
+  provider?: 'google' | 'facebook' | 'apple' | 'email' | 'guest' | string;
   planCode?: string;
   isGuest?: boolean;
   isAdmin?: boolean;
+  sessionIssuedAt?: number;
+  sessionExpiresAt?: number;
 };
 
 export type EmailAuthMode = 'signIn' | 'signUp';
@@ -81,6 +83,7 @@ type AuthModalContextValue = {
   clearAuthError: () => void;
   refreshAuthState: (options?: { silent?: boolean; retryDelaysMs?: number[] }) => Promise<boolean>;
   startGoogleAuth: () => Promise<void>;
+  startFacebookAuth: () => Promise<void>;
   authenticateWithEmail: (input: EmailAuthInput) => Promise<EmailAuthResult>;
   sendPasswordResetEmail: (email: string) => Promise<EmailPasswordResetResult>;
   updateRecoveredPassword: (input: EmailPasswordUpdateInput) => Promise<EmailAuthResult>;
@@ -420,7 +423,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('focus', onWindowFocus);
   }, [refreshAuthState]);
 
-  const startGoogleAuth = useCallback(async () => {
+  const startOAuthAuth = useCallback(async (provider: 'google' | 'facebook') => {
     setAuthBusy(true);
     setAuthError(null);
     oauthResultHandledRef.current = false;
@@ -435,7 +438,10 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
 
     try {
       const copy = getLocalizedCopy();
-      const { mode, popup } = await startServerOAuthLogin({ fallbackMessage: copy.connectionFailed || copy.error });
+      const { mode, popup } = await startServerOAuthLogin({
+        provider,
+        fallbackMessage: copy.connectionFailed || copy.error,
+      });
       if (mode === 'popup') {
         oauthPopupRef.current = popup;
         startOauthPopupMonitor();
@@ -449,6 +455,14 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
       setAuthBusy(false);
     }
   }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline, startOauthPopupMonitor]);
+
+  const startGoogleAuth = useCallback(async () => {
+    await startOAuthAuth('google');
+  }, [startOAuthAuth]);
+
+  const startFacebookAuth = useCallback(async () => {
+    await startOAuthAuth('facebook');
+  }, [startOAuthAuth]);
 
   const authenticateWithEmail = useCallback(async (input: EmailAuthInput): Promise<EmailAuthResult> => {
     oauthResultHandledRef.current = true;
@@ -667,6 +681,30 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     }
   }, [clearOauthPopupMonitor]);
 
+  useEffect(() => {
+    const expiresAt = Number(user?.sessionExpiresAt || 0);
+    if (!expiresAt) return undefined;
+
+    const delay = Math.max(0, expiresAt - Date.now());
+    const timeoutId = window.setTimeout(() => {
+      if (!isMountedRef.current) return;
+      oauthResultHandledRef.current = true;
+      refreshRequestIdRef.current += 1;
+      refreshControllerRef.current?.abort();
+      refreshControllerRef.current = null;
+      clearOauthPopupMonitor({ closePopup: true });
+      void fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => undefined);
+      const copy = getLocalizedCopy();
+      setUser(null);
+      setAuthChecking(false);
+      setAuthBusy(false);
+      setAuthError(copy.authSessionExpired || copy.authModalCancelled || 'Session expired. Please sign in again.');
+      setIsOpen(true);
+    }, Math.min(delay, 2_147_483_647));
+
+    return () => window.clearTimeout(timeoutId);
+  }, [clearOauthPopupMonitor, getLocalizedCopy, user?.sessionExpiresAt]);
+
   const value = useMemo<AuthModalContextValue>(() => ({
     isOpen,
     source,
@@ -682,6 +720,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     clearAuthError,
     refreshAuthState,
     startGoogleAuth,
+    startFacebookAuth,
     authenticateWithEmail,
     sendPasswordResetEmail,
     updateRecoveredPassword,
@@ -703,6 +742,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     source,
     sendPasswordResetEmail,
     startGoogleAuth,
+    startFacebookAuth,
     continueAsGuest,
     logout,
     updateRecoveredPassword,

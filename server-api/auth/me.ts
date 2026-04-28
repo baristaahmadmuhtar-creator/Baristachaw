@@ -33,7 +33,15 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
         });
     }
 
-    const baseUser = authResult.auth.user || { id: authResult.auth.userId };
+    const session = {
+        issuedAt: authResult.auth.sessionIssuedAt,
+        expiresAt: authResult.auth.sessionExpiresAt,
+    };
+    const baseUser = {
+        ...(authResult.auth.user || { id: authResult.auth.userId }),
+        sessionIssuedAt: session.issuedAt,
+        sessionExpiresAt: session.expiresAt,
+    };
     const admin = getAdminAccess(authResult.auth);
     const user = admin.isAdmin
         ? {
@@ -42,5 +50,5 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
             isAdmin: true,
         }
         : baseUser;
-    return res.json({ authenticated: true, user });
+    return res.json({ authenticated: true, user, session });
 }

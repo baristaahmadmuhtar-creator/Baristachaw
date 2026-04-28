@@ -116,7 +116,7 @@ export interface ResolvedResponseProfile {
   expectation: ExpectationProfile;
 }
 
-export type AuthProvider = 'google' | 'apple' | 'email' | 'guest';
+export type AuthProvider = 'google' | 'facebook' | 'apple' | 'email' | 'guest';
 
 export interface UserProfile {
   id: string;

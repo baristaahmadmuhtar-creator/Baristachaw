@@ -26,6 +26,10 @@ type PasswordAuthMode = 'signIn' | 'signUp';
 type EmailAuthMode = PasswordAuthMode | 'reset' | 'updatePassword';
 
 type SupabaseAuthPayload = Record<string, unknown>;
+type AppSessionUser = NonNullable<Awaited<ReturnType<typeof resolveAuthenticatedUser>>> & {
+  sessionIssuedAt?: number;
+  sessionExpiresAt?: number;
+};
 
 function readString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
@@ -41,6 +45,15 @@ function normalizeEmail(value: unknown): string {
 
 function normalizeDisplayName(value: unknown): string {
   return readString(value).replace(/\s+/g, ' ').slice(0, 80);
+}
+
+function withSessionMetadata(user: NonNullable<Awaited<ReturnType<typeof resolveAuthenticatedUser>>>): AppSessionUser {
+  const sessionIssuedAt = Date.now();
+  return {
+    ...user,
+    sessionIssuedAt,
+    sessionExpiresAt: sessionIssuedAt + EMAIL_SESSION_TTL_SECONDS * 1000,
+  };
 }
 
 function buildEmailRedirectUrl(pathAndQuery: string): string {
@@ -264,7 +277,7 @@ async function resolveAuthenticatedUserFromAccessToken(accessToken: string) {
   });
 }
 
-function setAppSessionCookie(res: VercelResponse, user: NonNullable<Awaited<ReturnType<typeof resolveAuthenticatedUser>>>, jwtSecret: string) {
+function setAppSessionCookie(res: VercelResponse, user: AppSessionUser, jwtSecret: string) {
   const token = jwt.sign({ user }, jwtSecret, { expiresIn: EMAIL_SESSION_TTL_SECONDS });
   const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
   res.setHeader('Set-Cookie', `auth_token=${token}; ${buildCookieAttributes({
@@ -379,14 +392,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    setAppSessionCookie(res, user, jwtSecret);
+    const sessionUser = withSessionMetadata(user);
+    setAppSessionCookie(res, sessionUser, jwtSecret);
 
     return res.status(200).json({
       ok: true,
       requestId,
       authenticated: true,
       passwordUpdated: mode === 'updatePassword' || undefined,
-      user,
+      user: sessionUser,
       expiresInSec: EMAIL_SESSION_TTL_SECONDS,
     });
   } catch (error) {

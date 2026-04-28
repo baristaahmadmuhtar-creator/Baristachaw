@@ -85,6 +85,7 @@ test('auth logout handler clears auth and oauth cookies in development', () => {
     'auth_token=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax',
     'oauth_state=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax',
     'oauth_return_to=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax',
+    'oauth_provider=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax',
   ]);
 });
 
@@ -108,5 +109,6 @@ test('auth logout handler keeps secure cookie attributes in production', () => {
     'auth_token=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=None',
     'oauth_state=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax',
     'oauth_return_to=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax',
+    'oauth_provider=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax',
   ]);
 });

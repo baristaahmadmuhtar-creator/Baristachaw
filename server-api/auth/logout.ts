@@ -53,6 +53,11 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
             secure: isProduction,
             sameSite: 'lax',
         })}`,
+        `oauth_provider=; ${buildCookieAttributes({
+            maxAgeSeconds: 0,
+            secure: isProduction,
+            sameSite: 'lax',
+        })}`,
     ]);
     res.json({ ok: true, requestId, success: true });
 }

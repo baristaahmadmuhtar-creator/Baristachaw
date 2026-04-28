@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type CSSProperties } from "react";
 import { motion } from "motion/react";
-import { AlertCircle, Bookmark, BookmarkCheck, Camera, Loader2, RefreshCw, Sparkles, Wand2 } from "lucide-react";
+import { AlertCircle, Bookmark, BookmarkCheck, Loader2, RefreshCw } from "lucide-react";
 import Markdown from "react-markdown";
 import { analyzeImage, editLatteArtImage } from "../services/gemini";
 import { getByFeatureKey, setByFeatureKey } from "../services/offlineCache";
@@ -12,7 +12,12 @@ import { useRuntimeDisplayMode } from "../hooks/useRuntimeDisplayMode";
 import { ensureCameraPermission, type CameraPermissionResult } from "../utils/cameraPermission";
 import { getLanguageLocale, getLanguageMeta } from "../constants";
 import { buildScannerPrompt } from "../features/scanner/buildScannerPrompt";
-import { GoogleMark } from "../components/icons";
+import {
+  Camera as AppCameraIcon,
+  GoogleMark,
+  Sparkles as AppSparklesIcon,
+  Wand2 as AppWand2Icon,
+} from "../components/icons";
 import { useAiAccessGate } from "../components/billing/AiAccessGate";
 
 type ScannerMode = "auto" | "ocr" | "latte";
@@ -21,6 +26,9 @@ const MAX_SCANNER_SOURCE_IMAGE_BYTES = 12 * 1024 * 1024;
 const MAX_SCANNER_INLINE_IMAGE_BYTES = 2_500_000;
 const SCANNER_IMAGE_MAX_DIMENSION = 1600;
 const LATTE_REQUEST_MAX_CHARS = 420;
+const currentColorIconStyle = { '--icon-glyph-color': 'currentColor' } as CSSProperties;
+const scannerModeActiveStyle = { backgroundColor: '#ffffff', color: '#111827' } as CSSProperties;
+const scannerModeActiveLabelStyle = { color: '#111827' } as CSSProperties;
 
 function formatFileSize(bytes: number) {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
@@ -362,9 +370,7 @@ export function Scanner() {
     >
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 flex flex-1 flex-col">
         <header className="mb-6 text-center shrink-0 panel-soft rounded-3xl px-5 py-5 lg:py-6">
-          <div className="w-14 h-14 rounded-[1.25rem] bg-orange-500/10 flex items-center justify-center text-orange-500 mx-auto mb-3 shadow-inner">
-            <Camera size={28} />
-          </div>
+          <AppCameraIcon size={56} variant="tile" tone="amber" className="mx-auto mb-3" />
           <h1 className="text-3xl font-semibold tracking-tight mb-2">{t.scannerTitle}</h1>
           <p className="text-secondary text-base">{t.scannerSubtitle}</p>
         </header>
@@ -389,24 +395,33 @@ export function Scanner() {
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-2 mb-4 p-1.5 panel-soft rounded-[1.25rem] max-w-md lg:max-w-2xl mx-auto shrink-0 w-full">
+        <div className="grid grid-cols-3 gap-2 mb-4 p-1.5 panel-soft rounded-[1.25rem] max-w-md lg:max-w-2xl mx-auto shrink-0 w-full" role="group" aria-label={t.scannerTitle}>
           <button
+            type="button"
             onClick={() => setModeAndReset("auto")}
-            className={`min-w-0 min-h-[52px] px-2 py-2.5 text-[11px] sm:text-sm font-medium rounded-xl transition-all duration-300 ease-out flex items-center justify-center text-center leading-tight ${mode === "auto" ? "bg-white shadow-md text-black scale-[1.02] dark:bg-white/20 dark:text-white" : "text-secondary hover:text-primary"}`}
+            aria-pressed={mode === "auto"}
+            style={mode === "auto" ? scannerModeActiveStyle : undefined}
+            className={`focus-soft min-w-0 min-h-[52px] px-2 py-2.5 text-[11px] sm:text-sm font-medium rounded-xl transition-all duration-300 ease-out flex items-center justify-center text-center leading-tight ${mode === "auto" ? "scanner-mode-active shadow-md scale-[1.02]" : "text-secondary hover:text-primary"}`}
           >
-            {t.scannerModeAuto}
+            <span style={mode === "auto" ? scannerModeActiveLabelStyle : undefined}>{t.scannerModeAuto}</span>
           </button>
           <button
+            type="button"
             onClick={() => setModeAndReset("ocr")}
-            className={`min-w-0 min-h-[52px] px-2 py-2.5 text-[11px] sm:text-sm font-medium rounded-xl transition-all duration-300 ease-out flex items-center justify-center text-center leading-tight ${mode === "ocr" ? "bg-white shadow-md text-black scale-[1.02] dark:bg-white/20 dark:text-white" : "text-secondary hover:text-primary"}`}
+            aria-pressed={mode === "ocr"}
+            style={mode === "ocr" ? scannerModeActiveStyle : undefined}
+            className={`focus-soft min-w-0 min-h-[52px] px-2 py-2.5 text-[11px] sm:text-sm font-medium rounded-xl transition-all duration-300 ease-out flex items-center justify-center text-center leading-tight ${mode === "ocr" ? "scanner-mode-active shadow-md scale-[1.02]" : "text-secondary hover:text-primary"}`}
           >
-            {t.scannerModeOcr}
+            <span style={mode === "ocr" ? scannerModeActiveLabelStyle : undefined}>{t.scannerModeOcr}</span>
           </button>
           <button
+            type="button"
             onClick={() => setModeAndReset("latte")}
-            className={`min-w-0 min-h-[52px] px-2 py-2.5 text-[11px] sm:text-sm font-medium rounded-xl transition-all duration-300 ease-out flex items-center justify-center text-center leading-tight ${mode === "latte" ? "bg-white shadow-md text-black scale-[1.02] dark:bg-white/20 dark:text-white" : "text-secondary hover:text-primary"}`}
+            aria-pressed={mode === "latte"}
+            style={mode === "latte" ? scannerModeActiveStyle : undefined}
+            className={`focus-soft min-w-0 min-h-[52px] px-2 py-2.5 text-[11px] sm:text-sm font-medium rounded-xl transition-all duration-300 ease-out flex items-center justify-center text-center leading-tight ${mode === "latte" ? "scanner-mode-active shadow-md scale-[1.02]" : "text-secondary hover:text-primary"}`}
           >
-            {t.scannerModeLatte}
+            <span style={mode === "latte" ? scannerModeActiveLabelStyle : undefined}>{t.scannerModeLatte}</span>
           </button>
         </div>
 
@@ -444,12 +459,14 @@ export function Scanner() {
         ) : !file ? (
           <div
             onClick={openPrimaryPicker}
-            className="glass-card flex-1 flex flex-col items-center justify-center gap-4 cursor-pointer border-dashed border-2 border-glass hover:border-blue-500/50 transition-colors group min-h-[200px]"
+            className="focus-soft glass-card flex-1 flex flex-col items-center justify-center gap-4 cursor-pointer border-dashed border-2 border-glass hover:border-blue-500/50 transition-colors group min-h-[200px]"
             style={{ touchAction: "pan-y" }}
           >
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-transform duration-300 ease-out group-hover:scale-110 ${isLatteMode ? "bg-fuchsia-500/10 text-fuchsia-500" : "bg-blue-500/10 text-blue-500"}`}>
-              {isLatteMode ? <Wand2 size={40} /> : <Camera size={40} />}
-            </div>
+            {isLatteMode ? (
+              <AppWand2Icon size={80} variant="tile" tone="purple" className="transition-transform duration-300 ease-out group-hover:scale-110" />
+            ) : (
+              <AppCameraIcon size={80} variant="tile" tone="blue" className="transition-transform duration-300 ease-out group-hover:scale-110" />
+            )}
             <div className="text-center">
               <p className="font-semibold text-xl">{t.scannerTapToScan}</p>
               <p className="text-base text-secondary mt-2">{t.scannerChooseSource}</p>
@@ -591,7 +608,7 @@ export function Scanner() {
                   </>
                 ) : (
                   <>
-                    <Sparkles size={28} />
+                    <AppSparklesIcon size={28} variant="glyph" tone="neutral" style={currentColorIconStyle} />
                     <span>{actionLabel}</span>
                   </>
                 )}
@@ -621,7 +638,7 @@ export function Scanner() {
                     </>
                   ) : (
                     <>
-                      <Sparkles size={24} />
+                      <AppSparklesIcon size={24} variant="glyph" tone="neutral" style={currentColorIconStyle} />
                       <span>{actionLabel}</span>
                     </>
                   )}
@@ -647,7 +664,7 @@ export function Scanner() {
                     {savedToCollection ? t.scannerSaved : t.saveToCollection}
                   </button>
                 </div>
-                <div className="prose prose-lg max-w-none text-primary">
+                <div className="prose prose-lg max-w-none text-primary chat-markdown search-result-markdown">
                   <Markdown>{resultMarkdown}</Markdown>
                 </div>
               </motion.div>

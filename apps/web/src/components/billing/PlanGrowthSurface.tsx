@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowRight, Check, CreditCard, Crown, Gauge, RefreshCcw, ShieldCheck, Sparkles, X } from 'lucide-react';
+import { ArrowRight, Check, CreditCard, Crown, Gauge, RefreshCw, ShieldCheck, Sparkles, X } from '../icons';
 import type { AccountPlan, AccountStatusSnapshot, PlanCode } from '../../services/accountStatus';
 import { BillingApiError, startBillingCheckout } from '../../services/billing';
 
@@ -15,6 +15,8 @@ type PlanGrowthSurfaceProps = {
   onOpen: () => void;
   onClose: () => void;
 };
+
+const currentColorIconStyle = { '--icon-glyph-color': 'currentColor' } as CSSProperties;
 
 const PLAN_ORDER: PlanCode[] = ['free', 'starter', 'pro', 'team'];
 
@@ -179,7 +181,7 @@ function PlanCard({
           </div>
           <p className="mt-1 text-sm leading-5 text-secondary">{formatPlanDescription(plan, language)}</p>
         </div>
-        {recommended ? <Crown className="shrink-0 text-blue-600 dark:text-blue-300" size={20} /> : null}
+        {recommended ? <Crown className="shrink-0" size={20} variant="glyph" tone="amber" /> : null}
       </div>
 
       <div className="mt-4">
@@ -187,10 +189,10 @@ function PlanCard({
         <p className="mt-1 text-xs font-semibold text-secondary">{t.homePlanPriceNote}</p>
       </div>
 
-      <ul className="mt-4 flex-1 space-y-2">
+      <ul className="mt-4 flex flex-1 flex-col gap-2">
         {benefits.map((benefit) => (
           <li key={benefit} className="flex items-start gap-2 text-sm leading-5 text-secondary">
-            <Check size={15} className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-300" />
+            <Check size={15} className="mt-0.5 shrink-0" variant="glyph" tone="green" />
             <span>{benefit}</span>
           </li>
         ))}
@@ -206,7 +208,18 @@ function PlanCard({
             : 'border border-glass bg-[var(--bg-base)]/70 text-primary hover:bg-[var(--bg-base)]'
         }`}
       >
-        {busy ? <RefreshCcw size={16} className="animate-spin" /> : isFree ? <ShieldCheck size={16} /> : <CreditCard size={16} />}
+        {busy ? (
+          <RefreshCw size={16} className="animate-spin" variant="glyph" tone="ice" />
+        ) : isFree ? (
+          <ShieldCheck size={16} variant="glyph" tone="green" />
+        ) : (
+          <CreditCard
+            size={16}
+            variant="glyph"
+            tone={recommended ? 'neutral' : 'blue'}
+            style={recommended ? currentColorIconStyle : undefined}
+          />
+        )}
         {active ? t.homePlanActive : isFree ? t.homePlanContinueFree : t.homePlanSelect.replace('{plan}', formatPlanName(plan, language))}
       </button>
     </article>
@@ -329,23 +342,21 @@ export function PlanGrowthSurface({
                 className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-secondary transition-colors hover:bg-surface-alpha hover:text-primary"
                 aria-label={t.close}
               >
-                <X size={18} />
+                <X size={18} variant="glyph" tone="neutral" />
               </button>
             </div>
 
             <div className="overflow-y-auto px-5 py-5 sm:px-6" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="grid gap-3 md:grid-cols-3">
-                {[
-                  { icon: Sparkles, title: t.homePlanStepChoose, body: t.homePlanStepChooseBody },
-                  { icon: CreditCard, title: t.homePlanStepCheckout, body: t.homePlanStepCheckoutBody },
-                  { icon: ShieldCheck, title: t.homePlanStepActivate, body: t.homePlanStepActivateBody },
-                ].map((step) => {
+                {([
+                  { icon: Sparkles, tone: 'blue', title: t.homePlanStepChoose, body: t.homePlanStepChooseBody },
+                  { icon: CreditCard, tone: 'amber', title: t.homePlanStepCheckout, body: t.homePlanStepCheckoutBody },
+                  { icon: ShieldCheck, tone: 'green', title: t.homePlanStepActivate, body: t.homePlanStepActivateBody },
+                ] as const).map((step) => {
                   const StepIcon = step.icon;
                   return (
                     <div key={step.title} className="rounded-2xl border border-glass bg-surface-alpha p-4">
-                      <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-300">
-                        <StepIcon size={17} />
-                      </div>
+                      <StepIcon className="mb-3" size={36} variant="tile" tone={step.tone} intensity="micro" />
                       <h3 className="text-sm font-bold text-primary">{step.title}</h3>
                       <p className="mt-1 text-sm leading-5 text-secondary">{step.body}</p>
                     </div>
@@ -377,7 +388,7 @@ export function PlanGrowthSurface({
 
               <div className={`mt-5 flex flex-col gap-3 rounded-2xl border border-glass bg-surface-alpha p-4 text-sm text-secondary sm:flex-row sm:items-center sm:justify-between ${isRtl ? 'sm:flex-row-reverse text-right' : ''}`}>
                 <div className="flex items-start gap-2">
-                  <ShieldCheck size={16} className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-300" />
+                  <ShieldCheck size={16} className="mt-0.5 shrink-0" variant="glyph" tone="green" />
                   <p>{t.homePlanTrustLine}</p>
                 </div>
                 <button
@@ -407,7 +418,7 @@ export function PlanGrowthSurface({
           <div className={`min-w-0 ${isRtl ? 'text-right' : 'text-left'}`}>
             <div className={`mb-2 flex flex-wrap items-center gap-2 ${isRtl ? 'justify-end' : ''}`}>
               <span className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-3 py-1 text-xs font-bold text-white">
-                <Sparkles size={13} />
+                <Sparkles size={13} variant="glyph" tone="neutral" style={currentColorIconStyle} />
                 {t.homePlanGrowthEyebrow}
               </span>
               <span className="rounded-full bg-[var(--bg-base)]/70 px-3 py-1 text-xs font-bold text-secondary">
@@ -434,16 +445,22 @@ export function PlanGrowthSurface({
               data-testid="home-plan-open-catalog"
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-700"
             >
-              <CreditCard size={17} />
+              <CreditCard size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />
               {t.homePlanViewOptions}
-              <ArrowRight size={16} className={isRtl ? 'rotate-180' : ''} />
+              <ArrowRight
+                size={16}
+                className={isRtl ? 'rotate-180' : ''}
+                variant="glyph"
+                tone="neutral"
+                style={currentColorIconStyle}
+              />
             </button>
             <button
               type="button"
               onClick={onOpen}
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-glass bg-[var(--bg-base)]/70 px-4 text-sm font-bold text-primary transition-colors hover:bg-[var(--bg-base)]"
             >
-              <Gauge size={17} />
+              <Gauge size={17} variant="glyph" tone="blue" />
               {t.homePlanCompare}
             </button>
           </div>

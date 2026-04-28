@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { AlertTriangle, Camera, Check, ChevronDown, Coffee, Copy, CreditCard, ExternalLink, Globe, LogIn, LogOut, Moon, RefreshCcw, Search, ShieldCheck, Sparkles, Sun, Wrench, X, Bookmark, BookOpen } from "lucide-react";
+import { AlertTriangle, Check, ChevronDown, Copy, CreditCard, ExternalLink, Globe, LogIn, LogOut, Moon, RefreshCcw, Search, ShieldCheck, Sparkles, Sun, Wrench, X, Bookmark } from "lucide-react";
 import { Link } from "react-router-dom";
 import { searchWithGemini, SearchWebError, type SearchResultPayload } from "../services/gemini";
 import {
@@ -26,6 +26,12 @@ import { isDisplayableAvatarUrl } from "../utils/avatarUrl";
 import { useAiAccessGate } from "../components/billing/AiAccessGate";
 import { PlanGrowthSurface } from "../components/billing/PlanGrowthSurface";
 import { AccountPrivacyPanel } from "../components/account/AccountPrivacyPanel";
+import {
+  BookOpen as AppBookOpenIcon,
+  Camera as AppCameraIcon,
+  Coffee as AppCoffeeIcon,
+  Sparkles as AppSparklesIcon,
+} from "../components/icons";
 import { normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentProfileMemory } from "@baristachaw/shared";
 import { getLanguageDirection, getLanguageLocale, LANGUAGE_OPTIONS } from "../constants";
 
@@ -709,7 +715,7 @@ export function Home() {
             style={{
               insetInlineStart: 'max(12px, env(safe-area-inset-left, 0px))',
               insetInlineEnd: 'max(12px, env(safe-area-inset-right, 0px))',
-              bottom: 'calc(max(12px, var(--bottom-safe-capped, 0px)) + 8px)',
+              bottom: 'calc(max(12px, var(--safe-ui-bottom, var(--safe-bottom, 0px))) + 8px)',
               maxHeight: 'min(34rem, 72vh)',
             }}
             onClick={(event) => event.stopPropagation()}
@@ -964,9 +970,7 @@ export function Home() {
             <div className={`glass-card-interactive min-h-[9.75rem] lg:min-h-[10.75rem] p-6 lg:p-7 relative overflow-hidden group ${featureCardStateClass(chatFeatureFlag)}`}>
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className={`flex h-full items-center gap-5 lg:gap-6 relative z-10 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                <div className="w-16 h-16 rounded-[1.25rem] bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0 shadow-inner group-hover:scale-110 transition-transform duration-300 ease-out">
-                  <Sparkles size={32} />
-                </div>
+                <AppSparklesIcon size={64} variant="tile" tone="blue" className="shrink-0 group-hover:scale-110 transition-transform duration-300 ease-out" />
                 <div className={`min-w-0 flex-1 ${isRtl ? 'text-right' : 'text-left'}`}>
                   <div className={`mb-1 flex flex-wrap items-center gap-2 ${isRtl ? 'justify-end' : ''}`}>
                     <h2 className="text-2xl font-semibold">{t.homeAskTitle}</h2>
@@ -982,9 +986,7 @@ export function Home() {
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }}>
           <Link to="/scanner" onClick={(event) => handleFeatureNavigation(event, scannerFeatureFlag)} aria-disabled={scannerFeatureFlag?.status === 'disabled'} className="block h-full">
             <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'} ${featureCardStateClass(scannerFeatureFlag)}`}>
-              <div className="w-14 h-14 rounded-[1.25rem] bg-orange-500/10 flex items-center justify-center text-orange-500 shadow-inner group-hover:scale-110 transition-transform duration-300 ease-out">
-                <Camera size={28} />
-              </div>
+              <AppCameraIcon size={56} variant="tile" tone="amber" className="group-hover:scale-110 transition-transform duration-300 ease-out" />
               <div className="w-full">
                 <div className={`flex flex-wrap items-center justify-center gap-2 ${isRtl ? 'lg:justify-end' : 'lg:justify-start'}`}>
                   <h3 className="font-semibold text-lg">{t.homeScannerTitle}</h3>
@@ -999,9 +1001,7 @@ export function Home() {
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }}>
           <Link to="/tools?tab=ai-brew" onClick={(event) => handleFeatureNavigation(event, aiBrewFeatureFlag)} aria-disabled={aiBrewFeatureFlag?.status === 'disabled'} className="block h-full">
             <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'} ${featureCardStateClass(aiBrewFeatureFlag)}`}>
-              <div className="w-14 h-14 rounded-[1.25rem] bg-blue-500/10 flex items-center justify-center text-blue-500 shadow-inner group-hover:scale-110 transition-transform duration-300 ease-out">
-                <Sparkles size={28} />
-              </div>
+              <AppSparklesIcon size={56} variant="tile" tone="blue" className="group-hover:scale-110 transition-transform duration-300 ease-out" />
               <div className="w-full">
                 <div className={`flex flex-wrap items-center justify-center gap-2 ${isRtl ? 'lg:justify-end' : 'lg:justify-start'}`}>
                   <h3 className="font-semibold text-lg">{t.homeAiBrewTitle}</h3>
@@ -1016,9 +1016,7 @@ export function Home() {
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }}>
           <Link to="/tools" onClick={(event) => handleFeatureNavigation(event, toolsFeatureFlag)} aria-disabled={toolsFeatureFlag?.status === 'disabled'} className="block h-full">
             <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'} ${featureCardStateClass(toolsFeatureFlag)}`}>
-              <div className="w-14 h-14 rounded-[1.25rem] bg-amber-500/10 flex items-center justify-center text-amber-500 shadow-inner group-hover:scale-110 transition-transform duration-300 ease-out">
-                <Coffee size={28} />
-              </div>
+              <AppCoffeeIcon size={56} variant="tile" tone="amber" className="group-hover:scale-110 transition-transform duration-300 ease-out" />
               <div className="w-full">
                 <div className={`flex flex-wrap items-center justify-center gap-2 ${isRtl ? 'lg:justify-end' : 'lg:justify-start'}`}>
                   <h3 className="font-semibold text-lg">{t.homeToolsTitle}</h3>
@@ -1033,9 +1031,7 @@ export function Home() {
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }} className="md:col-span-2 lg:col-span-3">
           <Link to="/collection" onClick={(event) => handleFeatureNavigation(event, collectionFeatureFlag)} aria-disabled={collectionFeatureFlag?.status === 'disabled'} className="block h-full">
             <div className={`glass-card-interactive min-h-[9rem] lg:min-h-[9.75rem] p-6 lg:p-7 flex items-center gap-5 group ${isRtl ? 'flex-row-reverse' : ''} ${featureCardStateClass(collectionFeatureFlag)}`}>
-              <div className="w-14 h-14 rounded-[1.25rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0 shadow-inner group-hover:scale-110 transition-transform duration-300 ease-out">
-                <BookOpen size={28} />
-              </div>
+              <AppBookOpenIcon size={56} variant="tile" tone="green" className="shrink-0 group-hover:scale-110 transition-transform duration-300 ease-out" />
               <div className={`min-w-0 ${isRtl ? 'text-right' : 'text-left'}`}>
                 <div className={`flex flex-wrap items-center gap-2 ${isRtl ? 'justify-end' : ''}`}>
                   <h3 className="font-semibold text-lg">{t.homeCollectionTitle}</h3>
@@ -1085,7 +1081,7 @@ export function Home() {
               }}
               style={{
                 top: 'max(calc(var(--safe-top, 0px) + 0.5rem), 1rem)',
-                bottom: 'max(calc(var(--bottom-safe-capped, 0px) + 0.5rem), 1rem)',
+                bottom: 'max(calc(var(--safe-ui-bottom, var(--safe-bottom, 0px)) + 0.5rem), 1rem)',
                 left: '1rem',
                 right: '1rem',
                 maxWidth: '42rem',

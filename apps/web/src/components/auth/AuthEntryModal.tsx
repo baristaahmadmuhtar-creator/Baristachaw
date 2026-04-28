@@ -1,11 +1,11 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { AlertCircle, Loader2, ShieldCheck, Sparkles, UserRound, WalletCards, X } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useEffect, useId, useRef } from 'react';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
 import { getLanguageDirection } from '../../constants';
 import { EmailPasswordAuthForm } from './EmailPasswordAuthForm';
-import { GoogleMark } from '../icons';
+import { AlertCircle, GoogleMark, ShieldCheck, Sparkles, UserRound, WalletCards, X } from '../icons';
 
 function resolveSourceLabel(source: string, t: Record<string, string>) {
   const sourceLabelMap: Record<string, string> = {
@@ -84,7 +84,7 @@ export function AuthEntryModal() {
             className="fixed inset-0 z-[121] flex items-center justify-center pointer-events-none"
             style={{
               paddingTop: 'max(16px, var(--safe-top, 0px))',
-              paddingBottom: 'max(16px, var(--bottom-safe-capped, 0px))',
+              paddingBottom: 'max(16px, var(--safe-ui-bottom, var(--safe-bottom, 0px)))',
               paddingLeft: 'max(16px, var(--safe-left, 0px))',
               paddingRight: 'max(16px, var(--safe-right, 0px))',
             }}
@@ -95,7 +95,7 @@ export function AuthEntryModal() {
               exit={{ opacity: 0, y: 20, scale: 0.98 }}
               transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
               dir={direction}
-              className={`pointer-events-auto max-h-[calc(var(--app-vh)-2rem)] w-full max-w-md overflow-y-auto rounded-[1.8rem] border border-glass bg-[var(--bg-base)]/96 p-5 shadow-[0_18px_46px_rgba(0,0,0,0.24)] ${isRtl ? 'text-right' : 'text-left'}`}
+              className={`auth-card-surface pointer-events-auto max-h-[calc(var(--app-vh)-2rem)] w-full max-w-md overflow-y-auto rounded-[1.8rem] p-5 ${isRtl ? 'text-right' : 'text-left'}`}
               role="dialog"
               aria-modal="true"
               aria-labelledby={titleId}
@@ -116,7 +116,7 @@ export function AuthEntryModal() {
                   className="rounded-full p-2 text-secondary hover:bg-surface-alpha hover:text-primary"
                   aria-label={t.authModalClose}
                 >
-                  <X size={16} />
+                  <X size={16} variant="glyph" tone="neutral" />
                 </button>
               </div>
 
@@ -128,7 +128,7 @@ export function AuthEntryModal() {
 
               {authError && (
                 <div className={`mt-4 flex items-start gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400 ${isRtl ? 'flex-row-reverse text-right' : ''}`}>
-                  <AlertCircle size={14} className="mt-0.5 shrink-0" />
+                  <AlertCircle size={16} className="mt-0.5 shrink-0" variant="glyph" tone="amber" />
                   <span className="flex-1">{authError}</span>
                   <button
                     type="button"
@@ -136,18 +136,18 @@ export function AuthEntryModal() {
                     className="rounded-full p-1 text-red-500/90 hover:bg-red-500/10"
                     aria-label={t.authModalDismissError}
                   >
-                    <X size={12} />
+                    <X size={12} variant="glyph" tone="neutral" />
                   </button>
                 </div>
               )}
 
-              <div className="mt-5 space-y-2">
+              <div className="mt-5 flex flex-col gap-2">
                 <button
                   ref={googleButtonRef}
                   type="button"
                   onClick={() => void startGoogleAuth()}
                   disabled={authBusy || isOffline}
-                  className="w-full rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)] transition-all hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-55"
+                  className="auth-action-primary w-full rounded-2xl px-4 py-3 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
                 >
                   <span className="flex items-center justify-center gap-2">
                     {authBusy ? (
@@ -185,7 +185,7 @@ export function AuthEntryModal() {
                     {authBusy ? (
                       <Loader2 size={16} className="animate-spin" />
                     ) : (
-                      <UserRound size={17} />
+                      <UserRound size={17} variant="glyph" tone="ice" />
                     )}
                     {authBusy ? t.authGuestStarting : t.continueAsGuest}
                   </span>
@@ -197,7 +197,7 @@ export function AuthEntryModal() {
                       key={label}
                       className={`flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-glass bg-[var(--bg-base)]/60 px-3 py-2 text-center text-xs font-semibold text-secondary ${isRtl ? 'flex-row-reverse' : ''}`}
                     >
-                      <Icon size={14} className="shrink-0 text-blue-600 dark:text-blue-300" />
+                      <Icon size={16} className="shrink-0" variant="glyph" tone="blue" />
                       <span>{label}</span>
                     </div>
                   ))}
@@ -205,7 +205,7 @@ export function AuthEntryModal() {
 
                 <div className={`rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-secondary ${isRtl ? 'text-right' : ''}`}>
                   <span className={`flex items-start gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                    <Sparkles size={15} className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-300" />
+                    <Sparkles size={16} className="mt-0.5 shrink-0" variant="glyph" tone="green" />
                     <span>{t.authRoutePlanNote}</span>
                   </span>
                 </div>

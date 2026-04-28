@@ -1590,11 +1590,11 @@ function UsersTable({
         ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-2xl border border-glass bg-surface-alpha md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-glass bg-[var(--bg-elevated)]/90 shadow-[var(--panel-elev-1)] md:block">
       <div className="overflow-x-auto">
         <table className={clsx(selectedUserId ? 'min-w-full' : 'min-w-[68rem]', 'w-full border-collapse text-left')}>
           <caption className="sr-only">{admin.text('usersTableCaption')}</caption>
-          <thead className="border-b border-glass text-[11px] uppercase tracking-[0.14em] text-tertiary">
+          <thead className="border-b border-glass bg-surface-alpha text-[11px] uppercase tracking-[0.14em] text-secondary">
             <tr>
               <th className="px-4 py-3 font-semibold">{admin.text('account')}</th>
               <th className="px-4 py-3 font-semibold">{admin.text('status')}</th>
@@ -1613,7 +1613,7 @@ function UsersTable({
           </thead>
           <tbody>
             {users.map((user) => (
-              <tr key={user.id} className={clsx('border-b border-glass last:border-b-0', selectedUserId === user.id && 'bg-blue-500/5')}>
+              <tr key={user.id} className={clsx('border-b border-glass transition-colors last:border-b-0 hover:bg-surface-alpha', selectedUserId === user.id && 'bg-blue-500/10')}>
                 <td className="px-4 py-4 align-top">
                   <div className="flex min-w-0 items-center gap-3">
                     <UserAvatar user={user} />

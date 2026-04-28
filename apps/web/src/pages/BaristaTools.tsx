@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
+import { Sparkles as AppSparklesIcon } from '../components/icons';
 import { BREW_METHOD_MAP, BREW_METHOD_PROFILES } from '../features/barista-tools/brewProfiles';
 import {
   buildBrewOutputs,
@@ -599,9 +600,7 @@ export function BaristaTools() {
     >
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 flex flex-1 flex-col">
       <header className="mb-4 text-center shrink-0 panel-soft rounded-3xl px-4 py-5">
-        <div className="w-14 h-14 rounded-[1.25rem] bg-blue-500/10 flex items-center justify-center text-blue-500 mx-auto mb-3 shadow-inner">
-          <Sparkles size={28} />
-        </div>
+        <AppSparklesIcon size={56} variant="tile" tone="blue" className="mx-auto mb-3" />
         <h1 className="text-3xl font-semibold tracking-tight mb-1">{t.toolsTitle}</h1>
         <p className="text-secondary text-base">{t.toolsSubtitle}</p>
       </header>

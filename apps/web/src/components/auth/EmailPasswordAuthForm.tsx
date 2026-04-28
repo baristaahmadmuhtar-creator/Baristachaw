@@ -1,7 +1,8 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { AlertCircle, ArrowLeft, AtSign, CheckCircle, Eye, EyeOff, Loader2, Lock, UserRound } from 'lucide-react';
+import { useEffect, useState, type CSSProperties, type FormEvent } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useAuthModal, type EmailAuthMode } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
+import { AlertCircle, ArrowLeft, AtSign, CheckCircle, Eye, EyeOff, Lock, UserRound } from '../icons';
 
 type EmailPasswordAuthFormProps = {
   initialMode?: EmailAuthMode;
@@ -10,6 +11,7 @@ type EmailPasswordAuthFormProps = {
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const currentColorIconStyle = { '--icon-glyph-color': 'currentColor' } as CSSProperties;
 
 type AuthFormStep = 'email' | 'password' | 'confirmation' | 'resetSent' | 'recovery';
 
@@ -158,7 +160,7 @@ export function EmailPasswordAuthForm({
     return (
       <div className={`rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 ${className}`}>
         <div className="flex items-start gap-3">
-          <CheckCircle className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-300" size={18} />
+          <CheckCircle className="mt-0.5 shrink-0" size={18} variant="glyph" tone="green" />
           <div>
             <h3 className="text-sm font-semibold text-primary">{t.authEmailConfirmationTitle}</h3>
             <p className="mt-1 text-sm leading-5 text-secondary">
@@ -184,7 +186,7 @@ export function EmailPasswordAuthForm({
     return (
       <div className={`rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 ${className}`}>
         <div className="flex items-start gap-3">
-          <CheckCircle className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-300" size={18} />
+          <CheckCircle className="mt-0.5 shrink-0" size={18} variant="glyph" tone="green" />
           <div>
             <h3 className="text-sm font-semibold text-primary">{t.authResetEmailSentTitle}</h3>
             <p className="mt-1 text-sm leading-5 text-secondary">
@@ -218,17 +220,17 @@ export function EmailPasswordAuthForm({
 
         {localError || !recoveryRequest.accessToken ? (
           <div className="mb-3 flex items-start gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">
-            <AlertCircle size={14} className="mt-0.5 shrink-0" />
+            <AlertCircle size={16} className="mt-0.5 shrink-0" variant="glyph" tone="amber" />
             <span>{localError || t.authRecoveryTokenMissing}</span>
           </div>
         ) : null}
 
-        <form onSubmit={handleRecoverySubmit} className="space-y-3">
+        <form onSubmit={handleRecoverySubmit} className="flex flex-col gap-3">
           <label className="block text-sm font-semibold text-primary" htmlFor={compact ? 'auth-modal-recovery-password' : 'auth-route-recovery-password'}>
             {t.authRecoveryPasswordLabel}
           </label>
-          <div className="flex items-center gap-3 rounded-2xl border border-glass bg-[var(--bg-base)]/72 px-4 py-3 focus-within:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/15">
-            <Lock size={18} className="shrink-0 text-secondary" />
+          <div className="auth-field-shell flex items-center gap-3 rounded-2xl px-4 py-3">
+            <Lock size={18} className="shrink-0" variant="glyph" tone="purple" />
             <input
               id={compact ? 'auth-modal-recovery-password' : 'auth-route-recovery-password'}
               type={showPassword ? 'text' : 'password'}
@@ -249,16 +251,16 @@ export function EmailPasswordAuthForm({
               className="rounded-full p-1.5 text-secondary hover:bg-surface-alpha hover:text-primary"
               aria-label={showPassword ? t.authHidePassword : t.authShowPassword}
             >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showPassword ? <EyeOff size={16} variant="glyph" tone="neutral" /> : <Eye size={16} variant="glyph" tone="neutral" />}
             </button>
           </div>
 
           <button
             type="submit"
             disabled={disabled || !recoveryRequest.accessToken}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3 text-base font-semibold text-blue-700 transition-colors hover:bg-blue-500/15 disabled:cursor-not-allowed disabled:opacity-55 dark:text-blue-200"
+            className="auth-action-primary flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-base font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
           >
-            {authBusy ? <Loader2 size={16} className="animate-spin" /> : <Lock size={17} />}
+            {authBusy ? <Loader2 size={16} className="animate-spin" /> : <Lock size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
             {t.authRecoverySubmit}
           </button>
 
@@ -290,18 +292,18 @@ export function EmailPasswordAuthForm({
 
       {localError ? (
         <div className="mb-3 flex items-start gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">
-          <AlertCircle size={14} className="mt-0.5 shrink-0" />
+          <AlertCircle size={16} className="mt-0.5 shrink-0" variant="glyph" tone="amber" />
           <span>{localError}</span>
         </div>
       ) : null}
 
       {step === 'email' ? (
-        <form onSubmit={handleEmailSubmit} className="space-y-3">
+        <form onSubmit={handleEmailSubmit} className="flex flex-col gap-3">
           <label className="block text-sm font-semibold text-primary" htmlFor={compact ? 'auth-modal-email' : 'auth-route-email'}>
             {t.authEmailLabel}
           </label>
-          <div className="flex items-center gap-3 rounded-2xl border border-glass bg-[var(--bg-base)]/72 px-4 py-3 focus-within:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/15">
-            <AtSign size={18} className="shrink-0 text-secondary" />
+          <div className="auth-field-shell flex items-center gap-3 rounded-2xl px-4 py-3">
+            <AtSign size={18} className="shrink-0" variant="glyph" tone="ice" />
             <input
               id={compact ? 'auth-modal-email' : 'auth-route-email'}
               type="email"
@@ -321,21 +323,21 @@ export function EmailPasswordAuthForm({
           <button
             type="submit"
             disabled={disabled}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3 text-base font-semibold text-blue-700 transition-colors hover:bg-blue-500/15 disabled:cursor-not-allowed disabled:opacity-55 dark:text-blue-200"
+            className="auth-action-primary flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-base font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
           >
-            {authBusy ? <Loader2 size={16} className="animate-spin" /> : <UserRound size={17} />}
+            {authBusy ? <Loader2 size={16} className="animate-spin" /> : <UserRound size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
             {t.authEmailContinue}
           </button>
         </form>
       ) : (
-        <form onSubmit={handlePasswordSubmit} className="space-y-3">
+        <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={() => setStep('email')}
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-secondary hover:text-primary"
             >
-              <ArrowLeft size={14} />
+              <ArrowLeft size={14} variant="glyph" tone="neutral" />
               {t.authBackToEmail}
             </button>
             <span className="truncate rounded-full bg-surface-alpha px-3 py-1 text-xs font-semibold text-secondary">
@@ -344,7 +346,7 @@ export function EmailPasswordAuthForm({
           </div>
 
           {isSignUp ? (
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               <label className="block text-sm font-semibold text-primary" htmlFor={compact ? 'auth-modal-name' : 'auth-route-name'}>
                 {t.authNameLabel}
               </label>
@@ -359,17 +361,17 @@ export function EmailPasswordAuthForm({
                 }}
                 placeholder={t.authNamePlaceholder}
                 disabled={disabled}
-                className="w-full rounded-2xl border border-glass bg-[var(--bg-base)]/72 px-4 py-3 text-base text-primary outline-none placeholder:text-tertiary focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/15 disabled:opacity-60"
+                className="auth-field-shell w-full rounded-2xl px-4 py-3 text-base text-primary outline-none placeholder:text-tertiary disabled:opacity-60"
               />
             </div>
           ) : null}
 
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <label className="block text-sm font-semibold text-primary" htmlFor={compact ? 'auth-modal-password' : 'auth-route-password'}>
               {t.authPasswordLabel}
             </label>
-            <div className="flex items-center gap-3 rounded-2xl border border-glass bg-[var(--bg-base)]/72 px-4 py-3 focus-within:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/15">
-              <Lock size={18} className="shrink-0 text-secondary" />
+            <div className="auth-field-shell flex items-center gap-3 rounded-2xl px-4 py-3">
+              <Lock size={18} className="shrink-0" variant="glyph" tone="purple" />
               <input
                 id={compact ? 'auth-modal-password' : 'auth-route-password'}
                 type={showPassword ? 'text' : 'password'}
@@ -390,7 +392,7 @@ export function EmailPasswordAuthForm({
                 className="rounded-full p-1.5 text-secondary hover:bg-surface-alpha hover:text-primary"
                 aria-label={showPassword ? t.authHidePassword : t.authShowPassword}
               >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showPassword ? <EyeOff size={16} variant="glyph" tone="neutral" /> : <Eye size={16} variant="glyph" tone="neutral" />}
               </button>
             </div>
           </div>
@@ -398,9 +400,9 @@ export function EmailPasswordAuthForm({
           <button
             type="submit"
             disabled={disabled}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3 text-base font-semibold text-blue-700 transition-colors hover:bg-blue-500/15 disabled:cursor-not-allowed disabled:opacity-55 dark:text-blue-200"
+            className="auth-action-primary flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-base font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
           >
-            {authBusy ? <Loader2 size={16} className="animate-spin" /> : <Lock size={17} />}
+            {authBusy ? <Loader2 size={16} className="animate-spin" /> : <Lock size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
             {isSignUp ? t.authCreateAccount : t.authSignInWithPassword}
           </button>
 

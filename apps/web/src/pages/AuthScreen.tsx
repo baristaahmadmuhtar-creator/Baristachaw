@@ -1,17 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
 import {
-  AlertCircle,
-  ArrowRight,
-  CheckCircle,
   Loader2,
-  UserRound,
 } from 'lucide-react';
 import { useAuthModal } from '../context/AuthModalContext';
 import { useGlobalState } from '../context/GlobalState';
 import { EmailPasswordAuthForm } from '../components/auth/EmailPasswordAuthForm';
-import { AppIconBrand, GoogleMark } from '../components/icons';
+import {
+  AlertCircle,
+  AppIconBrand,
+  ArrowRight,
+  CheckCircle,
+  GoogleMark,
+  UserRound,
+} from '../components/icons';
 
 interface AuthScreenProps {
   intent?: 'signIn' | 'signUp';
@@ -51,7 +54,7 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
       style={{
         minHeight: 'var(--app-vh)',
         paddingTop: 'max(0.75rem, calc(var(--safe-top, 0px) + 0.5rem))',
-        paddingBottom: 'max(0.75rem, calc(var(--bottom-safe-capped, 0px) + 0.5rem))',
+        paddingBottom: 'max(0.75rem, calc(var(--safe-ui-bottom, var(--safe-bottom, 0px)) + 0.5rem))',
         paddingLeft: 'max(1rem, var(--safe-left, 0px))',
         paddingRight: 'max(1rem, var(--safe-right, 0px))',
       }}
@@ -68,7 +71,7 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-[1.2rem] border border-black/[0.06] bg-white/85 shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:border-blue-300/20 dark:bg-gradient-to-br dark:from-blue-500 dark:to-indigo-600 dark:shadow-[0_8px_32px_rgba(0,122,255,0.3)]"
+                className="auth-card-surface mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-[1.2rem]"
               >
                 <AppIconBrand className="h-10 w-10 object-contain" />
               </motion.div>
@@ -88,7 +91,7 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
                   exit={{ opacity: 0, height: 0 }}
                   className="mb-4 flex items-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-4"
                 >
-                  <AlertCircle className="shrink-0 text-red-500" size={18} />
+                  <AlertCircle className="shrink-0" size={18} variant="glyph" tone="amber" />
                   <span className="text-sm text-red-600 dark:text-red-400">{authError}</span>
                 </motion.div>
               )}
@@ -99,13 +102,13 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
                   exit={{ opacity: 0, height: 0 }}
                   className="mb-4 flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4"
                 >
-                  <CheckCircle className="shrink-0 text-emerald-500" size={18} />
+                  <CheckCircle className="shrink-0" size={18} variant="glyph" tone="green" />
                   <span className="text-sm text-emerald-600 dark:text-emerald-400">{success}</span>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <div className="glass-card p-4 sm:p-6">
+            <div className="auth-card-surface rounded-[2rem] p-4 sm:p-6">
               {isOffline ? (
                 <div className="mb-4 rounded-2xl border border-amber-500/25 bg-amber-500/12 px-4 py-3 text-sm font-medium text-amber-700 dark:text-amber-300">
                   {t.authModalOffline}
@@ -114,7 +117,7 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
               <button
                 onClick={() => void startGoogleAuth()}
                 disabled={authBusy || isOffline}
-                className="flex w-full items-center justify-center gap-3 rounded-2xl bg-blue-600 px-5 py-3.5 text-base font-semibold text-white shadow-[0_12px_28px_rgba(37,99,235,0.28)] transition-all hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-55"
+                className="auth-action-primary flex w-full items-center justify-center gap-3 rounded-2xl px-5 py-3.5 text-base font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
               >
                 {authBusy ? (
                   <>
@@ -127,7 +130,7 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
                       <GoogleMark className="h-4 w-4" />
                     </span>
                     {t.continueWithGoogle}
-                    <ArrowRight className="hidden sm:block" size={18} />
+                    <ArrowRight className="hidden sm:block" size={18} variant="glyph" tone="neutral" style={{ '--icon-glyph-color': 'currentColor' } as CSSProperties} />
                   </>
                 )}
               </button>
@@ -149,9 +152,9 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
               <button
                 onClick={() => void continueAsGuest()}
                 disabled={authBusy}
-                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-glass bg-surface-alpha px-5 py-3.5 text-base font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55"
+                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-glass bg-surface-alpha px-5 py-3.5 text-base font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55 focus-soft"
               >
-                {authBusy ? <Loader2 className="animate-spin" size={20} /> : <UserRound size={20} />}
+                {authBusy ? <Loader2 className="animate-spin" size={20} /> : <UserRound size={20} variant="glyph" tone="ice" />}
                 {authBusy ? t.authGuestStarting : t.continueAsGuest}
               </button>
 
@@ -160,7 +163,7 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
                 className="mt-4 flex items-center justify-center gap-2 text-center text-sm font-semibold text-blue-700 hover:text-blue-800 dark:text-blue-300"
               >
                 {isSignUp ? t.authRouteSwitchToSignin : t.authRouteSwitchToSignup}
-                <ArrowRight size={15} />
+                <ArrowRight size={15} variant="glyph" tone="blue" />
               </Link>
             </div>
           </section>

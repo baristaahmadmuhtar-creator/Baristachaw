@@ -1927,10 +1927,7 @@ export function Chat() {
             <AppHomeIcon size={22} variant="glyph" tone="blue" />
           </button>
 
-          <div
-            className="flex-1 min-w-0 overflow-hidden rounded-[1.65rem] border panel-divider-subtle panel-soft shadow-[0_14px_32px_rgba(15,23,42,0.13)]"
-            style={{ backgroundColor: 'var(--nav-bg)' }}
-          >
+          <div className="chat-composer-shell flex-1 min-w-0 overflow-hidden rounded-[1.65rem] border">
             <div className="flex items-end gap-1.5 px-2 py-2 sm:gap-2 sm:px-2.5">
               <textarea
                 ref={composerTextareaRef}
@@ -1956,7 +1953,7 @@ export function Chat() {
                   }
                 }}
                 placeholder={t.typeMessage}
-                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 resize-none py-2.5 px-2.5 text-base leading-6 text-primary placeholder:text-tertiary min-h-[44px] max-h-[132px]"
+                className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 resize-none py-2.5 px-2.5 text-base leading-6 text-primary placeholder:text-tertiary min-h-[44px] max-h-[132px] focus:outline-none"
                 rows={1}
                 maxLength={CHAT_INPUT_MAX_CHARS}
                 disabled={interactionDisabled}
@@ -2125,7 +2122,6 @@ function AudioBubble({ url, isUser }: { url: string; isUser: boolean }) {
     </div>
   );
 }
-
 
 
 

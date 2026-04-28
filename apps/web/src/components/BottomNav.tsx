@@ -205,10 +205,11 @@ export function BottomNav({ hidden = false, showAdmin = false }: BottomNavProps)
             key={path}
             to={path}
             aria-label={label}
+            title={label}
             className={({ isActive }) =>
               clsx(
-                "relative isolate overflow-hidden flex-1 min-w-[50px] min-h-[48px] rounded-full flex items-center justify-center transition-[transform,color] duration-200 ease-out active:scale-[0.98]",
-                isActive ? "text-blue-500 scale-[1.03]" : "text-tertiary"
+                "focus-soft relative isolate overflow-hidden flex-1 min-w-[50px] min-h-[48px] rounded-full flex items-center justify-center transition-[transform,color] duration-200 ease-out active:scale-[0.98]",
+                isActive ? "text-blue-500 scale-[1.03]" : "text-secondary hover:text-primary"
               )
             }
           >

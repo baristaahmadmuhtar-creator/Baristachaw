@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import clsx from "clsx";
 import { useGlobalState } from "../context/GlobalState";
 import { subscribeMediaQueryChange } from "../utils/mediaQuery";
+import { mobileDockIconTransition, mobileDockPillTransition } from "../utils/motionPresets";
 import { BookOpen, Gauge, Home, MessageSquare, ScanLine, ShieldCheck } from "./icons";
 
 interface BottomNavProps {
@@ -165,7 +166,7 @@ export function BottomNav({ hidden = false, showAdmin = false }: BottomNavProps)
   const effectiveHidden = hidden || keyboardOpen || (isMobileViewport && !isPwaViewport && autoHidden);
   const navTransition = keyboardOpen
     ? 'none'
-    : 'transform 0.26s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.2s ease';
+    : 'transform var(--motion-duration-standard) var(--motion-ease-emphasized), opacity var(--motion-duration-fast) ease-out, visibility 0s linear';
   const navItems = [
     { path: PARITY_NAV_META.Home.path, icon: Home, label: t.home || PARITY_NAV_META.Home.label },
     { path: PARITY_NAV_META.Scanner.path, icon: ScanLine, label: t.scanner || PARITY_NAV_META.Scanner.label },
@@ -208,7 +209,7 @@ export function BottomNav({ hidden = false, showAdmin = false }: BottomNavProps)
             title={label}
             className={({ isActive }) =>
               clsx(
-                "focus-soft relative isolate overflow-hidden flex-1 min-w-[50px] min-h-[48px] rounded-full flex items-center justify-center transition-[transform,color] duration-200 ease-out active:scale-[0.98]",
+                "focus-soft motion-pressable relative isolate overflow-hidden flex-1 min-w-[50px] min-h-[48px] rounded-full flex items-center justify-center transition-[transform,color] duration-200 ease-out active:scale-[0.98]",
                 isActive ? "text-blue-500 scale-[1.03]" : "text-secondary hover:text-primary"
               )
             }
@@ -219,13 +220,13 @@ export function BottomNav({ hidden = false, showAdmin = false }: BottomNavProps)
                   <motion.span
                     layoutId="mobile-dock-active-pill"
                     className="mobile-bottom-nav-active-pill"
-                    transition={{ type: 'spring', stiffness: 540, damping: 40, mass: 0.68 }}
+                    transition={mobileDockPillTransition}
                   />
                 )}
                 <motion.span
                   className="relative z-[1] flex items-center justify-center"
                   animate={{ scale: isActive ? 1.08 : 1 }}
-                  transition={{ type: 'spring', stiffness: 420, damping: 28, mass: 0.7 }}
+                  transition={mobileDockIconTransition}
                 >
                   <Icon
                     size={isActive ? 22 : 21}

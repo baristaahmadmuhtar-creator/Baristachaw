@@ -7,6 +7,7 @@ import { useAuthModal } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
 import { BillingApiError, startBillingCheckout } from '../../services/billing';
 import type { AccountPlan, PlanCode } from '../../services/accountStatus';
+import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 
 export type AiPaidFeature = 'chat' | 'scanner' | 'search';
 
@@ -104,6 +105,7 @@ function AiAccessGateDialog({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      transition={overlayFadeTransition}
       className="fixed inset-0 z-[160]"
     >
       <div className="absolute inset-0 bg-black/45 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
@@ -112,13 +114,13 @@ function AiAccessGateDialog({
         initial={{ opacity: 0, y: 22, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 18, scale: 0.97 }}
-        transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+        transition={modalSpringTransition}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
         data-testid="ai-access-gate-modal"
-        className="absolute left-3 right-3 top-1/2 mx-auto w-auto max-w-md -translate-y-1/2 rounded-[1.75rem] border border-glass bg-[var(--bg-base)]/98 p-4 shadow-[0_26px_80px_rgba(0,0,0,0.34)] outline-none sm:left-6 sm:right-6 sm:p-5"
+        className="motion-safe-surface absolute left-3 right-3 top-1/2 mx-auto w-auto max-w-md -translate-y-1/2 rounded-[1.75rem] border border-glass bg-[var(--bg-base)]/98 p-4 shadow-[0_26px_80px_rgba(0,0,0,0.34)] outline-none sm:left-6 sm:right-6 sm:p-5"
         style={{
           maxHeight: 'min(88vh, 38rem)',
           overflowY: 'auto',
@@ -187,7 +189,7 @@ function AiAccessGateDialog({
             <button
               type="button"
               onClick={onSignin}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600"
+              className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600"
             >
               <LogIn size={16} />
               {t.aiGateSigninCta}
@@ -196,7 +198,7 @@ function AiAccessGateDialog({
             <button
               type="button"
               onClick={onRefresh}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600"
+              className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600"
             >
               <RefreshCcw size={16} />
               {t.aiGateRetryPlan}
@@ -206,7 +208,7 @@ function AiAccessGateDialog({
               type="button"
               onClick={onUpgrade}
               disabled={checkoutBusy}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600 disabled:opacity-60"
+              className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600 disabled:opacity-60"
             >
               {checkoutBusy ? <RefreshCcw size={16} className="animate-spin" /> : <CreditCard size={16} />}
               {checkoutBusy ? t.opening : formatText(t.aiGateUpgradeCta, { plan: planName })}
@@ -215,7 +217,7 @@ function AiAccessGateDialog({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-glass bg-surface-alpha px-4 text-sm font-semibold text-primary transition-colors hover:bg-[var(--bg-base)]"
+            className="motion-pressable inline-flex min-h-12 items-center justify-center rounded-2xl border border-glass bg-surface-alpha px-4 text-sm font-semibold text-primary transition-colors hover:bg-[var(--bg-base)]"
           >
             {t.aiGateLaterCta}
           </button>

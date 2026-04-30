@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, Check, CreditCard, Crown, Gauge, RefreshCw, ShieldCheck, Sparkles, X } from '../icons';
 import type { AccountPlan, AccountStatusSnapshot, PlanCode } from '../../services/accountStatus';
 import { BillingApiError, startBillingCheckout } from '../../services/billing';
+import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 
 type PlanGrowthSurfaceProps = {
   snapshot: AccountStatusSnapshot | null;
@@ -308,6 +309,7 @@ export function PlanGrowthSurface({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={overlayFadeTransition}
             className="fixed inset-0 z-[60] bg-black/45 backdrop-blur-sm"
             onClick={onClose}
           />
@@ -316,13 +318,13 @@ export function PlanGrowthSurface({
             initial={{ opacity: 0, y: 28, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 28, scale: 0.98 }}
-            transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
+            transition={modalSpringTransition}
             role="dialog"
             aria-modal="true"
             aria-label={t.homePlanCatalogTitle}
             tabIndex={-1}
             dir={direction}
-            className="fixed z-[61] flex max-h-[calc(100dvh-1.5rem)] w-[min(72rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.35rem] border border-glass bg-[var(--bg-elevated)] shadow-[0_24px_80px_rgba(0,0,0,0.28)]"
+            className="motion-safe-surface fixed z-[61] flex max-h-[calc(100dvh-1.5rem)] w-[min(72rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-[1.35rem] border border-glass bg-[var(--bg-elevated)] shadow-[0_24px_80px_rgba(0,0,0,0.28)]"
             style={{
               top: 'max(calc(var(--safe-top, 0px) + 0.5rem), 0.75rem)',
               left: '0.5rem',

@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
 import { getLanguageDirection } from '../../constants';
+import { modalExitTransition, modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 import { EmailPasswordAuthForm } from './EmailPasswordAuthForm';
 import { AuthProgressMark } from './AuthProgressMark';
 import { AlertCircle, FacebookMark, GoogleMark, ShieldCheck, Sparkles, UserRound, WalletCards, X } from '../icons';
@@ -107,6 +108,7 @@ export function AuthEntryModal() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={overlayFadeTransition}
             className="fixed inset-0 z-[120] bg-black/40 backdrop-blur-sm"
             onClick={() => {
               if (!isAuthActionPending) closeAuthModal();
@@ -125,9 +127,9 @@ export function AuthEntryModal() {
               initial={{ opacity: 0, y: 22, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.98 }}
-              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+              transition={isOpen ? modalSpringTransition : modalExitTransition}
               dir={direction}
-              className={`auth-card-surface pointer-events-auto max-h-[calc(var(--app-vh)-2rem)] w-full max-w-md overflow-y-auto rounded-[1.8rem] p-5 ${isRtl ? 'text-right' : 'text-left'}`}
+              className={`auth-card-surface motion-safe-surface pointer-events-auto max-h-[calc(var(--app-vh)-2rem)] w-full max-w-md overflow-y-auto rounded-[1.8rem] p-5 ${isRtl ? 'text-right' : 'text-left'}`}
               role="dialog"
               aria-modal="true"
               aria-labelledby={titleId}
@@ -179,7 +181,7 @@ export function AuthEntryModal() {
                   type="button"
                   onClick={() => void startAuthAction('google', startGoogleAuth)}
                   disabled={isAuthActionPending || isOffline}
-                  className="auth-action-primary w-full rounded-2xl px-4 py-3 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
+                  className="auth-action-primary motion-pressable w-full rounded-2xl px-4 py-3 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
                 >
                   <span className="flex items-center justify-center gap-2">
                     {isGoogleBusy ? (
@@ -197,7 +199,7 @@ export function AuthEntryModal() {
                   type="button"
                   onClick={() => void startAuthAction('facebook', startFacebookAuth)}
                   disabled={isAuthActionPending || isOffline}
-                  className="w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3 text-sm font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55"
+                  className="motion-pressable w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3 text-sm font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55"
                 >
                   <span className="flex items-center justify-center gap-2">
                     {isFacebookBusy ? (
@@ -227,7 +229,7 @@ export function AuthEntryModal() {
                   type="button"
                   onClick={() => void startAuthAction('guest', continueAsGuest)}
                   disabled={isAuthActionPending || isOffline}
-                  className="w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3 text-sm font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55"
+                  className="motion-pressable w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3 text-sm font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55"
                 >
                   <span className="flex items-center justify-center gap-2">
                     {isGuestBusy ? (

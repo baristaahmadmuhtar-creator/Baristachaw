@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from 'react';
 import { AlertTriangle, Loader2, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
+import { modalSpringTransition, overlayFadeTransition } from '../utils/motionPresets';
 
 type ConfirmActionDialogProps = {
   open: boolean;
@@ -57,6 +58,7 @@ export function ConfirmActionDialog({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={overlayFadeTransition}
             className="fixed inset-0 z-[140] bg-black/42 backdrop-blur-sm"
             onClick={() => {
               if (!busy) onCancel();
@@ -75,12 +77,12 @@ export function ConfirmActionDialog({
               initial={{ opacity: 0, y: 22, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.98 }}
-              transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+              transition={modalSpringTransition}
               role="dialog"
               aria-modal="true"
               aria-labelledby={titleId}
               aria-describedby={descriptionId}
-              className="pointer-events-auto w-full max-w-md rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/96 p-4 shadow-[var(--panel-elev-2)] backdrop-blur-xl"
+              className="motion-safe-surface pointer-events-auto w-full max-w-md rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/96 p-4 shadow-[var(--panel-elev-2)] backdrop-blur-xl"
             >
               <div className="flex items-start gap-3">
                 <div
@@ -116,7 +118,7 @@ export function ConfirmActionDialog({
                   type="button"
                   onClick={onCancel}
                   disabled={busy}
-                  className="h-11 rounded-xl border border-glass bg-surface-alpha px-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-alpha-hover disabled:opacity-50"
+                  className="motion-pressable h-11 rounded-xl border border-glass bg-surface-alpha px-3 text-sm font-semibold text-primary transition-colors hover:bg-surface-alpha-hover disabled:opacity-50"
                 >
                   {cancelLabel}
                 </button>
@@ -124,7 +126,7 @@ export function ConfirmActionDialog({
                   type="button"
                   onClick={() => { void onConfirm(); }}
                   disabled={busy}
-                  className={`h-11 rounded-xl px-3 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${
+                  className={`motion-pressable h-11 rounded-xl px-3 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${
                     destructive ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
                   }`}
                 >

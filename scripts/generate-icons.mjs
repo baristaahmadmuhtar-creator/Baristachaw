@@ -25,6 +25,14 @@ const sourceCandidates = [
 ].filter(Boolean);
 
 const sizes = [16, 32, 48, 72, 96, 128, 144, 152, 167, 180, 192, 256, 384, 512, 1024];
+const androidDensitySizes = [
+  { dir: 'mipmap-mdpi', legacy: 48, adaptive: 108 },
+  { dir: 'mipmap-hdpi', legacy: 72, adaptive: 162 },
+  { dir: 'mipmap-xhdpi', legacy: 96, adaptive: 216 },
+  { dir: 'mipmap-xxhdpi', legacy: 144, adaptive: 324 },
+  { dir: 'mipmap-xxxhdpi', legacy: 192, adaptive: 432 },
+];
+const lightIconBackground = [245, 248, 254, 255];
 
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
@@ -38,6 +46,34 @@ function writeText(filePath, content) {
 function writePng(filePath, png) {
   ensureDir(path.dirname(filePath));
   fs.writeFileSync(filePath, PNG.sync.write(png));
+}
+
+function writeIco(filePath, pngs) {
+  ensureDir(path.dirname(filePath));
+  const pngBuffers = pngs.map((png) => PNG.sync.write(png));
+  const headerSize = 6;
+  const entrySize = 16;
+  const directorySize = headerSize + (pngs.length * entrySize);
+  const header = Buffer.alloc(directorySize);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(pngs.length, 4);
+
+  let imageOffset = directorySize;
+  pngs.forEach((png, index) => {
+    const entryOffset = headerSize + (index * entrySize);
+    header.writeUInt8(png.width >= 256 ? 0 : png.width, entryOffset);
+    header.writeUInt8(png.height >= 256 ? 0 : png.height, entryOffset + 1);
+    header.writeUInt8(0, entryOffset + 2);
+    header.writeUInt8(0, entryOffset + 3);
+    header.writeUInt16LE(1, entryOffset + 4);
+    header.writeUInt16LE(32, entryOffset + 6);
+    header.writeUInt32LE(pngBuffers[index].length, entryOffset + 8);
+    header.writeUInt32LE(imageOffset, entryOffset + 12);
+    imageOffset += pngBuffers[index].length;
+  });
+
+  fs.writeFileSync(filePath, Buffer.concat([header, ...pngBuffers]));
 }
 
 function copyFile(source, target) {
@@ -259,6 +295,20 @@ function renderIconPng(src, size, options = {}) {
   return dst;
 }
 
+function renderSolidPng(size, color) {
+  const dst = new PNG({ width: size, height: size });
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const di = offset(size, x, y);
+      dst.data[di] = color[0];
+      dst.data[di + 1] = color[1];
+      dst.data[di + 2] = color[2];
+      dst.data[di + 3] = color[3];
+    }
+  }
+  return dst;
+}
+
 function dataUriFromPng(png) {
   return `data:image/png;base64,${PNG.sync.write(png).toString('base64')}`;
 }
@@ -378,6 +428,76 @@ function startStaticServer(rootDir) {
   });
 }
 
+function removeAndroidResourceVariants(targetDir, resourceName) {
+  for (const extension of ['.webp', '.png']) {
+    const filePath = path.join(targetDir, `${resourceName}${extension}`);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  }
+}
+
+function writeAndroidPngResource(targetDir, resourceName, png) {
+  ensureDir(targetDir);
+  removeAndroidResourceVariants(targetDir, resourceName);
+  writePng(path.join(targetDir, `${resourceName}.png`), png);
+}
+
+function syncAndroidSourceResources(lightIcon, monoIcon, splashIcon) {
+  const androidResDir = path.join(repoRoot, 'apps', 'mobile', 'android', 'app', 'src', 'main', 'res');
+  if (!fs.existsSync(androidResDir)) return;
+
+  for (const density of androidDensitySizes) {
+    const densityDir = path.join(androidResDir, density.dir);
+    writeAndroidPngResource(
+      densityDir,
+      'ic_launcher',
+      renderIconPng(lightIcon, density.legacy, { background: lightIconBackground }),
+    );
+    writeAndroidPngResource(
+      densityDir,
+      'ic_launcher_round',
+      renderIconPng(lightIcon, density.legacy, { background: lightIconBackground }),
+    );
+    writeAndroidPngResource(
+      densityDir,
+      'ic_launcher_background',
+      renderSolidPng(density.adaptive, lightIconBackground),
+    );
+    writeAndroidPngResource(
+      densityDir,
+      'ic_launcher_foreground',
+      renderIconPng(lightIcon, density.adaptive, { transparentBackground: true, scale: 0.82 }),
+    );
+    writeAndroidPngResource(
+      densityDir,
+      'ic_launcher_monochrome',
+      renderIconPng(monoIcon, density.adaptive, { transparentBackground: true, scale: 0.9 }),
+    );
+  }
+
+  const splashFiles = [
+    ...fs.readdirSync(androidResDir)
+      .filter((entry) => /^drawable(-night)?-(m|h|x|xx|xxx)hdpi$/.test(entry))
+      .map((entry) => path.join(androidResDir, entry, 'splashscreen_logo.png')),
+  ];
+  for (const splashPath of splashFiles) {
+    if (!fs.existsSync(splashPath)) continue;
+    const existing = PNG.sync.read(fs.readFileSync(splashPath));
+    writePng(splashPath, renderIconPng(splashIcon, existing.width, { transparentBackground: true }));
+  }
+}
+
+function syncIosSourceAssets() {
+  const iosAssetDir = path.join(repoRoot, 'apps', 'mobile', 'ios', 'BaristaClawMobile', 'Images.xcassets');
+  const appIconTarget = path.join(iosAssetDir, 'AppIcon.appiconset', 'App-Icon-1024x1024@1x.png');
+  const splashTarget = path.join(iosAssetDir, 'SplashScreen.imageset', 'image.png');
+  if (fs.existsSync(path.dirname(appIconTarget))) {
+    copyFile(path.join(webIconsDir, 'icon-light-1024.png'), appIconTarget);
+  }
+  if (fs.existsSync(path.dirname(splashTarget))) {
+    copyFile(path.join(mobileAssetsDir, 'splash-icon.png'), splashTarget);
+  }
+}
+
 async function renderSvg(svgPath, outputPath, size) {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: size, height: size } });
@@ -422,8 +542,6 @@ async function main() {
   const sourcePng = PNG.sync.read(fs.readFileSync(sourcePath));
   const clean = removeConnectedWhiteBackground(sourcePng);
   const foreground = extractForeground(clean);
-  const base1024 = renderIconPng(clean, 1024, { background: [0, 0, 0, 255] });
-  const maskable1024 = renderIconPng(clean, 1024, { background: [0, 0, 0, 255], scale: 0.86 });
   const mono1024 = renderIconPng(clean, 1024, { transparentBackground: true, mono: true, scale: 0.9 });
   const sourceDataUri = dataUriFromPng(clean);
   const foregroundDataUri = dataUriFromPng(foreground);
@@ -432,27 +550,32 @@ async function main() {
   writePng(path.join(webIconsDir, 'icon-source-foreground.png'), foreground);
   writePng(path.join(webIconsDir, 'brand-mark-transparent.png'), renderIconPng(foreground, 1024, { transparentBackground: true }));
 
-  writeText(path.join(webIconsDir, 'icon-light.svg'), lightGlassIconSvg(foregroundDataUri));
+  const lightIconSvg = lightGlassIconSvg(foregroundDataUri);
+  writeText(path.join(webIconsDir, 'icon-light.svg'), lightIconSvg);
   writeText(path.join(webIconsDir, 'icon-dark.svg'), rasterIconSvg(sourceDataUri));
-  writeText(path.join(webIconsDir, 'icon-maskable.svg'), rasterIconSvg(sourceDataUri, { maskable: true }));
-  writeText(path.join(webIconsDir, 'icon-master.svg'), rasterIconSvg(sourceDataUri));
-  writeText(path.join(webIconsDir, 'icon-192.svg'), rasterIconSvg(sourceDataUri));
-  writeText(path.join(webIconsDir, 'icon-512.svg'), rasterIconSvg(sourceDataUri));
+  writeText(path.join(webIconsDir, 'icon-maskable.svg'), lightIconSvg);
+  writeText(path.join(webIconsDir, 'icon-master.svg'), lightIconSvg);
+  writeText(path.join(webIconsDir, 'icon-192.svg'), lightIconSvg);
+  writeText(path.join(webIconsDir, 'icon-512.svg'), lightIconSvg);
   writeText(path.join(webIconsDir, 'icon-mono.svg'), monoSvg());
-  writeText(path.join(webPublicDir, 'favicon.svg'), rasterIconSvg(sourceDataUri));
+  writeText(path.join(webPublicDir, 'favicon.svg'), lightIconSvg);
 
   writeText(path.join(composerDir, 'background.svg'), composerBackgroundSvg());
   writeText(path.join(composerDir, 'foreground.svg'), foregroundLayerSvg(foregroundDataUri));
   writeText(path.join(composerDir, 'highlight.svg'), composerHighlightSvg());
   writeText(path.join(composerDir, 'mono.svg'), monoSvg());
 
+  await renderSvg(path.join(webIconsDir, 'icon-light.svg'), path.join(webIconsDir, 'icon-light-512.png'), 512);
+  await renderSvg(path.join(webIconsDir, 'icon-light.svg'), path.join(webIconsDir, 'icon-light-1024.png'), 1024);
+  const lightIcon1024 = PNG.sync.read(fs.readFileSync(path.join(webIconsDir, 'icon-light-1024.png')));
+
   for (const size of sizes) {
-    writePng(path.join(webIconsDir, `icon-${size}.png`), renderIconPng(clean, size, { background: [0, 0, 0, 255] }));
-    writePng(path.join(webIconsDir, `icon-maskable-${size}.png`), renderIconPng(clean, size, { background: [0, 0, 0, 255], scale: 0.86 }));
+    writePng(path.join(webIconsDir, `icon-${size}.png`), renderIconPng(lightIcon1024, size, { background: lightIconBackground }));
+    writePng(path.join(webIconsDir, `icon-maskable-${size}.png`), renderIconPng(lightIcon1024, size, { background: lightIconBackground, scale: 0.9 }));
   }
 
   writePng(path.join(webIconsDir, 'icon-dark-512.png'), renderIconPng(clean, 512, { background: [0, 0, 0, 255] }));
-  writePng(path.join(webIconsDir, 'icon-dark-1024.png'), base1024);
+  writePng(path.join(webIconsDir, 'icon-dark-1024.png'), renderIconPng(clean, 1024, { background: [0, 0, 0, 255] }));
   writePng(path.join(webIconsDir, 'icon-mono-512.png'), renderIconPng(clean, 512, { transparentBackground: true, mono: true, scale: 0.9 }));
   writePng(path.join(webIconsDir, 'icon-mono-1024.png'), mono1024);
 
@@ -461,20 +584,24 @@ async function main() {
   copyFile(path.join(webIconsDir, 'icon-180.png'), path.join(webIconsDir, 'apple-touch-icon.png'));
   copyFile(path.join(webIconsDir, 'icon-maskable-192.png'), path.join(webIconsDir, 'icon-192-maskable.png'));
   copyFile(path.join(webIconsDir, 'icon-maskable-512.png'), path.join(webIconsDir, 'icon-512-maskable.png'));
+  writeIco(path.join(webPublicDir, 'favicon.ico'), [
+    PNG.sync.read(fs.readFileSync(path.join(webIconsDir, 'icon-16.png'))),
+    PNG.sync.read(fs.readFileSync(path.join(webIconsDir, 'icon-32.png'))),
+    PNG.sync.read(fs.readFileSync(path.join(webIconsDir, 'icon-48.png'))),
+  ]);
 
-  writePng(path.join(mobileAssetsDir, 'icon.png'), base1024);
-  writePng(path.join(mobileAssetsDir, 'favicon.png'), renderIconPng(clean, 48, { background: [0, 0, 0, 255] }));
-  writePng(path.join(mobileAssetsDir, 'android-icon-background.png'), renderIconPng(clean, 1024, { background: [0, 0, 0, 255], scale: 0 }));
-  writePng(path.join(mobileAssetsDir, 'android-icon-foreground.png'), maskable1024);
+  copyFile(path.join(webIconsDir, 'icon-light-1024.png'), path.join(mobileAssetsDir, 'icon.png'));
+  writePng(path.join(mobileAssetsDir, 'favicon.png'), renderIconPng(lightIcon1024, 48, { background: lightIconBackground }));
+  writePng(path.join(mobileAssetsDir, 'android-icon-background.png'), renderSolidPng(1024, lightIconBackground));
+  writePng(path.join(mobileAssetsDir, 'android-icon-foreground.png'), renderIconPng(lightIcon1024, 1024, { transparentBackground: true, scale: 0.82 }));
   writePng(path.join(mobileAssetsDir, 'android-icon-monochrome.png'), mono1024);
-  writePng(path.join(mobileAssetsDir, 'splash-icon.png'), renderIconPng(clean, 1024, { transparentBackground: true, scale: 0.72 }));
-
-  await renderSvg(path.join(webIconsDir, 'icon-light.svg'), path.join(webIconsDir, 'icon-light-512.png'), 512);
-  await renderSvg(path.join(webIconsDir, 'icon-light.svg'), path.join(webIconsDir, 'icon-light-1024.png'), 1024);
+  writePng(path.join(mobileAssetsDir, 'splash-icon.png'), renderIconPng(lightIcon1024, 1024, { transparentBackground: true, scale: 0.72 }));
 
   copyFile(path.join(webIconsDir, 'icon-light-1024.png'), path.join(iosPrepDir, 'AppIcon-Light-1024.png'));
   copyFile(path.join(webIconsDir, 'icon-dark-1024.png'), path.join(iosPrepDir, 'AppIcon-Dark-1024.png'));
   copyFile(path.join(webIconsDir, 'icon-mono-1024.png'), path.join(iosPrepDir, 'AppIcon-Tinted-Mono-1024.png'));
+  syncAndroidSourceResources(lightIcon1024, mono1024, lightIcon1024);
+  syncIosSourceAssets();
 
   // Validate that the standalone SVG is renderable by Chromium.
   await renderSvg(path.join(webIconsDir, 'icon-light.svg'), path.join(repoRoot, 'artifacts', 'icon-light-preview.png'), 1024);

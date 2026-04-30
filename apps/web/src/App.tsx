@@ -10,8 +10,8 @@ import { NavbarProvider, useNavbar } from './context/NavbarContext';
 import { AuthModalProvider, useAuthModal } from './context/AuthModalContext';
 import { AccountStatusProvider, useAccountStatus } from './context/AccountStatusContext';
 import { MotionConfig } from 'motion/react';
-import { useRuntimeDisplayMode } from './hooks/useRuntimeDisplayMode';
 import { subscribeMediaQueryChange } from './utils/mediaQuery';
+import { motionDefaultTransition } from './utils/motionPresets';
 import { installClientErrorReporting } from './services/errorReporting';
 
 const MOBILE_ROUTE_ORDER = ['/', '/scanner', '/tools', '/collection', '/chat'] as const;
@@ -311,8 +311,6 @@ function AppContent() {
 }
 
 export default function App() {
-  const { isIosStandalone } = useRuntimeDisplayMode();
-
   useEffect(() => {
     return installClientErrorReporting();
   }, []);
@@ -323,7 +321,7 @@ export default function App() {
         <AuthModalProvider>
           <AccountStatusProvider>
             <NavbarProvider>
-              <MotionConfig reducedMotion={isIosStandalone ? 'always' : 'user'}>
+              <MotionConfig reducedMotion="user" transition={motionDefaultTransition}>
                 <AppContent />
               </MotionConfig>
             </NavbarProvider>

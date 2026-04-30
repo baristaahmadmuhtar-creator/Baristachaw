@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react';
-import { Loader2 } from 'lucide-react';
 import { useAuthModal, type EmailAuthMode } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
+import { AuthProgressMark } from './AuthProgressMark';
 import { AlertCircle, ArrowLeft, AtSign, CheckCircle, Eye, EyeOff, Lock, UserRound } from '../icons';
 
 type EmailPasswordAuthFormProps = {
@@ -14,6 +14,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const currentColorIconStyle = { '--icon-glyph-color': 'currentColor' } as CSSProperties;
 
 type AuthFormStep = 'email' | 'password' | 'confirmation' | 'resetSent' | 'recovery';
+type PendingAuthAction = 'password' | 'reset' | 'recovery';
 
 function readPasswordRecoveryRequest() {
   if (typeof window === 'undefined') return { requested: false, accessToken: '' };
@@ -52,9 +53,13 @@ export function EmailPasswordAuthForm({
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState('');
+  const [pendingAction, setPendingAction] = useState<PendingAuthAction | null>(null);
 
   const isSignUp = mode === 'signUp';
-  const disabled = authBusy || isOffline;
+  const disabled = authBusy || isOffline || pendingAction !== null;
+  const isPasswordBusy = pendingAction === 'password';
+  const isResetBusy = pendingAction === 'reset';
+  const isRecoveryBusy = pendingAction === 'recovery';
 
   useEffect(() => {
     if (!recoveryRequest.requested || !recoveryRequest.accessToken || typeof window === 'undefined') return;
@@ -95,6 +100,7 @@ export function EmailPasswordAuthForm({
     }
 
     setLocalError('');
+    setPendingAction('password');
     try {
       const result = await authenticateWithEmail({
         mode,
@@ -108,6 +114,8 @@ export function EmailPasswordAuthForm({
       }
     } catch {
       // AuthModalContext surfaces the localized server error.
+    } finally {
+      setPendingAction(null);
     }
   };
 
@@ -116,6 +124,7 @@ export function EmailPasswordAuthForm({
     if (!normalized) return;
 
     setLocalError('');
+    setPendingAction('reset');
     try {
       const result = await sendPasswordResetEmail(normalized);
       setPassword('');
@@ -123,6 +132,8 @@ export function EmailPasswordAuthForm({
       setStep('resetSent');
     } catch {
       // AuthModalContext surfaces the localized server error.
+    } finally {
+      setPendingAction(null);
     }
   };
 
@@ -138,6 +149,7 @@ export function EmailPasswordAuthForm({
     }
 
     setLocalError('');
+    setPendingAction('recovery');
     try {
       await updateRecoveredPassword({
         accessToken: recoveryRequest.accessToken,
@@ -146,6 +158,8 @@ export function EmailPasswordAuthForm({
       setPassword('');
     } catch {
       // AuthModalContext surfaces the localized server error.
+    } finally {
+      setPendingAction(null);
     }
   };
 
@@ -172,7 +186,7 @@ export function EmailPasswordAuthForm({
                 setMode('signIn');
                 setStep('password');
               }}
-              className="mt-3 text-sm font-semibold text-blue-700 hover:text-blue-800 dark:text-blue-300"
+              className="mt-3 text-sm font-semibold text-[var(--auth-accent)] hover:text-[var(--auth-accent-pressed)]"
             >
               {t.authEmailConfirmationCta}
             </button>
@@ -198,7 +212,7 @@ export function EmailPasswordAuthForm({
                 setMode('signIn');
                 setStep('password');
               }}
-              className="mt-3 text-sm font-semibold text-blue-700 hover:text-blue-800 dark:text-blue-300"
+              className="mt-3 text-sm font-semibold text-[var(--auth-accent)] hover:text-[var(--auth-accent-pressed)]"
             >
               {t.authResetEmailSentCta}
             </button>
@@ -260,7 +274,7 @@ export function EmailPasswordAuthForm({
             disabled={disabled || !recoveryRequest.accessToken}
             className="auth-action-primary flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-base font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
           >
-            {authBusy ? <Loader2 size={16} className="animate-spin" /> : <Lock size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
+            {isRecoveryBusy ? <AuthProgressMark /> : <Lock size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
             {t.authRecoverySubmit}
           </button>
 
@@ -318,7 +332,7 @@ export function EmailPasswordAuthForm({
             disabled={disabled}
             className="auth-action-primary flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-base font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
           >
-            {authBusy ? <Loader2 size={16} className="animate-spin" /> : <UserRound size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
+            {isPasswordBusy ? <AuthProgressMark /> : <UserRound size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
             {t.authEmailContinue}
           </button>
         </form>
@@ -395,7 +409,7 @@ export function EmailPasswordAuthForm({
             disabled={disabled}
             className="auth-action-primary flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-base font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
           >
-            {authBusy ? <Loader2 size={16} className="animate-spin" /> : <Lock size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
+            {isPasswordBusy ? <AuthProgressMark /> : <Lock size={17} variant="glyph" tone="neutral" style={currentColorIconStyle} />}
             {isSignUp ? t.authCreateAccount : t.authSignInWithPassword}
           </button>
 
@@ -404,16 +418,16 @@ export function EmailPasswordAuthForm({
               type="button"
               onClick={() => void handleSendPasswordReset()}
               disabled={disabled}
-              className="w-full rounded-xl px-3 py-2 text-center text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-500/10 hover:text-blue-800 disabled:opacity-55 dark:text-blue-300"
+              className="w-full rounded-xl px-3 py-2 text-center text-sm font-semibold text-[var(--auth-accent)] transition-colors hover:bg-[color-mix(in_srgb,var(--auth-accent)_10%,transparent)] hover:text-[var(--auth-accent-pressed)] disabled:opacity-55"
             >
-              {authBusy ? t.authResetEmailSending : t.authForgotPassword}
+              {isResetBusy ? t.authResetEmailSending : t.authForgotPassword}
             </button>
           ) : null}
 
           <button
             type="button"
             onClick={switchMode}
-            disabled={authBusy}
+            disabled={disabled}
             className="w-full rounded-xl px-3 py-2 text-center text-sm font-semibold text-secondary transition-colors hover:bg-surface-alpha hover:text-primary disabled:opacity-55"
           >
             {isSignUp ? t.authSwitchToPasswordSignin : t.authSwitchToPasswordSignup}

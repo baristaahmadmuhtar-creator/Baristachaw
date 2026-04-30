@@ -42,30 +42,30 @@ function normalizeRoutePath(pathname: string): string {
 function RouteLoadingFallback() {
   return (
     <div
-      className="min-h-[var(--app-height)] bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.14),_transparent_42%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] dark:bg-black"
+      className="route-loading-shell min-h-[var(--app-height)]"
       role="status"
       aria-live="polite"
       aria-busy="true"
     >
       <div className="mx-auto flex min-h-[var(--app-height)] max-w-5xl flex-col justify-center px-6 py-16">
-        <div className="max-w-xl rounded-[2rem] border border-white/70 bg-white/85 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur dark:border-white/10 dark:bg-white/8 dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-          <div className="inline-flex items-center gap-3 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-200">
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-blue-500" />
+        <div className="route-loading-panel max-w-xl rounded-[2rem] p-6">
+          <div className="route-loading-badge inline-flex items-center gap-3 rounded-full px-4 py-2 text-sm font-semibold">
+            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[var(--auth-accent)]" />
             Baristachaw
           </div>
-          <h1 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
+          <h1 className="mt-5 text-3xl font-semibold tracking-tight text-primary">
             Memuat ruang kerja barista
           </h1>
-          <p className="mt-3 max-w-lg text-sm leading-6 text-slate-600 dark:text-white/70">
+          <p className="mt-3 max-w-lg text-sm leading-6 text-secondary">
             Menyiapkan alat seduh, konteks obrolan, dan status ruang kerja tersimpan.
           </p>
           <div className="mt-8 space-y-3">
-            <div className="h-3 w-40 animate-pulse rounded-full bg-slate-200 dark:bg-white/12" />
-            <div className="h-16 animate-pulse rounded-2xl bg-slate-100 dark:bg-white/8" />
+            <div className="route-loading-bar h-3 w-40 animate-pulse rounded-full" />
+            <div className="route-loading-block h-16 animate-pulse rounded-2xl" />
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="h-24 animate-pulse rounded-2xl bg-slate-100 dark:bg-white/8" />
-              <div className="h-24 animate-pulse rounded-2xl bg-slate-100 dark:bg-white/8" />
-              <div className="h-24 animate-pulse rounded-2xl bg-slate-100 dark:bg-white/8" />
+              <div className="route-loading-block h-24 animate-pulse rounded-2xl" />
+              <div className="route-loading-block h-24 animate-pulse rounded-2xl" />
+              <div className="route-loading-block h-24 animate-pulse rounded-2xl" />
             </div>
           </div>
         </div>

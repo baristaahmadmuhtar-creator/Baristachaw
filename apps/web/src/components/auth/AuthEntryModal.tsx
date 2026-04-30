@@ -1,10 +1,10 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { Loader2 } from 'lucide-react';
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
 import { getLanguageDirection } from '../../constants';
 import { EmailPasswordAuthForm } from './EmailPasswordAuthForm';
+import { AuthProgressMark } from './AuthProgressMark';
 import { AlertCircle, FacebookMark, GoogleMark, ShieldCheck, Sparkles, UserRound, WalletCards, X } from '../icons';
 
 function resolveSourceLabel(source: string, t: Record<string, string>) {
@@ -20,6 +20,8 @@ function resolveSourceLabel(source: string, t: Record<string, string>) {
   };
   return sourceLabelMap[source] || sourceLabelMap.general;
 }
+
+type AuthModalAction = 'google' | 'facebook' | 'guest';
 
 export function AuthEntryModal() {
   const { t, language } = useGlobalState();
@@ -41,11 +43,40 @@ export function AuthEntryModal() {
   const bodyId = useId();
   const googleButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const authBusyRef = useRef(authBusy);
+  const authWasBusyRef = useRef(false);
+  const [activeAction, setActiveAction] = useState<AuthModalAction | null>(null);
+  const isAuthActionPending = activeAction !== null || authBusy;
+  const isGoogleBusy = activeAction === 'google';
+  const isFacebookBusy = activeAction === 'facebook';
+  const isGuestBusy = activeAction === 'guest';
   const benefits = [
     { icon: UserRound, label: t.authModalBenefitGuest },
     { icon: ShieldCheck, label: t.authModalBenefitSync },
     { icon: WalletCards, label: t.authModalBenefitUpgrade },
   ];
+
+  const startAuthAction = async (action: AuthModalAction, handler: () => Promise<void>) => {
+    if (isAuthActionPending) return;
+    setActiveAction(action);
+    try {
+      await handler();
+      if (!authBusyRef.current) setActiveAction(null);
+    } catch {
+      setActiveAction(null);
+    }
+  };
+
+  useEffect(() => {
+    authBusyRef.current = authBusy;
+    if (authBusy) {
+      authWasBusyRef.current = true;
+      return;
+    }
+    if (!authWasBusyRef.current) return;
+    authWasBusyRef.current = false;
+    setActiveAction(null);
+  }, [authBusy]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -55,7 +86,7 @@ export function AuthEntryModal() {
       else googleButtonRef.current?.focus();
     }, 60);
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !authBusy) {
+      if (event.key === 'Escape' && !isAuthActionPending) {
         event.preventDefault();
         closeAuthModal();
       }
@@ -66,7 +97,7 @@ export function AuthEntryModal() {
       window.clearTimeout(focusTimer);
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [authBusy, closeAuthModal, isOffline, isOpen]);
+  }, [closeAuthModal, isAuthActionPending, isOffline, isOpen]);
 
   return (
     <AnimatePresence>
@@ -78,7 +109,7 @@ export function AuthEntryModal() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[120] bg-black/40 backdrop-blur-sm"
             onClick={() => {
-              if (!authBusy) closeAuthModal();
+              if (!isAuthActionPending) closeAuthModal();
             }}
           />
           <div
@@ -113,7 +144,7 @@ export function AuthEntryModal() {
                   ref={closeButtonRef}
                   type="button"
                   onClick={closeAuthModal}
-                  disabled={authBusy}
+                  disabled={isAuthActionPending}
                   className="rounded-full p-2 text-secondary hover:bg-surface-alpha hover:text-primary"
                   aria-label={t.authModalClose}
                 >
@@ -146,35 +177,35 @@ export function AuthEntryModal() {
                 <button
                   ref={googleButtonRef}
                   type="button"
-                  onClick={() => void startGoogleAuth()}
-                  disabled={authBusy || isOffline}
+                  onClick={() => void startAuthAction('google', startGoogleAuth)}
+                  disabled={isAuthActionPending || isOffline}
                   className="auth-action-primary w-full rounded-2xl px-4 py-3 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-55"
                 >
                   <span className="flex items-center justify-center gap-2">
-                    {authBusy ? (
-                      <Loader2 size={16} className="animate-spin" />
+                    {isGoogleBusy ? (
+                      <AuthProgressMark />
                     ) : (
                       <span className="grid h-6 w-6 place-items-center rounded-full bg-white">
                         <GoogleMark className="h-4 w-4" />
                       </span>
                     )}
-                    {authBusy ? t.opening : t.continueWithGoogle}
+                    {isGoogleBusy ? t.opening : t.continueWithGoogle}
                   </span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => void startFacebookAuth()}
-                  disabled={authBusy || isOffline}
+                  onClick={() => void startAuthAction('facebook', startFacebookAuth)}
+                  disabled={isAuthActionPending || isOffline}
                   className="w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3 text-sm font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55"
                 >
                   <span className="flex items-center justify-center gap-2">
-                    {authBusy ? (
-                      <Loader2 size={16} className="animate-spin" />
+                    {isFacebookBusy ? (
+                      <AuthProgressMark />
                     ) : (
                       <FacebookMark className="h-6 w-6 shrink-0" />
                     )}
-                    {authBusy ? t.opening : t.continueWithFacebook}
+                    {isFacebookBusy ? t.opening : t.continueWithFacebook}
                   </span>
                 </button>
 
@@ -194,17 +225,17 @@ export function AuthEntryModal() {
 
                 <button
                   type="button"
-                  onClick={() => void continueAsGuest()}
-                  disabled={authBusy || isOffline}
+                  onClick={() => void startAuthAction('guest', continueAsGuest)}
+                  disabled={isAuthActionPending || isOffline}
                   className="w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3 text-sm font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55"
                 >
                   <span className="flex items-center justify-center gap-2">
-                    {authBusy ? (
-                      <Loader2 size={16} className="animate-spin" />
+                    {isGuestBusy ? (
+                      <AuthProgressMark />
                     ) : (
                       <UserRound size={17} variant="glyph" tone="ice" />
                     )}
-                    {authBusy ? t.authGuestStarting : t.continueAsGuest}
+                    {isGuestBusy ? t.authGuestStarting : t.continueAsGuest}
                   </span>
                 </button>
 

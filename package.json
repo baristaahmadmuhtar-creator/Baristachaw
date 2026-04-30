@@ -11,6 +11,7 @@
         "dev": "tsx server.ts",
         "dev:web": "npm run dev --workspace @baristachaw/web",
         "build": "npm run build --workspace @baristachaw/web",
+        "generate:icons": "node scripts/generate-icons.mjs",
         "catalog:bootstrap": "tsx scripts/catalog/bootstrap-phase1.ts",
         "catalog:build": "tsx scripts/catalog/build-phase1.ts",
         "preview": "npm run preview --workspace @baristachaw/web",
@@ -87,6 +88,7 @@
         "lighthouse": "^13.0.3",
         "metro": "^0.76.8",
         "metro-config": "^0.76.8",
+        "pngjs": "^3.4.0",
         "tsx": "^4.21.0",
         "typescript": "~5.8.2",
         "vite": "6.4.2"

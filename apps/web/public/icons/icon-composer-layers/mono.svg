@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="BaristaChaw monochrome app icon">
+  <g fill="#000000">
+    <path d="M382 350v-50c0-58 47-105 105-105h50c58 0 105 47 105 105v50c74 42 128 112 147 194h41c56 0 102 46 102 102v78c0 56-46 102-102 102h-43c-50 109-158 185-285 185s-235-76-285-185h-43c-56 0-102-46-102-102v-78c0-56 46-102 102-102h41c19-82 73-152 147-194Zm37-43v22c30-10 62-15 95-15s65 5 95 15v-22c0-21-17-38-38-38H457c-21 0-38 17-38 38Zm95 86c-132 0-239 107-239 239s107 239 239 239 239-107 239-239S646 393 514 393Z"/>
+    <rect x="335" y="559" width="358" height="198" rx="88"/>
+    <rect x="404" y="642" width="62" height="118" rx="31"/>
+    <rect x="562" y="642" width="62" height="118" rx="31"/>
+    <rect x="466" y="451" width="28" height="28" rx="3"/>
+    <rect x="514" y="431" width="28" height="28" rx="3"/>
+    <rect x="562" y="451" width="28" height="28" rx="3"/>
+    <rect x="514" y="493" width="28" height="28" rx="3"/>
+  </g>
+</svg>

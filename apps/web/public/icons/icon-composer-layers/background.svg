@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="darkGlass" x1="118" y1="24" x2="908" y2="998" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#111827"/>
+      <stop offset="0.52" stop-color="#020617"/>
+      <stop offset="1" stop-color="#000000"/>
+    </linearGradient>
+  </defs>
   <rect width="1024" height="1024" fill="#000000"/>
+  <rect x="28" y="28" width="968" height="968" rx="230" fill="url(#darkGlass)"/>
 </svg>

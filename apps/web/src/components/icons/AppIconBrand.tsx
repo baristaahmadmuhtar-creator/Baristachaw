@@ -1,5 +1,10 @@
 import type { ImgHTMLAttributes } from 'react';
 
 export function AppIconBrand(props: ImgHTMLAttributes<HTMLImageElement>) {
-  return <img src="/icons/brand-mark-transparent.png?v=20260423c" alt="Baristachaw" {...props} />;
+  return (
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcSet="/icons/icon-dark-512.png?v=20260430b" />
+      <img src="/icons/icon-light-512.png?v=20260430b" alt="Baristachaw" {...props} />
+    </picture>
+  );
 }

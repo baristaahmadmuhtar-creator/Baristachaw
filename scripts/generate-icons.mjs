@@ -15,9 +15,11 @@ const iosPrepDir = path.join(mobileAssetsDir, 'ios-appicon');
 const iconSourceDir = path.join(repoRoot, 'resources', 'icon-source');
 const composerDir = path.join(webIconsDir, 'icon-composer-layers');
 const storedSourcePath = path.join(iconSourceDir, 'baristachaw-source.png');
+const generatedSourcePath = path.join(iconSourceDir, 'baristachaw-imagegen-source.png');
 
 const sourceCandidates = [
   process.env.BARISTACHAW_ICON_SOURCE,
+  generatedSourcePath,
   storedSourcePath,
   'C:\\Users\\Alpha\\Downloads\\IMG_7090.PNG',
 ].filter(Boolean);
@@ -112,6 +114,89 @@ function removeConnectedWhiteBackground(input) {
   return out;
 }
 
+function insideIconGlyphMask(x, y, width, height) {
+  const nx = x / width;
+  const ny = y / height;
+  const circularHead = ((nx - 0.5) / 0.39) ** 2 + ((ny - 0.57) / 0.4) ** 2 <= 1;
+  const topHandle = nx >= 0.29 && nx <= 0.72 && ny >= 0.11 && ny <= 0.36;
+  const leftSide = nx >= 0.08 && nx <= 0.25 && ny >= 0.42 && ny <= 0.69;
+  const rightSide = nx >= 0.75 && nx <= 0.92 && ny >= 0.42 && ny <= 0.69;
+  const lowerLip = nx >= 0.35 && nx <= 0.65 && ny >= 0.78 && ny <= 0.91;
+  return circularHead || topHandle || leftSide || rightSide || lowerLip;
+}
+
+function isIconForegroundPixel(data, index, x, y, width, height) {
+  if (!insideIconGlyphMask(x, y, width, height)) return false;
+
+  const r = data[index];
+  const g = data[index + 1];
+  const b = data[index + 2];
+  const a = data[index + 3];
+  if (a <= 12) return false;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const saturation = max - min;
+
+  const blueTool = b > 74 && b - r > 20 && b >= g - 8;
+  const whiteFace = min > 152 && saturation < 86;
+  const glassEdge = max > 196 && b >= 145;
+  return blueTool || whiteFace || glassEdge;
+}
+
+function extractForeground(input) {
+  const { width, height, data } = input;
+  const keep = new Uint8Array(width * height);
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const i = offset(width, x, y);
+      if (isIconForegroundPixel(data, i, x, y, width, height)) {
+        keep[y * width + x] = 1;
+      }
+    }
+  }
+
+  const expanded = keep.slice();
+  const includeEdgePixel = (x, y) => {
+    if (!insideIconGlyphMask(x, y, width, height)) return false;
+
+    const i = offset(width, x, y);
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const a = data[i + 3];
+    const max = Math.max(r, g, b);
+    if (a <= 12 || max <= 46 || b - r <= 12 || b < g - 4) return false;
+
+    for (let yy = Math.max(0, y - 2); yy <= Math.min(height - 1, y + 2); yy += 1) {
+      for (let xx = Math.max(0, x - 2); xx <= Math.min(width - 1, x + 2); xx += 1) {
+        if (keep[yy * width + xx]) return true;
+      }
+    }
+    return false;
+  };
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const pixel = y * width + x;
+      if (!keep[pixel] && includeEdgePixel(x, y)) {
+        expanded[pixel] = 1;
+      }
+    }
+  }
+
+  const out = new PNG({ width, height });
+  data.copy(out.data);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (expanded[y * width + x]) continue;
+      out.data[offset(width, x, y) + 3] = 0;
+    }
+  }
+  return out;
+}
+
 function sampleNearest(src, x, y) {
   const sx = Math.max(0, Math.min(src.width - 1, Math.round(x)));
   const sy = Math.max(0, Math.min(src.height - 1, Math.round(y)));
@@ -188,6 +273,40 @@ function rasterIconSvg(dataUri, { maskable = false } = {}) {
 </svg>`;
 }
 
+function foregroundLayerSvg(dataUri) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="BaristaChaw foreground layer">
+  <image href="${dataUri}" x="0" y="0" width="1024" height="1024" preserveAspectRatio="xMidYMid meet"/>
+</svg>`;
+}
+
+function lightGlassIconSvg(dataUri) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="BaristaChaw light app icon">
+  <defs>
+    <linearGradient id="lightGlass" x1="140" y1="64" x2="884" y2="960" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.48" stop-color="#EEF5FF"/>
+      <stop offset="1" stop-color="#D8E6FA"/>
+    </linearGradient>
+    <radialGradient id="lightBloom" cx="30%" cy="12%" r="82%">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="0.58" stop-color="#DCEBFF" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#94BDF7" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softDepth" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="22" stdDeviation="32" flood-color="#0B3B91" flood-opacity="0.16"/>
+      <feDropShadow dx="0" dy="-2" stdDeviation="3" flood-color="#FFFFFF" flood-opacity="0.75"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" fill="#F5F8FE"/>
+  <rect x="32" y="32" width="960" height="960" rx="226" fill="url(#lightGlass)" filter="url(#softDepth)"/>
+  <rect x="48" y="42" width="928" height="928" rx="214" fill="url(#lightBloom)"/>
+  <path d="M128 106C205 58 315 42 458 42h108c145 0 253 16 330 64" fill="none" stroke="#FFFFFF" stroke-opacity="0.72" stroke-width="5" stroke-linecap="round"/>
+  <image href="${dataUri}" x="18" y="18" width="988" height="988" preserveAspectRatio="xMidYMid meet"/>
+</svg>`;
+}
+
 function monoSvg() {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="BaristaChaw monochrome app icon">
@@ -207,7 +326,15 @@ function monoSvg() {
 function composerBackgroundSvg() {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="darkGlass" x1="118" y1="24" x2="908" y2="998" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#111827"/>
+      <stop offset="0.52" stop-color="#020617"/>
+      <stop offset="1" stop-color="#000000"/>
+    </linearGradient>
+  </defs>
   <rect width="1024" height="1024" fill="#000000"/>
+  <rect x="28" y="28" width="968" height="968" rx="230" fill="url(#darkGlass)"/>
 </svg>`;
 }
 
@@ -258,7 +385,17 @@ async function renderSvg(svgPath, outputPath, size) {
   try {
     const publicPath = path.relative(webPublicDir, svgPath).replaceAll('\\', '/');
     const url = `${staticServer.origin}/${publicPath}`;
-    await page.goto(url, { waitUntil: 'load' });
+    await page.setContent(
+      `<!doctype html><html><head><style>html,body{width:${size}px;height:${size}px;margin:0;overflow:hidden;background:transparent}img{display:block;width:${size}px;height:${size}px;object-fit:contain}</style></head><body><img src="${url}" alt=""></body></html>`,
+      { waitUntil: 'load' },
+    );
+    await page.locator('img').evaluate((image) => {
+      if (image.complete) return;
+      return new Promise((resolve, reject) => {
+        image.addEventListener('load', resolve, { once: true });
+        image.addEventListener('error', reject, { once: true });
+      });
+    });
     await page.screenshot({
       path: outputPath,
       clip: { x: 0, y: 0, width: size, height: size },
@@ -284,15 +421,18 @@ async function main() {
 
   const sourcePng = PNG.sync.read(fs.readFileSync(sourcePath));
   const clean = removeConnectedWhiteBackground(sourcePng);
+  const foreground = extractForeground(clean);
   const base1024 = renderIconPng(clean, 1024, { background: [0, 0, 0, 255] });
   const maskable1024 = renderIconPng(clean, 1024, { background: [0, 0, 0, 255], scale: 0.86 });
   const mono1024 = renderIconPng(clean, 1024, { transparentBackground: true, mono: true, scale: 0.9 });
   const sourceDataUri = dataUriFromPng(clean);
+  const foregroundDataUri = dataUriFromPng(foreground);
 
   writePng(path.join(webIconsDir, 'icon-source-clean.png'), clean);
-  writePng(path.join(webIconsDir, 'icon-source-foreground.png'), clean);
+  writePng(path.join(webIconsDir, 'icon-source-foreground.png'), foreground);
+  writePng(path.join(webIconsDir, 'brand-mark-transparent.png'), renderIconPng(foreground, 1024, { transparentBackground: true }));
 
-  writeText(path.join(webIconsDir, 'icon-light.svg'), rasterIconSvg(sourceDataUri));
+  writeText(path.join(webIconsDir, 'icon-light.svg'), lightGlassIconSvg(foregroundDataUri));
   writeText(path.join(webIconsDir, 'icon-dark.svg'), rasterIconSvg(sourceDataUri));
   writeText(path.join(webIconsDir, 'icon-maskable.svg'), rasterIconSvg(sourceDataUri, { maskable: true }));
   writeText(path.join(webIconsDir, 'icon-master.svg'), rasterIconSvg(sourceDataUri));
@@ -302,7 +442,7 @@ async function main() {
   writeText(path.join(webPublicDir, 'favicon.svg'), rasterIconSvg(sourceDataUri));
 
   writeText(path.join(composerDir, 'background.svg'), composerBackgroundSvg());
-  writeText(path.join(composerDir, 'foreground.svg'), rasterIconSvg(sourceDataUri));
+  writeText(path.join(composerDir, 'foreground.svg'), foregroundLayerSvg(foregroundDataUri));
   writeText(path.join(composerDir, 'highlight.svg'), composerHighlightSvg());
   writeText(path.join(composerDir, 'mono.svg'), monoSvg());
 
@@ -329,7 +469,10 @@ async function main() {
   writePng(path.join(mobileAssetsDir, 'android-icon-monochrome.png'), mono1024);
   writePng(path.join(mobileAssetsDir, 'splash-icon.png'), renderIconPng(clean, 1024, { transparentBackground: true, scale: 0.72 }));
 
-  copyFile(path.join(webIconsDir, 'icon-1024.png'), path.join(iosPrepDir, 'AppIcon-Light-1024.png'));
+  await renderSvg(path.join(webIconsDir, 'icon-light.svg'), path.join(webIconsDir, 'icon-light-512.png'), 512);
+  await renderSvg(path.join(webIconsDir, 'icon-light.svg'), path.join(webIconsDir, 'icon-light-1024.png'), 1024);
+
+  copyFile(path.join(webIconsDir, 'icon-light-1024.png'), path.join(iosPrepDir, 'AppIcon-Light-1024.png'));
   copyFile(path.join(webIconsDir, 'icon-dark-1024.png'), path.join(iosPrepDir, 'AppIcon-Dark-1024.png'));
   copyFile(path.join(webIconsDir, 'icon-mono-1024.png'), path.join(iosPrepDir, 'AppIcon-Tinted-Mono-1024.png'));
 

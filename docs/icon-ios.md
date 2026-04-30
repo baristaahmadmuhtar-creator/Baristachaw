@@ -1,6 +1,6 @@
 # BaristaChaw iOS App Icon
 
-Asset app icon utama dibuat dari `resources/icon-source/baristachaw-source.png`, yaitu source `IMG_7090.PNG` yang background putihnya diproses menjadi transparan oleh `npm run generate:icons`.
+Asset app icon utama dibuat dari `resources/icon-source/baristachaw-imagegen-source.png`, yaitu source ImageGen baru bergaya Liquid Glass yang tetap mengikuti arah visual `IMG_7090.PNG`. Generator juga menyimpan salinan aktif ke `resources/icon-source/baristachaw-source.png` saat `npm run generate:icons` dijalankan.
 
 ## File Siap Pakai
 
@@ -8,6 +8,9 @@ Asset app icon utama dibuat dari `resources/icon-source/baristachaw-source.png`,
 - `apps/mobile/assets/ios-appicon/AppIcon-Light-1024.png` untuk varian terang.
 - `apps/mobile/assets/ios-appicon/AppIcon-Dark-1024.png` untuk varian gelap.
 - `apps/mobile/assets/ios-appicon/AppIcon-Tinted-Mono-1024.png` untuk varian tinted/monochrome.
+- `apps/web/public/icons/icon-light.svg` dan `icon-light-1024.png` untuk light mode.
+- `apps/web/public/icons/icon-dark.svg` dan `icon-dark-1024.png` untuk dark mode.
+- `apps/web/public/icons/brand-mark-transparent.png` untuk logo login dan brand mark di UI.
 - `apps/web/public/icons/icon-composer-layers/background.svg`
 - `apps/web/public/icons/icon-composer-layers/foreground.svg`
 - `apps/web/public/icons/icon-composer-layers/highlight.svg`

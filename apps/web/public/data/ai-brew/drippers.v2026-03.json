@@ -264,6 +264,106 @@
       "source": "official_2026",
       "sourceUrl": "https://tricolate.com/",
       "catalogVersion": "2026.03.11-ai-brew-v1.3"
+    },
+    {
+      "id": "espresso-machine",
+      "name": "Espresso Machine",
+      "brand": "Generic",
+      "type": "Pressure Espresso Brewer",
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://sca.coffee/research/protocols-best-practices"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.05.01-ai-brew-method-expansion"
+    },
+    {
+      "id": "french-press",
+      "name": "French Press",
+      "brand": "Generic",
+      "type": "Full Immersion Press Brewer",
+      "source": "official_2026",
+      "sourceUrl": "https://global.hario.com/coffeelife/press.html",
+      "verificationLevel": "official",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.05.01-ai-brew-method-expansion"
+    },
+    {
+      "id": "aeropress",
+      "name": "AeroPress",
+      "brand": "AeroPress",
+      "type": "Pressure-Assisted Immersion Brewer",
+      "source": "official_2026",
+      "sourceUrl": "https://help.aeropress.com/en-US/articles/brewing-33631",
+      "verificationLevel": "official",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.05.01-ai-brew-method-expansion"
+    },
+    {
+      "id": "hario-siphon",
+      "name": "Hario Siphon",
+      "brand": "Hario",
+      "type": "Vacuum Siphon Brewer",
+      "source": "official_2026",
+      "sourceUrl": "https://global.hario.com/coffeelife/siphon.html",
+      "verificationLevel": "official",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.05.01-ai-brew-method-expansion"
+    },
+    {
+      "id": "bialetti-moka-pot",
+      "name": "Bialetti Moka Pot",
+      "brand": "Bialetti",
+      "type": "Stovetop Pressure Brewer",
+      "source": "official_2026",
+      "sourceUrl": "https://bialetti-cookware.zendesk.com/hc/en-us/articles/5416235346322-How-to-use-the-Moka-Express",
+      "verificationLevel": "official",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.05.01-ai-brew-method-expansion"
+    },
+    {
+      "id": "toddy-cold-brew",
+      "name": "Toddy Cold Brew",
+      "brand": "Toddy",
+      "type": "Cold Brew Immersion Brewer",
+      "source": "official_2026",
+      "sourceUrl": "https://toddycafe.com/brewing/",
+      "verificationLevel": "official",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.05.01-ai-brew-method-expansion"
+    },
+    {
+      "id": "batch-brewer",
+      "name": "Batch Brewer",
+      "brand": "SCA",
+      "type": "Automatic Batch Brewer",
+      "source": "official_2026",
+      "sourceUrl": "https://sca.coffee/s/2017-SCA-CHB-Program-Requirements-ba6g.pdf",
+      "verificationLevel": "official",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.05.01-ai-brew-method-expansion"
     }
   ]
 }

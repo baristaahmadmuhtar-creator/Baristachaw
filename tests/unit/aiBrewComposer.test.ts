@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   buildDeterministicNarrative,
   composeHybridNarrative,
+  extractSequenceOverlayFromMarkdown,
   validateAiNarrative,
 } from '../../apps/web/src/features/ai-brew/aiComposer.ts';
 import type { BrewPlan } from '../../apps/web/src/features/ai-brew/types.ts';
@@ -57,6 +58,10 @@ function createPlan(overrides: Partial<BrewPlan> = {}) {
     hotWaterMl: 270,
     iceMl: 0,
     recommendedRatio: 15.5,
+    finalBeverageRatio: 15.5,
+    hotExtractionRatio: 15.5,
+    hotWaterSharePercent: 100,
+    iceSharePercent: 0,
     doseG: 17.5,
     waterTempC: 90,
     totalTimeSeconds: 165,
@@ -110,17 +115,100 @@ function createPlan(overrides: Partial<BrewPlan> = {}) {
   } as BrewPlan;
 }
 
+const icedFixtureSteps: BrewPlan['steps'] = [
+  {
+    id: 'bloom',
+    label: 'Bloom',
+    startSeconds: 0,
+    pourVolumeMl: 50,
+    targetVolumeMl: 50,
+    note: 'Wet all grounds quickly.',
+  },
+  {
+    id: 'pulse_1',
+    label: 'Pulse 1',
+    startSeconds: 40,
+    pourVolumeMl: 60,
+    targetVolumeMl: 110,
+    note: 'Center-out circles.',
+  },
+  {
+    id: 'pulse_2',
+    label: 'Pulse 2',
+    startSeconds: 90,
+    pourVolumeMl: 60,
+    targetVolumeMl: 170,
+    note: 'Finish gently and level bed.',
+  },
+];
+
 test('deterministic sequence changes by context (iced vs hot)', () => {
   const hot = buildDeterministicNarrative(createPlan(), 'sequence');
   const iced = buildDeterministicNarrative(createPlan({
     brewMode: 'iced',
+    steps: icedFixtureSteps,
     hotWaterMl: 170,
     iceMl: 100,
+    finalBeverageRatio: 15.5,
+    hotExtractionRatio: 9.7,
+    hotWaterSharePercent: 63,
+    iceSharePercent: 37,
   }), 'sequence');
 
   assert.notEqual(hot, iced);
   assert.match(iced, /## Service Pattern/);
   assert.match(iced, /Iced mode active/i);
+});
+
+test('sequence overlay accepts Indonesian section headings without losing step instructions', () => {
+  const plan = createPlan();
+  const translatedMarkdown = [
+    '## Pola Layanan',
+    '- Pola seduh tetap stabil untuk barista.',
+    '- Jaga semua angka dari planner.',
+    '## Urutan Seduh',
+    '1. Bloom at 00:00: pour 60 ml to 60 ml. Basahi semua bubuk dengan tenang.',
+    '2. Pulse 1 at 00:40: pour 90 ml to 150 ml. Pertahankan aliran tengah ke luar.',
+    '3. Pulse 2 at 01:30: pour 120 ml to 270 ml. Selesaikan pelan dan ratakan bed.',
+    '## Pantau',
+    '- Bed kopi harus rata sampai drawdown.',
+  ].join('\n');
+
+  const overlay = extractSequenceOverlayFromMarkdown(plan, translatedMarkdown);
+
+  assert.equal(overlay.servicePattern.length, 2);
+  assert.equal(overlay.watch.length, 1);
+  assert.equal(overlay.steps[0].instruction, 'Basahi semua bubuk dengan tenang.');
+  assert.equal(overlay.steps[2].instruction, 'Selesaikan pelan dan ratakan bed.');
+});
+
+test('validator accepts iced final ratio and hot concentrate ratio in the deterministic envelope', () => {
+  const plan = createPlan({
+    brewMode: 'iced',
+    totalWaterMl: 270,
+    hotWaterMl: 170,
+    iceMl: 100,
+    steps: icedFixtureSteps,
+    finalBeverageRatio: 15.5,
+    hotExtractionRatio: 9.7,
+    hotWaterSharePercent: 63,
+    iceSharePercent: 37,
+  });
+  const valid = [
+    '## Service Pattern',
+    '- Balanced Cone Clarity Arc for Hario V60.',
+    '- Iced mode active; keep final ratio and hot concentrate locked.',
+    '## Sequence',
+    '1. Bloom at 00:00: pour 50 ml to 50 ml for Hario V60 balance profile and Volvic water bloom.',
+    '2. Pulse 1 at 00:40: pour 60 ml to 110 ml for Hario V60 balance profile while keeping Volvic hot concentrate ratio 1:9.7 stable.',
+    '3. Pulse 2 at 01:30: pour 60 ml to 170 ml and finish Hario V60 balance extraction with steady water flow.',
+    '## Watch',
+    '- Keep final beverage ratio 1:15.5 and split fixed at 170 ml hot / 100 ml ice.',
+    '- Water and bean constraints remain fixed.',
+  ].join('\n');
+
+  const result = validateAiNarrative(plan, 'sequence', valid);
+  assert.equal(result.valid, true, result.errors.join('\n'));
 });
 
 test('deterministic sequence changes by method family, not only numbers', () => {
@@ -848,6 +936,55 @@ test('validator rejects clever sequence missing immersion and release cues', () 
   const result = validateAiNarrative(plan, 'sequence', invalid);
   assert.equal(result.valid, false);
   assert.ok(result.errors.some((item) => /immersion-contact cue and release cue/i.test(item)));
+});
+
+test('deterministic clever sequence uses hold and release checkpoints without zero-pour wording', () => {
+  const plan = createPlan({
+    methodFamily: 'clever_dripper',
+    methodId: 'clever_dripper',
+    ratioToolMethodId: 'clever_dripper',
+    dripper: { id: 'clever', name: 'Clever Dripper' } as BrewPlan['dripper'],
+    hotWaterMl: 250,
+    totalWaterMl: 250,
+    totalTimeSeconds: 165,
+    steps: [
+      {
+        id: 'charge',
+        label: 'Charge',
+        kind: 'pour',
+        startSeconds: 0,
+        pourVolumeMl: 250,
+        targetVolumeMl: 250,
+        note: 'Start full immersion contact.',
+      },
+      {
+        id: 'hold',
+        label: 'Hold',
+        kind: 'wait',
+        startSeconds: 55,
+        pourVolumeMl: 0,
+        targetVolumeMl: 250,
+        note: 'Keep immersion calm.',
+      },
+      {
+        id: 'release',
+        label: 'Release',
+        kind: 'release',
+        startSeconds: 115,
+        pourVolumeMl: 0,
+        targetVolumeMl: 250,
+        note: 'Release to cup.',
+      },
+    ],
+  });
+
+  const narrative = buildDeterministicNarrative(plan, 'sequence');
+  assert.doesNotMatch(narrative, /\bpour\s+0\b/i);
+  assert.match(narrative, /Hold at 00:55: hold contact at target 250 ml/i);
+  assert.match(narrative, /Release at 01:55: open release at target 250 ml/i);
+
+  const result = validateAiNarrative(plan, 'sequence', narrative);
+  assert.equal(result.valid, true, result.errors.join('\n'));
 });
 
 test('validator rejects sequence that only changes numbers but keeps one template shell', () => {

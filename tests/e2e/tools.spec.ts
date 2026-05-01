@@ -3,6 +3,9 @@ import { qaLogin, qaLogout } from '../fixtures/auth';
 import { mockAiApis } from '../helpers/network';
 import { clearClientState } from '../helpers/cleanup';
 import { continueAsGuestFromAuthGate } from '../helpers/authGate';
+import type { BrewPlan } from '../../apps/web/src/features/ai-brew/types';
+
+const LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
 
 test.beforeEach(async ({ page }) => {
   await qaLogout(page.request);
@@ -111,6 +114,14 @@ async function setVisibleInputValue(
     field.blur();
   }, { nextTestId: testId, nextValue: value });
   await expect(input).toHaveValue(value);
+}
+
+async function readStoredAiBrewPlan(page: import('@playwright/test').Page): Promise<BrewPlan> {
+  const raw = await page.evaluate((storageKey) => localStorage.getItem(storageKey), LAST_PLAN_STORAGE_KEY);
+  expect(raw).toBeTruthy();
+  const parsed = JSON.parse(raw || '{}') as { payload?: BrewPlan };
+  expect(parsed.payload?.id).toBeTruthy();
+  return parsed.payload as BrewPlan;
 }
 
 test('tools tabs expose accessible tab semantics and keyboard navigation', async ({ page }) => {
@@ -284,6 +295,34 @@ test('ai brew reveals custom process, variety, and water inputs', async ({ page 
   await expect(page.getByTestId('ai-brew-water-tds')).toBeVisible();
   await expect(page.getByTestId('ai-brew-water-hardness')).toBeVisible();
   await expect(page.getByTestId('ai-brew-water-alkalinity')).toBeVisible();
+});
+
+test('ai brew brewer picker prioritizes complete method catalog and search aliases', async ({ page }) => {
+  await openAiBrewQuickMode(page);
+  await page.getByTestId('ai-brew-dripper-picker').click();
+
+  const picker = page.getByRole('dialog', { name: /Alat seduh|Brewer/i });
+  await expect(picker).toBeVisible();
+  await expect(page.getByText(/Metode seduh inti|Core brew methods/i)).toBeVisible();
+  await expect(page.getByTestId('ai-brew-picker-option-dripper-espresso-machine')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-picker-option-dripper-aeropress')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-picker-option-dripper-french-press')).toBeVisible();
+
+  const search = page.getByTestId('ai-brew-picker-search-dripper');
+  const searchCases = [
+    ['espresso', 'espresso-machine'],
+    ['aeropress', 'aeropress'],
+    ['french press', 'french-press'],
+    ['cold brew', 'toddy-cold-brew'],
+    ['moka', 'bialetti-moka-pot'],
+    ['batch', 'batch-brewer'],
+    ['siphon', 'hario-siphon'],
+  ] as const;
+
+  for (const [query, expectedId] of searchCases) {
+    await search.fill(query);
+    await expect(page.getByTestId(`ai-brew-picker-option-dripper-${expectedId}`)).toBeVisible();
+  }
 });
 
 test('ai brew pro keeps mineral editor collapsed by default for ready-brew brand water', async ({ page }) => {
@@ -464,6 +503,51 @@ test('ai brew quick and pro modes honor target profile changes in the generated 
   expect(proTime!).toBeGreaterThan(quickTime!);
 });
 
+test('ai brew quick and pro iced modes show final ratio and hot concentrate split', async ({ page }) => {
+  const assertIcedResult = async (coffeeName: string) => {
+    const result = page.getByTestId('ai-brew-result');
+    await expect(result).toContainText(coffeeName);
+    await expect(result).toContainText(/Ice|Es|Seduh Es/i);
+    await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Final ratio|Rasio Final/i);
+    await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Hot concentrate|Konsentrat Panas/i);
+
+    const plan = await readStoredAiBrewPlan(page);
+    expect(plan.brewMode).toBe('iced');
+    expect(plan.iceMl).toBeGreaterThan(0);
+    expect(plan.hotWaterMl).toBeGreaterThan(0);
+    expect(plan.hotWaterMl).toBeLessThan(plan.totalWaterMl);
+    expect(plan.finalBeverageRatio).toBe(plan.recommendedRatio);
+    expect(plan.hotExtractionRatio).toBeGreaterThanOrEqual(8.7);
+    expect(plan.hotExtractionRatio).toBeLessThanOrEqual(10.9);
+    await expect(result).toContainText(`1:${plan.finalBeverageRatio}`);
+    await expect(result).toContainText(`1:${plan.hotExtractionRatio}`);
+    await expect(result).toContainText(`${plan.hotWaterMl} ml`);
+    await expect(result).toContainText(`${plan.iceMl} ml`);
+    return plan;
+  };
+
+  await openAiBrewQuickMode(page);
+  await page.getByTestId('ai-brew-builder-mode-iced').click();
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Quick Ice Split');
+  await page.getByTestId('ai-brew-dose').fill('20');
+  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+  const quickPlan = await assertIcedResult('QA Quick Ice Split');
+
+  await page.getByRole('button', { name: /Close planned output|Tutup output plan/i }).click();
+  await openAiBrewProMode(page);
+  await page.getByTestId('ai-brew-builder-mode-iced').click();
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Pro Ice Split');
+  await page.getByTestId('ai-brew-dose').fill('20');
+  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await page.getByRole('button', { name: /More Body|Body Lebih Tebal/i }).click();
+  await page.getByTestId('ai-brew-generate').click();
+  const proPlan = await assertIcedResult('QA Pro Ice Split');
+
+  expect(proPlan.targetProfileLabel).toMatch(/Body/i);
+  expect(proPlan.fingerprint).not.toBe(quickPlan.fingerprint);
+});
+
 test('ai brew can hand off an iced plan into timer and ratio tools', async ({ page }) => {
   await expect(page.getByTestId('ai-brew-panel')).toBeVisible();
 
@@ -480,7 +564,7 @@ test('ai brew can hand off an iced plan into timer and ratio tools', async ({ pa
   expect(brewTimeText).toBeTruthy();
 
   await page.getByTestId('ai-brew-use-timer').click();
-  await expect(page.getByRole('tab', { name: 'Timer', exact: true })).toHaveClass(/bg-white/);
+  await expect(page.getByRole('tab', { name: /^(Timer|Pengatur Waktu)$/i })).toHaveClass(/bg-white/);
   await expect(page.locator('#tools-panel-timer span.text-sm.text-secondary.mt-1')).toHaveText(brewTimeText!);
 
   await page.goto('/tools?tab=ai-brew');
@@ -490,12 +574,17 @@ test('ai brew can hand off an iced plan into timer and ratio tools', async ({ pa
   await page.getByTestId('ai-brew-dose').fill('20');
   await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
   await page.getByTestId('ai-brew-generate').click();
+  const ratioPlan = await readStoredAiBrewPlan(page);
   await page.getByTestId('ai-brew-use-ratio').click();
 
-  await expect(page.getByRole('tab', { name: 'Ratio', exact: true })).toHaveClass(/bg-white/);
-  await expect(page.getByRole('button', { name: 'V60 Ice Brew' })).toHaveClass(/bg-blue-600/);
+  await expect(page.getByRole('tab', { name: /^(Ratio|Rasio)$/i })).toHaveClass(/bg-white/);
+  await expect(page.getByRole('button', { name: /^V60 (Ice Brew|Seduh Es)$/i })).toHaveClass(/bg-blue-600/);
   await expect(page.getByTestId('dose-input')).toHaveValue('20');
-  await expect(page.getByTestId('ratio-input')).not.toHaveValue('16');
+  await expect(page.getByTestId('water-input')).toHaveValue(String(ratioPlan.totalWaterMl));
+  await expect(page.getByTestId('ratio-input')).toHaveValue(String(ratioPlan.finalBeverageRatio));
+  await expect(page.getByTestId('ai-brew-iced-ratio-split')).toContainText(`${Math.round(ratioPlan.hotWaterMl)} ml air panas`);
+  await expect(page.getByTestId('ai-brew-iced-ratio-split')).toContainText(`${Math.round(ratioPlan.iceMl)} ml es`);
+  await expect(page.getByTestId('ai-brew-iced-ratio-split')).toContainText(`1:${Math.round(ratioPlan.hotExtractionRatio * 10) / 10}`);
 });
 
 test('guest users are gated only when requesting ai coaching', async ({ page }) => {

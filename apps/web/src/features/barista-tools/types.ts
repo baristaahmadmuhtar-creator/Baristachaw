@@ -31,7 +31,12 @@ export type RoastLevel = 'light' | 'medium_light' | 'medium' | 'medium_dark' | '
 export type RoastInputMode = 'level' | 'agtron';
 export type GrindBias = 'finer' | 'same' | 'coarser';
 export type EvidenceConfidence = 'high' | 'medium' | 'experimental';
-export type EvidenceSourceTag = 'core_standard' | 'competition_rule' | 'peer_review' | 'regional_context';
+export type EvidenceSourceTag =
+  | 'core_standard'
+  | 'competition_rule'
+  | 'peer_review'
+  | 'regional_context'
+  | 'manufacturer_guidance';
 
 export interface RatioWarningPolicy {
   min: number;

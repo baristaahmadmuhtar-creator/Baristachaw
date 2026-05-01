@@ -67,7 +67,7 @@
         "april-brewer"
       ],
       "methodFamily": "april",
-      "brewMethodId": "april",
+      "brewMethodId": "april_iced",
       "exactMatch": true,
       "filterStyle": "flat",
       "ratioDelta": -0.2,
@@ -169,7 +169,7 @@
         "april-hybrid-brewer"
       ],
       "methodFamily": "april",
-      "brewMethodId": "april",
+      "brewMethodId": "april_iced",
       "exactMatch": true,
       "filterStyle": "flat",
       "ratioDelta": -0.3,
@@ -278,7 +278,7 @@
         "blue-bottle-dripper"
       ],
       "methodFamily": "april",
-      "brewMethodId": "april",
+      "brewMethodId": "april_iced",
       "exactMatch": true,
       "filterStyle": "flat",
       "ratioDelta": -0.95,
@@ -394,7 +394,7 @@
         "brewista-gem-series"
       ],
       "methodFamily": "april",
-      "brewMethodId": "april",
+      "brewMethodId": "april_iced",
       "exactMatch": true,
       "filterStyle": "flat",
       "ratioDelta": -0.3,
@@ -510,7 +510,7 @@
         "brewista-tornado"
       ],
       "methodFamily": "april",
-      "brewMethodId": "april",
+      "brewMethodId": "april_iced",
       "exactMatch": true,
       "filterStyle": "flat",
       "ratioDelta": -0.3,
@@ -626,7 +626,7 @@
         "cafec-deep-27"
       ],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -735,7 +735,7 @@
         "cafec-flower-dripper"
       ],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -844,7 +844,7 @@
         "chemex"
       ],
       "methodFamily": "chemex",
-      "brewMethodId": "chemex",
+      "brewMethodId": "chemex_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.35,
@@ -960,7 +960,7 @@
         "clever-dripper"
       ],
       "methodFamily": "clever_dripper",
-      "brewMethodId": "clever_dripper",
+      "brewMethodId": "clever_dripper_iced",
       "exactMatch": true,
       "filterStyle": "immersion",
       "ratioDelta": -0.22,
@@ -1052,7 +1052,7 @@
       "brewMode": "iced",
       "dripperIds": [],
       "methodFamily": "april",
-      "brewMethodId": "april",
+      "brewMethodId": "april_iced",
       "exactMatch": false,
       "filterStyle": "flat",
       "ratioDelta": -0.22,
@@ -1165,7 +1165,7 @@
       "brewMode": "iced",
       "dripperIds": [],
       "methodFamily": "clever_dripper",
-      "brewMethodId": "clever_dripper",
+      "brewMethodId": "clever_dripper_iced",
       "exactMatch": false,
       "filterStyle": "immersion",
       "ratioDelta": -0.2,
@@ -1256,7 +1256,7 @@
       "brewMode": "iced",
       "dripperIds": [],
       "methodFamily": "kalita_wave",
-      "brewMethodId": "kalita_wave",
+      "brewMethodId": "kalita_wave_iced",
       "exactMatch": false,
       "filterStyle": "flat",
       "ratioDelta": -0.25,
@@ -1305,7 +1305,7 @@
       "brewMode": "hot",
       "dripperIds": [],
       "methodFamily": "kono",
-      "brewMethodId": "v60",
+      "brewMethodId": "kono",
       "exactMatch": false,
       "filterStyle": "cone",
       "ratioDelta": -0.08,
@@ -1354,7 +1354,7 @@
       "brewMode": "iced",
       "dripperIds": [],
       "methodFamily": "kono",
-      "brewMethodId": "v60",
+      "brewMethodId": "kono_iced",
       "exactMatch": false,
       "filterStyle": "cone",
       "ratioDelta": -0.26,
@@ -1403,7 +1403,7 @@
       "brewMode": "hot",
       "dripperIds": [],
       "methodFamily": "melitta",
-      "brewMethodId": "kalita_wave",
+      "brewMethodId": "melitta",
       "exactMatch": false,
       "filterStyle": "trapezoid",
       "ratioDelta": 0,
@@ -1459,7 +1459,7 @@
       "brewMode": "iced",
       "dripperIds": [],
       "methodFamily": "melitta",
-      "brewMethodId": "kalita_wave",
+      "brewMethodId": "melitta_iced",
       "exactMatch": false,
       "filterStyle": "trapezoid",
       "ratioDelta": -0.24,
@@ -1564,7 +1564,7 @@
       "brewMode": "iced",
       "dripperIds": [],
       "methodFamily": "origami",
-      "brewMethodId": "origami",
+      "brewMethodId": "origami_iced",
       "exactMatch": false,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -1669,7 +1669,7 @@
       "brewMode": "iced",
       "dripperIds": [],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": false,
       "filterStyle": "cone",
       "ratioDelta": -0.28,
@@ -1778,7 +1778,7 @@
         "hario-mugen"
       ],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -1836,7 +1836,7 @@
         "hario-pegasus"
       ],
       "methodFamily": "melitta",
-      "brewMethodId": "kalita_wave",
+      "brewMethodId": "melitta",
       "exactMatch": true,
       "filterStyle": "trapezoid",
       "ratioDelta": 0,
@@ -1894,7 +1894,7 @@
         "hario-pegasus"
       ],
       "methodFamily": "melitta",
-      "brewMethodId": "kalita_wave",
+      "brewMethodId": "melitta_iced",
       "exactMatch": true,
       "filterStyle": "trapezoid",
       "ratioDelta": -0.2,
@@ -2017,7 +2017,7 @@
         "hario-switch"
       ],
       "methodFamily": "clever_dripper",
-      "brewMethodId": "clever_dripper",
+      "brewMethodId": "clever_dripper_iced",
       "exactMatch": true,
       "filterStyle": "immersion",
       "ratioDelta": -0.22,
@@ -2113,7 +2113,7 @@
         "hario-v60"
       ],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.35,
@@ -2222,7 +2222,7 @@
         "hero-variable-dripper"
       ],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -2338,7 +2338,7 @@
         "kalita-wave-155-185"
       ],
       "methodFamily": "kalita_wave",
-      "brewMethodId": "kalita_wave",
+      "brewMethodId": "kalita_wave_iced",
       "exactMatch": true,
       "filterStyle": "flat",
       "ratioDelta": -0.25,
@@ -2389,7 +2389,7 @@
         "kalita-102"
       ],
       "methodFamily": "melitta",
-      "brewMethodId": "kalita_wave",
+      "brewMethodId": "melitta",
       "exactMatch": true,
       "filterStyle": "trapezoid",
       "ratioDelta": 0,
@@ -2447,7 +2447,7 @@
         "kalita-102"
       ],
       "methodFamily": "melitta",
-      "brewMethodId": "kalita_wave",
+      "brewMethodId": "melitta_iced",
       "exactMatch": true,
       "filterStyle": "trapezoid",
       "ratioDelta": -0.25,
@@ -2505,7 +2505,7 @@
         "kono-meimon"
       ],
       "methodFamily": "kono",
-      "brewMethodId": "v60",
+      "brewMethodId": "kono",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.1,
@@ -2556,7 +2556,7 @@
         "kono-meimon"
       ],
       "methodFamily": "kono",
-      "brewMethodId": "v60",
+      "brewMethodId": "kono_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -2665,7 +2665,7 @@
         "latina-cono"
       ],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -2781,7 +2781,7 @@
         "latina-volcano"
       ],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -2897,7 +2897,7 @@
         "loveramics"
       ],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -2955,7 +2955,7 @@
         "melitta"
       ],
       "methodFamily": "melitta",
-      "brewMethodId": "kalita_wave",
+      "brewMethodId": "melitta",
       "exactMatch": true,
       "filterStyle": "trapezoid",
       "ratioDelta": 0,
@@ -3013,7 +3013,7 @@
         "melitta"
       ],
       "methodFamily": "melitta",
-      "brewMethodId": "kalita_wave",
+      "brewMethodId": "melitta_iced",
       "exactMatch": true,
       "filterStyle": "trapezoid",
       "ratioDelta": -0.25,
@@ -3129,7 +3129,7 @@
         "mhw-3bomber-elf"
       ],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -3245,7 +3245,7 @@
         "nextlevel-pulsar"
       ],
       "methodFamily": "clever_dripper",
-      "brewMethodId": "clever_dripper",
+      "brewMethodId": "clever_dripper_iced",
       "exactMatch": true,
       "filterStyle": "immersion",
       "ratioDelta": -0.2,
@@ -3361,7 +3361,7 @@
         "orea-v3-v4"
       ],
       "methodFamily": "april",
-      "brewMethodId": "april",
+      "brewMethodId": "april_iced",
       "exactMatch": true,
       "filterStyle": "flat",
       "ratioDelta": -0.25,
@@ -3463,7 +3463,7 @@
         "origami-dripper-air-s"
       ],
       "methodFamily": "origami",
-      "brewMethodId": "origami",
+      "brewMethodId": "origami_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -3572,7 +3572,7 @@
         "origami-dripper-s-m"
       ],
       "methodFamily": "origami",
-      "brewMethodId": "origami",
+      "brewMethodId": "origami_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -3681,7 +3681,7 @@
         "fellow-stagg-x"
       ],
       "methodFamily": "april",
-      "brewMethodId": "april",
+      "brewMethodId": "april_iced",
       "exactMatch": true,
       "filterStyle": "flat",
       "ratioDelta": -1.05,
@@ -3797,7 +3797,7 @@
         "fellow-stagg-xf-dripper"
       ],
       "methodFamily": "april",
-      "brewMethodId": "april",
+      "brewMethodId": "april_iced",
       "exactMatch": true,
       "filterStyle": "flat",
       "ratioDelta": -0.3,
@@ -3913,7 +3913,7 @@
         "suji-v60-dripper"
       ],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -4029,7 +4029,7 @@
         "suji-wave-dripper"
       ],
       "methodFamily": "april",
-      "brewMethodId": "april",
+      "brewMethodId": "april_iced",
       "exactMatch": true,
       "filterStyle": "flat",
       "ratioDelta": -0.3,
@@ -4145,7 +4145,7 @@
         "the-gabi-master-a-b"
       ],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -4261,7 +4261,7 @@
         "timemore-b75"
       ],
       "methodFamily": "april",
-      "brewMethodId": "april",
+      "brewMethodId": "april_iced",
       "exactMatch": true,
       "filterStyle": "flat",
       "ratioDelta": -0.25,
@@ -4363,7 +4363,7 @@
         "timemore-crystal-eye"
       ],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -4472,7 +4472,7 @@
         "torch-mountain"
       ],
       "methodFamily": "v60",
-      "brewMethodId": "v60",
+      "brewMethodId": "v60_japanese_iced",
       "exactMatch": true,
       "filterStyle": "cone",
       "ratioDelta": -0.25,
@@ -4588,7 +4588,7 @@
         "tricolate-brewer"
       ],
       "methodFamily": "april",
-      "brewMethodId": "april",
+      "brewMethodId": "april_iced",
       "exactMatch": true,
       "filterStyle": "flat",
       "ratioDelta": 0.45,
@@ -4711,7 +4711,7 @@
         "vietnam-drip"
       ],
       "methodFamily": "clever_dripper",
-      "brewMethodId": "clever_dripper",
+      "brewMethodId": "clever_dripper_iced",
       "exactMatch": true,
       "filterStyle": "immersion",
       "ratioDelta": -0.2,
@@ -4767,6 +4767,401 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "exactMatch": true,
+      "source": "ai-brew-method-expansion-2026-05",
+      "verifiedAt": "2026-05-01",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "id": "profile_espresso_machine_hot",
+      "label": "Espresso Machine Standard Shot",
+      "brewMode": "hot",
+      "dripperIds": [
+        "espresso-machine"
+      ],
+      "methodFamily": "espresso",
+      "brewMethodId": "espresso",
+      "filterStyle": "pressure",
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": -2,
+      "grindBias": "finer",
+      "note": "Pressure-shot profile targets yield and time rather than pour pulses.",
+      "steps": [
+        {
+          "id": "extract",
+          "label": "Extract",
+          "kind": "extract",
+          "share": 1,
+          "startSeconds": 0,
+          "note": "Start the shot and track yield, flow, and time together."
+        },
+        {
+          "id": "stop",
+          "label": "Stop",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 28,
+          "note": "Stop at target yield/time and taste before changing the next shot."
+        }
+      ],
+      "sourceUrls": [
+        "https://sca.coffee/research/protocols-best-practices"
+      ],
+      "verificationLevel": "curated"
+    },
+    {
+      "exactMatch": true,
+      "source": "ai-brew-method-expansion-2026-05",
+      "verifiedAt": "2026-05-01",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "id": "profile_french_press_hot",
+      "label": "French Press Immersion",
+      "brewMode": "hot",
+      "dripperIds": [
+        "french-press"
+      ],
+      "methodFamily": "french_press",
+      "brewMethodId": "french_press",
+      "filterStyle": "immersion",
+      "ratioDelta": 0,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": 20,
+      "grindBias": "coarser",
+      "note": "Immersion profile keeps the bed quiet, then presses slowly for a cleaner full-bodied cup.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge",
+          "kind": "pour",
+          "share": 1,
+          "startSeconds": 0,
+          "note": "Add all water evenly and saturate every dry pocket."
+        },
+        {
+          "id": "steep",
+          "label": "Steep",
+          "kind": "wait",
+          "share": 0,
+          "startSeconds": 240,
+          "note": "Let the coffee steep without repeated stirring."
+        },
+        {
+          "id": "press",
+          "label": "Press",
+          "kind": "press",
+          "share": 0,
+          "startSeconds": 270,
+          "note": "Press slowly with even pressure."
+        },
+        {
+          "id": "serve",
+          "label": "Serve",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 300,
+          "note": "Decant so extraction stops cleanly."
+        }
+      ],
+      "sourceUrls": [
+        "https://global.hario.com/coffeelife/press.html"
+      ],
+      "verificationLevel": "official"
+    },
+    {
+      "exactMatch": true,
+      "source": "ai-brew-method-expansion-2026-05",
+      "verifiedAt": "2026-05-01",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "id": "profile_aeropress_hot",
+      "label": "AeroPress Standard Immersion Press",
+      "brewMode": "hot",
+      "dripperIds": [
+        "aeropress"
+      ],
+      "methodFamily": "aeropress",
+      "brewMethodId": "aeropress",
+      "filterStyle": "pressure",
+      "ratioDelta": 0,
+      "tempDeltaC": -1.5,
+      "brewTimeDeltaSec": -15,
+      "grindBias": "finer",
+      "note": "Short immersion profile uses one controlled agitation pass and a steady press.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge",
+          "kind": "pour",
+          "share": 1,
+          "startSeconds": 0,
+          "note": "Add water quickly and wet the compact bed evenly."
+        },
+        {
+          "id": "steep",
+          "label": "Steep",
+          "kind": "wait",
+          "share": 0,
+          "startSeconds": 45,
+          "note": "Hold contact briefly after one gentle agitation pass."
+        },
+        {
+          "id": "press",
+          "label": "Press",
+          "kind": "press",
+          "share": 0,
+          "startSeconds": 90,
+          "note": "Press steadily and stop before the finish turns harsh."
+        }
+      ],
+      "sourceUrls": [
+        "https://help.aeropress.com/en-US/articles/brewing-33631"
+      ],
+      "verificationLevel": "official"
+    },
+    {
+      "exactMatch": true,
+      "source": "ai-brew-method-expansion-2026-05",
+      "verifiedAt": "2026-05-01",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "id": "profile_hario_siphon_hot",
+      "label": "Hario Siphon Vacuum Brew",
+      "brewMode": "hot",
+      "dripperIds": [
+        "hario-siphon"
+      ],
+      "methodFamily": "siphon",
+      "brewMethodId": "siphon",
+      "filterStyle": "vacuum",
+      "ratioDelta": 0,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": 0,
+      "grindBias": "same",
+      "note": "Vacuum profile protects aroma through short heat contact and natural drawdown.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge",
+          "kind": "pour",
+          "share": 1,
+          "startSeconds": 0,
+          "note": "Load water and let it rise before adding coffee."
+        },
+        {
+          "id": "heat",
+          "label": "Heat",
+          "kind": "heat",
+          "share": 0,
+          "startSeconds": 60,
+          "note": "Hold heat briefly and stir gently."
+        },
+        {
+          "id": "drawdown",
+          "label": "Drawdown",
+          "kind": "drawdown",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Remove heat and let vacuum draw coffee down naturally."
+        },
+        {
+          "id": "serve",
+          "label": "Serve",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 210,
+          "note": "Serve while aromatics are high."
+        }
+      ],
+      "sourceUrls": [
+        "https://global.hario.com/coffeelife/siphon.html"
+      ],
+      "verificationLevel": "official"
+    },
+    {
+      "exactMatch": true,
+      "source": "ai-brew-method-expansion-2026-05",
+      "verifiedAt": "2026-05-01",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "id": "profile_bialetti_moka_pot_hot",
+      "label": "Bialetti Moka Pot Standard",
+      "brewMode": "hot",
+      "dripperIds": [
+        "bialetti-moka-pot"
+      ],
+      "methodFamily": "moka_pot",
+      "brewMethodId": "moka_pot",
+      "filterStyle": "stovetop",
+      "ratioDelta": 0,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": 10,
+      "grindBias": "finer",
+      "note": "Stovetop profile keeps heat moderate and stops before boiling bitterness develops.",
+      "steps": [
+        {
+          "id": "fill_base",
+          "label": "Charge",
+          "kind": "pour",
+          "share": 1,
+          "startSeconds": 0,
+          "note": "Fill below the safety valve and level the basket without tamping."
+        },
+        {
+          "id": "heat",
+          "label": "Heat",
+          "kind": "heat",
+          "share": 0,
+          "startSeconds": 60,
+          "note": "Use low to medium heat and keep the flow calm."
+        },
+        {
+          "id": "stop",
+          "label": "Stop",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 180,
+          "note": "Remove from heat as the chamber fills or sputter begins."
+        }
+      ],
+      "sourceUrls": [
+        "https://bialetti-cookware.zendesk.com/hc/en-us/articles/5416235346322-How-to-use-the-Moka-Express"
+      ],
+      "verificationLevel": "official"
+    },
+    {
+      "exactMatch": true,
+      "source": "ai-brew-method-expansion-2026-05",
+      "verifiedAt": "2026-05-01",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "id": "profile_toddy_cold_brew_hot",
+      "label": "Toddy Cold Brew Immersion",
+      "brewMode": "hot",
+      "dripperIds": [
+        "toddy-cold-brew"
+      ],
+      "methodFamily": "cold_brew",
+      "brewMethodId": "cold_brew",
+      "filterStyle": "cold_immersion",
+      "ratioDelta": -0.5,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 0,
+      "grindBias": "coarser",
+      "note": "Cold immersion profile uses coarse grind, full saturation, and long contact before filtering.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge",
+          "kind": "pour",
+          "share": 1,
+          "startSeconds": 0,
+          "note": "Add cool water in stages and saturate all grounds."
+        },
+        {
+          "id": "steep",
+          "label": "Steep",
+          "kind": "wait",
+          "share": 0,
+          "startSeconds": 300,
+          "note": "Cover and steep without heat or repeated agitation."
+        },
+        {
+          "id": "filter",
+          "label": "Filter",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 43200,
+          "note": "Filter cleanly before diluting or serving over ice."
+        }
+      ],
+      "sourceUrls": [
+        "https://toddycafe.com/brewing/",
+        "https://www.toddycafe.com/downloads/Toddy_cold_brew_cupping_protocol.pdf"
+      ],
+      "verificationLevel": "official"
+    },
+    {
+      "exactMatch": true,
+      "source": "ai-brew-method-expansion-2026-05",
+      "verifiedAt": "2026-05-01",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "id": "profile_batch_brewer_hot",
+      "label": "Batch Brewer Golden Cup Service",
+      "brewMode": "hot",
+      "dripperIds": [
+        "batch-brewer"
+      ],
+      "methodFamily": "batch_brew",
+      "brewMethodId": "batch_brew",
+      "filterStyle": "batch",
+      "ratioDelta": 0,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 10,
+      "grindBias": "same",
+      "note": "Batch profile follows cafe service consistency with stable water temperature and a clean stream-to-drip finish.",
+      "steps": [
+        {
+          "id": "start_brew",
+          "label": "Start Brew",
+          "kind": "pour",
+          "share": 1,
+          "startSeconds": 0,
+          "note": "Start the brewer with a level bed and seated filter."
+        },
+        {
+          "id": "main_spray",
+          "label": "Main Spray",
+          "kind": "wait",
+          "share": 0,
+          "startSeconds": 120,
+          "note": "Let the spray pattern build even extraction without disturbing the basket."
+        },
+        {
+          "id": "drawdown",
+          "label": "Drawdown",
+          "kind": "drawdown",
+          "share": 0,
+          "startSeconds": 270,
+          "note": "Watch the stream-to-drip transition for a clean finish."
+        },
+        {
+          "id": "serve",
+          "label": "Serve",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 330,
+          "note": "Mix the finished batch gently before service."
+        }
+      ],
+      "sourceUrls": [
+        "https://sca.coffee/s/2017-SCA-CHB-Program-Requirements-ba6g.pdf"
+      ],
+      "verificationLevel": "official"
     }
   ]
 }

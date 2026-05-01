@@ -113,7 +113,7 @@ const AI_TIMEOUT_PATTERNS = [
   /\btime limit exceeded\b/i,
 ];
 
-const STEP_ACTION_VERB_PATTERN = /\b(pour|wait|swirl|stir|hold|level(?:ing)?|bloom|pulse|release|drawdown|finish|keep(?:ing)?|sett(?:le|ling)|agitate|pause|rest|spin|tap|drain|immerse|steep)\b/gi;
+const STEP_ACTION_VERB_PATTERN = /\b(pour|wait|swirl|stir|hold|level(?:ing)?|bloom|pulse|release|drawdown|finish|keep(?:ing)?|sett(?:le|ling)|agitate|pause|rest|spin|tap|drain|immerse|steep|press|plunge|heat|extract|serve|decant|filter)\b/gi;
 const IMMERSION_WORKFLOW_PATTERN = /\b(immersion|immerse|steep|steeping|hold\s+for\s+\d+\s*(?:sec|s|min|minutes?)|release\s+valve|plunge)\b/i;
 const PERCOLATION_WORKFLOW_PATTERN = /\b(concentric|circle|spiral|pulse(?:\s+pour)?|ring\s+pour)\b/i;
 const HOLD_DURATION_PATTERN = /\b(?:wait|hold|pause|rest)\s+(?:for\s+)?(\d+(?:\.\d+)?)\s*(s|sec|secs|second|seconds|min|mins|minute|minutes)\b/gi;
@@ -136,6 +136,8 @@ const RESISTANT_EXTRACTION_CONFLICT_PATTERN = /\b(short(?:en)?\s+contact|quick(?
 const EASY_EXTRACTION_CONFLICT_PATTERN = /\b(extend(?:ed)?\s+contact|slow(?:er)?\s+drawdown|long(?:er)?\s+slurry\s+hold|increase\s+contact\s+time)\b/i;
 const SERVICE_PATTERN_GENERIC_PATTERN = /\b(default|standard|generic|flexible|simple)\s+(style|pattern)\b/i;
 const FLAT_BED_METHODS = new Set<BrewPlan['methodFamily']>(['kalita_wave', 'april', 'melitta']);
+const RELEASE_HARDWARE_METHODS = new Set<BrewPlan['methodFamily']>(['clever_dripper', 'aeropress', 'french_press']);
+const IMMERSION_WORKFLOW_METHODS = new Set<BrewPlan['methodFamily']>(['clever_dripper', 'french_press', 'aeropress', 'cold_brew']);
 const RELATIVE_VALUE_CONTEXT_PATTERN = /\b(by|raise|raised|increase|increased|decrease|decreased|lower|lowered|higher|hotter|cooler|drop|dropped|bump|bumped|more|less)\b/i;
 const TEMPLATE_STOPWORDS = new Set([
   'the', 'and', 'with', 'for', 'from', 'that', 'this', 'then', 'into', 'while', 'keep', 'pour', 'step', 'profile',
@@ -151,7 +153,22 @@ const METHOD_FAMILY_ALIASES: Record<BrewPlan['methodFamily'], string[]> = {
   april: ['april dripper', 'april brewer', 'april'],
   melitta: ['melitta'],
   kono: ['kono'],
+  french_press: ['french press', 'press pot'],
+  aeropress: ['aeropress'],
+  siphon: ['siphon', 'syphon', 'vacuum brewer'],
+  moka_pot: ['moka pot', 'moka'],
+  cold_brew: ['cold brew', 'toddy'],
+  batch_brew: ['batch brewer', 'batch brew'],
+  espresso: ['espresso', 'espresso machine', 'portafilter'],
 };
+
+function referencesUnsupportedHardware(plan: BrewPlan, line: string) {
+  let lowered = line.toLowerCase();
+  for (const alias of METHOD_FAMILY_ALIASES[plan.methodFamily] || []) {
+    lowered = lowered.replace(new RegExp(`\\b${escapeRegExp(alias)}\\b`, 'gi'), ' ');
+  }
+  return STEP_UNSUPPORTED_HARDWARE_PATTERN.test(lowered);
+}
 
 type TargetIntent = 'acidity' | 'body' | 'sweetness' | 'balanced';
 
@@ -408,6 +425,18 @@ function buildStepFallbackControlCue(plan: BrewPlan, index: number, totalSteps: 
   return 'hold stream cadence steady before the next checkpoint';
 }
 
+function formatStepOperation(step: BrewPlan['steps'][number]) {
+  const kind = step.kind || 'pour';
+  if (kind === 'release') return `open release at target ${step.targetVolumeMl} ml`;
+  if (kind === 'wait') return `hold contact at target ${step.targetVolumeMl} ml`;
+  if (kind === 'drawdown') return `let drawdown continue at target ${step.targetVolumeMl} ml`;
+  if (kind === 'press') return `press slowly at target ${step.targetVolumeMl} ml`;
+  if (kind === 'heat') return `heat steadily at target ${step.targetVolumeMl} ml`;
+  if (kind === 'extract') return `extract to target yield ${step.targetVolumeMl} ml`;
+  if (kind === 'serve') return `separate and serve at target ${step.targetVolumeMl} ml`;
+  return `pour ${step.pourVolumeMl} ml to ${step.targetVolumeMl} ml`;
+}
+
 function isStepLineRepairSafe(plan: BrewPlan, line: string) {
   const normalized = stripStepNumberPrefix(line);
   if (!normalized) return false;
@@ -415,8 +444,8 @@ function isStepLineRepairSafe(plan: BrewPlan, line: string) {
   if (STEP_HEDGING_PATTERN.test(normalized) || STEP_APPROXIMATION_PATTERN.test(normalized) || STEP_FAKE_EXECUTION_PATTERN.test(normalized)) return false;
   if (STEP_OUT_OF_RUN_ADVICE_PATTERN.test(normalized)) return false;
   if (STEP_POST_BREW_DILUTION_PATTERN.test(normalized)) return false;
-  if (STEP_UNSUPPORTED_HARDWARE_PATTERN.test(normalized)) return false;
-  if (plan.methodFamily !== 'clever_dripper' && STEP_NON_IMMERSION_RELEASE_HARDWARE_PATTERN.test(normalized)) return false;
+  if (referencesUnsupportedHardware(plan, normalized)) return false;
+  if (!RELEASE_HARDWARE_METHODS.has(plan.methodFamily) && STEP_NON_IMMERSION_RELEASE_HARDWARE_PATTERN.test(normalized)) return false;
   if (hasOpposingTasteCueInSingleStep(plan, line)) return false;
   if (extractClockTimesInSeconds(line).length > 1) return false;
 
@@ -427,7 +456,7 @@ function isStepLineRepairSafe(plan: BrewPlan, line: string) {
   const lowered = normalized.toLowerCase();
   if (STEP_PARAMETER_SHIFT_VERB_PATTERN.test(lowered) && STEP_PARAMETER_SHIFT_TARGET_PATTERN.test(lowered)) return false;
   if (plan.methodFamily === 'clever_dripper' && PERCOLATION_WORKFLOW_PATTERN.test(normalized)) return false;
-  if (plan.methodFamily !== 'clever_dripper' && IMMERSION_WORKFLOW_PATTERN.test(normalized)) return false;
+  if (!IMMERSION_WORKFLOW_METHODS.has(plan.methodFamily) && IMMERSION_WORKFLOW_PATTERN.test(normalized)) return false;
   return true;
 }
 
@@ -466,7 +495,7 @@ function rebuildStepLineWithinEnvelope(
     .replace(/[.;,\s]+$/g, '')
     .trim();
 
-  return `${index + 1}. ${step.label} at ${formatSeconds(step.startSeconds)}: pour ${step.pourVolumeMl} ml to ${step.targetVolumeMl} ml ${tail}.`;
+  return `${index + 1}. ${step.label} at ${formatSeconds(step.startSeconds)}: ${formatStepOperation(step)} ${tail}.`;
 }
 
 function repairOperationalStepLines(plan: BrewPlan, lines: string[]) {
@@ -574,7 +603,7 @@ function deriveServicePattern(plan: BrewPlan) {
         return {
           name: 'Cone Clarity Arc',
           actions: [
-            'fast center wetting with clean bloom release',
+            'fast center wetting with clean bloom expansion',
             'controlled concentric pulses with stable bed height',
             'narrow finishing stream and immediate bed settle',
           ],
@@ -582,72 +611,140 @@ function deriveServicePattern(plan: BrewPlan) {
     }
   })();
 
-  const targetOverlay = target.includes('acidity')
-    ? [
-      'keep early turbulence low for clarity lift',
-      'protect clean acidity with short pulse windows',
-      'avoid late agitation to prevent harsh finish',
-    ]
-    : target.includes('body')
+  const targetOverlay = plan.methodFamily === 'clever_dripper'
+    ? (target.includes('acidity')
       ? [
-        'hold bloom saturation longer to build extraction depth',
-        'extend middle contact slightly for body retention',
-        'finish with steady depth to avoid hollow cups',
+        'keep early turbulence low for clarity lift',
+        'protect clean acidity with a restrained hold window',
+        'avoid late agitation during release to prevent harsh finish',
       ]
-      : target.includes('sweetness')
+      : target.includes('body')
         ? [
-          'focus on uniform wetting for sugar development',
-          'keep pulse tempo stable to build syrupy center',
-          'close quietly to preserve sweetness and roundness',
+          'hold full saturation longer to build extraction depth',
+          'extend middle contact slightly for body retention',
+          'finish with steady release depth to avoid hollow cups',
         ]
+        : target.includes('sweetness')
+          ? [
+            'focus on uniform saturation for sugar development',
+            'keep immersion tempo stable to build syrupy center',
+            'close quietly to preserve sweetness and roundness',
+          ]
         : [
-          'prioritize repeatable bloom release',
-          'maintain consistent mid-brew flow',
-          'finish calmly to keep clarity and sweetness aligned',
-        ];
+            'prioritize repeatable saturation and contact',
+            'maintain consistent mid-brew immersion flow',
+            'finish calmly to keep clarity and sweetness aligned',
+          ])
+    : target.includes('acidity')
+      ? [
+        'keep early turbulence low for clarity lift',
+        'protect clean acidity with short pulse windows',
+        'avoid late agitation to prevent harsh finish',
+      ]
+      : target.includes('body')
+        ? [
+          'hold bloom saturation longer to build extraction depth',
+          'extend middle contact slightly for body retention',
+          'finish with steady depth to avoid hollow cups',
+        ]
+        : target.includes('sweetness')
+          ? [
+            'focus on uniform wetting for sugar development',
+            'keep pulse tempo stable to build syrupy center',
+            'close quietly to preserve sweetness and roundness',
+          ]
+        : [
+            'prioritize repeatable bloom expansion',
+            'maintain consistent mid-brew flow',
+            'finish calmly to keep clarity and sweetness aligned',
+          ];
 
   const sequenceName = `${targetLabel} ${methodPattern.name} for ${plan.dripper.name}`;
-  const rhythmOverlay = beanFragile
-    ? [
-      'keep pulse entry gentle to avoid sharp extraction spikes',
-      'hold a calm stream transition to protect sweetness',
-      'close softly and avoid aggressive final turbulence',
-    ]
-    : beanDense
+  const rhythmOverlay = plan.methodFamily === 'clever_dripper'
+    ? (beanFragile
       ? [
-        'push early wetting complete to unlock denser soluble layers',
-        'sustain mid-brew contact slightly longer before settling',
-        'close with deliberate flow to avoid underdeveloped finish',
+        'keep immersion entry gentle to avoid sharp extraction spikes',
+        'hold a calm contact transition to protect sweetness',
+        'close softly and avoid aggressive release turbulence',
       ]
-      : [
-        'keep early wetting complete and repeatable',
-        'hold mid-brew flow stable through each pulse',
-        'close with controlled flow and minimal disturbance',
-      ];
-  const waterOverlay = softWater
-    ? [
-      'use narrower stream width to prevent over-bright edge',
-      'avoid abrupt kettle acceleration in the middle phase',
-      'finish with low turbulence before drawdown',
-    ]
-    : hardWater
+      : beanDense
+        ? [
+          'make early saturation complete to unlock denser soluble layers',
+          'sustain mid-brew contact slightly longer before draining',
+          'close with deliberate release to avoid underdeveloped finish',
+        ]
+        : [
+          'keep early saturation complete and repeatable',
+          'hold mid-brew contact stable through the immersion phase',
+          'close with controlled release and minimal disturbance',
+        ])
+    : beanFragile
       ? [
-        'keep center-lock longer to resist flat buffering',
-        'limit wide-ring pours that mute clarity',
-        'finish with focused stream to keep structure alive',
+        'keep pulse entry gentle to avoid sharp extraction spikes',
+        'hold a calm stream transition to protect sweetness',
+        'close softly and avoid aggressive final turbulence',
       ]
-      : [
-        'maintain centered-to-mid flow arc for stability',
-        'hold pulse windows even from step to step',
-        'finish with calm bed leveling and no late swirl',
-      ];
-  const phaseTemplates = [
-    'calibrate entry flow and wet grounds edge-to-edge without channel shock',
-    'stabilize slurry height before opening the next pulse window',
-    'push center-to-mid pour arc while keeping extraction tempo repeatable',
-    'tighten stream focus and protect drawdown momentum',
-    'settle bed quietly and lock final extraction before drawdown ends',
-  ];
+      : beanDense
+        ? [
+          'push early wetting complete to unlock denser soluble layers',
+          'sustain mid-brew contact slightly longer before settling',
+          'close with deliberate flow to avoid underdeveloped finish',
+        ]
+        : [
+          'keep early wetting complete and repeatable',
+          'hold mid-brew flow stable through each pulse',
+          'close with controlled flow and minimal disturbance',
+        ];
+  const waterOverlay = plan.methodFamily === 'clever_dripper'
+    ? (softWater
+      ? [
+        'keep contact calm to prevent over-bright edge',
+        'avoid abrupt agitation in the middle phase',
+        'finish with low turbulence before release drawdown',
+      ]
+      : hardWater
+        ? [
+          'keep contact steady longer to resist flat buffering',
+          'limit unnecessary stirring that can mute clarity',
+          'finish with focused release to keep structure alive',
+        ]
+        : [
+          'maintain stable immersion contact for balance',
+          'hold the contact windows even from step to step',
+          'finish with calm release and no late swirl',
+        ])
+    : softWater
+      ? [
+        'use narrower stream width to prevent over-bright edge',
+        'avoid abrupt kettle acceleration in the middle phase',
+        'finish with low turbulence before drawdown',
+      ]
+      : hardWater
+        ? [
+          'keep center-lock longer to resist flat buffering',
+          'limit wide-ring pours that mute clarity',
+          'finish with focused stream to keep structure alive',
+        ]
+        : [
+          'maintain centered-to-mid flow arc for stability',
+          'hold pulse windows even from step to step',
+          'finish with calm bed leveling and no late swirl',
+        ];
+  const phaseTemplates = plan.methodFamily === 'clever_dripper'
+    ? [
+      'calibrate entry contact and wet grounds evenly without agitation shock',
+      'stabilize slurry contact before the next hold checkpoint',
+      'protect immersion tempo while keeping extraction repeatable',
+      'tighten release readiness and protect drawdown momentum',
+      'settle bed quietly and lock final extraction before release ends',
+    ]
+    : [
+      'calibrate entry flow and wet grounds edge-to-edge without channel shock',
+      'stabilize slurry height before opening the next pulse window',
+      'push center-to-mid pour arc while keeping extraction tempo repeatable',
+      'tighten stream focus and protect drawdown momentum',
+      'settle bed quietly and lock final extraction before drawdown ends',
+    ];
   const variantSeed = `${plan.methodFamily}|${plan.targetProfileLabel}|${plan.brewMode}|${plan.waterMinerals.styleLabel}|${plan.beanProfile.summary || ''}`
     .split('')
     .reduce((total, char) => total + char.charCodeAt(0), 0);
@@ -661,13 +758,13 @@ function deriveServicePattern(plan: BrewPlan) {
         return {
           entry: [
             'immerse all grounds evenly, then hold contact without stirring',
-            'open with full immersion contact and keep slurry calm before release window',
+            'open with full immersion contact and keep slurry calm before the hold window',
             'saturate fully, then keep immersion still to stabilize extraction entry',
           ],
           middle: [
             'maintain immersion contact time and avoid agitation spikes between checkpoints',
             'keep slurry temperature stable while preserving clean immersion cadence',
-            'hold immersion quietly and prepare a clean release window',
+            'hold immersion quietly and prepare a clean finishing window',
           ],
           final: [
             'trigger release cleanly and let outflow finish without turbulence',
@@ -748,13 +845,18 @@ function deriveServicePattern(plan: BrewPlan) {
     const targetCue = targetOverlay[Math.min(index, targetOverlay.length - 1)];
     const rhythmCue = rhythmOverlay[Math.min(index, rhythmOverlay.length - 1)];
     const waterCueDetail = waterOverlay[Math.min(index, waterOverlay.length - 1)];
-    const stageCue = hasStepLabel(step, /bloom|wet|release/)
-      ? 'build full bloom saturation before progressing'
-      : hasStepLabel(step, /finish|final|drawdown|close/)
-        ? 'close with calm turbulence to protect aftertaste'
-        : hasStepLabel(step, /pulse|middle|main/)
-          ? 'hold pulse cadence and avoid abrupt kettle acceleration'
-          : phaseTemplates[phaseIndex];
+    const stepKind = step.kind || 'pour';
+    const stageCue = (() => {
+      if (stepKind === 'release' || stepKind === 'drawdown' || stepKind === 'serve' || hasStepLabel(step, /release|finish|final|drawdown|close|serve|filter/)) {
+        return 'close with calm turbulence to protect aftertaste';
+      }
+      if (stepKind === 'press') return 'press with steady pressure and avoid stirring fines into the cup';
+      if (stepKind === 'heat') return 'hold heat steady and avoid harsh acceleration';
+      if (stepKind === 'extract') return 'track yield and flow instead of extending a harsh extraction';
+      if (hasStepLabel(step, /bloom|wet/)) return 'build full bloom saturation before progressing';
+      if (hasStepLabel(step, /pulse|middle|main/)) return 'hold pulse cadence and avoid abrupt kettle acceleration';
+      return phaseTemplates[phaseIndex];
+    })();
     return `${methodCue}; ${methodPhaseCue}; ${stageCue}; ${targetCue}; ${rhythmCue}; ${waterCueDetail}`;
   });
   const waterCue = softWater
@@ -828,7 +930,8 @@ export function buildDeterministicNarrative(plan: BrewPlan, mode: AiBrewNarrativ
   const servicePattern = deriveServicePattern(plan);
   const stepLines = plan.steps.map((step, index) => {
     const stepCue = servicePattern.stepActions[Math.min(index, servicePattern.stepActions.length - 1)];
-    return `${index + 1}. ${step.label} at ${formatSeconds(step.startSeconds)}: pour ${step.pourVolumeMl} ml to ${step.targetVolumeMl} ml ${stepCue}. ${step.note}`;
+    const contextPatch = buildStepContextAnchorPatch(plan, index, plan.steps.length);
+    return `${index + 1}. ${step.label} at ${formatSeconds(step.startSeconds)}: ${formatStepOperation(step)} ${stepCue}; ${contextPatch}. ${step.note}`;
   });
   const techniqueNotes = collectTechniqueNotes(plan);
   const sourFix = getSourFix(plan);
@@ -841,9 +944,12 @@ export function buildDeterministicNarrative(plan: BrewPlan, mode: AiBrewNarrativ
   ]);
 
   if (mode === 'generate') {
+    const ratioLine = plan.brewMode === 'iced'
+      ? `final ratio 1:${plan.finalBeverageRatio} with a hot concentrate at 1:${plan.hotExtractionRatio}`
+      : `ratio 1:${plan.recommendedRatio}`;
     return [
       '## Why It Fits',
-      `This plan targets ${plan.targetProfileLabel.toLowerCase()} with ${plan.dripper.name} using 1:${plan.recommendedRatio} at ${plan.waterTempC} C and a ${formatSeconds(plan.totalTimeSeconds)} service window. The sequence is anchored to deterministic water split (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''}) and grinder bias (${plan.grindBias}) for repeatable extraction.`,
+      `This plan targets ${plan.targetProfileLabel.toLowerCase()} with ${plan.dripper.name} using ${ratioLine} at ${plan.waterTempC} C and a ${formatSeconds(plan.totalTimeSeconds)} service window. The sequence is anchored to deterministic water split (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''}) and grinder bias (${plan.grindBias}) for repeatable extraction.`,
       '## Focus',
       `- Execute each pour at its planned timestamp; do not shift total hot water beyond ${plan.hotWaterMl} ml.`,
       '- Track drawdown behavior and keep adjustments micro: grind step, 1 C temperature, or minor center-pour flow change.',
@@ -854,6 +960,7 @@ export function buildDeterministicNarrative(plan: BrewPlan, mode: AiBrewNarrativ
     return [
       '## Quick Dial',
       `- dose: ${plan.doseG} g`,
+      `- final ratio: 1:${plan.finalBeverageRatio}${plan.iceMl > 0 ? `; hot concentrate: 1:${plan.hotExtractionRatio}` : ''}`,
       `- total water: ${plan.totalWaterMl} ml (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''})`,
       `- temperature: ${plan.waterTempC} C`,
       `- grind: ${plan.grindRecommendation}`,
@@ -880,7 +987,7 @@ export function buildDeterministicNarrative(plan: BrewPlan, mode: AiBrewNarrativ
     ...stepLines,
     '## Watch',
     ...watchBullets.map((bullet) => `- ${bullet}`),
-    `- Keep final envelope locked: dose ${plan.doseG} g, ratio 1:${plan.recommendedRatio}, water ${plan.totalWaterMl} ml (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''}), temp ${plan.waterTempC} C, brew time ${formatSeconds(plan.totalTimeSeconds)}.`
+    `- Keep final envelope locked: dose ${plan.doseG} g, final ratio 1:${plan.finalBeverageRatio}${plan.iceMl > 0 ? `, hot concentrate 1:${plan.hotExtractionRatio}` : ''}, water ${plan.totalWaterMl} ml (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''}), temp ${plan.waterTempC} C, brew time ${formatSeconds(plan.totalTimeSeconds)}.`
   ].join('\n');
 }
 
@@ -959,12 +1066,16 @@ function validateNumericEnvelope(
   const ratioMatches = normalized
     .split('\n')
     .filter((line) => /\bratio\b|\bwater\s*:\s*coffee\b/i.test(line))
-    .flatMap((line) => [...line.matchAll(/\b1\s*:\s*(\d+(?:\.\d+)?)\b/gi)]);
-  for (const match of ratioMatches) {
+    .flatMap((line) => [...line.matchAll(/\b1\s*:\s*(\d+(?:\.\d+)?)\b/gi)].map((match) => ({ match, line })));
+  for (const { match, line } of ratioMatches) {
     const ratio = Number.parseFloat(match[1]);
     if (!Number.isFinite(ratio)) continue;
-    if (Math.abs(ratio - plan.recommendedRatio) > 0.25) {
-      errors.push(`Ratio ${ratio} is outside deterministic envelope 1:${plan.recommendedRatio}.`);
+    const acceptsHotExtractionRatio = plan.brewMode === 'iced'
+      && /\b(hot|concentrate|extraction|panas|konsentrat)\b/i.test(line)
+      && Math.abs(ratio - plan.hotExtractionRatio) <= 0.25;
+    const acceptsFinalRatio = Math.abs(ratio - plan.finalBeverageRatio) <= 0.25;
+    if (!acceptsHotExtractionRatio && !acceptsFinalRatio) {
+      errors.push(`Ratio ${ratio} is outside deterministic envelope final 1:${plan.finalBeverageRatio}${plan.brewMode === 'iced' ? ` / hot 1:${plan.hotExtractionRatio}` : ''}.`);
       break;
     }
   }
@@ -1078,18 +1189,24 @@ function validateStepNumbering(plan: BrewPlan, mode: AiBrewNarrativeMode, normal
   }
 }
 
-function validateStepExecutionLanguage(mode: AiBrewNarrativeMode, normalized: string, errors: string[]) {
+function validateStepExecutionLanguage(plan: BrewPlan, mode: AiBrewNarrativeMode, normalized: string, errors: string[]) {
   if (mode === 'generate') return;
   const numberedSteps = getStepSectionLines(mode, normalized);
-  for (const line of numberedSteps) {
+  for (let index = 0; index < numberedSteps.length; index += 1) {
+    const line = numberedSteps[index];
+    const expectedKind = plan.steps[index]?.kind || 'pour';
     const verbs = collectActionVerbs(line);
-    if (!verbs.includes('pour')) {
+    if (expectedKind === 'pour' && !verbs.includes('pour')) {
       errors.push(`Step must include deterministic pour action: "${line}".`);
+      break;
+    }
+    if (expectedKind !== 'pour' && !verbs.some((verb) => ['wait', 'hold', 'release', 'drawdown', 'drain', 'steep'].includes(verb))) {
+      errors.push(`Step must include deterministic ${expectedKind} action: "${line}".`);
       break;
     }
     const controlVerbs = collectActionVerbs(extractStepTailAfterCheckpoint(line)).filter((verb) => verb !== 'pour');
     if (controlVerbs.length === 0) {
-      errors.push(`Step must include a post-pour control action (wait/hold/level/etc): "${line}".`);
+      errors.push(`Step must include a post-pour control action or post-checkpoint action (wait/hold/level/release/etc): "${line}".`);
       break;
     }
   }
@@ -1126,8 +1243,12 @@ function validateStepEnvelopeCoverage(plan: BrewPlan, mode: AiBrewNarrativeMode,
     const line = numberedSteps[index] || '';
     const pourPattern = new RegExp('\\b' + escapeRegExp(String(step.pourVolumeMl)) + '\\s*ml\\b', 'i');
     const targetPattern = new RegExp('\\b' + escapeRegExp(String(step.targetVolumeMl)) + '\\s*ml\\b', 'i');
-    if (!pourPattern.test(line) || !targetPattern.test(line)) {
+    if ((step.kind || 'pour') === 'pour' && (!pourPattern.test(line) || !targetPattern.test(line))) {
       errors.push('Step [' + step.label + '] must include deterministic pour volume and cumulative target volume.');
+      return;
+    }
+    if (!targetPattern.test(line)) {
+      errors.push('Step [' + step.label + '] must include deterministic cumulative target volume.');
       return;
     }
   }
@@ -1152,15 +1273,13 @@ function validateStepCanonicalPrefix(plan: BrewPlan, mode: AiBrewNarrativeMode, 
         + minutePattern
         + ':'
         + secondPattern
-        + ':\\s+pour\\s+'
-        + escapeRegExp(String(step.pourVolumeMl))
-        + '\\s*ml\\s+to\\s+'
-        + escapeRegExp(String(step.targetVolumeMl))
-        + '\\s*ml\\b',
+        + ':\\s+'
+        + escapeRegExp(formatStepOperation(step))
+        + '\\b',
       'i',
     );
     if (!prefixPattern.test(line)) {
-      errors.push(`Step ${index + 1} must start with deterministic canonical prefix "${step.label} at ${expectedTime}: pour ${step.pourVolumeMl} ml to ${step.targetVolumeMl} ml".`);
+      errors.push(`Step ${index + 1} must start with deterministic canonical prefix "${step.label} at ${expectedTime}: ${formatStepOperation(step)}".`);
       return;
     }
   }
@@ -1183,6 +1302,10 @@ function validateStepCheckpointIntegrity(plan: BrewPlan, mode: AiBrewNarrativeMo
       return;
     }
 
+    if ((expected.kind || 'pour') !== 'pour' && pourMatches.length > 0) {
+      errors.push(`Step ${index + 1} is a ${expected.kind} checkpoint and must not introduce a pour volume.`);
+      return;
+    }
     if (pourMatches.length === 1) {
       const pourValue = Number.parseFloat(pourMatches[0][1]);
       if (Number.isFinite(pourValue) && Math.abs(pourValue - expected.pourVolumeMl) > 2) {
@@ -1452,11 +1575,11 @@ function validateStepUnsupportedHardwareInstructions(plan: BrewPlan, mode: AiBre
   const stepLines = getStepSectionLines(mode, normalized);
   for (let index = 0; index < stepLines.length; index += 1) {
     const line = stepLines[index];
-    if (STEP_UNSUPPORTED_HARDWARE_PATTERN.test(line)) {
+    if (referencesUnsupportedHardware(plan, line)) {
       errors.push(`Step ${index + 1} references unsupported hardware/tooling (${line}); keep instructions executable on the selected brew setup only.`);
       return;
     }
-    if (plan.methodFamily !== 'clever_dripper' && STEP_NON_IMMERSION_RELEASE_HARDWARE_PATTERN.test(line)) {
+    if (!RELEASE_HARDWARE_METHODS.has(plan.methodFamily) && STEP_NON_IMMERSION_RELEASE_HARDWARE_PATTERN.test(line)) {
       errors.push(`Step ${index + 1} references release hardware cues (valve/plunger/switch) that are not available on ${plan.dripper.name}.`);
       return;
     }
@@ -1645,7 +1768,7 @@ function validateMethodWorkflowConstraints(plan: BrewPlan, mode: AiBrewNarrative
     return;
   }
 
-  if (IMMERSION_WORKFLOW_PATTERN.test(stepText)) {
+  if (!IMMERSION_WORKFLOW_METHODS.has(plan.methodFamily) && IMMERSION_WORKFLOW_PATTERN.test(stepText)) {
     errors.push(`${plan.dripper.name} workflow must not include immersion/release-only instructions.`);
   }
 }
@@ -1895,6 +2018,26 @@ function getSectionLines(normalized: string, heading: string) {
 }
 
 
+const NARRATIVE_HEADING_ALIASES: Record<string, string> = {
+  '## Pola Servis': '## Service Pattern',
+  '## Pola Layanan': '## Service Pattern',
+  '## Pola Penyajian': '## Service Pattern',
+  '## Pola Seduh': '## Service Pattern',
+  '## Urutan': '## Sequence',
+  '## Urutan Seduh': '## Sequence',
+  '## Sekuens': '## Sequence',
+  '## Langkah': '## Sequence',
+  '## Pantau': '## Watch',
+  '## Perhatikan': '## Watch',
+  '## Yang Dipantau': '## Watch',
+  '## Titik Pantau': '## Watch',
+};
+
+function normalizeNarrativeHeading(line: string) {
+  const compact = line.replace(/\s+/g, ' ').trim();
+  return NARRATIVE_HEADING_ALIASES[compact] ?? compact;
+}
+
 function parseNarrativeSections(markdown: string) {
   const sections: Record<string, string[]> = {};
   const lines = normalizeText(markdown).split('\n');
@@ -1903,7 +2046,7 @@ function parseNarrativeSections(markdown: string) {
     const line = rawLine.trim();
     if (!line) continue;
     if (/^##\s+/.test(line)) {
-      currentHeading = line;
+      currentHeading = normalizeNarrativeHeading(line);
       if (!sections[currentHeading]) sections[currentHeading] = [];
       continue;
     }
@@ -2210,7 +2353,7 @@ export function validateAiNarrative(plan: BrewPlan, mode: AiBrewNarrativeMode, r
   validateStepCoverage(plan, normalized, mode, errors);
   validateStepLabelContinuity(plan, mode, normalized, errors);
   validateStepNumbering(plan, mode, normalized, errors);
-  validateStepExecutionLanguage(mode, normalized, errors);
+  validateStepExecutionLanguage(plan, mode, normalized, errors);
   validateStepInRunOnlyInstructions(mode, normalized, errors);
   validateStepParameterShiftInstructions(mode, normalized, errors);
   validateStepEnvelopeCoverage(plan, mode, normalized, errors);
@@ -2317,10 +2460,15 @@ function stripSequenceLinePrefix(plan: BrewPlan, line: string, index: number) {
 
   let next = line.replace(/^\d+\.\s*/, '').trim();
   const canonicalPrefix = new RegExp(
+    `^${escapeRegExp(step.label)}\\s+at(?:\\s+exact\\s+planner\\s+time)?\\s+${escapeRegExp(formatSeconds(step.startSeconds))}:\\s+${escapeRegExp(formatStepOperation(step))}\\b`,
+    'i',
+  );
+  const legacyCanonicalPrefix = new RegExp(
     `^${escapeRegExp(step.label)}\\s+at(?:\\s+exact\\s+planner\\s+time)?\\s+${escapeRegExp(formatSeconds(step.startSeconds))}:\\s+pour\\s+${step.pourVolumeMl}\\s*ml\\s+to\\s+${step.targetVolumeMl}\\s*ml\\b`,
     'i',
   );
   next = next.replace(canonicalPrefix, '').trim();
+  next = next.replace(legacyCanonicalPrefix, '').trim();
   next = next.replace(/^[\s,.;:–—-]+/, '').trim();
   return next || step.note;
 }
@@ -2348,7 +2496,7 @@ export function extractSequenceOverlayFromMarkdown(
   const stepLines = (sections['## Sequence'] || []).filter((line) => /^\d+\.\s+/.test(line));
 
   const steps = plan.steps.map((step, index) => {
-    const rawLine = stepLines[index] || `${index + 1}. ${step.label} at ${formatSeconds(step.startSeconds)}: pour ${step.pourVolumeMl} ml to ${step.targetVolumeMl} ml. ${step.note}`;
+    const rawLine = stepLines[index] || `${index + 1}. ${step.label} at ${formatSeconds(step.startSeconds)}: ${formatStepOperation(step)}. ${step.note}`;
     return {
       rawLine,
       instruction: stripSequenceLinePrefix(plan, rawLine, index),

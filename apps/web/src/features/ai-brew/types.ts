@@ -15,7 +15,14 @@ export type AiBrewMethodFamily =
   | 'origami'
   | 'april'
   | 'melitta'
-  | 'kono';
+  | 'kono'
+  | 'french_press'
+  | 'aeropress'
+  | 'siphon'
+  | 'moka_pot'
+  | 'cold_brew'
+  | 'batch_brew'
+  | 'espresso';
 
 export type CatalogPopularityTier =
   | 'widely_used'
@@ -252,9 +259,20 @@ export interface TargetProfile {
   catalogVersion: string;
 }
 
+export type BrewTemplateStepKind =
+  | 'pour'
+  | 'wait'
+  | 'release'
+  | 'drawdown'
+  | 'press'
+  | 'heat'
+  | 'extract'
+  | 'serve';
+
 export interface BrewTemplateStep {
   id: string;
   label: string;
+  kind?: BrewTemplateStepKind;
   share: number;
   startSeconds: number;
   note: string;
@@ -268,7 +286,7 @@ export interface DeviceBrewProfile extends CatalogProvenance {
   methodFamily: AiBrewMethodFamily;
   brewMethodId: BrewMethodId;
   exactMatch: boolean;
-  filterStyle: 'cone' | 'flat' | 'trapezoid' | 'immersion';
+  filterStyle: 'cone' | 'flat' | 'trapezoid' | 'immersion' | 'pressure' | 'vacuum' | 'stovetop' | 'cold_immersion' | 'batch';
   ratioDelta: number;
   tempDeltaC: number;
   brewTimeDeltaSec: number;
@@ -339,6 +357,7 @@ export interface BeanProfileState {
 export interface BrewPlanStep {
   id: string;
   label: string;
+  kind?: BrewTemplateStepKind;
   startSeconds: number;
   targetVolumeMl: number;
   pourVolumeMl: number;
@@ -396,6 +415,10 @@ export interface BrewPlan {
   hotWaterMl: number;
   iceMl: number;
   recommendedRatio: number;
+  finalBeverageRatio: number;
+  hotExtractionRatio: number;
+  hotWaterSharePercent: number;
+  iceSharePercent: number;
   doseG: number;
   waterTempC: number;
   totalTimeSeconds: number;

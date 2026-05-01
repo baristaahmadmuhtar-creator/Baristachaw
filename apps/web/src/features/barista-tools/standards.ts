@@ -19,11 +19,18 @@ const CATEGORY_RATIO_POLICIES: Record<BrewMethodProfile['category'], RatioWarnin
   espresso: { min: 1, max: 3.5, label: 'espresso shot baseline' },
 };
 
+const METHODS_WITH_CONTEXTUAL_TDS_TARGETS = new Set(['aeropress', 'moka_pot', 'cold_brew']);
+
 function resolveRatioPolicy(method: BrewMethodProfile): RatioWarningPolicy {
   const evidencePolicy = getMethodEvidenceProfile(method.id)?.ratioPolicy;
   if (evidencePolicy) return evidencePolicy;
   if (method.ratioPolicy) return method.ratioPolicy;
   return CATEGORY_RATIO_POLICIES[method.category];
+}
+
+function shouldApplyTypicalFilterTdsBand(method: BrewMethodProfile) {
+  if (method.category === 'espresso') return false;
+  return !METHODS_WITH_CONTEXTUAL_TDS_TARGETS.has(method.id);
 }
 
 export interface ConformanceResult {
@@ -178,7 +185,7 @@ export function evaluateConformance(
   }
 
   if (tdsPercent !== undefined && Number.isFinite(tdsPercent)) {
-    const shouldApplyFilterTdsBand = method.category !== 'espresso';
+    const shouldApplyFilterTdsBand = shouldApplyTypicalFilterTdsBand(method);
     if (shouldApplyFilterTdsBand && (tdsPercent < SCA_BASELINE.tdsRangePct[0] || tdsPercent > SCA_BASELINE.tdsRangePct[1])) {
       const msg = emit(options?.formatMessage, 'tdsOutsideTypicalFilter', {
         tds: tdsPercent.toFixed(2),

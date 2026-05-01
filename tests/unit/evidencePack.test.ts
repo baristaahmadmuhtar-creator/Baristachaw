@@ -46,7 +46,13 @@ test('source ids are unique', () => {
 
 test('sources include valid classification tags', () => {
   const sources = getEvidenceSources();
-  const validTags = new Set(['core_standard', 'competition_rule', 'peer_review', 'regional_context']);
+  const validTags = new Set([
+    'core_standard',
+    'competition_rule',
+    'peer_review',
+    'regional_context',
+    'manufacturer_guidance',
+  ]);
 
   for (const source of sources) {
     assert.ok(source.tags.length > 0);
@@ -56,3 +62,11 @@ test('sources include valid classification tags', () => {
   }
 });
 
+test('evidence pack covers every brew method exposed by Barista Tools', async () => {
+  const { BREW_METHOD_PROFILES } = await import('../../apps/web/src/features/barista-tools/brewProfiles.ts');
+  const evidenceMethodIds = new Set(getAllEvidenceProfiles().map((profile) => profile.methodId));
+
+  for (const method of BREW_METHOD_PROFILES) {
+    assert.ok(evidenceMethodIds.has(method.id), `${method.id} is missing from the evidence pack`);
+  }
+});

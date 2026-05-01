@@ -15,6 +15,8 @@ const mockPlan: any = {
   grinder: { name: 'Comandante' },
   iceMl: 80,
   hotWaterMl: 220,
+  finalBeverageRatio: 20,
+  hotExtractionRatio: 14.67,
   waterBrandLabel: 'Aqua',
   waterCustomized: true,
   summary: 'Resep ringkas.',
@@ -41,9 +43,10 @@ test('ai brew recipe copy switches to indonesian when locale=id', () => {
   assert.match(description, /Air:/);
   assert.match(steps[0], /tuang/);
   assert.equal(ingredients[0].name, 'Kopi');
-  assert.equal(ingredients[1].name, 'Air');
-  assert.equal(ingredients[2].name, 'Sumber air');
-  assert.equal(ingredients[3].name, 'Mineral air');
-  assert.equal(ingredients[4].name, 'Es');
+  assert.equal(ingredients[1].name, 'Total air akhir');
+  assert.equal(ingredients[2].name, 'Air panas seduh');
+  assert.equal(ingredients[3].name, 'Sumber air');
+  assert.equal(ingredients[4].name, 'Mineral air');
+  assert.equal(ingredients[5].name, 'Es');
 });
 

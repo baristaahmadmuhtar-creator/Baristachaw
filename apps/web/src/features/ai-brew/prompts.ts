@@ -3,15 +3,26 @@ import { buildExtractionFinisher } from './extractionFinisher';
 import { isIndonesianAiBrewLanguage } from './localization.ts';
 
 function formatSeconds(totalSeconds: number) {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
+  const safeSeconds = Math.max(0, Math.round(totalSeconds));
+  if (safeSeconds >= 3600) {
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    return minutes > 0 ? `${hours}j ${minutes}m` : `${hours}j`;
+  }
+  const minutes = Math.floor(safeSeconds / 60);
+  const seconds = safeSeconds % 60;
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
 function buildPourProgressionProfile(plan: BrewPlan) {
   if (plan.steps.length === 0 || plan.hotWaterMl <= 0) return 'not_available';
 
-  const shares = plan.steps.map((step) => step.pourVolumeMl / plan.hotWaterMl);
+  const pourSteps = plan.steps.filter((step) => {
+    const kind = step.kind || 'pour';
+    return kind === 'pour' || kind === 'extract';
+  });
+  const shares = (pourSteps.length > 0 ? pourSteps : plan.steps)
+    .map((step) => step.pourVolumeMl / plan.hotWaterMl);
   const first = shares[0] || 0;
   const last = shares[shares.length - 1] || 0;
   const middle = shares.length > 2
@@ -50,6 +61,7 @@ function buildCadenceProfile(plan: BrewPlan) {
   if (middle > Math.max(first, last)) return 'mid_cadence';
   return 'even_cadence';
 }
+
 function buildExtractionPressureProfile(plan: BrewPlan) {
   let score = 0;
   if (plan.beanProfile.roastDevelopment === 'underdeveloped') score += 1;
@@ -65,9 +77,22 @@ function buildExtractionPressureProfile(plan: BrewPlan) {
   if (score <= -1.4) return 'easy_extraction';
   return 'neutral_extraction';
 }
+
+function formatStepOperation(step: BrewPlan['steps'][number]) {
+  const kind = step.kind || 'pour';
+  if (kind === 'release') return `open release at target ${step.targetVolumeMl} ml`;
+  if (kind === 'wait') return `hold contact at target ${step.targetVolumeMl} ml`;
+  if (kind === 'drawdown') return `let drawdown continue at target ${step.targetVolumeMl} ml`;
+  if (kind === 'press') return `press slowly at target ${step.targetVolumeMl} ml`;
+  if (kind === 'heat') return `heat steadily at target ${step.targetVolumeMl} ml`;
+  if (kind === 'extract') return `extract to target yield ${step.targetVolumeMl} ml`;
+  if (kind === 'serve') return `separate and serve at target ${step.targetVolumeMl} ml`;
+  return `pour ${step.pourVolumeMl} ml to ${step.targetVolumeMl} ml`;
+}
+
 function buildSharedContext(plan: BrewPlan) {
   const steps = plan.steps
-    .map((step, index) => `${index + 1}. ${step.label} at ${formatSeconds(step.startSeconds)}: pour ${step.pourVolumeMl} ml to ${step.targetVolumeMl} ml. ${step.hybridInstruction || step.note}`)
+    .map((step, index) => `${index + 1}. ${step.label} at ${formatSeconds(step.startSeconds)}: ${formatStepOperation(step)}. ${step.hybridInstruction || step.note}`)
     .join('\n');
 
   return [
@@ -78,7 +103,7 @@ function buildSharedContext(plan: BrewPlan) {
     `Variety: ${plan.variety}`,
     `Roast level: ${plan.roastLevel}`,
     `Bean profile: ${plan.beanProfile.active ? plan.beanProfile.summary : 'neutral'}`,
-    `Dripper: ${plan.dripper.name}`,
+    `Brewer: ${plan.dripper.name}`,
     `Method family: ${plan.methodFamily}`,
     `Grinder: ${plan.grinder.name}`,
     `Water mode: ${plan.waterMode}`,
@@ -93,7 +118,8 @@ function buildSharedContext(plan: BrewPlan) {
     `Grinder setting reference: ${plan.grindSettingReference} (${plan.grindSettingMode}, ${plan.grindSettingVerification})`,
     `Provenance attention needed: ${plan.provenanceAttentionNeeded ? 'yes' : 'no'}`,
     `Dose: ${plan.doseG} g`,
-    `Ratio: 1:${plan.recommendedRatio}`,
+    `Final beverage ratio: 1:${plan.finalBeverageRatio}`,
+    `Hot extraction ratio: 1:${plan.hotExtractionRatio}`,
     `Water total: ${plan.totalWaterMl} ml`,
     `Hot water: ${plan.hotWaterMl} ml`,
     `Ice: ${plan.iceMl} ml`,
@@ -110,13 +136,14 @@ function buildSharedContext(plan: BrewPlan) {
 
 function buildPlannerEnvelope(plan: BrewPlan) {
   const stepEnvelope = plan.steps
-    .map((step) => `- ${step.label} @ ${formatSeconds(step.startSeconds)}: pour ${step.pourVolumeMl} ml -> ${step.targetVolumeMl} ml`)
+    .map((step) => `- ${step.label} @ ${formatSeconds(step.startSeconds)}: ${formatStepOperation(step)}`)
     .join('\n');
 
   return [
     'Deterministic envelope (source of truth):',
     `- dose: ${plan.doseG} g`,
-    `- ratio: 1:${plan.recommendedRatio}`,
+    `- final beverage ratio: 1:${plan.finalBeverageRatio}`,
+    `- hot extraction ratio: 1:${plan.hotExtractionRatio}`,
     `- total water: ${plan.totalWaterMl} ml`,
     `- hot water: ${plan.hotWaterMl} ml`,
     `- ice: ${plan.iceMl} ml`,
@@ -324,8 +351,8 @@ export function buildSequenceGuidePrompt(plan: BrewPlan, language?: string): AiB
       '- For iced mode, at least one Sequence line must state both hot and ice split values on the same line (X ml hot / Y ml ice).',
       '- Keep all numbers inside deterministic envelope.',
       '- Return markdown only, starting at the first required heading; do not add preface or code fences.',
-      '- Do not include immersion/release-only instructions for non-immersion drippers.',
-      '- Do not mention or imply another dripper/method family that conflicts with the deterministic plan.',
+    '- Do not include immersion/release-only instructions for non-immersion brewers.',
+    '- Do not mention or imply another brewer/method family that conflicts with the deterministic plan.',
       '- Do not invent extra steps, equipment, chemistry data, or placeholders.',
       '',
       buildPlannerEnvelope(plan),
@@ -416,8 +443,8 @@ export function buildSopPrompt(plan: BrewPlan, language?: string): AiBrewPromptC
       'Avoid repetitive step phrasing; vary actionable verbs while preserving deterministic checkpoints.',
       '- Keep heading order fixed as written: Quick Dial -> Service Pattern -> Steps -> Control Points.',
       '- Return markdown only, starting at the first required heading; do not add preface or code fences.',
-      '- For non-immersion drippers, avoid immersion/release-only instructions inside Steps.',
-      '- Do not mention or imply another dripper/method family that conflicts with the deterministic plan.',
+    '- For non-immersion brewers, avoid immersion/release-only instructions inside Steps.',
+    '- Do not mention or imply another brewer/method family that conflicts with the deterministic plan.',
       'If chemistry values are mentioned (TDS/GH/KH), they must match deterministic planner values exactly.',
       'Do not use generic language like "adjust as needed"; every point must be executable in bar workflow.',
       'Control Points must explicitly contain one sour corrective bullet and one bitter corrective bullet.',

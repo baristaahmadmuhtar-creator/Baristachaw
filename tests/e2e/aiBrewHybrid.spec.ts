@@ -106,7 +106,12 @@ async function expectCanonicalSequencePrefixes(sequenceNote: Locator) {
   await expect(sequenceNote.locator('[data-testid^="ai-brew-step-card-"]')).toHaveCount(plan.steps.length);
   for (const [index, step] of plan.steps.entries()) {
     const stepCard = sequenceNote.getByTestId(`ai-brew-step-card-${index + 1}`);
-    await expect(stepCard).toContainText(`+${step.pourVolumeMl} ml`);
+    const kind = step.kind || 'pour';
+    if (kind === 'pour') {
+      await expect(stepCard).toContainText(`+${step.pourVolumeMl} ml`);
+    } else {
+      await expect(stepCard).toContainText(kind === 'release' ? /Lepas|Release/i : kind === 'drawdown' ? /Drawdown/i : /Tahan|Wait/i);
+    }
     await expect(stepCard).toContainText(formatPlanTime(step.startSeconds));
     await expect(stepCard).toContainText(String(step.targetVolumeMl));
   }
@@ -142,9 +147,13 @@ async function clickTargetProfile(
     throw new Error('No active AI Brew builder is visible.');
   }
 
+  const labelPattern = label === 'More Body'
+    ? /^(More Body|Body Lebih Tebal)\b/i
+    : /^(More Acidity|Lebih Cerah)\b/i;
+
   await page
     .getByTestId(`ai-brew-builder-${activeMode}`)
-    .getByRole('button', { name: new RegExp(`^${label}\\b`, 'i') })
+    .getByRole('button', { name: labelPattern })
     .click();
 }
 
@@ -1110,7 +1119,7 @@ test('ai brew deterministic sequence changes checkpoint timeline across target c
   await expect(baselineTimes.length).toBeGreaterThan(2);
   await expect(baselinePours.length).toBeGreaterThan(2);
 
-  await page.getByRole('button', { name: 'Edit inputs' }).click();
+  await page.getByRole('button', { name: /Edit input|Edit inputs|Ubah input/i }).click();
   await clickTargetProfile(page, 'quick', 'More Body');
   await page.getByTestId('ai-brew-generate').click();
   await expect(sequenceNote).toBeVisible({ timeout: 60_000 });
@@ -1336,4 +1345,3 @@ test('ai brew auto sequence repairs watch section without deterministic envelope
   const plan = await readStoredPlan(page);
   expect(readStoredSequenceWatch(plan)).toMatch(/Keep final envelope locked:/i);
 });
-

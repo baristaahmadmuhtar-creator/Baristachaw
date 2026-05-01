@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {
   buildAiBrewPlan,
   buildAiBrewPlanProgressively,
+  buildLocalizedPlanRecipeSteps,
   createDefaultAiBrewFormState,
+  createQuickAiBrewFormState,
   resolveDeviceProfileSelection,
   resolveGrinderSettingReference,
   sanitizeAiBrewFormState,
@@ -521,8 +523,21 @@ function assertPlanEnvelope(plan: ReturnType<typeof buildAiBrewPlan>) {
   assert.equal(totalPoured, plan.hotWaterMl);
   assert.equal(finalStep?.targetVolumeMl, plan.hotWaterMl);
   assert.ok(plan.recommendedRatio > 0);
+  assert.equal(plan.finalBeverageRatio, plan.recommendedRatio);
+  assert.ok(plan.hotExtractionRatio > 0);
+  assert.ok(plan.hotWaterSharePercent >= 0 && plan.hotWaterSharePercent <= 100);
+  assert.ok(plan.iceSharePercent >= 0 && plan.iceSharePercent <= 100);
   assert.ok(plan.waterTempC >= 78 && plan.waterTempC <= 98);
   assert.ok(plan.totalTimeSeconds >= 75 && plan.totalTimeSeconds <= 420);
+}
+
+function getFinalWindowSeconds(plan: ReturnType<typeof buildAiBrewPlan>) {
+  const finalStep = plan.steps[plan.steps.length - 1];
+  return plan.totalTimeSeconds - (finalStep?.startSeconds || 0);
+}
+
+function getPourShareMap(plan: ReturnType<typeof buildAiBrewPlan>) {
+  return plan.steps.map((step) => step.pourVolumeMl / plan.hotWaterMl);
 }
 
 const ALL_METHOD_FAMILY_CASES: Array<{
@@ -598,6 +613,13 @@ const ALL_METHOD_FAMILY_CASES: Array<{
     cue: /open the release|open the valve|bed release|immersion/i,
   },
 ];
+
+const TARGET_PROFILE_MATRIX_IDS = [
+  'balance_clean',
+  'more_sweetness',
+  'more_acidity',
+  'more_body',
+] as const;
 
 function resolveExpectedMethodIdForFamily(family: AiBrewMethodFamily): BrewMethodId {
   switch (family) {
@@ -871,6 +893,219 @@ test('inferDripperMethodFamily maps common dripper names to brew families', () =
   assert.equal(inferDripperMethodFamily('ORIGAMI Dripper Air S', 'Cone Dripper'), 'origami');
   assert.equal(inferDripperMethodFamily('Clever Dripper', 'Immersion Dripper'), 'clever_dripper');
   assert.equal(inferDripperMethodFamily('Melitta 1x2', 'Trapezoid Dripper'), 'melitta');
+  assert.equal(inferDripperMethodFamily('French Press', 'Full Immersion Press Brewer'), 'french_press');
+  assert.equal(inferDripperMethodFamily('AeroPress', 'Pressure-Assisted Immersion Brewer'), 'aeropress');
+  assert.equal(inferDripperMethodFamily('Hario Siphon', 'Vacuum Brewer'), 'siphon');
+  assert.equal(inferDripperMethodFamily('Bialetti Moka Pot', 'Stovetop Brewer'), 'moka_pot');
+  assert.equal(inferDripperMethodFamily('Toddy Cold Brew', 'Cold Brew Immersion Brewer'), 'cold_brew');
+  assert.equal(inferDripperMethodFamily('Batch Brewer', 'Automatic Brewer'), 'batch_brew');
+});
+
+test('non-dripper method profiles generate action-safe AI Brew plans without fake iced mode', () => {
+  const cases = [
+    {
+      family: 'espresso',
+      methodId: 'espresso',
+      dripperId: 'matrix-espresso',
+      name: 'Espresso Machine Matrix',
+      typeLabel: 'Pressure Espresso Brewer',
+      filterStyle: 'pressure',
+      steps: [
+        { id: 'extract', label: 'Extract', kind: 'extract', share: 1, startSeconds: 0, note: 'Start the shot and track yield.' },
+        { id: 'stop', label: 'Stop', kind: 'serve', share: 0, startSeconds: 28, note: 'Stop at target yield.' },
+      ],
+      expectedKinds: ['extract', 'serve'],
+    },
+    {
+      family: 'french_press',
+      methodId: 'french_press',
+      dripperId: 'matrix-french-press',
+      name: 'French Press Matrix',
+      typeLabel: 'Full Immersion Press Brewer',
+      filterStyle: 'immersion',
+      steps: [
+        { id: 'charge', label: 'Charge', kind: 'pour', share: 1, startSeconds: 0, note: 'Add all water evenly.' },
+        { id: 'steep', label: 'Steep', kind: 'wait', share: 0, startSeconds: 240, note: 'Hold immersion.' },
+        { id: 'press', label: 'Press', kind: 'press', share: 0, startSeconds: 270, note: 'Press slowly.' },
+      ],
+      expectedKinds: ['pour', 'wait', 'press'],
+    },
+    {
+      family: 'aeropress',
+      methodId: 'aeropress',
+      dripperId: 'matrix-aeropress',
+      name: 'AeroPress Matrix',
+      typeLabel: 'Pressure-Assisted Immersion Brewer',
+      filterStyle: 'pressure',
+      steps: [
+        { id: 'charge', label: 'Charge', kind: 'pour', share: 1, startSeconds: 0, note: 'Wet compact bed.' },
+        { id: 'press', label: 'Press', kind: 'press', share: 0, startSeconds: 90, note: 'Press steadily.' },
+      ],
+      expectedKinds: ['pour', 'press'],
+    },
+    {
+      family: 'siphon',
+      methodId: 'siphon',
+      dripperId: 'matrix-siphon',
+      name: 'Siphon Matrix',
+      typeLabel: 'Vacuum Siphon Brewer',
+      filterStyle: 'vacuum',
+      steps: [
+        { id: 'charge', label: 'Charge', kind: 'pour', share: 1, startSeconds: 0, note: 'Load water.' },
+        { id: 'heat', label: 'Heat', kind: 'heat', share: 0, startSeconds: 60, note: 'Hold heat.' },
+        { id: 'drawdown', label: 'Drawdown', kind: 'drawdown', share: 0, startSeconds: 150, note: 'Let coffee draw down.' },
+      ],
+      expectedKinds: ['pour', 'heat', 'drawdown'],
+    },
+    {
+      family: 'moka_pot',
+      methodId: 'moka_pot',
+      dripperId: 'matrix-moka-pot',
+      name: 'Moka Pot Matrix',
+      typeLabel: 'Stovetop Pressure Brewer',
+      filterStyle: 'stovetop',
+      steps: [
+        { id: 'fill_base', label: 'Charge', kind: 'pour', share: 1, startSeconds: 0, note: 'Fill below the valve.' },
+        { id: 'heat', label: 'Heat', kind: 'heat', share: 0, startSeconds: 60, note: 'Use low heat.' },
+        { id: 'stop', label: 'Stop', kind: 'serve', share: 0, startSeconds: 180, note: 'Remove from heat.' },
+      ],
+      expectedKinds: ['pour', 'heat', 'serve'],
+    },
+    {
+      family: 'cold_brew',
+      methodId: 'cold_brew',
+      dripperId: 'matrix-cold-brew',
+      name: 'Cold Brew Matrix',
+      typeLabel: 'Cold Brew Immersion Brewer',
+      filterStyle: 'cold_immersion',
+      steps: [
+        { id: 'charge', label: 'Charge', kind: 'pour', share: 1, startSeconds: 0, note: 'Add cool water.' },
+        { id: 'steep', label: 'Steep', kind: 'wait', share: 0, startSeconds: 300, note: 'Steep cold.' },
+        { id: 'filter', label: 'Filter', kind: 'serve', share: 0, startSeconds: 43200, note: 'Filter cleanly.' },
+      ],
+      expectedKinds: ['pour', 'wait', 'serve'],
+    },
+    {
+      family: 'batch_brew',
+      methodId: 'batch_brew',
+      dripperId: 'matrix-batch-brewer',
+      name: 'Batch Brewer Matrix',
+      typeLabel: 'Automatic Batch Brewer',
+      filterStyle: 'batch',
+      steps: [
+        { id: 'start_brew', label: 'Start Brew', kind: 'pour', share: 1, startSeconds: 0, note: 'Start brew cycle.' },
+        { id: 'drawdown', label: 'Drawdown', kind: 'drawdown', share: 0, startSeconds: 270, note: 'Let drawdown finish.' },
+      ],
+      expectedKinds: ['pour', 'drawdown'],
+    },
+  ] as const;
+
+  const expandedCatalog: AiBrewCatalog = {
+    ...catalog,
+    drippers: [
+      ...catalog.drippers,
+      ...cases.map((entry) => ({
+        id: entry.dripperId,
+        kind: 'dripper' as const,
+        name: entry.name,
+        brand: 'QA',
+        typeLabel: entry.typeLabel,
+        description: `${entry.name} QA brewer.`,
+        searchText: entry.name.toLowerCase(),
+        catalogVersion: 'test-v2',
+        source: 'test',
+        sourceUrls: [`https://example.com/${entry.dripperId}`],
+        verificationLevel: 'official' as const,
+        verifiedAt: '2026-05-01',
+        popularityTier: 'widely_used' as const,
+        marketSegment: 'specialty_mainstream' as const,
+        releaseStatus: 'established' as const,
+        confidence: 'high' as const,
+        methodFamily: entry.family as AiBrewMethodFamily,
+      })),
+    ],
+    deviceProfiles: [
+      ...catalog.deviceProfiles,
+      ...cases.map((entry) => ({
+        id: `profile_${entry.dripperId}_hot`,
+        label: `${entry.name} Hot`,
+        brewMode: 'hot' as const,
+        dripperIds: [entry.dripperId],
+        methodFamily: entry.family as AiBrewMethodFamily,
+        brewMethodId: entry.methodId as BrewMethodId,
+        exactMatch: true,
+        filterStyle: entry.filterStyle,
+        ratioDelta: 0,
+        tempDeltaC: 0,
+        brewTimeDeltaSec: 0,
+        grindBias: 'same' as const,
+        note: `${entry.name} QA baseline.`,
+        steps: entry.steps,
+        source: 'test',
+        sourceUrls: [`https://example.com/profile-${entry.dripperId}`],
+        verificationLevel: 'official' as const,
+        verifiedAt: '2026-05-01',
+        popularityTier: 'widely_used' as const,
+        marketSegment: 'specialty_mainstream' as const,
+        releaseStatus: 'established' as const,
+        confidence: 'high' as const,
+        catalogVersion: 'test-v2',
+      })),
+    ],
+  };
+
+  for (const entry of cases) {
+    const input = {
+      ...createDefaultAiBrewFormState(expandedCatalog),
+      brewMode: 'iced' as const,
+      dripperId: entry.dripperId,
+      coffeeName: `${entry.name} QA`,
+      doseG: entry.family === 'cold_brew' ? '60' : entry.family === 'batch_brew' ? '55' : '18',
+      waterTdsPpm: '95',
+      waterHardnessPpm: '55',
+      waterAlkalinityPpm: '40',
+      targetProfileId: 'balance_clean',
+    };
+    const sanitized = sanitizeAiBrewFormState(input, expandedCatalog);
+    assert.equal(sanitized.brewMode, 'hot');
+
+    const plan = buildAiBrewPlan(input, expandedCatalog);
+    if (entry.family !== 'cold_brew' && entry.family !== 'espresso') {
+      assertPlanEnvelope(plan);
+    } else {
+      const totalPoured = plan.steps.reduce((sum, step) => sum + step.pourVolumeMl, 0);
+      assert.equal(totalPoured, plan.hotWaterMl);
+      assert.equal(plan.steps.at(-1)?.targetVolumeMl, plan.hotWaterMl);
+      assert.ok(plan.recommendedRatio > 0);
+      assert.equal(plan.finalBeverageRatio, plan.recommendedRatio);
+      assert.ok(plan.iceMl === 0);
+      if (entry.family === 'cold_brew') {
+        assert.ok(plan.waterTempC >= 4 && plan.waterTempC <= 25);
+        assert.ok(plan.totalTimeSeconds >= 21600);
+      } else {
+        assert.ok(plan.waterTempC >= 88 && plan.waterTempC <= 98);
+        assert.ok(plan.totalTimeSeconds >= 20 && plan.totalTimeSeconds <= 45);
+      }
+    }
+    assert.equal(plan.brewMode, 'hot');
+    assert.equal(plan.methodFamily, entry.family);
+    assert.equal(plan.methodId, entry.methodId);
+    assert.equal(plan.ratioToolMethodId, entry.methodId);
+    assert.deepEqual(plan.steps.map((step) => step.kind), entry.expectedKinds);
+    assert.doesNotMatch(buildLocalizedPlanRecipeSteps(plan, 'id').join('\n'), /\btuang\s+0\b|\bpour\s+0\b/i);
+    assert.ok(plan.confidenceNotes.some((note) =>
+      note.toLowerCase().includes(`method-family signature active: ${entry.family.replace(/_/g, ' ')}`),
+    ));
+
+    if (entry.family === 'cold_brew') {
+      assert.match(plan.summary, /Cold brew plan/i);
+      assert.match(buildLocalizedPlanRecipeSteps(plan, 'id').join('\n'), /\d+j/);
+    }
+    if (entry.family === 'espresso') {
+      assert.ok(plan.steps.some((step) => step.kind === 'extract' && step.pourVolumeMl > 0));
+      assert.match(plan.summary, /Espresso plan/i);
+    }
+  }
 });
 
 test('sanitizeAiBrewFormState falls back to valid defaults for unsupported values', () => {
@@ -1069,6 +1304,39 @@ test('buildAiBrewPlan keeps neutral quick and neutral pro-style inputs on the sa
   );
 });
 
+test('createQuickAiBrewFormState strips hidden precision-only modifiers before generation', () => {
+  const quickInput = createQuickAiBrewFormState({
+    ...createDefaultAiBrewFormState(catalog),
+    coffeeName: 'Quick Sanitizer QA',
+    brewMode: 'iced',
+    process: 'natural',
+    customProcess: 'experimental anaerobic',
+    variety: 'geisha',
+    customVariety: 'rare cultivar',
+    altitudeMasl: '1950',
+    beanDensityGml: '0.74',
+    roastDevelopment: 'underdeveloped',
+    solubility: 'low',
+    waterNotes: 'extra buffer',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, catalog);
+
+  assert.equal(quickInput.brewMode, 'iced');
+  assert.equal(quickInput.process, '');
+  assert.equal(quickInput.customProcess, '');
+  assert.equal(quickInput.variety, '');
+  assert.equal(quickInput.customVariety, '');
+  assert.equal(quickInput.altitudeMasl, '');
+  assert.equal(quickInput.beanDensityGml, '');
+  assert.equal(quickInput.roastDevelopment, '');
+  assert.equal(quickInput.solubility, '');
+  assert.equal(quickInput.waterNotes, '');
+  assert.equal(quickInput.waterTdsPpm, '95');
+});
+
 test('buildAiBrewPlan roast level shifts extraction envelope in a sensible direction', () => {
   const baseInput = {
     ...createDefaultAiBrewFormState(catalog),
@@ -1127,8 +1395,15 @@ test('buildAiBrewPlan creates a japanese iced plan with split water and derived 
   assert.equal(plan.ratioToolMethodId, 'v60_japanese_iced');
   assert.ok(plan.iceMl > 0);
   assert.ok(plan.hotWaterMl < plan.totalWaterMl);
+  assert.equal(plan.finalBeverageRatio, plan.recommendedRatio);
+  assert.equal(plan.hotExtractionRatio, Number((plan.hotWaterMl / plan.doseG).toFixed(2)));
+  assert.ok(plan.hotExtractionRatio >= 8.8, `Expected hot concentrate >= 1:8.8, got 1:${plan.hotExtractionRatio} (${plan.hotWaterMl} ml / ${plan.doseG} g)`);
+  assert.ok(plan.hotExtractionRatio <= 10.8);
+  assert.ok(plan.hotWaterSharePercent >= 54);
+  assert.ok(plan.hotWaterSharePercent <= 70);
   assert.equal(plan.deviceProfileMode, 'derived_template');
   assert.equal(plan.provenanceAttentionNeeded, true);
+  assert.ok(plan.notes.some((note) => /hot concentrate extracts/i.test(note)));
   assert.ok(plan.confidenceNotes.some((note) => /generated from the v60 family template/i.test(note)));
 });
 
@@ -1230,6 +1505,42 @@ test('buildAiBrewPlan target profiles shift ratio, time, and deterministic pour-
   assert.match(sweetness.summary, /more sweetness/i);
   assert.match(acidity.summary, /more acidity/i);
   assert.match(body.summary, /more body/i);
+});
+
+test('target profile calibration follows stable ids when labels are localized or customized', () => {
+  const localizedCatalog: AiBrewCatalog = {
+    ...catalog,
+    targetProfiles: catalog.targetProfiles?.map((profile) => ({
+      ...profile,
+      label: profile.id === 'more_acidity'
+        ? 'Terang Juicy'
+        : profile.id === 'more_body'
+          ? 'Tekstur Tebal'
+          : profile.id === 'more_sweetness'
+            ? 'Manis Bersih'
+            : 'Seimbang Harian',
+    })),
+  };
+  const baseInput = {
+    ...createDefaultAiBrewFormState(localizedCatalog),
+    coffeeName: 'Localized Target QA',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  };
+
+  const balance = buildAiBrewPlan({ ...baseInput, targetProfileId: 'balance_clean' }, localizedCatalog);
+  const acidity = buildAiBrewPlan({ ...baseInput, targetProfileId: 'more_acidity' }, localizedCatalog);
+  const sweetness = buildAiBrewPlan({ ...baseInput, targetProfileId: 'more_sweetness' }, localizedCatalog);
+  const body = buildAiBrewPlan({ ...baseInput, targetProfileId: 'more_body' }, localizedCatalog);
+
+  assert.equal(acidity.targetProfileLabel, 'Terang Juicy');
+  assert.equal(body.targetProfileLabel, 'Tekstur Tebal');
+  assert.ok(acidity.recommendedRatio > balance.recommendedRatio);
+  assert.ok(body.recommendedRatio < sweetness.recommendedRatio);
+  assert.ok(getFinalWindowSeconds(acidity) > getFinalWindowSeconds(body));
+  assert.ok(getPourShareMap(body)[0] > getPourShareMap(acidity)[0]);
+  assert.ok(getPourShareMap(sweetness)[1] >= getPourShareMap(balance)[1]);
 });
 
 test('buildAiBrewPlan requires manual mineral inputs', () => {
@@ -1763,44 +2074,69 @@ test('all supported dripper families stay production-safe across hot and iced fl
 
   const plans = new Map<string, ReturnType<typeof buildAiBrewPlan>>();
 
-  for (const brewMode of ['hot', 'iced'] as const) {
-    for (const familyCase of ALL_METHOD_FAMILY_CASES) {
-      const plan = buildAiBrewPlan({
-        ...baseInput,
-        brewMode,
-        dripperId: familyCase.dripperId,
-      }, fullFamilyCatalog);
+  for (const targetProfileId of TARGET_PROFILE_MATRIX_IDS) {
+    for (const brewMode of ['hot', 'iced'] as const) {
+      for (const familyCase of ALL_METHOD_FAMILY_CASES) {
+        const plan = buildAiBrewPlan({
+          ...baseInput,
+          targetProfileId,
+          brewMode,
+          dripperId: familyCase.dripperId,
+        }, fullFamilyCatalog);
 
-      plans.set(`${brewMode}:${familyCase.family}`, plan);
+        plans.set(`${targetProfileId}:${brewMode}:${familyCase.family}`, plan);
 
-      assertPlanEnvelope(plan);
-      assert.equal(plan.methodFamily, familyCase.family);
-      assert.equal(
-        plan.methodId,
-        resolveExpectedRatioToolMethodIdForFamily(familyCase.family, brewMode),
-      );
-      assert.equal(
-        plan.ratioToolMethodId,
-        resolveExpectedRatioToolMethodIdForFamily(familyCase.family, brewMode),
-      );
-      assert.match(collectPlanNarrative(plan), familyCase.cue);
-      assert.ok(
-        plan.confidenceNotes.some((note) =>
-          note.toLowerCase().includes(`method-family signature active: ${familyCase.family.replace(/_/g, ' ')}`)
-        ),
-      );
+        assertPlanEnvelope(plan);
+        assert.equal(plan.methodFamily, familyCase.family);
+        assert.equal(plan.targetProfileId, targetProfileId);
+        assert.equal(
+          plan.methodId,
+          resolveExpectedRatioToolMethodIdForFamily(familyCase.family, brewMode),
+        );
+        assert.equal(
+          plan.ratioToolMethodId,
+          resolveExpectedRatioToolMethodIdForFamily(familyCase.family, brewMode),
+        );
+        assert.match(collectPlanNarrative(plan), familyCase.cue);
+        assert.ok(
+          plan.confidenceNotes.some((note) =>
+            note.toLowerCase().includes(`method-family signature active: ${familyCase.family.replace(/_/g, ' ')}`)
+          ),
+        );
 
-      if (brewMode === 'hot') {
-        assert.equal(plan.iceMl, 0);
-        assert.equal(plan.hotWaterMl, plan.totalWaterMl);
-      } else {
-        assert.ok(plan.iceMl > 0);
-        assert.ok(plan.hotWaterMl < plan.totalWaterMl);
+        if (brewMode === 'hot') {
+          assert.equal(plan.iceMl, 0);
+          assert.equal(plan.hotWaterMl, plan.totalWaterMl);
+          assert.equal(plan.hotExtractionRatio, plan.recommendedRatio);
+        } else {
+          assert.ok(plan.iceMl > 0);
+          assert.ok(plan.hotWaterMl < plan.totalWaterMl);
+          assert.ok(plan.hotExtractionRatio < plan.finalBeverageRatio);
+          assert.match(plan.summary, /final ratio 1:[\d.]+ with hot concentrate 1:[\d.]+/i);
+        }
+
+        const indonesianRecipeSteps = buildLocalizedPlanRecipeSteps(plan, 'id').join('\n');
+        assert.doesNotMatch(indonesianRecipeSteps, /\btuang\s+0\b|\bpour\s+0\b/i);
+
+        if (familyCase.family === 'clever_dripper') {
+          const pourSteps = plan.steps.filter((step) => (step.kind || 'pour') === 'pour');
+          assert.equal(pourSteps.length, 1);
+          assert.equal(pourSteps[0].pourVolumeMl, plan.hotWaterMl);
+          assert.ok(plan.steps.some((step) => step.kind === 'wait'));
+          assert.ok(plan.steps.some((step) => step.kind === 'release'));
+          assert.ok(plan.steps.every((step) => step.kind === 'pour' || step.pourVolumeMl === 0));
+          assert.match(indonesianRecipeSteps, /tahan kontak|buka release/i);
+        } else {
+          assert.ok(plan.steps.every((step) => (step.kind || 'pour') === 'pour'));
+          assert.ok(plan.steps.every((step) => step.pourVolumeMl > 0));
+          assert.ok(getFinalWindowSeconds(plan) >= (brewMode === 'iced' ? 24 : 28));
+        }
       }
     }
   }
 
-  const getPlan = (brewMode: 'hot' | 'iced', family: AiBrewMethodFamily) => plans.get(`${brewMode}:${family}`)!;
+  const getPlan = (brewMode: 'hot' | 'iced', family: AiBrewMethodFamily, targetProfileId = 'balance_clean') =>
+    plans.get(`${targetProfileId}:${brewMode}:${family}`)!;
   const getIcedShare = (family: AiBrewMethodFamily) => getPlan('iced', family).hotWaterMl / getPlan('iced', family).totalWaterMl;
 
   assert.ok(getIcedShare('chemex') > getIcedShare('v60'));
@@ -1813,6 +2149,94 @@ test('all supported dripper families stay production-safe across hot and iced fl
   assert.ok(getPlan('hot', 'clever_dripper').totalTimeSeconds > getPlan('hot', 'v60').totalTimeSeconds);
   assert.ok(getPlan('hot', 'kono').totalTimeSeconds > getPlan('hot', 'origami').totalTimeSeconds);
   assert.ok(getPlan('hot', 'melitta').totalTimeSeconds >= getPlan('hot', 'kalita_wave').totalTimeSeconds);
+  assert.ok(getFinalWindowSeconds(getPlan('hot', 'v60', 'more_acidity')) > getFinalWindowSeconds(getPlan('hot', 'v60', 'more_body')));
+  assert.ok(getPourShareMap(getPlan('hot', 'v60', 'more_body'))[0] > getPourShareMap(getPlan('hot', 'v60', 'more_acidity'))[0]);
+});
+
+test('exact device profiles can own the ratio tool method id without losing family cues', () => {
+  const fullFamilyCatalog = buildAllMethodFamilyCatalog();
+  const sourceProfile = fullFamilyCatalog.deviceProfiles.find((profile) => profile.id === 'profile_matrix-v60-all_hot');
+  assert.ok(sourceProfile);
+
+  const overrideCatalog: AiBrewCatalog = {
+    ...fullFamilyCatalog,
+    drippers: fullFamilyCatalog.drippers.map((dripper) =>
+      dripper.id === 'matrix-v60-all'
+        ? { ...dripper, defaultProfileId: 'profile_matrix-v60-flat-override_hot' }
+        : dripper
+    ),
+    deviceProfiles: [
+      ...fullFamilyCatalog.deviceProfiles,
+      {
+        ...sourceProfile,
+        id: 'profile_matrix-v60-flat-override_hot',
+        label: 'V60 Flat Filter Override Hot',
+        dripperIds: ['matrix-v60-all'],
+        methodFamily: 'v60',
+        brewMethodId: 'kalita_wave',
+        filterStyle: 'flat',
+        exactMatch: true,
+      },
+    ],
+  };
+
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(overrideCatalog),
+    coffeeName: 'Profile Override QA',
+    dripperId: 'matrix-v60-all',
+    targetProfileId: 'balance_clean',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, overrideCatalog);
+
+  assert.equal(plan.methodFamily, 'v60');
+  assert.equal(plan.methodId, 'kalita_wave');
+  assert.equal(plan.ratioToolMethodId, 'kalita_wave');
+  assert.match(collectPlanNarrative(plan), /cone drain cleanly|center-to-mid/i);
+});
+
+test('single-step clever charge-release profiles expand into timer-safe hold and release checkpoints', () => {
+  const fullFamilyCatalog = buildAllMethodFamilyCatalog();
+  const overrideCatalog: AiBrewCatalog = {
+    ...fullFamilyCatalog,
+    deviceProfiles: fullFamilyCatalog.deviceProfiles.map((profile) =>
+      profile.id === 'profile_matrix-clever-all_iced'
+        ? {
+          ...profile,
+          steps: [
+            {
+              id: 'charge_release',
+              label: 'Charge and Release',
+              share: 1,
+              startSeconds: 0,
+              note: 'Charge full hot-water target, steep briefly, then release over ice.',
+            },
+          ],
+        }
+        : profile
+    ),
+  };
+
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(overrideCatalog),
+    coffeeName: 'Single Step Clever QA',
+    brewMode: 'iced',
+    dripperId: 'matrix-clever-all',
+    targetProfileId: 'balance_clean',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, overrideCatalog);
+
+  assertPlanEnvelope(plan);
+  assert.deepEqual(plan.steps.map((step) => step.kind), ['pour', 'wait', 'release']);
+  assert.equal(plan.steps[0].pourVolumeMl, plan.hotWaterMl);
+  assert.equal(plan.steps[1].pourVolumeMl, 0);
+  assert.equal(plan.steps[2].pourVolumeMl, 0);
+  assert.ok(plan.steps[1].startSeconds > 0);
+  assert.ok(plan.steps[2].startSeconds > plan.steps[1].startSeconds);
+  assert.doesNotMatch(buildLocalizedPlanRecipeSteps(plan, 'id').join('\n'), /\btuang\s+0\b|\bpour\s+0\b/i);
 });
 
 test('extraction finisher adapts watchpoints and rescue actions by dripper family', () => {
@@ -2606,8 +3030,3 @@ test('validateWaterChemistryConsistency flags GH or KH above TDS', () => {
   const ok = validateWaterChemistryConsistency(120, 65, 44);
   assert.equal(ok.length, 0);
 });
-
-
-
-
-

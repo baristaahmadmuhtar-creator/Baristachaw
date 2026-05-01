@@ -203,6 +203,13 @@ export function parseNumericRange(rangeLabel: string): ParsedNumericRange | null
 
 export function inferDripperMethodFamily(name: string, typeLabel: string): AiBrewMethodFamily {
   const haystack = `${name} ${typeLabel}`.toLowerCase();
+  if (haystack.includes('espresso')) return 'espresso';
+  if (haystack.includes('french press') || haystack.includes('press pot')) return 'french_press';
+  if (haystack.includes('aeropress')) return 'aeropress';
+  if (haystack.includes('siphon') || haystack.includes('syphon') || haystack.includes('vacuum')) return 'siphon';
+  if (haystack.includes('moka') || haystack.includes('stovetop')) return 'moka_pot';
+  if (haystack.includes('cold brew')) return 'cold_brew';
+  if (haystack.includes('batch brewer') || haystack.includes('batch brew') || haystack.includes('automatic brewer')) return 'batch_brew';
   if (haystack.includes('chemex')) return 'chemex';
   if (haystack.includes('switch') || haystack.includes('clever') || haystack.includes('immersion')) {
     return 'clever_dripper';

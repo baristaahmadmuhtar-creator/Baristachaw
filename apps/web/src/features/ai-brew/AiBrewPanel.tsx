@@ -19,6 +19,7 @@ import {
   Play,
   Search,
   SlidersHorizontal,
+  Snowflake,
   Sparkles,
   Target,
   Thermometer,
@@ -65,10 +66,12 @@ import {
   buildPlanRecipeIngredients,
   buildPlanRecipeMetadata,
   createDefaultAiBrewFormState,
+  createQuickAiBrewFormState,
   loadPlanIntoForm,
   resolveDeviceProfileSelection,
   resolveGrinderSettingReference,
   sanitizeAiBrewFormState,
+  supportsAiBrewIcedMode,
   type AiBrewGenerationProgress,
   type AiBrewGenerationStageId,
 } from './planner';
@@ -91,6 +94,7 @@ import { loadAiBrewCatalog } from './catalog';
 import type {
   AiBrewCatalog,
   AiBrewFormState,
+  AiBrewMethodFamily,
   BrewJournalEntry,
   BrewPlan,
   BrewPreset,
@@ -111,6 +115,9 @@ const COPY = {
     subtitle: 'Clean manual brew planner.',
     coffeeTitle: 'Coffee Context',
     equipmentTitle: 'Peralatan',
+    brewerCoreSection: 'Core brew methods',
+    brewerSpecialtySection: 'Specialty drippers',
+    brewerVerifiedBadge: 'Ready profile',
     waterTitle: 'Water Minerals',
     waterSourceTitle: 'Water Source',
     waterBrand: 'Merek',
@@ -164,13 +171,15 @@ const COPY = {
     profileTitle: 'Target Profile',
     modeHot: 'Hot Brew',
     modeIced: 'Ice Brew',
+    modeCold: 'Cold Brew',
+    modeEspresso: 'Espresso',
     coffeeName: 'Coffee / origin',
     coffeeNamePlaceholder: 'e.g. Ethiopia Chelbesa, Gayo Washed, House Filter',
     dose: 'Dose (g)',
     process: 'Process',
     variety: 'Variety',
     roast: 'Roast level',
-    dripper: 'Dripper',
+    dripper: 'Brewer',
     grinder: 'Grinder',
     tds: 'TDS (ppm)',
     hardness: 'Hardness (ppm as CaCO3)',
@@ -216,6 +225,10 @@ const COPY = {
     emptyPlan: 'Complete the form and generate a plan to open the focus workspace.',
     summaryTitle: 'Result',
     totalWater: 'Total Water',
+    finalRatio: 'Final Ratio',
+    hotConcentrate: 'Hot Concentrate',
+    iceSetupTitle: 'Ice brew setup',
+    iceSetupDetail: 'Put ice in the server first, brew only the hot-water target, then stir until the melt is even.',
     cupOutput: 'Estimated Cup Output',
     hotWater: 'Hot Water',
     ice: 'Ice',
@@ -320,7 +333,8 @@ const COPY = {
     waterRequired: 'Manual mineral input is required before generating.',
     openProcessPicker: 'Choose process',
     openVarietyPicker: 'Choose variety',
-    openDripperPicker: 'Choose dripper',
+    openDripperPicker: 'Choose brewer',
+    icedUnavailable: 'Ice mode is not available for this brewer yet. Standard mode will be used.',
     openGrinderPicker: 'Choose grinder',
     showProvenance: 'Show provenance',
     hideProvenance: 'Hide provenance',
@@ -405,6 +419,9 @@ const COPY = {
     subtitle: 'Planner seduh yang bersih.',
     coffeeTitle: 'Konteks Kopi',
     equipmentTitle: 'Peralatan',
+    brewerCoreSection: 'Metode seduh inti',
+    brewerSpecialtySection: 'Dripper spesialti',
+    brewerVerifiedBadge: 'Profil siap',
     waterTitle: 'Mineral Air',
     waterSourceTitle: 'Sumber Air',
     waterBrand: 'Merek',
@@ -458,13 +475,15 @@ const COPY = {
     profileTitle: 'Profil Target',
     modeHot: 'Seduh Panas',
     modeIced: 'Seduh Es',
+    modeCold: 'Seduh Dingin',
+    modeEspresso: 'Espresso',
     coffeeName: 'Kopi / asal',
     coffeeNamePlaceholder: 'mis. Ethiopia Chelbesa, Gayo Washed, House Filter',
     dose: 'Dosis (g)',
     process: 'Proses',
     variety: 'Varietas',
     roast: 'Profil sangrai',
-    dripper: 'Dripper',
+    dripper: 'Alat seduh',
     grinder: 'Grinder',
     tds: 'TDS (ppm)',
     hardness: 'Hardness (ppm sebagai CaCO3)',
@@ -510,6 +529,10 @@ const COPY = {
     emptyPlan: 'Lengkapi form lalu buat plan untuk membuka workspace hasil.',
     summaryTitle: 'Hasil',
     totalWater: 'Total Air',
+    finalRatio: 'Rasio Final',
+    hotConcentrate: 'Konsentrat Panas',
+    iceSetupTitle: 'Setup seduh es',
+    iceSetupDetail: 'Masukkan es ke server dulu, seduh hanya sampai target air panas, lalu aduk sampai lelehan merata.',
     cupOutput: 'Estimasi Hasil Cangkir',
     hotWater: 'Air Panas',
     ice: 'Es',
@@ -565,20 +588,20 @@ const COPY = {
     aiOffline: 'AI coach tidak tersedia saat offline.',
     aiGuest: 'Masuk dulu untuk memakai AI coach pada brew plan ini.',
     load: 'Muat',
-    pickerSearch: 'Cari catalog...',
-    pickerSearchLabel: 'Cari catalog AI Brew',
+    pickerSearch: 'Cari katalog...',
+    pickerSearchLabel: 'Cari katalog AI Brew',
     pickerHelp: '',
     pickerClose: 'Tutup picker',
-    noPickerResults: 'Tidak ada entry catalog yang cocok.',
+    noPickerResults: 'Tidak ada entri katalog yang cocok.',
     generated: 'Brew plan tersimpan ke history lokal.',
     savedCollection: 'Recipe tersimpan ke Collection.',
     saveCollectionFailed: 'Recipe ini belum bisa disimpan ke Collection sekarang.',
     savedFavorite: 'Masuk ke favorit.',
     removedFavorite: 'Dihapus dari favorit.',
-    unavailable: 'Catalog AI Brew belum bisa dimuat sekarang.',
-    loadingCatalog: 'Sedang memuat catalog AI Brew...',
+    unavailable: 'Katalog AI Brew belum bisa dimuat sekarang.',
+    loadingCatalog: 'Sedang memuat katalog AI Brew...',
     restoredPlan: 'Brew plan terakhir berhasil dipulihkan dari device ini.',
-    offlineCatalog: 'Catalog AI Brew cache berhasil dimuat untuk mode offline.',
+    offlineCatalog: 'Katalog AI Brew cache berhasil dimuat untuk mode offline.',
     loadFavorite: 'Muat brew favorit',
     loadRecent: 'Muat brew terbaru',
     aiSignIn: 'Masuk untuk mengaktifkan AI coach',
@@ -614,7 +637,8 @@ const COPY = {
     waterRequired: 'Input mineral manual wajib diisi sebelum generate.',
     openProcessPicker: 'Pilih proses',
     openVarietyPicker: 'Pilih varietas',
-    openDripperPicker: 'Pilih dripper',
+    openDripperPicker: 'Pilih alat seduh',
+    icedUnavailable: 'Mode es belum tersedia untuk alat ini. Mode standar dipakai agar hasil tidak salah.',
     openGrinderPicker: 'Pilih grinder',
     showProvenance: 'Tampilkan rujukan',
     hideProvenance: 'Sembunyikan rujukan',
@@ -735,14 +759,72 @@ interface PickerOption {
   tone?: 'highlight' | 'muted' | 'default';
 }
 
+const CORE_BREWER_IDS = [
+  'espresso-machine',
+  'aeropress',
+  'french-press',
+  'hario-v60',
+  'kalita-wave-155-185',
+  'chemex',
+  'clever-dripper',
+  'bialetti-moka-pot',
+  'toddy-cold-brew',
+  'batch-brewer',
+  'hario-siphon',
+  'origami-dripper-s-m',
+  'april-brewer',
+  'melitta',
+  'kono-meimon',
+] as const;
+
+const CORE_BREWER_PRIORITY = new Map<string, number>(
+  CORE_BREWER_IDS.map((id, index) => [id, index]),
+);
+
+const METHOD_FAMILY_SEARCH_ALIASES: Record<AiBrewMethodFamily, string> = {
+  espresso: 'espresso machine shot spro portafilter pressure 9 bar',
+  aeropress: 'aeropress immersion press pressure',
+  french_press: 'french press press pot cafetiere immersion plunger',
+  siphon: 'siphon syphon vacuum hario',
+  moka_pot: 'moka pot bialetti stovetop moka express',
+  cold_brew: 'cold brew toddy cold immersion concentrate',
+  batch_brew: 'batch brewer batch brew automatic brewer sca golden cup',
+  v60: 'v60 cone pour over pourover drip filter',
+  chemex: 'chemex glass pour over thick paper',
+  kalita_wave: 'kalita wave flat bottom wave filter',
+  clever_dripper: 'clever dripper switch immersion release steep',
+  origami: 'origami cone wave folded dripper',
+  april: 'april brewer flat bottom pulse',
+  melitta: 'melitta trapezoid 102',
+  kono: 'kono meimon cone dripper',
+};
+
+function scoreBrewerDisplayOrder(item: EquipmentCatalogEntry) {
+  const exactPriority = CORE_BREWER_PRIORITY.get(item.id);
+  if (exactPriority !== undefined) return exactPriority;
+  const familyPriority = CORE_BREWER_IDS.length + (item.methodFamily ? Object.keys(METHOD_FAMILY_SEARCH_ALIASES).indexOf(item.methodFamily) : 99);
+  return familyPriority + (item.verificationLevel === 'official' ? 0 : 50);
+}
+
 function formatTime(totalSeconds: number) {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
+  const safeSeconds = Math.max(0, Math.round(totalSeconds));
+  if (safeSeconds >= 3600) {
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    return minutes > 0 ? `${hours}j ${minutes}m` : `${hours}j`;
+  }
+  const minutes = Math.floor(safeSeconds / 60);
+  const seconds = safeSeconds % 60;
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
 function formatGuideTime(totalSeconds: number) {
   const safeSeconds = Math.max(0, Math.round(totalSeconds));
+  if (safeSeconds >= 3600) {
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    return minutes > 0 ? `${hours}j ${minutes}m` : `${hours}j`;
+  }
   const minutes = Math.floor(safeSeconds / 60);
   const seconds = safeSeconds % 60;
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
@@ -946,7 +1028,7 @@ async function normalizeSequenceMarkdownToLanguage(
     '## Service Pattern',
     '## Sequence',
     '## Watch',
-    'For every numbered Sequence line, keep the deterministic checkpoint prefix unchanged through "pour X ml to Y ml".',
+    'For every numbered Sequence line, keep the deterministic checkpoint prefix unchanged through the operation text, including pour, wait, release, drawdown, and all ml/time targets.',
     'Translate only the control instruction after that fixed checkpoint prefix.',
     'Keep numbering, line order, and all numeric values unchanged.',
     'Return only translated markdown.',
@@ -965,6 +1047,38 @@ function stripSequenceBullets(lines: string[]) {
   return lines
     .map((line) => line.replace(/^-\s+/, '').trim())
     .filter(Boolean);
+}
+
+function looksLikeUnstrippedSequenceInstruction(plan: BrewPlan, instruction: string, index: number) {
+  const step = plan.steps[index];
+  const normalized = instruction.trim().toLowerCase();
+  if (!step || !normalized) return true;
+  if (/^\d+\.\s+/.test(normalized)) return true;
+  if (normalized.startsWith(`${step.label.toLowerCase()} at `)) return true;
+  if (normalized.includes(formatTime(step.startSeconds)) && /\b(?:ml|pour|tuang|target|wait|hold|release|drawdown|buka|tahan)\b/i.test(normalized)) {
+    return true;
+  }
+  return false;
+}
+
+function resolveDisplaySequenceOverlay(plan: BrewPlan, canonicalMarkdown: string, displayMarkdown: string) {
+  const canonicalOverlay = extractSequenceOverlayFromMarkdown(plan, canonicalMarkdown);
+  const localizedOverlay = extractSequenceOverlayFromMarkdown(plan, displayMarkdown);
+  const canonicalServicePattern = stripSequenceBullets(canonicalOverlay.servicePattern);
+  const canonicalWatch = stripSequenceBullets(canonicalOverlay.watch);
+  const servicePattern = stripSequenceBullets(localizedOverlay.servicePattern);
+  const watch = stripSequenceBullets(localizedOverlay.watch);
+
+  return {
+    servicePattern: servicePattern.length > 0 ? servicePattern : canonicalServicePattern,
+    watch: watch.length > 0 ? watch : canonicalWatch,
+    stepInstructions: localizedOverlay.steps.map((step, index) => {
+      if (looksLikeUnstrippedSequenceInstruction(plan, step.instruction, index)) {
+        return canonicalOverlay.steps[index]?.instruction || plan.steps[index]?.note || step.instruction;
+      }
+      return step.instruction;
+    }),
+  };
 }
 
 function applyHybridSequenceToPlan(
@@ -1032,7 +1146,7 @@ async function runHybridSequenceUpdate(
       },
     },
   );
-  const localizedOverlay = extractSequenceOverlayFromMarkdown(nextPlan, displayMarkdown);
+  const displayOverlay = resolveDisplaySequenceOverlay(nextPlan, canonicalOverlay.markdown, displayMarkdown);
 
   const fallbackDiagnostics = [
     ...(canonicalOverlay.usedFallback
@@ -1045,9 +1159,9 @@ async function runHybridSequenceUpdate(
   return {
     markdown: displayMarkdown,
     canonicalMarkdown: canonicalOverlay.markdown,
-    servicePattern: stripSequenceBullets(localizedOverlay.servicePattern),
-    watch: stripSequenceBullets(localizedOverlay.watch),
-    stepInstructions: localizedOverlay.steps.map((step) => step.instruction),
+    servicePattern: displayOverlay.servicePattern,
+    watch: displayOverlay.watch,
+    stepInstructions: displayOverlay.stepInstructions,
     fallbackDiagnostics,
   };
 }
@@ -1205,7 +1319,61 @@ function normalizeAiBrewInstructionText(value: string) {
     .trim();
 }
 
+function getAiBrewStepKind(step: BrewPlan['steps'][number]) {
+  return step.kind || 'pour';
+}
+
+function resolveModeLabel(copy: CopySet, brewMode: string, methodFamily?: string) {
+  if (methodFamily === 'cold_brew') return copy.modeCold;
+  if (methodFamily === 'espresso') return copy.modeEspresso;
+  return brewMode === 'iced' ? copy.modeIced : copy.modeHot;
+}
+
+function formatAiBrewStepBadge(step: BrewPlan['steps'][number], language: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  const kind = getAiBrewStepKind(step);
+  if (kind === 'release') return id ? 'Lepas' : 'Release';
+  if (kind === 'wait') return id ? 'Tahan' : 'Wait';
+  if (kind === 'drawdown') return id ? 'Drawdown' : 'Drawdown';
+  if (kind === 'press') return id ? 'Tekan' : 'Press';
+  if (kind === 'heat') return id ? 'Panas' : 'Heat';
+  if (kind === 'extract') return id ? 'Ekstrak' : 'Extract';
+  if (kind === 'serve') return id ? 'Saji' : 'Serve';
+  return `+${formatRoundedMl(step.pourVolumeMl)}`;
+}
+
 function buildAiBrewStepActionText(step: BrewPlan['steps'][number], language: string) {
+  const kind = getAiBrewStepKind(step);
+  if (kind === 'release') {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Buka release dan biarkan kopi turun bersih di target ${formatRoundedMl(step.targetVolumeMl)}.`
+      : `Open the release and let the brew drain cleanly at ${formatRoundedMl(step.targetVolumeMl)}.`;
+  }
+  if (kind === 'wait' || kind === 'drawdown') {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Tahan kontak; jangan tambah air. Target tetap ${formatRoundedMl(step.targetVolumeMl)}.`
+      : `Hold contact; do not add water. Target stays ${formatRoundedMl(step.targetVolumeMl)}.`;
+  }
+  if (kind === 'press') {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Tekan perlahan; target tetap ${formatRoundedMl(step.targetVolumeMl)}.`
+      : `Press slowly; target stays ${formatRoundedMl(step.targetVolumeMl)}.`;
+  }
+  if (kind === 'heat') {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Panaskan stabil; target tetap ${formatRoundedMl(step.targetVolumeMl)}.`
+      : `Heat steadily; target stays ${formatRoundedMl(step.targetVolumeMl)}.`;
+  }
+  if (kind === 'extract') {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Ekstrak hingga yield target ${formatRoundedMl(step.targetVolumeMl)}.`
+      : `Extract to target yield ${formatRoundedMl(step.targetVolumeMl)}.`;
+  }
+  if (kind === 'serve') {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Pisahkan dari ampas dan sajikan. Target tetap ${formatRoundedMl(step.targetVolumeMl)}.`
+      : `Separate from grounds and serve. Target stays ${formatRoundedMl(step.targetVolumeMl)}.`;
+  }
   return isIndonesianAiBrewLanguage(language)
     ? `Tuang ${formatRoundedMl(step.pourVolumeMl)} hingga target ${formatRoundedMl(step.targetVolumeMl)}.`
     : `Pour ${formatRoundedMl(step.pourVolumeMl)} to reach ${formatRoundedMl(step.targetVolumeMl)}.`;
@@ -1213,24 +1381,102 @@ function buildAiBrewStepActionText(step: BrewPlan['steps'][number], language: st
 
 function buildAiBrewFlowStepSummary(step: BrewPlan['steps'][number], language: string) {
   const id = isIndonesianAiBrewLanguage(language);
+  const kind = getAiBrewStepKind(step);
+  if (kind === 'release') {
+    return id
+      ? `${formatGuideTime(step.startSeconds)} | buka release | target ${formatRoundedMl(step.targetVolumeMl)}`
+      : `${formatGuideTime(step.startSeconds)} | open release | target ${formatRoundedMl(step.targetVolumeMl)}`;
+  }
+  if (kind === 'wait' || kind === 'drawdown') {
+    return id
+      ? `${formatGuideTime(step.startSeconds)} | tahan kontak | target ${formatRoundedMl(step.targetVolumeMl)}`
+      : `${formatGuideTime(step.startSeconds)} | hold contact | target ${formatRoundedMl(step.targetVolumeMl)}`;
+  }
+  if (kind === 'press') {
+    return id
+      ? `${formatGuideTime(step.startSeconds)} | tekan perlahan | target ${formatRoundedMl(step.targetVolumeMl)}`
+      : `${formatGuideTime(step.startSeconds)} | press slowly | target ${formatRoundedMl(step.targetVolumeMl)}`;
+  }
+  if (kind === 'heat') {
+    return id
+      ? `${formatGuideTime(step.startSeconds)} | panaskan stabil | target ${formatRoundedMl(step.targetVolumeMl)}`
+      : `${formatGuideTime(step.startSeconds)} | heat steadily | target ${formatRoundedMl(step.targetVolumeMl)}`;
+  }
+  if (kind === 'extract') {
+    return id
+      ? `${formatGuideTime(step.startSeconds)} | ekstrak | yield ${formatRoundedMl(step.targetVolumeMl)}`
+      : `${formatGuideTime(step.startSeconds)} | extract | yield ${formatRoundedMl(step.targetVolumeMl)}`;
+  }
+  if (kind === 'serve') {
+    return id
+      ? `${formatGuideTime(step.startSeconds)} | sajikan | target ${formatRoundedMl(step.targetVolumeMl)}`
+      : `${formatGuideTime(step.startSeconds)} | serve | target ${formatRoundedMl(step.targetVolumeMl)}`;
+  }
   return id
     ? `${formatGuideTime(step.startSeconds)} | tuang +${formatRoundedMl(step.pourVolumeMl)} | target ${formatRoundedMl(step.targetVolumeMl)}`
     : `${formatGuideTime(step.startSeconds)} | pour +${formatRoundedMl(step.pourVolumeMl)} | target ${formatRoundedMl(step.targetVolumeMl)}`;
 }
 
 function buildAiBrewStepPrimaryCue(step: BrewPlan['steps'][number], language: string) {
+  const kind = getAiBrewStepKind(step);
+  if (kind === 'release') {
+    return isIndonesianAiBrewLanguage(language) ? 'Buka release sekarang' : 'Open release now';
+  }
+  if (kind === 'wait' || kind === 'drawdown') {
+    return isIndonesianAiBrewLanguage(language) ? 'Tahan, jangan tambah air' : 'Hold, no extra water';
+  }
+  if (kind === 'press') return isIndonesianAiBrewLanguage(language) ? 'Tekan perlahan sekarang' : 'Press slowly now';
+  if (kind === 'heat') return isIndonesianAiBrewLanguage(language) ? 'Panaskan stabil' : 'Heat steadily';
+  if (kind === 'extract') return isIndonesianAiBrewLanguage(language) ? 'Ekstrak sekarang' : 'Extract now';
+  if (kind === 'serve') return isIndonesianAiBrewLanguage(language) ? 'Pisahkan dan sajikan' : 'Separate and serve';
   return isIndonesianAiBrewLanguage(language)
     ? `Tuang +${formatRoundedMl(step.pourVolumeMl)} sekarang`
     : `Pour +${formatRoundedMl(step.pourVolumeMl)} now`;
 }
 
 function buildAiBrewStepTargetCue(step: BrewPlan['steps'][number], language: string) {
+  const kind = getAiBrewStepKind(step);
+  if (kind === 'release') {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Biarkan turun di ${formatRoundedMl(step.targetVolumeMl)}`
+      : `Let it drain at ${formatRoundedMl(step.targetVolumeMl)}`;
+  }
+  if (kind === 'wait' || kind === 'drawdown') {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Target tetap ${formatRoundedMl(step.targetVolumeMl)}`
+      : `Target stays ${formatRoundedMl(step.targetVolumeMl)}`;
+  }
+  if (kind === 'extract') {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Yield target ${formatRoundedMl(step.targetVolumeMl)}`
+      : `Target yield ${formatRoundedMl(step.targetVolumeMl)}`;
+  }
+  if (kind === 'press' || kind === 'heat' || kind === 'serve') {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Target tetap ${formatRoundedMl(step.targetVolumeMl)}`
+      : `Target stays ${formatRoundedMl(step.targetVolumeMl)}`;
+  }
   return isIndonesianAiBrewLanguage(language)
     ? `Berhenti di target ${formatRoundedMl(step.targetVolumeMl)}`
     : `Stop at ${formatRoundedMl(step.targetVolumeMl)}`;
 }
 
 function buildAiBrewNextStepCue(step: BrewPlan['steps'][number], remainingSeconds: number, language: string) {
+  const kind = getAiBrewStepKind(step);
+  if (kind === 'release') {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Release dalam ${formatGuideTime(remainingSeconds)}`
+      : `Release in ${formatGuideTime(remainingSeconds)}`;
+  }
+  if (kind === 'wait' || kind === 'drawdown') {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Fase tahan dalam ${formatGuideTime(remainingSeconds)}`
+      : `Hold phase in ${formatGuideTime(remainingSeconds)}`;
+  }
+  if (kind === 'press') return isIndonesianAiBrewLanguage(language) ? `Tekan dalam ${formatGuideTime(remainingSeconds)}` : `Press in ${formatGuideTime(remainingSeconds)}`;
+  if (kind === 'heat') return isIndonesianAiBrewLanguage(language) ? `Fase panas dalam ${formatGuideTime(remainingSeconds)}` : `Heat phase in ${formatGuideTime(remainingSeconds)}`;
+  if (kind === 'extract') return isIndonesianAiBrewLanguage(language) ? `Ekstraksi dalam ${formatGuideTime(remainingSeconds)}` : `Extraction in ${formatGuideTime(remainingSeconds)}`;
+  if (kind === 'serve') return isIndonesianAiBrewLanguage(language) ? `Sajikan dalam ${formatGuideTime(remainingSeconds)}` : `Serve in ${formatGuideTime(remainingSeconds)}`;
   return isIndonesianAiBrewLanguage(language)
     ? `Tuangan berikutnya dalam ${formatGuideTime(remainingSeconds)}`
     : `Next pour in ${formatGuideTime(remainingSeconds)}`;
@@ -1259,14 +1505,15 @@ function buildAiBrewStepDetailPoints(step: BrewPlan['steps'][number], language: 
 
 function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: string) {
   const id = isIndonesianAiBrewLanguage(language);
+  const kind = getAiBrewStepKind(step);
   return [
     {
       label: id ? 'Mulai' : 'Start',
       value: formatGuideTime(step.startSeconds),
     },
     {
-      label: id ? 'Tuang' : 'Pour',
-      value: formatRoundedMl(step.pourVolumeMl),
+      label: kind === 'pour' ? (id ? 'Tuang' : 'Pour') : kind === 'extract' ? (id ? 'Yield' : 'Yield') : (id ? 'Aksi' : 'Action'),
+      value: kind === 'pour' || kind === 'extract' ? formatRoundedMl(step.pourVolumeMl) : formatAiBrewStepBadge(step, language),
     },
     {
       label: id ? 'Target' : 'Target',
@@ -1310,7 +1557,7 @@ function renderAiBrewSequenceStepCard(
               <p className="mt-1 text-sm text-secondary">{stepActionText}</p>
             </div>
             <span className="rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-primary">
-              +{formatRoundedMl(step.pourVolumeMl)}
+              {formatAiBrewStepBadge(step, language)}
             </span>
           </div>
 
@@ -2071,14 +2318,41 @@ function PlanResultDialog({
                 <div className={resultMetricCardClass}>
                   <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
                     <Droplets size={12} />
-                    <span>{plan.brewMode === 'iced' ? copy.hotWater : copy.totalWater}</span>
+                    <span>{plan.brewMode === 'iced' ? copy.hotConcentrate : copy.totalWater}</span>
                   </div>
                   <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{formatRoundedMl(plan.hotWaterMl)}</p>
                   {plan.iceMl > 0 && (
-                    <p className="mt-1 text-xs text-secondary">{copy.ice}: {formatRoundedMl(plan.iceMl)}</p>
+                    <p className="mt-1 text-xs text-secondary">1:{plan.hotExtractionRatio} · {copy.ice}: {formatRoundedMl(plan.iceMl)}</p>
                   )}
                 </div>
               </div>
+
+              {plan.iceMl > 0 && (
+                <div
+                  className="rounded-[1.2rem] border border-sky-500/20 bg-sky-500/[0.08] p-4"
+                  data-testid="ai-brew-iced-calibration"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Snowflake size={16} className="text-sky-500" />
+                        <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.iceSetupTitle}</h4>
+                      </div>
+                      <p className="mt-2 text-sm leading-5 text-secondary">{copy.iceSetupDetail}</p>
+                    </div>
+                    <div className="grid min-w-[12rem] grid-cols-2 gap-2 text-xs">
+                      <span className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-secondary">
+                        <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
+                        <span className="font-semibold text-primary">1:{plan.finalBeverageRatio}</span>
+                      </span>
+                      <span className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-secondary">
+                        <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.hotConcentrate}</span>
+                        <span className="font-semibold text-primary">1:{plan.hotExtractionRatio}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {false && (
                 <>
@@ -2099,7 +2373,7 @@ function PlanResultDialog({
                     <div className="mt-3 space-y-2 text-sm text-secondary">
                       {plan.steps.map((step, index) => (
                         <p key={step.id}>
-                          {index + 1}. {formatTime(step.startSeconds)} · {localizeAiBrewStepLabel(step.label, language)} · {step.pourVolumeMl} ml to {step.targetVolumeMl} ml
+                          {index + 1}. {formatTime(step.startSeconds)} · {localizeAiBrewStepLabel(step.label, language)} · {buildAiBrewStepActionText(step, language)}
                         </p>
                       ))}
                     </div>
@@ -2333,8 +2607,18 @@ function PlanResultDialog({
                           <span className="font-semibold text-primary">{formatRoundedGrams(plan.doseG)}</span>
                         </span>
                         <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">Water</span>
-                          <span className="font-semibold text-primary">{formatRoundedMl(plan.totalWaterMl)}</span>
+                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{plan.iceMl > 0 ? copy.hotWater : copy.totalWater}</span>
+                          <span className="font-semibold text-primary">{formatRoundedMl(plan.iceMl > 0 ? plan.hotWaterMl : plan.totalWaterMl)}</span>
+                        </span>
+                        {plan.iceMl > 0 && (
+                          <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.ice}</span>
+                            <span className="font-semibold text-primary">{formatRoundedMl(plan.iceMl)}</span>
+                          </span>
+                        )}
+                        <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
+                          <span className="font-semibold text-primary">1:{plan.finalBeverageRatio}</span>
                         </span>
                         <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
                           <span className="block text-[10px] uppercase tracking-widest text-tertiary">Next</span>
@@ -2700,16 +2984,37 @@ function buildVarietyPickerOptions(catalog: AiBrewCatalog, copy: CopySet) {
 }
 
 function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopySet, kind: 'dripper' | 'grinder') {
-  return items.map((item): PickerOption => ({
-    id: item.id,
-    label: item.name,
-    subtitle: item.brand ? `${item.brand} · ${item.typeLabel}` : item.typeLabel,
-    description: item.description,
-    searchText: item.searchText,
-    section: '',
-    badges: [],
-    ariaLabel: copy.pickerSelectEquipment.replace('{kind}', kind).replace('{label}', item.name),
-  }));
+  const displayItems = kind === 'dripper'
+    ? [...items].sort((a, b) => {
+      const priorityDelta = scoreBrewerDisplayOrder(a) - scoreBrewerDisplayOrder(b);
+      if (priorityDelta !== 0) return priorityDelta;
+      return a.name.localeCompare(b.name);
+    })
+    : items;
+
+  return displayItems.map((item): PickerOption => {
+    const isCoreBrewer = kind === 'dripper' && CORE_BREWER_PRIORITY.has(item.id);
+    const methodAliases = kind === 'dripper' && item.methodFamily
+      ? METHOD_FAMILY_SEARCH_ALIASES[item.methodFamily]
+      : '';
+    const kindLabel = kind === 'dripper' ? copy.dripper.toLowerCase() : kind;
+
+    return {
+      id: item.id,
+      label: item.name,
+      subtitle: item.brand ? `${item.brand} · ${item.typeLabel}` : item.typeLabel,
+      description: item.description,
+      searchText: `${item.searchText} ${methodAliases} ${item.methodFamily || ''}`.toLowerCase(),
+      section: kind === 'dripper'
+        ? isCoreBrewer
+          ? copy.brewerCoreSection
+          : copy.brewerSpecialtySection
+        : '',
+      badges: isCoreBrewer ? [copy.brewerVerifiedBadge] : [],
+      ariaLabel: copy.pickerSelectEquipment.replace('{kind}', kindLabel).replace('{label}', item.name),
+      tone: isCoreBrewer ? 'highlight' : 'default',
+    };
+  });
 }
 
 function getWaterNumericProfile(item: WaterBrandProfile) {
@@ -3251,6 +3556,16 @@ export function AiBrewPanel({
     return catalog.drippers.find((item) => item.id === formState.dripperId) || catalog.drippers[0] || null;
   }, [catalog, formState.dripperId]);
 
+  const selectedDripperSupportsIced = useMemo(() => (
+    selectedDripper ? supportsAiBrewIcedMode(catalog, selectedDripper.id) : true
+  ), [catalog, selectedDripper]);
+
+  useEffect(() => {
+    if (formState.brewMode !== 'iced' || selectedDripperSupportsIced) return;
+    setFormState((prev) => (prev.brewMode === 'iced' ? { ...prev, brewMode: 'hot' } : prev));
+    setNotice(copy.icedUnavailable);
+  }, [copy.icedUnavailable, formState.brewMode, selectedDripperSupportsIced]);
+
   const selectedGrinder = useMemo(() => {
     if (!catalog) return null;
     return catalog.grinders.find((item) => item.id === formState.grinderId) || catalog.grinders[0] || null;
@@ -3487,15 +3802,18 @@ export function AiBrewPanel({
     setAiResponse(null);
     setAiError(null);
     clearSaveFeedback();
+    const generationFormState = activeBuilderModal === 'quick'
+      ? createQuickAiBrewFormState(formState, catalog)
+      : sanitizeAiBrewFormState(formState, catalog);
 
-    if (formState.waterMode === 'brand' && !formState.waterBrandId) {
+    if (generationFormState.waterMode === 'brand' && !generationFormState.waterBrandId) {
       setFormError(copy.waterNoBrand);
       return;
     }
 
     if (!mineralsReady) {
       setFormError(
-        formState.waterMode === 'brand' && selectedWaterBrand?.presetStatus !== 'autofill'
+        generationFormState.waterMode === 'brand' && selectedWaterBrand?.presetStatus !== 'autofill'
           ? copy.waterBrandNeedsManual
           : copy.waterRequired,
       );
@@ -3508,7 +3826,7 @@ export function AiBrewPanel({
     try {
       await nextAnimationFrame(0);
       let latestProgress: AiBrewGenerationProgress | null = null;
-      let nextPlan = await buildAiBrewPlanProgressively(formState, catalog, async (progress) => {
+      let nextPlan = await buildAiBrewPlanProgressively(generationFormState, catalog, async (progress) => {
         latestProgress = progress;
         setGenerationProgress(progress);
         setGenerationStage(progress.id);
@@ -3554,6 +3872,7 @@ export function AiBrewPanel({
       setActiveJournalId(journalEntry.id);
       setActiveBuilderModal(null);
       setResultOpen(true);
+      setFormState(generationFormState);
       saveLastGeneratedBrewPlan(nextPlan);
       await saveBrewJournalEntry(journalEntry);
       await refreshSavedViews();
@@ -3943,7 +4262,7 @@ export function AiBrewPanel({
 
                 <div className="mt-3 flex flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between">
                   <div className="w-full max-w-md">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-secondary">{copy.modeHot} / {copy.modeIced}</p>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-secondary">{resolveModeLabel(copy, 'hot', selectedDripper?.methodFamily)} / {copy.modeIced}</p>
                     <div className="grid grid-cols-2 gap-2 rounded-[1.1rem] panel-soft p-1.5">
                       <button
                         type="button"
@@ -3951,12 +4270,21 @@ export function AiBrewPanel({
                         className={`rounded-[0.95rem] px-4 py-2.5 text-sm font-medium transition-all ${formState.brewMode === 'hot' ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]' : 'text-secondary hover:text-primary'}`}
                         data-testid="ai-brew-builder-mode-hot"
                       >
-                        {copy.modeHot}
+                        {resolveModeLabel(copy, 'hot', selectedDripper?.methodFamily)}
                       </button>
                       <button
                         type="button"
-                        onClick={() => updateForm('brewMode', 'iced')}
-                        className={`rounded-[0.95rem] px-4 py-2.5 text-sm font-medium transition-all ${formState.brewMode === 'iced' ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]' : 'text-secondary hover:text-primary'}`}
+                        onClick={() => {
+                          if (!selectedDripperSupportsIced) {
+                            setNotice(copy.icedUnavailable);
+                            return;
+                          }
+                          updateForm('brewMode', 'iced');
+                        }}
+                        disabled={!selectedDripperSupportsIced}
+                        aria-disabled={!selectedDripperSupportsIced}
+                        title={!selectedDripperSupportsIced ? copy.icedUnavailable : copy.modeIced}
+                        className={`rounded-[0.95rem] px-4 py-2.5 text-sm font-medium transition-all ${formState.brewMode === 'iced' ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]' : 'text-secondary hover:text-primary'} ${!selectedDripperSupportsIced ? 'cursor-not-allowed opacity-45 hover:text-secondary' : ''}`}
                         data-testid="ai-brew-builder-mode-iced"
                       >
                         {copy.modeIced}
@@ -4601,7 +4929,7 @@ export function AiBrewPanel({
                     <p className="mt-1 text-xs text-secondary">{localizedSummary}</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <span className="rounded-full bg-surface-alpha px-2 py-1 text-[11px] font-medium text-secondary">
-                        {plan.brewMode === 'iced' ? copy.modeIced : copy.modeHot}
+                    {resolveModeLabel(copy, plan.brewMode, plan.methodFamily)}
                       </span>
                       <span className="rounded-full bg-surface-alpha px-2 py-1 text-[11px] font-medium text-secondary">
                         {plan.dripper.name}
@@ -4669,7 +4997,7 @@ export function AiBrewPanel({
                   >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-primary">{entry.title}</p>
-                      <p className="mt-1 text-xs text-secondary">{entry.plan.brewMode === 'iced' ? copy.modeIced : copy.modeHot} · {entry.plan.dripper.name}</p>
+              <p className="mt-1 text-xs text-secondary">{resolveModeLabel(copy, entry.plan.brewMode, entry.plan.methodFamily)} · {entry.plan.dripper.name}</p>
                     </div>
                     <span className="rounded-xl bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">{copy.load}</span>
                   </button>

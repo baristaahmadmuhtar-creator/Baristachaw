@@ -30,7 +30,13 @@ function assert(condition: boolean, message: string): asserts condition {
 
 function validateSources(sources: EvidenceSource[]) {
   const ids = new Set<string>();
-  const validTags: EvidenceSourceTag[] = ['core_standard', 'competition_rule', 'peer_review', 'regional_context'];
+    const validTags: EvidenceSourceTag[] = [
+      'core_standard',
+      'competition_rule',
+      'peer_review',
+      'regional_context',
+      'manufacturer_guidance',
+    ];
   for (const source of sources) {
     assert(Boolean(source.id), 'Source id is required.');
     assert(!ids.has(source.id), `Duplicate source id: ${source.id}`);

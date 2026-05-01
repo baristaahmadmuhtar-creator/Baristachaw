@@ -51,6 +51,17 @@ type ToolsTab = 'ai_brew' | 'timer' | 'ratio' | 'todo';
 type LastEditedField = 'dose' | 'water' | 'ratio';
 
 type TodoItem = TodoItemState;
+type ImportedAiBrewIcedSplit = {
+  methodId: BrewMethodId;
+  doseG: number;
+  totalWaterMl: number;
+  hotWaterMl: number;
+  iceMl: number;
+  finalBeverageRatio: number;
+  hotExtractionRatio: number;
+  hotWaterSharePercent: number;
+  iceSharePercent: number;
+};
 
 const TODO_STORAGE_KEY = 'BARISTA_TOOLS_TODO_V1';
 const LEGACY_RATIO_STORAGE_KEY_V4 = 'BARISTA_TOOLS_RATIO_V4';
@@ -112,6 +123,7 @@ export function BaristaTools() {
   // Ratio calculator
   const [ratioState, setRatioState] = useState<RatioSettingsState>(loadRatioSettingsFromStorage);
   const [lastEditedField, setLastEditedField] = useState<LastEditedField>('dose');
+  const [importedAiBrewIcedSplit, setImportedAiBrewIcedSplit] = useState<ImportedAiBrewIcedSplit | null>(null);
 
   // Todo
   const [todos, setTodos] = useState<TodoItem[]>(() => {
@@ -271,6 +283,13 @@ export function BaristaTools() {
   const parsedMeasuredOutput = Number.parseFloat(ratioState.measuredOutput);
   const tdsValue = Number.isFinite(parsedTds) ? parsedTds : undefined;
   const measuredOutputValue = Number.isFinite(parsedMeasuredOutput) ? parsedMeasuredOutput : undefined;
+  const activeImportedAiBrewIcedSplit = importedAiBrewIcedSplit
+    && ratioState.methodId === importedAiBrewIcedSplit.methodId
+    && Math.abs(parsedDose - importedAiBrewIcedSplit.doseG) <= 0.05
+    && Math.abs(parsedWater - importedAiBrewIcedSplit.totalWaterMl) <= 0.75
+    && Math.abs(parsedRatio - importedAiBrewIcedSplit.finalBeverageRatio) <= 0.05
+      ? importedAiBrewIcedSplit
+      : null;
   const outputRenderKey = `${ratioState.methodId}-${ratioState.mode}-${ratioState.unitMode}-${ratioState.dose}-${ratioState.water}-${ratioState.ratio}-${ratioState.measuredOutput}`;
 
   // Timer logic
@@ -420,6 +439,9 @@ export function BaristaTools() {
   }, [parsedDose, parsedWater, parsedRatio, selectedMethod, ratioState.mode, ratioState.roastInputMode, effectiveRoastLevel, agtronNumber, tdsValue, measuredOutputValue, t]);
 
   const updateRatioState = (patch: Partial<RatioSettingsState>) => {
+    if ('methodId' in patch || 'dose' in patch || 'water' in patch || 'ratio' in patch) {
+      setImportedAiBrewIcedSplit(null);
+    }
     setRatioState((prev) => ({ ...prev, ...patch }));
   };
 
@@ -572,6 +594,7 @@ export function BaristaTools() {
   };
 
   const handleUsePlanInRatio = (plan: BrewPlan) => {
+    const finalBeverageRatio = Number.isFinite(plan.finalBeverageRatio) ? plan.finalBeverageRatio : plan.recommendedRatio;
     setLastEditedField('ratio');
     setRatioState((prev) => ({
       ...prev,
@@ -583,10 +606,21 @@ export function BaristaTools() {
       applyRoastAdaptiveDefaults: false,
       dose: String(plan.doseG),
       water: String(plan.totalWaterMl),
-      ratio: String(plan.recommendedRatio),
+      ratio: String(finalBeverageRatio),
       tdsPercent: '',
       measuredOutput: '',
     }));
+    setImportedAiBrewIcedSplit(plan.iceMl > 0 ? {
+      methodId: plan.ratioToolMethodId,
+      doseG: plan.doseG,
+      totalWaterMl: plan.totalWaterMl,
+      hotWaterMl: plan.hotWaterMl,
+      iceMl: plan.iceMl,
+      finalBeverageRatio,
+      hotExtractionRatio: plan.hotExtractionRatio,
+      hotWaterSharePercent: plan.hotWaterSharePercent,
+      iceSharePercent: plan.iceSharePercent,
+    } : null);
     selectTab('ratio');
   };
 
@@ -1055,7 +1089,14 @@ export function BaristaTools() {
                 <p>{t.toolsGrindBiasSuggestion.replace('{value}', roastAdjustedTargets.suggestedGrindBias === 'same' ? t.toolsGrindBiasKeepSame : t.toolsGrindBiasGoOneClick.replace('{direction}', getGrindDirectionLabel(roastAdjustedTargets.suggestedGrindBias)))}</p>
               )}
               <p>{t.toolsScaReference}</p>
-              {selectedMethod.japaneseSplit && ratioState.mode === 'advanced' && (
+              {activeImportedAiBrewIcedSplit && ratioState.mode === 'advanced' && (
+                <p data-testid="ai-brew-iced-ratio-split">
+                  {t.toolsIceBrewSplitGuide
+                    .replace('{hotWater}', String(Math.round(activeImportedAiBrewIcedSplit.hotWaterSharePercent)))
+                    .replace('{ice}', String(Math.round(activeImportedAiBrewIcedSplit.iceSharePercent)))} AI Brew: {Math.round(activeImportedAiBrewIcedSplit.hotWaterMl)} ml air panas / {Math.round(activeImportedAiBrewIcedSplit.iceMl)} ml es, konsentrat 1:{roundTo(activeImportedAiBrewIcedSplit.hotExtractionRatio, 1)}.
+                </p>
+              )}
+              {!activeImportedAiBrewIcedSplit && selectedMethod.japaneseSplit && ratioState.mode === 'advanced' && (
                 <p>
                   {t.toolsIceBrewSplitGuide.replace('{hotWater}', String(Math.round(selectedMethod.japaneseSplit.hotWaterShare * 100))).replace('{ice}', String(Math.round(selectedMethod.japaneseSplit.iceShare * 100)))}
                 </p>

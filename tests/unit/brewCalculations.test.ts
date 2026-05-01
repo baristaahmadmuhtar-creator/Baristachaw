@@ -99,6 +99,25 @@ test('espresso ratio uses espresso policy and avoids filter baseline warning', (
   assert.equal(guard.warnings.some((w) => /SCA-style filter baseline|12-22/i.test(w)), false);
 });
 
+test('contextual concentrate methods do not reuse the typical filter TDS warning', () => {
+  for (const methodId of ['aeropress', 'moka_pot', 'cold_brew'] as const) {
+    const method = BREW_METHOD_MAP[methodId];
+    const guard = validateBrewInputs({
+      method,
+      doseG: methodId === 'moka_pot' ? 18 : 20,
+      waterMl: calcWaterFromDoseRatio(methodId === 'moka_pot' ? 18 : 20, method.ratioDefault),
+      ratio: method.ratioDefault,
+      tdsPercent: methodId === 'cold_brew' ? 3.2 : 2.8,
+    });
+
+    assert.equal(
+      guard.warnings.some((warning) => /typical filter range/i.test(warning)),
+      false,
+      `${methodId} should not use the hot-filter TDS warning`,
+    );
+  }
+});
+
 test('roast-adjusted targets shift with light and dark levels', () => {
   const light = buildRoastAdjustedTargets(BREW_METHOD_MAP.v60, 'light');
   const dark = buildRoastAdjustedTargets(BREW_METHOD_MAP.v60, 'dark');

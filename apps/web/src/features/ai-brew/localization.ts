@@ -81,6 +81,26 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
       return 'Tuang Akhir';
     case 'finish':
       return 'Selesai';
+    case 'charge':
+      return 'Isi Air';
+    case 'steep':
+      return 'Steep';
+    case 'press':
+      return 'Tekan';
+    case 'drawdown':
+      return 'Drawdown';
+    case 'heat':
+      return 'Panaskan';
+    case 'start brew':
+      return 'Mulai Seduh';
+    case 'extract':
+      return 'Ekstraksi';
+    case 'serve':
+      return 'Sajikan';
+    case 'filter':
+      return 'Filter';
+    case 'stop':
+      return 'Stop';
     default:
       return label;
   }
@@ -168,7 +188,9 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/^Device profile was generated from the (.+) family template for (.+)\.$/i, 'Profil alat dibuat dari template family $1 untuk $2.')
     .replace(/^Exact device profile matched: (.+)\.$/i, 'Profil alat exact ditemukan: $1.')
     .replace(/^Water source: (.+) \((.+)\)\.$/i, 'Sumber air: $1 ($2).')
+    .replace(/^Brew (\d+(?:\.\d+)?) ml hot over (\d+(?:\.\d+)?) ml\/g ice \((.+)\)\. Final ratio is 1:(\d+(?:\.\d+)?); hot concentrate extracts at 1:(\d+(?:\.\d+)?)\. Keep pours compact to hold sweetness and clarity\.$/i, 'Seduh $1 ml air panas di atas $2 ml/g es ($3). Rasio final 1:$4; konsentrat panas terekstraksi di 1:$5. Jaga tuangan tetap rapat untuk menjaga manis dan kejernihan.')
     .replace(/^Brew (\d+(?:\.\d+)?) ml hot over (\d+(?:\.\d+)?) ml\/g ice \((.+)\)\. Keep pours compact to hold sweetness and clarity\.$/i, 'Seduh $1 ml air panas di atas $2 ml/g es ($3). Jaga tuangan tetap rapat untuk menjaga manis dan kejernihan.')
+    .replace(/^Iced split source: final beverage ratio 1:(\d+(?:\.\d+)?), hot extraction ratio 1:(\d+(?:\.\d+)?), hot\/ice (.+)\.$/i, 'Sumber split seduh es: rasio final 1:$1, rasio ekstraksi panas 1:$2, panas/es $3.')
     .replace(/^Use the full (\d+(?:\.\d+)?) ml as brew water and keep kettle near (\d+(?:\.\d+)?)(?:Â?°?|°)C with calm, center-focused pours\.$/i, 'Gunakan penuh $1 ml sebagai air seduh dan jaga kettle di sekitar $2°C dengan tuangan tenang yang fokus ke tengah.');
 
   const localized = normalized
@@ -212,19 +234,45 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
 
 export function localizeAiBrewSummary(plan: Pick<
   BrewPlan,
-  'brewMode' | 'coffeeName' | 'dripper' | 'targetProfileId' | 'targetProfileLabel' | 'recommendedRatio' | 'waterTempC' | 'totalTimeSeconds'
+  'brewMode' | 'methodFamily' | 'coffeeName' | 'dripper' | 'targetProfileId' | 'targetProfileLabel' | 'recommendedRatio' | 'finalBeverageRatio' | 'hotExtractionRatio' | 'waterTempC' | 'totalTimeSeconds'
 >, language?: string) {
+  const englishRatioText = plan.brewMode === 'iced'
+    ? `final ratio 1:${plan.finalBeverageRatio} with hot concentrate 1:${plan.hotExtractionRatio}`
+    : `1:${plan.recommendedRatio}`;
+  const englishModeLabel = plan.methodFamily === 'cold_brew'
+    ? 'Cold brew'
+    : plan.methodFamily === 'espresso'
+      ? 'Espresso'
+      : plan.brewMode === 'iced'
+        ? 'Ice brew'
+        : 'Hot brew';
   if (!isIndonesianAiBrewLanguage(language)) {
-    return `${plan.brewMode === 'iced' ? 'Ice brew' : 'Hot brew'} plan for ${plan.coffeeName || 'your coffee'} on ${plan.dripper.name}, tuned for ${plan.targetProfileLabel.toLowerCase()} at 1:${plan.recommendedRatio}, ${plan.waterTempC}°C, around ${formatAiBrewTime(plan.totalTimeSeconds)}.`;
+    return `${englishModeLabel} plan for ${plan.coffeeName || 'your coffee'} on ${plan.dripper.name}, tuned for ${plan.targetProfileLabel.toLowerCase()} at ${englishRatioText}, ${plan.waterTempC}°C, around ${formatAiBrewTime(plan.totalTimeSeconds)}.`;
   }
 
   const coffeeName = plan.coffeeName || 'kopi ini';
   const target = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language).toLowerCase();
-  return `${plan.brewMode === 'iced' ? 'Plan seduh es' : 'Plan seduh panas'} untuk ${coffeeName} dengan ${plan.dripper.name}, disetel untuk profil ${target} pada 1:${plan.recommendedRatio}, ${plan.waterTempC}°C, sekitar ${formatAiBrewTime(plan.totalTimeSeconds)}.`;
+  const ratioText = plan.brewMode === 'iced'
+    ? `rasio final 1:${plan.finalBeverageRatio} dan konsentrat panas 1:${plan.hotExtractionRatio}`
+    : `1:${plan.recommendedRatio}`;
+  const modeLabel = plan.methodFamily === 'cold_brew'
+    ? 'Plan seduh dingin'
+    : plan.methodFamily === 'espresso'
+      ? 'Plan espresso'
+      : plan.brewMode === 'iced'
+        ? 'Plan seduh es'
+        : 'Plan seduh panas';
+  return `${modeLabel} untuk ${coffeeName} dengan ${plan.dripper.name}, disetel untuk profil ${target} pada ${ratioText}, ${plan.waterTempC}°C, sekitar ${formatAiBrewTime(plan.totalTimeSeconds)}.`;
 }
 
 export function formatAiBrewTime(totalSeconds: number) {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
+  const safeSeconds = Math.max(0, Math.round(totalSeconds));
+  if (safeSeconds >= 3600) {
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    return minutes > 0 ? `${hours}j ${minutes}m` : `${hours}j`;
+  }
+  const minutes = Math.floor(safeSeconds / 60);
+  const seconds = safeSeconds % 60;
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }

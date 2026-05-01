@@ -110,5 +110,138 @@
       "competition_rule",
       "regional_context"
     ]
+  },
+  {
+    "id": "sca_home_brewer_requirements_2017",
+    "title": "SCA Certified Home Brewer Program Requirements",
+    "org": "Specialty Coffee Association",
+    "url": "https://sca.coffee/s/2017-SCA-CHB-Program-Requirements-ba6g.pdf",
+    "publishedAt": "2017-01-01",
+    "versionTag": "2017-certification-requirements",
+    "tags": [
+      "core_standard"
+    ]
+  },
+  {
+    "id": "sca_full_immersion_research_2026",
+    "title": "How Strong is the Coffee You're Cupping? Full Immersion Brewing Model",
+    "org": "Specialty Coffee Association",
+    "url": "https://sca.coffee/sca-news/25/issue-17/how-strong-is-the-coffee-youre-cupping-new-model-captures-the-equilibrium-extraction-nature-of-full-immersion-brewed-coffee",
+    "publishedAt": "2026-04-25",
+    "versionTag": "issue-17-full-immersion",
+    "tags": [
+      "core_standard",
+      "peer_review"
+    ]
+  },
+  {
+    "id": "hario_paper_drip_official",
+    "title": "Paper Drip Coffee Brewing Guide",
+    "org": "Hario",
+    "url": "https://global.hario.com/coffeelife/paper-drip.html",
+    "publishedAt": "2026-01-01",
+    "versionTag": "official-guide",
+    "tags": [
+      "manufacturer_guidance"
+    ]
+  },
+  {
+    "id": "hario_french_press_official",
+    "title": "French Press Coffee Brewing Guide",
+    "org": "Hario",
+    "url": "https://global.hario.com/coffeelife/press.html",
+    "publishedAt": "2026-01-01",
+    "versionTag": "official-guide",
+    "tags": [
+      "manufacturer_guidance"
+    ]
+  },
+  {
+    "id": "hario_siphon_official",
+    "title": "Siphon Coffee Brewing Guide",
+    "org": "Hario",
+    "url": "https://global.hario.com/coffeelife/siphon.html",
+    "publishedAt": "2026-01-01",
+    "versionTag": "official-guide",
+    "tags": [
+      "manufacturer_guidance"
+    ]
+  },
+  {
+    "id": "chemex_canada_brew_guide",
+    "title": "How to Brew with Chemex Coffeemaker",
+    "org": "Chemex Canada",
+    "url": "https://chemex-canada.ca/pages/how-to-brew-with-chemex-coffeemaker",
+    "publishedAt": "2026-01-01",
+    "versionTag": "official-distributor-guide",
+    "tags": [
+      "manufacturer_guidance"
+    ]
+  },
+  {
+    "id": "kalita_wave_official",
+    "title": "Kalita Wave 155 Stainless Steel Coffee Dripper",
+    "org": "Kalita USA",
+    "url": "https://kalitausa.com/products/kalita-wave-155-stainless-steel-coffee-dripper",
+    "publishedAt": "2026-01-01",
+    "versionTag": "official-product-guide",
+    "tags": [
+      "manufacturer_guidance"
+    ]
+  },
+  {
+    "id": "clever_official_recipe",
+    "title": "Clever Dripper Product Guide and Recipe",
+    "org": "Clever Brewing",
+    "url": "https://cleverbrewing.coffee/products/clever-dripper",
+    "publishedAt": "2026-01-01",
+    "versionTag": "official-product-recipe",
+    "tags": [
+      "manufacturer_guidance"
+    ]
+  },
+  {
+    "id": "april_official_recipes",
+    "title": "April Coffee Recipes",
+    "org": "April Coffee Roasters",
+    "url": "https://www.aprilcoffeeroasters.com/pages/coffee-inf-recipes",
+    "publishedAt": "2026-01-01",
+    "versionTag": "official-recipes",
+    "tags": [
+      "manufacturer_guidance"
+    ]
+  },
+  {
+    "id": "aeropress_official_temperature",
+    "title": "Optimal Brewing Temperature for AeroPress Coffee Makers",
+    "org": "AeroPress",
+    "url": "https://help.aeropress.com/en-US/whats-the-optimal-brewing-temperature-for-aeropress-coffee-makers-123212",
+    "publishedAt": "2026-01-01",
+    "versionTag": "official-faq",
+    "tags": [
+      "manufacturer_guidance"
+    ]
+  },
+  {
+    "id": "bialetti_moka_instructions",
+    "title": "How to Use the Moka Express",
+    "org": "Bialetti",
+    "url": "https://bialetti-cookware.zendesk.com/hc/en-us/articles/5416235346322-How-to-use-the-Moka-Express",
+    "publishedAt": "2026-01-01",
+    "versionTag": "official-support-guide",
+    "tags": [
+      "manufacturer_guidance"
+    ]
+  },
+  {
+    "id": "toddy_home_guide",
+    "title": "Toddy Home Cold Brew Guide",
+    "org": "Toddy",
+    "url": "https://wholesale.toddycafe.com/downloads/toddy_retail_instructions.pdf",
+    "publishedAt": "2026-01-01",
+    "versionTag": "official-home-guide",
+    "tags": [
+      "manufacturer_guidance"
+    ]
   }
 ]

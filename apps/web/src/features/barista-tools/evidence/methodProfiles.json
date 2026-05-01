@@ -1,7 +1,7 @@
 {
-  "packVersion": "2026.03.04-ratio-evidence-v2",
-  "generatedAt": "2026-03-04T00:00:00.000Z",
-  "sourceDigest": "sca-wcc-paper-indonesia-context-v2",
+  "packVersion": "2026.05.01-ratio-evidence-v3",
+  "generatedAt": "2026-05-01T00:00:00.000Z",
+  "sourceDigest": "sca-wcc-paper-indonesia-method-complete-v3",
   "categoryAdjustments": {
     "espresso": {
       "light": {
@@ -244,9 +244,11 @@
         "sca_indonesia_collab_2025",
         "scai_icc_2025",
         "sca_woc_jakarta_2025",
-        "sca_wcc_2025_three_continents"
+        "sca_wcc_2025_three_continents",
+        "hario_paper_drip_official",
+        "sca_home_brewer_requirements_2017"
       ],
-      "updatedAt": "2026-03-04"
+      "updatedAt": "2026-05-01"
     },
     {
       "methodId": "v60_japanese_iced",
@@ -288,9 +290,10 @@
         "paper_physicochem_2020",
         "sca_indonesia_collab_2025",
         "scai_icc_2025",
-        "sca_wcc_2025_three_continents"
+        "sca_wcc_2025_three_continents",
+        "hario_paper_drip_official"
       ],
-      "updatedAt": "2026-03-04"
+      "updatedAt": "2026-05-01"
     },
     {
       "methodId": "chemex",
@@ -328,9 +331,52 @@
       ],
       "sources": [
         "sca_towards_chart",
-        "paper_physicochem_2020"
+        "paper_physicochem_2020",
+        "chemex_canada_brew_guide",
+        "sca_home_brewer_requirements_2017"
       ],
-      "updatedAt": "2026-03-04"
+      "updatedAt": "2026-05-01"
+    },
+    {
+      "methodId": "chemex_iced",
+      "category": "filter",
+      "baseline": {
+        "ratioDefault": 15.4,
+        "ratioRange": [
+          14,
+          16.8
+        ],
+        "tempRangeC": [
+          90,
+          95
+        ],
+        "brewTimeRangeSec": [
+          210,
+          300
+        ]
+      },
+      "ratioPolicy": {
+        "min": 12,
+        "max": 22,
+        "label": "iced filter concentrate baseline"
+      },
+      "roastSupport": {
+        "agtronRange": [
+          25,
+          95
+        ],
+        "defaultLevel": "medium"
+      },
+      "confidence": "medium",
+      "validationNotes": [
+        "Iced Chemex keeps a stronger hot concentrate while protecting flow through thick paper."
+      ],
+      "sources": [
+        "sca_towards_chart",
+        "paper_physicochem_2020",
+        "chemex_canada_brew_guide"
+      ],
+      "updatedAt": "2026-05-01"
     },
     {
       "methodId": "kalita_wave",
@@ -370,9 +416,134 @@
       "sources": [
         "sca_towards_chart",
         "wbrc_2025",
-        "sca_woc_jakarta_2025"
+        "sca_woc_jakarta_2025",
+        "kalita_wave_official",
+        "sca_home_brewer_requirements_2017"
       ],
-      "updatedAt": "2026-03-04"
+      "updatedAt": "2026-05-01"
+    },
+    {
+      "methodId": "kalita_wave_iced",
+      "category": "filter",
+      "baseline": {
+        "ratioDefault": 15.2,
+        "ratioRange": [
+          14,
+          16.8
+        ],
+        "tempRangeC": [
+          89,
+          94
+        ],
+        "brewTimeRangeSec": [
+          165,
+          250
+        ]
+      },
+      "ratioPolicy": {
+        "min": 12,
+        "max": 22,
+        "label": "iced filter concentrate baseline"
+      },
+      "roastSupport": {
+        "agtronRange": [
+          25,
+          95
+        ],
+        "defaultLevel": "medium"
+      },
+      "confidence": "medium",
+      "validationNotes": [
+        "Iced flat-bottom profile uses compact pulses and a stronger hot phase before dilution."
+      ],
+      "sources": [
+        "sca_towards_chart",
+        "paper_physicochem_2020",
+        "kalita_wave_official"
+      ],
+      "updatedAt": "2026-05-01"
+    },
+    {
+      "methodId": "melitta",
+      "category": "filter",
+      "baseline": {
+        "ratioDefault": 15.7,
+        "ratioRange": [
+          14.5,
+          17
+        ],
+        "tempRangeC": [
+          90,
+          95
+        ],
+        "brewTimeRangeSec": [
+          185,
+          280
+        ]
+      },
+      "ratioPolicy": {
+        "min": 12,
+        "max": 22,
+        "label": "broad SCA-style filter baseline"
+      },
+      "roastSupport": {
+        "agtronRange": [
+          25,
+          95
+        ],
+        "defaultLevel": "medium"
+      },
+      "confidence": "medium",
+      "validationNotes": [
+        "Trapezoid flow is kept near filter baselines with slightly longer contact than cone drippers."
+      ],
+      "sources": [
+        "sca_towards_chart",
+        "paper_physicochem_2020",
+        "hario_paper_drip_official"
+      ],
+      "updatedAt": "2026-05-01"
+    },
+    {
+      "methodId": "melitta_iced",
+      "category": "filter",
+      "baseline": {
+        "ratioDefault": 14.9,
+        "ratioRange": [
+          13.8,
+          16.4
+        ],
+        "tempRangeC": [
+          89,
+          94
+        ],
+        "brewTimeRangeSec": [
+          165,
+          245
+        ]
+      },
+      "ratioPolicy": {
+        "min": 12,
+        "max": 22,
+        "label": "iced filter concentrate baseline"
+      },
+      "roastSupport": {
+        "agtronRange": [
+          25,
+          95
+        ],
+        "defaultLevel": "medium"
+      },
+      "confidence": "medium",
+      "validationNotes": [
+        "Iced trapezoid flow keeps the bed covered while maintaining a stronger hot-water phase."
+      ],
+      "sources": [
+        "sca_towards_chart",
+        "paper_physicochem_2020",
+        "hario_paper_drip_official"
+      ],
+      "updatedAt": "2026-05-01"
     },
     {
       "methodId": "french_press",
@@ -410,9 +581,11 @@
       ],
       "sources": [
         "sca_towards_chart",
-        "paper_physicochem_2020"
+        "paper_physicochem_2020",
+        "sca_full_immersion_research_2026",
+        "hario_french_press_official"
       ],
-      "updatedAt": "2026-03-04"
+      "updatedAt": "2026-05-01"
     },
     {
       "methodId": "aeropress",
@@ -450,9 +623,10 @@
       ],
       "sources": [
         "sca_towards_chart",
-        "paper_physicochem_2020"
+        "paper_physicochem_2020",
+        "aeropress_official_temperature"
       ],
-      "updatedAt": "2026-03-04"
+      "updatedAt": "2026-05-01"
     },
     {
       "methodId": "clever_dripper",
@@ -490,9 +664,52 @@
       ],
       "sources": [
         "sca_towards_chart",
+        "paper_physicochem_2020",
+        "sca_full_immersion_research_2026",
+        "clever_official_recipe"
+      ],
+      "updatedAt": "2026-05-01"
+    },
+    {
+      "methodId": "clever_dripper_iced",
+      "category": "filter",
+      "baseline": {
+        "ratioDefault": 15,
+        "ratioRange": [
+          13.8,
+          16.4
+        ],
+        "tempRangeC": [
+          89,
+          94
+        ],
+        "brewTimeRangeSec": [
+          150,
+          240
+        ]
+      },
+      "ratioPolicy": {
+        "min": 12,
+        "max": 22,
+        "label": "iced filter concentrate baseline"
+      },
+      "roastSupport": {
+        "agtronRange": [
+          25,
+          95
+        ],
+        "defaultLevel": "medium"
+      },
+      "confidence": "medium",
+      "validationNotes": [
+        "Iced Clever combines immersion strength control with a clean release over measured ice."
+      ],
+      "sources": [
+        "sca_full_immersion_research_2026",
+        "clever_official_recipe",
         "paper_physicochem_2020"
       ],
-      "updatedAt": "2026-03-04"
+      "updatedAt": "2026-05-01"
     },
     {
       "methodId": "origami",
@@ -535,9 +752,51 @@
         "sca_indonesia_collab_2025",
         "scai_icc_2025",
         "sca_woc_jakarta_2025",
-        "sca_wcc_2025_three_continents"
+        "sca_wcc_2025_three_continents",
+        "hario_paper_drip_official"
       ],
-      "updatedAt": "2026-03-04"
+      "updatedAt": "2026-05-01"
+    },
+    {
+      "methodId": "origami_iced",
+      "category": "filter",
+      "baseline": {
+        "ratioDefault": 15.1,
+        "ratioRange": [
+          13.8,
+          16.4
+        ],
+        "tempRangeC": [
+          90,
+          95
+        ],
+        "brewTimeRangeSec": [
+          145,
+          225
+        ]
+      },
+      "ratioPolicy": {
+        "min": 12,
+        "max": 22,
+        "label": "iced filter concentrate baseline"
+      },
+      "roastSupport": {
+        "agtronRange": [
+          25,
+          95
+        ],
+        "defaultLevel": "medium"
+      },
+      "confidence": "medium",
+      "validationNotes": [
+        "Iced Origami is treated as agile cone/flat hybrid flow with fast aromatic preservation."
+      ],
+      "sources": [
+        "sca_towards_chart",
+        "wbrc_2025",
+        "paper_physicochem_2020"
+      ],
+      "updatedAt": "2026-05-01"
     },
     {
       "methodId": "april",
@@ -569,15 +828,139 @@
         ],
         "defaultLevel": "medium_light"
       },
-      "confidence": "experimental",
+      "confidence": "medium",
       "validationNotes": [
-        "Method variance across recipes is high; guidance marked experimental."
+        "Official April guidance anchors ratio, temperature, and manual brew time; recipe variance across roasters remains wider than core SCA-style drippers."
       ],
       "sources": [
         "paper_physicochem_2020",
+        "sca_towards_chart",
+        "april_official_recipes"
+      ],
+      "updatedAt": "2026-05-01"
+    },
+    {
+      "methodId": "april_iced",
+      "category": "filter",
+      "baseline": {
+        "ratioDefault": 16.2,
+        "ratioRange": [
+          15,
+          17.8
+        ],
+        "tempRangeC": [
+          87,
+          93
+        ],
+        "brewTimeRangeSec": [
+          140,
+          215
+        ]
+      },
+      "ratioPolicy": {
+        "min": 12,
+        "max": 22,
+        "label": "iced filter concentrate baseline"
+      },
+      "roastSupport": {
+        "agtronRange": [
+          25,
+          95
+        ],
+        "defaultLevel": "medium"
+      },
+      "confidence": "medium",
+      "validationNotes": [
+        "Iced April keeps low-agitation pulses and uses concentration rather than turbulence for sweetness."
+      ],
+      "sources": [
+        "april_official_recipes",
+        "paper_physicochem_2020",
         "sca_towards_chart"
       ],
-      "updatedAt": "2026-03-04"
+      "updatedAt": "2026-05-01"
+    },
+    {
+      "methodId": "kono",
+      "category": "filter",
+      "baseline": {
+        "ratioDefault": 15.7,
+        "ratioRange": [
+          14.5,
+          17
+        ],
+        "tempRangeC": [
+          90,
+          95
+        ],
+        "brewTimeRangeSec": [
+          180,
+          265
+        ]
+      },
+      "ratioPolicy": {
+        "min": 12,
+        "max": 22,
+        "label": "broad SCA-style filter baseline"
+      },
+      "roastSupport": {
+        "agtronRange": [
+          25,
+          95
+        ],
+        "defaultLevel": "medium"
+      },
+      "confidence": "medium",
+      "validationNotes": [
+        "Kono cone profile favors centered pours and longer middle contact for sweetness."
+      ],
+      "sources": [
+        "sca_towards_chart",
+        "paper_physicochem_2020",
+        "hario_paper_drip_official"
+      ],
+      "updatedAt": "2026-05-01"
+    },
+    {
+      "methodId": "kono_iced",
+      "category": "filter",
+      "baseline": {
+        "ratioDefault": 15,
+        "ratioRange": [
+          13.8,
+          16.4
+        ],
+        "tempRangeC": [
+          90,
+          95
+        ],
+        "brewTimeRangeSec": [
+          155,
+          235
+        ]
+      },
+      "ratioPolicy": {
+        "min": 12,
+        "max": 22,
+        "label": "iced filter concentrate baseline"
+      },
+      "roastSupport": {
+        "agtronRange": [
+          25,
+          95
+        ],
+        "defaultLevel": "medium"
+      },
+      "confidence": "medium",
+      "validationNotes": [
+        "Iced Kono keeps the center sweet before measured dilution lands in the cup."
+      ],
+      "sources": [
+        "sca_towards_chart",
+        "paper_physicochem_2020",
+        "hario_paper_drip_official"
+      ],
+      "updatedAt": "2026-05-01"
     },
     {
       "methodId": "siphon",
@@ -615,9 +998,11 @@
       ],
       "sources": [
         "paper_physicochem_2020",
-        "sca_towards_chart"
+        "sca_towards_chart",
+        "sca_full_immersion_research_2026",
+        "hario_siphon_official"
       ],
-      "updatedAt": "2026-03-04"
+      "updatedAt": "2026-05-01"
     },
     {
       "methodId": "moka_pot",
@@ -655,9 +1040,10 @@
       ],
       "sources": [
         "paper_physicochem_2020",
-        "wbc_2026"
+        "wbc_2026",
+        "bialetti_moka_instructions"
       ],
-      "updatedAt": "2026-03-04"
+      "updatedAt": "2026-05-01"
     },
     {
       "methodId": "cold_brew",
@@ -695,9 +1081,11 @@
       ],
       "sources": [
         "paper_physicochem_2020",
-        "paper_roast_2024"
+        "paper_roast_2024",
+        "sca_full_immersion_research_2026",
+        "toddy_home_guide"
       ],
-      "updatedAt": "2026-03-04"
+      "updatedAt": "2026-05-01"
     },
     {
       "methodId": "batch_brew",
@@ -741,9 +1129,10 @@
         "sca_indonesia_collab_2025",
         "scai_icc_2025",
         "sca_woc_jakarta_2025",
-        "sca_wcc_2025_three_continents"
+        "sca_wcc_2025_three_continents",
+        "sca_home_brewer_requirements_2017"
       ],
-      "updatedAt": "2026-03-04"
+      "updatedAt": "2026-05-01"
     }
   ]
 }

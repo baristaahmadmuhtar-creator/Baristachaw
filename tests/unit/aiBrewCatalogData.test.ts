@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { BREW_METHOD_PROFILES } from '../../apps/web/src/features/barista-tools/brewProfiles.ts';
 
 function readJson<T>(relativePath: string): T {
   const fullPath = path.resolve(process.cwd(), relativePath);
@@ -19,7 +20,7 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   const drippers = readJson<{ items: Array<{ name: string }> }>('apps/web/public/data/ai-brew/drippers.v2026-03.json').items;
   const grinders = readJson<{ items: Array<{ name: string }> }>('apps/web/public/data/ai-brew/grinders.v2026-03.json').items;
   const grinderSearch = readJson<{ items: Array<{ id: string; search_text: string }> }>('apps/web/public/data/catalog/phase1/grinders.search.json').items;
-  const profiles = readJson<{ items: Array<{ id: string; exactMatch: boolean; brewMode: string; dripperIds: string[]; methodFamily: string }> }>('apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json').items;
+  const profiles = readJson<{ items: Array<{ id: string; exactMatch: boolean; brewMode: string; dripperIds: string[]; methodFamily: string; brewMethodId: string }> }>('apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json').items;
   const grinderSettings = readJson<{ items: Array<{ id: string; grinderId: string; profileIds: string[]; rangeLabel: string }> }>('apps/web/public/data/ai-brew/grinder-settings.v2026-06.json').items;
   const processes = readJson<{ items: Array<{ id: string; origins?: string[] }> }>('apps/web/public/data/ai-brew/processes.v2026-06.json').items;
   const varieties = readJson<{ items: Array<{ id: string; origins?: string[] }> }>('apps/web/public/data/ai-brew/varieties.v2026-06.json').items;
@@ -76,6 +77,38 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
     'profile_torch-mountain_iced',
   ]) {
     assert.ok(profiles.some((entry) => entry.id === icedId && entry.exactMatch && entry.brewMode === 'iced'), `Expected iced exact profile missing: ${icedId}`);
+  }
+
+  for (const [profileId, expectedMethodId] of [
+    ['profile_kono_meimon_hot', 'kono'],
+    ['profile_kono_meimon_iced', 'kono_iced'],
+    ['profile_melitta_hot', 'melitta'],
+    ['profile_melitta_iced', 'melitta_iced'],
+    ['profile_hario_pegasus_hot', 'melitta'],
+    ['profile_hario_pegasus_iced', 'melitta_iced'],
+  ] as const) {
+    const profile = profiles.find((entry) => entry.id === profileId);
+    assert.equal(profile?.brewMethodId, expectedMethodId, `${profileId} should hand off to ${expectedMethodId}`);
+  }
+
+  const aiBrewMethodIds = new Set(profiles.map((entry) => entry.brewMethodId));
+  for (const method of BREW_METHOD_PROFILES) {
+    assert.ok(aiBrewMethodIds.has(method.id), `AI Brew device profiles should cover Barista Tools method ${method.id}`);
+  }
+
+  for (const [profileId, methodFamily, brewMethodId] of [
+    ['profile_espresso_machine_hot', 'espresso', 'espresso'],
+    ['profile_french_press_hot', 'french_press', 'french_press'],
+    ['profile_aeropress_hot', 'aeropress', 'aeropress'],
+    ['profile_hario_siphon_hot', 'siphon', 'siphon'],
+    ['profile_bialetti_moka_pot_hot', 'moka_pot', 'moka_pot'],
+    ['profile_toddy_cold_brew_hot', 'cold_brew', 'cold_brew'],
+    ['profile_batch_brewer_hot', 'batch_brew', 'batch_brew'],
+  ] as const) {
+    const profile = profiles.find((entry) => entry.id === profileId);
+    assert.equal(profile?.methodFamily, methodFamily, `${profileId} should use ${methodFamily}`);
+    assert.equal(profile?.brewMethodId, brewMethodId, `${profileId} should hand off to ${brewMethodId}`);
+    assert.equal(profile?.exactMatch, true, `${profileId} should be an exact AI Brew profile`);
   }
 
   const settingsByGrinder = new Map<string, number>();

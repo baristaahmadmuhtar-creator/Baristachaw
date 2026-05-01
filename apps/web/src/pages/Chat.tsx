@@ -17,6 +17,8 @@ import {
   transcribeAudio,
   analyzeAttachment,
   analyzeTextDocument,
+  resolveServerAiTimeoutMs,
+  resolveServerChatTimeoutMs,
   type DeepThinkingDetailedPayload,
 } from '../services/gemini';
 import {
@@ -109,6 +111,24 @@ const DEEP_THINKING_PHASE_KEYS = [
   'chatDeepThinkingPhaseTradeoff',
   'chatDeepThinkingPhaseFinalize',
 ] as const;
+
+function actionForResponseMode(mode: ResponseMode): 'fast' | 'balanced' | 'deep_think' {
+  if (mode === 'fast') return 'fast';
+  if (mode === 'deep') return 'deep_think';
+  return 'balanced';
+}
+
+function resolveChatSafetyTimeoutMs(mode: ResponseMode, attachmentMimeType?: string): number {
+  const actionTimeout = resolveServerAiTimeoutMs(actionForResponseMode(mode));
+  const attachmentTimeout = attachmentMimeType
+    ? resolveServerAiTimeoutMs(attachmentMimeType.startsWith('text/') ? 'analyze_text' : 'analyze_attachment')
+    : 0;
+  const fallbackTimeout = mode === 'deep'
+    ? resolveServerChatTimeoutMs(70_000)
+    : resolveServerChatTimeoutMs();
+  const responseTimeout = Math.max(actionTimeout, attachmentTimeout, fallbackTimeout);
+  return responseTimeout + (mode === 'deep' ? 15_000 : 10_000);
+}
 const CHAT_MOBILE_SWIPE_HINT_STORAGE_KEY = 'baristachaw_chat_mobile_swipe_hint_count_v1';
 const CHAT_MOBILE_SWIPE_HINT_MAX_SHOWS = 3;
 
@@ -611,6 +631,7 @@ export function Chat() {
           boundedUserText,
           (newSession) => setChatSession(newSession),
           requestContext,
+          { timeoutMs: 70_000 },
         );
         if (fallback.session !== chatSession) setChatSession(fallback.session);
         return {
@@ -1060,13 +1081,17 @@ export function Chat() {
     setDeepThinkingPhaseIndex(0);
     await persistMessage(userMsg, preferredLanguage, nextConversationMessages);
 
-    const safetyTimeoutMs = draftToSend && !draftToSend.mimeType.startsWith('text/') ? 60_000 : 35_000;
+    const safetyTimeoutMs = resolveChatSafetyTimeoutMs(requestMode, draftToSend?.mimeType);
+    let didSafetyTimeout = false;
+    let timeoutMessageId: string | null = null;
     const safetyTimeout = setTimeout(() => {
+      didSafetyTimeout = true;
       setLoading(false);
       setLoadingPhase('idle');
       setActiveRequestMode(null);
+      timeoutMessageId = (Date.now() + 1).toString();
       const timeoutMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: timeoutMessageId,
         sessionId: activeSessionId || undefined,
         role: 'model',
         text: t.chatResponseTimeoutRetry,
@@ -1121,7 +1146,12 @@ export function Chat() {
         timestamp: Date.now(),
         status: 'sent',
       };
-      setMessages((prev: ChatMessage[]) => [...prev, modelMsg]);
+      setMessages((prev: ChatMessage[]) => {
+        if (didSafetyTimeout && timeoutMessageId) {
+          return prev.map((message) => (message.id === timeoutMessageId ? modelMsg : message));
+        }
+        return [...prev, modelMsg];
+      });
       setRevealMessageId(modelMsg.id);
       window.setTimeout(() => {
         setRevealMessageId((prev) => (prev === modelMsg.id ? null : prev));
@@ -1143,7 +1173,12 @@ export function Chat() {
         timestamp: Date.now(),
         status: 'error',
       };
-      setMessages((prev: ChatMessage[]) => [...prev, errorMsg]);
+      setMessages((prev: ChatMessage[]) => {
+        if (didSafetyTimeout && timeoutMessageId) {
+          return prev.map((message) => (message.id === timeoutMessageId ? errorMsg : message));
+        }
+        return [...prev, errorMsg];
+      });
       await persistMessage(errorMsg, preferredLanguage, [...nextConversationMessages, errorMsg]);
     } finally {
       setLoading(false);
@@ -2122,9 +2157,6 @@ function AudioBubble({ url, isUser }: { url: string; isUser: boolean }) {
     </div>
   );
 }
-
-
-
 
 
 

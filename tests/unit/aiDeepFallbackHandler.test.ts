@@ -143,7 +143,7 @@ test('deep_think falls back to internal chat proxy when compat providers are una
     const payload = JSON.parse(res.body);
     assert.equal(payload.ok, true);
     assert.equal(payload.action, 'deep_think');
-    assert.equal(payload.provider, 'GROQ');
+    assert.equal(payload.provider, 'CHAT_PROXY');
     assert.equal(payload.model, 'chat_race');
     assert.equal(payload.degraded, true);
     assert.match(payload.text, /## TL;DR/);
@@ -164,6 +164,98 @@ test('deep_think falls back to internal chat proxy when compat providers are una
       assert.equal(forwardedBody.mode, 'race');
       assert.match(forwardedBody.message, /## TL;DR/);
     }
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const [key, value] of Object.entries(envBackup)) {
+      if (typeof value === 'string') process.env[key] = value;
+      else delete process.env[key];
+    }
+  }
+});
+
+test('deep_think returns deterministic local fallback when every provider path is unavailable', async () => {
+  const originalFetch = globalThis.fetch;
+  const envBackup = {
+    JWT_SECRET: process.env.JWT_SECRET,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    GROQ_API_KEY: process.env.GROQ_API_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
+    MISTRAL_API_KEY: process.env.MISTRAL_API_KEY,
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+    APP_URL: process.env.APP_URL,
+    VERCEL_URL: process.env.VERCEL_URL,
+  };
+
+  process.env.JWT_SECRET = 'local-test-jwt-secret-32-chars-minimum';
+  delete process.env.GEMINI_API_KEY;
+  delete process.env.GROQ_API_KEY;
+  delete process.env.OPENAI_API_KEY;
+  delete process.env.DEEPSEEK_API_KEY;
+  delete process.env.MISTRAL_API_KEY;
+  delete process.env.OPENROUTER_API_KEY;
+  delete process.env.APP_URL;
+  delete process.env.VERCEL_URL;
+
+  globalThis.fetch = (async () => {
+    throw new Error('Internal chat proxy should not be called without a resolvable host');
+  }) as typeof fetch;
+
+  const authToken = jwt.sign(
+    { user: { id: 'qa-deep-local-user', email: 'qa-local@example.com', name: 'QA Deep Local', planCode: 'starter' } },
+    process.env.JWT_SECRET,
+    { expiresIn: '1h' },
+  );
+
+  try {
+    const req = {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${authToken}`,
+      },
+      body: {
+        action: 'deep_think',
+        prompt: 'Diagnose a sour espresso shot and provide a practical action plan.',
+        responseProfile: {
+          language: 'en',
+          verbosity: 'comprehensive',
+          format: 'steps',
+          tone: 'professional',
+          ambiguityPolicy: 'assume',
+        },
+        clientContext: {
+          platform: 'web',
+          surface: 'chat',
+          appLanguage: 'en',
+          acceptLanguage: 'en-US,en;q=0.9',
+        },
+      },
+      query: {},
+      cookies: {},
+      socket: {
+        remoteAddress: '203.0.113.56',
+      },
+    } as any;
+
+    const res = createMockRes() as any;
+    await aiHandler(req, res);
+
+    assert.equal(res.statusCode, 200);
+    const payload = JSON.parse(res.body);
+    assert.equal(payload.ok, true);
+    assert.equal(payload.action, 'deep_think');
+    assert.equal(payload.provider, 'LOCAL');
+    assert.equal(payload.model, 'deterministic-fallback');
+    assert.equal(payload.degraded, true);
+    assert.match(payload.text, /## TL;DR/);
+    assert.match(payload.text, /## Core Analysis/);
+    assert.match(payload.text, /## Options & Tradeoffs/);
+    assert.match(payload.text, /## Recommended Action Plan/);
+    assert.match(payload.text, /## Risks & Validation/);
+    assert.equal(payload.deepMeta?.fallbackUsed, true);
+    assert.equal(payload.deepMeta?.qualityPass, true);
+    assert.equal(res.headers.get('x-deep-quality-pass'), 'true');
+    assert.equal(res.headers.get('x-deep-degraded'), 'true');
   } finally {
     globalThis.fetch = originalFetch;
     for (const [key, value] of Object.entries(envBackup)) {

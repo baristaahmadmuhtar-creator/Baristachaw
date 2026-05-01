@@ -24,6 +24,36 @@ const CLIENT_KEY_DISABLED_MESSAGE = "Client-side API keys are disabled. Please u
 const MULTIMODAL_AI_ACTIONS = new Set(["analyze_image", "analyze_attachment", "edit_latte_art", "transcribe"]);
 const SERVER_CHAT_DEFAULT_MESSAGE_MAX_CHARS = 1800;
 const SERVER_CHAT_TOOLS_MESSAGE_MAX_CHARS = 12000;
+const SERVER_AI_DEFAULT_TIMEOUT_MS = 30_000;
+const SERVER_AI_FAST_TIMEOUT_MS = 40_000;
+const SERVER_AI_BALANCED_TIMEOUT_MS = 65_000;
+const SERVER_AI_DEEP_TIMEOUT_MS = 150_000;
+const SERVER_AI_SEARCH_TIMEOUT_MS = 75_000;
+const SERVER_AI_TEXT_ATTACHMENT_TIMEOUT_MS = 65_000;
+const SERVER_AI_MULTIMODAL_TIMEOUT_MS = 75_000;
+const SERVER_CHAT_DEFAULT_TIMEOUT_MS = 50_000;
+
+export function resolveServerAiTimeoutMs(action: string, explicitTimeoutMs?: number): number {
+  if (Number.isFinite(explicitTimeoutMs) && Number(explicitTimeoutMs) > 0) {
+    return Math.max(2_000, Number(explicitTimeoutMs));
+  }
+
+  if (action === "fast") return SERVER_AI_FAST_TIMEOUT_MS;
+  if (action === "balanced") return SERVER_AI_BALANCED_TIMEOUT_MS;
+  if (action === "deep_think") return SERVER_AI_DEEP_TIMEOUT_MS;
+  if (action === "search") return SERVER_AI_SEARCH_TIMEOUT_MS;
+  if (action === "analyze_text") return SERVER_AI_TEXT_ATTACHMENT_TIMEOUT_MS;
+  if (MULTIMODAL_AI_ACTIONS.has(action)) return SERVER_AI_MULTIMODAL_TIMEOUT_MS;
+  return SERVER_AI_DEFAULT_TIMEOUT_MS;
+}
+
+export function resolveServerChatTimeoutMs(explicitTimeoutMs?: number): number {
+  if (Number.isFinite(explicitTimeoutMs) && Number(explicitTimeoutMs) > 0) {
+    return Math.max(2_000, Number(explicitTimeoutMs));
+  }
+
+  return SERVER_CHAT_DEFAULT_TIMEOUT_MS;
+}
 
 function getAppLanguage() {
   if (typeof document !== "undefined" && document.documentElement?.lang) {
@@ -341,7 +371,7 @@ async function serverAi(
   options?: { timeoutMs?: number },
 ): Promise<ServerAiResponse> {
   const controller = new AbortController();
-  const timeoutMs = options?.timeoutMs || (MULTIMODAL_AI_ACTIONS.has(action) ? 55000 : 30000);
+  const timeoutMs = resolveServerAiTimeoutMs(action, options?.timeoutMs);
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const clientContext = resolveClientContext(context?.clientContext);
@@ -389,7 +419,7 @@ async function serverChat(
   options?: { timeoutMs?: number },
 ): Promise<string> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), options?.timeoutMs || 30000);
+  const timeout = setTimeout(() => controller.abort(), resolveServerChatTimeoutMs(options?.timeoutMs));
   try {
     const clientContext = resolveClientContext(context?.clientContext);
     const response = await fetch("/api/chat", {
@@ -501,11 +531,13 @@ export function createChatSession() {
     async sendMessage({
       message,
       requestContext,
+      timeoutMs,
     }: {
       message: string;
       requestContext?: ChatRequestContextPayload;
+      timeoutMs?: number;
     }): Promise<{ text: string }> {
-      const text = await serverChat(message, requestContext);
+      const text = await serverChat(message, requestContext, { timeoutMs });
       return { text };
     },
   };
@@ -516,14 +548,15 @@ export async function sendMessageSafe(
   message: string,
   onSessionRecreated?: (newSession: any) => void,
   requestContext?: ChatRequestContextPayload,
+  options?: { timeoutMs?: number },
 ): Promise<{ text: string; session: any }> {
   try {
-    const response = await chatSession.sendMessage({ message, requestContext });
+    const response = await chatSession.sendMessage({ message, requestContext, timeoutMs: options?.timeoutMs });
     return { text: response.text || "", session: chatSession };
   } catch {
     const newSession = createChatSession();
     onSessionRecreated?.(newSession);
-    const text = await serverChat(message, requestContext);
+    const text = await serverChat(message, requestContext, { timeoutMs: options?.timeoutMs });
     return { text, session: newSession };
   }
 }
@@ -1017,4 +1050,3 @@ export function getFullVaultStatus() {
 export function getAvailableProviders() {
   return [] as string[];
 }
-

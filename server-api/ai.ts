@@ -57,6 +57,10 @@ const FALLBACK_MESSAGE = 'Sorry, I could not process your request right now. Ple
 export const VERCEL_JSON_BODY_SOFT_LIMIT_BYTES = 4_250_000;
 export const INLINE_ATTACHMENT_MAX_BYTES = 2_500_000;
 export const INLINE_ATTACHMENT_MAX_BASE64_CHARS = Math.ceil(INLINE_ATTACHMENT_MAX_BYTES / 3) * 4;
+const GEMINI_TEXT_PROVIDER_TIMEOUT_MS = 24_000;
+const GEMINI_DEEP_PROVIDER_TIMEOUT_MS = 45_000;
+const GEMINI_DEEP_REPAIR_TIMEOUT_MS = 32_000;
+const CHAT_PROXY_DEEP_TIMEOUT_MS = 45_000;
 const VISION_PROVIDER_TIMEOUT_MS = 45_000;
 const JSON_HEARTBEAT_INTERVAL_MS = 8_000;
 const ATTACHMENT_URL_FETCH_TIMEOUT_MS = 10_000;
@@ -670,6 +674,7 @@ type PromptOrchestrationResult = {
 };
 
 type OpenAiCompatProvider = 'GROQ' | 'DEEPSEEK' | 'MISTRAL' | 'OPENAI' | 'OPENROUTER';
+type StructuredFallbackProvider = OpenAiCompatProvider | 'LOCAL' | 'CHAT_PROXY';
 
 interface OpenAiCompatConfig {
   provider: OpenAiCompatProvider;
@@ -1088,6 +1093,7 @@ async function callGemini(
   prompt: string,
   model = 'gemini-2.5-flash',
   config: Record<string, unknown> = {},
+  timeoutMs = GEMINI_TEXT_PROVIDER_TIMEOUT_MS,
 ): Promise<string> {
   const { GoogleGenAI } = await import('@google/genai');
   const ai = new GoogleGenAI({ apiKey: key });
@@ -1100,7 +1106,7 @@ async function callGemini(
         ...config,
       },
     }),
-    24000,
+    timeoutMs,
     'GEMINI',
   );
   return response.text || '';
@@ -1556,6 +1562,104 @@ function buildFallbackPrompts(
   };
 }
 
+function isIndonesianLanguage(language: string): boolean {
+  const normalized = String(language || '').trim().toLowerCase();
+  return normalized === 'id' || normalized.startsWith('id-');
+}
+
+function extractLocalFallbackSubject(prompt: string): string {
+  const value = String(prompt || '').replace(/\r\n/g, '\n').trim();
+  const userRequestMarker = 'User request:';
+  const markerIndex = value.lastIndexOf(userRequestMarker);
+  const candidate = markerIndex >= 0
+    ? value.slice(markerIndex + userRequestMarker.length)
+    : value
+        .replace(/^Answer concisely and actionably:\s*/i, '')
+        .replace(/^Answer clearly[\s\S]*?:\s*/i, '')
+        .replace(/^Think deeply, provide structured recommendations and tradeoffs:\s*/i, '');
+  const cleaned = candidate.replace(/\s+/g, ' ').trim().replace(/[.!?]+$/, '');
+  return cleaned.slice(0, 320) || 'the current coffee request';
+}
+
+function buildLocalStructuredFallback(
+  action: 'fast' | 'balanced' | 'deep_think',
+  prompt: string,
+  resolved: ResolvedResponseProfile,
+): string {
+  const subject = extractLocalFallbackSubject(prompt);
+  const isId = isIndonesianLanguage(resolved.language);
+
+  if (action === 'deep_think') {
+    if (isId) {
+      return [
+        '## TL;DR',
+        `Untuk permintaan ini, fokus pada baseline yang terukur: ${subject}. Mulai dari resep stabil, ubah satu variabel saja, lalu validasi dengan rasa dan angka agar keputusan berikutnya tidak spekulatif.`,
+        '',
+        '## Core Analysis',
+        'Masalah kopi biasanya sulit dibaca ketika dosis, grind, suhu, agitasi, dan waktu kontak berubah bersamaan. Pendekatan paling aman adalah mengunci resep dasar, mencatat output, lalu menghubungkan perubahan rasa dengan satu penyebab yang paling mungkin. Untuk espresso, asam tajam biasanya mengarah ke ekstraksi rendah, flow terlalu cepat, atau distribusi puck yang kurang rata. Untuk filter, rasa tipis atau tajam sering terkait grind terlalu kasar, suhu terlalu rendah, atau pouring yang kurang konsisten.',
+        '',
+        '## Options & Tradeoffs',
+        'Opsi 1: grind lebih halus untuk menaikkan ekstraksi. Tradeoff-nya flow bisa melambat, astringency meningkat, dan channeling lebih mudah muncul jika distribusi buruk.',
+        'Opsi 2: naikkan suhu atau agitasi untuk membantu pelarutan. Tradeoff-nya karakter aromatik bisa terasa lebih berat jika kopi sudah cukup developed.',
+        'Opsi 3: pertahankan resep, perbaiki workflow, dan ulangi brew kontrol. Ini lebih lambat, tetapi paling kuat untuk membedakan masalah teknik dari masalah bahan.',
+        '',
+        '## Recommended Action Plan',
+        '1. Kunci baseline: dosis, yield atau rasio, suhu air, grind setting, waktu kontak, dan teknik distribusi/pouring.',
+        '2. Jalankan satu brew kontrol, catat rasa utama, waktu, berat akhir, dan observasi flow seperti channeling, clogging, atau drawdown terlalu cepat.',
+        '3. Ubah satu variabel kecil saja: grind sedikit lebih halus jika asam/tipis, lebih kasar jika pahit/kering, atau perbaiki distribusi jika flow tidak rata.',
+        '4. Bandingkan dua hasil saat suhu minum sudah stabil, lalu simpan perubahan hanya jika rasa membaik tanpa menambah defect baru.',
+        '',
+        '## Risks & Validation',
+        'Risiko terbesar adalah mengejar rasa dengan terlalu banyak perubahan sekaligus. Validasi minimal dengan dua pengulangan pada setting terbaik, catatan waktu yang konsisten, dan evaluasi rasa setelah kopi sedikit turun suhu. Jika hasil masih berubah-ubah, audit grinder retention, kualitas air, kesegaran biji, dan konsistensi puck atau bed sebelum mengubah resep lagi.',
+      ].join('\n');
+    }
+
+    return [
+      '## TL;DR',
+      `For this request, use a measured baseline first: ${subject}. Change one variable at a time, compare the cup against numbers, and keep only adjustments that improve balance without adding a new defect.`,
+      '',
+      '## Core Analysis',
+      'Coffee troubleshooting becomes unreliable when dose, grind, water temperature, agitation, and contact time all move at once. The production-safe approach is to lock a baseline recipe, record the output, and connect each flavor change to one likely cause. In espresso, sharp sourness often points to low extraction, fast flow, or uneven puck prep. In filter brewing, thin acidity often points to a grind that is too coarse, low slurry temperature, weak agitation, or inconsistent pouring.',
+      '',
+      '## Options & Tradeoffs',
+      'Option 1: grind finer to raise extraction. The tradeoff is slower flow, higher risk of astringency, and more channeling sensitivity if puck prep is weak.',
+      'Option 2: raise water temperature or agitation to improve solubility. The tradeoff is a heavier cup and more bitterness if the roast is already developed.',
+      'Option 3: keep the recipe stable and repeat a control brew. This is slower, but it separates technique noise from a real recipe problem.',
+      '',
+      '## Recommended Action Plan',
+      '1. Lock dose, yield or brew ratio, water temperature, grind setting, contact time, and distribution or pouring method.',
+      '2. Run one control brew and record flavor, final weight, total time, and flow signs such as channeling, clogging, or a fast drawdown.',
+      '3. Change one small variable: grind finer for sour or thin cups, coarser for dry bitterness, or improve distribution when flow is uneven.',
+      '4. Compare the two cups at a consistent drinking temperature, then keep the change only if sweetness and balance improve without a new defect.',
+      '',
+      '## Risks & Validation',
+      'The main risk is changing too many variables and losing the signal. Validate with at least two repeat brews at the best setting, stable timing, and notes taken after the cup cools slightly. If results still drift, audit grinder retention, water quality, coffee age, puck prep, and bed geometry before changing the recipe again.',
+    ].join('\n');
+  }
+
+  if (action === 'fast') {
+    return isId
+      ? `Gunakan baseline terukur untuk permintaan ini: ${subject}. Kunci dosis dan yield/rasio dulu, lalu ubah satu variabel kecil. Jika rasa asam atau tipis, coba grind sedikit lebih halus atau naikkan ekstraksi. Jika pahit atau kering, coba grind sedikit lebih kasar atau kurangi agitasi. Catat waktu dan rasa agar perubahan berikutnya punya dasar.`
+      : `Use a measured baseline for this request: ${subject}. Lock dose and yield or ratio first, then change one small variable. If the cup is sour or thin, grind slightly finer or raise extraction. If it is bitter or dry, grind slightly coarser or reduce agitation. Track time and taste so the next change has evidence.`;
+  }
+
+  return isId
+    ? [
+        `Untuk permintaan ini: ${subject}.`,
+        '',
+        'Mulai dari resep kontrol yang bisa diulang. Kunci dosis, yield atau rasio, suhu air, grind setting, dan waktu kontak. Setelah itu, ubah satu variabel kecil berdasarkan defect rasa paling jelas.',
+        '',
+        'Langkah praktis: jika asam/tipis, naikkan ekstraksi dengan grind sedikit lebih halus, suhu sedikit lebih tinggi, atau kontak lebih lama. Jika pahit/kering, turunkan ekstraksi dengan grind sedikit lebih kasar, agitasi lebih rendah, atau kontak lebih pendek. Validasi dengan minimal satu brew ulang sebelum menyimpan setting baru.',
+      ].join('\n')
+    : [
+        `For this request: ${subject}.`,
+        '',
+        'Start with a repeatable control recipe. Lock dose, yield or brew ratio, water temperature, grind setting, and contact time. Then adjust one small variable based on the clearest flavor defect.',
+        '',
+        'Practical path: if the cup is sour or thin, raise extraction with a slightly finer grind, slightly higher temperature, or longer contact time. If it is bitter or dry, lower extraction with a slightly coarser grind, less agitation, or shorter contact time. Validate with at least one repeat brew before saving the new setting.',
+      ].join('\n');
+}
+
 async function callStructuredTextFallback(
   action: 'fast' | 'balanced' | 'deep_think',
   orchestratedPrompt: string,
@@ -1565,7 +1669,7 @@ async function callStructuredTextFallback(
   agentProfile: AgentProfileMemory | undefined,
   requestId: string,
   req: VercelRequest,
-): Promise<{ text: string; provider: OpenAiCompatProvider; model: string }> {
+): Promise<{ text: string; provider: StructuredFallbackProvider; model: string }> {
   const prompts = buildFallbackPrompts(action, orchestratedPrompt, resolved);
   let lastError: unknown = null;
   const maxTokens = action === 'fast'
@@ -1628,16 +1732,18 @@ async function callStructuredTextFallback(
               agentProfile,
             }),
           }),
-          18000,
+          CHAT_PROXY_DEEP_TIMEOUT_MS,
           'CHAT_PROXY',
         );
         if (chatResponse.ok) {
           const text = (await chatResponse.text().catch(() => '')).trim();
           if (text) {
+            const proxyProvider = String(chatResponse.headers.get('x-provider') || '').trim().toUpperCase();
+            const proxyModel = String(chatResponse.headers.get('x-model') || '').trim();
             return {
               text,
-              provider: 'GROQ',
-              model: 'chat_race',
+              provider: proxyProvider === 'LOCAL' ? 'LOCAL' : 'CHAT_PROXY',
+              model: proxyProvider === 'LOCAL' ? (proxyModel || 'deterministic-fallback') : 'chat_race',
             };
           }
         }
@@ -1647,6 +1753,14 @@ async function callStructuredTextFallback(
         );
       }
     }
+  }
+
+  const localText = buildLocalStructuredFallback(action, prompts.user, resolved);
+  if (localText) {
+    console.warn(
+      `[api/ai][${requestId}] action=${action} local_fallback_used details="${sanitizeErrorDetails(lastError || 'no compatible fallback providers', 180)}"`,
+    );
+    return { text: localText, provider: 'LOCAL', model: 'deterministic-fallback' };
   }
 
   if (lastError) throw lastError;
@@ -1764,7 +1878,13 @@ async function repairOutputIfNeeded(params: {
   try {
     if (!isGeminiTextDisabled()) {
       repairedText = await withRetry(
-        key => callGemini(key, repairPrompt, params.mode === 'deep' ? 'gemini-2.5-flash' : 'gemini-2.5-flash-lite-latest'),
+        key => callGemini(
+          key,
+          repairPrompt,
+          'gemini-2.5-flash',
+          {},
+          params.mode === 'deep' ? GEMINI_DEEP_REPAIR_TIMEOUT_MS : GEMINI_TEXT_PROVIDER_TIMEOUT_MS,
+        ),
         { provider: 'GEMINI', requestId: params.requestId, action: params.action, maxRetries: 1 },
       );
     }
@@ -2245,7 +2365,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const isBalancedAction = action === 'balanced';
       const geminiModel = isBalancedAction
         ? (selectedModel || 'gemini-2.5-flash')
-        : 'gemini-2.5-flash-lite-latest';
+        : (selectedModel || 'gemini-2.5-flash');
       const geminiPrompt = isBalancedAction
         ? `As Baristachaw, an expert coffee assistant, answer with practical, scoped guidance and moderate detail. Stay tightly aligned to the latest user request. Do not roleplay as a cashier, POS bot, or take a drink order unless the user explicitly asks for an ordering simulation. For greetings or very short openers, greet back briefly and ask what they need.\n\n${promptForModel}`
         : `As Baristachaw, an expert coffee assistant, answer concisely and helpfully. Do not roleplay as a cashier, POS bot, or take a drink order unless the user explicitly asks for an ordering simulation. For greetings or very short openers, greet back briefly and ask what they need.\n\n${promptForModel}`;
@@ -2262,8 +2382,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               geminiPrompt,
               geminiModel,
               isBalancedAction ? { temperature: 0.45 } : undefined,
+              isBalancedAction ? 28_000 : GEMINI_TEXT_PROVIDER_TIMEOUT_MS,
             ),
-          { provider: 'GEMINI', requestId, action },
+          { provider: 'GEMINI', requestId, action, maxRetries: isBalancedAction ? 2 : 1 },
         );
         const repaired = await repairOutputIfNeeded({
           rawText,
@@ -2380,7 +2501,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                   deepGroundedPrompt,
                   selectedModel || 'gemini-2.5-flash',
                 ),
-              { provider: 'GEMINI', requestId, action },
+              { provider: 'GEMINI', requestId, action, maxRetries: 1 },
             );
             const candidateText = sanitizeModelText(groundedResult.text);
             const candidateChunks = Array.isArray(groundedResult.chunks) ? groundedResult.chunks : [];
@@ -2410,8 +2531,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 deepPrompt,
                 selectedModel || 'gemini-2.5-flash',
                 { thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH } },
+                GEMINI_DEEP_PROVIDER_TIMEOUT_MS,
               ),
-            { provider: 'GEMINI', requestId, action },
+            { provider: 'GEMINI', requestId, action, maxRetries: 1 },
           );
           rawText = sanitizeModelText(rawText);
           grounded = false;

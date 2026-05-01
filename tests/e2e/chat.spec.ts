@@ -137,6 +137,60 @@ test('deep mode shows thinking phases, degraded badge, and source links', async 
   await expect(page.getByRole('link', { name: 'Source 1' })).toBeVisible();
 });
 
+test('deep mode waits for long-running responses without rendering timeout error', async ({ page }) => {
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await page.goto('/chat', { waitUntil: 'domcontentloaded' });
+
+  let sawDeepRequest = false;
+  await page.route('**/api/ai', async (route) => {
+    const body = route.request().postDataJSON() as { action?: string };
+    if (body.action === 'deep_think') {
+      sawDeepRequest = true;
+      await page.waitForTimeout(36_000);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          action: 'deep_think',
+          text: '## TL;DR\nWaited successfully.\n## Core Analysis\nThe UI held the deep request open without showing a timeout error.\n## Options & Tradeoffs\nLong deep requests trade speed for stronger reasoning.\n## Recommended Action Plan\n1. Keep waiting.\n2. Render one final answer.\n3. Avoid duplicate timeout messages.\n## Risks & Validation\nValidate that no timeout copy remains visible.',
+          degraded: false,
+          provider: 'GEMINI',
+          sourceCount: 0,
+          deepMeta: {
+            mode: 'deep',
+            grounded: false,
+            degraded: false,
+            fallbackUsed: false,
+            qualityPass: true,
+            latencyMs: 36_000,
+            sourceCount: 0,
+          },
+        }),
+      });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, text: 'mock' }),
+    });
+  });
+  await page.route('**/api/chat', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'text/plain', body: 'mock fallback' });
+  });
+
+  await page.getByLabel(deepModeLabel).click();
+  const input = page.getByPlaceholder(chatInputPlaceholder);
+  await expect(input).toBeEnabled({ timeout: 30_000 });
+  await input.fill('qa_e2e deep slow response');
+  await page.getByLabel(sendMessageLabel).click();
+
+  await expect(page.locator('.chat-markdown').last()).toContainText('Core Analysis', { timeout: 60_000 });
+  await expect(page.getByText(/Response took too long|Respons terlalu lama/i)).toHaveCount(0);
+  expect(sawDeepRequest).toBe(true);
+});
+
 test('supports sidebar folder flow', async ({ page }) => {
   await qaLogin(page.request);
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });

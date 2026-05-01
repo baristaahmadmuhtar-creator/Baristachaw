@@ -367,14 +367,22 @@ export function classifyProviderError(
 
   if (
     status === 429 ||
+    status === 402 ||
     details.includes('quota') ||
+    details.includes('insufficient balance') ||
+    details.includes('insufficient credits') ||
+    details.includes('billing_not_active') ||
+    details.includes('billing not active') ||
+    details.includes('account is not active') ||
+    details.includes('payment required') ||
+    details.includes('billing') ||
     details.includes('resource exhausted') ||
     details.includes('rate limit')
   ) {
     return createApiError('quota_exceeded', 'Provider quota or rate limit exceeded', 429, true, provider);
   }
 
-  if (status === 400 && details.includes('model')) {
+  if ((status === 400 || status === 404) && details.includes('model')) {
     return createApiError('unsupported_model', 'Unsupported provider model', 400, false, provider);
   }
 

@@ -63,6 +63,7 @@ import {
   buildLocalizedPlanRecipeDescription,
   buildLocalizedPlanRecipeName,
   buildLocalizedPlanRecipeSteps,
+  buildPlanMethodBrief,
   buildPlanRecipeIngredients,
   buildPlanRecipeMetadata,
   createDefaultAiBrewFormState,
@@ -224,6 +225,14 @@ const COPY = {
     emptyFavorites: 'Favorite a plan to pin it here.',
     emptyPlan: 'Complete the form and generate a plan to open the focus workspace.',
     summaryTitle: 'Result',
+    methodBriefTitle: 'Method Focus',
+    methodBriefPrimary: 'Primary number',
+    methodBriefControl: 'Main control',
+    methodBriefSuccess: 'Finish cue',
+    methodBriefWatch: 'Watch',
+    flowMetricDose: 'Dose',
+    flowMetricNext: 'Next',
+    flowMetricTotal: 'Total',
     totalWater: 'Total Water',
     finalRatio: 'Final Ratio',
     hotConcentrate: 'Hot Concentrate',
@@ -528,6 +537,14 @@ const COPY = {
     emptyFavorites: 'Tandai favorit agar resep muncul di sini.',
     emptyPlan: 'Lengkapi form lalu buat plan untuk membuka workspace hasil.',
     summaryTitle: 'Hasil',
+    methodBriefTitle: 'Kunci Metode',
+    methodBriefPrimary: 'Angka utama',
+    methodBriefControl: 'Kontrol utama',
+    methodBriefSuccess: 'Tanda selesai',
+    methodBriefWatch: 'Pantau',
+    flowMetricDose: 'Dosis',
+    flowMetricNext: 'Berikutnya',
+    flowMetricTotal: 'Total',
     totalWater: 'Total Air',
     finalRatio: 'Rasio Final',
     hotConcentrate: 'Konsentrat Panas',
@@ -1486,6 +1503,52 @@ function buildAiBrewStepQuickNote(step: BrewPlan['steps'][number], language: str
   return normalizeAiBrewInstructionText(localizeAiBrewDynamicText(step.note, language));
 }
 
+function buildAiBrewStepMethodFocusCue(
+  plan: BrewPlan,
+  step: BrewPlan['steps'][number],
+  language: string,
+) {
+  const id = isIndonesianAiBrewLanguage(language);
+  const kind = getAiBrewStepKind(step);
+
+  switch (plan.methodFamily) {
+    case 'espresso':
+      if (kind === 'extract') return id ? 'Fokus: mulai shot, baca flow, dan stop hanya saat yield target tercapai.' : 'Focus: start the shot, read flow, and stop only when target yield lands.';
+      return id ? 'Fokus: pisahkan espresso di target yield; jangan tambah volume setelah shot selesai.' : 'Focus: separate espresso at target yield; do not add volume after the shot.';
+    case 'moka_pot':
+      if (kind === 'heat') return id ? 'Fokus: panas moderat. Angkat sebelum sputter kasar atau rasa rebus muncul.' : 'Focus: moderate heat. Remove before harsh sputtering or boiled flavor appears.';
+      return id ? 'Fokus: basket tetap loose, base di bawah safety valve, dan serve saat target tercapai.' : 'Focus: keep basket loose, base below safety valve, and serve when target lands.';
+    case 'cold_brew':
+      if (kind === 'wait') return id ? 'Fokus: steep stabil. Jangan tambah agitasi saat semua bed sudah basah.' : 'Focus: stable steep. Do not add agitation once the whole bed is wet.';
+      if (kind === 'serve') return id ? 'Fokus: filter/decant bersih agar ekstraksi berhenti.' : 'Focus: filter/decant cleanly so extraction stops.';
+      return id ? 'Fokus: hilangkan dry pocket sebelum steep panjang dimulai.' : 'Focus: remove dry pockets before the long steep starts.';
+    case 'batch_brew':
+      if (kind === 'drawdown' || kind === 'serve') return id ? 'Fokus: tunggu drawdown selesai, lalu aduk batch sebelum cicip.' : 'Focus: wait for drawdown, then mix the batch before tasting.';
+      return id ? 'Fokus: bed basket rata dan siklus mesin tidak diganggu.' : 'Focus: level basket bed and keep the machine cycle undisturbed.';
+    case 'french_press':
+      if (kind === 'press' || kind === 'serve') return id ? 'Fokus: press pelan lalu decant supaya fines berhenti mengekstrak.' : 'Focus: press slowly, then decant so fines stop extracting.';
+      return id ? 'Fokus: immersion tenang. Jangan aduk agresif menjelang akhir.' : 'Focus: calm immersion. Avoid aggressive stirring near the end.';
+    case 'aeropress':
+      if (kind === 'press') return id ? 'Fokus: press stabil; berhenti sebelum hiss terakhir terasa dipaksa.' : 'Focus: steady press; stop before the final hiss feels forced.';
+      return id ? 'Fokus: chamber basah rata dan steep tetap pendek.' : 'Focus: evenly wet chamber and keep the steep compact.';
+    case 'siphon':
+      if (kind === 'heat') return id ? 'Fokus: heat stabil sampai vacuum bekerja, bukan boiling agresif.' : 'Focus: stable heat until vacuum works, not aggressive boiling.';
+      if (kind === 'drawdown' || kind === 'serve') return id ? 'Fokus: cut heat dan biarkan drawdown selesai tanpa agitasi tambahan.' : 'Focus: cut heat and let drawdown finish without extra agitation.';
+      return id ? 'Fokus: agitasi singkat saat upper chamber aktif.' : 'Focus: brief agitation while the upper chamber is active.';
+    case 'clever_dripper':
+      if (kind === 'release' || kind === 'drawdown') return id ? 'Fokus: release bersih dan jangan aduk saat drawdown.' : 'Focus: clean release and no stirring during drawdown.';
+      return id ? 'Fokus: contact time stabil; immersion jangan terlalu gelisah.' : 'Focus: stable contact time; keep immersion calm.';
+    case 'chemex':
+      return id ? 'Fokus: flow stabil dan hindari bypass dinding filter tebal.' : 'Focus: stable flow and avoid thick-filter wall bypass.';
+    case 'kalita_wave':
+    case 'april':
+    case 'melitta':
+      return id ? 'Fokus: flat bed tetap rata; pulse pendek lebih aman daripada flooding.' : 'Focus: keep the flat bed level; short pulses are safer than flooding.';
+    default:
+      return id ? 'Fokus: aliran center-to-mid stabil dan drawdown tetap bersih.' : 'Focus: stable center-to-mid flow and clean drawdown.';
+  }
+}
+
 function buildAiBrewStepDetailPoints(step: BrewPlan['steps'][number], language: string) {
   const fallbackNote = buildAiBrewStepQuickNote(step, language).toLowerCase();
   const detailText = normalizeAiBrewInstructionText(
@@ -1523,6 +1586,7 @@ function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: strin
 }
 
 function renderAiBrewSequenceStepCard(
+  plan: BrewPlan,
   step: BrewPlan['steps'][number],
   index: number,
   language: string,
@@ -1532,8 +1596,12 @@ function renderAiBrewSequenceStepCard(
   const stepQuickNote = buildAiBrewStepQuickNote(step, language);
   const stepDetailPoints = buildAiBrewStepDetailPoints(step, language);
   const stepMetrics = buildAiBrewStepMetrics(step, language);
+  const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
   const normalizedActionText = normalizeAiBrewInstructionText(stepActionText).toLowerCase();
   const showQuickNote = Boolean(stepQuickNote) && stepQuickNote.toLowerCase() !== normalizedActionText;
+  const showMethodFocusCue = Boolean(methodFocusCue)
+    && methodFocusCue.toLowerCase() !== stepQuickNote.toLowerCase()
+    && methodFocusCue.toLowerCase() !== normalizedActionText;
   const stepCardClass = 'rounded-[1rem] border panel-divider-subtle panel-soft p-3 sm:p-3.5';
   const metricChipClass = 'rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] text-secondary';
 
@@ -1577,6 +1645,12 @@ function renderAiBrewSequenceStepCard(
 
           {showQuickNote && (
             <p className="text-sm leading-5 text-secondary">{stepQuickNote}</p>
+          )}
+
+          {showMethodFocusCue && (
+            <p className="rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">
+              {methodFocusCue}
+            </p>
           )}
 
           {stepDetailPoints.length > 0 && (
@@ -2093,6 +2167,7 @@ function PlanResultDialog({
   const waterSourceLinks = plan.waterBrandSourceUrls || [];
   const localizedTargetProfileLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language);
   const localizedSummary = localizeAiBrewSummary(plan, language);
+  const methodBrief = buildPlanMethodBrief(plan, language);
   const localizedWaterStyle = localizeAiBrewWaterStyle(plan.waterMinerals.styleLabel, language);
   const localizedGrindRecommendation = formatGrindTextForDisplay(plan.grindRecommendation, language);
   const localizedGrindBandLabel = formatGrindTextForDisplay(plan.grindBandLabel, language);
@@ -2199,6 +2274,21 @@ function PlanResultDialog({
                 <p id={descriptionId} className="sr-only">
                   {plan.doseG} g · {plan.totalWaterMl} ml · {formatTime(plan.totalTimeSeconds)} · {plan.waterTempC}°C
                 </p>
+                <p className="mt-2 max-w-3xl text-sm leading-5 text-secondary">
+                  {localizedSummary}
+                </p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                  {[
+                    { label: methodBrief.primaryLabel || copy.methodBriefPrimary, value: methodBrief.primaryValue },
+                    { label: methodBrief.controlLabel || copy.methodBriefControl, value: methodBrief.controlValue },
+                    { label: methodBrief.successLabel || copy.methodBriefSuccess, value: methodBrief.successCue },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/72 px-3 py-2.5">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-tertiary">{item.label}</p>
+                      <p className="mt-1 text-sm font-medium leading-5 text-primary">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="mt-3 grid gap-2.5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
@@ -2286,8 +2376,8 @@ function PlanResultDialog({
               >
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 xl:grid-cols-6">
                 <div className={resultMetricCardClass}>
-                  <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.totalWater}</p>
-                  <p className="mt-1 text-xl font-semibold text-primary sm:text-2xl">{formatRoundedMl(plan.totalWaterMl)}</p>
+                  <p className="text-[11px] uppercase tracking-widest text-secondary">{methodBrief.primaryLabel}</p>
+                  <p className="mt-1 text-xl font-semibold text-primary sm:text-2xl">{methodBrief.primaryValue}</p>
                 </div>
                 <div className={resultMetricCardClass}>
                   <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.cupOutput}</p>
@@ -2422,7 +2512,7 @@ function PlanResultDialog({
                       </span>
                     </div>
                     <div className="space-y-2.5">
-                      {plan.steps.map((step, index) => renderAiBrewSequenceStepCard(step, index, language))}
+                      {plan.steps.map((step, index) => renderAiBrewSequenceStepCard(plan, step, index, language))}
                       {/*
                       {plan.steps.map((step, index) => {
                         const localizedStepLabel = localizeAiBrewStepLabel(step.label, language);
@@ -2459,6 +2549,18 @@ function PlanResultDialog({
                 </div>
 
                 <div className="space-y-5">
+                  <div className="rounded-[1.4rem] border panel-divider-subtle panel-soft p-4">
+                    <div className="mb-3 flex items-center gap-2">
+                      <Target size={15} className="text-blue-500" />
+                      <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.methodBriefWatch}</h4>
+                    </div>
+                    <ul className="space-y-2 text-sm leading-5 text-secondary">
+                      {methodBrief.watch.map((item) => (
+                        <li key={item} className="rounded-xl bg-surface-alpha px-3 py-2">{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+
                   <div className="rounded-[1.4rem] border panel-divider-subtle panel-soft p-4">
                     <div className="mb-3 flex items-center gap-2">
                       <FlaskConical size={15} className="text-sky-500" />
@@ -2603,12 +2705,12 @@ function PlanResultDialog({
                       </p>
                       <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 xl:grid-cols-2">
                         <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">Dose</span>
+                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowMetricDose}</span>
                           <span className="font-semibold text-primary">{formatRoundedGrams(plan.doseG)}</span>
                         </span>
                         <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{plan.iceMl > 0 ? copy.hotWater : copy.totalWater}</span>
-                          <span className="font-semibold text-primary">{formatRoundedMl(plan.iceMl > 0 ? plan.hotWaterMl : plan.totalWaterMl)}</span>
+                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{methodBrief.primaryLabel}</span>
+                          <span className="font-semibold text-primary">{methodBrief.primaryValue}</span>
                         </span>
                         {plan.iceMl > 0 && (
                           <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
@@ -2621,11 +2723,11 @@ function PlanResultDialog({
                           <span className="font-semibold text-primary">1:{plan.finalBeverageRatio}</span>
                         </span>
                         <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">Next</span>
+                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowMetricNext}</span>
                           <span className="font-semibold text-primary">{formatGuideTime(flowStepRemainingSeconds)}</span>
                         </span>
                         <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">Total</span>
+                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowMetricTotal}</span>
                           <span className="font-semibold text-primary">{formatGuideTime(plan.totalTimeSeconds)}</span>
                         </span>
                       </div>
@@ -2634,6 +2736,11 @@ function PlanResultDialog({
                           ? buildAiBrewStepQuickNote(flowCurrentStep, language)
                           : localizedSummary}
                       </p>
+                      {flowCurrentStep && (
+                        <p className="mt-2 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">
+                          {buildAiBrewStepMethodFocusCue(plan, flowCurrentStep, language)}
+                        </p>
+                      )}
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">
@@ -2691,6 +2798,7 @@ function PlanResultDialog({
                         ? 'current'
                         : 'next';
                     const quickNote = buildAiBrewStepQuickNote(step, language);
+                    const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
                     const showStepNote = state === 'current' && Boolean(quickNote);
 
                     return (
@@ -2729,6 +2837,9 @@ function PlanResultDialog({
                         </div>
                         {showStepNote && (
                           <p className="mt-2 text-sm leading-5 text-secondary">{quickNote}</p>
+                        )}
+                        {state === 'current' && methodFocusCue && methodFocusCue.toLowerCase() !== quickNote.toLowerCase() && (
+                          <p className="mt-2 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">{methodFocusCue}</p>
                         )}
                       </div>
                     );

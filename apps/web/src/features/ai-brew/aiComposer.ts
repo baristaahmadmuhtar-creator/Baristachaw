@@ -113,31 +113,55 @@ const AI_TIMEOUT_PATTERNS = [
   /\btime limit exceeded\b/i,
 ];
 
-const STEP_ACTION_VERB_PATTERN = /\b(pour|wait|swirl|stir|hold|level(?:ing)?|bloom|pulse|release|drawdown|finish|keep(?:ing)?|sett(?:le|ling)|agitate|pause|rest|spin|tap|drain|immerse|steep|press|plunge|heat|extract|serve|decant|filter)\b/gi;
+const STEP_ACTION_VERB_PATTERN = /\b(pour|wait|swirl|stir|hold|level(?:ing)?|bloom|pulse|release|open|drawdown|finish|keep(?:ing)?|sett(?:le|ling)|agitate|pause|rest|spin|tap|drain|immerse|steep|press|plunge|heat|extract|serve|decant|filter|separate)\b/gi;
 const IMMERSION_WORKFLOW_PATTERN = /\b(immersion|immerse|steep|steeping|hold\s+for\s+\d+\s*(?:sec|s|min|minutes?)|release\s+valve|plunge)\b/i;
 const PERCOLATION_WORKFLOW_PATTERN = /\b(concentric|circle|spiral|pulse(?:\s+pour)?|ring\s+pour)\b/i;
 const HOLD_DURATION_PATTERN = /\b(?:wait|hold|pause|rest)\s+(?:for\s+)?(\d+(?:\.\d+)?)\s*(s|sec|secs|second|seconds|min|mins|minute|minutes)\b/gi;
-const ENTRY_PHASE_CUE_PATTERN = /\b(bloom|wet|saturat|immerse|steep|soak|contact\s*time)\b/i;
-const MID_PHASE_CUE_PATTERN = /\b(pulse|cadence|stable|maintain|height|center|flow|stream|hold)\b/i;
-const FINAL_PHASE_CUE_PATTERN = /\b(finish|final|drawdown|close|sett(?:le|ling)|release|drain|level(?:ing)?|serve|plunge)\b/i;
+const ENTRY_PHASE_CUE_PATTERN = /\b(bloom|wet|saturat|immerse|steep|soak|contact\s*time|prepare|start|load|fill|raise|heat)\b/i;
+const MID_PHASE_CUE_PATTERN = /\b(pulse|cadence|stable|maintain|height|center|flow|stream|hold|contact|cycle|extract|steep)\b/i;
+const FINAL_PHASE_CUE_PATTERN = /\b(finish|final|drawdown|close|sett(?:le|ling)|release|drain|level(?:ing)?|serve|plunge|press|stop|separate|decant|filter|remove)\b/i;
 const HARD_ENTRY_PHASE_CUE_PATTERN = /\b(bloom|initial\s+saturat|first\s+wet|immerse|steep|soak|contact\s*time)\b/i;
 const HARD_FINAL_PHASE_CUE_PATTERN = /\b(finish|final|drawdown|close|release|drain|serve|plunge)\b/i;
 const STEP_PARAMETER_SHIFT_VERB_PATTERN = /\b(increase|decrease|raise|lower|coarsen|coarser|finer|tighten|loosen|change|adjust|bump|drop|reduce)\b/i;
 const STEP_PARAMETER_SHIFT_TARGET_PATTERN = /\b(grind|temperature|temp|ratio|dose|water|brew\s*time|time)\b/i;
+const STEP_PARAMETER_SHIFT_PAIR_PATTERN = /\b(?:increase|decrease|raise|lower|coarsen|coarser|finer|tighten|loosen|change|adjust|bump|drop|reduce)\s+(?:the\s+)?(?:grind|temperature|temp|ratio|dose|water|brew\s*time|time)\b|\b(?:grind|temperature|temp|ratio|dose|water|brew\s*time|time)\s+(?:up|down|higher|lower|coarser|finer|tighter|looser)\b/i;
 const STEP_HEDGING_PATTERN = /\b(if needed|if required|if possible|optional|to taste|as desired|at your discretion|adjust accordingly|adjust based on feel)\b/i;
 const STEP_APPROXIMATION_PATTERN = /\b(roughly|approximately|approx\.?|estimate(?:d)?)\b/i;
 const STEP_FAKE_EXECUTION_PATTERN = /\b(?:simulate|simulasi|pretend|imagine|hypothetical|as if|fiktif|dummy)\b/i;
 const STEP_OUT_OF_RUN_ADVICE_PATTERN = /\b(if\s+sour|if\s+bitter|if\s+thin|if\s+muddy|if\s+hollow|next\s+cup|next\s+brew|on\s+the\s+next\s+cup|on\s+the\s+next\s+brew|for\s+the\s+next\s+cup|for\s+the\s+next\s+brew)\b/i;
 const STEP_POST_BREW_DILUTION_PATTERN = /\b(?:add|top[\s-]?up|dilute|bypass(?:\s+with)?)\s+(?:\d+(?:\.\d+)?\s*ml\s+(?:of\s+)?)?(?:hot\s+)?(?:water|ice)\s+\d+(?:\.\d+)?\s*ml\b|\b(?:add|top[\s-]?up|dilute|bypass(?:\s+with)?)\s+\d+(?:\.\d+)?\s*ml\s+(?:of\s+)?(?:hot\s+)?(?:water|ice)\b/i;
-const STEP_CLOCK_TIME_PATTERN = /\b(\d{1,2}):([0-5]\d)\b/g;
+const STEP_CLOCK_TIME_PATTERN = /\b(\d{1,4}):([0-5]\d)\b/g;
+
+function hasStepParameterShiftInstruction(line: string) {
+  const normalized = line
+    .toLowerCase()
+    .replace(/\blower chamber\b/g, 'moka chamber')
+    .replace(/\bbelow the safety valve\b/g, 'under the safety valve');
+  return (
+    STEP_PARAMETER_SHIFT_VERB_PATTERN.test(normalized) &&
+    STEP_PARAMETER_SHIFT_TARGET_PATTERN.test(normalized) &&
+    STEP_PARAMETER_SHIFT_PAIR_PATTERN.test(normalized)
+  );
+}
 const STEP_UNSUPPORTED_HARDWARE_PATTERN = /\b(aeropress|french\s+press|moka\s+pot|portafilter|espresso\s+machine|steam\s+wand)\b/i;
 const STEP_NON_IMMERSION_RELEASE_HARDWARE_PATTERN = /\b(release\s+valve|open\s+valve|plunger|plunge|open\s+switch|switch\s+release|clever\s+switch)\b/i;
 const RESISTANT_EXTRACTION_CONFLICT_PATTERN = /\b(short(?:en)?\s+contact|quick(?:en)?\s+drawdown|faster\s+flow|reduce\s+slurry\s+contact)\b/i;
 const EASY_EXTRACTION_CONFLICT_PATTERN = /\b(extend(?:ed)?\s+contact|slow(?:er)?\s+drawdown|long(?:er)?\s+slurry\s+hold|increase\s+contact\s+time)\b/i;
 const SERVICE_PATTERN_GENERIC_PATTERN = /\b(default|standard|generic|flexible|simple)\s+(style|pattern)\b/i;
 const FLAT_BED_METHODS = new Set<BrewPlan['methodFamily']>(['kalita_wave', 'april', 'melitta']);
+const POUR_OVER_METHODS = new Set<BrewPlan['methodFamily']>(['v60', 'chemex', 'kalita_wave', 'origami', 'april', 'melitta', 'kono']);
 const RELEASE_HARDWARE_METHODS = new Set<BrewPlan['methodFamily']>(['clever_dripper', 'aeropress', 'french_press']);
-const IMMERSION_WORKFLOW_METHODS = new Set<BrewPlan['methodFamily']>(['clever_dripper', 'french_press', 'aeropress', 'cold_brew']);
+const IMMERSION_WORKFLOW_METHODS = new Set<BrewPlan['methodFamily']>(['clever_dripper', 'french_press', 'aeropress', 'siphon', 'cold_brew']);
+const MANUAL_POUR_OVER_CONFLICT_PATTERN = /\b(concentric|circle|spiral|ring\s+pour|gooseneck\s+circle|kettle\s+circle)\b/i;
+const METHOD_CUE_PATTERNS: Partial<Record<BrewPlan['methodFamily'], RegExp>> = {
+  espresso: /\b(espresso|shot|yield|extract|flow|pressure|pump|stop)\b/i,
+  moka_pot: /\b(moka|base|boiler|safety\s+valve|heat|stovetop|sputter|boil|serve)\b/i,
+  cold_brew: /\b(cold\s+brew|cool\s+water|room\s+temp|steep|saturat|filter|decant|concentrate)\b/i,
+  batch_brew: /\b(batch|machine|brew\s+cycle|basket|spray|drawdown|carafe|bed)\b/i,
+  french_press: /\b(french\s+press|press\s+pot|immersion|steep|press|plunge|decant|separate)\b/i,
+  aeropress: /\b(aeropress|immersion|steep|press|plunge|hiss|cap|filter)\b/i,
+  siphon: /\b(siphon|syphon|vacuum|heat|upper\s+chamber|drawdown|stir|agitate)\b/i,
+};
 const RELATIVE_VALUE_CONTEXT_PATTERN = /\b(by|raise|raised|increase|increased|decrease|decreased|lower|lowered|higher|hotter|cooler|drop|dropped|bump|bumped|more|less)\b/i;
 const TEMPLATE_STOPWORDS = new Set([
   'the', 'and', 'with', 'for', 'from', 'that', 'this', 'then', 'into', 'while', 'keep', 'pour', 'step', 'profile',
@@ -325,7 +349,7 @@ function normalizeStepTextForSimilarity(plan: BrewPlan, line: string) {
   let normalized = line
     .toLowerCase()
     .replace(/^\d+\.\s+/, '')
-    .replace(/\b\d{1,2}:[0-5]\d\b/g, ' ')
+    .replace(/\b\d{1,4}:[0-5]\d\b/g, ' ')
     .replace(/\b\d+(?:\.\d+)?\s*(?:ml|g|c|sec|secs|second|seconds|min|mins|minute|minutes)\b/g, ' ')
     .replace(/\b\d+(?:\.\d+)?\b/g, ' ');
 
@@ -450,19 +474,20 @@ function isStepLineRepairSafe(plan: BrewPlan, line: string) {
   if (extractClockTimesInSeconds(line).length > 1) return false;
 
   const pourMatches = Array.from(normalized.matchAll(/\bpour\s+\d+(?:\.\d+)?\s*ml\b/gi)).length;
-  const targetMatches = Array.from(normalized.matchAll(/\b(?:to|reach|target)\s+\d+(?:\.\d+)?\s*ml\b/gi)).length;
+  const targetMatches = Array.from(normalized.matchAll(/\b(?:to|reach|target(?:\s+yield)?)\s+\d+(?:\.\d+)?\s*ml\b/gi)).length;
   if (pourMatches > 1 || targetMatches > 1) return false;
 
   const lowered = normalized.toLowerCase();
-  if (STEP_PARAMETER_SHIFT_VERB_PATTERN.test(lowered) && STEP_PARAMETER_SHIFT_TARGET_PATTERN.test(lowered)) return false;
+  if (hasStepParameterShiftInstruction(lowered)) return false;
   if (plan.methodFamily === 'clever_dripper' && PERCOLATION_WORKFLOW_PATTERN.test(normalized)) return false;
-  if (!IMMERSION_WORKFLOW_METHODS.has(plan.methodFamily) && IMMERSION_WORKFLOW_PATTERN.test(normalized)) return false;
+  if (POUR_OVER_METHODS.has(plan.methodFamily) && IMMERSION_WORKFLOW_PATTERN.test(normalized)) return false;
+  if (!POUR_OVER_METHODS.has(plan.methodFamily) && MANUAL_POUR_OVER_CONFLICT_PATTERN.test(normalized)) return false;
   return true;
 }
 
 function extractStepTailAfterCheckpoint(line: string) {
   const withoutPrefix = stripStepNumberPrefix(line);
-  const checkpoint = withoutPrefix.match(/\b(?:to|reach|target)\s+\d+(?:\.\d+)?\s*ml\b/i);
+  const checkpoint = withoutPrefix.match(/\b(?:to|reach|target(?:\s+yield)?)\s+\d+(?:\.\d+)?\s*ml\b/i);
   if (!checkpoint || checkpoint.index === undefined) return withoutPrefix;
   const tail = withoutPrefix.slice(checkpoint.index + checkpoint[0].length).trim();
   return tail.replace(/^[,;:\-]\s*/, '').trim();
@@ -479,7 +504,7 @@ function rebuildStepLineWithinEnvelope(
   const hasPostPourAction = actions.some((verb) => verb !== 'pour');
   const rawTail = extractStepTailAfterCheckpoint(aiLine);
   const cleanedTail = rawTail
-    .replace(/\b\d{1,2}:[0-5]\d\b/g, ' ')
+    .replace(/\b\d{1,4}:[0-5]\d\b/g, ' ')
     .replace(/\s+/g, ' ')
     .replace(/^and\s+/i, '')
     .trim();
@@ -522,6 +547,27 @@ function collectTechniqueNotes(plan: BrewPlan) {
     notes.push('Keep pours compact and controlled to avoid melting ice too early.');
   }
   switch (plan.methodFamily) {
+    case 'espresso':
+      notes.push('Treat the liquid number as beverage yield, then stop by yield, time, and flow rather than by extra water.');
+      break;
+    case 'moka_pot':
+      notes.push('Keep heat moderate, do not tamp the basket, and remove from heat before harsh sputtering or boiling.');
+      break;
+    case 'cold_brew':
+      notes.push('Fully saturate the coarse bed, keep the long steep stable, then filter or decant cleanly before serving.');
+      break;
+    case 'batch_brew':
+      notes.push('Dose the basket evenly, let the machine complete the brew cycle and drawdown, then mix the batch before tasting.');
+      break;
+    case 'french_press':
+      notes.push('Use full immersion contact, then press slowly and decant so fines do not keep extracting in the cup.');
+      break;
+    case 'aeropress':
+      notes.push('Keep immersion short and controlled, then press steadily without forcing the last hiss into the cup.');
+      break;
+    case 'siphon':
+      notes.push('Control heat and agitation while the upper chamber is active, then let vacuum drawdown finish cleanly.');
+      break;
     case 'kalita_wave':
     case 'april':
       notes.push('Keep the kettle low and use short, center-focused pulses for flat-bed evenness.');
@@ -567,6 +613,69 @@ function deriveServicePattern(plan: BrewPlan) {
 
   const methodPattern = (() => {
     switch (plan.methodFamily) {
+      case 'espresso':
+        return {
+          name: 'Yield-Locked Espresso',
+          actions: [
+            'prepare puck and start extraction against the yield target',
+            'track flow and time while the shot builds sweetness',
+            'stop cleanly at target yield before the finish turns hollow',
+          ],
+        };
+      case 'moka_pot':
+        return {
+          name: 'Moderate-Heat Moka',
+          actions: [
+            'fill the base correctly and keep the basket loose',
+            'hold moderate heat so pressure rises without boiling the brew',
+            'remove from heat as the upper chamber fills before harsh sputter',
+          ],
+        };
+      case 'cold_brew':
+        return {
+          name: 'Cold Immersion Hold',
+          actions: [
+            'wet the coarse bed completely with cool water',
+            'hold a stable steep window without extra agitation',
+            'filter and decant cleanly before dilution or service',
+          ],
+        };
+      case 'batch_brew':
+        return {
+          name: 'Batch Cycle Control',
+          actions: [
+            'load the basket evenly before the machine cycle starts',
+            'keep the brew cycle stable through spray and drawdown',
+            'mix the finished batch before tasting or serving',
+          ],
+        };
+      case 'french_press':
+        return {
+          name: 'Calm Immersion Press',
+          actions: [
+            'saturate all grounds and start full immersion evenly',
+            'hold contact time without stirring fines into suspension',
+            'press slowly and separate the brew before it keeps extracting',
+          ],
+        };
+      case 'aeropress':
+        return {
+          name: 'Short Immersion Press',
+          actions: [
+            'saturate the chamber evenly and start a compact immersion',
+            'hold the steep window steady before the press',
+            'press smoothly to target and stop before harsh resistance',
+          ],
+        };
+      case 'siphon':
+        return {
+          name: 'Vacuum Heat Drawdown',
+          actions: [
+            'raise water to the upper chamber with steady heat',
+            'stir briefly and hold heat just enough for stable contact',
+            'cut heat and let vacuum drawdown finish cleanly',
+          ],
+        };
       case 'kalita_wave':
       case 'april':
       case 'melitta':
@@ -611,6 +720,7 @@ function deriveServicePattern(plan: BrewPlan) {
     }
   })();
 
+  const isPourOverWorkflow = POUR_OVER_METHODS.has(plan.methodFamily);
   const targetOverlay = plan.methodFamily === 'clever_dripper'
     ? (target.includes('acidity')
       ? [
@@ -635,6 +745,30 @@ function deriveServicePattern(plan: BrewPlan) {
             'maintain consistent mid-brew immersion flow',
             'finish calmly to keep clarity and sweetness aligned',
           ])
+    : !isPourOverWorkflow
+      ? (target.includes('acidity')
+        ? [
+          'keep entry contact controlled for clarity lift',
+          'protect clean acidity with a compact method-specific window',
+          'avoid overrun at the finish so sharpness does not rise',
+        ]
+        : target.includes('body')
+          ? [
+            'build contact depth without forcing extraction',
+            'hold the middle phase stable for body retention',
+            'finish deliberately so the cup stays full instead of muddy',
+          ]
+          : target.includes('sweetness')
+            ? [
+              'focus on even saturation for sugar development',
+              'keep the middle phase stable to build a round center',
+              'stop cleanly to preserve sweetness and roundness',
+            ]
+            : [
+              'prioritize repeatable contact and clean extraction',
+              'maintain method timing through the middle phase',
+              'finish calmly to keep clarity and sweetness aligned',
+            ])
     : target.includes('acidity')
       ? [
         'keep early turbulence low for clarity lift',
@@ -678,6 +812,24 @@ function deriveServicePattern(plan: BrewPlan) {
           'hold mid-brew contact stable through the immersion phase',
           'close with controlled release and minimal disturbance',
         ])
+    : !isPourOverWorkflow
+      ? (beanFragile
+        ? [
+          'keep entry contact gentle to avoid sharp extraction spikes',
+          'hold a calm transition to protect sweetness',
+          'close softly and avoid forcing late extraction',
+        ]
+        : beanDense
+          ? [
+            'make early saturation complete to unlock denser soluble layers',
+            'sustain method contact slightly longer before finishing',
+            'close with deliberate control to avoid underdeveloped finish',
+          ]
+          : [
+            'keep early saturation complete and repeatable',
+            'hold the middle phase stable through the method window',
+            'close with controlled finish and minimal disturbance',
+          ])
     : beanFragile
       ? [
         'keep pulse entry gentle to avoid sharp extraction spikes',
@@ -713,6 +865,24 @@ function deriveServicePattern(plan: BrewPlan) {
           'hold the contact windows even from step to step',
           'finish with calm release and no late swirl',
         ])
+    : !isPourOverWorkflow
+      ? (softWater
+        ? [
+          'keep agitation moderate to prevent over-bright edge',
+          'avoid abrupt intensity changes in the middle phase',
+          'finish with low turbulence before service',
+        ]
+        : hardWater
+          ? [
+            'keep contact focused longer to resist flat buffering',
+            'limit unnecessary agitation that can mute clarity',
+            'finish with controlled separation to keep structure alive',
+          ]
+          : [
+            'maintain stable contact for balance',
+            'hold the method windows even from step to step',
+            'finish calmly with no late agitation',
+          ])
     : softWater
       ? [
         'use narrower stream width to prevent over-bright edge',
@@ -738,6 +908,14 @@ function deriveServicePattern(plan: BrewPlan) {
       'tighten release readiness and protect drawdown momentum',
       'settle bed quietly and lock final extraction before release ends',
     ]
+    : !isPourOverWorkflow
+      ? [
+        'calibrate entry contact and wet grounds evenly without agitation shock',
+        'stabilize method contact before the next checkpoint',
+        'protect timing while keeping extraction repeatable',
+        'tighten finish readiness and protect cup structure',
+        'separate cleanly and lock final extraction before service',
+      ]
     : [
       'calibrate entry flow and wet grounds edge-to-edge without channel shock',
       'stabilize slurry height before opening the next pulse window',
@@ -754,6 +932,132 @@ function deriveServicePattern(plan: BrewPlan) {
   };
   const methodPhaseActions = (() => {
     switch (plan.methodFamily) {
+      case 'espresso':
+        return {
+          entry: [
+            'prepare puck and start extraction against the target yield',
+            'start the shot cleanly and watch flow instead of adding water',
+            'lock the first seconds to yield, time, and flow together',
+          ],
+          middle: [
+            'track shot flow as sweetness builds toward target yield',
+            'hold extraction steady and avoid extending the shot past the plan',
+            'keep the stream stable while the target profile develops',
+          ],
+          final: [
+            'stop by target yield before the finish blondes or turns hollow',
+            'end the shot cleanly and separate the beverage at target yield',
+            'finish on yield and time together, not on extra water',
+          ],
+        };
+      case 'moka_pot':
+        return {
+          entry: [
+            'fill the base below the safety valve and keep the basket loose',
+            'prepare the lower chamber correctly before heat builds pressure',
+            'start with loose grounds and enough headspace for moka pressure',
+          ],
+          middle: [
+            'hold moderate heat so the brew rises without boiling',
+            'keep stovetop heat steady while the upper chamber fills',
+            'avoid high heat that pushes bitter boiled flavors',
+          ],
+          final: [
+            'remove from heat before harsh sputtering takes over',
+            'stop the moka run as the upper chamber fills and serve promptly',
+            'finish before boiling or aggressive sputter makes the cup harsh',
+          ],
+        };
+      case 'cold_brew':
+        return {
+          entry: [
+            'saturate the coarse bed completely with cool water',
+            'wet dry pockets fully before the long steep begins',
+            'start with even cool-water contact across the grounds',
+          ],
+          middle: [
+            'hold the steep stable without extra agitation',
+            'keep immersion calm through the long contact window',
+            'maintain cool contact so extraction stays mellow',
+          ],
+          final: [
+            'filter and decant cleanly before dilution or service',
+            'separate the concentrate from grounds so extraction stops cleanly',
+            'finish by filtering fines away before tasting or serving',
+          ],
+        };
+      case 'batch_brew':
+        return {
+          entry: [
+            'load the basket evenly and start the brew cycle cleanly',
+            'set a level bed before machine spray begins',
+            'begin the batch cycle with even dose distribution',
+          ],
+          middle: [
+            'let the machine cycle run stable through spray and drawdown',
+            'watch basket flow and avoid disturbing the bed mid-cycle',
+            'keep the brew cycle consistent while the carafe fills',
+          ],
+          final: [
+            'let drawdown finish before mixing the finished batch',
+            'mix the carafe after final drawdown so the batch tastes even',
+            'finish the cycle cleanly and stir the batch before service',
+          ],
+        };
+      case 'french_press':
+        return {
+          entry: [
+            'immerse all grounds evenly and start full contact',
+            'saturate the press pot fully before the steep window',
+            'wet the bed completely and keep fines calm',
+          ],
+          middle: [
+            'hold the steep without unnecessary stirring',
+            'keep immersion contact stable while body develops',
+            'let the press pot steep calmly before separation',
+          ],
+          final: [
+            'press slowly and decant so fines stop extracting',
+            'plunge gently and separate the brew before the cup muddies',
+            'finish with a calm press and clean decant',
+          ],
+        };
+      case 'aeropress':
+        return {
+          entry: [
+            'saturate the chamber evenly and start compact immersion',
+            'wet the AeroPress bed fully before the short steep',
+            'open with even immersion contact inside the chamber',
+          ],
+          middle: [
+            'hold the steep window steady before pressing',
+            'keep the chamber calm and avoid stirring fines aggressively',
+            'maintain short immersion timing so the cup stays clean',
+          ],
+          final: [
+            'press smoothly to target and stop before harsh resistance',
+            'plunge steadily and avoid forcing the last hiss',
+            'finish with steady pressure and stop cleanly at target',
+          ],
+        };
+      case 'siphon':
+        return {
+          entry: [
+            'raise water to the upper chamber with steady heat',
+            'seat the upper chamber and build vacuum contact cleanly',
+            'start the siphon phase with stable heat and clear transfer',
+          ],
+          middle: [
+            'stir briefly and hold heat just enough for stable contact',
+            'keep agitation measured while the upper chamber extracts',
+            'maintain vacuum contact without over-stirring the slurry',
+          ],
+          final: [
+            'cut heat and let vacuum drawdown finish cleanly',
+            'allow drawdown to pull the brew through without extra agitation',
+            'finish by separating the upper chamber after drawdown completes',
+          ],
+        };
       case 'clever_dripper':
         return {
           entry: [
@@ -863,10 +1167,14 @@ function deriveServicePattern(plan: BrewPlan) {
     ? 'Water is soft/low-buffer, so keep agitation moderate to avoid sharp edges.'
     : hardWater
       ? 'Water is buffered, so keep flow focused to avoid flattening the cup.'
-      : 'Water is balanced, so prioritize repeatable pour tempo.';
+      : isPourOverWorkflow
+        ? 'Water is balanced, so prioritize repeatable pour tempo.'
+        : 'Water is balanced, so prioritize repeatable method timing and clean separation.';
   const modeCue = plan.brewMode === 'iced'
     ? `Iced mode active: front-load extraction and keep pour windows compact before dilution; lock split at ${plan.hotWaterMl} ml hot / ${plan.iceMl} ml ice.`
-    : 'Hot mode active: preserve thermal stability and hit each checkpoint on time.';
+    : isPourOverWorkflow
+      ? 'Hot mode active: preserve thermal stability and hit each pour checkpoint on time.'
+      : 'Hot mode active: preserve thermal stability and hit each method checkpoint on time.';
 
   return {
     sequenceName,
@@ -881,15 +1189,20 @@ function getContextControlPoints(plan: BrewPlan) {
   const target = plan.targetProfileLabel.toLowerCase();
   const softWater = /soft|low/i.test(plan.waterMinerals.styleLabel);
   const bufferedWater = /hard|buffer/i.test(plan.waterMinerals.styleLabel);
+  const isPourOverWorkflow = POUR_OVER_METHODS.has(plan.methodFamily);
 
   if (target.includes('acidity')) {
     points.push('Prioritize cleaner early flow and avoid over-agitation after the midpoint.');
   } else if (target.includes('body')) {
-    points.push('Keep slurry depth stable and avoid stalling between pulses to preserve body.');
+    points.push(isPourOverWorkflow
+      ? 'Keep slurry depth stable and avoid stalling between pulses to preserve body.'
+      : 'Keep contact depth stable and avoid forcing the finish so body stays clean.');
   } else if (target.includes('sweetness')) {
     points.push('Keep the bed calm late in the brew to lock in sweetness and avoid bitterness.');
   } else {
-    points.push('Balance clarity and sweetness by holding consistent center-to-mid pour paths.');
+    points.push(isPourOverWorkflow
+      ? 'Balance clarity and sweetness by holding consistent center-to-mid pour paths.'
+      : 'Balance clarity and sweetness by holding consistent contact timing and clean separation.');
   }
 
   if (target.includes('acidity') && bufferedWater) {
@@ -897,7 +1210,9 @@ function getContextControlPoints(plan: BrewPlan) {
   } else if (target.includes('body') && softWater) {
     points.push('Softer water can thin this body target; for the best next cup, raise hardness slightly or reduce agitation before changing ratio.');
   } else if (!softWater && !bufferedWater) {
-    points.push('Water profile is balanced, so prioritize repeatable flow and stable drawdown rhythm.');
+    points.push(isPourOverWorkflow
+      ? 'Water profile is balanced, so prioritize repeatable flow and stable drawdown rhythm.'
+      : 'Water profile is balanced, so prioritize repeatable timing and clean service separation.');
   }
 
   if (plan.beanProfile.active) {
@@ -907,6 +1222,22 @@ function getContextControlPoints(plan: BrewPlan) {
 }
 
 function getSourFix(plan: BrewPlan) {
+  switch (plan.methodFamily) {
+    case 'espresso':
+      return 'Tighten grind slightly or extend yield only within the planned ratio window; keep dose and temperature fixed first.';
+    case 'moka_pot':
+      return 'Use slightly finer moka grind or lower heat less aggressively; keep the basket loose and water below the valve.';
+    case 'cold_brew':
+      return 'Extend steep time in the next batch or grind slightly finer, then filter at the same dilution.';
+    case 'batch_brew':
+      return 'Tighten grind a small step and verify the basket bed is level before changing dose.';
+    case 'french_press':
+      return 'Extend steep slightly or grind a touch finer, then press slowly and decant promptly.';
+    case 'aeropress':
+      return 'Add a short steep extension or tighten grind slightly before pressing; keep press pressure steady.';
+    case 'siphon':
+      return 'Extend upper-chamber contact slightly or stir once more before heat-off; keep drawdown clean.';
+  }
   if (plan.grindBias === 'coarser') {
     return 'Tighten grind by 0.5-1 step, keep temperature fixed, and repeat the same pour map.';
   }
@@ -917,6 +1248,22 @@ function getSourFix(plan: BrewPlan) {
 }
 
 function getBitterFix(plan: BrewPlan) {
+  switch (plan.methodFamily) {
+    case 'espresso':
+      return 'Stop the shot earlier by yield/flow or coarsen a small step; do not stretch the shot for more volume.';
+    case 'moka_pot':
+      return 'Lower heat and remove earlier before sputter; keep the basket untamped.';
+    case 'cold_brew':
+      return 'Shorten steep time or grind coarser for the next batch, then filter thoroughly.';
+    case 'batch_brew':
+      return 'Coarsen a small step and check that the basket is not overfilled or channeling.';
+    case 'french_press':
+      return 'Shorten steep or decant sooner after pressing so fines stop extracting.';
+    case 'aeropress':
+      return 'Press sooner or coarsen slightly, and stop before forcing the last hiss.';
+    case 'siphon':
+      return 'Reduce agitation and cut heat a little earlier so drawdown finishes without harshness.';
+  }
   if (plan.grindBias === 'finer') {
     return 'Coarsen grind by 0.5-1 step, then keep the same pulse timing and total water.';
   }
@@ -947,12 +1294,16 @@ export function buildDeterministicNarrative(plan: BrewPlan, mode: AiBrewNarrativ
     const ratioLine = plan.brewMode === 'iced'
       ? `final ratio 1:${plan.finalBeverageRatio} with a hot concentrate at 1:${plan.hotExtractionRatio}`
       : `ratio 1:${plan.recommendedRatio}`;
+    const executionNoun = POUR_OVER_METHODS.has(plan.methodFamily) ? 'pour' : 'method';
+    const microAdjustment = POUR_OVER_METHODS.has(plan.methodFamily)
+      ? 'minor center-pour flow change'
+      : 'minor timing or separation change';
     return [
       '## Why It Fits',
       `This plan targets ${plan.targetProfileLabel.toLowerCase()} with ${plan.dripper.name} using ${ratioLine} at ${plan.waterTempC} C and a ${formatSeconds(plan.totalTimeSeconds)} service window. The sequence is anchored to deterministic water split (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''}) and grinder bias (${plan.grindBias}) for repeatable extraction.`,
       '## Focus',
-      `- Execute each pour at its planned timestamp; do not shift total hot water beyond ${plan.hotWaterMl} ml.`,
-      '- Track drawdown behavior and keep adjustments micro: grind step, 1 C temperature, or minor center-pour flow change.',
+      `- Execute each ${executionNoun} checkpoint at its planned timestamp; do not shift the deterministic liquid target beyond ${plan.hotWaterMl} ml.`,
+      `- Track method behavior and keep adjustments micro: grind step, 1 C temperature, or ${microAdjustment}.`,
     ].join('\n');
   }
 
@@ -1037,9 +1388,11 @@ function validatePlaceholders(normalized: string, errors: string[]) {
   }
 }
 
-function validateForbiddenInstructions(normalized: string, errors: string[]) {
+function validateForbiddenInstructions(plan: BrewPlan, normalized: string, errors: string[]) {
   const forbidden = [
-    /\b(espresso machine|portafilter|steam wand|backflush)\b/i,
+    ...(plan.methodFamily === 'espresso'
+      ? [/\b(steam\s+wand|backflush)\b/i]
+      : [/\b(espresso machine|portafilter|steam wand|backflush)\b/i]),
     /\b(pressure\s*\d+\s*bar)\b/i,
     /\b(boil(ed)?\s+water\s+to\s+\d{3,})\b/i,
     /\b(skip\s+to\s+the\s+next\s+step\s+if\s+needed)\b/i,
@@ -1052,7 +1405,7 @@ function validateForbiddenInstructions(normalized: string, errors: string[]) {
     STEP_POST_BREW_DILUTION_PATTERN,
   ];
   if (forbidden.some((pattern) => pattern.test(normalized))) {
-    errors.push('Contains instructions that do not match manual-brew workflow.');
+    errors.push('Contains instructions that do not match the selected brew workflow.');
   }
 }
 
@@ -1108,7 +1461,7 @@ function validateNumericEnvelope(
   const timeMatches = mode === 'generate'
     ? []
     : getStepSectionLines(mode, normalized)
-      .flatMap((line) => [...line.matchAll(/\b(\d{1,2}):([0-5]\d)\b/g)]);
+      .flatMap((line) => [...line.matchAll(/\b(\d{1,4}):([0-5]\d)\b/g)]);
   if (timeMatches.length > 1) {
     let last = -1;
     for (const match of timeMatches) {
@@ -1192,15 +1545,22 @@ function validateStepNumbering(plan: BrewPlan, mode: AiBrewNarrativeMode, normal
 function validateStepExecutionLanguage(plan: BrewPlan, mode: AiBrewNarrativeMode, normalized: string, errors: string[]) {
   if (mode === 'generate') return;
   const numberedSteps = getStepSectionLines(mode, normalized);
+  const expectedVerbMap: Record<NonNullable<BrewPlan['steps'][number]['kind']>, string[]> = {
+    pour: ['pour'],
+    wait: ['wait', 'hold', 'pause', 'rest', 'steep', 'immerse'],
+    release: ['release', 'drawdown', 'drain', 'open'],
+    drawdown: ['drawdown', 'drain', 'finish', 'settle'],
+    press: ['press', 'plunge'],
+    heat: ['heat', 'keep'],
+    extract: ['extract'],
+    serve: ['serve', 'decant', 'filter', 'separate'],
+  };
   for (let index = 0; index < numberedSteps.length; index += 1) {
     const line = numberedSteps[index];
     const expectedKind = plan.steps[index]?.kind || 'pour';
     const verbs = collectActionVerbs(line);
-    if (expectedKind === 'pour' && !verbs.includes('pour')) {
-      errors.push(`Step must include deterministic pour action: "${line}".`);
-      break;
-    }
-    if (expectedKind !== 'pour' && !verbs.some((verb) => ['wait', 'hold', 'release', 'drawdown', 'drain', 'steep'].includes(verb))) {
+    const expectedVerbs = expectedVerbMap[expectedKind];
+    if (!verbs.some((verb) => expectedVerbs.includes(verb))) {
       errors.push(`Step must include deterministic ${expectedKind} action: "${line}".`);
       break;
     }
@@ -1228,7 +1588,7 @@ function validateStepParameterShiftInstructions(mode: AiBrewNarrativeMode, norma
   const stepLines = getStepSectionLines(mode, normalized);
   for (const line of stepLines) {
     const lowered = line.toLowerCase();
-    if (STEP_PARAMETER_SHIFT_VERB_PATTERN.test(lowered) && STEP_PARAMETER_SHIFT_TARGET_PATTERN.test(lowered)) {
+    if (hasStepParameterShiftInstruction(lowered)) {
       errors.push(`Step contains mid-brew parameter shift instruction that is not executable in-run: "${line}".`);
       return;
     }
@@ -1291,7 +1651,7 @@ function validateStepCheckpointIntegrity(plan: BrewPlan, mode: AiBrewNarrativeMo
     const line = numberedSteps[index];
     const expected = plan.steps[index];
     const pourMatches = Array.from(line.matchAll(/\bpour\s+(\d+(?:\.\d+)?)\s*ml\b/gi));
-    const targetMatches = Array.from(line.matchAll(/\b(?:to|reach|target)\s+(\d+(?:\.\d+)?)\s*ml\b/gi));
+    const targetMatches = Array.from(line.matchAll(/\b(?:to|reach|target(?:\s+yield)?)\s+(\d+(?:\.\d+)?)\s*ml\b/gi));
 
     if (pourMatches.length > 1) {
       errors.push(`Step ${index + 1} contains multiple pour checkpoints; keep exactly one deterministic pour volume per step.`);
@@ -1331,7 +1691,7 @@ function validateStepCumulativeTargets(plan: BrewPlan, mode: AiBrewNarrativeMode
   for (let index = 0; index < Math.min(numberedSteps.length, plan.steps.length); index += 1) {
     const line = numberedSteps[index];
     const expected = plan.steps[index];
-    const targetMatch = line.match(/\b(?:to|reach|target)\s+(\d+(?:\.\d+)?)\s*ml\b/i);
+    const targetMatch = line.match(/\b(?:to|reach|target(?:\s+yield)?)\s+(\d+(?:\.\d+)?)\s*ml\b/i);
     if (!targetMatch) {
       errors.push(`Step ${index + 1} is missing cumulative volume checkpoint.`);
       return;
@@ -1361,7 +1721,7 @@ function validateStepTimeline(plan: BrewPlan, mode: AiBrewNarrativeMode, normali
   let previousExpected = -1;
   for (let index = 0; index < Math.min(numberedSteps.length, plan.steps.length); index += 1) {
     const line = numberedSteps[index];
-    const match = line.match(/\b(\d{1,2}):([0-5]\d)\b/);
+    const match = line.match(/\b(\d{1,4}):([0-5]\d)\b/);
     if (!match) {
       errors.push(`Step ${index + 1} is missing timing reference.`);
       return;
@@ -1718,6 +2078,7 @@ function validateMethodCueDistribution(plan: BrewPlan, mode: AiBrewNarrativeMode
   if (mode === 'generate') return;
   const stepLines = getStepSectionLines(mode, normalized);
   if (stepLines.length < 2) return;
+  const requiredMentions = Math.min(2, stepLines.length);
 
   if (plan.methodFamily === 'clever_dripper') {
     const firstLine = stepLines[0] || '';
@@ -1730,7 +2091,48 @@ function validateMethodCueDistribution(plan: BrewPlan, mode: AiBrewNarrativeMode
     return;
   }
 
-  const requiredMentions = Math.min(2, stepLines.length);
+  const methodCuePattern = METHOD_CUE_PATTERNS[plan.methodFamily];
+  if (methodCuePattern) {
+    const methodMentions = stepLines.filter((line) => methodCuePattern.test(line)).length;
+    if (methodMentions < requiredMentions) {
+      errors.push(`${plan.dripper.name} cues are too concentrated; include method-specific control cues in at least ${requiredMentions} steps.`);
+      return;
+    }
+
+    const firstLine = stepLines[0] || '';
+    const finalLine = stepLines[stepLines.length - 1] || '';
+    if ((plan.methodFamily === 'french_press' || plan.methodFamily === 'aeropress')
+      && (!/\b(immersion|immerse|steep|saturat|contact)\b/i.test(firstLine)
+        || !/\b(press|plunge|decant|separate|filter)\b/i.test(finalLine))) {
+      errors.push(`${plan.dripper.name} cues must be phase-distributed: entry needs immersion/contact and final needs press/separation.`);
+      return;
+    }
+    if (plan.methodFamily === 'moka_pot'
+      && (!/\b(base|boiler|safety\s+valve|heat)\b/i.test(firstLine + '\n' + stepLines[1])
+        || !/\b(remove|sputter|boil|serve|finish)\b/i.test(finalLine))) {
+      errors.push('Moka cues must cover base/heat setup early and remove-before-boil finish late.');
+      return;
+    }
+    if (plan.methodFamily === 'cold_brew'
+      && (!/\b(saturat|cool\s+water|cold\s+brew|steep)\b/i.test(firstLine)
+        || !/\b(filter|decant|separate|serve)\b/i.test(finalLine))) {
+      errors.push('Cold brew cues must cover full saturation early and filter/decant finish late.');
+      return;
+    }
+    if (plan.methodFamily === 'siphon'
+      && (!/\b(heat|upper\s+chamber|vacuum)\b/i.test(firstLine + '\n' + stepLines[1])
+        || !/\b(drawdown|cut\s+heat|separate|serve)\b/i.test(finalLine))) {
+      errors.push('Siphon cues must cover heat/vacuum setup early and drawdown finish late.');
+      return;
+    }
+    if (plan.methodFamily === 'espresso'
+      && !/\b(yield|stop|shot|serve|separate)\b/i.test(finalLine)) {
+      errors.push('Espresso cues must finish by shot yield, flow, or separation.');
+      return;
+    }
+    return;
+  }
+
   const percolationPattern = /\b(concentric|circle|spiral|pulse|center(?:ed)?|ring\s+pour|drawdown|flow|bed\s+(?:level|settle)|(?:level(?:ing)?|settle)\s+bed|stream)\b/i;
   const percolationMentions = stepLines.filter((line) => percolationPattern.test(line)).length;
   if (percolationMentions < requiredMentions) {
@@ -1768,8 +2170,19 @@ function validateMethodWorkflowConstraints(plan: BrewPlan, mode: AiBrewNarrative
     return;
   }
 
-  if (!IMMERSION_WORKFLOW_METHODS.has(plan.methodFamily) && IMMERSION_WORKFLOW_PATTERN.test(stepText)) {
+  if (POUR_OVER_METHODS.has(plan.methodFamily) && IMMERSION_WORKFLOW_PATTERN.test(stepText)) {
     errors.push(`${plan.dripper.name} workflow must not include immersion/release-only instructions.`);
+    return;
+  }
+
+  if (!POUR_OVER_METHODS.has(plan.methodFamily) && MANUAL_POUR_OVER_CONFLICT_PATTERN.test(stepText)) {
+    errors.push(`${plan.dripper.name} workflow must not rely on manual pour-over circle/concentric language.`);
+    return;
+  }
+
+  if (!IMMERSION_WORKFLOW_METHODS.has(plan.methodFamily)
+    && /\b(release\s+valve|open\s+valve|clever\s+switch)\b/i.test(stepText)) {
+    errors.push(`${plan.dripper.name} workflow must not include Clever-style release valve instructions.`);
   }
 }
 
@@ -1783,6 +2196,14 @@ function validateMethodSpecificOperationalCues(plan: BrewPlan, mode: AiBrewNarra
     const hasReleaseCue = /\b(release|open\s+valve|drawdown|drain|plunge)\b/i.test(stepText);
     if (!hasImmersionCue || !hasReleaseCue) {
       errors.push('Clever Dripper sequence must include both immersion-contact cue and release cue in operational steps.');
+    }
+    return;
+  }
+
+  const methodCuePattern = METHOD_CUE_PATTERNS[plan.methodFamily];
+  if (methodCuePattern) {
+    if (!methodCuePattern.test(stepText)) {
+      errors.push(`${plan.dripper.name} sequence must include explicit ${plan.methodFamily.replace(/_/g, ' ')} control cues.`);
     }
     return;
   }
@@ -1972,7 +2393,7 @@ function validateControlPointTroubleshootingCoverage(mode: AiBrewNarrativeMode, 
   }
 
   const actionablePattern = /\b(tighten|coarsen|raise|lower|increase|decrease|reduce|extend|shorten|shift|adjust|hold|keep)\b/i;
-  const controlKnobPattern = /\b(grind|temperature|temp|ratio|pour|pulse|time|flow|agitation|water|bed)\b/i;
+  const controlKnobPattern = /\b(grind|temperature|temp|ratio|pour|pulse|time|flow|agitation|water|bed|heat|press|steep|yield|drawdown)\b/i;
   if (sourLine && (!actionablePattern.test(sourLine) || !controlKnobPattern.test(sourLine))) {
     errors.push('Sour corrective bullet must include an actionable adjustment on a controllable brewing knob.');
   }
@@ -2348,7 +2769,7 @@ export function validateAiNarrative(plan: BrewPlan, mode: AiBrewNarrativeMode, r
   validateHeadingStructure(normalized, mode, errors);
   validateHeadingOrder(normalized, mode, errors);
   validatePlaceholders(normalized, errors);
-  validateForbiddenInstructions(normalized, errors);
+  validateForbiddenInstructions(plan, normalized, errors);
   validateNumericEnvelope(plan, mode, normalized, errors, warnings);
   validateStepCoverage(plan, normalized, mode, errors);
   validateStepLabelContinuity(plan, mode, normalized, errors);

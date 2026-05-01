@@ -6,6 +6,14 @@ import { continueAsGuestFromAuthGate } from '../helpers/authGate';
 import type { BrewPlan } from '../../apps/web/src/features/ai-brew/types';
 
 const LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
+const AI_BREW_SEQUENCE_HEADING = /Brew Sequence|Urutan Seduh/i;
+const AI_BREW_SAVED_COLLECTION = /Recipe saved to Collection\.|Recipe tersimpan ke Collection\./i;
+const AI_BREW_CLOSE_OUTPUT = /Close planned output|Tutup output plan/i;
+const AI_BREW_SIGN_IN_COACH = /Sign in to enable AI coach|Masuk untuk mengaktifkan AI coach/i;
+const AI_BREW_EXPLAIN_PLAN = /Explain Plan|Jelaskan Resep/i;
+const AI_BREW_GUEST_DISABLED = /AI coach is disabled until you sign in\.|AI coach dinonaktifkan sampai Anda masuk\./i;
+const AI_BREW_OFFLINE_DISABLED = /AI coach is disabled while offline\.|AI coach dinonaktifkan saat offline\./i;
+const AI_BREW_EXACT_PROFILE = /Exact profile|Profil exact/i;
 
 test.beforeEach(async ({ page }) => {
   await qaLogout(page.request);
@@ -443,56 +451,59 @@ test('ai brew generates a hot brew plan and saves it to collection', async ({ pa
 
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toContainText('QA Ethiopia Chelbesa');
-  await expect(result.getByTestId('ai-brew-sequence-section')).toContainText('Brew Sequence');
+  await expect(result.getByTestId('ai-brew-sequence-section')).toContainText(AI_BREW_SEQUENCE_HEADING);
   await expect(result.getByTestId('ai-brew-step-card-1')).toBeVisible();
 
   await page.getByTestId('ai-brew-save').click();
-  await expect(page.getByText('Recipe saved to Collection.')).toBeVisible();
+  await expect(page.getByText(AI_BREW_SAVED_COLLECTION)).toBeVisible();
   await page.goto('/collection', { waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('heading', { name: 'Collection' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Collection|Koleksi/i })).toBeVisible();
   await expect(page.getByText('QA Ethiopia Chelbesa')).toBeVisible();
 });
 
 test('ai brew quick and pro modes honor target profile changes in the generated result', async ({ page }) => {
-  const parseMetric = (text: string, label: string) => {
-    const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const match = text.match(new RegExp(`${escapedLabel}\\s*([0-9]+(?:\\.[0-9]+)?)`, 'i'));
-    return match ? Number(match[1]) : null;
+  const parseMetric = (text: string, labels: string[]) => {
+    for (const label of labels) {
+      const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const match = text.match(new RegExp(`${escapedLabel}\\s*([0-9]+(?:\\.[0-9]+)?)`, 'i'));
+      if (match) return Number(match[1]);
+    }
+    return null;
   };
   const parseTimeSeconds = (text: string) => {
-    const match = text.match(/Brew Time\s*(\d{2}):(\d{2})/i);
+    const match = text.match(/(?:Brew Time|Waktu Seduh)\s*(\d{1,2}):(\d{2})/i);
     return match ? (Number(match[1]) * 60) + Number(match[2]) : null;
   };
 
   await openAiBrewQuickMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Target Quick');
   await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
-  await page.getByRole('button', { name: 'More Acidity' }).click();
+  await page.getByRole('button', { name: /More Acidity|Lebih Cerah/i }).click();
   await page.getByTestId('ai-brew-generate').click();
 
   const quickResult = page.getByTestId('ai-brew-result');
-  await expect(quickResult).toContainText('More Acidity');
+  await expect(quickResult).toContainText(/More Acidity|Lebih Cerah/i);
   const quickText = (await quickResult.textContent()) || '';
-  const quickWater = parseMetric(quickText, 'Total Water');
-  const quickTemp = parseMetric(quickText, 'Temperature');
+  const quickWater = parseMetric(quickText, ['Total Water', 'Total Air', 'Total air']);
+  const quickTemp = parseMetric(quickText, ['Temperature', 'Suhu']);
   const quickTime = parseTimeSeconds(quickText);
   expect(quickWater).toBeTruthy();
   expect(quickTemp).toBeTruthy();
   expect(quickTime).toBeTruthy();
 
-  await page.getByRole('button', { name: 'Close planned output' }).click();
+  await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
 
   await openAiBrewProMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Target Pro');
   await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
-  await page.getByRole('button', { name: 'More Body' }).click();
+  await page.getByRole('button', { name: /More Body|Body Lebih Tebal/i }).click();
   await page.getByTestId('ai-brew-generate').click();
 
   const proResult = page.getByTestId('ai-brew-result');
-  await expect(proResult).toContainText('More Body');
+  await expect(proResult).toContainText(/More Body|Body Lebih Tebal/i);
   const proText = (await proResult.textContent()) || '';
-  const proWater = parseMetric(proText, 'Total Water');
-  const proTemp = parseMetric(proText, 'Temperature');
+  const proWater = parseMetric(proText, ['Total Water', 'Total Air', 'Total air']);
+  const proTemp = parseMetric(proText, ['Temperature', 'Suhu']);
   const proTime = parseTimeSeconds(proText);
   expect(proWater).toBeTruthy();
   expect(proTemp).toBeTruthy();
@@ -559,7 +570,7 @@ test('ai brew can hand off an iced plan into timer and ratio tools', async ({ pa
   await page.getByTestId('ai-brew-generate').click();
 
   const result = page.getByTestId('ai-brew-result');
-  await expect(result).toContainText('Ice');
+  await expect(result).toContainText(/Ice|Es|Seduh Es/i);
   const brewTimeText = ((await result.textContent()) || '').match(/(\d{2}:\d{2})/)?.[1];
   expect(brewTimeText).toBeTruthy();
 
@@ -593,16 +604,16 @@ test('guest users are gated only when requesting ai coaching', async ({ page }) 
   await switchAiBrewToManualWater(page, { tds: '90', hardness: '55', alkalinity: '40' });
   await page.getByTestId('ai-brew-generate').click();
   await expect(page.getByTestId('ai-brew-result')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-sequence-note')).toContainText(/Brew Sequence|Urutan Seduh/i);
-  await expect(page.getByRole('button', { name: 'Sign in to enable AI coach' })).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-sequence-note')).toContainText(AI_BREW_SEQUENCE_HEADING);
+  await expect(page.getByRole('button', { name: AI_BREW_SIGN_IN_COACH })).toHaveCount(0);
   await page.getByTestId('ai-brew-result-tab-coach').click();
-  await expect(page.getByRole('button', { name: 'Explain Plan' })).toBeDisabled();
-  await expect(page.getByText('AI coach is disabled until you sign in.')).toBeVisible();
-  await page.getByRole('button', { name: 'Sign in to enable AI coach' }).click();
+  await expect(page.getByRole('button', { name: AI_BREW_EXPLAIN_PLAN })).toBeDisabled();
+  await expect(page.getByText(AI_BREW_GUEST_DISABLED)).toBeVisible();
+  await page.getByRole('button', { name: AI_BREW_SIGN_IN_COACH }).click();
 
-  const dialog = page.getByRole('dialog', { name: 'Sign in' });
+  const dialog = page.getByRole('dialog', { name: /Sign in|Masuk/i });
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText('AI Brew requires an authenticated account.');
+  await expect(dialog).toContainText(/AI Brew requires an authenticated account|AI Brew perlu sesi akun/i);
 });
 
 test('authenticated users can request ai coaching manually from the result panel', async ({ page }) => {
@@ -615,10 +626,10 @@ test('authenticated users can request ai coaching manually from the result panel
   await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
   await page.getByTestId('ai-brew-generate').click();
   await expect(page.getByTestId('ai-brew-result')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-sequence-note')).toContainText(/Brew Sequence|Urutan Seduh/i);
+  await expect(page.getByTestId('ai-brew-sequence-note')).toContainText(AI_BREW_SEQUENCE_HEADING);
 
   await page.getByTestId('ai-brew-result-tab-coach').click();
-  await page.getByRole('button', { name: 'Explain Plan' }).click();
+  await page.getByRole('button', { name: AI_BREW_EXPLAIN_PLAN }).click();
   await expect(page.getByText(/Mocked Response/i).first()).toBeVisible();
   await expect(page.getByText(/qa_e2e mocked response for UI flow validation/i).first()).toBeVisible();
 });
@@ -635,8 +646,8 @@ test('ai brew discloses exact-profile provenance when a niche dripper now has a 
   await page.getByTestId('ai-brew-generate').click();
 
   const result = page.getByTestId('ai-brew-result');
-  await expect(result).toContainText('Exact profile');
-  await expect(result).toContainText(/Exact device profile matched: Latina Cono Hot\./i);
+  await expect(result).toContainText(AI_BREW_EXACT_PROFILE);
+  await expect(result).toContainText(/Exact device profile matched: Latina Cono Hot\.|Profil exact cocok: Latina Cono Hot\./i);
 });
 
 test('ai brew restores cached catalog and last plan when catalog assets are unavailable after warm load', async ({ page, context }) => {
@@ -645,7 +656,7 @@ test('ai brew restores cached catalog and last plan when catalog assets are unav
   await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
   await page.getByTestId('ai-brew-generate').click();
   await expect(page.getByTestId('ai-brew-result')).toContainText('QA Offline Cache');
-  await page.getByRole('button', { name: 'Close planned output' }).click();
+  await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
 
   await page.route('**/data/ai-brew/**', async (route) => {
     await route.abort();
@@ -660,7 +671,7 @@ test('ai brew restores cached catalog and last plan when catalog assets are unav
   await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
   await page.getByTestId('ai-brew-generate').click();
   await expect(page.getByTestId('ai-brew-result')).toContainText('QA Offline Reload');
-  await page.getByRole('button', { name: 'Close planned output' }).click();
+  await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
 
   await context.setOffline(true);
   await openAiBrewQuickMode(page);
@@ -669,8 +680,8 @@ test('ai brew restores cached catalog and last plan when catalog assets are unav
   await page.getByTestId('ai-brew-generate').click();
   await expect(page.getByTestId('ai-brew-result')).toContainText('QA Offline Deterministic');
   await page.getByTestId('ai-brew-result-tab-coach').click();
-  await expect(page.getByRole('button', { name: 'Explain Plan' })).toBeDisabled();
-  await expect(page.getByText('AI coach is disabled while offline.')).toBeVisible();
+  await expect(page.getByRole('button', { name: AI_BREW_EXPLAIN_PLAN })).toBeDisabled();
+  await expect(page.getByText(AI_BREW_OFFLINE_DISABLED)).toBeVisible();
   await context.setOffline(false);
 });
 

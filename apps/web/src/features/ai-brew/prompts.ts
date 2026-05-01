@@ -149,7 +149,7 @@ function buildPlannerEnvelope(plan: BrewPlan) {
     `- ice: ${plan.iceMl} ml`,
     `- temperature: ${plan.waterTempC} C`,
     `- brew time: ${formatSeconds(plan.totalTimeSeconds)}`,
-    `- pour progression profile: ${buildPourProgressionProfile(plan)}`,
+    `- operation progression profile: ${buildPourProgressionProfile(plan)}`,
     `- extraction pressure profile: ${buildExtractionPressureProfile(plan)}`,
     `- cadence profile: ${buildCadenceProfile(plan)}`,
     '- sequence checkpoints:',
@@ -158,20 +158,51 @@ function buildPlannerEnvelope(plan: BrewPlan) {
 }
 
 function buildStepRoleMap(plan: BrewPlan) {
-  const methodRole = plan.methodFamily === 'clever_dripper'
-    ? 'immersion-contact control'
-    : plan.methodFamily === 'chemex'
-      ? 'thick-filter flow stability'
-      : plan.methodFamily === 'kalita_wave' || plan.methodFamily === 'april' || plan.methodFamily === 'melitta'
-        ? 'flat-bed pulse stability'
-        : 'cone-flow clarity control';
+  const methodRole = (() => {
+    switch (plan.methodFamily) {
+      case 'espresso':
+        return 'yield, flow, and shot-stop control';
+      case 'moka_pot':
+        return 'base-fill, moderate heat, and remove-before-boil control';
+      case 'cold_brew':
+        return 'full saturation, long steep, and clean filter control';
+      case 'batch_brew':
+        return 'basket distribution, machine cycle, and batch mixing control';
+      case 'french_press':
+        return 'immersion contact, slow press, and decant control';
+      case 'aeropress':
+        return 'short immersion and steady press control';
+      case 'siphon':
+        return 'heat, vacuum contact, and drawdown control';
+      case 'clever_dripper':
+        return 'immersion-contact control';
+      case 'chemex':
+        return 'thick-filter flow stability';
+      case 'kalita_wave':
+      case 'april':
+      case 'melitta':
+        return 'flat-bed pulse stability';
+      default:
+        return 'cone-flow clarity control';
+    }
+  })();
 
   const roleLines = plan.steps.map((step, index) => {
-    const role = index === 0
-      ? 'initiate full saturation and lock bed wetting uniformity'
-      : index === plan.steps.length - 1
-        ? 'close extraction and stabilize drawdown for clean finish'
-        : 'manage mid-brew cadence and slurry height before next checkpoint';
+    const kind = step.kind || 'pour';
+    const role = (() => {
+      if (kind === 'extract') return 'start and stop extraction by target yield, time, and flow';
+      if (kind === 'heat') return 'build heat steadily without boiling or harsh acceleration';
+      if (kind === 'press') return 'press steadily and avoid forcing fines into the cup';
+      if (kind === 'wait') return 'hold contact time stable without adding extra water';
+      if (kind === 'release') return 'open release cleanly and protect drawdown';
+      if (kind === 'drawdown') return 'let drawdown finish cleanly without extra agitation';
+      if (kind === 'serve') return 'separate, filter, decant, or serve to stop extraction cleanly';
+      return index === 0
+        ? 'initiate full saturation and lock bed wetting uniformity'
+        : index === plan.steps.length - 1
+          ? 'close extraction and stabilize drawdown for clean finish'
+          : 'manage mid-brew cadence and slurry height before next checkpoint';
+    })();
     return `- ${step.label} @ ${formatSeconds(step.startSeconds)}: ${role}; keep ${methodRole}.`;
   });
 
@@ -182,18 +213,44 @@ function buildStepRoleMap(plan: BrewPlan) {
 }
 
 function buildMethodCueChecklist(plan: BrewPlan) {
-  if (plan.methodFamily === 'clever_dripper') {
-    return [
-      'Method cue checklist (must appear in Sequence/Steps lines):',
-      '- Include immersion-contact cue in entry step (step 1).',
-      '- Include release cue in final step (last step).',
-    ].join('\n');
+  const lines = ['Method cue checklist (must appear in Sequence/Steps lines):'];
+
+  switch (plan.methodFamily) {
+    case 'espresso':
+      lines.push('- Include espresso yield/shot/flow cue in at least two steps.');
+      lines.push('- Final step must stop by target yield/time/flow, not by adding water.');
+      return lines.join('\n');
+    case 'moka_pot':
+      lines.push('- Include base-fill or safety-valve cue early.');
+      lines.push('- Include moderate heat and remove-before-boil/sputter cue late.');
+      return lines.join('\n');
+    case 'cold_brew':
+      lines.push('- Include cool-water full-saturation cue early.');
+      lines.push('- Include long steep and filter/decant separation cue by the final step.');
+      return lines.join('\n');
+    case 'batch_brew':
+      lines.push('- Include basket/machine-cycle cue early or middle.');
+      lines.push('- Include drawdown completion and batch mixing cue by the final step.');
+      return lines.join('\n');
+    case 'french_press':
+      lines.push('- Include immersion/steep cue in entry step.');
+      lines.push('- Include slow press and decant/separate cue in final step.');
+      return lines.join('\n');
+    case 'aeropress':
+      lines.push('- Include AeroPress chamber immersion cue before pressing.');
+      lines.push('- Include steady press/plunge cue in final step; avoid forcing the last hiss.');
+      return lines.join('\n');
+    case 'siphon':
+      lines.push('- Include heat/vacuum/upper-chamber cue early.');
+      lines.push('- Include cut-heat/drawdown cue in final step.');
+      return lines.join('\n');
+    case 'clever_dripper':
+      lines.push('- Include immersion-contact cue in entry step (step 1).');
+      lines.push('- Include release cue in final step (last step).');
+      return lines.join('\n');
   }
 
-  const lines = [
-    'Method cue checklist (must appear in Sequence/Steps lines):',
-    '- Include percolation flow cues (concentric/circle/pulse/center/bed settle) across multiple steps, not just one.',
-  ];
+  lines.push('- Include percolation flow cues (concentric/circle/pulse/center/bed settle) across multiple steps, not just one.');
 
   if (plan.methodFamily === 'chemex') {
     lines.push('- Include thick-filter control cues (filter wall/bypass/steady flow) across at least two steps.');
@@ -317,20 +374,20 @@ export function buildSequenceGuidePrompt(plan: BrewPlan, language?: string): AiB
       '- Service Pattern style line must not use generic labels like "default pattern" or "flexible style".',
       '- Service Pattern mode line must explicitly mention the active brew mode (hot or iced).',
       '- Every sequence line must reference the deterministic step label (e.g., Bloom, Pulse 1, Finish) for that step index.',
-      '- Every sequence line must include deterministic pour volume and target cumulative volume on the same line.',
-      '- Start every sequence line with deterministic exact prefix "<step label> at exact planner time MM:SS: pour X ml to Y ml" before control instructions.',
-      '- Every sequence line must contain exactly one pour checkpoint and one cumulative target checkpoint (no chained second pour or alternate volume).',
-      '- Every sequence line must include at least one post-pour control action (wait/hold/level/swirl/etc).',
+      '- Every sequence line must include the deterministic operation and target checkpoint from the planner envelope on the same line.',
+      '- Start every sequence line with deterministic exact prefix from the envelope: "<step label> at exact planner time MM:SS: <deterministic operation>" before control instructions.',
+      '- For pour checkpoints, include exactly one pour volume and one cumulative target. For non-pour checkpoints, do not invent a pour volume; keep the target/yield/action from the envelope.',
+      '- Every sequence line must include at least one post-checkpoint control action (wait/hold/level/swirl/release/press/stop/filter/etc).',
       '- Any explicit wait/hold/pause/rest durations in one step must fit that step\'s deterministic cadence window to the next checkpoint.',
       '- Do not add a second absolute clock timestamp (MM:SS) inside the same step line; only the deterministic prefix time is allowed.',
       '- Avoid hedging terms in step lines (if needed/optional/approximate/to taste/at your discretion).',
       '- Do not use simulated or hypothetical execution wording (simulate/pretend/imagine/hypothetical).',
       '- Do not place next-cup troubleshooting phrases (if sour/if bitter/next cup/next brew) inside sequence steps; keep every step immediately executable in-run.',
       '- Do not inject post-brew dilution or top-up instructions (add/top-up/bypass X ml water or ice) outside deterministic checkpoints.',
-      '- Do not reference unsupported hardware or tools (AeroPress/French press/moka pot/portafilter/espresso machine/steam wand) in sequence steps.',
+      '- Do not reference hardware or tools that conflict with the selected brewer/method; the selected brewer itself is allowed.',
       '- Do not change grind, temperature, ratio, dose, total water, or brew time inside sequence steps; keep the envelope locked during the run.',
       '- Sequence must reflect phase control: entry cue in step 1, cadence-flow cue in middle steps, and closure cue in final step.',
-      '- Keep operational intent aligned with deterministic pour progression profile (front_loaded/back_loaded/mid_loaded/even) from the planner envelope.',
+      '- Keep operational intent aligned with deterministic progression profile (front_loaded/back_loaded/mid_loaded/even) from the planner envelope.',
       '- Keep step intensity language aligned with extraction pressure profile (resistant_extraction/easy_extraction/neutral_extraction) from the planner envelope.',
       '- Keep hold/wait emphasis aligned with cadence profile (front_cadence/back_cadence/mid_cadence/even_cadence) from the planner envelope.',
       '- Step 1 must not include closure-phase words (finish/final/drawdown/release/drain).',
@@ -351,8 +408,8 @@ export function buildSequenceGuidePrompt(plan: BrewPlan, language?: string): AiB
       '- For iced mode, at least one Sequence line must state both hot and ice split values on the same line (X ml hot / Y ml ice).',
       '- Keep all numbers inside deterministic envelope.',
       '- Return markdown only, starting at the first required heading; do not add preface or code fences.',
-    '- Do not include immersion/release-only instructions for non-immersion brewers.',
-    '- Do not mention or imply another brewer/method family that conflicts with the deterministic plan.',
+      '- Do not include immersion/release-only instructions for non-immersion brewers.',
+      '- Do not mention or imply another brewer/method family that conflicts with the deterministic plan.',
       '- Do not invent extra steps, equipment, chemistry data, or placeholders.',
       '',
       buildPlannerEnvelope(plan),
@@ -403,7 +460,7 @@ export function buildSopPrompt(plan: BrewPlan, language?: string): AiBrewPromptC
       '2. ...',
       '3. ...',
       '## Control Points',
-      '- what to watch during pouring',
+      '- what to watch during execution',
       '- one method- or target-specific watchpoint tied to this plan context',
       '- one water or bean-context watchpoint tied to this plan context',
       '- one adjustment if the cup tastes sour',
@@ -418,21 +475,21 @@ export function buildSopPrompt(plan: BrewPlan, language?: string): AiBrewPromptC
       'Quick Dial must mirror deterministic values exactly for dose, total water (and iced split when present), temperature, grind recommendation, and total time.',
       'Do not round, estimate, or substitute Quick Dial values with alternatives.',
       `Use exactly ${plan.steps.length} numbered steps in the Steps section.`,
-      'Each step must include both deterministic pour volume and cumulative target volume on the same line.',
-      'Start every step with deterministic exact prefix "<step label> at exact planner time MM:SS: pour X ml to Y ml" before control instructions.',
-      'Each step must contain exactly one deterministic pour checkpoint and one cumulative target checkpoint (no chained second pour or alternate volume).',
+      'Each step must include the deterministic operation and target checkpoint from the planner envelope on the same line.',
+      'Start every step with deterministic exact prefix from the envelope: "<step label> at exact planner time MM:SS: <deterministic operation>" before control instructions.',
+      'For pour checkpoints, include exactly one pour volume and one cumulative target. For non-pour checkpoints, do not invent a pour volume; keep the target/yield/action from the envelope.',
       'Each step must reference the deterministic step label for its index (e.g., Bloom, Pulse 1, Finish).',
-      'Each step must include at least one post-pour control action (wait/hold/level/swirl/etc).',
+      'Each step must include at least one post-checkpoint control action (wait/hold/level/swirl/release/press/stop/filter/etc).',
       'Any explicit wait/hold/pause/rest durations in one step must fit that step\'s deterministic cadence window to the next checkpoint.',
       'Do not add a second absolute clock timestamp (MM:SS) inside the same step line; only the deterministic prefix time is allowed.',
       'Avoid hedging terms in step lines (if needed/optional/approximate/to taste/at your discretion).',
       'Do not use simulated or hypothetical execution wording (simulate/pretend/imagine/hypothetical).',
       'Do not place next-cup troubleshooting phrases (if sour/if bitter/next cup/next brew) inside Steps; keep every step immediately executable in-run.',
       'Do not inject post-brew dilution or top-up instructions (add/top-up/bypass X ml water or ice) outside deterministic checkpoints.',
-      'Do not reference unsupported hardware or tools (AeroPress/French press/moka pot/portafilter/espresso machine/steam wand) in Steps.',
+      'Do not reference hardware or tools that conflict with the selected brewer/method; the selected brewer itself is allowed.',
       'Do not change grind, temperature, ratio, dose, total water, or brew time inside Steps; all parameter shifts belong to next-cup troubleshooting only.',
       'Steps must reflect phase control: entry cue in step 1, cadence-flow cue in middle steps, and closure cue in final step.',
-      '- Keep operational intent aligned with deterministic pour progression profile (front_loaded/back_loaded/mid_loaded/even) from the planner envelope.',
+      '- Keep operational intent aligned with deterministic progression profile (front_loaded/back_loaded/mid_loaded/even) from the planner envelope.',
       '- Keep step intensity language aligned with extraction pressure profile (resistant_extraction/easy_extraction/neutral_extraction) from the planner envelope.',
       '- Keep hold/wait emphasis aligned with cadence profile (front_cadence/back_cadence/mid_cadence/even_cadence) from the planner envelope.',
       'Step 1 must not include closure-phase words (finish/final/drawdown/release/drain).',
@@ -443,8 +500,8 @@ export function buildSopPrompt(plan: BrewPlan, language?: string): AiBrewPromptC
       'Avoid repetitive step phrasing; vary actionable verbs while preserving deterministic checkpoints.',
       '- Keep heading order fixed as written: Quick Dial -> Service Pattern -> Steps -> Control Points.',
       '- Return markdown only, starting at the first required heading; do not add preface or code fences.',
-    '- For non-immersion brewers, avoid immersion/release-only instructions inside Steps.',
-    '- Do not mention or imply another brewer/method family that conflicts with the deterministic plan.',
+      '- For non-immersion brewers, avoid immersion/release-only instructions inside Steps.',
+      '- Do not mention or imply another brewer/method family that conflicts with the deterministic plan.',
       'If chemistry values are mentioned (TDS/GH/KH), they must match deterministic planner values exactly.',
       'Do not use generic language like "adjust as needed"; every point must be executable in bar workflow.',
       'Control Points must explicitly contain one sour corrective bullet and one bitter corrective bullet.',

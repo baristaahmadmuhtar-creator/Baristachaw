@@ -6,6 +6,7 @@ import {
   extractSequenceOverlayFromMarkdown,
   validateAiNarrative,
 } from '../../apps/web/src/features/ai-brew/aiComposer.ts';
+import { buildPlanMethodBrief } from '../../apps/web/src/features/ai-brew/planner.ts';
 import type { BrewPlan } from '../../apps/web/src/features/ai-brew/types.ts';
 
 function createPlan(overrides: Partial<BrewPlan> = {}) {
@@ -218,6 +219,98 @@ test('deterministic sequence changes by method family, not only numbers', () => 
   assert.notEqual(cone, flat);
   assert.match(cone, /Cone Clarity Arc/i);
   assert.match(flat, /Flat-Bed Ladder/i);
+});
+
+test('deterministic narratives validate non pour-over method checkpoints', () => {
+  const cases: Array<{
+    name: string;
+    plan: BrewPlan;
+    expected: RegExp;
+  }> = [
+    {
+      name: 'espresso',
+      expected: /Yield-Locked Espresso|target yield|shot|flow/i,
+      plan: createPlan({
+        methodFamily: 'espresso',
+        methodId: 'espresso',
+        ratioToolMethodId: 'espresso',
+        dripper: { id: 'espresso-machine', name: 'Espresso Machine' } as BrewPlan['dripper'],
+        totalWaterMl: 36,
+        hotWaterMl: 36,
+        recommendedRatio: 2.1,
+        finalBeverageRatio: 2.1,
+        hotExtractionRatio: 2.1,
+        totalTimeSeconds: 30,
+        steps: [
+          { id: 'extract', label: 'Extract', kind: 'extract', startSeconds: 0, pourVolumeMl: 36, targetVolumeMl: 36, note: 'Start shot and track flow.' },
+          { id: 'stop', label: 'Stop', kind: 'serve', startSeconds: 28, pourVolumeMl: 0, targetVolumeMl: 36, note: 'Stop at target yield.' },
+        ],
+      }),
+    },
+    {
+      name: 'moka',
+      expected: /Moderate-Heat Moka|safety valve|sputter|boil/i,
+      plan: createPlan({
+        methodFamily: 'moka_pot',
+        methodId: 'moka_pot',
+        ratioToolMethodId: 'moka_pot',
+        dripper: { id: 'moka-pot', name: 'Moka Pot' } as BrewPlan['dripper'],
+        totalWaterMl: 200,
+        hotWaterMl: 200,
+        totalTimeSeconds: 180,
+        steps: [
+          { id: 'fill_base', label: 'Charge', kind: 'pour', startSeconds: 0, pourVolumeMl: 200, targetVolumeMl: 200, note: 'Fill below the safety valve.' },
+          { id: 'heat', label: 'Heat', kind: 'heat', startSeconds: 60, pourVolumeMl: 0, targetVolumeMl: 200, note: 'Use moderate heat.' },
+          { id: 'serve', label: 'Serve', kind: 'serve', startSeconds: 170, pourVolumeMl: 0, targetVolumeMl: 200, note: 'Remove before harsh sputter.' },
+        ],
+      }),
+    },
+    {
+      name: 'cold brew',
+      expected: /Cold Immersion Hold|cool water|steep|filter/i,
+      plan: createPlan({
+        methodFamily: 'cold_brew',
+        methodId: 'cold_brew',
+        ratioToolMethodId: 'cold_brew',
+        dripper: { id: 'cold-brew', name: 'Cold Brew Brewer' } as BrewPlan['dripper'],
+        totalWaterMl: 500,
+        hotWaterMl: 500,
+        waterTempC: 22,
+        totalTimeSeconds: 43200,
+        steps: [
+          { id: 'charge', label: 'Charge', kind: 'pour', startSeconds: 0, pourVolumeMl: 500, targetVolumeMl: 500, note: 'Saturate with cool water.' },
+          { id: 'steep', label: 'Steep', kind: 'wait', startSeconds: 300, pourVolumeMl: 0, targetVolumeMl: 500, note: 'Hold long steep.' },
+          { id: 'filter', label: 'Filter', kind: 'serve', startSeconds: 43200, pourVolumeMl: 0, targetVolumeMl: 500, note: 'Filter cleanly.' },
+        ],
+      }),
+    },
+  ];
+
+  for (const item of cases) {
+    const narrative = buildDeterministicNarrative(item.plan, 'sequence');
+    const result = validateAiNarrative(item.plan, 'sequence', narrative);
+    assert.equal(result.valid, true, `${item.name}\n${result.errors.join('\n')}\n${narrative}`);
+    assert.match(narrative, item.expected);
+    assert.doesNotMatch(narrative, /concentric|ring pour/i);
+  }
+});
+
+test('method brief gives non pour-over methods usable barista-facing focus', () => {
+  const espresso = buildPlanMethodBrief(createPlan({
+    methodFamily: 'espresso',
+    dripper: { id: 'espresso-machine', name: 'Espresso Machine' } as BrewPlan['dripper'],
+    totalWaterMl: 36,
+    hotWaterMl: 36,
+  }), 'id');
+  const frenchPress = buildPlanMethodBrief(createPlan({
+    methodFamily: 'french_press',
+    dripper: { id: 'french-press', name: 'French Press' } as BrewPlan['dripper'],
+  }), 'id');
+
+  assert.match(`${espresso.primaryLabel} ${espresso.controlValue} ${espresso.successCue}`, /Yield espresso|yield|flow/i);
+  assert.match(`${frenchPress.controlValue} ${frenchPress.successCue}`, /Immersion|press|decant/i);
+  assert.ok(espresso.watch.length >= 2);
+  assert.ok(frenchPress.watch.length >= 2);
 });
 
 test('validator rejects placeholders and envelope violations', () => {

@@ -4258,6 +4258,204 @@ function isIndonesianLocale(locale?: string) {
   return isIndonesianAiBrewLanguage(locale);
 }
 
+export interface AiBrewMethodBrief {
+  title: string;
+  primaryLabel: string;
+  primaryValue: string;
+  controlLabel: string;
+  controlValue: string;
+  successLabel: string;
+  successCue: string;
+  watch: string[];
+}
+
+function formatMethodBriefMl(value: number) {
+  return `${Math.round(value)} ml`;
+}
+
+export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMethodBrief {
+  const id = isIndonesianLocale(locale);
+  const target = id
+    ? localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, locale).toLowerCase()
+    : plan.targetProfileLabel.toLowerCase();
+  const methodName = plan.dripper.name;
+  const defaultPrimaryLabel = plan.brewMode === 'iced'
+    ? (id ? 'Air panas seduh' : 'Hot brew water')
+    : (id ? 'Total air' : 'Total water');
+  const defaultPrimaryValue = formatMethodBriefMl(plan.brewMode === 'iced' ? plan.hotWaterMl : plan.totalWaterMl);
+  const defaultSuccess = id
+    ? 'Bed turun rapi, tidak macet, dan rasa tetap sesuai target.'
+    : 'Bed drains cleanly without stalling and the cup stays aligned with target.';
+
+  const common = {
+    title: id ? 'Kunci metode' : 'Method focus',
+    primaryLabel: defaultPrimaryLabel,
+    primaryValue: defaultPrimaryValue,
+    controlLabel: id ? 'Kontrol utama' : 'Main control',
+    controlValue: id ? `Jaga ${target} dengan waktu dan flow stabil.` : `Keep ${target} with stable time and flow.`,
+    successLabel: id ? 'Tanda selesai' : 'Finish cue',
+    successCue: defaultSuccess,
+    watch: id
+      ? ['Ikuti checkpoint berurutan.', 'Jangan ubah rasio, suhu, atau grind di tengah seduhan.']
+      : ['Follow checkpoints in order.', 'Do not change ratio, temperature, or grind mid-brew.'],
+  };
+
+  switch (plan.methodFamily) {
+    case 'espresso':
+      return {
+        ...common,
+        primaryLabel: id ? 'Yield espresso' : 'Espresso yield',
+        primaryValue: formatMethodBriefMl(plan.totalWaterMl),
+        controlValue: id
+          ? 'Stop berdasarkan yield, waktu, dan flow. Jangan mengejar volume dengan ekstraksi berlebih.'
+          : 'Stop by yield, time, and flow. Do not chase volume by over-extending extraction.',
+        successCue: id
+          ? 'Aliran menyempit bersih dan shot berhenti di target yield sebelum blonding agresif.'
+          : 'Flow narrows cleanly and the shot stops at target yield before aggressive blonding.',
+        watch: id
+          ? ['Yield adalah minuman di cup, bukan air ketel.', 'Lihat flow dan waktu bersamaan sebelum menghentikan shot.']
+          : ['Yield is beverage output, not kettle water.', 'Read flow and time together before stopping the shot.'],
+      };
+    case 'moka_pot':
+      return {
+        ...common,
+        primaryLabel: id ? 'Air base moka' : 'Moka base water',
+        primaryValue: formatMethodBriefMl(plan.totalWaterMl),
+        controlValue: id
+          ? 'Isi base di bawah safety valve, basket jangan ditamp, lalu pakai panas moderat.'
+          : 'Fill the base below the safety valve, do not tamp the basket, then use moderate heat.',
+        successCue: id
+          ? 'Angkat sebelum sputter kasar atau rasa rebus muncul.'
+          : 'Remove from heat before harsh sputtering or boiled flavor appears.',
+        watch: id
+          ? ['Panas terlalu tinggi membuat rasa cepat pahit.', 'Sajikan saat upper chamber sudah terisi sesuai target.']
+          : ['Too much heat turns the cup bitter fast.', 'Serve when the upper chamber reaches target output.'],
+      };
+    case 'cold_brew':
+      return {
+        ...common,
+        primaryLabel: id ? 'Air dingin' : 'Cool water',
+        primaryValue: formatMethodBriefMl(plan.totalWaterMl),
+        controlValue: id
+          ? `Saturasi bed kasar penuh, lalu tahan steep sekitar ${formatTime(plan.totalTimeSeconds)}.`
+          : `Fully saturate the coarse bed, then hold the steep around ${formatTime(plan.totalTimeSeconds)}.`,
+        successCue: id
+          ? 'Filter atau decant bersih agar ekstraksi berhenti sebelum disajikan.'
+          : 'Filter or decant cleanly so extraction stops before service.',
+        watch: id
+          ? ['Dry pocket membuat hasil tipis dan tidak rata.', 'Pisahkan kopi dari ampas sebelum simpan atau serving.']
+          : ['Dry pockets make extraction thin and uneven.', 'Separate brew from grounds before storage or service.'],
+      };
+    case 'batch_brew':
+      return {
+        ...common,
+        primaryLabel: id ? 'Air siklus mesin' : 'Machine cycle water',
+        primaryValue: formatMethodBriefMl(plan.totalWaterMl),
+        controlValue: id
+          ? 'Ratakan basket, biarkan siklus mesin dan drawdown selesai, lalu aduk batch.'
+          : 'Level the basket, let the machine cycle and drawdown finish, then mix the batch.',
+        successCue: id
+          ? 'Carafe tercampur rata dan tidak ada channel besar di bed.'
+          : 'Carafe is mixed evenly and the bed shows no major channeling.',
+        watch: id
+          ? ['Bed miring membuat batch tidak konsisten.', 'Aduk carafe sebelum evaluasi rasa.']
+          : ['An uneven bed makes the batch inconsistent.', 'Mix the carafe before judging flavor.'],
+      };
+    case 'french_press':
+      return {
+        ...common,
+        controlValue: id
+          ? 'Immersion penuh, steep stabil, lalu press pelan dan decant.'
+          : 'Full immersion, stable steep, then slow press and decant.',
+        successCue: id
+          ? 'Plunge terasa halus dan brew dipisahkan agar fines tidak terus mengekstrak.'
+          : 'Plunge feels smooth and brew is separated so fines stop extracting.',
+        watch: id
+          ? ['Jangan aduk agresif menjelang akhir.', 'Decant setelah press agar rasa tidak makin berat.']
+          : ['Avoid aggressive late stirring.', 'Decant after pressing so the cup does not keep getting heavier.'],
+      };
+    case 'aeropress':
+      return {
+        ...common,
+        controlValue: id
+          ? 'Immersion pendek, timing ketat, lalu press stabil tanpa memaksa akhir.'
+          : 'Short immersion, tight timing, then steady press without forcing the finish.',
+        successCue: id
+          ? 'Press selesai halus di target; hindari memaksa hiss terakhir.'
+          : 'Press finishes smoothly at target; avoid forcing the final hiss.',
+        watch: id
+          ? ['Chamber harus basah rata sebelum press.', 'Tekanan stabil lebih penting daripada press cepat.']
+          : ['Chamber should be evenly wet before pressing.', 'Stable pressure matters more than a fast press.'],
+      };
+    case 'siphon':
+      return {
+        ...common,
+        controlValue: id
+          ? 'Jaga heat/vacuum stabil, agitasi singkat, lalu biarkan drawdown selesai.'
+          : 'Keep heat/vacuum stable, agitate briefly, then let drawdown finish.',
+        successCue: id
+          ? 'Drawdown turun bersih setelah heat-off tanpa agitasi tambahan.'
+          : 'Drawdown finishes cleanly after heat-off without extra agitation.',
+        watch: id
+          ? ['Jangan over-stir saat upper chamber aktif.', 'Cut heat tepat waktu supaya finish tidak kasar.']
+          : ['Do not over-stir while the upper chamber is active.', 'Cut heat on time so the finish stays clean.'],
+      };
+    case 'clever_dripper':
+      return {
+        ...common,
+        controlValue: id
+          ? 'Bangun immersion tenang, lalu release bersih di checkpoint.'
+          : 'Build calm immersion, then release cleanly at checkpoint.',
+        successCue: id
+          ? 'Release mengalir stabil dan finish tidak keruh atau kasar.'
+          : 'Release flows steadily and the finish is not muddy or harsh.',
+        watch: id
+          ? ['Contact time adalah kontrol utama.', 'Jangan swirl berat menjelang release.']
+          : ['Contact time is the main control.', 'Avoid heavy swirling before release.'],
+      };
+    case 'chemex':
+      return {
+        ...common,
+        controlValue: id
+          ? 'Jaga aliran stabil dan hindari bypass di dinding filter tebal.'
+          : 'Keep flow stable and avoid bypass through the thick filter wall.',
+        successCue: id
+          ? 'Drawdown tetap terbuka, tidak tersendat oleh filter.'
+          : 'Drawdown stays open and does not stall through the filter.',
+        watch: id
+          ? ['Filter tebal butuh flow stabil.', 'Hindari turbulensi agresif di akhir.']
+          : ['Thick filters need steady flow.', 'Avoid aggressive turbulence late.'],
+      };
+    case 'kalita_wave':
+    case 'april':
+    case 'melitta':
+      return {
+        ...common,
+        controlValue: id
+          ? 'Jaga flat bed rata dengan pulse pendek dan spout rendah.'
+          : 'Keep the flat bed level with short pulses and a low spout.',
+        successCue: id
+          ? 'Permukaan bed rata dan drawdown turun seragam.'
+          : 'Bed surface stays level and drawdown finishes evenly.',
+        watch: id
+          ? ['Bed miring membuat ekstraksi tidak rata.', 'Pulse pendek lebih aman daripada flooding.']
+          : ['A tilted bed extracts unevenly.', 'Short pulses are safer than flooding.'],
+      };
+    default:
+      return methodName.toLowerCase().includes('kono')
+        ? {
+          ...common,
+          controlValue: id
+            ? 'Mulai center-focused, lalu buka alur perlahan untuk menjaga sweetness.'
+            : 'Start center-focused, then widen gently to preserve sweetness.',
+          successCue: id
+            ? 'Center tetap bersih dan finish manis tanpa turbulence akhir.'
+            : 'Center stays clean and finish remains sweet without late turbulence.',
+        }
+        : common;
+  }
+}
+
 export function buildPlanRecipeName(plan: BrewPlan, locale?: string) {
   const fallback = isIndonesianLocale(locale) ? 'AI Seduh' : 'AI Brew';
   return `${plan.coffeeName || fallback} · ${plan.targetProfileLabel}`;

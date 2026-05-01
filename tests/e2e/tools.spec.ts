@@ -541,10 +541,16 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
     expect(plan.finalBeverageRatio).toBe(plan.recommendedRatio);
     expect(plan.hotExtractionRatio).toBeGreaterThanOrEqual(8.7);
     expect(plan.hotExtractionRatio).toBeLessThanOrEqual(10.9);
+    expect(plan.steps.length).toBeGreaterThanOrEqual(4);
+    expect(plan.steps.map((step) => step.kind)).not.toContain('serve');
+    expect(plan.steps[2]?.label).toMatch(/Pulse|Pour/i);
+    expect(plan.steps[plan.steps.length - 1]?.label).toMatch(/Final Pour|Finish/i);
     await expect(result).toContainText(`1:${plan.finalBeverageRatio}`);
     await expect(result).toContainText(`1:${plan.hotExtractionRatio}`);
     await expect(result).toContainText(`${plan.hotWaterMl} ml`);
     await expect(result).toContainText(`${plan.iceMl} ml`);
+    await expect(result.getByTestId('ai-brew-step-card-3')).not.toContainText(/Saji|sajikan|serve/i);
+    await expect(result.getByTestId('ai-brew-step-card-4')).toContainText(/Final Pour|Tuang Akhir/i);
     return plan;
   };
 

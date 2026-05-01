@@ -2392,6 +2392,7 @@ function inferBrewStepKind(
 ): BrewTemplateStepKind {
   if (step.kind) return step.kind;
   const signature = `${step.id} ${step.label} ${step.note}`.toLowerCase();
+  const hasPositiveShare = Number.isFinite(step.share) && step.share > 0;
   if (context.methodFamily === 'clever_dripper') {
     if (index === 0) return 'pour';
     if (/\b(open valve|open the valve|release to cup|release and let|drain cleanly|activate drain|drawdown)\b/.test(signature) || index === stepCount - 1) return 'release';
@@ -2402,8 +2403,9 @@ function inferBrewStepKind(
   if (/\bpress\b|\bplunge\b/.test(signature)) return 'press';
   if (/\bheat\b|\bstove\b|\bburner\b/.test(signature)) return 'heat';
   if (/\bextract\b|\bshot\b|\byield\b/.test(signature)) return 'extract';
-  if (/\bserve\b|\bdecant\b/.test(signature)) return 'serve';
+  if (hasPositiveShare) return 'pour';
   if (/drawdown|drain only|let drain/.test(signature)) return 'drawdown';
+  if (/\bserve\b|\bdecant\b/.test(signature)) return 'serve';
   if (/hold|steep|wait|rest/.test(signature)) return 'wait';
   return 'pour';
 }
@@ -2664,7 +2666,7 @@ function buildMethodFamilyStepInstruction(params: {
       } else {
         quickNote = 'Finish calmly and let the cone drain without chasing the walls.';
         detail = context.brewMode === 'iced'
-          ? 'Land the final hot water cleanly and let it drop over the ice without dragging the walls.'
+          ? 'Land the final hot water cleanly, let the cone drain over the ice, then stir the server 5-8 seconds so the melt is even; do not add another pour.'
           : 'Land the last pour gently, then let the cone drain on its own without reopening the wall path.';
       }
       break;
@@ -3045,7 +3047,7 @@ function buildServiceExecutionNote(params: {
   waterTempC: number;
 }) {
   if (params.brewMode === 'iced') {
-    return `Brew ${params.hotWaterMl} ml hot over ${params.iceMl} ml/g ice (${params.hotSplitPercent}%:${params.iceSplitPercent}%). Final ratio is 1:${params.finalBeverageRatio}; hot concentrate extracts at 1:${params.hotExtractionRatio}. Keep pours compact to hold sweetness and clarity.`;
+    return `Brew ${params.hotWaterMl} ml hot over ${params.iceMl} ml/g ice (${params.hotSplitPercent}%:${params.iceSplitPercent}%). Final ratio is 1:${params.finalBeverageRatio}; hot concentrate extracts at 1:${params.hotExtractionRatio}. Keep pours compact to hold sweetness and clarity, then stir the chilled server after drawdown so service is not confused with another brew step.`;
   }
   switch (params.methodFamily) {
     case 'cold_brew':

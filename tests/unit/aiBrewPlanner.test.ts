@@ -455,9 +455,10 @@ const catalog: AiBrewCatalog = {
       grindBias: 'finer',
       note: 'Fallback iced cone baseline.',
       steps: [
-        { id: 'bloom', label: 'Bloom', share: 0.22, startSeconds: 0, note: 'Wet all grounds.' },
-        { id: 'middle', label: 'Middle Pour', share: 0.33, startSeconds: 45, note: 'Keep center-focused.' },
-        { id: 'finish', label: 'Finish', share: 0.45, startSeconds: 95, note: 'Finish to hot-water target.' },
+        { id: 'bloom', label: 'Bloom', share: 0.24, startSeconds: 0, note: 'Wet all grounds.' },
+        { id: 'build_1', label: 'Center Pour', share: 0.28, startSeconds: 35, note: 'Keep center-focused.' },
+        { id: 'build_2', label: 'Second Pulse', share: 0.24, startSeconds: 70, note: 'Keep slurry modest.' },
+        { id: 'finish', label: 'Final Pour', share: 0.24, startSeconds: 105, note: 'Finish to hot-water target, then serve after drawdown.' },
       ],
       source: 'test',
       sourceUrls: ['https://example.com/family-v60-iced'],
@@ -773,9 +774,10 @@ function buildProfileStepsForFamily(family: AiBrewMethodFamily, brewMode: 'hot' 
     default:
       return brewMode === 'iced'
         ? [
-          { id: 'bloom', label: 'Bloom', share: 0.22, startSeconds: 0, note: 'Open the bloom evenly.' },
-          { id: 'center', label: 'Center Pour', share: 0.34, startSeconds: 32, note: 'Keep the cone walls quiet.' },
-          { id: 'finish', label: 'Finish', share: 0.44, startSeconds: 88, note: 'Finish calmly and cleanly.' },
+          { id: 'bloom', label: 'Bloom', share: 0.24, startSeconds: 0, note: 'Open the bloom evenly.' },
+          { id: 'build_1', label: 'Center Pour', share: 0.28, startSeconds: 35, note: 'Keep the cone walls quiet.' },
+          { id: 'build_2', label: 'Second Pulse', share: 0.24, startSeconds: 70, note: 'Keep slurry modest.' },
+          { id: 'finish', label: 'Final Pour', share: 0.24, startSeconds: 105, note: 'Finish calmly, then serve only after drawdown.' },
         ]
         : [
           { id: 'bloom', label: 'Bloom', share: 0.22, startSeconds: 0, note: 'Open the bloom evenly.' },
@@ -1406,6 +1408,15 @@ test('buildAiBrewPlan creates a japanese iced plan with split water and derived 
   assert.ok(plan.hotExtractionRatio <= 10.8);
   assert.ok(plan.hotWaterSharePercent >= 54);
   assert.ok(plan.hotWaterSharePercent <= 70);
+  assert.equal(plan.steps.length, 4);
+  assert.deepEqual(plan.steps.map((step) => step.kind), ['pour', 'pour', 'pour', 'pour']);
+  assert.ok(plan.steps.every((step) => step.pourVolumeMl > 0), 'Iced V60 hot-water checkpoints should all be real pour steps');
+  assert.match(plan.steps[plan.steps.length - 1]?.label || '', /Final Pour/i);
+  assert.doesNotMatch(
+    buildLocalizedPlanRecipeSteps(plan, 'id').join('\n'),
+    /sajikan|pisahkan/i,
+    'Iced V60 recipe steps should not turn the final pour into a serve step',
+  );
   assert.equal(plan.deviceProfileMode, 'derived_template');
   assert.equal(plan.provenanceAttentionNeeded, true);
   assert.ok(plan.notes.some((note) => /hot concentrate extracts/i.test(note)));

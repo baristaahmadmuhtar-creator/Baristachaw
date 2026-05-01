@@ -1676,28 +1676,35 @@
       "tempDeltaC": 0.5,
       "brewTimeDeltaSec": -10,
       "grindBias": "finer",
-      "note": "Family fallback for cone brewers in Japanese iced mode.",
+      "note": "Family fallback for cone brewers in Japanese iced mode: bloom, two compact build pours, final hot-water target, then stir the chilled server after drawdown.",
       "steps": [
         {
           "id": "bloom",
           "label": "Bloom",
-          "share": 0.22,
+          "share": 0.24,
           "startSeconds": 0,
-          "note": "Compact bloom."
+          "note": "Wet all grounds with a compact bloom and give the bed about 30 seconds."
         },
         {
-          "id": "main",
-          "label": "Main Pour",
-          "share": 0.36,
-          "startSeconds": 40,
-          "note": "Keep the center of the bed active."
+          "id": "build_1",
+          "label": "Center Pour",
+          "share": 0.28,
+          "startSeconds": 35,
+          "note": "Build to about half of the hot-water target with a tight center-to-mid stream."
+        },
+        {
+          "id": "build_2",
+          "label": "Second Pulse",
+          "share": 0.24,
+          "startSeconds": 70,
+          "note": "Keep slurry depth modest and avoid washing the paper wall."
         },
         {
           "id": "finish",
-          "label": "Finish",
-          "share": 0.42,
-          "startSeconds": 90,
-          "note": "Finish to the hot-water target and chill immediately."
+          "label": "Final Pour",
+          "share": 0.24,
+          "startSeconds": 105,
+          "note": "Finish to the hot-water target and let the cone drain over the ice before stirring the server."
         }
       ],
       "source": "fallback-family",
@@ -2120,28 +2127,35 @@
       "tempDeltaC": 0.5,
       "brewTimeDeltaSec": -10,
       "grindBias": "finer",
-      "note": "Tighter hot-brew mass over ice, keeping the V60 drawdown controlled rather than rushing it.",
+      "note": "Tighter hot-brew mass over ice, keeping the V60 drawdown controlled; stir the chilled server after drawdown so service is not treated as another brew step.",
       "steps": [
         {
           "id": "bloom",
           "label": "Bloom",
-          "share": 0.22,
+          "share": 0.24,
           "startSeconds": 0,
-          "note": "Fully saturate with a slightly concentrated bloom."
+          "note": "Fully saturate with a 2.5-3x dose bloom and let the cone settle for about 30 seconds."
         },
         {
-          "id": "mid",
+          "id": "build_1",
           "label": "Center Pour",
-          "share": 0.34,
-          "startSeconds": 40,
-          "note": "Keep the pour centered to protect clarity."
+          "share": 0.28,
+          "startSeconds": 35,
+          "note": "Build to roughly half of the hot-water target with a calm center-to-mid pour."
+        },
+        {
+          "id": "build_2",
+          "label": "Second Pulse",
+          "share": 0.24,
+          "startSeconds": 70,
+          "note": "Keep slurry depth moderate and avoid washing the paper wall."
         },
         {
           "id": "finish",
-          "label": "Finish to Hot-Water Target",
-          "share": 0.44,
-          "startSeconds": 90,
-          "note": "Finish to target and serve over weighed ice immediately."
+          "label": "Final Pour",
+          "share": 0.24,
+          "startSeconds": 105,
+          "note": "Finish to the hot-water target, let drawdown finish over the ice, then stir the server 5-8 seconds."
         }
       ],
       "source": "hario-curated-iced",

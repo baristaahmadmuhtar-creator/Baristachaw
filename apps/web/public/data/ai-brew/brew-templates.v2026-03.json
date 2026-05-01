@@ -19,12 +19,13 @@
       "brewMode": "iced",
       "bloomSeconds": 40,
       "drawdownSeconds": 150,
-      "note": "Japanese iced variant using 60% hot water and 40% ice by total brew water.",
+      "note": "Japanese iced variant using concentrated hot water over measured ice; service/stir happens after drawdown, not as a brew pour.",
       "catalogVersion": "2026.03.09-ai-brew-v1",
       "steps": [
-        { "id": "bloom", "label": "Bloom", "share": 0.33, "startSeconds": 0, "note": "Use a full bloom to stabilize the fast iced extraction." },
-        { "id": "main", "label": "Second Pour", "share": 0.37, "startSeconds": 45, "note": "Keep the stream stable and centered to avoid over-agitation." },
-        { "id": "finish", "label": "Final Pour", "share": 0.3, "startSeconds": 90, "note": "Finish to the hot-water target, then serve straight over ice." }
+        { "id": "bloom", "label": "Bloom", "share": 0.24, "startSeconds": 0, "note": "Use a compact bloom to wet every dry pocket and stabilize extraction." },
+        { "id": "build_1", "label": "Center Pour", "share": 0.28, "startSeconds": 35, "note": "Build to roughly half of the hot-water target with a centered stream." },
+        { "id": "build_2", "label": "Second Pulse", "share": 0.24, "startSeconds": 70, "note": "Keep slurry depth modest and avoid washing the paper wall." },
+        { "id": "finish", "label": "Final Pour", "share": 0.24, "startSeconds": 105, "note": "Finish to the hot-water target, then let drawdown finish over the ice before stirring." }
       ]
     },
     {

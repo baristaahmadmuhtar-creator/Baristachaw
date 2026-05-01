@@ -20,7 +20,17 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   const drippers = readJson<{ items: Array<{ name: string }> }>('apps/web/public/data/ai-brew/drippers.v2026-03.json').items;
   const grinders = readJson<{ items: Array<{ name: string }> }>('apps/web/public/data/ai-brew/grinders.v2026-03.json').items;
   const grinderSearch = readJson<{ items: Array<{ id: string; search_text: string }> }>('apps/web/public/data/catalog/phase1/grinders.search.json').items;
-  const profiles = readJson<{ items: Array<{ id: string; exactMatch: boolean; brewMode: string; dripperIds: string[]; methodFamily: string; brewMethodId: string }> }>('apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json').items;
+  const profiles = readJson<{
+    items: Array<{
+      id: string;
+      exactMatch: boolean;
+      brewMode: string;
+      dripperIds: string[];
+      methodFamily: string;
+      brewMethodId: string;
+      steps?: Array<{ id: string; label: string; share: number; note: string }>;
+    }>;
+  }>('apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json').items;
   const grinderSettings = readJson<{ items: Array<{ id: string; grinderId: string; profileIds: string[]; rangeLabel: string }> }>('apps/web/public/data/ai-brew/grinder-settings.v2026-06.json').items;
   const processes = readJson<{ items: Array<{ id: string; origins?: string[] }> }>('apps/web/public/data/ai-brew/processes.v2026-06.json').items;
   const varieties = readJson<{ items: Array<{ id: string; origins?: string[] }> }>('apps/web/public/data/ai-brew/varieties.v2026-06.json').items;
@@ -78,6 +88,21 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   ]) {
     assert.ok(profiles.some((entry) => entry.id === icedId && entry.exactMatch && entry.brewMode === 'iced'), `Expected iced exact profile missing: ${icedId}`);
   }
+
+  const harioV60Iced = profiles.find((entry) => entry.id === 'profile_hario_v60_iced');
+  assert.ok(harioV60Iced, 'Hario V60 iced profile should exist');
+  assert.equal(harioV60Iced?.brewMethodId, 'v60_japanese_iced');
+  assert.equal(harioV60Iced?.steps?.length, 4, 'Hario V60 iced should expose bloom, two build pours, and final pour');
+  assert.deepEqual(
+    harioV60Iced?.steps?.map((step) => step.label),
+    ['Bloom', 'Center Pour', 'Second Pulse', 'Final Pour'],
+  );
+  assert.ok(harioV60Iced?.steps?.every((step) => step.share > 0), 'Hario V60 iced service/stir should not be encoded as a zero-share brew step');
+  assert.doesNotMatch(
+    harioV60Iced?.steps?.map((step) => `${step.label} ${step.note}`).join('\n') || '',
+    /\bserve\b/i,
+    'Hario V60 iced brew steps should avoid serve wording inside the operational pour sequence',
+  );
 
   for (const [profileId, expectedMethodId] of [
     ['profile_kono_meimon_hot', 'kono'],

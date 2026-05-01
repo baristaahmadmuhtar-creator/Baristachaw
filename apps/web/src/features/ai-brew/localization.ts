@@ -73,12 +73,33 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
   switch (label.trim().toLowerCase()) {
     case 'bloom':
       return 'Bloom';
+    case 'main pour':
+      return 'Tuang Utama';
+    case 'center pour':
+      return 'Tuang Tengah';
+    case 'mid pour':
+    case 'middle pour':
+      return 'Tuang Tengah';
+    case 'first pulse':
+    case 'pulse one':
+    case 'pulse 1':
+      return 'Pulse Pertama';
+    case 'second pulse':
+    case 'pulse two':
+    case 'pulse 2':
+      return 'Pulse Kedua';
+    case 'third pulse':
+    case 'pulse three':
+    case 'pulse 3':
+      return 'Pulse Ketiga';
     case 'second pour':
       return 'Tuang Kedua';
     case 'third pour':
       return 'Tuang Ketiga';
     case 'final pour':
       return 'Tuang Akhir';
+    case 'finish to hot-water target':
+      return 'Tuang Akhir Target Panas';
     case 'finish':
       return 'Selesai';
     case 'charge':

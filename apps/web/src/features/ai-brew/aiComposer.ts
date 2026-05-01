@@ -36,6 +36,17 @@ function formatSeconds(totalSeconds: number) {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
+function formatBaristaRatio(value: number) {
+  if (!Number.isFinite(value)) return '--';
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
+function formatBaristaTemperature(value: number) {
+  if (!Number.isFinite(value)) return '--';
+  return String(Math.round(value));
+}
+
 function normalizeText(text: string) {
   return text.replace(/\r\n/g, '\n').trim();
 }
@@ -1292,15 +1303,15 @@ export function buildDeterministicNarrative(plan: BrewPlan, mode: AiBrewNarrativ
 
   if (mode === 'generate') {
     const ratioLine = plan.brewMode === 'iced'
-      ? `final ratio 1:${plan.finalBeverageRatio} with a hot concentrate at 1:${plan.hotExtractionRatio}`
-      : `ratio 1:${plan.recommendedRatio}`;
+      ? `final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)} with a hot concentrate at 1:${formatBaristaRatio(plan.hotExtractionRatio)}`
+      : `ratio 1:${formatBaristaRatio(plan.recommendedRatio)}`;
     const executionNoun = POUR_OVER_METHODS.has(plan.methodFamily) ? 'pour' : 'method';
     const microAdjustment = POUR_OVER_METHODS.has(plan.methodFamily)
       ? 'minor center-pour flow change'
       : 'minor timing or separation change';
     return [
       '## Why It Fits',
-      `This plan targets ${plan.targetProfileLabel.toLowerCase()} with ${plan.dripper.name} using ${ratioLine} at ${plan.waterTempC} C and a ${formatSeconds(plan.totalTimeSeconds)} service window. The sequence is anchored to deterministic water split (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''}) and grinder bias (${plan.grindBias}) for repeatable extraction.`,
+      `This plan targets ${plan.targetProfileLabel.toLowerCase()} with ${plan.dripper.name} using ${ratioLine} at ${formatBaristaTemperature(plan.waterTempC)} C and a ${formatSeconds(plan.totalTimeSeconds)} service window. The sequence is anchored to deterministic water split (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''}) and grinder bias (${plan.grindBias}) for repeatable extraction.`,
       '## Focus',
       `- Execute each ${executionNoun} checkpoint at its planned timestamp; do not shift the deterministic liquid target beyond ${plan.hotWaterMl} ml.`,
       `- Track method behavior and keep adjustments micro: grind step, 1 C temperature, or ${microAdjustment}.`,
@@ -1311,9 +1322,9 @@ export function buildDeterministicNarrative(plan: BrewPlan, mode: AiBrewNarrativ
     return [
       '## Quick Dial',
       `- dose: ${plan.doseG} g`,
-      `- final ratio: 1:${plan.finalBeverageRatio}${plan.iceMl > 0 ? `; hot concentrate: 1:${plan.hotExtractionRatio}` : ''}`,
+      `- final ratio: 1:${formatBaristaRatio(plan.finalBeverageRatio)}${plan.iceMl > 0 ? `; hot concentrate: 1:${formatBaristaRatio(plan.hotExtractionRatio)}` : ''}`,
       `- total water: ${plan.totalWaterMl} ml (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''})`,
-      `- temperature: ${plan.waterTempC} C`,
+      `- temperature: ${formatBaristaTemperature(plan.waterTempC)} C`,
       `- grind: ${plan.grindRecommendation}`,
       `- total time: ${formatSeconds(plan.totalTimeSeconds)}`,
       '## Service Pattern',
@@ -1338,7 +1349,7 @@ export function buildDeterministicNarrative(plan: BrewPlan, mode: AiBrewNarrativ
     ...stepLines,
     '## Watch',
     ...watchBullets.map((bullet) => `- ${bullet}`),
-    `- Keep final envelope locked: dose ${plan.doseG} g, final ratio 1:${plan.finalBeverageRatio}${plan.iceMl > 0 ? `, hot concentrate 1:${plan.hotExtractionRatio}` : ''}, water ${plan.totalWaterMl} ml (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''}), temp ${plan.waterTempC} C, brew time ${formatSeconds(plan.totalTimeSeconds)}.`
+    `- Keep final envelope locked: dose ${plan.doseG} g, final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)}${plan.iceMl > 0 ? `, hot concentrate 1:${formatBaristaRatio(plan.hotExtractionRatio)}` : ''}, water ${plan.totalWaterMl} ml (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''}), temp ${formatBaristaTemperature(plan.waterTempC)} C, brew time ${formatSeconds(plan.totalTimeSeconds)}.`
   ].join('\n');
 }
 

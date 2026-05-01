@@ -518,10 +518,49 @@ function installLocalStorageMock(options?: { throwOnSetItem?: boolean }) {
   });
 }
 
+function getBaristaVolumeIncrementMl(methodFamily: AiBrewMethodFamily) {
+  if (methodFamily === 'espresso') return 1;
+  if (methodFamily === 'cold_brew' || methodFamily === 'batch_brew') return 25;
+  return 5;
+}
+
+function getBaristaTimeIncrementSeconds(methodFamily: AiBrewMethodFamily) {
+  if (methodFamily === 'espresso') return 1;
+  if (methodFamily === 'cold_brew') return 300;
+  if (methodFamily === 'batch_brew') return 15;
+  return 5;
+}
+
+function assertMultipleOf(value: number, increment: number, label: string) {
+  const roundedQuotient = Math.round(value / increment);
+  assert.ok(
+    Math.abs(value - roundedQuotient * increment) < 1e-9,
+    `${label} should be rounded to ${increment}, got ${value}`,
+  );
+}
+
+function assertBaristaRoundedPlan(plan: ReturnType<typeof buildAiBrewPlan>) {
+  const volumeIncrement = getBaristaVolumeIncrementMl(plan.methodFamily);
+  const timeIncrement = getBaristaTimeIncrementSeconds(plan.methodFamily);
+
+  assertMultipleOf(plan.totalWaterMl, volumeIncrement, 'total water');
+  assertMultipleOf(plan.hotWaterMl, volumeIncrement, 'hot water');
+  assertMultipleOf(plan.iceMl, volumeIncrement, 'ice');
+  assertMultipleOf(plan.estimatedCupOutputMl, volumeIncrement, 'estimated cup output');
+  assertMultipleOf(plan.totalTimeSeconds, timeIncrement, 'total time');
+
+  for (const [index, step] of plan.steps.entries()) {
+    assertMultipleOf(step.startSeconds, timeIncrement, `step ${index + 1} start time`);
+    assertMultipleOf(step.pourVolumeMl, volumeIncrement, `step ${index + 1} pour volume`);
+    assertMultipleOf(step.targetVolumeMl, volumeIncrement, `step ${index + 1} target volume`);
+  }
+}
+
 function assertPlanEnvelope(plan: ReturnType<typeof buildAiBrewPlan>) {
   const totalPoured = plan.steps.reduce((sum, step) => sum + step.pourVolumeMl, 0);
   const finalStep = plan.steps[plan.steps.length - 1];
 
+  assertBaristaRoundedPlan(plan);
   assert.equal(totalPoured, plan.hotWaterMl);
   assert.equal(finalStep?.targetVolumeMl, plan.hotWaterMl);
   assert.ok(plan.recommendedRatio > 0);
@@ -1078,6 +1117,7 @@ test('non-dripper method profiles generate action-safe AI Brew plans without fak
     if (entry.family !== 'cold_brew' && entry.family !== 'espresso') {
       assertPlanEnvelope(plan);
     } else {
+      assertBaristaRoundedPlan(plan);
       const totalPoured = plan.steps.reduce((sum, step) => sum + step.pourVolumeMl, 0);
       assert.equal(totalPoured, plan.hotWaterMl);
       assert.equal(plan.steps.at(-1)?.targetVolumeMl, plan.hotWaterMl);
@@ -2158,7 +2198,10 @@ test('all supported dripper families stay production-safe across hot and iced fl
   assert.ok(getIcedShare('chemex') > getIcedShare('v60'));
   assert.ok(getIcedShare('clever_dripper') > getIcedShare('april'));
   assert.ok(getIcedShare('melitta') > getIcedShare('origami'));
-  assert.ok(getIcedShare('kono') > getIcedShare('origami'));
+  assert.ok(
+    getIcedShare('kono') > getIcedShare('origami'),
+    `Expected rounded Kono hot split to stay above Origami, got Kono ${getIcedShare('kono')} and Origami ${getIcedShare('origami')}`,
+  );
 
   assert.ok(getPlan('hot', 'chemex').recommendedRatio > getPlan('hot', 'v60').recommendedRatio);
   assert.ok(getPlan('hot', 'april').totalTimeSeconds < getPlan('hot', 'kalita_wave').totalTimeSeconds);

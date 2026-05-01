@@ -14,6 +14,17 @@ function formatSeconds(totalSeconds: number) {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
+function formatBaristaRatio(value: number) {
+  if (!Number.isFinite(value)) return '--';
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
+function formatBaristaTemperature(value: number) {
+  if (!Number.isFinite(value)) return '--';
+  return String(Math.round(value));
+}
+
 function buildPourProgressionProfile(plan: BrewPlan) {
   if (plan.steps.length === 0 || plan.hotWaterMl <= 0) return 'not_available';
 
@@ -118,12 +129,12 @@ function buildSharedContext(plan: BrewPlan) {
     `Grinder setting reference: ${plan.grindSettingReference} (${plan.grindSettingMode}, ${plan.grindSettingVerification})`,
     `Provenance attention needed: ${plan.provenanceAttentionNeeded ? 'yes' : 'no'}`,
     `Dose: ${plan.doseG} g`,
-    `Final beverage ratio: 1:${plan.finalBeverageRatio}`,
-    `Hot extraction ratio: 1:${plan.hotExtractionRatio}`,
+    `Final beverage ratio: 1:${formatBaristaRatio(plan.finalBeverageRatio)}`,
+    `Hot extraction ratio: 1:${formatBaristaRatio(plan.hotExtractionRatio)}`,
     `Water total: ${plan.totalWaterMl} ml`,
     `Hot water: ${plan.hotWaterMl} ml`,
     `Ice: ${plan.iceMl} ml`,
-    `Temperature: ${plan.waterTempC} C`,
+    `Temperature: ${formatBaristaTemperature(plan.waterTempC)} C`,
     `Target brew time: ${formatSeconds(plan.totalTimeSeconds)}`,
     `Grind recommendation: ${plan.grindRecommendation}`,
     `Warnings: ${plan.guardrails.warnings.join(' | ') || 'none'}`,
@@ -142,12 +153,12 @@ function buildPlannerEnvelope(plan: BrewPlan) {
   return [
     'Deterministic envelope (source of truth):',
     `- dose: ${plan.doseG} g`,
-    `- final beverage ratio: 1:${plan.finalBeverageRatio}`,
-    `- hot extraction ratio: 1:${plan.hotExtractionRatio}`,
+    `- final beverage ratio: 1:${formatBaristaRatio(plan.finalBeverageRatio)}`,
+    `- hot extraction ratio: 1:${formatBaristaRatio(plan.hotExtractionRatio)}`,
     `- total water: ${plan.totalWaterMl} ml`,
     `- hot water: ${plan.hotWaterMl} ml`,
     `- ice: ${plan.iceMl} ml`,
-    `- temperature: ${plan.waterTempC} C`,
+    `- temperature: ${formatBaristaTemperature(plan.waterTempC)} C`,
     `- brew time: ${formatSeconds(plan.totalTimeSeconds)}`,
     `- operation progression profile: ${buildPourProgressionProfile(plan)}`,
     `- extraction pressure profile: ${buildExtractionPressureProfile(plan)}`,

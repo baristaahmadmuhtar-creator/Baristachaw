@@ -162,6 +162,45 @@ function midpoint(range: [number, number], digits = 1) {
   return roundTo((range[0] + range[1]) / 2, digits);
 }
 
+function roundToIncrement(value: number, increment: number) {
+  if (!Number.isFinite(value) || !Number.isFinite(increment) || increment <= 0) {
+    return value;
+  }
+  return Math.round(value / increment) * increment;
+}
+
+function resolveBaristaVolumeIncrementMl(methodFamily: AiBrewMethodFamily) {
+  if (methodFamily === 'espresso') return 1;
+  if (methodFamily === 'cold_brew' || methodFamily === 'batch_brew') return 25;
+  return 5;
+}
+
+function resolveBaristaTimeIncrementSeconds(methodFamily: AiBrewMethodFamily) {
+  if (methodFamily === 'espresso') return 1;
+  if (methodFamily === 'cold_brew') return 300;
+  if (methodFamily === 'batch_brew') return 15;
+  return 5;
+}
+
+function roundBaristaVolumeMl(value: number, methodFamily: AiBrewMethodFamily) {
+  return Math.max(0, roundToIncrement(value, resolveBaristaVolumeIncrementMl(methodFamily)));
+}
+
+function roundBaristaTimeSeconds(value: number, methodFamily: AiBrewMethodFamily) {
+  return Math.max(0, roundToIncrement(value, resolveBaristaTimeIncrementSeconds(methodFamily)));
+}
+
+function clampRoundedToIncrement(value: number, min: number, max: number, increment: number) {
+  const lower = Math.min(min, max);
+  const upper = Math.max(min, max);
+  const alignedLower = Math.ceil(lower / increment) * increment;
+  const alignedUpper = Math.floor(upper / increment) * increment;
+  if (alignedLower <= alignedUpper) {
+    return clamp(roundToIncrement(value, increment), alignedLower, alignedUpper);
+  }
+  return roundTo(clamp(value, lower, upper), 0);
+}
+
 function nowId(prefix: string) {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -379,6 +418,17 @@ function parseOptionalNumber(label: string, value: string, min: number, max: num
 
 function formatTime(totalSeconds: number) {
   return formatAiBrewTime(totalSeconds);
+}
+
+function formatBaristaRatio(value: number) {
+  if (!Number.isFinite(value)) return '--';
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
+function formatBaristaTemperature(value: number) {
+  if (!Number.isFinite(value)) return '--';
+  return String(Math.round(value));
 }
 
 function methodFamilySupportsIced(methodFamily: AiBrewMethodFamily) {
@@ -650,6 +700,35 @@ function buildAdaptiveStepStartSeconds(
   }
   adapted[adapted.length - 1] = clamp(adapted[adapted.length - 1], minLastStepSeconds, maxLastStepSeconds);
   return adapted;
+}
+
+function normalizeBaristaStepStartSeconds(
+  starts: number[],
+  totalTimeSeconds: number,
+  methodFamily: AiBrewMethodFamily,
+) {
+  if (starts.length <= 1) return starts.map((start) => Math.max(0, Math.round(start)));
+  const increment = resolveBaristaTimeIncrementSeconds(methodFamily);
+  const minGapSeconds = methodFamily === 'espresso' ? 1 : Math.min(30, Math.max(5, increment));
+  const maxStartBudget = Math.max(minGapSeconds, totalTimeSeconds - minGapSeconds);
+  let previous = 0;
+
+  return starts.map((start, index) => {
+    if (index === 0) {
+      previous = 0;
+      return 0;
+    }
+    const remainingSteps = starts.length - 1 - index;
+    const minimumStart = previous + minGapSeconds;
+    const maximumStart = Math.max(
+      minimumStart,
+      Math.min(maxStartBudget, totalTimeSeconds - (remainingSteps + 1) * minGapSeconds),
+    );
+    const roundedStart = roundToIncrement(start, increment);
+    const normalizedStart = clampRoundedToIncrement(roundedStart, minimumStart, maximumStart, increment);
+    previous = normalizedStart;
+    return normalizedStart;
+  });
 }
 
 type TargetIntent = 'acidity' | 'body' | 'sweetness' | 'balanced';
@@ -1301,6 +1380,8 @@ function resolveIcedHotWaterShare(params: {
   };
 
   let hotWaterShare = familyShareProfile.base;
+  if (params.methodFamily === 'kono') hotWaterShare += 0.05;
+  if (params.methodFamily === 'origami') hotWaterShare -= 0.01;
   const targetIntent = resolveTargetIntent(params.targetProfileLabel, params.targetProfileId);
   if (targetIntent === 'body') hotWaterShare += 0.02;
   else if (targetIntent === 'sweetness') hotWaterShare += 0.015;
@@ -2900,12 +2981,27 @@ function buildSteps(
   adaptiveShareContext: AdaptiveShareContext,
 ): BrewPlanStep[] {
   if (profile.steps.length === 0) return [];
+  const volumeIncrementMl = resolveBaristaVolumeIncrementMl(adaptiveShareContext.methodFamily);
+  const timeIncrementSeconds = resolveBaristaTimeIncrementSeconds(adaptiveShareContext.methodFamily);
   if (adaptiveShareContext.methodFamily === 'clever_dripper' && profile.steps.length === 1) {
     const sourceStep = profile.steps[0];
     const finalWindowBounds = resolveMethodFamilyFinalWindowBounds(adaptiveShareContext.methodFamily, adaptiveShareContext.brewMode);
-    const finalWindow = Math.round(clamp(totalTimeSeconds * 0.32, finalWindowBounds.min, finalWindowBounds.max));
-    const releaseStart = Math.max(45, totalTimeSeconds - finalWindow);
-    const holdStart = Math.max(25, Math.round(releaseStart * 0.48));
+    const finalWindow = roundBaristaTimeSeconds(
+      clamp(totalTimeSeconds * 0.32, finalWindowBounds.min, finalWindowBounds.max),
+      adaptiveShareContext.methodFamily,
+    );
+    const releaseStart = clampRoundedToIncrement(
+      totalTimeSeconds - finalWindow,
+      45,
+      Math.max(45, totalTimeSeconds - timeIncrementSeconds),
+      timeIncrementSeconds,
+    );
+    const holdStart = clampRoundedToIncrement(
+      releaseStart * 0.48,
+      25,
+      Math.max(25, releaseStart - timeIncrementSeconds),
+      timeIncrementSeconds,
+    );
     const chargeInstruction = buildMethodFamilyStepInstruction({
       methodFamily: adaptiveShareContext.methodFamily,
       phase: 'bloom',
@@ -2953,7 +3049,11 @@ function buildSteps(
       },
     ];
   }
-  const adaptedStartSeconds = buildAdaptiveStepStartSeconds(profile, totalTimeSeconds, adaptiveShareContext);
+  const adaptedStartSeconds = normalizeBaristaStepStartSeconds(
+    buildAdaptiveStepStartSeconds(profile, totalTimeSeconds, adaptiveShareContext),
+    totalTimeSeconds,
+    adaptiveShareContext.methodFamily,
+  );
   const adaptedShares = buildAdaptiveStepShares(profile, adaptiveShareContext);
   const stepKinds = profile.steps.map((step, index) =>
     inferBrewStepKind(step, adaptiveShareContext, index, profile.steps.length));
@@ -2972,10 +3072,22 @@ function buildSteps(
     const isPourStep = isVolumeTargetStepKind(kind) || inferredVolumeIndexes.length === 0;
     const isLastPourStep = index === lastPourIndex;
     const remainingWater = Math.max(0, hotWaterMl - runningTotal);
+    const remainingPourCount = pourIndexes.filter((pourIndex) => pourIndex > index).length;
+    const minimumReserveMl = remainingPourCount * volumeIncrementMl;
     const rawShare = Math.max(0, adaptedShares[index] ?? step.share);
     const normalizedPourShare = pourShareTotal > 0 ? rawShare / pourShareTotal : 1 / Math.max(1, pourIndexes.length);
-    const rawPour = isLastPourStep ? remainingWater : roundTo(hotWaterMl * normalizedPourShare, 0);
-    const pourVolumeMl = isPourStep ? roundTo(Math.min(remainingWater, Math.max(0, rawPour)), 0) : 0;
+    const rawPour = isLastPourStep ? remainingWater : hotWaterMl * normalizedPourShare;
+    const maxPourVolumeMl = isLastPourStep
+      ? remainingWater
+      : Math.max(0, remainingWater - minimumReserveMl);
+    const minPourVolumeMl = !isLastPourStep && rawShare > 0 && maxPourVolumeMl >= volumeIncrementMl
+      ? volumeIncrementMl
+      : 0;
+    const pourVolumeMl = isPourStep
+      ? isLastPourStep
+        ? remainingWater
+        : clampRoundedToIncrement(rawPour, minPourVolumeMl, maxPourVolumeMl, volumeIncrementMl)
+      : 0;
     runningTotal = isLastPourStep
       ? hotWaterMl
       : roundTo(runningTotal + pourVolumeMl, 0);
@@ -3022,8 +3134,8 @@ function buildSummary(plan: Pick<
   'brewMode' | 'methodFamily' | 'coffeeName' | 'dripper' | 'targetProfileLabel' | 'recommendedRatio' | 'finalBeverageRatio' | 'hotExtractionRatio' | 'waterTempC' | 'totalTimeSeconds'
 >) {
   const ratioText = plan.brewMode === 'iced'
-    ? `final ratio 1:${plan.finalBeverageRatio} with hot concentrate 1:${plan.hotExtractionRatio}`
-    : `1:${plan.recommendedRatio}`;
+    ? `final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)} with hot concentrate 1:${formatBaristaRatio(plan.hotExtractionRatio)}`
+    : `1:${formatBaristaRatio(plan.recommendedRatio)}`;
   const modeLabel = plan.methodFamily === 'cold_brew'
     ? 'Cold brew'
     : plan.methodFamily === 'espresso'
@@ -3031,7 +3143,7 @@ function buildSummary(plan: Pick<
       : plan.brewMode === 'iced'
         ? 'Ice brew'
         : 'Hot brew';
-  return `${modeLabel} plan for ${plan.coffeeName || 'your coffee'} on ${plan.dripper.name}, tuned for ${plan.targetProfileLabel.toLowerCase()} at ${ratioText}, ${plan.waterTempC}°C, around ${formatTime(plan.totalTimeSeconds)}.`;
+  return `${modeLabel} plan for ${plan.coffeeName || 'your coffee'} on ${plan.dripper.name}, tuned for ${plan.targetProfileLabel.toLowerCase()} at ${ratioText}, ${formatBaristaTemperature(plan.waterTempC)}°C, around ${formatTime(plan.totalTimeSeconds)}.`;
 }
 
 function buildServiceExecutionNote(params: {
@@ -3047,7 +3159,7 @@ function buildServiceExecutionNote(params: {
   waterTempC: number;
 }) {
   if (params.brewMode === 'iced') {
-    return `Brew ${params.hotWaterMl} ml hot over ${params.iceMl} ml/g ice (${params.hotSplitPercent}%:${params.iceSplitPercent}%). Final ratio is 1:${params.finalBeverageRatio}; hot concentrate extracts at 1:${params.hotExtractionRatio}. Keep pours compact to hold sweetness and clarity, then stir the chilled server after drawdown so service is not confused with another brew step.`;
+    return `Brew ${params.hotWaterMl} ml hot over ${params.iceMl} ml/g ice (${params.hotSplitPercent}%:${params.iceSplitPercent}%). Final ratio is 1:${formatBaristaRatio(params.finalBeverageRatio)}; hot concentrate extracts at 1:${formatBaristaRatio(params.hotExtractionRatio)}. Keep pours compact to hold sweetness and clarity, then stir the chilled server after drawdown so service is not confused with another brew step.`;
   }
   switch (params.methodFamily) {
     case 'cold_brew':
@@ -3061,9 +3173,9 @@ function buildServiceExecutionNote(params: {
     case 'french_press':
     case 'aeropress':
     case 'siphon':
-      return `Use the full ${params.totalWaterMl} ml as brew water and keep contact time controlled around ${params.waterTempC}°C without extra late agitation.`;
+      return `Use the full ${params.totalWaterMl} ml as brew water and keep contact time controlled around ${formatBaristaTemperature(params.waterTempC)}°C without extra late agitation.`;
     default:
-      return `Use the full ${params.totalWaterMl} ml as brew water and keep kettle near ${params.waterTempC}°C with calm, center-focused pours.`;
+      return `Use the full ${params.totalWaterMl} ml as brew water and keep kettle near ${formatBaristaTemperature(params.waterTempC)}°C with calm, center-focused pours.`;
   }
 }
 
@@ -3634,7 +3746,7 @@ function finalizePlanCore(
     originAdjustment,
   });
 
-  const recommendedRatio = roundTo(clamp(
+  const targetRecommendedRatio = roundTo(clamp(
     roastAdjustedTargets.adjustedRatioDefault
       + deviceSelection.profile.ratioDelta
       + waterProfile.ratioDelta
@@ -3653,7 +3765,8 @@ function finalizePlanCore(
     method.ratioRange[1] + 0.75,
   ), 2);
 
-  const totalWaterMl = roundTo(calcWaterFromDoseRatio(doseG, recommendedRatio), 0);
+  const totalWaterMl = roundBaristaVolumeMl(calcWaterFromDoseRatio(doseG, targetRecommendedRatio), methodFamily);
+  const recommendedRatio = targetRecommendedRatio;
   const hotWaterShare = input.brewMode === 'iced'
     ? resolveIcedHotWaterShare({
       methodFamily,
@@ -3667,7 +3780,7 @@ function finalizePlanCore(
     })
     : 1;
   let hotWaterMl = input.brewMode === 'iced'
-    ? roundTo(totalWaterMl * hotWaterShare, 0)
+    ? roundBaristaVolumeMl(totalWaterMl * hotWaterShare, methodFamily)
     : totalWaterMl;
   if (input.brewMode === 'iced') {
     const hotRatioBounds = ICED_HOT_EXTRACTION_RATIO_BOUNDS[methodFamily] || ICED_HOT_EXTRACTION_RATIO_BOUNDS.v60;
@@ -3676,7 +3789,12 @@ function finalizePlanCore(
     const maxHotWaterWithIceMl = Math.max(1, totalWaterMl - 1);
     const lowerHotWaterMl = Math.min(maxHotWaterWithIceMl, Math.max(1, minHotWaterMl));
     const upperHotWaterMl = Math.min(maxHotWaterWithIceMl, Math.max(lowerHotWaterMl, maxHotWaterMl));
-    hotWaterMl = roundTo(clamp(hotWaterMl, lowerHotWaterMl, upperHotWaterMl), 0);
+    hotWaterMl = clampRoundedToIncrement(
+      hotWaterMl,
+      lowerHotWaterMl,
+      upperHotWaterMl,
+      resolveBaristaVolumeIncrementMl(methodFamily),
+    );
   }
   const iceMl = input.brewMode === 'iced'
     ? roundTo(totalWaterMl - hotWaterMl, 0)
@@ -3712,7 +3830,7 @@ function finalizePlanCore(
     : methodFamily === 'espresso'
       ? { min: 20, max: 45 }
       : { min: 75, max: 420 };
-  const totalTimeSeconds = Math.round(clamp(
+  const totalTimeSeconds = roundBaristaTimeSeconds(clamp(
     midpoint(roastAdjustedTargets.adjustedBrewTimeRangeSec, 0)
       + deviceSelection.profile.brewTimeDeltaSec
       + waterProfile.brewTimeDeltaSec
@@ -3729,7 +3847,7 @@ function finalizePlanCore(
       + (input.brewMode === 'iced' ? -5 : 0),
     methodTimeBounds.min,
     methodTimeBounds.max,
-  ));
+  ), methodFamily);
   const hotSplitPercent = roundTo(totalWaterMl > 0 ? (hotWaterMl / totalWaterMl) * 100 : 100, 0);
   const iceSplitPercent = roundTo(totalWaterMl > 0 ? (iceMl / totalWaterMl) * 100 : 0, 0);
   const hotWaterSharePercent = hotSplitPercent;
@@ -3785,8 +3903,8 @@ function finalizePlanCore(
     waterMl: hotWaterMl,
     ratio: recommendedRatio,
   });
-  const estimatedBrewOutputMl = brewOutputs.beverageOutputMl;
-  const estimatedCupOutputMl = roundTo(estimatedBrewOutputMl + iceMl, 1);
+  const estimatedBrewOutputMl = roundBaristaVolumeMl(brewOutputs.beverageOutputMl, methodFamily);
+  const estimatedCupOutputMl = roundBaristaVolumeMl(estimatedBrewOutputMl + iceMl, methodFamily);
 
   const processLabel = resolveCatalogLabel(processEntry, input.process, input.customProcess, 'Not specified');
   const varietyLabel = resolveCatalogLabel(varietyEntry, input.variety, input.customVariety, 'Not specified');
@@ -3869,7 +3987,7 @@ function finalizePlanCore(
       `Device profile source: ${deviceSelection.profile.verificationLevel}.`,
       `Grinder setting source: ${grindDetails.verificationLevel}.`,
       input.brewMode === 'iced'
-        ? `Iced split source: final beverage ratio 1:${finalBeverageRatio}, hot extraction ratio 1:${hotExtractionRatio}, hot/ice ${hotSplitPercent}:${iceSplitPercent}.`
+        ? `Iced split source: final beverage ratio 1:${formatBaristaRatio(finalBeverageRatio)}, hot extraction ratio 1:${formatBaristaRatio(hotExtractionRatio)}, hot/ice ${hotSplitPercent}:${iceSplitPercent}.`
         : undefined,
     ],
   );
@@ -4467,7 +4585,7 @@ export function buildPlanRecipeDescription(plan: BrewPlan, locale?: string) {
   const id = isIndonesianLocale(locale);
   const gear = `${plan.dripper.name} + ${plan.grinder.name}`;
   const split = plan.iceMl > 0
-    ? (id ? ` Split ${plan.hotWaterMl} ml panas / ${plan.iceMl} ml es. Rasio final 1:${plan.finalBeverageRatio}, konsentrat panas 1:${plan.hotExtractionRatio}.` : ` Split ${plan.hotWaterMl} ml hot / ${plan.iceMl} ml ice. Final ratio 1:${plan.finalBeverageRatio}, hot concentrate 1:${plan.hotExtractionRatio}.`)
+    ? (id ? ` Split ${plan.hotWaterMl} ml panas / ${plan.iceMl} ml es. Rasio final 1:${formatBaristaRatio(plan.finalBeverageRatio)}, konsentrat panas 1:${formatBaristaRatio(plan.hotExtractionRatio)}.` : ` Split ${plan.hotWaterMl} ml hot / ${plan.iceMl} ml ice. Final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)}, hot concentrate 1:${formatBaristaRatio(plan.hotExtractionRatio)}.`)
     : '';
   const waterSource = plan.waterBrandLabel
     ? (id
@@ -4567,7 +4685,7 @@ export function buildLocalizedPlanRecipeDescription(plan: BrewPlan, locale?: str
   const id = isIndonesianLocale(locale);
   const gear = `${plan.dripper.name} + ${plan.grinder.name}`;
   const split = plan.iceMl > 0
-    ? (id ? ` Split ${plan.hotWaterMl} ml panas / ${plan.iceMl} ml es. Rasio final 1:${plan.finalBeverageRatio}, konsentrat panas 1:${plan.hotExtractionRatio}.` : ` Split ${plan.hotWaterMl} ml hot / ${plan.iceMl} ml ice. Final ratio 1:${plan.finalBeverageRatio}, hot concentrate 1:${plan.hotExtractionRatio}.`)
+    ? (id ? ` Split ${plan.hotWaterMl} ml panas / ${plan.iceMl} ml es. Rasio final 1:${formatBaristaRatio(plan.finalBeverageRatio)}, konsentrat panas 1:${formatBaristaRatio(plan.hotExtractionRatio)}.` : ` Split ${plan.hotWaterMl} ml hot / ${plan.iceMl} ml ice. Final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)}, hot concentrate 1:${formatBaristaRatio(plan.hotExtractionRatio)}.`)
     : '';
   const waterSource = plan.waterBrandLabel
     ? (id

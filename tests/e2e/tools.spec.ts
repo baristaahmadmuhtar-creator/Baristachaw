@@ -132,6 +132,12 @@ async function readStoredAiBrewPlan(page: import('@playwright/test').Page): Prom
   return parsed.payload as BrewPlan;
 }
 
+function formatAiBrewDisplayRatio(value: number) {
+  if (!Number.isFinite(value)) return '--';
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
 test('tools tabs expose accessible tab semantics and keyboard navigation', async ({ page }) => {
   const aiTab = page.getByRole('tab', { name: 'AI Brew' });
   const timerTab = page.getByRole('tab', { name: 'Timer' });
@@ -545,8 +551,8 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
     expect(plan.steps.map((step) => step.kind)).not.toContain('serve');
     expect(plan.steps[2]?.label).toMatch(/Pulse|Pour/i);
     expect(plan.steps[plan.steps.length - 1]?.label).toMatch(/Final Pour|Finish/i);
-    await expect(result).toContainText(`1:${plan.finalBeverageRatio}`);
-    await expect(result).toContainText(`1:${plan.hotExtractionRatio}`);
+    await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(plan.finalBeverageRatio)}`);
+    await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(plan.hotExtractionRatio)}`);
     await expect(result).toContainText(`${plan.hotWaterMl} ml`);
     await expect(result).toContainText(`${plan.iceMl} ml`);
     await expect(result.getByTestId('ai-brew-step-card-3')).not.toContainText(/Saji|sajikan|serve/i);
@@ -609,10 +615,10 @@ test('ai brew can hand off an iced plan into timer and ratio tools', async ({ pa
   await expect(page.getByRole('button', { name: /^V60 (Ice Brew|Seduh Es)$/i })).toHaveClass(/bg-blue-600/);
   await expect(page.getByTestId('dose-input')).toHaveValue('20');
   await expect(page.getByTestId('water-input')).toHaveValue(String(ratioPlan.totalWaterMl));
-  await expect(page.getByTestId('ratio-input')).toHaveValue(String(ratioPlan.finalBeverageRatio));
+  await expect(page.getByTestId('ratio-input')).toHaveValue(formatAiBrewDisplayRatio(ratioPlan.finalBeverageRatio));
   await expect(page.getByTestId('ai-brew-iced-ratio-split')).toContainText(`${Math.round(ratioPlan.hotWaterMl)} ml air panas`);
   await expect(page.getByTestId('ai-brew-iced-ratio-split')).toContainText(`${Math.round(ratioPlan.iceMl)} ml es`);
-  await expect(page.getByTestId('ai-brew-iced-ratio-split')).toContainText(`1:${Math.round(ratioPlan.hotExtractionRatio * 10) / 10}`);
+  await expect(page.getByTestId('ai-brew-iced-ratio-split')).toContainText(`1:${formatAiBrewDisplayRatio(ratioPlan.hotExtractionRatio)}`);
 });
 
 test('guest users are gated only when requesting ai coaching', async ({ page }) => {

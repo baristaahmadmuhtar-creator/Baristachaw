@@ -91,6 +91,11 @@ const formatClock = (totalSeconds: number) => {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 
+function roundAiBrewRatioForTools(value: number) {
+  if (!Number.isFinite(value)) return value;
+  return Math.round(value * 10) / 10;
+}
+
 export function BaristaTools() {
   const { t } = useGlobalState();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -594,7 +599,9 @@ export function BaristaTools() {
   };
 
   const handleUsePlanInRatio = (plan: BrewPlan) => {
-    const finalBeverageRatio = Number.isFinite(plan.finalBeverageRatio) ? plan.finalBeverageRatio : plan.recommendedRatio;
+    const finalBeverageRatio = roundAiBrewRatioForTools(
+      Number.isFinite(plan.finalBeverageRatio) ? plan.finalBeverageRatio : plan.recommendedRatio,
+    );
     setLastEditedField('ratio');
     setRatioState((prev) => ({
       ...prev,
@@ -617,7 +624,7 @@ export function BaristaTools() {
       hotWaterMl: plan.hotWaterMl,
       iceMl: plan.iceMl,
       finalBeverageRatio,
-      hotExtractionRatio: plan.hotExtractionRatio,
+      hotExtractionRatio: roundAiBrewRatioForTools(plan.hotExtractionRatio),
       hotWaterSharePercent: plan.hotWaterSharePercent,
       iceSharePercent: plan.iceSharePercent,
     } : null);

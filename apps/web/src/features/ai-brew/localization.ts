@@ -4,6 +4,17 @@ export function isIndonesianAiBrewLanguage(language?: string) {
   return /^id(?:-|$)/i.test((language || '').trim());
 }
 
+function formatBaristaRatio(value: number) {
+  if (!Number.isFinite(value)) return '--';
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+}
+
+function formatBaristaTemperature(value: number) {
+  if (!Number.isFinite(value)) return '--';
+  return String(Math.round(value));
+}
+
 export function localizeAiBrewTargetProfile(
   targetProfileId: string,
   fallbackLabel: string,
@@ -258,8 +269,8 @@ export function localizeAiBrewSummary(plan: Pick<
   'brewMode' | 'methodFamily' | 'coffeeName' | 'dripper' | 'targetProfileId' | 'targetProfileLabel' | 'recommendedRatio' | 'finalBeverageRatio' | 'hotExtractionRatio' | 'waterTempC' | 'totalTimeSeconds'
 >, language?: string) {
   const englishRatioText = plan.brewMode === 'iced'
-    ? `final ratio 1:${plan.finalBeverageRatio} with hot concentrate 1:${plan.hotExtractionRatio}`
-    : `1:${plan.recommendedRatio}`;
+    ? `final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)} with hot concentrate 1:${formatBaristaRatio(plan.hotExtractionRatio)}`
+    : `1:${formatBaristaRatio(plan.recommendedRatio)}`;
   const englishModeLabel = plan.methodFamily === 'cold_brew'
     ? 'Cold brew'
     : plan.methodFamily === 'espresso'
@@ -268,14 +279,14 @@ export function localizeAiBrewSummary(plan: Pick<
         ? 'Ice brew'
         : 'Hot brew';
   if (!isIndonesianAiBrewLanguage(language)) {
-    return `${englishModeLabel} plan for ${plan.coffeeName || 'your coffee'} on ${plan.dripper.name}, tuned for ${plan.targetProfileLabel.toLowerCase()} at ${englishRatioText}, ${plan.waterTempC}°C, around ${formatAiBrewTime(plan.totalTimeSeconds)}.`;
+    return `${englishModeLabel} plan for ${plan.coffeeName || 'your coffee'} on ${plan.dripper.name}, tuned for ${plan.targetProfileLabel.toLowerCase()} at ${englishRatioText}, ${formatBaristaTemperature(plan.waterTempC)}°C, around ${formatAiBrewTime(plan.totalTimeSeconds)}.`;
   }
 
   const coffeeName = plan.coffeeName || 'kopi ini';
   const target = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language).toLowerCase();
   const ratioText = plan.brewMode === 'iced'
-    ? `rasio final 1:${plan.finalBeverageRatio} dan konsentrat panas 1:${plan.hotExtractionRatio}`
-    : `1:${plan.recommendedRatio}`;
+    ? `rasio final 1:${formatBaristaRatio(plan.finalBeverageRatio)} dan konsentrat panas 1:${formatBaristaRatio(plan.hotExtractionRatio)}`
+    : `1:${formatBaristaRatio(plan.recommendedRatio)}`;
   const modeLabel = plan.methodFamily === 'cold_brew'
     ? 'Plan seduh dingin'
     : plan.methodFamily === 'espresso'
@@ -283,7 +294,7 @@ export function localizeAiBrewSummary(plan: Pick<
       : plan.brewMode === 'iced'
         ? 'Plan seduh es'
         : 'Plan seduh panas';
-  return `${modeLabel} untuk ${coffeeName} dengan ${plan.dripper.name}, disetel untuk profil ${target} pada ${ratioText}, ${plan.waterTempC}°C, sekitar ${formatAiBrewTime(plan.totalTimeSeconds)}.`;
+  return `${modeLabel} untuk ${coffeeName} dengan ${plan.dripper.name}, disetel untuk profil ${target} pada ${ratioText}, ${formatBaristaTemperature(plan.waterTempC)}°C, sekitar ${formatAiBrewTime(plan.totalTimeSeconds)}.`;
 }
 
 export function formatAiBrewTime(totalSeconds: number) {

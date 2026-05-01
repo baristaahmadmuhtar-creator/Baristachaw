@@ -872,6 +872,12 @@ function formatRoundedTemperature(value: number) {
   return `${formatDisplayNumber(Math.round(value))}\u00b0C`;
 }
 
+function formatBrewRatio(value: number) {
+  if (!Number.isFinite(value)) return '--';
+  const rounded = Math.round(value * 10) / 10;
+  return formatDisplayNumber(rounded, Number.isInteger(rounded) ? 0 : 1);
+}
+
 function formatGrindSettingValue(value: string) {
   const parsed = Number.parseFloat(value);
   if (!Number.isFinite(parsed)) return value;
@@ -2284,7 +2290,7 @@ function PlanResultDialog({
                   {formatRoundedGrams(plan.doseG)} | {formatRoundedMl(plan.totalWaterMl)} | {formatGuideTime(plan.totalTimeSeconds)} | {formatRoundedTemperature(plan.waterTempC)}
                 </p>
                 <p id={descriptionId} className="sr-only">
-                  {plan.doseG} g · {plan.totalWaterMl} ml · {formatTime(plan.totalTimeSeconds)} · {plan.waterTempC}°C
+                  {formatRoundedGrams(plan.doseG)} · {formatRoundedMl(plan.totalWaterMl)} · {formatGuideTime(plan.totalTimeSeconds)} · {formatRoundedTemperature(plan.waterTempC)}
                 </p>
                 <p className="mt-2 max-w-3xl text-sm leading-5 text-secondary">
                   {localizedSummary}
@@ -2424,7 +2430,7 @@ function PlanResultDialog({
                   </div>
                   <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{formatRoundedMl(plan.hotWaterMl)}</p>
                   {plan.iceMl > 0 && (
-                    <p className="mt-1 text-xs text-secondary">1:{plan.hotExtractionRatio} · {copy.ice}: {formatRoundedMl(plan.iceMl)}</p>
+                    <p className="mt-1 text-xs text-secondary">1:{formatBrewRatio(plan.hotExtractionRatio)} · {copy.ice}: {formatRoundedMl(plan.iceMl)}</p>
                   )}
                 </div>
               </div>
@@ -2445,11 +2451,11 @@ function PlanResultDialog({
                     <div className="grid min-w-[12rem] grid-cols-2 gap-2 text-xs">
                       <span className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-secondary">
                         <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
-                        <span className="font-semibold text-primary">1:{plan.finalBeverageRatio}</span>
+                        <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
                       </span>
                       <span className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-secondary">
                         <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.hotConcentrate}</span>
-                        <span className="font-semibold text-primary">1:{plan.hotExtractionRatio}</span>
+                        <span className="font-semibold text-primary">1:{formatBrewRatio(plan.hotExtractionRatio)}</span>
                       </span>
                     </div>
                   </div>
@@ -2464,7 +2470,7 @@ function PlanResultDialog({
                     <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.sopQuickDial}</p>
                     <div className="mt-3 space-y-2 text-sm text-secondary">
                       <p>{plan.doseG} g coffee</p>
-                      <p>{plan.totalWaterMl} ml water at {plan.waterTempC}°C</p>
+                      <p>{formatRoundedMl(plan.totalWaterMl)} water at {formatRoundedTemperature(plan.waterTempC)}</p>
                       <p>{copy.grind}: {localizedGrindRecommendation}</p>
                       <p>{copy.time}: {formatTime(plan.totalTimeSeconds)}</p>
                       <p>{plan.waterBrandLabel || copy.waterSelectedManual} · TDS {plan.waterMinerals.tdsPpm} · GH {plan.waterMinerals.hardnessPpm} · KH {plan.waterMinerals.alkalinityPpm}</p>
@@ -2475,7 +2481,7 @@ function PlanResultDialog({
                     <div className="mt-3 space-y-2 text-sm text-secondary">
                       {plan.steps.map((step, index) => (
                         <p key={step.id}>
-                          {index + 1}. {formatTime(step.startSeconds)} · {localizeAiBrewStepLabel(step.label, language)} · {buildAiBrewStepActionText(step, language)}
+                          {index + 1}. {formatGuideTime(step.startSeconds)} · {localizeAiBrewStepLabel(step.label, language)} · {buildAiBrewStepActionText(step, language)}
                         </p>
                       ))}
                     </div>
@@ -2544,10 +2550,10 @@ function PlanResultDialog({
                           <div className="flex items-start gap-3">
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-500/12 text-sm font-semibold text-blue-400">
                               {index + 1}
-                              <p className="text-xs text-secondary">{formatTime(step.startSeconds)} · {step.pourVolumeMl} ml pour · {step.targetVolumeMl} ml target</p>
+                              <p className="text-xs text-secondary">{formatGuideTime(step.startSeconds)} · {formatRoundedMl(step.pourVolumeMl)} pour · {formatRoundedMl(step.targetVolumeMl)} target</p>
                             </div>
                             <span className="rounded-full border border-blue-500/12 bg-[var(--bg-base)] px-3.5 py-2 text-sm font-semibold text-primary shadow-[0_8px_18px_rgba(15,23,42,0.12)]">
-                              {step.pourVolumeMl} ml
+                              {formatRoundedMl(step.pourVolumeMl)}
                             </span>
                           </div>
                           <p className="mt-3 text-sm leading-6 text-secondary">
@@ -2732,7 +2738,7 @@ function PlanResultDialog({
                         )}
                         <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
                           <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
-                          <span className="font-semibold text-primary">1:{plan.finalBeverageRatio}</span>
+                          <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
                         </span>
                         <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
                           <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowMetricNext}</span>

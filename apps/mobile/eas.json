@@ -1,6 +1,6 @@
 {
   "cli": {
-    "version": ">= 12.6.0",
+    "version": ">= 16.0.1",
     "appVersionSource": "remote"
   },
   "build": {
@@ -18,7 +18,10 @@
         "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
         "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
+        "EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS": "10000",
         "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
+        "EXPO_PUBLIC_ENABLE_GUEST_MODE": "true",
+        "EXPO_PUBLIC_ENABLE_APPLE_SIGNIN": "true",
         "EXPO_PUBLIC_RELEASE": "ios-internal-qa"
       },
       "ios": {
@@ -33,7 +36,10 @@
         "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
         "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
+        "EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS": "10000",
         "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
+        "EXPO_PUBLIC_ENABLE_GUEST_MODE": "true",
+        "EXPO_PUBLIC_ENABLE_APPLE_SIGNIN": "false",
         "EXPO_PUBLIC_RELEASE": "android-mvp-production"
       },
       "android": {
@@ -47,7 +53,10 @@
         "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
         "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
+        "EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS": "10000",
         "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
+        "EXPO_PUBLIC_ENABLE_GUEST_MODE": "true",
+        "EXPO_PUBLIC_ENABLE_APPLE_SIGNIN": "true",
         "EXPO_PUBLIC_RELEASE": "mobile-preview"
       },
       "ios": {
@@ -65,7 +74,10 @@
         "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
         "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
+        "EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS": "10000",
         "EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED": "false",
+        "EXPO_PUBLIC_ENABLE_GUEST_MODE": "true",
+        "EXPO_PUBLIC_ENABLE_APPLE_SIGNIN": "true",
         "EXPO_PUBLIC_RELEASE": "mobile-production"
       },
       "ios": {
@@ -79,10 +91,16 @@
   },
   "submit": {
     "preview": {
-      "ios": {}
+      "ios": {},
+      "android": {
+        "track": "internal"
+      }
     },
     "production": {
-      "ios": {}
+      "ios": {},
+      "android": {
+        "track": "internal"
+      }
     }
   }
 }

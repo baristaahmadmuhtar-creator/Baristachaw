@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, type NavigationProp, type ParamListBase } from '@react-navigation/native';
-import { Linking, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Linking, Platform, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { buildResponseOrchestration, normalizeAgentProfileMemory, type AgentProfileMemory } from '@baristachaw/shared';
 import {
   ActionButton,
@@ -105,6 +105,7 @@ export function HomeScreen({
 }: HomeScreenProps) {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const preferredLanguage = usePreferredMobileLanguage(session?.user.id);
+  const canUseAppleSignIn = enableAppleSignIn && Platform.OS === 'ios';
   const isMountedRef = useRef(true);
   const activeSearchRequestRef = useRef(0);
   const [query, setQuery] = useState('');
@@ -717,7 +718,7 @@ export function HomeScreen({
                     />
                   ) : null}
                   {!supabaseAuthEnabled ? <Text selectable style={styles.accountHint}>{authFormCopy.googleFallback}</Text> : null}
-                  {enableAppleSignIn ? (
+                  {canUseAppleSignIn ? (
                     <ActionButton
                       label={authBusyProvider === 'apple' ? homeCopy.sections.openingApple : webT.authModalAppleSoon}
                       tone="secondary"
@@ -1016,4 +1017,3 @@ const styles = StyleSheet.create({
     lineHeight: uiTokens.typography.caption.lineHeight,
   },
 });
-

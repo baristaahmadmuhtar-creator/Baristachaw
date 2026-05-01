@@ -8,9 +8,23 @@ const DEFAULT_BUNDLE_ID = 'com.baristachaw.app';
 const DEFAULT_ANDROID_PACKAGE = 'com.baristachaw.mobile';
 const LIGHT_SPLASH_BACKGROUND = '#F2F2F7';
 const DARK_SPLASH_BACKGROUND = '#000000';
+const IOS_APP_ICON = {
+  light: './assets/ios-appicon/AppIcon-Light-1024.png',
+  dark: './assets/ios-appicon/AppIcon-Dark-1024.png',
+  tinted: './assets/ios-appicon/AppIcon-Tinted-Mono-1024.png',
+};
+const ANDROID_BLOCKED_STORE_PERMISSIONS = [
+  'android.permission.SYSTEM_ALERT_WINDOW',
+  'android.permission.WRITE_EXTERNAL_STORAGE',
+];
 
 function isLocalHttpUrl(value: string): boolean {
   return /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(value.trim());
+}
+
+function readBooleanEnv(value: string | undefined, fallback: boolean): boolean {
+  if (value === undefined) return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase());
 }
 
 export default ({ config }: ConfigContext): ExpoConfig => {
@@ -22,7 +36,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   const webParityTimeoutMs = process.env.EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS || '6000';
   const webParityFallbackEnabled = process.env.EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED || 'false';
   const enableGuestMode = process.env.EXPO_PUBLIC_ENABLE_GUEST_MODE || 'true';
-  const enableAppleSignIn = process.env.EXPO_PUBLIC_ENABLE_APPLE_SIGNIN || 'false';
+  const enableAppleSignIn = readBooleanEnv(process.env.EXPO_PUBLIC_ENABLE_APPLE_SIGNIN, false);
   const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
   const supabasePublishableKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
   const sentryDsn = process.env.EXPO_PUBLIC_SENTRY_DSN || '';
@@ -66,11 +80,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ios: {
       supportsTablet: true,
       bundleIdentifier: DEFAULT_BUNDLE_ID,
+      icon: IOS_APP_ICON,
+      usesAppleSignIn: enableAppleSignIn,
       scheme: appSchemes,
       infoPlist: {
-        NSCameraUsageDescription: 'Baristachaw uses the camera for live Vision Scan and photo attachments.',
-        NSPhotoLibraryUsageDescription: 'Baristachaw uses your photo library to pick coffee photos and videos for analysis.',
-        NSMicrophoneUsageDescription: 'Baristachaw uses the microphone for voice note transcription in chat.',
+        NSCameraUsageDescription: 'BaristaChaw uses the camera for live Vision Scan and photo attachments.',
+        NSPhotoLibraryUsageDescription: 'BaristaChaw uses your photo library to pick coffee photos and videos for analysis.',
+        NSMicrophoneUsageDescription: 'BaristaChaw uses the microphone for voice note transcription in chat.',
         NSAppTransportSecurity: atsPolicy,
         ITSAppUsesNonExemptEncryption: false,
         UIRequiresFullScreen: true,
@@ -81,6 +97,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: {
       package: DEFAULT_ANDROID_PACKAGE,
       newArchEnabled: false,
+      allowBackup: false,
+      blockedPermissions: ANDROID_BLOCKED_STORE_PERMISSIONS,
       permissions: [
         'CAMERA',
         'RECORD_AUDIO',

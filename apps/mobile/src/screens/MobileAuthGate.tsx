@@ -193,6 +193,7 @@ export function MobileAuthGate({
   const facebookBusy = authBusyProvider === 'facebook';
   const emailBusy = authBusyProvider === 'email';
   const appleBusy = authBusyProvider === 'apple';
+  const canUseAppleSignIn = enableAppleSignIn && Platform.OS === 'ios';
   const emailActionBusy = emailBusy && ['signIn', 'signUp', 'resetPassword', 'newPassword'].includes(activeMode);
 
   const switchMode = (nextMode: AuthMode) => {
@@ -707,7 +708,7 @@ export function MobileAuthGate({
             {activeMode !== 'newPassword' ? renderGoogleButton() : null}
             {activeMode !== 'newPassword' ? renderFacebookButton() : null}
 
-            {activeMode !== 'newPassword' && enableAppleSignIn ? (
+            {activeMode !== 'newPassword' && canUseAppleSignIn ? (
               <Pressable
                 accessibilityRole="button"
                 disabled={!isOnline || busy}

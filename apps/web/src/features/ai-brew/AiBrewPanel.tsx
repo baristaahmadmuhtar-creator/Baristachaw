@@ -344,6 +344,7 @@ const COPY = {
     openVarietyPicker: 'Choose variety',
     openDripperPicker: 'Choose brewer',
     icedUnavailable: 'Ice mode is not available for this brewer yet. Standard mode will be used.',
+    icedUnavailableInline: 'Ice mode is intentionally locked for this brewer so BaristaChaw does not invent a fake iced recipe. Use hot mode for this method, or choose V60, Kalita, Chemex, April, Origami, Kono, Melitta, or Clever for Japanese-style ice brew.',
     openGrinderPicker: 'Choose grinder',
     showProvenance: 'Show provenance',
     hideProvenance: 'Hide provenance',
@@ -656,6 +657,7 @@ const COPY = {
     openVarietyPicker: 'Pilih varietas',
     openDripperPicker: 'Pilih alat seduh',
     icedUnavailable: 'Mode es belum tersedia untuk alat ini. Mode standar dipakai agar hasil tidak salah.',
+    icedUnavailableInline: 'Mode es sengaja dikunci untuk alat ini agar BaristaChaw tidak membuat resep es palsu. Pakai mode panas untuk metode ini, atau pilih V60, Kalita, Chemex, April, Origami, Kono, Melitta, atau Clever untuk seduh es gaya Jepang.',
     openGrinderPicker: 'Pilih grinder',
     showProvenance: 'Tampilkan rujukan',
     hideProvenance: 'Sembunyikan rujukan',
@@ -4401,6 +4403,14 @@ export function AiBrewPanel({
                         {copy.modeIced}
                       </button>
                     </div>
+                    {!selectedDripperSupportsIced ? (
+                      <p
+                        className="mt-2 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-secondary"
+                        data-testid="ai-brew-iced-unavailable-note"
+                      >
+                        {copy.icedUnavailableInline}
+                      </p>
+                    ) : null}
                   </div>
 
                   {selectedTargetProfile && (

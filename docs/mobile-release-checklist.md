@@ -13,11 +13,14 @@
 
 - [ ] `EXPO_PUBLIC_API_BASE_URL=https://baristaclaw.vercel.app`.
 - [ ] `EXPO_PUBLIC_APP_SCHEME=baristachaw`.
-- [ ] `EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS=6000`.
-- [ ] `EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED=true`.
+- [ ] `EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS=10000`.
+- [ ] `EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED=false` for production parity. Enable native fallback only in non-store debug builds.
 - [ ] `EXPO_PUBLIC_ENABLE_GUEST_MODE=true`.
+- [ ] `EXPO_PUBLIC_ENABLE_APPLE_SIGNIN=true` for iOS store builds once Apple provider is configured. Android must not show the Apple button.
 - [ ] `EXPO_PUBLIC_SENTRY_DSN` set (or intentionally empty for local-only).
 - [ ] `EXPO_PUBLIC_RELEASE` set for environment labeling.
+- [ ] iOS light, dark, and tinted app icons are wired from `apps/mobile/assets/ios-appicon`.
+- [ ] Android `allowBackup=false` and store-blocked permissions are removed or blocked.
 - [ ] iOS bundle identifier validated.
 - [ ] Signing team selected in Xcode.
 
@@ -59,6 +62,7 @@
 - [ ] Error envelopes (`errorCode`, `retryable`, `details`) handled cleanly.
 - [ ] Sentry receives runtime errors with release/environment tags.
 - [ ] No production secrets inside mobile source code.
+- [ ] Play Store/App Store builds come from EAS store profiles, not local debug signing.
 
 ## F. Local-Free Track Constraints
 
@@ -69,5 +73,8 @@
 ## G. Submit
 
 - [ ] `npm run mobile:eas:build:preview` succeeds.
+- [ ] `npm run mobile:eas:build:android-production` succeeds and uploads an AAB.
+- [ ] `npm run mobile:eas:build:ios-production` succeeds and uploads an IPA.
 - [ ] `npm run mobile:eas:submit:preview` succeeds.
+- [ ] Android submit uses the internal track first, then production only after QA sign-off.
 - [ ] Release notes prepared from template.

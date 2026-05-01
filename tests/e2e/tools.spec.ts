@@ -333,6 +333,17 @@ test('ai brew brewer picker prioritizes complete method catalog and search alias
   }
 });
 
+test('ai brew locks ice mode for methods that should stay hot or dedicated cold', async ({ page }) => {
+  await openAiBrewQuickMode(page);
+  await page.getByTestId('ai-brew-dripper-picker').click();
+  await page.getByTestId('ai-brew-picker-search-dripper').fill('espresso');
+  await page.getByTestId('ai-brew-picker-option-dripper-espresso-machine').click();
+
+  await expect(page.getByTestId('ai-brew-builder-mode-iced')).toBeDisabled();
+  await expect(page.getByTestId('ai-brew-iced-unavailable-note')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-iced-unavailable-note')).toContainText(/fake iced recipe|resep es palsu/i);
+});
+
 test('ai brew pro keeps mineral editor collapsed by default for ready-brew brand water', async ({ page }) => {
   await openAiBrewProMode(page);
   await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');

@@ -9,6 +9,7 @@ import {
   resolveDeviceProfileSelection,
   resolveGrinderSettingReference,
   sanitizeAiBrewFormState,
+  supportsAiBrewIcedMode,
   type AiBrewGenerationProgress,
 } from '../../apps/web/src/features/ai-brew/planner.ts';
 import { buildExtractionFinisher } from '../../apps/web/src/features/ai-brew/extractionFinisher.ts';
@@ -1055,6 +1056,8 @@ test('non-dripper method profiles generate action-safe AI Brew plans without fak
   };
 
   for (const entry of cases) {
+    assert.equal(supportsAiBrewIcedMode(expandedCatalog, entry.dripperId), false);
+
     const input = {
       ...createDefaultAiBrewFormState(expandedCatalog),
       brewMode: 'iced' as const,
@@ -1106,6 +1109,8 @@ test('non-dripper method profiles generate action-safe AI Brew plans without fak
       assert.match(plan.summary, /Espresso plan/i);
     }
   }
+
+  assert.equal(supportsAiBrewIcedMode(expandedCatalog, 'hario-v60'), true);
 });
 
 test('sanitizeAiBrewFormState falls back to valid defaults for unsupported values', () => {

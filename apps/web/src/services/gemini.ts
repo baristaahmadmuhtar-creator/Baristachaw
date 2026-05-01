@@ -338,9 +338,10 @@ async function serverAi(
   prompt: string,
   extra?: Record<string, any>,
   context?: ChatRequestContextPayload,
+  options?: { timeoutMs?: number },
 ): Promise<ServerAiResponse> {
   const controller = new AbortController();
-  const timeoutMs = MULTIMODAL_AI_ACTIONS.has(action) ? 55000 : 30000;
+  const timeoutMs = options?.timeoutMs || (MULTIMODAL_AI_ACTIONS.has(action) ? 55000 : 30000);
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const clientContext = resolveClientContext(context?.clientContext);
@@ -382,9 +383,13 @@ async function serverAi(
   }
 }
 
-async function serverChat(message: string, context?: ChatRequestContextPayload): Promise<string> {
+async function serverChat(
+  message: string,
+  context?: ChatRequestContextPayload,
+  options?: { timeoutMs?: number },
+): Promise<string> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
+  const timeout = setTimeout(() => controller.abort(), options?.timeoutMs || 30000);
   try {
     const clientContext = resolveClientContext(context?.clientContext);
     const response = await fetch("/api/chat", {
@@ -433,6 +438,7 @@ export async function raceChatResponse(
   requestContext?: ChatRequestContextPayload,
   options?: {
     model?: string;
+    timeoutMs?: number;
   },
 ) {
   const fallbackMessage = localize(
@@ -448,7 +454,7 @@ export async function raceChatResponse(
 
   if (!shouldBypassChatRoute) {
     try {
-      return await serverChat(normalizedPrompt, requestContext);
+      return await serverChat(normalizedPrompt, requestContext, { timeoutMs: options?.timeoutMs });
     } catch {
       // fall through to structured AI fallback
     }
@@ -460,6 +466,7 @@ export async function raceChatResponse(
       normalizedPrompt,
       options?.model ? { model: options.model } : undefined,
       requestContext,
+      { timeoutMs: options?.timeoutMs },
     );
     return result.text || fallbackMessage;
   } catch {
@@ -1010,5 +1017,4 @@ export function getFullVaultStatus() {
 export function getAvailableProviders() {
   return [] as string[];
 }
-
 

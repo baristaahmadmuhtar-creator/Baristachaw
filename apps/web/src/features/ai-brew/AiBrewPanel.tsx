@@ -110,6 +110,8 @@ import type {
 
 const CUSTOM_ENTRY_ID = 'custom';
 const OMITTED_ENTRY_ID = '__omitted__';
+const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 4500;
+const AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS = 2500;
 const COPY = {
   en: {
     title: 'AI Brew',
@@ -1038,6 +1040,7 @@ async function normalizeSequenceMarkdownToLanguage(
   markdown: string,
   language: string,
   requestContext: any,
+  options?: { timeoutMs?: number },
 ) {
   if (!markdown.trim()) return markdown;
   if (/^en(?:-|$)/i.test(language)) return markdown;
@@ -1055,7 +1058,9 @@ async function normalizeSequenceMarkdownToLanguage(
     markdown,
   ].join('\n');
   try {
-    const translated = await raceChatResponse(translationPrompt, requestContext);
+    const translated = await raceChatResponse(translationPrompt, requestContext, {
+      timeoutMs: options?.timeoutMs,
+    });
     return translated?.trim() || markdown;
   } catch {
     return markdown;
@@ -1150,7 +1155,11 @@ async function runHybridSequenceUpdate(
     },
   };
 
-  const aiText = await raceChatResponse(buildSequenceGuidePrompt(nextPlan).body, canonicalRequestContext);
+  const aiText = await raceChatResponse(
+    buildSequenceGuidePrompt(nextPlan).body,
+    canonicalRequestContext,
+    { timeoutMs: AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS },
+  );
   const canonicalOverlay = composeHybridSequenceOverlay(nextPlan, aiText);
   const displayMarkdown = await normalizeSequenceMarkdownToLanguage(
     canonicalOverlay.markdown,
@@ -1164,6 +1173,7 @@ async function runHybridSequenceUpdate(
         tone: 'professional' as const,
       },
     },
+    { timeoutMs: AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS },
   );
   const displayOverlay = resolveDisplaySequenceOverlay(nextPlan, canonicalOverlay.markdown, displayMarkdown);
 
@@ -3446,7 +3456,7 @@ export function AiBrewPanel({
   onUseInRatio: (plan: BrewPlan) => void;
 }) {
   const { language, t } = useGlobalState();
-  const { isAuthenticated, openAuthModal } = useAuthModal();
+  const { isAuthenticated, isGuest, openAuthModal } = useAuthModal();
   const { hideNav, showNav } = useNavbar();
   const { isOffline } = useNetworkStatus();
   const { isPwa } = useRuntimeDisplayMode();
@@ -3945,7 +3955,7 @@ export function AiBrewPanel({
         setGenerationStage(progress.id);
         await nextAnimationFrame(110);
       });
-      if (isAuthenticated && !isOffline) {
+      if (isAuthenticated && !isGuest && !isOffline) {
         setGenerationProgress(createHybridAiSequenceProgress(nextPlan, latestProgress));
         setGenerationStage('hybrid_ai_sequence');
         await nextAnimationFrame(140);

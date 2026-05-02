@@ -1011,6 +1011,14 @@ type OriginTargetMethodAdjustment = CalibrationAdjustment & {
   lastShareDelta: number;
 };
 
+type TemperatureCalibration = {
+  tempDeltaC: number;
+  minTempC?: number;
+  maxTempC?: number;
+  notes: string[];
+  confidenceNotes: string[];
+};
+
 type AdaptiveShareContext = {
   targetProfileId: string;
   targetProfileLabel: string;
@@ -1232,6 +1240,158 @@ function detectOriginProfile(text: string) {
   }
 
   return null;
+}
+
+function normalizeSearchHaystack(parts: Array<string | undefined>) {
+  return parts
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function haystackHasAny(haystack: string, patterns: RegExp[]) {
+  return patterns.some((pattern) => pattern.test(haystack));
+}
+
+function isLightOrMediumLightRoast(roastLevel: RoastLevel) {
+  return roastLevel === 'light' || roastLevel === 'medium_light';
+}
+
+function isMediumOrDarkerRoast(roastLevel: RoastLevel) {
+  return roastLevel === 'medium' || roastLevel === 'medium_dark' || roastLevel === 'dark';
+}
+
+function createNeutralTemperatureCalibration(): TemperatureCalibration {
+  return {
+    tempDeltaC: 0,
+    notes: [],
+    confidenceNotes: [],
+  };
+}
+
+function deriveBaristaTemperatureCalibration(params: {
+  input: AiBrewFormState;
+  methodFamily: AiBrewMethodFamily;
+  brewMode: 'hot' | 'iced';
+  processEntry?: ProcessCatalogEntry;
+  varietyEntry?: VarietyCatalogEntry;
+  originAdjustment: OriginCalibrationAdjustment;
+}) {
+  const calibration = createNeutralTemperatureCalibration();
+  if (params.methodFamily === 'cold_brew' || params.methodFamily === 'espresso' || params.methodFamily === 'moka_pot') {
+    return calibration;
+  }
+
+  const processText = normalizeSearchHaystack([
+    params.input.process,
+    params.input.customProcess,
+    params.processEntry?.id,
+    params.processEntry?.label,
+    params.processEntry?.searchText,
+    ...(params.processEntry?.aliases || []),
+  ]);
+  const varietyText = normalizeSearchHaystack([
+    params.input.variety,
+    params.input.customVariety,
+    params.varietyEntry?.id,
+    params.varietyEntry?.label,
+    params.varietyEntry?.searchText,
+    ...(params.varietyEntry?.aliases || []),
+  ]);
+  const coffeeText = normalizeSearchHaystack([
+    params.input.coffeeName,
+    params.input.customProcess,
+    params.input.customVariety,
+    varietyText,
+    processText,
+  ]);
+
+  const isWashed = haystackHasAny(processText, [/\bwashed\b/i, /\bfully washed\b/i, /\bwet process\b/i]);
+  const isGeisha = haystackHasAny(coffeeText, [/\bgeisha\b/i, /\bgesha\b/i]);
+  const isEastAfrica = params.originAdjustment.profileId === 'east_africa_floral'
+    || haystackHasAny(coffeeText, [/\bethiopia\b/i, /\byirgacheffe\b/i, /\bchelbesa\b/i, /\bchebesa\b/i, /\bkenya\b/i, /\bsl28\b/i, /\bsl34\b/i]);
+  const isKenya = haystackHasAny(coffeeText, [/\bkenya\b/i, /\bnyeri\b/i, /\bkirinyaga\b/i, /\bsl28\b/i, /\bsl34\b/i]);
+  const isEthiopia = haystackHasAny(coffeeText, [/\bethiopia\b/i, /\byirgacheffe\b/i, /\bchelbesa\b/i, /\bchebesa\b/i, /\bguji\b/i, /\bsidamo\b/i]);
+  const isIndonesiaBody = params.originAdjustment.profileId === 'indonesia_structured'
+    || haystackHasAny(coffeeText, [/\bsumatra\b/i, /\bgayo\b/i, /\baceh\b/i, /\blintong\b/i, /\bmandheling\b/i]);
+  const isAntigua = haystackHasAny(coffeeText, [/\bantigua\b/i, /\bguatemala\b/i]);
+  const isCostaRica = haystackHasAny(coffeeText, [/\bcosta rica\b/i, /\btarrazu\b/i]);
+  const isColombia = haystackHasAny(coffeeText, [/\bcolombia\b/i, /\bexcelso\b/i, /\bhuila\b/i, /\bcauca\b/i]);
+
+  if (params.methodFamily === 'aeropress') {
+    calibration.minTempC = isMediumOrDarkerRoast(params.input.roastLevel) ? 88 : 90;
+    calibration.maxTempC = params.input.roastLevel === 'dark' ? 91 : 94;
+    calibration.tempDeltaC += params.input.roastLevel === 'medium_dark' || params.input.roastLevel === 'dark' ? 0.5 : 1.4;
+    calibration.notes.push('AeroPress service floor protects medium and lighter roasts from under-extraction; preheat, then press steadily instead of using a very low kettle temperature.');
+    calibration.confidenceNotes.push('Barista temperature calibration active: AeroPress immersion floor.');
+    return calibration;
+  }
+
+  if (params.methodFamily === 'french_press') {
+    calibration.minTempC = params.input.roastLevel === 'dark' ? 88 : 90;
+    calibration.maxTempC = params.input.roastLevel === 'dark' ? 92 : 94;
+    calibration.tempDeltaC += params.input.roastLevel === 'medium_dark' || params.input.roastLevel === 'dark' ? -0.2 : 0.2;
+    calibration.notes.push('French Press temperature kept in a calm immersion band so body builds without extracting harsh fines.');
+    calibration.confidenceNotes.push('Barista temperature calibration active: French Press immersion band.');
+    return calibration;
+  }
+
+  if (params.brewMode === 'iced' && ICED_MANUAL_POUR_OVER_FAMILIES.has(params.methodFamily)) {
+    if (isGeisha) {
+      calibration.minTempC = 92;
+      calibration.maxTempC = 94;
+      calibration.tempDeltaC -= 1.8;
+      calibration.notes.push('Delicate Geisha/Gesha iced profile capped at 92-94°C to protect floral aroma while keeping Japanese-style concentration.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: delicate Geisha iced cap.');
+    } else if (isIndonesiaBody) {
+      calibration.minTempC = 90;
+      calibration.maxTempC = params.methodFamily === 'chemex' ? 92 : 93;
+      calibration.tempDeltaC -= params.methodFamily === 'chemex' ? 2.2 : 1.4;
+      calibration.notes.push('Structured Indonesian iced profile uses lower kettle energy so body stays sweet instead of bitter or burnt.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: Indonesian Japanese-iced body control.');
+    } else if (isColombia && isWashed && params.methodFamily === 'april') {
+      calibration.minTempC = 93;
+      calibration.maxTempC = 95;
+      calibration.tempDeltaC += 1.1;
+      calibration.notes.push('Washed Colombia on April iced gets a little more kettle energy to lift caramel, red-apple, and citrus sweetness.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: washed Colombia April iced lift.');
+    }
+    return calibration;
+  }
+
+  if (params.brewMode === 'hot' && ICED_MANUAL_POUR_OVER_FAMILIES.has(params.methodFamily)) {
+    if (isKenya && isWashed && isLightOrMediumLightRoast(params.input.roastLevel)) {
+      calibration.minTempC = 94;
+      calibration.maxTempC = 96;
+      calibration.tempDeltaC += 1.5;
+      calibration.notes.push('Washed Kenya light/medium-light profile lifted toward 94-96°C so berry, citrus, and bergamot notes extract clearly.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: washed Kenya bright filter lift.');
+    } else if (isEthiopia && isWashed && isLightOrMediumLightRoast(params.input.roastLevel)) {
+      calibration.minTempC = 94;
+      calibration.maxTempC = 96;
+      calibration.tempDeltaC += 1.4;
+      calibration.notes.push('Washed Ethiopia/Yirgacheffe light profile lifted toward 94-96°C to open citrus, honey, and floral clarity.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: washed Ethiopia bright filter lift.');
+    } else if ((isCostaRica || isAntigua) && isWashed && isLightOrMediumLightRoast(params.input.roastLevel)) {
+      calibration.minTempC = 93;
+      calibration.maxTempC = 95;
+      calibration.tempDeltaC += 0.8;
+      calibration.notes.push('Washed Central America light/medium-light profile nudged toward 93-95°C for citrus, caramel, and clean sweetness.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: washed Central America filter lift.');
+    } else if (isEastAfrica && isWashed && isLightOrMediumLightRoast(params.input.roastLevel)) {
+      calibration.minTempC = 93;
+      calibration.maxTempC = 96;
+      calibration.tempDeltaC += 0.9;
+      calibration.notes.push('Bright washed highland profile uses a slightly warmer filter envelope so clarity does not turn thin.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: washed highland filter lift.');
+    }
+  }
+
+  return calibration;
 }
 
 function deriveOriginAdjustment(
@@ -2930,6 +3090,66 @@ function buildAdaptiveDoseCue(context: AdaptiveShareContext) {
   return undefined;
 }
 
+function buildBaristaStepPracticalCue(context: AdaptiveShareContext, phase: AdaptiveStepPhase) {
+  const isManualPaperFilter = ICED_MANUAL_POUR_OVER_FAMILIES.has(context.methodFamily);
+
+  if (isManualPaperFilter) {
+    if (phase === 'bloom') {
+      if (context.brewMode === 'iced') {
+        return 'Rinse the paper filter separately, discard rinse water, then put measured ice in the server before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before the next pour.';
+      }
+      if (context.methodFamily === 'chemex') {
+        return 'Rinse the thick Chemex paper thoroughly and discard rinse water before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before building volume.';
+      }
+      return 'Rinse the paper filter and discard rinse water before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before the next pour.';
+    }
+    if (phase === 'early_middle') {
+      if (context.methodFamily === 'kalita_wave' || context.methodFamily === 'april') {
+        return 'Keep the spout low and use short pulses; if the bed mounds, one gentle swirl or stir after this pour is enough.';
+      }
+      if (context.methodFamily === 'origami') {
+        return 'Pour center-to-spiral with a light hand; one small swirl is enough if the bed looks uneven.';
+      }
+      if (context.methodFamily === 'chemex') {
+        return 'Keep the stream away from the paper wall so the thick filter does not stall or create bypass.';
+      }
+    }
+    if (phase === 'finish') {
+      if (context.brewMode === 'iced') {
+        return 'Finish at the hot-water target only; let drawdown complete over ice, then stir the server 5-8 seconds before serving.';
+      }
+      return 'After the last pour, use only a small leveling swirl if needed, then let drawdown finish without wall-rinsing.';
+    }
+  }
+
+  if (context.methodFamily === 'aeropress') {
+    if (phase === 'bloom') {
+      return 'Preheat the chamber and rinse the paper cap first, then wet the compact bed quickly so contact starts evenly.';
+    }
+    if (phase === 'finish') {
+      return 'Press with steady pressure and stop before the final dry hiss so bitterness does not enter the cup.';
+    }
+  }
+
+  if (context.methodFamily === 'french_press') {
+    if (phase === 'bloom') {
+      return 'Use a coarse, even grind and saturate all grounds; leave the slurry quiet after the first wetting.';
+    }
+    if (phase === 'late_middle') {
+      return 'Around the late steep window, break the crust gently and skim foam or floating grounds without aggressive stirring.';
+    }
+    if (phase === 'finish') {
+      return 'Press slowly, do not squeeze the bed, then decant immediately so extraction stops cleanly.';
+    }
+  }
+
+  if (context.methodFamily === 'clever_dripper' && phase === 'bloom') {
+    return 'Rinse the paper and preheat the brewer first, then close the valve before adding coffee and brew water.';
+  }
+
+  return undefined;
+}
+
 function buildMethodFamilyStepInstruction(params: {
   methodFamily: AiBrewMethodFamily;
   phase: AdaptiveStepPhase;
@@ -3174,10 +3394,11 @@ function buildMethodFamilyStepInstruction(params: {
 
   const focusCue = buildAdaptivePhaseFocusCue(context, phase);
   const doseCue = buildAdaptiveDoseCue(context);
+  const practicalCue = buildBaristaStepPracticalCue(context, phase);
 
   return {
     note: quickNote,
-    hybridInstruction: joinInstructionText(detail, focusCue, phase === 'finish' ? doseCue : undefined, fallbackNote),
+    hybridInstruction: joinInstructionText(detail, practicalCue, focusCue, phase === 'finish' ? doseCue : undefined, fallbackNote),
   };
 }
 
@@ -4015,6 +4236,14 @@ function finalizePlanCore(
     waterProfile,
     originAdjustment,
   });
+  const baristaTemperatureCalibration = deriveBaristaTemperatureCalibration({
+    input,
+    methodFamily,
+    brewMode: input.brewMode,
+    processEntry,
+    varietyEntry,
+    originAdjustment,
+  });
 
   const ratioLowerBound = method.ratioRange[0] - 0.75;
   const ratioUpperBound = method.ratioRange[1] + 0.75;
@@ -4115,22 +4344,26 @@ function finalizePlanCore(
     methodTempBounds.min,
     methodTempBounds.max,
   );
+  const baseWaterTempC = midpoint(roastAdjustedTargets.adjustedTempRangeC, 1)
+    + deviceSelection.profile.tempDeltaC
+    + waterProfile.tempDeltaC
+    + targetProfile.tempDeltaC
+    + (processModifiers.tempDeltaC || 0)
+    + (varietyModifiers.tempDeltaC || 0)
+    + beanProfileAdjustment.tempDeltaC
+    + methodFamilyAdjustment.tempDeltaC
+    + targetFamilyAdjustment.tempDeltaC
+    + originAdjustment.tempDeltaC
+    + originTargetMethodAdjustment.tempDeltaC
+    + doseAdjustment.tempDeltaC
+    + flavorAlignment.tempDeltaC
+    + baristaTemperatureCalibration.tempDeltaC;
+  const calibratedTempMin = Math.max(methodTempBounds.min, baristaTemperatureCalibration.minTempC ?? methodTempBounds.min);
+  const calibratedTempMax = Math.min(methodTempBounds.max, baristaTemperatureCalibration.maxTempC ?? methodTempBounds.max);
   const waterTempC = roundTo(targetTempOverrideC ?? clamp(
-    midpoint(roastAdjustedTargets.adjustedTempRangeC, 1)
-      + deviceSelection.profile.tempDeltaC
-      + waterProfile.tempDeltaC
-      + targetProfile.tempDeltaC
-      + (processModifiers.tempDeltaC || 0)
-      + (varietyModifiers.tempDeltaC || 0)
-      + beanProfileAdjustment.tempDeltaC
-      + methodFamilyAdjustment.tempDeltaC
-      + targetFamilyAdjustment.tempDeltaC
-      + originAdjustment.tempDeltaC
-      + originTargetMethodAdjustment.tempDeltaC
-      + doseAdjustment.tempDeltaC
-      + flavorAlignment.tempDeltaC,
-    methodTempBounds.min,
-    methodTempBounds.max,
+    baseWaterTempC,
+    Math.min(calibratedTempMin, calibratedTempMax),
+    Math.max(calibratedTempMin, calibratedTempMax),
   ), 1);
   if (targetTempOverrideC !== null) {
     precisionOverrideNotes.push(
@@ -4275,6 +4508,7 @@ function finalizePlanCore(
     originTargetMethodAdjustment.notes,
     doseAdjustment.notes,
     flavorAlignment.notes,
+    baristaTemperatureCalibration.notes,
     precisionOverrideNotes,
     operatorKnowledgeNotes,
     [
@@ -4312,6 +4546,7 @@ function finalizePlanCore(
     originTargetMethodAdjustment.confidenceNotes,
     doseAdjustment.confidenceNotes,
     flavorAlignment.confidenceNotes,
+    baristaTemperatureCalibration.confidenceNotes,
     precisionOverrideNotes,
     operatorKnowledgeNotes.length > 0
       ? [`Operator knowledge active: ${operatorKnowledgeNotes.length} matched note(s) from knowledge_v1.xlsx.`]

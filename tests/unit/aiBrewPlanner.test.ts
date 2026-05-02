@@ -909,6 +909,79 @@ function collectPlanNarrative(plan: ReturnType<typeof buildAiBrewPlan>) {
   return plan.steps.map((step) => `${step.note} ${step.hybridInstruction || ''}`).join(' ');
 }
 
+test('barista evaluation calibration tunes temperature and practical step details', () => {
+  const fullCatalog = buildAllMethodFamilyCatalog();
+  const baseInput = {
+    ...createDefaultAiBrewFormState(fullCatalog),
+    doseG: '15',
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  };
+
+  const ethiopiaV60 = buildAiBrewPlan({
+    ...baseInput,
+    coffeeName: 'Ethiopia Chelbesa Yirgacheffe Washed',
+    process: 'washed',
+    roastLevel: 'light',
+    dripperId: 'matrix-v60-all',
+    targetProfileId: 'balance_clean',
+  }, fullCatalog);
+  assert.ok(ethiopiaV60.waterTempC >= 94 && ethiopiaV60.waterTempC <= 96);
+  assert.match(collectPlanNarrative(ethiopiaV60), /Rinse the paper filter.*Bloom with about 2-3x coffee weight/i);
+
+  const geishaIced = buildAiBrewPlan({
+    ...baseInput,
+    brewMode: 'iced' as const,
+    coffeeName: 'Panama Geisha Boquete Washed',
+    process: 'washed',
+    variety: 'geisha',
+    roastLevel: 'light',
+    dripperId: 'matrix-v60-all',
+    targetProfileId: 'more_sweetness',
+  }, fullCatalog);
+  assert.ok(geishaIced.waterTempC >= 92 && geishaIced.waterTempC <= 94);
+  assert.ok(geishaIced.notes.some((note) => /Geisha\/Gesha iced profile/i.test(note)));
+  assert.match(collectPlanNarrative(geishaIced), /measured ice.*Bloom with about 2-3x coffee weight|hot-water target only/i);
+
+  const chemexGayoIced = buildAiBrewPlan({
+    ...baseInput,
+    brewMode: 'iced' as const,
+    coffeeName: 'Sumatra Gayo Aceh Washed',
+    process: 'washed',
+    roastLevel: 'medium',
+    dripperId: 'matrix-chemex-all',
+    targetProfileId: 'balance_clean',
+  }, fullCatalog);
+  assert.ok(chemexGayoIced.waterTempC >= 90 && chemexGayoIced.waterTempC <= 92);
+  assert.match(collectPlanNarrative(chemexGayoIced), /thick filter.*stall|measured ice/i);
+
+  const kalitaKenya = buildAiBrewPlan({
+    ...baseInput,
+    coffeeName: 'Kenya AA Washed',
+    process: 'washed',
+    roastLevel: 'medium_light',
+    dripperId: 'matrix-kalita-all',
+    targetProfileId: 'balance_clean',
+  }, fullCatalog);
+  assert.ok(kalitaKenya.waterTempC >= 94 && kalitaKenya.waterTempC <= 96);
+  assert.match(collectPlanNarrative(kalitaKenya), /short pulses.*gentle swirl/i);
+
+  const aprilColombiaIced = buildAiBrewPlan({
+    ...baseInput,
+    brewMode: 'iced' as const,
+    coffeeName: 'Colombia Excelso Washed',
+    process: 'washed',
+    roastLevel: 'medium',
+    dripperId: 'matrix-april-all',
+    targetProfileId: 'more_sweetness',
+  }, fullCatalog);
+  assert.ok(aprilColombiaIced.waterTempC >= 93 && aprilColombiaIced.waterTempC <= 95);
+  assert.match(collectPlanNarrative(aprilColombiaIced), /short pulses|measured ice/i);
+});
+
 test('AI Brew optimizer can adjust iced plans without breaking planner guardrails', () => {
   const baseline = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),
@@ -1264,6 +1337,14 @@ test('non-dripper method profiles generate action-safe AI Brew plans without fak
     assert.ok(plan.confidenceNotes.some((note) =>
       note.toLowerCase().includes(`method-family signature active: ${entry.family.replace(/_/g, ' ')}`),
     ));
+    const narrative = collectPlanNarrative(plan);
+    if (entry.family === 'aeropress') {
+      assert.ok(plan.waterTempC >= 88);
+      assert.match(narrative, /Preheat the chamber|stop before the final dry hiss/i);
+    }
+    if (entry.family === 'french_press') {
+      assert.match(narrative, /coarse, even grind|decant immediately/i);
+    }
 
     if (entry.family === 'cold_brew') {
       assert.match(plan.summary, /Cold brew plan/i);

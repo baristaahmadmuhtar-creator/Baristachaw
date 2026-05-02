@@ -21,6 +21,7 @@ import authLogoutHandler from "./server-api/auth/logout";
 import accountDeleteHandler from "./server-api/account/delete";
 import accountExportHandler from "./server-api/account/export";
 import accountStatusHandler from "./server-api/account/status";
+import librarySyncHandler from "./server-api/library/sync";
 import adminManagementHandler from "./server-api/admin/management";
 import billingCheckoutHandler from "./server-api/billing/checkout";
 import billingPortalHandler from "./server-api/billing/portal";
@@ -152,6 +153,7 @@ app.all("/api/auth/logout", wrapVercelHandler(authLogoutHandler as unknown as Lo
 app.all("/api/account/export", wrapVercelHandler(accountExportHandler as unknown as LocalApiHandler));
 app.all("/api/account/delete", wrapVercelHandler(accountDeleteHandler as unknown as LocalApiHandler));
 app.all("/api/account/status", wrapVercelHandler(accountStatusHandler as unknown as LocalApiHandler));
+app.all("/api/library/sync", wrapVercelHandler(librarySyncHandler as unknown as LocalApiHandler));
 app.all("/api/admin/management", wrapVercelHandler(adminManagementHandler as unknown as LocalApiHandler));
 app.all("/api/billing/checkout", wrapVercelHandler(billingCheckoutHandler as unknown as LocalApiHandler));
 app.all("/api/billing/portal", wrapVercelHandler(billingPortalHandler as unknown as LocalApiHandler));

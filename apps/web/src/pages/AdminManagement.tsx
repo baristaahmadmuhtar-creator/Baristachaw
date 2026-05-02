@@ -17,6 +17,7 @@ import {
   Download,
   Gauge,
   KeyRound,
+  Library,
   ListChecks,
   Lock,
   Mail,
@@ -79,6 +80,7 @@ const TABS = [
   { id: 'plans', labelKey: 'tabPlans', icon: WalletCards },
   { id: 'maintenance', labelKey: 'tabMaintenance', icon: Wrench },
   { id: 'database', labelKey: 'tabDatabase', icon: Database },
+  { id: 'recipes', labelKey: 'tabRecipes', icon: Library },
   { id: 'audit', labelKey: 'tabAudit', icon: BookOpenCheck },
   { id: 'launch', labelKey: 'tabLaunch', icon: ListChecks },
 ] as const;
@@ -1095,7 +1097,7 @@ function MobileAdminCommandBar({
           </button>
         </div>
       </div>
-      <div className="mt-3 grid grid-cols-3 gap-2">
+      <div className="mt-3 grid grid-cols-4 gap-2">
         <button
           type="button"
           onClick={() => onSelectTab('users')}
@@ -1117,6 +1119,17 @@ function MobileAdminCommandBar({
         >
           <WalletCards size={14} />
           {admin.text('tabPlans')}
+        </button>
+        <button
+          type="button"
+          onClick={() => onSelectTab('recipes')}
+          className={clsx(
+            'inline-flex min-h-9 items-center justify-center gap-1.5 rounded-xl text-xs font-semibold transition-colors',
+            activeTab === 'recipes' ? 'bg-blue-600 text-white' : 'border border-glass bg-surface-alpha text-secondary',
+          )}
+        >
+          <Library size={14} />
+          {admin.text('tabRecipes')}
         </button>
         <button
           type="button"
@@ -2784,6 +2797,91 @@ function MaintenancePanel({
   );
 }
 
+function RecipeLibraryPanel({ snapshot }: { snapshot: AdminSnapshot }) {
+  const admin = useAdminCopy();
+  const library = snapshot.recipeLibrary;
+  const stats = [
+    { label: admin.text('recipeLibrarySynced'), value: library.totalItems },
+    { label: admin.text('recipeLibraryAiBrew'), value: library.aiBrewCount },
+    { label: admin.text('recipeLibraryCollection'), value: library.collectionCount },
+    { label: admin.text('recipeLibraryFeedback'), value: library.feedbackCount },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {stats.map((item) => (
+          <div key={item.label} className="rounded-2xl border border-glass bg-surface-alpha p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{item.label}</p>
+            <p className="mt-2 text-2xl font-semibold text-primary">{admin.number(item.value)}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-primary">{admin.text('recipeLibraryReady')}</p>
+            <p className="mt-1 text-xs leading-5 text-secondary">
+              {library.tables.join(', ')}
+            </p>
+          </div>
+          <StatusBadge value={library.ready ? 'pass' : 'warn'} />
+        </div>
+        {library.gaps[0] ? (
+          <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-800 dark:text-amber-200">
+            <span className="font-semibold">{admin.text('recipeLibraryGap')}: </span>
+            {library.gaps[0]}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="rounded-2xl border border-glass bg-surface-alpha">
+        <div className="flex items-center justify-between gap-3 border-b border-glass px-4 py-3">
+          <div>
+            <p className="text-sm font-semibold text-primary">{admin.text('recipeLibraryRecent')}</p>
+            <p className="mt-0.5 text-xs text-tertiary">{admin.text('recipeLibrarySubtitle')}</p>
+          </div>
+          <Library size={18} className="shrink-0 text-blue-500" />
+        </div>
+        {library.recentItems.length ? (
+          <div className="divide-y divide-[var(--panel-border-soft)]">
+            {library.recentItems.map((item) => (
+              <article key={`${item.source}-${item.id}`} className="grid gap-3 px-4 py-4 md:grid-cols-[minmax(0,1fr)_10rem_8rem] md:items-center">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate text-sm font-semibold text-primary">{item.title}</p>
+                    {item.deletedAt ? <StatusBadge value="warn" label={admin.enumLabel('deleted')} /> : null}
+                    {item.feedbackRating ? <StatusBadge value="pass" label={admin.enumLabel(item.feedbackRating)} /> : null}
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-secondary">{item.summary}</p>
+                  <p className="mt-1 truncate text-[11px] text-tertiary">{item.userId}</p>
+                </div>
+                <div className="flex flex-wrap gap-1.5 md:justify-end">
+                  <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-semibold text-secondary">
+                    {admin.enumLabel(item.source)}
+                  </span>
+                  <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-semibold text-secondary">
+                    {admin.enumLabel(item.itemType)}
+                  </span>
+                  {item.brewMode ? (
+                    <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-semibold text-secondary">
+                      {admin.enumLabel(item.brewMode)}
+                    </span>
+                  ) : null}
+                </div>
+                <p className="text-xs text-tertiary md:text-right">{admin.date(item.updatedAt)}</p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="px-4 py-8 text-center text-sm text-secondary">{admin.text('recipeLibraryNoItems')}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AuditPanel({ audit }: { audit: AdminSnapshot['audit'] }) {
   const admin = useAdminCopy();
   return (
@@ -3601,6 +3699,19 @@ export function AdminManagement() {
                   </div>
                   <CatalogDatabasePanel snapshot={snapshot} busy={busyCatalogRequest} onCreate={(patch) => void commitCatalogRequest(patch)} />
                   <ChecksPanel checks={snapshot.checks} />
+                </motion.section>
+              ) : null}
+
+              {activeTab === 'recipes' ? (
+                <motion.section id="admin-panel-recipes" aria-labelledby="admin-tab-recipes" role="tabpanel" key="recipes" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                  <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h2 className="text-base font-semibold text-primary">{admin.text('recipeLibrary')}</h2>
+                      <p className="mt-1 text-sm text-secondary">{admin.text('recipeLibrarySubtitle')}</p>
+                    </div>
+                    <StatusBadge value={snapshot.recipeLibrary.ready ? 'pass' : 'warn'} />
+                  </div>
+                  <RecipeLibraryPanel snapshot={snapshot} />
                 </motion.section>
               ) : null}
 

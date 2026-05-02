@@ -48,6 +48,7 @@ const ROUTE_LOADERS: Record<string, () => Promise<{ default: Handler }>> = {
   'account/export': () => import('../server-api/account/export.js'),
   'account/delete': () => import('../server-api/account/delete.js'),
   'account/status': () => import('../server-api/account/status.js'),
+  'library/sync': () => import('../server-api/library/sync.js'),
   'admin/management': () => import('../server-api/admin/management.js'),
   'billing/checkout': () => import('../server-api/billing/checkout.js'),
   'billing/portal': () => import('../server-api/billing/portal.js'),

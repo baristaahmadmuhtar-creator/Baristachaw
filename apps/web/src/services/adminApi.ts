@@ -49,6 +49,34 @@ export type AdminCatalogRequest = {
   createdAt: string;
 };
 
+export type AdminRecipeLibraryItem = {
+  id: string;
+  userId: string;
+  title: string;
+  source: 'ai_brew' | 'collection' | 'import' | 'unknown';
+  itemType: 'brew_journal' | 'recipe' | 'ai_canvas' | 'unknown';
+  brewMode?: 'hot' | 'iced';
+  methodFamily?: string;
+  coffeeName?: string;
+  dripperName?: string;
+  feedbackRating?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  summary: string;
+};
+
+export type AdminRecipeLibrarySummary = {
+  ready: boolean;
+  totalItems: number;
+  aiBrewCount: number;
+  collectionCount: number;
+  feedbackCount: number;
+  recentItems: AdminRecipeLibraryItem[];
+  tables: string[];
+  gaps: string[];
+};
+
 export type AdminUserBilling = {
   status: BillingStatus;
   provider: BillingProvider;
@@ -195,6 +223,7 @@ export type AdminSnapshot = {
     recentRequests: AdminCatalogRequest[];
     gaps: string[];
   };
+  recipeLibrary: AdminRecipeLibrarySummary;
   recommendations: string[];
   warnings: string[];
   realtime: {

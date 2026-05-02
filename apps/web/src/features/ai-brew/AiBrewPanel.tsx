@@ -48,6 +48,7 @@ import {
   composeHybridSequenceOverlay,
   extractSequenceOverlayFromMarkdown,
 } from './aiComposer';
+import { syncAiBrewLibraryToCloud } from './cloudSync';
 import { parseAiBrewOptimizationPatch } from './aiOptimizer';
 import {
   isIndonesianAiBrewLanguage,
@@ -292,6 +293,7 @@ const COPY = {
     useInTimer: 'Use in Timer',
     useInRatio: 'Use in Ratio',
     save: 'Save',
+    saveToCollection: 'Save to Collection',
     saved: 'Saved',
     favorite: 'Favorite',
     unfavorite: 'Unfavorite',
@@ -644,6 +646,7 @@ const COPY = {
     useInTimer: 'Pakai di Timer',
     useInRatio: 'Pakai di Ratio',
     save: 'Simpan',
+    saveToCollection: 'Simpan Koleksi',
     saved: 'Tersimpan',
     favorite: 'Favorit',
     unfavorite: 'Hapus Favorit',
@@ -2633,7 +2636,7 @@ function PlanResultDialog({
     ? (id ? 'Menyimpan...' : 'Saving...')
     : saveSuccess
       ? copy.saved
-      : copy.save;
+      : copy.saveToCollection;
   const feedbackOptions: Array<{ rating: BrewTasteFeedbackRating; label: string }> = [
     { rating: 'great', label: copy.feedbackGreat },
     { rating: 'sour', label: copy.feedbackSour },
@@ -2964,9 +2967,22 @@ function PlanResultDialog({
                           </span>
                         </div>
                       </div>
-                      <span className="rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
-                        {plan.steps.length} {copy.stepCountSuffix}
-                      </span>
+                      <div className="flex shrink-0 flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={onSaveRecipe}
+                          disabled={saving}
+                          className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-3 text-xs font-semibold text-blue-700 transition-colors hover:border-blue-500/30 hover:bg-blue-500/[0.08] disabled:cursor-not-allowed disabled:opacity-55 dark:text-blue-300"
+                          data-testid="ai-brew-save-inline"
+                          aria-label={copy.ariaSaveToCollection.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}
+                        >
+                          {saveSuccess ? <Check size={14} /> : <Bookmark size={14} />}
+                          {saveButtonLabel}
+                        </button>
+                        <span className="rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
+                          {plan.steps.length} {copy.stepCountSuffix}
+                        </span>
+                      </div>
                     </div>
                     <div className="space-y-2.5">
                       {plan.steps.map((step, index) => renderAiBrewSequenceStepCard(plan, step, index, language))}
@@ -4561,6 +4577,7 @@ export function AiBrewPanel({
       setFormState(generationFormState);
       saveLastGeneratedBrewPlan(nextPlan);
       await saveBrewJournalEntry(journalEntry);
+      void syncAiBrewLibraryToCloud({ aiBrewJournal: [journalEntry] });
       await refreshSavedViews();
       setNotice(planUsesOnlineAi(nextPlan) ? copy.generatedAi : copy.generatedLocal);
     } catch (error) {
@@ -4601,6 +4618,7 @@ export function AiBrewPanel({
     });
     try {
       await saveCollectionItem(item);
+      await syncAiBrewLibraryToCloud({ collectionItems: [{ ...item, source: 'ai_brew' }] });
       setSaveSuccess(copy.savedCollection);
     } catch {
       try {
@@ -4650,8 +4668,9 @@ export function AiBrewPanel({
     setSaveError(null);
     try {
       const updated = await updateBrewJournalFeedback(journalId, nextFeedback);
+      let entryForSync = updated;
       if (!updated) {
-        await saveBrewJournalEntry({
+        const newEntry: BrewJournalEntry = {
           id: journalId,
           fingerprint: plan.fingerprint,
           title: buildLocalizedPlanRecipeName(plan, language),
@@ -4661,8 +4680,11 @@ export function AiBrewPanel({
           plan,
           aiNotes: plan.aiNotes,
           feedback: nextFeedback,
-        });
+        };
+        await saveBrewJournalEntry(newEntry);
+        entryForSync = newEntry;
       }
+      if (entryForSync) void syncAiBrewLibraryToCloud({ aiBrewJournal: [entryForSync] });
       setActiveJournalId(journalId);
       setActiveFeedback(nextFeedback);
       setFeedbackNoteDraft(nextFeedback.note || '');
@@ -4717,6 +4739,19 @@ export function AiBrewPanel({
       saveLastGeneratedBrewPlan(nextPlan);
       if (activeJournalId) {
         await updateBrewJournalAiNotes(activeJournalId, { [mode]: markdown });
+        void syncAiBrewLibraryToCloud({
+          aiBrewJournal: [{
+            id: activeJournalId,
+            fingerprint: nextPlan.fingerprint,
+            title: buildLocalizedPlanRecipeName(nextPlan, language),
+            locale: language,
+            createdAt: nextPlan.createdAt,
+            updatedAt: Date.now(),
+            plan: nextPlan,
+            aiNotes: nextPlan.aiNotes,
+            feedback: activeFeedback || undefined,
+          }],
+        });
         await refreshSavedViews();
       }
     } catch (error) {

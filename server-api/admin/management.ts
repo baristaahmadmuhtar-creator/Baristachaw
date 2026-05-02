@@ -67,6 +67,34 @@ type AdminCatalogRequest = {
   createdAt: string;
 };
 
+type AdminRecipeLibraryItem = {
+  id: string;
+  userId: string;
+  title: string;
+  source: 'ai_brew' | 'collection' | 'import' | 'unknown';
+  itemType: 'brew_journal' | 'recipe' | 'ai_canvas' | 'unknown';
+  brewMode?: 'hot' | 'iced';
+  methodFamily?: string;
+  coffeeName?: string;
+  dripperName?: string;
+  feedbackRating?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  summary: string;
+};
+
+type AdminRecipeLibrarySummary = {
+  ready: boolean;
+  totalItems: number;
+  aiBrewCount: number;
+  collectionCount: number;
+  feedbackCount: number;
+  recentItems: AdminRecipeLibraryItem[];
+  tables: string[];
+  gaps: string[];
+};
+
 type AdminUserBilling = {
   status: BillingStatus;
   provider: BillingProvider;
@@ -204,6 +232,7 @@ type AdminSnapshot = {
     recentRequests: AdminCatalogRequest[];
     gaps: string[];
   };
+  recipeLibrary: AdminRecipeLibrarySummary;
   recommendations: string[];
   warnings: string[];
   realtime: {
@@ -1225,7 +1254,7 @@ function buildBillingSummary(users: AdminUserRecord[], plans: AdminPlan[], dataM
     revenueMonthlyUsd: Math.round(revenueMonthlyUsd * 100) / 100,
     attentionUsers: users.filter((user) => user.billing.paymentActionRequired || user.billing.status === 'past_due' || user.billing.status === 'refunded').length,
     supportedMarkets: ['indonesia', 'brunei', 'global'],
-    realtimeTables: ['app_users', 'app_plans', 'user_entitlements', 'payment_receipts', 'admin_audit_events', 'app_feature_flags', 'catalog_review_queue'],
+    realtimeTables: ['app_users', 'app_plans', 'user_entitlements', 'payment_receipts', 'admin_audit_events', 'app_feature_flags', 'catalog_review_queue', 'ai_brew_journal', 'recipe_library_items'],
     gaps,
   };
 }
@@ -1332,6 +1361,122 @@ function buildRuntimeCatalogSummary(): AdminSnapshot['catalog'] {
     reviewQueue,
     recentRequests: RUNTIME_CATALOG_REQUESTS.slice(0, 20),
     gaps: ['Supabase catalog_platform.sql belum aktif; request katalog runtime hanya preview sampai database produksi tersambung.'],
+  };
+}
+
+function recipeLibrarySource(value: unknown): AdminRecipeLibraryItem['source'] {
+  const raw = normalizeText(value).toLowerCase();
+  if (raw === 'ai_brew' || raw === 'collection' || raw === 'import') return raw;
+  return 'unknown';
+}
+
+function recipeLibraryItemType(value: unknown): AdminRecipeLibraryItem['itemType'] {
+  const raw = normalizeText(value).toLowerCase();
+  if (raw === 'recipe' || raw === 'ai_canvas') return raw;
+  if (raw === 'brew_journal') return raw;
+  return 'unknown';
+}
+
+function recipeLibrarySummaryText(...parts: unknown[]): string {
+  return parts
+    .map((part) => normalizeText(part))
+    .filter(Boolean)
+    .join(' / ')
+    .slice(0, 220);
+}
+
+function aiBrewJournalItemFromSupabase(row: any): AdminRecipeLibraryItem {
+  const title = normalizeText(row.title, normalizeText(row.coffee_name, 'AI Brew'));
+  return {
+    id: normalizeText(row.id, `brew_${Date.now()}`),
+    userId: normalizeText(row.user_id, 'unknown-user'),
+    title,
+    source: 'ai_brew',
+    itemType: 'brew_journal',
+    brewMode: normalizeText(row.brew_mode).toLowerCase() === 'iced' ? 'iced' : 'hot',
+    methodFamily: normalizeText(row.method_family),
+    coffeeName: normalizeText(row.coffee_name),
+    dripperName: normalizeText(row.dripper_name),
+    feedbackRating: normalizeText(row.feedback_rating),
+    createdAt: normalizeText(row.created_at, nowIso()),
+    updatedAt: normalizeText(row.updated_at || row.created_at, nowIso()),
+    summary: recipeLibrarySummaryText(
+      row.coffee_name,
+      row.dripper_name,
+      row.method_family,
+      row.brew_mode,
+      row.feedback_rating ? `feedback: ${row.feedback_rating}` : '',
+    ) || title,
+  };
+}
+
+function collectionItemFromSupabase(row: any): AdminRecipeLibraryItem {
+  const metadata = row.metadata && typeof row.metadata === 'object' ? row.metadata : {};
+  const content = row.content && typeof row.content === 'object' ? row.content : {};
+  const title = normalizeText(row.title, normalizeText((content as Record<string, unknown>).name, 'Recipe item'));
+  return {
+    id: normalizeText(row.id, `collection_${Date.now()}`),
+    userId: normalizeText(row.user_id, 'unknown-user'),
+    title,
+    source: recipeLibrarySource(row.source),
+    itemType: recipeLibraryItemType(row.item_type),
+    createdAt: normalizeText(row.created_at, nowIso()),
+    updatedAt: normalizeText(row.updated_at || row.created_at, nowIso()),
+    deletedAt: normalizeText(row.deleted_at),
+    summary: recipeLibrarySummaryText(
+      row.item_type,
+      row.source,
+      (content as Record<string, unknown>).description,
+      (metadata as Record<string, unknown>).syncedFrom,
+    ) || title,
+  };
+}
+
+async function loadSupabaseRecipeLibrarySummary(config: Extract<SupabaseConfig, { configured: true }>): Promise<AdminRecipeLibrarySummary> {
+  const gaps: string[] = [];
+  let aiBrewItems: AdminRecipeLibraryItem[] = [];
+  let collectionItems: AdminRecipeLibraryItem[] = [];
+
+  try {
+    const rows = await supabaseRest<any[]>(config, 'ai_brew_journal?select=id,user_id,title,brew_mode,method_family,coffee_name,dripper_name,feedback_rating,created_at,updated_at&order=updated_at.desc&limit=60');
+    aiBrewItems = Array.isArray(rows) ? rows.map(aiBrewJournalItemFromSupabase) : [];
+  } catch (error) {
+    gaps.push(`ai_brew_journal belum siap: ${sanitizeErrorDetails(error, 140)}`);
+  }
+
+  try {
+    const rows = await supabaseRest<any[]>(config, 'recipe_library_items?select=id,user_id,title,source,item_type,content,metadata,deleted_at,created_at,updated_at&order=updated_at.desc&limit=60');
+    collectionItems = Array.isArray(rows) ? rows.map(collectionItemFromSupabase) : [];
+  } catch (error) {
+    gaps.push(`recipe_library_items belum siap: ${sanitizeErrorDetails(error, 140)}`);
+  }
+
+  const recentItems = [...aiBrewItems, ...collectionItems]
+    .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
+    .slice(0, 40);
+
+  return {
+    ready: gaps.length === 0,
+    totalItems: recentItems.length,
+    aiBrewCount: aiBrewItems.length,
+    collectionCount: collectionItems.filter((item) => !item.deletedAt).length,
+    feedbackCount: aiBrewItems.filter((item) => Boolean(item.feedbackRating)).length,
+    recentItems,
+    tables: ['ai_brew_journal', 'recipe_library_items'],
+    gaps,
+  };
+}
+
+function buildRuntimeRecipeLibrarySummary(): AdminRecipeLibrarySummary {
+  return {
+    ready: false,
+    totalItems: 0,
+    aiBrewCount: 0,
+    collectionCount: 0,
+    feedbackCount: 0,
+    recentItems: [],
+    tables: ['ai_brew_journal', 'recipe_library_items'],
+    gaps: ['Supabase ai_brew_recipe_library.sql belum aktif; Recipe Library admin akan terisi setelah sync production berjalan.'],
   };
 }
 
@@ -1628,6 +1773,7 @@ async function buildAdminSnapshot(
   let audit: AdminAuditEvent[] = [];
   let featureFlags: AdminFeatureFlag[] = [];
   let catalog: AdminSnapshot['catalog'] = buildRuntimeCatalogSummary();
+  let recipeLibrary: AdminRecipeLibrarySummary = buildRuntimeRecipeLibrarySummary();
   const warnings: string[] = [];
 
   if (config.configured) {
@@ -1644,6 +1790,7 @@ async function buildAdminSnapshot(
       audit = await loadSupabaseAudit(config);
       featureFlags = await loadSupabaseFeatureFlags(config);
       catalog = await loadSupabaseCatalogSummary(config);
+      recipeLibrary = await loadSupabaseRecipeLibrarySummary(config);
       dataMode = 'supabase';
     } catch (error) {
       warnings.push(`Supabase admin read failed: ${sanitizeErrorDetails(error, 180)}`);
@@ -1659,6 +1806,7 @@ async function buildAdminSnapshot(
     audit = buildRuntimeAudit(admin);
     featureFlags = buildRuntimeFeatureFlags(RUNTIME_FEATURE_FLAG_PATCHES);
     catalog = buildRuntimeCatalogSummary();
+    recipeLibrary = buildRuntimeRecipeLibrarySummary();
   }
 
   const metrics = metricsFromUsers(users);
@@ -1666,6 +1814,9 @@ async function buildAdminSnapshot(
   const billing = buildBillingSummary(users, plans, dataMode);
   const launchChecklist = buildLaunchChecklist(checks);
   const recommendations = buildRecommendations({ dataMode, metrics, checks });
+  if (!recipeLibrary.ready) {
+    recommendations.unshift('Run supabase/ai_brew_recipe_library.sql so AI Brew saves and Collection recipes appear in admin Recipe Library.');
+  }
   if (!billing.ready) {
     recommendations.unshift('Finish billing provider and Supabase entitlement setup before opening paid plans to real users.');
   }
@@ -1692,6 +1843,7 @@ async function buildAdminSnapshot(
     featureFlags,
     billing,
     catalog,
+    recipeLibrary,
     recommendations,
     warnings,
     realtime: {

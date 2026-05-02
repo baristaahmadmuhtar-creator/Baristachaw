@@ -1,5 +1,5 @@
 -- Baristachaw production verification queries.
--- Run after admin_management.sql and catalog_platform.sql.
+-- Run after admin_management.sql, catalog_platform.sql, and ai_brew_recipe_library.sql.
 
 select
   'tables' as check_name,
@@ -22,7 +22,9 @@ where table_schema = 'public'
     'grinder_sources',
     'brand_suggestions',
     'catalog_review_queue',
-    'ingest_runs'
+    'ingest_runs',
+    'ai_brew_journal',
+    'recipe_library_items'
   );
 
 select
@@ -47,7 +49,9 @@ where schemaname = 'public'
     'grinder_sources',
     'brand_suggestions',
     'catalog_review_queue',
-    'ingest_runs'
+    'ingest_runs',
+    'ai_brew_journal',
+    'recipe_library_items'
   )
 order by tablename;
 
@@ -96,3 +100,13 @@ select
 from public.catalog_review_queue
 group by review_status
 order by review_status;
+
+select
+  'ai_brew_journal' as table_name,
+  count(*) as row_count
+from public.ai_brew_journal
+union all
+select
+  'recipe_library_items' as table_name,
+  count(*) as row_count
+from public.recipe_library_items;

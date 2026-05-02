@@ -101,12 +101,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       entitlementRows,
       receiptRows,
       auditRows,
+      aiBrewRows,
+      recipeLibraryRows,
     ] = await Promise.all([
       loadRows<Record<string, unknown>>(config, `app_users?id=eq.${encodedUserId}&select=*`, warnings, 'Account profile'),
       loadRows<Record<string, unknown>>(config, `app_usage_daily?user_id=eq.${encodedUserId}&select=*&order=usage_date.desc&limit=366`, warnings, 'Usage history'),
       loadRows<Record<string, unknown>>(config, `user_entitlements?user_id=eq.${encodedUserId}&select=*&order=updated_at.desc&limit=100`, warnings, 'Entitlement history'),
       loadRows<Record<string, unknown>>(config, `payment_receipts?user_id=eq.${encodedUserId}&select=*&order=created_at.desc&limit=100`, warnings, 'Payment receipts'),
       loadRows<Record<string, unknown>>(config, `admin_audit_events?target_type=eq.user&target_id=eq.${encodedUserId}&select=*&order=created_at.desc&limit=200`, warnings, 'Audit events'),
+      loadRows<Record<string, unknown>>(config, `ai_brew_journal?user_id=eq.${encodedUserId}&select=*&order=updated_at.desc&limit=500`, warnings, 'AI Brew journal'),
+      loadRows<Record<string, unknown>>(config, `recipe_library_items?user_id=eq.${encodedUserId}&select=*&order=updated_at.desc&limit=500`, warnings, 'Recipe library'),
     ]);
 
     await insertAdminAuditEvent(config, {
@@ -120,7 +124,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       request_id: requestId,
       ip_hash: hashRequestIp(req),
       metadata: {
-        exportVersion: 1,
+        exportVersion: 2,
         warningCount: warnings.length,
       },
     }).catch((error) => {
@@ -134,7 +138,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ok: true,
       requestId,
       generatedAt,
-      exportVersion: 1,
+      exportVersion: 2,
       account: {
         userId,
         email: email || undefined,
@@ -147,6 +151,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         usageDaily: usageRows,
         entitlements: entitlementRows,
         paymentReceipts: receiptRows,
+        aiBrewJournal: aiBrewRows,
+        recipeLibrary: recipeLibraryRows,
         auditEvents: auditRows,
       },
       warnings,

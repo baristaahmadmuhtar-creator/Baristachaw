@@ -1508,6 +1508,9 @@ test('createQuickAiBrewFormState strips hidden precision-only modifiers before g
     waterTdsPpm: '95',
     waterHardnessPpm: '55',
     waterAlkalinityPpm: '40',
+    targetRatio: '15.2',
+    targetWaterMl: '230',
+    targetTempC: '92',
     pourStyle: 'pulse',
     pourCount: '5',
   }, catalog);
@@ -1522,9 +1525,56 @@ test('createQuickAiBrewFormState strips hidden precision-only modifiers before g
   assert.equal(quickInput.roastDevelopment, '');
   assert.equal(quickInput.solubility, '');
   assert.equal(quickInput.waterNotes, '');
+  assert.equal(quickInput.targetRatio, '');
+  assert.equal(quickInput.targetWaterMl, '');
+  assert.equal(quickInput.targetTempC, '');
   assert.equal(quickInput.waterTdsPpm, '95');
   assert.equal(quickInput.pourStyle, 'pulse');
   assert.equal(quickInput.pourCount, '5');
+});
+
+test('precision targets can override ratio, total water, and temperature within guardrails', () => {
+  const fullFamilyCatalog = buildAllMethodFamilyCatalog();
+  const baseInput = {
+    ...createDefaultAiBrewFormState(fullFamilyCatalog),
+    coffeeName: 'Precision Override QA',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '92',
+    waterHardnessPpm: '46',
+    waterAlkalinityPpm: '32',
+    roastLevel: 'light' as const,
+    targetProfileId: 'balance_clean',
+  };
+
+  const v60 = buildAiBrewPlan({
+    ...baseInput,
+    dripperId: 'matrix-v60-all',
+    doseG: '15',
+    targetRatio: '15.5',
+    targetTempC: '92',
+  }, fullFamilyCatalog);
+
+  assertPlanEnvelope(v60);
+  assert.equal(v60.waterTempC, 92);
+  assert.ok(Math.abs(v60.recommendedRatio - 15.5) <= 0.25);
+  assert.ok(v60.notes.some((note) => /precision target ratio active/i.test(note)));
+  assert.ok(v60.notes.some((note) => /precision target temperature active/i.test(note)));
+
+  const chemex = buildAiBrewPlan({
+    ...baseInput,
+    dripperId: 'matrix-chemex-all',
+    doseG: '30',
+    targetRatio: '14',
+    targetWaterMl: '500',
+    targetTempC: '90',
+  }, fullFamilyCatalog);
+
+  assertPlanEnvelope(chemex);
+  assert.equal(chemex.totalWaterMl, 500);
+  assert.equal(chemex.hotWaterMl, 500);
+  assert.equal(chemex.waterTempC, 90);
+  assert.ok(Math.abs(chemex.recommendedRatio - 16.67) <= 0.05);
+  assert.ok(chemex.notes.some((note) => /precision target water active/i.test(note)));
 });
 
 test('buildAiBrewPlan roast level shifts extraction envelope in a sensible direction', () => {

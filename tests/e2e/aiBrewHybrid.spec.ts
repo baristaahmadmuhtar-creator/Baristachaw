@@ -188,6 +188,30 @@ test('ai brew auto sequence keeps deterministic operational steps when mocked AI
   await expectDefaultHotDeterministicSequence(sequenceNote);
 });
 
+test('ai brew precision builder applies barista target controls and keeps extra details useful', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await openProBuilder(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Precision Target Controls');
+  await setVisibleInputValue(page, 'ai-brew-dose', '15');
+  await setVisibleInputValue(page, 'ai-brew-target-ratio', '15.5');
+  await setVisibleInputValue(page, 'ai-brew-target-temp', '92');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible({ timeout: 60_000 });
+  const plan = await readStoredPlan(page);
+  expect(plan.waterTempC).toBe(92);
+  expect(plan.recommendedRatio).toBeGreaterThanOrEqual(15.4);
+  expect(plan.recommendedRatio).toBeLessThanOrEqual(15.8);
+  expect(plan.notes.join('\n')).toMatch(/precision target ratio active/i);
+  expect(plan.notes.join('\n')).toMatch(/precision target temperature active/i);
+  await expect(sequenceNote.getByTestId('ai-brew-step-detail-1')).toContainText(/Bilas filter|Rinse the filter/i);
+  await expect(sequenceNote.getByTestId('ai-brew-step-detail-1')).toContainText(/Bloom/i);
+});
+
 test('ai brew auto sequence keeps deterministic sequence when AI responses timeout', async ({ page }) => {
   await qaLogin(page.request);
   await mockAiApis(page);

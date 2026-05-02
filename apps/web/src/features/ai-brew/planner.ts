@@ -579,6 +579,46 @@ function parseOptionalNumber(label: string, value: string, min: number, max: num
   return parsed;
 }
 
+function resolveTargetWaterOverrideBounds(methodFamily: AiBrewMethodFamily, doseG: number, ratioLowerBound: number, ratioUpperBound: number) {
+  const methodMaxWaterMl: Record<AiBrewMethodFamily, number> = {
+    v60: 900,
+    chemex: 1200,
+    kalita_wave: 850,
+    clever_dripper: 750,
+    origami: 850,
+    april: 850,
+    melitta: 850,
+    kono: 850,
+    french_press: 1200,
+    aeropress: 320,
+    siphon: 800,
+    moka_pot: 450,
+    cold_brew: 2000,
+    batch_brew: 2500,
+    espresso: 90,
+  };
+  const methodMinWaterMl: Record<AiBrewMethodFamily, number> = {
+    v60: 80,
+    chemex: 120,
+    kalita_wave: 80,
+    clever_dripper: 100,
+    origami: 80,
+    april: 80,
+    melitta: 80,
+    kono: 80,
+    french_press: 150,
+    aeropress: 60,
+    siphon: 180,
+    moka_pot: 80,
+    cold_brew: 160,
+    batch_brew: 300,
+    espresso: 15,
+  };
+  const min = Math.ceil(Math.max(methodMinWaterMl[methodFamily], doseG * ratioLowerBound));
+  const max = Math.floor(Math.min(methodMaxWaterMl[methodFamily], doseG * ratioUpperBound));
+  return { min, max: Math.max(min, max) };
+}
+
 function formatTime(totalSeconds: number) {
   return formatAiBrewTime(totalSeconds);
 }
@@ -3976,7 +4016,9 @@ function finalizePlanCore(
     originAdjustment,
   });
 
-  const targetRecommendedRatio = roundTo(clamp(
+  const ratioLowerBound = method.ratioRange[0] - 0.75;
+  const ratioUpperBound = method.ratioRange[1] + 0.75;
+  const baseRecommendedRatio = roundTo(clamp(
     roastAdjustedTargets.adjustedRatioDefault
       + deviceSelection.profile.ratioDelta
       + waterProfile.ratioDelta
@@ -3991,12 +4033,42 @@ function finalizePlanCore(
       + doseAdjustment.ratioDelta
       + flavorAlignment.ratioDelta
       + (input.brewMode === 'iced' ? -0.65 : 0),
-    method.ratioRange[0] - 0.75,
-    method.ratioRange[1] + 0.75,
+    ratioLowerBound,
+    ratioUpperBound,
   ), 2);
+  const targetWaterBounds = resolveTargetWaterOverrideBounds(methodFamily, doseG, ratioLowerBound, ratioUpperBound);
+  const targetWaterOverrideMl = parseOptionalNumber(
+    'Target water',
+    input.targetWaterMl || '',
+    targetWaterBounds.min,
+    targetWaterBounds.max,
+  );
+  const targetRatioOverride = targetWaterOverrideMl !== null
+    ? null
+    : parseOptionalNumber(
+      'Target ratio',
+      input.targetRatio || '',
+      ratioLowerBound,
+      ratioUpperBound,
+    );
+  const precisionOverrideNotes: string[] = [];
 
-  const totalWaterMl = roundBaristaVolumeMl(calcWaterFromDoseRatio(doseG, targetRecommendedRatio), methodFamily);
-  const recommendedRatio = targetRecommendedRatio;
+  const totalWaterMl = targetWaterOverrideMl !== null
+    ? roundBaristaVolumeMl(targetWaterOverrideMl, methodFamily)
+    : roundBaristaVolumeMl(calcWaterFromDoseRatio(doseG, targetRatioOverride ?? baseRecommendedRatio), methodFamily);
+  const recommendedRatio = targetWaterOverrideMl !== null
+    ? roundTo(totalWaterMl / doseG, 2)
+    : roundTo(targetRatioOverride ?? baseRecommendedRatio, 2);
+
+  if (targetWaterOverrideMl !== null) {
+    precisionOverrideNotes.push(
+      `Precision target water active: ${totalWaterMl} ml; ratio recalculated from ${roundTo(doseG, 1)} g dose to 1:${formatBaristaRatio(recommendedRatio)}.`,
+    );
+  } else if (targetRatioOverride !== null) {
+    precisionOverrideNotes.push(
+      `Precision target ratio active: 1:${formatBaristaRatio(recommendedRatio)} with service-rounded water.`,
+    );
+  }
   const hotWaterShare = input.brewMode === 'iced'
     ? resolveIcedHotWaterShare({
       methodFamily,
@@ -4037,7 +4109,13 @@ function finalizePlanCore(
   const methodTempBounds = methodFamily === 'cold_brew'
     ? { min: 4, max: 25 }
     : { min: 78, max: 98 };
-  const waterTempC = roundTo(clamp(
+  const targetTempOverrideC = parseOptionalNumber(
+    'Target temperature',
+    input.targetTempC || '',
+    methodTempBounds.min,
+    methodTempBounds.max,
+  );
+  const waterTempC = roundTo(targetTempOverrideC ?? clamp(
     midpoint(roastAdjustedTargets.adjustedTempRangeC, 1)
       + deviceSelection.profile.tempDeltaC
       + waterProfile.tempDeltaC
@@ -4054,6 +4132,11 @@ function finalizePlanCore(
     methodTempBounds.min,
     methodTempBounds.max,
   ), 1);
+  if (targetTempOverrideC !== null) {
+    precisionOverrideNotes.push(
+      `Precision target temperature active: ${formatBaristaTemperature(waterTempC)}°C.`,
+    );
+  }
 
   const methodTimeBounds = methodFamily === 'cold_brew'
     ? { min: 21600, max: 64800 }
@@ -4192,6 +4275,7 @@ function finalizePlanCore(
     originTargetMethodAdjustment.notes,
     doseAdjustment.notes,
     flavorAlignment.notes,
+    precisionOverrideNotes,
     operatorKnowledgeNotes,
     [
       !input.process ? 'Process not specified. No automatic process modifier was applied.' : undefined,
@@ -4228,6 +4312,7 @@ function finalizePlanCore(
     originTargetMethodAdjustment.confidenceNotes,
     doseAdjustment.confidenceNotes,
     flavorAlignment.confidenceNotes,
+    precisionOverrideNotes,
     operatorKnowledgeNotes.length > 0
       ? [`Operator knowledge active: ${operatorKnowledgeNotes.length} matched note(s) from knowledge_v1.xlsx.`]
       : [],
@@ -4288,6 +4373,9 @@ function finalizePlanCore(
     beanDensityGml: input.beanDensityGml,
     roastDevelopment: input.roastDevelopment,
     solubility: input.solubility,
+    targetRatio: input.targetRatio,
+    targetWaterMl: input.targetWaterMl,
+    targetTempC: input.targetTempC,
   }));
 
   return {
@@ -4390,6 +4478,9 @@ export function createDefaultAiBrewFormState(catalog?: AiBrewCatalog): AiBrewFor
     waterAlkalinityPpm: '',
     waterNotes: '',
     targetProfileId: pickDefaultCatalogId(catalog?.targetProfiles, DEFAULT_TARGET_PROFILE_PRIORITY) || 'balance_clean',
+    targetRatio: '',
+    targetWaterMl: '',
+    targetTempC: '',
     pourStyle: 'auto',
     pourCount: 'auto',
   };
@@ -4444,6 +4535,9 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
     waterAlkalinityPpm: String(input.waterAlkalinityPpm || ''),
     waterNotes: String(input.waterNotes || ''),
     targetProfileId: String(input.targetProfileId || fallback.targetProfileId),
+    targetRatio: String(input.targetRatio || ''),
+    targetWaterMl: String(input.targetWaterMl || ''),
+    targetTempC: String(input.targetTempC || ''),
     pourStyle: validPourStyles.has(String(input.pourStyle))
       ? (String(input.pourStyle) as AiBrewFormState['pourStyle'])
       : fallback.pourStyle,
@@ -4466,6 +4560,9 @@ export function createQuickAiBrewFormState(input: AiBrewFormState, catalog?: AiB
     beanDensityGml: '',
     roastDevelopment: '',
     solubility: '',
+    targetRatio: '',
+    targetWaterMl: '',
+    targetTempC: '',
   };
 }
 

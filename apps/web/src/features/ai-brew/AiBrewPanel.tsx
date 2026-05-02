@@ -152,6 +152,14 @@ const COPY = {
     pourCount4: '4 pours',
     pourCount5: '5 pours',
     pourControlHint: 'Iced mode stays Japanese-style: hot concentrate over measured ice.',
+    precisionControlTitle: 'Precision targets',
+    precisionControlHint: 'Optional. Use ratio or total water, then adjust temperature when the coffee needs a softer or hotter extraction.',
+    targetRatio: 'Ratio target',
+    targetRatioPlaceholder: 'Auto',
+    targetWaterMl: 'Total water (ml)',
+    targetWaterMlPlaceholder: 'Auto',
+    targetTempC: 'Temperature (C)',
+    targetTempCPlaceholder: 'Auto',
     quickBuilderTitle: 'Quick Builder',
     proBuilderTitle: 'Precision Builder',
     closeBuilder: 'Close builder',
@@ -485,6 +493,14 @@ const COPY = {
     pourCount4: '4 tuang',
     pourCount5: '5 tuang',
     pourControlHint: 'Mode es dikunci Japanese style: konsentrat panas langsung ke es terukur.',
+    precisionControlTitle: 'Target presisi',
+    precisionControlHint: 'Opsional. Pakai rasio atau total air, lalu atur suhu saat kopi perlu ekstraksi lebih lembut atau lebih panas.',
+    targetRatio: 'Rasio target',
+    targetRatioPlaceholder: 'Auto',
+    targetWaterMl: 'Total air (ml)',
+    targetWaterMlPlaceholder: 'Auto',
+    targetTempC: 'Suhu (C)',
+    targetTempCPlaceholder: 'Auto',
     quickBuilderTitle: 'Builder Cepat',
     proBuilderTitle: 'Builder Presisi',
     closeBuilder: 'Tutup builder',
@@ -1778,6 +1794,20 @@ function addUniqueAiBrewDetailPoint(points: string[], value: string) {
   points.push(normalized);
 }
 
+function aiBrewUsesPaperFilter(plan: BrewPlan) {
+  return [
+    'v60',
+    'chemex',
+    'kalita_wave',
+    'origami',
+    'april',
+    'melitta',
+    'kono',
+    'clever_dripper',
+    'aeropress',
+  ].includes(plan.methodFamily);
+}
+
 function buildAiBrewDeterministicStepDetailPoints(
   plan: BrewPlan,
   step: BrewPlan['steps'][number],
@@ -1791,6 +1821,21 @@ function buildAiBrewDeterministicStepDetailPoints(
   const isLastStep = index === plan.steps.length - 1;
   const isLastPour = step.pourVolumeMl > 0
     && !plan.steps.slice(index + 1).some((nextStep) => nextStep.pourVolumeMl > 0);
+  const nextStep = plan.steps[index + 1];
+  const isFirstPour = index === 0 && isPourStep;
+
+  if (isFirstPour && aiBrewUsesPaperFilter(plan)) {
+    addUniqueAiBrewDetailPoint(
+      points,
+      plan.methodFamily === 'chemex'
+        ? (id
+          ? 'Bilas filter Chemex sampai hangat, lalu buang air bilasan sebelum kopi masuk.'
+          : 'Rinse the Chemex filter until warm, then discard rinse water before adding coffee.')
+        : (id
+          ? 'Bilas filter dan panaskan alat/server dulu; buang air bilasan sebelum mulai.'
+          : 'Rinse the filter and preheat the brewer/server first; discard rinse water before brewing.'),
+    );
+  }
 
   if (plan.brewMode === 'iced' && plan.iceMl > 0) {
     if (index === 0) {
@@ -1846,6 +1891,16 @@ function buildAiBrewDeterministicStepDetailPoints(
       id
         ? `Jangan tambah air pada fase ini; ikuti waktu dan target yang sudah dihitung.`
         : `Do not add water in this phase; follow the calculated time and target.`,
+    );
+  }
+
+  if (isFirstPour && nextStep) {
+    const waitSeconds = Math.max(0, nextStep.startSeconds - step.startSeconds);
+    addUniqueAiBrewDetailPoint(
+      points,
+      id
+        ? `Bloom sampai ${formatGuideTime(nextStep.startSeconds)} sekitar ${formatGuideTime(waitSeconds)}; pastikan semua bubuk basah sebelum tuang berikutnya.`
+        : `Bloom until ${formatGuideTime(nextStep.startSeconds)} for about ${formatGuideTime(waitSeconds)}; make sure all grounds are wet before the next pour.`,
     );
   }
 
@@ -5289,6 +5344,63 @@ export function AiBrewPanel({
                           />
                         </div>
                       )}
+
+                      <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3">
+                        <div className="flex flex-col gap-1">
+                          <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.precisionControlTitle}</h4>
+                          <p className="text-xs leading-5 text-secondary">{copy.precisionControlHint}</p>
+                        </div>
+                        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                          <div>
+                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetRatio}</label>
+                            <input
+                              type="number"
+                              min="6"
+                              max="24"
+                              step="0.1"
+                              inputMode="decimal"
+                              value={formState.targetRatio}
+                              onChange={(event) => updateForm('targetRatio', event.target.value)}
+                              placeholder={copy.targetRatioPlaceholder}
+                              aria-label={copy.targetRatio}
+                              className="glass-input h-12 w-full px-4 text-base"
+                              data-testid="ai-brew-target-ratio"
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetWaterMl}</label>
+                            <input
+                              type="number"
+                              min="15"
+                              max="2500"
+                              step="5"
+                              inputMode="numeric"
+                              value={formState.targetWaterMl}
+                              onChange={(event) => updateForm('targetWaterMl', event.target.value)}
+                              placeholder={copy.targetWaterMlPlaceholder}
+                              aria-label={copy.targetWaterMl}
+                              className="glass-input h-12 w-full px-4 text-base"
+                              data-testid="ai-brew-target-water"
+                            />
+                          </div>
+                          <div>
+                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetTempC}</label>
+                            <input
+                              type="number"
+                              min="4"
+                              max="98"
+                              step="1"
+                              inputMode="numeric"
+                              value={formState.targetTempC}
+                              onChange={(event) => updateForm('targetTempC', event.target.value)}
+                              placeholder={copy.targetTempCPlaceholder}
+                              aria-label={copy.targetTempC}
+                              className="glass-input h-12 w-full px-4 text-base"
+                              data-testid="ai-brew-target-temp"
+                            />
+                          </div>
+                        </div>
+                      </div>
 
                       <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3">
                         <div className="flex flex-wrap items-start justify-between gap-3">

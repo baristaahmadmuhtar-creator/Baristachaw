@@ -344,6 +344,9 @@ export interface AiBrewFormState {
   waterAlkalinityPpm: string;
   waterNotes: string;
   targetProfileId: string;
+  targetRatio: string;
+  targetWaterMl: string;
+  targetTempC: string;
   pourStyle: AiBrewPourStyle;
   pourCount: AiBrewPourCount;
 }

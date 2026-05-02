@@ -311,6 +311,19 @@ function buildPourControlNote(input: AiBrewFormState, methodFamily: AiBrewMethod
   return `${modeLabel} cadence: ${countLabel}, ${buildPourStyleLabel(input)}. Targets stay rounded and cumulative for service use.`;
 }
 
+function resolveMinimumIcedManualPourOverTimeSeconds(profile: DeviceBrewProfile, methodFamily: AiBrewMethodFamily, brewMode: 'hot' | 'iced') {
+  if (brewMode !== 'iced' || !isIcedManualPourOverFamily(methodFamily)) return 0;
+  const lastPositivePourIndex = profile.steps.reduce(
+    (lastIndex, step, index) => (step.share > 0 && (step.kind === undefined || isVolumeTargetStepKind(step.kind)) ? index : lastIndex),
+    -1,
+  );
+  if (lastPositivePourIndex <= 0) return 0;
+
+  const minPourGapSeconds = 30;
+  const finalWindowBounds = resolveMethodFamilyFinalWindowBounds(methodFamily, brewMode);
+  return (lastPositivePourIndex * minPourGapSeconds) + finalWindowBounds.min;
+}
+
 function applyPourControlsToProfile(
   profile: DeviceBrewProfile,
   input: AiBrewFormState,
@@ -856,11 +869,17 @@ function normalizeBaristaStepStartSeconds(
   starts: number[],
   totalTimeSeconds: number,
   methodFamily: AiBrewMethodFamily,
+  options: { finalWindowMinSeconds?: number } = {},
 ) {
   if (starts.length <= 1) return starts.map((start) => Math.max(0, Math.round(start)));
   const increment = resolveBaristaTimeIncrementSeconds(methodFamily);
   const baseMinGapSeconds = methodFamily === 'espresso' ? 1 : Math.min(30, Math.max(5, increment));
-  const maxStartBudget = Math.max(baseMinGapSeconds, totalTimeSeconds - baseMinGapSeconds);
+  const minGapSeconds = supportsAiBrewPourControls(methodFamily)
+    ? Math.max(baseMinGapSeconds, 30)
+    : baseMinGapSeconds;
+  const finalWindowMinSeconds = Math.max(baseMinGapSeconds, options.finalWindowMinSeconds || baseMinGapSeconds);
+  const minimumLastStartSeconds = minGapSeconds * (starts.length - 1);
+  const maxStartBudget = Math.max(minimumLastStartSeconds, totalTimeSeconds - finalWindowMinSeconds);
   let previous = 0;
 
   return starts.map((start, index) => {
@@ -868,15 +887,9 @@ function normalizeBaristaStepStartSeconds(
       previous = 0;
       return 0;
     }
-    const minGapSeconds = supportsAiBrewPourControls(methodFamily)
-      ? Math.max(baseMinGapSeconds, 30)
-      : baseMinGapSeconds;
     const remainingSteps = starts.length - 1 - index;
     const minimumStart = previous + minGapSeconds;
-    const maximumStart = Math.max(
-      minimumStart,
-      Math.min(maxStartBudget, totalTimeSeconds - (remainingSteps + 1) * minGapSeconds),
-    );
+    const maximumStart = Math.max(minimumStart, maxStartBudget - remainingSteps * minGapSeconds);
     const roundedStart = roundToIncrement(start, increment);
     const normalizedStart = clampRoundedToIncrement(roundedStart, minimumStart, maximumStart, increment);
     previous = normalizedStart;
@@ -3258,6 +3271,11 @@ function buildSteps(
     buildAdaptiveStepStartSeconds(profile, totalTimeSeconds, adaptiveShareContext),
     totalTimeSeconds,
     adaptiveShareContext.methodFamily,
+    {
+      finalWindowMinSeconds: adaptiveShareContext.brewMode === 'iced' && isIcedManualPourOverFamily(adaptiveShareContext.methodFamily)
+        ? resolveMethodFamilyFinalWindowBounds(adaptiveShareContext.methodFamily, adaptiveShareContext.brewMode).min
+        : undefined,
+    },
   );
   const adaptedShares = buildAdaptiveStepShares(profile, adaptiveShareContext);
   const stepKinds = profile.steps.map((step, index) =>
@@ -4042,7 +4060,9 @@ function finalizePlanCore(
     : methodFamily === 'espresso'
       ? { min: 20, max: 45 }
       : { min: 75, max: 420 };
-  const totalTimeSeconds = roundBaristaTimeSeconds(clamp(
+  const controlledDeviceProfile = applyPourControlsToProfile(deviceSelection.profile, input, methodFamily);
+  const pourControlNote = buildPourControlNote(input, methodFamily);
+  const baseTotalTimeSeconds = roundBaristaTimeSeconds(clamp(
     midpoint(roastAdjustedTargets.adjustedBrewTimeRangeSec, 0)
       + deviceSelection.profile.brewTimeDeltaSec
       + waterProfile.brewTimeDeltaSec
@@ -4060,6 +4080,11 @@ function finalizePlanCore(
     methodTimeBounds.min,
     methodTimeBounds.max,
   ), methodFamily);
+  const minimumServiceTimeSeconds = resolveMinimumIcedManualPourOverTimeSeconds(controlledDeviceProfile, methodFamily, input.brewMode);
+  const totalTimeSeconds = roundBaristaTimeSeconds(
+    clamp(Math.max(baseTotalTimeSeconds, minimumServiceTimeSeconds), methodTimeBounds.min, methodTimeBounds.max),
+    methodFamily,
+  );
   const hotSplitPercent = roundTo(totalWaterMl > 0 ? (hotWaterMl / totalWaterMl) * 100 : 100, 0);
   const iceSplitPercent = roundTo(totalWaterMl > 0 ? (iceMl / totalWaterMl) * 100 : 0, 0);
   const hotWaterSharePercent = hotSplitPercent;
@@ -4080,8 +4105,6 @@ function finalizePlanCore(
     flavorAlignment.grindBias,
   );
   const grindDetails = buildGrindRecommendation(grinder, grinderSetting, grindBias, input.roastLevel, input.brewMode);
-  const controlledDeviceProfile = applyPourControlsToProfile(deviceSelection.profile, input, methodFamily);
-  const pourControlNote = buildPourControlNote(input, methodFamily);
   const steps = buildSteps(controlledDeviceProfile, hotWaterMl, totalTimeSeconds, {
     targetProfileId: targetProfile.id,
     targetProfileLabel: targetProfile.label,
@@ -4574,7 +4597,16 @@ function rebuildOptimizedSteps(
     const proposed = finitePatchNumber(patch?.startSeconds);
     return proposed ?? (index === 0 ? 0 : step.startSeconds * timeScale);
   });
-  const startSeconds = normalizeBaristaStepStartSeconds(startCandidates, totalTimeSeconds, plan.methodFamily);
+  const startSeconds = normalizeBaristaStepStartSeconds(
+    startCandidates,
+    totalTimeSeconds,
+    plan.methodFamily,
+    {
+      finalWindowMinSeconds: plan.brewMode === 'iced' && isIcedManualPourOverFamily(plan.methodFamily)
+        ? resolveMethodFamilyFinalWindowBounds(plan.methodFamily, plan.brewMode).min
+        : undefined,
+    },
+  );
   const volumeIndexes = plan.steps
     .map((step, index) => {
       const kind = step.kind || 'pour';

@@ -1639,6 +1639,83 @@ test('buildAiBrewPlan keeps small-dose V60 hot and iced cadence barista-friendly
   assert.equal(iced.steps.at(-1)?.targetVolumeMl, iced.hotWaterMl);
 });
 
+test('buildAiBrewPlan keeps high-dose Japanese iced pour-over cadence service-safe', () => {
+  const fullFamilyCatalog = buildAllMethodFamilyCatalog();
+  const manualFamilies = new Set<AiBrewMethodFamily>([
+    'v60',
+    'origami',
+    'kono',
+    'kalita_wave',
+    'melitta',
+    'april',
+    'chemex',
+  ]);
+  const minimumFinalWindowByFamily: Partial<Record<AiBrewMethodFamily, number>> = {
+    v60: 65,
+    origami: 50,
+    kono: 50,
+    kalita_wave: 50,
+    melitta: 50,
+    april: 40,
+    chemex: 65,
+  };
+
+  for (const familyCase of ALL_METHOD_FAMILY_CASES.filter((entry) => manualFamilies.has(entry.family))) {
+    for (const builder of ['quick', 'pro'] as const) {
+      for (const doseG of ['30', '40']) {
+        for (const targetProfileId of ['balance_clean', 'more_acidity', 'more_sweetness', 'more_body'] as const) {
+          const base = {
+            ...createDefaultAiBrewFormState(fullFamilyCatalog),
+            brewMode: 'iced' as const,
+            coffeeName: `${familyCase.name} high dose iced QA`,
+            dripperId: familyCase.dripperId,
+            doseG,
+            targetProfileId,
+            roastLevel: 'medium_light' as const,
+            waterMode: 'manual' as const,
+            waterTdsPpm: '92',
+            waterHardnessPpm: '46',
+            waterAlkalinityPpm: '32',
+          };
+          const plan = buildAiBrewPlan(
+            builder === 'quick' ? createQuickAiBrewFormState(base, fullFamilyCatalog) : base,
+            fullFamilyCatalog,
+          );
+          const positivePours = plan.steps.filter((step) => step.pourVolumeMl > 0);
+          const finalPour = positivePours[positivePours.length - 1];
+          const finalWindow = plan.totalTimeSeconds - finalPour.startSeconds;
+
+          assertPlanEnvelope(plan);
+          assert.equal(plan.brewMode, 'iced');
+          assert.equal(positivePours.length, 5);
+          assert.equal(plan.steps.reduce((sum, step) => sum + step.pourVolumeMl, 0), plan.hotWaterMl);
+          assert.equal(plan.steps.at(-1)?.targetVolumeMl, plan.hotWaterMl);
+          assert.ok(
+            finalWindow >= (minimumFinalWindowByFamily[familyCase.family] || 40),
+            `${builder} ${familyCase.family} ${doseG}g ${targetProfileId} final window ${finalWindow}s is too short`,
+          );
+        }
+      }
+    }
+  }
+
+  const harioHighDose = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'iced',
+    dripperId: 'hario-v60',
+    coffeeName: 'Production Hario V60 high dose iced QA',
+    doseG: '40',
+    targetProfileId: 'more_acidity',
+    waterMode: 'manual',
+    waterTdsPpm: '92',
+    waterHardnessPpm: '46',
+    waterAlkalinityPpm: '32',
+  }, catalog);
+  const harioFinalPour = harioHighDose.steps.filter((step) => step.pourVolumeMl > 0).at(-1);
+  assert.ok(harioFinalPour);
+  assert.ok(harioHighDose.totalTimeSeconds - harioFinalPour.startSeconds >= 65);
+});
+
 test('buildAiBrewPlan applies selected pour count and interval style without breaking Japanese iced totals', () => {
   const form = {
     ...createDefaultAiBrewFormState(catalog),

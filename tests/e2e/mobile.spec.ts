@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { clearClientState } from '../helpers/cleanup';
 import { qaLogin, qaLogout } from '../fixtures/auth';
+import { buildQaUser } from '../fixtures/test-data';
 
 test.beforeEach(async ({ page }) => {
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
 });
 
 test.afterEach(async ({ page }) => {
@@ -85,7 +86,7 @@ test('collection create-folder close button keeps iOS-friendly touch target', as
 test('mobile ai brew picker keeps dialog semantics and returns focus on close', async ({ page }) => {
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   const aiTab = page.getByRole('tab', { name: /AI Brew|AI Seduh/i });
@@ -111,7 +112,7 @@ test('mobile ai brew builder uses app fullscreen height in pwa profile', async (
 
   await page.goto('/');
   await clearClientState(page);
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/tools?tab=ai-brew&runtime=web_parity&ui_profile=pwa&host_safe_bottom=34', { waitUntil: 'domcontentloaded' });
   await page.getByTestId('ai-brew-open-quick').click();
   const builder = page.getByTestId('ai-brew-builder-quick');
@@ -140,7 +141,7 @@ test('mobile ai brew builder uses app fullscreen height in pwa profile', async (
 test('mobile ai brew result workspace keeps primary actions inside the viewport', async ({ page }) => {
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await page.getByTestId('ai-brew-open-quick').click();
@@ -206,7 +207,7 @@ test('mobile ai brew result stays legible in light theme', async ({ page }) => {
 
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.evaluate(() => {
     localStorage.setItem('BARISTA_THEME', 'light');
   });
@@ -292,7 +293,7 @@ test('mobile ai brew loading stays centered and keeps bottom nav hidden through 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await page.getByTestId('ai-brew-open-quick').click();
@@ -366,7 +367,7 @@ test('mobile ai brew builder keeps the action footer docked to the modal bottom'
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await page.getByTestId('ai-brew-open-quick').click();

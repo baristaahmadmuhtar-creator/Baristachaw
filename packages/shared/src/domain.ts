@@ -54,6 +54,7 @@ export type AiToolSuggestion =
   | 'web_search';
 export type ClientPlatform = 'web' | 'pwa' | 'mobile';
 export type ClientSurface = 'home' | 'chat' | 'scanner' | 'collection' | 'tools' | 'auth';
+export type ClientFeature = 'chat' | 'search' | 'scanner' | 'ai_brew';
 
 export interface ResponseProfile {
   language?: string;
@@ -68,6 +69,7 @@ export interface ClientContext {
   appLanguage?: string;
   acceptLanguage?: string;
   surface?: ClientSurface;
+  feature?: ClientFeature;
 }
 
 export interface ConversationContextMessage {

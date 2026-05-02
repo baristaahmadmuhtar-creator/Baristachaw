@@ -42,6 +42,23 @@ export async function mockAiApis(page: Page) {
   await page.route('**/api/chat', async (route) => {
     const request = route.request();
     const body = request.postDataJSON() as { message?: string };
+    if (body?.message?.includes('AI Brew numeric optimizer')) {
+      const ratioMatch = body.message.match(/final beverage ratio:\s*1:(\d+(?:\.\d+)?)/i);
+      const baselineRatio = ratioMatch ? Number.parseFloat(ratioMatch[1]) : 15;
+      const recommendedRatio = Number.isFinite(baselineRatio)
+        ? Math.round((baselineRatio + 0.1) * 10) / 10
+        : 15.1;
+      await route.fulfill({
+        status: 200,
+        body: JSON.stringify({
+          reason: 'QA safe numeric optimizer delta',
+          confidence: 0.82,
+          recommendedRatio,
+        }),
+        contentType: 'application/json',
+      });
+      return;
+    }
     const text = body?.message?.includes('Smoke test ping')
       ? 'Smoke pong'
       : '## ☕ Mocked Response\nThis is a qa_e2e mocked response for UI flow validation.';

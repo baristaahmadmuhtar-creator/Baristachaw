@@ -310,8 +310,21 @@ function resolveClientContext(input?: ClientContext): ClientContext | undefined 
   if (!base.appLanguage && typeof document !== 'undefined') {
     base.appLanguage = document.documentElement.lang || undefined;
   }
-  const hasValue = Boolean(base.platform || base.surface || base.appLanguage || base.acceptLanguage);
+  const hasValue = Boolean(base.platform || base.surface || base.feature || base.appLanguage || base.acceptLanguage);
   return hasValue ? base : undefined;
+}
+
+const AI_ACCESS_ERROR_CODES = new Set([
+  "auth_required",
+  "paid_plan_required",
+  "billing_attention_required",
+  "account_blocked",
+  "account_status_unavailable",
+]);
+
+function isAiAccessError(error: unknown) {
+  return error instanceof ServerAiError
+    && Boolean(error.errorCode && AI_ACCESS_ERROR_CODES.has(String(error.errorCode)));
 }
 
 function normalizeServerError(
@@ -455,7 +468,8 @@ export async function raceChatResponse(
   if (!shouldBypassChatRoute) {
     try {
       return await serverChat(normalizedPrompt, requestContext, { timeoutMs: options?.timeoutMs });
-    } catch {
+    } catch (error) {
+      if (isAiAccessError(error)) throw error;
       // fall through to structured AI fallback
     }
   }
@@ -469,7 +483,8 @@ export async function raceChatResponse(
       { timeoutMs: options?.timeoutMs },
     );
     return result.text || fallbackMessage;
-  } catch {
+  } catch (error) {
+    if (isAiAccessError(error)) throw error;
     return fallbackMessage;
   }
 }

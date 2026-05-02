@@ -380,6 +380,7 @@ export function buildOptimizationPrompt(plan: BrewPlan, language?: string): AiBr
       'Your job is to optimize the deterministic planner envelope, not merely rewrite narrative.',
       'Use current coffee/barista knowledge for origin, process, variety, roast, water, method family, and target profile. If the bean is unknown, infer conservatively from the provided name and catalog context.',
       'The local planner will validate, clamp, round, and reject unsafe values. Stay close to the baseline so the result is production-safe.',
+      'You must return at least one safe numeric adjustment that changes the baseline. Do not answer with narrative-only optimization. If the baseline is already strong, choose the smallest justified numeric shift inside guardrails.',
       '',
       'Never change: dose, brew mode, brewer, grinder, water minerals, method family, or selected step count.',
       `Allowed max shift from baseline: ratio ±${ratioDelta}, temperature ±${tempDelta} C, brew time ±${timeDelta} seconds.`,

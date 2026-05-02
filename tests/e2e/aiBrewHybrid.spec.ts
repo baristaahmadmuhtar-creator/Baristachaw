@@ -1,12 +1,17 @@
-import { test, expect, type Locator } from '@playwright/test';
+import { test, expect, type APIRequestContext, type Locator } from '@playwright/test';
 import type { BrewPlan } from '../../apps/web/src/features/ai-brew/types';
-import { qaLogin, qaLogout } from '../fixtures/auth';
+import { qaLogin as qaLoginBase, qaLogout } from '../fixtures/auth';
+import { buildQaUser } from '../fixtures/test-data';
 import { mockAiApis } from '../helpers/network';
 import { clearClientState } from '../helpers/cleanup';
 
 test.describe.configure({ timeout: 180_000 });
 
 const LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
+
+async function qaLogin(request: APIRequestContext) {
+  await qaLoginBase(request, buildQaUser({ planCode: 'starter' }));
+}
 
 test.afterEach(async ({ page }) => {
   await qaLogout(page.request);

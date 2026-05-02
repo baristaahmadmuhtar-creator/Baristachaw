@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
+import { buildQaUser } from '../fixtures/test-data';
 import { mockAiApis } from '../helpers/network';
 import { clearClientState } from '../helpers/cleanup';
 import { continueAsGuestFromAuthGate } from '../helpers/authGate';
@@ -9,18 +10,20 @@ const LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
 const AI_BREW_SEQUENCE_HEADING = /Brew Sequence|Urutan Seduh/i;
 const AI_BREW_SAVED_COLLECTION = /Recipe saved to Collection\.|Recipe tersimpan ke Collection\./i;
 const AI_BREW_CLOSE_OUTPUT = /Close planned output|Tutup output plan/i;
-const AI_BREW_SIGN_IN_COACH = /Sign in to enable AI coach|Masuk untuk mengaktifkan AI coach/i;
 const AI_BREW_EXPLAIN_PLAN = /Explain Plan|Jelaskan Resep/i;
-const AI_BREW_GUEST_DISABLED = /AI coach is disabled until you sign in\.|AI coach dinonaktifkan sampai Anda masuk\./i;
-const AI_BREW_OFFLINE_DISABLED = /AI coach is disabled while offline\.|AI coach dinonaktifkan saat offline\./i;
 const AI_BREW_EXACT_PROFILE = /Exact profile|Profil exact/i;
 
 test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('BARISTA_LANGUAGE', 'en');
+    localStorage.setItem('BARISTA_LANGUAGE_ID_DEFAULT_MIGRATED', '1');
+  });
   await qaLogout(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await mockAiApis(page);
   await page.goto('/tools');
   await clearClientState(page);
   await page.goto('/tools', { waitUntil: 'domcontentloaded' });
-  await continueAsGuestFromAuthGate(page);
 });
 
 test.afterEach(async ({ page }) => {
@@ -315,7 +318,7 @@ test('ai brew brewer picker prioritizes complete method catalog and search alias
   await openAiBrewQuickMode(page);
   await page.getByTestId('ai-brew-dripper-picker').click();
 
-  const picker = page.getByRole('dialog', { name: /Alat seduh|Brewer/i });
+  const picker = page.getByRole('dialog', { name: /Dripper|Alat seduh|Brewer/i });
   await expect(picker).toBeVisible();
   await expect(page.getByText(/Metode seduh inti|Core brew methods/i)).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-dripper-espresso-machine')).toBeVisible();
@@ -621,27 +624,23 @@ test('ai brew can hand off an iced plan into timer and ratio tools', async ({ pa
   await expect(page.getByTestId('ai-brew-iced-ratio-split')).toContainText(`1:${formatAiBrewDisplayRatio(ratioPlan.hotExtractionRatio)}`);
 });
 
-test('guest users are gated only when requesting ai coaching', async ({ page }) => {
-  await openAiBrewQuickMode(page);
-  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Guest Brew');
-  await switchAiBrewToManualWater(page, { tds: '90', hardness: '55', alkalinity: '40' });
-  await page.getByTestId('ai-brew-generate').click();
-  await expect(page.getByTestId('ai-brew-result')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-sequence-note')).toContainText(AI_BREW_SEQUENCE_HEADING);
-  await expect(page.getByRole('button', { name: AI_BREW_SIGN_IN_COACH })).toHaveCount(0);
-  await page.getByTestId('ai-brew-result-tab-coach').click();
-  await expect(page.getByRole('button', { name: AI_BREW_EXPLAIN_PLAN })).toBeDisabled();
-  await expect(page.getByText(AI_BREW_GUEST_DISABLED)).toBeVisible();
-  await page.getByRole('button', { name: AI_BREW_SIGN_IN_COACH }).click();
+test('guest users are gated before opening ai brew builders', async ({ page }) => {
+  await qaLogout(page.request);
+  await page.goto('/tools');
+  await clearClientState(page);
+  await page.goto('/tools', { waitUntil: 'domcontentloaded' });
+  await continueAsGuestFromAuthGate(page);
 
-  const dialog = page.getByRole('dialog', { name: /Sign in|Masuk/i });
+  await page.getByTestId('ai-brew-open-quick').click();
+
+  const dialog = page.getByTestId('ai-access-gate-modal');
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText(/AI Brew requires an authenticated account|AI Brew perlu sesi akun/i);
+  await expect(dialog).toContainText(/Sign in to use AI Brew|Masuk untuk memakai Seduh AI/i);
+  await expect(page.getByTestId('ai-brew-builder-quick')).toHaveCount(0);
 });
 
 test('authenticated users can request ai coaching manually from the result panel', async ({ page }) => {
-  await qaLogin(page.request);
-  await mockAiApis(page);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await openAiBrewQuickMode(page);
@@ -660,8 +659,8 @@ test('authenticated users can request ai coaching manually from the result panel
 test('ai brew discloses exact-profile provenance when a niche dripper now has a curated match', async ({ page }) => {
   await openAiBrewQuickMode(page);
   await page.getByTestId('ai-brew-dripper-picker').click();
-  await page.getByLabel('Search AI Brew catalog').fill('Latina');
-  await page.getByRole('button', { name: /Select dripper Latina Cono/i }).click();
+  await page.getByLabel(/Search catalog|Search AI Brew catalog|Cari catalog/i).fill('Latina');
+  await page.getByRole('button', { name: /Select brewer Latina Cono|Select dripper Latina Cono/i }).click();
   await expect(page.getByTestId('ai-brew-picker-dripper')).toHaveCount(0);
 
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Fallback Brew');
@@ -697,14 +696,9 @@ test('ai brew restores cached catalog and last plan when catalog assets are unav
   await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
 
   await context.setOffline(true);
-  await openAiBrewQuickMode(page);
-  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Offline Deterministic');
-  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
-  await page.getByTestId('ai-brew-generate').click();
-  await expect(page.getByTestId('ai-brew-result')).toContainText('QA Offline Deterministic');
-  await page.getByTestId('ai-brew-result-tab-coach').click();
-  await expect(page.getByRole('button', { name: AI_BREW_EXPLAIN_PLAN })).toBeDisabled();
-  await expect(page.getByText(AI_BREW_OFFLINE_DISABLED)).toBeVisible();
+  await page.getByTestId('ai-brew-open-quick').click();
+  await expect(page.getByText(/AI coaching is unavailable offline\.|AI coach tidak tersedia saat offline\./i)).toBeVisible();
+  await expect(page.getByTestId('ai-brew-builder-quick')).toHaveCount(0);
   await context.setOffline(false);
 });
 

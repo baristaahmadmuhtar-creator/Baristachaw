@@ -1919,13 +1919,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const clientSurface = rawClientContext && typeof rawClientContext === 'object' && typeof (rawClientContext as { surface?: unknown }).surface === 'string'
     ? String((rawClientContext as { surface?: string }).surface).trim().toLowerCase()
     : '';
+  const clientFeature = rawClientContext && typeof rawClientContext === 'object' && typeof (rawClientContext as { feature?: unknown }).feature === 'string'
+    ? String((rawClientContext as { feature?: string }).feature).trim().toLowerCase()
+    : '';
   const paidFeature: PaidAiFeature | null = action === 'search'
     ? 'search'
     : action === 'analyze_image' || action === 'edit_latte_art'
       ? 'scanner'
       : action === 'generate_image' || action === 'analyze_attachment' || action === 'analyze_text' || action === 'transcribe'
         ? 'chat'
-        : (clientSurface === 'chat' ? 'chat' : clientSurface === 'home' ? 'search' : null);
+        : (clientFeature === 'ai_brew' || clientFeature === 'brew' || clientSurface === 'tools'
+          ? 'brew'
+          : clientSurface === 'chat'
+            ? 'chat'
+            : clientSurface === 'home'
+              ? 'search'
+              : null);
   if (paidFeature) {
     const aiAccess = await requirePaidAiAccess({
       requestId,

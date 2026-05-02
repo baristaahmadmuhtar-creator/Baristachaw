@@ -31,7 +31,7 @@ import {
     STRUCTURED_AI_PROMPT_MAX_CHARS,
     type ConversationContext,
 } from './_contracts.js';
-import { requirePaidAiAccess } from './account/aiAccess.js';
+import { requirePaidAiAccess, type PaidAiFeature } from './account/aiAccess.js';
 
 /**
  * Baristachaw Multi-Provider AI Chat API
@@ -526,11 +526,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
     }
 
+    const rawChatClientContext = req.body?.clientContext;
+    const rawChatFeature = rawChatClientContext && typeof rawChatClientContext === 'object'
+        ? String((rawChatClientContext as { feature?: unknown }).feature || '').trim().toLowerCase()
+        : '';
+    const paidFeature: PaidAiFeature = rawChatFeature === 'ai_brew' || rawChatFeature === 'brew' ? 'brew' : 'chat';
     const aiAccess = await requirePaidAiAccess({
         requestId,
         auth: authResult.auth,
-        rawClientContext: req.body?.clientContext,
-        feature: 'chat',
+        rawClientContext: rawChatClientContext,
+        feature: paidFeature,
     });
     if (aiAccess.ok === false) {
         return res.status(aiAccess.statusCode).json({

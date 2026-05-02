@@ -1,11 +1,13 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { qaLogin, qaLogout } from '../fixtures/auth';
+import { buildQaUser } from '../fixtures/test-data';
+import { mockAiApis } from '../helpers/network';
 
 const routes = ['/', '/chat', '/scanner', '/collection', '/tools'];
 
 test.beforeEach(async ({ page }) => {
-  await qaLogin(page.request);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
 });
 
 test.afterEach(async ({ page }) => {
@@ -28,6 +30,7 @@ for (const route of routes) {
 }
 
 test('a11y /tools?tab=ai-brew with picker open has no serious/critical violations', async ({ page }) => {
+  await mockAiApis(page);
   await page.goto('/tools?tab=ai-brew');
   await page.getByTestId('ai-brew-open-quick').click();
   await page.getByTestId('ai-brew-dripper-picker').click();
@@ -45,6 +48,7 @@ test('a11y /tools?tab=ai-brew with picker open has no serious/critical violation
 });
 
 test('a11y /tools?tab=ai-brew with result workspace open has no serious/critical violations', async ({ page }) => {
+  await mockAiApis(page);
   await page.goto('/tools?tab=ai-brew');
   await page.getByTestId('ai-brew-open-quick').click();
   await page.getByTestId('ai-brew-coffee-name').fill('A11y Result Brew');

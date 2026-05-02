@@ -30,6 +30,7 @@ import {
 import { useGlobalState } from '../../context/GlobalState';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useNavbar } from '../../context/NavbarContext';
+import { useAiAccessGate } from '../../components/billing/AiAccessGate';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useRuntimeDisplayMode } from '../../hooks/useRuntimeDisplayMode';
 import { raceChatResponse, deepThinkingResponseDetailed } from '../../services/gemini';
@@ -323,6 +324,7 @@ const COPY = {
     generated: 'Brew plan saved to local history.',
     generatedAi: 'Brew plan saved. AI optimization applied.',
     generatedLocal: 'Brew plan saved with local planner.',
+    aiOptimizationNoChange: 'AI did not return a validated numeric change yet. Try again or adjust the coffee profile.',
     savedCollection: 'Recipe saved to Collection.',
     saveCollectionFailed: 'Unable to save this brew to Collection right now.',
     savedFavorite: 'Saved to favorites.',
@@ -654,6 +656,7 @@ const COPY = {
     generated: 'Brew plan tersimpan ke history lokal.',
     generatedAi: 'Brew plan tersimpan. Optimasi AI diterapkan.',
     generatedLocal: 'Brew plan tersimpan dengan planner lokal.',
+    aiOptimizationNoChange: 'AI belum memberi perubahan angka yang lolos validasi. Coba ulang atau ubah profil kopi.',
     savedCollection: 'Recipe tersimpan ke Collection.',
     saveCollectionFailed: 'Recipe ini belum bisa disimpan ke Collection sekarang.',
     savedFavorite: 'Masuk ke favorit.',
@@ -1238,6 +1241,7 @@ async function runHybridSequenceUpdate(
     clientContext: {
       platform: options.platform,
       surface: 'tools' as const,
+      feature: 'ai_brew' as const,
       appLanguage: options.language,
     },
   };
@@ -1288,6 +1292,7 @@ async function runHybridOptimizationUpdate(
     enabled: boolean;
     platform: 'web' | 'pwa';
     language: string;
+    repair?: boolean;
   },
 ) {
   if (!options.enabled) {
@@ -1304,12 +1309,17 @@ async function runHybridOptimizationUpdate(
     clientContext: {
       platform: options.platform,
       surface: 'tools' as const,
+      feature: 'ai_brew' as const,
       appLanguage: options.language,
     },
   };
 
   const aiText = await raceChatResponse(
-    buildOptimizationPrompt(nextPlan, options.language).body,
+    `${buildOptimizationPrompt(nextPlan, options.language).body}${
+      options.repair
+        ? '\n\nRepair pass: the previous response did not create a validated numeric delta. Return JSON only with at least one small safe numeric change inside the allowed guardrails.'
+        : ''
+    }`,
     canonicalRequestContext,
     { timeoutMs: AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS },
   );
@@ -1824,6 +1834,11 @@ function getAiBrewFriendlyErrorMessage(
     return id
       ? 'Masuk dulu untuk memakai fitur AI pada brew ini.'
       : 'Sign in first to use AI on this brew.';
+  }
+  if (normalized.includes('402') || normalized.includes('paid') || normalized.includes('plan') || normalized.includes('billing')) {
+    return id
+      ? 'AI Brew membutuhkan paket berbayar aktif. Upgrade ke paket Starter atau sinkronkan status paket Anda.'
+      : 'AI Brew requires an active paid plan. Upgrade to Starter or sync your plan status.';
   }
   if (normalized.includes('timeout') || normalized.includes('provider') || normalized.includes('quota') || normalized.includes('model') || normalized.includes('400') || normalized.includes('500')) {
     return id
@@ -3582,7 +3597,8 @@ export function AiBrewPanel({
   onUseInRatio: (plan: BrewPlan) => void;
 }) {
   const { language, t } = useGlobalState();
-  const { isAuthenticated, isGuest, openAuthModal } = useAuthModal();
+  const { isAuthenticated, openAuthModal } = useAuthModal();
+  const { ensureAiAccess, hasPaidAiAccess, aiAccessGateModal } = useAiAccessGate('brew');
   const { hideNav, showNav } = useNavbar();
   const { isOffline } = useNetworkStatus();
   const { isPwa } = useRuntimeDisplayMode();
@@ -3945,7 +3961,8 @@ export function AiBrewPanel({
     ) * 100,
   );
   const generationStageDetail = getGenerationStageDetail(generationProgress, copy, language);
-  const canUseHybridAiSequence = Boolean(activeBuilderModal) && isAuthenticated && !isGuest && !isOffline;
+  const canUsePaidAiBrew = hasPaidAiAccess && !isOffline;
+  const canUseHybridAiSequence = Boolean(activeBuilderModal) && canUsePaidAiBrew;
   const preferredBuilderMode = inferPreferredBuilderMode(formState);
 
   const mineralsReady = Boolean(formState.waterTdsPpm && formState.waterHardnessPpm && formState.waterAlkalinityPpm);
@@ -4052,6 +4069,11 @@ export function AiBrewPanel({
 
   async function handleGeneratePlan() {
     if (!catalog) return;
+    if (!ensureAiAccess('ai_brew_generate')) return;
+    if (isOffline) {
+      setFormError(copy.aiOffline);
+      return;
+    }
     setFormError(null);
     setAiResponse(null);
     setAiError(null);
@@ -4090,52 +4112,53 @@ export function AiBrewPanel({
         setGenerationProgress(createHybridAiSequenceProgress(nextPlan, latestProgress));
         setGenerationStage('hybrid_ai_sequence');
         await nextAnimationFrame(140);
-        let shouldRunSequenceFallback = false;
+        let optimized = await runHybridOptimizationUpdate(nextPlan, {
+          enabled: true,
+          platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
+          language,
+        });
+
+        if (!optimized.applied) {
+          console.warn(
+            getAiBrewOptimizationFallbackMessage(language),
+            optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
+          );
+          optimized = await runHybridOptimizationUpdate(nextPlan, {
+            enabled: true,
+            platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
+            language,
+            repair: true,
+          });
+        }
+
+        if (!optimized.applied) {
+          throw new Error(copy.aiOptimizationNoChange);
+        }
+
+        nextPlan = optimized.plan;
+        latestProgress = createHybridAiSequenceProgress(nextPlan, latestProgress);
+        setGenerationProgress(latestProgress);
+
         try {
-          const optimized = await runHybridOptimizationUpdate(nextPlan, {
+          const hybridSequence = await runHybridSequenceUpdate(nextPlan, {
             enabled: true,
             platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
             language,
           });
-
-          if (optimized.applied) {
-            nextPlan = optimized.plan;
-            latestProgress = createHybridAiSequenceProgress(nextPlan, latestProgress);
-            setGenerationProgress(latestProgress);
-          } else {
-            shouldRunSequenceFallback = true;
-            console.warn(
-              getAiBrewOptimizationFallbackMessage(language),
-              optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
-            );
+          if (hybridSequence) {
+            nextPlan = applyHybridSequenceToPlan(nextPlan, {
+              canonicalMarkdown: hybridSequence.canonicalMarkdown,
+              displayMarkdown: hybridSequence.markdown,
+              servicePattern: hybridSequence.servicePattern,
+              watch: hybridSequence.watch,
+              stepInstructions: hybridSequence.stepInstructions,
+            });
+            if (hybridSequence.fallbackDiagnostics.length > 0) {
+              console.warn(getAiBrewSequenceFallbackMessage(language), hybridSequence.fallbackDiagnostics);
+            }
           }
         } catch (error) {
-          shouldRunSequenceFallback = true;
-          console.warn(getAiBrewOptimizationFallbackMessage(language), error);
-        }
-
-        if (shouldRunSequenceFallback) {
-          try {
-            const hybridSequence = await runHybridSequenceUpdate(nextPlan, {
-              enabled: true,
-              platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
-              language,
-            });
-            if (hybridSequence) {
-              nextPlan = applyHybridSequenceToPlan(nextPlan, {
-                canonicalMarkdown: hybridSequence.canonicalMarkdown,
-                displayMarkdown: hybridSequence.markdown,
-                servicePattern: hybridSequence.servicePattern,
-                watch: hybridSequence.watch,
-                stepInstructions: hybridSequence.stepInstructions,
-              });
-              if (hybridSequence.fallbackDiagnostics.length > 0) {
-                console.warn(getAiBrewSequenceFallbackMessage(language), hybridSequence.fallbackDiagnostics);
-              }
-            }
-          } catch (error) {
-            console.warn(getAiBrewSequenceFallbackMessage(language), error);
-          }
+          console.warn(getAiBrewSequenceFallbackMessage(language), error);
         }
       }
       const journalEntry: BrewJournalEntry = {
@@ -4230,11 +4253,7 @@ export function AiBrewPanel({
 
   async function runAiCoach(mode: AiCoachMode) {
     if (!plan) return;
-    if (!isAuthenticated) {
-      openAuthModal({ source: 'ai_brew' });
-      setAiError(copy.aiGuest);
-      return;
-    }
+    if (!ensureAiAccess(`ai_brew_${mode}`)) return;
     if (isOffline) {
       setAiError(copy.aiOffline);
       return;
@@ -4259,6 +4278,7 @@ export function AiBrewPanel({
         clientContext: {
           platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
           surface: 'tools' as const,
+          feature: 'ai_brew' as const,
           appLanguage: language,
         },
       };
@@ -4276,16 +4296,7 @@ export function AiBrewPanel({
         await refreshSavedViews();
       }
     } catch (error) {
-      const fallbackMarkdown = buildDeterministicAiCoachMarkdown(plan, mode, language);
-      setAiResponse({ title: getAiCoachTitle(copy, mode), markdown: fallbackMarkdown });
-      const nextPlan = mergeAiNotesIntoPlan(plan, { [mode]: fallbackMarkdown });
-      setPlan(nextPlan);
-      saveLastGeneratedBrewPlan(nextPlan);
-      if (activeJournalId) {
-        await updateBrewJournalAiNotes(activeJournalId, { [mode]: fallbackMarkdown });
-        await refreshSavedViews();
-      }
-      setAiError(null);
+      setAiError(getAiBrewFriendlyErrorMessage(error, language, copy.coachFallback));
     } finally {
       setAiBusy(null);
     }
@@ -4318,17 +4329,20 @@ export function AiBrewPanel({
           ? copy.dripper
           : copy.grinder
     : copy.process;
-  const aiCoachDisabled = !plan || !isAuthenticated || isOffline || aiBusy !== null;
+  const aiCoachDisabled = !plan || isOffline || aiBusy !== null;
   const aiCoachReason = !plan
     ? null
     : isOffline
       ? copy.aiDisabledOffline
-      : !isAuthenticated
-        ? copy.aiDisabledGuest
-        : null;
+      : null;
 
   function openBuilder(mode: FormMode) {
     if (!catalog) return;
+    if (!ensureAiAccess(`ai_brew_${mode}`)) return;
+    if (isOffline) {
+      setNotice(copy.aiOffline);
+      return;
+    }
     setFormError(null);
     setShowBeanProfileEditor(false);
     setActiveBuilderModal(mode);
@@ -5217,6 +5231,7 @@ export function AiBrewPanel({
 
   return (
     <div className="space-y-5 pb-28 lg:pb-0" data-testid="ai-brew-panel">
+      {aiAccessGateModal}
       <div aria-hidden={activeBuilderModal !== null || resultOpen} className="mx-auto max-w-4xl space-y-5">
         <div className="glass-card p-5 lg:p-6">
           <div className="flex items-start gap-4">
@@ -5239,12 +5254,12 @@ export function AiBrewPanel({
               >
                 <div className="text-base font-semibold text-primary">{copy.quickMode}</div>
                 <div className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                  isAuthenticated && !isGuest && !isOffline
+                  canUsePaidAiBrew
                     ? 'bg-blue-500/10 text-blue-600 dark:text-blue-300'
                     : 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
                 }`}>
-                  {isAuthenticated && !isGuest && !isOffline ? <Brain size={12} /> : <Sparkles size={12} />}
-                  {isAuthenticated && !isGuest && !isOffline ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
+                  {canUsePaidAiBrew ? <Brain size={12} /> : <Sparkles size={12} />}
+                  {canUsePaidAiBrew ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
                 </div>
               </button>
               <button
@@ -5256,12 +5271,12 @@ export function AiBrewPanel({
               >
                 <div className="text-base font-semibold text-primary">{copy.proMode}</div>
                 <div className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                  isAuthenticated && !isGuest && !isOffline
+                  canUsePaidAiBrew
                     ? 'bg-blue-500/10 text-blue-600 dark:text-blue-300'
                     : 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
                 }`}>
-                  {isAuthenticated && !isGuest && !isOffline ? <Brain size={12} /> : <Sparkles size={12} />}
-                  {isAuthenticated && !isGuest && !isOffline ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
+                  {canUsePaidAiBrew ? <Brain size={12} /> : <Sparkles size={12} />}
+                  {canUsePaidAiBrew ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
                 </div>
               </button>
             </div>

@@ -2,7 +2,7 @@ import type { AuthContext } from '../_shared.js';
 import type { FeatureSurface } from '../admin/_featureFlags.js';
 import { buildAccountStatus, type AccountStatusResponse, type PlanCode } from './status.js';
 
-export type PaidAiFeature = 'chat' | 'scanner' | 'search';
+export type PaidAiFeature = 'chat' | 'scanner' | 'search' | 'brew';
 
 export type PaidAiAccessResult =
   | { ok: true; snapshot: AccountStatusResponse }
@@ -104,7 +104,13 @@ export async function requirePaidAiAccess(params: {
   }
 
   if (!isPaidPlan(snapshot.user.planCode)) {
-    const featureLabel = params.feature === 'search' ? 'AI Search' : params.feature === 'scanner' ? 'AI Scan' : 'AI Chat';
+    const featureLabel = params.feature === 'search'
+      ? 'AI Search'
+      : params.feature === 'scanner'
+        ? 'AI Scan'
+        : params.feature === 'brew'
+          ? 'AI Brew'
+          : 'AI Chat';
     return {
       ok: false,
       statusCode: 402,

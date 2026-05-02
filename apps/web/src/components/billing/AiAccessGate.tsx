@@ -9,7 +9,7 @@ import { BillingApiError, startBillingCheckout } from '../../services/billing';
 import type { AccountPlan, PlanCode } from '../../services/accountStatus';
 import { modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 
-export type AiPaidFeature = 'chat' | 'scanner' | 'search';
+export type AiPaidFeature = 'chat' | 'scanner' | 'search' | 'brew';
 
 type GateMode = 'login' | 'upgrade' | 'checking';
 
@@ -229,6 +229,9 @@ function AiAccessGateDialog({
 
 export function useAiAccessGate(feature: AiPaidFeature): {
   ensureAiAccess: (source: string) => boolean;
+  hasPaidAiAccess: boolean;
+  minimumPaidPlan: AccountPlan | null;
+  effectivePlanCode: PlanCode | null;
   aiAccessGateModal: ReactNode;
 } {
   const { t } = useGlobalState();
@@ -242,6 +245,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const minimumPaidPlan = useMemo(() => findMinimumPaidPlan(snapshot?.plans), [snapshot?.plans]);
   const tokenPlanCode = normalizePlanCode(user?.planCode);
   const effectivePlanCode = normalizePlanCode(snapshot?.user.planCode || snapshot?.plan.code) || tokenPlanCode;
+  const hasPaidAiAccess = isAuthenticated && !isGuest && isPaidPlanCode(effectivePlanCode);
 
   const close = useCallback(() => {
     setState(null);
@@ -350,5 +354,5 @@ export function useAiAccessGate(feature: AiPaidFeature): {
       )
     : null;
 
-  return { ensureAiAccess, aiAccessGateModal };
+  return { ensureAiAccess, hasPaidAiAccess, minimumPaidPlan, effectivePlanCode, aiAccessGateModal };
 }

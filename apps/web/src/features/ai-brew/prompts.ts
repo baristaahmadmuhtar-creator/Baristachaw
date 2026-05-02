@@ -1,5 +1,6 @@
 import type { AiBrewPromptContext, BrewPlan } from './types';
 import { buildExtractionFinisher } from './extractionFinisher';
+import { formatAiBrewKnowledgeContext } from './knowledge.ts';
 import { isIndonesianAiBrewLanguage } from './localization.ts';
 
 function formatSeconds(totalSeconds: number) {
@@ -125,6 +126,7 @@ function buildSharedContext(plan: BrewPlan) {
     `Water brew ready: ${plan.waterIsBrewReady ? 'yes' : 'no'}`,
     `Water customized: ${plan.waterCustomized ? 'yes' : 'no'}`,
     `Water minerals: TDS ${plan.waterMinerals.tdsPpm} ppm, hardness ${plan.waterMinerals.hardnessPpm} ppm, alkalinity ${plan.waterMinerals.alkalinityPpm} ppm (${plan.waterMinerals.styleLabel})`,
+    `Operator knowledge: ${formatAiBrewKnowledgeContext(plan)}`,
     `Device profile: ${plan.deviceProfileLabel} (${plan.deviceProfileMode})`,
     `Grinder setting reference: ${plan.grindSettingReference} (${plan.grindSettingMode}, ${plan.grindSettingVerification})`,
     `Provenance attention needed: ${plan.provenanceAttentionNeeded ? 'yes' : 'no'}`,

@@ -110,8 +110,8 @@ import type {
 
 const CUSTOM_ENTRY_ID = 'custom';
 const OMITTED_ENTRY_ID = '__omitted__';
-const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 4500;
-const AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS = 2500;
+const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 3500;
+const AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS = 1800;
 const COPY = {
   en: {
     title: 'AI Brew',
@@ -217,15 +217,15 @@ const COPY = {
     otherVariety: 'Custom variety',
     openPicker: 'Choose',
     generate: 'Generate',
-    generating: 'Generating plan',
+    generating: 'Building brew',
     reset: 'Reset',
     recent: 'Recent Brews',
     favorites: 'Favorites',
     latestPlan: 'Planned Output',
     openPlan: 'Open result',
-    emptyRecent: 'Generate a brew plan to start building a local journal.',
+    emptyRecent: 'Generate once to start your local journal.',
     emptyFavorites: 'Favorite a plan to pin it here.',
-    emptyPlan: 'Complete the form and generate a plan to open the focus workspace.',
+    emptyPlan: 'Pick Quick or Precision to build a brew.',
     summaryTitle: 'Result',
     methodBriefTitle: 'Method Focus',
     methodBriefPrimary: 'Primary number',
@@ -273,10 +273,14 @@ const COPY = {
     aiSop: 'Standardize SOP',
     aiGenerateBrief: 'AI Assist',
     aiSequenceGuide: 'AI Notes',
-    aiGenerateLoading: 'Updating concise AI notes...',
+    aiGenerateLoading: 'Refreshing short notes...',
+    aiEngineOnlineOptimized: 'AI online',
+    aiEngineLocalValidated: 'Local planner',
+    aiEngineWorkingOnline: 'AI optimizing',
+    aiEngineWorkingLocal: 'Local planner',
     updateNotes: 'Refresh Notes',
     updatingNotes: 'Refreshing Notes',
-    aiNotesManualHint: 'Refresh the short AI brief when needed.',
+    aiNotesManualHint: 'Use AI only when needed.',
     aiNotesUpdated: 'AI Notes updated.',
     finisherCard: 'Extraction Finisher',
     finisherReasoning: 'Final Read',
@@ -286,17 +290,17 @@ const COPY = {
     finisherAiEmpty: 'Run AI if you want more detail.',
     finisherAiGuest: 'Sign in to use AI.',
     finisherAiOffline: 'AI unavailable offline.',
-    finisherAiLoading: 'AI is working...',
+    finisherAiLoading: 'AI working...',
     finisherTasteSour: 'Sour',
     finisherTasteBitter: 'Bitter',
     finisherTasteThin: 'Thin',
     finisherRefresh: 'Refresh AI',
-    aiBusy: 'Reviewing this brew plan...',
+    aiBusy: 'Writing a short brew note...',
     aiOffline: 'AI coaching is unavailable offline.',
     aiGuest: 'Sign in to use AI coaching for this brew plan.',
     load: 'Load',
     pickerSearch: 'Search catalog...',
-    pickerSearchLabel: 'Search AI Brew catalog',
+    pickerSearchLabel: 'Search catalog',
     pickerHelp: '',
     pickerClose: 'Close picker',
     noPickerResults: 'No matching catalog entries.',
@@ -306,7 +310,7 @@ const COPY = {
     savedFavorite: 'Saved to favorites.',
     removedFavorite: 'Removed from favorites.',
     unavailable: 'AI Brew catalog is unavailable right now.',
-    loadingCatalog: 'Loading AI Brew catalog...',
+    loadingCatalog: 'Loading catalog...',
     restoredPlan: 'Restored your last AI Brew plan from this device.',
     offlineCatalog: 'Loaded cached AI Brew catalog for offline use.',
     loadFavorite: 'Load favorite brew',
@@ -352,7 +356,7 @@ const COPY = {
     hideProvenance: 'Hide provenance',
     sourceBadge: 'Source',
     popularityBadge: 'Popularity',
-    generationStageLabel: 'Generation stage',
+    generationStageLabel: 'Stage',
     planTab: 'Plan',
     flowTab: 'Brew Guide',
     coachTab: 'Coach',
@@ -373,8 +377,8 @@ const COPY = {
     flowDone: 'Done',
     flowNow: 'Now',
     flowUpNext: 'Up next',
-    coachDescription: 'Use AI only when you need a short explanation, a taste fix, or a tighter target adjustment.',
-    coachEmpty: 'Choose one action to get a short bar-ready brief.',
+    coachDescription: 'AI is optional. Use it only for a short fix or explanation.',
+    coachEmpty: 'Choose one brief.',
     coachExplainHint: 'Why this plan fits the bean, water, and target.',
     coachTroubleshootHint: 'What to change first when the cup tastes off.',
     coachAdjustHint: 'How to push the cup brighter, sweeter, or tighter.',
@@ -530,15 +534,15 @@ const COPY = {
     otherVariety: 'Varietas custom',
     openPicker: 'Pilih',
     generate: 'Buat',
-    generating: 'Sedang membuat plan',
+    generating: 'Menyusun seduh',
     reset: 'Reset',
     recent: 'Seduhan Terbaru',
     favorites: 'Favorit',
     latestPlan: 'Hasil Plan',
     openPlan: 'Buka hasil',
-    emptyRecent: 'Buat brew plan dulu untuk mulai membangun jurnal lokal.',
+    emptyRecent: 'Buat satu seduhan untuk mulai jurnal lokal.',
     emptyFavorites: 'Tandai favorit agar resep muncul di sini.',
-    emptyPlan: 'Lengkapi form lalu buat plan untuk membuka workspace hasil.',
+    emptyPlan: 'Pilih Cepat atau Presisi untuk menyusun seduhan.',
     summaryTitle: 'Hasil',
     methodBriefTitle: 'Kunci Metode',
     methodBriefPrimary: 'Angka utama',
@@ -586,10 +590,14 @@ const COPY = {
     aiSop: 'Standarkan SOP',
     aiGenerateBrief: 'Asisten AI',
     aiSequenceGuide: 'Catatan AI',
-    aiGenerateLoading: 'Memperbarui AI Notes ringkas...',
+    aiGenerateLoading: 'Memperbarui catatan singkat...',
+    aiEngineOnlineOptimized: 'AI online',
+    aiEngineLocalValidated: 'Lokal hemat',
+    aiEngineWorkingOnline: 'AI mengoptimalkan',
+    aiEngineWorkingLocal: 'Planner lokal',
     updateNotes: 'Perbarui Catatan',
     updatingNotes: 'Memperbarui Catatan',
-    aiNotesManualHint: 'Perbarui catatan singkat saat perlu.',
+    aiNotesManualHint: 'Pakai AI hanya saat perlu.',
     aiNotesUpdated: 'AI Notes diperbarui.',
     finisherCard: 'Finalisasi Ekstraksi',
     finisherReasoning: 'Bacaan Akhir',
@@ -599,17 +607,17 @@ const COPY = {
     finisherAiEmpty: 'Jalankan AI jika butuh detail tambahan.',
     finisherAiGuest: 'Masuk untuk memakai AI.',
     finisherAiOffline: 'AI tidak tersedia saat offline.',
-    finisherAiLoading: 'AI sedang bekerja...',
+    finisherAiLoading: 'AI bekerja...',
     finisherTasteSour: 'Asam',
     finisherTasteBitter: 'Pahit',
     finisherTasteThin: 'Tipis',
     finisherRefresh: 'Muat ulang AI',
-    aiBusy: 'AI sedang meninjau brew plan...',
+    aiBusy: 'Menulis catatan singkat...',
     aiOffline: 'AI coach tidak tersedia saat offline.',
     aiGuest: 'Masuk dulu untuk memakai AI coach pada brew plan ini.',
     load: 'Muat',
     pickerSearch: 'Cari katalog...',
-    pickerSearchLabel: 'Cari katalog AI Brew',
+    pickerSearchLabel: 'Cari katalog',
     pickerHelp: '',
     pickerClose: 'Tutup picker',
     noPickerResults: 'Tidak ada entri katalog yang cocok.',
@@ -619,14 +627,14 @@ const COPY = {
     savedFavorite: 'Masuk ke favorit.',
     removedFavorite: 'Dihapus dari favorit.',
     unavailable: 'Katalog AI Brew belum bisa dimuat sekarang.',
-    loadingCatalog: 'Sedang memuat katalog AI Brew...',
-    restoredPlan: 'Brew plan terakhir berhasil dipulihkan dari device ini.',
-    offlineCatalog: 'Katalog AI Brew cache berhasil dimuat untuk mode offline.',
+    loadingCatalog: 'Memuat katalog...',
+    restoredPlan: 'Plan terakhir dipulihkan.',
+    offlineCatalog: 'Katalog offline siap.',
     loadFavorite: 'Muat brew favorit',
     loadRecent: 'Muat brew terbaru',
-    aiSignIn: 'Masuk untuk mengaktifkan AI coach',
-    aiDisabledGuest: 'AI coach dinonaktifkan sampai Anda masuk.',
-    aiDisabledOffline: 'AI coach dinonaktifkan saat offline.',
+    aiSignIn: 'Masuk untuk AI',
+    aiDisabledGuest: 'Masuk untuk memakai AI.',
+    aiDisabledOffline: 'AI offline.',
     balance: 'Seimbang & Bersih',
     sweetness: 'Lebih Manis',
     acidity: 'Lebih Cerah',
@@ -659,18 +667,18 @@ const COPY = {
     openVarietyPicker: 'Pilih varietas',
     openDripperPicker: 'Pilih alat seduh',
     icedUnavailable: 'Mode es belum tersedia untuk alat ini. Mode standar dipakai agar hasil tidak salah.',
-    icedUnavailableInline: 'Mode es sengaja dikunci untuk alat ini agar BaristaChaw tidak membuat resep es palsu. Pakai mode panas untuk metode ini, atau pilih V60, Kalita, Chemex, April, Origami, Kono, Melitta, atau Clever untuk seduh es gaya Jepang.',
+    icedUnavailableInline: 'Mode es belum aman untuk alat ini. Pilih V60, Kalita, Chemex, April, Origami, Kono, Melitta, atau Clever.',
     openGrinderPicker: 'Pilih grinder',
     showProvenance: 'Tampilkan rujukan',
     hideProvenance: 'Sembunyikan rujukan',
     sourceBadge: 'Sumber',
     popularityBadge: 'Popularitas',
-    generationStageLabel: 'Tahap generate',
+    generationStageLabel: 'Tahap',
     planTab: 'Ringkasan',
     flowTab: 'Panduan Seduh',
     coachTab: 'Panduan AI',
     flowTitle: 'Panduan seduh',
-    flowDescription: 'Fokus ke langkah yang sedang berjalan. Timer menjaga ritme seduh tanpa bikin ribet.',
+    flowDescription: 'Fokus ke langkah aktif.',
     flowReady: 'Siap mulai seduh',
     flowRunning: 'Timer sedang berjalan',
     flowPaused: 'Timer dijeda',
@@ -686,8 +694,8 @@ const COPY = {
     flowDone: 'Selesai',
     flowNow: 'Sekarang',
     flowUpNext: 'Berikutnya',
-    coachDescription: 'Pakai AI hanya saat butuh penjelasan singkat, koreksi rasa, atau penyesuaian target.',
-    coachEmpty: 'Pilih satu aksi untuk mendapat brief singkat yang siap dipakai saat seduh.',
+    coachDescription: 'AI opsional. Pakai hanya untuk penjelasan atau koreksi rasa singkat.',
+    coachEmpty: 'Pilih satu brief.',
     coachExplainHint: 'Mengapa plan ini cocok dengan bean, air, dan target.',
     coachTroubleshootHint: 'Apa yang paling dulu diubah saat rasa mulai meleset.',
     coachAdjustHint: 'Cara mendorong cangkir jadi lebih cerah, manis, atau rapat.',
@@ -872,6 +880,20 @@ function formatRoundedTemperature(value: number) {
   return `${formatDisplayNumber(Math.round(value))}\u00b0C`;
 }
 
+function formatPlanHeaderWater(plan: BrewPlan, language: string) {
+  if (plan.iceMl > 0) {
+    const id = isIndonesianAiBrewLanguage(language);
+    return id
+      ? `${formatRoundedMl(plan.hotWaterMl)} panas + ${formatRoundedGrams(plan.iceMl)} es`
+      : `${formatRoundedMl(plan.hotWaterMl)} hot + ${formatRoundedGrams(plan.iceMl)} ice`;
+  }
+  return formatRoundedMl(plan.totalWaterMl);
+}
+
+function planUsesOnlineAi(plan: BrewPlan) {
+  return Boolean(plan.aiNotes?.sequenceCanonical || plan.aiNotes?.sequence);
+}
+
 function formatBrewRatio(value: number) {
   if (!Number.isFinite(value)) return '--';
   const rounded = Math.round(value * 10) / 10;
@@ -1028,8 +1050,9 @@ async function normalizeMarkdownToLanguage(
   if (!markdown.trim()) return markdown;
   if (/^en(?:-|$)/i.test(language)) return markdown;
   const translationPrompt = [
-    'Translate the markdown below fully into ' + language + '.',
+    'Translate the markdown below fully into ' + language + ' using concise, natural barista language.',
     'Keep structure exactly: headings, list numbering, line breaks, and all numeric values unchanged.',
+    'For Indonesian, keep it friendly and practical; avoid stiff literal wording.',
     'Do not add commentary. Return only translated markdown.',
     '',
     markdown,
@@ -1051,7 +1074,7 @@ async function normalizeSequenceMarkdownToLanguage(
   if (!markdown.trim()) return markdown;
   if (/^en(?:-|$)/i.test(language)) return markdown;
   const translationPrompt = [
-    'Translate the markdown below fully into ' + language + '.',
+    'Translate the markdown below fully into ' + language + ' using concise, natural barista language.',
     'Keep these headings exactly unchanged:',
     '## Service Pattern',
     '## Sequence',
@@ -1059,6 +1082,7 @@ async function normalizeSequenceMarkdownToLanguage(
     'For every numbered Sequence line, keep the deterministic checkpoint prefix unchanged through the operation text, including pour, wait, release, drawdown, and all ml/time targets.',
     'Translate only the control instruction after that fixed checkpoint prefix.',
     'Keep numbering, line order, and all numeric values unchanged.',
+    'Use short service-ready sentences. For Indonesian, prefer natural terms like "tuang", "target", "bed", "server", and "drawdown"; avoid stiff textbook phrasing.',
     'Return only translated markdown.',
     '',
     markdown,
@@ -1299,8 +1323,8 @@ function getGenerationStageDetail(
 ) {
   if (!progress) {
     return isIndonesianAiBrewLanguage(language)
-      ? 'Menyiapkan input brew sebelum recipe dihitung.'
-      : 'Preparing brew inputs before the recipe is computed.';
+      ? 'Menyiapkan input.'
+      : 'Preparing inputs.';
   }
 
   const id = isIndonesianAiBrewLanguage(language);
@@ -1317,33 +1341,33 @@ function getGenerationStageDetail(
   switch (progress.id) {
     case 'validate_input':
       return id
-        ? `Memeriksa ${metrics.normalizedInputCount}/${metrics.totalCoreInputs} input inti dan ${metrics.optionalSignalCount}/${metrics.totalOptionalSignals} sinyal tambahan.`
-        : `Checking ${metrics.normalizedInputCount}/${metrics.totalCoreInputs} core inputs and ${metrics.optionalSignalCount}/${metrics.totalOptionalSignals} extra signals.`;
+        ? `Cek input ${metrics.normalizedInputCount}/${metrics.totalCoreInputs}.`
+        : `Checking ${metrics.normalizedInputCount}/${metrics.totalCoreInputs} inputs.`;
     case 'match_device_profile':
       return id
-        ? `Mencocokkan alat dengan profil seduh untuk target ${targetLabel}.`
-        : `Matching the brewer with the brew profile for the ${targetLabel} target.`;
+        ? `Target ${targetLabel}.`
+        : `Target ${targetLabel}.`;
     case 'resolve_grinder_settings':
       return id
-        ? `Mencari baseline giling ${metrics.grinderRangeLabel || 'dari katalog'} dengan status ${verificationLabel}.`
-        : `Finding the ${metrics.grinderRangeLabel || 'catalog'} grind baseline with ${verificationLabel} status.`;
+        ? `Giling ${metrics.grinderRangeLabel || verificationLabel}.`
+        : `Grind ${metrics.grinderRangeLabel || verificationLabel}.`;
     case 'compute_brew_variables':
       return id
-        ? `Menghitung rasio ${ratioLabel}, air ${waterLabel}, suhu ${tempLabel}, dan waktu ${timeLabel}.`
-        : `Computing ratio ${ratioLabel}, water ${waterLabel}, temperature ${tempLabel}, and time ${timeLabel}.`;
+        ? `${ratioLabel} | ${waterLabel} | ${tempLabel} | ${timeLabel}.`
+        : `${ratioLabel} | ${waterLabel} | ${tempLabel} | ${timeLabel}.`;
     case 'build_sequence':
       return id
-        ? `Menyusun ${metrics.stepCount || 0} checkpoint tuang dan target volume tiap fase.`
-        : `Building ${metrics.stepCount || 0} pour checkpoints and target volumes for each phase.`;
+        ? `${metrics.stepCount || 0} checkpoint siap.`
+        : `${metrics.stepCount || 0} checkpoints ready.`;
     case 'hybrid_ai_sequence':
       return id
-        ? 'AI sedang menyusun instruksi servis di atas checkpoint planner yang sudah terkunci.'
-        : 'AI is composing service instructions on top of the locked planner checkpoints.';
+        ? 'AI merapikan instruksi.'
+        : 'AI is tightening instructions.';
     case 'run_standards_checks':
     default:
       return id
-        ? `Menjalankan guardrail dan standar ekstraksi: ${metrics.standardsHits || 0} lolos, ${metrics.standardsMisses || 0} miss, ${metrics.warningCount || 0} warning.`
-        : `Running guardrails and extraction standards: ${metrics.standardsHits || 0} passed, ${metrics.standardsMisses || 0} missed, ${metrics.warningCount || 0} warnings.`;
+        ? `Guardrail ${metrics.standardsHits || 0} lolos, ${metrics.warningCount || 0} catatan.`
+        : `Guardrails ${metrics.standardsHits || 0} passed, ${metrics.warningCount || 0} notes.`;
   }
 }
 
@@ -1563,7 +1587,7 @@ function buildAiBrewStepMethodFocusCue(
     case 'melitta':
       return id ? 'Fokus: flat bed tetap rata; pulse pendek lebih aman daripada flooding.' : 'Focus: keep the flat bed level; short pulses are safer than flooding.';
     default:
-      return id ? 'Fokus: aliran center-to-mid stabil dan drawdown tetap bersih.' : 'Focus: stable center-to-mid flow and clean drawdown.';
+      return id ? 'Fokus: aliran dari tengah tetap stabil, bed rapi, dan drawdown bersih.' : 'Focus: stable center-to-mid flow and clean drawdown.';
   }
 }
 
@@ -1616,10 +1640,8 @@ function renderAiBrewSequenceStepCard(
   const stepMetrics = buildAiBrewStepMetrics(step, language);
   const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
   const normalizedActionText = normalizeAiBrewInstructionText(stepActionText).toLowerCase();
-  const showQuickNote = Boolean(stepQuickNote) && stepQuickNote.toLowerCase() !== normalizedActionText;
-  const showMethodFocusCue = Boolean(methodFocusCue)
-    && methodFocusCue.toLowerCase() !== stepQuickNote.toLowerCase()
-    && methodFocusCue.toLowerCase() !== normalizedActionText;
+  const conciseCue = methodFocusCue || stepQuickNote;
+  const showConciseCue = Boolean(conciseCue) && conciseCue.toLowerCase() !== normalizedActionText;
   const stepCardClass = 'rounded-[1rem] border panel-divider-subtle panel-soft p-3 sm:p-3.5';
   const metricChipClass = 'rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] text-secondary';
 
@@ -1661,13 +1683,9 @@ function renderAiBrewSequenceStepCard(
             ))}
           </div>
 
-          {showQuickNote && (
-            <p className="text-sm leading-5 text-secondary">{stepQuickNote}</p>
-          )}
-
-          {showMethodFocusCue && (
+          {showConciseCue && (
             <p className="rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">
-              {methodFocusCue}
+              {conciseCue}
             </p>
           )}
 
@@ -1675,7 +1693,7 @@ function renderAiBrewSequenceStepCard(
             <details className="group rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/72 px-3 py-2">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-medium text-primary">
                 <span>
-                  {isIndonesianAiBrewLanguage(language) ? 'Buka detail langkah' : 'Open step detail'}
+                  {isIndonesianAiBrewLanguage(language) ? 'Detail' : 'Detail'}
                 </span>
                 <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
               </summary>
@@ -2045,10 +2063,7 @@ function MasterPickerDialog({
                       {item.subtitle && (
                         <p className="mt-1 text-xs text-secondary">{item.subtitle}</p>
                       )}
-                      {item.description && (
-                        <p className="mt-1 text-xs text-secondary">{item.description}</p>
-                      )}
-                      {item.badges.length > 0 && (
+                      {item.badges.length > 0 && item.tone === 'highlight' && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {item.badges.map((badge) => (
                             <span key={`${item.id}-${badge}`} className="rounded-full bg-surface-alpha px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-secondary">
@@ -2186,6 +2201,8 @@ function PlanResultDialog({
   const localizedTargetProfileLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language);
   const localizedSummary = localizeAiBrewSummary(plan, language);
   const methodBrief = buildPlanMethodBrief(plan, language);
+  const aiEngineOnline = planUsesOnlineAi(plan);
+  const planHeaderWater = formatPlanHeaderWater(plan, language);
   const localizedWaterStyle = localizeAiBrewWaterStyle(plan.waterMinerals.styleLabel, language);
   const localizedGrindRecommendation = formatGrindTextForDisplay(plan.grindRecommendation, language);
   const localizedGrindBandLabel = formatGrindTextForDisplay(plan.grindBandLabel, language);
@@ -2209,6 +2226,9 @@ function PlanResultDialog({
       : flowProgressSeconds > 0
         ? copy.flowPaused
         : copy.flowReady;
+  const flowCurrentCue = flowCurrentStep
+    ? (buildAiBrewStepMethodFocusCue(plan, flowCurrentStep, language) || buildAiBrewStepQuickNote(flowCurrentStep, language))
+    : localizedSummary;
   const resultHeaderClass = 'relative rounded-[1.5rem] border panel-divider-subtle panel-soft px-4 pb-4 pt-5 lg:px-5';
   const resultMetricCardClass = 'rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/84 p-3';
   const resultChipClass = 'rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-medium text-secondary';
@@ -2284,13 +2304,21 @@ function PlanResultDialog({
                   <span className={resultChipClass}>
                     {localizedTargetProfileLabel}
                   </span>
+                  <span className={`${resultChipClass} inline-flex items-center gap-1.5 ${
+                    aiEngineOnline
+                      ? 'border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300'
+                      : 'text-secondary'
+                  }`}>
+                    {aiEngineOnline ? <Brain size={12} /> : <Sparkles size={12} />}
+                    {aiEngineOnline ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
+                  </span>
                 </div>
                 <h3 className="text-lg font-semibold tracking-tight text-primary sm:text-xl">{buildLocalizedPlanRecipeName(plan, language)}</h3>
                 <p className="mt-1 text-sm text-secondary">
-                  {formatRoundedGrams(plan.doseG)} | {formatRoundedMl(plan.totalWaterMl)} | {formatGuideTime(plan.totalTimeSeconds)} | {formatRoundedTemperature(plan.waterTempC)}
+                  {formatRoundedGrams(plan.doseG)} | {planHeaderWater} | {formatGuideTime(plan.totalTimeSeconds)} | {formatRoundedTemperature(plan.waterTempC)}
                 </p>
                 <p id={descriptionId} className="sr-only">
-                  {formatRoundedGrams(plan.doseG)} · {formatRoundedMl(plan.totalWaterMl)} · {formatGuideTime(plan.totalTimeSeconds)} · {formatRoundedTemperature(plan.waterTempC)}
+                  {formatRoundedGrams(plan.doseG)} · {planHeaderWater} · {formatGuideTime(plan.totalTimeSeconds)} · {formatRoundedTemperature(plan.waterTempC)}
                 </p>
                 <p className="mt-2 max-w-3xl text-sm leading-5 text-secondary">
                   {localizedSummary}
@@ -2749,16 +2777,9 @@ function PlanResultDialog({
                           <span className="font-semibold text-primary">{formatGuideTime(plan.totalTimeSeconds)}</span>
                         </span>
                       </div>
-                      <p className="mt-3 text-sm leading-5 text-secondary">
-                        {flowCurrentStep
-                          ? buildAiBrewStepQuickNote(flowCurrentStep, language)
-                          : localizedSummary}
+                      <p className="mt-3 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">
+                        {flowCurrentCue}
                       </p>
-                      {flowCurrentStep && (
-                        <p className="mt-2 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">
-                          {buildAiBrewStepMethodFocusCue(plan, flowCurrentStep, language)}
-                        </p>
-                      )}
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">
@@ -2817,7 +2838,8 @@ function PlanResultDialog({
                         : 'next';
                     const quickNote = buildAiBrewStepQuickNote(step, language);
                     const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
-                    const showStepNote = state === 'current' && Boolean(quickNote);
+                    const activeCue = methodFocusCue || quickNote;
+                    const showStepNote = state === 'current' && Boolean(activeCue);
 
                     return (
                       <div
@@ -2854,10 +2876,7 @@ function PlanResultDialog({
                           </div>
                         </div>
                         {showStepNote && (
-                          <p className="mt-2 text-sm leading-5 text-secondary">{quickNote}</p>
-                        )}
-                        {state === 'current' && methodFocusCue && methodFocusCue.toLowerCase() !== quickNote.toLowerCase() && (
-                          <p className="mt-2 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">{methodFocusCue}</p>
+                          <p className="mt-2 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">{activeCue}</p>
                         )}
                       </div>
                     );
@@ -3821,6 +3840,8 @@ export function AiBrewPanel({
     ) * 100,
   );
   const generationStageDetail = getGenerationStageDetail(generationProgress, copy, language);
+  const isPrecisionGeneration = activeBuilderModal === 'pro';
+  const canUseHybridAiSequence = isPrecisionGeneration && isAuthenticated && !isGuest && !isOffline;
   const preferredBuilderMode = inferPreferredBuilderMode(formState);
 
   const mineralsReady = Boolean(formState.waterTdsPpm && formState.waterHardnessPpm && formState.waterAlkalinityPpm);
@@ -3961,7 +3982,7 @@ export function AiBrewPanel({
         setGenerationStage(progress.id);
         await nextAnimationFrame(110);
       });
-      if (isAuthenticated && !isGuest && !isOffline) {
+      if (canUseHybridAiSequence) {
         setGenerationProgress(createHybridAiSequenceProgress(nextPlan, latestProgress));
         setGenerationStage('hybrid_ai_sequence');
         await nextAnimationFrame(140);
@@ -4238,22 +4259,26 @@ export function AiBrewPanel({
     const currentStageNumber = generationStageIndex >= 0 ? generationStageIndex + 1 : 1;
     const normalizedStageIndex = generationStageIndex >= 0 ? generationStageIndex : 0;
     const elapsedLabel = formatTime(Math.max(0, Math.floor(generationElapsedMs / 1000)));
+    const EngineIcon = canUseHybridAiSequence ? Brain : Sparkles;
+    const engineLabel = canUseHybridAiSequence ? copy.aiEngineWorkingOnline : copy.aiEngineWorkingLocal;
     const loadingSteps = [
       {
         key: 'inputs',
-        label: id ? 'Memeriksa input dan alat' : 'Checking inputs and gear',
+        label: id ? 'Input' : 'Inputs',
         start: 0,
         end: 1,
       },
       {
         key: 'calibration',
-        label: id ? 'Menyesuaikan rasio, suhu, dan gilingan' : 'Calibrating ratio, temperature, and grind',
+        label: id ? 'Kalibrasi' : 'Calibration',
         start: 2,
         end: 3,
       },
       {
         key: 'sequence',
-        label: id ? 'Menyusun urutan seduh final' : 'Building the final brew sequence',
+        label: canUseHybridAiSequence
+          ? (id ? 'AI' : 'AI')
+          : (id ? 'Urutan' : 'Sequence'),
         start: 4,
         end: totalStages - 1,
       },
@@ -4275,10 +4300,18 @@ export function AiBrewPanel({
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-300">
             <Loader2 size={20} className="animate-spin" />
           </div>
+          <div className={`mx-auto mt-3 inline-flex items-center justify-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${
+            canUseHybridAiSequence
+              ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-400/30 dark:bg-blue-950 dark:text-blue-100'
+              : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200'
+          }`}>
+            <EngineIcon size={13} />
+            <span>{engineLabel}</span>
+          </div>
 
           <div className="mt-4 text-center">
             <p className="text-base font-semibold text-slate-950 dark:text-white">
-              {id ? 'Menyiapkan recipe brew' : 'Preparing your brew plan'}
+              {id ? 'Menyusun seduhan' : 'Building your brew'}
             </p>
             <p className="mt-1 text-sm leading-6 text-slate-700 dark:text-slate-200">{generationStageDetail}</p>
           </div>
@@ -4327,10 +4360,10 @@ export function AiBrewPanel({
                   </div>
                   <span className="text-[11px] font-semibold uppercase tracking-[0.08em] opacity-80">
                     {state === 'done'
-                      ? (id ? 'Selesai' : 'Done')
+                      ? (id ? 'OK' : 'OK')
                       : state === 'active'
-                        ? (id ? 'Berjalan' : 'Working')
-                        : (id ? 'Berikutnya' : 'Next')}
+                        ? (id ? 'Aktif' : 'Active')
+                        : (id ? 'Nanti' : 'Next')}
                   </span>
                 </div>
               );
@@ -4339,11 +4372,7 @@ export function AiBrewPanel({
 
           <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-700 dark:text-slate-200">
             <Clock3 size={13} className="text-blue-500" />
-            <span>
-              {id
-                ? `Waktu ${elapsedLabel}. Hasil akan tampil otomatis saat siap.`
-                : `Elapsed ${elapsedLabel}. Your brew plan will appear automatically when ready.`}
-            </span>
+            <span>{elapsedLabel}</span>
           </div>
         </div>
       </div>
@@ -4383,8 +4412,11 @@ export function AiBrewPanel({
                 </button>
                 <div className="pr-12">
                   <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-300">
-                    <Sparkles size={13} />
-                    {isPro ? copy.proMode : copy.quickMode}
+                    {isPro && canUseHybridAiSequence ? <Brain size={13} /> : <Sparkles size={13} />}
+                    <span>{isPro ? copy.proMode : copy.quickMode}</span>
+                    <span className="opacity-70">
+                      {isPro && canUseHybridAiSequence ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
+                    </span>
                   </div>
                   <h3 className="text-base font-semibold tracking-tight text-primary lg:text-xl">{dialogTitle}</h3>
                 </div>
@@ -5007,6 +5039,10 @@ export function AiBrewPanel({
                 data-testid="ai-brew-open-quick"
               >
                 <div className="text-base font-semibold text-primary">{copy.quickMode}</div>
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-secondary">
+                  <Sparkles size={12} />
+                  {copy.aiEngineLocalValidated}
+                </div>
               </button>
               <button
                 type="button"
@@ -5016,6 +5052,10 @@ export function AiBrewPanel({
                 data-testid="ai-brew-open-pro"
               >
                 <div className="text-base font-semibold text-primary">{copy.proMode}</div>
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-secondary">
+                  {isAuthenticated && !isGuest && !isOffline ? <Brain size={12} /> : <Sparkles size={12} />}
+                  {isAuthenticated && !isGuest && !isOffline ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
+                </div>
               </button>
             </div>
           </div>

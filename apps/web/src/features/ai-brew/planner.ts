@@ -23,6 +23,7 @@ import {
   localizeAiBrewSummary,
   localizeAiBrewTargetProfile,
 } from './localization.ts';
+import { resolveAiBrewKnowledgeNotes } from './knowledge.ts';
 import type {
   AiBrewCatalog,
   AiBrewFormState,
@@ -124,6 +125,16 @@ const ICED_METHOD_FAMILIES = new Set<AiBrewMethodFamily>([
   'april',
   'chemex',
   'clever_dripper',
+]);
+
+const ICED_MANUAL_POUR_OVER_FAMILIES = new Set<AiBrewMethodFamily>([
+  'v60',
+  'origami',
+  'kono',
+  'kalita_wave',
+  'melitta',
+  'april',
+  'chemex',
 ]);
 
 const ICED_HOT_EXTRACTION_RATIO_BOUNDS: Record<AiBrewMethodFamily, { min: number; max: number }> = {
@@ -2485,7 +2496,7 @@ function inferBrewStepKind(
   if (/\bheat\b|\bstove\b|\bburner\b/.test(signature)) return 'heat';
   if (/\bextract\b|\bshot\b|\byield\b/.test(signature)) return 'extract';
   if (hasPositiveShare) return 'pour';
-  if (/drawdown|drain only|let drain/.test(signature)) return 'drawdown';
+  if (/drawdown|drain only|let drain|finish drain|finish draining|\bdrain\b/.test(signature)) return 'drawdown';
   if (/\bserve\b|\bdecant\b/.test(signature)) return 'serve';
   if (/hold|steep|wait|rest/.test(signature)) return 'wait';
   return 'pour';
@@ -2974,6 +2985,57 @@ function buildMethodFamilyStepInstruction(params: {
   };
 }
 
+function isIcedManualPourOverFamily(methodFamily: AiBrewMethodFamily) {
+  return ICED_MANUAL_POUR_OVER_FAMILIES.has(methodFamily);
+}
+
+function polishIcedManualPourOverSteps(
+  steps: BrewPlanStep[],
+  context: AdaptiveShareContext,
+) {
+  if (context.brewMode !== 'iced' || !isIcedManualPourOverFamily(context.methodFamily)) return steps;
+
+  const lastPositivePourIndex = steps.reduce(
+    (lastIndex, step, index) => (step.pourVolumeMl > 0 ? index : lastIndex),
+    -1,
+  );
+  const lastStepIndex = steps.length - 1;
+
+  return steps.map((step, index) => {
+    let nextStep = step;
+
+    if (
+      index === lastStepIndex
+      && step.pourVolumeMl <= 0
+      && (step.kind === 'serve' || step.kind === 'drawdown' || /\bserve\b/i.test(step.label))
+    ) {
+      nextStep = {
+        ...step,
+        label: /\bserve\b/i.test(step.label) ? 'Drawdown' : step.label,
+        kind: 'drawdown',
+        note:
+          'Let drawdown finish over the measured ice; stir the server after the final drips so service stays separate from brewing.',
+        hybridInstruction: joinInstructionText(
+          'Stop adding water here. Let the bed finish draining over the measured ice, then stir the server 5-8 seconds before serving.',
+          step.hybridInstruction,
+        ),
+      };
+    }
+
+    if (index === lastPositivePourIndex && nextStep.pourVolumeMl > 0) {
+      return {
+        ...nextStep,
+        hybridInstruction: joinInstructionText(
+          nextStep.hybridInstruction,
+          'Land the final hot-water target only; the ice is intentional bypass, not another pour through the bed.',
+        ),
+      };
+    }
+
+    return nextStep;
+  });
+}
+
 function buildSteps(
   profile: DeviceBrewProfile,
   hotWaterMl: number,
@@ -3067,7 +3129,7 @@ function buildSteps(
   const pourShareTotal = pourIndexes.reduce((sum, index) => sum + Math.max(0, adaptedShares[index] ?? profile.steps[index]?.share ?? 0), 0);
 
   let runningTotal = 0;
-  return profile.steps.map((step, index) => {
+  const steps = profile.steps.map((step, index) => {
     const kind = stepKinds[index] || 'pour';
     const isPourStep = isVolumeTargetStepKind(kind) || inferredVolumeIndexes.length === 0;
     const isLastPourStep = index === lastPourIndex;
@@ -3127,6 +3189,7 @@ function buildSteps(
       hybridInstruction,
     };
   });
+  return polishIcedManualPourOverSteps(steps, adaptiveShareContext);
 }
 
 function buildSummary(plan: Pick<
@@ -3908,6 +3971,14 @@ function finalizePlanCore(
 
   const processLabel = resolveCatalogLabel(processEntry, input.process, input.customProcess, 'Not specified');
   const varietyLabel = resolveCatalogLabel(varietyEntry, input.variety, input.customVariety, 'Not specified');
+  const coffeeName = input.coffeeName.trim() || 'Unknown Origin';
+  const operatorKnowledgeNotes = resolveAiBrewKnowledgeNotes({
+    coffeeName,
+    dripperName: dripper.name,
+    methodFamily,
+    process: processLabel,
+    variety: varietyLabel,
+  });
 
   const baseGuardrails = validateBrewInputs({
     method,
@@ -3946,6 +4017,7 @@ function finalizePlanCore(
     originTargetMethodAdjustment.notes,
     doseAdjustment.notes,
     flavorAlignment.notes,
+    operatorKnowledgeNotes,
     [
       !input.process ? 'Process not specified. No automatic process modifier was applied.' : undefined,
       !input.variety ? 'Variety not specified. No automatic variety modifier was applied.' : undefined,
@@ -3980,6 +4052,9 @@ function finalizePlanCore(
     originTargetMethodAdjustment.confidenceNotes,
     doseAdjustment.confidenceNotes,
     flavorAlignment.confidenceNotes,
+    operatorKnowledgeNotes.length > 0
+      ? [`Operator knowledge active: ${operatorKnowledgeNotes.length} matched note(s) from knowledge_v1.xlsx.`]
+      : [],
     [
       waterBrand
         ? `Water source: ${waterBrand.shortLabel} (${input.waterCustomized ? 'customized' : waterBrand.presetStatus}).`
@@ -3998,7 +4073,6 @@ function finalizePlanCore(
     || input.waterMode === 'manual'
     || waterBrand?.presetStatus === 'manual_required';
 
-  const coffeeName = input.coffeeName.trim() || 'Unknown Origin';
   const summary = buildSummary({
     brewMode: input.brewMode,
     methodFamily,

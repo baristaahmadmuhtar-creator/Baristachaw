@@ -1244,6 +1244,22 @@ test('buildAiBrewPlan creates a hot brew plan with deterministic outputs and pro
   assert.match(plan.summary, /QA Ethiopia/);
 });
 
+test('buildAiBrewPlan applies operator knowledge seed notes from knowledge_v1 workbook', () => {
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    coffeeName: 'Gayo Washed QA',
+    dripperId: 'hario-v60',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, catalog);
+
+  assert.ok(plan.notes.some((note) => /Knowledge v1 - Gayo/i.test(note)));
+  assert.ok(plan.notes.some((note) => /Knowledge v1 - V60/i.test(note)));
+  assert.ok(plan.confidenceNotes.some((note) => /knowledge_v1\.xlsx/i.test(note)));
+});
+
 test('buildAiBrewPlanProgressively emits factual generation progress with increasing system signals', async () => {
   const progressEvents: AiBrewGenerationProgress[] = [];
   const plan = await buildAiBrewPlanProgressively({
@@ -1461,6 +1477,63 @@ test('buildAiBrewPlan creates a japanese iced plan with split water and derived 
   assert.equal(plan.provenanceAttentionNeeded, true);
   assert.ok(plan.notes.some((note) => /hot concentrate extracts/i.test(note)));
   assert.ok(plan.confidenceNotes.some((note) => /generated from the v60 family template/i.test(note)));
+});
+
+test('buildAiBrewPlan treats iced pour-over no-volume finish as drawdown, not a serve step', () => {
+  const icedCatalog: AiBrewCatalog = {
+    ...catalog,
+    drippers: [
+      ...catalog.drippers,
+      {
+        ...catalog.drippers[0],
+        id: 'test-v60-iced-finish',
+        name: 'Test V60 Iced Finish',
+        searchText: 'test v60 iced finish',
+        defaultProfileId: 'profile_test_v60_iced_finish',
+      },
+    ],
+    deviceProfiles: [
+      ...catalog.deviceProfiles,
+      {
+        ...catalog.deviceProfiles[0],
+        id: 'profile_test_v60_iced_finish',
+        label: 'Test V60 Iced Finish',
+        brewMode: 'iced',
+        dripperIds: ['test-v60-iced-finish'],
+        methodFamily: 'v60',
+        brewMethodId: 'v60_japanese_iced' as BrewMethodId,
+        exactMatch: true,
+        ratioDelta: -0.2,
+        tempDeltaC: 0.4,
+        brewTimeDeltaSec: -8,
+        grindBias: 'finer',
+        note: 'QA iced profile with a no-volume finish step.',
+        steps: [
+          { id: 'bloom', label: 'Bloom', share: 0.24, startSeconds: 0, note: 'Wet all grounds.' },
+          { id: 'middle', label: 'Middle Pour', share: 0.76, startSeconds: 35, note: 'Build the hot concentrate.' },
+          { id: 'serve', label: 'Serve', share: 0, startSeconds: 110, note: 'Let the bed finish draining and serve.' },
+        ],
+      },
+    ],
+  };
+
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(icedCatalog),
+    brewMode: 'iced',
+    dripperId: 'test-v60-iced-finish',
+    coffeeName: 'Iced Drawdown QA',
+    doseG: '20',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, icedCatalog);
+
+  const finalStep = plan.steps[plan.steps.length - 1];
+  assert.equal(finalStep.kind, 'drawdown');
+  assert.equal(finalStep.pourVolumeMl, 0);
+  assert.match(finalStep.hybridInstruction || finalStep.note, /drawdown|stir|measured ice/i);
+  assert.ok(plan.steps.slice(0, -1).some((step) => step.pourVolumeMl > 0));
 });
 
 test('buildAiBrewPlan flags derived grinder baselines for provenance', () => {

@@ -349,6 +349,65 @@ export function buildGenerateBriefPrompt(plan: BrewPlan, language?: string): AiB
   };
 }
 
+export function buildOptimizationPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
+  const controlLanguage = isIndonesianAiBrewLanguage(language)
+    ? 'Bahasa Indonesia natural, pendek, dan siap dipakai barista.'
+    : `${language || 'English'} with concise service-ready wording.`;
+  const timeDelta = plan.methodFamily === 'espresso'
+    ? 5
+    : plan.methodFamily === 'cold_brew'
+      ? 3600
+      : plan.methodFamily === 'batch_brew'
+        ? 60
+        : 45;
+  const ratioDelta = plan.methodFamily === 'cold_brew'
+    ? 1.2
+    : plan.methodFamily === 'batch_brew'
+      ? 0.7
+      : plan.methodFamily === 'espresso'
+        ? 0.25
+        : 0.6;
+  const tempDelta = plan.methodFamily === 'cold_brew'
+    ? 4
+    : plan.methodFamily === 'espresso'
+      ? 1.5
+      : 2;
+
+  return {
+    title: isIndonesianAiBrewLanguage(language) ? 'Optimasi AI' : 'AI Optimization',
+    body: [
+      'You are the AI Brew numeric optimizer. Return JSON only.',
+      'Your job is to optimize the deterministic planner envelope, not merely rewrite narrative.',
+      'Use current coffee/barista knowledge for origin, process, variety, roast, water, method family, and target profile. If the bean is unknown, infer conservatively from the provided name and catalog context.',
+      'The local planner will validate, clamp, round, and reject unsafe values. Stay close to the baseline so the result is production-safe.',
+      '',
+      'Never change: dose, brew mode, brewer, grinder, water minerals, method family, or step count.',
+      `Allowed max shift from baseline: ratio ±${ratioDelta}, temperature ±${tempDelta} C, brew time ±${timeDelta} seconds.`,
+      'For iced mode, hotWaterSharePercent may shift only inside a realistic concentrate split. The validator will preserve hot water + ice = total water.',
+      'All numbers must be finite. Do not use null, NaN, Infinity, comments, markdown, code fences, or extra prose.',
+      `Step control text language: ${controlLanguage}`,
+      'Step control text must be short and must not contain new numeric targets, dose, ratio, temperature, grind changes, or next-cup troubleshooting.',
+      '',
+      'Return exactly this JSON shape with only keys you can justify:',
+      '{',
+      '  "reason": "one short reason",',
+      '  "confidence": 0.0,',
+      '  "recommendedRatio": 15.5,',
+      '  "waterTempC": 92,',
+      '  "totalTimeSeconds": 165,',
+      '  "hotWaterSharePercent": 63,',
+      '  "steps": [',
+      '    { "index": 1, "startSeconds": 0, "pourVolumeMl": 50, "control": "short phase cue" }',
+      '  ]',
+      '}',
+      '',
+      buildPlannerEnvelope(plan),
+      '',
+      buildSharedContext(plan),
+    ].join('\n'),
+  };
+}
+
 export function buildTroubleshootPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
   return {
     title: isIndonesianAiBrewLanguage(language) ? 'Perbaiki Rasa' : 'Fix Taste',

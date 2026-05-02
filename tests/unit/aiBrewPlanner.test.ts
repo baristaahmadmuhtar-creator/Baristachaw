@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  applyAiBrewOptimizationPatch,
   buildAiBrewPlan,
   buildAiBrewPlanProgressively,
   buildLocalizedPlanRecipeSteps,
@@ -559,8 +560,27 @@ function assertBaristaRoundedPlan(plan: ReturnType<typeof buildAiBrewPlan>) {
 function assertPlanEnvelope(plan: ReturnType<typeof buildAiBrewPlan>) {
   const totalPoured = plan.steps.reduce((sum, step) => sum + step.pourVolumeMl, 0);
   const finalStep = plan.steps[plan.steps.length - 1];
+  const finiteValues: Array<[string, number]> = [
+    ['dose', plan.doseG],
+    ['total water', plan.totalWaterMl],
+    ['hot water', plan.hotWaterMl],
+    ['ice', plan.iceMl],
+    ['ratio', plan.recommendedRatio],
+    ['hot extraction ratio', plan.hotExtractionRatio],
+    ['temperature', plan.waterTempC],
+    ['total time', plan.totalTimeSeconds],
+    ['estimated cup output', plan.estimatedCupOutputMl],
+  ];
 
   assertBaristaRoundedPlan(plan);
+  for (const [label, value] of finiteValues) {
+    assert.ok(Number.isFinite(value), `${label} should be finite`);
+  }
+  for (const [index, step] of plan.steps.entries()) {
+    assert.ok(Number.isFinite(step.startSeconds), `step ${index + 1} start should be finite`);
+    assert.ok(Number.isFinite(step.pourVolumeMl), `step ${index + 1} pour should be finite`);
+    assert.ok(Number.isFinite(step.targetVolumeMl), `step ${index + 1} target should be finite`);
+  }
   assert.equal(totalPoured, plan.hotWaterMl);
   assert.equal(finalStep?.targetVolumeMl, plan.hotWaterMl);
   assert.ok(plan.recommendedRatio > 0);
@@ -887,6 +907,89 @@ function buildAllMethodFamilyCatalog(): AiBrewCatalog {
 function collectPlanNarrative(plan: ReturnType<typeof buildAiBrewPlan>) {
   return plan.steps.map((step) => `${step.note} ${step.hybridInstruction || ''}`).join(' ');
 }
+
+test('AI Brew optimizer can adjust iced plans without breaking planner guardrails', () => {
+  const baseline = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'iced',
+    coffeeName: 'Iced Geisha Guardrail',
+    doseG: '20',
+    targetProfileId: 'more_sweetness',
+    process: 'natural',
+    variety: 'geisha',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '45',
+    waterAlkalinityPpm: '32',
+  }, catalog);
+  const result = applyAiBrewOptimizationPatch(baseline, {
+    reason: 'Sweet high-grown coffee can take a slightly tighter iced extraction with compact pulses.',
+    confidence: 0.92,
+    recommendedRatio: baseline.recommendedRatio + 0.35,
+    waterTempC: baseline.waterTempC + 1,
+    totalTimeSeconds: baseline.totalTimeSeconds + 15,
+    hotWaterSharePercent: 64,
+    steps: baseline.steps.map((step, index) => ({
+      index: index + 1,
+      startSeconds: step.startSeconds + (index === 0 ? 0 : 5),
+      pourVolumeMl: step.pourVolumeMl + (index === 0 ? 5 : 0),
+      control: index === 0
+        ? 'Buka bloom rata, lalu jaga aliran kecil dan bersih.'
+        : 'Jaga pulse stabil; selesai tanpa mengaduk es terlalu keras.',
+    })),
+  });
+
+  assert.equal(result.applied, true);
+  assert.deepEqual(result.rejected, []);
+  assertPlanEnvelope(result.plan);
+  assert.equal(result.plan.brewMode, 'iced');
+  assert.equal(result.plan.hotWaterMl + result.plan.iceMl, result.plan.totalWaterMl);
+  assert.ok(result.plan.confidenceNotes.some((note) => /AI numeric optimizer accepted/i.test(note)));
+  assert.ok(result.plan.steps.some((step) => /pulse|bloom|aliran/i.test(step.hybridInstruction || '')));
+});
+
+test('AI Brew optimizer preserves hot and iced envelopes across core dripper families', () => {
+  const matrixCatalog = buildAllMethodFamilyCatalog();
+
+  for (const entry of ALL_METHOD_FAMILY_CASES) {
+    for (const brewMode of ['hot', 'iced'] as const) {
+      const baseline = buildAiBrewPlan({
+        ...createDefaultAiBrewFormState(matrixCatalog),
+        brewMode,
+        coffeeName: `${entry.name} optimizer matrix`,
+        dripperId: entry.dripperId,
+        targetProfileId: brewMode === 'iced' ? 'more_sweetness' : 'balance_clean',
+        roastLevel: 'medium_light',
+        doseG: '18',
+        waterTdsPpm: '92',
+        waterHardnessPpm: '48',
+        waterAlkalinityPpm: '34',
+      }, matrixCatalog);
+      const result = applyAiBrewOptimizationPatch(baseline, {
+        reason: `${entry.family} ${brewMode} micro adjustment inside validated service range.`,
+        confidence: 87,
+        recommendedRatio: baseline.recommendedRatio + (brewMode === 'iced' ? 0.25 : -0.25),
+        waterTempC: baseline.waterTempC + 1,
+        totalTimeSeconds: baseline.totalTimeSeconds + 10,
+        hotWaterSharePercent: brewMode === 'iced' ? 66 : undefined,
+        steps: baseline.steps.map((step, index) => ({
+          index: index + 1,
+          startSeconds: step.startSeconds + (index === 0 ? 0 : 5),
+          pourVolumeMl: step.pourVolumeMl,
+          control: `Keep ${entry.family.replace(/_/g, ' ')} ${brewMode} control on checkpoint ${index + 1}.`,
+        })),
+      });
+
+      assert.deepEqual(result.rejected, [], `${entry.family} ${brewMode} should not reject optimizer patch`);
+      assertPlanEnvelope(result.plan);
+      assert.equal(result.plan.brewMode, brewMode);
+      assert.equal(result.plan.steps.reduce((sum, step) => sum + step.pourVolumeMl, 0), result.plan.hotWaterMl);
+      assert.equal(result.plan.steps[result.plan.steps.length - 1]?.targetVolumeMl, result.plan.hotWaterMl);
+      if (brewMode === 'iced') {
+        assert.equal(result.plan.hotWaterMl + result.plan.iceMl, result.plan.totalWaterMl);
+      }
+    }
+  }
+});
 
 test('parseNumericRange extracts numeric grinder bands and units', () => {
   const parsed = parseNumericRange('20-24 clicks');

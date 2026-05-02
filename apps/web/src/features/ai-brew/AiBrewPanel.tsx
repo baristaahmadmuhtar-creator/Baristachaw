@@ -38,6 +38,7 @@ import type { Recipe } from '../../types';
 import {
   buildAdjustPrompt,
   buildExplainPrompt,
+  buildOptimizationPrompt,
   buildSequenceGuidePrompt,
   buildTroubleshootPrompt,
 } from './prompts';
@@ -46,6 +47,7 @@ import {
   composeHybridSequenceOverlay,
   extractSequenceOverlayFromMarkdown,
 } from './aiComposer';
+import { parseAiBrewOptimizationPatch } from './aiOptimizer';
 import {
   isIndonesianAiBrewLanguage,
   localizeAiBrewDynamicText,
@@ -66,6 +68,7 @@ import {
   buildPlanMethodBrief,
   buildPlanRecipeIngredients,
   buildPlanRecipeMetadata,
+  applyAiBrewOptimizationPatch,
   createDefaultAiBrewFormState,
   createQuickAiBrewFormState,
   loadPlanIntoForm,
@@ -110,6 +113,7 @@ import type {
 
 const CUSTOM_ENTRY_ID = 'custom';
 const OMITTED_ENTRY_ID = '__omitted__';
+const AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS = 5000;
 const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 3500;
 const AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS = 1800;
 const COPY = {
@@ -870,6 +874,17 @@ function formatRoundedMl(value: number) {
   return `${formatDisplayNumber(Math.round(value))} ml`;
 }
 
+function escapeAiBrewRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function compactResultSummaryForDisplay(summary: string, plan: BrewPlan, language: string) {
+  const coffeeName = plan.coffeeName.trim();
+  if (!coffeeName) return summary;
+  const replacement = isIndonesianAiBrewLanguage(language) ? 'kopi ini' : 'this coffee';
+  return summary.replace(new RegExp(escapeAiBrewRegExp(coffeeName), 'gi'), replacement);
+}
+
 function formatRoundedGrams(value: number) {
   const rounded = Math.round(value * 10) / 10;
   const maxFractionDigits = Number.isInteger(rounded) ? 0 : 1;
@@ -1225,6 +1240,41 @@ async function runHybridSequenceUpdate(
   };
 }
 
+async function runHybridOptimizationUpdate(
+  nextPlan: BrewPlan,
+  options: {
+    enabled: boolean;
+    platform: 'web' | 'pwa';
+    language: string;
+  },
+) {
+  if (!options.enabled) {
+    return applyAiBrewOptimizationPatch(nextPlan, null);
+  }
+
+  const canonicalRequestContext = {
+    responseProfile: {
+      language: 'en',
+      verbosity: 'comprehensive' as const,
+      format: 'plain' as const,
+      tone: 'professional' as const,
+    },
+    clientContext: {
+      platform: options.platform,
+      surface: 'tools' as const,
+      appLanguage: options.language,
+    },
+  };
+
+  const aiText = await raceChatResponse(
+    buildOptimizationPrompt(nextPlan, options.language).body,
+    canonicalRequestContext,
+    { timeoutMs: AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS },
+  );
+
+  return applyAiBrewOptimizationPatch(nextPlan, parseAiBrewOptimizationPatch(aiText));
+}
+
 function nowId(prefix: string) {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -1361,8 +1411,8 @@ function getGenerationStageDetail(
         : `${metrics.stepCount || 0} checkpoints ready.`;
     case 'hybrid_ai_sequence':
       return id
-        ? 'AI merapikan instruksi.'
-        : 'AI is tightening instructions.';
+        ? 'AI mengoptimasi seduhan.'
+        : 'AI is optimizing the brew.';
     case 'run_standards_checks':
     default:
       return id
@@ -1748,6 +1798,12 @@ function getAiBrewSequenceFallbackMessage(language: string) {
     : 'The extra AI layer was skipped. The validated brew sequence is being used to keep the result stable.';
 }
 
+function getAiBrewOptimizationFallbackMessage(language: string) {
+  return isIndonesianAiBrewLanguage(language)
+    ? 'Optimasi AI belum dipakai. Planner lokal tetap menjaga angka seduh tervalidasi.'
+    : 'AI optimization was skipped. The local planner kept the validated brew numbers.';
+}
+
 function getFlowActiveStepIndex(plan: BrewPlan, elapsedSeconds: number) {
   if (plan.steps.length === 0) return -1;
 
@@ -1926,6 +1982,7 @@ function MasterPickerDialog({
   open,
   kind,
   title,
+  ariaLabel,
   closeLabel,
   searchLabel,
   description,
@@ -1939,6 +1996,7 @@ function MasterPickerDialog({
   open: boolean;
   kind: NonNullable<PickerKind>;
   title: string;
+  ariaLabel?: string;
   closeLabel: string;
   searchLabel: string;
   description: string;
@@ -1979,7 +2037,7 @@ function MasterPickerDialog({
     <FocusLockedDialog
       open={open}
       onClose={onClose}
-      ariaLabel={title}
+      ariaLabel={ariaLabel || title}
       ariaDescribedBy={hasDescription ? descriptionId : undefined}
       restoreFocusTarget={restoreFocusTarget}
       className="fixed inset-x-0 bottom-0 z-[111] mx-auto flex w-full max-w-3xl flex-col overflow-hidden rounded-t-[1.8rem] border border-glass bg-[var(--bg-base)]/96 px-4 pb-4 pt-4 shadow-[0_-18px_40px_rgba(0,0,0,0.24)] lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:rounded-[1.8rem] lg:px-5"
@@ -2200,6 +2258,7 @@ function PlanResultDialog({
   const waterSourceLinks = plan.waterBrandSourceUrls || [];
   const localizedTargetProfileLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language);
   const localizedSummary = localizeAiBrewSummary(plan, language);
+  const displaySummary = compactResultSummaryForDisplay(localizedSummary, plan, language);
   const methodBrief = buildPlanMethodBrief(plan, language);
   const aiEngineOnline = planUsesOnlineAi(plan);
   const planHeaderWater = formatPlanHeaderWater(plan, language);
@@ -2320,8 +2379,36 @@ function PlanResultDialog({
                 <p id={descriptionId} className="sr-only">
                   {formatRoundedGrams(plan.doseG)} · {planHeaderWater} · {formatGuideTime(plan.totalTimeSeconds)} · {formatRoundedTemperature(plan.waterTempC)}
                 </p>
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+                  <button type="button" onClick={onEditInputs} className={resultActionButtonClass}>
+                    {copy.editInputs}
+                  </button>
+                  <button type="button" onClick={() => onUseInTimer(plan.totalTimeSeconds)} className={resultActionButtonClass} data-testid="ai-brew-use-timer" aria-label={copy.ariaUseInTimer.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
+                    {copy.useInTimer}
+                  </button>
+                  <button type="button" onClick={() => onUseInRatio(plan)} className={resultActionButtonClass} data-testid="ai-brew-use-ratio" aria-label={copy.ariaUseInRatio.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
+                    {copy.useInRatio}
+                  </button>
+                  <button type="button" onClick={onSaveRecipe} disabled={saving} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-save" aria-label={copy.ariaSaveToCollection.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
+                    {saveButtonLabel}
+                  </button>
+                  <button type="button" onClick={onToggleFavorite} className={resultActionButtonClass} data-testid="ai-brew-favorite" aria-label={(currentPreset ? copy.ariaFavoriteRemove : copy.ariaFavoriteAdd).replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
+                    <span className="inline-flex items-center justify-center gap-2">
+                      {currentPreset ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
+                      {currentPreset ? copy.unfavorite : copy.favorite}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('flow')}
+                    className={resultActionButtonClass}
+                    data-testid="ai-brew-open-flow"
+                  >
+                    {copy.flowTab}
+                  </button>
+                </div>
                 <p className="mt-2 max-w-3xl text-sm leading-5 text-secondary">
-                  {localizedSummary}
+                  {displaySummary}
                 </p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-3">
                   {[
@@ -2369,34 +2456,6 @@ function PlanResultDialog({
                 </div>
               </div>
 
-              <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
-                  <button type="button" onClick={onEditInputs} className={resultActionButtonClass}>
-                    {copy.editInputs}
-                  </button>
-                  <button type="button" onClick={() => onUseInTimer(plan.totalTimeSeconds)} className={resultActionButtonClass} data-testid="ai-brew-use-timer" aria-label={copy.ariaUseInTimer.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
-                    {copy.useInTimer}
-                  </button>
-                  <button type="button" onClick={() => onUseInRatio(plan)} className={resultActionButtonClass} data-testid="ai-brew-use-ratio" aria-label={copy.ariaUseInRatio.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
-                    {copy.useInRatio}
-                  </button>
-                  <button type="button" onClick={onSaveRecipe} disabled={saving} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-save" aria-label={copy.ariaSaveToCollection.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
-                    {saveButtonLabel}
-                  </button>
-                  <button type="button" onClick={onToggleFavorite} className={resultActionButtonClass} data-testid="ai-brew-favorite" aria-label={(currentPreset ? copy.ariaFavoriteRemove : copy.ariaFavoriteAdd).replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
-                    <span className="inline-flex items-center justify-center gap-2">
-                      {currentPreset ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
-                      {currentPreset ? copy.unfavorite : copy.favorite}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('flow')}
-                    className={resultActionButtonClass}
-                    data-testid="ai-brew-open-flow"
-                  >
-                    {copy.flowTab}
-                  </button>
-              </div>
               {saveSuccess && (
                 <div
                   className="mt-3 flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2.5 text-sm text-emerald-700 dark:text-emerald-300"
@@ -3986,26 +4045,52 @@ export function AiBrewPanel({
         setGenerationProgress(createHybridAiSequenceProgress(nextPlan, latestProgress));
         setGenerationStage('hybrid_ai_sequence');
         await nextAnimationFrame(140);
+        let shouldRunSequenceFallback = false;
         try {
-          const hybridSequence = await runHybridSequenceUpdate(nextPlan, {
+          const optimized = await runHybridOptimizationUpdate(nextPlan, {
             enabled: true,
             platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
             language,
           });
-          if (hybridSequence) {
-            nextPlan = applyHybridSequenceToPlan(nextPlan, {
-              canonicalMarkdown: hybridSequence.canonicalMarkdown,
-              displayMarkdown: hybridSequence.markdown,
-              servicePattern: hybridSequence.servicePattern,
-              watch: hybridSequence.watch,
-              stepInstructions: hybridSequence.stepInstructions,
-            });
-            if (hybridSequence.fallbackDiagnostics.length > 0) {
-              console.warn(getAiBrewSequenceFallbackMessage(language), hybridSequence.fallbackDiagnostics);
-            }
+
+          if (optimized.applied) {
+            nextPlan = optimized.plan;
+            latestProgress = createHybridAiSequenceProgress(nextPlan, latestProgress);
+            setGenerationProgress(latestProgress);
+          } else {
+            shouldRunSequenceFallback = true;
+            console.warn(
+              getAiBrewOptimizationFallbackMessage(language),
+              optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
+            );
           }
         } catch (error) {
-          console.warn(getAiBrewSequenceFallbackMessage(language), error);
+          shouldRunSequenceFallback = true;
+          console.warn(getAiBrewOptimizationFallbackMessage(language), error);
+        }
+
+        if (shouldRunSequenceFallback) {
+          try {
+            const hybridSequence = await runHybridSequenceUpdate(nextPlan, {
+              enabled: true,
+              platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
+              language,
+            });
+            if (hybridSequence) {
+              nextPlan = applyHybridSequenceToPlan(nextPlan, {
+                canonicalMarkdown: hybridSequence.canonicalMarkdown,
+                displayMarkdown: hybridSequence.markdown,
+                servicePattern: hybridSequence.servicePattern,
+                watch: hybridSequence.watch,
+                stepInstructions: hybridSequence.stepInstructions,
+              });
+              if (hybridSequence.fallbackDiagnostics.length > 0) {
+                console.warn(getAiBrewSequenceFallbackMessage(language), hybridSequence.fallbackDiagnostics);
+              }
+            }
+          } catch (error) {
+            console.warn(getAiBrewSequenceFallbackMessage(language), error);
+          }
         }
       }
       const journalEntry: BrewJournalEntry = {
@@ -4388,7 +4473,7 @@ export function AiBrewPanel({
         open={activeBuilderModal === mode}
         onClose={closeBuilder}
         ariaLabel={dialogTitle}
-        className="fixed inset-0 z-[111] h-[var(--fullscreen-modal-height)] max-h-[var(--fullscreen-modal-height)] overflow-hidden bg-[var(--bg-base)]/98 lg:inset-6 lg:mx-auto lg:h-auto lg:max-h-[calc(var(--fullscreen-modal-height)_-_3rem)] lg:max-w-5xl lg:rounded-[2rem] lg:border lg:border-glass lg:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
+        className="fixed inset-0 z-[111] h-[calc(var(--fullscreen-modal-height)_+_1px)] max-h-[calc(var(--fullscreen-modal-height)_+_1px)] overflow-hidden bg-[var(--bg-base)]/98 lg:inset-6 lg:mx-auto lg:h-auto lg:max-h-[calc(var(--fullscreen-modal-height)_-_3rem)] lg:max-w-5xl lg:rounded-[2rem] lg:border lg:border-glass lg:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
       >
         <div className="relative flex h-full flex-col" data-testid={`ai-brew-builder-${mode}`}>
           <div
@@ -5195,6 +5280,7 @@ export function AiBrewPanel({
           open={pickerKind !== null}
           kind={pickerKind}
           title={pickerTitle}
+          ariaLabel={pickerKind === 'dripper' ? 'Dripper' : pickerTitle}
           closeLabel={copy.pickerClose}
           searchLabel={copy.pickerSearchLabel}
           description={copy.pickerHelp}

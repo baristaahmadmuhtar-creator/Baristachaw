@@ -4305,6 +4305,359 @@ export function buildAiBrewPlan(input: AiBrewFormState, catalog: AiBrewCatalog):
   );
 }
 
+export interface AiBrewOptimizationStepPatch {
+  index?: number;
+  stepId?: string;
+  startSeconds?: number;
+  pourVolumeMl?: number;
+  control?: string;
+}
+
+export interface AiBrewOptimizationPatch {
+  reason?: string;
+  confidence?: number;
+  recommendedRatio?: number;
+  waterTempC?: number;
+  totalTimeSeconds?: number;
+  hotWaterSharePercent?: number;
+  steps?: AiBrewOptimizationStepPatch[];
+}
+
+export interface AiBrewOptimizationResult {
+  plan: BrewPlan;
+  applied: boolean;
+  diagnostics: string[];
+  rejected: string[];
+}
+
+function resolveOptimizationDeltaBounds(methodFamily: AiBrewMethodFamily) {
+  switch (methodFamily) {
+    case 'espresso':
+      return { ratio: 0.25, tempC: 1.5, timeSec: 5 };
+    case 'cold_brew':
+      return { ratio: 1.2, tempC: 4, timeSec: 3600 };
+    case 'batch_brew':
+      return { ratio: 0.7, tempC: 2, timeSec: 60 };
+    case 'moka_pot':
+      return { ratio: 0.45, tempC: 2, timeSec: 35 };
+    default:
+      return { ratio: 0.6, tempC: 2, timeSec: 45 };
+  }
+}
+
+function resolveOptimizationTimeBounds(methodFamily: AiBrewMethodFamily) {
+  if (methodFamily === 'cold_brew') return { min: 21600, max: 64800 };
+  if (methodFamily === 'espresso') return { min: 20, max: 45 };
+  return { min: 75, max: 420 };
+}
+
+function finitePatchNumber(value: number | undefined) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+function clampPatchValue(
+  value: number | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+  label: string,
+  diagnostics: string[],
+) {
+  if (value === undefined) return fallback;
+  const next = clamp(value, min, max);
+  if (Math.abs(next - value) > 0.001) {
+    diagnostics.push(`${label} clamped from ${roundTo(value, 2)} to ${roundTo(next, 2)}.`);
+  }
+  return next;
+}
+
+function sanitizeOptimizationControl(value: string | undefined) {
+  const normalized = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!normalized || normalized.length > 180) return undefined;
+  if (/\b(if\s+sour|if\s+bitter|next\s+cup|next\s+brew|optional|to taste|adjust as needed)\b/i.test(normalized)) {
+    return undefined;
+  }
+  if (/\b(?:increase|decrease|raise|lower|coarsen|finer|coarser|change|adjust|bump|drop|reduce)\s+(?:the\s+)?(?:grind|temperature|temp|ratio|dose|water|time)\b/i.test(normalized)) {
+    return undefined;
+  }
+  if (/\d+(?:\.\d+)?\s*(?:ml|g|c|°c|sec|secs|second|seconds|min|mins|minute|minutes)\b|1\s*:\s*\d/i.test(normalized)) {
+    return undefined;
+  }
+  return normalized;
+}
+
+function resolveStepPatch(patches: AiBrewOptimizationStepPatch[], step: BrewPlanStep, index: number) {
+  return patches.find((patch) => {
+    if (patch.stepId && patch.stepId === step.id) return true;
+    const rawIndex = finitePatchNumber(patch.index);
+    if (rawIndex === undefined) return false;
+    return Math.round(rawIndex) === index + 1 || Math.round(rawIndex) === index;
+  });
+}
+
+function rebuildOptimizedSteps(
+  plan: BrewPlan,
+  hotWaterMl: number,
+  totalTimeSeconds: number,
+  patches: AiBrewOptimizationStepPatch[],
+) {
+  const volumeIncrementMl = resolveBaristaVolumeIncrementMl(plan.methodFamily);
+  const timeScale = plan.totalTimeSeconds > 0 ? totalTimeSeconds / plan.totalTimeSeconds : 1;
+  const startCandidates = plan.steps.map((step, index) => {
+    const patch = resolveStepPatch(patches, step, index);
+    const proposed = finitePatchNumber(patch?.startSeconds);
+    return proposed ?? (index === 0 ? 0 : step.startSeconds * timeScale);
+  });
+  const startSeconds = normalizeBaristaStepStartSeconds(startCandidates, totalTimeSeconds, plan.methodFamily);
+  const volumeIndexes = plan.steps
+    .map((step, index) => {
+      const kind = step.kind || 'pour';
+      return kind === 'pour' || kind === 'extract' || step.pourVolumeMl > 0 ? index : -1;
+    })
+    .filter((index) => index >= 0);
+  const pourIndexes = volumeIndexes.length > 0 ? volumeIndexes : plan.steps.map((_, index) => index);
+  const lastPourIndex = pourIndexes[pourIndexes.length - 1] ?? plan.steps.length - 1;
+  const waterScale = plan.hotWaterMl > 0 ? hotWaterMl / plan.hotWaterMl : 1;
+  const rawPours = plan.steps.map((step, index) => {
+    if (!pourIndexes.includes(index)) return 0;
+    const patch = resolveStepPatch(patches, step, index);
+    return Math.max(0, finitePatchNumber(patch?.pourVolumeMl) ?? step.pourVolumeMl * waterScale);
+  });
+  const rawPourTotal = pourIndexes.reduce((sum, index) => sum + Math.max(0, rawPours[index] || 0), 0);
+
+  let runningTotal = 0;
+  return plan.steps.map((step, index) => {
+    const patch = resolveStepPatch(patches, step, index);
+    const isPourStep = pourIndexes.includes(index);
+    const isLastPourStep = index === lastPourIndex;
+    const remainingWater = Math.max(0, hotWaterMl - runningTotal);
+    const remainingPourCount = pourIndexes.filter((pourIndex) => pourIndex > index).length;
+    const minimumReserveMl = remainingPourCount * volumeIncrementMl;
+    const normalizedShare = rawPourTotal > 0
+      ? Math.max(0, rawPours[index] || 0) / rawPourTotal
+      : 1 / Math.max(1, pourIndexes.length);
+    const rawPour = isLastPourStep ? remainingWater : hotWaterMl * normalizedShare;
+    const maxPourVolumeMl = isLastPourStep
+      ? remainingWater
+      : Math.max(0, remainingWater - minimumReserveMl);
+    const minPourVolumeMl = !isLastPourStep && isPourStep && maxPourVolumeMl >= volumeIncrementMl
+      ? volumeIncrementMl
+      : 0;
+    const pourVolumeMl = isPourStep
+      ? isLastPourStep
+        ? remainingWater
+        : clampRoundedToIncrement(rawPour, minPourVolumeMl, maxPourVolumeMl, volumeIncrementMl)
+      : 0;
+    runningTotal = isLastPourStep ? hotWaterMl : roundTo(runningTotal + pourVolumeMl, 0);
+    const control = sanitizeOptimizationControl(patch?.control);
+    return {
+      ...step,
+      startSeconds: startSeconds[index] ?? step.startSeconds,
+      pourVolumeMl,
+      targetVolumeMl: runningTotal,
+      hybridInstruction: control
+        ? joinInstructionText(control, step.hybridInstruction || step.note)
+        : step.hybridInstruction,
+    } satisfies BrewPlanStep;
+  });
+}
+
+function validateOptimizedPlanEnvelope(plan: BrewPlan) {
+  const errors: string[] = [];
+  const numericValues = [
+    plan.totalWaterMl,
+    plan.hotWaterMl,
+    plan.iceMl,
+    plan.recommendedRatio,
+    plan.finalBeverageRatio,
+    plan.hotExtractionRatio,
+    plan.waterTempC,
+    plan.totalTimeSeconds,
+    ...plan.steps.flatMap((step) => [step.startSeconds, step.pourVolumeMl, step.targetVolumeMl]),
+  ];
+  if (numericValues.some((value) => !Number.isFinite(value))) {
+    errors.push('AI optimization produced a non-finite number.');
+  }
+
+  const totalPoured = plan.steps.reduce((sum, step) => sum + step.pourVolumeMl, 0);
+  const finalStep = plan.steps[plan.steps.length - 1];
+  if (totalPoured !== plan.hotWaterMl) {
+    errors.push(`Step total pour ${totalPoured} ml must equal hot water ${plan.hotWaterMl} ml.`);
+  }
+  if (finalStep?.targetVolumeMl !== plan.hotWaterMl) {
+    errors.push(`Final step target ${finalStep?.targetVolumeMl ?? 'missing'} ml must equal hot water ${plan.hotWaterMl} ml.`);
+  }
+  if (plan.brewMode === 'iced' && plan.hotWaterMl + plan.iceMl !== plan.totalWaterMl) {
+    errors.push('Iced hot water and ice split must equal total water.');
+  }
+  for (let index = 1; index < plan.steps.length; index += 1) {
+    if (plan.steps[index].startSeconds <= plan.steps[index - 1].startSeconds) {
+      errors.push('Step timestamps must be strictly increasing.');
+      break;
+    }
+  }
+  return errors;
+}
+
+export function applyAiBrewOptimizationPatch(
+  plan: BrewPlan,
+  patch: AiBrewOptimizationPatch | null | undefined,
+): AiBrewOptimizationResult {
+  if (!patch) {
+    return { plan, applied: false, diagnostics: [], rejected: ['AI optimization response was empty or invalid JSON.'] };
+  }
+
+  const diagnostics: string[] = [];
+  const rejected: string[] = [];
+  const method = BREW_METHOD_MAP[plan.methodId] || BREW_METHOD_MAP[resolvePlannerMethodId(plan.methodFamily, plan.brewMode)];
+  const roastTargets = buildRoastAdjustedTargets(method, plan.roastLevel);
+  const deltaBounds = resolveOptimizationDeltaBounds(plan.methodFamily);
+  const ratioMin = Math.max(method.ratioRange[0] - 0.75, roastTargets.adjustedRatioRange[0] - 0.75, plan.recommendedRatio - deltaBounds.ratio);
+  const ratioMax = Math.min(method.ratioRange[1] + 0.75, roastTargets.adjustedRatioRange[1] + 0.75, plan.recommendedRatio + deltaBounds.ratio);
+  const nextRatio = roundTo(clampPatchValue(
+    finitePatchNumber(patch.recommendedRatio),
+    plan.recommendedRatio,
+    ratioMin,
+    ratioMax,
+    'ratio',
+    diagnostics,
+  ), 2);
+  const totalWaterMl = roundBaristaVolumeMl(calcWaterFromDoseRatio(plan.doseG, nextRatio), plan.methodFamily);
+
+  let hotWaterMl = totalWaterMl;
+  if (plan.brewMode === 'iced') {
+    const rawSharePercent = finitePatchNumber(patch.hotWaterSharePercent) ?? plan.hotWaterSharePercent;
+    const requestedShare = clampPatchValue(rawSharePercent, plan.hotWaterSharePercent, 50, 78, 'hot water share', diagnostics) / 100;
+    const hotRatioBounds = ICED_HOT_EXTRACTION_RATIO_BOUNDS[plan.methodFamily] || ICED_HOT_EXTRACTION_RATIO_BOUNDS.v60;
+    const volumeIncrementMl = resolveBaristaVolumeIncrementMl(plan.methodFamily);
+    const minHotWaterMl = Math.ceil(plan.doseG * hotRatioBounds.min);
+    const maxHotWaterMl = Math.floor(plan.doseG * hotRatioBounds.max);
+    const maxHotWaterWithIceMl = Math.max(1, totalWaterMl - volumeIncrementMl);
+    const lowerHotWaterMl = Math.min(maxHotWaterWithIceMl, Math.max(volumeIncrementMl, minHotWaterMl));
+    const upperHotWaterMl = Math.min(maxHotWaterWithIceMl, Math.max(lowerHotWaterMl, maxHotWaterMl));
+    hotWaterMl = clampRoundedToIncrement(totalWaterMl * requestedShare, lowerHotWaterMl, upperHotWaterMl, volumeIncrementMl);
+  }
+  const iceMl = plan.brewMode === 'iced' ? roundTo(totalWaterMl - hotWaterMl, 0) : 0;
+  const hotExtractionRatio = plan.brewMode === 'iced' ? roundTo(hotWaterMl / plan.doseG, 2) : nextRatio;
+  const hotWaterSharePercent = roundTo(totalWaterMl > 0 ? (hotWaterMl / totalWaterMl) * 100 : 100, 0);
+  const iceSharePercent = roundTo(totalWaterMl > 0 ? (iceMl / totalWaterMl) * 100 : 0, 0);
+
+  const tempBounds = plan.methodFamily === 'cold_brew' ? { min: 4, max: 25 } : { min: 78, max: 98 };
+  const waterTempC = Math.round(clampPatchValue(
+    finitePatchNumber(patch.waterTempC),
+    plan.waterTempC,
+    Math.max(tempBounds.min, plan.waterTempC - deltaBounds.tempC),
+    Math.min(tempBounds.max, plan.waterTempC + deltaBounds.tempC),
+    'temperature',
+    diagnostics,
+  ));
+  const methodTimeBounds = resolveOptimizationTimeBounds(plan.methodFamily);
+  const totalTimeSeconds = roundBaristaTimeSeconds(clampPatchValue(
+    finitePatchNumber(patch.totalTimeSeconds),
+    plan.totalTimeSeconds,
+    Math.max(methodTimeBounds.min, plan.totalTimeSeconds - deltaBounds.timeSec),
+    Math.min(methodTimeBounds.max, plan.totalTimeSeconds + deltaBounds.timeSec),
+    'brew time',
+    diagnostics,
+  ), plan.methodFamily);
+  const steps = rebuildOptimizedSteps(plan, hotWaterMl, totalTimeSeconds, patch.steps || []);
+  const brewOutputs = buildBrewOutputs({ method, doseG: plan.doseG, waterMl: hotWaterMl, ratio: nextRatio });
+  const estimatedBrewOutputMl = roundBaristaVolumeMl(brewOutputs.beverageOutputMl, plan.methodFamily);
+  const estimatedCupOutputMl = roundBaristaVolumeMl(estimatedBrewOutputMl + iceMl, plan.methodFamily);
+  const baseGuardrails = validateBrewInputs({ method, doseG: plan.doseG, waterMl: totalWaterMl, ratio: nextRatio }, { roastLevel: plan.roastLevel });
+  const baseConformance = evaluateConformance({ method, doseG: plan.doseG, waterMl: totalWaterMl, ratio: nextRatio }, { roastLevel: plan.roastLevel });
+  const optimizationReason = patch.reason?.trim().slice(0, 220);
+  const warnings = normalizeNoteList(plan.warnings, baseGuardrails.warnings);
+  const nextPlan = {
+    ...plan,
+    fingerprint: createFingerprint(JSON.stringify({
+      previousFingerprint: plan.fingerprint,
+      aiOptimizedAt: Date.now(),
+      ratio: nextRatio,
+      totalWaterMl,
+      hotWaterMl,
+      iceMl,
+      waterTempC,
+      totalTimeSeconds,
+      steps: steps.map((step) => [step.startSeconds, step.pourVolumeMl, step.targetVolumeMl]),
+    })),
+    totalWaterMl,
+    hotWaterMl,
+    iceMl,
+    recommendedRatio: nextRatio,
+    finalBeverageRatio: nextRatio,
+    hotExtractionRatio,
+    hotWaterSharePercent,
+    iceSharePercent,
+    waterTempC,
+    totalTimeSeconds,
+    estimatedCupOutputMl,
+    estimatedBrewOutputMl,
+    estimatedBeverageOutputMl: estimatedCupOutputMl,
+    summary: buildSummary({
+      brewMode: plan.brewMode,
+      methodFamily: plan.methodFamily,
+      coffeeName: plan.coffeeName,
+      dripper: plan.dripper,
+      targetProfileLabel: plan.targetProfileLabel,
+      recommendedRatio: nextRatio,
+      finalBeverageRatio: nextRatio,
+      hotExtractionRatio,
+      waterTempC,
+      totalTimeSeconds,
+    }),
+    steps,
+    notes: normalizeNoteList(
+      plan.notes,
+      optimizationReason ? [`AI optimizer: ${optimizationReason}`] : ['AI optimizer adjusted the deterministic brew envelope within guardrails.'],
+    ),
+    warnings,
+    guardrails: {
+      errors: baseGuardrails.errors,
+      warnings,
+    },
+    conformance: {
+      warnings: normalizeNoteList(baseConformance.warnings, warnings),
+      standardsHits: baseConformance.standardsHits,
+      standardsMisses: normalizeNoteList(baseConformance.standardsMisses),
+    },
+    confidenceNotes: normalizeNoteList(
+      plan.confidenceNotes,
+      [`AI numeric optimizer accepted inside guardrails${typeof patch.confidence === 'number' ? ` (confidence ${roundPercent(clamp(patch.confidence <= 1 ? patch.confidence * 100 : patch.confidence, 0, 100))}%).` : '.'}`],
+      diagnostics,
+    ),
+  } satisfies BrewPlan;
+
+  rejected.push(...validateOptimizedPlanEnvelope(nextPlan));
+  if (rejected.length > 0 || nextPlan.guardrails.errors.length > 0) {
+    return {
+      plan,
+      applied: false,
+      diagnostics,
+      rejected: normalizeNoteList(rejected, nextPlan.guardrails.errors),
+    };
+  }
+
+  const applied = (
+    nextPlan.recommendedRatio !== plan.recommendedRatio
+    || nextPlan.totalWaterMl !== plan.totalWaterMl
+    || nextPlan.hotWaterMl !== plan.hotWaterMl
+    || nextPlan.iceMl !== plan.iceMl
+    || nextPlan.waterTempC !== plan.waterTempC
+    || nextPlan.totalTimeSeconds !== plan.totalTimeSeconds
+    || nextPlan.steps.some((step, index) => {
+      const previous = plan.steps[index];
+      return !previous
+        || step.startSeconds !== previous.startSeconds
+        || step.pourVolumeMl !== previous.pourVolumeMl
+        || step.targetVolumeMl !== previous.targetVolumeMl
+        || step.hybridInstruction !== previous.hybridInstruction;
+    })
+  );
+
+  return { plan: applied ? nextPlan : plan, applied, diagnostics, rejected: [] };
+}
+
 export async function buildAiBrewPlanProgressively(
   input: AiBrewFormState,
   catalog: AiBrewCatalog,

@@ -1,5 +1,12 @@
 import { DB_STORES, idbDelete, idbGet, idbGetAll, idbPut } from '../../services/db.ts';
-import type { AiBrewCatalog, BrewJournalEntry, BrewPlan, BrewPlanAiNotes, BrewPreset } from './types';
+import type {
+  AiBrewCatalog,
+  BrewJournalEntry,
+  BrewPlan,
+  BrewPlanAiNotes,
+  BrewPreset,
+  BrewTasteFeedback,
+} from './types';
 
 const AI_BREW_FORM_STORAGE_KEY = 'BARISTACHAW_AI_BREW_FORM_V5';
 const AI_BREW_CATALOG_SNAPSHOT_STORAGE_KEY = 'BARISTACHAW_AI_BREW_CATALOG_SNAPSHOT_V5';
@@ -116,6 +123,25 @@ export async function updateBrewJournalAiNotes(id: string, patch: BrewPlanAiNote
     },
   } satisfies BrewJournalEntry;
   await idbPut(DB_STORES.AI_BREW_JOURNAL, next);
+}
+
+export async function updateBrewJournalFeedback(
+  id: string,
+  feedback: BrewTasteFeedback,
+): Promise<BrewJournalEntry | null> {
+  const entry = await idbGet<BrewJournalEntry>(DB_STORES.AI_BREW_JOURNAL, id);
+  if (!entry) return null;
+  const now = Date.now();
+  const next = {
+    ...entry,
+    updatedAt: now,
+    feedback: {
+      ...feedback,
+      updatedAt: now,
+    },
+  } satisfies BrewJournalEntry;
+  await idbPut(DB_STORES.AI_BREW_JOURNAL, next);
+  return next;
 }
 
 export async function listRecentBrewJournalEntries(limit = 6): Promise<BrewJournalEntry[]> {

@@ -95,6 +95,7 @@ import {
   saveCachedAiBrewCatalogSnapshot,
   saveLastGeneratedBrewPlan,
   updateBrewJournalAiNotes,
+  updateBrewJournalFeedback,
 } from './storage';
 import { loadAiBrewCatalog } from './catalog';
 import type {
@@ -104,6 +105,8 @@ import type {
   BrewJournalEntry,
   BrewPlan,
   BrewPreset,
+  BrewTasteFeedback,
+  BrewTasteFeedbackRating,
   EquipmentCatalogEntry,
   ProcessCatalogEntry,
   VarietyCatalogEntry,
@@ -118,6 +121,7 @@ const OMITTED_ENTRY_ID = '__omitted__';
 const AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS = 5000;
 const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 3500;
 const AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS = 1800;
+const AI_BREW_FEEDBACK_NOTE_MAX_LENGTH = 240;
 const COPY = {
   en: {
     title: 'AI Brew',
@@ -339,6 +343,17 @@ const COPY = {
     saveCollectionFailed: 'Unable to save this brew to Collection right now.',
     savedFavorite: 'Saved to favorites.',
     removedFavorite: 'Removed from favorites.',
+    feedbackTitle: 'Taste Check',
+    feedbackDescription: 'After brewing, mark the cup result. This keeps the local journal useful for the next adjustment.',
+    feedbackGreat: 'Landed well',
+    feedbackSour: 'Too sour',
+    feedbackBitter: 'Too bitter',
+    feedbackThin: 'Too thin',
+    feedbackNote: 'Short note',
+    feedbackNotePlaceholder: 'e.g. drawdown was fast, cup felt sharp, grind one click finer next time',
+    feedbackSaveNote: 'Save note',
+    feedbackSaved: 'Taste feedback saved.',
+    feedbackSaveFailed: 'Unable to save taste feedback right now.',
     unavailable: 'AI Brew catalog is unavailable right now.',
     loadingCatalog: 'Loading catalog...',
     restoredPlan: 'Restored your last AI Brew plan from this device.',
@@ -680,6 +695,17 @@ const COPY = {
     saveCollectionFailed: 'Recipe ini belum bisa disimpan ke Collection sekarang.',
     savedFavorite: 'Masuk ke favorit.',
     removedFavorite: 'Dihapus dari favorit.',
+    feedbackTitle: 'Cek rasa',
+    feedbackDescription: 'Setelah seduh, tandai hasil cangkir. Jurnal lokal jadi lebih berguna untuk penyesuaian berikutnya.',
+    feedbackGreat: 'Sudah enak',
+    feedbackSour: 'Terlalu asam',
+    feedbackBitter: 'Terlalu pahit',
+    feedbackThin: 'Terlalu tipis',
+    feedbackNote: 'Catatan singkat',
+    feedbackNotePlaceholder: 'mis. drawdown cepat, rasa tajam, grind satu klik lebih halus',
+    feedbackSaveNote: 'Simpan catatan',
+    feedbackSaved: 'Catatan rasa tersimpan.',
+    feedbackSaveFailed: 'Catatan rasa belum bisa disimpan sekarang.',
     unavailable: 'Katalog AI Brew belum bisa dimuat sekarang.',
     loadingCatalog: 'Memuat katalog...',
     restoredPlan: 'Plan terakhir dipulihkan.',
@@ -1497,6 +1523,24 @@ function formatWaterPresetStatus(copy: CopySet, status: WaterPresetStatus) {
     default:
       return copy.waterInfoOnly;
   }
+}
+
+function formatBrewFeedbackRating(copy: CopySet, rating: BrewTasteFeedbackRating) {
+  switch (rating) {
+    case 'great':
+      return copy.feedbackGreat;
+    case 'sour':
+      return copy.feedbackSour;
+    case 'bitter':
+      return copy.feedbackBitter;
+    case 'thin':
+    default:
+      return copy.feedbackThin;
+  }
+}
+
+function sanitizeBrewFeedbackNote(value: string) {
+  return value.trim().replace(/\s+/g, ' ').slice(0, AI_BREW_FEEDBACK_NOTE_MAX_LENGTH);
 }
 
 function translateTargetProfileLabel(copy: CopySet, profileId: string) {
@@ -2442,6 +2486,8 @@ function PlanResultDialog({
   saving,
   saveSuccess,
   saveError,
+  feedback,
+  feedbackNoteDraft,
   showProvenance,
   isAuthenticated,
   isOffline,
@@ -2451,6 +2497,8 @@ function PlanResultDialog({
   onUseInRatio,
   onSaveRecipe,
   onToggleFavorite,
+  onFeedbackNoteChange,
+  onSaveFeedback,
   onRunAiCoach,
   onOpenAuth,
 }: {
@@ -2467,6 +2515,8 @@ function PlanResultDialog({
   saving: boolean;
   saveSuccess: string | null;
   saveError: string | null;
+  feedback: BrewTasteFeedback | null;
+  feedbackNoteDraft: string;
   showProvenance: boolean;
   isAuthenticated: boolean;
   isOffline: boolean;
@@ -2476,6 +2526,8 @@ function PlanResultDialog({
   onUseInRatio: (plan: BrewPlan) => void;
   onSaveRecipe: () => void;
   onToggleFavorite: () => void;
+  onFeedbackNoteChange: (value: string) => void;
+  onSaveFeedback: (rating: BrewTasteFeedbackRating) => void;
   onRunAiCoach: (mode: AiCoachMode) => void;
   onOpenAuth: () => void;
 }) {
@@ -2582,6 +2634,12 @@ function PlanResultDialog({
     : saveSuccess
       ? copy.saved
       : copy.save;
+  const feedbackOptions: Array<{ rating: BrewTasteFeedbackRating; label: string }> = [
+    { rating: 'great', label: copy.feedbackGreat },
+    { rating: 'sour', label: copy.feedbackSour },
+    { rating: 'bitter', label: copy.feedbackBitter },
+    { rating: 'thin', label: copy.feedbackThin },
+  ];
 
   function startFlowTimer() {
     if (flowProgressSeconds >= plan.totalTimeSeconds) {
@@ -2958,6 +3016,55 @@ function PlanResultDialog({
                         <li key={item} className="rounded-xl bg-surface-alpha px-3 py-2">{item}</li>
                       ))}
                     </ul>
+                  </div>
+
+                  <div className="rounded-[1.4rem] border panel-divider-subtle panel-soft p-4" data-testid="ai-brew-taste-feedback">
+                    <div className="mb-2 flex items-center gap-2">
+                      <Coffee size={15} className="text-amber-500" />
+                      <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.feedbackTitle}</h4>
+                    </div>
+                    <p className="text-sm leading-5 text-secondary">{copy.feedbackDescription}</p>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {feedbackOptions.map((item) => {
+                        const selected = feedback?.rating === item.rating;
+                        return (
+                          <button
+                            key={item.rating}
+                            type="button"
+                            onClick={() => onSaveFeedback(item.rating)}
+                            className={`min-h-[44px] rounded-xl border px-3 py-2 text-sm font-semibold transition-all ${
+                              selected
+                                ? 'border-blue-500/25 bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.18)]'
+                                : 'panel-divider-subtle bg-[var(--bg-base)] text-primary hover:border-blue-500/20 hover:bg-surface-alpha'
+                            }`}
+                            aria-pressed={selected}
+                            data-testid={`ai-brew-feedback-${item.rating}`}
+                          >
+                            {item.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <label className="mt-3 block">
+                      <span className="mb-2 block text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.feedbackNote}</span>
+                      <textarea
+                        value={feedbackNoteDraft}
+                        onChange={(event) => onFeedbackNoteChange(event.target.value.slice(0, AI_BREW_FEEDBACK_NOTE_MAX_LENGTH))}
+                        placeholder={copy.feedbackNotePlaceholder}
+                        maxLength={AI_BREW_FEEDBACK_NOTE_MAX_LENGTH}
+                        className="glass-input min-h-20 w-full resize-none px-3 py-2 text-sm leading-5"
+                        data-testid="ai-brew-feedback-note"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => feedback && onSaveFeedback(feedback.rating)}
+                      disabled={!feedback || saving}
+                      className="mt-2 inline-flex min-h-[40px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary transition-colors hover:border-blue-500/20 hover:bg-surface-alpha disabled:cursor-not-allowed disabled:opacity-55"
+                      data-testid="ai-brew-feedback-save-note"
+                    >
+                      {copy.feedbackSaveNote}
+                    </button>
                   </div>
 
                   <div className="rounded-[1.4rem] border panel-divider-subtle panel-soft p-4">
@@ -3911,6 +4018,8 @@ export function AiBrewPanel({
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [activeFeedback, setActiveFeedback] = useState<BrewTasteFeedback | null>(null);
+  const [feedbackNoteDraft, setFeedbackNoteDraft] = useState('');
   const [aiBusy, setAiBusy] = useState<AiCoachMode | null>(null);
   const [aiResponse, setAiResponse] = useState<{ title: string; markdown: string } | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -3960,6 +4069,7 @@ export function AiBrewPanel({
     setShowMineralEditor(nextForm.waterMode === 'manual' || nextForm.waterCustomized);
     setShowProvenance(storedPlan.provenanceAttentionNeeded);
     clearSaveFeedback();
+    syncTasteFeedback(null);
     setActiveBuilderModal(null);
     setResultOpen(shouldOpen);
     setAiResponse(selectDefaultAiResponse(copy, storedPlan.aiNotes, storedPlan, language));
@@ -4059,6 +4169,11 @@ export function AiBrewPanel({
   function clearSaveFeedback() {
     setSaveSuccess(null);
     setSaveError(null);
+  }
+
+  function syncTasteFeedback(feedback?: BrewTasteFeedback | null) {
+    setActiveFeedback(feedback || null);
+    setFeedbackNoteDraft(feedback?.note || '');
   }
 
   const selectedProcessLabel = useMemo(() => {
@@ -4335,6 +4450,7 @@ export function AiBrewPanel({
     setAiResponse(null);
     setAiError(null);
     clearSaveFeedback();
+    syncTasteFeedback(null);
     const generationFormState = activeBuilderModal === 'quick'
       ? createQuickAiBrewFormState(formState, catalog)
       : sanitizeAiBrewFormState(formState, catalog);
@@ -4464,6 +4580,7 @@ export function AiBrewPanel({
     setAiResponse(null);
     setAiError(null);
     clearSaveFeedback();
+    syncTasteFeedback(null);
     setFormError(null);
     setActiveJournalId(null);
     setShowMineralEditor(false);
@@ -4518,6 +4635,46 @@ export function AiBrewPanel({
     setNotice(copy.savedFavorite);
   }
 
+  async function handleSaveTasteFeedback(rating: BrewTasteFeedbackRating) {
+    if (!plan || saving) return;
+    const now = Date.now();
+    const nextFeedback: BrewTasteFeedback = {
+      rating,
+      note: sanitizeBrewFeedbackNote(feedbackNoteDraft) || undefined,
+      createdAt: activeFeedback?.createdAt || now,
+      updatedAt: now,
+    };
+    const journalId = activeJournalId || plan.id;
+    setSaving(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+    try {
+      const updated = await updateBrewJournalFeedback(journalId, nextFeedback);
+      if (!updated) {
+        await saveBrewJournalEntry({
+          id: journalId,
+          fingerprint: plan.fingerprint,
+          title: buildLocalizedPlanRecipeName(plan, language),
+          locale: language,
+          createdAt: plan.createdAt,
+          updatedAt: now,
+          plan,
+          aiNotes: plan.aiNotes,
+          feedback: nextFeedback,
+        });
+      }
+      setActiveJournalId(journalId);
+      setActiveFeedback(nextFeedback);
+      setFeedbackNoteDraft(nextFeedback.note || '');
+      await refreshSavedViews();
+      setSaveSuccess(copy.feedbackSaved);
+    } catch {
+      setSaveError(copy.feedbackSaveFailed);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function runAiCoach(mode: AiCoachMode) {
     if (!plan) return;
     if (!ensureAiAccess(`ai_brew_${mode}`)) return;
@@ -4569,20 +4726,25 @@ export function AiBrewPanel({
     }
   }
 
-  function hydrateFromPlan(nextPlan: BrewPlan) {
+  function hydrateFromPlan(nextPlan: BrewPlan, feedback?: BrewTasteFeedback | null, journalId = nextPlan.id) {
     if (!catalog) return;
     const nextForm = sanitizeAiBrewFormState(loadPlanIntoForm(nextPlan), catalog);
     setFormState(nextForm);
     setShowMineralEditor(nextForm.waterMode === 'manual' || nextForm.waterCustomized);
     setPlan(nextPlan);
     setShowProvenance(nextPlan.provenanceAttentionNeeded);
-    setActiveJournalId(nextPlan.id);
+    setActiveJournalId(journalId);
     clearSaveFeedback();
+    syncTasteFeedback(feedback);
     setActiveBuilderModal(null);
     setResultOpen(true);
     saveLastGeneratedBrewPlan(nextPlan);
     setAiResponse(selectDefaultAiResponse(copy, nextPlan.aiNotes, nextPlan, language));
     setAiError(null);
+  }
+
+  function hydrateFromJournalEntry(entry: BrewJournalEntry) {
+    hydrateFromPlan(entry.plan, entry.feedback, entry.id);
   }
 
   const pickerTitle = pickerKind
@@ -5713,14 +5875,19 @@ export function AiBrewPanel({
                   <button
                     key={entry.id}
                     type="button"
-                    onClick={() => hydrateFromPlan(entry.plan)}
+                    onClick={() => hydrateFromJournalEntry(entry)}
                     className="flex w-full items-start justify-between gap-3 rounded-2xl bg-surface-alpha px-3 py-3 text-left transition-colors hover:bg-surface-alpha-hover"
                     data-testid={index === 0 ? 'ai-brew-history-item' : `ai-brew-history-item-${index}`}
                     aria-label={`${copy.loadRecent}: ${entry.title}`}
                   >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-primary">{entry.title}</p>
-              <p className="mt-1 text-xs text-secondary">{resolveModeLabel(copy, entry.plan.brewMode, entry.plan.methodFamily)} · {entry.plan.dripper.name}</p>
+                      <p className="mt-1 text-xs text-secondary">{resolveModeLabel(copy, entry.plan.brewMode, entry.plan.methodFamily)} · {entry.plan.dripper.name}</p>
+                      {entry.feedback && (
+                        <p className="mt-2 inline-flex rounded-full bg-blue-500/10 px-2 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
+                          {formatBrewFeedbackRating(copy, entry.feedback.rating)}
+                        </p>
+                      )}
                     </div>
                     <span className="rounded-xl bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">{copy.load}</span>
                   </button>
@@ -5781,6 +5948,8 @@ export function AiBrewPanel({
         saving={saving}
         saveSuccess={saveSuccess}
         saveError={saveError}
+        feedback={activeFeedback}
+        feedbackNoteDraft={feedbackNoteDraft}
         showProvenance={showProvenance}
         isAuthenticated={isAuthenticated}
         isOffline={isOffline}
@@ -5793,6 +5962,8 @@ export function AiBrewPanel({
         onUseInRatio={onUseInRatio}
         onSaveRecipe={() => { void handleSaveRecipe(); }}
         onToggleFavorite={() => { void handleToggleFavorite(); }}
+        onFeedbackNoteChange={setFeedbackNoteDraft}
+        onSaveFeedback={(rating) => { void handleSaveTasteFeedback(rating); }}
         onRunAiCoach={(mode) => { void runAiCoach(mode); }}
         onOpenAuth={() => openAuthModal({ source: 'ai_brew' })}
       />

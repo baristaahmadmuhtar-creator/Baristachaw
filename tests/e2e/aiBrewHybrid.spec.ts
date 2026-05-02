@@ -212,6 +212,31 @@ test('ai brew precision builder applies barista target controls and keeps extra 
   await expect(sequenceNote.getByTestId('ai-brew-step-detail-1')).toContainText(/Bloom/i);
 });
 
+test('ai brew taste feedback is saved in the local brew journal', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await openQuickBuilder(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Taste Feedback Loop');
+  await pickWater(page, 'volvic', 'volvic-sg');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const feedbackPanel = page.getByTestId('ai-brew-taste-feedback');
+  await expect(feedbackPanel).toBeVisible({ timeout: 60_000 });
+  await feedbackPanel.scrollIntoViewIfNeeded();
+  await page.getByTestId('ai-brew-feedback-note').fill('Drawdown cepat, grind satu klik lebih halus.');
+  await page.getByTestId('ai-brew-feedback-sour').click();
+  await expect(page.getByTestId('ai-brew-save-success')).toContainText(/Catatan rasa tersimpan|Taste feedback saved/i);
+  await expect(page.getByTestId('ai-brew-feedback-sour')).toHaveAttribute('aria-pressed', 'true');
+
+  await page.getByRole('button', { name: /Tutup output plan|Close planned output/i }).click();
+  await page.getByTestId('ai-brew-history-tab-recent').click();
+  await expect(page.getByTestId('ai-brew-history-item')).toContainText(/Terlalu asam|Too sour/i);
+  await page.getByTestId('ai-brew-history-item').click();
+  await expect(page.getByTestId('ai-brew-feedback-note')).toHaveValue(/Drawdown cepat/i);
+  await expect(page.getByTestId('ai-brew-feedback-sour')).toHaveAttribute('aria-pressed', 'true');
+});
+
 test('ai brew auto sequence keeps deterministic sequence when AI responses timeout', async ({ page }) => {
   await qaLogin(page.request);
   await mockAiApis(page);

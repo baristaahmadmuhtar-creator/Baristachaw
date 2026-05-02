@@ -466,6 +466,16 @@ export interface BrewJournalEntry {
   updatedAt: number;
   plan: BrewPlan;
   aiNotes?: BrewPlanAiNotes;
+  feedback?: BrewTasteFeedback;
+}
+
+export type BrewTasteFeedbackRating = 'great' | 'sour' | 'bitter' | 'thin';
+
+export interface BrewTasteFeedback {
+  rating: BrewTasteFeedbackRating;
+  note?: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface BrewPreset {

@@ -4549,6 +4549,7 @@ export function AiBrewPanel({
                   className="absolute right-3 top-3 icon-touch-button glass-button"
                   aria-label={copy.closeBuilder}
                   data-testid={`ai-brew-close-${mode}`}
+                  data-autofocus="true"
                 >
                   <X size={18} />
                 </button>
@@ -4687,7 +4688,6 @@ export function AiBrewPanel({
                         aria-label={copy.coffeeName}
                         className="glass-input h-12 w-full px-4 text-base"
                         data-testid="ai-brew-coffee-name"
-                        data-autofocus="true"
                       />
                     </div>
 

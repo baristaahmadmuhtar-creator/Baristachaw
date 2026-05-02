@@ -431,7 +431,9 @@ export function PlanGrowthSurface({
               </span>
             </div>
             <h2 className="text-lg font-black tracking-tight text-primary sm:text-xl">
-              {showUpgradeFraming ? t.homePlanGrowthTitle : t.homePlanPaidTitle}
+              {(showUpgradeFraming ? t.homePlanGrowthTitle : t.homePlanPaidTitle)
+                .replace('{plan}', formatPlanName(currentPlan, language))
+                .replace('{recommendedPlan}', formatPlanName(recommendedPlan, language))}
             </h2>
             <p className="mt-1 max-w-3xl text-sm leading-6 text-secondary">
               {(showUpgradeFraming ? t.homePlanGrowthBody : t.homePlanPaidBody)

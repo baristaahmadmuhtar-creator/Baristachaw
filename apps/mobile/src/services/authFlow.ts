@@ -167,6 +167,9 @@ function toGoogleErrorMessage(error: unknown): string {
   if (/grant/i.test(message)) {
     return 'Masuk dengan Google belum lengkap. Coba ulang sekali lagi.';
   }
+  if (/oauth.*not.*configured|not.*configured.*oauth/i.test(message)) {
+    return 'Login Google belum dikonfigurasi di server ini. Hubungi admin atau gunakan build dengan konfigurasi OAuth aktif.';
+  }
   return message || 'Gagal masuk dengan Google.';
 }
 

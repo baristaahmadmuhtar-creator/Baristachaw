@@ -108,6 +108,9 @@ function buildNativeShellBootstrap(platform: 'ios' | 'android', authSession?: Au
           };
         }
       }
+      try {
+        window.dispatchEvent(new Event('barista:native-session-ready'));
+      } catch (error) {}
     })();
     true;
   `;
@@ -352,6 +355,7 @@ export function WebParityScreen({
         containerStyle={styles.webviewContainer}
         originWhitelist={['https://*', 'baristachaw://*', 'baristaclaw://*']}
         injectedJavaScriptBeforeContentLoaded={nativeShellBootstrap}
+        injectedJavaScript={nativeShellBootstrap}
         onLoadStart={() => {
           if (!didReportReady.current) {
             setLoading(true);

@@ -5,6 +5,8 @@ describe('mobile env defaults', () => {
     jest.resetModules();
     process.env = { ...originalEnv };
     delete process.env.EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED;
+    delete process.env.EXPO_PUBLIC_API_BASE_URL;
+    delete process.env.EXPO_PUBLIC_WEB_APP_URL;
   });
 
   afterEach(() => {

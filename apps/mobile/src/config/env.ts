@@ -74,10 +74,12 @@ const hardFailToDebugParity = normalizeBoolean(
   DEFAULT_HARD_FAIL_TO_DEBUG_PARITY,
 );
 const runtimePolicy = resolveRuntimePolicy({ uiMode, debugWebParityEnabled, hardFailToDebugParity });
+const apiBaseUrl = normalizeBaseUrl(process.env.EXPO_PUBLIC_API_BASE_URL || DEFAULT_API_BASE_URL);
+const webAppUrl = normalizeBaseUrl(process.env.EXPO_PUBLIC_WEB_APP_URL || DEFAULT_WEB_APP_URL);
 
 export const mobileEnv = {
-  apiBaseUrl: normalizeBaseUrl(process.env.EXPO_PUBLIC_API_BASE_URL || DEFAULT_API_BASE_URL),
-  webAppUrl: normalizeBaseUrl(process.env.EXPO_PUBLIC_WEB_APP_URL || DEFAULT_WEB_APP_URL),
+  apiBaseUrl,
+  webAppUrl,
   appScheme: normalizeScheme(process.env.EXPO_PUBLIC_APP_SCHEME || DEFAULT_APP_SCHEME),
   supabaseUrl: normalizeOptionalBaseUrl(process.env.EXPO_PUBLIC_SUPABASE_URL),
   supabasePublishableKey: (process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '').trim(),

@@ -314,6 +314,20 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   }, [getLocalizedCopy, refreshAuthState]);
 
   useEffect(() => {
+    const handleNativeSessionReady = () => {
+      if (!readNativeShellSession()) return;
+      void refreshAuthState({
+        silent: true,
+        retryDelaysMs: [120, 400, 900],
+      });
+    };
+
+    window.addEventListener('barista:native-session-ready', handleNativeSessionReady);
+    handleNativeSessionReady();
+    return () => window.removeEventListener('barista:native-session-ready', handleNativeSessionReady);
+  }, [refreshAuthState]);
+
+  useEffect(() => {
     const stored = readStoredOauthCallbackResult();
     if (!stored?.type) return;
 

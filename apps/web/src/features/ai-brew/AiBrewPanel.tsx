@@ -77,6 +77,7 @@ import {
   resolveGrinderSettingReference,
   sanitizeAiBrewFormState,
   supportsAiBrewIcedMode,
+  type AiBrewOptimizationPatch,
   type AiBrewGenerationProgress,
   type AiBrewGenerationStageId,
 } from './planner';
@@ -291,6 +292,7 @@ const COPY = {
     aiGenerateBrief: 'AI Assist',
     aiSequenceGuide: 'AI Notes',
     aiGenerateLoading: 'Refreshing short notes...',
+    aiEngineReady: 'AI ready',
     aiEngineOnlineOptimized: 'AI optimized',
     aiEngineLocalValidated: 'AI off',
     aiEngineWorkingOnline: 'AI optimizing',
@@ -324,7 +326,7 @@ const COPY = {
     generated: 'Brew plan saved to local history.',
     generatedAi: 'Brew plan saved. AI optimization applied.',
     generatedLocal: 'Brew plan saved with local planner.',
-    aiOptimizationNoChange: 'AI did not return a validated numeric change yet. Try again or adjust the coffee profile.',
+    aiOptimizationNoChange: 'AI could not produce a safe numeric adjustment, so the validated planner result was kept.',
     savedCollection: 'Recipe saved to Collection.',
     saveCollectionFailed: 'Unable to save this brew to Collection right now.',
     savedFavorite: 'Saved to favorites.',
@@ -623,6 +625,7 @@ const COPY = {
     aiGenerateBrief: 'Asisten AI',
     aiSequenceGuide: 'Catatan AI',
     aiGenerateLoading: 'Memperbarui catatan singkat...',
+    aiEngineReady: 'Siap AI',
     aiEngineOnlineOptimized: 'AI dioptimalkan',
     aiEngineLocalValidated: 'AI nonaktif',
     aiEngineWorkingOnline: 'AI mengoptimalkan',
@@ -656,7 +659,7 @@ const COPY = {
     generated: 'Brew plan tersimpan ke history lokal.',
     generatedAi: 'Brew plan tersimpan. Optimasi AI diterapkan.',
     generatedLocal: 'Brew plan tersimpan dengan planner lokal.',
-    aiOptimizationNoChange: 'AI belum memberi perubahan angka yang lolos validasi. Coba ulang atau ubah profil kopi.',
+    aiOptimizationNoChange: 'AI belum memberi penyesuaian angka yang aman, jadi hasil planner tervalidasi tetap dipakai.',
     savedCollection: 'Recipe tersimpan ke Collection.',
     saveCollectionFailed: 'Recipe ini belum bisa disimpan ke Collection sekarang.',
     savedFavorite: 'Masuk ke favorit.',
@@ -1325,6 +1328,80 @@ async function runHybridOptimizationUpdate(
   );
 
   return applyAiBrewOptimizationPatch(nextPlan, parseAiBrewOptimizationPatch(aiText));
+}
+
+function resolveAiBrewOptimizationIntent(plan: BrewPlan) {
+  const target = `${plan.targetProfileId} ${plan.targetProfileLabel}`.toLowerCase();
+  if (/\b(acid|acidity|bright|clarity|clear|clean|citrus|floral|juicy|cerah|jernih)\b/i.test(target)) {
+    return 'clarity';
+  }
+  if (/\b(body|depth|heavy|texture|syrupy|tebal|bodi)\b/i.test(target)) {
+    return 'body';
+  }
+  if (/\b(sweet|sweetness|round|manis|madu|gula)\b/i.test(target)) {
+    return 'sweetness';
+  }
+  return 'balanced';
+}
+
+function buildGuardrailAiOptimizationCandidates(plan: BrewPlan): AiBrewOptimizationPatch[] {
+  const intent = resolveAiBrewOptimizationIntent(plan);
+  const iced = plan.brewMode === 'iced';
+  const espresso = plan.methodFamily === 'espresso';
+  const coldBrew = plan.methodFamily === 'cold_brew';
+  const ratioStep = espresso ? 0.1 : coldBrew ? 0.5 : 0.2;
+  const timeStep = espresso ? 2 : coldBrew ? 1800 : iced ? 10 : 8;
+  const ratioDirection = intent === 'body' || intent === 'sweetness' ? -1 : 1;
+  const tempDirection = intent === 'body' || plan.roastLevel === 'dark' ? -1 : 1;
+  const timeDirection = intent === 'clarity' ? -1 : 1;
+  const hotShareDirection = intent === 'clarity' ? -1 : 1;
+  const reason = [
+    'AI guardrail synthesis after the model response did not produce a directly usable numeric delta.',
+    iced
+      ? 'Japanese-style iced remains hot concentrate over measured ice.'
+      : 'Hot brew envelope stays inside method and roast limits.',
+  ].join(' ');
+
+  return [
+    {
+      reason,
+      confidence: 0.72,
+      recommendedRatio: plan.recommendedRatio + (ratioStep * ratioDirection),
+      waterTempC: plan.waterTempC + tempDirection,
+      totalTimeSeconds: plan.totalTimeSeconds + (timeStep * timeDirection),
+      hotWaterSharePercent: iced
+        ? plan.hotWaterSharePercent + (2 * hotShareDirection)
+        : undefined,
+    },
+    {
+      reason,
+      confidence: 0.68,
+      recommendedRatio: plan.recommendedRatio - (ratioStep * ratioDirection),
+      waterTempC: plan.waterTempC + (plan.waterTempC >= 94 ? -1 : 1),
+      totalTimeSeconds: plan.totalTimeSeconds + timeStep,
+      hotWaterSharePercent: iced
+        ? plan.hotWaterSharePercent + (plan.hotWaterSharePercent >= 64 ? -2 : 2)
+        : undefined,
+    },
+    {
+      reason,
+      confidence: 0.64,
+      waterTempC: plan.waterTempC + (plan.waterTempC >= 94 ? -1 : 1),
+      totalTimeSeconds: plan.totalTimeSeconds + (plan.totalTimeSeconds >= 300 ? -timeStep : timeStep),
+      hotWaterSharePercent: iced
+        ? plan.hotWaterSharePercent + (plan.hotWaterSharePercent >= 64 ? -1 : 1)
+        : undefined,
+    },
+  ];
+}
+
+function applyGuardrailAiOptimizationSynthesis(plan: BrewPlan) {
+  let latest = applyAiBrewOptimizationPatch(plan, null);
+  for (const patch of buildGuardrailAiOptimizationCandidates(plan)) {
+    latest = applyAiBrewOptimizationPatch(plan, patch);
+    if (latest.applied) return latest;
+  }
+  return latest;
 }
 
 function nowId(prefix: string) {
@@ -4132,12 +4209,22 @@ export function AiBrewPanel({
         }
 
         if (!optimized.applied) {
-          throw new Error(copy.aiOptimizationNoChange);
+          const synthesized = applyGuardrailAiOptimizationSynthesis(nextPlan);
+          if (synthesized.applied) {
+            optimized = synthesized;
+          } else {
+            console.warn(
+              copy.aiOptimizationNoChange,
+              synthesized.rejected.length > 0 ? synthesized.rejected : synthesized.diagnostics,
+            );
+          }
         }
 
-        nextPlan = optimized.plan;
-        latestProgress = createHybridAiSequenceProgress(nextPlan, latestProgress);
-        setGenerationProgress(latestProgress);
+        if (optimized.applied) {
+          nextPlan = optimized.plan;
+          latestProgress = createHybridAiSequenceProgress(nextPlan, latestProgress);
+          setGenerationProgress(latestProgress);
+        }
 
         try {
           const hybridSequence = await runHybridSequenceUpdate(nextPlan, {
@@ -4576,7 +4663,7 @@ export function AiBrewPanel({
                     {canUseHybridAiSequence ? <Brain size={13} /> : <Sparkles size={13} />}
                     <span>{isPro ? copy.proMode : copy.quickMode}</span>
                     <span className="opacity-70">
-                      {canUseHybridAiSequence ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
+                      {canUseHybridAiSequence ? copy.aiEngineReady : copy.aiEngineLocalValidated}
                     </span>
                   </div>
                   <h3 className="text-base font-semibold tracking-tight text-primary lg:text-xl">{dialogTitle}</h3>
@@ -5249,7 +5336,7 @@ export function AiBrewPanel({
                 type="button"
                 onClick={() => openBuilder('quick')}
                 disabled={!catalog}
-                className="rounded-[1.4rem] border border-blue-500/20 bg-blue-500/10 p-4 text-left transition-all hover:border-blue-500/35 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-[1.4rem] border border-blue-500/15 bg-blue-500/5 p-4 text-left transition-all hover:border-blue-500/35 hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                 data-testid="ai-brew-open-quick"
               >
                 <div className="text-base font-semibold text-primary">{copy.quickMode}</div>
@@ -5259,14 +5346,14 @@ export function AiBrewPanel({
                     : 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
                 }`}>
                   {canUsePaidAiBrew ? <Brain size={12} /> : <Sparkles size={12} />}
-                  {canUsePaidAiBrew ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
+                  {canUsePaidAiBrew ? copy.aiEngineReady : copy.aiEngineLocalValidated}
                 </div>
               </button>
               <button
                 type="button"
                 onClick={() => openBuilder('pro')}
                 disabled={!catalog}
-                className="rounded-[1.4rem] border border-[var(--panel-border-soft)] bg-surface-alpha p-4 text-left transition-all hover:border-blue-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-[1.4rem] border border-blue-500/15 bg-blue-500/5 p-4 text-left transition-all hover:border-blue-500/35 hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                 data-testid="ai-brew-open-pro"
               >
                 <div className="text-base font-semibold text-primary">{copy.proMode}</div>
@@ -5276,7 +5363,7 @@ export function AiBrewPanel({
                     : 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
                 }`}>
                   {canUsePaidAiBrew ? <Brain size={12} /> : <Sparkles size={12} />}
-                  {canUsePaidAiBrew ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
+                  {canUsePaidAiBrew ? copy.aiEngineReady : copy.aiEngineLocalValidated}
                 </div>
               </button>
             </div>

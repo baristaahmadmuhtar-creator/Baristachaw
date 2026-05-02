@@ -53,6 +53,10 @@ export function parseAiBrewOptimizationPatch(raw: string | null | undefined): Ai
 
   try {
     const parsed = JSON.parse(normalizeJsonCandidate(raw)) as Record<string, unknown>;
+    if (typeof parsed.text === 'string') {
+      const nested = parseAiBrewOptimizationPatch(parsed.text);
+      if (nested) return nested;
+    }
     const source = (parsed.optimization && typeof parsed.optimization === 'object')
       ? parsed.optimization as Record<string, unknown>
       : parsed;
@@ -70,10 +74,30 @@ export function parseAiBrewOptimizationPatch(raw: string | null | undefined): Ai
     return {
       reason: typeof source.reason === 'string' ? source.reason : undefined,
       confidence: finiteNumber(source.confidence),
-      recommendedRatio: finiteNumber(source.recommendedRatio ?? source.finalBeverageRatio ?? source.ratio),
-      waterTempC: finiteNumber(source.waterTempC ?? source.temperatureC ?? source.tempC),
-      totalTimeSeconds: finiteNumber(source.totalTimeSeconds ?? source.brewTimeSeconds ?? source.timeSeconds),
-      hotWaterSharePercent: finiteNumber(source.hotWaterSharePercent ?? source.hotSharePercent),
+      recommendedRatio: finiteNumber(
+        source.recommendedRatio
+        ?? source.finalBeverageRatio
+        ?? source.targetRatio
+        ?? source.ratio,
+      ),
+      waterTempC: finiteNumber(
+        source.waterTempC
+        ?? source.temperatureC
+        ?? source.temperature
+        ?? source.tempC,
+      ),
+      totalTimeSeconds: finiteNumber(
+        source.totalTimeSeconds
+        ?? source.brewTimeSeconds
+        ?? source.timeSeconds
+        ?? source.targetTimeSeconds,
+      ),
+      hotWaterSharePercent: finiteNumber(
+        source.hotWaterSharePercent
+        ?? source.hotSharePercent
+        ?? source.hotWaterShare
+        ?? source.hotShare,
+      ),
       steps,
     };
   } catch {

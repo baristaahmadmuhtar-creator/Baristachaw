@@ -15,6 +15,7 @@ import {
 } from '../../apps/web/src/features/ai-brew/planner.ts';
 import { buildExtractionFinisher } from '../../apps/web/src/features/ai-brew/extractionFinisher.ts';
 import { buildDeterministicAiCoachMarkdown } from '../../apps/web/src/features/ai-brew/coachNotes.ts';
+import { parseAiBrewOptimizationPatch } from '../../apps/web/src/features/ai-brew/aiOptimizer.ts';
 import {
   deriveAlkalinityFromBicarbonate,
   deriveHardnessFromCalciumMagnesium,
@@ -945,6 +946,25 @@ test('AI Brew optimizer can adjust iced plans without breaking planner guardrail
   assert.equal(result.plan.hotWaterMl + result.plan.iceMl, result.plan.totalWaterMl);
   assert.ok(result.plan.confidenceNotes.some((note) => /AI numeric optimizer accepted/i.test(note)));
   assert.ok(result.plan.steps.some((step) => /pulse|bloom|aliran/i.test(step.hybridInstruction || '')));
+});
+
+test('AI Brew optimizer parser unwraps nested structured text payloads', () => {
+  const patch = parseAiBrewOptimizationPatch(JSON.stringify({
+    ok: true,
+    text: JSON.stringify({
+      reason: 'Structured transport wrapped the optimizer JSON.',
+      confidence: 0.81,
+      targetRatio: 15.6,
+      temperature: '92 C',
+      targetTimeSeconds: 165,
+      hotWaterShare: 62,
+    }),
+  }));
+
+  assert.equal(patch?.recommendedRatio, 15.6);
+  assert.equal(patch?.waterTempC, 92);
+  assert.equal(patch?.totalTimeSeconds, 165);
+  assert.equal(patch?.hotWaterSharePercent, 62);
 });
 
 test('AI Brew optimizer preserves hot and iced envelopes across core dripper families', () => {

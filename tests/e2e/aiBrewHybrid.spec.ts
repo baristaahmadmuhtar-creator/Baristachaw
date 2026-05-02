@@ -119,6 +119,7 @@ async function expectCanonicalSequencePrefixes(sequenceNote: Locator) {
     }
     await expect(stepCard).toContainText(formatPlanTime(step.startSeconds));
     await expect(stepCard).toContainText(String(step.targetVolumeMl));
+    await expect(stepCard.getByTestId(`ai-brew-step-detail-${index + 1}`)).toContainText(/Detail tambahan|Extra detail/i);
   }
 }
 

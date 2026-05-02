@@ -1770,21 +1770,114 @@ function buildAiBrewStepMethodFocusCue(
   }
 }
 
-function buildAiBrewStepDetailPoints(step: BrewPlan['steps'][number], language: string) {
+function addUniqueAiBrewDetailPoint(points: string[], value: string) {
+  const normalized = normalizeAiBrewInstructionText(value);
+  if (!normalized) return;
+  const key = normalized.toLowerCase();
+  if (points.some((point) => point.toLowerCase() === key)) return;
+  points.push(normalized);
+}
+
+function buildAiBrewDeterministicStepDetailPoints(
+  plan: BrewPlan,
+  step: BrewPlan['steps'][number],
+  index: number,
+  language: string,
+) {
+  const id = isIndonesianAiBrewLanguage(language);
+  const kind = getAiBrewStepKind(step);
+  const points: string[] = [];
+  const isPourStep = kind === 'pour' || kind === 'extract';
+  const isLastStep = index === plan.steps.length - 1;
+  const isLastPour = step.pourVolumeMl > 0
+    && !plan.steps.slice(index + 1).some((nextStep) => nextStep.pourVolumeMl > 0);
+
+  if (plan.brewMode === 'iced' && plan.iceMl > 0) {
+    if (index === 0) {
+      addUniqueAiBrewDetailPoint(
+        points,
+        id
+          ? `Timbang ${formatRoundedGrams(plan.iceMl)} es di server sebelum mulai; bed kopi hanya menerima ${formatRoundedMl(plan.hotWaterMl)} air panas.`
+          : `Weigh ${formatRoundedGrams(plan.iceMl)} ice in the server before brewing; the bed only receives ${formatRoundedMl(plan.hotWaterMl)} hot water.`,
+      );
+    }
+
+    if (isPourStep) {
+      addUniqueAiBrewDetailPoint(
+        points,
+        id
+          ? `Tuang ke target kumulatif ${formatRoundedMl(step.targetVolumeMl)}; jangan tambah bypass setelah target panas tercapai.`
+          : `Pour to cumulative target ${formatRoundedMl(step.targetVolumeMl)}; do not add bypass after the hot target lands.`,
+      );
+    } else {
+      addUniqueAiBrewDetailPoint(
+        points,
+        id
+          ? `Target tetap ${formatRoundedMl(step.targetVolumeMl)}; fase ini untuk kontrol aliran, bukan menambah air.`
+          : `Target stays ${formatRoundedMl(step.targetVolumeMl)}; this phase controls flow, not extra water.`,
+      );
+    }
+
+    if (isLastPour || isLastStep || kind === 'drawdown' || kind === 'serve') {
+      addUniqueAiBrewDetailPoint(
+        points,
+        id
+          ? `Setelah tetesan akhir, aduk server 5-8 detik agar es dan konsentrat menyatu rata.`
+          : `After the final drips, stir the server for 5-8 seconds so ice melt and concentrate integrate evenly.`,
+      );
+    } else if (index > 0) {
+      addUniqueAiBrewDetailPoint(
+        points,
+        id
+          ? `Jaga slurry stabil dan hindari dinding filter agar Japanese-style tetap bersih.`
+          : `Keep slurry depth stable and avoid the filter wall so the Japanese-style cup stays clean.`,
+      );
+    }
+  } else if (isPourStep) {
+    addUniqueAiBrewDetailPoint(
+      points,
+      id
+        ? `Tuangan ini harus berhenti di target kumulatif ${formatRoundedMl(step.targetVolumeMl)}.`
+        : `This pour should stop at cumulative target ${formatRoundedMl(step.targetVolumeMl)}.`,
+    );
+  } else {
+    addUniqueAiBrewDetailPoint(
+      points,
+      id
+        ? `Jangan tambah air pada fase ini; ikuti waktu dan target yang sudah dihitung.`
+        : `Do not add water in this phase; follow the calculated time and target.`,
+    );
+  }
+
+  const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
+  addUniqueAiBrewDetailPoint(points, methodFocusCue);
+
+  return points;
+}
+
+function buildAiBrewStepDetailPoints(
+  plan: BrewPlan,
+  step: BrewPlan['steps'][number],
+  index: number,
+  language: string,
+) {
   const fallbackNote = buildAiBrewStepQuickNote(step, language).toLowerCase();
   const detailText = normalizeAiBrewInstructionText(
     localizeAiBrewDynamicText(step.hybridInstruction || '', language),
   );
 
-  if (!detailText || detailText.toLowerCase() === fallbackNote) return [];
+  const points = buildAiBrewDeterministicStepDetailPoints(plan, step, index, language);
 
-  const points = detailText
+  if (!detailText || detailText.toLowerCase() === fallbackNote) return points.slice(0, 5);
+
+  detailText
     .split(/;\s+|(?<=[.!?])\s+/)
     .map((part) => normalizeAiBrewInstructionText(part))
     .filter(Boolean)
-    .filter((part) => part.toLowerCase() !== fallbackNote);
+    .filter((part) => part.toLowerCase() !== fallbackNote)
+    .forEach((part) => addUniqueAiBrewDetailPoint(points, part));
 
-  return Array.from(new Set(points)).slice(0, 5);
+  return points.slice(0, 5);
 }
 
 function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: string) {
@@ -1815,7 +1908,7 @@ function renderAiBrewSequenceStepCard(
   const localizedStepLabel = localizeAiBrewStepLabel(step.label, language);
   const stepActionText = buildAiBrewStepActionText(step, language);
   const stepQuickNote = buildAiBrewStepQuickNote(step, language);
-  const stepDetailPoints = buildAiBrewStepDetailPoints(step, language);
+  const stepDetailPoints = buildAiBrewStepDetailPoints(plan, step, index, language);
   const stepMetrics = buildAiBrewStepMetrics(step, language);
   const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
   const normalizedActionText = normalizeAiBrewInstructionText(stepActionText).toLowerCase();
@@ -1869,10 +1962,13 @@ function renderAiBrewSequenceStepCard(
           )}
 
           {stepDetailPoints.length > 0 && (
-            <details className="group rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/72 px-3 py-2">
+            <details
+              className="group rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/72 px-3 py-2"
+              data-testid={`ai-brew-step-detail-${index + 1}`}
+            >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-medium text-primary">
                 <span>
-                  {isIndonesianAiBrewLanguage(language) ? 'Detail' : 'Detail'}
+                  {isIndonesianAiBrewLanguage(language) ? 'Detail tambahan' : 'Extra detail'}
                 </span>
                 <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
               </summary>
@@ -2668,8 +2764,13 @@ function PlanResultDialog({
                         <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.iceSetupTitle}</h4>
                       </div>
                       <p className="mt-2 text-sm leading-5 text-secondary">{copy.iceSetupDetail}</p>
+                      <p className="mt-2 rounded-xl border border-sky-500/15 bg-[var(--bg-base)]/70 px-3 py-2 text-sm font-medium leading-5 text-primary">
+                        {id
+                          ? `${formatRoundedGrams(plan.iceMl)} es di server + ${formatRoundedMl(plan.hotWaterMl)} air panas ke bed kopi. Berhenti di target panas, lalu aduk server sebelum minum.`
+                          : `${formatRoundedGrams(plan.iceMl)} ice in the server + ${formatRoundedMl(plan.hotWaterMl)} hot water through the bed. Stop at the hot target, then stir the server before drinking.`}
+                      </p>
                     </div>
-                    <div className="grid min-w-[12rem] grid-cols-2 gap-2 text-xs">
+                    <div className="grid w-full min-w-[12rem] grid-cols-1 gap-2 text-xs sm:w-auto sm:grid-cols-3">
                       <span className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-secondary">
                         <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
                         <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
@@ -2677,6 +2778,10 @@ function PlanResultDialog({
                       <span className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-secondary">
                         <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.hotConcentrate}</span>
                         <span className="font-semibold text-primary">1:{formatBrewRatio(plan.hotExtractionRatio)}</span>
+                      </span>
+                      <span className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-secondary">
+                        <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.ice}</span>
+                        <span className="font-semibold text-primary">{formatRoundedGrams(plan.iceMl)}</span>
                       </span>
                     </div>
                   </div>
@@ -3033,6 +3138,7 @@ function PlanResultDialog({
                     const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
                     const activeCue = methodFocusCue || quickNote;
                     const showStepNote = state === 'current' && Boolean(activeCue);
+                    const stepDetailPoints = buildAiBrewStepDetailPoints(plan, step, index, language);
 
                     return (
                       <div
@@ -3070,6 +3176,25 @@ function PlanResultDialog({
                         </div>
                         {showStepNote && (
                           <p className="mt-2 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">{activeCue}</p>
+                        )}
+                        {stepDetailPoints.length > 0 && (
+                          <details
+                            className="group mt-2 rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/72 px-3 py-2"
+                            data-testid={`ai-brew-flow-step-detail-${index + 1}`}
+                          >
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-medium text-primary">
+                              <span>{id ? 'Detail tambahan' : 'Extra detail'}</span>
+                              <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
+                            </summary>
+                            <ul className="mt-2.5 space-y-2 text-sm leading-5 text-secondary">
+                              {stepDetailPoints.map((point) => (
+                                <li key={`${step.id}-flow-${point}`} className="flex items-start gap-2">
+                                  <span className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400" />
+                                  <span>{point}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </details>
                         )}
                       </div>
                     );

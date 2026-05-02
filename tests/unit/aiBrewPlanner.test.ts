@@ -1607,6 +1607,38 @@ test('buildAiBrewPlan creates a japanese iced plan with split water and derived 
   assert.ok(plan.confidenceNotes.some((note) => /generated from the v60 family template/i.test(note)));
 });
 
+test('buildAiBrewPlan keeps small-dose V60 hot and iced cadence barista-friendly', () => {
+  const base = {
+    ...createDefaultAiBrewFormState(catalog),
+    dripperId: 'hario-v60',
+    coffeeName: 'Small Dose V60 QA',
+    doseG: '15',
+    targetProfileId: 'balance_clean',
+    process: 'washed',
+    variety: 'ethiopian_heirloom',
+    roastLevel: 'medium_light' as const,
+    waterMode: 'manual' as const,
+    waterTdsPpm: '90',
+    waterHardnessPpm: '45',
+    waterAlkalinityPpm: '30',
+  };
+
+  const hot = buildAiBrewPlan({ ...base, brewMode: 'hot' }, catalog);
+  const iced = buildAiBrewPlan({ ...base, brewMode: 'iced' }, catalog);
+  const icedPositivePours = iced.steps.filter((step) => step.pourVolumeMl > 0);
+  const icedFinalPour = icedPositivePours[icedPositivePours.length - 1];
+
+  assertPlanEnvelope(hot);
+  assertPlanEnvelope(iced);
+  assert.ok((hot.steps[1]?.startSeconds ?? 0) >= 30);
+  assert.equal(icedPositivePours.length, 3);
+  assert.match(icedPositivePours[1]?.label || '', /Center Pour/i);
+  assert.ok(icedPositivePours[0].pourVolumeMl >= iced.doseG * 2);
+  assert.ok(iced.totalTimeSeconds - icedFinalPour.startSeconds >= 65);
+  assert.equal(iced.steps.reduce((sum, step) => sum + step.pourVolumeMl, 0), iced.hotWaterMl);
+  assert.equal(iced.steps.at(-1)?.targetVolumeMl, iced.hotWaterMl);
+});
+
 test('buildAiBrewPlan applies selected pour count and interval style without breaking Japanese iced totals', () => {
   const form = {
     ...createDefaultAiBrewFormState(catalog),

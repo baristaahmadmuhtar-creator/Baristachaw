@@ -239,7 +239,18 @@ function normalizePourShares(shares: number[]) {
 function resolveRequestedPourCount(input: AiBrewFormState, profile: DeviceBrewProfile) {
   const explicitCount = Number.parseInt(input.pourCount, 10);
   if (Number.isFinite(explicitCount)) return clamp(Math.round(explicitCount), 3, 5);
-  if (input.pourStyle === 'auto') return null;
+  if (input.pourStyle === 'auto') {
+    const profileAlreadyOwnsFinish = profile.steps.some((step) =>
+      step.share <= 0 || step.kind === 'drawdown' || step.kind === 'serve' || /\b(?:drawdown|serve)\b/i.test(`${step.id} ${step.label}`),
+    );
+    if (input.brewMode === 'iced' && isIcedManualPourOverFamily(profile.methodFamily || 'v60') && !profileAlreadyOwnsFinish) {
+      const doseG = parseDose(input.doseG);
+      if (doseG <= 18) return 3;
+      if (doseG <= 26) return 4;
+      return 5;
+    }
+    return null;
+  }
   const currentPourCount = profile.steps.filter((step) => step.share > 0).length;
   return clamp(currentPourCount || (input.brewMode === 'iced' ? 4 : 3), 3, 5);
 }
@@ -321,9 +332,10 @@ function applyPourControlsToProfile(
     steps: shares.map((share, index) => {
       const isFirst = index === 0;
       const isLast = index === pourCount - 1;
+      const isSingleMiddlePour = pourCount === 3 && index === 1;
       return {
-        id: isFirst ? 'bloom' : isLast ? 'final_pour' : `pulse_${index}`,
-        label: isFirst ? 'Bloom' : isLast ? 'Final Pour' : `Pulse ${index}`,
+        id: isFirst ? 'bloom' : isLast ? 'final_pour' : isSingleMiddlePour ? 'center_pour' : `pulse_${index}`,
+        label: isFirst ? 'Bloom' : isLast ? 'Final Pour' : isSingleMiddlePour ? 'Center Pour' : `Pulse ${index}`,
         kind: 'pour',
         share,
         startSeconds: starts[index] ?? index * 40,
@@ -847,8 +859,8 @@ function normalizeBaristaStepStartSeconds(
 ) {
   if (starts.length <= 1) return starts.map((start) => Math.max(0, Math.round(start)));
   const increment = resolveBaristaTimeIncrementSeconds(methodFamily);
-  const minGapSeconds = methodFamily === 'espresso' ? 1 : Math.min(30, Math.max(5, increment));
-  const maxStartBudget = Math.max(minGapSeconds, totalTimeSeconds - minGapSeconds);
+  const baseMinGapSeconds = methodFamily === 'espresso' ? 1 : Math.min(30, Math.max(5, increment));
+  const maxStartBudget = Math.max(baseMinGapSeconds, totalTimeSeconds - baseMinGapSeconds);
   let previous = 0;
 
   return starts.map((start, index) => {
@@ -856,6 +868,9 @@ function normalizeBaristaStepStartSeconds(
       previous = 0;
       return 0;
     }
+    const minGapSeconds = supportsAiBrewPourControls(methodFamily)
+      ? Math.max(baseMinGapSeconds, 30)
+      : baseMinGapSeconds;
     const remainingSteps = starts.length - 1 - index;
     const minimumStart = previous + minGapSeconds;
     const maximumStart = Math.max(
@@ -955,6 +970,7 @@ type AdaptiveShareContext = {
   hardnessPpm: number;
   alkalinityPpm: number;
   processId?: string;
+  doseG: number;
   doseScale: number;
   flavorDirection: TargetIntent;
   flavorIntensity: number;
@@ -2454,21 +2470,21 @@ function resolveMethodFamilyFinalWindowBounds(methodFamily: AiBrewMethodFamily, 
     case 'batch_brew':
       return { min: 60, max: 110 };
     case 'chemex':
-      return brewMode === 'iced' ? { min: 42, max: 82 } : { min: 52, max: 96 };
+      return brewMode === 'iced' ? { min: 70, max: 110 } : { min: 52, max: 96 };
     case 'clever_dripper':
       return brewMode === 'iced' ? { min: 42, max: 78 } : { min: 50, max: 88 };
     case 'kono':
-      return brewMode === 'iced' ? { min: 32, max: 68 } : { min: 38, max: 78 };
+      return brewMode === 'iced' ? { min: 58, max: 88 } : { min: 38, max: 78 };
     case 'kalita_wave':
     case 'melitta':
-      return brewMode === 'iced' ? { min: 30, max: 66 } : { min: 36, max: 78 };
+      return brewMode === 'iced' ? { min: 55, max: 85 } : { min: 36, max: 78 };
     case 'april':
-      return brewMode === 'iced' ? { min: 24, max: 54 } : { min: 28, max: 62 };
+      return brewMode === 'iced' ? { min: 44, max: 75 } : { min: 28, max: 62 };
     case 'origami':
-      return brewMode === 'iced' ? { min: 28, max: 60 } : { min: 32, max: 70 };
+      return brewMode === 'iced' ? { min: 56, max: 86 } : { min: 32, max: 70 };
     case 'v60':
     default:
-      return brewMode === 'iced' ? { min: 30, max: 66 } : { min: 36, max: 78 };
+      return brewMode === 'iced' ? { min: 70, max: 95 } : { min: 36, max: 78 };
   }
 }
 
@@ -3269,9 +3285,15 @@ function buildSteps(
     const maxPourVolumeMl = isLastPourStep
       ? remainingWater
       : Math.max(0, remainingWater - minimumReserveMl);
-    const minPourVolumeMl = !isLastPourStep && rawShare > 0 && maxPourVolumeMl >= volumeIncrementMl
+    const bloomFloorMl = index === pourIndexes[0] && supportsAiBrewPourControls(adaptiveShareContext.methodFamily)
+      ? roundBaristaVolumeMl(adaptiveShareContext.doseG * 2, adaptiveShareContext.methodFamily)
+      : 0;
+    const baseMinPourVolumeMl = !isLastPourStep && rawShare > 0 && maxPourVolumeMl >= volumeIncrementMl
       ? volumeIncrementMl
       : 0;
+    const minPourVolumeMl = !isLastPourStep && maxPourVolumeMl >= volumeIncrementMl
+      ? Math.min(maxPourVolumeMl, Math.max(baseMinPourVolumeMl, bloomFloorMl))
+      : baseMinPourVolumeMl;
     const pourVolumeMl = isPourStep
       ? isLastPourStep
         ? remainingWater
@@ -4072,6 +4094,7 @@ function finalizePlanCore(
     hardnessPpm: waterProfile.minerals.hardnessPpm,
     alkalinityPpm: waterProfile.minerals.alkalinityPpm,
     processId: processEntry?.id,
+    doseG,
     doseScale: doseAdjustment.normalizedOffset,
     flavorDirection: flavorAlignment.dominantAxis,
     flavorIntensity: flavorAlignment.intensity,

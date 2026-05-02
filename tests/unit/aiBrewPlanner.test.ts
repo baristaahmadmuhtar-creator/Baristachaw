@@ -1488,6 +1488,8 @@ test('createQuickAiBrewFormState strips hidden precision-only modifiers before g
     waterTdsPpm: '95',
     waterHardnessPpm: '55',
     waterAlkalinityPpm: '40',
+    pourStyle: 'pulse',
+    pourCount: '5',
   }, catalog);
 
   assert.equal(quickInput.brewMode, 'iced');
@@ -1501,6 +1503,8 @@ test('createQuickAiBrewFormState strips hidden precision-only modifiers before g
   assert.equal(quickInput.solubility, '');
   assert.equal(quickInput.waterNotes, '');
   assert.equal(quickInput.waterTdsPpm, '95');
+  assert.equal(quickInput.pourStyle, 'pulse');
+  assert.equal(quickInput.pourCount, '5');
 });
 
 test('buildAiBrewPlan roast level shifts extraction envelope in a sensible direction', () => {
@@ -1571,6 +1575,7 @@ test('buildAiBrewPlan creates a japanese iced plan with split water and derived 
   assert.deepEqual(plan.steps.map((step) => step.kind), ['pour', 'pour', 'pour', 'pour']);
   assert.ok(plan.steps.every((step) => step.pourVolumeMl > 0), 'Iced V60 hot-water checkpoints should all be real pour steps');
   assert.match(plan.steps[plan.steps.length - 1]?.label || '', /Final Pour/i);
+  assert.match(plan.summary, /Japanese-style iced brew/i);
   assert.doesNotMatch(
     buildLocalizedPlanRecipeSteps(plan, 'id').join('\n'),
     /sajikan|pisahkan/i,
@@ -1580,6 +1585,36 @@ test('buildAiBrewPlan creates a japanese iced plan with split water and derived 
   assert.equal(plan.provenanceAttentionNeeded, true);
   assert.ok(plan.notes.some((note) => /hot concentrate extracts/i.test(note)));
   assert.ok(plan.confidenceNotes.some((note) => /generated from the v60 family template/i.test(note)));
+});
+
+test('buildAiBrewPlan applies selected pour count and interval style without breaking Japanese iced totals', () => {
+  const form = {
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'iced' as const,
+    dripperId: 'hario-v60',
+    coffeeName: 'Japanese Pulse QA',
+    doseG: '20',
+    pourStyle: 'pulse' as const,
+    pourCount: '5' as const,
+    targetProfileId: 'more_sweetness',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '90',
+    waterHardnessPpm: '45',
+    waterAlkalinityPpm: '30',
+  };
+
+  const plan = buildAiBrewPlan(form, catalog);
+  const totalPoured = plan.steps.reduce((sum, step) => sum + step.pourVolumeMl, 0);
+  const positivePours = plan.steps.filter((step) => step.pourVolumeMl > 0);
+
+  assert.equal(plan.brewMode, 'iced');
+  assert.equal(plan.methodId, 'v60_japanese_iced');
+  assert.equal(positivePours.length, 5);
+  assert.equal(totalPoured, plan.hotWaterMl);
+  assert.equal(plan.steps.at(-1)?.targetVolumeMl, plan.hotWaterMl);
+  assert.ok(plan.notes.some((note) => /Japanese-style iced|5 pours|pulse interval/i.test(note)));
+  assert.ok(plan.confidenceNotes.some((note) => /Pour control source/i.test(note)));
+  assertPlanEnvelope(plan);
 });
 
 test('buildAiBrewPlan treats iced pour-over no-volume finish as drawdown, not a serve step', () => {

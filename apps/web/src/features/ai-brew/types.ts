@@ -6,6 +6,8 @@ import type {
 } from '../barista-tools/types.ts';
 
 export type AiBrewMode = 'hot' | 'iced';
+export type AiBrewPourStyle = 'auto' | 'balanced' | 'pulse' | 'gentle';
+export type AiBrewPourCount = 'auto' | '3' | '4' | '5';
 
 export type AiBrewMethodFamily =
   | 'v60'
@@ -342,6 +344,8 @@ export interface AiBrewFormState {
   waterAlkalinityPpm: string;
   waterNotes: string;
   targetProfileId: string;
+  pourStyle: AiBrewPourStyle;
+  pourCount: AiBrewPourCount;
 }
 
 export interface BeanProfileState {

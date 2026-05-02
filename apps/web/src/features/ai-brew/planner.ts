@@ -137,6 +137,16 @@ const ICED_MANUAL_POUR_OVER_FAMILIES = new Set<AiBrewMethodFamily>([
   'chemex',
 ]);
 
+const POUR_CONTROL_METHOD_FAMILIES = new Set<AiBrewMethodFamily>([
+  'v60',
+  'origami',
+  'kono',
+  'kalita_wave',
+  'melitta',
+  'april',
+  'chemex',
+]);
+
 const ICED_HOT_EXTRACTION_RATIO_BOUNDS: Record<AiBrewMethodFamily, { min: number; max: number }> = {
   v60: { min: 8.8, max: 10.6 },
   origami: { min: 8.7, max: 10.5 },
@@ -210,6 +220,123 @@ function clampRoundedToIncrement(value: number, min: number, max: number, increm
     return clamp(roundToIncrement(value, increment), alignedLower, alignedUpper);
   }
   return roundTo(clamp(value, lower, upper), 0);
+}
+
+function supportsAiBrewPourControls(methodFamily: AiBrewMethodFamily) {
+  return POUR_CONTROL_METHOD_FAMILIES.has(methodFamily);
+}
+
+function normalizePourShares(shares: number[]) {
+  const total = shares.reduce((sum, share) => sum + Math.max(0, share), 0);
+  if (total <= 0) return shares.map(() => roundTo(1 / Math.max(1, shares.length), 3));
+  const normalized = shares.map((share) => roundTo(Math.max(0, share) / total, 3));
+  const normalizedTotal = normalized.reduce((sum, share) => sum + share, 0);
+  const lastIndex = normalized.length - 1;
+  normalized[lastIndex] = roundTo(Math.max(0, normalized[lastIndex] + 1 - normalizedTotal), 3);
+  return normalized;
+}
+
+function resolveRequestedPourCount(input: AiBrewFormState, profile: DeviceBrewProfile) {
+  const explicitCount = Number.parseInt(input.pourCount, 10);
+  if (Number.isFinite(explicitCount)) return clamp(Math.round(explicitCount), 3, 5);
+  if (input.pourStyle === 'auto') return null;
+  const currentPourCount = profile.steps.filter((step) => step.share > 0).length;
+  return clamp(currentPourCount || (input.brewMode === 'iced' ? 4 : 3), 3, 5);
+}
+
+function buildControlledPourStarts(count: number, input: AiBrewFormState) {
+  const style = input.pourStyle === 'auto' ? 'balanced' : input.pourStyle;
+  const gap = style === 'pulse'
+    ? input.brewMode === 'iced' ? 30 : 35
+    : style === 'gentle'
+      ? input.brewMode === 'iced' ? 40 : 45
+      : input.brewMode === 'iced' ? 35 : 40;
+  return Array.from({ length: count }, (_, index) => index === 0 ? 0 : index * gap);
+}
+
+function buildControlledPourShares(count: number, input: AiBrewFormState) {
+  const style = input.pourStyle === 'auto' ? 'balanced' : input.pourStyle;
+  if (style === 'pulse') {
+    return normalizePourShares(Array.from({ length: count }, () => 1 / count));
+  }
+
+  const bloomShare = input.brewMode === 'iced'
+    ? style === 'gentle' ? 0.25 : 0.24
+    : style === 'gentle' ? 0.22 : 0.2;
+  const finalShare = input.brewMode === 'iced'
+    ? style === 'gentle' ? 0.26 : 0.3
+    : style === 'gentle' ? 0.28 : 0.32;
+  const middleCount = Math.max(0, count - 2);
+  if (middleCount === 0) return normalizePourShares([bloomShare, 1 - bloomShare]);
+
+  const middleTotal = Math.max(0.1, 1 - bloomShare - finalShare);
+  return normalizePourShares([
+    bloomShare,
+    ...Array.from({ length: middleCount }, () => middleTotal / middleCount),
+    finalShare,
+  ]);
+}
+
+function buildPourStyleLabel(input: AiBrewFormState) {
+  switch (input.pourStyle) {
+    case 'pulse':
+      return 'pulse interval';
+    case 'gentle':
+      return 'gentle interval';
+    case 'balanced':
+      return 'balanced interval';
+    default:
+      return 'auto interval';
+  }
+}
+
+function buildPourControlNote(input: AiBrewFormState, methodFamily: AiBrewMethodFamily) {
+  if (!supportsAiBrewPourControls(methodFamily)) return null;
+  if (input.pourStyle === 'auto' && input.pourCount === 'auto') return null;
+  const countLabel = input.pourCount === 'auto' ? 'planner-selected pour count' : `${input.pourCount} pours`;
+  const modeLabel = input.brewMode === 'iced'
+    ? 'Japanese-style iced flash brew'
+    : 'hot pour-over';
+  return `${modeLabel} cadence: ${countLabel}, ${buildPourStyleLabel(input)}. Targets stay rounded and cumulative for service use.`;
+}
+
+function applyPourControlsToProfile(
+  profile: DeviceBrewProfile,
+  input: AiBrewFormState,
+  methodFamily: AiBrewMethodFamily,
+): DeviceBrewProfile {
+  if (!supportsAiBrewPourControls(methodFamily)) return profile;
+  const pourCount = resolveRequestedPourCount(input, profile);
+  if (!pourCount) return profile;
+
+  const starts = buildControlledPourStarts(pourCount, input);
+  const shares = buildControlledPourShares(pourCount, input);
+  const modePrefix = input.brewMode === 'iced' ? 'Japanese iced' : 'Hot';
+  const styleLabel = buildPourStyleLabel(input);
+  return {
+    ...profile,
+    id: `${profile.id}_${input.brewMode}_${input.pourStyle}_${pourCount}p`,
+    label: `${profile.label} ${pourCount}-pour`,
+    note: `${profile.note} ${modePrefix} cadence is controlled as ${pourCount} pours with ${styleLabel}.`,
+    steps: shares.map((share, index) => {
+      const isFirst = index === 0;
+      const isLast = index === pourCount - 1;
+      return {
+        id: isFirst ? 'bloom' : isLast ? 'final_pour' : `pulse_${index}`,
+        label: isFirst ? 'Bloom' : isLast ? 'Final Pour' : `Pulse ${index}`,
+        kind: 'pour',
+        share,
+        startSeconds: starts[index] ?? index * 40,
+        note: input.brewMode === 'iced'
+          ? isFirst
+            ? 'Japanese-style iced: bloom over ice with compact hot water, then keep every next pour as hot concentrate only.'
+            : 'Keep the iced brew as Japanese-style flash brew: pour hot concentrate over measured ice, no late bypass.'
+          : isFirst
+            ? 'Bloom evenly, then keep the next pours calm and centered.'
+            : 'Keep the pour controlled, even, and aligned to the selected interval.',
+      };
+    }),
+  };
 }
 
 function nowId(prefix: string) {
@@ -3204,7 +3331,7 @@ function buildSummary(plan: Pick<
     : plan.methodFamily === 'espresso'
       ? 'Espresso'
       : plan.brewMode === 'iced'
-        ? 'Ice brew'
+        ? 'Japanese-style iced brew'
         : 'Hot brew';
   return `${modeLabel} plan for ${plan.coffeeName || 'your coffee'} on ${plan.dripper.name}, tuned for ${plan.targetProfileLabel.toLowerCase()} at ${ratioText}, ${formatBaristaTemperature(plan.waterTempC)}°C, around ${formatTime(plan.totalTimeSeconds)}.`;
 }
@@ -3222,7 +3349,7 @@ function buildServiceExecutionNote(params: {
   waterTempC: number;
 }) {
   if (params.brewMode === 'iced') {
-    return `Brew ${params.hotWaterMl} ml hot over ${params.iceMl} ml/g ice (${params.hotSplitPercent}%:${params.iceSplitPercent}%). Final ratio is 1:${formatBaristaRatio(params.finalBeverageRatio)}; hot concentrate extracts at 1:${formatBaristaRatio(params.hotExtractionRatio)}. Keep pours compact to hold sweetness and clarity, then stir the chilled server after drawdown so service is not confused with another brew step.`;
+    return `Japanese-style iced is locked: brew ${params.hotWaterMl} ml hot concentrate over ${params.iceMl} ml/g ice (${params.hotSplitPercent}%:${params.iceSplitPercent}%). Final ratio is 1:${formatBaristaRatio(params.finalBeverageRatio)}; hot concentrate extracts at 1:${formatBaristaRatio(params.hotExtractionRatio)}. Keep pours compact to hold sweetness and clarity, then stir the chilled server after drawdown so service is not confused with another brew step.`;
   }
   switch (params.methodFamily) {
     case 'cold_brew':
@@ -3931,11 +4058,13 @@ function finalizePlanCore(
     flavorAlignment.grindBias,
   );
   const grindDetails = buildGrindRecommendation(grinder, grinderSetting, grindBias, input.roastLevel, input.brewMode);
-  const steps = buildSteps(deviceSelection.profile, hotWaterMl, totalTimeSeconds, {
+  const controlledDeviceProfile = applyPourControlsToProfile(deviceSelection.profile, input, methodFamily);
+  const pourControlNote = buildPourControlNote(input, methodFamily);
+  const steps = buildSteps(controlledDeviceProfile, hotWaterMl, totalTimeSeconds, {
     targetProfileId: targetProfile.id,
     targetProfileLabel: targetProfile.label,
     methodFamily,
-    filterStyle: deviceSelection.profile.filterStyle,
+    filterStyle: controlledDeviceProfile.filterStyle,
     brewMode: input.brewMode,
     roastLevel: input.roastLevel,
     roastDevelopment: input.roastDevelopment || undefined,
@@ -4006,7 +4135,7 @@ function finalizePlanCore(
   const isDerivedTemplateProfile = deviceSelection.mode === 'derived_template';
 
   const notes = normalizeNoteList(
-    [targetProfile.description, deviceSelection.profile.note],
+    [targetProfile.description, controlledDeviceProfile.note],
     waterProfile.notes,
     processEntry?.notes || [],
     varietyEntry?.notes || [],
@@ -4033,6 +4162,7 @@ function finalizePlanCore(
         iceSplitPercent,
         waterTempC,
       }),
+      pourControlNote,
       grinderSetting?.note,
     ],
   );
@@ -4064,6 +4194,7 @@ function finalizePlanCore(
       input.brewMode === 'iced'
         ? `Iced split source: final beverage ratio 1:${formatBaristaRatio(finalBeverageRatio)}, hot extraction ratio 1:${formatBaristaRatio(hotExtractionRatio)}, hot/ice ${hotSplitPercent}:${iceSplitPercent}.`
         : undefined,
+      pourControlNote ? `Pour control source: ${pourControlNote}` : undefined,
     ],
   );
   const provenanceAttentionNeeded =
@@ -4095,6 +4226,8 @@ function finalizePlanCore(
     targetProfileId: targetProfile.id,
     deviceProfileId: deviceSelection.profile.id,
     grindSettingId: grinderSetting?.id,
+    pourStyle: input.pourStyle,
+    pourCount: input.pourCount,
     ratio: recommendedRatio,
     doseG,
     roastLevel: input.roastLevel,
@@ -4211,6 +4344,8 @@ export function createDefaultAiBrewFormState(catalog?: AiBrewCatalog): AiBrewFor
     waterAlkalinityPpm: '',
     waterNotes: '',
     targetProfileId: pickDefaultCatalogId(catalog?.targetProfiles, DEFAULT_TARGET_PROFILE_PRIORITY) || 'balance_clean',
+    pourStyle: 'auto',
+    pourCount: 'auto',
   };
 }
 
@@ -4225,6 +4360,8 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
   const variety = String(input.variety || fallback.variety);
   const validWaterModes = new Set(['brand', 'manual']);
   const validWaterRegions = new Set(['id', 'sg', 'bn', 'my']);
+  const validPourStyles = new Set(['auto', 'balanced', 'pulse', 'gentle']);
+  const validPourCounts = new Set(['auto', '3', '4', '5']);
   const waterBrandId = String(input.waterBrandId || '');
   const dripperId = String(input.dripperId || fallback.dripperId);
   const requestedBrewMode = input.brewMode === 'iced' ? 'iced' : 'hot';
@@ -4261,6 +4398,12 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
     waterAlkalinityPpm: String(input.waterAlkalinityPpm || ''),
     waterNotes: String(input.waterNotes || ''),
     targetProfileId: String(input.targetProfileId || fallback.targetProfileId),
+    pourStyle: validPourStyles.has(String(input.pourStyle))
+      ? (String(input.pourStyle) as AiBrewFormState['pourStyle'])
+      : fallback.pourStyle,
+    pourCount: validPourCounts.has(String(input.pourCount))
+      ? (String(input.pourCount) as AiBrewFormState['pourCount'])
+      : fallback.pourCount,
   };
 }
 

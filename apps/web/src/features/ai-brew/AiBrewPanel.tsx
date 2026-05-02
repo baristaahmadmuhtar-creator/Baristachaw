@@ -138,6 +138,18 @@ const COPY = {
     proModeDescription: '',
     quickModeTrustHint: 'Best for speed and consistency. If bean profile and water stay neutral, Quick and Pro can land on the same plan.',
     proModeTrustHint: '',
+    pourControlTitle: 'Pour control',
+    pourStyleTitle: 'Interval style',
+    pourCountTitle: 'Pour count',
+    pourStyleAuto: 'Auto',
+    pourStyleBalanced: 'Balanced',
+    pourStylePulse: 'Pulse',
+    pourStyleGentle: 'Gentle',
+    pourCountAuto: 'Auto',
+    pourCount3: '3 pours',
+    pourCount4: '4 pours',
+    pourCount5: '5 pours',
+    pourControlHint: 'Iced mode stays Japanese-style: hot concentrate over measured ice.',
     quickBuilderTitle: 'Quick Builder',
     proBuilderTitle: 'Precision Builder',
     closeBuilder: 'Close builder',
@@ -278,10 +290,10 @@ const COPY = {
     aiGenerateBrief: 'AI Assist',
     aiSequenceGuide: 'AI Notes',
     aiGenerateLoading: 'Refreshing short notes...',
-    aiEngineOnlineOptimized: 'AI online',
-    aiEngineLocalValidated: 'Local planner',
+    aiEngineOnlineOptimized: 'AI optimized',
+    aiEngineLocalValidated: 'AI off',
     aiEngineWorkingOnline: 'AI optimizing',
-    aiEngineWorkingLocal: 'Local planner',
+    aiEngineWorkingLocal: 'AI off',
     updateNotes: 'Refresh Notes',
     updatingNotes: 'Refreshing Notes',
     aiNotesManualHint: 'Use AI only when needed.',
@@ -309,6 +321,8 @@ const COPY = {
     pickerClose: 'Close picker',
     noPickerResults: 'No matching catalog entries.',
     generated: 'Brew plan saved to local history.',
+    generatedAi: 'Brew plan saved. AI optimization applied.',
+    generatedLocal: 'Brew plan saved with local planner.',
     savedCollection: 'Recipe saved to Collection.',
     saveCollectionFailed: 'Unable to save this brew to Collection right now.',
     savedFavorite: 'Saved to favorites.',
@@ -455,6 +469,18 @@ const COPY = {
     proModeDescription: '',
     quickModeTrustHint: 'Paling cocok untuk cepat dan konsisten. Kalau profil bean dan air masih netral, hasil Quick dan Pro bisa sama.',
     proModeTrustHint: '',
+    pourControlTitle: 'Kontrol tuang',
+    pourStyleTitle: 'Gaya interval',
+    pourCountTitle: 'Jumlah tuang',
+    pourStyleAuto: 'Auto',
+    pourStyleBalanced: 'Seimbang',
+    pourStylePulse: 'Pulse',
+    pourStyleGentle: 'Halus',
+    pourCountAuto: 'Auto',
+    pourCount3: '3 tuang',
+    pourCount4: '4 tuang',
+    pourCount5: '5 tuang',
+    pourControlHint: 'Mode es dikunci Japanese style: konsentrat panas langsung ke es terukur.',
     quickBuilderTitle: 'Builder Cepat',
     proBuilderTitle: 'Builder Presisi',
     closeBuilder: 'Tutup builder',
@@ -595,10 +621,10 @@ const COPY = {
     aiGenerateBrief: 'Asisten AI',
     aiSequenceGuide: 'Catatan AI',
     aiGenerateLoading: 'Memperbarui catatan singkat...',
-    aiEngineOnlineOptimized: 'AI online',
-    aiEngineLocalValidated: 'Lokal hemat',
+    aiEngineOnlineOptimized: 'AI dioptimalkan',
+    aiEngineLocalValidated: 'AI nonaktif',
     aiEngineWorkingOnline: 'AI mengoptimalkan',
-    aiEngineWorkingLocal: 'Planner lokal',
+    aiEngineWorkingLocal: 'AI nonaktif',
     updateNotes: 'Perbarui Catatan',
     updatingNotes: 'Memperbarui Catatan',
     aiNotesManualHint: 'Pakai AI hanya saat perlu.',
@@ -626,6 +652,8 @@ const COPY = {
     pickerClose: 'Tutup picker',
     noPickerResults: 'Tidak ada entri katalog yang cocok.',
     generated: 'Brew plan tersimpan ke history lokal.',
+    generatedAi: 'Brew plan tersimpan. Optimasi AI diterapkan.',
+    generatedLocal: 'Brew plan tersimpan dengan planner lokal.',
     savedCollection: 'Recipe tersimpan ke Collection.',
     saveCollectionFailed: 'Recipe ini belum bisa disimpan ke Collection sekarang.',
     savedFavorite: 'Masuk ke favorit.',
@@ -780,6 +808,16 @@ type HistoryStripTab = 'latest' | 'favorites' | 'recent';
 type ResultTab = 'plan' | 'flow' | 'coach';
 type CopySet = Record<string, string>;
 
+const AI_BREW_POUR_CONTROL_FAMILIES = new Set<AiBrewMethodFamily>([
+  'v60',
+  'origami',
+  'kono',
+  'kalita_wave',
+  'melitta',
+  'april',
+  'chemex',
+]);
+
 interface PickerOption {
   id: string;
   label: string;
@@ -906,7 +944,11 @@ function formatPlanHeaderWater(plan: BrewPlan, language: string) {
 }
 
 function planUsesOnlineAi(plan: BrewPlan) {
-  return Boolean(plan.aiNotes?.sequenceCanonical || plan.aiNotes?.sequence);
+  return (
+    plan.confidenceNotes.some((note) => /AI numeric optimizer accepted inside guardrails/i.test(note))
+    || plan.notes.some((note) => /^AI optimizer:/i.test(note))
+    || Boolean(plan.aiNotes?.sequenceCanonical || plan.aiNotes?.sequence)
+  );
 }
 
 function formatBrewRatio(value: number) {
@@ -2366,7 +2408,7 @@ function PlanResultDialog({
                   <span className={`${resultChipClass} inline-flex items-center gap-1.5 ${
                     aiEngineOnline
                       ? 'border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300'
-                      : 'text-secondary'
+                      : 'border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-300'
                   }`}>
                     {aiEngineOnline ? <Brain size={12} /> : <Sparkles size={12} />}
                     {aiEngineOnline ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
@@ -3767,6 +3809,10 @@ export function AiBrewPanel({
     selectedDripper ? supportsAiBrewIcedMode(catalog, selectedDripper.id) : true
   ), [catalog, selectedDripper]);
 
+  const selectedDripperSupportsPourControl = Boolean(
+    selectedDripper?.methodFamily && AI_BREW_POUR_CONTROL_FAMILIES.has(selectedDripper.methodFamily),
+  );
+
   useEffect(() => {
     if (formState.brewMode !== 'iced' || selectedDripperSupportsIced) return;
     setFormState((prev) => (prev.brewMode === 'iced' ? { ...prev, brewMode: 'hot' } : prev));
@@ -3899,8 +3945,7 @@ export function AiBrewPanel({
     ) * 100,
   );
   const generationStageDetail = getGenerationStageDetail(generationProgress, copy, language);
-  const isPrecisionGeneration = activeBuilderModal === 'pro';
-  const canUseHybridAiSequence = isPrecisionGeneration && isAuthenticated && !isGuest && !isOffline;
+  const canUseHybridAiSequence = Boolean(activeBuilderModal) && isAuthenticated && !isGuest && !isOffline;
   const preferredBuilderMode = inferPreferredBuilderMode(formState);
 
   const mineralsReady = Boolean(formState.waterTdsPpm && formState.waterHardnessPpm && formState.waterAlkalinityPpm);
@@ -4111,7 +4156,7 @@ export function AiBrewPanel({
       saveLastGeneratedBrewPlan(nextPlan);
       await saveBrewJournalEntry(journalEntry);
       await refreshSavedViews();
-      setNotice(copy.generated);
+      setNotice(planUsesOnlineAi(nextPlan) ? copy.generatedAi : copy.generatedLocal);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : copy.unavailable);
     } finally {
@@ -4388,7 +4433,7 @@ export function AiBrewPanel({
           <div className={`mx-auto mt-3 inline-flex items-center justify-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${
             canUseHybridAiSequence
               ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-400/30 dark:bg-blue-950 dark:text-blue-100'
-              : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200'
+              : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/30 dark:bg-rose-950 dark:text-rose-100'
           }`}>
             <EngineIcon size={13} />
             <span>{engineLabel}</span>
@@ -4466,6 +4511,18 @@ export function AiBrewPanel({
 
   function renderBuilderDialog(mode: FormMode) {
     const isPro = mode === 'pro';
+    const pourStyleOptions = [
+      { value: 'auto', label: copy.pourStyleAuto },
+      { value: 'balanced', label: copy.pourStyleBalanced },
+      { value: 'pulse', label: copy.pourStylePulse },
+      { value: 'gentle', label: copy.pourStyleGentle },
+    ] as const;
+    const pourCountOptions = [
+      { value: 'auto', label: copy.pourCountAuto },
+      { value: '3', label: copy.pourCount3 },
+      { value: '4', label: copy.pourCount4 },
+      { value: '5', label: copy.pourCount5 },
+    ] as const;
     const dialogTitle = `${copy.title} · ${isPro ? copy.proBuilderTitle : copy.quickBuilderTitle}`;
 
     return (
@@ -4496,11 +4553,15 @@ export function AiBrewPanel({
                   <X size={18} />
                 </button>
                 <div className="pr-12">
-                  <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-300">
-                    {isPro && canUseHybridAiSequence ? <Brain size={13} /> : <Sparkles size={13} />}
+                  <div className={`mb-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
+                    canUseHybridAiSequence
+                      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-300'
+                      : 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
+                  }`}>
+                    {canUseHybridAiSequence ? <Brain size={13} /> : <Sparkles size={13} />}
                     <span>{isPro ? copy.proMode : copy.quickMode}</span>
                     <span className="opacity-70">
-                      {isPro && canUseHybridAiSequence ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
+                      {canUseHybridAiSequence ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
                     </span>
                   </div>
                   <h3 className="text-base font-semibold tracking-tight text-primary lg:text-xl">{dialogTitle}</h3>
@@ -4552,6 +4613,59 @@ export function AiBrewPanel({
                     </div>
                   )}
                 </div>
+
+                {selectedDripperSupportsPourControl ? (
+                  <div className="mt-3 rounded-[1.1rem] panel-soft p-3">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.pourControlTitle}</p>
+                      <p className="text-xs leading-5 text-secondary">{copy.pourControlHint}</p>
+                    </div>
+                    <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                      <div>
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.pourStyleTitle}</p>
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          {pourStyleOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => updateForm('pourStyle', option.value)}
+                              className={`min-h-[42px] rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+                                formState.pourStyle === option.value
+                                  ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.18)]'
+                                  : 'bg-[var(--bg-base)] text-secondary hover:text-primary'
+                              }`}
+                              aria-pressed={formState.pourStyle === option.value}
+                              data-testid={`ai-brew-pour-style-${option.value}`}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.pourCountTitle}</p>
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          {pourCountOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => updateForm('pourCount', option.value)}
+                              className={`min-h-[42px] rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+                                formState.pourCount === option.value
+                                  ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.18)]'
+                                  : 'bg-[var(--bg-base)] text-secondary hover:text-primary'
+                              }`}
+                              aria-pressed={formState.pourCount === option.value}
+                              data-testid={`ai-brew-pour-count-${option.value}`}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
               {renderFeedback(true)}
@@ -5124,9 +5238,13 @@ export function AiBrewPanel({
                 data-testid="ai-brew-open-quick"
               >
                 <div className="text-base font-semibold text-primary">{copy.quickMode}</div>
-                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-secondary">
-                  <Sparkles size={12} />
-                  {copy.aiEngineLocalValidated}
+                <div className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                  isAuthenticated && !isGuest && !isOffline
+                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-300'
+                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
+                }`}>
+                  {isAuthenticated && !isGuest && !isOffline ? <Brain size={12} /> : <Sparkles size={12} />}
+                  {isAuthenticated && !isGuest && !isOffline ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
                 </div>
               </button>
               <button
@@ -5137,7 +5255,11 @@ export function AiBrewPanel({
                 data-testid="ai-brew-open-pro"
               >
                 <div className="text-base font-semibold text-primary">{copy.proMode}</div>
-                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-secondary">
+                <div className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                  isAuthenticated && !isGuest && !isOffline
+                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-300'
+                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
+                }`}>
                   {isAuthenticated && !isGuest && !isOffline ? <Brain size={12} /> : <Sparkles size={12} />}
                   {isAuthenticated && !isGuest && !isOffline ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
                 </div>

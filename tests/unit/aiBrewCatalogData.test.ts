@@ -205,15 +205,19 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
 
   const icelandic = waters.find((entry) => entry.id === 'icelandic-glacial-sg');
   assert.ok(icelandic, 'Icelandic Glacial SG should exist');
-  assert.equal(icelandic.publish_state, 'published', 'Icelandic Glacial SG should be published after chemistry enrichment');
-  assert.equal(icelandic.coffee_parameters.hardness_ppm_as_caco3, 23.2);
-  assert.equal(icelandic.coffee_parameters.alkalinity_ppm_as_caco3, 34.2);
+  assert.equal(icelandic.publish_state, 'review_only', 'Icelandic Glacial SG should stay review-only until public Ca/Mg/HCO3 data exists');
+  assert.equal(icelandic.is_brew_ready, false);
+  assert.equal(icelandic.tds_ppm, 62);
+  assert.equal(icelandic.ph, 8.4);
+  assert.equal(icelandic.coffee_parameters.hardness_ppm_as_caco3, null);
+  assert.equal(icelandic.coffee_parameters.alkalinity_ppm_as_caco3, null);
 
   const sanPellegrino = waters.find((entry) => entry.id === 'san-pellegrino-sg');
   assert.ok(sanPellegrino, 'San Pellegrino SG should exist');
-  assert.equal(sanPellegrino.publish_state, 'review_only', 'San Pellegrino SG should remain review-only due extreme chemistry');
-  assert.equal(sanPellegrino.tds_ppm, 1100);
-  assert.equal(sanPellegrino.coffee_parameters.hardness_ppm_as_caco3, 616.3);
+  assert.equal(sanPellegrino.publish_state, 'published', 'San Pellegrino SG can be shown with official chemistry and a blocked brew preset');
+  assert.equal(sanPellegrino.is_brew_ready, false);
+  assert.equal(sanPellegrino.tds_ppm, 860);
+  assert.equal(sanPellegrino.coffee_parameters.hardness_ppm_as_caco3, 624.6);
 
   const timemoreC2Cone = grinderSettings.find((entry) => entry.id === 'gs_timemore_c2_cone');
   const timemoreC2Flat = grinderSettings.find((entry) => entry.id === 'gs_timemore_c2_flat');

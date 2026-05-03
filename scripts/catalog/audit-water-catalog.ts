@@ -53,6 +53,7 @@ type WaterEntry = {
 
 const root = process.cwd();
 const waterPath = path.join(root, 'apps/web/public/data/catalog/phase1/waters.catalog.json');
+const normalizedWaterPath = path.join(root, 'data/catalog/normalized/phase1/waters.json');
 const repoLocalPrefix = 'local:/data/catalog/raw-evidence/';
 
 function readItems<T>(filePath: string): T[] {
@@ -102,6 +103,19 @@ function allSources(entry: WaterEntry) {
 
 const waters = readItems<WaterEntry>(waterPath);
 const rows: ReturnType<typeof report>[] = [];
+
+for (const sourceFilePath of [waterPath, normalizedWaterPath]) {
+  if (!fs.existsSync(sourceFilePath)) continue;
+  const raw = fs.readFileSync(sourceFilePath, 'utf8');
+  if (/local:\/Users\/Alpha\//i.test(raw)) {
+    rows.push(report(
+      'NEEDS_PUBLIC_SOURCE',
+      path.relative(root, sourceFilePath),
+      'Private local source path is not allowed in normalized or published water catalog data.',
+      true,
+    ));
+  }
+}
 
 for (const entry of waters) {
   const id = entry.id || '(missing id)';

@@ -37,24 +37,12 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#2tang-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#2tang-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#2tang-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#2tang-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -87,30 +75,40 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
-        "calcium": null,
-        "magnesium": null,
-        "sodium": null,
-        "potassium": null,
-        "bicarbonate": null,
-        "sulfate": null,
-        "chloride": null,
-        "silica": null
+        "calcium": 32.2,
+        "magnesium": 6.7,
+        "sodium": 7,
+        "potassium": 0.9,
+        "bicarbonate": 107,
+        "sulfate": 23,
+        "chloride": 8.2,
+        "silica": 7.1
       },
-      "ph": null,
-      "tds_ppm": 188,
+      "ph": 8,
+      "tds_ppm": 142,
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": 106.2,
-        "alkalinity_ppm_as_caco3": 130.5,
+        "hardness_ppm_as_caco3": 108,
+        "alkalinity_ppm_as_caco3": 87.7,
         "sca_match_score": null,
         "brew_recommendation": "acceptable"
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "brand_site",
+          "source_url": "https://www.acquapanna.com/intl/1l-plastic-water-bottle",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.96
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.acquapanna.com/us/1-liter-plastic-bottle",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.94
+        },
+        {
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#acqua-panna-global",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
@@ -122,19 +120,19 @@
       "aliases": [
         "Acqua Panna"
       ],
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [],
         "completeness_score": 100
       },
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#acqua-panna-global",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.acquapanna.com/intl/1l-plastic-water-bottle",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.96
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "acqua-panna-my",
@@ -149,28 +147,38 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
-        "calcium": 32.1,
-        "magnesium": 6.5,
-        "sodium": 6.8,
-        "potassium": 1.2,
-        "bicarbonate": 106,
-        "sulfate": 22.4,
-        "chloride": 7.8,
-        "silica": null
+        "calcium": 32.2,
+        "magnesium": 6.7,
+        "sodium": 7,
+        "potassium": 0.9,
+        "bicarbonate": 107,
+        "sulfate": 23,
+        "chloride": 8.2,
+        "silica": 7.1
       },
-      "ph": 7.9,
-      "tds_ppm": 188,
+      "ph": 8,
+      "tds_ppm": 142,
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": 106.2,
-        "alkalinity_ppm_as_caco3": 130.5,
+        "hardness_ppm_as_caco3": 108,
+        "alkalinity_ppm_as_caco3": 87.7,
         "sca_match_score": 56,
         "brew_recommendation": "acceptable"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.acquapanna.com/intl/1l-plastic-water-bottle",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.96
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.acquapanna.com/us/1-liter-plastic-bottle",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.94
+        },
         {
           "source_type": "brand_site",
           "source_url": "https://www.acquapanna.com/us/eng/products/plastic-bottles/1l",
@@ -184,17 +192,17 @@
           "confidence_score": 0.82
         },
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#acqua-panna-my",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#acqua-panna-my",
-        "collected_at": "2026-04-07T07:30:53.893Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.acquapanna.com/intl/1l-plastic-water-bottle",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.96
       },
       "published": true,
       "publish_state": "published",
@@ -209,7 +217,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "acqua-panna-sg",
@@ -224,28 +232,38 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
-        "calcium": 32.1,
-        "magnesium": 6.5,
-        "sodium": 6.8,
-        "potassium": 1.2,
-        "bicarbonate": 106,
-        "sulfate": 22.4,
-        "chloride": 7.8,
-        "silica": null
+        "calcium": 32.2,
+        "magnesium": 6.7,
+        "sodium": 7,
+        "potassium": 0.9,
+        "bicarbonate": 107,
+        "sulfate": 23,
+        "chloride": 8.2,
+        "silica": 7.1
       },
-      "ph": 7.9,
-      "tds_ppm": 188,
+      "ph": 8,
+      "tds_ppm": 142,
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": 106.2,
-        "alkalinity_ppm_as_caco3": 130.5,
+        "hardness_ppm_as_caco3": 108,
+        "alkalinity_ppm_as_caco3": 87.7,
         "sca_match_score": 56,
         "brew_recommendation": "acceptable"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.acquapanna.com/intl/1l-plastic-water-bottle",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.96
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.acquapanna.com/us/1-liter-plastic-bottle",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.94
+        },
         {
           "source_type": "brand_site",
           "source_url": "https://www.acquapanna.com/us/eng/products/plastic-bottles/1l",
@@ -259,17 +277,17 @@
           "confidence_score": 0.82
         },
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#acqua-panna-sg",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#acqua-panna-sg",
-        "collected_at": "2026-04-07T07:30:53.893Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.acquapanna.com/intl/1l-plastic-water-bottle",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.96
       },
       "published": true,
       "publish_state": "published",
@@ -284,7 +302,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "ades-id",
@@ -322,30 +340,18 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ades-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
+          "collected_at": "2026-04-07T07:30:53.893Z",
+          "confidence_score": 0.7
         },
         {
           "source_type": "brand_site",
           "source_url": "https://www.coca-cola.com/id/id/brands/ades",
           "collected_at": "2026-03-10T00:00:00.000Z",
           "confidence_score": 0.8
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ades-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ades-id",
-          "collected_at": "2026-04-07T07:30:53.893Z",
-          "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ades-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -399,20 +405,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#aetra-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#aetra-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#aetra-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -470,24 +470,12 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#air-alfamart-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#air-alfamart-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#air-alfamart-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#air-alfamart-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -505,7 +493,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "air-indomaret-id",
@@ -543,24 +531,12 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#air-indomaret-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#air-indomaret-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#air-indomaret-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#air-indomaret-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -616,20 +592,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#airku-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#airku-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#airku-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -647,7 +617,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "alfa-spring-id",
@@ -683,20 +653,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#alfa-spring-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#alfa-spring-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#alfa-spring-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -754,24 +718,12 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#amidis-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#amidis-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#amidis-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#amidis-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -789,7 +741,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "aqua-id",
@@ -827,30 +779,18 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#aqua-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
+          "collected_at": "2026-04-07T07:30:53.893Z",
+          "confidence_score": 0.7
         },
         {
           "source_type": "brand_site",
           "source_url": "https://www.aqua.co.id/en",
           "collected_at": "2026-03-10T00:00:00.000Z",
           "confidence_score": 0.9
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#aqua-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#aqua-id",
-          "collected_at": "2026-04-07T07:30:53.893Z",
-          "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#aqua-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -904,20 +844,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#arjuna-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#arjuna-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#arjuna-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -950,9 +884,7 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": null,
         "magnesium": null,
@@ -969,11 +901,11 @@
         "hardness_ppm_as_caco3": 164.3,
         "alkalinity_ppm_as_caco3": 158.6,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "good"
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#arrowhead-global",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
@@ -992,7 +924,7 @@
         "completeness_score": 100
       },
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#arrowhead-global",
         "collected_at": "2026-04-07T07:33:16.224Z",
         "confidence_score": 0.7
@@ -1033,20 +965,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#banyu-sehat-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#banyu-sehat-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#banyu-sehat-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -1100,20 +1026,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#bayu-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#bayu-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#bayu-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -1167,20 +1087,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#biru-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#biru-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#biru-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -1234,20 +1148,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#cendana-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#cendana-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#cendana-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -1281,6 +1189,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
+        "Official source confirms TDS under 10 ppm; use as a low-mineral base and add minerals manually.",
         "Water is too low-mineral for ready-brew use; add minerals manually."
       ],
       "minerals_mg_l": {
@@ -1303,35 +1212,29 @@
       },
       "sources": [
         {
+          "source_type": "brand_site",
+          "source_url": "https://cleopurewater.com/brand-cleo/",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.92
+        },
+        {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#cleo-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
+          "collected_at": "2026-04-07T07:30:53.893Z",
+          "confidence_score": 0.7
         },
         {
           "source_type": "brand_site",
           "source_url": "https://cleopurewater.com/",
           "collected_at": "2026-03-10T00:00:00.000Z",
           "confidence_score": 0.82
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#cleo-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#cleo-id",
-          "collected_at": "2026-04-07T07:30:53.893Z",
-          "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#cleo-id",
-        "collected_at": "2026-04-07T07:30:53.893Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://cleopurewater.com/brand-cleo/",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.92
       },
       "published": true,
       "publish_state": "published",
@@ -1340,13 +1243,17 @@
         "Cleo",
         "CLEO"
       ],
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
-        "missing_fields": [],
-        "completeness_score": 100
+        "missing_fields": [
+          "official_calcium",
+          "official_magnesium",
+          "official_bicarbonate"
+        ],
+        "completeness_score": 70
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "club-id",
@@ -1384,24 +1291,12 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#club-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#club-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#club-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#club-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -1434,9 +1329,7 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": null,
         "magnesium": null,
@@ -1453,11 +1346,11 @@
         "hardness_ppm_as_caco3": 94.6,
         "alkalinity_ppm_as_caco3": 122,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "good"
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#crystal-geyser-global",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
@@ -1476,7 +1369,7 @@
         "completeness_score": 100
       },
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#crystal-geyser-global",
         "collected_at": "2026-04-07T07:33:16.224Z",
         "confidence_score": 0.7
@@ -1517,20 +1410,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#crystaline-plus-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#crystaline-plus-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#crystaline-plus-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -1586,24 +1473,12 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#crystalline-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#crystalline-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#crystalline-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#crystalline-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -1633,10 +1508,12 @@
       "available_in": [
         "Global"
       ],
-      "water_type": "natural_mineral",
+      "water_type": "purified",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Official report does not expose a stable coffee-ready Ca/Mg/bicarbonate profile; purified formulation varies by market."
+      ],
       "minerals_mg_l": {
         "calcium": null,
         "magnesium": null,
@@ -1657,35 +1534,49 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "official_report",
+          "source_url": "https://www.coca-cola.com/content/dam/onexp/us/en/media-center/dasani-water-quality-report/dasani-purified-water-annual-analysis-water-quality-report-2024.pdf",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.9
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.coca-cola.com/us/en/media-center/DASANI-water-quality-report",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.86
+        },
+        {
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#dasani-global",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
         }
       ],
-      "published": true,
-      "publish_state": "published",
+      "published": false,
+      "publish_state": "review_only",
       "search_text": "dasani usa global ",
       "aliases": [
         "Dasani"
       ],
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
+          "calcium",
+          "magnesium",
+          "bicarbonate",
+          "tds_ppm",
+          "ph"
         ],
-        "completeness_score": 100
+        "completeness_score": 25
       },
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#dasani-global",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "official_report",
+        "source_url": "https://www.coca-cola.com/content/dam/onexp/us/en/media-center/dasani-water-quality-report/dasani-purified-water-annual-analysis-water-quality-report-2024.pdf",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.9
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "diamond-id",
@@ -1721,20 +1612,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#diamond-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#diamond-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#diamond-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -1788,20 +1673,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#elok-water-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#elok-water-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#elok-water-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -1834,9 +1713,7 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 29,
         "magnesium": 7.2,
@@ -1859,30 +1736,18 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#equil-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
+          "collected_at": "2026-04-07T07:30:53.893Z",
+          "confidence_score": 0.7
         },
         {
           "source_type": "distributor",
           "source_url": "https://www.blibli.com/brand/equil",
           "collected_at": "2026-03-10T00:00:00.000Z",
           "confidence_score": 0.72
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#equil-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#equil-id",
-          "collected_at": "2026-04-07T07:30:53.893Z",
-          "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#equil-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -1938,24 +1803,12 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#eternal-plus-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#eternal-plus-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#eternal-plus-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#eternal-plus-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -1989,28 +1842,33 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific Brunei imported SKU still needs public label verification; use the global chemistry manually only if the bottle label matches."
       ],
       "minerals_mg_l": {
-        "calcium": null,
-        "magnesium": null,
-        "sodium": null,
-        "potassium": null,
-        "bicarbonate": null,
-        "sulfate": null,
-        "chloride": null,
-        "silica": null
+        "calcium": 80,
+        "magnesium": 26,
+        "sodium": 6.5,
+        "potassium": 1,
+        "bicarbonate": 360,
+        "sulfate": 14,
+        "chloride": 10,
+        "silica": 15
       },
-      "ph": null,
-      "tds_ppm": null,
+      "ph": 7.2,
+      "tds_ppm": 345,
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": null,
-        "alkalinity_ppm_as_caco3": null,
+        "hardness_ppm_as_caco3": 306.8,
+        "alkalinity_ppm_as_caco3": 295.2,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "poor"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.evian.com/en_gb/our-water/water-attributes",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.97
+        },
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#evian-bn",
@@ -2024,23 +1882,19 @@
       "aliases": [
         "Evian"
       ],
-      "verification_status": "review_required",
+      "verification_status": "verified",
       "data_quality": {
-        "is_estimated": true,
-        "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
-        ],
-        "completeness_score": 58
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
       },
       "primary_source": {
-        "source_type": "community_reference",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#evian-bn",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.evian.com/en_gb/our-water/water-attributes",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.97
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T08:10:20.648Z"
     },
     {
       "id": "evian-global",
@@ -2055,30 +1909,34 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
-        "calcium": null,
-        "magnesium": null,
-        "sodium": null,
-        "potassium": null,
-        "bicarbonate": null,
-        "sulfate": null,
-        "chloride": null,
-        "silica": null
+        "calcium": 80,
+        "magnesium": 26,
+        "sodium": 6.5,
+        "potassium": 1,
+        "bicarbonate": 360,
+        "sulfate": 14,
+        "chloride": 10,
+        "silica": 15
       },
-      "ph": null,
+      "ph": 7.2,
       "tds_ppm": 345,
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 306.8,
-        "alkalinity_ppm_as_caco3": 327,
+        "alkalinity_ppm_as_caco3": 295.2,
         "sca_match_score": null,
         "brew_recommendation": "acceptable"
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "brand_site",
+          "source_url": "https://www.evian.com/en_gb/our-water/water-attributes",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.97
+        },
+        {
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#evian-global",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
@@ -2090,19 +1948,19 @@
       "aliases": [
         "Evian"
       ],
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [],
         "completeness_score": 100
       },
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#evian-global",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.evian.com/en_gb/our-water/water-attributes",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.97
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "evian-my",
@@ -2117,9 +1975,7 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 80,
         "magnesium": 26,
@@ -2127,18 +1983,24 @@
         "potassium": 1,
         "bicarbonate": 360,
         "sulfate": 14,
-        "chloride": 6.8,
-        "silica": null
+        "chloride": 10,
+        "silica": 15
       },
-      "ph": null,
+      "ph": 7.2,
       "tds_ppm": 345,
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 306.8,
-        "alkalinity_ppm_as_caco3": 327,
+        "alkalinity_ppm_as_caco3": 295.2,
         "sca_match_score": 0,
         "brew_recommendation": "acceptable"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.evian.com/en_gb/our-water/water-attributes",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.97
+        },
         {
           "source_type": "brand_site",
           "source_url": "https://www.evian.com/en_int/water-attributes",
@@ -2158,17 +2020,17 @@
           "confidence_score": 0.82
         },
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#evian-my",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#evian-my",
-        "collected_at": "2026-04-07T07:30:53.893Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.evian.com/en_gb/our-water/water-attributes",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.97
       },
       "published": true,
       "publish_state": "published",
@@ -2183,7 +2045,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "evian-sg",
@@ -2198,9 +2060,7 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 80,
         "magnesium": 26,
@@ -2208,18 +2068,24 @@
         "potassium": 1,
         "bicarbonate": 360,
         "sulfate": 14,
-        "chloride": 6.8,
-        "silica": null
+        "chloride": 10,
+        "silica": 15
       },
-      "ph": null,
+      "ph": 7.2,
       "tds_ppm": 345,
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 306.8,
-        "alkalinity_ppm_as_caco3": 327,
+        "alkalinity_ppm_as_caco3": 295.2,
         "sca_match_score": 0,
         "brew_recommendation": "acceptable"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.evian.com/en_gb/our-water/water-attributes",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.97
+        },
         {
           "source_type": "brand_site",
           "source_url": "https://www.evian.com/en_int/water-attributes",
@@ -2239,17 +2105,17 @@
           "confidence_score": 0.82
         },
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#evian-sg",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#evian-sg",
-        "collected_at": "2026-04-07T07:30:53.893Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.evian.com/en_gb/our-water/water-attributes",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.97
       },
       "published": true,
       "publish_state": "published",
@@ -2264,7 +2130,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "fiji-global",
@@ -2279,30 +2145,34 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
-        "calcium": null,
-        "magnesium": null,
-        "sodium": null,
-        "potassium": null,
-        "bicarbonate": null,
+        "calcium": 18,
+        "magnesium": 15,
+        "sodium": 18,
+        "potassium": 4.9,
+        "bicarbonate": 152,
         "sulfate": null,
-        "chloride": null,
-        "silica": null
+        "chloride": 9.3,
+        "silica": 93
       },
-      "ph": null,
-      "tds_ppm": 230,
+      "ph": 7.7,
+      "tds_ppm": 222,
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 106.7,
-        "alkalinity_ppm_as_caco3": 112.2,
+        "alkalinity_ppm_as_caco3": 124.6,
         "sca_match_score": null,
-        "brew_recommendation": "good"
+        "brew_recommendation": "acceptable"
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "brand_site",
+          "source_url": "https://www.fijiwater.ca/faqs",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.96
+        },
+        {
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#fiji-global",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
@@ -2314,19 +2184,19 @@
       "aliases": [
         "Fiji"
       ],
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [],
         "completeness_score": 100
       },
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#fiji-global",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.fijiwater.ca/faqs",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.96
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "fiji-my",
@@ -2341,28 +2211,32 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 18,
         "magnesium": 15,
         "sodium": 18,
-        "potassium": 5,
-        "bicarbonate": 153,
+        "potassium": 4.9,
+        "bicarbonate": 152,
         "sulfate": null,
-        "chloride": null,
+        "chloride": 9.3,
         "silica": 93
       },
       "ph": 7.7,
-      "tds_ppm": 230,
+      "tds_ppm": 222,
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 106.7,
-        "alkalinity_ppm_as_caco3": 112.2,
+        "alkalinity_ppm_as_caco3": 124.6,
         "sca_match_score": 25,
         "brew_recommendation": "acceptable"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.fijiwater.ca/faqs",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.96
+        },
         {
           "source_type": "official_report",
           "source_url": "https://cdn.shopify.com/s/files/1/0286/6052/files/Fiji_Water_2023_Water_Quality_Report.pdf?v=1706305193",
@@ -2382,17 +2256,17 @@
           "confidence_score": 0.82
         },
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#fiji-my",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#fiji-my",
-        "collected_at": "2026-04-07T07:30:53.893Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.fijiwater.ca/faqs",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.96
       },
       "published": true,
       "publish_state": "published",
@@ -2408,7 +2282,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "fiji-sg",
@@ -2423,28 +2297,32 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 18,
         "magnesium": 15,
         "sodium": 18,
-        "potassium": 5,
-        "bicarbonate": 153,
+        "potassium": 4.9,
+        "bicarbonate": 152,
         "sulfate": null,
-        "chloride": null,
+        "chloride": 9.3,
         "silica": 93
       },
       "ph": 7.7,
-      "tds_ppm": 230,
+      "tds_ppm": 222,
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 106.7,
-        "alkalinity_ppm_as_caco3": 112.2,
+        "alkalinity_ppm_as_caco3": 124.6,
         "sca_match_score": 25,
         "brew_recommendation": "acceptable"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.fijiwater.ca/faqs",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.96
+        },
         {
           "source_type": "official_report",
           "source_url": "https://cdn.shopify.com/s/files/1/0286/6052/files/Fiji_Water_2023_Water_Quality_Report.pdf?v=1706305193",
@@ -2464,17 +2342,17 @@
           "confidence_score": 0.82
         },
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#fiji-sg",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#fiji-sg",
-        "collected_at": "2026-04-07T07:30:53.893Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.fijiwater.ca/faqs",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.96
       },
       "published": true,
       "publish_state": "published",
@@ -2490,7 +2368,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "frozen-id",
@@ -2528,24 +2406,12 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#frozen-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#frozen-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#frozen-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#frozen-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -2578,9 +2444,7 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": null,
         "magnesium": null,
@@ -2597,11 +2461,11 @@
         "hardness_ppm_as_caco3": 1313.7,
         "alkalinity_ppm_as_caco3": 2215.5,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "good"
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#gerolsteiner-global",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
@@ -2620,7 +2484,7 @@
         "completeness_score": 100
       },
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#gerolsteiner-global",
         "collected_at": "2026-04-07T07:33:16.224Z",
         "confidence_score": 0.7
@@ -2661,20 +2525,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#gilang-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#gilang-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#gilang-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -2708,8 +2566,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -2775,8 +2632,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -2841,30 +2697,34 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
-        "calcium": null,
-        "magnesium": null,
-        "sodium": null,
-        "potassium": null,
-        "bicarbonate": null,
-        "sulfate": null,
-        "chloride": null,
+        "calcium": 40.5,
+        "magnesium": 10.1,
+        "sodium": 5.6,
+        "potassium": 0.7,
+        "bicarbonate": 150,
+        "sulfate": 5.3,
+        "chloride": 6.1,
         "silica": null
       },
-      "ph": null,
+      "ph": 7.8,
       "tds_ppm": 170,
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": 141.1,
-        "alkalinity_ppm_as_caco3": 183,
+        "hardness_ppm_as_caco3": 142.7,
+        "alkalinity_ppm_as_caco3": 123,
         "sca_match_score": null,
         "brew_recommendation": "acceptable"
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "brand_site",
+          "source_url": "https://highlandspring.com/product-range/spring-water/",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.96
+        },
+        {
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#highland-spring-global",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
@@ -2876,19 +2736,19 @@
       "aliases": [
         "Highland Spring"
       ],
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [],
         "completeness_score": 100
       },
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#highland-spring-global",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://highlandspring.com/product-range/spring-water/",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.96
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "highland-spring-sg",
@@ -2902,30 +2762,33 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": false,
-      "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
-      ],
+      "is_brew_ready": true,
+      "brew_block_reason": [],
       "minerals_mg_l": {
-        "calcium": null,
-        "magnesium": null,
-        "sodium": null,
-        "potassium": null,
-        "bicarbonate": null,
-        "sulfate": null,
-        "chloride": null,
+        "calcium": 40.5,
+        "magnesium": 10.1,
+        "sodium": 5.6,
+        "potassium": 0.7,
+        "bicarbonate": 150,
+        "sulfate": 5.3,
+        "chloride": 6.1,
         "silica": null
       },
-      "ph": null,
-      "tds_ppm": null,
+      "ph": 7.8,
+      "tds_ppm": 170,
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": null,
-        "alkalinity_ppm_as_caco3": null,
+        "hardness_ppm_as_caco3": 142.7,
+        "alkalinity_ppm_as_caco3": 123,
         "sca_match_score": null,
         "brew_recommendation": "acceptable"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://highlandspring.com/product-range/spring-water/",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.96
+        },
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#highland-spring-sg",
@@ -2934,28 +2797,24 @@
         }
       ],
       "primary_source": {
-        "source_type": "community_reference",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#highland-spring-sg",
-        "collected_at": "2026-04-07T07:33:30.461Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://highlandspring.com/product-range/spring-water/",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.96
       },
-      "published": false,
-      "publish_state": "review_only",
+      "published": true,
+      "publish_state": "published",
       "search_text": "highland spring uk sg",
       "aliases": [
         "Highland Spring"
       ],
-      "verification_status": "review_required",
+      "verification_status": "verified",
       "data_quality": {
-        "is_estimated": true,
-        "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
-        ],
-        "completeness_score": 58
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:33:30.461Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "hydromed-id",
@@ -2991,20 +2850,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#hydromed-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#hydromed-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#hydromed-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -3038,8 +2891,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Official source confirms pH and TDS, but Ca/Mg/bicarbonate are not public enough for automatic brew minerals."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -3051,15 +2903,27 @@
         "chloride": null,
         "silica": null
       },
-      "ph": null,
-      "tds_ppm": null,
+      "ph": 8.4,
+      "tds_ppm": 62,
       "coffee_parameters": {
         "hardness_ppm_as_caco3": null,
         "alkalinity_ppm_as_caco3": null,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "poor"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://icelandicglacial.com/pages/our-water",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.94
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://icelandicglacial.com/pages/faq",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.94
+        },
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#icelandic-glacial-bn",
@@ -3073,23 +2937,25 @@
       "aliases": [
         "Icelandic Glacial"
       ],
-      "verification_status": "review_required",
+      "verification_status": "verified",
       "data_quality": {
-        "is_estimated": true,
+        "is_estimated": false,
         "missing_fields": [
-          "tds",
+          "calcium",
+          "magnesium",
+          "bicarbonate",
           "hardness",
           "alkalinity"
         ],
-        "completeness_score": 58
+        "completeness_score": 42
       },
       "primary_source": {
-        "source_type": "community_reference",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#icelandic-glacial-bn",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://icelandicglacial.com/pages/our-water",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.94
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "icelandic-glacial-global",
@@ -3103,8 +2969,10 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Official source confirms pH and TDS, but Ca/Mg/bicarbonate are not public enough for automatic brew minerals."
+      ],
       "minerals_mg_l": {
         "calcium": null,
         "magnesium": null,
@@ -3115,41 +2983,59 @@
         "chloride": null,
         "silica": null
       },
-      "ph": null,
+      "ph": 8.4,
       "tds_ppm": 62,
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": 23.2,
-        "alkalinity_ppm_as_caco3": 34.2,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
         "sca_match_score": null,
-        "brew_recommendation": "good"
+        "brew_recommendation": "poor"
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "brand_site",
+          "source_url": "https://icelandicglacial.com/pages/our-water",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.94
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://icelandicglacial.com/pages/faq",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.94
+        },
+        {
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#icelandic-glacial-global",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
         }
       ],
-      "published": true,
-      "publish_state": "published",
+      "published": false,
+      "publish_state": "review_only",
       "search_text": "icelandic glacial iceland global ",
       "aliases": [
         "Icelandic Glacial"
       ],
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
-        "missing_fields": [],
-        "completeness_score": 100
+        "missing_fields": [
+          "calcium",
+          "magnesium",
+          "bicarbonate",
+          "hardness",
+          "alkalinity"
+        ],
+        "completeness_score": 42
       },
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#icelandic-glacial-global",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://icelandicglacial.com/pages/our-water",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.94
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "icelandic-glacial-sg",
@@ -3163,8 +3049,10 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Official source confirms pH and TDS, but Ca/Mg/bicarbonate are not public enough for automatic brew minerals."
+      ],
       "minerals_mg_l": {
         "calcium": null,
         "magnesium": null,
@@ -3175,41 +3063,59 @@
         "chloride": null,
         "silica": null
       },
-      "ph": null,
+      "ph": 8.4,
       "tds_ppm": 62,
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": 23.2,
-        "alkalinity_ppm_as_caco3": 34.2,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
         "sca_match_score": null,
-        "brew_recommendation": "good"
+        "brew_recommendation": "poor"
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "brand_site",
+          "source_url": "https://icelandicglacial.com/pages/our-water",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.94
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://icelandicglacial.com/pages/faq",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.94
+        },
+        {
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#icelandic-glacial-sg",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
         }
       ],
-      "published": true,
-      "publish_state": "published",
+      "published": false,
+      "publish_state": "review_only",
       "search_text": "icelandic glacial iceland sg ",
       "aliases": [
         "Icelandic Glacial"
       ],
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
-        "missing_fields": [],
-        "completeness_score": 100
+        "missing_fields": [
+          "calcium",
+          "magnesium",
+          "bicarbonate",
+          "hardness",
+          "alkalinity"
+        ],
+        "completeness_score": 42
       },
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#icelandic-glacial-sg",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://icelandicglacial.com/pages/our-water",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.94
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "ion-plus-id",
@@ -3247,20 +3153,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ion-plus-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ion-plus-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ion-plus-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -3278,7 +3178,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "jeju-samdasoo-global",
@@ -3294,8 +3194,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -3361,8 +3260,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -3428,8 +3326,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -3495,8 +3392,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -3561,9 +3457,7 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 59.8,
         "magnesium": 15,
@@ -3586,30 +3480,18 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#le-minerale-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
+          "collected_at": "2026-04-07T07:30:53.893Z",
+          "confidence_score": 0.7
         },
         {
           "source_type": "brand_site",
           "source_url": "https://www.leminerale.com/en/news/Bikin-Airnya-Sehat-dan-Berkualitas-Ini-Rahasia-Produksi-Le-Minerale-",
           "collected_at": "2026-03-10T00:00:00.000Z",
           "confidence_score": 0.88
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#le-minerale-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#le-minerale-id",
-          "collected_at": "2026-04-07T07:30:53.893Z",
-          "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#le-minerale-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -3642,9 +3524,7 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 2.2,
         "magnesium": 5.5,
@@ -3667,8 +3547,8 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#le-minerale-my",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
+          "collected_at": "2026-04-07T07:30:53.893Z",
+          "confidence_score": 0.7
         },
         {
           "source_type": "brand_site",
@@ -3681,16 +3561,10 @@
           "source_url": "https://jgfreshub.jayagrocer.com/collections/water",
           "collected_at": "2026-03-10T00:00:00.000Z",
           "confidence_score": 0.72
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#le-minerale-my",
-          "collected_at": "2026-04-07T07:30:53.893Z",
-          "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#le-minerale-my",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -3743,20 +3617,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#lontar-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#lontar-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#lontar-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -3810,20 +3678,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#mahkota-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#mahkota-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#mahkota-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -3877,20 +3739,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#mayora-sparkling-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#mayora-sparkling-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#mayora-sparkling-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -3924,8 +3780,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -3991,8 +3846,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -4058,8 +3912,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -4125,8 +3978,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -4212,20 +4064,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#neo-aqua-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#neo-aqua-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#neo-aqua-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -4255,10 +4101,12 @@
       "available_in": [
         "Global"
       ],
-      "water_type": "natural_mineral",
+      "water_type": "purified",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Pure Life chemistry is region-specific; use manual minerals until the exact market/SKU is selected."
+      ],
       "minerals_mg_l": {
         "calcium": null,
         "magnesium": null,
@@ -4279,35 +4127,42 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "brand_site",
+          "source_url": "https://www.purelifewater.com/our-brand/our-quality",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.86
+        },
+        {
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#nestle-pure-life-global",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
         }
       ],
-      "published": true,
-      "publish_state": "published",
+      "published": false,
+      "publish_state": "review_only",
       "search_text": "nestle pure life global global ",
       "aliases": [
         "Nestle Pure Life"
       ],
-      "verification_status": "curated",
+      "verification_status": "review_required",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [
+          "regional_variant",
           "tds",
           "hardness",
           "alkalinity"
         ],
-        "completeness_score": 100
+        "completeness_score": 35
       },
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#nestle-pure-life-global",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.purelifewater.com/our-brand/our-quality",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.86
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "nestle-pure-life-id",
@@ -4343,20 +4198,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#nestle-pure-life-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#nestle-pure-life-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#nestle-pure-life-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -4410,20 +4259,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#nirwana-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#nirwana-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#nirwana-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -4457,8 +4300,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -4524,8 +4366,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -4613,30 +4454,18 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#oasis-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
+          "collected_at": "2026-04-07T07:30:53.893Z",
+          "confidence_score": 0.7
         },
         {
           "source_type": "brand_site",
           "source_url": "https://oasis.co.id/",
           "collected_at": "2026-03-10T00:00:00.000Z",
           "confidence_score": 0.82
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#oasis-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#oasis-id",
-          "collected_at": "2026-04-07T07:30:53.893Z",
-          "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#oasis-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -4672,8 +4501,7 @@
       "brew_block_reason": [
         "Calcium is missing.",
         "Magnesium is missing.",
-        "Bicarbonate is missing.",
-        "Alkaline water can mute acidity; verify minerals manually before using it as a brew preset."
+        "Bicarbonate is missing."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -4768,20 +4596,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#oxywater-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#oxywater-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#oxywater-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -4799,7 +4621,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "perfect-id",
@@ -4837,24 +4659,12 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#perfect-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#perfect-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#perfect-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#perfect-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -4908,7 +4718,7 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#poland-spring-global",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
@@ -4927,7 +4737,7 @@
         "completeness_score": 100
       },
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#poland-spring-global",
         "collected_at": "2026-04-07T07:33:16.224Z",
         "confidence_score": 0.7
@@ -4968,20 +4778,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#polar-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#polar-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#polar-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -5047,14 +4851,14 @@
           "confidence_score": 0.65
         },
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#polar-sg",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#polar-sg",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -5109,30 +4913,18 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#prima-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
+          "collected_at": "2026-04-07T07:30:53.893Z",
+          "confidence_score": 0.7
         },
         {
           "source_type": "brand_site",
           "source_url": "https://www.primawater.com/",
           "collected_at": "2026-03-10T00:00:00.000Z",
           "confidence_score": 0.82
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#prima-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#prima-id",
-          "collected_at": "2026-04-07T07:30:53.893Z",
-          "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#prima-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -5164,8 +4956,10 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Alkaline pH is source-backed, but mineral quantities are curated; use manual minerals for coffee-ready precision."
+      ],
       "minerals_mg_l": {
         "calcium": 5.8,
         "magnesium": 1.5,
@@ -5176,7 +4970,7 @@
         "chloride": null,
         "silica": null
       },
-      "ph": 7,
+      "ph": 8.6,
       "tds_ppm": 29,
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 20.7,
@@ -5186,23 +4980,23 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#pristine-8-6-plus-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
+          "source_type": "brand_site",
+          "source_url": "https://pristineofficial.com/tentang-ph86",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.9
         },
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#pristine-8-6-plus-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#pristine-8-6-plus-id",
-        "collected_at": "2026-04-07T07:30:53.893Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://pristineofficial.com/tentang-ph86",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.9
       },
       "published": true,
       "publish_state": "published",
@@ -5215,9 +5009,9 @@
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [],
-        "completeness_score": 100
+        "completeness_score": 75
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "pristine-8-plus-id",
@@ -5233,10 +5027,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Calcium is missing.",
-        "Magnesium is missing.",
-        "Bicarbonate is missing.",
-        "TDS is missing."
+        "Official source confirms alkaline pH, but mineral quantities are incomplete; use manual minerals for brewing."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -5248,7 +5039,7 @@
         "chloride": null,
         "silica": null
       },
-      "ph": null,
+      "ph": 8.6,
       "tds_ppm": null,
       "coffee_parameters": {
         "hardness_ppm_as_caco3": null,
@@ -5257,6 +5048,12 @@
         "brew_recommendation": "poor"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://pristineofficial.com/tentang-ph86",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.9
+        },
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#pristine-8-plus-id",
@@ -5272,9 +5069,9 @@
       ],
       "primary_source": {
         "source_type": "brand_site",
-        "source_url": "https://www.pristine8plus.com/",
-        "collected_at": "2026-03-10T00:00:00.000Z",
-        "confidence_score": 0.82
+        "source_url": "https://pristineofficial.com/tentang-ph86",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.9
       },
       "published": false,
       "publish_state": "review_only",
@@ -5290,12 +5087,11 @@
           "calcium",
           "magnesium",
           "bicarbonate",
-          "tds_ppm",
-          "ph"
+          "tds_ppm"
         ],
-        "completeness_score": 17
+        "completeness_score": 25
       },
-      "updated_at": "2026-03-10T00:00:00.000Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "pure-life-global",
@@ -5464,7 +5260,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Water is too low-mineral for ready-brew use; add minerals manually."
+        "Rivero mineral profile is curated and requires manual confirmation before ready-brew use."
       ],
       "minerals_mg_l": {
         "calcium": 9.6,
@@ -5488,30 +5284,18 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#rivero-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#rivero-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#rivero-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#rivero-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
       },
-      "published": true,
-      "publish_state": "published",
+      "published": false,
+      "publish_state": "review_only",
       "search_text": "rivero indonesia id rivero natural mineral water rivero",
       "aliases": [
         "Rivero",
@@ -5523,7 +5307,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T08:10:20.648Z"
     },
     {
       "id": "ron-88-id",
@@ -5561,24 +5345,12 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ron-88-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ron-88-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ron-88-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ron-88-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -5632,20 +5404,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#rona-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#rona-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#rona-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -5675,34 +5441,37 @@
       "available_in": [
         "Singapore"
       ],
-      "water_type": "natural_mineral",
-      "is_sparkling": false,
+      "water_type": "sparkling",
+      "is_sparkling": true,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Extreme chemistry is held in review_only for manual brew use.",
-        "Held in review_only until market verification is complete.",
-        "Estimated water values must be verified manually before ready-brew use.",
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
+        "Carbonated natural mineral water is not a ready-brew filter preset; use manual minerals only after degassing and tasting."
       ],
       "minerals_mg_l": {
-        "calcium": null,
-        "magnesium": null,
-        "sodium": null,
-        "potassium": null,
-        "bicarbonate": null,
-        "sulfate": null,
-        "chloride": null,
-        "silica": null
+        "calcium": 169,
+        "magnesium": 49.2,
+        "sodium": 31.2,
+        "potassium": 2.4,
+        "bicarbonate": 249,
+        "sulfate": 403,
+        "chloride": 49.8,
+        "silica": 7.2
       },
-      "ph": null,
-      "tds_ppm": 1100,
+      "ph": 7.6,
+      "tds_ppm": 860,
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": 616.3,
-        "alkalinity_ppm_as_caco3": 552,
+        "hardness_ppm_as_caco3": 624.6,
+        "alkalinity_ppm_as_caco3": 204.2,
         "sca_match_score": null,
         "brew_recommendation": "acceptable"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.sanpellegrino.com/water/1-l-pet-bottle?_wrapper_format=html",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.96
+        },
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#san-pellegrino-sg",
@@ -5710,26 +5479,26 @@
           "confidence_score": 0.7
         }
       ],
-      "published": false,
-      "publish_state": "review_only",
+      "published": true,
+      "publish_state": "published",
       "search_text": "san pellegrino italy sg s.pellegrino",
       "aliases": [
         "San Pellegrino",
         "S.Pellegrino"
       ],
-      "verification_status": "review_required",
+      "verification_status": "verified",
       "data_quality": {
-        "is_estimated": true,
+        "is_estimated": false,
         "missing_fields": [],
-        "completeness_score": 84
+        "completeness_score": 100
       },
       "primary_source": {
-        "source_type": "community_reference",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#san-pellegrino-sg",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.sanpellegrino.com/water/1-l-pet-bottle?_wrapper_format=html",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.96
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "segar-id",
@@ -5765,20 +5534,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#segar-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#segar-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#segar-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -5832,20 +5595,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#sejuk-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#sejuk-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#sejuk-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -5879,28 +5636,33 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label availability still needs verification; use manual minerals if this exact imported SKU is confirmed."
       ],
       "minerals_mg_l": {
-        "calcium": null,
-        "magnesium": null,
-        "sodium": null,
-        "potassium": null,
-        "bicarbonate": null,
-        "sulfate": null,
-        "chloride": null,
-        "silica": null
+        "calcium": 31,
+        "magnesium": 2.7,
+        "sodium": 9.9,
+        "potassium": 2.4,
+        "bicarbonate": 104,
+        "sulfate": 4.9,
+        "chloride": 2,
+        "silica": 60
       },
-      "ph": null,
-      "tds_ppm": null,
+      "ph": 7.65,
+      "tds_ppm": 160,
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": null,
-        "alkalinity_ppm_as_caco3": null,
+        "hardness_ppm_as_caco3": 88.5,
+        "alkalinity_ppm_as_caco3": 85.3,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "good"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.spritzer.com.my/our-product/spritzer-natural-mineral-water/",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.95
+        },
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#spritzer-bn",
@@ -5914,23 +5676,19 @@
       "aliases": [
         "Spritzer"
       ],
-      "verification_status": "review_required",
+      "verification_status": "verified",
       "data_quality": {
-        "is_estimated": true,
-        "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
-        ],
-        "completeness_score": 58
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
       },
       "primary_source": {
-        "source_type": "community_reference",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#spritzer-bn",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.spritzer.com.my/our-product/spritzer-natural-mineral-water/",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.95
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "spritzer-my",
@@ -5945,28 +5703,32 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 31,
         "magnesium": 2.7,
-        "sodium": null,
-        "potassium": null,
+        "sodium": 9.9,
+        "potassium": 2.4,
         "bicarbonate": 104,
-        "sulfate": null,
-        "chloride": null,
-        "silica": 44
+        "sulfate": 4.9,
+        "chloride": 2,
+        "silica": 60
       },
       "ph": 7.65,
       "tds_ppm": 160,
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": 88.6,
+        "hardness_ppm_as_caco3": 88.5,
         "alkalinity_ppm_as_caco3": 85.3,
         "sca_match_score": 82,
         "brew_recommendation": "good"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.spritzer.com.my/our-product/spritzer-natural-mineral-water/",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.95
+        },
         {
           "source_type": "brand_site",
           "source_url": "https://www.spritzer.com.my/story",
@@ -5982,9 +5744,9 @@
       ],
       "primary_source": {
         "source_type": "brand_site",
-        "source_url": "https://www.spritzer.com.my/story",
-        "collected_at": "2026-03-10T00:00:00.000Z",
-        "confidence_score": 0.93
+        "source_url": "https://www.spritzer.com.my/our-product/spritzer-natural-mineral-water/",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.95
       },
       "published": true,
       "publish_state": "published",
@@ -5998,7 +5760,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-03-10T00:00:00.000Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "spritzer-sg",
@@ -6014,28 +5776,33 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label availability still needs verification; use manual minerals if this exact imported SKU is confirmed."
       ],
       "minerals_mg_l": {
-        "calcium": null,
-        "magnesium": null,
-        "sodium": null,
-        "potassium": null,
-        "bicarbonate": null,
-        "sulfate": null,
-        "chloride": null,
-        "silica": null
+        "calcium": 31,
+        "magnesium": 2.7,
+        "sodium": 9.9,
+        "potassium": 2.4,
+        "bicarbonate": 104,
+        "sulfate": 4.9,
+        "chloride": 2,
+        "silica": 60
       },
-      "ph": null,
-      "tds_ppm": null,
+      "ph": 7.65,
+      "tds_ppm": 160,
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": null,
-        "alkalinity_ppm_as_caco3": null,
+        "hardness_ppm_as_caco3": 88.5,
+        "alkalinity_ppm_as_caco3": 85.3,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "good"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.spritzer.com.my/our-product/spritzer-natural-mineral-water/",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.95
+        },
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#spritzer-sg",
@@ -6044,10 +5811,10 @@
         }
       ],
       "primary_source": {
-        "source_type": "community_reference",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#spritzer-sg",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.spritzer.com.my/our-product/spritzer-natural-mineral-water/",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.95
       },
       "published": false,
       "publish_state": "review_only",
@@ -6055,17 +5822,13 @@
       "aliases": [
         "Spritzer"
       ],
-      "verification_status": "review_required",
+      "verification_status": "verified",
       "data_quality": {
-        "is_estimated": true,
-        "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
-        ],
-        "completeness_score": 58
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "suci-bn",
@@ -6109,14 +5872,14 @@
           "confidence_score": 0.82
         },
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#suci-bn",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#suci-bn",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -6128,13 +5891,13 @@
         "Suci",
         "Suci Drinking Water"
       ],
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "suci-id",
@@ -6172,20 +5935,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#suci-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#suci-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#suci-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -6203,7 +5960,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "sumber-air-sehat-id",
@@ -6239,20 +5996,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#sumber-air-sehat-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#sumber-air-sehat-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#sumber-air-sehat-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -6306,20 +6057,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#sumurup-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#sumurup-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#sumurup-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -6353,8 +6098,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -6420,8 +6164,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -6509,20 +6252,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#super-o2-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#super-o2-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#super-o2-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -6540,7 +6277,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "tirta-fresh-id",
@@ -6576,20 +6313,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#tirta-fresh-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#tirta-fresh-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#tirta-fresh-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -6643,20 +6374,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#tirtone-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#tirtone-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#tirtone-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -6712,24 +6437,12 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#total-8-plus-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#total-8-plus-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#total-8-plus-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#total-8-plus-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -6785,24 +6498,12 @@
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#vit-id",
-          "collected_at": "2026-03-10T00:00:00.000Z",
-          "confidence_score": 0.62
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#vit-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#vit-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#vit-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -6834,8 +6535,10 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Vittel has source/SKU variants; choose manual minerals until the exact source label is selected."
+      ],
       "minerals_mg_l": {
         "calcium": null,
         "magnesium": null,
@@ -6856,35 +6559,42 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "brand_site",
+          "source_url": "https://www.vittel.fr/produits/vittel-nature",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.88
+        },
+        {
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#vittel-global",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
         }
       ],
-      "published": true,
-      "publish_state": "published",
+      "published": false,
+      "publish_state": "review_only",
       "search_text": "vittel france global ",
       "aliases": [
         "Vittel"
       ],
-      "verification_status": "curated",
+      "verification_status": "review_required",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [
+          "source_variant",
           "tds",
           "hardness",
           "alkalinity"
         ],
-        "completeness_score": 100
+        "completeness_score": 35
       },
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#vittel-global",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.vittel.fr/produits/vittel-nature",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.88
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "volvic-bn",
@@ -6900,28 +6610,33 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific Brunei imported SKU still needs public label verification; use the global chemistry manually only if the bottle label matches."
       ],
       "minerals_mg_l": {
-        "calcium": null,
-        "magnesium": null,
-        "sodium": null,
-        "potassium": null,
-        "bicarbonate": null,
-        "sulfate": null,
-        "chloride": null,
-        "silica": null
+        "calcium": 12,
+        "magnesium": 8,
+        "sodium": 12,
+        "potassium": 6,
+        "bicarbonate": 74,
+        "sulfate": 9,
+        "chloride": 15,
+        "silica": 32
       },
-      "ph": null,
-      "tds_ppm": null,
+      "ph": 7,
+      "tds_ppm": 130,
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": null,
-        "alkalinity_ppm_as_caco3": null,
+        "hardness_ppm_as_caco3": 62.9,
+        "alkalinity_ppm_as_caco3": 60.7,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "poor"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.volvic.co.uk/products/natural-mineral-water/volvic-natural-mineral-water/natural-mineral-water-15l",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.97
+        },
         {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#volvic-bn",
@@ -6935,23 +6650,19 @@
       "aliases": [
         "Volvic"
       ],
-      "verification_status": "review_required",
+      "verification_status": "verified",
       "data_quality": {
-        "is_estimated": true,
-        "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
-        ],
-        "completeness_score": 58
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
       },
       "primary_source": {
-        "source_type": "community_reference",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#volvic-bn",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.volvic.co.uk/products/natural-mineral-water/volvic-natural-mineral-water/natural-mineral-water-15l",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.97
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T08:10:20.648Z"
     },
     {
       "id": "volvic-global",
@@ -6966,30 +6677,34 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
-        "calcium": null,
-        "magnesium": null,
-        "sodium": null,
-        "potassium": null,
-        "bicarbonate": null,
-        "sulfate": null,
-        "chloride": null,
-        "silica": null
+        "calcium": 12,
+        "magnesium": 8,
+        "sodium": 12,
+        "potassium": 6,
+        "bicarbonate": 74,
+        "sulfate": 9,
+        "chloride": 15,
+        "silica": 32
       },
-      "ph": null,
+      "ph": 7,
       "tds_ppm": 130,
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 62.9,
-        "alkalinity_ppm_as_caco3": 91.5,
+        "alkalinity_ppm_as_caco3": 60.7,
         "sca_match_score": null,
-        "brew_recommendation": "good"
+        "brew_recommendation": "excellent"
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
+          "source_type": "brand_site",
+          "source_url": "https://www.volvic.co.uk/products/natural-mineral-water/volvic-natural-mineral-water/natural-mineral-water-15l",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.97
+        },
+        {
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#volvic-global",
           "collected_at": "2026-04-07T07:33:16.224Z",
           "confidence_score": 0.7
@@ -7001,19 +6716,19 @@
       "aliases": [
         "Volvic"
       ],
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [],
         "completeness_score": 100
       },
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#volvic-global",
-        "collected_at": "2026-04-07T07:33:16.224Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.volvic.co.uk/products/natural-mineral-water/volvic-natural-mineral-water/natural-mineral-water-15l",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.97
       },
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "volvic-my",
@@ -7028,28 +6743,32 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
-        "calcium": 11.5,
+        "calcium": 12,
         "magnesium": 8,
-        "sodium": 11.6,
-        "potassium": 6.2,
-        "bicarbonate": 71,
-        "sulfate": 8.1,
-        "chloride": 13.5,
-        "silica": null
+        "sodium": 12,
+        "potassium": 6,
+        "bicarbonate": 74,
+        "sulfate": 9,
+        "chloride": 15,
+        "silica": 32
       },
       "ph": 7,
       "tds_ppm": 130,
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 62.9,
-        "alkalinity_ppm_as_caco3": 91.5,
+        "alkalinity_ppm_as_caco3": 60.7,
         "sca_match_score": 100,
-        "brew_recommendation": "good"
+        "brew_recommendation": "excellent"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.volvic.co.uk/products/natural-mineral-water/volvic-natural-mineral-water/natural-mineral-water-15l",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.97
+        },
         {
           "source_type": "brand_site",
           "source_url": "https://www.volvic.co.uk/volcanic-mineral-water/natural-mineral-water",
@@ -7063,17 +6782,17 @@
           "confidence_score": 0.76
         },
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#volvic-my",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#volvic-my",
-        "collected_at": "2026-04-07T07:30:53.893Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.volvic.co.uk/products/natural-mineral-water/volvic-natural-mineral-water/natural-mineral-water-15l",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.97
       },
       "published": true,
       "publish_state": "published",
@@ -7087,7 +6806,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "volvic-sg",
@@ -7102,28 +6821,32 @@
       "water_type": "natural_mineral",
       "is_sparkling": false,
       "is_brew_ready": true,
-      "brew_block_reason": [
-        "High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans."
-      ],
+      "brew_block_reason": [],
       "minerals_mg_l": {
-        "calcium": 11.5,
+        "calcium": 12,
         "magnesium": 8,
-        "sodium": 11.6,
-        "potassium": 6.2,
-        "bicarbonate": 71,
-        "sulfate": 8.1,
-        "chloride": 13.5,
-        "silica": null
+        "sodium": 12,
+        "potassium": 6,
+        "bicarbonate": 74,
+        "sulfate": 9,
+        "chloride": 15,
+        "silica": 32
       },
       "ph": 7,
       "tds_ppm": 130,
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 62.9,
-        "alkalinity_ppm_as_caco3": 91.5,
+        "alkalinity_ppm_as_caco3": 60.7,
         "sca_match_score": 100,
-        "brew_recommendation": "good"
+        "brew_recommendation": "excellent"
       },
       "sources": [
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.volvic.co.uk/products/natural-mineral-water/volvic-natural-mineral-water/natural-mineral-water-15l",
+          "collected_at": "2026-05-03T00:00:00.000Z",
+          "confidence_score": 0.97
+        },
         {
           "source_type": "brand_site",
           "source_url": "https://www.volvic.co.uk/volcanic-mineral-water/natural-mineral-water",
@@ -7137,17 +6860,17 @@
           "confidence_score": 0.8
         },
         {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#volvic-sg",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#volvic-sg",
-        "collected_at": "2026-04-07T07:30:53.893Z",
-        "confidence_score": 0.7
+        "source_type": "brand_site",
+        "source_url": "https://www.volvic.co.uk/products/natural-mineral-water/volvic-natural-mineral-water/natural-mineral-water-15l",
+        "collected_at": "2026-05-03T00:00:00.000Z",
+        "confidence_score": 0.97
       },
       "published": true,
       "publish_state": "published",
@@ -7161,7 +6884,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "watersan-id",
@@ -7197,20 +6920,14 @@
       },
       "sources": [
         {
-          "source_type": "catalog_seed",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#watersan-id",
-          "collected_at": "2026-04-07T07:30:53.798Z",
-          "confidence_score": 0.7
-        },
-        {
-          "source_type": "catalog_seed",
+          "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#watersan-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
         }
       ],
       "primary_source": {
-        "source_type": "catalog_seed",
+        "source_type": "community_reference",
         "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#watersan-id",
         "collected_at": "2026-04-07T07:30:53.893Z",
         "confidence_score": 0.7
@@ -7244,8 +6961,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -7311,8 +7027,7 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Market-specific label chemistry still needs full verification.",
-        "Estimated water values must be verified manually before ready-brew use."
+        "Market-specific label chemistry still needs full verification."
       ],
       "minerals_mg_l": {
         "calcium": null,

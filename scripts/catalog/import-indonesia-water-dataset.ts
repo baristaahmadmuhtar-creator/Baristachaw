@@ -82,7 +82,7 @@ interface CsvRow {
 
 const ROOT = path.resolve(process.cwd());
 const WATERS_PATH = path.join(ROOT, 'data/catalog/normalized/phase1/waters.json');
-const CSV_PATH = 'C:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv';
+const CSV_PATH = process.env.WATER_INDONESIA_DATASET_CSV;
 
 function slugify(value: string) {
   return value
@@ -218,6 +218,10 @@ function buildRecord(row: CsvRow, existing: WaterRecord | undefined, nowIso: str
 }
 
 async function main() {
+  if (!CSV_PATH) {
+    throw new Error('Set WATER_INDONESIA_DATASET_CSV to the internal curated CSV path before running this importer.');
+  }
+
   const nowIso = new Date().toISOString();
   const [csvRaw, watersRaw] = await Promise.all([
     readFile(CSV_PATH, 'utf8'),

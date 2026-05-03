@@ -39,23 +39,23 @@
         "confidence_score": 0.62
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -112,17 +112,17 @@
         "confidence_score": 0.95
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -186,17 +186,17 @@
         "confidence_score": 0.82
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -259,17 +259,17 @@
         "confidence_score": 0.82
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -332,23 +332,23 @@
         "confidence_score": 0.8
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -399,23 +399,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -472,23 +472,23 @@
         "confidence_score": 0.62
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -545,23 +545,23 @@
         "confidence_score": 0.62
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -612,23 +612,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -679,23 +679,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -752,23 +752,23 @@
         "confidence_score": 0.62
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -831,23 +831,23 @@
         "confidence_score": 0.9
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -898,23 +898,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -967,17 +967,17 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T12:15:00.000Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T12:15:00.000Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": false,
     "publish_state": "review_only",
@@ -1032,23 +1032,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -1099,23 +1099,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -1166,23 +1166,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -1233,23 +1233,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -1312,23 +1312,23 @@
         "confidence_score": 0.82
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -1385,23 +1385,23 @@
         "confidence_score": 0.62
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -1453,10 +1453,10 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:00:00.000Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       },
       {
         "source_type": "brand_site",
@@ -1466,10 +1466,10 @@
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:00:00.000Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -1519,23 +1519,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -1592,23 +1592,23 @@
         "confidence_score": 0.62
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -1661,17 +1661,17 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T12:15:00.000Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T12:15:00.000Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": false,
     "publish_state": "review_only",
@@ -1726,23 +1726,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -1793,23 +1793,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -1872,23 +1872,23 @@
         "confidence_score": 0.72
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -1945,23 +1945,23 @@
         "confidence_score": 0.62
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -2026,10 +2026,10 @@
         "confidence_score": 0.97
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       },
       {
         "source_type": "catalog_seed",
@@ -2105,10 +2105,10 @@
         "confidence_score": 0.97
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
@@ -2184,17 +2184,17 @@
         "confidence_score": 0.82
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -2263,17 +2263,17 @@
         "confidence_score": 0.82
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -2336,10 +2336,10 @@
         "confidence_score": 0.94
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
@@ -2417,17 +2417,17 @@
         "confidence_score": 0.82
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -2497,17 +2497,17 @@
         "confidence_score": 0.82
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -2565,23 +2565,23 @@
         "confidence_score": 0.62
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -2642,17 +2642,17 @@
         "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T16:45:00.000Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T16:45:00.000Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": false,
     "publish_state": "review_only",
@@ -2703,23 +2703,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -2842,17 +2842,17 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T12:15:00.000Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T12:15:00.000Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": false,
     "publish_state": "review_only",
@@ -2907,23 +2907,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -2980,17 +2980,17 @@
         "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T16:45:00.000Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T16:45:00.000Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -3041,23 +3041,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -3260,23 +3260,23 @@
         "confidence_score": 0.88
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -3345,17 +3345,17 @@
         "confidence_score": 0.72
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -3405,23 +3405,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -3472,23 +3472,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -3539,23 +3539,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -3745,23 +3745,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -3812,23 +3812,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -3879,23 +3879,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -4100,23 +4100,23 @@
         "confidence_score": 0.82
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -4242,23 +4242,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -4315,23 +4315,23 @@
         "confidence_score": 0.62
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -4382,17 +4382,17 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T12:15:00.000Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T12:15:00.000Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -4447,23 +4447,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -4526,17 +4526,17 @@
         "confidence_score": 0.65
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -4598,23 +4598,23 @@
         "confidence_score": 0.82
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -4665,23 +4665,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -4969,23 +4969,23 @@
         "confidence_score": 0.62
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -5042,23 +5042,23 @@
         "confidence_score": 0.62
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -5109,23 +5109,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -5184,17 +5184,17 @@
         "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T16:45:00.000Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T16:45:00.000Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": false,
     "publish_state": "review_only",
@@ -5245,23 +5245,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -5312,23 +5312,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -5586,17 +5586,17 @@
         "confidence_score": 0.82
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -5647,23 +5647,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -5714,23 +5714,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -5781,23 +5781,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -5918,23 +5918,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -5985,23 +5985,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -6052,23 +6052,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -6125,23 +6125,23 @@
         "confidence_score": 0.62
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -6198,23 +6198,23 @@
         "confidence_score": 0.62
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -6267,17 +6267,17 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T12:15:00.000Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T12:15:00.000Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": false,
     "publish_state": "review_only",
@@ -6340,10 +6340,10 @@
         "confidence_score": 0.96
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       },
       {
         "source_type": "catalog_seed",
@@ -6353,10 +6353,10 @@
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": false,
     "publish_state": "review_only",
@@ -6413,17 +6413,17 @@
         "confidence_score": 0.96
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -6486,17 +6486,17 @@
         "confidence_score": 0.76
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -6558,17 +6558,17 @@
         "confidence_score": 0.8
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -6618,23 +6618,23 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset",
         "collected_at": "2026-03-11T00:12:38.838Z",
-        "confidence_score": 0.86
+        "confidence_score": 0.7
       },
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:26:11.529Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:26:11.529Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",
@@ -6757,10 +6757,10 @@
     },
     "sources": [
       {
-        "source_type": "official_report",
-        "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+        "source_type": "catalog_seed",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
         "collected_at": "2026-03-11T00:00:00.000Z",
-        "confidence_score": 0.95
+        "confidence_score": 0.7
       },
       {
         "source_type": "brand_site",
@@ -6770,10 +6770,10 @@
       }
     ],
     "primary_source": {
-      "source_type": "official_report",
-      "source_url": "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv",
+      "source_type": "catalog_seed",
+      "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh",
       "collected_at": "2026-03-11T00:00:00.000Z",
-      "confidence_score": 0.95
+      "confidence_score": 0.7
     },
     "published": true,
     "publish_state": "published",

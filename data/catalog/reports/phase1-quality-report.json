@@ -1,18 +1,15 @@
 {
-  "generated_at": "2026-04-07T07:33:40.019Z",
+  "generated_at": "2026-05-03T08:10:21.667Z",
   "version": "2026.03.10-asean-first-phase1",
   "waters": {
     "total": 106,
-    "published": 80,
-    "brew_ready": 80,
-    "complete": 79,
-    "incomplete": 27,
+    "published": 76,
+    "brew_ready": 65,
+    "complete": 78,
+    "incomplete": 28,
     "estimated": [
-      "evian-bn",
       "heysong-water-global",
       "heysong-water-sg",
-      "highland-spring-sg",
-      "icelandic-glacial-bn",
       "jeju-samdasoo-global",
       "jeju-samdasoo-sg",
       "la-vie-global",
@@ -23,12 +20,8 @@
       "natures-spring-sg",
       "nongfu-spring-global",
       "nongfu-spring-sg",
-      "san-pellegrino-sg",
-      "spritzer-bn",
-      "spritzer-sg",
       "suntory-tennensui-global",
       "suntory-tennensui-sg",
-      "volvic-bn",
       "watsons-water-global",
       "watsons-water-sg"
     ],
@@ -62,8 +55,8 @@
       "sg": 18
     },
     "by_publish_state": {
-      "published": 80,
-      "review_only": 26,
+      "published": 76,
+      "review_only": 30,
       "rejected": 0
     },
     "top_recommended_by_region": {
@@ -141,549 +134,525 @@
         "id": "2tang-id",
         "brand": "2Tang",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#2tang-id",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#2tang-id"
         ]
       },
       {
         "id": "acqua-panna-global",
         "brand": "Acqua Panna",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "https://www.acquapanna.com/intl/1l-plastic-water-bottle",
+          "https://www.acquapanna.com/us/1-liter-plastic-bottle",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#acqua-panna-global"
         ]
       },
       {
         "id": "acqua-panna-my",
         "brand": "Acqua Panna",
         "sources": [
+          "https://www.acquapanna.com/intl/1l-plastic-water-bottle",
+          "https://www.acquapanna.com/us/1-liter-plastic-bottle",
           "https://www.acquapanna.com/us/eng/products/plastic-bottles/1l",
           "https://jgsj.jayagrocer.com/collections/mineral-water/products/acqua-panna-natural-mineral-water-1l-1",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#acqua-panna-my"
         ]
       },
       {
         "id": "acqua-panna-sg",
         "brand": "Acqua Panna",
         "sources": [
+          "https://www.acquapanna.com/intl/1l-plastic-water-bottle",
+          "https://www.acquapanna.com/us/1-liter-plastic-bottle",
           "https://www.acquapanna.com/us/eng/products/plastic-bottles/1l",
           "https://www.fairprice.com.sg/product/acqua-panna-natural-mineral-water-plastic-12-x-1l-90197308",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#acqua-panna-sg"
         ]
       },
       {
         "id": "ades-id",
         "brand": "Ades",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#ades-id",
-          "https://www.coca-cola.com/id/id/brands/ades",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ades-id",
+          "https://www.coca-cola.com/id/id/brands/ades"
         ]
       },
       {
         "id": "aetra-id",
         "brand": "Aetra",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#aetra-id"
         ]
       },
       {
         "id": "air-alfamart-id",
         "brand": "Air Alfamart",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#air-alfamart-id",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#air-alfamart-id"
         ]
       },
       {
         "id": "air-indomaret-id",
         "brand": "Air Indomaret",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#air-indomaret-id",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#air-indomaret-id"
         ]
       },
       {
         "id": "airku-id",
         "brand": "Airku",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#airku-id"
         ]
       },
       {
         "id": "alfa-spring-id",
         "brand": "Alfa Spring",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#alfa-spring-id"
         ]
       },
       {
         "id": "amidis-id",
         "brand": "Amidis",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#amidis-id",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#amidis-id"
         ]
       },
       {
         "id": "aqua-id",
         "brand": "Aqua",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#aqua-id",
-          "https://www.aqua.co.id/en",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#aqua-id",
+          "https://www.aqua.co.id/en"
         ]
       },
       {
         "id": "arjuna-id",
         "brand": "Arjuna",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#arjuna-id"
         ]
       },
       {
         "id": "arrowhead-global",
         "brand": "Arrowhead",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#arrowhead-global"
         ]
       },
       {
         "id": "banyu-sehat-id",
         "brand": "Banyu Sehat",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#banyu-sehat-id"
         ]
       },
       {
         "id": "bayu-id",
         "brand": "Bayu",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#bayu-id"
         ]
       },
       {
         "id": "biru-id",
         "brand": "Biru",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#biru-id"
         ]
       },
       {
         "id": "cendana-id",
         "brand": "Cendana",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#cendana-id"
         ]
       },
       {
         "id": "cleo-id",
         "brand": "Cleo",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#cleo-id",
-          "https://cleopurewater.com/",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "https://cleopurewater.com/brand-cleo/",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#cleo-id",
+          "https://cleopurewater.com/"
         ]
       },
       {
         "id": "club-id",
         "brand": "Club",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#club-id",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#club-id"
         ]
       },
       {
         "id": "crystal-geyser-global",
         "brand": "Crystal Geyser",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#crystal-geyser-global"
         ]
       },
       {
         "id": "crystaline-plus-id",
         "brand": "Crystaline Plus",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#crystaline-plus-id"
         ]
       },
       {
         "id": "crystalline-id",
         "brand": "Crystalline",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#crystalline-id",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#crystalline-id"
         ]
       },
       {
         "id": "dasani-global",
         "brand": "Dasani",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "https://www.coca-cola.com/content/dam/onexp/us/en/media-center/dasani-water-quality-report/dasani-purified-water-annual-analysis-water-quality-report-2024.pdf",
+          "https://www.coca-cola.com/us/en/media-center/DASANI-water-quality-report",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#dasani-global"
         ]
       },
       {
         "id": "diamond-id",
         "brand": "Diamond",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#diamond-id"
         ]
       },
       {
         "id": "elok-water-id",
         "brand": "Elok Water",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#elok-water-id"
         ]
       },
       {
         "id": "equil-id",
         "brand": "Equil",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#equil-id",
-          "https://www.blibli.com/brand/equil",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#equil-id",
+          "https://www.blibli.com/brand/equil"
         ]
       },
       {
         "id": "eternal-plus-id",
         "brand": "Eternal Plus",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#eternal-plus-id",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#eternal-plus-id"
         ]
       },
       {
         "id": "evian-bn",
         "brand": "Evian",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#evian-bn"
+          "https://www.evian.com/en_gb/our-water/water-attributes",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#evian-bn"
         ]
       },
       {
         "id": "evian-global",
         "brand": "Evian",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "https://www.evian.com/en_gb/our-water/water-attributes",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#evian-global"
         ]
       },
       {
         "id": "evian-my",
         "brand": "Evian",
         "sources": [
+          "https://www.evian.com/en_gb/our-water/water-attributes",
           "https://www.evian.com/en_int/water-attributes",
           "https://www.evian.com/en_int/quality-report",
           "https://jgsj.jayagrocer.com/products/evian-mineral-water-1-5l",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#evian-my"
         ]
       },
       {
         "id": "evian-sg",
         "brand": "Evian",
         "sources": [
+          "https://www.evian.com/en_gb/our-water/water-attributes",
           "https://www.evian.com/en_int/water-attributes",
           "https://www.evian.com/en_int/quality-report",
           "https://www.fairprice.com.sg/product/ctn-evian-mineral-water-24s-x-500ml-11738836",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#evian-sg"
         ]
       },
       {
         "id": "fiji-global",
         "brand": "Fiji",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "https://www.fijiwater.ca/faqs",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#fiji-global"
         ]
       },
       {
         "id": "fiji-my",
         "brand": "FIJI",
         "sources": [
+          "https://www.fijiwater.ca/faqs",
           "https://cdn.shopify.com/s/files/1/0286/6052/files/Fiji_Water_2023_Water_Quality_Report.pdf?v=1706305193",
           "https://fijiwater.com/pages/store-locator?store-page=water-quality-report",
           "https://jgsj.jayagrocer.com/products/fiji-natural-artesian-water-1l-1?pr_prod_strat=e5_desc&pr_rec_id=964832702&pr_rec_pid=7121301962919&pr_ref_pid=7121275191463&pr_seq=uniform",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#fiji-my"
         ]
       },
       {
         "id": "fiji-sg",
         "brand": "FIJI",
         "sources": [
+          "https://www.fijiwater.ca/faqs",
           "https://cdn.shopify.com/s/files/1/0286/6052/files/Fiji_Water_2023_Water_Quality_Report.pdf?v=1706305193",
           "https://fijiwater.com/pages/store-locator?store-page=water-quality-report",
           "https://www.fairprice.com.sg/product/fiji-natural-artesian-water-6-x-1-5l-90132036",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#fiji-sg"
         ]
       },
       {
         "id": "frozen-id",
         "brand": "Frozen",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#frozen-id",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#frozen-id"
         ]
       },
       {
         "id": "gerolsteiner-global",
         "brand": "Gerolsteiner",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#gerolsteiner-global"
         ]
       },
       {
         "id": "gilang-id",
         "brand": "Gilang",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#gilang-id"
         ]
       },
       {
         "id": "heysong-water-global",
         "brand": "HeySong Water",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#heysong-water-global"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#heysong-water-global"
         ]
       },
       {
         "id": "heysong-water-sg",
         "brand": "HeySong Water",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#heysong-water-sg"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#heysong-water-sg"
         ]
       },
       {
         "id": "highland-spring-global",
         "brand": "Highland Spring",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "https://highlandspring.com/product-range/spring-water/",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#highland-spring-global"
         ]
       },
       {
         "id": "highland-spring-sg",
         "brand": "Highland Spring",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#highland-spring-sg"
+          "https://highlandspring.com/product-range/spring-water/",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#highland-spring-sg"
         ]
       },
       {
         "id": "hydromed-id",
         "brand": "Hydromed",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#hydromed-id"
         ]
       },
       {
         "id": "icelandic-glacial-bn",
         "brand": "Icelandic Glacial",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#icelandic-glacial-bn"
+          "https://icelandicglacial.com/pages/our-water",
+          "https://icelandicglacial.com/pages/faq",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#icelandic-glacial-bn"
         ]
       },
       {
         "id": "icelandic-glacial-global",
         "brand": "Icelandic Glacial",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "https://icelandicglacial.com/pages/our-water",
+          "https://icelandicglacial.com/pages/faq",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#icelandic-glacial-global"
         ]
       },
       {
         "id": "icelandic-glacial-sg",
         "brand": "Icelandic Glacial",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "https://icelandicglacial.com/pages/our-water",
+          "https://icelandicglacial.com/pages/faq",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#icelandic-glacial-sg"
         ]
       },
       {
         "id": "ion-plus-id",
         "brand": "Ion+",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ion-plus-id"
         ]
       },
       {
         "id": "jeju-samdasoo-global",
         "brand": "Jeju Samdasoo",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#jeju-samdasoo-global"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#jeju-samdasoo-global"
         ]
       },
       {
         "id": "jeju-samdasoo-sg",
         "brand": "Jeju Samdasoo",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#jeju-samdasoo-sg"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#jeju-samdasoo-sg"
         ]
       },
       {
         "id": "la-vie-global",
         "brand": "La Vie",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#la-vie-global"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#la-vie-global"
         ]
       },
       {
         "id": "la-vie-sg",
         "brand": "La Vie",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#la-vie-sg"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#la-vie-sg"
         ]
       },
       {
         "id": "le-minerale-id",
         "brand": "Le Minerale",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#le-minerale-id",
-          "https://www.leminerale.com/en/news/Bikin-Airnya-Sehat-dan-Berkualitas-Ini-Rahasia-Produksi-Le-Minerale-",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#le-minerale-id",
+          "https://www.leminerale.com/en/news/Bikin-Airnya-Sehat-dan-Berkualitas-Ini-Rahasia-Produksi-Le-Minerale-"
         ]
       },
       {
         "id": "le-minerale-my",
         "brand": "Le Minerale",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#le-minerale-id",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#le-minerale-my",
           "https://www.leminerale.com/en/news/Bikin-Airnya-Sehat-dan-Berkualitas-Ini-Rahasia-Produksi-Le-Minerale-",
-          "https://jgfreshub.jayagrocer.com/collections/water",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "https://jgfreshub.jayagrocer.com/collections/water"
         ]
       },
       {
         "id": "lontar-id",
         "brand": "Lontar",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#lontar-id"
         ]
       },
       {
         "id": "mahkota-id",
         "brand": "Mahkota",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#mahkota-id"
         ]
       },
       {
         "id": "mayora-sparkling-id",
         "brand": "Mayora Sparkling",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#mayora-sparkling-id"
         ]
       },
       {
         "id": "mont-fleur-global",
         "brand": "Mont Fleur",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#mont-fleur-global"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#mont-fleur-global"
         ]
       },
       {
         "id": "mont-fleur-sg",
         "brand": "Mont Fleur",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#mont-fleur-sg"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#mont-fleur-sg"
         ]
       },
       {
         "id": "natures-spring-global",
         "brand": "Nature's Spring",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#natures-spring-global"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#natures-spring-global"
         ]
       },
       {
         "id": "natures-spring-sg",
         "brand": "Nature's Spring",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#natures-spring-sg"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#natures-spring-sg"
         ]
       },
       {
         "id": "neo-aqua-id",
         "brand": "Neo Aqua",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#neo-aqua-id"
         ]
       },
       {
         "id": "nestle-pure-life-global",
         "brand": "Nestle Pure Life",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "https://www.purelifewater.com/our-brand/our-quality",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#nestle-pure-life-global"
         ]
       },
       {
         "id": "nestle-pure-life-id",
         "brand": "Nestle Pure Life",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#nestle-pure-life-id"
         ]
       },
       {
         "id": "nirwana-id",
         "brand": "Nirwana",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#nirwana-id"
         ]
       },
       {
         "id": "nongfu-spring-global",
         "brand": "Nongfu Spring",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#nongfu-spring-global"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#nongfu-spring-global"
         ]
       },
       {
         "id": "nongfu-spring-sg",
         "brand": "Nongfu Spring",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#nongfu-spring-sg"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#nongfu-spring-sg"
         ]
       },
       {
         "id": "oasis-id",
         "brand": "Oasis",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#oasis-id",
-          "https://oasis.co.id/",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#oasis-id",
+          "https://oasis.co.id/"
         ]
       },
       {
         "id": "oasis-plus-id",
         "brand": "Oasis+",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#oasis-plus-id",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#oasis-plus-id",
           "https://oasis.co.id/"
         ]
       },
@@ -691,32 +660,28 @@
         "id": "oxywater-id",
         "brand": "Oxywater",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#oxywater-id"
         ]
       },
       {
         "id": "perfect-id",
         "brand": "Perfect",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#perfect-id",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#perfect-id"
         ]
       },
       {
         "id": "poland-spring-global",
         "brand": "Poland Spring",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#poland-spring-global"
         ]
       },
       {
         "id": "polar-id",
         "brand": "Polar",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#polar-id"
         ]
       },
       {
@@ -725,32 +690,31 @@
         "sources": [
           "https://omni.fairprice.com.sg/product/polar-natural-mineral-bottle-water-10932741",
           "https://www.fairprice.com.sg/water/mineral-water",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#polar-sg"
         ]
       },
       {
         "id": "prima-id",
         "brand": "Prima",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#prima-id",
-          "https://www.primawater.com/",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#prima-id",
+          "https://www.primawater.com/"
         ]
       },
       {
         "id": "pristine-8-6-plus-id",
         "brand": "Pristine 8.6+",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "https://pristineofficial.com/tentang-ph86",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#pristine-8-6-plus-id"
         ]
       },
       {
         "id": "pristine-8-plus-id",
         "brand": "Pristine 8+",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#pristine-8-plus-id",
+          "https://pristineofficial.com/tentang-ph86",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#pristine-8-plus-id",
           "https://www.pristine8plus.com/"
         ]
       },
@@ -758,7 +722,7 @@
         "id": "pure-life-global",
         "brand": "Pure Life",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#pure-life-global",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#pure-life-global",
           "https://www.nestlepurelife.com/uk/about-us/frequently-asked-questions",
           "https://www.akasha.co.id/products/brands/water-pure-life.html"
         ]
@@ -774,62 +738,58 @@
         "id": "rivero-id",
         "brand": "Rivero",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#rivero-id",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#rivero-id"
         ]
       },
       {
         "id": "ron-88-id",
         "brand": "Ron 88",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#ron-88-id",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#ron-88-id"
         ]
       },
       {
         "id": "rona-id",
         "brand": "Rona",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#rona-id"
         ]
       },
       {
         "id": "san-pellegrino-sg",
         "brand": "San Pellegrino",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#san-pellegrino-sg"
+          "https://www.sanpellegrino.com/water/1-l-pet-bottle?_wrapper_format=html",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#san-pellegrino-sg"
         ]
       },
       {
         "id": "segar-id",
         "brand": "Segar",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#segar-id"
         ]
       },
       {
         "id": "sejuk-id",
         "brand": "Sejuk",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#sejuk-id"
         ]
       },
       {
         "id": "spritzer-bn",
         "brand": "Spritzer",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#spritzer-bn"
+          "https://www.spritzer.com.my/our-product/spritzer-natural-mineral-water/",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#spritzer-bn"
         ]
       },
       {
         "id": "spritzer-my",
         "brand": "Spritzer",
         "sources": [
+          "https://www.spritzer.com.my/our-product/spritzer-natural-mineral-water/",
           "https://www.spritzer.com.my/story",
           "https://jgsj.jayagrocer.com/collections/mineral-water"
         ]
@@ -838,7 +798,8 @@
         "id": "spritzer-sg",
         "brand": "Spritzer",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#spritzer-sg"
+          "https://www.spritzer.com.my/our-product/spritzer-natural-mineral-water/",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#spritzer-sg"
         ]
       },
       {
@@ -846,168 +807,164 @@
         "brand": "Suci",
         "sources": [
           "https://tlt-ent.com/product/suci-drinking-water-1-5l/",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#suci-bn"
         ]
       },
       {
         "id": "suci-id",
         "brand": "Suci",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#suci-id"
         ]
       },
       {
         "id": "sumber-air-sehat-id",
         "brand": "Sumber Air Sehat",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#sumber-air-sehat-id"
         ]
       },
       {
         "id": "sumurup-id",
         "brand": "Sumurup",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#sumurup-id"
         ]
       },
       {
         "id": "suntory-tennensui-global",
         "brand": "Suntory Tennensui",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#suntory-tennensui-global"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#suntory-tennensui-global"
         ]
       },
       {
         "id": "suntory-tennensui-sg",
         "brand": "Suntory Tennensui",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#suntory-tennensui-sg"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#suntory-tennensui-sg"
         ]
       },
       {
         "id": "super-o2-id",
         "brand": "Super O2",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#super-o2-id"
         ]
       },
       {
         "id": "tirta-fresh-id",
         "brand": "Tirta Fresh",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#tirta-fresh-id"
         ]
       },
       {
         "id": "tirtone-id",
         "brand": "Tirtone",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#tirtone-id"
         ]
       },
       {
         "id": "total-8-plus-id",
         "brand": "Total 8+",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#total-8-plus-id",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#total-8-plus-id"
         ]
       },
       {
         "id": "vit-id",
         "brand": "Vit",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-hydrokimia-indonesia.curated.json#vit-id",
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#vit-id"
         ]
       },
       {
         "id": "vittel-global",
         "brand": "Vittel",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "https://www.vittel.fr/produits/vittel-nature",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#vittel-global"
         ]
       },
       {
         "id": "volvic-bn",
         "brand": "Volvic",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#volvic-bn"
+          "https://www.volvic.co.uk/products/natural-mineral-water/volvic-natural-mineral-water/natural-mineral-water-15l",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#volvic-bn"
         ]
       },
       {
         "id": "volvic-global",
         "brand": "Volvic",
         "sources": [
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "https://www.volvic.co.uk/products/natural-mineral-water/volvic-natural-mineral-water/natural-mineral-water-15l",
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#volvic-global"
         ]
       },
       {
         "id": "volvic-my",
         "brand": "Volvic",
         "sources": [
+          "https://www.volvic.co.uk/products/natural-mineral-water/volvic-natural-mineral-water/natural-mineral-water-15l",
           "https://www.volvic.co.uk/volcanic-mineral-water/natural-mineral-water",
           "https://jgsj.jayagrocer.com/collections/mineral-water",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#volvic-my"
         ]
       },
       {
         "id": "volvic-sg",
         "brand": "Volvic",
         "sources": [
+          "https://www.volvic.co.uk/products/natural-mineral-water/volvic-natural-mineral-water/natural-mineral-water-15l",
           "https://www.volvic.co.uk/volcanic-mineral-water/natural-mineral-water",
           "https://www.fairprice.com.sg/product/volvic-natural-mineral-water-15lt-190330",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#volvic-sg"
         ]
       },
       {
         "id": "watersan-id",
         "brand": "Watersan",
         "sources": [
-          "local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv",
-          "local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#watersan-id"
         ]
       },
       {
         "id": "watsons-water-global",
         "brand": "Watsons Water",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#watsons-water-global"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#watsons-water-global"
         ]
       },
       {
         "id": "watsons-water-sg",
         "brand": "Watsons Water",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-asia-expansion.curated.json#watsons-water-sg"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#watsons-water-sg"
         ]
       }
     ],
     "data_gaps": [
       {
-        "id": "dasani-global",
-        "brand": "Dasani",
+        "id": "cleo-id",
+        "brand": "Cleo",
         "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
+          "official_calcium",
+          "official_magnesium",
+          "official_bicarbonate"
         ]
       },
       {
-        "id": "evian-bn",
-        "brand": "Evian",
+        "id": "dasani-global",
+        "brand": "Dasani",
         "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
+          "calcium",
+          "magnesium",
+          "bicarbonate",
+          "tds_ppm",
+          "ph"
         ]
       },
       {
@@ -1029,19 +986,34 @@
         ]
       },
       {
-        "id": "highland-spring-sg",
-        "brand": "Highland Spring",
+        "id": "icelandic-glacial-bn",
+        "brand": "Icelandic Glacial",
         "missing_fields": [
-          "tds",
+          "calcium",
+          "magnesium",
+          "bicarbonate",
           "hardness",
           "alkalinity"
         ]
       },
       {
-        "id": "icelandic-glacial-bn",
+        "id": "icelandic-glacial-global",
         "brand": "Icelandic Glacial",
         "missing_fields": [
-          "tds",
+          "calcium",
+          "magnesium",
+          "bicarbonate",
+          "hardness",
+          "alkalinity"
+        ]
+      },
+      {
+        "id": "icelandic-glacial-sg",
+        "brand": "Icelandic Glacial",
+        "missing_fields": [
+          "calcium",
+          "magnesium",
+          "bicarbonate",
           "hardness",
           "alkalinity"
         ]
@@ -1122,6 +1094,7 @@
         "id": "nestle-pure-life-global",
         "brand": "Nestle Pure Life",
         "missing_fields": [
+          "regional_variant",
           "tds",
           "hardness",
           "alkalinity"
@@ -1161,8 +1134,7 @@
           "calcium",
           "magnesium",
           "bicarbonate",
-          "tds_ppm",
-          "ph"
+          "tds_ppm"
         ]
       },
       {
@@ -1181,24 +1153,6 @@
           "bicarbonate",
           "tds_ppm",
           "ph"
-        ]
-      },
-      {
-        "id": "spritzer-bn",
-        "brand": "Spritzer",
-        "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
-        ]
-      },
-      {
-        "id": "spritzer-sg",
-        "brand": "Spritzer",
-        "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
         ]
       },
       {
@@ -1223,15 +1177,7 @@
         "id": "vittel-global",
         "brand": "Vittel",
         "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
-        ]
-      },
-      {
-        "id": "volvic-bn",
-        "brand": "Volvic",
-        "missing_fields": [
+          "source_variant",
           "tds",
           "hardness",
           "alkalinity"
@@ -1257,11 +1203,18 @@
       }
     ],
     "manual_only": [
+      "air-alfamart-id",
+      "airku-id",
+      "amidis-id",
+      "cleo-id",
+      "dasani-global",
       "evian-bn",
       "heysong-water-global",
       "heysong-water-sg",
-      "highland-spring-sg",
       "icelandic-glacial-bn",
+      "icelandic-glacial-global",
+      "icelandic-glacial-sg",
+      "ion-plus-id",
       "jeju-samdasoo-global",
       "jeju-samdasoo-sg",
       "la-vie-global",
@@ -1270,16 +1223,24 @@
       "mont-fleur-sg",
       "natures-spring-global",
       "natures-spring-sg",
+      "nestle-pure-life-global",
       "nongfu-spring-global",
       "nongfu-spring-sg",
       "oasis-plus-id",
+      "oxywater-id",
+      "pristine-8-6-plus-id",
       "pristine-8-plus-id",
       "pure-life-sg",
+      "rivero-id",
       "san-pellegrino-sg",
       "spritzer-bn",
       "spritzer-sg",
+      "suci-bn",
+      "suci-id",
       "suntory-tennensui-global",
       "suntory-tennensui-sg",
+      "super-o2-id",
+      "vittel-global",
       "volvic-bn",
       "watsons-water-global",
       "watsons-water-sg"

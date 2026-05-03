@@ -61,7 +61,7 @@ interface CsvRow {
 
 const ROOT = path.resolve(process.cwd());
 const WATERS_PATH = path.join(ROOT, 'data/catalog/normalized/phase1/waters.json');
-const CSV_PATH = 'C:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv';
+const CSV_PATH = process.env.WATER_GLOBAL_GH_KH_CSV;
 const CSV_SOURCE_URL = 'local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh';
 
 function slugify(value: string) {
@@ -118,6 +118,10 @@ function makeSource(nowIso: string): CatalogSource {
 }
 
 async function main() {
+  if (!CSV_PATH) {
+    throw new Error('Set WATER_GLOBAL_GH_KH_CSV to the internal curated CSV path before running this importer.');
+  }
+
   const nowIso = new Date().toISOString();
   const [csvRaw, watersRaw] = await Promise.all([
     readFile(CSV_PATH, 'utf8'),

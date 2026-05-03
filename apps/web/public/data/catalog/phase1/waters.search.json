@@ -50,23 +50,23 @@
       "is_brew_ready": true,
       "brew_block_reason": [],
       "publish_state": "published",
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [],
         "completeness_score": 100
       },
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": 106.2,
-        "alkalinity_ppm_as_caco3": 130.5,
+        "hardness_ppm_as_caco3": 108,
+        "alkalinity_ppm_as_caco3": 87.7,
         "sca_match_score": null,
-        "brew_recommendation": "good"
+        "brew_recommendation": "acceptable"
       },
       "search_text": "acqua panna italy global ",
       "aliases": [
         "Acqua Panna"
       ],
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "acqua-panna-my",
@@ -90,8 +90,8 @@
         "completeness_score": 100
       },
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": 106.2,
-        "alkalinity_ppm_as_caco3": 130.5,
+        "hardness_ppm_as_caco3": 108,
+        "alkalinity_ppm_as_caco3": 87.7,
         "sca_match_score": 56,
         "brew_recommendation": "acceptable"
       },
@@ -100,7 +100,7 @@
         "Acqua Panna",
         "Panna"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "acqua-panna-sg",
@@ -124,8 +124,8 @@
         "completeness_score": 100
       },
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": 106.2,
-        "alkalinity_ppm_as_caco3": 130.5,
+        "hardness_ppm_as_caco3": 108,
+        "alkalinity_ppm_as_caco3": 87.7,
         "sca_match_score": 56,
         "brew_recommendation": "acceptable"
       },
@@ -134,7 +134,7 @@
         "Acqua Panna",
         "Panna"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "ades-id",
@@ -216,8 +216,10 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Water is too low-mineral for ready-brew use; add minerals manually."
+      ],
       "publish_state": "published",
       "verification_status": "curated",
       "data_quality": {
@@ -229,14 +231,14 @@
         "hardness_ppm_as_caco3": 0.9,
         "alkalinity_ppm_as_caco3": 0.6,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "poor"
       },
       "search_text": "air alfamart indonesia id air alfamart natural mineral water air-alfamart",
       "aliases": [
         "Air Alfamart",
         "AIR ALFAMART"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "air-indomaret-id",
@@ -284,8 +286,10 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Water is too low-mineral for ready-brew use; add minerals manually."
+      ],
       "publish_state": "published",
       "verification_status": "curated",
       "data_quality": {
@@ -297,14 +301,14 @@
         "hardness_ppm_as_caco3": 12.7,
         "alkalinity_ppm_as_caco3": 11,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "poor"
       },
       "search_text": "airku indonesia id airku natural mineral water airku",
       "aliases": [
         "Airku",
         "AIRKU"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "alfa-spring-id",
@@ -352,8 +356,10 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Water is too low-mineral for ready-brew use; add minerals manually."
+      ],
       "publish_state": "published",
       "verification_status": "curated",
       "data_quality": {
@@ -365,14 +371,14 @@
         "hardness_ppm_as_caco3": 1.4,
         "alkalinity_ppm_as_caco3": 1.2,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "poor"
       },
       "search_text": "amidis indonesia id amidis natural mineral water amidis",
       "aliases": [
         "Amidis",
         "AMIDIS"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "aqua-id",
@@ -623,27 +629,34 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Official source confirms TDS under 10 ppm; use as a low-mineral base and add minerals manually.",
+        "Water is too low-mineral for ready-brew use; add minerals manually."
+      ],
       "publish_state": "published",
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
-        "missing_fields": [],
-        "completeness_score": 100
+        "missing_fields": [
+          "official_calcium",
+          "official_magnesium",
+          "official_bicarbonate"
+        ],
+        "completeness_score": 70
       },
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 6.6,
         "alkalinity_ppm_as_caco3": 5.5,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "poor"
       },
       "search_text": "cleo indonesia id cleo natural mineral water cleo",
       "aliases": [
         "Cleo",
         "CLEO"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "club-id",
@@ -779,43 +792,6 @@
         "CRYSTALLINE"
       ],
       "updated_at": "2026-04-07T07:30:53.893Z"
-    },
-    {
-      "id": "dasani-global",
-      "brand_group_id": "dasani",
-      "market_code": "global",
-      "sku_label": "Dasani GLOBAL water profile",
-      "brand": "Dasani",
-      "country_origin": "USA",
-      "available_in": [
-        "Global"
-      ],
-      "water_type": "natural_mineral",
-      "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
-      "publish_state": "published",
-      "verification_status": "curated",
-      "data_quality": {
-        "is_estimated": false,
-        "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
-        ],
-        "completeness_score": 100
-      },
-      "coffee_parameters": {
-        "hardness_ppm_as_caco3": null,
-        "alkalinity_ppm_as_caco3": null,
-        "sca_match_score": null,
-        "brew_recommendation": "good"
-      },
-      "search_text": "dasani usa global ",
-      "aliases": [
-        "Dasani"
-      ],
-      "updated_at": "2026-04-07T07:33:16.224Z"
     },
     {
       "id": "diamond-id",
@@ -968,7 +944,7 @@
       "is_brew_ready": true,
       "brew_block_reason": [],
       "publish_state": "published",
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [],
@@ -976,15 +952,15 @@
       },
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 306.8,
-        "alkalinity_ppm_as_caco3": 327,
+        "alkalinity_ppm_as_caco3": 295.2,
         "sca_match_score": null,
-        "brew_recommendation": "good"
+        "brew_recommendation": "acceptable"
       },
       "search_text": "evian france global ",
       "aliases": [
         "Evian"
       ],
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "evian-my",
@@ -1009,7 +985,7 @@
       },
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 306.8,
-        "alkalinity_ppm_as_caco3": 327,
+        "alkalinity_ppm_as_caco3": 295.2,
         "sca_match_score": 0,
         "brew_recommendation": "acceptable"
       },
@@ -1018,7 +994,7 @@
         "Evian",
         "Evian Malaysia"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "evian-sg",
@@ -1043,7 +1019,7 @@
       },
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 306.8,
-        "alkalinity_ppm_as_caco3": 327,
+        "alkalinity_ppm_as_caco3": 295.2,
         "sca_match_score": 0,
         "brew_recommendation": "acceptable"
       },
@@ -1052,7 +1028,7 @@
         "Evian",
         "Evian Singapore"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "fiji-global",
@@ -1069,7 +1045,7 @@
       "is_brew_ready": true,
       "brew_block_reason": [],
       "publish_state": "published",
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [],
@@ -1077,15 +1053,15 @@
       },
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 106.7,
-        "alkalinity_ppm_as_caco3": 112.2,
+        "alkalinity_ppm_as_caco3": 124.6,
         "sca_match_score": null,
-        "brew_recommendation": "good"
+        "brew_recommendation": "acceptable"
       },
       "search_text": "fiji fiji global ",
       "aliases": [
         "Fiji"
       ],
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "fiji-my",
@@ -1110,7 +1086,7 @@
       },
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 106.7,
-        "alkalinity_ppm_as_caco3": 112.2,
+        "alkalinity_ppm_as_caco3": 124.6,
         "sca_match_score": 25,
         "brew_recommendation": "acceptable"
       },
@@ -1120,7 +1096,7 @@
         "Fiji",
         "FIJI Water"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "fiji-sg",
@@ -1145,7 +1121,7 @@
       },
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 106.7,
-        "alkalinity_ppm_as_caco3": 112.2,
+        "alkalinity_ppm_as_caco3": 124.6,
         "sca_match_score": 25,
         "brew_recommendation": "acceptable"
       },
@@ -1155,7 +1131,7 @@
         "Fiji",
         "FIJI Water"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "frozen-id",
@@ -1273,23 +1249,56 @@
       "is_brew_ready": true,
       "brew_block_reason": [],
       "publish_state": "published",
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [],
         "completeness_score": 100
       },
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": 141.1,
-        "alkalinity_ppm_as_caco3": 183,
+        "hardness_ppm_as_caco3": 142.7,
+        "alkalinity_ppm_as_caco3": 123,
         "sca_match_score": null,
-        "brew_recommendation": "good"
+        "brew_recommendation": "acceptable"
       },
       "search_text": "highland spring uk global ",
       "aliases": [
         "Highland Spring"
       ],
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
+    },
+    {
+      "id": "highland-spring-sg",
+      "brand_group_id": "highland-spring",
+      "market_code": "sg",
+      "sku_label": "Highland Spring SG water profile",
+      "brand": "Highland Spring",
+      "country_origin": "UK",
+      "available_in": [
+        "Singapore"
+      ],
+      "water_type": "natural_mineral",
+      "is_sparkling": false,
+      "is_brew_ready": true,
+      "brew_block_reason": [],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "coffee_parameters": {
+        "hardness_ppm_as_caco3": 142.7,
+        "alkalinity_ppm_as_caco3": 123,
+        "sca_match_score": null,
+        "brew_recommendation": "acceptable"
+      },
+      "search_text": "highland spring uk sg",
+      "aliases": [
+        "Highland Spring"
+      ],
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "hydromed-id",
@@ -1326,72 +1335,6 @@
       "updated_at": "2026-04-07T07:30:53.893Z"
     },
     {
-      "id": "icelandic-glacial-global",
-      "brand_group_id": "icelandic-glacial",
-      "market_code": "global",
-      "sku_label": "Icelandic Glacial GLOBAL water profile",
-      "brand": "Icelandic Glacial",
-      "country_origin": "Iceland",
-      "available_in": [
-        "Global"
-      ],
-      "water_type": "natural_mineral",
-      "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
-      "publish_state": "published",
-      "verification_status": "curated",
-      "data_quality": {
-        "is_estimated": false,
-        "missing_fields": [],
-        "completeness_score": 100
-      },
-      "coffee_parameters": {
-        "hardness_ppm_as_caco3": 23.2,
-        "alkalinity_ppm_as_caco3": 34.2,
-        "sca_match_score": null,
-        "brew_recommendation": "good"
-      },
-      "search_text": "icelandic glacial iceland global ",
-      "aliases": [
-        "Icelandic Glacial"
-      ],
-      "updated_at": "2026-04-07T07:33:16.224Z"
-    },
-    {
-      "id": "icelandic-glacial-sg",
-      "brand_group_id": "icelandic-glacial",
-      "market_code": "sg",
-      "sku_label": "Icelandic Glacial SG water profile",
-      "brand": "Icelandic Glacial",
-      "country_origin": "Iceland",
-      "available_in": [
-        "Singapore"
-      ],
-      "water_type": "natural_mineral",
-      "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
-      "publish_state": "published",
-      "verification_status": "curated",
-      "data_quality": {
-        "is_estimated": false,
-        "missing_fields": [],
-        "completeness_score": 100
-      },
-      "coffee_parameters": {
-        "hardness_ppm_as_caco3": 23.2,
-        "alkalinity_ppm_as_caco3": 34.2,
-        "sca_match_score": null,
-        "brew_recommendation": "good"
-      },
-      "search_text": "icelandic glacial iceland sg ",
-      "aliases": [
-        "Icelandic Glacial"
-      ],
-      "updated_at": "2026-04-07T07:33:16.224Z"
-    },
-    {
       "id": "ion-plus-id",
       "brand_group_id": "ion-plus",
       "market_code": "id",
@@ -1403,8 +1346,10 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Water is too low-mineral for ready-brew use; add minerals manually."
+      ],
       "publish_state": "published",
       "verification_status": "curated",
       "data_quality": {
@@ -1416,14 +1361,14 @@
         "hardness_ppm_as_caco3": 14.1,
         "alkalinity_ppm_as_caco3": 12.2,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "poor"
       },
       "search_text": "ion+ indonesia id ion+ natural mineral water ion-plus",
       "aliases": [
         "Ion+",
         "ION+"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "le-minerale-id",
@@ -1629,43 +1574,6 @@
       "updated_at": "2026-04-07T07:30:53.893Z"
     },
     {
-      "id": "nestle-pure-life-global",
-      "brand_group_id": "nestle-pure-life",
-      "market_code": "global",
-      "sku_label": "Nestle Pure Life GLOBAL water profile",
-      "brand": "Nestle Pure Life",
-      "country_origin": "Global",
-      "available_in": [
-        "Global"
-      ],
-      "water_type": "natural_mineral",
-      "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
-      "publish_state": "published",
-      "verification_status": "curated",
-      "data_quality": {
-        "is_estimated": false,
-        "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
-        ],
-        "completeness_score": 100
-      },
-      "coffee_parameters": {
-        "hardness_ppm_as_caco3": null,
-        "alkalinity_ppm_as_caco3": null,
-        "sca_match_score": null,
-        "brew_recommendation": "good"
-      },
-      "search_text": "nestle pure life global global ",
-      "aliases": [
-        "Nestle Pure Life"
-      ],
-      "updated_at": "2026-04-07T07:33:16.224Z"
-    },
-    {
       "id": "nestle-pure-life-id",
       "brand_group_id": "nestle-pure-life",
       "market_code": "id",
@@ -1779,8 +1687,10 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Water is too low-mineral for ready-brew use; add minerals manually."
+      ],
       "publish_state": "published",
       "verification_status": "curated",
       "data_quality": {
@@ -1792,14 +1702,14 @@
         "hardness_ppm_as_caco3": 10.8,
         "alkalinity_ppm_as_caco3": 9.2,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "poor"
       },
       "search_text": "oxywater indonesia id oxywater natural mineral water oxywater",
       "aliases": [
         "Oxywater",
         "OXYWATER"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "perfect-id",
@@ -1981,14 +1891,16 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Alkaline pH is source-backed, but mineral quantities are curated; use manual minerals for coffee-ready precision."
+      ],
       "publish_state": "published",
       "verification_status": "curated",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [],
-        "completeness_score": 100
+        "completeness_score": 75
       },
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 20.7,
@@ -2001,7 +1913,7 @@
         "Pristine 8.6+",
         "PRISTINE 8.6+"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "pure-life-global",
@@ -2043,40 +1955,6 @@
         "Nestlé Pure Life"
       ],
       "updated_at": "2026-03-10T00:00:00.000Z"
-    },
-    {
-      "id": "rivero-id",
-      "brand_group_id": "rivero",
-      "market_code": "id",
-      "sku_label": "Rivero natural mineral water",
-      "brand": "Rivero",
-      "country_origin": "Indonesia",
-      "available_in": [
-        "Indonesia"
-      ],
-      "water_type": "natural_mineral",
-      "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
-      "publish_state": "published",
-      "verification_status": "curated",
-      "data_quality": {
-        "is_estimated": false,
-        "missing_fields": [],
-        "completeness_score": 100
-      },
-      "coffee_parameters": {
-        "hardness_ppm_as_caco3": 33.9,
-        "alkalinity_ppm_as_caco3": 29.3,
-        "sca_match_score": null,
-        "brew_recommendation": "good"
-      },
-      "search_text": "rivero indonesia id rivero natural mineral water rivero",
-      "aliases": [
-        "Rivero",
-        "RIVERO"
-      ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
     },
     {
       "id": "ron-88-id",
@@ -2145,6 +2023,42 @@
         "RONA"
       ],
       "updated_at": "2026-04-07T07:30:53.893Z"
+    },
+    {
+      "id": "san-pellegrino-sg",
+      "brand_group_id": "san-pellegrino",
+      "market_code": "sg",
+      "sku_label": "San Pellegrino SG water profile",
+      "brand": "San Pellegrino",
+      "country_origin": "Italy",
+      "available_in": [
+        "Singapore"
+      ],
+      "water_type": "sparkling",
+      "is_sparkling": true,
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Carbonated natural mineral water is not a ready-brew filter preset; use manual minerals only after degassing and tasting."
+      ],
+      "publish_state": "published",
+      "verification_status": "verified",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [],
+        "completeness_score": 100
+      },
+      "coffee_parameters": {
+        "hardness_ppm_as_caco3": 624.6,
+        "alkalinity_ppm_as_caco3": 204.2,
+        "sca_match_score": null,
+        "brew_recommendation": "acceptable"
+      },
+      "search_text": "san pellegrino italy sg s.pellegrino",
+      "aliases": [
+        "San Pellegrino",
+        "S.Pellegrino"
+      ],
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "segar-id",
@@ -2236,7 +2150,7 @@
         "completeness_score": 100
       },
       "coffee_parameters": {
-        "hardness_ppm_as_caco3": 88.6,
+        "hardness_ppm_as_caco3": 88.5,
         "alkalinity_ppm_as_caco3": 85.3,
         "sca_match_score": 82,
         "brew_recommendation": "good"
@@ -2245,7 +2159,7 @@
       "aliases": [
         "Spritzer"
       ],
-      "updated_at": "2026-03-10T00:00:00.000Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "suci-bn",
@@ -2259,8 +2173,10 @@
       ],
       "water_type": "spring",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Water is too low-mineral for ready-brew use; add minerals manually."
+      ],
       "publish_state": "published",
       "verification_status": "verified",
       "data_quality": {
@@ -2272,14 +2188,14 @@
         "hardness_ppm_as_caco3": 8.5,
         "alkalinity_ppm_as_caco3": 7.3,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "poor"
       },
       "search_text": "suci brunei bn suci drinking water brunei suci drinking water",
       "aliases": [
         "Suci",
         "Suci Drinking Water"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "suci-id",
@@ -2293,8 +2209,10 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Water is too low-mineral for ready-brew use; add minerals manually."
+      ],
       "publish_state": "published",
       "verification_status": "curated",
       "data_quality": {
@@ -2306,14 +2224,14 @@
         "hardness_ppm_as_caco3": 8.5,
         "alkalinity_ppm_as_caco3": 7.3,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "poor"
       },
       "search_text": "suci indonesia id suci natural mineral water suci",
       "aliases": [
         "Suci",
         "SUCI"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "sumber-air-sehat-id",
@@ -2395,8 +2313,10 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Water is too low-mineral for ready-brew use; add minerals manually."
+      ],
       "publish_state": "published",
       "verification_status": "curated",
       "data_quality": {
@@ -2408,14 +2328,14 @@
         "hardness_ppm_as_caco3": 3.3,
         "alkalinity_ppm_as_caco3": 3,
         "sca_match_score": null,
-        "brew_recommendation": "acceptable"
+        "brew_recommendation": "poor"
       },
       "search_text": "super o2 indonesia id super o2 natural mineral water super-o2",
       "aliases": [
         "Super O2",
         "SUPER O2"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "tirta-fresh-id",
@@ -2554,43 +2474,6 @@
       "updated_at": "2026-04-07T07:30:53.893Z"
     },
     {
-      "id": "vittel-global",
-      "brand_group_id": "vittel",
-      "market_code": "global",
-      "sku_label": "Vittel GLOBAL water profile",
-      "brand": "Vittel",
-      "country_origin": "France",
-      "available_in": [
-        "Global"
-      ],
-      "water_type": "natural_mineral",
-      "is_sparkling": false,
-      "is_brew_ready": true,
-      "brew_block_reason": [],
-      "publish_state": "published",
-      "verification_status": "curated",
-      "data_quality": {
-        "is_estimated": false,
-        "missing_fields": [
-          "tds",
-          "hardness",
-          "alkalinity"
-        ],
-        "completeness_score": 100
-      },
-      "coffee_parameters": {
-        "hardness_ppm_as_caco3": null,
-        "alkalinity_ppm_as_caco3": null,
-        "sca_match_score": null,
-        "brew_recommendation": "good"
-      },
-      "search_text": "vittel france global ",
-      "aliases": [
-        "Vittel"
-      ],
-      "updated_at": "2026-04-07T07:33:16.224Z"
-    },
-    {
       "id": "volvic-global",
       "brand_group_id": "volvic",
       "market_code": "global",
@@ -2605,7 +2488,7 @@
       "is_brew_ready": true,
       "brew_block_reason": [],
       "publish_state": "published",
-      "verification_status": "curated",
+      "verification_status": "verified",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [],
@@ -2613,15 +2496,15 @@
       },
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 62.9,
-        "alkalinity_ppm_as_caco3": 91.5,
+        "alkalinity_ppm_as_caco3": 60.7,
         "sca_match_score": null,
-        "brew_recommendation": "good"
+        "brew_recommendation": "excellent"
       },
       "search_text": "volvic france global ",
       "aliases": [
         "Volvic"
       ],
-      "updated_at": "2026-04-07T07:33:16.224Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "volvic-my",
@@ -2646,15 +2529,15 @@
       },
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 62.9,
-        "alkalinity_ppm_as_caco3": 91.5,
+        "alkalinity_ppm_as_caco3": 60.7,
         "sca_match_score": 100,
-        "brew_recommendation": "good"
+        "brew_recommendation": "excellent"
       },
       "search_text": "volvic france my volvic natural mineral water malaysia volvic",
       "aliases": [
         "Volvic"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "volvic-sg",
@@ -2679,15 +2562,15 @@
       },
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 62.9,
-        "alkalinity_ppm_as_caco3": 91.5,
+        "alkalinity_ppm_as_caco3": 60.7,
         "sca_match_score": 100,
-        "brew_recommendation": "good"
+        "brew_recommendation": "excellent"
       },
       "search_text": "volvic france sg volvic natural mineral water singapore volvic",
       "aliases": [
         "Volvic"
       ],
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-03T00:00:00.000Z"
     },
     {
       "id": "watersan-id",

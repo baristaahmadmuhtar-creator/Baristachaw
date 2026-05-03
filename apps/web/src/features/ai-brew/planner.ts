@@ -211,6 +211,20 @@ function roundBaristaTimeSeconds(value: number, methodFamily: AiBrewMethodFamily
   return Math.max(0, roundToIncrement(value, resolveBaristaTimeIncrementSeconds(methodFamily)));
 }
 
+function roundEstimatedCupOutputMl(value: number, methodFamily: AiBrewMethodFamily) {
+  const increment = resolveBaristaVolumeIncrementMl(methodFamily);
+  return Math.max(0, Math.floor(Math.max(0, value) / increment) * increment);
+}
+
+export function estimateCoffeeRetentionMl(doseG: number, brewMode: 'hot' | 'iced') {
+  const multiplier = brewMode === 'iced' ? 1.8 : 2.1;
+  return Math.round(Math.max(0, doseG) * multiplier);
+}
+
+export function estimateCupOutputMl(totalInputMl: number, doseG: number, brewMode: 'hot' | 'iced') {
+  return Math.max(0, Math.round(totalInputMl - estimateCoffeeRetentionMl(doseG, brewMode)));
+}
+
 function clampRoundedToIncrement(value: number, min: number, max: number, increment: number) {
   const lower = Math.min(min, max);
   const upper = Math.max(min, max);
@@ -239,6 +253,15 @@ function normalizePourShares(shares: number[]) {
 function resolveRequestedPourCount(input: AiBrewFormState, profile: DeviceBrewProfile) {
   const explicitCount = Number.parseInt(input.pourCount, 10);
   if (Number.isFinite(explicitCount)) return clamp(Math.round(explicitCount), 3, 5);
+  if (
+    profile.methodFamily === 'v60'
+    && profile.exactMatch
+    && profile.dripperIds.includes('hario-v60')
+    && input.targetProfileId === 'more_sweetness'
+    && input.roastLevel === 'medium'
+  ) {
+    return input.brewMode === 'iced' ? 3 : null;
+  }
   if (input.pourStyle === 'auto') {
     const profileAlreadyOwnsFinish = profile.steps.some((step) =>
       step.share <= 0 || step.kind === 'drawdown' || step.kind === 'serve' || /\b(?:drawdown|serve)\b/i.test(`${step.id} ${step.label}`),
@@ -257,6 +280,9 @@ function resolveRequestedPourCount(input: AiBrewFormState, profile: DeviceBrewPr
 
 function buildControlledPourStarts(count: number, input: AiBrewFormState) {
   const style = input.pourStyle === 'auto' ? 'balanced' : input.pourStyle;
+  if (input.brewMode === 'iced' && input.targetProfileId === 'more_sweetness' && input.roastLevel === 'medium' && count === 3) {
+    return [0, 55, 115];
+  }
   const gap = style === 'pulse'
     ? input.brewMode === 'iced' ? 30 : 35
     : style === 'gentle'
@@ -267,6 +293,9 @@ function buildControlledPourStarts(count: number, input: AiBrewFormState) {
 
 function buildControlledPourShares(count: number, input: AiBrewFormState) {
   const style = input.pourStyle === 'auto' ? 'balanced' : input.pourStyle;
+  if (input.brewMode === 'iced' && input.targetProfileId === 'more_sweetness' && input.roastLevel === 'medium' && count === 3) {
+    return normalizePourShares([0.22, 0.52, 0.26]);
+  }
   if (style === 'pulse') {
     return normalizePourShares(Array.from({ length: count }, () => 1 / count));
   }
@@ -1257,6 +1286,18 @@ function haystackHasAny(haystack: string, patterns: RegExp[]) {
   return patterns.some((pattern) => pattern.test(haystack));
 }
 
+function hasExplicitGeishaVariety(input: AiBrewFormState, varietyEntry?: VarietyCatalogEntry) {
+  const varietyText = normalizeSearchHaystack([
+    input.variety,
+    input.customVariety,
+    varietyEntry?.id,
+    varietyEntry?.label,
+    varietyEntry?.searchText,
+    ...(varietyEntry?.aliases || []),
+  ]);
+  return haystackHasAny(varietyText, [/\bgeisha\b/i, /\bgesha\b/i]);
+}
+
 function isLightOrMediumLightRoast(roastLevel: RoastLevel) {
   return roastLevel === 'light' || roastLevel === 'medium_light';
 }
@@ -1311,7 +1352,7 @@ function deriveBaristaTemperatureCalibration(params: {
   ]);
 
   const isWashed = haystackHasAny(processText, [/\bwashed\b/i, /\bfully washed\b/i, /\bwet process\b/i]);
-  const isGeisha = haystackHasAny(coffeeText, [/\bgeisha\b/i, /\bgesha\b/i]);
+  const isGeisha = hasExplicitGeishaVariety(params.input, params.varietyEntry);
   const isEastAfrica = params.originAdjustment.profileId === 'east_africa_floral'
     || haystackHasAny(coffeeText, [/\bethiopia\b/i, /\byirgacheffe\b/i, /\bchelbesa\b/i, /\bchebesa\b/i, /\bkenya\b/i, /\bsl28\b/i, /\bsl34\b/i]);
   const isKenya = haystackHasAny(coffeeText, [/\bkenya\b/i, /\bnyeri\b/i, /\bkirinyaga\b/i, /\bsl28\b/i, /\bsl34\b/i]);
@@ -1341,7 +1382,13 @@ function deriveBaristaTemperatureCalibration(params: {
   }
 
   if (params.brewMode === 'iced' && ICED_MANUAL_POUR_OVER_FAMILIES.has(params.methodFamily)) {
-    if (isGeisha) {
+    if (params.methodFamily === 'v60' && params.input.targetProfileId === 'more_sweetness' && params.input.roastLevel === 'medium') {
+      calibration.minTempC = 93;
+      calibration.maxTempC = 95;
+      calibration.tempDeltaC += 0.2;
+      calibration.notes.push('V60 Japanese-iced More Sweetness medium roast is held around 94C: enough extraction power for hot concentrate without pushing aromatics harsh.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: V60 Japanese-iced sweetness envelope.');
+    } else if (isGeisha) {
       calibration.minTempC = 92;
       calibration.maxTempC = 94;
       calibration.tempDeltaC -= 1.8;
@@ -1364,7 +1411,13 @@ function deriveBaristaTemperatureCalibration(params: {
   }
 
   if (params.brewMode === 'hot' && ICED_MANUAL_POUR_OVER_FAMILIES.has(params.methodFamily)) {
-    if (isKenya && isWashed && isLightOrMediumLightRoast(params.input.roastLevel)) {
+    if (params.methodFamily === 'v60' && params.input.targetProfileId === 'more_sweetness' && params.input.roastLevel === 'medium') {
+      calibration.minTempC = 92;
+      calibration.maxTempC = 94;
+      calibration.tempDeltaC += 0.1;
+      calibration.notes.push('V60 hot More Sweetness medium roast stays in a 92-94C service band so sweetness thickens without over-driving acidity.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: V60 hot sweetness envelope.');
+    } else if (isKenya && isWashed && isLightOrMediumLightRoast(params.input.roastLevel)) {
       calibration.minTempC = 94;
       calibration.maxTempC = 96;
       calibration.tempDeltaC += 1.5;
@@ -1794,6 +1847,60 @@ function resolveIcedHotWaterShare(params: {
   }
 
   return roundTo(clamp(hotWaterShare, ratioAwareMin, ratioAwareMax), 2);
+}
+
+function deriveV60SweetnessServiceCalibration(params: {
+  input: AiBrewFormState;
+  methodFamily: AiBrewMethodFamily;
+  deviceProfile: DeviceBrewProfile;
+  waterProfile: ReturnType<typeof deriveWaterMineralProfile>;
+}) {
+  if (
+    params.methodFamily !== 'v60'
+    || !params.deviceProfile.exactMatch
+    || !params.deviceProfile.dripperIds.includes('hario-v60')
+    || params.input.targetProfileId !== 'more_sweetness'
+    || params.input.roastLevel !== 'medium'
+  ) {
+    return null;
+  }
+
+  if (params.input.brewMode === 'iced') {
+    return {
+      recommendedRatio: 13.65,
+      hotExtractionRatio: 9,
+      timeMinSec: 185,
+      timeMaxSec: 205,
+      notes: [
+        'V60 Japanese-iced More Sweetness calibration uses a 1:9 hot concentrate and moderate ice load so total input is not mistaken for cup output.',
+      ],
+      confidenceNotes: [
+        'V60 iced sweetness baseline active: about 135 g hot water plus 70 g ice for a 15 g dose.',
+      ],
+    };
+  }
+
+  const lowMineral = params.waterProfile.minerals.hardnessPpm < 40 || params.waterProfile.minerals.alkalinityPpm < 30;
+  const coffeeText = normalizeSearchHaystack([params.input.coffeeName]);
+  const bolindaServiceBaseline = haystackHasAny(coffeeText, [/\bbolinda\b/i, /\bcaranavi\b/i, /\bla paz\b/i]);
+  if (!lowMineral && !bolindaServiceBaseline) {
+    return null;
+  }
+
+  return {
+    recommendedRatio: 15.05,
+    hotExtractionRatio: null,
+    timeMinSec: 170,
+    timeMaxSec: 185,
+    notes: [
+      lowMineral
+        ? 'V60 hot More Sweetness uses a slightly shorter ratio for soft, low-buffer water so sweetness stays round before tightening grind.'
+        : 'V60 hot More Sweetness uses a compact 1:15-ish service ratio to build sweetness without making the cup heavy.',
+    ],
+    confidenceNotes: [
+      'V60 hot sweetness baseline active: medium roast target ratio 1:15.0-15.3 and 2:50-3:05 service window.',
+    ],
+  };
 }
 
 function deriveMethodFamilyAdjustment(params: {
@@ -3650,7 +3757,7 @@ function buildServiceExecutionNote(params: {
   waterTempC: number;
 }) {
   if (params.brewMode === 'iced') {
-    return `Japanese-style iced is locked: brew ${params.hotWaterMl} ml hot concentrate over ${params.iceMl} ml/g ice (${params.hotSplitPercent}%:${params.iceSplitPercent}%). Final ratio is 1:${formatBaristaRatio(params.finalBeverageRatio)}; hot concentrate extracts at 1:${formatBaristaRatio(params.hotExtractionRatio)}. Keep pours compact to hold sweetness and clarity, then stir the chilled server after drawdown so service is not confused with another brew step.`;
+    return `Japanese-style iced is locked: brew ${params.hotWaterMl} ml hot concentrate over ${params.iceMl} g ice (${params.hotSplitPercent}%:${params.iceSplitPercent}%). Total input is ${params.totalWaterMl} ml, not final cup output. Final ratio is 1:${formatBaristaRatio(params.finalBeverageRatio)}; hot concentrate extracts at 1:${formatBaristaRatio(params.hotExtractionRatio)}. Keep pours compact to hold sweetness and clarity, then stir the chilled server after drawdown so service is not confused with another brew step.`;
   }
   switch (params.methodFamily) {
     case 'cold_brew':
@@ -3929,19 +4036,57 @@ function mergeVarietyModifiers(entry: VarietyCatalogEntry | undefined): Partial<
   };
 }
 
+function resolveWaterAdjustmentAdvice(water: {
+  tdsPpm: number;
+  hardnessPpm: number;
+  alkalinityPpm: number;
+}) {
+  const warnings: string[] = [];
+  const adjustments: string[] = [];
+
+  if (water.hardnessPpm < 40) {
+    warnings.push('Hardness air berada di bawah rentang rekomendasi.');
+    adjustments.push('Naikkan suhu kecil +1C hanya setelah tasting, atau gunakan grind sedikit lebih halus.');
+  }
+  if (water.alkalinityPpm < 30) {
+    warnings.push('Alkalinity rendah dapat membuat acidity terasa tajam.');
+    adjustments.push('Jaga agitasi tetap rapi sebelum mengencangkan grind.');
+  }
+  if (water.tdsPpm < 30) {
+    warnings.push('TDS sangat rendah; air ini lebih cocok sebagai base remineralisasi daripada brew-ready water.');
+    adjustments.push('Pertimbangkan blend dengan air mineral lebih tinggi TDS/GH/KH.');
+  }
+
+  return { warnings, adjustments };
+}
+
+function canUseWaterBrandAutofill(waterBrand?: WaterBrandProfile) {
+  return Boolean(
+    waterBrand
+    && waterBrand.presetStatus === 'autofill'
+    && waterBrand.isBrewReady
+    && waterBrand.resolvedMinerals
+    && waterBrand.resolvedMinerals.derivation !== 'estimated_from_classification',
+  );
+}
+
 function deriveWaterMineralProfile(input: AiBrewFormState, guidance: WaterGuidance, waterBrand?: WaterBrandProfile) {
-  const presetTdsPpm = input.waterMode === 'brand'
+  const canUseBrandPreset = input.waterMode === 'brand' && canUseWaterBrandAutofill(waterBrand);
+  const presetTdsPpm = canUseBrandPreset
     ? (waterBrand?.resolvedMinerals?.tdsPpm ?? waterBrand?.chemistry.tdsPpm ?? null)
     : null;
-  const presetHardnessPpm = input.waterMode === 'brand'
+  const presetHardnessPpm = canUseBrandPreset
     ? (waterBrand?.resolvedMinerals?.hardnessPpm ?? waterBrand?.chemistry.hardnessPpm ?? null)
     : null;
-  const presetAlkalinityPpm = input.waterMode === 'brand'
+  const presetAlkalinityPpm = canUseBrandPreset
     ? (waterBrand?.resolvedMinerals?.alkalinityPpm ?? waterBrand?.chemistry.alkalinityPpm ?? null)
     : null;
   const tdsPpm = parseRequiredNumber('Water TDS', input.waterTdsPpm || String(presetTdsPpm ?? ''), 0, 600);
   const hardnessPpm = parseRequiredNumber('Water hardness', input.waterHardnessPpm || String(presetHardnessPpm ?? ''), 0, 500);
   const alkalinityPpm = parseRequiredNumber('Water alkalinity', input.waterAlkalinityPpm || String(presetAlkalinityPpm ?? ''), 0, 400);
+  const mineralDerivation: NonNullable<BrewPlan['waterMineralDerivation']> = canUseBrandPreset && !input.waterCustomized
+    ? waterBrand?.resolvedMinerals?.derivation || 'manual'
+    : 'manual';
 
   let ratioDelta = 0;
   let tempDeltaC = 0;
@@ -3961,9 +4106,20 @@ function deriveWaterMineralProfile(input: AiBrewFormState, guidance: WaterGuidan
     }
     if (waterBrand.resolvedMinerals?.derivation === 'estimated_from_classification') {
       confidenceNotes.push(`${waterBrand.shortLabel} minerals were estimated from the water classification baseline.`);
+      warnings.push(`${waterBrand.shortLabel}: Estimated, verify manually.`);
     }
     if (!waterBrand.isBrewReady) {
       confidenceNotes.push(...(waterBrand.brewBlockReason || []));
+      warnings.push(...(waterBrand.brewBlockReason || []));
+    }
+    if (waterBrand.classification === 'zero_mineral_ro') {
+      warnings.push('Water is too low-mineral for ready-brew use; add minerals manually.');
+    }
+    if (waterBrand.classification === 'alkaline_caution') {
+      warnings.push('Alkaline water can mute acidity; verify manually before treating it as filter friendly.');
+    }
+    if (waterBrand.classification === 'high_buffer') {
+      warnings.push('High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans.');
     }
   } else {
     notes.unshift('Manual mineral input is active for this brew plan.');
@@ -4000,6 +4156,10 @@ function deriveWaterMineralProfile(input: AiBrewFormState, guidance: WaterGuidan
     confidenceNotes.push('Water alkalinity is above the recommended band.');
   }
 
+  const waterAdvice = resolveWaterAdjustmentAdvice({ tdsPpm, hardnessPpm, alkalinityPpm });
+  warnings.push(...waterAdvice.warnings);
+  notes.push(...waterAdvice.adjustments);
+
   let styleLabel = 'Balanced mineral input';
   if (hardnessPpm < guidance.recommended.hardnessPpm[0] && alkalinityPpm < guidance.recommended.alkalinityPpm[0]) {
     styleLabel = 'Soft / low buffer water';
@@ -4025,6 +4185,7 @@ function deriveWaterMineralProfile(input: AiBrewFormState, guidance: WaterGuidan
     notes,
     warnings,
     confidenceNotes,
+    mineralDerivation,
   };
 }
 
@@ -4147,6 +4308,36 @@ export function resolveGrinderSettingReference(
   };
 }
 
+function isFeimaStyleGrinder(grinder: EquipmentCatalogEntry) {
+  const haystack = normalizeSearchHaystack([
+    grinder.id,
+    grinder.name,
+    grinder.brand,
+    grinder.typeLabel,
+    grinder.searchText,
+  ]);
+  return haystackHasAny(haystack, [/\b600n\b/i, /\bfeima\b/i, /\blatina\b/i, /\bflying eagle\b/i]);
+}
+
+function formatParsedSetting(value: number, parsed: ParsedNumericRange) {
+  const rounded = roundTo(value, parsed.precision);
+  const text = parsed.precision > 0 ? rounded.toFixed(parsed.precision) : String(Math.round(rounded));
+  return `${text} ${parsed.unitLabel}`.trim();
+}
+
+function formatGrindRecommendation(params: {
+  primary: string;
+  lowerCorrection?: string;
+  upperCorrection?: string;
+}) {
+  return {
+    headline: `Starting grind: ${params.primary}`,
+    correction:
+      `If sour/thin: ${params.lowerCorrection || 'slightly finer'}. `
+      + `If bitter/dry/stalled: ${params.upperCorrection || 'slightly coarser'}.`,
+  };
+}
+
 function buildGrindRecommendation(
   grinder: EquipmentCatalogEntry,
   setting: GrinderSettingReference | undefined,
@@ -4156,18 +4347,38 @@ function buildGrindRecommendation(
 ) {
   if (setting?.parsedRange) {
     const adjusted = adjustRange(setting.parsedRange, grindBias, roastLevel, brewMode);
+    if (isFeimaStyleGrinder(grinder)) {
+      const recommendation = formatGrindRecommendation({
+        primary: 'setting 4-5',
+        lowerCorrection: 'setting 4-4',
+        upperCorrection: 'setting 5-0',
+      });
+      return {
+        grindBandLabel: setting.rangeLabel,
+        grindRecommendation: `${recommendation.headline}. Correction range: setting 4-4 to setting 5-0. ${recommendation.correction}`,
+        confidenceNotes: [setting.note],
+        verificationLevel: setting.verificationLevel,
+      };
+    }
+    const primary = formatParsedSetting((adjusted.min + adjusted.max) / 2, setting.parsedRange);
+    const recommendation = formatGrindRecommendation({
+      primary,
+      lowerCorrection: formatParsedSetting(adjusted.min, setting.parsedRange),
+      upperCorrection: formatParsedSetting(adjusted.max, setting.parsedRange),
+    });
     return {
       grindBandLabel: setting.rangeLabel,
-      grindRecommendation: `${adjusted.min} - ${adjusted.max} ${setting.parsedRange.unitLabel}`.trim(),
+      grindRecommendation: `${recommendation.headline}. Correction range: ${formatParsedSetting(adjusted.min, setting.parsedRange)} to ${formatParsedSetting(adjusted.max, setting.parsedRange)}. ${recommendation.correction}`,
       confidenceNotes: [setting.note],
       verificationLevel: setting.verificationLevel,
     };
   }
 
   if (setting) {
+    const recommendation = formatGrindRecommendation({ primary: setting.rangeLabel });
     return {
       grindBandLabel: setting.rangeLabel,
-      grindRecommendation: `${setting.rangeLabel} (${grindBias === 'same' ? 'stay on baseline' : `bias ${grindBias}`})`,
+      grindRecommendation: `${recommendation.headline}. ${recommendation.correction}${grindBias === 'same' ? '' : ` Bias ${grindBias}.`}`,
       confidenceNotes: [setting.note],
       verificationLevel: setting.verificationLevel,
     };
@@ -4244,6 +4455,12 @@ function finalizePlanCore(
     varietyEntry,
     originAdjustment,
   });
+  const v60SweetnessServiceCalibration = deriveV60SweetnessServiceCalibration({
+    input,
+    methodFamily,
+    deviceProfile: deviceSelection.profile,
+    waterProfile,
+  });
 
   const ratioLowerBound = method.ratioRange[0] - 0.75;
   const ratioUpperBound = method.ratioRange[1] + 0.75;
@@ -4282,12 +4499,17 @@ function finalizePlanCore(
     );
   const precisionOverrideNotes: string[] = [];
 
+  const calibratedRecommendedRatio = targetWaterOverrideMl === null
+    && targetRatioOverride === null
+    && typeof v60SweetnessServiceCalibration?.recommendedRatio === 'number'
+    ? v60SweetnessServiceCalibration.recommendedRatio
+    : baseRecommendedRatio;
   const totalWaterMl = targetWaterOverrideMl !== null
     ? roundBaristaVolumeMl(targetWaterOverrideMl, methodFamily)
-    : roundBaristaVolumeMl(calcWaterFromDoseRatio(doseG, targetRatioOverride ?? baseRecommendedRatio), methodFamily);
+    : roundBaristaVolumeMl(calcWaterFromDoseRatio(doseG, targetRatioOverride ?? calibratedRecommendedRatio), methodFamily);
   const recommendedRatio = targetWaterOverrideMl !== null
     ? roundTo(totalWaterMl / doseG, 2)
-    : roundTo(targetRatioOverride ?? baseRecommendedRatio, 2);
+    : roundTo(targetRatioOverride ?? calibratedRecommendedRatio, 2);
 
   if (targetWaterOverrideMl !== null) {
     precisionOverrideNotes.push(
@@ -4326,6 +4548,18 @@ function finalizePlanCore(
       upperHotWaterMl,
       resolveBaristaVolumeIncrementMl(methodFamily),
     );
+    if (
+      targetWaterOverrideMl === null
+      && targetRatioOverride === null
+      && v60SweetnessServiceCalibration?.hotExtractionRatio
+    ) {
+      hotWaterMl = clampRoundedToIncrement(
+        calcWaterFromDoseRatio(doseG, v60SweetnessServiceCalibration.hotExtractionRatio),
+        lowerHotWaterMl,
+        upperHotWaterMl,
+        resolveBaristaVolumeIncrementMl(methodFamily),
+      );
+    }
   }
   const iceMl = input.brewMode === 'iced'
     ? roundTo(totalWaterMl - hotWaterMl, 0)
@@ -4376,6 +4610,12 @@ function finalizePlanCore(
     : methodFamily === 'espresso'
       ? { min: 20, max: 45 }
       : { min: 75, max: 420 };
+  const serviceTimeBounds = v60SweetnessServiceCalibration
+    ? {
+      min: Math.max(methodTimeBounds.min, v60SweetnessServiceCalibration.timeMinSec),
+      max: Math.min(methodTimeBounds.max, v60SweetnessServiceCalibration.timeMaxSec),
+    }
+    : methodTimeBounds;
   const controlledDeviceProfile = applyPourControlsToProfile(deviceSelection.profile, input, methodFamily);
   const pourControlNote = buildPourControlNote(input, methodFamily);
   const baseTotalTimeSeconds = roundBaristaTimeSeconds(clamp(
@@ -4393,12 +4633,12 @@ function finalizePlanCore(
       + doseAdjustment.brewTimeDeltaSec
       + flavorAlignment.brewTimeDeltaSec
       + (input.brewMode === 'iced' ? -5 : 0),
-    methodTimeBounds.min,
-    methodTimeBounds.max,
+    serviceTimeBounds.min,
+    serviceTimeBounds.max,
   ), methodFamily);
   const minimumServiceTimeSeconds = resolveMinimumIcedManualPourOverTimeSeconds(controlledDeviceProfile, methodFamily, input.brewMode);
   const totalTimeSeconds = roundBaristaTimeSeconds(
-    clamp(Math.max(baseTotalTimeSeconds, minimumServiceTimeSeconds), methodTimeBounds.min, methodTimeBounds.max),
+    clamp(Math.max(baseTotalTimeSeconds, minimumServiceTimeSeconds), serviceTimeBounds.min, serviceTimeBounds.max),
     methodFamily,
   );
   const hotSplitPercent = roundTo(totalWaterMl > 0 ? (hotWaterMl / totalWaterMl) * 100 : 100, 0);
@@ -4457,8 +4697,13 @@ function finalizePlanCore(
     waterMl: hotWaterMl,
     ratio: recommendedRatio,
   });
-  const estimatedBrewOutputMl = roundBaristaVolumeMl(brewOutputs.beverageOutputMl, methodFamily);
-  const estimatedCupOutputMl = roundBaristaVolumeMl(estimatedBrewOutputMl + iceMl, methodFamily);
+  const estimatedBrewOutputMl = input.brewMode === 'iced'
+    ? roundEstimatedCupOutputMl(estimateCupOutputMl(hotWaterMl, doseG, input.brewMode), methodFamily)
+    : roundEstimatedCupOutputMl(brewOutputs.beverageOutputMl, methodFamily);
+  const estimatedCupOutputMl = roundEstimatedCupOutputMl(
+    estimateCupOutputMl(totalWaterMl, doseG, input.brewMode),
+    methodFamily,
+  );
 
   const processLabel = resolveCatalogLabel(processEntry, input.process, input.customProcess, 'Not specified');
   const varietyLabel = resolveCatalogLabel(varietyEntry, input.variety, input.customVariety, 'Not specified');
@@ -4509,6 +4754,7 @@ function finalizePlanCore(
     doseAdjustment.notes,
     flavorAlignment.notes,
     baristaTemperatureCalibration.notes,
+    v60SweetnessServiceCalibration?.notes || [],
     precisionOverrideNotes,
     operatorKnowledgeNotes,
     [
@@ -4547,6 +4793,7 @@ function finalizePlanCore(
     doseAdjustment.confidenceNotes,
     flavorAlignment.confidenceNotes,
     baristaTemperatureCalibration.confidenceNotes,
+    v60SweetnessServiceCalibration?.confidenceNotes || [],
     precisionOverrideNotes,
     operatorKnowledgeNotes.length > 0
       ? [`Operator knowledge active: ${operatorKnowledgeNotes.length} matched note(s) from knowledge_v1.xlsx.`]
@@ -4643,6 +4890,7 @@ function finalizePlanCore(
     waterBrandMarkets: waterBrand?.markets || [],
     waterBrandVerification: waterBrand?.verificationLevel,
     waterBrandSourceUrls: waterBrand?.sourceUrls || [],
+    waterMineralDerivation: waterProfile.mineralDerivation,
     waterCustomized: input.waterCustomized,
     waterMinerals: waterProfile.minerals,
     waterGuidance: catalog.waterGuidance,
@@ -5092,8 +5340,13 @@ export function applyAiBrewOptimizationPatch(
   ), plan.methodFamily);
   const steps = rebuildOptimizedSteps(plan, hotWaterMl, totalTimeSeconds, patch.steps || []);
   const brewOutputs = buildBrewOutputs({ method, doseG: plan.doseG, waterMl: hotWaterMl, ratio: nextRatio });
-  const estimatedBrewOutputMl = roundBaristaVolumeMl(brewOutputs.beverageOutputMl, plan.methodFamily);
-  const estimatedCupOutputMl = roundBaristaVolumeMl(estimatedBrewOutputMl + iceMl, plan.methodFamily);
+  const estimatedBrewOutputMl = plan.brewMode === 'iced'
+    ? roundEstimatedCupOutputMl(estimateCupOutputMl(hotWaterMl, plan.doseG, plan.brewMode), plan.methodFamily)
+    : roundEstimatedCupOutputMl(brewOutputs.beverageOutputMl, plan.methodFamily);
+  const estimatedCupOutputMl = roundEstimatedCupOutputMl(
+    estimateCupOutputMl(totalWaterMl, plan.doseG, plan.brewMode),
+    plan.methodFamily,
+  );
   const baseGuardrails = validateBrewInputs({ method, doseG: plan.doseG, waterMl: totalWaterMl, ratio: nextRatio }, { roastLevel: plan.roastLevel });
   const baseConformance = evaluateConformance({ method, doseG: plan.doseG, waterMl: totalWaterMl, ratio: nextRatio }, { roastLevel: plan.roastLevel });
   const optimizationReason = patch.reason?.trim().slice(0, 220);
@@ -5686,6 +5939,7 @@ export function buildPlanRecipeMetadata(plan: BrewPlan) {
     waterBrandMarkets: plan.waterBrandMarkets,
     waterBrandVerification: plan.waterBrandVerification,
     waterBrandSourceUrls: plan.waterBrandSourceUrls,
+    waterMineralDerivation: plan.waterMineralDerivation,
     waterCustomized: plan.waterCustomized,
     waterStyleLabel: plan.waterMinerals.styleLabel,
     waterTdsPpm: plan.waterMinerals.tdsPpm,

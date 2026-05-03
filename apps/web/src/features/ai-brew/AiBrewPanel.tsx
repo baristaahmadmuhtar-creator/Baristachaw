@@ -44,6 +44,8 @@ import {
   buildTroubleshootPrompt,
 } from './prompts';
 import { buildDeterministicAiCoachMarkdown } from './coachNotes';
+import { sanitizeBrewNarrative } from './antiHallucination';
+import { sanitizeAiCoachMarkdown } from './coachGuard';
 import {
   composeHybridSequenceOverlay,
   extractSequenceOverlayFromMarkdown,
@@ -82,6 +84,12 @@ import {
   type AiBrewGenerationProgress,
   type AiBrewGenerationStageId,
 } from './planner';
+import {
+  formatBrewerProfileTrustDetail,
+  formatBrewerProfileTrustLabel,
+  resolveBrewerProfileTrustStatus,
+  type BrewerProfileTrustStatus,
+} from './catalogTrust.ts';
 import {
   deleteBrewPreset,
   findBrewPresetByFingerprint,
@@ -197,6 +205,11 @@ const COPY = {
     waterReadyNow: 'Water ready',
     waterNeedsInput: 'Minerals needed',
     grindVerified: 'Verified grind reference',
+    grindOfficialReference: 'Official reference',
+    grindCuratedReference: 'Curated reference',
+    grindCommunityReference: 'Community reference',
+    grindEstimatedBaseline: 'Estimated baseline',
+    grindCalibrationNote: 'Grinder settings depend on burr zero point, calibration, roast, and dose. Start here, then adjust by drawdown and taste.',
     grindFallback: 'Grind fallback',
     profileExactStatus: 'Exact device profile',
     profileFallbackStatus: 'Family fallback profile',
@@ -231,10 +244,17 @@ const COPY = {
     waterNoBrand: 'Choose water.',
     waterBrandNeedsManual: 'Add minerals before brew.',
     waterBrandPartialFilled: 'Complete missing minerals.',
-    waterBrandEstimated: 'Estimate',
-    waterBrandEstimatedNote: '',
+    waterBrandEstimated: 'Estimated — verify manually',
+    waterBrandEstimatedNote: 'Estimated values are only a placeholder. Verify manually before brewing.',
     waterBrandAutofilled: 'Minerals loaded from the selected brand profile.',
     waterBrandCustomized: 'Brand minerals were adjusted manually for this brew.',
+    waterDerivationDirect: 'Direct label/lab data',
+    waterDerivationDerived: 'Derived from Ca/Mg/HCO3',
+    waterDerivationEstimated: 'Estimated from classification',
+    waterDerivationManual: 'Manual mineral input',
+    waterUseAsRoBase: 'Use as RO base; add minerals manually.',
+    waterHighBufferWarning: 'High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans.',
+    waterAlkalineWarning: 'Alkaline water can mute acidity. Verify manually before treating it as filter friendly.',
     waterEditMinerals: 'Edit minerals',
     waterHideMinerals: 'Hide minerals',
     waterSummary: 'Minerals',
@@ -550,6 +570,11 @@ const COPY = {
     waterReadyNow: 'Air siap',
     waterNeedsInput: 'Mineral wajib diisi',
     grindVerified: 'Referensi grind terverifikasi',
+    grindOfficialReference: 'Referensi resmi',
+    grindCuratedReference: 'Referensi kurasi',
+    grindCommunityReference: 'Referensi komunitas',
+    grindEstimatedBaseline: 'Baseline estimasi',
+    grindCalibrationNote: 'Setting grinder bergantung pada titik nol burr, kalibrasi, sangrai, dan dosis. Mulai dari sini, lalu koreksi dari drawdown dan rasa.',
     grindFallback: 'Fallback grind',
     profileExactStatus: 'Profil alat exact',
     profileFallbackStatus: 'Profil fallback family',
@@ -584,10 +609,17 @@ const COPY = {
     waterNoBrand: 'Pilih air.',
     waterBrandNeedsManual: 'Isi mineral dulu.',
     waterBrandPartialFilled: 'Lengkapi mineral yang kosong.',
-    waterBrandEstimated: 'Estimasi',
-    waterBrandEstimatedNote: '',
+    waterBrandEstimated: 'Estimasi — verifikasi manual',
+    waterBrandEstimatedNote: 'Nilai estimasi hanya placeholder. Verifikasi manual sebelum seduh.',
     waterBrandAutofilled: 'Mineral dimuat dari profil brand terpilih.',
     waterBrandCustomized: 'Mineral brand sudah disesuaikan manual untuk brew ini.',
+    waterDerivationDirect: 'Data label/lab langsung',
+    waterDerivationDerived: 'Turunan dari Ca/Mg/HCO3',
+    waterDerivationEstimated: 'Estimasi dari klasifikasi',
+    waterDerivationManual: 'Input mineral manual',
+    waterUseAsRoBase: 'Pakai sebagai base RO; tambahkan mineral manual.',
+    waterHighBufferWarning: 'Alkalinitas/buffer tinggi bisa meredam acidity dan membuat kopi floral terasa datar. Pakai kontak lebih pendek atau mineral manual untuk bean delicate.',
+    waterAlkalineWarning: 'Air alkaline bisa meredam acidity. Verifikasi manual sebelum dianggap ramah filter.',
     waterEditMinerals: 'Edit mineral',
     waterHideMinerals: 'Sembunyikan mineral',
     waterSummary: 'Mineral',
@@ -879,6 +911,7 @@ interface PickerOption {
   badges: string[];
   ariaLabel: string;
   tone?: 'highlight' | 'muted' | 'default';
+  trustStatus?: BrewerProfileTrustStatus;
 }
 
 const CORE_BREWER_IDS = [
@@ -1077,9 +1110,12 @@ function selectDefaultAiResponse(
     for (const mode of orderedModes) {
       const markdown = aiNotes[mode];
       if (!markdown) continue;
+      const guarded = plan
+        ? sanitizeAiCoachMarkdown({ action: mode, markdown, plan })
+        : { markdown, risk: 'none' as const, replacements: [] };
       return {
         title: getAiCoachTitle(copy, mode),
-        markdown,
+        markdown: guarded.markdown,
       };
     }
   }
@@ -1314,7 +1350,15 @@ async function runHybridSequenceUpdate(
     },
     { timeoutMs: AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS },
   );
-  const displayOverlay = resolveDisplaySequenceOverlay(nextPlan, canonicalOverlay.markdown, displayMarkdown);
+  const guardedDisplay = sanitizeAiCoachMarkdown({
+    action: 'sequence',
+    markdown: displayMarkdown,
+    plan: nextPlan,
+  });
+  const safeDisplayMarkdown = guardedDisplay.risk === 'high'
+    ? canonicalOverlay.markdown
+    : guardedDisplay.markdown;
+  const displayOverlay = resolveDisplaySequenceOverlay(nextPlan, canonicalOverlay.markdown, safeDisplayMarkdown);
 
   const fallbackDiagnostics = [
     ...(canonicalOverlay.usedFallback
@@ -1325,7 +1369,7 @@ async function runHybridSequenceUpdate(
   ];
 
   return {
-    markdown: displayMarkdown,
+    markdown: safeDisplayMarkdown,
     canonicalMarkdown: canonicalOverlay.markdown,
     servicePattern: displayOverlay.servicePattern,
     watch: displayOverlay.watch,
@@ -2340,12 +2384,16 @@ function MasterPickerDialog({
   onSelect: (id: string) => void;
 }) {
   const [query, setQuery] = useState('');
+  const [specialtyExpanded, setSpecialtyExpanded] = useState(false);
   const descriptionId = useId();
   const searchInputId = useId();
   const hasDescription = description.trim().length > 0;
 
   useEffect(() => {
-    if (!open) setQuery('');
+    if (!open) {
+      setQuery('');
+      setSpecialtyExpanded(false);
+    }
   }, [open]);
 
   const filteredItems = useMemo(() => {
@@ -2422,14 +2470,29 @@ function MasterPickerDialog({
         {sections.length === 0 ? (
           <p className="px-3 py-8 text-center text-sm text-secondary">{emptyText}</p>
         ) : (
-          sections.map(([section, sectionItems]) => (
+          sections.map(([section, sectionItems]) => {
+            const isSpecialtySection = kind === 'dripper' && /specialty|spesialti/i.test(section);
+            const collapsed = isSpecialtySection && query.trim().length === 0 && !specialtyExpanded;
+            return (
             <div key={section} className="mb-3 last:mb-0">
               {showSectionHeaders && section ? (
-                <div className="px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">
-                  {section}
-                </div>
+                isSpecialtySection ? (
+                  <button
+                    type="button"
+                    onClick={() => setSpecialtyExpanded((current) => !current)}
+                    className="flex w-full items-center justify-between gap-3 px-2 pb-1 pt-2 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary"
+                    aria-expanded={!collapsed}
+                  >
+                    <span>{section}</span>
+                    <span className="rounded-full bg-surface-alpha px-2 py-0.5 tracking-normal">{sectionItems.length}</span>
+                  </button>
+                ) : (
+                  <div className="px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">
+                    {section}
+                  </div>
+                )
               ) : null}
-              <div className="space-y-1">
+              <div className={`space-y-1 ${collapsed ? 'hidden' : ''}`}>
                 {sectionItems.map((item) => (
                   <button
                     key={item.id}
@@ -2453,7 +2516,10 @@ function MasterPickerDialog({
                       {item.subtitle && (
                         <p className="mt-1 text-xs text-secondary">{item.subtitle}</p>
                       )}
-                      {item.badges.length > 0 && item.tone === 'highlight' && (
+                      {item.description && (
+                        <p className="mt-1 text-xs leading-5 text-secondary">{item.description}</p>
+                      )}
+                      {item.badges.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {item.badges.map((badge) => (
                             <span key={`${item.id}-${badge}`} className="rounded-full bg-surface-alpha px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-secondary">
@@ -2468,7 +2534,8 @@ function MasterPickerDialog({
                 ))}
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
     </FocusLockedDialog>
@@ -2591,6 +2658,11 @@ function PlanResultDialog({
     { mode: 'troubleshoot', label: copy.troubleshoot, hint: copy.coachTroubleshootHint },
     { mode: 'adjust', label: copy.adjust, hint: copy.coachAdjustHint },
   ];
+  const hasLowConfidenceCoachData = plan.provenanceAttentionNeeded
+    || plan.grindSettingVerification !== 'official'
+    || plan.deviceProfileMode !== 'exact'
+    || plan.waterMineralDerivation === 'estimated_from_classification'
+    || plan.waterPresetStatus === 'manual_required';
 
   const activeTabPanelId = `ai-brew-result-panel-${activeTab}`;
   const activeTabId = `ai-brew-result-tab-${activeTab}`;
@@ -3102,6 +3174,9 @@ function PlanResultDialog({
                         <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
                           {plan.waterCustomized ? copy.waterBrandCustomized : localizedWaterStyle}
                         </span>
+                        <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
+                          {formatWaterDerivationLabel(copy, plan.waterMineralDerivation)}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -3121,7 +3196,8 @@ function PlanResultDialog({
                         <div className="rounded-xl bg-surface-alpha px-3 py-3">
                           <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grindSource}</p>
                           <p className="mt-1 font-medium text-primary">{localizedGrindSettingReference}</p>
-                          <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} · {formatVerification(copy, plan.grindSettingVerification)}</p>
+                          <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} · {formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}</p>
+                          <p className="mt-2 text-xs">{copy.grindCalibrationNote}</p>
                         </div>
                         <div className="rounded-xl bg-surface-alpha px-3 py-3">
                           <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.confidenceNotes}</p>
@@ -3394,6 +3470,12 @@ function PlanResultDialog({
                   <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.aiCoach}</h4>
                 </div>
                 <p className="text-sm text-secondary">{copy.coachDescription}</p>
+                <div className="mt-3 space-y-1 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2 text-xs leading-5 text-secondary">
+                  <p>{id ? 'Coach mengikuti planner deterministic. Angka resep tidak diubah oleh AI.' : 'Coach follows the deterministic planner. AI does not change recipe numbers.'}</p>
+                  {hasLowConfidenceCoachData && (
+                    <p>{id ? 'Sebagian data bersifat curated/estimated; gunakan sebagai baseline, bukan klaim final.' : 'Some data is curated/estimated; use it as a baseline, not a final factual claim.'}</p>
+                  )}
+                </div>
                 <div className="mt-4 grid gap-2 sm:grid-cols-3">
                   {coachActions.map((action) => (
                     <button
@@ -3486,7 +3568,8 @@ function PlanResultDialog({
                     <div className="rounded-xl bg-surface-alpha px-3 py-3">
                       <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grindSource}</p>
                       <p className="mt-1 font-medium text-primary">{localizedGrindSettingReference}</p>
-                      <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} · {formatVerification(copy, plan.grindSettingVerification)}</p>
+                      <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} · {formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}</p>
+                      <p className="mt-2 text-xs">{copy.grindCalibrationNote}</p>
                     </div>
                     <div className="rounded-xl bg-surface-alpha px-3 py-3">
                       <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.confidenceNotes}</p>
@@ -3521,6 +3604,9 @@ function PlanResultDialog({
                     <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-secondary">
                       <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
                         {plan.waterCustomized ? copy.waterBrandCustomized : localizedWaterStyle}
+                      </span>
+                      <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
+                        {formatWaterDerivationLabel(copy, plan.waterMineralDerivation)}
                       </span>
                     </div>
                     {plan.waterBrewBlockReason.length > 0 && (
@@ -3627,7 +3713,7 @@ function buildVarietyPickerOptions(catalog: AiBrewCatalog, copy: CopySet) {
   return options;
 }
 
-function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopySet, kind: 'dripper' | 'grinder') {
+function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopySet, kind: 'dripper' | 'grinder', language?: string) {
   const displayItems = kind === 'dripper'
     ? [...items].sort((a, b) => {
       const priorityDelta = scoreBrewerDisplayOrder(a) - scoreBrewerDisplayOrder(b);
@@ -3638,6 +3724,20 @@ function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopyS
 
   return displayItems.map((item): PickerOption => {
     const isCoreBrewer = kind === 'dripper' && CORE_BREWER_PRIORITY.has(item.id);
+    const trustStatus = kind === 'dripper'
+      ? resolveBrewerProfileTrustStatus({
+        deviceProfileMode: item.defaultProfileId || isCoreBrewer ? 'exact' : item.confidence === 'low' ? 'family_fallback' : 'derived_template',
+        verificationLevel: item.verificationLevel,
+        confidence: item.confidence,
+        exactMatch: Boolean(item.defaultProfileId || isCoreBrewer),
+        methodFamily: item.methodFamily,
+        dripperId: item.id,
+        dripperName: item.name,
+      })
+      : undefined;
+    const trustDetail = trustStatus
+      ? formatBrewerProfileTrustDetail({ status: trustStatus, dripperId: item.id, language })
+      : '';
     const methodAliases = kind === 'dripper' && item.methodFamily
       ? METHOD_FAMILY_SEARCH_ALIASES[item.methodFamily]
       : '';
@@ -3647,16 +3747,17 @@ function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopyS
       id: item.id,
       label: item.name,
       subtitle: item.brand ? `${item.brand} · ${item.typeLabel}` : item.typeLabel,
-      description: item.description,
+      description: [trustDetail, item.description].filter(Boolean).join(' - '),
       searchText: `${item.searchText} ${methodAliases} ${item.methodFamily || ''}`.toLowerCase(),
       section: kind === 'dripper'
         ? isCoreBrewer
           ? copy.brewerCoreSection
           : copy.brewerSpecialtySection
         : '',
-      badges: isCoreBrewer ? [copy.brewerVerifiedBadge] : [],
+      badges: trustStatus ? [formatBrewerProfileTrustLabel(trustStatus, language)] : [],
       ariaLabel: copy.pickerSelectEquipment.replace('{kind}', kindLabel).replace('{label}', item.name),
-      tone: isCoreBrewer ? 'highlight' : 'default',
+      tone: trustStatus === 'exact' ? 'highlight' : trustStatus === 'calibration_required' ? 'muted' : 'default',
+      trustStatus,
     };
   });
 }
@@ -3755,6 +3856,12 @@ function compareWaterBrandDisplayPriority(left: WaterBrandProfile, right: WaterB
 function buildWaterFactBadges(item: WaterBrandProfile, copy: CopySet) {
   const profile = getWaterNumericProfile(item);
   const badges: string[] = [];
+  if (item.resolvedMinerals?.derivation === 'estimated_from_classification') {
+    badges.push(copy.waterBrandEstimated);
+  }
+  if (item.classification === 'zero_mineral_ro') {
+    badges.push(copy.waterUseAsRoBase);
+  }
   if (profile.tdsPpm === null || profile.hardnessPpm === null || profile.alkalinityPpm === null) {
     badges.push(copy.waterBadgeNeedsFullMinerals);
     return badges;
@@ -3786,6 +3893,13 @@ function buildWaterFactBadges(item: WaterBrandProfile, copy: CopySet) {
 }
 
 function buildWaterPrefillValues(item: WaterBrandProfile | null | undefined) {
+  if (!isWaterBrandAutofillAllowed(item)) {
+    return {
+      waterTdsPpm: '',
+      waterHardnessPpm: '',
+      waterAlkalinityPpm: '',
+    };
+  }
   const tdsPpm = item?.resolvedMinerals?.tdsPpm ?? item?.chemistry.tdsPpm;
   const hardnessPpm = item?.resolvedMinerals?.hardnessPpm ?? item?.chemistry.hardnessPpm;
   const alkalinityPpm = item?.resolvedMinerals?.alkalinityPpm ?? item?.chemistry.alkalinityPpm;
@@ -3797,12 +3911,54 @@ function buildWaterPrefillValues(item: WaterBrandProfile | null | undefined) {
 }
 
 function countKnownWaterFields(item: WaterBrandProfile | null | undefined) {
-  const values = buildWaterPrefillValues(item);
-  return [values.waterTdsPpm, values.waterHardnessPpm, values.waterAlkalinityPpm].filter(Boolean).length;
+  if (!item) return 0;
+  const profile = getWaterNumericProfile(item);
+  return [profile.tdsPpm, profile.hardnessPpm, profile.alkalinityPpm].filter((value) => value !== null).length;
 }
 
 function isEstimatedWaterBaseline(item: WaterBrandProfile | null | undefined) {
   return item?.resolvedMinerals?.derivation === 'estimated_from_classification';
+}
+
+function isWaterBrandAutofillAllowed(item: WaterBrandProfile | null | undefined) {
+  return Boolean(
+    item
+    && item.presetStatus === 'autofill'
+    && item.isBrewReady
+    && item.resolvedMinerals
+    && item.resolvedMinerals.derivation !== 'estimated_from_classification',
+  );
+}
+
+function formatWaterDerivationLabel(copy: CopySet, derivation: BrewPlan['waterMineralDerivation'] | undefined) {
+  switch (derivation) {
+    case 'direct':
+      return copy.waterDerivationDirect;
+    case 'derived_from_ions':
+      return copy.waterDerivationDerived;
+    case 'estimated_from_classification':
+      return copy.waterDerivationEstimated;
+    case 'manual':
+    default:
+      return copy.waterDerivationManual;
+  }
+}
+
+function formatGrinderReferenceLabel(copy: CopySet, verification: VerificationLevel, mode?: BrewPlan['grindSettingMode']) {
+  if (mode === 'derived_baseline' || verification === 'fallback' || verification === 'dataset_unverified') {
+    return copy.grindEstimatedBaseline;
+  }
+  if (verification === 'official') return copy.grindOfficialReference;
+  if (verification === 'community_verified') return copy.grindCommunityReference;
+  return copy.grindCuratedReference;
+}
+
+function buildWaterPolicyWarning(copy: CopySet, item: WaterBrandProfile) {
+  if (item.classification === 'zero_mineral_ro') return copy.waterUseAsRoBase;
+  if (item.classification === 'high_buffer') return copy.waterHighBufferWarning;
+  if (item.classification === 'alkaline_caution') return copy.waterAlkalineWarning;
+  if (isEstimatedWaterBaseline(item)) return copy.waterBrandEstimatedNote;
+  return item.classificationCaution || '';
 }
 
 function buildWaterTargetFitHint(
@@ -4256,9 +4412,9 @@ export function AiBrewPanel({
     if (pickerKind === 'process') return buildProcessPickerOptions(catalog, copy);
     if (pickerKind === 'variety') return buildVarietyPickerOptions(catalog, copy);
     if (pickerKind === 'water_brand') return buildWaterPickerOptions(userFacingWaterBrands, copy, language);
-    if (pickerKind === 'dripper') return buildEquipmentPickerOptions(catalog.drippers, copy, 'dripper');
-    return buildEquipmentPickerOptions(catalog.grinders, copy, 'grinder');
-  }, [catalog, copy, pickerKind, userFacingWaterBrands]);
+    if (pickerKind === 'dripper') return buildEquipmentPickerOptions(catalog.drippers, copy, 'dripper', language);
+    return buildEquipmentPickerOptions(catalog.grinders, copy, 'grinder', language);
+  }, [catalog, copy, language, pickerKind, userFacingWaterBrands]);
 
   const currentPreset = useMemo(() => {
     if (!plan) return undefined;
@@ -4295,13 +4451,25 @@ export function AiBrewPanel({
       const grinderSetting = resolveGrinderSettingReference(catalog, selectedGrinder, deviceSelection.profile, sanitized.brewMode);
       const waterStatusLabel = nextMineralsReady ? copy.waterReadyNow : copy.waterNeedsInput;
       const waterStatusTone = nextMineralsReady ? 'emerald' : 'amber';
+      const waterDerivation = formState.waterMode === 'brand'
+        ? selectedWaterBrand?.resolvedMinerals?.derivation
+        : 'manual';
       const waterDetail = formState.waterMode === 'brand' && selectedWaterBrand
-        ? buildWaterChemistryLabel(selectedWaterBrand, language)
+        ? `${buildWaterChemistryLabel(selectedWaterBrand, language)} · ${formatWaterDerivationLabel(copy, waterDerivation)}`
         : nextMineralsReady
           ? `TDS ${formState.waterTdsPpm} · GH ${formState.waterHardnessPpm} · KH ${formState.waterAlkalinityPpm}`
           : copy.waterRequired;
       const beanProfileSummary = buildBeanProfileSummary(formState);
       const beanProfileActive = Boolean(beanProfileSummary);
+      const profileTrustStatus = resolveBrewerProfileTrustStatus({
+        deviceProfileMode: deviceSelection.mode,
+        verificationLevel: deviceSelection.profile.verificationLevel,
+        confidence: deviceSelection.profile.confidence,
+        exactMatch: deviceSelection.profile.exactMatch,
+        methodFamily: deviceSelection.profile.methodFamily,
+        dripperId: selectedDripper.id,
+        dripperName: selectedDripper.name,
+      });
       const notes = [
         !formState.process ? copy.processOptionalNote : '',
         !formState.variety ? copy.varietyOptionalNote : '',
@@ -4310,11 +4478,13 @@ export function AiBrewPanel({
       ].filter(Boolean);
 
       return {
-        profileTone: deviceSelection.mode === 'exact' ? 'blue' : 'amber',
-        profileStatus: deviceSelection.mode === 'exact' ? copy.profileExactStatus : copy.profileFallbackStatus,
+        profileTone: profileTrustStatus === 'exact' ? 'blue' : profileTrustStatus === 'calibration_required' ? 'amber' : 'slate',
+        profileStatus: formatBrewerProfileTrustLabel(profileTrustStatus, language),
         profileLabel: deviceSelection.profile.label,
         grindTone: grinderSetting ? 'blue' : 'amber',
-        grindStatus: grinderSetting ? copy.grindVerified : copy.grindFallback,
+        grindStatus: grinderSetting
+          ? formatGrinderReferenceLabel(copy, grinderSetting.verificationLevel, 'catalog_reference')
+          : copy.grindFallback,
         grindLabel: grinderSetting?.rangeLabel || copy.noVerifiedGrinderSettingShort,
         grindVerification: grinderSetting ? formatVerification(copy, grinderSetting.verificationLevel) : formatVerification(copy, 'fallback'),
         waterTone: waterStatusTone,
@@ -4332,6 +4502,7 @@ export function AiBrewPanel({
     catalog,
     copy,
     formState,
+    language,
     selectedDripper,
     selectedGrinder,
     selectedWaterBrand,
@@ -4354,13 +4525,14 @@ export function AiBrewPanel({
   const preferredBuilderMode = inferPreferredBuilderMode(formState);
 
   const mineralsReady = Boolean(formState.waterTdsPpm && formState.waterHardnessPpm && formState.waterAlkalinityPpm);
+  const selectedWaterBrandCanAutofill = isWaterBrandAutofillAllowed(selectedWaterBrand);
   const waterNeedsManualEntry = formState.waterMode === 'manual'
     || !selectedWaterBrand
-    || selectedWaterBrand.presetStatus !== 'autofill'
+    || !selectedWaterBrandCanAutofill
     || formState.waterCustomized;
   const shouldShowMineralEditor = showMineralEditor || waterNeedsManualEntry;
   const canToggleMineralEditor = formState.waterMode === 'brand'
-    && selectedWaterBrand?.presetStatus === 'autofill';
+    && selectedWaterBrandCanAutofill;
 
   useEffect(() => {
     if (!catalog || formState.waterMode !== 'brand' || !formState.waterBrandId) return;
@@ -4409,22 +4581,23 @@ export function AiBrewPanel({
   function setWaterMode(mode: WaterMode) {
     const fallbackBrand = catalog?.waterBrands.find((item) => item.id === formState.waterBrandId);
     const fallbackPrefill = buildWaterPrefillValues(fallbackBrand);
+    const fallbackCanAutofill = isWaterBrandAutofillAllowed(fallbackBrand);
     setFormState((prev) => ({
       ...prev,
       waterMode: mode,
       waterCustomized: mode === 'manual' ? true : false,
-      waterTdsPpm: mode === 'brand' && fallbackBrand
+      waterTdsPpm: mode === 'brand' && fallbackBrand && fallbackCanAutofill
         ? fallbackPrefill.waterTdsPpm || prev.waterTdsPpm
         : prev.waterTdsPpm,
-      waterHardnessPpm: mode === 'brand' && fallbackBrand
+      waterHardnessPpm: mode === 'brand' && fallbackBrand && fallbackCanAutofill
         ? fallbackPrefill.waterHardnessPpm || prev.waterHardnessPpm
         : prev.waterHardnessPpm,
-      waterAlkalinityPpm: mode === 'brand' && fallbackBrand
+      waterAlkalinityPpm: mode === 'brand' && fallbackBrand && fallbackCanAutofill
         ? fallbackPrefill.waterAlkalinityPpm || prev.waterAlkalinityPpm
         : prev.waterAlkalinityPpm,
       waterNotes: mode === 'brand' && fallbackBrand ? (fallbackBrand.notes[0] || '') : prev.waterNotes,
     }));
-    setShowMineralEditor(mode === 'manual' || fallbackBrand?.presetStatus !== 'autofill');
+    setShowMineralEditor(mode === 'manual' || !fallbackCanAutofill);
   }
 
   function applyWaterBrandSelection(brandId: string) {
@@ -4433,6 +4606,7 @@ export function AiBrewPanel({
     if (!brand) return;
     const prefill = buildWaterPrefillValues(brand);
     const knownFieldCount = countKnownWaterFields(brand);
+    const canAutofill = isWaterBrandAutofillAllowed(brand);
 
     setFormState((prev) => ({
       ...prev,
@@ -4445,9 +4619,11 @@ export function AiBrewPanel({
       waterAlkalinityPpm: prefill.waterAlkalinityPpm,
       waterNotes: brand.notes[0] || '',
     }));
-    setShowMineralEditor(brand.presetStatus !== 'autofill');
-    if (brand.presetStatus === 'autofill') {
+    setShowMineralEditor(!canAutofill);
+    if (canAutofill) {
       setNotice(copy.waterBrandAutofilled);
+    } else if (brand.classification === 'zero_mineral_ro') {
+      setNotice(copy.waterUseAsRoBase);
     } else if (knownFieldCount > 0) {
       setNotice(copy.waterBrandPartialFilled);
     } else {
@@ -4733,12 +4909,20 @@ export function AiBrewPanel({
         ? (await deepThinkingResponseDetailed(lockedPrompt, requestContext)).text
         : await raceChatResponse(lockedPrompt, requestContext);
       const markdown = await normalizeMarkdownToLanguage(rawMarkdown, language, requestContext);
-      setAiResponse({ title: prompt.title, markdown });
-      const nextPlan = mergeAiNotesIntoPlan(plan, { [mode]: markdown });
+      const guarded = sanitizeAiCoachMarkdown({ action: mode, markdown, plan });
+      const safeMarkdown = guarded.risk === 'high'
+        ? sanitizeAiCoachMarkdown({
+            action: mode,
+            markdown: sanitizeBrewNarrative(buildDeterministicAiCoachMarkdown(plan, mode, language), plan),
+            plan,
+          }).markdown
+        : guarded.markdown;
+      setAiResponse({ title: prompt.title, markdown: safeMarkdown });
+      const nextPlan = mergeAiNotesIntoPlan(plan, { [mode]: safeMarkdown });
       setPlan(nextPlan);
       saveLastGeneratedBrewPlan(nextPlan);
       if (activeJournalId) {
-        await updateBrewJournalAiNotes(activeJournalId, { [mode]: markdown });
+        await updateBrewJournalAiNotes(activeJournalId, { [mode]: safeMarkdown });
         void syncAiBrewLibraryToCloud({
           aiBrewJournal: [{
             id: activeJournalId,
@@ -5338,7 +5522,7 @@ export function AiBrewPanel({
                                     <div className="flex flex-wrap items-center gap-2">
                                       <p className="text-sm font-semibold text-primary">{selectedWaterBrand.shortLabel}</p>
                                       <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">
-                                        {selectedWaterBrand.presetStatus === 'autofill' ? copy.waterReadyBrew : copy.waterNeedsMinerals}
+                                        {selectedWaterBrandCanAutofill ? copy.waterReadyBrew : copy.waterNeedsMinerals}
                                       </span>
                                       {isEstimatedWaterBaseline(selectedWaterBrand) && (
                                         <span className="rounded-full bg-amber-500/10 px-2 py-1 text-[11px] font-medium text-amber-700 dark:text-amber-300">
@@ -5346,10 +5530,18 @@ export function AiBrewPanel({
                                         </span>
                                       )}
                                       <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">
+                                        {formatWaterDerivationLabel(copy, selectedWaterBrand.resolvedMinerals?.derivation)}
+                                      </span>
+                                      <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">
                                       {localizeAiBrewWaterClassificationLabel(selectedWaterBrand.classificationLabel, language)}
                                       </span>
                                     </div>
                                     <p className="mt-1 text-xs text-secondary">{buildWaterChemistryLabel(selectedWaterBrand, language)}</p>
+                                    {buildWaterPolicyWarning(copy, selectedWaterBrand) && (
+                                      <p className="mt-2 rounded-xl bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+                                        {buildWaterPolicyWarning(copy, selectedWaterBrand)}
+                                      </p>
+                                    )}
                                     {waterTargetFitHint && (
                                       <div
                                         className={`mt-3 rounded-xl px-3 py-3 text-xs ${
@@ -5723,7 +5915,7 @@ export function AiBrewPanel({
               <button
                 type="button"
                 onClick={() => { void handleGeneratePlan(); }}
-                disabled={!catalog || generationBusy}
+                disabled={!catalog || generationBusy || !mineralsReady}
                 className="inline-flex h-12 min-w-[10rem] flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-[0_10px_26px_rgba(37,99,235,0.24)] transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-55 sm:flex-none"
                 data-testid="ai-brew-generate"
               >

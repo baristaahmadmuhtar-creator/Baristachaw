@@ -355,7 +355,7 @@ test('ai brew locks ice mode for methods that should stay hot or dedicated cold'
 
 test('ai brew pro keeps mineral editor collapsed by default for ready-brew brand water', async ({ page }) => {
   await openAiBrewProMode(page);
-  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
 
   await expect(page.getByTestId('ai-brew-water-toggle-minerals')).toBeVisible();
   await expect(page.getByTestId('ai-brew-water-tds')).toHaveCount(0);
@@ -369,23 +369,22 @@ test('ai brew pro keeps mineral editor collapsed by default for ready-brew brand
 
 test('ai brew water picker modal autofills a published brew-ready brand', async ({ page }) => {
   await openAiBrewQuickMode(page);
-  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Volvic Search');
-  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Aqua Search');
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
 
   const waterSummary = page.getByTestId('ai-brew-water-summary');
   await expect(waterSummary).toBeVisible();
-  await expect(waterSummary).toContainText(/TDS 130/i);
+  await expect(waterSummary).toContainText(/TDS 112/i);
   await expect(waterSummary).toContainText(/Ready brew water/i);
 
   await page.getByTestId('ai-brew-generate').click();
-  await expect(page.getByTestId('ai-brew-result')).toContainText('QA Volvic Search');
-  await expect(page.getByTestId('ai-brew-result')).toContainText('Volvic');
+  await expect(page.getByTestId('ai-brew-result')).toContainText('QA Aqua Search');
+  await expect(page.getByTestId('ai-brew-result')).toContainText('Aqua');
 });
 
 test('ai brew water picker shows all deduped waters and keeps estimated brands visible', async ({ page }) => {
   await openAiBrewQuickMode(page);
   await page.getByTestId('ai-brew-water-picker').click();
-  await expect(page.getByTestId('ai-brew-picker-option-water_brand-volvic-sg')).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-pure-life-global')).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-aqua-id')).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-cleo-id')).toBeVisible();
@@ -393,11 +392,9 @@ test('ai brew water picker shows all deduped waters and keeps estimated brands v
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-le-minerale-my')).toHaveCount(0);
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-pure-life-sg')).toHaveCount(0);
 
-  const optionOrder = await page.locator('[data-testid^="ai-brew-picker-option-water_brand-"]').evaluateAll((nodes) =>
-    nodes.map((node) => (node as HTMLElement).dataset.testid || '')
-  );
-  expect(optionOrder.indexOf('ai-brew-picker-option-water_brand-aqua-id')).toBeLessThan(optionOrder.indexOf('ai-brew-picker-option-water_brand-volvic-sg'));
-  expect(optionOrder.indexOf('ai-brew-picker-option-water_brand-cleo-id')).toBeGreaterThan(optionOrder.indexOf('ai-brew-picker-option-water_brand-pure-life-global'));
+  await page.getByTestId('ai-brew-picker-search-water_brand').fill('volvic');
+  await expect(page.getByRole('button', { name: /Select water brand Volvic.*manual minerals required/i })).toBeVisible();
+  await expect(page.getByTestId('ai-brew-picker-option-water_brand-volvic-sg')).toHaveCount(0);
 });
 
 test('ai brew selecting a published water autofills complete minerals and keeps the editor optional', async ({ page }) => {
@@ -421,28 +418,43 @@ test('ai brew preloads known GH and KH values for partially mapped waters', asyn
   await selectAiBrewWaterBrand(page, 'le', 'le-minerale-id');
 
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/Le Minerale/i);
+  await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/High alkalinity|Alkalinitas/i);
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/TDS 299/i);
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/GH 211\.1/i);
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/KH 182\.4/i);
-  await page.getByTestId('ai-brew-water-toggle-minerals').click();
-  await expect(page.getByTestId('ai-brew-water-hardness')).toHaveValue('211.1');
-  await expect(page.getByTestId('ai-brew-water-alkalinity')).toHaveValue('182.4');
+  await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/Needs minerals|Manual required/i);
+  await expect(page.getByTestId('ai-brew-generate')).toBeDisabled();
 });
 
-test('ai brew applies published mineral values for low-mineral waters', async ({ page }) => {
+test('ai brew blocks low-mineral waters until manual minerals are entered', async ({ page }) => {
   await openAiBrewProMode(page);
   await selectAiBrewWaterBrand(page, 'amidis', 'amidis-id');
 
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/Amidis/i);
-  await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/Ready brew water/i);
+  await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/Needs minerals|Manual required|Use as RO base/i);
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/TDS 2/i);
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/GH 1\.4/i);
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/KH 1\.2/i);
-  await expect(page.getByTestId('ai-brew-water-tds')).toHaveCount(0);
-  await page.getByTestId('ai-brew-water-toggle-minerals').click();
-  await expect(page.getByTestId('ai-brew-water-tds')).toHaveValue('2');
-  await expect(page.getByTestId('ai-brew-water-hardness')).toHaveValue('1.4');
-  await expect(page.getByTestId('ai-brew-water-alkalinity')).toHaveValue('1.2');
+  await expect(page.getByTestId('ai-brew-generate')).toBeDisabled();
+  await expect(page.getByTestId('ai-brew-water-tds')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-water-tds')).toHaveValue('');
+  await expect(page.getByTestId('ai-brew-water-hardness')).toHaveValue('');
+  await expect(page.getByTestId('ai-brew-water-alkalinity')).toHaveValue('');
+
+  await setVisibleInputValue(page, 'ai-brew-water-tds', '85');
+  await setVisibleInputValue(page, 'ai-brew-water-hardness', '55');
+  await setVisibleInputValue(page, 'ai-brew-water-alkalinity', '38');
+  await expect(page.getByTestId('ai-brew-generate')).toBeEnabled();
+});
+
+test('ai brew labels estimated water as manual verification only', async ({ page }) => {
+  await openAiBrewProMode(page);
+  await selectAiBrewWaterBrand(page, 'heysong', 'heysong-water-sg');
+
+  await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/HeySong/i);
+  await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/Estimated.*verify manually|Estimated.*manual/i);
+  await expect(page.getByTestId('ai-brew-generate')).toBeDisabled();
+  await expect(page.getByText(/local:\/Users\/Alpha/i)).toHaveCount(0);
 });
 
 test('ai brew pro bean profile updates the analysis state while quick stays minimal', async ({ page }) => {
@@ -466,7 +478,7 @@ test('ai brew generates a hot brew plan and saves it to collection', async ({ pa
   await openAiBrewQuickMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Ethiopia Chelbesa');
   await page.getByTestId('ai-brew-dose').fill('18');
-  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const result = page.getByTestId('ai-brew-result');
@@ -497,7 +509,7 @@ test('ai brew quick and pro modes honor target profile changes in the generated 
 
   await openAiBrewQuickMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Target Quick');
-  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByRole('button', { name: /More Acidity|Lebih Cerah/i }).click();
   await page.getByTestId('ai-brew-generate').click();
 
@@ -515,7 +527,7 @@ test('ai brew quick and pro modes honor target profile changes in the generated 
 
   await openAiBrewProMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Target Pro');
-  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByRole('button', { name: /More Body|Body Lebih Tebal/i }).click();
   await page.getByTestId('ai-brew-generate').click();
 
@@ -567,7 +579,7 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
   await page.getByTestId('ai-brew-builder-mode-iced').click();
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Quick Ice Split');
   await page.getByTestId('ai-brew-dose').fill('20');
-  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
   const quickPlan = await assertIcedResult('QA Quick Ice Split');
 
@@ -576,7 +588,7 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
   await page.getByTestId('ai-brew-builder-mode-iced').click();
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Pro Ice Split');
   await page.getByTestId('ai-brew-dose').fill('20');
-  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByRole('button', { name: /More Body|Body Lebih Tebal/i }).click();
   await page.getByTestId('ai-brew-generate').click();
   const proPlan = await assertIcedResult('QA Pro Ice Split');
@@ -592,7 +604,7 @@ test('ai brew can hand off an iced plan into timer and ratio tools', async ({ pa
   await page.getByTestId('ai-brew-builder-mode-iced').click();
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Iced Gesha');
   await page.getByTestId('ai-brew-dose').fill('20');
-  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const result = page.getByTestId('ai-brew-result');
@@ -609,7 +621,7 @@ test('ai brew can hand off an iced plan into timer and ratio tools', async ({ pa
   await page.getByTestId('ai-brew-builder-mode-iced').click();
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Iced Gesha');
   await page.getByTestId('ai-brew-dose').fill('20');
-  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
   const ratioPlan = await readStoredAiBrewPlan(page);
   await page.getByTestId('ai-brew-use-ratio').click();
@@ -645,7 +657,7 @@ test('authenticated users can request ai coaching manually from the result panel
 
   await openAiBrewQuickMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Manual Coach');
-  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
   await expect(page.getByTestId('ai-brew-result')).toBeVisible();
   await expect(page.getByTestId('ai-brew-sequence-note')).toContainText(AI_BREW_SEQUENCE_HEADING);
@@ -654,6 +666,33 @@ test('authenticated users can request ai coaching manually from the result panel
   await page.getByRole('button', { name: AI_BREW_EXPLAIN_PLAN }).click();
   await expect(page.getByText(/Mocked Response/i).first()).toBeVisible();
   await expect(page.getByText(/qa_e2e mocked response for UI flow validation/i).first()).toBeVisible();
+});
+
+test('ai brew coach guard blocks unsafe AI claims and keeps deterministic values', async ({ page }) => {
+  await openAiBrewQuickMode(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'Bolinda Caranavi Coach Guard');
+  await switchAiBrewToManualWater(page, { tds: '9', hardness: '6.6', alkalinity: '5.5' });
+  await page.getByTestId('ai-brew-generate').click();
+  await expect(page.getByTestId('ai-brew-result')).toBeVisible({ timeout: 30_000 });
+  const plan = await readStoredAiBrewPlan(page);
+
+  await page.unroute('**/api/chat');
+  await page.route('**/api/chat', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/plain',
+      body: `### Kenapa cocok\nGeisha washed ini memakai ideal water. Profil exact. Total water 999 ml. Suhu 99C. Grind setting 9.`,
+    });
+  });
+
+  await page.getByTestId('ai-brew-result-tab-coach').click();
+  await expect(page.getByText(/Coach follows the deterministic planner|Coach mengikuti planner deterministic/i)).toBeVisible();
+  await page.getByRole('button', { name: AI_BREW_EXPLAIN_PLAN }).click();
+  const coachPanel = page.locator('.chat-markdown').last();
+  await expect(coachPanel).toBeVisible({ timeout: 30_000 });
+  await expect(coachPanel).not.toContainText(/Geisha|Gesha|ideal water|Profil exact|999 ml|setting 9/i);
+  await expect(coachPanel).toContainText(new RegExp(String(plan.totalWaterMl)));
+  await expect(coachPanel).toContainText(/Kalibrasi dengan drawdown dan rasa|calibrate by drawdown and taste|planner/i);
 });
 
 test('ai brew discloses exact-profile provenance when a niche dripper now has a curated match', async ({ page }) => {
@@ -675,7 +714,7 @@ test('ai brew discloses exact-profile provenance when a niche dripper now has a 
 test('ai brew restores cached catalog and last plan when catalog assets are unavailable after warm load', async ({ page, context }) => {
   await openAiBrewQuickMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Offline Cache');
-  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
   await expect(page.getByTestId('ai-brew-result')).toContainText('QA Offline Cache');
   await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
@@ -690,7 +729,7 @@ test('ai brew restores cached catalog and last plan when catalog assets are unav
 
   await openAiBrewQuickMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Offline Reload');
-  await selectAiBrewWaterBrand(page, 'volvic', 'volvic-sg');
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
   await expect(page.getByTestId('ai-brew-result')).toContainText('QA Offline Reload');
   await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();

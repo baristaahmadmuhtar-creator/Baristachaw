@@ -62,7 +62,7 @@ interface CsvRow {
 const ROOT = path.resolve(process.cwd());
 const WATERS_PATH = path.join(ROOT, 'data/catalog/normalized/phase1/waters.json');
 const CSV_PATH = 'C:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv';
-const CSV_SOURCE_URL = 'local:/Users/Alpha/Downloads/Global___Indonesia_Bottled_Water_Dataset__TDS__GH__KH_.csv';
+const CSV_SOURCE_URL = 'local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-global-water-gh-kh';
 
 function slugify(value: string) {
   return value
@@ -110,10 +110,10 @@ function computeRecommendation(tds: number, gh: number, kh: number, hasCriticalF
 
 function makeSource(nowIso: string): CatalogSource {
   return {
-    source_type: 'official_report',
+    source_type: 'catalog_seed',
     source_url: CSV_SOURCE_URL,
     collected_at: nowIso,
-    confidence_score: 0.95,
+    confidence_score: 0.7,
   };
 }
 

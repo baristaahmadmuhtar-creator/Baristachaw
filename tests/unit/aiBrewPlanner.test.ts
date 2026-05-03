@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {
   applyAiBrewOptimizationPatch,
   buildAiBrewPlan,
@@ -31,6 +32,10 @@ import {
   saveCachedAiBrewCatalogSnapshot,
   saveLastGeneratedBrewPlan,
 } from '../../apps/web/src/features/ai-brew/storage.ts';
+import { buildGenerateBriefPrompt } from '../../apps/web/src/features/ai-brew/prompts.ts';
+import { resolveBrewerProfileTrustStatus } from '../../apps/web/src/features/ai-brew/catalogTrust.ts';
+import { sanitizeBrewNarrative, validateBrewPlanOutput } from '../../apps/web/src/features/ai-brew/antiHallucination.ts';
+import { sanitizeAiCoachMarkdown } from '../../apps/web/src/features/ai-brew/coachGuard.ts';
 import type { AiBrewCatalog, AiBrewFormState, AiBrewMethodFamily } from '../../apps/web/src/features/ai-brew/types.ts';
 import type { BrewMethodId } from '../../apps/web/src/features/barista-tools/types.ts';
 
@@ -124,6 +129,30 @@ const catalog: AiBrewCatalog = {
         medium: '8 - 10 clicks',
         fine: '5 - 7 clicks',
         parsedMedium: parseNumericRange('8 - 10 clicks'),
+      },
+    },
+    {
+      id: 'feima-600n',
+      kind: 'grinder',
+      name: 'Feima 600N',
+      brand: 'Feima',
+      typeLabel: 'Electric flat burr',
+      description: '600N platform baseline.',
+      searchText: 'feima 600n latina flying eagle',
+      catalogVersion: 'test-v2',
+      source: 'test',
+      sourceUrls: ['https://example.com/600n'],
+      verificationLevel: 'curated',
+      verifiedAt: '2026-03-09',
+      popularityTier: 'widely_used',
+      marketSegment: 'mass_market',
+      releaseStatus: 'established',
+      confidence: 'medium',
+      grindBands: {
+        coarse: 'setting 5-0',
+        medium: 'setting 4-5',
+        fine: 'setting 4-4',
+        parsedMedium: parseNumericRange('4 - 5 setting'),
       },
     },
   ],
@@ -310,6 +339,90 @@ const catalog: AiBrewCatalog = {
       confidence: 'medium',
       catalogVersion: 'test-v2',
     },
+    {
+      id: 'amidis-id',
+      brandGroupId: 'amidis',
+      marketCode: 'id',
+      skuLabel: 'Amidis Indonesia',
+      label: 'Amidis Indonesia',
+      shortLabel: 'Amidis',
+      subtitle: 'Indonesia · low-mineral water',
+      country: 'Indonesia',
+      markets: ['id'],
+      searchText: 'amidis indonesia ro low mineral water',
+      description: 'Low-mineral water must be remineralized before brewing.',
+      notes: ['Water is too low-mineral for ready-brew use; add minerals manually.'],
+      presetStatus: 'manual_required',
+      publishState: 'review_only',
+      isBrewReady: false,
+      brewBlockReason: ['Water is too low-mineral for ready-brew use; add minerals manually.'],
+      still: true,
+      recommendedForFilter: false,
+      classification: 'zero_mineral_ro',
+      classificationLabel: 'Zero mineral / RO',
+      classificationNote: 'Use as a remineralization base.',
+      classificationCaution: 'Add minerals manually before generating a plan.',
+      chemistry: {
+        tdsPpm: 2,
+        hardnessPpm: 1.4,
+        alkalinityPpm: 1.2,
+      },
+      resolvedMinerals: {
+        tdsPpm: 2,
+        hardnessPpm: 1.4,
+        alkalinityPpm: 1.2,
+        derivation: 'direct',
+      },
+      source: 'test',
+      sourceUrls: ['local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#amidis-id'],
+      verificationLevel: 'dataset_unverified',
+      verifiedAt: '2026-03-09',
+      popularityTier: 'widely_used',
+      marketSegment: 'mass_market',
+      releaseStatus: 'established',
+      confidence: 'low',
+      catalogVersion: 'test-v2',
+    },
+    {
+      id: 'estimated-water',
+      brandGroupId: 'estimated-water',
+      marketCode: 'global',
+      skuLabel: 'Estimated Water',
+      label: 'Estimated Water',
+      shortLabel: 'Estimated Water',
+      subtitle: 'Global · estimated baseline',
+      country: 'Unknown',
+      markets: ['global'],
+      searchText: 'estimated water baseline',
+      description: 'Estimated data must be verified manually.',
+      notes: ['Estimated water values must be verified manually before ready-brew use.'],
+      presetStatus: 'manual_required',
+      publishState: 'review_only',
+      isBrewReady: false,
+      brewBlockReason: ['Estimated water values must be verified manually before ready-brew use.'],
+      still: true,
+      recommendedForFilter: false,
+      classification: 'balanced',
+      classificationLabel: 'Estimated baseline',
+      classificationNote: 'Estimated values are only a placeholder.',
+      classificationCaution: 'Verify manually before brewing.',
+      chemistry: {},
+      resolvedMinerals: {
+        tdsPpm: 100,
+        hardnessPpm: 55,
+        alkalinityPpm: 40,
+        derivation: 'estimated_from_classification',
+      },
+      source: 'test',
+      sourceUrls: ['local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#estimated-water'],
+      verificationLevel: 'dataset_unverified',
+      verifiedAt: '2026-03-09',
+      popularityTier: 'niche',
+      marketSegment: 'mass_market',
+      releaseStatus: 'established',
+      confidence: 'low',
+      catalogVersion: 'test-v2',
+    },
   ],
   waterGuidance: {
     id: 'manual-water',
@@ -490,6 +603,24 @@ const catalog: AiBrewCatalog = {
       marketSegment: 'specialty_mainstream',
       releaseStatus: 'established',
       confidence: 'high',
+      catalogVersion: 'test-v2',
+    },
+    {
+      id: 'gs_feima_600n_cone',
+      grinderId: 'feima-600n',
+      brewMode: 'both',
+      profileIds: ['profile_family_v60_hot', 'profile_family_v60_iced'],
+      rangeLabel: 'setting 4-5',
+      parsedRange: parseNumericRange('4 - 5 setting'),
+      note: 'Curated 600N platform filter baseline.',
+      source: 'test',
+      sourceUrls: ['https://example.com/600n-grind'],
+      verificationLevel: 'curated',
+      verifiedAt: '2026-03-09',
+      popularityTier: 'widely_used',
+      marketSegment: 'mass_market',
+      releaseStatus: 'established',
+      confidence: 'medium',
       catalogVersion: 'test-v2',
     },
   ],
@@ -980,6 +1111,362 @@ test('barista evaluation calibration tunes temperature and practical step detail
   }, fullCatalog);
   assert.ok(aprilColombiaIced.waterTempC >= 93 && aprilColombiaIced.waterTempC <= 95);
   assert.match(collectPlanNarrative(aprilColombiaIced), /short pulses|measured ice/i);
+});
+
+test('V60 More Sweetness calibration handles Japanese iced, hot, water, grind, prompt, and trust labels', () => {
+  const iced = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'iced',
+    coffeeName: 'Bolinda, Caranavi, La Paz',
+    doseG: '15',
+    roastLevel: 'medium',
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'more_sweetness',
+    waterMode: 'manual',
+    waterTdsPpm: '9',
+    waterHardnessPpm: '6.6',
+    waterAlkalinityPpm: '5.5',
+    pourStyle: 'balanced',
+    pourCount: '3',
+  }, catalog);
+
+  assert.equal(iced.hotWaterMl, 135);
+  assert.equal(iced.iceMl, 70);
+  assert.ok(iced.finalBeverageRatio >= 13.4 && iced.finalBeverageRatio <= 13.8);
+  assert.ok(iced.hotExtractionRatio >= 8.9 && iced.hotExtractionRatio <= 9.1);
+  assert.ok(iced.waterTempC >= 93 && iced.waterTempC <= 95);
+  assert.ok(iced.totalTimeSeconds >= 185 && iced.totalTimeSeconds <= 205);
+  assert.equal(iced.steps.filter((step) => step.pourVolumeMl > 0).length, 3);
+  assert.ok(iced.estimatedCupOutputMl < iced.totalWaterMl);
+  assert.equal(iced.hotWaterMl + iced.iceMl, iced.totalWaterMl);
+  assert.ok(iced.warnings.join(' ').toLowerCase().includes('hardness'));
+
+  const hot = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'hot',
+    coffeeName: 'Bolinda, Caranavi, La Paz',
+    doseG: '15',
+    roastLevel: 'medium',
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'more_sweetness',
+    waterMode: 'manual',
+    waterTdsPpm: '9',
+    waterHardnessPpm: '6.6',
+    waterAlkalinityPpm: '5.5',
+  }, catalog);
+  assert.ok(hot.totalWaterMl >= 225 && hot.totalWaterMl <= 235);
+  assert.ok(hot.finalBeverageRatio >= 15.0 && hot.finalBeverageRatio <= 15.7);
+  assert.ok(hot.waterTempC >= 92 && hot.waterTempC <= 94);
+  assert.ok(hot.totalTimeSeconds >= 170 && hot.totalTimeSeconds <= 185);
+
+  const normalWaterHot = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'hot',
+    coffeeName: 'Bolinda, Caranavi, La Paz',
+    doseG: '15',
+    roastLevel: 'medium',
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'more_sweetness',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, catalog);
+  assert.ok(normalWaterHot.totalWaterMl >= 225 && normalWaterHot.totalWaterMl <= 235);
+  assert.ok(normalWaterHot.waterTempC >= 92 && normalWaterHot.waterTempC <= 94);
+  assert.ok(normalWaterHot.totalTimeSeconds >= 170 && normalWaterHot.totalTimeSeconds <= 185);
+
+  const promptWithoutVariety = buildGenerateBriefPrompt(iced, 'id');
+  assert.doesNotMatch(promptWithoutVariety.body, /geisha|gesha/i);
+
+  const geishaPlan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'iced',
+    coffeeName: 'Panama Boquete',
+    doseG: '15',
+    roastLevel: 'light',
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'more_sweetness',
+    variety: 'geisha',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, catalog);
+  assert.match(buildGenerateBriefPrompt(geishaPlan, 'id').body, /geisha|gesha/i);
+
+  const feimaPlan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    coffeeName: 'Bolinda, Caranavi, La Paz',
+    doseG: '15',
+    dripperId: 'hario-v60',
+    grinderId: 'feima-600n',
+    targetProfileId: 'more_sweetness',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, catalog);
+  assert.match(feimaPlan.grindRecommendation, /Gilingan awal|Starting grind/i);
+  assert.doesNotMatch(feimaPlan.grindRecommendation, /Gilingan:\s*setting 4-4[\s\S]*Sumber.*setting 4-5/i);
+
+  assert.equal(resolveBrewerProfileTrustStatus({ deviceProfileMode: 'exact', exactMatch: true, confidence: 'high' }), 'exact');
+  assert.equal(resolveBrewerProfileTrustStatus({ deviceProfileMode: 'derived_template', confidence: 'medium' }), 'derived');
+  assert.equal(resolveBrewerProfileTrustStatus({ deviceProfileMode: 'family_fallback', confidence: 'low' }), 'calibration_required');
+});
+
+test('AI Brew anti-hallucination guard sanitizes unsafe narrative claims', () => {
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'iced',
+    coffeeName: 'Bolinda, Caranavi, La Paz',
+    doseG: '15',
+    process: '',
+    variety: '',
+    roastLevel: 'medium',
+    dripperId: 'latina-cono',
+    grinderId: 'feima-600n',
+    targetProfileId: 'more_sweetness',
+    waterMode: 'manual',
+    waterTdsPpm: '9',
+    waterHardnessPpm: '6.6',
+    waterAlkalinityPpm: '5.5',
+  }, catalog);
+
+  const unsafe = [
+    `Kopi Geisha washed dari farm altitude 2200m.`,
+    `Air ideal ready brew dengan hasil cangkir final ${plan.totalWaterMl} ml.`,
+    'Official grind reference dan Profil exact.',
+  ].join('\n');
+  const sanitized = sanitizeBrewNarrative(unsafe, plan);
+  assert.doesNotMatch(sanitized, /geisha|gesha/i);
+  assert.doesNotMatch(sanitized, /\bwashed\b/i);
+  assert.doesNotMatch(sanitized, /official grind reference/i);
+  assert.doesNotMatch(sanitized, /Profil exact/i);
+  assert.match(sanitized, new RegExp(`${plan.estimatedCupOutputMl}|retensi kopi`));
+
+  const validation = validateBrewPlanOutput(plan);
+  assert.equal(validation.allowed, true);
+});
+
+test('AI Brew coach guard preserves deterministic grind, water, brewer, and recipe numbers', () => {
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'iced',
+    coffeeName: 'Bolinda, Caranavi, La Paz',
+    doseG: '15',
+    process: '',
+    variety: '',
+    roastLevel: 'medium',
+    dripperId: 'latina-cono',
+    grinderId: 'feima-600n',
+    targetProfileId: 'more_sweetness',
+    waterMode: 'manual',
+    waterTdsPpm: '9',
+    waterHardnessPpm: '6.6',
+    waterAlkalinityPpm: '5.5',
+  }, catalog);
+
+  const explain = sanitizeAiCoachMarkdown({
+    action: 'explain',
+    plan,
+    markdown: '### Kenapa cocok\nSuhu 99C, total water 300 ml, grind setting 9 untuk Geisha. Air ideal. Profil exact.',
+  });
+  assert.equal(explain.risk, 'high');
+  assert.match(explain.markdown, new RegExp(`${plan.waterTempC}`));
+  assert.match(explain.markdown, new RegExp(`${plan.totalWaterMl}`));
+  assert.match(explain.markdown, /setting 4-5/i);
+  assert.doesNotMatch(explain.markdown, /geisha|gesha/i);
+  assert.doesNotMatch(explain.markdown, /Air ideal|Profil exact/i);
+  assert.match(explain.markdown, /Kalibrasi dengan drawdown dan rasa/i);
+
+  const troubleshoot = sanitizeAiCoachMarkdown({
+    action: 'troubleshoot',
+    plan,
+    markdown: 'Jika asam: ganti ke setting 9 dan ubah suhu 99C. Jika pahit: tambah bypass 50 ml.',
+  });
+  assert.match(troubleshoot.markdown, /Mulai dari perubahan terkecil dulu/i);
+  assert.match(troubleshoot.markdown, /setting 4-5/i);
+  assert.equal(troubleshoot.risk, 'high');
+
+  const fallback = troubleshoot.risk === 'high'
+    ? buildDeterministicAiCoachMarkdown(plan, 'troubleshoot', 'id')
+    : troubleshoot.markdown;
+  assert.doesNotMatch(fallback, /bypass 50/i);
+});
+
+function readJsonItems<T>(filePath: string): T[] {
+  const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8')) as { items?: T[] };
+  return Array.isArray(parsed.items) ? parsed.items : [];
+}
+
+function catalogSlug(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .slice(0, 80);
+}
+
+function explicitNonNumericRange(label: string) {
+  return /reference official grinder chart|official stepped settings|manual setting required/i.test(label);
+}
+
+test('AI Brew grinder catalog publish rules keep sources, references, and ranges auditable', () => {
+  type RawGrinder = {
+    name?: string;
+    source?: string;
+    sourceUrl?: string;
+    sourceUrls?: string[];
+    verificationLevel?: string;
+    confidence?: string;
+    medium?: string;
+  };
+  type GrinderSetting = {
+    grinderId?: string;
+    profileIds?: string[];
+    rangeLabel?: string;
+  };
+  type DeviceProfile = { id?: string };
+  const grinders = readJsonItems<RawGrinder>('apps/web/public/data/ai-brew/grinders.v2026-03.json');
+  const settings = readJsonItems<GrinderSetting>('apps/web/public/data/ai-brew/grinder-settings.v2026-06.json');
+  const profiles = readJsonItems<DeviceProfile>('apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json');
+  const grinderIds = new Set(grinders.map((item) => catalogSlug(String(item.name || ''))));
+  const profileIds = new Set(profiles.map((item) => item.id).filter(Boolean));
+
+  for (const grinder of grinders) {
+    const urls = [...(grinder.sourceUrls || []), ...(grinder.sourceUrl ? [grinder.sourceUrl] : [])];
+    if (grinder.verificationLevel === 'official' || grinder.source === 'official_2026') {
+      assert.ok(urls.length > 0, `${grinder.name} official grinder needs sourceUrls`);
+    }
+    if (grinder.source === 'user_dataset' && urls.length === 0) {
+      assert.equal(grinder.verificationLevel, 'dataset_unverified', `${grinder.name} user dataset must stay unverified`);
+      assert.equal(grinder.confidence, 'low', `${grinder.name} user dataset must stay low confidence`);
+    }
+    if (grinder.medium) {
+      assert.ok(parseNumericRange(grinder.medium) || explicitNonNumericRange(grinder.medium), `${grinder.name} has unparseable medium band`);
+    }
+  }
+
+  for (const setting of settings) {
+    assert.ok(grinderIds.has(String(setting.grinderId)), `${setting.grinderId} setting references missing grinder`);
+    for (const profileId of setting.profileIds || []) {
+      assert.ok(profileIds.has(profileId), `${setting.grinderId} references missing profile ${profileId}`);
+    }
+    if (setting.rangeLabel) {
+      assert.ok(parseNumericRange(setting.rangeLabel) || explicitNonNumericRange(setting.rangeLabel), `${setting.grinderId} has unparseable rangeLabel`);
+    }
+  }
+
+  const kUltra = grinders.find((item) => item.name === '1Zpresso K-Ultra');
+  assert.equal(kUltra?.medium, '8.0 - 9.0 numbers');
+  const breville = grinders.find((item) => item.name === 'Breville Smart Grinder Pro');
+  assert.equal(breville?.medium, 'Setting 40 - 50');
+});
+
+test('AI Brew water catalog blocks private sources, zero-mineral autofill, and estimated facts', () => {
+  type RawWater = {
+    id?: string;
+    brand_group_id?: string;
+    source_url?: string;
+    is_brew_ready?: boolean;
+    tds_ppm?: number | null;
+    publish_state?: string;
+    primary_source?: { source_url?: string };
+    sources?: Array<{ source_url?: string }>;
+    data_quality?: { is_estimated?: boolean };
+    coffee_parameters?: {
+      hardness_ppm_as_caco3?: number | null;
+      alkalinity_ppm_as_caco3?: number | null;
+      brew_recommendation?: string;
+    };
+  };
+  const waters = readJsonItems<RawWater>('apps/web/public/data/catalog/phase1/waters.catalog.json');
+  const allSourceUrls = waters.flatMap((entry) => [
+    ...(entry.sources || []).map((source) => source.source_url || ''),
+    entry.primary_source?.source_url || '',
+  ]);
+  assert.ok(allSourceUrls.every((url) => !/^local:\/Users\/Alpha\//i.test(url)));
+
+  for (const entry of waters) {
+    const tds = typeof entry.tds_ppm === 'number' ? entry.tds_ppm : null;
+    const gh = typeof entry.coffee_parameters?.hardness_ppm_as_caco3 === 'number'
+      ? entry.coffee_parameters.hardness_ppm_as_caco3
+      : null;
+    const kh = typeof entry.coffee_parameters?.alkalinity_ppm_as_caco3 === 'number'
+      ? entry.coffee_parameters.alkalinity_ppm_as_caco3
+      : null;
+    const isLowMineral = (tds !== null && tds <= 20) || (gh !== null && gh <= 15) || (kh !== null && kh <= 10);
+    if (isLowMineral || ['amidis', 'air-alfamart', 'cleo', 'suci', 'rivero'].includes(String(entry.brand_group_id))) {
+      assert.equal(entry.is_brew_ready, false, `${entry.id} low-mineral water must not be ready`);
+      assert.equal(entry.coffee_parameters?.brew_recommendation, 'poor', `${entry.id} low-mineral water must be poor/manual`);
+    }
+    if (entry.data_quality?.is_estimated) {
+      assert.equal(entry.is_brew_ready, false, `${entry.id} estimated water must not be ready`);
+      assert.notEqual(entry.publish_state, 'published', `${entry.id} estimated water must not be published as fact`);
+    }
+  }
+});
+
+test('AI Brew planner requires manual minerals for blocked or estimated water brands', () => {
+  assert.throws(() => buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    waterMode: 'brand',
+    waterBrandId: 'amidis-id',
+    waterTdsPpm: '',
+    waterHardnessPpm: '',
+    waterAlkalinityPpm: '',
+  }, catalog), /Water TDS/);
+
+  const remineralizedAmidis = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    coffeeName: 'Manual minerals after Amidis',
+    waterMode: 'brand',
+    waterBrandId: 'amidis-id',
+    waterTdsPpm: '85',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '38',
+    waterCustomized: true,
+  }, catalog);
+  assert.equal(remineralizedAmidis.waterMineralDerivation, 'manual');
+  assert.equal(remineralizedAmidis.waterIsBrewReady, false);
+  assert.match(remineralizedAmidis.warnings.join(' '), /too low-mineral|add minerals/i);
+  assert.ok(remineralizedAmidis.waterBrandSourceUrls.every((url) => !/^local:\/Users\/Alpha\//i.test(url)));
+
+  assert.throws(() => buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    waterMode: 'brand',
+    waterBrandId: 'estimated-water',
+    waterTdsPpm: '',
+    waterHardnessPpm: '',
+    waterAlkalinityPpm: '',
+  }, catalog), /Water TDS/);
+
+  const verifiedEstimatedWater = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    coffeeName: 'Manually verified estimated water',
+    waterMode: 'brand',
+    waterBrandId: 'estimated-water',
+    waterTdsPpm: '100',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+    waterCustomized: true,
+  }, catalog);
+  assert.equal(verifiedEstimatedWater.waterMineralDerivation, 'manual');
+  assert.match(verifiedEstimatedWater.warnings.join(' '), /Estimated, verify manually/i);
+
+  const evian = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    coffeeName: 'Evian provenance test',
+    waterMode: 'brand',
+    waterBrandId: 'evian-sg',
+  }, catalog);
+  assert.equal(evian.waterMineralDerivation, 'derived_from_ions');
+  assert.match(evian.warnings.join(' '), /High alkalinity|buffer/i);
 });
 
 test('AI Brew optimizer can adjust iced plans without breaking planner guardrails', () => {

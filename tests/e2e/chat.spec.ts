@@ -69,15 +69,145 @@ test('supports send message, mode switch, save/copy actions', async ({ page }) =
   await page.getByLabel(flashModeLabel).click();
   await page.getByLabel(normalModeLabel).click();
   await page.getByLabel(deepModeLabel).click();
+  await page.getByLabel(normalModeLabel).click();
 
   const input = page.getByPlaceholder(chatInputPlaceholder);
   await expect(input).toBeEnabled({ timeout: 30_000 });
   await input.fill('qa_e2e please provide recipe');
   await page.getByLabel(sendMessageLabel).click();
 
-  await expect(page.locator('.chat-markdown').last()).toContainText(/mock default|Mocked Response|Mocked AI|TL;DR/i, { timeout: 30_000 });
+  await expect(page.locator('.chat-markdown').last()).toContainText(/mock default|Mocked Response|Mocked AI|TL;DR|Normal Mode/i, { timeout: 30_000 });
 
   await page.locator('[title="Copy"], [title="Salin"]').last().click();
+});
+
+test('fast mode relevance guard answers method comparison without stale recipe template', async ({ page }) => {
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await page.route('**/api/ai', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        action: 'fast',
+        text: [
+          '- V60: clarity tinggi; air balanced, gilingan medium-fine, suhu 92-94C, waktu 2:30-3:05.',
+          '- Chemex: cup bersih-body ringan; air jangan terlalu low mineral, gilingan medium, suhu 93-95C, waktu 3:30-4:30.',
+          '- Kalita: sweetness stabil; air balanced, gilingan medium, suhu 92-94C, waktu 2:45-3:30.',
+          '- AeroPress: body lebih tebal; air fleksibel, gilingan medium-fine, suhu 85-92C, waktu 1:30-2:30.',
+        ].join('\n'),
+      }),
+    });
+  });
+  await page.goto('/chat', { waitUntil: 'domcontentloaded' });
+  await page.getByLabel(flashModeLabel).click();
+  const input = page.getByPlaceholder(chatInputPlaceholder);
+  await expect(input).toBeEnabled({ timeout: 30_000 });
+  await input.fill('Bandingkan V60, Chemex, Kalita, AeroPress dari profil rasa, air, grind, suhu, waktu.');
+  await page.getByLabel(sendMessageLabel).click();
+
+  const answer = page.locator('.chat-markdown').last();
+  await expect(answer).toContainText(/V60/i, { timeout: 30_000 });
+  await expect(answer).toContainText(/Chemex/i);
+  await expect(answer).toContainText(/Kalita/i);
+  await expect(answer).toContainText(/AeroPress/i);
+  await expect(answer).not.toContainText(/Ethiopia Yirgacheffe/i);
+});
+
+test('normal and deep mode contracts stay relevant for method comparison', async ({ page }) => {
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await page.route('**/api/ai', async (route) => {
+    const body = route.request().postDataJSON() as { action?: string };
+    const text = body.action === 'deep_think'
+      ? [
+          'Jawaban singkat: V60 paling clarity, Chemex paling bersih, Kalita paling manis stabil, AeroPress paling body.',
+          '',
+          '## Analisis',
+          '- V60: profil rasa clean; air balanced, grind medium-fine, suhu 92-94C, waktu 2:30-3:05.',
+          '- Chemex: profil rasa ringan dan bersih; air jangan terlalu soft, grind medium, suhu 93-95C, waktu 3:30-4:30.',
+          '- Kalita: sweetness dan body stabil; air balanced, grind medium, suhu 92-94C, waktu 2:45-3:30.',
+          '- AeroPress: body dan sweetness cepat; air fleksibel, grind medium-fine, suhu 85-92C, waktu 1:30-2:30.',
+          '',
+          '## Trade-off / Risiko',
+          '- Chemex mudah stall; AeroPress mudah over-agitate.',
+          '',
+          '## Rekomendasi',
+          '- Untuk clean pilih V60/Chemex, untuk stabil pilih Kalita, untuk body pilih AeroPress.',
+        ].join('\n')
+      : [
+          '## Perbandingan',
+          '| Metode | Profil rasa | Air | Grind | Suhu | Waktu |',
+          '|---|---|---|---|---|---|',
+          '| V60 | clarity | balanced | medium-fine | 92-94C | 2:30-3:05 |',
+          '| Chemex | clean ringan | balanced | medium | 93-95C | 3:30-4:30 |',
+          '| Kalita | sweet stabil | balanced | medium | 92-94C | 2:45-3:30 |',
+          '| AeroPress | body tebal | fleksibel | medium-fine | 85-92C | 1:30-2:30 |',
+        ].join('\n');
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, text }) });
+  });
+  await page.goto('/chat', { waitUntil: 'domcontentloaded' });
+
+  const prompt = 'Bandingkan V60, Chemex, Kalita, AeroPress dari profil rasa, air, grind, suhu, waktu.';
+  const input = page.getByPlaceholder(chatInputPlaceholder);
+  await expect(input).toBeEnabled({ timeout: 30_000 });
+  await input.fill(prompt);
+  await page.getByLabel(sendMessageLabel).click();
+  await expect(page.locator('.chat-markdown').last()).toContainText(/Perbandingan/i, { timeout: 30_000 });
+  await expect(page.locator('.chat-markdown').last()).toContainText(/AeroPress/i);
+
+  const previousAnswerCount = await page.locator('.chat-markdown').count();
+  await page.getByLabel(deepModeLabel).click();
+  await expect(input).toBeEnabled({ timeout: 30_000 });
+  await input.click();
+  await input.fill(prompt);
+  await page.getByLabel(sendMessageLabel).click();
+  await expect(page.locator('.chat-markdown')).toHaveCount(previousAnswerCount + 1, { timeout: 30_000 });
+  const deepAnswer = page.locator('.chat-markdown').last();
+  await expect(deepAnswer).toContainText(/Jawaban singkat/i, { timeout: 30_000 });
+  await expect(deepAnswer).toContainText(/Analisis/i);
+  await expect(deepAnswer).toContainText(/V60/i);
+  await expect(deepAnswer).toContainText(/Chemex/i);
+  await expect(deepAnswer).toContainText(/Kalita/i);
+  await expect(deepAnswer).toContainText(/AeroPress/i);
+  await expect(deepAnswer).not.toContainText(/wizard/i);
+});
+
+test('irrelevance and current-data guards regenerate or fall back safely', async ({ page }) => {
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  let apiCall = 0;
+  await page.route('**/api/ai', async (route) => {
+    apiCall += 1;
+    const body = route.request().postDataJSON() as { prompt?: string };
+    const prompt = String(body.prompt || '');
+    if (prompt.includes('harga terbaru')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, text: 'Harga terbaru kopi X hari ini Rp123.000.' }),
+      });
+      return;
+    }
+    const text = apiCall === 1 && !prompt.includes('Jawab pertanyaan user secara langsung')
+      ? 'Resep V60 Ethiopia Yirgacheffe: gunakan 15g kopi dan 240g air.'
+      : 'V60, Chemex, Kalita, dan AeroPress berbeda pada profil rasa, air, grind, suhu, dan waktu; pilih V60 untuk clarity, Chemex untuk clean cup, Kalita untuk sweetness stabil, AeroPress untuk body.';
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, text }) });
+  });
+  await page.goto('/chat', { waitUntil: 'domcontentloaded' });
+
+  const input = page.getByPlaceholder(chatInputPlaceholder);
+  await expect(input).toBeEnabled({ timeout: 30_000 });
+  await input.fill('Bandingkan V60, Chemex, Kalita, AeroPress dari profil rasa, air, grind, suhu, waktu.');
+  await page.getByLabel(sendMessageLabel).click();
+  const correctedAnswer = page.locator('.chat-markdown').last();
+  await expect(correctedAnswer).toContainText(/Chemex/i, { timeout: 30_000 });
+  await expect(correctedAnswer).not.toContainText(/Ethiopia Yirgacheffe/i);
+  await expect(page.getByText(/regenerated:\s*yes/i).last()).toBeVisible();
+
+  await input.fill('Berapa harga terbaru kopi X hari ini?');
+  await page.getByLabel(sendMessageLabel).click();
+  const guardedCurrent = page.locator('.chat-markdown').last();
+  await expect(guardedCurrent).toContainText(/tidak bisa memastikan data terbaru|sumber live/i, { timeout: 30_000 });
+  await expect(guardedCurrent).not.toContainText(/Rp123\.000/i);
 });
 
 test('deep mode shows thinking phases, degraded badge, and source links', async ({ page }) => {

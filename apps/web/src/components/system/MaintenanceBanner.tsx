@@ -25,11 +25,11 @@ export function MaintenanceBanner() {
     <AnimatePresence>
       {shouldShow ? (
         <motion.div
-          initial={{ opacity: 0, y: -16 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -12 }}
+          initial={{ y: -16 }}
+          animate={{ y: 0 }}
+          exit={{ y: -12 }}
           transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-          className="pointer-events-none fixed left-3 right-3 top-[calc(env(safe-area-inset-top,0px)+3.75rem)] z-[89] rounded-2xl border border-blue-500/20 bg-blue-500/12 px-4 py-2.5 text-sm text-blue-800 shadow-[0_10px_24px_rgba(0,0,0,0.14)] backdrop-blur dark:text-blue-200"
+          className="pointer-events-none fixed left-3 right-3 top-[calc(env(safe-area-inset-top,0px)+3.75rem)] z-[89] rounded-2xl border border-blue-200/30 bg-slate-950/95 px-4 py-2.5 text-sm text-white shadow-[0_10px_24px_rgba(0,0,0,0.22)] backdrop-blur dark:border-blue-300/20"
           role="status"
           aria-live="polite"
         >

@@ -53,8 +53,8 @@ test('a11y /tools?tab=ai-brew with result workspace open has no serious/critical
   await page.getByTestId('ai-brew-open-quick').click();
   await page.getByTestId('ai-brew-coffee-name').fill('A11y Result Brew');
   await page.getByTestId('ai-brew-water-picker').click();
-  await page.getByTestId('ai-brew-picker-search-water_brand').fill('volvic');
-  await page.getByTestId('ai-brew-picker-option-water_brand-volvic-sg').click();
+  await page.getByTestId('ai-brew-picker-search-water_brand').fill('aqua');
+  await page.getByTestId('ai-brew-picker-option-water_brand-aqua-id').click();
   await page.getByTestId('ai-brew-generate').click();
   await expect(page.getByTestId('ai-brew-result')).toBeVisible();
 

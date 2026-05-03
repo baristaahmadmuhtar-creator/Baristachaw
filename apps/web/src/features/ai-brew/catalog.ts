@@ -87,8 +87,17 @@ interface RawPlatformWaterEntry {
     source_type: string;
     source_url: string;
   }>;
+  primary_source: {
+    source_type: string;
+    source_url: string;
+  };
   verification_status: 'verified' | 'curated' | 'review_required';
   publish_state: WaterPublishState;
+  data_quality?: {
+    is_estimated?: boolean;
+    missing_fields?: string[];
+    completeness_score?: number;
+  };
   search_text: string;
   aliases: string[];
 }
@@ -259,16 +268,21 @@ function applyEquipmentProvenance(
   raw: RawDripperCatalogEntry | RawGrinderCatalogEntry,
   override: MarketSignalRecord | undefined,
 ) {
-  const verificationLevel = override?.verificationLevel || raw.verificationLevel || defaultVerificationLevel(raw.source);
+  const rawSourceUrls = toSourceUrls(raw.sourceUrl, raw.sourceUrls);
+  const sourceUrls = override?.sourceUrls || rawSourceUrls;
+  const userDatasetWithoutSources = raw.source === 'user_dataset' && sourceUrls.length === 0;
+  const verificationLevel = userDatasetWithoutSources
+    ? 'dataset_unverified'
+    : override?.verificationLevel || raw.verificationLevel || defaultVerificationLevel(raw.source);
   return {
     source: override?.source || raw.source || 'user_dataset',
-    sourceUrls: override?.sourceUrls || toSourceUrls(raw.sourceUrl, raw.sourceUrls),
+    sourceUrls,
     verificationLevel,
     verifiedAt: override?.verifiedAt || raw.verifiedAt || raw.created_at || '2026-03-09',
     popularityTier: override?.popularityTier || raw.popularityTier || 'niche',
     marketSegment: override?.marketSegment || raw.marketSegment || 'small_market',
     releaseStatus: override?.releaseStatus || raw.releaseStatus || 'established',
-    confidence: override?.confidence || raw.confidence || defaultConfidence(verificationLevel),
+    confidence: userDatasetWithoutSources ? 'low' : override?.confidence || raw.confidence || defaultConfidence(verificationLevel),
     catalogVersion: override?.catalogVersion || raw.catalogVersion || CATALOG_VERSION,
   };
 }
@@ -384,9 +398,22 @@ function roundTo(value: number, digits: number) {
   return Math.round(value * factor) / factor;
 }
 
+function hasPublicWaterSource(entry: RawPlatformWaterEntry) {
+  return entry.sources.some((source) => /^https?:\/\//i.test(source.source_url))
+    || /^https?:\/\//i.test(entry.primary_source.source_url);
+}
+
+function hasDirectPublicWaterSource(entry: RawPlatformWaterEntry) {
+  return [...entry.sources, entry.primary_source].some((source) =>
+    /^https?:\/\//i.test(source.source_url)
+    && ['official_report', 'lab_report', 'brand_site'].includes(source.source_type),
+  );
+}
+
 function mapCanonicalVerification(entry: RawPlatformWaterEntry): VerificationLevel {
-  if (entry.verification_status === 'verified') return 'official';
+  if (entry.verification_status === 'verified' && hasDirectPublicWaterSource(entry)) return 'official';
   if (entry.verification_status === 'curated') return 'curated';
+  if (entry.verification_status === 'verified' && hasPublicWaterSource(entry)) return 'curated';
   return 'dataset_unverified';
 }
 
@@ -691,14 +718,34 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
   const hardnessPpm = directHardness ?? ionHardness;
   const alkalinityPpm = directAlkalinity ?? ionAlkalinity;
   const consistencyErrors = validateWaterChemistryConsistency(tdsPpm, hardnessPpm, alkalinityPpm);
-  const mergedBrewBlockReason = Array.from(new Set([...entry.brew_block_reason, ...consistencyErrors]));
-  const isBrewReady = entry.is_brew_ready && mergedBrewBlockReason.length === 0;
   const classification = classifyWaterBrand(entry, tdsPpm, hardnessPpm, alkalinityPpm);
+  const classificationIsZeroMineral = classification.classification === 'zero_mineral_ro';
+  const classificationIsAlkaline = classification.classification === 'alkaline_caution';
+  const classificationIsHighBuffer = classification.classification === 'high_buffer';
+  const estimatedData = entry.data_quality?.is_estimated === true;
+  const directPublicSource = hasDirectPublicWaterSource(entry);
+  const policyBlockReasons = [
+    ...(classificationIsZeroMineral
+      ? ['Water is too low-mineral for ready-brew use; add minerals manually.']
+      : []),
+    ...(estimatedData
+      ? ['Estimated water values must be verified manually before ready-brew use.']
+      : []),
+  ];
+  const mergedBrewBlockReason = Array.from(new Set([
+    ...entry.brew_block_reason,
+    ...consistencyErrors,
+    ...policyBlockReasons,
+  ]));
+  const isBrewReady = entry.is_brew_ready
+    && mergedBrewBlockReason.length === 0
+    && !classificationIsZeroMineral
+    && !estimatedData;
   const baseline = WATER_CLASSIFICATION_BASELINES[classification.classification];
   const filledTdsPpm = tdsPpm ?? baseline.tdsPpm;
   const filledHardnessPpm = hardnessPpm ?? baseline.hardnessPpm;
   const filledAlkalinityPpm = alkalinityPpm ?? baseline.alkalinityPpm;
-  const resolvedMinerals = isBrewReady && tdsPpm !== null && hardnessPpm !== null && alkalinityPpm !== null
+  const resolvedMinerals = tdsPpm !== null && hardnessPpm !== null && alkalinityPpm !== null
     ? {
         tdsPpm,
         hardnessPpm,
@@ -712,7 +759,18 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
         derivation: 'estimated_from_classification' as const,
       };
 
-  const presetStatus: WaterPresetStatus = !entry.is_sparkling && resolvedMinerals
+  const resolvedMineralsAreEstimated = resolvedMinerals.derivation === 'estimated_from_classification';
+  const requiresManualPreset = !isBrewReady
+    || classificationIsZeroMineral
+    || estimatedData
+    || resolvedMineralsAreEstimated
+    || (classificationIsAlkaline && (!directPublicSource || entry.coffee_parameters.brew_recommendation === 'poor'));
+  const canAutofillBrand = !entry.is_sparkling
+    && !requiresManualPreset
+    && tdsPpm !== null
+    && hardnessPpm !== null
+    && alkalinityPpm !== null;
+  const presetStatus: WaterPresetStatus = canAutofillBrand
     ? 'autofill'
     : entry.sources.length > 0
       ? 'manual_required'
@@ -730,18 +788,21 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
     country: entry.country_origin,
     markets: mapWaterMarkets(entry.available_in, entry.market_code),
     searchText: entry.search_text || buildSearchText(entry.brand, entry.country_origin, entry.market_code, ...entry.aliases),
-    description: entry.publish_state === 'published'
-      ? `${entry.brand} is source-backed and brew-ready for ${entry.available_in.join(', ')}.`
-      : `${entry.brand} is tracked for ${entry.available_in.join(', ')}, but still needs manual minerals.`,
+    description: canAutofillBrand
+      ? `${entry.brand} is source-backed and ready as a starting brew-water preset for ${entry.available_in.join(', ')}.`
+      : `${entry.brand} is tracked for ${entry.available_in.join(', ')}, but needs manual mineral review before generation.`,
     notes: mergedBrewBlockReason.length > 0
-      ? [...mergedBrewBlockReason, classification.note]
-      : [classification.note],
+      ? [...mergedBrewBlockReason, classification.note, ...(classification.caution ? [classification.caution] : [])]
+      : [classification.note, ...(classification.caution ? [classification.caution] : [])],
     presetStatus,
     publishState: entry.publish_state,
     isBrewReady: isBrewReady,
     brewBlockReason: mergedBrewBlockReason,
     still: !entry.is_sparkling,
-    recommendedForFilter: isBrewReady && entry.coffee_parameters.brew_recommendation !== 'poor',
+    recommendedForFilter: canAutofillBrand
+      && entry.coffee_parameters.brew_recommendation !== 'poor'
+      && !classificationIsHighBuffer
+      && !classificationIsAlkaline,
     classification: classification.classification,
     classificationLabel: classification.label,
     classificationNote: classification.note,

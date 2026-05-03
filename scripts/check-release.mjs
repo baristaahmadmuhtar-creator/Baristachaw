@@ -56,6 +56,7 @@ async function stopServer(server) {
 
 async function main() {
   await run(NPM_BIN, ['run', 'check']);
+  await run(NPM_BIN, ['run', 'catalog:audit']);
 
   const env = buildLocalQaEnv(process.env, LOCAL_BASE_URL);
 

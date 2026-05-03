@@ -87,9 +87,9 @@
     --popover-foreground: var(--text-primary);
     --primary: #2563eb;
     --primary-foreground: #ffffff;
-    --auth-accent: var(--token-accent-primary, #007AFF);
-    --auth-accent-pressed: #0066d6;
-    --auth-accent-shadow: rgba(0, 122, 255, 0.28);
+    --auth-accent: #005fcc;
+    --auth-accent-pressed: #004fa8;
+    --auth-accent-shadow: rgba(0, 95, 204, 0.28);
     --motion-ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
     --motion-ease-emphasized: cubic-bezier(0.22, 1, 0.36, 1);
     --motion-duration-fast: 150ms;
@@ -170,9 +170,9 @@
     --popover-foreground: var(--text-primary);
     --primary: #60a5fa;
     --primary-foreground: #020617;
-    --auth-accent: #0A84FF;
-    --auth-accent-pressed: #2F9BFF;
-    --auth-accent-shadow: rgba(10, 132, 255, 0.34);
+    --auth-accent: #60a5fa;
+    --auth-accent-pressed: #93c5fd;
+    --auth-accent-shadow: rgba(96, 165, 250, 0.34);
     --secondary: var(--surface-alpha);
     --secondary-foreground: var(--text-primary);
     --muted: var(--surface-alpha);
@@ -249,9 +249,9 @@
       --popover-foreground: var(--text-primary);
       --primary: #60a5fa;
       --primary-foreground: #020617;
-      --auth-accent: #0A84FF;
-      --auth-accent-pressed: #2F9BFF;
-      --auth-accent-shadow: rgba(10, 132, 255, 0.34);
+      --auth-accent: #60a5fa;
+      --auth-accent-pressed: #93c5fd;
+      --auth-accent-shadow: rgba(96, 165, 250, 0.34);
       --secondary: var(--surface-alpha);
       --secondary-foreground: var(--text-primary);
       --muted: var(--surface-alpha);
@@ -780,8 +780,14 @@
   }
 
   :root.dark .auth-action-primary {
+    background: #005fcc;
     color: #ffffff;
+    border-color: color-mix(in srgb, #005fcc 82%, white 18%);
     box-shadow: 0 14px 34px var(--auth-accent-shadow);
+  }
+
+  :root.dark .auth-action-primary:hover {
+    background: #004fa8;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -804,8 +810,14 @@
     }
 
     :root:not(.light) .auth-action-primary {
+      background: #005fcc;
       color: #ffffff;
+      border-color: color-mix(in srgb, #005fcc 82%, white 18%);
       box-shadow: 0 14px 34px var(--auth-accent-shadow);
+    }
+
+    :root:not(.light) .auth-action-primary:hover {
+      background: #004fa8;
     }
 
     :root:not(.light) .auth-brand-tile {
@@ -836,8 +848,13 @@
   }
 
   .route-loading-badge {
-    background: color-mix(in srgb, var(--auth-accent) 12%, var(--bg-elevated) 88%);
-    color: var(--auth-accent);
+    background: color-mix(in srgb, var(--bg-elevated) 96%, var(--auth-accent) 4%);
+    color: #0f172a;
+    border: 1px solid color-mix(in srgb, var(--panel-border-soft) 86%, transparent);
+  }
+
+  :root.dark .route-loading-badge {
+    color: #f8fafc;
   }
 
   .route-loading-bar,
@@ -1186,6 +1203,7 @@
   .scanner-mode-active {
     background: #dbeafe !important;
     color: #111827 !important;
+    transition-property: transform, box-shadow !important;
   }
 
   :root.dark .scanner-mode-active {

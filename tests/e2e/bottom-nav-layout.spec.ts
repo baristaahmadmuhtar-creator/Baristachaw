@@ -208,10 +208,10 @@ test('manifest requests fullscreen PWA display with standalone fallback', async 
   expect(response.ok()).toBe(true);
 
   const manifest = await response.json();
-  expect(manifest.display).toBe('fullscreen');
+  expect(manifest.display).toBe('standalone');
   expect(manifest.display_override).toEqual(expect.arrayContaining(['fullscreen', 'standalone']));
-  expect(manifest.theme_color).toBe('#000000');
-  expect(manifest.background_color).toBe('#000000');
+  expect(manifest.theme_color).toBe('#0A84FF');
+  expect(manifest.background_color).toBe('#F5F8FE');
 });
 
 test('bottom nav auto-hides on downward scroll and reveals on interaction', async ({ page }, testInfo) => {

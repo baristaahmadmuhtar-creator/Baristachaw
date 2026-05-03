@@ -415,6 +415,7 @@ export interface BrewPlan {
   waterBrandMarkets: WaterMarket[];
   waterBrandVerification?: VerificationLevel;
   waterBrandSourceUrls: string[];
+  waterMineralDerivation?: 'direct' | 'derived_from_ions' | 'estimated_from_classification' | 'manual';
   waterCustomized: boolean;
   waterMinerals: WaterMineralInput;
   waterGuidance: WaterGuidance;

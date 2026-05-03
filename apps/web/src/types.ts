@@ -157,6 +157,13 @@ export interface ChatMessage {
     sources?: string[];
     sourceDetails?: StructuredSearchSource[];
     deepMeta?: DeepResponseMeta;
+    responseMode?: 'fast' | 'normal' | 'deep';
+    relevanceScore?: number;
+    regenerated?: boolean;
+    caveatApplied?: boolean;
+    guardRisk?: 'safe' | 'needs_caveat' | 'irrelevant' | 'blocked';
+    guardReason?: string;
+    missingEntities?: string[];
     timestamp: number;
     status?: ChatMessageStatus;
     errorCode?: ChatErrorCode;

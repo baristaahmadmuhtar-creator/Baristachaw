@@ -128,10 +128,10 @@ function computeRecommendation(tds: number, gh: number, kh: number, hasCriticalF
 
 function buildSource(collectedAt: string): CatalogSource {
   return {
-    source_type: 'official_report',
-    source_url: 'local:/Users/Alpha/Downloads/Indonesia_Bottled_Water_Dataset__53_brands_.csv',
+    source_type: 'catalog_seed',
+    source_url: 'local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#import-indonesia-water-dataset',
     collected_at: collectedAt,
-    confidence_score: 0.86,
+    confidence_score: 0.7,
   };
 }
 

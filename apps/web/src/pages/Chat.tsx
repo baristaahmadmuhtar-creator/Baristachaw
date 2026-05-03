@@ -78,6 +78,9 @@ import {
   Paperclip as AppPaperclipIcon,
 } from '../components/icons';
 import { useAiAccessGate } from '../components/billing/AiAccessGate';
+import { guardChatAnswer } from '../features/chat/antiHallucination';
+import { scoreAnswerRelevance } from '../features/chat/relevance';
+import { buildStrictRegenerationPrompt, formatDirectFallbackAnswer } from '../features/chat/responseModeContracts';
 
 const ChatWorkspacePanel = lazy(() =>
   import('../components/chat/ChatWorkspacePanel').then((module) => ({ default: module.ChatWorkspacePanel }))
@@ -656,6 +659,78 @@ export function Chat() {
         : undefined),
   }), []);
 
+  const guardModeResponse = useCallback(async (
+    userText: string,
+    response: ModeResponsePayload,
+    mode: ResponseMode,
+    requestContext: ReturnType<typeof buildRequestContext>,
+  ): Promise<{
+    response: ModeResponsePayload;
+    meta: Pick<ChatMessage, 'responseMode' | 'relevanceScore' | 'regenerated' | 'caveatApplied' | 'guardRisk' | 'guardReason' | 'missingEntities'>;
+  }> => {
+    let nextResponse = response;
+    let guard = guardChatAnswer({ userMessage: userText, answer: nextResponse.text, mode });
+    let regenerated = false;
+    let caveatApplied = false;
+
+    if (guard.risk === 'irrelevant' || guard.risk === 'blocked') {
+      const strictPrompt = buildStrictRegenerationPrompt({
+        userMessage: userText,
+        missingEntities: guard.missingEntities || [],
+        mode,
+      });
+      regenerated = true;
+      const regeneratedResponse = await requestAiResponseByMode(strictPrompt, mode, requestContext);
+      const regeneratedGuard = guardChatAnswer({ userMessage: userText, answer: regeneratedResponse.text, mode });
+
+      if (regeneratedGuard.risk === 'safe' || regeneratedGuard.risk === 'needs_caveat') {
+        nextResponse = regeneratedResponse;
+        guard = regeneratedGuard;
+      } else {
+        const fallbackText = formatDirectFallbackAnswer(
+          userText,
+          regeneratedGuard.missingEntities?.length
+            ? regeneratedGuard.missingEntities
+            : guard.missingEntities || [],
+        );
+        nextResponse = {
+          ...regeneratedResponse,
+          text: fallbackText,
+          degraded: true,
+          details: [regeneratedResponse.details, `guard_fallback:${regeneratedGuard.reason || guard.reason || 'irrelevant'}`].filter(Boolean).join('|'),
+        };
+        guard = guardChatAnswer({ userMessage: userText, answer: fallbackText, mode });
+        caveatApplied = true;
+      }
+    }
+
+    if (guard.risk === 'needs_caveat' && /\b(?:harga terbaru|price today|current price|hari ini|terbaru|stock|stok|deploy|repo status|production status)\b/i.test(userText)) {
+      nextResponse = {
+        ...nextResponse,
+        text: [
+          'Catatan: data terbaru perlu sumber/live check yang valid; saya tidak akan mengarang angka atau status.',
+          '',
+          nextResponse.text,
+        ].join('\n'),
+      };
+      caveatApplied = true;
+    }
+
+    const relevance = scoreAnswerRelevance(userText, nextResponse.text);
+    return {
+      response: nextResponse,
+      meta: {
+        responseMode: mode,
+        relevanceScore: Math.round(relevance.score * 100) / 100,
+        regenerated,
+        caveatApplied,
+        guardRisk: guard.risk,
+        guardReason: guard.reason,
+        missingEntities: relevance.missingRequiredEntities,
+      },
+    };
+  }, [requestAiResponseByMode]);
+
   const syncSessionMemory = useCallback(async (
     nextMessages: ChatMessage[],
     preferredLanguage?: string,
@@ -915,9 +990,11 @@ export function Chat() {
                   role: 'model',
                   ...(await (async () => {
                     const response = await requestAiResponseByMode(boundedTranscript, voiceMode, transcriptRequestContext);
+                    const guarded = await guardModeResponse(boundedTranscript, response, voiceMode, transcriptRequestContext);
                     return {
-                      text: response.text,
-                      ...mapResponsePayloadToMessageMeta(response),
+                      text: guarded.response.text,
+                      ...mapResponsePayloadToMessageMeta(guarded.response),
+                      ...guarded.meta,
                     };
                   })()),
                   timestamp: Date.now(),
@@ -1109,6 +1186,9 @@ export function Chat() {
         responsePayload = await requestAiResponseByMode(userMsg.text, requestMode, requestContext);
       }
 
+      const guardedResponse = await guardModeResponse(userMsg.text, responsePayload, requestMode, requestContext);
+      responsePayload = guardedResponse.response;
+
       clearTimeout(safetyTimeout);
       setLoadingPhase('rendering');
 
@@ -1118,6 +1198,7 @@ export function Chat() {
         role: 'model',
         text: responsePayload.text,
         ...mapResponsePayloadToMessageMeta(responsePayload),
+        ...guardedResponse.meta,
         timestamp: Date.now(),
         status: 'sent',
       };
@@ -1703,6 +1784,30 @@ export function Chat() {
                           </a>
                         );
                       })}
+                    </div>
+                  </div>
+                )}
+
+                {msg.role === 'model' && msg.responseMode && (
+                  <div className="mt-3 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2 text-[11px] leading-5 text-tertiary">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1">
+                      <span>mode: {msg.responseMode}</span>
+                      <span>relevance: {typeof msg.relevanceScore === 'number' ? msg.relevanceScore.toFixed(2) : '-'}</span>
+                      <span>regenerated: {msg.regenerated ? 'yes' : 'no'}</span>
+                      <span>caveat: {msg.caveatApplied ? 'yes' : 'no'}</span>
+                      <span>guard: {msg.guardRisk || 'safe'}</span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {['Helpful', 'Not relevant', 'Factual issue', 'Too long', 'Too short'].map((label) => (
+                        <button
+                          key={`${msg.id}_${label}`}
+                          type="button"
+                          className="rounded-full border border-current/10 px-2 py-1 text-[11px] text-secondary transition-colors hover:bg-surface-alpha-hover"
+                          aria-label={`Feedback: ${label}`}
+                        >
+                          {label}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 )}

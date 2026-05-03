@@ -102,6 +102,32 @@ function formatStepOperation(step: BrewPlan['steps'][number]) {
   return `pour ${step.pourVolumeMl} ml to ${step.targetVolumeMl} ml`;
 }
 
+function hasExplicitGeishaVariety(plan: BrewPlan) {
+  return /\b(?:geisha|gesha)\b/i.test(plan.variety || '');
+}
+
+function formatVarietyAwarePhrase(plan: BrewPlan) {
+  if (hasExplicitGeishaVariety(plan)) return 'varietas Geisha/Gesha yang kompleks';
+  if (plan.variety && !/^not specified$/i.test(plan.variety)) return `varietas ${plan.variety}`;
+  return 'kopi ini';
+}
+
+function buildDeterministicVocabularyRules(plan: BrewPlan) {
+  const explicitGeisha = hasExplicitGeishaVariety(plan);
+  return [
+    'Deterministic vocabulary rules:',
+    '- Never rename the coffee variety unless the deterministic context provides it.',
+    explicitGeisha
+      ? '- Variety is explicitly Geisha/Gesha; keep that label exact and do not broaden it.'
+      : '- Never use premium variety names unless Variety explicitly provides them.',
+    '- Never call total input "cup output".',
+    '- For iced mode, totalWaterMl is total input, not final served cup output.',
+    '- For iced mode, estimatedCupOutputMl is estimated served beverage after coffee retention.',
+    '- For iced mode, iceMl must be shown operationally as grams of ice.',
+    `- Variety-safe phrase for narrative: ${formatVarietyAwarePhrase(plan)}.`,
+  ].join('\n');
+}
+
 function buildSharedContext(plan: BrewPlan) {
   const steps = plan.steps
     .map((step, index) => `${index + 1}. ${step.label} at ${formatSeconds(step.startSeconds)}: ${formatStepOperation(step)}. ${step.hybridInstruction || step.note}`)
@@ -133,15 +159,17 @@ function buildSharedContext(plan: BrewPlan) {
     `Dose: ${plan.doseG} g`,
     `Final beverage ratio: 1:${formatBaristaRatio(plan.finalBeverageRatio)}`,
     `Hot extraction ratio: 1:${formatBaristaRatio(plan.hotExtractionRatio)}`,
-    `Water total: ${plan.totalWaterMl} ml`,
+    `Total input (totalWaterMl): ${plan.totalWaterMl} ml`,
     `Hot water: ${plan.hotWaterMl} ml`,
-    `Ice: ${plan.iceMl} ml`,
+    `Ice in server: ${plan.iceMl} g`,
+    `Estimated cup output after retention: ${plan.estimatedCupOutputMl} ml`,
     `Temperature: ${formatBaristaTemperature(plan.waterTempC)} C`,
     `Target brew time: ${formatSeconds(plan.totalTimeSeconds)}`,
     `Grind recommendation: ${plan.grindRecommendation}`,
     `Warnings: ${plan.guardrails.warnings.join(' | ') || 'none'}`,
     `Standards misses: ${plan.conformance.standardsMisses.join(' | ') || 'none'}`,
     `Confidence notes: ${plan.confidenceNotes.join(' | ') || 'none'}`,
+    buildDeterministicVocabularyRules(plan),
     'Brew steps:',
     steps,
   ].join('\n');
@@ -159,7 +187,8 @@ function buildPlannerEnvelope(plan: BrewPlan) {
     `- hot extraction ratio: 1:${formatBaristaRatio(plan.hotExtractionRatio)}`,
     `- total water: ${plan.totalWaterMl} ml`,
     `- hot water: ${plan.hotWaterMl} ml`,
-    `- ice: ${plan.iceMl} ml`,
+    `- ice in server: ${plan.iceMl} g`,
+    `- estimated cup output after retention: ${plan.estimatedCupOutputMl} ml`,
     `- temperature: ${formatBaristaTemperature(plan.waterTempC)} C`,
     `- brew time: ${formatSeconds(plan.totalTimeSeconds)}`,
     `- operation progression profile: ${buildPourProgressionProfile(plan)}`,
@@ -316,6 +345,9 @@ export function buildExplainPrompt(plan: BrewPlan, language?: string): AiBrewPro
       'Explain why this brew plan should work.',
       'Focus on extraction logic, roast fit, target profile, and why the chosen grind/temperature/ratio make sense.',
       'Keep it practical for a barista and use short sections.',
+      'Do not suggest new numeric parameters. Explain only using deterministic plan values.',
+      'If variety, process, water, grinder, or brewer source is unknown/estimated/curated, state that uncertainty instead of inventing facts.',
+      'Use sections exactly: ### Kenapa cocok, ### Hal yang perlu dijaga, ### Catatan sumber data.',
       '',
       buildSharedContext(plan),
     ].join('\n'),
@@ -385,6 +417,8 @@ export function buildOptimizationPrompt(plan: BrewPlan, language?: string): AiBr
       'Never change: dose, brew mode, brewer, grinder, water minerals, method family, or selected step count.',
       `Allowed max shift from baseline: ratio ±${ratioDelta}, temperature ±${tempDelta} C, brew time ±${timeDelta} seconds.`,
       'For iced mode, keep Japanese-style flash brew: hot concentrate is poured over measured ice, with no late bypass or top-up. hotWaterSharePercent may shift only inside a realistic concentrate split. The validator will preserve hot water + ice = total water.',
+      'Never invent variety, process, origin, roaster, farm, altitude, water status, grinder source, brewer trust, or claims not present in deterministic context.',
+      'If the patch is not safe, the app will keep the deterministic planner and show a safe fallback.',
       'All numbers must be finite. Do not use null, NaN, Infinity, comments, markdown, code fences, or extra prose.',
       `Step control text language: ${controlLanguage}`,
       'Step control text must be short and must not contain new numeric targets, dose, ratio, temperature, grind changes, or next-cup troubleshooting.',
@@ -416,6 +450,9 @@ export function buildTroubleshootPrompt(plan: BrewPlan, language?: string): AiBr
       'Create a troubleshooting guide for this brew plan.',
       'Cover sour, bitter, thin, muddy, hollow, and stalled drawdown outcomes.',
       'Give concrete one-step adjustments first, then explain tradeoffs.',
+      'Recommend one smallest change first. Always include: "Mulai dari perubahan terkecil dulu."',
+      'Use this order: small grind correction, pouring/agitation, small temperature correction, ratio only if needed.',
+      'Never overwrite current plan numbers and never change more than one variable at once.',
       '',
       buildSharedContext(plan),
     ].join('\n'),
@@ -504,6 +541,9 @@ export function buildAdjustPrompt(plan: BrewPlan, language?: string): AiBrewProm
     body: [
       'Suggest how to push this brew toward the selected target profile even harder without breaking balance.',
       'Return only actionable adjustments to grind, temperature, pour structure, and ratio.',
+      'Treat suggestions as next-brew adjustments, not changes to the current deterministic plan.',
+      'Stay inside safe guardrails. Do not suggest extreme temperature, extreme ratio, top-up, bypass, or extra water unless deterministic steps include it.',
+      'Do not invent variety, process, origin, roaster, farm, altitude, water status, grinder source, or brewer trust.',
       '',
       buildSharedContext(plan),
     ].join('\n'),

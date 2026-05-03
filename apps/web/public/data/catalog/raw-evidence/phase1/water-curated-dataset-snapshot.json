@@ -1,0 +1,1810 @@
+{
+  "catalog_version": "unknown",
+  "generated_at": "2026-05-03T00:00:00.000Z",
+  "status": "repo_local_curated_seed_not_official",
+  "note": "This snapshot replaces private local machine paths. It is not an official source and must not be displayed as public official evidence.",
+  "items": [
+    {
+      "id": "2tang-id",
+      "brand_group_id": "2tang",
+      "market_code": "id",
+      "brand": "2Tang",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 68,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 48,
+        "alkalinity_ppm_as_caco3": 41.5,
+        "calcium_mg_l": 13.6,
+        "magnesium_mg_l": 3.4,
+        "bicarbonate_mg_l": 34
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "acqua-panna-global",
+      "brand_group_id": "acqua-panna",
+      "market_code": "global",
+      "brand": "Acqua Panna",
+      "country_origin": "Italy",
+      "captured_values": {
+        "tds_ppm": 188,
+        "ph": null,
+        "hardness_ppm_as_caco3": 106.2,
+        "alkalinity_ppm_as_caco3": 130.5,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "acqua-panna-my",
+      "brand_group_id": "acqua-panna",
+      "market_code": "my",
+      "brand": "Acqua Panna",
+      "country_origin": "Italy",
+      "captured_values": {
+        "tds_ppm": 188,
+        "ph": 7.9,
+        "hardness_ppm_as_caco3": 106.2,
+        "alkalinity_ppm_as_caco3": 130.5,
+        "calcium_mg_l": 32.1,
+        "magnesium_mg_l": 6.5,
+        "bicarbonate_mg_l": 106
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "acqua-panna-sg",
+      "brand_group_id": "acqua-panna",
+      "market_code": "sg",
+      "brand": "Acqua Panna",
+      "country_origin": "Italy",
+      "captured_values": {
+        "tds_ppm": 188,
+        "ph": 7.9,
+        "hardness_ppm_as_caco3": 106.2,
+        "alkalinity_ppm_as_caco3": 130.5,
+        "calcium_mg_l": 32.1,
+        "magnesium_mg_l": 6.5,
+        "bicarbonate_mg_l": 106
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "ades-id",
+      "brand_group_id": "ades",
+      "market_code": "id",
+      "brand": "Ades",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 58,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 40.9,
+        "alkalinity_ppm_as_caco3": 35.4,
+        "calcium_mg_l": 11.6,
+        "magnesium_mg_l": 2.9,
+        "bicarbonate_mg_l": 29
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "aetra-id",
+      "brand_group_id": "aetra",
+      "market_code": "id",
+      "brand": "Aetra",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 60,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 42.3,
+        "alkalinity_ppm_as_caco3": 36.6,
+        "calcium_mg_l": 12,
+        "magnesium_mg_l": 3,
+        "bicarbonate_mg_l": 30
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "air-alfamart-id",
+      "brand_group_id": "air-alfamart",
+      "market_code": "id",
+      "brand": "Air Alfamart",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 1,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 0.9,
+        "alkalinity_ppm_as_caco3": 0.6,
+        "calcium_mg_l": 0.2,
+        "magnesium_mg_l": 0.1,
+        "bicarbonate_mg_l": 0.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "air-indomaret-id",
+      "brand_group_id": "air-indomaret",
+      "market_code": "id",
+      "brand": "Air Indomaret",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 31,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 22.1,
+        "alkalinity_ppm_as_caco3": 18.9,
+        "calcium_mg_l": 6.2,
+        "magnesium_mg_l": 1.6,
+        "bicarbonate_mg_l": 15.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "airku-id",
+      "brand_group_id": "airku",
+      "market_code": "id",
+      "brand": "Airku",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 18,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 12.7,
+        "alkalinity_ppm_as_caco3": 11,
+        "calcium_mg_l": 3.6,
+        "magnesium_mg_l": 0.9,
+        "bicarbonate_mg_l": 9
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "alfa-spring-id",
+      "brand_group_id": "alfa-spring",
+      "market_code": "id",
+      "brand": "Alfa Spring",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 47,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 33.4,
+        "alkalinity_ppm_as_caco3": 28.7,
+        "calcium_mg_l": 9.4,
+        "magnesium_mg_l": 2.4,
+        "bicarbonate_mg_l": 23.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "amidis-id",
+      "brand_group_id": "amidis",
+      "market_code": "id",
+      "brand": "Amidis",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 2,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 1.4,
+        "alkalinity_ppm_as_caco3": 1.2,
+        "calcium_mg_l": 0.4,
+        "magnesium_mg_l": 0.1,
+        "bicarbonate_mg_l": 1
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "aqua-id",
+      "brand_group_id": "aqua",
+      "market_code": "id",
+      "brand": "Aqua",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 112,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 79,
+        "alkalinity_ppm_as_caco3": 68.3,
+        "calcium_mg_l": 22.4,
+        "magnesium_mg_l": 5.6,
+        "bicarbonate_mg_l": 56
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "arjuna-id",
+      "brand_group_id": "arjuna",
+      "market_code": "id",
+      "brand": "Arjuna",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 62,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 43.7,
+        "alkalinity_ppm_as_caco3": 37.8,
+        "calcium_mg_l": 12.4,
+        "magnesium_mg_l": 3.1,
+        "bicarbonate_mg_l": 31
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "arrowhead-global",
+      "brand_group_id": "arrowhead",
+      "market_code": "global",
+      "brand": "Arrowhead",
+      "country_origin": "USA",
+      "captured_values": {
+        "tds_ppm": 200,
+        "ph": null,
+        "hardness_ppm_as_caco3": 164.3,
+        "alkalinity_ppm_as_caco3": 158.6,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "banyu-sehat-id",
+      "brand_group_id": "banyu-sehat",
+      "market_code": "id",
+      "brand": "Banyu Sehat",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 58,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 40.9,
+        "alkalinity_ppm_as_caco3": 35.4,
+        "calcium_mg_l": 11.6,
+        "magnesium_mg_l": 2.9,
+        "bicarbonate_mg_l": 29
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "bayu-id",
+      "brand_group_id": "bayu",
+      "market_code": "id",
+      "brand": "Bayu",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 40,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 28.2,
+        "alkalinity_ppm_as_caco3": 24.4,
+        "calcium_mg_l": 8,
+        "magnesium_mg_l": 2,
+        "bicarbonate_mg_l": 20
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "biru-id",
+      "brand_group_id": "biru",
+      "market_code": "id",
+      "brand": "Biru",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 50,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 35.3,
+        "alkalinity_ppm_as_caco3": 30.5,
+        "calcium_mg_l": 10,
+        "magnesium_mg_l": 2.5,
+        "bicarbonate_mg_l": 25
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "cendana-id",
+      "brand_group_id": "cendana",
+      "market_code": "id",
+      "brand": "Cendana",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 101,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 71.4,
+        "alkalinity_ppm_as_caco3": 61.6,
+        "calcium_mg_l": 20.2,
+        "magnesium_mg_l": 5.1,
+        "bicarbonate_mg_l": 50.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "cleo-id",
+      "brand_group_id": "cleo",
+      "market_code": "id",
+      "brand": "Cleo",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 9,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 6.6,
+        "alkalinity_ppm_as_caco3": 5.5,
+        "calcium_mg_l": 1.8,
+        "magnesium_mg_l": 0.5,
+        "bicarbonate_mg_l": 4.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "club-id",
+      "brand_group_id": "club",
+      "market_code": "id",
+      "brand": "Club",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 52,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 36.7,
+        "alkalinity_ppm_as_caco3": 31.7,
+        "calcium_mg_l": 10.4,
+        "magnesium_mg_l": 2.6,
+        "bicarbonate_mg_l": 26
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "crystal-geyser-global",
+      "brand_group_id": "crystal-geyser",
+      "market_code": "global",
+      "brand": "Crystal Geyser",
+      "country_origin": "USA",
+      "captured_values": {
+        "tds_ppm": 130,
+        "ph": null,
+        "hardness_ppm_as_caco3": 94.6,
+        "alkalinity_ppm_as_caco3": 122,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "crystaline-plus-id",
+      "brand_group_id": "crystaline-plus",
+      "market_code": "id",
+      "brand": "Crystaline Plus",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 97,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 68.6,
+        "alkalinity_ppm_as_caco3": 59.2,
+        "calcium_mg_l": 19.4,
+        "magnesium_mg_l": 4.9,
+        "bicarbonate_mg_l": 48.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "crystalline-id",
+      "brand_group_id": "crystalline",
+      "market_code": "id",
+      "brand": "Crystalline",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 95,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 67.2,
+        "alkalinity_ppm_as_caco3": 57.9,
+        "calcium_mg_l": 19,
+        "magnesium_mg_l": 4.8,
+        "bicarbonate_mg_l": 47.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "dasani-global",
+      "brand_group_id": "dasani",
+      "market_code": "global",
+      "brand": "Dasani",
+      "country_origin": "USA",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "diamond-id",
+      "brand_group_id": "diamond",
+      "market_code": "id",
+      "brand": "Diamond",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 85,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 59.7,
+        "alkalinity_ppm_as_caco3": 51.9,
+        "calcium_mg_l": 17,
+        "magnesium_mg_l": 4.2,
+        "bicarbonate_mg_l": 42.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "elok-water-id",
+      "brand_group_id": "elok-water",
+      "market_code": "id",
+      "brand": "Elok Water",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 55,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 39,
+        "alkalinity_ppm_as_caco3": 33.5,
+        "calcium_mg_l": 11,
+        "magnesium_mg_l": 2.8,
+        "bicarbonate_mg_l": 27.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "equil-id",
+      "brand_group_id": "equil",
+      "market_code": "id",
+      "brand": "Equil",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 145,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 102.1,
+        "alkalinity_ppm_as_caco3": 88.5,
+        "calcium_mg_l": 29,
+        "magnesium_mg_l": 7.2,
+        "bicarbonate_mg_l": 72.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "eternal-plus-id",
+      "brand_group_id": "eternal-plus",
+      "market_code": "id",
+      "brand": "Eternal Plus",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 80,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 56.4,
+        "alkalinity_ppm_as_caco3": 48.8,
+        "calcium_mg_l": 16,
+        "magnesium_mg_l": 4,
+        "bicarbonate_mg_l": 40
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "evian-bn",
+      "brand_group_id": "evian",
+      "market_code": "bn",
+      "brand": "Evian",
+      "country_origin": "France",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "evian-global",
+      "brand_group_id": "evian",
+      "market_code": "global",
+      "brand": "Evian",
+      "country_origin": "France",
+      "captured_values": {
+        "tds_ppm": 345,
+        "ph": null,
+        "hardness_ppm_as_caco3": 306.8,
+        "alkalinity_ppm_as_caco3": 327,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "evian-my",
+      "brand_group_id": "evian",
+      "market_code": "my",
+      "brand": "Evian",
+      "country_origin": "France",
+      "captured_values": {
+        "tds_ppm": 345,
+        "ph": null,
+        "hardness_ppm_as_caco3": 306.8,
+        "alkalinity_ppm_as_caco3": 327,
+        "calcium_mg_l": 80,
+        "magnesium_mg_l": 26,
+        "bicarbonate_mg_l": 360
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "evian-sg",
+      "brand_group_id": "evian",
+      "market_code": "sg",
+      "brand": "Evian",
+      "country_origin": "France",
+      "captured_values": {
+        "tds_ppm": 345,
+        "ph": null,
+        "hardness_ppm_as_caco3": 306.8,
+        "alkalinity_ppm_as_caco3": 327,
+        "calcium_mg_l": 80,
+        "magnesium_mg_l": 26,
+        "bicarbonate_mg_l": 360
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "fiji-global",
+      "brand_group_id": "fiji",
+      "market_code": "global",
+      "brand": "Fiji",
+      "country_origin": "Fiji",
+      "captured_values": {
+        "tds_ppm": 230,
+        "ph": null,
+        "hardness_ppm_as_caco3": 106.7,
+        "alkalinity_ppm_as_caco3": 112.2,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "fiji-my",
+      "brand_group_id": "fiji",
+      "market_code": "my",
+      "brand": "FIJI",
+      "country_origin": "Fiji",
+      "captured_values": {
+        "tds_ppm": 230,
+        "ph": 7.7,
+        "hardness_ppm_as_caco3": 106.7,
+        "alkalinity_ppm_as_caco3": 112.2,
+        "calcium_mg_l": 18,
+        "magnesium_mg_l": 15,
+        "bicarbonate_mg_l": 153
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "fiji-sg",
+      "brand_group_id": "fiji",
+      "market_code": "sg",
+      "brand": "FIJI",
+      "country_origin": "Fiji",
+      "captured_values": {
+        "tds_ppm": 230,
+        "ph": 7.7,
+        "hardness_ppm_as_caco3": 106.7,
+        "alkalinity_ppm_as_caco3": 112.2,
+        "calcium_mg_l": 18,
+        "magnesium_mg_l": 15,
+        "bicarbonate_mg_l": 153
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "frozen-id",
+      "brand_group_id": "frozen",
+      "market_code": "id",
+      "brand": "Frozen",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 87,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 61.6,
+        "alkalinity_ppm_as_caco3": 53.1,
+        "calcium_mg_l": 17.4,
+        "magnesium_mg_l": 4.4,
+        "bicarbonate_mg_l": 43.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "gerolsteiner-global",
+      "brand_group_id": "gerolsteiner",
+      "market_code": "global",
+      "brand": "Gerolsteiner",
+      "country_origin": "Germany",
+      "captured_values": {
+        "tds_ppm": 2500,
+        "ph": null,
+        "hardness_ppm_as_caco3": 1313.7,
+        "alkalinity_ppm_as_caco3": 2215.5,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "gilang-id",
+      "brand_group_id": "gilang",
+      "market_code": "id",
+      "brand": "Gilang",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 59,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 41.8,
+        "alkalinity_ppm_as_caco3": 36,
+        "calcium_mg_l": 11.8,
+        "magnesium_mg_l": 3,
+        "bicarbonate_mg_l": 29.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "heysong-water-global",
+      "brand_group_id": "heysong-water",
+      "market_code": "global",
+      "brand": "HeySong Water",
+      "country_origin": "Taiwan",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "heysong-water-sg",
+      "brand_group_id": "heysong-water",
+      "market_code": "sg",
+      "brand": "HeySong Water",
+      "country_origin": "Taiwan",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "highland-spring-global",
+      "brand_group_id": "highland-spring",
+      "market_code": "global",
+      "brand": "Highland Spring",
+      "country_origin": "UK",
+      "captured_values": {
+        "tds_ppm": 170,
+        "ph": null,
+        "hardness_ppm_as_caco3": 141.1,
+        "alkalinity_ppm_as_caco3": 183,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "highland-spring-sg",
+      "brand_group_id": "highland-spring",
+      "market_code": "sg",
+      "brand": "Highland Spring",
+      "country_origin": "UK",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "hydromed-id",
+      "brand_group_id": "hydromed",
+      "market_code": "id",
+      "brand": "Hydromed",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 25,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 17.4,
+        "alkalinity_ppm_as_caco3": 15.2,
+        "calcium_mg_l": 5,
+        "magnesium_mg_l": 1.2,
+        "bicarbonate_mg_l": 12.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "icelandic-glacial-bn",
+      "brand_group_id": "icelandic-glacial",
+      "market_code": "bn",
+      "brand": "Icelandic Glacial",
+      "country_origin": "Iceland",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "icelandic-glacial-global",
+      "brand_group_id": "icelandic-glacial",
+      "market_code": "global",
+      "brand": "Icelandic Glacial",
+      "country_origin": "Iceland",
+      "captured_values": {
+        "tds_ppm": 62,
+        "ph": null,
+        "hardness_ppm_as_caco3": 23.2,
+        "alkalinity_ppm_as_caco3": 34.2,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "icelandic-glacial-sg",
+      "brand_group_id": "icelandic-glacial",
+      "market_code": "sg",
+      "brand": "Icelandic Glacial",
+      "country_origin": "Iceland",
+      "captured_values": {
+        "tds_ppm": 62,
+        "ph": null,
+        "hardness_ppm_as_caco3": 23.2,
+        "alkalinity_ppm_as_caco3": 34.2,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "ion-plus-id",
+      "brand_group_id": "ion-plus",
+      "market_code": "id",
+      "brand": "Ion+",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 20,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 14.1,
+        "alkalinity_ppm_as_caco3": 12.2,
+        "calcium_mg_l": 4,
+        "magnesium_mg_l": 1,
+        "bicarbonate_mg_l": 10
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "jeju-samdasoo-global",
+      "brand_group_id": "jeju-samdasoo",
+      "market_code": "global",
+      "brand": "Jeju Samdasoo",
+      "country_origin": "South Korea",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "jeju-samdasoo-sg",
+      "brand_group_id": "jeju-samdasoo",
+      "market_code": "sg",
+      "brand": "Jeju Samdasoo",
+      "country_origin": "South Korea",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "la-vie-global",
+      "brand_group_id": "la-vie",
+      "market_code": "global",
+      "brand": "La Vie",
+      "country_origin": "Vietnam",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "la-vie-sg",
+      "brand_group_id": "la-vie",
+      "market_code": "sg",
+      "brand": "La Vie",
+      "country_origin": "Vietnam",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "le-minerale-id",
+      "brand_group_id": "le-minerale",
+      "market_code": "id",
+      "brand": "Le Minerale",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 299,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 211.1,
+        "alkalinity_ppm_as_caco3": 182.4,
+        "calcium_mg_l": 59.8,
+        "magnesium_mg_l": 15,
+        "bicarbonate_mg_l": 149.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "le-minerale-my",
+      "brand_group_id": "le-minerale",
+      "market_code": "my",
+      "brand": "Le Minerale",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 299,
+        "ph": null,
+        "hardness_ppm_as_caco3": 211.1,
+        "alkalinity_ppm_as_caco3": 182.4,
+        "calcium_mg_l": 2.2,
+        "magnesium_mg_l": 5.5,
+        "bicarbonate_mg_l": 120
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "lontar-id",
+      "brand_group_id": "lontar",
+      "market_code": "id",
+      "brand": "Lontar",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 27,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 19.2,
+        "alkalinity_ppm_as_caco3": 16.5,
+        "calcium_mg_l": 5.4,
+        "magnesium_mg_l": 1.4,
+        "bicarbonate_mg_l": 13.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "mahkota-id",
+      "brand_group_id": "mahkota",
+      "market_code": "id",
+      "brand": "Mahkota",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 38,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 26.8,
+        "alkalinity_ppm_as_caco3": 23.2,
+        "calcium_mg_l": 7.6,
+        "magnesium_mg_l": 1.9,
+        "bicarbonate_mg_l": 19
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "mayora-sparkling-id",
+      "brand_group_id": "mayora-sparkling",
+      "market_code": "id",
+      "brand": "Mayora Sparkling",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 70,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 49.4,
+        "alkalinity_ppm_as_caco3": 42.7,
+        "calcium_mg_l": 14,
+        "magnesium_mg_l": 3.5,
+        "bicarbonate_mg_l": 35
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "mont-fleur-global",
+      "brand_group_id": "mont-fleur",
+      "market_code": "global",
+      "brand": "Mont Fleur",
+      "country_origin": "Thailand",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "mont-fleur-sg",
+      "brand_group_id": "mont-fleur",
+      "market_code": "sg",
+      "brand": "Mont Fleur",
+      "country_origin": "Thailand",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "natures-spring-global",
+      "brand_group_id": "natures-spring",
+      "market_code": "global",
+      "brand": "Nature's Spring",
+      "country_origin": "Philippines",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "natures-spring-sg",
+      "brand_group_id": "natures-spring",
+      "market_code": "sg",
+      "brand": "Nature's Spring",
+      "country_origin": "Philippines",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "neo-aqua-id",
+      "brand_group_id": "neo-aqua",
+      "market_code": "id",
+      "brand": "Neo Aqua",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 125,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 88,
+        "alkalinity_ppm_as_caco3": 76.2,
+        "calcium_mg_l": 25,
+        "magnesium_mg_l": 6.2,
+        "bicarbonate_mg_l": 62.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "nestle-pure-life-global",
+      "brand_group_id": "nestle-pure-life",
+      "market_code": "global",
+      "brand": "Nestle Pure Life",
+      "country_origin": "Global",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "nestle-pure-life-id",
+      "brand_group_id": "nestle-pure-life",
+      "market_code": "id",
+      "brand": "Nestle Pure Life",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 66,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 46.5,
+        "alkalinity_ppm_as_caco3": 40.3,
+        "calcium_mg_l": 13.2,
+        "magnesium_mg_l": 3.3,
+        "bicarbonate_mg_l": 33
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "nirwana-id",
+      "brand_group_id": "nirwana",
+      "market_code": "id",
+      "brand": "Nirwana",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 45,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 31.5,
+        "alkalinity_ppm_as_caco3": 27.4,
+        "calcium_mg_l": 9,
+        "magnesium_mg_l": 2.2,
+        "bicarbonate_mg_l": 22.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "nongfu-spring-global",
+      "brand_group_id": "nongfu-spring",
+      "market_code": "global",
+      "brand": "Nongfu Spring",
+      "country_origin": "China",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "nongfu-spring-sg",
+      "brand_group_id": "nongfu-spring",
+      "market_code": "sg",
+      "brand": "Nongfu Spring",
+      "country_origin": "China",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "oasis-id",
+      "brand_group_id": "oasis",
+      "market_code": "id",
+      "brand": "Oasis",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 64,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 45.1,
+        "alkalinity_ppm_as_caco3": 39,
+        "calcium_mg_l": 12.8,
+        "magnesium_mg_l": 3.2,
+        "bicarbonate_mg_l": 32
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "oasis-plus-id",
+      "brand_group_id": "oasis-plus",
+      "market_code": "id",
+      "brand": "Oasis+",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 72,
+        "ph": 8.6,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "oxywater-id",
+      "brand_group_id": "oxywater",
+      "market_code": "id",
+      "brand": "Oxywater",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 15,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 10.8,
+        "alkalinity_ppm_as_caco3": 9.2,
+        "calcium_mg_l": 3,
+        "magnesium_mg_l": 0.8,
+        "bicarbonate_mg_l": 7.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "perfect-id",
+      "brand_group_id": "perfect",
+      "market_code": "id",
+      "brand": "Perfect",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 29,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 20.7,
+        "alkalinity_ppm_as_caco3": 17.7,
+        "calcium_mg_l": 5.8,
+        "magnesium_mg_l": 1.5,
+        "bicarbonate_mg_l": 14.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "poland-spring-global",
+      "brand_group_id": "poland-spring",
+      "market_code": "global",
+      "brand": "Poland Spring",
+      "country_origin": "USA",
+      "captured_values": {
+        "tds_ppm": 110,
+        "ph": null,
+        "hardness_ppm_as_caco3": 82.3,
+        "alkalinity_ppm_as_caco3": 61,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "polar-id",
+      "brand_group_id": "polar",
+      "market_code": "id",
+      "brand": "Polar",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 110,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 77.6,
+        "alkalinity_ppm_as_caco3": 67.1,
+        "calcium_mg_l": 22,
+        "magnesium_mg_l": 5.5,
+        "bicarbonate_mg_l": 55
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "polar-sg",
+      "brand_group_id": "polar",
+      "market_code": "sg",
+      "brand": "Polar",
+      "country_origin": "Singapore",
+      "captured_values": {
+        "tds_ppm": 110,
+        "ph": null,
+        "hardness_ppm_as_caco3": 77.6,
+        "alkalinity_ppm_as_caco3": 67.1,
+        "calcium_mg_l": 2.4,
+        "magnesium_mg_l": 0.9,
+        "bicarbonate_mg_l": 25
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "prima-id",
+      "brand_group_id": "prima",
+      "market_code": "id",
+      "brand": "Prima",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 67,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 47.5,
+        "alkalinity_ppm_as_caco3": 40.9,
+        "calcium_mg_l": 13.4,
+        "magnesium_mg_l": 3.4,
+        "bicarbonate_mg_l": 33.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "pristine-8-6-plus-id",
+      "brand_group_id": "pristine-8-6-plus",
+      "market_code": "id",
+      "brand": "Pristine 8.6+",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 29,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 20.7,
+        "alkalinity_ppm_as_caco3": 17.7,
+        "calcium_mg_l": 5.8,
+        "magnesium_mg_l": 1.5,
+        "bicarbonate_mg_l": 14.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "pristine-8-plus-id",
+      "brand_group_id": "pristine-8-plus",
+      "market_code": "id",
+      "brand": "Pristine 8+",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "pure-life-global",
+      "brand_group_id": "pure-life",
+      "market_code": "global",
+      "brand": "Pure Life",
+      "country_origin": "Global",
+      "captured_values": {
+        "tds_ppm": 150,
+        "ph": null,
+        "hardness_ppm_as_caco3": 115.7,
+        "alkalinity_ppm_as_caco3": 18,
+        "calcium_mg_l": 37.6,
+        "magnesium_mg_l": 5.3,
+        "bicarbonate_mg_l": 22
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "pure-life-sg",
+      "brand_group_id": "pure-life",
+      "market_code": "sg",
+      "brand": "Pure Life",
+      "country_origin": "Singapore",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "rivero-id",
+      "brand_group_id": "rivero",
+      "market_code": "id",
+      "brand": "Rivero",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 48,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 33.9,
+        "alkalinity_ppm_as_caco3": 29.3,
+        "calcium_mg_l": 9.6,
+        "magnesium_mg_l": 2.4,
+        "bicarbonate_mg_l": 24
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "ron-88-id",
+      "brand_group_id": "ron-88",
+      "market_code": "id",
+      "brand": "Ron 88",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 74,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 52.2,
+        "alkalinity_ppm_as_caco3": 45.1,
+        "calcium_mg_l": 14.8,
+        "magnesium_mg_l": 3.7,
+        "bicarbonate_mg_l": 37
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "rona-id",
+      "brand_group_id": "rona",
+      "market_code": "id",
+      "brand": "Rona",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 69,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 48.9,
+        "alkalinity_ppm_as_caco3": 42.1,
+        "calcium_mg_l": 13.8,
+        "magnesium_mg_l": 3.5,
+        "bicarbonate_mg_l": 34.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "san-pellegrino-sg",
+      "brand_group_id": "san-pellegrino",
+      "market_code": "sg",
+      "brand": "San Pellegrino",
+      "country_origin": "Italy",
+      "captured_values": {
+        "tds_ppm": 1100,
+        "ph": null,
+        "hardness_ppm_as_caco3": 616.3,
+        "alkalinity_ppm_as_caco3": 552,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "segar-id",
+      "brand_group_id": "segar",
+      "market_code": "id",
+      "brand": "Segar",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 90,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 63.5,
+        "alkalinity_ppm_as_caco3": 54.9,
+        "calcium_mg_l": 18,
+        "magnesium_mg_l": 4.5,
+        "bicarbonate_mg_l": 45
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "sejuk-id",
+      "brand_group_id": "sejuk",
+      "market_code": "id",
+      "brand": "Sejuk",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 33,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 23.5,
+        "alkalinity_ppm_as_caco3": 20.1,
+        "calcium_mg_l": 6.6,
+        "magnesium_mg_l": 1.7,
+        "bicarbonate_mg_l": 16.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "spritzer-bn",
+      "brand_group_id": "spritzer",
+      "market_code": "bn",
+      "brand": "Spritzer",
+      "country_origin": "Malaysia",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "spritzer-my",
+      "brand_group_id": "spritzer",
+      "market_code": "my",
+      "brand": "Spritzer",
+      "country_origin": "Malaysia",
+      "captured_values": {
+        "tds_ppm": 160,
+        "ph": 7.65,
+        "hardness_ppm_as_caco3": 88.6,
+        "alkalinity_ppm_as_caco3": 85.3,
+        "calcium_mg_l": 31,
+        "magnesium_mg_l": 2.7,
+        "bicarbonate_mg_l": 104
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "spritzer-sg",
+      "brand_group_id": "spritzer",
+      "market_code": "sg",
+      "brand": "Spritzer",
+      "country_origin": "Malaysia",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "suci-bn",
+      "brand_group_id": "suci",
+      "market_code": "bn",
+      "brand": "Suci",
+      "country_origin": "Brunei",
+      "captured_values": {
+        "tds_ppm": 12,
+        "ph": null,
+        "hardness_ppm_as_caco3": 8.5,
+        "alkalinity_ppm_as_caco3": 7.3,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "suci-id",
+      "brand_group_id": "suci",
+      "market_code": "id",
+      "brand": "Suci",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 12,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 8.5,
+        "alkalinity_ppm_as_caco3": 7.3,
+        "calcium_mg_l": 2.4,
+        "magnesium_mg_l": 0.6,
+        "bicarbonate_mg_l": 6
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "sumber-air-sehat-id",
+      "brand_group_id": "sumber-air-sehat",
+      "market_code": "id",
+      "brand": "Sumber Air Sehat",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 42,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 29.6,
+        "alkalinity_ppm_as_caco3": 25.6,
+        "calcium_mg_l": 8.4,
+        "magnesium_mg_l": 2.1,
+        "bicarbonate_mg_l": 21
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "sumurup-id",
+      "brand_group_id": "sumurup",
+      "market_code": "id",
+      "brand": "Sumurup",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 83,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 58.7,
+        "alkalinity_ppm_as_caco3": 50.6,
+        "calcium_mg_l": 16.6,
+        "magnesium_mg_l": 4.2,
+        "bicarbonate_mg_l": 41.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "suntory-tennensui-global",
+      "brand_group_id": "suntory-tennensui",
+      "market_code": "global",
+      "brand": "Suntory Tennensui",
+      "country_origin": "Japan",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "suntory-tennensui-sg",
+      "brand_group_id": "suntory-tennensui",
+      "market_code": "sg",
+      "brand": "Suntory Tennensui",
+      "country_origin": "Japan",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "super-o2-id",
+      "brand_group_id": "super-o2",
+      "market_code": "id",
+      "brand": "Super O2",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 5,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 3.3,
+        "alkalinity_ppm_as_caco3": 3,
+        "calcium_mg_l": 1,
+        "magnesium_mg_l": 0.2,
+        "bicarbonate_mg_l": 2.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "tirta-fresh-id",
+      "brand_group_id": "tirta-fresh",
+      "market_code": "id",
+      "brand": "Tirta Fresh",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 54,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 38.1,
+        "alkalinity_ppm_as_caco3": 32.9,
+        "calcium_mg_l": 10.8,
+        "magnesium_mg_l": 2.7,
+        "bicarbonate_mg_l": 27
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "tirtone-id",
+      "brand_group_id": "tirtone",
+      "market_code": "id",
+      "brand": "Tirtone",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 35,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 24.9,
+        "alkalinity_ppm_as_caco3": 21.3,
+        "calcium_mg_l": 7,
+        "magnesium_mg_l": 1.8,
+        "bicarbonate_mg_l": 17.5
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "total-8-plus-id",
+      "brand_group_id": "total-8-plus",
+      "market_code": "id",
+      "brand": "Total 8+",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 102,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 71.9,
+        "alkalinity_ppm_as_caco3": 62.2,
+        "calcium_mg_l": 20.4,
+        "magnesium_mg_l": 5.1,
+        "bicarbonate_mg_l": 51
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "vit-id",
+      "brand_group_id": "vit",
+      "market_code": "id",
+      "brand": "Vit",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 120,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 84.6,
+        "alkalinity_ppm_as_caco3": 73.2,
+        "calcium_mg_l": 24,
+        "magnesium_mg_l": 6,
+        "bicarbonate_mg_l": 60
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "vittel-global",
+      "brand_group_id": "vittel",
+      "market_code": "global",
+      "brand": "Vittel",
+      "country_origin": "France",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "volvic-bn",
+      "brand_group_id": "volvic",
+      "market_code": "bn",
+      "brand": "Volvic",
+      "country_origin": "France",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "volvic-global",
+      "brand_group_id": "volvic",
+      "market_code": "global",
+      "brand": "Volvic",
+      "country_origin": "France",
+      "captured_values": {
+        "tds_ppm": 130,
+        "ph": null,
+        "hardness_ppm_as_caco3": 62.9,
+        "alkalinity_ppm_as_caco3": 91.5,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "volvic-my",
+      "brand_group_id": "volvic",
+      "market_code": "my",
+      "brand": "Volvic",
+      "country_origin": "France",
+      "captured_values": {
+        "tds_ppm": 130,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 62.9,
+        "alkalinity_ppm_as_caco3": 91.5,
+        "calcium_mg_l": 11.5,
+        "magnesium_mg_l": 8,
+        "bicarbonate_mg_l": 71
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "volvic-sg",
+      "brand_group_id": "volvic",
+      "market_code": "sg",
+      "brand": "Volvic",
+      "country_origin": "France",
+      "captured_values": {
+        "tds_ppm": 130,
+        "ph": 7,
+        "hardness_ppm_as_caco3": 62.9,
+        "alkalinity_ppm_as_caco3": 91.5,
+        "calcium_mg_l": 11.5,
+        "magnesium_mg_l": 8,
+        "bicarbonate_mg_l": 71
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "watersan-id",
+      "brand_group_id": "watersan",
+      "market_code": "id",
+      "brand": "Watersan",
+      "country_origin": "Indonesia",
+      "captured_values": {
+        "tds_ppm": 72,
+        "ph": 7.2,
+        "hardness_ppm_as_caco3": 50.8,
+        "alkalinity_ppm_as_caco3": 43.9,
+        "calcium_mg_l": 14.4,
+        "magnesium_mg_l": 3.6,
+        "bicarbonate_mg_l": 36
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "watsons-water-global",
+      "brand_group_id": "watsons-water",
+      "market_code": "global",
+      "brand": "Watsons Water",
+      "country_origin": "Hong Kong",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    },
+    {
+      "id": "watsons-water-sg",
+      "brand_group_id": "watsons-water",
+      "market_code": "sg",
+      "brand": "Watsons Water",
+      "country_origin": "Hong Kong",
+      "captured_values": {
+        "tds_ppm": null,
+        "ph": null,
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "calcium_mg_l": null,
+        "magnesium_mg_l": null,
+        "bicarbonate_mg_l": null
+      },
+      "note": "Repository-local curated seed snapshot used only as non-official raw evidence. Verify against public label/lab sources before promoting confidence."
+    }
+  ]
+}

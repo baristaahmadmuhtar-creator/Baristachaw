@@ -16,7 +16,6 @@ async function qaLogin(request: APIRequestContext) {
 test.afterEach(async ({ page }) => {
   await qaLogout(page.request);
 });
-
 async function openQuickBuilder(page: import('@playwright/test').Page) {
   await page.goto('/tools');
   await clearClientState(page);
@@ -180,7 +179,7 @@ test('ai brew auto sequence keeps deterministic operational steps when mocked AI
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -197,7 +196,7 @@ test('ai brew precision builder applies barista target controls and keeps extra 
   await setVisibleInputValue(page, 'ai-brew-dose', '15');
   await setVisibleInputValue(page, 'ai-brew-target-ratio', '15.5');
   await setVisibleInputValue(page, 'ai-brew-target-temp', '92');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -218,7 +217,7 @@ test('ai brew taste feedback is saved in the local brew journal', async ({ page 
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Taste Feedback Loop');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const feedbackPanel = page.getByTestId('ai-brew-taste-feedback');
@@ -256,7 +255,7 @@ test('ai brew auto sequence keeps deterministic sequence when AI responses timeo
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Timeout Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -298,7 +297,7 @@ test('ai brew auto sequence falls back when mocked AI mixes conflicting method c
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Method-Conflict Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -340,7 +339,7 @@ test('ai brew auto sequence falls back when AI references unsupported hardware t
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Unsupported Hardware Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -398,7 +397,7 @@ test('ai brew iced sequence falls back when AI omits explicit hot-ice split pair
   await openQuickBuilder(page);
   await page.getByTestId('ai-brew-builder-mode-iced').click();
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Iced Split Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -444,7 +443,7 @@ test('ai brew auto sequence falls back when AI wait timing exceeds deterministic
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Cadence Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -485,7 +484,7 @@ test('ai brew auto sequence falls back when AI repeats one template shell across
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Template-Shell Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -526,7 +525,7 @@ test('ai brew auto sequence falls back when AI changes brew parameters mid-seque
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Mid-Run Shift Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -567,7 +566,7 @@ test('ai brew auto sequence falls back when AI chains second pour checkpoint ins
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Multi-Pour Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -609,7 +608,7 @@ test('ai brew auto sequence falls back when step 1 carries closure-phase wording
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Phase Intent Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -652,7 +651,7 @@ test('ai brew auto sequence repairs weak watch section while preserving valid AI
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Partial Repair');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -696,7 +695,7 @@ test('ai brew auto sequence falls back when AI uses hedging language in sequence
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Hedging Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -737,7 +736,7 @@ test('ai brew auto sequence normalizes safe free-form AI steps into deterministi
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Step Normalization Repair');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -784,7 +783,7 @@ test('ai brew auto sequence repairs non-canonical deterministic prefix formattin
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Prefix Normalization Repair');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -826,7 +825,7 @@ test('ai brew auto sequence repairs shifted deterministic timestamps from AI bac
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Timestamp Checkpoint Repair');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -868,7 +867,7 @@ test('ai brew auto sequence falls back when AI injects extra absolute clock time
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Extra Clock Tail Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -908,7 +907,7 @@ test('ai brew auto sequence falls back when balanced target drifts into body-onl
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Balanced Drift Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -965,7 +964,7 @@ test('ai brew auto sequence repairs conflicting method cues in support sections 
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Method Cue Repair');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -1010,7 +1009,7 @@ test('ai brew auto sequence falls back when body target mixes conflicting acidit
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Body Conflict Fallback');
   await clickTargetProfile(page, 'quick', 'More Body');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -1052,7 +1051,7 @@ test('ai brew auto sequence falls back when one body-target step mixes opposing 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Single-Line Body Conflict');
   await clickTargetProfile(page, 'quick', 'More Body');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -1108,7 +1107,7 @@ test('ai brew auto sequence falls back when AI injects post-brew dilution top-up
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Dilution Topup Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -1148,7 +1147,7 @@ test('ai brew auto sequence falls back when AI injects next-cup troubleshooting 
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Next-Cup Step Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -1163,7 +1162,7 @@ test('ai brew deterministic sequence changes checkpoint timeline across target c
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Timeline Context Shift');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
 
   await page.getByTestId('ai-brew-generate').click();
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -1196,25 +1195,27 @@ test('ai brew deterministic sequence changes pour-map structure across bean extr
 
   await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Bean Context Shift');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
 
   await page.getByTestId('ai-brew-generate').click();
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
   await expect(sequenceNote).toBeVisible({ timeout: 60_000 });
   const baselinePlan = await readStoredPlan(page);
-  const baselinePours = baselinePlan.steps.map((step) => step.pourVolumeMl);
-  const baselineShares = baselinePlan.steps.map((step) => step.pourVolumeMl / baselinePlan.hotWaterMl);
+  const baselinePourSteps = baselinePlan.steps.filter((step) => step.pourVolumeMl > 0);
+  const baselinePours = baselinePourSteps.map((step) => step.pourVolumeMl);
+  const baselineShares = baselinePourSteps.map((step) => step.pourVolumeMl / baselinePlan.hotWaterMl);
   await expect(baselinePours.length).toBeGreaterThan(2);
 
-  await page.getByRole('button', { name: 'Edit inputs' }).click();
+  await page.getByRole('button', { name: /Edit input|Edit inputs|Ubah input/i }).click();
   await page.getByTestId('ai-brew-bean-profile-toggle').click();
   await page.getByTestId('ai-brew-bean-roast-underdeveloped').click();
   await page.getByTestId('ai-brew-bean-solubility-low').click();
   await page.getByTestId('ai-brew-generate').click();
   await expect(sequenceNote).toBeVisible({ timeout: 60_000 });
   const resistantPlan = await readStoredPlan(page);
-  const resistantPours = resistantPlan.steps.map((step) => step.pourVolumeMl);
-  const resistantShares = resistantPlan.steps.map((step) => step.pourVolumeMl / resistantPlan.hotWaterMl);
+  const resistantPourSteps = resistantPlan.steps.filter((step) => step.pourVolumeMl > 0);
+  const resistantPours = resistantPourSteps.map((step) => step.pourVolumeMl);
+  const resistantShares = resistantPourSteps.map((step) => step.pourVolumeMl / resistantPlan.hotWaterMl);
 
   await expect(resistantPours.length).toBeGreaterThan(2);
   await expect(resistantPours).not.toEqual(baselinePours);
@@ -1254,7 +1255,7 @@ test('ai brew auto sequence falls back when AI conflicts with easy extraction pr
 
   await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Extraction-Pressure Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-bean-profile-toggle').click();
   await page.getByTestId('ai-brew-bean-roast-developed').click();
   await page.getByTestId('ai-brew-bean-solubility-high').click();
@@ -1298,7 +1299,7 @@ test('ai brew auto sequence falls back when AI hold distribution conflicts with 
 
   await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Cadence-Profile Fallback');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await clickTargetProfile(page, 'pro', 'More Acidity');
   await page.getByTestId('ai-brew-bean-profile-toggle').click();
   await page.getByTestId('ai-brew-bean-roast-underdeveloped').click();
@@ -1344,7 +1345,7 @@ test('ai brew auto sequence repairs generic service pattern while preserving val
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Service Pattern Repair');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');
@@ -1391,7 +1392,7 @@ test('ai brew auto sequence repairs watch section without deterministic envelope
 
   await openQuickBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Watch Envelope Repair');
-  await pickWater(page, 'volvic', 'volvic-sg');
+  await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
   const sequenceNote = page.getByTestId('ai-brew-sequence-note');

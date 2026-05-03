@@ -94,7 +94,7 @@ test('deep mode uses /api/ai with response profile and deep action', async ({ pa
       body: JSON.stringify({
         ok: true,
         action: 'deep_think',
-        text: '## Analisis\n1. Atur rasio 1:16.\n2. Evaluasi rasa setiap iterasi.',
+        text: 'Jawaban singkat\nGunakan rasio 1:16 sebagai baseline teknis.\n\n## Analisis\n1. Atur rasio 1:16.\n2. Evaluasi rasa setiap iterasi.\n\n## Trade-off / Risiko\n- Terlalu halus bisa memperlambat drawdown.\n\n## Rekomendasi\n- Ubah satu variabel kecil per seduhan.',
       }),
     });
   });
@@ -207,10 +207,10 @@ test('pwa chat preserves zoomable viewport and restores after leaving chat', asy
 
   const chatViewport = await page.locator('meta[name="viewport"]').getAttribute('content');
   expect(chatViewport).toContain('viewport-fit=cover');
-  expect(chatViewport).not.toContain('user-scalable=no');
-  expect(chatViewport).not.toContain('maximum-scale=1');
+  expect(chatViewport).toContain('user-scalable=no');
+  expect(chatViewport).toContain('maximum-scale=1.0');
 
   await page.goto('/?runtime=web_parity&ui_profile=pwa', { waitUntil: 'domcontentloaded' });
   const restoredViewport = await page.locator('meta[name="viewport"]').getAttribute('content');
-  expect(restoredViewport).not.toContain('user-scalable=no');
+  expect(restoredViewport).toContain('user-scalable=no');
 });

@@ -810,6 +810,32 @@ export async function editLatteArtImage(
   return result.imageDataUrl;
 }
 
+function withStrictAnswerInstruction(prompt: string, mode: 'fast' | 'normal' | 'deep') {
+  const contract = mode === 'fast'
+    ? [
+        'Mode contract: answer in 3-5 concise bullets.',
+        'Answer the actual user question immediately. No long intro.',
+      ]
+    : mode === 'deep'
+      ? [
+          'Mode contract: start with "Jawaban singkat", then "Analisis", then "Trade-off / Risiko", then "Rekomendasi".',
+          'Do not show a generic wizard when the user already asked a clear question.',
+        ]
+      : [
+          'Mode contract: use clear markdown, cover every requested aspect, and include practical recommendations.',
+        ];
+
+  return [
+    prompt,
+    '',
+    'Strict answer contract:',
+    'Answer the actual user question. Do not reuse previous recipe/template unless requested.',
+    'If asked to compare multiple methods, compare all named methods.',
+    'Do not introduce unrelated coffee origins, recipes, prices, repo files, functions, tests, or deployment status.',
+    ...contract,
+  ].join('\n');
+}
+
 async function structuredTextResponseDetailed(
   action: "fast" | "balanced",
   prompt: string,
@@ -818,6 +844,7 @@ async function structuredTextResponseDetailed(
     model?: string;
   },
 ): Promise<StructuredTextDetailedPayload> {
+  const strictPrompt = withStrictAnswerInstruction(prompt, action === 'fast' ? 'fast' : 'normal');
   const fallbackMessage = localize(
     "Sorry, I could not process your request. Please try again.",
     "Maaf, permintaan Anda belum bisa diproses. Silakan coba lagi.",
@@ -827,7 +854,7 @@ async function structuredTextResponseDetailed(
   try {
     const result = await serverAi(
       action,
-      prompt,
+      strictPrompt,
       options?.model ? { model: options.model } : undefined,
       requestContext,
     );
@@ -849,7 +876,7 @@ async function structuredTextResponseDetailed(
     };
   } catch (error) {
     try {
-      const fallbackText = await serverChat(prompt, requestContext);
+      const fallbackText = await serverChat(strictPrompt, requestContext);
       const text = String(fallbackText || '').trim();
       if (text) {
         return {
@@ -971,8 +998,9 @@ export async function deepThinkingResponseDetailed(
   prompt: string,
   requestContext?: ChatRequestContextPayload,
 ): Promise<DeepThinkingDetailedPayload> {
+  const strictPrompt = withStrictAnswerInstruction(prompt, 'deep');
   try {
-    const result = await serverAi("deep_think", prompt, undefined, requestContext);
+    const result = await serverAi("deep_think", strictPrompt, undefined, requestContext);
     const text = String(result.text || '').trim();
     if (!text) {
       throw new DeepThinkingError('Deep response was empty.', {

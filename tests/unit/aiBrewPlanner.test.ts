@@ -36,7 +36,7 @@ import { buildGenerateBriefPrompt } from '../../apps/web/src/features/ai-brew/pr
 import { resolveBrewerProfileTrustStatus } from '../../apps/web/src/features/ai-brew/catalogTrust.ts';
 import { sanitizeBrewNarrative, validateBrewPlanOutput } from '../../apps/web/src/features/ai-brew/antiHallucination.ts';
 import { sanitizeAiCoachMarkdown } from '../../apps/web/src/features/ai-brew/coachGuard.ts';
-import { resolveAiWaterMineralAssist } from '../../apps/web/src/features/ai-brew/waterMineralAssist.ts';
+import { resolveWaterMineralCompletion } from '../../apps/web/src/features/ai-brew/waterMineralCompletion.ts';
 import type { AiBrewCatalog, AiBrewFormState, AiBrewMethodFamily } from '../../apps/web/src/features/ai-brew/types.ts';
 import type { BrewMethodId } from '../../apps/web/src/features/barista-tools/types.ts';
 
@@ -1470,33 +1470,34 @@ test('AI Brew planner requires manual minerals for blocked or estimated water br
   assert.match(evian.warnings.join(' '), /High alkalinity|buffer/i);
 });
 
-test('AI water mineral assist fills safe manual baselines without reclassifying blocked brands', () => {
+test('water mineral completion fills safe manual baselines without reclassifying blocked brands', () => {
   const amidis = catalog.waterBrands.find((water) => water.id === 'amidis-id');
   assert.ok(amidis);
 
-  const amidisAssist = resolveAiWaterMineralAssist({
+  const amidisCompletion = resolveWaterMineralCompletion({
     waterBrand: amidis,
     guidance: catalog.waterGuidance,
     language: 'id',
+    targetProfileId: 'more_sweetness',
   });
 
-  assert.equal(amidisAssist.mode, 'remineralization_target');
-  assert.equal(amidisAssist.confidence, 'low');
-  assert.ok(amidisAssist.tdsPpm >= 70 && amidisAssist.tdsPpm <= 120);
-  assert.ok(amidisAssist.hardnessPpm >= 45 && amidisAssist.hardnessPpm <= 70);
-  assert.ok(amidisAssist.alkalinityPpm >= 30 && amidisAssist.alkalinityPpm <= 50);
-  assert.notEqual(amidisAssist.tdsPpm, amidis.resolvedMinerals?.tdsPpm);
-  assert.match(`${amidisAssist.note} ${amidisAssist.warnings.join(' ')}`, /remineralisasi|low-mineral/i);
+  assert.equal(amidisCompletion.mode, 'remineralization_target');
+  assert.equal(amidisCompletion.confidence, 'low');
+  assert.ok(amidisCompletion.tdsPpm >= 70 && amidisCompletion.tdsPpm <= 125);
+  assert.ok(amidisCompletion.hardnessPpm >= 45 && amidisCompletion.hardnessPpm <= 75);
+  assert.ok(amidisCompletion.alkalinityPpm >= 30 && amidisCompletion.alkalinityPpm <= 50);
+  assert.notEqual(amidisCompletion.tdsPpm, amidis.resolvedMinerals?.tdsPpm);
+  assert.match(`${amidisCompletion.note} ${amidisCompletion.warnings.join(' ')}`, /remineralisasi|low-mineral/i);
 
   const plan = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),
-    coffeeName: 'AI-assisted low mineral water',
+    coffeeName: 'Completed low mineral water',
     waterMode: 'brand',
     waterBrandId: 'amidis-id',
-    waterTdsPpm: String(amidisAssist.tdsPpm),
-    waterHardnessPpm: String(amidisAssist.hardnessPpm),
-    waterAlkalinityPpm: String(amidisAssist.alkalinityPpm),
-    waterNotes: amidisAssist.note,
+    waterTdsPpm: String(amidisCompletion.tdsPpm),
+    waterHardnessPpm: String(amidisCompletion.hardnessPpm),
+    waterAlkalinityPpm: String(amidisCompletion.alkalinityPpm),
+    waterNotes: amidisCompletion.note,
     waterCustomized: true,
   }, catalog);
 
@@ -1507,15 +1508,28 @@ test('AI water mineral assist fills safe manual baselines without reclassifying 
 
   const estimatedWater = catalog.waterBrands.find((water) => water.id === 'estimated-water');
   assert.ok(estimatedWater);
-  const estimatedAssist = resolveAiWaterMineralAssist({
+  const estimatedCompletion = resolveWaterMineralCompletion({
     waterBrand: estimatedWater,
     guidance: catalog.waterGuidance,
     language: 'en',
   });
-  assert.equal(estimatedAssist.mode, 'estimated_baseline');
-  assert.equal(estimatedAssist.confidence, 'low');
-  assert.equal(estimatedAssist.tdsPpm, 100);
-  assert.match(`${estimatedAssist.note} ${estimatedAssist.warnings.join(' ')}`, /estimate|verify/i);
+  assert.equal(estimatedCompletion.mode, 'classification_baseline');
+  assert.equal(estimatedCompletion.confidence, 'low');
+  assert.equal(estimatedCompletion.tdsPpm, 100);
+  assert.match(`${estimatedCompletion.note} ${estimatedCompletion.warnings.join(' ')}`, /estimate|verify/i);
+
+  const aqua = catalog.waterBrands.find((water) => water.id === 'aqua-id');
+  assert.ok(aqua);
+  const aquaCompletion = resolveWaterMineralCompletion({
+    waterBrand: aqua,
+    guidance: catalog.waterGuidance,
+    language: 'en',
+    targetProfileId: 'more_body',
+  });
+  assert.equal(aquaCompletion.mode, 'classification_baseline');
+  assert.ok(aquaCompletion.tdsPpm >= 120);
+  assert.ok(aquaCompletion.hardnessPpm >= 70);
+  assert.match(aquaCompletion.note, /classification/i);
 });
 
 test('AI Brew optimizer can adjust iced plans without breaking planner guardrails', () => {

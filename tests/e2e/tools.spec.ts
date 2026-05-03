@@ -441,9 +441,9 @@ test('ai brew blocks low-mineral waters until manual minerals are entered', asyn
   await expect(page.getByTestId('ai-brew-water-hardness')).toHaveValue('');
   await expect(page.getByTestId('ai-brew-water-alkalinity')).toHaveValue('');
 
-  await expect(page.getByTestId('ai-brew-water-ai-mineral-assist')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-water-ai-mineral-hint')).toContainText(/RO|low-mineral|remineralization/i);
-  await page.getByTestId('ai-brew-water-ai-mineral-assist').click();
+  await expect(page.getByTestId('ai-brew-water-complete-minerals')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-water-complete-minerals-hint')).toContainText(/RO|low-mineral|remineralization/i);
+  await page.getByTestId('ai-brew-water-complete-minerals').click();
   await expect(page.getByTestId('ai-brew-water-tds')).toHaveValue(/\d+/);
   await expect(page.getByTestId('ai-brew-water-hardness')).toHaveValue(/\d+/);
   await expect(page.getByTestId('ai-brew-water-alkalinity')).toHaveValue(/\d+/);
@@ -461,8 +461,8 @@ test('ai brew labels estimated water as manual verification only', async ({ page
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/HeySong/i);
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/Estimated.*verify manually|Estimated.*manual/i);
   await expect(page.getByTestId('ai-brew-generate')).toBeDisabled();
-  await expect(page.getByTestId('ai-brew-water-ai-mineral-assist')).toBeVisible();
-  await page.getByTestId('ai-brew-water-ai-mineral-assist').click();
+  await expect(page.getByTestId('ai-brew-water-complete-minerals')).toBeVisible();
+  await page.getByTestId('ai-brew-water-complete-minerals').click();
   await expect(page.getByTestId('ai-brew-water-tds')).toHaveValue(/\d+/);
   await expect(page.getByTestId('ai-brew-water-hardness')).toHaveValue(/\d+/);
   await expect(page.getByTestId('ai-brew-water-alkalinity')).toHaveValue(/\d+/);

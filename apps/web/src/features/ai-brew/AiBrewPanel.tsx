@@ -46,7 +46,7 @@ import {
 import { buildDeterministicAiCoachMarkdown } from './coachNotes';
 import { sanitizeBrewNarrative } from './antiHallucination';
 import { sanitizeAiCoachMarkdown } from './coachGuard';
-import { resolveAiWaterMineralAssist } from './waterMineralAssist';
+import { resolveWaterMineralCompletion } from './waterMineralCompletion';
 import {
   composeHybridSequenceOverlay,
   extractSequenceOverlayFromMarkdown,
@@ -256,12 +256,12 @@ const COPY = {
     waterUseAsRoBase: 'Use as RO base; add minerals manually.',
     waterHighBufferWarning: 'High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans.',
     waterAlkalineWarning: 'Alkaline water can mute acidity. Verify manually before treating it as filter friendly.',
-    waterAiMineralAssist: 'AI fill minerals',
-    waterAiMineralAssistHint: 'AI-assisted baseline for beginners. It stays manual and shows confidence, so the app does not claim unverified values as official.',
-    waterAiMineralAssistApplied: 'AI mineral baseline filled. Review the notes, then generate.',
-    waterAiMineralAssistUnavailable: 'Choose a water brand first.',
-    waterAiMineralAssistRoNote: 'For RO/low-mineral water, this is a remineralization target, not the original label profile.',
-    waterAiMineralAssistEstimatedNote: 'Estimated baseline — verify manually before publishing this as a brand profile.',
+    waterCompleteMinerals: 'Complete minerals',
+    waterCompleteMineralsHint: 'Fills missing fields from catalog data, partial brand chemistry, or a conservative classification baseline. It remains manual until verified.',
+    waterCompleteMineralsApplied: 'Minerals completed. Review the notes, then generate.',
+    waterCompleteMineralsUnavailable: 'Choose a water brand first.',
+    waterCompleteMineralsRoNote: 'For RO/low-mineral water, this is a remineralization target, not the original label profile.',
+    waterCompleteMineralsEstimatedNote: 'Classification baseline — verify manually before publishing this as a brand profile.',
     waterWhyManualTitle: 'Why manual?',
     waterWhyManualBody: 'Manual is required when the mineral panel is incomplete, estimated, too low-mineral, alkaline/high-buffer, or not backed by a trusted public source. This prevents false “ready brew” claims and bad recipes.',
     waterEditMinerals: 'Edit minerals',
@@ -629,12 +629,12 @@ const COPY = {
     waterUseAsRoBase: 'Pakai sebagai base RO; tambahkan mineral manual.',
     waterHighBufferWarning: 'Alkalinitas/buffer tinggi bisa meredam acidity dan membuat kopi floral terasa datar. Pakai kontak lebih pendek atau mineral manual untuk bean delicate.',
     waterAlkalineWarning: 'Air alkaline bisa meredam acidity. Verifikasi manual sebelum dianggap ramah filter.',
-    waterAiMineralAssist: 'AI isi mineral',
-    waterAiMineralAssistHint: 'Baseline bantuan AI untuk pemula. Statusnya tetap manual dan menampilkan confidence, jadi app tidak mengklaim nilai belum terverifikasi sebagai resmi.',
-    waterAiMineralAssistApplied: 'Baseline mineral AI sudah diisi. Cek catatan, lalu buat seduhan.',
-    waterAiMineralAssistUnavailable: 'Pilih brand air dulu.',
-    waterAiMineralAssistRoNote: 'Untuk air RO/low-mineral, ini target remineralisasi, bukan profil mineral asli label.',
-    waterAiMineralAssistEstimatedNote: 'Baseline estimasi — verifikasi manual sebelum dipublikasikan sebagai profil brand.',
+    waterCompleteMinerals: 'Lengkapi mineral',
+    waterCompleteMineralsHint: 'Mengisi field kosong dari data katalog, chemistry brand yang tersedia, atau baseline klasifikasi konservatif. Statusnya tetap manual sampai terverifikasi.',
+    waterCompleteMineralsApplied: 'Mineral sudah dilengkapi. Cek catatan, lalu buat seduhan.',
+    waterCompleteMineralsUnavailable: 'Pilih brand air dulu.',
+    waterCompleteMineralsRoNote: 'Untuk air RO/low-mineral, ini target remineralisasi, bukan profil mineral asli label.',
+    waterCompleteMineralsEstimatedNote: 'Baseline klasifikasi — verifikasi manual sebelum dipublikasikan sebagai profil brand.',
     waterWhyManualTitle: 'Kenapa manual?',
     waterWhyManualBody: 'Manual wajib ketika panel mineral belum lengkap, masih estimasi, terlalu rendah mineral, alkaline/high-buffer, atau belum didukung sumber publik tepercaya. Ini mencegah klaim “siap seduh” yang salah dan resep yang buruk.',
     waterEditMinerals: 'Edit mineral',
@@ -4416,14 +4416,15 @@ export function AiBrewPanel({
     return catalog.waterBrands.find((item) => item.id === formState.waterBrandId) || null;
   }, [catalog, formState.waterBrandId]);
 
-  const selectedWaterAiAssist = useMemo(() => {
+  const selectedWaterCompletion = useMemo(() => {
     if (!catalog || !selectedWaterBrand) return null;
-    return resolveAiWaterMineralAssist({
+    return resolveWaterMineralCompletion({
       waterBrand: selectedWaterBrand,
       guidance: catalog.waterGuidance,
       language,
+      targetProfileId: formState.targetProfileId,
     });
-  }, [catalog, language, selectedWaterBrand]);
+  }, [catalog, formState.targetProfileId, language, selectedWaterBrand]);
 
   const waterTargetFitHint = useMemo(() => (
     buildWaterTargetFitHint(language, copy, formState.targetProfileId, selectedWaterBrand)
@@ -4557,7 +4558,7 @@ export function AiBrewPanel({
 
   const mineralsReady = Boolean(formState.waterTdsPpm && formState.waterHardnessPpm && formState.waterAlkalinityPpm);
   const selectedWaterBrandCanAutofill = isWaterBrandAutofillAllowed(selectedWaterBrand);
-  const canUseWaterAiAssist = Boolean(selectedWaterBrand && selectedWaterAiAssist && !selectedWaterBrandCanAutofill);
+  const canCompleteWaterMinerals = Boolean(selectedWaterBrand && selectedWaterCompletion && !selectedWaterBrandCanAutofill);
   const waterNeedsManualEntry = formState.waterMode === 'manual'
     || !selectedWaterBrand
     || !selectedWaterBrandCanAutofill
@@ -4663,15 +4664,15 @@ export function AiBrewPanel({
     }
   }
 
-  function applyWaterAiMineralAssist() {
-    if (!selectedWaterBrand || !selectedWaterAiAssist) {
-      setNotice(copy.waterAiMineralAssistUnavailable);
+  function applyWaterMineralCompletion() {
+    if (!selectedWaterBrand || !selectedWaterCompletion) {
+      setNotice(copy.waterCompleteMineralsUnavailable);
       return;
     }
 
     const noteParts = [
-      selectedWaterAiAssist.note,
-      ...selectedWaterAiAssist.warnings,
+      selectedWaterCompletion.note,
+      ...selectedWaterCompletion.warnings,
     ].filter(Boolean);
 
     setFormState((prev) => ({
@@ -4680,14 +4681,14 @@ export function AiBrewPanel({
       waterRegion: selectedWaterBrand.marketCode,
       waterBrandId: selectedWaterBrand.id,
       waterCustomized: true,
-      waterTdsPpm: formatWaterMineralInput(selectedWaterAiAssist.tdsPpm),
-      waterHardnessPpm: formatWaterMineralInput(selectedWaterAiAssist.hardnessPpm),
-      waterAlkalinityPpm: formatWaterMineralInput(selectedWaterAiAssist.alkalinityPpm),
+      waterTdsPpm: formatWaterMineralInput(selectedWaterCompletion.tdsPpm),
+      waterHardnessPpm: formatWaterMineralInput(selectedWaterCompletion.hardnessPpm),
+      waterAlkalinityPpm: formatWaterMineralInput(selectedWaterCompletion.alkalinityPpm),
       waterNotes: noteParts.join(' '),
     }));
     setShowMineralEditor(true);
     setFormError(null);
-    setNotice(copy.waterAiMineralAssistApplied);
+    setNotice(copy.waterCompleteMineralsApplied);
   }
 
   async function handleGeneratePlan() {
@@ -5621,15 +5622,15 @@ export function AiBrewPanel({
                                     )}
                                   </div>
                                   <div className="flex shrink-0 flex-col gap-2 sm:items-end">
-                                    {canUseWaterAiAssist && (
+                                    {canCompleteWaterMinerals && (
                                       <button
                                         type="button"
-                                        onClick={applyWaterAiMineralAssist}
+                                        onClick={applyWaterMineralCompletion}
                                         className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]"
-                                        data-testid="ai-brew-water-ai-mineral-assist"
+                                        data-testid="ai-brew-water-complete-minerals"
                                       >
-                                        <Sparkles size={14} />
-                                        {copy.waterAiMineralAssist}
+                                        <SlidersHorizontal size={14} />
+                                        {copy.waterCompleteMinerals}
                                       </button>
                                     )}
                                     {canToggleMineralEditor && (
@@ -5667,18 +5668,18 @@ export function AiBrewPanel({
                               <SlidersHorizontal size={15} className="text-blue-500" />
                               <h5 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.waterSummary}</h5>
                             </div>
-                            {canUseWaterAiAssist && selectedWaterAiAssist && (
+                            {canCompleteWaterMinerals && selectedWaterCompletion && (
                               <div
                                 className="mb-3 rounded-xl bg-blue-500/10 px-3 py-2 text-xs text-blue-700 dark:text-blue-200"
-                                data-testid="ai-brew-water-ai-mineral-hint"
+                                data-testid="ai-brew-water-complete-minerals-hint"
                               >
-                                <p className="font-semibold text-primary">{copy.waterAiMineralAssistHint}</p>
+                                <p className="font-semibold text-primary">{copy.waterCompleteMineralsHint}</p>
                                 <p className="mt-1">
-                                  {selectedWaterAiAssist.mode === 'remineralization_target'
-                                    ? copy.waterAiMineralAssistRoNote
-                                    : selectedWaterAiAssist.mode === 'estimated_baseline'
-                                      ? copy.waterAiMineralAssistEstimatedNote
-                                      : selectedWaterAiAssist.note}
+                                  {selectedWaterCompletion.mode === 'remineralization_target'
+                                    ? copy.waterCompleteMineralsRoNote
+                                    : selectedWaterCompletion.mode === 'classification_baseline'
+                                      ? copy.waterCompleteMineralsEstimatedNote
+                                      : selectedWaterCompletion.note}
                                 </p>
                               </div>
                             )}

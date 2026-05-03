@@ -32,7 +32,6 @@ const scannerModeActiveStyle = {
   color: '#111827',
   transitionProperty: 'transform, box-shadow',
 } as CSSProperties;
-const scannerModeActiveLabelStyle = { color: '#111827' } as CSSProperties;
 
 function formatFileSize(bytes: number) {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
@@ -367,7 +366,7 @@ export function Scanner() {
 
   return (
     <motion.div
-      initial={isIosStandalone ? false : { opacity: 0, y: 20 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={isIosStandalone ? { duration: 0 } : { duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
       className="page-container desktop-noise-bg w-full"
@@ -407,7 +406,7 @@ export function Scanner() {
             style={mode === "auto" ? scannerModeActiveStyle : undefined}
             className={`focus-soft min-w-0 min-h-[52px] px-2 py-2.5 text-[11px] sm:text-sm font-medium rounded-xl transition-all duration-300 ease-out flex items-center justify-center text-center leading-tight ${mode === "auto" ? "scanner-mode-active shadow-md scale-[1.02]" : "text-secondary hover:text-primary"}`}
           >
-            <span style={mode === "auto" ? scannerModeActiveLabelStyle : undefined}>{t.scannerModeAuto}</span>
+            <span className={mode === "auto" ? "scanner-mode-active-label" : undefined}>{t.scannerModeAuto}</span>
           </button>
           <button
             type="button"
@@ -416,7 +415,7 @@ export function Scanner() {
             style={mode === "ocr" ? scannerModeActiveStyle : undefined}
             className={`focus-soft min-w-0 min-h-[52px] px-2 py-2.5 text-[11px] sm:text-sm font-medium rounded-xl transition-all duration-300 ease-out flex items-center justify-center text-center leading-tight ${mode === "ocr" ? "scanner-mode-active shadow-md scale-[1.02]" : "text-secondary hover:text-primary"}`}
           >
-            <span style={mode === "ocr" ? scannerModeActiveLabelStyle : undefined}>{t.scannerModeOcr}</span>
+            <span className={mode === "ocr" ? "scanner-mode-active-label" : undefined}>{t.scannerModeOcr}</span>
           </button>
           <button
             type="button"
@@ -425,7 +424,7 @@ export function Scanner() {
             style={mode === "latte" ? scannerModeActiveStyle : undefined}
             className={`focus-soft min-w-0 min-h-[52px] px-2 py-2.5 text-[11px] sm:text-sm font-medium rounded-xl transition-all duration-300 ease-out flex items-center justify-center text-center leading-tight ${mode === "latte" ? "scanner-mode-active shadow-md scale-[1.02]" : "text-secondary hover:text-primary"}`}
           >
-            <span style={mode === "latte" ? scannerModeActiveLabelStyle : undefined}>{t.scannerModeLatte}</span>
+            <span className={mode === "latte" ? "scanner-mode-active-label" : undefined}>{t.scannerModeLatte}</span>
           </button>
         </div>
 

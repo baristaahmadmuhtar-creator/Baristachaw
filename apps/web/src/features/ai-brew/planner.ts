@@ -250,11 +250,13 @@ function normalizePourShares(shares: number[]) {
   return normalized;
 }
 
-function hasSumatraStructuredV60Cue(input: AiBrewFormState) {
-  return /\b(?:sumatra|lintong|lake\s*toba|toba|mandheling|gayo|wet[-\s_]?hulled)\b/i.test([
+function hasStructuredBodyCoffeeCue(input: AiBrewFormState) {
+  return /\b(?:sumatra|lintong|lake\s*toba|toba|mandheling|gayo|java|sulawesi|toraja|bali|flores|papua|timor|indonesia|brazil|cerrado|minas|mogiana|vietnam|india|monsooned|wet[-\s_]?hulled|giling\s+basah|natural|honey|pulped\s+natural|anaerobic|carbonic|lactic|bourbon|catuai|caturra|mundo\s+novo|catimor|sarchimor|robusta|liberica|excelsa|body|full[-\s]?body|chocolate|cocoa|molasses|spice|earthy|low[-\s]?acid)\b/i.test([
     input.coffeeName,
     input.process,
     input.customProcess,
+    input.variety,
+    input.customVariety,
   ].filter(Boolean).join(' '));
 }
 
@@ -262,7 +264,7 @@ function shouldUseFrontLoadedHotV60PourMap(input: AiBrewFormState) {
   return input.brewMode === 'hot'
     && (
       (input.targetProfileId === 'more_sweetness' && input.roastLevel === 'medium')
-      || (input.targetProfileId === 'balance_clean' && hasSumatraStructuredV60Cue(input))
+      || (input.targetProfileId === 'balance_clean' && hasStructuredBodyCoffeeCue(input))
     );
 }
 

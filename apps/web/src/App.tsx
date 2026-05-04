@@ -8,7 +8,7 @@ import { MaintenanceBanner } from './components/system/MaintenanceBanner';
 import { GlobalProvider } from './context/GlobalState';
 import { NavbarProvider, useNavbar } from './context/NavbarContext';
 import { AuthModalProvider, useAuthModal } from './context/AuthModalContext';
-import { AccountStatusProvider, useAccountStatus } from './context/AccountStatusContext';
+import { AccountStatusProvider } from './context/AccountStatusContext';
 import { MotionConfig } from 'motion/react';
 import { subscribeMediaQueryChange } from './utils/mediaQuery';
 import { motionDefaultTransition } from './utils/motionPresets';
@@ -120,7 +120,6 @@ function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
   const { authChecking, isAuthenticated, user } = useAuthModal();
-  const { snapshot: accountSnapshot, maintenance } = useAccountStatus();
   const routeLayerRef = useRef<HTMLDivElement | null>(null);
   const currentPathRef = useRef(location.pathname);
   const isDesignRoute = location.pathname === DESIGN_ROUTE;
@@ -131,10 +130,6 @@ function AppContent() {
   const isWaitingForEntryAuthCheck = shouldGateEntryRoute && authChecking;
   const isEntryAuthGateRoute = shouldGateEntryRoute && !authChecking;
   const isAuthSurface = isAuthRoute || isEntryAuthGateRoute || isWaitingForEntryAuthCheck;
-  const hasMaintenanceBanner = !isAdminRoute
-    && !isAuthSurface
-    && Boolean(accountSnapshot)
-    && (accountSnapshot?.appAccess.status !== 'ok' || maintenance.length > 0);
   const desktopChatPanelWidth = isChatRoute && desktopChatNavOpen
     ? (
         desktopChatSidebarCollapsed
@@ -301,7 +296,6 @@ function AppContent() {
         ref={routeLayerRef}
         data-testid="app-route-layer"
         className={`app-route-layer ${isAuthSurface ? '' : 'app-route-layer-desktop'}`}
-        style={hasMaintenanceBanner ? { paddingTop: '7.5rem' } : undefined}
       >
         {routes}
       </div>

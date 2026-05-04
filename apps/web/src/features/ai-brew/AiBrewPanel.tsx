@@ -1524,7 +1524,7 @@ function buildGuardrailAiOptimizationCandidates(plan: BrewPlan): AiBrewOptimizat
   const timeDirection = intent === 'clarity' ? -1 : 1;
   const hotShareDirection = intent === 'clarity' ? -1 : 1;
   const reason = [
-    'AI guardrail synthesis after the model response did not produce a directly usable numeric delta.',
+    'AI Brew guardrail optimizer created a safe numeric micro-adjustment after the online optimizer was unavailable or not directly usable.',
     iced
       ? 'Japanese-style iced remains hot concentrate over measured ice.'
       : 'Hot brew envelope stays inside method and roast limits.',
@@ -4936,10 +4936,11 @@ export function AiBrewPanel({
             language,
           });
         } catch (error) {
-          if (requireOnlineAiGenerate) {
-            throw new Error(`ai_brew_optimizer_unavailable:${error instanceof Error ? error.message : String(error || 'request_failed')}`);
-          }
-          throw error;
+          console.warn(
+            getAiBrewOptimizationFallbackMessage(language),
+            error instanceof Error ? error.message : String(error || 'request_failed'),
+          );
+          optimized = applyAiBrewOptimizationPatch(nextPlan, null);
         }
 
         if (!optimized.applied) {
@@ -4955,10 +4956,11 @@ export function AiBrewPanel({
               repair: true,
             });
           } catch (error) {
-            if (requireOnlineAiGenerate) {
-              throw new Error(`ai_brew_optimizer_unavailable:${error instanceof Error ? error.message : String(error || 'repair_failed')}`);
-            }
-            throw error;
+            console.warn(
+              getAiBrewOptimizationFallbackMessage(language),
+              error instanceof Error ? error.message : String(error || 'repair_failed'),
+            );
+            optimized = applyAiBrewOptimizationPatch(nextPlan, null);
           }
         }
 

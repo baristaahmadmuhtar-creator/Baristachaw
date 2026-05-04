@@ -1227,8 +1227,21 @@ test('V60 More Sweetness calibration handles Japanese iced, hot, water, grind, p
   assert.equal(resolveBrewerProfileTrustStatus({ deviceProfileMode: 'family_fallback', confidence: 'low' }), 'calibration_required');
 });
 
-test('V60 hot auto plan keeps Sumatra balanced brew flexible with four positive pours', () => {
-  const plan = buildAiBrewPlan({
+test('V60 hot auto plan keeps structured global coffees flexible with four positive pours', () => {
+  const assertStructuredPlan = (plan: ReturnType<typeof buildAiBrewPlan>) => {
+    const pours = plan.steps.filter((step) => step.pourVolumeMl > 0);
+    assert.equal(pours.length, 4);
+    assert.ok(plan.totalWaterMl >= 230 && plan.totalWaterMl <= 245);
+    assert.ok(plan.waterTempC >= 92 && plan.waterTempC <= 94);
+    assert.equal(pours.reduce((sum, step) => sum + step.pourVolumeMl, 0), plan.hotWaterMl);
+    assert.ok(pours[0].pourVolumeMl >= 30 && pours[0].pourVolumeMl <= 36);
+    assert.ok(pours[1].pourVolumeMl >= 82 && pours[1].pourVolumeMl <= 90);
+    assert.ok(pours[2].pourVolumeMl >= 55 && pours[2].pourVolumeMl <= 65);
+    assert.ok(pours[3].pourVolumeMl >= 55 && pours[3].pourVolumeMl <= 65);
+    assert.ok(pours.every((step) => !/drawdown|serve|sajikan/i.test(`${step.id} ${step.label}`)));
+  };
+
+  const indonesiaPlan = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),
     brewMode: 'hot',
     coffeeName: 'Sumatra Lintong Lake Toba',
@@ -1245,17 +1258,26 @@ test('V60 hot auto plan keeps Sumatra balanced brew flexible with four positive 
     pourStyle: 'auto',
     pourCount: 'auto',
   }, catalog);
+  assertStructuredPlan(indonesiaPlan);
 
-  const pours = plan.steps.filter((step) => step.pourVolumeMl > 0);
-  assert.equal(pours.length, 4);
-  assert.ok(plan.totalWaterMl >= 230 && plan.totalWaterMl <= 245);
-  assert.ok(plan.waterTempC >= 92 && plan.waterTempC <= 94);
-  assert.equal(pours.reduce((sum, step) => sum + step.pourVolumeMl, 0), plan.hotWaterMl);
-  assert.ok(pours[0].pourVolumeMl >= 30 && pours[0].pourVolumeMl <= 36);
-  assert.ok(pours[1].pourVolumeMl >= 82 && pours[1].pourVolumeMl <= 90);
-  assert.ok(pours[2].pourVolumeMl >= 55 && pours[2].pourVolumeMl <= 65);
-  assert.ok(pours[3].pourVolumeMl >= 55 && pours[3].pourVolumeMl <= 65);
-  assert.ok(pours.every((step) => !/drawdown|serve|sajikan/i.test(`${step.id} ${step.label}`)));
+  const brazilPlan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'hot',
+    coffeeName: 'Brazil Cerrado Natural Bourbon chocolate',
+    doseG: '15',
+    process: 'natural',
+    roastLevel: 'medium',
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'balance_clean',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+    pourStyle: 'auto',
+    pourCount: 'auto',
+  }, catalog);
+  assertStructuredPlan(brazilPlan);
 });
 
 test('AI Brew defaults target profile from process, variety, and altitude without overriding explicit target', () => {

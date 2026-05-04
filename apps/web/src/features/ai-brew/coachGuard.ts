@@ -130,6 +130,36 @@ function appendIcedOutputVocabulary(markdown: string, plan: BrewPlan) {
   ].join('\n');
 }
 
+function enforceCoachAdjustmentContract(markdown: string, action: CoachAction) {
+  if (action !== 'troubleshoot' && action !== 'adjust') {
+    return { markdown, risk: 'none' as CoachRisk, replacements: [] as string[] };
+  }
+  let output = markdown;
+  let risk: CoachRisk = 'none';
+  const replacements: string[] = [];
+
+  if (/\b(?:ubah|ganti|naikkan|turunkan|increase|decrease|change|raise|lower)\b[^.\n]{0,42}\b(?:rasio|ratio|dosis|dose)\b/i.test(output)) {
+    output = output.replace(
+      /\b(?:ubah|ganti|naikkan|turunkan|increase|decrease|change|raise|lower)\b[^.\n]{0,42}\b(?:rasio|ratio|dosis|dose)\b[^\n.]*/gi,
+      'Jangan ubah rasio/dosis dari plan ini; mulai dari koreksi grind kecil, pouring/agitation, lalu suhu kecil',
+    );
+    risk = maxRisk(risk, 'medium');
+    replacements.push('ratio_dose_adjustment_blocked');
+  }
+
+  if (!/grind kecil|pouring\/agitation|agitasi|suhu kecil/i.test(output)) {
+    output += [
+      '',
+      'Urutan koreksi: 1) grind kecil, 2) pouring/agitation, 3) suhu kecil.',
+      'Jangan ubah rasio/dosis pada seduhan ini.',
+    ].join('\n');
+    risk = maxRisk(risk, 'low');
+    replacements.push('coach_adjustment_order');
+  }
+
+  return { markdown: output, risk, replacements };
+}
+
 export function sanitizeAiCoachMarkdown(params: {
   action: CoachAction;
   markdown: string;
@@ -184,6 +214,11 @@ export function sanitizeAiCoachMarkdown(params: {
     replacements.push('unsafe_extra_water');
     risk = maxRisk(risk, 'high');
   }
+
+  const coachContract = enforceCoachAdjustmentContract(markdown, params.action);
+  markdown = coachContract.markdown;
+  risk = maxRisk(risk, coachContract.risk);
+  replacements.push(...coachContract.replacements);
 
   if (params.action === 'troubleshoot' && !/Mulai dari perubahan terkecil dulu/i.test(markdown)) {
     markdown = `Mulai dari perubahan terkecil dulu.\n\n${markdown}`;

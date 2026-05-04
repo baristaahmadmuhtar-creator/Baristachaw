@@ -411,6 +411,7 @@ export interface BrewPlan {
   waterPresetStatus?: WaterPresetStatus;
   waterPublishState?: WaterPublishState;
   waterIsBrewReady: boolean;
+  waterClassification?: WaterClassification;
   waterBrewBlockReason: string[];
   waterBrandMarkets: WaterMarket[];
   waterBrandVerification?: VerificationLevel;

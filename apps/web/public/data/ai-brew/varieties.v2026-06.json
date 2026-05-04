@@ -1816,6 +1816,41 @@
       ]
     },
     {
+      "id": "mixed_variety",
+      "label": "Mixed Variety",
+      "group": "lot-composition",
+      "aliases": [
+        "mixed varieties",
+        "blend variety",
+        "variety blend",
+        "multi variety",
+        "campuran varietas"
+      ],
+      "originNotes": "Lot-level composition label for bags that list multiple cultivars or do not disclose a single variety.",
+      "source": "lot-composition-curation",
+      "sourceUrls": [
+        "https://varieties.worldcoffeeresearch.org/"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Use process, roast, water, and target profile as the main brew drivers; do not apply cultivar-specific numeric shifts for mixed lots."
+      ],
+      "searchText": "mixed variety mixed varieties blend variety variety blend multi variety campuran varietas",
+      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.1-ai-brew-variety-plus",
+      "origins": [
+        "Global",
+        "Indonesia",
+        "Brazil",
+        "Colombia",
+        "Ethiopia"
+      ]
+    },
+    {
       "id": "yunnan_catimor",
       "label": "Yunnan Catimor",
       "group": "regional-selection",

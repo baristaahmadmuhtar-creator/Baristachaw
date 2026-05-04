@@ -213,7 +213,6 @@ export function Home() {
     || !accountSnapshot
     || accountBlocked
     || accountLimited
-    || recommendedUpgrade?.action === 'manage'
     || recommendedUpgrade?.action === 'contact_support'
   );
   const recommendedUpgradeReason = useMemo(

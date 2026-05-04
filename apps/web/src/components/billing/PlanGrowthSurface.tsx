@@ -247,6 +247,7 @@ export function PlanGrowthSurface({
   const currentPlanCode = snapshot?.user.planCode || snapshot?.plan.code || 'free';
   const currentPlan = displayPlans.find((plan) => plan.code === currentPlanCode) || snapshot?.plan || null;
   const showUpgradeFraming = currentPlanCode === 'free' || snapshot?.recommendedUpgrade.action === 'checkout';
+  const showCompactPaidSurface = !showUpgradeFraming;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -408,6 +409,42 @@ export function PlanGrowthSurface({
     </AnimatePresence>,
     document.body,
   ) : null;
+
+  if (showCompactPaidSurface) {
+    return (
+      <>
+        <section
+          data-testid="home-plan-growth-panel"
+          className="mb-6 max-w-xl lg:max-w-6xl mx-auto w-full rounded-[1.2rem] border border-glass bg-[var(--bg-elevated)]/70 px-3 py-3 shadow-[var(--panel-elev-1)]"
+          dir={direction}
+        >
+          <div className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ${isRtl ? 'sm:flex-row-reverse text-right' : ''}`}>
+            <div className={`flex min-w-0 items-center gap-3 ${isRtl ? 'flex-row-reverse' : ''}`}>
+              <ShieldCheck className="shrink-0" size={34} variant="tile" tone="green" intensity="micro" />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-black text-primary">
+                  {t.homePlanPaidTitle.replace('{plan}', formatPlanName(currentPlan, language))}
+                </p>
+                <p className="mt-0.5 text-xs font-semibold text-secondary">
+                  {t.homePlanPaidProof}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onOpen}
+              data-testid="home-plan-open-catalog"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-glass bg-[var(--bg-base)]/70 px-3 text-sm font-bold text-primary transition-colors hover:bg-[var(--bg-base)]"
+            >
+              <Gauge size={16} variant="glyph" tone="blue" />
+              {t.homePlanCompare}
+            </button>
+          </div>
+        </section>
+        {modal}
+      </>
+    );
+  }
 
   return (
     <>

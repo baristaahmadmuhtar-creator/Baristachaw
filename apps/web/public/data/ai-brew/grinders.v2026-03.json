@@ -620,6 +620,10 @@
       "fine": "1.0 - 2.5 settings",
       "source": "curated_2026",
       "sourceUrl": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+      "sourceUrls": [
+        "https://www.tgc-coffee.com/en/data/yang-chia-600N",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
       "catalogVersion": "2026.04.07-ai-brew-v1.4",
       "verificationLevel": "community_verified",
       "confidence": "medium",

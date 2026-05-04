@@ -77,6 +77,7 @@ import {
   createDefaultAiBrewFormState,
   createQuickAiBrewFormState,
   loadPlanIntoForm,
+  resolveDefaultTargetProfileIdForBean,
   resolveDeviceProfileSelection,
   resolveGrinderSettingReference,
   sanitizeAiBrewFormState,
@@ -165,11 +166,12 @@ const COPY = {
     pourCount3: '3 pours',
     pourCount4: '4 pours',
     pourCount5: '5 pours',
-    pourControlHint: 'Iced mode stays Japanese-style: hot concentrate over measured ice.',
+    pourControlHint: '',
     precisionControlTitle: 'Precision targets',
-    precisionControlHint: 'Optional. Use ratio or total water, then adjust temperature when the coffee needs a softer or hotter extraction.',
+    precisionControlHint: 'Optional. Filter brewers work best around 1:13-1:17; Auto picks a safe default from the brewer, roast, and target.',
     targetRatio: 'Ratio target',
     targetRatioPlaceholder: 'Auto',
+    targetRatioHint: 'Manual filter range: 1:13-1:17. Leave Auto when you want BaristaChaw to choose per method.',
     targetWaterMl: 'Total water (ml)',
     targetWaterMlPlaceholder: 'Auto',
     targetTempC: 'Temperature (C)',
@@ -205,6 +207,10 @@ const COPY = {
     inputAnalysisDescription: '',
     waterReadyNow: 'Water ready',
     waterNeedsInput: 'Minerals needed',
+    waterStatusReady: 'Ready',
+    waterStatusManualRequired: 'Manual Required',
+    waterStatusHighBuffer: 'High Buffer',
+    waterStatusZeroMineral: 'Zero Mineral',
     grindVerified: 'Verified grind reference',
     grindOfficialReference: 'Official reference',
     grindCuratedReference: 'Curated reference',
@@ -224,6 +230,7 @@ const COPY = {
     coffeeName: 'Coffee / origin',
     coffeeNamePlaceholder: 'e.g. Ethiopia Chelbesa, Gayo Washed, House Filter',
     dose: 'Dose (g)',
+    doseRangeHint: 'Recommended working dose: 10-20 g. AI keeps 15 g as the stable starting point per brewer.',
     process: 'Process',
     variety: 'Variety',
     roast: 'Roast level',
@@ -538,11 +545,12 @@ const COPY = {
     pourCount3: '3 tuang',
     pourCount4: '4 tuang',
     pourCount5: '5 tuang',
-    pourControlHint: 'Mode es dikunci Japanese style: konsentrat panas langsung ke es terukur.',
+    pourControlHint: '',
     precisionControlTitle: 'Target presisi',
-    precisionControlHint: 'Opsional. Pakai rasio atau total air, lalu atur suhu saat kopi perlu ekstraksi lebih lembut atau lebih panas.',
+    precisionControlHint: 'Opsional. Filter manual paling aman di sekitar 1:13-1:17; Auto memilih default dari alat, sangrai, dan target.',
     targetRatio: 'Rasio target',
     targetRatioPlaceholder: 'Auto',
+    targetRatioHint: 'Rentang filter manual: 1:13-1:17. Biarkan Auto kalau ingin BaristaChaw memilih per metode.',
     targetWaterMl: 'Total air (ml)',
     targetWaterMlPlaceholder: 'Auto',
     targetTempC: 'Suhu (C)',
@@ -578,6 +586,10 @@ const COPY = {
     inputAnalysisDescription: '',
     waterReadyNow: 'Air siap',
     waterNeedsInput: 'Mineral wajib diisi',
+    waterStatusReady: 'Ready',
+    waterStatusManualRequired: 'Manual Required',
+    waterStatusHighBuffer: 'High Buffer',
+    waterStatusZeroMineral: 'Zero Mineral',
     grindVerified: 'Referensi grind terverifikasi',
     grindOfficialReference: 'Referensi resmi',
     grindCuratedReference: 'Referensi kurasi',
@@ -597,6 +609,7 @@ const COPY = {
     coffeeName: 'Kopi / asal',
     coffeeNamePlaceholder: 'mis. Ethiopia Chelbesa, Gayo Washed, House Filter',
     dose: 'Dosis (g)',
+    doseRangeHint: 'Dosis kerja disarankan: 10-20 g. AI memakai 15 g sebagai titik awal stabil per alat.',
     process: 'Proses',
     variety: 'Varietas',
     roast: 'Profil sangrai',
@@ -976,6 +989,45 @@ function scoreBrewerDisplayOrder(item: EquipmentCatalogEntry) {
   if (exactPriority !== undefined) return exactPriority;
   const familyPriority = CORE_BREWER_IDS.length + (item.methodFamily ? Object.keys(METHOD_FAMILY_SEARCH_ALIASES).indexOf(item.methodFamily) : 99);
   return familyPriority + (item.verificationLevel === 'official' ? 0 : 50);
+}
+
+function scoreGrinderDisplayOrder(item: EquipmentCatalogEntry) {
+  const name = `${item.name} ${item.brand || ''} ${item.typeLabel || ''}`.toLowerCase();
+  let score = 0;
+
+  if (name.includes('feima') || name.includes('600n')) score -= 150;
+  if (name.includes('latina') || name.includes('flying eagle')) score -= 120;
+
+  if (item.popularityTier === 'widely_used') score -= 90;
+  else if (item.popularityTier === 'specialty_common') score -= 60;
+  else if (item.popularityTier === 'emerging') score -= 25;
+
+  if (item.marketSegment === 'mass_market') score -= 28;
+  else if (item.marketSegment === 'specialty_mainstream') score -= 18;
+
+  if (item.verificationLevel === 'official') score -= 22;
+  else if (item.verificationLevel === 'community_verified') score -= 14;
+  else if (item.verificationLevel === 'curated') score -= 8;
+  else if (item.verificationLevel === 'dataset_unverified') score += 30;
+
+  const brandPriority = [
+    '1zpresso',
+    'timemore',
+    'kingrinder',
+    'comandante',
+    'baratza',
+    'feima',
+    'yang-chia',
+    'latina',
+    'fellow',
+    'niche',
+    'eureka',
+    'mahlkonig',
+    'df64',
+  ].findIndex((brand) => name.includes(brand));
+  if (brandPriority >= 0) score -= Math.max(0, 24 - brandPriority * 2);
+
+  return score;
 }
 
 function formatTime(totalSeconds: number) {
@@ -2379,6 +2431,7 @@ function MasterPickerDialog({
   closeLabel,
   searchLabel,
   description,
+  language,
   searchPlaceholder,
   emptyText,
   items,
@@ -2393,6 +2446,7 @@ function MasterPickerDialog({
   closeLabel: string;
   searchLabel: string;
   description: string;
+  language?: string;
   searchPlaceholder: string;
   emptyText: string;
   items: PickerOption[];
@@ -2497,11 +2551,21 @@ function MasterPickerDialog({
                   <button
                     type="button"
                     onClick={() => setSpecialtyExpanded((current) => !current)}
-                    className="flex w-full items-center justify-between gap-3 px-2 pb-1 pt-2 text-left text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary"
+                    className="flex w-full items-center justify-between gap-3 rounded-xl px-2.5 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-secondary transition-colors hover:bg-surface-alpha hover:text-primary"
                     aria-expanded={!collapsed}
                   >
-                    <span>{section}</span>
-                    <span className="rounded-full bg-surface-alpha px-2 py-0.5 tracking-normal">{sectionItems.length}</span>
+                    <span className="min-w-0">
+                      <span className="block">{section}</span>
+                      <span className="mt-0.5 block text-[10px] normal-case tracking-normal text-tertiary">
+                        {collapsed
+                          ? (isIndonesianAiBrewLanguage(language) ? 'Ketuk untuk lihat dripper lain' : 'Tap to show more drippers')
+                          : (isIndonesianAiBrewLanguage(language) ? 'Ketuk untuk sembunyikan' : 'Tap to collapse')}
+                      </span>
+                    </span>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-surface-alpha px-2 py-1 tracking-normal">
+                      {sectionItems.length}
+                      <ArrowRight size={14} className={`transition-transform ${collapsed ? 'rotate-90' : '-rotate-90'}`} />
+                    </span>
                   </button>
                 ) : (
                   <div className="px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">
@@ -2845,18 +2909,6 @@ function PlanResultDialog({
                 <p className="mt-2 max-w-3xl text-sm leading-5 text-secondary">
                   {displaySummary}
                 </p>
-                <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                  {[
-                    { label: methodBrief.primaryLabel || copy.methodBriefPrimary, value: methodBrief.primaryValue },
-                    { label: methodBrief.controlLabel || copy.methodBriefControl, value: methodBrief.controlValue },
-                    { label: methodBrief.successLabel || copy.methodBriefSuccess, value: methodBrief.successCue },
-                  ].map((item) => (
-                    <div key={item.label} className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/72 px-3 py-2.5">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-tertiary">{item.label}</p>
-                      <p className="mt-1 text-sm font-medium leading-5 text-primary">{item.value}</p>
-                    </div>
-                  ))}
-                </div>
               </div>
 
               <div className="mt-3 grid gap-2.5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
@@ -2885,9 +2937,6 @@ function PlanResultDialog({
                       {tab.label}
                     </button>
                   ))}
-                </div>
-                <div className={`${resultChipClass} rounded-xl px-3 py-2 text-xs`}>
-                  {copy.grind}: {localizedGrindRecommendation}
                 </div>
               </div>
 
@@ -3183,6 +3232,14 @@ function PlanResultDialog({
                         TDS {plan.waterMinerals.tdsPpm} · GH {plan.waterMinerals.hardnessPpm} · KH {plan.waterMinerals.alkalinityPpm}
                       </p>
                       <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-secondary">
+                        <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
+                          {formatWaterReadinessStatus(copy, {
+                            classification: plan.waterClassification,
+                            presetStatus: plan.waterPresetStatus,
+                            isBrewReady: plan.waterIsBrewReady,
+                            mineralsReady: true,
+                          })}
+                        </span>
                         {plan.waterPresetStatus && (
                           <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
                             {formatWaterPresetStatus(copy, plan.waterPresetStatus)}
@@ -3609,6 +3666,14 @@ function PlanResultDialog({
                     <div className="rounded-xl bg-surface-alpha px-3 py-3">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-sm font-semibold text-primary">{plan.waterBrandLabel || copy.waterSelectedManual}</p>
+                        <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">
+                          {formatWaterReadinessStatus(copy, {
+                            classification: plan.waterClassification,
+                            presetStatus: plan.waterPresetStatus,
+                            isBrewReady: plan.waterIsBrewReady,
+                            mineralsReady: true,
+                          })}
+                        </span>
                         {plan.waterPresetStatus && (
                           <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">
                             {formatWaterPresetStatus(copy, plan.waterPresetStatus)}
@@ -3737,7 +3802,11 @@ function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopyS
       if (priorityDelta !== 0) return priorityDelta;
       return a.name.localeCompare(b.name);
     })
-    : items;
+    : [...items].sort((a, b) => {
+      const priorityDelta = scoreGrinderDisplayOrder(a) - scoreGrinderDisplayOrder(b);
+      if (priorityDelta !== 0) return priorityDelta;
+      return a.name.localeCompare(b.name);
+    });
 
   return displayItems.map((item): PickerOption => {
     const isCoreBrewer = kind === 'dripper' && CORE_BREWER_PRIORITY.has(item.id);
@@ -3759,19 +3828,28 @@ function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopyS
       ? METHOD_FAMILY_SEARCH_ALIASES[item.methodFamily]
       : '';
     const kindLabel = kind === 'dripper' ? copy.dripper.toLowerCase() : kind;
+    const grinderReference = kind === 'grinder'
+      ? formatGrinderReferenceLabel(copy, item.verificationLevel)
+      : '';
+    const subtitle = kind === 'grinder'
+      ? [item.brand, item.typeLabel].filter(Boolean).join(' · ')
+      : item.brand ? `${item.brand} · ${item.typeLabel}` : item.typeLabel;
+    const description = kind === 'dripper'
+      ? [trustDetail, item.description].filter(Boolean).join(' - ')
+      : '';
 
     return {
       id: item.id,
       label: item.name,
-      subtitle: item.brand ? `${item.brand} · ${item.typeLabel}` : item.typeLabel,
-      description: [trustDetail, item.description].filter(Boolean).join(' - '),
+      subtitle,
+      description,
       searchText: `${item.searchText} ${methodAliases} ${item.methodFamily || ''}`.toLowerCase(),
       section: kind === 'dripper'
         ? isCoreBrewer
           ? copy.brewerCoreSection
           : copy.brewerSpecialtySection
         : '',
-      badges: trustStatus ? [formatBrewerProfileTrustLabel(trustStatus, language)] : [],
+      badges: trustStatus ? [formatBrewerProfileTrustLabel(trustStatus, language)] : grinderReference ? [grinderReference] : [],
       ariaLabel: copy.pickerSelectEquipment.replace('{kind}', kindLabel).replace('{label}', item.name),
       tone: trustStatus === 'exact' ? 'highlight' : trustStatus === 'calibration_required' ? 'muted' : 'default',
       trustStatus,
@@ -3799,6 +3877,21 @@ function buildWaterChemistryLabel(item: WaterBrandProfile, language?: string) {
   ].filter(Boolean);
   if (parts.length > 0) return parts.join(' · ');
   return localizeAiBrewWaterClassificationLabel(item.classificationLabel, language);
+}
+
+function buildWaterPickerSubtitle(item: WaterBrandProfile, copy: CopySet, language?: string) {
+  const status = formatWaterReadinessStatus(copy, {
+    classification: item.classification,
+    presetStatus: item.presetStatus,
+    isBrewReady: item.isBrewReady,
+    mineralsReady: item.presetStatus === 'autofill',
+  });
+  const classification = localizeAiBrewWaterClassificationLabel(item.classificationLabel, language);
+  return [
+    status,
+    classification,
+    item.marketCode.toUpperCase(),
+  ].filter(Boolean).join(' · ');
 }
 
 function rangePenalty(value: number, min: number, max: number) {
@@ -3975,6 +4068,20 @@ function formatGrinderReferenceLabel(copy: CopySet, verification: VerificationLe
   return copy.grindCuratedReference;
 }
 
+function formatWaterReadinessStatus(copy: CopySet, params: {
+  classification?: BrewPlan['waterClassification'];
+  presetStatus?: BrewPlan['waterPresetStatus'];
+  isBrewReady?: boolean;
+  mineralsReady?: boolean;
+}) {
+  if (params.classification === 'zero_mineral_ro') return copy.waterStatusZeroMineral;
+  if (params.classification === 'high_buffer') return copy.waterStatusHighBuffer;
+  if (params.presetStatus === 'manual_required' || params.isBrewReady === false || params.mineralsReady === false) {
+    return copy.waterStatusManualRequired;
+  }
+  return copy.waterStatusReady;
+}
+
 function buildWaterPolicyWarning(copy: CopySet, item: WaterBrandProfile) {
   if (item.classification === 'zero_mineral_ro') return copy.waterUseAsRoBase;
   if (item.classification === 'high_buffer') return copy.waterHighBufferWarning;
@@ -4061,7 +4168,7 @@ function buildWaterPickerOptions(items: WaterBrandProfile[], copy: CopySet, lang
   return items.map((item): PickerOption => ({
     id: item.id,
     label: item.shortLabel,
-    subtitle: buildWaterChemistryLabel(item, language),
+    subtitle: buildWaterPickerSubtitle(item, copy, language),
     searchText: item.searchText,
     description: undefined,
     section: '',
@@ -4198,6 +4305,7 @@ export function AiBrewPanel({
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [formState, setFormState] = useState<AiBrewFormState>(() => loadAiBrewFormDraft(createDefaultAiBrewFormState()));
+  const [targetProfileTouched, setTargetProfileTouched] = useState(false);
   const [activeBuilderModal, setActiveBuilderModal] = useState<FormMode | null>(null);
   const [historyStripTab, setHistoryStripTab] = useState<HistoryStripTab>('latest');
   const [plan, setPlan] = useState<BrewPlan | null>(null);
@@ -4481,8 +4589,16 @@ export function AiBrewPanel({
       );
       const deviceSelection = resolveDeviceProfileSelection(catalog, selectedDripper, sanitized.brewMode);
       const grinderSetting = resolveGrinderSettingReference(catalog, selectedGrinder, deviceSelection.profile, sanitized.brewMode);
-      const waterStatusLabel = nextMineralsReady ? copy.waterReadyNow : copy.waterNeedsInput;
-      const waterStatusTone = nextMineralsReady ? 'emerald' : 'amber';
+      const waterStatusLabel = formState.waterMode === 'brand' && selectedWaterBrand
+        ? formatWaterReadinessStatus(copy, {
+          classification: selectedWaterBrand.classification,
+          presetStatus: selectedWaterBrand.presetStatus,
+          isBrewReady: selectedWaterBrand.isBrewReady,
+          mineralsReady: nextMineralsReady,
+        })
+        : formatWaterReadinessStatus(copy, { mineralsReady: nextMineralsReady });
+      const waterNeedsAttention = waterStatusLabel !== copy.waterStatusReady;
+      const waterStatusTone = nextMineralsReady && !waterNeedsAttention ? 'emerald' : 'amber';
       const waterDerivation = formState.waterMode === 'brand'
         ? selectedWaterBrand?.resolvedMinerals?.derivation
         : 'manual';
@@ -4593,9 +4709,28 @@ export function AiBrewPanel({
   }
 
   function updateForm<K extends keyof AiBrewFormState>(key: K, value: AiBrewFormState[K]) {
+    if (key === 'targetProfileId') {
+      setTargetProfileTouched(true);
+    }
     setFormState((prev) => {
       let next = { ...prev, [key]: value };
       next = normalizeBeanProfileFieldMerge(next, key);
+      if (
+        catalog
+        && !targetProfileTouched
+        && key !== 'targetProfileId'
+        && (
+          key === 'coffeeName'
+          || key === 'process'
+          || key === 'customProcess'
+          || key === 'variety'
+          || key === 'customVariety'
+          || key === 'roastLevel'
+          || key === 'altitudeMasl'
+        )
+      ) {
+        next.targetProfileId = resolveDefaultTargetProfileIdForBean(next, catalog) || next.targetProfileId;
+      }
       if (
         key === 'waterTdsPpm'
         || key === 'waterHardnessPpm'
@@ -4619,16 +4754,22 @@ export function AiBrewPanel({
       ...prev,
       waterMode: mode,
       waterCustomized: mode === 'manual' ? true : false,
-      waterTdsPpm: mode === 'brand' && fallbackBrand && fallbackCanAutofill
-        ? fallbackPrefill.waterTdsPpm || prev.waterTdsPpm
-        : prev.waterTdsPpm,
-      waterHardnessPpm: mode === 'brand' && fallbackBrand && fallbackCanAutofill
-        ? fallbackPrefill.waterHardnessPpm || prev.waterHardnessPpm
-        : prev.waterHardnessPpm,
-      waterAlkalinityPpm: mode === 'brand' && fallbackBrand && fallbackCanAutofill
-        ? fallbackPrefill.waterAlkalinityPpm || prev.waterAlkalinityPpm
-        : prev.waterAlkalinityPpm,
-      waterNotes: mode === 'brand' && fallbackBrand ? (fallbackBrand.notes[0] || '') : prev.waterNotes,
+      waterTdsPpm: mode === 'manual'
+        ? ''
+        : mode === 'brand' && fallbackBrand && fallbackCanAutofill
+          ? fallbackPrefill.waterTdsPpm || prev.waterTdsPpm
+          : prev.waterTdsPpm,
+      waterHardnessPpm: mode === 'manual'
+        ? ''
+        : mode === 'brand' && fallbackBrand && fallbackCanAutofill
+          ? fallbackPrefill.waterHardnessPpm || prev.waterHardnessPpm
+          : prev.waterHardnessPpm,
+      waterAlkalinityPpm: mode === 'manual'
+        ? ''
+        : mode === 'brand' && fallbackBrand && fallbackCanAutofill
+          ? fallbackPrefill.waterAlkalinityPpm || prev.waterAlkalinityPpm
+          : prev.waterAlkalinityPpm,
+      waterNotes: mode === 'manual' ? '' : mode === 'brand' && fallbackBrand ? (fallbackBrand.notes[0] || '') : prev.waterNotes,
     }));
     setShowMineralEditor(mode === 'manual' || !fallbackCanAutofill);
   }
@@ -4838,6 +4979,7 @@ export function AiBrewPanel({
     setActiveJournalId(null);
     setShowMineralEditor(false);
     setShowBeanProfileEditor(false);
+    setTargetProfileTouched(false);
     setFormState(createDefaultAiBrewFormState(catalog));
   }
 
@@ -5246,6 +5388,60 @@ export function AiBrewPanel({
       { value: '5', label: copy.pourCount5 },
     ] as const;
     const dialogTitle = `${copy.title} · ${isPro ? copy.proBuilderTitle : copy.quickBuilderTitle}`;
+    const pourControlPanel = selectedDripperSupportsPourControl ? (
+      <div className="rounded-[1.1rem] panel-soft p-3" data-testid="ai-brew-pour-control-panel">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.pourControlTitle}</p>
+          {copy.pourControlHint ? (
+            <p className="text-xs leading-5 text-secondary">{copy.pourControlHint}</p>
+          ) : null}
+        </div>
+        <div className="mt-3 grid gap-3 lg:grid-cols-2">
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.pourStyleTitle}</p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {pourStyleOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => updateForm('pourStyle', option.value)}
+                  className={`min-h-[42px] rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+                    formState.pourStyle === option.value
+                      ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.18)]'
+                      : 'bg-[var(--bg-base)] text-secondary hover:text-primary'
+                  }`}
+                  aria-pressed={formState.pourStyle === option.value}
+                  data-testid={`ai-brew-pour-style-${option.value}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.pourCountTitle}</p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {pourCountOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => updateForm('pourCount', option.value)}
+                  className={`min-h-[42px] rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+                    formState.pourCount === option.value
+                      ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.18)]'
+                      : 'bg-[var(--bg-base)] text-secondary hover:text-primary'
+                  }`}
+                  aria-pressed={formState.pourCount === option.value}
+                  data-testid={`ai-brew-pour-count-${option.value}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : null;
 
     return (
       <FocusLockedDialog
@@ -5337,58 +5533,6 @@ export function AiBrewPanel({
                   )}
                 </div>
 
-                {selectedDripperSupportsPourControl ? (
-                  <div className="mt-3 rounded-[1.1rem] panel-soft p-3">
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                      <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.pourControlTitle}</p>
-                      <p className="text-xs leading-5 text-secondary">{copy.pourControlHint}</p>
-                    </div>
-                    <div className="mt-3 grid gap-3 lg:grid-cols-2">
-                      <div>
-                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.pourStyleTitle}</p>
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                          {pourStyleOptions.map((option) => (
-                            <button
-                              key={option.value}
-                              type="button"
-                              onClick={() => updateForm('pourStyle', option.value)}
-                              className={`min-h-[42px] rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-                                formState.pourStyle === option.value
-                                  ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.18)]'
-                                  : 'bg-[var(--bg-base)] text-secondary hover:text-primary'
-                              }`}
-                              aria-pressed={formState.pourStyle === option.value}
-                              data-testid={`ai-brew-pour-style-${option.value}`}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.pourCountTitle}</p>
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                          {pourCountOptions.map((option) => (
-                            <button
-                              key={option.value}
-                              type="button"
-                              onClick={() => updateForm('pourCount', option.value)}
-                              className={`min-h-[42px] rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-                                formState.pourCount === option.value
-                                  ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.18)]'
-                                  : 'bg-[var(--bg-base)] text-secondary hover:text-primary'
-                              }`}
-                              aria-pressed={formState.pourCount === option.value}
-                              data-testid={`ai-brew-pour-count-${option.value}`}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
               </div>
 
               {renderFeedback(true)}
@@ -5418,8 +5562,8 @@ export function AiBrewPanel({
                         <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.dose}</label>
                         <input
                           type="number"
-                          min="8"
-                          max="40"
+                          min="10"
+                          max="20"
                           step="0.1"
                           value={formState.doseG}
                           onChange={(event) => updateForm('doseG', event.target.value)}
@@ -5427,6 +5571,7 @@ export function AiBrewPanel({
                           className="glass-input h-12 w-full px-4 text-base"
                           data-testid="ai-brew-dose"
                         />
+                        <p className="mt-1 text-xs leading-5 text-secondary" data-testid="ai-brew-dose-range-hint">{copy.doseRangeHint}</p>
                       </div>
                       <div>
                         <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.roast}</label>
@@ -5582,7 +5727,12 @@ export function AiBrewPanel({
                                     <div className="flex flex-wrap items-center gap-2">
                                       <p className="text-sm font-semibold text-primary">{selectedWaterBrand.shortLabel}</p>
                                       <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">
-                                        {selectedWaterBrandCanAutofill ? copy.waterReadyBrew : copy.waterNeedsMinerals}
+                                        {formatWaterReadinessStatus(copy, {
+                                          classification: selectedWaterBrand.classification,
+                                          presetStatus: selectedWaterBrand.presetStatus,
+                                          isBrewReady: selectedWaterBrand.isBrewReady,
+                                          mineralsReady,
+                                        })}
                                       </span>
                                       {isEstimatedWaterBaseline(selectedWaterBrand) && (
                                         <span className="rounded-full bg-amber-500/10 px-2 py-1 text-[11px] font-medium text-amber-700 dark:text-amber-300">
@@ -5838,8 +5988,8 @@ export function AiBrewPanel({
                             <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetRatio}</label>
                             <input
                               type="number"
-                              min="6"
-                              max="24"
+                              min="13"
+                              max="17"
                               step="0.1"
                               inputMode="decimal"
                               value={formState.targetRatio}
@@ -5849,6 +5999,7 @@ export function AiBrewPanel({
                               className="glass-input h-12 w-full px-4 text-base"
                               data-testid="ai-brew-target-ratio"
                             />
+                            <p className="mt-1 text-xs leading-5 text-secondary" data-testid="ai-brew-target-ratio-hint">{copy.targetRatioHint}</p>
                           </div>
                           <div>
                             <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetWaterMl}</label>
@@ -5884,6 +6035,8 @@ export function AiBrewPanel({
                           </div>
                         </div>
                       </div>
+
+                      {pourControlPanel}
 
                       <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3">
                         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -6233,6 +6386,7 @@ export function AiBrewPanel({
           closeLabel={copy.pickerClose}
           searchLabel={copy.pickerSearchLabel}
           description={copy.pickerHelp}
+          language={language}
           searchPlaceholder={copy.pickerSearch}
           emptyText={copy.noPickerResults}
           items={pickerOptions}

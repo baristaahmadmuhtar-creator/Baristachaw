@@ -1155,6 +1155,66 @@ const BODY_VARIETY_IDS = new Set([
   'sigarar_utang',
 ]);
 
+export function resolveDefaultTargetProfileIdForBean(
+  input: Partial<AiBrewFormState>,
+  catalog?: AiBrewCatalog,
+) {
+  const processEntry = input.process && input.process !== CUSTOM_ENTRY_ID && catalog
+    ? findProcessEntry(catalog, String(input.process))
+    : undefined;
+  const varietyEntry = input.variety && input.variety !== CUSTOM_ENTRY_ID && catalog
+    ? findVarietyEntry(catalog, String(input.variety))
+    : undefined;
+  const processId = String(processEntry?.id || input.process || '').toLowerCase();
+  const varietyId = String(varietyEntry?.id || input.variety || '').toLowerCase();
+  const haystack = normalizeSearchHaystack([
+    input.coffeeName,
+    input.customProcess,
+    processEntry?.label,
+    processEntry?.searchText,
+    ...(processEntry?.aliases || []),
+    input.customVariety,
+    varietyEntry?.label,
+    varietyEntry?.searchText,
+    ...(varietyEntry?.aliases || []),
+  ]);
+  const altitude = Number.parseFloat(String(input.altitudeMasl || ''));
+  const roastLevel = input.roastLevel || 'medium';
+  const hasTarget = (id: string) => !catalog || catalog.targetProfiles.some((profile) => profile.id === id);
+
+  if (
+    processId === 'wet_hulled'
+    || /\b(wet[-\s]?hulled|giling\s+basah|sumatra|mandheling|gayo)\b/i.test(haystack)
+    || BODY_VARIETY_IDS.has(varietyId)
+  ) {
+    return hasTarget('more_body') ? 'more_body' : 'balance_clean';
+  }
+
+  if (
+    SWEETNESS_PROCESS_IDS.has(processId)
+    || /\b(natural|honey|anaerobic|carbonic|lactic|yeast|fermentation)\b/i.test(haystack)
+    || SWEETNESS_VARIETY_IDS.has(varietyId)
+  ) {
+    if (roastLevel === 'medium_dark' || roastLevel === 'dark') {
+      return hasTarget('more_body') ? 'more_body' : 'more_sweetness';
+    }
+    return hasTarget('more_sweetness') ? 'more_sweetness' : 'balance_clean';
+  }
+
+  if (
+    (CLARITY_PROCESS_IDS.has(processId) || /\b(washed|fully\s+washed|double\s+washed|wet\s+process)\b/i.test(haystack))
+    && (Number.isFinite(altitude) ? altitude >= 1600 : /\b(high[-\s]?altitude|ethiopia|yirgacheffe|guji|kenya|nyeri|kirinyaga)\b/i.test(haystack))
+  ) {
+    return hasTarget('more_acidity') ? 'more_acidity' : 'balance_clean';
+  }
+
+  if (CLARITY_VARIETY_IDS.has(varietyId)) {
+    return hasTarget('more_acidity') ? 'more_acidity' : 'balance_clean';
+  }
+
+  return hasTarget('balance_clean') ? 'balance_clean' : undefined;
+}
+
 const ORIGIN_PROFILE_RULES: Array<{
   profileId: OriginProfileId;
   label: string;
@@ -3203,12 +3263,12 @@ function buildBaristaStepPracticalCue(context: AdaptiveShareContext, phase: Adap
   if (isManualPaperFilter) {
     if (phase === 'bloom') {
       if (context.brewMode === 'iced') {
-        return 'Rinse the paper filter separately, discard rinse water, then put measured ice in the server before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before the next pour.';
+        return 'Rinse the paper filter separately, preheat the brewer, discard rinse water, then put measured ice in the server before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before the next pour.';
       }
       if (context.methodFamily === 'chemex') {
-        return 'Rinse the thick Chemex paper thoroughly and discard rinse water before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before building volume.';
+        return 'Rinse the thick Chemex paper thoroughly, preheat the brewer/server, and discard rinse water before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before building volume.';
       }
-      return 'Rinse the paper filter and discard rinse water before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before the next pour.';
+      return 'Rinse the paper filter, preheat the brewer/server, and discard rinse water before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before the next pour.';
     }
     if (phase === 'early_middle') {
       if (context.methodFamily === 'kalita_wave' || context.methodFamily === 'april') {
@@ -4886,6 +4946,7 @@ function finalizePlanCore(
     waterPresetStatus: waterBrand?.presetStatus,
     waterPublishState: waterBrand?.publishState,
     waterIsBrewReady: waterBrand?.isBrewReady ?? input.waterMode === 'manual',
+    waterClassification: waterBrand?.classification,
     waterBrewBlockReason: waterBrand?.brewBlockReason || [],
     waterBrandMarkets: waterBrand?.markets || [],
     waterBrandVerification: waterBrand?.verificationLevel,

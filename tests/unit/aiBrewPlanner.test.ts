@@ -8,6 +8,7 @@ import {
   buildLocalizedPlanRecipeSteps,
   createDefaultAiBrewFormState,
   createQuickAiBrewFormState,
+  resolveDefaultTargetProfileIdForBean,
   resolveDeviceProfileSelection,
   resolveGrinderSettingReference,
   sanitizeAiBrewFormState,
@@ -1220,6 +1221,59 @@ test('V60 More Sweetness calibration handles Japanese iced, hot, water, grind, p
   assert.equal(resolveBrewerProfileTrustStatus({ deviceProfileMode: 'family_fallback', confidence: 'low' }), 'calibration_required');
 });
 
+test('AI Brew defaults target profile from process, variety, and altitude without overriding explicit target', () => {
+  assert.equal(resolveDefaultTargetProfileIdForBean({
+    coffeeName: 'Brazil Natural',
+    process: 'natural',
+    roastLevel: 'medium',
+  }, catalog), 'more_sweetness');
+
+  assert.equal(resolveDefaultTargetProfileIdForBean({
+    coffeeName: 'Gayo wet hulled',
+    process: 'wet_hulled',
+    roastLevel: 'medium_dark',
+  }, catalog), 'more_body');
+
+  assert.equal(resolveDefaultTargetProfileIdForBean({
+    coffeeName: 'Ethiopia washed high altitude',
+    process: 'washed',
+    altitudeMasl: '1900',
+    roastLevel: 'medium_light',
+  }, catalog), 'more_acidity');
+
+  const manualSweetness = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    coffeeName: 'Manual target remains sweetness',
+    process: 'washed',
+    altitudeMasl: '1900',
+    targetProfileId: 'more_sweetness',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, catalog);
+  assert.equal(manualSweetness.targetProfileId, 'more_sweetness');
+});
+
+test('AI Brew precision controls honor barista-friendly dose and ratio while keeping filter prep in the guide', () => {
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    coffeeName: 'Precision ratio QA',
+    doseG: '12',
+    targetRatio: '14.5',
+    dripperId: 'hario-v60',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, catalog);
+
+  assert.equal(plan.doseG, 12);
+  assert.ok(plan.recommendedRatio >= 14.4 && plan.recommendedRatio <= 14.6);
+  assert.ok(plan.totalWaterMl >= 170 && plan.totalWaterMl <= 175);
+  assert.match(collectPlanNarrative(plan), /Rinse the paper filter.*preheat the brewer\/server.*Bloom with about 2-3x coffee weight/i);
+});
+
 test('AI Brew anti-hallucination guard sanitizes unsafe narrative claims', () => {
   const plan = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),
@@ -1288,10 +1342,11 @@ test('AI Brew coach guard preserves deterministic grind, water, brewer, and reci
   const troubleshoot = sanitizeAiCoachMarkdown({
     action: 'troubleshoot',
     plan,
-    markdown: 'Jika asam: ganti ke setting 9 dan ubah suhu 99C. Jika pahit: tambah bypass 50 ml.',
+    markdown: 'Jika asam: ganti ke setting 9 dan ubah suhu 99C. Ubah rasio ke 1:17 dan naikkan dosis. Jika pahit: tambah bypass 50 ml.',
   });
   assert.match(troubleshoot.markdown, /Mulai dari perubahan terkecil dulu/i);
   assert.match(troubleshoot.markdown, /setting 4-5/i);
+  assert.match(troubleshoot.markdown, /Jangan ubah rasio\/dosis|grind kecil.*pouring\/agitation.*suhu kecil/is);
   assert.equal(troubleshoot.risk, 'high');
 
   const fallback = troubleshoot.risk === 'high'

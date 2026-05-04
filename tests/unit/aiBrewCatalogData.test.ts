@@ -151,7 +151,7 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   assert.deepEqual(missingGrinderCoverage, [], 'Every grinder should have at least one grinder-setting reference');
 
   const processIds = new Set(processes.map((entry) => entry.id));
-  for (const required of ['wet_hulled', 'black_honey', 'white_honey', 'anaerobic_washed', 'monsooned', 'red_honey', 'yellow_honey', 'anaerobic_natural', 'anaerobic_honey', 'double_fermentation', 'wine_yeast_fermentation', 'aerobic_fermentation', 'coferment', 'sequential_fermentation', 'anaerobic_thermal_shock', 'semi_washed', 'lactic_anaerobic', 'enzyme_fermentation']) {
+  for (const required of ['wet_hulled', 'black_honey', 'white_honey', 'anaerobic_washed', 'monsooned', 'red_honey', 'yellow_honey', 'anaerobic_natural', 'anaerobic_honey', 'double_fermentation', 'wine_process', 'wine_yeast_fermentation', 'aerobic_fermentation', 'coferment', 'sequential_fermentation', 'anaerobic_thermal_shock', 'semi_washed', 'lactic_anaerobic', 'enzyme_fermentation']) {
     assert.ok(processIds.has(required), `Expected process missing: ${required}`);
   }
 
@@ -171,7 +171,7 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
     assert.ok(varietyIds.has(required), `Expected variety missing: ${required}`);
   }
 
-  for (const expanded of ['sln7', 'liberica']) {
+  for (const expanded of ['sln7', 'liberica', 'mixed_variety']) {
     assert.ok(varietyIds.has(expanded), `Expected expanded variety missing: ${expanded}`);
   }
 

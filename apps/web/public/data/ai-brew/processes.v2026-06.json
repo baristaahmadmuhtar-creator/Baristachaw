@@ -818,6 +818,36 @@
       ]
     },
     {
+      "id": "wine_process",
+      "label": "Wine Process",
+      "group": "regional",
+      "aliases": [
+        "proses wine",
+        "winey process",
+        "wine coffee"
+      ],
+      "source": "indonesia-regional-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-04",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Indonesian market descriptor for winey, fruit-forward fermentation lots; treat as curated wording, not an official processing standard."
+      ],
+      "catalogVersion": "2026.06.1-ai-brew-process-plus",
+      "origins": [
+        "Indonesia",
+        "Vietnam",
+        "Thailand"
+      ],
+      "searchText": "wine process proses wine winey process wine coffee indonesia regional"
+    },
+    {
       "id": "wine_yeast_fermentation",
       "label": "Wine Yeast Fermentation",
       "group": "experimental",

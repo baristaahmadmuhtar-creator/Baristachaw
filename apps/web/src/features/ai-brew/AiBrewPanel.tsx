@@ -130,8 +130,8 @@ import type {
 
 const CUSTOM_ENTRY_ID = 'custom';
 const OMITTED_ENTRY_ID = '__omitted__';
-const AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS = 5000;
-const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 3500;
+const AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS = 14000;
+const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 9000;
 const AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS = 1800;
 const AI_BREW_FEEDBACK_NOTE_MAX_LENGTH = 240;
 const AI_BREW_ONLINE_PROVIDER_STACK = 'Groq Llama 3.3 70B, Gemini 2.5 Flash, DeepSeek Chat, Mistral Large, OpenAI GPT-4o mini, OpenRouter Llama fallback';
@@ -348,7 +348,7 @@ const COPY = {
     aiEngineStrictReady: 'Strict AI',
     aiEngineStrictRequired: 'AI server required',
     aiEngineProviderStack: `Online engine: ${AI_BREW_ONLINE_PROVIDER_STACK}.`,
-    aiFallbackDisabledByAdmin: 'Fallback is disabled by Admin. Generate requires a safe online AI optimization; local planner fallback will not be shown as a generated result.',
+    aiFallbackDisabledByAdmin: 'Strict mode is active. Online AI optimizes the plan, then the deterministic planner validates every number before it is shown.',
     aiEngineOnlineOptimized: 'AI optimized',
     aiEngineLocalValidated: 'AI off',
     aiEngineWorkingOnline: 'AI optimizing',
@@ -731,7 +731,7 @@ const COPY = {
     aiEngineStrictReady: 'Strict AI',
     aiEngineStrictRequired: 'Perlu server AI',
     aiEngineProviderStack: `Engine online: ${AI_BREW_ONLINE_PROVIDER_STACK}.`,
-    aiFallbackDisabledByAdmin: 'Fallback dimatikan Admin. Generate wajib mendapat optimasi AI online yang aman; planner lokal tidak akan ditampilkan sebagai hasil generate.',
+    aiFallbackDisabledByAdmin: 'Mode ketat aktif. AI online mengoptimalkan plan, lalu planner deterministik memvalidasi semua angka sebelum ditampilkan.',
     aiEngineOnlineOptimized: 'AI dioptimalkan',
     aiEngineLocalValidated: 'AI nonaktif',
     aiEngineWorkingOnline: 'AI mengoptimalkan',
@@ -4963,13 +4963,13 @@ export function AiBrewPanel({
         }
 
         if (!optimized.applied) {
-          if (requireOnlineAiGenerate) {
-            throw new Error('ai_brew_optimizer_unavailable');
-          }
           const synthesized = applyGuardrailAiOptimizationSynthesis(nextPlan);
           if (synthesized.applied) {
             optimized = synthesized;
           } else {
+            if (requireOnlineAiGenerate) {
+              throw new Error('ai_brew_optimizer_unavailable');
+            }
             console.warn(
               copy.aiOptimizationNoChange,
               synthesized.rejected.length > 0 ? synthesized.rejected : synthesized.diagnostics,

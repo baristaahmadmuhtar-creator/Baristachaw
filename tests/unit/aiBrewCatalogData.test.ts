@@ -151,7 +151,8 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   assert.deepEqual(missingGrinderCoverage, [], 'Every grinder should have at least one grinder-setting reference');
 
   const processIds = new Set(processes.map((entry) => entry.id));
-  for (const required of ['wet_hulled', 'black_honey', 'white_honey', 'anaerobic_washed', 'monsooned', 'red_honey', 'yellow_honey', 'anaerobic_natural', 'anaerobic_honey', 'double_fermentation', 'wine_process', 'wine_yeast_fermentation', 'aerobic_fermentation', 'coferment', 'sequential_fermentation', 'anaerobic_thermal_shock', 'semi_washed', 'lactic_anaerobic', 'enzyme_fermentation']) {
+  assert.equal(processIds.size, processes.length, 'Process catalog should not contain duplicate IDs');
+  for (const required of ['wet_hulled', 'black_honey', 'white_honey', 'anaerobic_washed', 'monsooned', 'red_honey', 'yellow_honey', 'anaerobic_natural', 'anaerobic_honey', 'double_fermentation', 'wine_process', 'wine_yeast_fermentation', 'aerobic_fermentation', 'coferment', 'sequential_fermentation', 'anaerobic_thermal_shock', 'semi_washed', 'lactic_anaerobic', 'enzyme_fermentation', 'extended_fermentation', 'koji_fermentation', 'mossto_fermentation', 'anaerobic_wet_hulled']) {
     assert.ok(processIds.has(required), `Expected process missing: ${required}`);
   }
 
@@ -167,11 +168,12 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   }
 
   const varietyIds = new Set(varieties.map((entry) => entry.id));
-  for (const required of ['sigararutang', 'andungsari', 'lini_s', 'timtim', 'yunnan_catimor', 'java', 'ateng_super', 'borbor', 'usda_762', 'kartika_1', 'kartika_2', 'gayo_1', 'sln9', 'sarchimor', 'pacas', 'kent', 'sln6', 'sln5b', 's288', 'cauvery', 'chandragiri']) {
+  assert.equal(varietyIds.size, varieties.length, 'Variety catalog should not contain duplicate IDs');
+  for (const required of ['sigararutang', 'andungsari', 'lini_s', 'timtim', 'yunnan_catimor', 'java', 'ateng_super', 'borbor', 'usda_762', 'kartika_1', 'kartika_2', 'gayo_1', 'sln9', 'sarchimor', 'pacas', 'kent', 'sln6', 'sln5b', 's288', 'cauvery', 'chandragiri', 'komasti', 'rasuna', 'blp_4', 'excelsa', 'ethiopian_landrace_mix']) {
     assert.ok(varietyIds.has(required), `Expected variety missing: ${required}`);
   }
 
-  for (const expanded of ['sln7', 'liberica', 'mixed_variety']) {
+  for (const expanded of ['sln7', 'liberica', 'mixed_variety', 'komasti', 'rasuna', 'blp_4', 'excelsa', 'ethiopian_landrace_mix']) {
     assert.ok(varietyIds.has(expanded), `Expected expanded variety missing: ${expanded}`);
   }
 
@@ -226,6 +228,7 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   const c3EspFlat = grinderSettings.find((entry) => entry.id === 'gs_timemore_c3_esp_flat');
   const feima600nCone = grinderSettings.find((entry) => entry.id === 'gs_feima_600n_cone');
   const feima600nFlat = grinderSettings.find((entry) => entry.id === 'gs_feima_600n_flat');
+  assert.equal(new Set(grinderSettings.map((entry) => entry.id)).size, grinderSettings.length, 'Grinder setting catalog should not contain duplicate IDs');
   assert.ok(timemoreC2Cone && timemoreC2Flat, 'Timemore C2 should have cone and flat grinder-setting references');
   assert.ok(kinuM47Cone, 'Kinu M47 should include cone grinder-setting reference');
   assert.ok(harioMiniSlimCone, 'Hario Mini Slim should include cone grinder-setting reference');
@@ -244,6 +247,14 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
     'gs_kingrinder_k0_k1_cone',
     'gs_1zpresso_k_plus_flat',
     'gs_timemore_sculptor_078s_filter',
+    'gs_baratza_encore_esp_cone',
+    'gs_baratza_encore_esp_flat',
+    'gs_fellow_opus_cone',
+    'gs_fellow_opus_flat',
+    'gs_fellow_ode_gen_2_cone',
+    'gs_fellow_ode_gen_2_flat',
+    'gs_varia_vs3_gen_2_cone',
+    'gs_varia_vs3_gen_2_flat',
   ]) {
     assert.ok(grinderSettings.some((entry) => entry.id === id), `Expected grinder setting missing: ${id}`);
   }

@@ -356,33 +356,6 @@
       ]
     },
     {
-      "id": "extended_fermentation",
-      "label": "Extended Fermentation",
-      "group": "fermented",
-      "aliases": [
-        "long fermentation"
-      ],
-      "source": "sca-coffee-processing",
-      "sourceUrls": [
-        "https://sca.coffee/research/coffee-processing-glossary"
-      ],
-      "verificationLevel": "curated",
-      "verifiedAt": "2026-03-09",
-      "popularityTier": "emerging",
-      "marketSegment": "specialty_mainstream",
-      "releaseStatus": "new",
-      "confidence": "medium",
-      "notes": [
-        "Treat as sensory context rather than a guaranteed numeric rule."
-      ],
-      "origins": [
-        "Colombia",
-        "Ethiopia",
-        "Kenya",
-        "Indonesia"
-      ]
-    },
-    {
       "id": "honey",
       "label": "Honey",
       "group": "classic",
@@ -412,35 +385,6 @@
         "Vietnam",
         "Taiwan",
         "Malaysia"
-      ]
-    },
-    {
-      "id": "koji_fermentation",
-      "label": "Koji Fermentation",
-      "group": "experimental",
-      "aliases": [
-        "koji processed"
-      ],
-      "source": "sca-coffee-processing",
-      "sourceUrls": [
-        "https://sca.coffee/research/coffee-processing-glossary"
-      ],
-      "verificationLevel": "curated",
-      "popularityTier": "emerging",
-      "marketSegment": "small_market",
-      "releaseStatus": "new",
-      "confidence": "low",
-      "notes": [
-        "Experimental fermentation pathway; keep recipe moves conservative until cup confirms direction."
-      ],
-      "searchText": "koji fermentation koji processed",
-      "verifiedAt": "2026-03-11",
-      "catalogVersion": "2026.06.0-ai-brew-v2",
-      "origins": [
-        "Japan",
-        "China",
-        "South Korea",
-        "Indonesia"
       ]
     },
     {
@@ -846,6 +790,139 @@
         "Thailand"
       ],
       "searchText": "wine process proses wine winey process wine coffee indonesia regional"
+    },
+    {
+      "id": "extended_fermentation",
+      "label": "Extended Fermentation",
+      "group": "fermented",
+      "aliases": [
+        "long fermentation",
+        "fermentasi panjang",
+        "extended natural"
+      ],
+      "source": "sca-processing-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://sca.coffee/sca-news/25-magazine/issue-10/english/the-fermentation-effect-25-magazine-issue-10"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-04",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Use as a process descriptor only when the producer or roaster states extended fermentation; do not infer exact hours or tank protocol.",
+        "Often benefits from conservative agitation first, because expression can swing from sweet fruit to heavy ferment quickly."
+      ],
+      "catalogVersion": "2026.06.2-ai-brew-process-plus",
+      "origins": [
+        "Global",
+        "Indonesia",
+        "Colombia",
+        "Costa Rica",
+        "Ethiopia",
+        "China"
+      ],
+      "searchText": "extended fermentation long fermentation fermentasi panjang extended natural"
+    },
+    {
+      "id": "koji_fermentation",
+      "label": "Koji Fermentation",
+      "group": "experimental",
+      "aliases": [
+        "koji process",
+        "oryzae coffee",
+        "koji supernatural"
+      ],
+      "source": "experimental-process-curation",
+      "sourceUrls": [
+        "https://perfectdailygrind.com/2022/03/what-is-koji-fermented-coffee/",
+        "https://www.baristamagazine.com/understanding-the-process-koji-fermentation/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-04",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Experimental koji-driven fermentation; treat as high-uncertainty unless a producer protocol is provided.",
+        "AI Brew should favor sweetness clarity and avoid aggressive temperature jumps until cup feedback is known."
+      ],
+      "catalogVersion": "2026.06.2-ai-brew-process-plus",
+      "origins": [
+        "Colombia",
+        "Indonesia",
+        "Thailand",
+        "Japan",
+        "Global"
+      ],
+      "searchText": "koji fermentation koji process oryzae coffee koji supernatural"
+    },
+    {
+      "id": "mossto_fermentation",
+      "label": "Mossto Fermentation",
+      "group": "experimental",
+      "aliases": [
+        "mosto fermentation",
+        "coffee mossto",
+        "starter culture fermentation"
+      ],
+      "source": "experimental-process-curation",
+      "sourceUrls": [
+        "https://christopherferan.com/2022/08/19/a-sort-of-glossary-of-coffee-processes/",
+        "https://sca.coffee/sca-news/25-magazine/issue-10/english/the-fermentation-effect-25-magazine-issue-10"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-04",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Starter-culture descriptor used in advanced fermentation lots; do not invent fruit notes or culture composition without producer data.",
+        "Keep recipe changes small because sweetness, acidity, and ferment intensity vary heavily by producer protocol."
+      ],
+      "catalogVersion": "2026.06.2-ai-brew-process-plus",
+      "origins": [
+        "Colombia",
+        "Costa Rica",
+        "Ecuador",
+        "Indonesia",
+        "Global"
+      ],
+      "searchText": "mossto fermentation mosto fermentation coffee mossto starter culture fermentation"
+    },
+    {
+      "id": "anaerobic_wet_hulled",
+      "label": "Anaerobic Wet Hulled",
+      "group": "regional",
+      "aliases": [
+        "anaerobic giling basah",
+        "anaerobic semi washed indonesia",
+        "fermentasi anaerobik giling basah"
+      ],
+      "source": "indonesia-regional-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://sucafina.com/apac/origins/indonesia"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-04",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Regional hybrid descriptor for Indonesian lots that combine anaerobic fermentation language with wet-hulled or semi-washed handling.",
+        "Use only when the bag/roaster states this process; otherwise choose Wet Hulled or Anaerobic separately."
+      ],
+      "catalogVersion": "2026.06.2-ai-brew-process-plus",
+      "origins": [
+        "Indonesia"
+      ],
+      "searchText": "anaerobic wet hulled anaerobic giling basah anaerobic semi washed indonesia fermentasi anaerobik giling basah"
     },
     {
       "id": "wine_yeast_fermentation",

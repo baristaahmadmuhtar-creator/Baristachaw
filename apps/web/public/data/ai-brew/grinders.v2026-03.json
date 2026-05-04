@@ -611,6 +611,92 @@
       "catalogVersion": "2026.03.12-ai-brew-v1.3"
     },
     {
+      "id": "baratza-encore-esp",
+      "name": "Baratza Encore ESP",
+      "brand": "Baratza",
+      "type": "Stepped (1 - 40) Electric",
+      "coarse": "25 - 40 settings",
+      "medium": "15 - 30 settings",
+      "fine": "1 - 13 settings",
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://www.baratza.com/en-gb/product/encoretm-esp-zcg495",
+        "https://assets.breville.com/ZCG495/manual-encoreesp-v1-0-en-010923.pdf",
+        "https://honestcoffeeguide.com/baratza-encore-esp-grind-settings/"
+      ],
+      "catalogVersion": "2026.06.2-ai-brew-grinder-plus",
+      "verificationLevel": "community_verified",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-04",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established"
+    },
+    {
+      "id": "fellow-opus",
+      "name": "Fellow Opus",
+      "brand": "Fellow",
+      "type": "Stepped (1 - 11, 41+ positions) Electric",
+      "coarse": "8 - 11 numbers",
+      "medium": "4.5 - 7.5 numbers",
+      "fine": "1 - 3 numbers",
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://fellowproducts.com/pages/gear-guide-opus",
+        "https://help.fellowproducts.com/hc/en-us/articles/12697790417947-What-does-the-in-41-adjustable-settings-mean",
+        "https://honestcoffeeguide.com/fellow-opus-grind-settings/"
+      ],
+      "catalogVersion": "2026.06.2-ai-brew-grinder-plus",
+      "verificationLevel": "community_verified",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-04",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established"
+    },
+    {
+      "id": "fellow-ode-gen-2",
+      "name": "Fellow Ode Gen 2",
+      "brand": "Fellow",
+      "type": "Stepped Brew Grinder Electric",
+      "coarse": "8 - 11 numbers",
+      "medium": "4 - 8 numbers",
+      "fine": "2 - 4 numbers",
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://help.fellowproducts.com/hc/en-us/articles/9962302561819-What-are-the-recommended-grind-settings-for-Ode-Gen-2-Brew-Burrs",
+        "https://honestcoffeeguide.com/fellow-ode-brew-grinder-gen-2-grind-settings/"
+      ],
+      "catalogVersion": "2026.06.2-ai-brew-grinder-plus",
+      "verificationLevel": "community_verified",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-04",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established"
+    },
+    {
+      "id": "varia-vs3-gen-2",
+      "name": "Varia VS3 Gen 2",
+      "brand": "Varia",
+      "type": "Stepless Electric",
+      "coarse": "8.3 - 18 numbers",
+      "medium": "3.7 - 12.1 numbers",
+      "fine": "0.2 - 3.3 numbers",
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://www.variabrewing.com/products/varia-vs3-grinder",
+        "https://honestcoffeeguide.com/varia-vs3-gen-2-grind-settings/"
+      ],
+      "catalogVersion": "2026.06.2-ai-brew-grinder-plus",
+      "verificationLevel": "community_verified",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-04",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established"
+    },
+    {
       "id": "feima-600n",
       "name": "Feima 600N",
       "brand": "Feima (Yang-Chia)",

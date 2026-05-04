@@ -1851,6 +1851,158 @@
       ]
     },
     {
+      "id": "komasti",
+      "label": "Komasti",
+      "group": "indonesia-selection",
+      "aliases": [
+        "composite andungsari",
+        "komposit andungsari",
+        "komasti arabica"
+      ],
+      "originNotes": "Indonesian arabica variety promoted by ICCRI/WCR demo work for climate-resilient farmer trials.",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/news/2023/komasti-demo-plot",
+        "https://worldcoffeeresearch.org/countries/indonesia"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Indonesian cultivar context; keep recipe anchored to process, roast, and target profile until producer data is explicit."
+      ],
+      "searchText": "komasti composite andungsari komposit andungsari komasti arabica indonesia-selection indonesia",
+      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
+      "origins": [
+        "Indonesia"
+      ]
+    },
+    {
+      "id": "rasuna",
+      "label": "Rasuna",
+      "group": "indonesia-selection",
+      "aliases": [
+        "wahana rasuna",
+        "sumatra rasuna"
+      ],
+      "originNotes": "Sumatra cultivar described as a Catimor x Typica cross in Wahana/Sumatra trade references.",
+      "source": "regional-curation",
+      "sourceUrls": [
+        "https://drwakefield.com/coffees/sumatra-wahana-rasuna-w/",
+        "https://sucafina.com/apac/origins/indonesia"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Use as Indonesian lot context only; do not force earthy/body assumptions unless process and roast also support them."
+      ],
+      "searchText": "rasuna wahana rasuna sumatra rasuna indonesia-selection indonesia catimor typica",
+      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
+      "origins": [
+        "Indonesia"
+      ]
+    },
+    {
+      "id": "blp_4",
+      "label": "BLP-4",
+      "group": "indonesia-selection",
+      "aliases": [
+        "blp4",
+        "blp 4"
+      ],
+      "originNotes": "Indonesian arabica variety appearing in public agronomy research alongside Gayo-1 and Sigararutang.",
+      "source": "academic-curation",
+      "sourceUrls": [
+        "https://garuda.kemdiktisaintek.go.id/journal/view/15868?issue=Vol+5%2C+No+1+%282021%29%3A+Agrotechnology+Research+Journal",
+        "https://jurnal.uns.ac.id/arj/article/download/44868/pdf"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Niche Indonesian agronomy reference; use only when the bag or producer identifies BLP-4."
+      ],
+      "searchText": "blp-4 blp4 blp 4 indonesia-selection indonesia",
+      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
+      "origins": [
+        "Indonesia"
+      ]
+    },
+    {
+      "id": "excelsa",
+      "label": "Excelsa",
+      "group": "non-arabica",
+      "aliases": [
+        "coffea excelsa",
+        "liberica excelsa"
+      ],
+      "originNotes": "Non-arabica coffee type seen in Southeast Asian lots; UI should not treat it as Arabica without explicit producer data.",
+      "source": "species-curation",
+      "sourceUrls": [
+        "https://perfectdailygrind.com/2021/05/what-is-excelsa-coffee/",
+        "https://greencoffeecollective.com/blogs/learn/excelsa-coffee-s-overlooked-alternative"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Treat as non-arabica / liberica-adjacent context; AI Brew should avoid Arabica cultivar assumptions and lean on roast, process, and tasting feedback."
+      ],
+      "searchText": "excelsa coffea excelsa liberica excelsa non-arabica philippines indonesia malaysia vietnam",
+      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
+      "origins": [
+        "Philippines",
+        "Indonesia",
+        "Malaysia",
+        "Vietnam",
+        "Southeast Asia"
+      ]
+    },
+    {
+      "id": "ethiopian_landrace_mix",
+      "label": "Ethiopian Landrace Mix",
+      "group": "lot-composition",
+      "aliases": [
+        "ethiopian heirloom",
+        "heirloom mix",
+        "landrace blend",
+        "regional landrace"
+      ],
+      "originNotes": "Safer label for Ethiopian lots described broadly as heirloom/landrace without a single named variety.",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/countries/ethiopia",
+        "https://varieties.worldcoffeeresearch.org/"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Use this when Ethiopian bags say heirloom or landrace without a named JARC selection; do not invent 74110/74112 or Gesha."
+      ],
+      "searchText": "ethiopian landrace mix ethiopian heirloom heirloom mix landrace blend regional landrace ethiopia",
+      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
+      "origins": [
+        "Ethiopia"
+      ]
+    },
+    {
       "id": "yunnan_catimor",
       "label": "Yunnan Catimor",
       "group": "regional-selection",

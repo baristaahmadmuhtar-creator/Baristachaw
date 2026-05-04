@@ -111,6 +111,7 @@ test('account status returns plan and runtime maintenance flags for mobile', asy
   assert.equal(body.billing.status, 'none');
   assert.equal(body.recommendedUpgrade.planCode, 'pro');
   assert.equal(body.recommendedUpgrade.action, 'checkout');
+  assert.ok(body.featureFlags.some((flag: any) => flag.key === 'ai_brew_fallback' && flag.status === 'available'));
   assert.ok(body.maintenance.some((flag: any) => flag.key === 'scanner' && flag.status === 'maintenance'));
   assert.equal(body.appAccess.status, 'limited');
 });

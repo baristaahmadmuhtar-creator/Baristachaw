@@ -131,6 +131,7 @@ test('admin management returns runtime snapshot for allowlisted owner', async ()
   assert.equal(body.billing.mode, 'not_configured');
   assert.ok(Array.isArray(body.billing.gaps));
   assert.ok(body.featureFlags.some((flag: any) => flag.key === 'chat'));
+  assert.ok(body.featureFlags.some((flag: any) => flag.key === 'ai_brew_fallback' && flag.status === 'available'));
   assert.ok(body.checks.some((check: any) => check.id === 'database_persistence' && check.status === 'fail'));
 });
 

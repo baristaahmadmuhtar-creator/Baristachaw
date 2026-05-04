@@ -134,6 +134,7 @@ const AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS = 5000;
 const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 3500;
 const AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS = 1800;
 const AI_BREW_FEEDBACK_NOTE_MAX_LENGTH = 240;
+const AI_BREW_ONLINE_PROVIDER_STACK = 'Groq Llama 3.3 70B, Gemini 2.5 Flash, DeepSeek Chat, Mistral Large, OpenAI GPT-4o mini, OpenRouter Llama fallback';
 const COPY = {
   en: {
     title: 'AI Brew',
@@ -344,6 +345,10 @@ const COPY = {
     aiSequenceGuide: 'AI Notes',
     aiGenerateLoading: 'Refreshing short notes...',
     aiEngineReady: 'AI ready',
+    aiEngineStrictReady: 'Strict AI',
+    aiEngineStrictRequired: 'AI server required',
+    aiEngineProviderStack: `Online engine: ${AI_BREW_ONLINE_PROVIDER_STACK}.`,
+    aiFallbackDisabledByAdmin: 'Fallback is disabled by Admin. Generate requires a safe online AI optimization; local planner fallback will not be shown as a generated result.',
     aiEngineOnlineOptimized: 'AI optimized',
     aiEngineLocalValidated: 'AI off',
     aiEngineWorkingOnline: 'AI optimizing',
@@ -723,6 +728,10 @@ const COPY = {
     aiSequenceGuide: 'Catatan AI',
     aiGenerateLoading: 'Memperbarui catatan singkat...',
     aiEngineReady: 'Siap AI',
+    aiEngineStrictReady: 'Strict AI',
+    aiEngineStrictRequired: 'Perlu server AI',
+    aiEngineProviderStack: `Engine online: ${AI_BREW_ONLINE_PROVIDER_STACK}.`,
+    aiFallbackDisabledByAdmin: 'Fallback dimatikan Admin. Generate wajib mendapat optimasi AI online yang aman; planner lokal tidak akan ditampilkan sebagai hasil generate.',
     aiEngineOnlineOptimized: 'AI dioptimalkan',
     aiEngineLocalValidated: 'AI nonaktif',
     aiEngineWorkingOnline: 'AI mengoptimalkan',
@@ -2238,10 +2247,25 @@ function getAiBrewFriendlyErrorMessage(
       ? 'AI Brew membutuhkan paket berbayar aktif. Upgrade ke paket Starter atau sinkronkan status paket Anda.'
       : 'AI Brew requires an active paid plan. Upgrade to Starter or sync your plan status.';
   }
-  if (normalized.includes('timeout') || normalized.includes('provider') || normalized.includes('quota') || normalized.includes('model') || normalized.includes('400') || normalized.includes('500')) {
+  if (
+    normalized.includes('timeout')
+    || normalized.includes('provider')
+    || normalized.includes('quota')
+    || normalized.includes('model')
+    || normalized.includes('unavailable')
+    || normalized.includes('could not process')
+    || normalized.includes('request_failed')
+    || normalized.includes('no ai providers')
+    || normalized.includes('all ai providers failed')
+    || normalized.includes('empty response')
+    || normalized.includes('belum bisa diproses')
+    || normalized.includes('tidak tersedia')
+    || normalized.includes('400')
+    || normalized.includes('500')
+  ) {
     return id
-      ? 'AI sedang sibuk. Coba ulang sebentar lagi.'
-      : 'AI is busy right now. Please try again shortly.';
+      ? 'Server AI sedang penuh. Coba ulang sebentar lagi.'
+      : 'AI servers are busy right now. Please try again shortly.';
   }
 
   return fallback;
@@ -4684,6 +4708,15 @@ export function AiBrewPanel({
   const requireOnlineAiGenerate = !aiBrewFallbackEnabled;
   const canUsePaidAiBrew = hasPaidAiAccess && !isOffline;
   const canUseHybridAiSequence = Boolean(activeBuilderModal) && canUsePaidAiBrew;
+  const aiEngineReadyLabel = canUseHybridAiSequence
+    ? requireOnlineAiGenerate ? copy.aiEngineStrictReady : copy.aiEngineReady
+    : requireOnlineAiGenerate ? copy.aiEngineStrictRequired : copy.aiEngineLocalValidated;
+  const aiEngineWorkingLabel = canUseHybridAiSequence
+    ? requireOnlineAiGenerate ? copy.aiEngineStrictReady : copy.aiEngineWorkingOnline
+    : requireOnlineAiGenerate ? copy.aiEngineStrictRequired : copy.aiEngineWorkingLocal;
+  const aiEngineLaunchLabel = canUsePaidAiBrew
+    ? requireOnlineAiGenerate ? copy.aiEngineStrictReady : copy.aiEngineReady
+    : requireOnlineAiGenerate ? copy.aiEngineStrictRequired : copy.aiEngineLocalValidated;
   const preferredBuilderMode = inferPreferredBuilderMode(formState);
 
   const mineralsReady = Boolean(formState.waterTdsPpm && formState.waterHardnessPpm && formState.waterAlkalinityPpm);
@@ -4895,23 +4928,38 @@ export function AiBrewPanel({
         setGenerationProgress(createHybridAiSequenceProgress(nextPlan, latestProgress));
         setGenerationStage('hybrid_ai_sequence');
         await nextAnimationFrame(140);
-        let optimized = await runHybridOptimizationUpdate(nextPlan, {
-          enabled: true,
-          platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
-          language,
-        });
+        let optimized: Awaited<ReturnType<typeof runHybridOptimizationUpdate>>;
+        try {
+          optimized = await runHybridOptimizationUpdate(nextPlan, {
+            enabled: true,
+            platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
+            language,
+          });
+        } catch (error) {
+          if (requireOnlineAiGenerate) {
+            throw new Error(`ai_brew_optimizer_unavailable:${error instanceof Error ? error.message : String(error || 'request_failed')}`);
+          }
+          throw error;
+        }
 
         if (!optimized.applied) {
           console.warn(
             getAiBrewOptimizationFallbackMessage(language),
             optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
           );
-          optimized = await runHybridOptimizationUpdate(nextPlan, {
-            enabled: true,
-            platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
-            language,
-            repair: true,
-          });
+          try {
+            optimized = await runHybridOptimizationUpdate(nextPlan, {
+              enabled: true,
+              platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
+              language,
+              repair: true,
+            });
+          } catch (error) {
+            if (requireOnlineAiGenerate) {
+              throw new Error(`ai_brew_optimizer_unavailable:${error instanceof Error ? error.message : String(error || 'repair_failed')}`);
+            }
+            throw error;
+          }
         }
 
         if (!optimized.applied) {
@@ -5274,7 +5322,7 @@ export function AiBrewPanel({
     const normalizedStageIndex = generationStageIndex >= 0 ? generationStageIndex : 0;
     const elapsedLabel = formatTime(Math.max(0, Math.floor(generationElapsedMs / 1000)));
     const EngineIcon = canUseHybridAiSequence ? Brain : Sparkles;
-    const engineLabel = canUseHybridAiSequence ? copy.aiEngineWorkingOnline : copy.aiEngineWorkingLocal;
+    const engineLabel = aiEngineWorkingLabel;
     const loadingSteps = [
       {
         key: 'inputs',
@@ -5500,10 +5548,14 @@ export function AiBrewPanel({
                     {canUseHybridAiSequence ? <Brain size={13} /> : <Sparkles size={13} />}
                     <span>{isPro ? copy.proMode : copy.quickMode}</span>
                     <span className="opacity-70">
-                      {canUseHybridAiSequence ? copy.aiEngineReady : copy.aiEngineLocalValidated}
+                      {aiEngineReadyLabel}
                     </span>
                   </div>
                   <h3 className="text-base font-semibold tracking-tight text-primary lg:text-xl">{dialogTitle}</h3>
+                  <p className="mt-1 text-xs leading-5 text-secondary">{copy.aiEngineProviderStack}</p>
+                  {requireOnlineAiGenerate ? (
+                    <p className="mt-1 text-xs leading-5 text-amber-600 dark:text-amber-300">{copy.aiFallbackDisabledByAdmin}</p>
+                  ) : null}
                 </div>
 
                 <div className="mt-3 flex flex-col gap-2.5 lg:flex-row lg:items-start lg:justify-between">
@@ -6239,7 +6291,7 @@ export function AiBrewPanel({
                     : 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
                 }`}>
                   {canUsePaidAiBrew ? <Brain size={12} /> : <Sparkles size={12} />}
-                  {canUsePaidAiBrew ? copy.aiEngineReady : copy.aiEngineLocalValidated}
+                  {aiEngineLaunchLabel}
                 </div>
               </button>
               <button
@@ -6256,7 +6308,7 @@ export function AiBrewPanel({
                     : 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
                 }`}>
                   {canUsePaidAiBrew ? <Brain size={12} /> : <Sparkles size={12} />}
-                  {canUsePaidAiBrew ? copy.aiEngineReady : copy.aiEngineLocalValidated}
+                  {aiEngineLaunchLabel}
                 </div>
               </button>
             </div>

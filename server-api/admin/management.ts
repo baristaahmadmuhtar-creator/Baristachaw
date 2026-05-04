@@ -17,6 +17,10 @@ import {
   type AdminFeatureFlag,
   type FeatureFlagPatch,
 } from './_featureFlags.js';
+import {
+  resolveAiProviderAdminSnapshot,
+  type AiProviderAdminSnapshot,
+} from '../_aiProviderControl.js';
 
 type AdminRole = 'owner' | 'admin' | 'support' | 'analyst' | 'user';
 type AccountStatus = 'active' | 'trialing' | 'past_due' | 'suspended' | 'deleted';
@@ -204,6 +208,7 @@ type AdminSnapshot = {
   checks: AdminSystemCheck[];
   launchChecklist: LaunchChecklistItem[];
   featureFlags: AdminFeatureFlag[];
+  ai: AiProviderAdminSnapshot;
   billing: {
     ready: boolean;
     mode: 'not_configured' | 'test' | 'live_ready';
@@ -1484,7 +1489,7 @@ function buildChecks(dataMode: DataMode): AdminSystemCheck[] {
   const supabase = getSupabaseConfig();
   const adminConfigured = Boolean(readEnv('ADMIN_EMAILS', 'ADMIN_BOOTSTRAP_EMAILS', 'ADMIN_USER_IDS', 'ADMIN_BOOTSTRAP_USER_IDS'));
   const jwtConfigured = Boolean(readEnv('JWT_SECRET'));
-  const aiConfigured = Boolean(readEnv('GEMINI_API_KEY', 'GOOGLE_GENAI_API_KEY', 'OPENAI_API_KEY'));
+  const aiConfigured = resolveAiProviderAdminSnapshot().configuredProviders > 0;
   const billingConfigured = connectedBillingProviders().length > 0;
   const billingSyncReady = billingSyncConfigured();
   const sentryConfigured = Boolean(readEnv('SENTRY_DSN', 'EXPO_PUBLIC_SENTRY_DSN', 'VITE_SENTRY_DSN'));
@@ -1810,10 +1815,14 @@ async function buildAdminSnapshot(
   }
 
   const metrics = metricsFromUsers(users);
+  const ai = resolveAiProviderAdminSnapshot(featureFlags);
   const checks = buildChecks(dataMode);
   const billing = buildBillingSummary(users, plans, dataMode);
   const launchChecklist = buildLaunchChecklist(checks);
   const recommendations = buildRecommendations({ dataMode, metrics, checks });
+  for (const warning of ai.warnings) {
+    warnings.push(warning);
+  }
   if (!recipeLibrary.ready) {
     recommendations.unshift('Run supabase/ai_brew_recipe_library.sql so AI Brew saves and Collection recipes appear in admin Recipe Library.');
   }
@@ -1841,6 +1850,7 @@ async function buildAdminSnapshot(
     checks,
     launchChecklist,
     featureFlags,
+    ai,
     billing,
     catalog,
     recipeLibrary,
@@ -2611,6 +2621,8 @@ async function updateFeatureFlag(
   if (config.configured) {
     try {
       await patchSupabaseFeatureFlag(config, admin, key, patch);
+      const previous = RUNTIME_FEATURE_FLAG_PATCHES.get(key) || {};
+      RUNTIME_FEATURE_FLAG_PATCHES.set(key, { ...previous, ...patch });
       return buildAdminSnapshot(requestId, admin, rawUser);
     } catch (error) {
       const details = sanitizeErrorDetails(error, 180);

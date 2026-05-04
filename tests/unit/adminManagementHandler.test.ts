@@ -10,6 +10,10 @@ const ORIGINAL_ENV = {
   SUPABASE_URL: process.env.SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   ADMIN_RUNTIME_WRITE_FALLBACK: process.env.ADMIN_RUNTIME_WRITE_FALLBACK,
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  GROQ_API_KEY: process.env.GROQ_API_KEY,
+  AI_PAID_OPENAI_API_KEY: process.env.AI_PAID_OPENAI_API_KEY,
+  AI_BREW_PAID_GROQ_API_KEY: process.env.AI_BREW_PAID_GROQ_API_KEY,
 };
 
 function restoreEnv() {
@@ -80,6 +84,10 @@ test.beforeEach(() => {
   delete process.env.SUPABASE_URL;
   delete process.env.SUPABASE_SERVICE_ROLE_KEY;
   delete process.env.ADMIN_RUNTIME_WRITE_FALLBACK;
+  delete process.env.GEMINI_API_KEY;
+  delete process.env.GROQ_API_KEY;
+  delete process.env.AI_PAID_OPENAI_API_KEY;
+  delete process.env.AI_BREW_PAID_GROQ_API_KEY;
 });
 
 test.after(() => {
@@ -132,7 +140,36 @@ test('admin management returns runtime snapshot for allowlisted owner', async ()
   assert.ok(Array.isArray(body.billing.gaps));
   assert.ok(body.featureFlags.some((flag: any) => flag.key === 'chat'));
   assert.ok(body.featureFlags.some((flag: any) => flag.key === 'ai_brew_fallback' && flag.status === 'available'));
+  assert.ok(body.featureFlags.some((flag: any) => flag.key === 'ai_provider_groq' && flag.status === 'available'));
+  assert.ok(body.ai && Array.isArray(body.ai.providers));
   assert.ok(body.checks.some((check: any) => check.id === 'database_persistence' && check.status === 'fail'));
+});
+
+test('admin management exposes AI provider inventory without leaking server keys', async () => {
+  process.env.GROQ_API_KEY = 'gsk_live_secret_one,gsk_live_secret_two';
+  process.env.AI_PAID_OPENAI_API_KEY = 'sk-paid-openai-secret';
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    cookies: { auth_token: token },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  const groq = body.ai.providers.find((item: any) => item.provider === 'GROQ');
+  const openai = body.ai.providers.find((item: any) => item.provider === 'OPENAI');
+  assert.equal(groq.keyCount, 2);
+  assert.equal(groq.standardKeyCount, 2);
+  assert.equal(openai.paidKeyCount, 1);
+  assert.equal(body.ai.configuredProviders >= 2, true);
+  assert.equal(JSON.stringify(body).includes('gsk_live_secret_one'), false);
+  assert.equal(JSON.stringify(body).includes('sk-paid-openai-secret'), false);
 });
 
 test('admin management patch updates runtime users and records audit', async () => {
@@ -829,6 +866,43 @@ test('admin management accepts disabled feature flags with operator message', as
     event.action === 'feature_flag_updated'
     && event.severity === 'critical'
     && event.detail.includes('Message: Collection disabled during launch data migration.')
+  )));
+});
+
+test('admin management can disable an AI provider with a safe audit trail', async () => {
+  process.env.GROQ_API_KEY = 'gsk_provider_control_secret';
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_feature_flag',
+      key: 'ai_provider_groq',
+      patch: {
+        status: 'disabled',
+        message: 'Groq quota limit reached; use paid fallback providers.',
+        surfaces: ['web', 'pwa', 'mobile', 'admin'],
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  const provider = body.ai.providers.find((item: any) => item.provider === 'GROQ');
+  assert.equal(provider.status, 'disabled');
+  assert.equal(provider.keyCount, 1);
+  assert.equal(JSON.stringify(body).includes('gsk_provider_control_secret'), false);
+  assert.ok(body.audit.some((event: any) => (
+    event.action === 'feature_flag_updated'
+    && event.target === 'ai_provider_groq'
+    && event.severity === 'critical'
   )));
 });
 

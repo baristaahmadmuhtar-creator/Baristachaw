@@ -60,3 +60,18 @@ test('admin mobile exposes editable plans and catalog operations', async ({ page
   await expect(page.getByText('Request katalog baru')).toBeVisible();
   await expect(page.getByLabel('Payload JSON')).toBeVisible();
 });
+
+test('admin AI control shows provider health without exposing secrets', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await qaLogin(page.request, buildQaAdminUser());
+
+  await page.goto('/admin?tab=ai', { waitUntil: 'domcontentloaded' });
+
+  await expect(page.getByRole('heading', { name: 'Manajemen Admin' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText('Kontrol provider AI')).toBeVisible();
+  await expect(page.getByText('Inventory aman secret')).toBeVisible();
+  await expect(page.getByText('Groq', { exact: true })).toBeVisible();
+  await expect(page.getByText('Gemini', { exact: true })).toBeVisible();
+  await expect(page.getByText('Key standar / Key paid').first()).toBeVisible();
+  await expect(page.getByText(/sk-|gsk_|AIza/i)).not.toBeVisible();
+});

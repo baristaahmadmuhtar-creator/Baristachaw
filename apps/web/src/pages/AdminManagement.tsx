@@ -52,6 +52,7 @@ import {
   updateFeatureFlag,
   type AccountRecoveryStatus,
   type AccountStatus,
+  type AdminAiProviderStatus,
   type AdminCatalogKind,
   type AdminCatalogRequestPatch,
   type AdminFeatureFlag,
@@ -78,6 +79,7 @@ const TABS = [
   { id: 'overview', labelKey: 'tabOverview', icon: Gauge },
   { id: 'users', labelKey: 'tabUsers', icon: Users },
   { id: 'plans', labelKey: 'tabPlans', icon: WalletCards },
+  { id: 'ai', labelKey: 'tabAi', icon: Sparkles },
   { id: 'maintenance', labelKey: 'tabMaintenance', icon: Wrench },
   { id: 'database', labelKey: 'tabDatabase', icon: Database },
   { id: 'recipes', labelKey: 'tabRecipes', icon: Library },
@@ -2797,6 +2799,161 @@ function MaintenancePanel({
   );
 }
 
+function formatAiUsageLabel(value: AdminAiProviderStatus['recommendedFor'][number]): string {
+  if (value === 'ai_chat') return 'AI Chat';
+  if (value === 'ai_brew') return 'AI Brew';
+  if (value === 'deep_search') return 'Deep/Search';
+  if (value === 'structured_fallback') return 'Fallback';
+  return 'Vision';
+}
+
+function formatAiTierLabel(value: AdminAiProviderStatus['tier']): string {
+  if (value === 'paid_credit') return 'Paid credit aktif';
+  if (value === 'paid_credit_ready') return 'Siap paid credit';
+  return 'Free tier';
+}
+
+function AiProviderPanel({
+  snapshot,
+  busyFlagKey,
+  onPatch,
+}: {
+  snapshot: AdminSnapshot;
+  busyFlagKey: string | null;
+  onPatch: (key: string, patch: AdminFeatureFlagPatch) => void;
+}) {
+  const admin = useAdminCopy();
+  const [draftMessages, setDraftMessages] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    setDraftMessages((current) => {
+      const next = { ...current };
+      for (const provider of snapshot.ai.providers) {
+        if (!(provider.featureFlagKey in next)) next[provider.featureFlagKey] = provider.message || '';
+      }
+      return next;
+    });
+  }, [snapshot.ai.providers]);
+
+  const commitMessage = (provider: AdminAiProviderStatus) => {
+    const message = (draftMessages[provider.featureFlagKey] ?? provider.message ?? '').trim();
+    if (message === (provider.message || '')) return;
+    onPatch(provider.featureFlagKey, { message });
+  };
+
+  const healthTone = (provider: AdminAiProviderStatus) => {
+    if (provider.status !== 'available') return 'warn';
+    if (!provider.configured) return 'fail';
+    if (provider.health.status === 'ok') return 'pass';
+    if (provider.health.status === 'rate_limited' || provider.health.status === 'error') return 'warn';
+    return 'supabase';
+  };
+
+  const stats = [
+    { label: admin.text('aiEnabledProviders'), value: snapshot.ai.enabledProviders },
+    { label: admin.text('aiConfiguredProviders'), value: snapshot.ai.configuredProviders },
+    { label: admin.text('aiPaidCreditProviders'), value: snapshot.ai.paidCreditProviders },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-2xl border border-blue-500/20 bg-blue-500/10 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-primary">{admin.text('aiNoSecretLeak')}</p>
+            <p className="mt-1 text-sm leading-6 text-secondary">{admin.text('aiProviderSecurityNote')}</p>
+            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700 dark:text-blue-200">{admin.text('aiFallbackPolicy')}</p>
+          </div>
+          <StatusBadge value={snapshot.ai.ready ? 'pass' : 'warn'} label={snapshot.ai.ready ? admin.text('aiProviderReady') : admin.text('aiNoKeys')} />
+        </div>
+      </div>
+
+      {snapshot.ai.warnings.length ? (
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
+          {snapshot.ai.warnings.map((warning) => (
+            <p key={warning} className="text-sm leading-6 text-amber-800 dark:text-amber-200">{warning}</p>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        {stats.map((item) => (
+          <div key={item.label} className="rounded-2xl border border-glass bg-surface-alpha p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{item.label}</p>
+            <p className="mt-2 text-2xl font-semibold text-primary">{admin.number(item.value)}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-3 xl:grid-cols-2">
+        {snapshot.ai.providers.map((provider) => {
+          const busy = busyFlagKey === provider.featureFlagKey;
+          const lastHealth = provider.health.lastCheckedAt.startsWith('1970')
+            ? 'belum ada request'
+            : `${admin.date(provider.health.lastCheckedAt)}${provider.health.lastLatencyMs ? ` / ${admin.number(provider.health.lastLatencyMs)}ms` : ''}`;
+          return (
+            <article key={provider.provider} className="rounded-2xl border border-glass bg-surface-alpha p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-base font-semibold text-primary">{provider.label}</p>
+                    <StatusBadge value={healthTone(provider)} label={provider.health.status.replace(/_/g, ' ')} />
+                    <StatusBadge value={provider.status === 'available' ? 'pass' : 'warn'} label={admin.enumLabel(provider.status)} />
+                  </div>
+                  <p className="mt-1 text-xs text-tertiary">{provider.provider} / priority {provider.priority} / {formatAiTierLabel(provider.tier)}</p>
+                </div>
+                <select
+                  value={provider.status}
+                  disabled={busy}
+                  onChange={(event) => onPatch(provider.featureFlagKey, { status: event.currentTarget.value as FeatureFlagStatus })}
+                  className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-xs font-semibold text-primary"
+                  aria-label={`Change AI provider status for ${provider.label}`}
+                >
+                  {FEATURE_STATUS_OPTIONS.map((status) => <option key={status} value={status}>{admin.enumLabel(status)}</option>)}
+                </select>
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiPrimaryModel')}</p>
+                  <p className="mt-1 text-sm font-semibold text-primary">{provider.primaryModel}</p>
+                  {provider.fallbackModels.length ? <p className="mt-1 text-xs text-secondary">{provider.fallbackModels.join(', ')}</p> : null}
+                </div>
+                <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiLastHealth')}</p>
+                  <p className="mt-1 text-sm font-semibold text-primary">{lastHealth}</p>
+                  <p className="mt-1 text-xs text-secondary">
+                    {provider.health.successes} ok / {provider.health.failures} fail{provider.health.errorCode ? ` / ${provider.health.errorCode}` : ''}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiStandardKeys')} / {admin.text('aiPaidKeys')}</p>
+                  <p className="mt-1 text-sm font-semibold text-primary">{provider.standardKeyCount} / {provider.paidKeyCount}</p>
+                  <p className="mt-1 text-xs text-secondary">{provider.configured ? `${provider.keyCount} total server key` : admin.text('aiNoKeys')}</p>
+                </div>
+                <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiRecommendedFor')}</p>
+                  <p className="mt-1 text-sm font-semibold text-primary">{provider.recommendedFor.map(formatAiUsageLabel).join(', ')}</p>
+                </div>
+              </div>
+
+              <textarea
+                value={draftMessages[provider.featureFlagKey] ?? provider.message ?? ''}
+                disabled={busy}
+                onChange={(event) => setDraftMessages((current) => ({ ...current, [provider.featureFlagKey]: event.currentTarget.value }))}
+                onBlur={() => commitMessage(provider)}
+                placeholder={admin.text('maintenanceMessagePlaceholder')}
+                className="mt-4 min-h-16 w-full resize-none rounded-xl border border-glass bg-[var(--bg-base)] px-3 py-2 text-sm leading-6 text-primary outline-none transition-colors focus:border-blue-400"
+              />
+              {busy ? <p className="mt-3 text-xs font-semibold text-blue-500">{admin.text('savingMaintenanceControl')}</p> : null}
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function RecipeLibraryPanel({ snapshot }: { snapshot: AdminSnapshot }) {
   const admin = useAdminCopy();
   const library = snapshot.recipeLibrary;
@@ -3675,6 +3832,19 @@ export function AdminManagement() {
                 </motion.section>
               ) : null}
 
+              {activeTab === 'ai' ? (
+                <motion.section id="admin-panel-ai" aria-labelledby="admin-tab-ai" role="tabpanel" key="ai" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
+                  <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h2 className="text-base font-semibold text-primary">{admin.text('aiProviderControls')}</h2>
+                      <p className="mt-1 text-sm text-secondary">{admin.text('aiProviderControlsSubtitle')}</p>
+                    </div>
+                    <StatusBadge value={snapshot.ai.ready ? 'pass' : 'warn'} />
+                  </div>
+                  <AiProviderPanel snapshot={snapshot} busyFlagKey={busyFlagKey} onPatch={handleFeatureFlagPatch} />
+                </motion.section>
+              ) : null}
+
               {activeTab === 'maintenance' ? (
                 <motion.section id="admin-panel-maintenance" aria-labelledby="admin-tab-maintenance" role="tabpanel" key="maintenance" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/76 p-4">
                   <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -3684,7 +3854,7 @@ export function AdminManagement() {
                     </div>
                     <StatusBadge value={snapshot.featureFlags.some((flag) => flag.status !== 'available') ? 'warn' : 'pass'} />
                   </div>
-                  <MaintenancePanel flags={snapshot.featureFlags} busyFlagKey={busyFlagKey} onPatch={handleFeatureFlagPatch} />
+                  <MaintenancePanel flags={snapshot.featureFlags.filter((flag) => !flag.key.startsWith('ai_provider_'))} busyFlagKey={busyFlagKey} onPatch={handleFeatureFlagPatch} />
                 </motion.section>
               ) : null}
 

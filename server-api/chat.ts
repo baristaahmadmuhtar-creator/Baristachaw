@@ -10,6 +10,7 @@ import {
     applyCors,
     applyRateLimitHeaders,
     checkRateLimit,
+    classifyProviderError,
     createRequestId,
     enforceTrustedRequestOrigin,
     isE2eMockRequest,
@@ -32,6 +33,14 @@ import {
     type ConversationContext,
 } from './_contracts.js';
 import { requirePaidAiAccess, type PaidAiFeature } from './account/aiAccess.js';
+import {
+    aiProviderDisabledMessage,
+    getAiProviderKeys,
+    getEnabledAiProviderConfigs,
+    isAiProviderAvailable,
+    parseAiProviderId,
+    registerAiProviderResult,
+} from './_aiProviderControl.js';
 
 /**
  * Baristachaw Multi-Provider AI Chat API
@@ -65,9 +74,8 @@ interface RaceResult {
 const keyCounters: Record<string, number> = {};
 
 function getKeys(provider: ProviderId): string[] {
-    const envKey = `${provider}_API_KEY`;
-    const raw = process.env[envKey] || '';
-    return raw.split(',').map(k => k.trim()).filter(k => k.length > 5);
+    const providerId = parseAiProviderId(provider);
+    return providerId ? getAiProviderKeys(providerId) : [];
 }
 
 function getNextKey(provider: ProviderId): string | null {
@@ -76,11 +84,6 @@ function getNextKey(provider: ProviderId): string | null {
     const idx = (keyCounters[provider] || 0) % keys.length;
     keyCounters[provider] = idx + 1;
     return keys[idx];
-}
-
-function maskKey(key: string): string {
-    if (key.length < 8) return '***';
-    return `${key.slice(0, 4)}...${key.slice(-4)}`;
 }
 
 // ─── Provider Configs ───
@@ -252,6 +255,10 @@ async function repairChatText(params: {
         return cleaned;
     }
 
+    if (!isAiProviderAvailable('GEMINI')) {
+        return cleaned;
+    }
+
     const key = getNextKey('GEMINI');
     if (!key) {
         return cleaned;
@@ -365,12 +372,13 @@ async function fetchOpenAICompatible(
 
     if (!res.ok) {
         const errText = await res.text().catch(() => '');
-        throw new Error(`${config.provider} (${maskKey(key)}) HTTP ${res.status}: ${errText.slice(0, 200)}`);
+        throw new Error(`${config.provider} HTTP ${res.status}: ${errText.slice(0, 160)}`);
     }
 
     if (!res.body) throw new Error(`${config.provider}: No response body`);
 
     const latency = Date.now() - startTime;
+    registerAiProviderResult({ provider: config.provider, ok: true, latencyMs: latency });
 
     // Transform SSE stream to plain text
     const reader = res.body.getReader();
@@ -449,12 +457,13 @@ async function fetchGemini(
 
     if (!res.ok) {
         const errText = await res.text().catch(() => '');
-        throw new Error(`GEMINI ${model} (${maskKey(key)}) HTTP ${res.status}: ${errText.slice(0, 200)}`);
+        throw new Error(`GEMINI ${model} HTTP ${res.status}: ${errText.slice(0, 160)}`);
     }
 
     if (!res.body) throw new Error(`GEMINI ${model}: No response body`);
 
     const latency = Date.now() - startTime;
+    registerAiProviderResult({ provider: 'GEMINI', ok: true, latencyMs: latency });
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -799,6 +808,7 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
 
         // Build racer list
         const racerConfigs = getRacerConfigs();
+        const availableRacerConfigs = getEnabledAiProviderConfigs(racerConfigs);
         const racers: Promise<RaceResult>[] = [];
         const controllers: Map<string, AbortController> = new Map();
 
@@ -807,7 +817,7 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
 
         if (isRaceMode) {
             // RACE MODE: fire all providers simultaneously, fastest wins
-            for (const config of racerConfigs) {
+            for (const config of availableRacerConfigs) {
                 const key = getNextKey(config.provider);
                 if (!key) continue;
 
@@ -827,15 +837,24 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
                 }
 
                 racers.push(racerPromise.catch(err => {
+                    const classified = classifyProviderError(err, config.provider);
+                    registerAiProviderResult({ provider: config.provider, ok: false, errorCode: classified.code });
                     console.error(
-                        `[api/chat][${requestId}] racer_fail provider=${config.provider} details="${sanitizeErrorDetails(err, 180)}"`,
+                        `[api/chat][${requestId}] racer_fail provider=${config.provider} details="${sanitizeErrorDetails(classified, 180)}"`,
                     );
-                    throw err;
+                    throw classified;
                 }));
             }
         } else {
             // TARGETED MODE: specific provider with model fallback
             const targetProvider = requestedProvider as ProviderId;
+            if (!isAiProviderAvailable(targetProvider)) {
+                return res.status(503).json({
+                    requestId,
+                    error: aiProviderDisabledMessage(targetProvider) || `${targetProvider} is unavailable by admin control.`,
+                    errorCode: 'provider_disabled',
+                });
+            }
             const key = getNextKey(targetProvider);
             if (!key) {
                 return res.status(503).json({
@@ -857,10 +876,12 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
                         fetchGemini(model, key, conversationMessages, controller.signal)
                             .finally(() => clearTimeout(timeoutId))
                             .catch(err => {
+                                const classified = classifyProviderError(err, 'GEMINI');
+                                registerAiProviderResult({ provider: 'GEMINI', ok: false, errorCode: classified.code });
                                 console.error(
-                                    `[api/chat][${requestId}] gemini_fallback model=${model} details="${sanitizeErrorDetails(err, 180)}"`,
+                                    `[api/chat][${requestId}] gemini_fallback model=${model} details="${sanitizeErrorDetails(classified, 180)}"`,
                                 );
-                                throw err;
+                                throw classified;
                             })
                     );
                 }
@@ -880,6 +901,11 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
                 racers.push(
                     fetchOpenAICompatible(config, key, conversationMessages, controller.signal)
                         .finally(() => clearTimeout(timeoutId))
+                        .catch(err => {
+                            const classified = classifyProviderError(err, targetProvider);
+                            registerAiProviderResult({ provider: targetProvider, ok: false, errorCode: classified.code });
+                            throw classified;
+                        })
                 );
             }
         }

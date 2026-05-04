@@ -145,6 +145,44 @@ export type AdminFeatureFlag = {
   updatedAt: string;
 };
 
+export type AdminAiProviderStatus = {
+  provider: 'GEMINI' | 'GROQ' | 'DEEPSEEK' | 'MISTRAL' | 'OPENROUTER' | 'OPENAI';
+  label: string;
+  primaryModel: string;
+  fallbackModels: string[];
+  priority: number;
+  tier: 'free_tier' | 'paid_credit_ready' | 'paid_credit';
+  recommendedFor: Array<'ai_chat' | 'ai_brew' | 'deep_search' | 'structured_fallback' | 'vision'>;
+  featureFlagKey: string;
+  status: FeatureFlagStatus;
+  configured: boolean;
+  keyCount: number;
+  standardKeyCount: number;
+  paidKeyCount: number;
+  health: {
+    status: 'unknown' | 'ok' | 'error' | 'rate_limited' | 'disabled' | 'unconfigured';
+    lastCheckedAt: string;
+    lastLatencyMs?: number;
+    errorCode?: string;
+    attempts: number;
+    successes: number;
+    failures: number;
+  };
+  message: string;
+  surfaces: FeatureSurface[];
+};
+
+export type AdminAiProviderSnapshot = {
+  ready: boolean;
+  enabledProviders: number;
+  configuredProviders: number;
+  paidCreditProviders: number;
+  fallbackPolicy: 'admin_controlled_provider_chain';
+  securityNote: string;
+  providers: AdminAiProviderStatus[];
+  warnings: string[];
+};
+
 export type AdminSystemCheck = {
   id: string;
   label: string;
@@ -195,6 +233,7 @@ export type AdminSnapshot = {
   checks: AdminSystemCheck[];
   launchChecklist: LaunchChecklistItem[];
   featureFlags: AdminFeatureFlag[];
+  ai: AdminAiProviderSnapshot;
   billing: {
     ready: boolean;
     mode: 'not_configured' | 'test' | 'live_ready';

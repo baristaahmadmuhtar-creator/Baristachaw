@@ -41,6 +41,14 @@ import {
   E2E_MOCK_PROVIDER,
 } from './_e2eMock.js';
 import { requirePaidAiAccess, type PaidAiFeature } from './account/aiAccess.js';
+import {
+  aiProviderDisabledMessage,
+  getAiProviderKeys,
+  getEnabledAiProviderConfigs,
+  isAiProviderAvailable,
+  parseAiProviderId,
+  registerAiProviderResult,
+} from './_aiProviderControl.js';
 
 type StructuredAiAction = AiAction;
 
@@ -746,11 +754,8 @@ function disableGeminiTextTemporarily(ms = 10 * 60 * 1000): void {
 }
 
 function getKeys(provider: string): string[] {
-  const raw = process.env[`${provider}_API_KEY`] || '';
-  return raw
-    .split(',')
-    .map(value => value.trim())
-    .filter(value => value.length > 5);
+  const providerId = parseAiProviderId(provider);
+  return providerId ? getAiProviderKeys(providerId) : [];
 }
 
 function getNextKey(provider: string): string | null {
@@ -1574,7 +1579,7 @@ async function callStructuredTextFallback(
       ? 700
       : DEEP_FALLBACK_MAX_TOKENS;
 
-  for (const cfg of OPENAI_COMPAT_FALLBACKS) {
+  for (const cfg of getEnabledAiProviderConfigs(OPENAI_COMPAT_FALLBACKS)) {
     try {
       const text = await withRetry(
         key => callOpenAiCompatibleText(key, cfg, prompts.system, prompts.user, maxTokens),
@@ -1659,10 +1664,28 @@ async function withRetry<T>(
 ): Promise<T> {
   const retries = options.maxRetries ?? 3;
   let last: unknown;
+  const providerId = parseAiProviderId(options.provider);
+
+  if (providerId && !isAiProviderAvailable(providerId)) {
+    throw createApiError(
+      'provider_error',
+      aiProviderDisabledMessage(providerId) || `${providerId} disabled by admin`,
+      503,
+      false,
+      providerId,
+    );
+  }
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     const key = getNextKey(options.provider);
     if (!key) {
+      if (providerId) {
+        registerAiProviderResult({
+          provider: providerId,
+          ok: false,
+          errorCode: 'no_key',
+        });
+      }
       throw createApiError(
         'no_key',
         `No ${options.provider} API keys available`,
@@ -1673,10 +1696,26 @@ async function withRetry<T>(
     }
 
     try {
-      return await fn(key);
+      const startedAt = Date.now();
+      const result = await fn(key);
+      if (providerId) {
+        registerAiProviderResult({
+          provider: providerId,
+          ok: true,
+          latencyMs: Date.now() - startedAt,
+        });
+      }
+      return result;
     } catch (error) {
       const classified = classifyProviderError(error, options.provider);
       last = classified;
+      if (providerId) {
+        registerAiProviderResult({
+          provider: providerId,
+          ok: false,
+          errorCode: classified.code,
+        });
+      }
       console.error(
         `[api/ai][${options.requestId}] action=${options.action} attempt=${attempt}/${retries} code=${classified.code} retryable=${classified.retryable} details="${sanitizeErrorDetails(error)}"`,
       );

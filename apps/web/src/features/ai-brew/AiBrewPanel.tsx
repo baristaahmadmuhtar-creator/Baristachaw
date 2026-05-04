@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useGlobalState } from '../../context/GlobalState';
 import { useAuthModal } from '../../context/AuthModalContext';
+import { useAccountStatus } from '../../context/AccountStatusContext';
 import { useNavbar } from '../../context/NavbarContext';
 import { useAiAccessGate } from '../../components/billing/AiAccessGate';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
@@ -2213,6 +2214,15 @@ function getAiBrewFriendlyErrorMessage(
   const id = isIndonesianAiBrewLanguage(language);
 
   if (!message.trim()) return fallback;
+  if (
+    normalized.includes('ai_brew_online_required')
+    || normalized.includes('ai_brew_optimizer_unavailable')
+    || normalized.includes('strict online ai')
+  ) {
+    return id
+      ? 'Server AI sedang penuh. Resep belum dibuat agar hasil tidak memakai fallback lokal. Coba ulang sebentar lagi atau aktifkan AI Brew Fallback di Admin.'
+      : 'AI servers are busy. The brew was not generated so it does not use local fallback. Try again shortly or re-enable AI Brew Fallback in Admin.';
+  }
   if (normalized.includes('offline') || normalized.includes('network') || normalized.includes('fetch')) {
     return id
       ? 'Koneksi belum stabil. Coba lagi saat jaringan lebih aman.'
@@ -4267,6 +4277,7 @@ export function AiBrewPanel({
   const { hideNav, showNav } = useNavbar();
   const { isOffline } = useNetworkStatus();
   const { isPwa } = useRuntimeDisplayMode();
+  const { snapshot: accountStatusSnapshot } = useAccountStatus();
   const fallbackCopy = useMemo(() => ({
     ...COPY.en,
     title: t.toolsTabAiBrew || COPY.en.title,
@@ -4668,6 +4679,9 @@ export function AiBrewPanel({
     ) * 100,
   );
   const generationStageDetail = getGenerationStageDetail(generationProgress, copy, language);
+  const aiBrewFallbackFlag = accountStatusSnapshot?.featureFlags.find((flag) => flag.key === 'ai_brew_fallback');
+  const aiBrewFallbackEnabled = !aiBrewFallbackFlag || aiBrewFallbackFlag.status === 'available';
+  const requireOnlineAiGenerate = !aiBrewFallbackEnabled;
   const canUsePaidAiBrew = hasPaidAiAccess && !isOffline;
   const canUseHybridAiSequence = Boolean(activeBuilderModal) && canUsePaidAiBrew;
   const preferredBuilderMode = inferPreferredBuilderMode(formState);
@@ -4874,6 +4888,9 @@ export function AiBrewPanel({
         setGenerationStage(progress.id);
         await nextAnimationFrame(110);
       });
+      if (requireOnlineAiGenerate && !canUseHybridAiSequence) {
+        throw new Error('ai_brew_online_required');
+      }
       if (canUseHybridAiSequence) {
         setGenerationProgress(createHybridAiSequenceProgress(nextPlan, latestProgress));
         setGenerationStage('hybrid_ai_sequence');
@@ -4898,6 +4915,9 @@ export function AiBrewPanel({
         }
 
         if (!optimized.applied) {
+          if (requireOnlineAiGenerate) {
+            throw new Error('ai_brew_optimizer_unavailable');
+          }
           const synthesized = applyGuardrailAiOptimizationSynthesis(nextPlan);
           if (synthesized.applied) {
             optimized = synthesized;
@@ -4958,7 +4978,7 @@ export function AiBrewPanel({
       await refreshSavedViews();
       setNotice(planUsesOnlineAi(nextPlan) ? copy.generatedAi : copy.generatedLocal);
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : copy.unavailable);
+      setFormError(getAiBrewFriendlyErrorMessage(error, language, copy.aiGenerateFailed));
     } finally {
       setGenerationBusy(false);
       setGenerationStage(null);

@@ -11,7 +11,7 @@ import {
 import {
   activeOperationalFlags,
   buildRuntimeFeatureFlags,
-  featureFlagFromSupabase,
+  mergeFeatureFlagsWithDefaults,
   normalizeFeatureSurface,
   RUNTIME_FEATURE_FLAG_PATCHES,
   type AdminFeatureFlag,
@@ -556,7 +556,7 @@ async function loadSupabaseAccount(
     warnings.push(`Feature flag fallback used: ${sanitizeErrorDetails(error, 140)}`);
     return [];
   });
-  const flags = Array.isArray(flagRows) && flagRows.length ? flagRows.map(featureFlagFromSupabase) : buildRuntimeFeatureFlags(RUNTIME_FEATURE_FLAG_PATCHES);
+  const flags = mergeFeatureFlagsWithDefaults(flagRows, RUNTIME_FEATURE_FLAG_PATCHES);
 
   return { user, billing, plans, flags, warnings };
 }

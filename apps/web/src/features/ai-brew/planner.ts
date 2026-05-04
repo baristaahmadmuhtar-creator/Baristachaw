@@ -250,6 +250,22 @@ function normalizePourShares(shares: number[]) {
   return normalized;
 }
 
+function hasSumatraStructuredV60Cue(input: AiBrewFormState) {
+  return /\b(?:sumatra|lintong|lake\s*toba|toba|mandheling|gayo|wet[-\s_]?hulled)\b/i.test([
+    input.coffeeName,
+    input.process,
+    input.customProcess,
+  ].filter(Boolean).join(' '));
+}
+
+function shouldUseFrontLoadedHotV60PourMap(input: AiBrewFormState) {
+  return input.brewMode === 'hot'
+    && (
+      (input.targetProfileId === 'more_sweetness' && input.roastLevel === 'medium')
+      || (input.targetProfileId === 'balance_clean' && hasSumatraStructuredV60Cue(input))
+    );
+}
+
 function resolveRequestedPourCount(input: AiBrewFormState, profile: DeviceBrewProfile) {
   const explicitCount = Number.parseInt(input.pourCount, 10);
   if (Number.isFinite(explicitCount)) return clamp(Math.round(explicitCount), 3, 5);
@@ -260,9 +276,17 @@ function resolveRequestedPourCount(input: AiBrewFormState, profile: DeviceBrewPr
     && input.targetProfileId === 'more_sweetness'
     && input.roastLevel === 'medium'
   ) {
-    return input.brewMode === 'iced' ? 3 : null;
+    return input.brewMode === 'iced' ? 3 : 4;
   }
   if (input.pourStyle === 'auto') {
+    if (
+      profile.methodFamily === 'v60'
+      && profile.exactMatch
+      && profile.dripperIds.includes('hario-v60')
+      && shouldUseFrontLoadedHotV60PourMap(input)
+    ) {
+      return 4;
+    }
     const profileAlreadyOwnsFinish = profile.steps.some((step) =>
       step.share <= 0 || step.kind === 'drawdown' || step.kind === 'serve' || /\b(?:drawdown|serve)\b/i.test(`${step.id} ${step.label}`),
     );
@@ -283,6 +307,9 @@ function buildControlledPourStarts(count: number, input: AiBrewFormState) {
   if (input.brewMode === 'iced' && input.targetProfileId === 'more_sweetness' && input.roastLevel === 'medium' && count === 3) {
     return [0, 55, 115];
   }
+  if (input.brewMode === 'hot' && style === 'balanced' && count === 4) {
+    return [0, 30, 60, 90];
+  }
   const gap = style === 'pulse'
     ? input.brewMode === 'iced' ? 30 : 35
     : style === 'gentle'
@@ -295,6 +322,9 @@ function buildControlledPourShares(count: number, input: AiBrewFormState) {
   const style = input.pourStyle === 'auto' ? 'balanced' : input.pourStyle;
   if (input.brewMode === 'iced' && input.targetProfileId === 'more_sweetness' && input.roastLevel === 'medium' && count === 3) {
     return normalizePourShares([0.22, 0.52, 0.26]);
+  }
+  if (input.brewMode === 'hot' && style === 'balanced' && count === 4 && shouldUseFrontLoadedHotV60PourMap(input)) {
+    return normalizePourShares([0.14, 0.36, 0.25, 0.25]);
   }
   if (style === 'pulse') {
     return normalizePourShares(Array.from({ length: count }, () => 1 / count));

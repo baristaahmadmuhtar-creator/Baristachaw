@@ -10,7 +10,7 @@ import {
 import { requireAdmin, type AdminAccess } from './_access.js';
 import {
   buildRuntimeFeatureFlags,
-  featureFlagFromSupabase,
+  mergeFeatureFlagsWithDefaults,
   normalizeFeatureFlagKey,
   normalizeFeatureFlagPatch,
   RUNTIME_FEATURE_FLAG_PATCHES,
@@ -1714,7 +1714,7 @@ async function loadSupabaseAudit(config: Extract<SupabaseConfig, { configured: t
 
 async function loadSupabaseFeatureFlags(config: Extract<SupabaseConfig, { configured: true }>): Promise<AdminFeatureFlag[]> {
   const rows = await supabaseRest<any[]>(config, 'app_feature_flags?select=*&order=key.asc');
-  return Array.isArray(rows) && rows.length ? rows.map(featureFlagFromSupabase) : buildRuntimeFeatureFlags(RUNTIME_FEATURE_FLAG_PATCHES);
+  return mergeFeatureFlagsWithDefaults(rows, RUNTIME_FEATURE_FLAG_PATCHES);
 }
 
 async function upsertSupabaseAdminUser(

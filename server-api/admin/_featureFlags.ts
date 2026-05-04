@@ -54,6 +54,14 @@ const DEFAULT_FEATURE_FLAGS: AdminFeatureFlag[] = [
     updatedAt: new Date(0).toISOString(),
   },
   {
+    key: 'ai_brew_fallback',
+    label: 'AI Brew Fallback',
+    status: 'available',
+    message: 'Allows AI Brew to keep a validated deterministic planner result when the online AI optimizer is unavailable. Disable for strict online-AI generation.',
+    surfaces: ['web', 'pwa', 'mobile', 'admin'],
+    updatedAt: new Date(0).toISOString(),
+  },
+  {
     key: 'collection',
     label: 'Collection',
     status: 'available',
@@ -192,6 +200,34 @@ export function buildRuntimeFeatureFlags(patches?: Map<string, FeatureFlagPatch>
       updatedAt: patch ? nowIso() : flag.updatedAt,
     };
   });
+}
+
+export function mergeFeatureFlagsWithDefaults(
+  rows: any[] | null | undefined,
+  patches?: Map<string, FeatureFlagPatch>,
+): AdminFeatureFlag[] {
+  const defaults = buildRuntimeFeatureFlags(patches);
+  const merged = new Map(defaults.map((flag) => [flag.key, flag]));
+  const extraOrder: string[] = [];
+
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const flag = featureFlagFromSupabase(row);
+    if (!flag.key || flag.key === 'unknown') continue;
+    const existing = merged.get(flag.key);
+    if (!existing) extraOrder.push(flag.key);
+    merged.set(flag.key, {
+      ...(existing || flag),
+      ...flag,
+      label: flag.label || existing?.label || flag.key.replace(/[_:-]+/g, ' '),
+      message: flag.message || existing?.message || '',
+      surfaces: flag.surfaces.length ? flag.surfaces : existing?.surfaces || ['global'],
+    });
+  }
+
+  return [
+    ...defaults.map((flag) => merged.get(flag.key)).filter((flag): flag is AdminFeatureFlag => Boolean(flag)),
+    ...extraOrder.map((key) => merged.get(key)).filter((flag): flag is AdminFeatureFlag => Boolean(flag)),
+  ];
 }
 
 export function flagsForSurface(flags: AdminFeatureFlag[], surface: FeatureSurface): AdminFeatureFlag[] {

@@ -172,6 +172,70 @@ export type AdminAiProviderStatus = {
   surfaces: FeatureSurface[];
 };
 
+export type AdminAiUsageBreakdown = {
+  key: string;
+  label: string;
+  requests: number;
+  successes: number;
+  failures: number;
+  rateLimited: number;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  estimatedCostUsd: number;
+  avgLatencyMs?: number;
+};
+
+export type AdminAiUsageAggregate = {
+  label: 'today' | 'month' | 'custom';
+  range: {
+    from: string;
+    to: string;
+  };
+  requests: number;
+  successes: number;
+  failures: number;
+  rateLimited: number;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  estimatedCostUsd: number;
+  avgLatencyMs?: number;
+  providerBreakdown: AdminAiUsageBreakdown[];
+  modelBreakdown: AdminAiUsageBreakdown[];
+  actionBreakdown: AdminAiUsageBreakdown[];
+};
+
+export type AdminAiUsageEvent = {
+  id: string;
+  createdAt: string;
+  provider: AdminAiProviderStatus['provider'];
+  providerLabel: string;
+  model: string;
+  feature: 'ai_brew' | 'ai_chat' | 'ai_search' | 'scanner' | 'vision' | 'unknown';
+  route: '/api/ai' | '/api/chat' | 'unknown';
+  action: string;
+  mode: string;
+  outcome: 'success' | 'error' | 'rate_limited' | 'blocked';
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  estimatedCostUsd: number;
+  latencyMs?: number;
+  errorCode?: string;
+};
+
+export type AdminAiUsageSnapshot = {
+  source: 'runtime_estimate';
+  currency: 'USD';
+  estimationNote: string;
+  retainedEvents: number;
+  today: AdminAiUsageAggregate;
+  month: AdminAiUsageAggregate;
+  custom: AdminAiUsageAggregate;
+  recentEvents: AdminAiUsageEvent[];
+};
+
 export type AdminAiProviderSnapshot = {
   ready: boolean;
   enabledProviders: number;
@@ -180,6 +244,7 @@ export type AdminAiProviderSnapshot = {
   fallbackPolicy: 'admin_controlled_provider_chain';
   securityNote: string;
   providers: AdminAiProviderStatus[];
+  usage: AdminAiUsageSnapshot;
   warnings: string[];
 };
 
@@ -392,8 +457,12 @@ async function adminRequest<T>(path: string, init: RequestInit = {}, timeoutMs =
   }
 }
 
-export function fetchAdminSnapshot(): Promise<AdminSnapshot> {
-  return adminRequest<AdminSnapshot>('/api/admin/management', { method: 'GET' }, 18_000);
+export function fetchAdminSnapshot(options: { aiFrom?: string; aiTo?: string } = {}): Promise<AdminSnapshot> {
+  const params = new URLSearchParams();
+  if (options.aiFrom) params.set('aiFrom', options.aiFrom);
+  if (options.aiTo) params.set('aiTo', options.aiTo);
+  const path = params.toString() ? `/api/admin/management?${params.toString()}` : '/api/admin/management';
+  return adminRequest<AdminSnapshot>(path, { method: 'GET' }, 18_000);
 }
 
 export function updateAdminUser(userId: string, patch: AdminUserPatch): Promise<AdminSnapshot> {

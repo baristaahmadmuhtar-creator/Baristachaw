@@ -70,6 +70,9 @@ test('admin AI control shows provider health without exposing secrets', async ({
   await expect(page.getByRole('heading', { name: 'Manajemen Admin' })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText('Kontrol provider AI')).toBeVisible();
   await expect(page.getByText('Inventory aman secret')).toBeVisible();
+  await expect(page.getByText('Pemakaian provider AI Brew')).toBeVisible();
+  await expect(page.getByText('Hari ini', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Terapkan range' })).toBeVisible();
   await expect(page.getByText('Groq', { exact: true })).toBeVisible();
   await expect(page.getByText('Gemini', { exact: true })).toBeVisible();
   await expect(page.getByText('Key standar / Key paid').first()).toBeVisible();

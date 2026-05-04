@@ -47,6 +47,9 @@ import {
   getEnabledAiProviderConfigs,
   isAiProviderAvailable,
   parseAiProviderId,
+  estimateAiTokenCount,
+  recordAiProviderFailure,
+  recordAiProviderUsage,
   registerAiProviderResult,
 } from './_aiProviderControl.js';
 
@@ -68,6 +71,17 @@ export const INLINE_ATTACHMENT_MAX_BASE64_CHARS = Math.ceil(INLINE_ATTACHMENT_MA
 const VISION_PROVIDER_TIMEOUT_MS = 45_000;
 const JSON_HEARTBEAT_INTERVAL_MS = 8_000;
 const ATTACHMENT_URL_FETCH_TIMEOUT_MS = 10_000;
+
+function aiUsageFeatureFromContext(feature: string, surface?: string): 'ai_brew' | 'ai_chat' | 'ai_search' | 'scanner' | 'vision' | 'unknown' {
+  const normalizedFeature = String(feature || '').trim().toLowerCase();
+  const normalizedSurface = String(surface || '').trim().toLowerCase();
+  if (normalizedFeature === 'ai_brew' || normalizedFeature === 'brew' || normalizedSurface === 'tools') return 'ai_brew';
+  if (normalizedFeature === 'search' || normalizedFeature === 'ai_search' || normalizedSurface === 'home') return 'ai_search';
+  if (normalizedFeature === 'scanner') return 'scanner';
+  if (normalizedFeature === 'vision' || normalizedFeature === 'image') return 'vision';
+  if (normalizedFeature === 'chat' || normalizedFeature === 'ai_chat' || normalizedSurface === 'chat') return 'ai_chat';
+  return 'unknown';
+}
 const SUPPORTED_IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif']);
 const AI_RATE_LIMIT = {
   maxRequests: 20,
@@ -1961,6 +1975,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const clientFeature = rawClientContext && typeof rawClientContext === 'object' && typeof (rawClientContext as { feature?: unknown }).feature === 'string'
     ? String((rawClientContext as { feature?: string }).feature).trim().toLowerCase()
     : '';
+  const usageFeature = aiUsageFeatureFromContext(clientFeature, clientSurface);
   const paidFeature: PaidAiFeature | null = action === 'search'
     ? 'search'
     : action === 'analyze_image' || action === 'edit_latte_art'
@@ -2329,6 +2344,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.info(
           `[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms provider=GEMINI fallback_count=0 repaired=${repaired.repaired ? 1 : 0} integrity_pass=${repaired.integrityPass}`,
         );
+        recordAiProviderUsage({
+          provider: 'GEMINI',
+          model: geminiModel,
+          feature: usageFeature,
+          route: '/api/ai',
+          action,
+          mode: responseMode,
+          outcome: 'success',
+          inputTokens: estimateAiTokenCount(geminiPrompt),
+          outputTokens: estimateAiTokenCount(repaired.text),
+          latencyMs: Date.now() - startedAt,
+        });
         return res.json({ ok: true, requestId, action, text: repaired.text, provider: 'GEMINI' });
       } catch (geminiError) {
         const classifiedGemini = classifyProviderError(geminiError, 'GEMINI');
@@ -2360,6 +2387,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.info(
           `[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms provider=${fallback.provider} mode=fallback fallback_count=1 repaired=${repaired.repaired ? 1 : 0} integrity_pass=${repaired.integrityPass}`,
         );
+        recordAiProviderUsage({
+          provider: fallback.provider,
+          model: fallback.model,
+          feature: usageFeature,
+          route: '/api/ai',
+          action,
+          mode: responseMode,
+          outcome: 'success',
+          inputTokens: estimateAiTokenCount(promptForModel),
+          outputTokens: estimateAiTokenCount(repaired.text),
+          latencyMs: Date.now() - startedAt,
+        });
         return res.json({
           ok: true,
           requestId,
@@ -2495,6 +2534,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.info(
           `[api/ai][${requestId}] action=${action} ok latency=${latencyMs}ms provider=${providerForResponse} grounded=${grounded ? 1 : 0} fallback_used=${fallbackUsed ? 1 : 0} deep_quality_pass=${qualityPass ? 1 : 0} source_count=${sourceCount} degraded=${degraded ? 1 : 0}`,
         );
+        recordAiProviderUsage({
+          provider: providerForResponse,
+          model: modelForResponse,
+          feature: usageFeature,
+          route: '/api/ai',
+          action,
+          mode: 'deep',
+          outcome: 'success',
+          inputTokens: estimateAiTokenCount(grounded ? deepGroundedPrompt : deepPrompt),
+          outputTokens: estimateAiTokenCount(quality.text),
+          latencyMs,
+        });
         return res.json({
           ok: true,
           requestId,
@@ -2556,6 +2607,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.info(
           `[api/ai][${requestId}] action=${action} ok latency=${latencyMs}ms provider=${fallback.provider} mode=fallback grounded=0 fallback_used=1 deep_quality_pass=${qualityPass ? 1 : 0} source_count=0 degraded=1`,
         );
+        recordAiProviderUsage({
+          provider: fallback.provider,
+          model: fallback.model,
+          feature: usageFeature,
+          route: '/api/ai',
+          action,
+          mode: 'deep',
+          outcome: 'success',
+          inputTokens: estimateAiTokenCount(deepPrompt),
+          outputTokens: estimateAiTokenCount(quality.text),
+          latencyMs,
+        });
         return res.json({
           ok: true,
           requestId,
@@ -2610,6 +2673,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.warn(
           `[api/ai][${requestId}] action=${action} degraded reason=${quality.reason} details=${quality.details || 'n/a'} source_count=${quality.sourceCount} unique_domains=${quality.uniqueDomainCount} authority_score=${quality.authorityScore} latency=${Date.now() - startedAt}ms`,
         );
+        recordAiProviderFailure({
+          provider: 'GEMINI',
+          model: selectedModel || 'gemini-2.5-flash',
+          feature: usageFeature,
+          route: '/api/ai',
+          action,
+          mode: 'search',
+          inputTokens: estimateAiTokenCount(promptForModel),
+          latencyMs: Date.now() - startedAt,
+          errorCode,
+        });
         return res.status(200).json({
           ok: false,
           requestId,
@@ -2631,6 +2705,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.info(
         `[api/ai][${requestId}] action=${action} ok latency=${Date.now() - startedAt}ms source_count=${quality.sourceCount} unique_domains=${quality.uniqueDomainCount} authority_score=${quality.authorityScore}`,
       );
+      recordAiProviderUsage({
+        provider: 'GEMINI',
+        model: selectedModel || 'gemini-2.5-flash',
+        feature: usageFeature,
+        route: '/api/ai',
+        action,
+        mode: 'search',
+        outcome: 'success',
+        inputTokens: estimateAiTokenCount(promptForModel),
+        outputTokens: estimateAiTokenCount(text),
+        latencyMs: Date.now() - startedAt,
+      });
       return res.json({
         ok: true,
         requestId,
@@ -2654,6 +2740,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error(
       `[api/ai][${requestId}] action=${action} failed code=${classified.code} status=${classified.statusCode} retryable=${classified.retryable} latency=${Date.now() - startedAt}ms details="${details}"`,
     );
+    recordAiProviderFailure({
+      provider: classified.provider || 'GEMINI',
+      model: selectedModel || undefined,
+      feature: usageFeature,
+      route: '/api/ai',
+      action,
+      mode: promptPlan.mode,
+      inputTokens: estimateAiTokenCount(promptForModel || ''),
+      latencyMs: Date.now() - startedAt,
+      errorCode: classified.code,
+    });
 
     if (action === 'search') {
       if (jsonHeartbeat) {

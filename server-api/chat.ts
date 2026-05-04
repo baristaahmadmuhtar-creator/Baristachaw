@@ -39,6 +39,9 @@ import {
     getEnabledAiProviderConfigs,
     isAiProviderAvailable,
     parseAiProviderId,
+    estimateAiTokenCount,
+    recordAiProviderFailure,
+    recordAiProviderUsage,
     registerAiProviderResult,
 } from './_aiProviderControl.js';
 
@@ -68,6 +71,19 @@ interface RaceResult {
     provider: string;
     model: string;
     latency: number;
+}
+
+function aiUsageFeatureFromContext(feature: string, surface?: string): 'ai_brew' | 'ai_chat' | 'ai_search' | 'unknown' {
+    const normalizedFeature = String(feature || '').trim().toLowerCase();
+    const normalizedSurface = String(surface || '').trim().toLowerCase();
+    if (normalizedFeature === 'ai_brew' || normalizedFeature === 'brew' || normalizedSurface === 'tools') return 'ai_brew';
+    if (normalizedFeature === 'search' || normalizedFeature === 'ai_search' || normalizedSurface === 'home') return 'ai_search';
+    if (normalizedFeature === 'chat' || normalizedFeature === 'ai_chat' || normalizedSurface === 'chat') return 'ai_chat';
+    return 'unknown';
+}
+
+function estimateMessagesTokens(messages: { role: string; content: string }[]): number {
+    return estimateAiTokenCount(messages.map((item) => `${item.role}: ${item.content}`).join('\n'));
 }
 
 // ─── Key Management ───
@@ -539,6 +555,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const rawChatFeature = rawChatClientContext && typeof rawChatClientContext === 'object'
         ? String((rawChatClientContext as { feature?: unknown }).feature || '').trim().toLowerCase()
         : '';
+    const rawChatSurface = rawChatClientContext && typeof rawChatClientContext === 'object'
+        ? String((rawChatClientContext as { surface?: unknown }).surface || '').trim().toLowerCase()
+        : '';
+    const usageFeature = aiUsageFeatureFromContext(rawChatFeature, rawChatSurface);
     const paidFeature: PaidAiFeature = rawChatFeature === 'ai_brew' || rawChatFeature === 'brew' ? 'brew' : 'chat';
     const aiAccess = await requirePaidAiAccess({
         requestId,
@@ -786,6 +806,7 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
             { role: 'system', content: buildLatestTurnGuardPrompt() },
             { role: 'user', content: messageForModel },
         ];
+        const inputTokensForUsage = estimateMessagesTokens(conversationMessages);
 
         console.info(
             `[api/chat][${requestId}] resolved_language=${resolvedProfile.language} verbosity=${resolvedProfile.expectation.verbosity} format=${resolvedProfile.expectation.format} tone=${resolvedProfile.expectation.tone} ambiguity=${resolvedProfile.expectation.ambiguityRisk} platform=${clientContext?.platform || 'unknown'}`,
@@ -839,6 +860,18 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
                 racers.push(racerPromise.catch(err => {
                     const classified = classifyProviderError(err, config.provider);
                     registerAiProviderResult({ provider: config.provider, ok: false, errorCode: classified.code });
+                    if (classified.code !== 'provider_timeout') {
+                        recordAiProviderFailure({
+                            provider: config.provider,
+                            model: config.model,
+                            feature: usageFeature,
+                            route: '/api/chat',
+                            action: 'race',
+                            mode: normalizedMode || 'race',
+                            inputTokens: inputTokensForUsage,
+                            errorCode: classified.code,
+                        });
+                    }
                     console.error(
                         `[api/chat][${requestId}] racer_fail provider=${config.provider} details="${sanitizeErrorDetails(classified, 180)}"`,
                     );
@@ -849,6 +882,16 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
             // TARGETED MODE: specific provider with model fallback
             const targetProvider = requestedProvider as ProviderId;
             if (!isAiProviderAvailable(targetProvider)) {
+                recordAiProviderFailure({
+                    provider: targetProvider,
+                    model: modelId || '',
+                    feature: usageFeature,
+                    route: '/api/chat',
+                    action: 'targeted',
+                    mode: normalizedMode || 'targeted',
+                    inputTokens: inputTokensForUsage,
+                    errorCode: 'provider_disabled',
+                });
                 return res.status(503).json({
                     requestId,
                     error: aiProviderDisabledMessage(targetProvider) || `${targetProvider} is unavailable by admin control.`,
@@ -857,6 +900,16 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
             }
             const key = getNextKey(targetProvider);
             if (!key) {
+                recordAiProviderFailure({
+                    provider: targetProvider,
+                    model: modelId || '',
+                    feature: usageFeature,
+                    route: '/api/chat',
+                    action: 'targeted',
+                    mode: normalizedMode || 'targeted',
+                    inputTokens: inputTokensForUsage,
+                    errorCode: 'no_key',
+                });
                 return res.status(503).json({
                     requestId,
                     error: `No API keys available for ${targetProvider}`,
@@ -878,6 +931,16 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
                             .catch(err => {
                                 const classified = classifyProviderError(err, 'GEMINI');
                                 registerAiProviderResult({ provider: 'GEMINI', ok: false, errorCode: classified.code });
+                                recordAiProviderFailure({
+                                    provider: 'GEMINI',
+                                    model,
+                                    feature: usageFeature,
+                                    route: '/api/chat',
+                                    action: 'targeted_fallback',
+                                    mode: normalizedMode || 'targeted',
+                                    inputTokens: inputTokensForUsage,
+                                    errorCode: classified.code,
+                                });
                                 console.error(
                                     `[api/chat][${requestId}] gemini_fallback model=${model} details="${sanitizeErrorDetails(classified, 180)}"`,
                                 );
@@ -904,6 +967,16 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
                         .catch(err => {
                             const classified = classifyProviderError(err, targetProvider);
                             registerAiProviderResult({ provider: targetProvider, ok: false, errorCode: classified.code });
+                            recordAiProviderFailure({
+                                provider: targetProvider,
+                                model: config.model,
+                                feature: usageFeature,
+                                route: '/api/chat',
+                                action: 'targeted',
+                                mode: normalizedMode || 'targeted',
+                                inputTokens: inputTokensForUsage,
+                                errorCode: classified.code,
+                            });
                             throw classified;
                         })
                 );
@@ -945,6 +1018,18 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
             requestId,
             resolvedProfile,
             originalMessage: message,
+        });
+        recordAiProviderUsage({
+            provider: winner.provider,
+            model: winner.model,
+            feature: usageFeature,
+            route: '/api/chat',
+            action: isRaceMode ? 'race' : 'targeted',
+            mode: normalizedMode || (isRaceMode ? 'race' : 'targeted'),
+            outcome: 'success',
+            inputTokens: inputTokensForUsage,
+            outputTokens: estimateAiTokenCount(finalText),
+            latencyMs: winner.latency,
         });
         res.end(finalText);
         console.info(

@@ -52,6 +52,7 @@ import {
   updateFeatureFlag,
   type AccountRecoveryStatus,
   type AccountStatus,
+  type AdminAiUsageAggregate,
   type AdminAiProviderStatus,
   type AdminCatalogKind,
   type AdminCatalogRequestPatch,
@@ -88,6 +89,7 @@ const TABS = [
 ] as const;
 
 type AdminTab = (typeof TABS)[number]['id'];
+type AdminAiUsageRange = { aiFrom?: string; aiTo?: string };
 type UserQueueFilter = 'all' | 'risk' | 'recovery' | 'billing' | 'paid' | 'sample';
 type UserMutationRiskLevel = 'warning' | 'critical';
 
@@ -2813,17 +2815,56 @@ function formatAiTierLabel(value: AdminAiProviderStatus['tier']): string {
   return 'Free tier';
 }
 
+function formatAiCostUsd(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return '$0.0000';
+  return `$${value.toFixed(value < 0.01 ? 4 : 2)}`;
+}
+
+function formatAiSuccessRate(usage: AdminAiUsageAggregate): string {
+  if (usage.requests <= 0) return '0%';
+  return `${Math.round((usage.successes / usage.requests) * 100)}%`;
+}
+
+function AiUsageMetricCard({ title, usage }: { title: string; usage: AdminAiUsageAggregate }) {
+  const admin = useAdminCopy();
+  return (
+    <div className="rounded-2xl border border-glass bg-surface-alpha p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{title}</p>
+          <p className="mt-2 text-2xl font-semibold text-primary">{admin.number(usage.requests)}</p>
+        </div>
+        <StatusBadge value={usage.failures > 0 || usage.rateLimited > 0 ? 'warn' : usage.requests > 0 ? 'pass' : 'supabase'} label={formatAiSuccessRate(usage)} />
+      </div>
+      <div className="mt-3 grid gap-2 text-xs text-secondary">
+        <p>{admin.text('aiUsageTokens')}: <span className="font-semibold text-primary">{admin.number(usage.totalTokens)}</span></p>
+        <p>{admin.text('aiUsageCost')}: <span className="font-semibold text-primary">{formatAiCostUsd(usage.estimatedCostUsd)}</span></p>
+        <p>{admin.text('aiUsageFailures')}: <span className="font-semibold text-primary">{admin.number(usage.failures)}</span>{usage.rateLimited ? ` / ${admin.number(usage.rateLimited)} rate limit` : ''}</p>
+        <p>{admin.text('aiUsageLatency')}: <span className="font-semibold text-primary">{usage.avgLatencyMs ? `${admin.number(usage.avgLatencyMs)}ms` : '-'}</span></p>
+      </div>
+    </div>
+  );
+}
+
 function AiProviderPanel({
   snapshot,
   busyFlagKey,
   onPatch,
+  aiUsageRange,
+  onApplyUsageRange,
 }: {
   snapshot: AdminSnapshot;
   busyFlagKey: string | null;
   onPatch: (key: string, patch: AdminFeatureFlagPatch) => void;
+  aiUsageRange: { aiFrom?: string; aiTo?: string };
+  onApplyUsageRange: (range: { aiFrom?: string; aiTo?: string }) => void;
 }) {
   const admin = useAdminCopy();
   const [draftMessages, setDraftMessages] = useState<Record<string, string>>({});
+  const defaultCustomFrom = snapshot.ai.usage.custom.range.from.slice(0, 10);
+  const defaultCustomTo = snapshot.ai.usage.custom.range.to.slice(0, 10);
+  const [usageFromDraft, setUsageFromDraft] = useState(aiUsageRange.aiFrom || defaultCustomFrom);
+  const [usageToDraft, setUsageToDraft] = useState(aiUsageRange.aiTo || defaultCustomTo);
 
   useEffect(() => {
     setDraftMessages((current) => {
@@ -2834,6 +2875,11 @@ function AiProviderPanel({
       return next;
     });
   }, [snapshot.ai.providers]);
+
+  useEffect(() => {
+    setUsageFromDraft(aiUsageRange.aiFrom || snapshot.ai.usage.custom.range.from.slice(0, 10));
+    setUsageToDraft(aiUsageRange.aiTo || snapshot.ai.usage.custom.range.to.slice(0, 10));
+  }, [aiUsageRange.aiFrom, aiUsageRange.aiTo, snapshot.ai.usage.custom.range.from, snapshot.ai.usage.custom.range.to]);
 
   const commitMessage = (provider: AdminAiProviderStatus) => {
     const message = (draftMessages[provider.featureFlagKey] ?? provider.message ?? '').trim();
@@ -2883,6 +2929,85 @@ function AiProviderPanel({
             <p className="mt-2 text-2xl font-semibold text-primary">{admin.number(item.value)}</p>
           </div>
         ))}
+      </div>
+
+      <div className="rounded-2xl border border-glass bg-[var(--bg-base)]/70 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-primary">{admin.text('aiBrewUsageTitle')}</p>
+            <p className="mt-1 text-xs leading-5 text-secondary">{admin.text('aiBrewUsageSubtitle')}</p>
+          </div>
+          <StatusBadge value="supabase" label={admin.text('aiUsageEstimated')} />
+        </div>
+        <div className="mt-4 grid gap-3 lg:grid-cols-3">
+          <AiUsageMetricCard title={admin.text('aiUsageToday')} usage={snapshot.ai.usage.today} />
+          <AiUsageMetricCard title={admin.text('aiUsageMonth')} usage={snapshot.ai.usage.month} />
+          <AiUsageMetricCard title={admin.text('aiUsageCustom')} usage={snapshot.ai.usage.custom} />
+        </div>
+        <div className="mt-4 grid gap-3 rounded-2xl border border-glass bg-surface-alpha p-3 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
+          <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">
+            {admin.text('aiUsageFrom')}
+            <input
+              type="date"
+              value={usageFromDraft}
+              onChange={(event) => setUsageFromDraft(event.currentTarget.value)}
+              className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm normal-case tracking-normal text-primary"
+            />
+          </label>
+          <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-tertiary">
+            {admin.text('aiUsageTo')}
+            <input
+              type="date"
+              value={usageToDraft}
+              onChange={(event) => setUsageToDraft(event.currentTarget.value)}
+              className="min-h-10 rounded-xl border border-glass bg-[var(--bg-base)] px-3 text-sm normal-case tracking-normal text-primary"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={() => onApplyUsageRange({ aiFrom: usageFromDraft || undefined, aiTo: usageToDraft || undefined })}
+            className="min-h-10 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.24)] transition hover:bg-blue-500"
+          >
+            {admin.text('aiUsageApply')}
+          </button>
+        </div>
+        <div className="mt-4 grid gap-3 xl:grid-cols-2">
+          <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiUsageProviderBreakdown')}</p>
+            <div className="mt-3 space-y-2">
+              {snapshot.ai.usage.month.providerBreakdown.length ? snapshot.ai.usage.month.providerBreakdown.slice(0, 6).map((item) => (
+                <div key={item.key} className="flex items-center justify-between gap-3 rounded-xl bg-[var(--bg-base)] px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-primary">{item.label}</p>
+                    <p className="text-xs text-secondary">{admin.number(item.totalTokens)} token / {formatAiCostUsd(item.estimatedCostUsd)}</p>
+                  </div>
+                  <p className="shrink-0 text-sm font-semibold text-primary">{admin.number(item.requests)}</p>
+                </div>
+              )) : <p className="py-4 text-center text-sm text-secondary">{admin.text('aiUsageNoEvents')}</p>}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-glass bg-surface-alpha p-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiUsageRecentEvents')}</p>
+            <div className="mt-3 space-y-2">
+              {snapshot.ai.usage.recentEvents.length ? snapshot.ai.usage.recentEvents.slice(0, 6).map((event) => (
+                <div key={event.id} className="grid gap-1 rounded-xl bg-[var(--bg-base)] px-3 py-2 text-xs text-secondary sm:grid-cols-[1fr_auto] sm:items-center">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-primary">{event.providerLabel} / {event.model}</p>
+                    <p>{event.action}{event.mode ? ` / ${event.mode}` : ''} / {event.route}</p>
+                  </div>
+                  <p className="sm:text-right">
+                    <span className={clsx('font-semibold', event.outcome === 'success' ? 'text-emerald-600 dark:text-emerald-300' : 'text-amber-600 dark:text-amber-300')}>
+                      {event.outcome.replace(/_/g, ' ')}
+                    </span>
+                    <br />
+                    {admin.number(event.totalTokens)} token / {formatAiCostUsd(event.estimatedCostUsd)}
+                  </p>
+                </div>
+              )) : <p className="py-4 text-center text-sm text-secondary">{admin.text('aiUsageNoEvents')}</p>}
+            </div>
+          </div>
+        </div>
+        <p className="mt-3 text-xs leading-5 text-tertiary">{snapshot.ai.usage.estimationNote}</p>
       </div>
 
       <div className="grid gap-3 xl:grid-cols-2">
@@ -3115,6 +3240,7 @@ export function AdminManagement() {
   const [busyFlagKey, setBusyFlagKey] = useState<string | null>(null);
   const [busyPlanCode, setBusyPlanCode] = useState<PlanCode | null>(null);
   const [busyCatalogRequest, setBusyCatalogRequest] = useState(false);
+  const [aiUsageRange, setAiUsageRange] = useState<AdminAiUsageRange>({});
   const [pendingUserPatch, setPendingUserPatch] = useState<PendingUserPatch | null>(null);
   const [pendingFeatureFlagPatch, setPendingFeatureFlagPatch] = useState<PendingFeatureFlagPatch | null>(null);
   const [toast, setToast] = useState('');
@@ -3157,14 +3283,14 @@ export function AdminManagement() {
     });
   }, [selectTab]);
 
-  const refresh = useCallback(async (options?: { silent?: boolean }) => {
+  const refresh = useCallback(async (options?: { silent?: boolean; aiUsageRange?: AdminAiUsageRange }) => {
     if (!options?.silent) {
       const hasSnapshot = Boolean(snapshotRef.current);
       setLoading(!hasSnapshot);
       setRefreshing(hasSnapshot);
     }
     try {
-      const next = await fetchAdminSnapshot();
+      const next = await fetchAdminSnapshot(options?.aiUsageRange || aiUsageRange);
       setSnapshot(next);
       setError(null);
       setAccountErrorUserId(null);
@@ -3175,10 +3301,15 @@ export function AdminManagement() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [aiUsageRange]);
 
   useEffect(() => {
     void refresh();
+  }, [refresh]);
+
+  const applyAiUsageRange = useCallback((range: AdminAiUsageRange) => {
+    setAiUsageRange(range);
+    void refresh({ aiUsageRange: range });
   }, [refresh]);
 
   useEffect(() => {
@@ -3841,7 +3972,13 @@ export function AdminManagement() {
                     </div>
                     <StatusBadge value={snapshot.ai.ready ? 'pass' : 'warn'} />
                   </div>
-                  <AiProviderPanel snapshot={snapshot} busyFlagKey={busyFlagKey} onPatch={handleFeatureFlagPatch} />
+                  <AiProviderPanel
+                    snapshot={snapshot}
+                    busyFlagKey={busyFlagKey}
+                    onPatch={handleFeatureFlagPatch}
+                    aiUsageRange={aiUsageRange}
+                    onApplyUsageRange={applyAiUsageRange}
+                  />
                 </motion.section>
               ) : null}
 

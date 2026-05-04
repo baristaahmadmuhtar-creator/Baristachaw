@@ -20,6 +20,7 @@ import {
 import {
   resolveAiProviderAdminSnapshot,
   type AiProviderAdminSnapshot,
+  type AiUsageRangeInput,
 } from '../_aiProviderControl.js';
 
 type AdminRole = 'owner' | 'admin' | 'support' | 'analyst' | 'user';
@@ -480,6 +481,18 @@ const PLAN_BLUEPRINTS: Omit<AdminPlan, 'activeUsers'>[] = [
 
 function nowIso(): string {
   return new Date().toISOString();
+}
+
+function queryStringValue(value: unknown): string {
+  if (Array.isArray(value)) return typeof value[0] === 'string' ? value[0] : '';
+  return typeof value === 'string' ? value : '';
+}
+
+function parseAiUsageRangeQuery(query: VercelRequest['query']): AiUsageRangeInput | undefined {
+  const from = queryStringValue(query.aiFrom || query.from).trim();
+  const to = queryStringValue(query.aiTo || query.to).trim();
+  if (!from && !to) return undefined;
+  return { from, to };
 }
 
 function normalizeText(value: unknown, fallback = ''): string {
@@ -1770,6 +1783,7 @@ async function buildAdminSnapshot(
   requestId: string,
   admin: AdminAccess,
   rawUser?: Record<string, unknown>,
+  aiUsageRange?: AiUsageRangeInput,
 ): Promise<AdminSnapshot> {
   const config = getSupabaseConfig();
   let dataMode: DataMode = 'runtime_fallback';
@@ -1815,7 +1829,7 @@ async function buildAdminSnapshot(
   }
 
   const metrics = metricsFromUsers(users);
-  const ai = resolveAiProviderAdminSnapshot(featureFlags);
+  const ai = resolveAiProviderAdminSnapshot(featureFlags, aiUsageRange);
   const checks = buildChecks(dataMode);
   const billing = buildBillingSummary(users, plans, dataMode);
   const launchChecklist = buildLaunchChecklist(checks);
@@ -2786,7 +2800,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'GET') {
-      const snapshot = await buildAdminSnapshot(requestId, access.admin, access.auth.user);
+      const snapshot = await buildAdminSnapshot(requestId, access.admin, access.auth.user, parseAiUsageRangeQuery(req.query));
       return res.status(200).json(snapshot);
     }
 

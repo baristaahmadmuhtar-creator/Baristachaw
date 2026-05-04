@@ -2,6 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
 import adminManagementHandler from '../../server-api/admin/management.ts';
+import {
+  recordAiProviderFailure,
+  recordAiProviderUsage,
+  resetAiProviderRuntimeStateForTests,
+} from '../../server-api/_aiProviderControl.ts';
 
 const ORIGINAL_ENV = {
   JWT_SECRET: process.env.JWT_SECRET,
@@ -88,6 +93,7 @@ test.beforeEach(() => {
   delete process.env.GROQ_API_KEY;
   delete process.env.AI_PAID_OPENAI_API_KEY;
   delete process.env.AI_BREW_PAID_GROQ_API_KEY;
+  resetAiProviderRuntimeStateForTests();
 });
 
 test.after(() => {
@@ -170,6 +176,68 @@ test('admin management exposes AI provider inventory without leaking server keys
   assert.equal(body.ai.configuredProviders >= 2, true);
   assert.equal(JSON.stringify(body).includes('gsk_live_secret_one'), false);
   assert.equal(JSON.stringify(body).includes('sk-paid-openai-secret'), false);
+});
+
+test('admin management exposes AI Brew provider usage without prompt or key leakage', async () => {
+  recordAiProviderUsage({
+    provider: 'GEMINI',
+    model: 'gemini-2.5-flash',
+    feature: 'ai_brew',
+    route: '/api/chat',
+    action: 'race',
+    mode: 'precision',
+    outcome: 'success',
+    inputTokens: 320,
+    outputTokens: 140,
+    latencyMs: 1250,
+  });
+  recordAiProviderFailure({
+    provider: 'GROQ',
+    model: 'llama-3.3-70b-versatile',
+    feature: 'ai_brew',
+    route: '/api/chat',
+    action: 'race',
+    mode: 'quick',
+    inputTokens: 280,
+    errorCode: 'rate_limited',
+  });
+  recordAiProviderUsage({
+    provider: 'OPENAI',
+    model: 'gpt-4o-mini',
+    feature: 'ai_chat',
+    route: '/api/chat',
+    action: 'race',
+    mode: 'normal',
+    outcome: 'success',
+    inputTokens: 100,
+    outputTokens: 40,
+  });
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    query: { aiFrom: '2026-01-01', aiTo: '2099-12-31' },
+    cookies: { auth_token: token },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 200);
+  const body = JSON.parse(res.body);
+  assert.equal(body.ai.usage.source, 'runtime_estimate');
+  assert.equal(body.ai.usage.custom.requests, 2);
+  assert.equal(body.ai.usage.custom.successes, 1);
+  assert.equal(body.ai.usage.custom.rateLimited, 1);
+  assert.equal(body.ai.usage.custom.inputTokens, 600);
+  assert.equal(body.ai.usage.custom.outputTokens, 140);
+  assert.ok(body.ai.usage.custom.estimatedCostUsd >= 0);
+  assert.ok(body.ai.usage.custom.providerBreakdown.some((item: any) => item.key === 'GEMINI' && item.requests === 1));
+  assert.ok(body.ai.usage.custom.providerBreakdown.some((item: any) => item.key === 'GROQ' && item.rateLimited === 1));
+  assert.equal(body.ai.usage.recentEvents.some((event: any) => event.feature === 'ai_chat'), false);
+  assert.equal(JSON.stringify(body).includes('gsk_live_secret'), false);
 });
 
 test('admin management patch updates runtime users and records audit', async () => {

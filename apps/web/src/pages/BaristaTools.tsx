@@ -112,12 +112,18 @@ export function BaristaTools() {
   const pageRef = useRef<HTMLDivElement | null>(null);
   useIOSKeyboardFix({
     focusScopeRef: pageRef,
-    hideNav,
-    showNav,
+    hideNav: activeTab === 'ai_brew' ? undefined : hideNav,
+    showNav: activeTab === 'ai_brew' ? undefined : showNav,
     navHideWhenKeyboard: true,
     navHideWhenFocusWithin: true,
     enableScrollIntoViewOnFocus: false,
   });
+
+  useEffect(() => {
+    if (activeTab === 'ai_brew') hideNav();
+    else showNav();
+    return () => showNav();
+  }, [activeTab, hideNav, showNav]);
 
   // Timer
   const [timerSeconds, setTimerSeconds] = useState(0);

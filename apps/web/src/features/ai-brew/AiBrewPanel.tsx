@@ -1,13 +1,15 @@
-import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import Markdown from 'react-markdown';
 import {
   ArrowRight,
+  AlertTriangle,
   Beaker,
   Bookmark,
   BookmarkCheck,
   Brain,
   Check,
+  ChevronDown,
   Clock3,
   Coffee,
   Droplets,
@@ -300,6 +302,9 @@ const COPY = {
     emptyRecent: 'Generate once to start your local journal.',
     emptyFavorites: 'Favorite a plan to pin it here.',
     emptyPlan: 'Pick Quick or Precision to build a brew.',
+    actionPrioritiesTitle: 'Next brew moves',
+    actionPrioritiesDescription: 'Start with the first item. Change one variable at a time so the cup stays easy to evaluate.',
+    warningsDescription: 'Review before brewing. These notes follow the selected language and the current water, grinder, and brewer status.',
     summaryTitle: 'Result',
     methodBriefTitle: 'Method Focus',
     methodBriefPrimary: 'Primary number',
@@ -686,6 +691,9 @@ const COPY = {
     emptyRecent: 'Buat satu seduhan untuk mulai jurnal lokal.',
     emptyFavorites: 'Tandai favorit agar resep muncul di sini.',
     emptyPlan: 'Pilih Cepat atau Presisi untuk menyusun seduhan.',
+    actionPrioritiesTitle: 'Langkah berikutnya',
+    actionPrioritiesDescription: 'Mulai dari urutan pertama. Ubah satu variabel dulu agar rasa mudah dievaluasi.',
+    warningsDescription: 'Baca sebelum seduh. Catatan ini mengikuti bahasa aplikasi dan status air, grinder, serta alat yang dipakai.',
     summaryTitle: 'Hasil',
     methodBriefTitle: 'Kunci Metode',
     methodBriefPrimary: 'Angka utama',
@@ -1115,6 +1123,30 @@ function formatPlanHeaderWater(plan: BrewPlan, language: string) {
       : `${formatRoundedMl(plan.hotWaterMl)} hot + ${formatRoundedGrams(plan.iceMl)} ice`;
   }
   return formatRoundedMl(plan.totalWaterMl);
+}
+
+function buildPremiumResultSummary(plan: BrewPlan, language: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  const target = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language).toLowerCase();
+  const dose = formatRoundedGrams(plan.doseG);
+  const temperature = formatRoundedTemperature(plan.waterTempC);
+  const time = formatTime(plan.totalTimeSeconds);
+
+  if (plan.brewMode === 'iced') {
+    const split = id
+      ? `${formatRoundedMl(plan.hotWaterMl)} air panas + ${formatRoundedGrams(plan.iceMl)} es`
+      : `${formatRoundedMl(plan.hotWaterMl)} hot water + ${formatRoundedGrams(plan.iceMl)} ice`;
+    const ratio = id
+      ? `rasio final 1:${formatBrewRatio(plan.finalBeverageRatio)}`
+      : `final ratio 1:${formatBrewRatio(plan.finalBeverageRatio)}`;
+    return id
+      ? `${plan.dripper.name} - seduh es. ${dose} kopi, ${split}, ${ratio}, ${temperature}, selesai sekitar ${time}. Target: ${target}.`
+      : `${plan.dripper.name} - ice brew. ${dose} coffee, ${split}, ${ratio}, ${temperature}, finish around ${time}. Target: ${target}.`;
+  }
+
+  return id
+    ? `${plan.dripper.name} - seduh panas. ${dose} kopi, ${formatRoundedMl(plan.totalWaterMl)} air, rasio 1:${formatBrewRatio(plan.recommendedRatio)}, ${temperature}, selesai sekitar ${time}. Target: ${target}.`
+    : `${plan.dripper.name} - hot brew. ${dose} coffee, ${formatRoundedMl(plan.totalWaterMl)} water, ratio 1:${formatBrewRatio(plan.recommendedRatio)}, ${temperature}, finish around ${time}. Target: ${target}.`;
 }
 
 function planUsesOnlineAi(plan: BrewPlan) {
@@ -2737,6 +2769,61 @@ function MasterPickerDialog({
   );
 }
 
+function ResultDisclosureSection({
+  title,
+  summary,
+  icon,
+  children,
+  defaultOpen = false,
+  testId,
+  tone = 'neutral',
+}: {
+  title: string;
+  summary?: string;
+  icon: ReactNode;
+  children: ReactNode;
+  defaultOpen?: boolean;
+  testId?: string;
+  tone?: 'neutral' | 'blue' | 'amber';
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const toneClass = tone === 'amber'
+    ? 'border-amber-500/20 bg-amber-500/10'
+    : tone === 'blue'
+      ? 'border-blue-500/18 bg-blue-500/[0.07]'
+      : 'panel-divider-subtle panel-soft';
+  const iconClass = tone === 'amber'
+    ? 'text-amber-600 dark:text-amber-300'
+    : tone === 'blue'
+      ? 'text-blue-500'
+      : 'text-secondary';
+
+  return (
+    <details
+      open={isOpen}
+      onToggle={(event) => setIsOpen(event.currentTarget.open)}
+      className={`group rounded-[1.4rem] border ${toneClass}`}
+      data-testid={testId}
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5">
+        <span className="flex min-w-0 items-start gap-2.5">
+          <span className={`mt-0.5 shrink-0 ${iconClass}`}>{icon}</span>
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold uppercase tracking-widest text-secondary">{title}</span>
+            {summary && (
+              <span className="mt-1 block text-xs leading-5 text-secondary">{summary}</span>
+            )}
+          </span>
+        </span>
+        <ChevronDown size={16} className="shrink-0 text-secondary transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="px-4 pb-4">
+        {children}
+      </div>
+    </details>
+  );
+}
+
 function PlanResultDialog({
   open,
   language,
@@ -2864,8 +2951,7 @@ function PlanResultDialog({
   const id = isIndonesianAiBrewLanguage(language);
   const waterSourceLinks = plan.waterBrandSourceUrls || [];
   const localizedTargetProfileLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language);
-  const localizedSummary = localizeAiBrewSummary(plan, language);
-  const displaySummary = compactResultSummaryForDisplay(localizedSummary, plan, language);
+  const displaySummary = compactResultSummaryForDisplay(buildPremiumResultSummary(plan, language), plan, language);
   const methodBrief = buildPlanMethodBrief(plan, language);
   const aiEngineOnline = planUsesOnlineAi(plan);
   const confidenceBadges = resolveAiBrewConfidenceBadges(plan, language);
@@ -2896,7 +2982,7 @@ function PlanResultDialog({
         : copy.flowReady;
   const flowCurrentCue = flowCurrentStep
     ? (buildAiBrewStepMethodFocusCue(plan, flowCurrentStep, language) || buildAiBrewStepQuickNote(flowCurrentStep, language))
-    : localizedSummary;
+    : displaySummary;
   const resultHeaderClass = 'relative rounded-[1.5rem] border panel-divider-subtle panel-soft px-4 pb-4 pt-5 lg:px-5';
   const resultMetricCardClass = 'rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/84 p-3';
   const resultChipClass = 'rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-medium text-secondary';
@@ -3032,19 +3118,22 @@ function PlanResultDialog({
                   {displaySummary}
                 </p>
                 <div className="mt-3 rounded-2xl border border-blue-500/18 bg-blue-500/[0.07] px-3 py-3" data-testid="ai-brew-action-priorities">
-                  <div className="mb-2 flex items-center gap-2">
-                    <Target size={14} className="text-blue-500" />
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
-                      {id ? 'Prioritas aksi' : 'Action priorities'}
-                    </p>
+                  <div className="mb-2 flex items-start gap-2">
+                    <Target size={15} className="mt-0.5 shrink-0 text-blue-500" />
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
+                        {copy.actionPrioritiesTitle}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-secondary">{copy.actionPrioritiesDescription}</p>
+                    </div>
                   </div>
-                  <ol className="space-y-1.5 text-sm leading-5 text-secondary">
+                  <ol className="grid gap-2 text-sm leading-5 text-secondary sm:grid-cols-3">
                     {actionPriorities.map((item, index) => (
-                      <li key={`${index}-${item}`} className="grid grid-cols-[1.5rem_minmax(0,1fr)] gap-2">
+                      <li key={`${index}-${item}`} className="grid grid-cols-[1.65rem_minmax(0,1fr)] gap-2 rounded-xl bg-[var(--bg-base)]/72 px-2.5 py-2">
                         <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[11px] font-semibold text-white">
                           {index + 1}
                         </span>
-                        <span>{item}</span>
+                        <span className="min-w-0">{item}</span>
                       </li>
                     ))}
                   </ol>
@@ -3306,24 +3395,27 @@ function PlanResultDialog({
                 </div>
 
                 <div className="space-y-5">
-                  <div className="rounded-[1.4rem] border panel-divider-subtle panel-soft p-4">
-                    <div className="mb-3 flex items-center gap-2">
-                      <Target size={15} className="text-blue-500" />
-                      <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.methodBriefWatch}</h4>
-                    </div>
+                  <ResultDisclosureSection
+                    title={copy.methodBriefWatch}
+                    summary={methodBrief.watch[0]}
+                    icon={<Target size={15} />}
+                    defaultOpen
+                    tone="blue"
+                  >
                     <ul className="space-y-2 text-sm leading-5 text-secondary">
                       {methodBrief.watch.map((item) => (
                         <li key={item} className="rounded-xl bg-surface-alpha px-3 py-2">{item}</li>
                       ))}
                     </ul>
-                  </div>
+                  </ResultDisclosureSection>
 
-                  <div className="rounded-[1.4rem] border panel-divider-subtle panel-soft p-4" data-testid="ai-brew-taste-feedback">
-                    <div className="mb-2 flex items-center gap-2">
-                      <Coffee size={15} className="text-amber-500" />
-                      <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.feedbackTitle}</h4>
-                    </div>
-                    <p className="text-sm leading-5 text-secondary">{copy.feedbackDescription}</p>
+                  <ResultDisclosureSection
+                    title={copy.feedbackTitle}
+                    summary={copy.feedbackDescription}
+                    icon={<Coffee size={15} />}
+                    defaultOpen
+                    testId="ai-brew-taste-feedback"
+                  >
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       {feedbackOptions.map((item) => {
                         const selected = feedback?.rating === item.rating;
@@ -3377,13 +3469,14 @@ function PlanResultDialog({
                         <p className="mt-2 text-xs text-secondary">{copy.feedbackCoachHint}</p>
                       </div>
                     )}
-                  </div>
+                  </ResultDisclosureSection>
 
-                  <div className="rounded-[1.4rem] border panel-divider-subtle panel-soft p-4">
-                    <div className="mb-3 flex items-center gap-2">
-                      <FlaskConical size={15} className="text-sky-500" />
-                      <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.waterSourceUsed}</h4>
-                    </div>
+                  <ResultDisclosureSection
+                    title={copy.waterSourceUsed}
+                    summary={plan.waterBrandLabel || copy.waterSelectedManual}
+                    icon={<FlaskConical size={15} />}
+                    defaultOpen={false}
+                  >
                     <div className="rounded-2xl bg-surface-alpha p-3">
                       <p className="text-sm font-semibold text-primary">{plan.waterBrandLabel || copy.waterSelectedManual}</p>
                       <p className="mt-1 text-xs text-secondary">
@@ -3411,14 +3504,15 @@ function PlanResultDialog({
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </ResultDisclosureSection>
 
                   {(showProvenance || plan.deviceProfileMode === 'exact' || plan.confidenceNotes.length > 0) && (
-                    <div className="rounded-[1.4rem] border panel-divider-subtle panel-soft p-4">
-                      <div className="mb-3 flex items-center gap-2">
-                        <Info size={15} className="text-blue-500" />
-                        <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.provenance}</h4>
-                      </div>
+                    <ResultDisclosureSection
+                      title={copy.provenance}
+                      summary={`${formatDeviceProfileMode(copy, plan.deviceProfileMode)} - ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}`}
+                      icon={<Info size={15} />}
+                      defaultOpen={showProvenance}
+                    >
                       <div className="space-y-3 text-sm text-secondary">
                         <div className="rounded-xl bg-surface-alpha px-3 py-3">
                           <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.profileUsed}</p>
@@ -3440,7 +3534,7 @@ function PlanResultDialog({
                           </ul>
                         </div>
                       </div>
-                    </div>
+                    </ResultDisclosureSection>
                   )}
 
                   {false && (
@@ -3458,14 +3552,19 @@ function PlanResultDialog({
                   )}
 
                   {(plan.guardrails.errors.length > 0 || plan.warnings.length > 0) && (
-                    <div className="rounded-[1.4rem] border border-amber-500/20 bg-amber-500/10 p-4">
-                      <h4 className="text-sm font-semibold uppercase tracking-widest text-amber-700 dark:text-amber-300">{copy.warnings}</h4>
-                      <div className="mt-2 space-y-2 text-sm text-amber-700 dark:text-amber-200">
+                    <ResultDisclosureSection
+                      title={copy.warnings}
+                      summary={copy.warningsDescription}
+                      icon={<AlertTriangle size={15} />}
+                      defaultOpen
+                      tone="amber"
+                    >
+                      <div className="space-y-2 text-sm text-amber-700 dark:text-amber-200">
                         {localizedWarnings.map((warning, index) => (
-                          <p key={`${warning}-${index}`}>{warning}</p>
+                          <p key={`${warning}-${index}`} className="rounded-xl bg-[var(--bg-base)]/72 px-3 py-2 leading-5">{warning}</p>
                         ))}
                       </div>
-                    </div>
+                    </ResultDisclosureSection>
                   )}
 
                   {false && (plan.conformance.standardsHits.length > 0 || plan.conformance.standardsMisses.length > 0) && (
@@ -3531,7 +3630,7 @@ function PlanResultDialog({
                       <p className="mt-1 text-base font-semibold text-blue-700 dark:text-blue-300">
                         {flowCurrentStep
                           ? buildAiBrewStepTargetCue(flowCurrentStep, language)
-                          : localizedSummary}
+                          : displaySummary}
                       </p>
                       <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 xl:grid-cols-2">
                         <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
@@ -4515,7 +4614,7 @@ export function AiBrewPanel({
     return () => window.clearInterval(intervalId);
   }, [generationBusy]);
 
-  const shouldHideAppNav = activeBuilderModal !== null || pickerKind !== null || resultOpen || generationBusy;
+  const shouldHideAppNav = true;
 
   useEffect(() => {
     if (shouldHideAppNav) hideNav();

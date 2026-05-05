@@ -301,7 +301,8 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
 export function localizeAiBrewSummary(plan: Pick<
   BrewPlan,
   'brewMode' | 'methodFamily' | 'coffeeName' | 'dripper' | 'targetProfileId' | 'targetProfileLabel' | 'recommendedRatio' | 'finalBeverageRatio' | 'hotExtractionRatio' | 'waterTempC' | 'totalTimeSeconds'
->, language?: string) {
+> & Partial<Pick<BrewPlan, 'doseG' | 'totalWaterMl' | 'hotWaterMl' | 'iceMl'>>, language?: string) {
+  const targetLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language).toLowerCase();
   const englishRatioText = plan.brewMode === 'iced'
     ? `final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)} with hot concentrate 1:${formatBaristaRatio(plan.hotExtractionRatio)}`
     : `1:${formatBaristaRatio(plan.recommendedRatio)}`;
@@ -317,7 +318,7 @@ export function localizeAiBrewSummary(plan: Pick<
   }
 
   const coffeeName = plan.coffeeName || 'kopi ini';
-  const target = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language).toLowerCase();
+  const target = targetLabel;
   const ratioText = plan.brewMode === 'iced'
     ? `rasio final 1:${formatBaristaRatio(plan.finalBeverageRatio)} dan konsentrat panas 1:${formatBaristaRatio(plan.hotExtractionRatio)}`
     : `1:${formatBaristaRatio(plan.recommendedRatio)}`;

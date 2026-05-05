@@ -4614,7 +4614,7 @@ export function AiBrewPanel({
     return () => window.clearInterval(intervalId);
   }, [generationBusy]);
 
-  const shouldHideAppNav = true;
+  const shouldHideAppNav = activeBuilderModal !== null || pickerKind !== null || resultOpen || generationBusy;
 
   useEffect(() => {
     if (shouldHideAppNav) hideNav();

@@ -88,6 +88,10 @@
             "destination": "/api/billing?path=$1"
         },
         {
+            "source": "/api/library/(.*)",
+            "destination": "/api/library?path=$1"
+        },
+        {
             "source": "/api/monitoring/(.*)",
             "destination": "/api/monitoring?path=$1"
         },

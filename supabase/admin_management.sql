@@ -174,6 +174,138 @@ create table if not exists public.app_usage_daily (
   unique (user_id, usage_date)
 );
 
+create or replace function public.consume_app_quota(
+  p_user_id text,
+  p_feature text,
+  p_amount integer default 1,
+  p_total_tokens integer default 0,
+  p_cost_usd numeric default 0
+)
+returns table (
+  allowed boolean,
+  usage_date date,
+  used integer,
+  daily_limit integer,
+  plan_code text,
+  reason text
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_today date := current_date;
+  v_feature text := lower(coalesce(p_feature, 'ai'));
+  v_amount integer := greatest(coalesce(p_amount, 1), 1);
+  v_total_tokens integer := greatest(coalesce(p_total_tokens, 0), 0);
+  v_cost_usd numeric := greatest(coalesce(p_cost_usd, 0), 0);
+  v_plan_code text;
+  v_ai_limit integer := 0;
+  v_deep_limit integer := 0;
+  v_scanner_limit integer := 0;
+  v_usage public.app_usage_daily%rowtype;
+  v_current integer := 0;
+  v_limit integer := 0;
+begin
+  if v_feature not in ('ai', 'deep', 'scanner') then
+    v_feature := 'ai';
+  end if;
+
+  select u.plan_code, p.ai_daily_limit, p.deep_daily_limit, p.scanner_daily_limit
+    into v_plan_code, v_ai_limit, v_deep_limit, v_scanner_limit
+  from public.app_users u
+  join public.app_plans p on p.code = u.plan_code
+  where u.id = p_user_id
+    and u.status in ('active', 'trialing');
+
+  if v_plan_code is null then
+    return query select false, v_today, 0, 0, ''::text, 'account_not_active'::text;
+    return;
+  end if;
+
+  insert into public.app_usage_daily (user_id, usage_date)
+  values (p_user_id, v_today)
+  on conflict (user_id, usage_date) do nothing;
+
+  select *
+    into v_usage
+  from public.app_usage_daily
+  where public.app_usage_daily.user_id = p_user_id
+    and public.app_usage_daily.usage_date = v_today
+  for update;
+
+  if v_feature = 'deep' then
+    v_current := coalesce(v_usage.deep_requests, 0);
+    v_limit := v_deep_limit;
+    if v_current + v_amount > v_limit or coalesce(v_usage.ai_requests, 0) + v_amount > v_ai_limit then
+      return query select false, v_today, v_current, v_limit, v_plan_code, 'quota_exceeded'::text;
+      return;
+    end if;
+
+    update public.app_usage_daily
+      set deep_requests = deep_requests + v_amount,
+          ai_requests = ai_requests + v_amount,
+          total_tokens = total_tokens + v_total_tokens,
+          cost_usd = cost_usd + v_cost_usd,
+          updated_at = now()
+    where id = v_usage.id
+    returning * into v_usage;
+  elsif v_feature = 'scanner' then
+    v_current := coalesce(v_usage.scanner_runs, 0);
+    v_limit := v_scanner_limit;
+    if v_current + v_amount > v_limit then
+      return query select false, v_today, v_current, v_limit, v_plan_code, 'quota_exceeded'::text;
+      return;
+    end if;
+
+    update public.app_usage_daily
+      set scanner_runs = scanner_runs + v_amount,
+          total_tokens = total_tokens + v_total_tokens,
+          cost_usd = cost_usd + v_cost_usd,
+          updated_at = now()
+    where id = v_usage.id
+    returning * into v_usage;
+  else
+    v_current := coalesce(v_usage.ai_requests, 0);
+    v_limit := v_ai_limit;
+    if v_current + v_amount > v_limit then
+      return query select false, v_today, v_current, v_limit, v_plan_code, 'quota_exceeded'::text;
+      return;
+    end if;
+
+    update public.app_usage_daily
+      set ai_requests = ai_requests + v_amount,
+          total_tokens = total_tokens + v_total_tokens,
+          cost_usd = cost_usd + v_cost_usd,
+          updated_at = now()
+    where id = v_usage.id
+    returning * into v_usage;
+  end if;
+
+  update public.app_users
+    set usage_today = jsonb_build_object(
+          'ai_requests_today', v_usage.ai_requests,
+          'deep_requests_today', v_usage.deep_requests,
+          'scanner_runs_today', v_usage.scanner_runs,
+          'collection_writes_today', v_usage.collection_writes,
+          'total_tokens_today', v_usage.total_tokens
+        ),
+        last_seen_at = now(),
+        updated_at = now()
+  where id = p_user_id;
+
+  if v_feature = 'deep' then
+    v_current := v_usage.deep_requests;
+  elsif v_feature = 'scanner' then
+    v_current := v_usage.scanner_runs;
+  else
+    v_current := v_usage.ai_requests;
+  end if;
+
+  return query select true, v_today, v_current, v_limit, v_plan_code, 'ok'::text;
+end;
+$$;
+
 create table if not exists public.user_entitlements (
   id uuid primary key default gen_random_uuid(),
   user_id text not null references public.app_users(id) on delete cascade,
@@ -538,6 +670,8 @@ grant all on public.user_entitlements to service_role;
 grant all on public.payment_receipts to service_role;
 grant all on public.app_feature_flags to service_role;
 grant all on public.admin_audit_events to service_role;
+revoke all on function public.consume_app_quota(text, text, integer, integer, numeric) from public;
+grant execute on function public.consume_app_quota(text, text, integer, integer, numeric) to service_role;
 
 drop policy if exists "service role manages app plans" on public.app_plans;
 create policy "service role manages app plans" on public.app_plans

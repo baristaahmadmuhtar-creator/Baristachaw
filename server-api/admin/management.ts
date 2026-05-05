@@ -1506,6 +1506,8 @@ function buildChecks(dataMode: DataMode): AdminSystemCheck[] {
   const billingConfigured = connectedBillingProviders().length > 0;
   const billingSyncReady = billingSyncConfigured();
   const sentryConfigured = Boolean(readEnv('SENTRY_DSN', 'EXPO_PUBLIC_SENTRY_DSN', 'VITE_SENTRY_DSN'));
+  const planEnforcementEnabled = envEnabled('PLAN_ENFORCEMENT_ENABLED');
+  const planEnforcementReady = planEnforcementEnabled && dataMode === 'supabase';
 
   return [
     {
@@ -1586,12 +1588,18 @@ function buildChecks(dataMode: DataMode): AdminSystemCheck[] {
     {
       id: 'plan_enforcement',
       label: 'Per-plan enforcement',
-      status: envEnabled('PLAN_ENFORCEMENT_ENABLED') ? 'pass' : 'warn',
+      status: planEnforcementReady ? 'pass' : planEnforcementEnabled ? 'fail' : 'warn',
       owner: 'Backend',
-      detail: envEnabled('PLAN_ENFORCEMENT_ENABLED')
-        ? 'Plan enforcement flag is enabled.'
-        : 'Admin can manage plans, but enforcement must be wired to quota middleware before paid launch.',
-      nextAction: envEnabled('PLAN_ENFORCEMENT_ENABLED') ? undefined : 'Gate /api/ai and scanner usage by app_users.plan_code quotas.',
+      detail: planEnforcementReady
+        ? 'Plan enforcement flag is enabled and Supabase quota consumption is required for paid AI routes.'
+        : planEnforcementEnabled
+          ? 'PLAN_ENFORCEMENT_ENABLED is true, but Supabase persistence is not active; paid AI routes will fail closed.'
+          : 'Admin can manage plans, but daily quota enforcement is disabled until PLAN_ENFORCEMENT_ENABLED is true.',
+      nextAction: planEnforcementReady
+        ? undefined
+        : planEnforcementEnabled
+          ? 'Run supabase/admin_management.sql and set SUPABASE_SERVICE_ROLE_KEY before keeping quota enforcement enabled.'
+          : 'Enable PLAN_ENFORCEMENT_ENABLED after Supabase admin tables and consume_app_quota RPC are deployed.',
     },
     {
       id: 'telemetry',

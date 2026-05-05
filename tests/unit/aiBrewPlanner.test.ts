@@ -1868,6 +1868,54 @@ test('AI Brew grinder catalog publish rules keep sources, references, and ranges
   assert.equal(breville?.medium, 'Setting 40 - 50');
 });
 
+test('AI Brew core brewer production profiles keep method-specific SOP cues', () => {
+  type DeviceProfile = {
+    id?: string;
+    brewMode?: string;
+    note?: string;
+    steps?: Array<{ id?: string; label?: string; kind?: string; note?: string }>;
+  };
+  const profiles = readJsonItems<DeviceProfile>('apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json');
+  const byId = new Map(profiles.map((profile) => [profile.id, profile]));
+  const profileText = (profileId: string) => {
+    const profile = byId.get(profileId);
+    assert.ok(profile, `${profileId} must exist`);
+    return [
+      profile.note || '',
+      ...(profile.steps || []).flatMap((step) => [step.label || '', step.kind || '', step.note || '']),
+    ].join(' ');
+  };
+
+  const icedProfileExpectations: Array<[string, RegExp]> = [
+    ['profile_april_brewer_iced', /measured ice in server|server 5-8 seconds/i],
+    ['profile_chemex_iced', /thick paper|paper wall|server 5-8 seconds/i],
+    ['profile_kalita_wave_iced', /flat bed|edge to edge|server 5-8 seconds/i],
+    ['profile_kono_meimon_iced', /center-focused|hot-water target over measured ice/i],
+    ['profile_melitta_iced', /trapezoid|measured ice in server|server 5-8 seconds/i],
+    ['profile_origami_iced', /ribs|measured ice in server|server 5-8 seconds/i],
+  ];
+
+  for (const [profileId, expectedCue] of icedProfileExpectations) {
+    const text = profileText(profileId);
+    assert.match(text, expectedCue, `${profileId} needs a method-specific Japanese iced cue`);
+    assert.doesNotMatch(text, /before adding ice|combining with measured ice/i, `${profileId} must not imply ice is added after brewing`);
+  }
+
+  const cleverHot = byId.get('profile_clever_dripper_hot');
+  assert.ok(cleverHot);
+  assert.equal(cleverHot.steps?.find((step) => step.id === 'bloom')?.kind, 'pour');
+  assert.equal(cleverHot.steps?.find((step) => step.id === 'pour_1')?.kind, 'pour');
+  assert.equal(cleverHot.steps?.find((step) => step.id === 'release')?.kind, 'release');
+  assert.equal(cleverHot.steps?.find((step) => step.id === 'finish')?.kind, 'serve');
+
+  const cleverIced = byId.get('profile_clever_dripper_iced');
+  assert.ok(cleverIced);
+  assert.equal(cleverIced.steps?.find((step) => step.id === 'charge')?.kind, 'pour');
+  assert.equal(cleverIced.steps?.find((step) => step.id === 'release')?.kind, 'release');
+  assert.equal(cleverIced.steps?.find((step) => step.id === 'finish')?.kind, 'serve');
+  assert.match(profileText('profile_clever_dripper_iced'), /valve closed|measured ice|server 5-8 seconds/i);
+});
+
 test('AI Brew water catalog blocks private sources, zero-mineral autofill, and estimated facts', () => {
   type RawWater = {
     id?: string;

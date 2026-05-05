@@ -74,28 +74,28 @@
       "tempDeltaC": 0.6,
       "brewTimeDeltaSec": -10,
       "grindBias": "finer",
-      "note": "Iced April profile keeps pulse simplicity but tightens concentration over ice.",
+      "note": "Japanese iced April profile: measured ice in server, low-agitation pulses, and a quick server stir after drawdown.",
       "steps": [
         {
           "id": "pulse_1",
           "label": "Pulse 1",
           "share": 0.34,
           "startSeconds": 0,
-          "note": "Charge evenly with a concentrated first pulse."
+          "note": "Rinse/preheat filter, keep measured ice in server, then charge evenly with a concentrated first pulse."
         },
         {
           "id": "pulse_2",
           "label": "Pulse 2",
           "share": 0.33,
           "startSeconds": 45,
-          "note": "Keep agitation minimal."
+          "note": "Keep agitation minimal and the flat bed level."
         },
         {
           "id": "pulse_3",
           "label": "Pulse 3",
           "share": 0.33,
           "startSeconds": 88,
-          "note": "Finish to the hot-water target and chill immediately."
+          "note": "Finish to the hot-water target over measured ice, then stir the server 5-8 seconds."
         }
       ],
       "source": "april-curation",
@@ -851,28 +851,28 @@
       "tempDeltaC": 0.5,
       "brewTimeDeltaSec": -15,
       "grindBias": "finer",
-      "note": "Iced Chemex profile with tighter grind to offset paper resistance and ice dilution.",
+      "note": "Japanese iced Chemex profile: rinse/preheat thick paper, place measured ice in server, then brew a clean hot concentrate over it.",
       "steps": [
         {
           "id": "bloom",
           "label": "Bloom",
           "share": 0.22,
           "startSeconds": 0,
-          "note": "Compact bloom."
+          "note": "Compact bloom after rinsing the thick paper and preheating the glass."
         },
         {
           "id": "main",
           "label": "Main Pour",
           "share": 0.36,
           "startSeconds": 45,
-          "note": "Build concentration without over-flooding."
+          "note": "Build concentration with a steady stream; avoid pouring down the paper wall."
         },
         {
           "id": "finish",
           "label": "Finish",
           "share": 0.42,
           "startSeconds": 118,
-          "note": "Finish to the hot-water target and chill immediately over ice."
+          "note": "Finish to the hot-water target over measured ice, let the thick filter drain, then stir server 5-8 seconds."
         }
       ],
       "source": "chemex-curation",
@@ -907,6 +907,7 @@
         {
           "id": "bloom",
           "label": "Bloom",
+          "kind": "pour",
           "share": 0.19,
           "startSeconds": 0,
           "note": "Wet the bed evenly and bloom for 30 seconds."
@@ -914,6 +915,7 @@
         {
           "id": "pour_1",
           "label": "Second Pour",
+          "kind": "pour",
           "share": 0.5,
           "startSeconds": 30,
           "note": "Pour to most of the target water with gentle circles."
@@ -921,6 +923,7 @@
         {
           "id": "pour_2",
           "label": "Final Pour",
+          "kind": "pour",
           "share": 0.31,
           "startSeconds": 90,
           "note": "Top up to target before opening the valve."
@@ -928,6 +931,7 @@
         {
           "id": "release",
           "label": "Open Valve",
+          "kind": "release",
           "share": 0,
           "startSeconds": 150,
           "note": "Release and let the dripper drain cleanly."
@@ -935,6 +939,7 @@
         {
           "id": "finish",
           "label": "Finish",
+          "kind": "serve",
           "share": 0,
           "startSeconds": 165,
           "note": "Serve once drawdown is complete."
@@ -967,14 +972,31 @@
       "tempDeltaC": 0.2,
       "brewTimeDeltaSec": 10,
       "grindBias": "same",
-      "note": "Iced immersion profile designed to land sweet and clean instead of spiky.",
+      "note": "Japanese iced Clever profile: valve closed for hot immersion, measured ice in server, then release directly over ice.",
       "steps": [
         {
           "id": "charge",
-          "label": "Charge and Release",
+          "label": "Charge Closed",
+          "kind": "pour",
           "share": 1,
           "startSeconds": 0,
-          "note": "Charge full hot-water target, steep briefly, then release directly over ice."
+          "note": "Valve closed. Add full hot-water target, saturate evenly, and steep briefly."
+        },
+        {
+          "id": "release",
+          "label": "Release Over Ice",
+          "kind": "release",
+          "share": 0,
+          "startSeconds": 120,
+          "note": "Open the valve over measured ice and let the concentrate drain cleanly."
+        },
+        {
+          "id": "finish",
+          "label": "Stir Server",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Stir the server 5-8 seconds before serving."
         }
       ],
       "source": "clever-curation",
@@ -2383,28 +2405,28 @@
       "tempDeltaC": 0.4,
       "brewTimeDeltaSec": -8,
       "grindBias": "finer",
-      "note": "Pulse-driven iced profile with slightly finer grind to preserve concentration over ice.",
+      "note": "Japanese iced Kalita profile: measured ice in server, level flat bed, and short pulses to preserve sweetness.",
       "steps": [
         {
           "id": "bloom",
           "label": "Bloom",
           "share": 0.22,
           "startSeconds": 0,
-          "note": "Compact bloom for concentration."
+          "note": "Rinse/preheat the wave filter, keep measured ice in server, then bloom compactly."
         },
         {
           "id": "pulse_1",
           "label": "Pulse 1",
           "share": 0.34,
           "startSeconds": 40,
-          "note": "Control slurry height and keep bed even."
+          "note": "Use a low spout and short pulse; keep the flat bed even edge to edge."
         },
         {
           "id": "finish",
           "label": "Finish",
           "share": 0.44,
           "startSeconds": 88,
-          "note": "Finish to hot-water target and chill immediately."
+          "note": "Finish to the hot-water target over measured ice, then stir server 5-8 seconds."
         }
       ],
       "source": "kalita-curation",
@@ -2601,7 +2623,7 @@
       "tempDeltaC": 0.4,
       "brewTimeDeltaSec": -10,
       "grindBias": "finer",
-      "note": "Iced adaptation of Kono Meimon Hot with concentrated hot-phase extraction before dilution over ice.",
+      "note": "Japanese iced Kono profile: measured ice in server and a compact center-focused hot concentrate for a sweet core.",
       "steps": [
         {
           "id": "bloom",
@@ -2622,7 +2644,7 @@
           "label": "Finish",
           "share": 0.55,
           "startSeconds": 92,
-          "note": "Finish in two calm pulses or one steady pour depending on flow. Keep concentrate stable before combining with measured ice."
+          "note": "Finish in two calm pulses or one steady pour to the hot-water target over measured ice, then stir server 5-8 seconds."
         }
       ],
       "source": "kono-curation-iced-curated",
@@ -3058,14 +3080,14 @@
       "tempDeltaC": -1.2,
       "brewTimeDeltaSec": -65,
       "grindBias": "finer",
-      "note": "Iced adaptation of Melitta Hot tuned for concentrated hot-phase extraction before chilling.",
+      "note": "Japanese iced Melitta profile: measured ice in server, full trapezoid saturation, and a clean hot concentrate over ice.",
       "steps": [
         {
           "id": "bloom",
           "label": "Bloom",
           "share": 0.19,
           "startSeconds": 0,
-          "note": "Saturate the bed fully and bloom for 30 seconds."
+          "note": "Rinse/preheat the trapezoid filter, keep measured ice in server, then saturate fully and bloom for 30 seconds."
         },
         {
           "id": "main",
@@ -3086,7 +3108,7 @@
           "label": "Finish",
           "share": 0,
           "startSeconds": 165,
-          "note": "Let the trapezoid bed drain and serve. Keep output concentrated before adding ice."
+          "note": "Let the trapezoid bed drain over measured ice, stir server 5-8 seconds, then serve."
         }
       ],
       "source": "melitta-curation-iced-curated",
@@ -3617,28 +3639,28 @@
       "tempDeltaC": 0.5,
       "brewTimeDeltaSec": -8,
       "grindBias": "finer",
-      "note": "Slightly tighter than the hot Origami baseline, built for sweetness retention over ice.",
+      "note": "Japanese iced Origami profile: measured ice in server, agile center flow, and a sweet clean concentrate over ice.",
       "steps": [
         {
           "id": "bloom",
           "label": "Bloom",
           "share": 0.22,
           "startSeconds": 0,
-          "note": "Use a compact bloom to build concentration."
+          "note": "Rinse/preheat the filter, keep measured ice in server, then use a compact bloom to build concentration."
         },
         {
           "id": "main",
           "label": "Main Pour",
           "share": 0.34,
           "startSeconds": 40,
-          "note": "Keep the center flowing cleanly."
+          "note": "Keep the center flowing cleanly and avoid flooding the ribs."
         },
         {
           "id": "finish",
           "label": "Finish",
           "share": 0.44,
           "startSeconds": 90,
-          "note": "Finish to the hot-water target and chill immediately over ice."
+          "note": "Finish to the hot-water target over measured ice, then stir server 5-8 seconds."
         }
       ],
       "source": "origami-curation",

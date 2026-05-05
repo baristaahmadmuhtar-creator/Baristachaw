@@ -115,7 +115,7 @@ export function BaristaTools() {
     hideNav,
     showNav,
     navHideWhenKeyboard: true,
-    navHideWhenFocusWithin: false,
+    navHideWhenFocusWithin: true,
     enableScrollIntoViewOnFocus: false,
   });
 

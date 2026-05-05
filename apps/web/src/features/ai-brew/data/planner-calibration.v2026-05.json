@@ -1,0 +1,1169 @@
+{
+  "version": "2026-05-global-origin-plus",
+  "source": "BaristaChaw deterministic planner calibration seed",
+  "processModifiers": {
+    "washed": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "natural": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "coarser"
+    },
+    "honey": {
+      "ratioDelta": 0.03,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -2,
+      "grindBias": "coarser"
+    },
+    "pulped_natural": {
+      "ratioDelta": 0.03,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -2,
+      "grindBias": "coarser"
+    },
+    "wet_hulled": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "giling_basah": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "semi_washed": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -1,
+      "grindBias": "same"
+    },
+    "wine_process": {
+      "ratioDelta": 0.06,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "anaerobic": {
+      "ratioDelta": 0.07,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "carbonic_maceration": {
+      "ratioDelta": 0.08,
+      "tempDeltaC": -0.5,
+      "brewTimeDeltaSec": -7,
+      "grindBias": "coarser"
+    },
+    "extended_fermentation": {
+      "ratioDelta": 0.06,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "lactic": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "coarser"
+    },
+    "lactic_anaerobic": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "coarser"
+    },
+    "yeast_inoculated": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "coarser"
+    },
+    "thermal_shock": {
+      "ratioDelta": 0.06,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "anaerobic_wet_hulled": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.5,
+      "brewTimeDeltaSec": -7,
+      "grindBias": "coarser"
+    },
+    "decaf": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "carbonic_natural": {
+      "ratioDelta": 0.08,
+      "tempDeltaC": -0.5,
+      "brewTimeDeltaSec": -7,
+      "grindBias": "coarser"
+    },
+    "carbonic_washed": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "coarser"
+    },
+    "cold_fermentation": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -3,
+      "grindBias": "same"
+    },
+    "controlled_fermentation": {
+      "ratioDelta": 0.02,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -2,
+      "grindBias": "same"
+    },
+    "dark_room_natural": {
+      "ratioDelta": 0.06,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "coarser"
+    },
+    "double_washed": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "fruit_maceration": {
+      "ratioDelta": 0.08,
+      "tempDeltaC": -0.5,
+      "brewTimeDeltaSec": -7,
+      "grindBias": "coarser"
+    },
+    "mountain_water_decaf": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "raisin_natural": {
+      "ratioDelta": 0.07,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "semi_carbonic_maceration": {
+      "ratioDelta": 0.06,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "shade_dried_natural": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -3,
+      "grindBias": "coarser"
+    },
+    "submerged_fermentation": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "coarser"
+    },
+    "sugarcane_decaf": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "swiss_water_decaf": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "washed_anaerobic": {
+      "ratioDelta": 0.03,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -3,
+      "grindBias": "same"
+    },
+    "semi_anaerobic": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -4,
+      "grindBias": "coarser"
+    },
+    "double_anaerobic": {
+      "ratioDelta": 0.06,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "mosto_fermentation": {
+      "ratioDelta": 0.06,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "yeast_fermentation": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -4,
+      "grindBias": "coarser"
+    },
+    "slow_dry_natural": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "coarser"
+    },
+    "semi_washed_extended_fermentation": {
+      "ratioDelta": 0.03,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -4,
+      "grindBias": "coarser"
+    },
+    "enzyme_fermentation": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -4,
+      "grindBias": "coarser"
+    },
+    "natural_anaerobic": {
+      "ratioDelta": 0.08,
+      "tempDeltaC": -0.5,
+      "brewTimeDeltaSec": -7,
+      "grindBias": "coarser"
+    },
+    "double_soak_washed": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "kenya_double_fermentation": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 3,
+      "grindBias": "same"
+    },
+    "mechanically_demucilaged": {
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 0,
+      "grindBias": "same"
+    },
+    "eco_pulped": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -1,
+      "grindBias": "same"
+    },
+    "koji_fermentation": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -4,
+      "grindBias": "coarser"
+    },
+    "co_fermented": {
+      "ratioDelta": 0.06,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "coarser"
+    },
+    "thermal_shock_washed": {
+      "ratioDelta": 0.03,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -3,
+      "grindBias": "same"
+    },
+    "thermal_shock_natural": {
+      "ratioDelta": 0.06,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    }
+  },
+  "varietyModifiers": {
+    "geisha": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -4,
+      "grindBias": "coarser"
+    },
+    "gesha": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -4,
+      "grindBias": "coarser"
+    },
+    "abyssinia": {
+      "ratioDelta": 0.03,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -3,
+      "grindBias": "coarser"
+    },
+    "ethiopian_heirloom": {
+      "ratioDelta": 0.03,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -3,
+      "grindBias": "coarser"
+    },
+    "sl28": {
+      "ratioDelta": 0.03,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -3,
+      "grindBias": "coarser"
+    },
+    "sl34": {
+      "ratioDelta": 0.02,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -2,
+      "grindBias": "coarser"
+    },
+    "pacamara": {
+      "ratioDelta": -0.03,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 4,
+      "grindBias": "finer"
+    },
+    "maragogipe": {
+      "ratioDelta": -0.03,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 4,
+      "grindBias": "finer"
+    },
+    "pink_bourbon": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "sidra": {
+      "ratioDelta": 0.02,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -1,
+      "grindBias": "same"
+    },
+    "typica_mejorado": {
+      "ratioDelta": 0.02,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -1,
+      "grindBias": "same"
+    },
+    "robusta": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "arabica_robusta_blend": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -4,
+      "grindBias": "coarser"
+    },
+    "mix_variety": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "mixed_variety": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "ethiopian_landrace_mix": {
+      "ratioDelta": 0.02,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -2,
+      "grindBias": "same"
+    },
+    "acaia": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "acaua": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "anfilloo": {
+      "ratioDelta": 0.02,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -2,
+      "grindBias": "same"
+    },
+    "bp_534": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "bp_936": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "bp_939": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "brs_2314": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "coarser"
+    },
+    "catisic": {
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 0,
+      "grindBias": "same"
+    },
+    "cenicafe_1": {
+      "ratioDelta": 0,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "gesha_1931": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -4,
+      "grindBias": "coarser"
+    },
+    "icatu": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "jember": {
+      "ratioDelta": 0.02,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -3,
+      "grindBias": "coarser"
+    },
+    "kr1": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "lempira": {
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 0,
+      "grindBias": "same"
+    },
+    "maracaturra": {
+      "ratioDelta": -0.03,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 4,
+      "grindBias": "finer"
+    },
+    "milenio": {
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 0,
+      "grindBias": "same"
+    },
+    "pache": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "pache_colis": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "roubi_1": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "starmaya": {
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 0,
+      "grindBias": "same"
+    },
+    "topazio": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "tr4": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "tr9": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "trs1": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "tupi": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "sl14": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "kp423": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "harrar_rwanda": {
+      "ratioDelta": 0.02,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -2,
+      "grindBias": "same"
+    },
+    "mibirizi": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "nyasaland": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "pop3303_21": {
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 0,
+      "grindBias": "same"
+    },
+    "catimor_129": {
+      "ratioDelta": 0.03,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -3,
+      "grindBias": "coarser"
+    },
+    "rab_c15": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "bourbon_mayaguez_71": {
+      "ratioDelta": 0.02,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -1,
+      "grindBias": "same"
+    },
+    "jackson_2_1257": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "moka": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -4,
+      "grindBias": "coarser"
+    },
+    "ethiopian_landrace": {
+      "ratioDelta": 0.02,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -2,
+      "grindBias": "same"
+    },
+    "rume_sudan": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 4,
+      "grindBias": "finer"
+    },
+    "tekisic": {
+      "ratioDelta": -0.02,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "centroamericano": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 3,
+      "grindBias": "finer"
+    },
+    "n39": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "colombia_variety": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "kartika": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "sigarar_utang": {
+      "ratioDelta": -0.02,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "coarser"
+    },
+    "gayo_2": {
+      "ratioDelta": -0.02,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "coarser"
+    },
+    "linie_s": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "sln_9": {
+      "ratioDelta": -0.02,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "coarser"
+    },
+    "timor_hybrid": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "catuai_99": {
+      "ratioDelta": -0.02,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "catuai_144": {
+      "ratioDelta": -0.02,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "caturra_chiroso": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "bourbon_pointu": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -1,
+      "grindBias": "same"
+    },
+    "orange_bourbon": {
+      "ratioDelta": -0.02,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "andina": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    }
+  },
+  "originProfiles": [
+    {
+      "profileId": "east_africa_floral",
+      "label": "East Africa floral highlands",
+      "keywords": [
+        "Angola",
+        "burundi",
+        "Cameroon",
+        "djimma",
+        "DR Congo",
+        "embu",
+        "ethiopia",
+        "guji",
+        "harrar",
+        "jimma",
+        "kenya",
+        "kiambu",
+        "kilimanjaro",
+        "kirinyaga",
+        "Kivu",
+        "limu",
+        "Madagascar",
+        "Malawi",
+        "mbeya",
+        "muranga",
+        "nyeri",
+        "rwanda",
+        "rwenzori",
+        "sidamo",
+        "tanzania",
+        "uganda",
+        "yirgacheffe",
+        "Zambia"
+      ],
+      "source": "BaristaChaw curated origin heuristic using public ICO/WCR regional references",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://ico.org/what-we-do/about-us/"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    },
+    {
+      "profileId": "middle_east_dried_fruit",
+      "label": "Middle East dried fruit depth",
+      "keywords": [
+        "yemen",
+        "haraz",
+        "harrar",
+        "mocca",
+        "mocha",
+        "bani mattar",
+        "hajja",
+        "israel",
+        "saudi"
+      ],
+      "source": "origin-curation",
+      "sourceUrls": [
+        "https://ico.org/what-we-do/about-us/",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    },
+    {
+      "profileId": "central_america_cocoa",
+      "label": "Central America cocoa citrus",
+      "keywords": [
+        "costa rica",
+        "tarrazu",
+        "west valley",
+        "central valley",
+        "guatemala",
+        "antigua",
+        "atitlan",
+        "huehuetenango",
+        "el salvador",
+        "apaneca",
+        "honduras",
+        "copan",
+        "marcala",
+        "nicaragua",
+        "jinotega",
+        "matagalpa",
+        "panama",
+        "boquete",
+        "volcan"
+      ],
+      "source": "origin-curation",
+      "sourceUrls": [
+        "https://ico.org/what-we-do/about-us/",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    },
+    {
+      "profileId": "mexico_mesoamerica",
+      "label": "Mexico and Mesoamerica cocoa citrus",
+      "keywords": [
+        "mexico",
+        "chiapas",
+        "oaxaca",
+        "veracruz",
+        "huatusco",
+        "pluma hidalgo",
+        "tapachula",
+        "soconusco",
+        "puebla"
+      ],
+      "source": "Curated public origin profile references for deterministic AI Brew routing",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://ico.org/what-we-do/about-us/",
+        "https://www.croptrust.org/knowledge-hub/crops/coffee/"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    },
+    {
+      "profileId": "andes_balanced",
+      "label": "Andes balanced fruit",
+      "keywords": [
+        "colombia",
+        "huila",
+        "cauca",
+        "narino",
+        "nariño",
+        "tolima",
+        "antioquia",
+        "quindio",
+        "santander",
+        "sierra nevada",
+        "peru",
+        "cajamarca",
+        "cusco",
+        "bolivia",
+        "caranavi",
+        "la paz",
+        "ecuador",
+        "loja",
+        "pichincha",
+        "venezuela",
+        "merida"
+      ],
+      "source": "origin-curation",
+      "sourceUrls": [
+        "https://ico.org/what-we-do/about-us/",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    },
+    {
+      "profileId": "caribbean_milds",
+      "label": "Caribbean mild sweetness",
+      "keywords": [
+        "jamaica",
+        "blue mountain",
+        "dominican republic",
+        "barahona",
+        "jarabacoa",
+        "puerto rico",
+        "cuba",
+        "haiti",
+        "caribbean"
+      ],
+      "source": "Curated public origin profile references for deterministic AI Brew routing",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://ico.org/what-we-do/about-us/",
+        "https://www.croptrust.org/knowledge-hub/crops/coffee/"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    },
+    {
+      "profileId": "brazil_sweet",
+      "label": "Brazil comfort sweetness",
+      "keywords": [
+        "bahia",
+        "brazil",
+        "caparao",
+        "cerrado",
+        "Chapada",
+        "espirito santo",
+        "mantiqueira",
+        "Matas de Minas",
+        "minas gerais",
+        "mogiana",
+        "Parana",
+        "Rondonia",
+        "sul de minas"
+      ],
+      "source": "BaristaChaw curated origin heuristic using public ICO/WCR regional references",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://ico.org/what-we-do/about-us/"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    },
+    {
+      "profileId": "indonesia_structured",
+      "label": "Indonesia structured profile",
+      "keywords": [
+        "aceh",
+        "Argopuro",
+        "bajawa",
+        "Bajawa",
+        "bali",
+        "Ciwidey",
+        "Enrekang",
+        "flores",
+        "Garut",
+        "gayo",
+        "Ijen",
+        "indonesia",
+        "java",
+        "kalimantan",
+        "kerinci",
+        "kintamani",
+        "lintong",
+        "Malabar",
+        "Mamasa",
+        "mandheling",
+        "Manggarai",
+        "papua",
+        "preanger",
+        "sulawesi",
+        "sumatra",
+        "sunda",
+        "Temanggung",
+        "toraja",
+        "wamena",
+        "west java"
+      ],
+      "source": "BaristaChaw curated origin heuristic using public ICO/WCR regional references",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://ico.org/what-we-do/about-us/"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    },
+    {
+      "profileId": "pacific_islands_complex",
+      "label": "Pacific islands structured sweetness",
+      "keywords": [
+        "papua new guinea",
+        "png",
+        "mount hagen",
+        "eastern highlands",
+        "timor-leste",
+        "east timor",
+        "hawaii",
+        "kona",
+        "ka'u",
+        "philippines",
+        "benguet",
+        "mindanao"
+      ],
+      "source": "origin-curation",
+      "sourceUrls": [
+        "https://ico.org/what-we-do/about-us/",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    },
+    {
+      "profileId": "south_asia_monsoon_spice",
+      "label": "South Asia monsoon spice body",
+      "keywords": [
+        "india",
+        "monsooned malabar",
+        "monsooned",
+        "malabar",
+        "chikmagalur",
+        "coorg",
+        "wayanad",
+        "bababudangiri",
+        "araku",
+        "nilgiri"
+      ],
+      "source": "Curated public origin profile references for deterministic AI Brew routing",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://ico.org/what-we-do/about-us/",
+        "https://www.croptrust.org/knowledge-hub/crops/coffee/"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    },
+    {
+      "profileId": "china_yunnan_fruit",
+      "label": "China Yunnan fruit clarity",
+      "keywords": [
+        "china",
+        "yunnan",
+        "baoshan",
+        "dehong",
+        "menglian",
+        "puer",
+        "pu'er",
+        "xishuangbanna",
+        "lincang"
+      ],
+      "source": "Curated public origin profile references for deterministic AI Brew routing",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://ico.org/what-we-do/about-us/",
+        "https://www.croptrust.org/knowledge-hub/crops/coffee/"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    },
+    {
+      "profileId": "asia_highland",
+      "label": "Asia highland clarity",
+      "keywords": [
+        "alishan",
+        "araku",
+        "baoshan",
+        "benguet",
+        "chiang mai",
+        "chiang rai",
+        "chikmagalur",
+        "china",
+        "da lat",
+        "east timor",
+        "Himachal",
+        "india",
+        "lam dong",
+        "laos",
+        "malaysia",
+        "menglian",
+        "mindanao",
+        "Mizoram",
+        "Monsooned Malabar",
+        "Mount Hagen",
+        "myanmar",
+        "nepal",
+        "Nilgiri",
+        "Papua New Guinea",
+        "philippines",
+        "Pidurutalagala",
+        "PNG",
+        "pu'er",
+        "puer",
+        "sabah",
+        "son la",
+        "Sri Lanka",
+        "taiwan",
+        "thailand",
+        "timor-leste",
+        "vietnam",
+        "yunnan"
+      ],
+      "source": "BaristaChaw curated origin heuristic using public ICO/WCR regional references",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://ico.org/what-we-do/about-us/"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    },
+    {
+      "profileId": "robusta_lowland_body",
+      "label": "Robusta and lowland body",
+      "keywords": [
+        "robusta",
+        "conilon",
+        "canephora",
+        "vietnam robusta",
+        "dak lak",
+        "lam dong robusta",
+        "india robusta",
+        "uganda robusta",
+        "liberica",
+        "excelsa"
+      ],
+      "source": "origin-curation",
+      "sourceUrls": [
+        "https://ico.org/what-we-do/about-us/",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    },
+    {
+      "profileId": "latin_america_balanced",
+      "label": "Latin America balanced sweetness",
+      "keywords": [
+        "antigua",
+        "antioquia",
+        "apaneca",
+        "atitlan",
+        "Blue Mountain",
+        "bolivia",
+        "boquete",
+        "cajamarca",
+        "caranavi",
+        "cauca",
+        "chiapas",
+        "colombia",
+        "copan",
+        "costa rica",
+        "Cuba",
+        "cusco",
+        "dominican republic",
+        "ecuador",
+        "El Paraiso",
+        "el salvador",
+        "guatemala",
+        "Haiti",
+        "honduras",
+        "huehuetenango",
+        "huila",
+        "Jamaica",
+        "jinotega",
+        "loja",
+        "marcala",
+        "matagalpa",
+        "Merida",
+        "mexico",
+        "nariño",
+        "narino",
+        "nicaragua",
+        "panama",
+        "Paraguay",
+        "peru",
+        "pichincha",
+        "Puerto Rico",
+        "quindio",
+        "Santander",
+        "Sierra Nevada",
+        "tarrazu",
+        "tolima",
+        "Venezuela",
+        "veracruz",
+        "volcan",
+        "west valley"
+      ],
+      "source": "BaristaChaw curated origin heuristic using public ICO/WCR regional references",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://ico.org/what-we-do/about-us/"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium"
+    }
+  ]
+}

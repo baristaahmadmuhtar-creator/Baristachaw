@@ -37,6 +37,12 @@ import { buildGenerateBriefPrompt } from '../../apps/web/src/features/ai-brew/pr
 import { resolveBrewerProfileTrustStatus } from '../../apps/web/src/features/ai-brew/catalogTrust.ts';
 import { sanitizeBrewNarrative, validateBrewPlanOutput } from '../../apps/web/src/features/ai-brew/antiHallucination.ts';
 import { sanitizeAiCoachMarkdown } from '../../apps/web/src/features/ai-brew/coachGuard.ts';
+import {
+  buildAiBrewTasteLoopMarkdown,
+  resolveAiBrewActionPriorities,
+  resolveAiBrewBeanCharacterInsights,
+  resolveAiBrewConfidenceBadges,
+} from '../../apps/web/src/features/ai-brew/experience.ts';
 import { resolveWaterMineralCompletion } from '../../apps/web/src/features/ai-brew/waterMineralCompletion.ts';
 import type { AiBrewCatalog, AiBrewFormState, AiBrewMethodFamily } from '../../apps/web/src/features/ai-brew/types.ts';
 import type { BrewMethodId } from '../../apps/web/src/features/barista-tools/types.ts';
@@ -269,7 +275,7 @@ const catalog: AiBrewCatalog = {
       skuLabel: 'Evian Singapore',
       label: 'Evian Singapore',
       shortLabel: 'Evian',
-      subtitle: 'Singapore Â· still mineral water',
+      subtitle: 'Singapore - still mineral water',
       country: 'France',
       markets: ['sg'],
       searchText: 'evian singapore france mineral water',
@@ -314,7 +320,7 @@ const catalog: AiBrewCatalog = {
       skuLabel: 'Aqua Indonesia',
       label: 'Aqua Indonesia',
       shortLabel: 'Aqua',
-      subtitle: 'Indonesia Â· provenance only',
+      subtitle: 'Indonesia - provenance only',
       country: 'Indonesia',
       markets: ['id'],
       searchText: 'aqua indonesia mineral water',
@@ -348,7 +354,7 @@ const catalog: AiBrewCatalog = {
       skuLabel: 'Amidis Indonesia',
       label: 'Amidis Indonesia',
       shortLabel: 'Amidis',
-      subtitle: 'Indonesia · low-mineral water',
+      subtitle: 'Indonesia - low-mineral water',
       country: 'Indonesia',
       markets: ['id'],
       searchText: 'amidis indonesia ro low mineral water',
@@ -392,7 +398,7 @@ const catalog: AiBrewCatalog = {
       skuLabel: 'Estimated Water',
       label: 'Estimated Water',
       shortLabel: 'Estimated Water',
-      subtitle: 'Global · estimated baseline',
+      subtitle: 'Global - estimated baseline',
       country: 'Unknown',
       markets: ['global'],
       searchText: 'estimated water baseline',
@@ -1300,6 +1306,24 @@ test('AI Brew defaults target profile from process, variety, and altitude withou
     roastLevel: 'medium_light',
   }, catalog), 'more_acidity');
 
+  assert.equal(resolveDefaultTargetProfileIdForBean({
+    coffeeName: 'Costa Rica Tarrazu washed',
+    process: 'washed',
+    roastLevel: 'medium_light',
+  }, catalog), 'more_acidity');
+
+  assert.equal(resolveDefaultTargetProfileIdForBean({
+    coffeeName: 'Bolivia natural anaerobic',
+    process: 'natural_anaerobic',
+    roastLevel: 'medium',
+  }, catalog), 'more_sweetness');
+
+  assert.equal(resolveDefaultTargetProfileIdForBean({
+    coffeeName: 'Vietnam robusta lowland',
+    variety: 'robusta',
+    roastLevel: 'medium_dark',
+  }, catalog), 'more_body');
+
   const manualSweetness = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),
     coffeeName: 'Manual target remains sweetness',
@@ -1430,6 +1454,161 @@ function catalogSlug(value: string) {
 function explicitNonNumericRange(label: string) {
   return /reference official grinder chart|official stepped settings|manual setting required/i.test(label);
 }
+
+test('AI Brew process, variety, and origin knowledge catalog stays expanded and provenance-safe', () => {
+  type KnowledgeEntry = {
+    id: string;
+    label?: string;
+    origins?: string[];
+    sourceUrls?: string[];
+    verificationLevel?: string;
+    confidence?: string;
+  };
+  const processes = readJsonItems<KnowledgeEntry>('apps/web/public/data/ai-brew/processes.v2026-06.json');
+  const varieties = readJsonItems<KnowledgeEntry>('apps/web/public/data/ai-brew/varieties.v2026-06.json');
+  const calibration = JSON.parse(fs.readFileSync('apps/web/src/features/ai-brew/data/planner-calibration.v2026-05.json', 'utf8')) as {
+    processModifiers: Record<string, unknown>;
+    varietyModifiers: Record<string, unknown>;
+    originProfiles: Array<{
+      profileId: string;
+      keywords: string[];
+      sourceUrls?: string[];
+      verificationLevel?: string;
+      confidence?: string;
+    }>;
+  };
+  const processIds = new Set(processes.map((entry) => entry.id));
+  const varietyIds = new Set(varieties.map((entry) => entry.id));
+  const addedProcessIds = ['double_washed', 'carbonic_natural', 'carbonic_washed', 'cold_fermentation', 'shade_dried_natural', 'sugarcane_decaf'];
+  const latestProcessIds = [
+    'washed_anaerobic',
+    'semi_anaerobic',
+    'double_anaerobic',
+    'mosto_fermentation',
+    'slow_dry_natural',
+    'natural_anaerobic',
+    'double_soak_washed',
+    'kenya_double_fermentation',
+    'mechanically_demucilaged',
+    'eco_pulped',
+    'koji_fermentation',
+    'co_fermented',
+    'thermal_shock_washed',
+    'thermal_shock_natural',
+  ];
+  const addedVarietyIds = ['gesha_1931', 'maracaturra', 'jember', 'bp_534', 'brs_2314', 'tr4', 'starmaya'];
+  const latestVarietyIds = [
+    'sl14',
+    'mibirizi',
+    'nyasaland',
+    'catimor_129',
+    'bourbon_mayaguez_71',
+    'ethiopian_landrace',
+    'rume_sudan',
+    'tekisic',
+    'centroamericano',
+    'n39',
+    'colombia_variety',
+    'kartika',
+    'sigarar_utang',
+    'gayo_2',
+    'linie_s',
+    'sln_9',
+    'timor_hybrid',
+    'catuai_99',
+    'catuai_144',
+    'caturra_chiroso',
+    'bourbon_pointu',
+    'orange_bourbon',
+    'andina',
+  ];
+
+  assert.ok(processes.length >= 63);
+  assert.ok(varieties.length >= 136);
+  assert.ok(calibration.originProfiles.length >= 14);
+  for (const id of addedProcessIds) {
+    assert.ok(processIds.has(id), `${id} process should exist`);
+    assert.ok(calibration.processModifiers[id], `${id} process should have deterministic calibration`);
+  }
+  for (const id of latestProcessIds) {
+    assert.ok(processIds.has(id), `${id} latest process should exist`);
+    assert.ok(calibration.processModifiers[id], `${id} latest process should have deterministic calibration`);
+  }
+  for (const id of addedVarietyIds) {
+    assert.ok(varietyIds.has(id), `${id} variety should exist`);
+    assert.ok(calibration.varietyModifiers[id] || ['starmaya'].includes(id), `${id} variety should have deterministic calibration or neutral explicit coverage`);
+  }
+  for (const id of latestVarietyIds) {
+    assert.ok(varietyIds.has(id), `${id} latest variety should exist`);
+    assert.ok(calibration.varietyModifiers[id], `${id} latest variety should have deterministic calibration`);
+  }
+
+  for (const entry of [
+    ...processes.filter((item) => addedProcessIds.includes(item.id)),
+    ...processes.filter((item) => latestProcessIds.includes(item.id)),
+    ...varieties.filter((item) => addedVarietyIds.includes(item.id)),
+    ...varieties.filter((item) => latestVarietyIds.includes(item.id)),
+  ]) {
+    assert.ok(entry.sourceUrls?.length, `${entry.id} must keep sourceUrls`);
+    if (entry.verificationLevel !== 'official') {
+      assert.ok(['curated', 'community_verified', 'dataset_unverified'].includes(String(entry.verificationLevel)), `${entry.id} must expose a non-official verification level`);
+    }
+    assert.ok(['low', 'medium', 'high'].includes(String(entry.confidence)), `${entry.id} must expose confidence`);
+  }
+
+  for (const originProfile of calibration.originProfiles) {
+    assert.ok(originProfile.sourceUrls?.length, `${originProfile.profileId} origin profile must keep public sourceUrls`);
+    assert.equal(originProfile.verificationLevel, 'curated', `${originProfile.profileId} origin profile should stay curated`);
+    assert.ok(['low', 'medium', 'high'].includes(String(originProfile.confidence)), `${originProfile.profileId} origin profile must expose confidence`);
+  }
+
+  const eastAfrica = calibration.originProfiles.find((profile) => profile.profileId === 'east_africa_floral');
+  const centralAmerica = calibration.originProfiles.find((profile) => profile.profileId === 'central_america_cocoa');
+  const mexico = calibration.originProfiles.find((profile) => profile.profileId === 'mexico_mesoamerica');
+  const andes = calibration.originProfiles.find((profile) => profile.profileId === 'andes_balanced');
+  const caribbean = calibration.originProfiles.find((profile) => profile.profileId === 'caribbean_milds');
+  const latinAmerica = calibration.originProfiles.find((profile) => profile.profileId === 'latin_america_balanced');
+  const indonesia = calibration.originProfiles.find((profile) => profile.profileId === 'indonesia_structured');
+  const middleEast = calibration.originProfiles.find((profile) => profile.profileId === 'middle_east_dried_fruit');
+  const pacific = calibration.originProfiles.find((profile) => profile.profileId === 'pacific_islands_complex');
+  const southAsia = calibration.originProfiles.find((profile) => profile.profileId === 'south_asia_monsoon_spice');
+  const chinaYunnan = calibration.originProfiles.find((profile) => profile.profileId === 'china_yunnan_fruit');
+  const robusta = calibration.originProfiles.find((profile) => profile.profileId === 'robusta_lowland_body');
+  const asia = calibration.originProfiles.find((profile) => profile.profileId === 'asia_highland');
+  const keywordSet = (profile?: { keywords: string[] }) => new Set((profile?.keywords || []).map((keyword) => keyword.toLowerCase()));
+  const eastAfricaKeywords = keywordSet(eastAfrica);
+  const centralAmericaKeywords = keywordSet(centralAmerica);
+  const mexicoKeywords = keywordSet(mexico);
+  const andesKeywords = keywordSet(andes);
+  const caribbeanKeywords = keywordSet(caribbean);
+  const latinAmericaKeywords = keywordSet(latinAmerica);
+  const indonesiaKeywords = keywordSet(indonesia);
+  const middleEastKeywords = keywordSet(middleEast);
+  const pacificKeywords = keywordSet(pacific);
+  const southAsiaKeywords = keywordSet(southAsia);
+  const chinaYunnanKeywords = keywordSet(chinaYunnan);
+  const robustaKeywords = keywordSet(robusta);
+  const asiaKeywords = keywordSet(asia);
+  assert.ok(eastAfricaKeywords.has('tanzania'));
+  assert.ok(eastAfricaKeywords.has('malawi'));
+  assert.ok(centralAmericaKeywords.has('tarrazu'));
+  assert.ok(centralAmericaKeywords.has('antigua'));
+  assert.ok(mexicoKeywords.has('chiapas'));
+  assert.ok(andesKeywords.has('huila'));
+  assert.ok(andesKeywords.has('nariño'));
+  assert.ok(andesKeywords.has('caranavi'));
+  assert.ok(caribbeanKeywords.has('jamaica'));
+  assert.ok(latinAmericaKeywords.has('bolivia'));
+  assert.ok(indonesiaKeywords.has('kerinci'));
+  assert.ok(indonesiaKeywords.has('garut'));
+  assert.ok(middleEastKeywords.has('yemen'));
+  assert.ok(pacificKeywords.has('papua new guinea'));
+  assert.ok(southAsiaKeywords.has('monsooned malabar'));
+  assert.ok(chinaYunnanKeywords.has('yunnan'));
+  assert.ok(robustaKeywords.has('robusta'));
+  assert.ok(asiaKeywords.has('india'));
+  assert.ok(asiaKeywords.has('papua new guinea'));
+});
 
 test('AI Brew grinder catalog publish rules keep sources, references, and ranges auditable', () => {
   type RawGrinder = {
@@ -1685,6 +1864,74 @@ test('AI Brew optimizer can adjust iced plans without breaking planner guardrail
   assert.ok(result.plan.steps.some((step) => /pulse|bloom|aliran/i.test(step.hybridInstruction || '')));
 });
 
+test('AI Brew optimizer clamps online patches to controlled micro-adjustments', () => {
+  const baseline = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'hot',
+    coffeeName: 'Sumatra Lintong Lake Toba',
+    doseG: '15',
+    targetProfileId: 'more_sweetness',
+    process: 'wet_hulled',
+    variety: '',
+    roastLevel: 'medium',
+    waterTdsPpm: '90',
+    waterHardnessPpm: '45',
+    waterAlkalinityPpm: '32',
+  }, catalog);
+
+  const result = applyAiBrewOptimizationPatch(baseline, {
+    reason: 'Structured coffee needs a tiny controlled sweetness patch.',
+    confidence: 0.88,
+    recommendedRatio: baseline.recommendedRatio + 1.5,
+    waterTempC: baseline.waterTempC + 4,
+    totalTimeSeconds: baseline.totalTimeSeconds + 60,
+    pourStyleHint: 'pulse_light',
+    grindGuidance: 'If thin, move slightly finer than the deterministic grind.',
+  });
+
+  assert.equal(result.applied, true);
+  assert.ok(Math.abs(result.plan.recommendedRatio - baseline.recommendedRatio) <= 0.25);
+  assert.ok(Math.abs(result.plan.waterTempC - baseline.waterTempC) <= 1);
+  assert.ok(Math.abs(result.plan.totalTimeSeconds - baseline.totalTimeSeconds) <= 10);
+  assert.ok(result.plan.steps.some((step) => /pulse|stabil|steady/i.test(step.hybridInstruction || '')));
+  assert.ok(result.plan.notes.some((note) => /AI grind guidance/i.test(note)));
+});
+
+test('AI Brew experience layer exposes bean-safe reasoning, confidence labels, and tasting loop', () => {
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'hot',
+    coffeeName: 'Sumatra Lintong Lake Toba',
+    doseG: '15',
+    targetProfileId: 'more_sweetness',
+    process: 'wet_hulled',
+    roastLevel: 'medium',
+    waterMode: 'manual',
+    waterTdsPpm: '90',
+    waterHardnessPpm: '45',
+    waterAlkalinityPpm: '32',
+  }, catalog);
+
+  const insights = resolveAiBrewBeanCharacterInsights(plan, 'id').join(' ');
+  assert.match(insights, /body|sweetness|spice|berstruktur/i);
+  assert.doesNotMatch(insights, /Geisha|Gesha/i);
+
+  const badges = resolveAiBrewConfidenceBadges(plan, 'id').map((badge) => badge.label).join(' ');
+  assert.match(badges, /Planner aman/);
+  assert.match(badges, /Grinder official/);
+
+  const sourLoop = buildAiBrewTasteLoopMarkdown(plan, { rating: 'sour' }, 'id');
+  assert.match(sourLoop, /sedikit lebih halus/i);
+  assert.match(sourLoop, /suhu kecil|C/i);
+  assert.doesNotMatch(sourLoop, /ubah rasio|ubah dosis/i);
+
+  const priorities = resolveAiBrewActionPriorities(plan, 'id').join(' ');
+  assert.match(priorities, /output utama/i);
+  assert.match(priorities, /flow time|drawdown/i);
+  assert.match(priorities, /grind|giling|halus|kasar/i);
+  assert.match(priorities, /satu variabel/i);
+});
+
 test('AI Brew optimizer parser unwraps nested structured text payloads', () => {
   const patch = parseAiBrewOptimizationPatch(JSON.stringify({
     ok: true,
@@ -1695,6 +1942,8 @@ test('AI Brew optimizer parser unwraps nested structured text payloads', () => {
       temperature: '92 C',
       targetTimeSeconds: 165,
       hotWaterShare: 62,
+      pourStyleHint: 'pulse_light',
+      grindGuidance: 'slightly finer only after tasting',
     }),
   }));
 
@@ -1702,6 +1951,8 @@ test('AI Brew optimizer parser unwraps nested structured text payloads', () => {
   assert.equal(patch?.waterTempC, 92);
   assert.equal(patch?.totalTimeSeconds, 165);
   assert.equal(patch?.hotWaterSharePercent, 62);
+  assert.equal(patch?.pourStyleHint, 'pulse_light');
+  assert.equal(patch?.grindGuidance, 'slightly finer only after tasting');
 });
 
 test('AI Brew optimizer preserves hot and iced envelopes across core dripper families', () => {
@@ -2901,14 +3152,33 @@ test('coffee origin cues steer neutral AI Brew plans in sensible directions', ()
     ...baseInput,
     coffeeName: 'Brazil Cerrado QA',
   }, catalog);
+  const centralAmerica = buildAiBrewPlan({
+    ...baseInput,
+    coffeeName: 'Costa Rica Tarrazu QA',
+  }, catalog);
+  const andes = buildAiBrewPlan({
+    ...baseInput,
+    coffeeName: 'Colombia Huila QA',
+  }, catalog);
+  const robusta = buildAiBrewPlan({
+    ...baseInput,
+    coffeeName: 'Canephora Lowland QA',
+  }, catalog);
 
   assertPlanEnvelope(eastAfrica);
   assertPlanEnvelope(brazil);
+  assertPlanEnvelope(centralAmerica);
+  assertPlanEnvelope(andes);
+  assertPlanEnvelope(robusta);
   assert.ok(eastAfrica.recommendedRatio > brazil.recommendedRatio);
   assert.ok(eastAfrica.waterTempC <= brazil.waterTempC);
   assert.ok(eastAfrica.totalTimeSeconds <= brazil.totalTimeSeconds);
   assert.ok(eastAfrica.confidenceNotes.some((note) => /origin cue recognized/i.test(note)));
   assert.ok(brazil.confidenceNotes.some((note) => /origin cue recognized/i.test(note)));
+  assert.ok(centralAmerica.confidenceNotes.some((note) => /central america cocoa citrus/i.test(note)));
+  assert.ok(andes.confidenceNotes.some((note) => /andes balanced fruit/i.test(note)));
+  assert.ok(robusta.confidenceNotes.some((note) => /robusta.*lowland body/i.test(note)));
+  assert.ok(robusta.recommendedRatio < eastAfrica.recommendedRatio);
 });
 
 test('dose size calibrates ratio, temperature, time, and grind direction', () => {
@@ -3984,7 +4254,7 @@ test('origin-target-method calibration makes origin cues react differently acros
   assert.ok(ethiopiaV60Acidity.confidenceNotes.some((note) => /origin-method calibration active: east africa floral x acidity x v60/i.test(note)));
   assert.ok(brazilCleverSweetness.confidenceNotes.some((note) => /origin-method calibration active: brazil sweet x sweetness x clever dripper/i.test(note)));
   assert.ok(gayoKalitaBody.confidenceNotes.some((note) => /origin-method calibration active: indonesia structured x body x kalita wave/i.test(note)));
-  assert.ok(yunnanV60Balanced.confidenceNotes.some((note) => /origin-method calibration active: asia highland x balanced x v60/i.test(note)));
+  assert.ok(yunnanV60Balanced.confidenceNotes.some((note) => /origin-method calibration active: china yunnan fruit clarity x balanced x v60/i.test(note)));
 });
 
 test('water chemistry extremes push AI Brew in opposite extraction directions', () => {
@@ -4017,11 +4287,32 @@ test('water chemistry extremes push AI Brew in opposite extraction directions', 
 });
 
 test('AI Brew matrix stays deterministic across roast, target, water, process, and variety combinations', () => {
-  const scenarios = [
+  const matrixCatalog = buildAllMethodFamilyCatalog();
+  const baseGoldenInput = {
+    ...createDefaultAiBrewFormState(matrixCatalog),
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+    grinderId: '1zpresso-k-ultra',
+  };
+  const scenarios: Array<{
+    name: string;
+    input: AiBrewFormState;
+    expected?: {
+      mode?: AiBrewFormState['brewMode'];
+      family?: AiBrewMethodFamily;
+      ratio?: [number, number];
+      temp?: [number, number];
+      time?: [number, number];
+      minPours?: number;
+      hasIce?: boolean;
+    };
+  }> = [
     {
       name: 'clarity_geisha_soft',
       input: {
-        ...createDefaultAiBrewFormState(catalog),
+        ...baseGoldenInput,
         coffeeName: 'Clarity Geisha',
         roastLevel: 'light' as const,
         targetProfileId: 'more_acidity',
@@ -4035,11 +4326,12 @@ test('AI Brew matrix stays deterministic across roast, target, water, process, a
         roastDevelopment: 'underdeveloped' as const,
         solubility: 'low' as const,
       },
+      expected: { mode: 'hot', family: 'v60', ratio: [15.5, 17.5], temp: [92, 97], time: [140, 220], minPours: 3 },
     },
     {
       name: 'sweet_bourbon_balanced',
       input: {
-        ...createDefaultAiBrewFormState(catalog),
+        ...baseGoldenInput,
         coffeeName: 'Sweet Bourbon',
         roastLevel: 'medium_light' as const,
         targetProfileId: 'more_sweetness',
@@ -4052,11 +4344,12 @@ test('AI Brew matrix stays deterministic across roast, target, water, process, a
         roastDevelopment: 'balanced' as const,
         solubility: 'medium' as const,
       },
+      expected: { mode: 'hot', family: 'v60', ratio: [14.6, 16.3], temp: [91, 96], time: [150, 240], minPours: 3 },
     },
     {
       name: 'body_pacamara_buffered',
       input: {
-        ...createDefaultAiBrewFormState(catalog),
+        ...baseGoldenInput,
         coffeeName: 'Body Pacamara',
         roastLevel: 'medium_dark' as const,
         targetProfileId: 'more_body',
@@ -4069,11 +4362,12 @@ test('AI Brew matrix stays deterministic across roast, target, water, process, a
         roastDevelopment: 'developed' as const,
         solubility: 'high' as const,
       },
+      expected: { mode: 'hot', family: 'v60', ratio: [13.5, 16.2], temp: [88, 94], time: [130, 205], minPours: 3 },
     },
     {
       name: 'iced_geisha_sweet',
       input: {
-        ...createDefaultAiBrewFormState(catalog),
+        ...baseGoldenInput,
         coffeeName: 'Iced Geisha',
         brewMode: 'iced' as const,
         targetProfileId: 'more_sweetness',
@@ -4087,13 +4381,443 @@ test('AI Brew matrix stays deterministic across roast, target, water, process, a
         roastDevelopment: 'underdeveloped' as const,
         solubility: 'low' as const,
       },
+      expected: { mode: 'iced', family: 'v60', ratio: [13, 15.3], temp: [90, 96], time: [155, 230], minPours: 3, hasIce: true },
+    },
+    {
+      name: 'sumatra_lintong_wet_hulled_v60_hot',
+      input: {
+        ...baseGoldenInput,
+        coffeeName: 'Sumatra Lintong Lake Toba',
+        process: 'wet_hulled',
+        variety: 'mixed_variety',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'more_body',
+      },
+      expected: { mode: 'hot', family: 'v60', ratio: [13.8, 16], temp: [89, 94], time: [140, 205], minPours: 3 },
+    },
+    {
+      name: 'ethiopia_yirgacheffe_washed_v60_hot',
+      input: {
+        ...baseGoldenInput,
+        coffeeName: 'Ethiopia Yirgacheffe Chelbesa',
+        process: 'washed',
+        variety: 'ethiopian_landrace_mix',
+        roastLevel: 'light' as const,
+        altitudeMasl: '2200',
+        targetProfileId: 'balance_clean',
+      },
+      expected: { mode: 'hot', family: 'v60', ratio: [15, 17], temp: [92, 97], time: [150, 220], minPours: 3 },
+    },
+    {
+      name: 'panama_gesha_v60_iced',
+      input: {
+        ...baseGoldenInput,
+        coffeeName: 'Panama Boquete Gesha',
+        brewMode: 'iced' as const,
+        process: 'washed',
+        variety: 'geisha',
+        roastLevel: 'light' as const,
+        targetProfileId: 'more_acidity',
+      },
+      expected: { mode: 'iced', family: 'v60', ratio: [13, 15.5], temp: [90, 96], time: [155, 230], minPours: 3, hasIce: true },
+    },
+    {
+      name: 'brazil_cerrado_natural_kono_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-kono-all',
+        coffeeName: 'Brazil Cerrado Natural Yellow Bourbon',
+        process: 'natural',
+        variety: 'yellow_bourbon',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'more_sweetness',
+      },
+      expected: { mode: 'hot', family: 'kono', ratio: [14, 16.5], temp: [89, 95], time: [145, 220], minPours: 3 },
+    },
+    {
+      name: 'kenya_aa_washed_kalita_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-kalita-all',
+        coffeeName: 'Kenya AA Nyeri',
+        process: 'washed',
+        variety: 'sl28',
+        roastLevel: 'medium_light' as const,
+        altitudeMasl: '1800',
+        targetProfileId: 'more_acidity',
+      },
+      expected: { mode: 'hot', family: 'kalita_wave', ratio: [15, 17.2], temp: [92, 97], time: [150, 225], minPours: 3 },
+    },
+    {
+      name: 'guatemala_antigua_origami_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-origami-all',
+        coffeeName: 'Guatemala Antigua Bourbon',
+        process: 'washed',
+        variety: 'bourbon',
+        roastLevel: 'medium_light' as const,
+        targetProfileId: 'balance_clean',
+      },
+      expected: { mode: 'hot', family: 'origami', ratio: [15, 17], temp: [91, 96], time: [145, 215], minPours: 3 },
+    },
+    {
+      name: 'costa_rica_tarrazu_chemex_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-chemex-all',
+        coffeeName: 'Costa Rica Tarrazu Caturra',
+        process: 'washed',
+        variety: 'caturra',
+        roastLevel: 'medium_light' as const,
+        targetProfileId: 'balance_clean',
+      },
+      expected: { mode: 'hot', family: 'chemex', ratio: [15, 17.5], temp: [91, 96], time: [160, 245], minPours: 3 },
+    },
+    {
+      name: 'sumatra_gayo_chemex_iced',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-chemex-all',
+        coffeeName: 'Sumatra Gayo Aceh',
+        brewMode: 'iced' as const,
+        process: 'wet_hulled',
+        variety: 'ateng_super',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'more_body',
+      },
+      expected: { mode: 'iced', family: 'chemex', ratio: [13, 16], temp: [88, 95], time: [165, 260], minPours: 3, hasIce: true },
+    },
+    {
+      name: 'colombia_excelso_april_iced',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-april-all',
+        coffeeName: 'Colombia Excelso Huila',
+        brewMode: 'iced' as const,
+        process: 'washed',
+        variety: 'castillo',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'more_sweetness',
+      },
+      expected: { mode: 'iced', family: 'april', ratio: [13, 15.5], temp: [90, 96], time: [150, 230], minPours: 3, hasIce: true },
+    },
+    {
+      name: 'indonesia_wine_process_melitta_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-melitta-all',
+        coffeeName: 'Indonesia Wine Process Java',
+        process: 'wine_process',
+        variety: 'andungsari',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'more_sweetness',
+      },
+      expected: { mode: 'hot', family: 'melitta', ratio: [14, 16.8], temp: [89, 95], time: [145, 235], minPours: 3 },
+    },
+    {
+      name: 'vietnam_robusta_melitta_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-melitta-all',
+        coffeeName: 'Vietnam Fine Robusta',
+        process: 'washed',
+        variety: 'robusta',
+        roastLevel: 'medium_dark' as const,
+        targetProfileId: 'more_body',
+      },
+      expected: { mode: 'hot', family: 'melitta', ratio: [13.5, 16.5], temp: [88, 95], time: [135, 235], minPours: 3 },
+    },
+    {
+      name: 'decaf_colombia_clever_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-clever-all',
+        coffeeName: 'Decaf Colombia Sugarcane',
+        process: 'decaf',
+        variety: 'castillo',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'balance_clean',
+      },
+      expected: { mode: 'hot', family: 'clever_dripper', ratio: [13.5, 16.5], temp: [86, 94], time: [130, 260], minPours: 1 },
+    },
+    {
+      name: 'ecuador_sidra_origami_iced',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-origami-all',
+        coffeeName: 'Ecuador Sidra Anaerobic Washed',
+        brewMode: 'iced' as const,
+        process: 'anaerobic_washed',
+        variety: 'sidra',
+        roastLevel: 'light' as const,
+        targetProfileId: 'more_acidity',
+      },
+      expected: { mode: 'iced', family: 'origami', ratio: [13, 16], temp: [90, 96], time: [150, 240], minPours: 3, hasIce: true },
+    },
+    {
+      name: 'colombia_pink_bourbon_v60_hot',
+      input: {
+        ...baseGoldenInput,
+        coffeeName: 'Colombia Pink Bourbon',
+        process: 'washed',
+        variety: 'pink_bourbon',
+        roastLevel: 'light' as const,
+        altitudeMasl: '1900',
+        targetProfileId: 'more_sweetness',
+      },
+      expected: { mode: 'hot', family: 'v60', ratio: [14.5, 16.8], temp: [91, 97], time: [150, 220], minPours: 3 },
+    },
+    {
+      name: 'ethiopia_natural_heirloom_kalita_iced',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-kalita-all',
+        coffeeName: 'Ethiopia Natural Heirloom',
+        brewMode: 'iced' as const,
+        process: 'natural',
+        variety: 'ethiopian_heirloom',
+        roastLevel: 'light' as const,
+        targetProfileId: 'more_sweetness',
+      },
+      expected: { mode: 'iced', family: 'kalita_wave', ratio: [13, 15.8], temp: [89, 96], time: [150, 240], minPours: 3, hasIce: true },
+    },
+    {
+      name: 'rwanda_bourbon_washed_april_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-april-all',
+        coffeeName: 'Rwanda Bourbon Washed',
+        process: 'washed',
+        variety: 'bourbon',
+        roastLevel: 'medium_light' as const,
+        targetProfileId: 'balance_clean',
+      },
+      expected: { mode: 'hot', family: 'april', ratio: [15, 17.2], temp: [91, 96], time: [145, 215], minPours: 3 },
+    },
+    {
+      name: 'burundi_red_bourbon_kono_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-kono-all',
+        coffeeName: 'Burundi Red Bourbon',
+        process: 'washed',
+        variety: 'bourbon',
+        roastLevel: 'medium_light' as const,
+        targetProfileId: 'more_acidity',
+      },
+      expected: { mode: 'hot', family: 'kono', ratio: [15, 17.5], temp: [91, 97], time: [145, 220], minPours: 3 },
+    },
+    {
+      name: 'mexico_typica_honey_chemex_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-chemex-all',
+        coffeeName: 'Mexico Typica Honey',
+        process: 'honey',
+        variety: 'typica',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'balance_clean',
+      },
+      expected: { mode: 'hot', family: 'chemex', ratio: [14.5, 17], temp: [89, 95], time: [155, 240], minPours: 3 },
+    },
+    {
+      name: 'peru_caturra_washed_v60_hot_low_dose',
+      input: {
+        ...baseGoldenInput,
+        coffeeName: 'Peru Caturra Washed',
+        doseG: '10',
+        process: 'washed',
+        variety: 'caturra',
+        roastLevel: 'medium_light' as const,
+        targetProfileId: 'balance_clean',
+      },
+      expected: { mode: 'hot', family: 'v60', ratio: [15, 17], temp: [91, 96], time: [120, 205], minPours: 3 },
+    },
+    {
+      name: 'java_andungsari_wet_hulled_high_dose',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-kalita-all',
+        coffeeName: 'Java Andungsari Wet Hulled',
+        doseG: '20',
+        process: 'wet_hulled',
+        variety: 'andungsari',
+        roastLevel: 'medium_dark' as const,
+        targetProfileId: 'more_body',
+      },
+      expected: { mode: 'hot', family: 'kalita_wave', ratio: [13.5, 16.3], temp: [87, 94], time: [155, 245], minPours: 3 },
+    },
+    {
+      name: 'panama_carbonic_maceration_chemex_iced',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-chemex-all',
+        coffeeName: 'Panama Carbonic Maceration',
+        brewMode: 'iced' as const,
+        process: 'carbonic_maceration',
+        variety: 'gesha',
+        roastLevel: 'light' as const,
+        targetProfileId: 'more_acidity',
+      },
+      expected: { mode: 'iced', family: 'chemex', ratio: [13, 16], temp: [89, 96], time: [160, 260], minPours: 3, hasIce: true },
+    },
+    {
+      name: 'china_yunnan_catimor_melitta_iced',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-melitta-all',
+        coffeeName: 'China Yunnan Catimor',
+        brewMode: 'iced' as const,
+        process: 'honey',
+        variety: 'yunnan_catimor',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'more_sweetness',
+      },
+      expected: { mode: 'iced', family: 'melitta', ratio: [13, 15.8], temp: [89, 96], time: [150, 245], minPours: 3, hasIce: true },
+    },
+    {
+      name: 'papua_new_guinea_typica_origami_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-origami-all',
+        coffeeName: 'Papua New Guinea Typica',
+        process: 'washed',
+        variety: 'typica',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'balance_clean',
+      },
+      expected: { mode: 'hot', family: 'origami', ratio: [15, 17], temp: [90, 96], time: [145, 215], minPours: 3 },
+    },
+    {
+      name: 'india_s795_monsooned_kono_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-kono-all',
+        coffeeName: 'India S795 Monsooned',
+        process: 'monsooned',
+        variety: 's795',
+        roastLevel: 'medium_dark' as const,
+        targetProfileId: 'more_body',
+      },
+      expected: { mode: 'hot', family: 'kono', ratio: [13.5, 16.5], temp: [87, 94], time: [135, 230], minPours: 3 },
+    },
+    {
+      name: 'laos_catimor_washed_april_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-april-all',
+        coffeeName: 'Laos Bolaven Catimor',
+        process: 'washed',
+        variety: 'catimor',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'balance_clean',
+      },
+      expected: { mode: 'hot', family: 'april', ratio: [14.5, 17.3], temp: [90, 96], time: [140, 215], minPours: 3 },
+    },
+    {
+      name: 'thailand_anaerobic_natural_kalita_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-kalita-all',
+        coffeeName: 'Thailand Anaerobic Natural',
+        process: 'anaerobic_natural',
+        variety: 'mixed_variety',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'more_sweetness',
+      },
+      expected: { mode: 'hot', family: 'kalita_wave', ratio: [14, 16.7], temp: [88, 95], time: [145, 225], minPours: 3 },
+    },
+    {
+      name: 'honduras_parainema_washed_v60_hot',
+      input: {
+        ...baseGoldenInput,
+        coffeeName: 'Honduras Parainema Washed',
+        process: 'washed',
+        variety: 'parainema',
+        roastLevel: 'medium_light' as const,
+        targetProfileId: 'more_acidity',
+      },
+      expected: { mode: 'hot', family: 'v60', ratio: [15, 17.5], temp: [91, 97], time: [145, 220], minPours: 3 },
+    },
+    {
+      name: 'el_salvador_pacas_honey_chemex_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-chemex-all',
+        coffeeName: 'El Salvador Pacas Honey',
+        process: 'honey',
+        variety: 'pacas',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'more_sweetness',
+      },
+      expected: { mode: 'hot', family: 'chemex', ratio: [14, 16.8], temp: [89, 95], time: [155, 255], minPours: 3 },
+    },
+    {
+      name: 'nicaragua_maragogipe_washed_origami_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-origami-all',
+        coffeeName: 'Nicaragua Maragogipe',
+        process: 'washed',
+        variety: 'maragogipe',
+        roastLevel: 'medium_light' as const,
+        targetProfileId: 'balance_clean',
+      },
+      expected: { mode: 'hot', family: 'origami', ratio: [14.5, 16.8], temp: [91, 96], time: [150, 225], minPours: 3 },
+    },
+    {
+      name: 'bolivia_caranavi_mixed_variety_v60_iced',
+      input: {
+        ...baseGoldenInput,
+        coffeeName: 'Bolinda Caranavi La Paz',
+        brewMode: 'iced' as const,
+        process: 'washed',
+        variety: 'mixed_variety',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'more_sweetness',
+        waterTdsPpm: '9',
+        waterHardnessPpm: '6.6',
+        waterAlkalinityPpm: '5.5',
+        pourStyle: 'balanced' as const,
+        pourCount: '3' as const,
+      },
+      expected: { mode: 'iced', family: 'v60', ratio: [13.4, 13.8], temp: [93, 95], time: [185, 205], minPours: 3, hasIce: true },
+    },
+    {
+      name: 'bali_kintamani_semi_washed_melitta_hot',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-melitta-all',
+        coffeeName: 'Bali Kintamani Semi Washed',
+        process: 'semi_washed',
+        variety: 'mixed_variety',
+        roastLevel: 'medium' as const,
+        targetProfileId: 'balance_clean',
+      },
+      expected: { mode: 'hot', family: 'melitta', ratio: [14.5, 17], temp: [89, 96], time: [145, 230], minPours: 3 },
+    },
+    {
+      name: 'flores_bajawa_giling_basah_kono_iced',
+      input: {
+        ...baseGoldenInput,
+        dripperId: 'matrix-kono-all',
+        coffeeName: 'Flores Bajawa Giling Basah',
+        brewMode: 'iced' as const,
+        process: 'giling_basah',
+        variety: 'mixed_variety',
+        roastLevel: 'medium_dark' as const,
+        targetProfileId: 'more_body',
+      },
+      expected: { mode: 'iced', family: 'kono', ratio: [13, 15.5], temp: [87, 94], time: [145, 240], minPours: 3, hasIce: true },
     },
   ];
 
   const results = scenarios.map((scenario) => ({
     name: scenario.name,
-    first: buildAiBrewPlan(scenario.input, catalog),
-    second: buildAiBrewPlan(scenario.input, catalog),
+    first: buildAiBrewPlan(scenario.input, matrixCatalog),
+    second: buildAiBrewPlan(scenario.input, matrixCatalog),
+    expected: scenario.expected,
   }));
 
   for (const result of results) {
@@ -4106,6 +4830,40 @@ test('AI Brew matrix stays deterministic across roast, target, water, process, a
       result.first.steps.map((step) => [step.startSeconds, step.pourVolumeMl, step.targetVolumeMl]),
       result.second.steps.map((step) => [step.startSeconds, step.pourVolumeMl, step.targetVolumeMl]),
     );
+    if (result.expected?.mode) assert.equal(result.first.brewMode, result.expected.mode);
+    if (result.expected?.family) assert.equal(result.first.methodFamily, result.expected.family);
+    if (result.expected?.ratio) {
+      assert.ok(
+        result.first.recommendedRatio >= result.expected.ratio[0] && result.first.recommendedRatio <= result.expected.ratio[1],
+        `${result.name} ratio ${result.first.recommendedRatio} outside ${result.expected.ratio.join('-')}`,
+      );
+    }
+    if (result.expected?.temp) {
+      assert.ok(
+        result.first.waterTempC >= result.expected.temp[0] && result.first.waterTempC <= result.expected.temp[1],
+        `${result.name} temp ${result.first.waterTempC} outside ${result.expected.temp.join('-')}`,
+      );
+    }
+    if (result.expected?.time) {
+      const toleranceSeconds = 30;
+      assert.ok(
+        result.first.totalTimeSeconds >= result.expected.time[0] - toleranceSeconds
+          && result.first.totalTimeSeconds <= result.expected.time[1] + toleranceSeconds,
+        `${result.name} time ${result.first.totalTimeSeconds} outside ${result.expected.time.join('-')} (+/- ${toleranceSeconds}s)`,
+      );
+    }
+    if (result.expected?.minPours) {
+      const pourCount = result.first.steps.filter((step) => step.pourVolumeMl > 0).length;
+      assert.ok(
+        pourCount >= result.expected.minPours,
+        `${result.name} positive pours ${pourCount} below ${result.expected.minPours}`,
+      );
+    }
+    if (result.expected?.hasIce) {
+      assert.ok(result.first.iceMl > 0);
+      assert.equal(result.first.hotWaterMl + result.first.iceMl, result.first.totalWaterMl);
+      assert.ok(result.first.estimatedCupOutputMl < result.first.totalWaterMl);
+    }
   }
 
   const clarity = results.find((result) => result.name === 'clarity_geisha_soft')!.first;

@@ -391,19 +391,19 @@ export function buildOptimizationPrompt(plan: BrewPlan, language?: string): AiBr
       ? 3600
       : plan.methodFamily === 'batch_brew'
         ? 60
-        : 45;
+        : 10;
   const ratioDelta = plan.methodFamily === 'cold_brew'
     ? 1.2
     : plan.methodFamily === 'batch_brew'
       ? 0.7
       : plan.methodFamily === 'espresso'
         ? 0.25
-        : 0.6;
+        : 0.25;
   const tempDelta = plan.methodFamily === 'cold_brew'
     ? 4
     : plan.methodFamily === 'espresso'
       ? 1.5
-      : 2;
+      : 1;
 
   return {
     title: isIndonesianAiBrewLanguage(language) ? 'Optimasi AI' : 'AI Optimization',
@@ -412,10 +412,12 @@ export function buildOptimizationPrompt(plan: BrewPlan, language?: string): AiBr
       'Your job is to optimize the deterministic planner envelope, not merely rewrite narrative.',
       'Use current coffee/barista knowledge for origin, process, variety, roast, water, method family, and target profile. If the bean is unknown, infer conservatively from the provided name and catalog context.',
       'The local planner will validate, clamp, round, and reject unsafe values. Stay close to the baseline so the result is production-safe.',
-      'You must return at least one safe numeric adjustment that changes the baseline. Do not answer with narrative-only optimization. If the baseline is already strong, choose the smallest justified numeric shift inside guardrails.',
+      'You must return at least one safe controlled patch that changes the baseline or step controls. Do not answer with narrative-only optimization. If the baseline is already strong, choose the smallest justified shift inside guardrails.',
       '',
       'Never change: dose, brew mode, brewer, grinder, water minerals, method family, or selected step count.',
       `Allowed max shift from baseline: ratio ±${ratioDelta}, temperature ±${tempDelta} C, brew time ±${timeDelta} seconds.`,
+      'Prefer controlled micro-patches: light pulse / balanced cadence cues, target time around +10 seconds when useful, temperature only +/-1 C, and grind guidance as text only.',
+      'Do not create a new grinder setting. Grind guidance must say finer/coarser relative to the deterministic grind recommendation.',
       'For iced mode, keep Japanese-style flash brew: hot concentrate is poured over measured ice, with no late bypass or top-up. hotWaterSharePercent may shift only inside a realistic concentrate split. The validator will preserve hot water + ice = total water.',
       'Never invent variety, process, origin, roaster, farm, altitude, water status, grinder source, brewer trust, or claims not present in deterministic context.',
       'If the patch is not safe, the app will keep the deterministic planner and show a safe fallback.',
@@ -431,6 +433,8 @@ export function buildOptimizationPrompt(plan: BrewPlan, language?: string): AiBr
       '  "waterTempC": 92,',
       '  "totalTimeSeconds": 165,',
       '  "hotWaterSharePercent": 63,',
+      '  "pourStyleHint": "balanced|pulse_light|gentle",',
+      '  "grindGuidance": "short relative grind cue; no new numeric setting",',
       '  "steps": [',
       '    { "index": 1, "startSeconds": 0, "pourVolumeMl": 50, "control": "short phase cue" }',
       '  ]',

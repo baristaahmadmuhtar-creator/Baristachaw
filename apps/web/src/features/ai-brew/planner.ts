@@ -24,11 +24,44 @@ import {
   localizeAiBrewTargetProfile,
 } from './localization.ts';
 import { resolveAiBrewKnowledgeNotes } from './knowledge.ts';
+import {
+  deriveBeanProfileAdjustment,
+  mergeProcessModifiers,
+  mergeVarietyModifiers,
+} from './beanPlanner.ts';
+import {
+  buildGrindRecommendation,
+  resolveGrinderSettingReference,
+} from './grindPlanner.ts';
+export { resolveGrinderSettingReference } from './grindPlanner.ts';
+import { deriveWaterMineralProfile } from './waterPlanner.ts';
+import {
+  clampRoundedToIncrement,
+  estimateCoffeeRetentionMl,
+  estimateCupOutputMl,
+  resolveBaristaTimeIncrementSeconds,
+  resolveBaristaVolumeIncrementMl,
+  roundBaristaTimeSeconds,
+  roundBaristaVolumeMl,
+  roundEstimatedCupOutputMl,
+  roundToIncrement,
+} from './stepPlanner.ts';
+import {
+  buildStyleHintStepPatches,
+  clampPatchValue,
+  finitePatchNumber,
+  resolveOptimizationDeltaBounds,
+  resolveOptimizationTimeBounds,
+  resolveStepPatch,
+  sanitizeOptimizationControl,
+  sanitizeOptimizationGrindGuidance,
+  sanitizeOptimizationPourStyleHint,
+} from './optimizerGuard.ts';
+import { ORIGIN_PROFILE_RULES_V2026_05 } from './plannerCalibration.v2026-05.ts';
 import type {
   AiBrewCatalog,
   AiBrewFormState,
   AiBrewMethodFamily,
-  BeanProfileState,
   BeanRoastDevelopment,
   BeanSolubility,
   BrewJournalEntry,
@@ -45,7 +78,6 @@ import type {
   VerificationLevel,
   WaterBrandProfile,
   WaterGuidance,
-  WaterMineralInput,
 } from './types.ts';
 
 export type AiBrewGenerationStageId =
@@ -181,59 +213,6 @@ function roundPercent(value: number) {
 
 function midpoint(range: [number, number], digits = 1) {
   return roundTo((range[0] + range[1]) / 2, digits);
-}
-
-function roundToIncrement(value: number, increment: number) {
-  if (!Number.isFinite(value) || !Number.isFinite(increment) || increment <= 0) {
-    return value;
-  }
-  return Math.round(value / increment) * increment;
-}
-
-function resolveBaristaVolumeIncrementMl(methodFamily: AiBrewMethodFamily) {
-  if (methodFamily === 'espresso') return 1;
-  if (methodFamily === 'cold_brew' || methodFamily === 'batch_brew') return 25;
-  return 5;
-}
-
-function resolveBaristaTimeIncrementSeconds(methodFamily: AiBrewMethodFamily) {
-  if (methodFamily === 'espresso') return 1;
-  if (methodFamily === 'cold_brew') return 300;
-  if (methodFamily === 'batch_brew') return 15;
-  return 5;
-}
-
-function roundBaristaVolumeMl(value: number, methodFamily: AiBrewMethodFamily) {
-  return Math.max(0, roundToIncrement(value, resolveBaristaVolumeIncrementMl(methodFamily)));
-}
-
-function roundBaristaTimeSeconds(value: number, methodFamily: AiBrewMethodFamily) {
-  return Math.max(0, roundToIncrement(value, resolveBaristaTimeIncrementSeconds(methodFamily)));
-}
-
-function roundEstimatedCupOutputMl(value: number, methodFamily: AiBrewMethodFamily) {
-  const increment = resolveBaristaVolumeIncrementMl(methodFamily);
-  return Math.max(0, Math.floor(Math.max(0, value) / increment) * increment);
-}
-
-export function estimateCoffeeRetentionMl(doseG: number, brewMode: 'hot' | 'iced') {
-  const multiplier = brewMode === 'iced' ? 1.8 : 2.1;
-  return Math.round(Math.max(0, doseG) * multiplier);
-}
-
-export function estimateCupOutputMl(totalInputMl: number, doseG: number, brewMode: 'hot' | 'iced') {
-  return Math.max(0, Math.round(totalInputMl - estimateCoffeeRetentionMl(doseG, brewMode)));
-}
-
-function clampRoundedToIncrement(value: number, min: number, max: number, increment: number) {
-  const lower = Math.min(min, max);
-  const upper = Math.max(min, max);
-  const alignedLower = Math.ceil(lower / increment) * increment;
-  const alignedUpper = Math.floor(upper / increment) * increment;
-  if (alignedLower <= alignedUpper) {
-    return clamp(roundToIncrement(value, increment), alignedLower, alignedUpper);
-  }
-  return roundTo(clamp(value, lower, upper), 0);
 }
 
 function supportsAiBrewPourControls(methodFamily: AiBrewMethodFamily) {
@@ -1002,8 +981,17 @@ type TargetIntent = 'acidity' | 'body' | 'sweetness' | 'balanced';
 type OriginProfileId =
   | 'east_africa_floral'
   | 'latin_america_balanced'
+  | 'central_america_cocoa'
+  | 'mexico_mesoamerica'
+  | 'andes_balanced'
+  | 'caribbean_milds'
   | 'brazil_sweet'
   | 'indonesia_structured'
+  | 'middle_east_dried_fruit'
+  | 'pacific_islands_complex'
+  | 'south_asia_monsoon_spice'
+  | 'china_yunnan_fruit'
+  | 'robusta_lowland_body'
   | 'asia_highland'
   | 'unknown';
 
@@ -1129,14 +1117,22 @@ function resolveContextTargetIntent(context: AdaptiveShareContext) {
 
 const CLARITY_PROCESS_IDS = new Set([
   'washed',
+  'carbonic_washed',
+  'controlled_fermentation',
   'double_washed',
   'fully_washed',
   'anaerobic_washed',
   'aerobic_fermentation',
+  'double_soak_washed',
+  'kenya_double_fermentation',
+  'mechanically_demucilaged',
+  'eco_pulped',
+  'thermal_shock_washed',
 ]);
 
 const SWEETNESS_PROCESS_IDS = new Set([
   'natural',
+  'natural_anaerobic',
   'honey',
   'yellow_honey',
   'red_honey',
@@ -1144,8 +1140,15 @@ const SWEETNESS_PROCESS_IDS = new Set([
   'white_honey',
   'pulped_natural',
   'anaerobic_honey',
+  'cold_fermentation',
+  'dark_room_natural',
   'lactic',
+  'raisin_natural',
+  'shade_dried_natural',
   'yeast_inoculated',
+  'koji_fermentation',
+  'co_fermented',
+  'thermal_shock_natural',
 ]);
 
 const BODY_PROCESS_IDS = new Set([
@@ -1153,10 +1156,21 @@ const BODY_PROCESS_IDS = new Set([
   'wet_hulled',
   'anaerobic',
   'anaerobic_natural',
+  'natural_anaerobic',
+  'carbonic_natural',
   'carbonic_maceration',
   'extended_fermentation',
+  'fruit_maceration',
+  'semi_carbonic_maceration',
+  'submerged_fermentation',
   'thermal_shock',
   'decaf',
+  'mountain_water_decaf',
+  'sugarcane_decaf',
+  'swiss_water_decaf',
+  'koji_fermentation',
+  'co_fermented',
+  'thermal_shock_natural',
 ]);
 
 const CLARITY_VARIETY_IDS = new Set([
@@ -1167,24 +1181,61 @@ const CLARITY_VARIETY_IDS = new Set([
   'sl34',
   'wush_wush',
   'typica',
+  'anfilloo',
+  'gesha_1931',
+  'rume_sudan',
+  'centroamericano',
+  'n39',
+  'caturra_chiroso',
+  'bourbon_pointu',
 ]);
 
 const SWEETNESS_VARIETY_IDS = new Set([
   'bourbon',
+  'acaia',
+  'topazio',
+  'yellow_bourbon',
   'caturra',
   'catuai',
   'arara',
   'blue_mountain',
   'gesha_1931',
+  'tekisic',
+  'centroamericano',
+  'colombia_variety',
+  'kartika',
+  'catuai_99',
+  'catuai_144',
+  'caturra_chiroso',
+  'orange_bourbon',
+  'andina',
 ]);
 
 const BODY_VARIETY_IDS = new Set([
   'pacamara',
+  'maracaturra',
   'maragogipe',
   'robusta',
+  'conilon',
+  'excelsa',
+  'bp_534',
+  'bp_936',
+  'bp_939',
+  'brs_2314',
+  'kr1',
+  'roubi_1',
+  'tr4',
+  'tr9',
+  'trs1',
   'liberica',
   's795',
+  'sigararutang',
   'sigarar_utang',
+  'jember',
+  'gayo_2',
+  'linie_s',
+  'sln_9',
+  'timor_hybrid',
 ]);
 
 export function resolveDefaultTargetProfileIdForBean(
@@ -1216,7 +1267,7 @@ export function resolveDefaultTargetProfileIdForBean(
 
   if (
     processId === 'wet_hulled'
-    || /\b(wet[-\s]?hulled|giling\s+basah|sumatra|mandheling|gayo)\b/i.test(haystack)
+    || /\b(wet[-\s]?hulled|giling\s+basah|sumatra|mandheling|gayo|robusta|conilon|canephora|liberica|excelsa)\b/i.test(haystack)
     || BODY_VARIETY_IDS.has(varietyId)
   ) {
     return hasTarget('more_body') ? 'more_body' : 'balance_clean';
@@ -1235,7 +1286,9 @@ export function resolveDefaultTargetProfileIdForBean(
 
   if (
     (CLARITY_PROCESS_IDS.has(processId) || /\b(washed|fully\s+washed|double\s+washed|wet\s+process)\b/i.test(haystack))
-    && (Number.isFinite(altitude) ? altitude >= 1600 : /\b(high[-\s]?altitude|ethiopia|yirgacheffe|guji|kenya|nyeri|kirinyaga)\b/i.test(haystack))
+    && (Number.isFinite(altitude)
+      ? altitude >= 1600
+      : /\b(high[-\s]?altitude|ethiopia|yirgacheffe|guji|kenya|nyeri|kirinyaga|tarrazu|antigua|huehuetenango|boquete|colombia|huila|cauca|narino|nariño|peru|bolivia|yemen|papua\s+new\s+guinea|png)\b/i.test(haystack))
   ) {
     return hasTarget('more_acidity') ? 'more_acidity' : 'balance_clean';
   }
@@ -1247,88 +1300,28 @@ export function resolveDefaultTargetProfileIdForBean(
   return hasTarget('balance_clean') ? 'balance_clean' : undefined;
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function createOriginKeywordPattern(keyword: string) {
+  const source = escapeRegExp(keyword.trim())
+    .replace(/\s+/g, '\\s+')
+    .replace(/'/g, "['’]?");
+  return new RegExp(`\\b${source}\\b`, 'i');
+}
+
 const ORIGIN_PROFILE_RULES: Array<{
   profileId: OriginProfileId;
   label: string;
+  keywords: string[];
   patterns: RegExp[];
-}> = [
-  {
-    profileId: 'east_africa_floral',
-    label: 'East Africa floral highlands',
-    patterns: [
-      /\bethiopia\b/i,
-      /\byirgacheffe\b/i,
-      /\bguji\b/i,
-      /\bsidamo\b/i,
-      /\blimu\b/i,
-      /\bkenya\b/i,
-      /\bnyeri\b/i,
-      /\bkirinyaga\b/i,
-      /\brwanda\b/i,
-      /\bburundi\b/i,
-    ],
-  },
-  {
-    profileId: 'latin_america_balanced',
-    label: 'Latin America balanced sweetness',
-    patterns: [
-      /\bcolombia\b/i,
-      /\bhuila\b/i,
-      /\bnarino\b/i,
-      /\bcauca\b/i,
-      /\bguatemala\b/i,
-      /\bhonduras\b/i,
-      /\bel\s*salvador\b/i,
-      /\bnicaragua\b/i,
-      /\bcosta\s*rica\b/i,
-      /\bpanama\b/i,
-      /\bperu\b/i,
-    ],
-  },
-  {
-    profileId: 'brazil_sweet',
-    label: 'Brazil comfort sweetness',
-    patterns: [
-      /\bbrazil\b/i,
-      /\bcerrado\b/i,
-      /\bmogiana\b/i,
-      /\bmantiqueira\b/i,
-      /\bsul\s+de\s+minas\b/i,
-    ],
-  },
-  {
-    profileId: 'indonesia_structured',
-    label: 'Indonesia structured profile',
-    patterns: [
-      /\bindonesia\b/i,
-      /\bsumatra\b/i,
-      /\baceh\b/i,
-      /\bgayo\b/i,
-      /\blintong\b/i,
-      /\bjava\b/i,
-      /\bbali\b/i,
-      /\bflores\b/i,
-      /\btoraja\b/i,
-      /\bsulawesi\b/i,
-      /\bpapua\b/i,
-    ],
-  },
-  {
-    profileId: 'asia_highland',
-    label: 'Asia highland clarity',
-    patterns: [
-      /\bchina\b/i,
-      /\byunnan\b/i,
-      /\bbaoshan\b/i,
-      /\bpuer\b/i,
-      /\bpu'er\b/i,
-      /\btaiwan\b/i,
-      /\bthailand\b/i,
-      /\bvietnam\b/i,
-      /\blaos\b/i,
-    ],
-  },
-];
+}> = ORIGIN_PROFILE_RULES_V2026_05.map((rule) => ({
+  profileId: rule.profileId as OriginProfileId,
+  label: rule.label,
+  keywords: rule.keywords,
+  patterns: rule.keywords.map(createOriginKeywordPattern),
+}));
 
 function createNeutralCalibrationAdjustment(): CalibrationAdjustment {
   return {
@@ -1346,9 +1339,8 @@ function detectOriginProfile(text: string) {
   if (!normalized) return null;
 
   for (const rule of ORIGIN_PROFILE_RULES) {
-    const matchedOrigins = rule.patterns
-      .filter((pattern) => pattern.test(normalized))
-      .map((pattern) => pattern.source.replace(/\\b/g, '').replace(/[\\^$.*+?()[\]{}|]/g, ' '))
+    const matchedOrigins = rule.keywords
+      .filter((_, index) => rule.patterns[index]?.test(normalized))
       .map((value) => value.replace(/\s+/g, ' ').trim())
       .filter(Boolean);
     if (matchedOrigins.length > 0) {
@@ -1606,6 +1598,59 @@ function deriveOriginAdjustment(
         brewTimeDeltaSec = 2;
       }
       break;
+    case 'central_america_cocoa':
+      if (targetIntent === 'acidity') {
+        ratioDelta = 0.01;
+        tempDeltaC = -0.1;
+        brewTimeDeltaSec = -1;
+      } else if (targetIntent === 'sweetness' || targetIntent === 'body') {
+        ratioDelta = -0.02;
+        tempDeltaC = 0.1;
+        brewTimeDeltaSec = 2;
+      } else {
+        ratioDelta = -0.01;
+        brewTimeDeltaSec = 1;
+      }
+      break;
+    case 'mexico_mesoamerica':
+      if (targetIntent === 'sweetness' || targetIntent === 'body') {
+        ratioDelta = -0.02;
+        tempDeltaC = 0.1;
+        brewTimeDeltaSec = 2;
+      } else if (targetIntent === 'acidity') {
+        ratioDelta = 0.01;
+        brewTimeDeltaSec = -1;
+      } else {
+        ratioDelta = -0.01;
+        brewTimeDeltaSec = 1;
+      }
+      break;
+    case 'andes_balanced':
+      if (targetIntent === 'acidity') {
+        ratioDelta = 0.02;
+        tempDeltaC = -0.1;
+        brewTimeDeltaSec = -2;
+        grindBias = 'coarser';
+      } else if (targetIntent === 'sweetness') {
+        ratioDelta = -0.01;
+        tempDeltaC = 0.1;
+        brewTimeDeltaSec = 1;
+      } else if (targetIntent === 'body') {
+        ratioDelta = -0.02;
+        brewTimeDeltaSec = 2;
+      }
+      break;
+    case 'caribbean_milds':
+      if (targetIntent === 'acidity') {
+        ratioDelta = 0.01;
+        tempDeltaC = -0.1;
+        brewTimeDeltaSec = -1;
+      } else {
+        ratioDelta = -0.02;
+        tempDeltaC = 0.1;
+        brewTimeDeltaSec = 2;
+      }
+      break;
     case 'brazil_sweet':
       if (targetIntent === 'sweetness') {
         ratioDelta = -0.03;
@@ -1636,6 +1681,66 @@ function deriveOriginAdjustment(
         ratioDelta = -0.03;
         tempDeltaC = -0.1;
         brewTimeDeltaSec = 2;
+      }
+      break;
+    case 'middle_east_dried_fruit':
+      if (targetIntent === 'acidity') {
+        ratioDelta = 0.02;
+        tempDeltaC = -0.2;
+        brewTimeDeltaSec = -2;
+        grindBias = 'coarser';
+      } else {
+        ratioDelta = -0.03;
+        tempDeltaC = -0.1;
+        brewTimeDeltaSec = 1;
+        grindBias = targetIntent === 'balanced' ? 'same' : 'coarser';
+      }
+      break;
+    case 'pacific_islands_complex':
+      if (targetIntent === 'acidity') {
+        ratioDelta = 0.01;
+        brewTimeDeltaSec = -1;
+      } else if (targetIntent === 'body' || targetIntent === 'sweetness') {
+        ratioDelta = -0.01;
+        tempDeltaC = 0.1;
+        brewTimeDeltaSec = 2;
+      }
+      break;
+    case 'south_asia_monsoon_spice':
+      if (targetIntent === 'acidity') {
+        ratioDelta = 0.03;
+        tempDeltaC = -0.2;
+        brewTimeDeltaSec = -3;
+        grindBias = 'coarser';
+      } else {
+        ratioDelta = -0.03;
+        tempDeltaC = -0.1;
+        brewTimeDeltaSec = 2;
+        grindBias = 'coarser';
+      }
+      break;
+    case 'china_yunnan_fruit':
+      if (targetIntent === 'acidity' || targetIntent === 'balanced') {
+        ratioDelta = 0.01;
+        tempDeltaC = -0.1;
+        brewTimeDeltaSec = -1;
+      } else {
+        ratioDelta = -0.01;
+        tempDeltaC = 0.1;
+        brewTimeDeltaSec = 1;
+      }
+      break;
+    case 'robusta_lowland_body':
+      if (targetIntent === 'acidity') {
+        ratioDelta = 0.03;
+        tempDeltaC = -0.2;
+        brewTimeDeltaSec = -3;
+        grindBias = 'coarser';
+      } else {
+        ratioDelta = -0.04;
+        tempDeltaC = -0.2;
+        brewTimeDeltaSec = 2;
+        grindBias = 'coarser';
       }
       break;
     case 'asia_highland':
@@ -1802,12 +1907,52 @@ function deriveFlavorAlignmentAdjustment(params: {
       scores.acidity += 0.2;
       scores.sweetness += 0.45;
       break;
+    case 'central_america_cocoa':
+      scores.sweetness += 0.5;
+      scores.acidity += 0.25;
+      scores.body += 0.15;
+      break;
+    case 'mexico_mesoamerica':
+      scores.sweetness += 0.45;
+      scores.acidity += 0.2;
+      scores.body += 0.2;
+      break;
+    case 'andes_balanced':
+      scores.acidity += 0.35;
+      scores.sweetness += 0.4;
+      break;
+    case 'caribbean_milds':
+      scores.sweetness += 0.45;
+      scores.body += 0.2;
+      scores.acidity += 0.15;
+      break;
     case 'brazil_sweet':
       scores.sweetness += 0.65;
       scores.body += 0.3;
       break;
     case 'indonesia_structured':
       scores.body += 0.7;
+      scores.sweetness += 0.2;
+      break;
+    case 'middle_east_dried_fruit':
+      scores.sweetness += 0.45;
+      scores.body += 0.35;
+      break;
+    case 'pacific_islands_complex':
+      scores.sweetness += 0.35;
+      scores.body += 0.3;
+      scores.acidity += 0.15;
+      break;
+    case 'south_asia_monsoon_spice':
+      scores.body += 0.55;
+      scores.sweetness += 0.3;
+      break;
+    case 'china_yunnan_fruit':
+      scores.acidity += 0.3;
+      scores.sweetness += 0.35;
+      break;
+    case 'robusta_lowland_body':
+      scores.body += 0.95;
       scores.sweetness += 0.2;
       break;
     case 'asia_highland':
@@ -1907,8 +2052,23 @@ function resolveIcedHotWaterShare(params: {
   if (BODY_PROCESS_IDS.has(processId)) hotWaterShare += 0.01;
 
   if (params.originAdjustment.profileId === 'east_africa_floral') hotWaterShare -= 0.005;
-  if (params.originAdjustment.profileId === 'brazil_sweet' || params.originAdjustment.profileId === 'indonesia_structured') {
+  if (
+    params.originAdjustment.profileId === 'brazil_sweet'
+    || params.originAdjustment.profileId === 'indonesia_structured'
+    || params.originAdjustment.profileId === 'middle_east_dried_fruit'
+    || params.originAdjustment.profileId === 'south_asia_monsoon_spice'
+    || params.originAdjustment.profileId === 'robusta_lowland_body'
+  ) {
     hotWaterShare += 0.005;
+  }
+  if (
+    params.originAdjustment.profileId === 'central_america_cocoa'
+    || params.originAdjustment.profileId === 'mexico_mesoamerica'
+    || params.originAdjustment.profileId === 'andes_balanced'
+    || params.originAdjustment.profileId === 'caribbean_milds'
+    || params.originAdjustment.profileId === 'china_yunnan_fruit'
+  ) {
+    hotWaterShare += 0.002;
   }
 
   if (params.flavorAlignment.dominantAxis === 'acidity') {
@@ -2393,10 +2553,28 @@ function resolveOriginProfileDisplayLabel(profileId: OriginProfileId) {
       return 'East Africa floral';
     case 'latin_america_balanced':
       return 'Latin America balanced';
+    case 'central_america_cocoa':
+      return 'Central America cocoa citrus';
+    case 'mexico_mesoamerica':
+      return 'Mexico and Mesoamerica cocoa citrus';
+    case 'andes_balanced':
+      return 'Andes balanced fruit';
+    case 'caribbean_milds':
+      return 'Caribbean mild sweetness';
     case 'brazil_sweet':
       return 'Brazil sweet';
     case 'indonesia_structured':
       return 'Indonesia structured';
+    case 'middle_east_dried_fruit':
+      return 'Middle East dried fruit';
+    case 'pacific_islands_complex':
+      return 'Pacific islands structured';
+    case 'south_asia_monsoon_spice':
+      return 'South Asia monsoon spice';
+    case 'china_yunnan_fruit':
+      return 'China Yunnan fruit clarity';
+    case 'robusta_lowland_body':
+      return 'Robusta lowland body';
     case 'asia_highland':
       return 'Asia highland';
     default:
@@ -2636,6 +2814,7 @@ function deriveOriginTargetMethodAdjustment(params: {
       }
       break;
     case 'indonesia_structured':
+    case 'south_asia_monsoon_spice':
       if (methodFamily === 'v60' || methodFamily === 'origami') {
         if (targetIntent === 'acidity') {
           adjustment.ratioDelta = 0.02;
@@ -2739,6 +2918,7 @@ function deriveOriginTargetMethodAdjustment(params: {
       }
       break;
     case 'asia_highland':
+    case 'china_yunnan_fruit':
       if (methodFamily === 'v60' || methodFamily === 'origami') {
         if (targetIntent === 'acidity' || targetIntent === 'balanced') {
           adjustment.ratioDelta = 0.01;
@@ -2784,6 +2964,8 @@ function deriveOriginTargetMethodAdjustment(params: {
       }
       break;
     case 'latin_america_balanced':
+    case 'mexico_mesoamerica':
+    case 'caribbean_milds':
       if ((methodFamily === 'v60' || methodFamily === 'origami') && targetIntent === 'balanced') {
         adjustment.middleShift = 0.04;
         adjustment.middleShareDelta = 0.004;
@@ -3869,418 +4051,6 @@ function buildServiceExecutionNote(params: {
   }
 }
 
-function deriveBeanProfileAdjustment(input: AiBrewFormState): {
-  ratioDelta: number;
-  tempDeltaC: number;
-  brewTimeDeltaSec: number;
-  grindBias: GrindBias;
-  notes: string[];
-  confidenceNotes: string[];
-  state: BeanProfileState;
-} {
-  const altitudeMasl = parseOptionalNumber('Bean altitude', input.altitudeMasl || '', 0, 3200);
-  const beanDensityGml = parseOptionalNumber('Bean density', input.beanDensityGml || '', 0.55, 0.95);
-  const roastDevelopment = (input.roastDevelopment || '') as BeanRoastDevelopment;
-  const solubility = (input.solubility || '') as BeanSolubility;
-
-  let ratioDelta = 0;
-  let tempDeltaC = 0;
-  let brewTimeDeltaSec = 0;
-  const grindBiases: GrindBias[] = ['same'];
-  const notes: string[] = [];
-  const confidenceNotes: string[] = [];
-
-  if (altitudeMasl !== null) {
-    if (altitudeMasl >= 1800) {
-      tempDeltaC += 0.35;
-      brewTimeDeltaSec += 6;
-      grindBiases.push('finer');
-      notes.push('High-altitude coffee usually benefits from a slightly tighter, hotter extraction.');
-    } else if (altitudeMasl >= 1500) {
-      tempDeltaC += 0.2;
-      brewTimeDeltaSec += 3;
-      notes.push('Higher altitude adds a small extraction lift to keep the cup fully developed.');
-    } else if (altitudeMasl <= 1100) {
-      tempDeltaC -= 0.2;
-      brewTimeDeltaSec -= 3;
-      grindBiases.push('coarser');
-      notes.push('Lower-altitude coffee can read broader and easier to extract, so the profile is softened slightly.');
-    }
-  }
-
-  if (beanDensityGml !== null) {
-    if (beanDensityGml >= 0.73) {
-      tempDeltaC += 0.25;
-      brewTimeDeltaSec += 5;
-      ratioDelta -= 0.03;
-      grindBiases.push('finer');
-      notes.push('Higher bean density adds a small extraction push to keep sweetness and clarity aligned.');
-    } else if (beanDensityGml <= 0.67) {
-      tempDeltaC -= 0.25;
-      brewTimeDeltaSec -= 5;
-      ratioDelta += 0.03;
-      grindBiases.push('coarser');
-      notes.push('Lower bean density softens the extraction slightly to avoid pushing roasty or woody notes.');
-    }
-  }
-
-  if (roastDevelopment === 'underdeveloped') {
-    tempDeltaC += 0.35;
-    brewTimeDeltaSec += 6;
-    ratioDelta -= 0.03;
-    grindBiases.push('finer');
-    notes.push('Underdeveloped roast profile needs a slightly more assertive extraction path.');
-  } else if (roastDevelopment === 'developed') {
-    tempDeltaC -= 0.35;
-    brewTimeDeltaSec -= 6;
-    ratioDelta += 0.04;
-    grindBiases.push('coarser');
-    notes.push('More developed roasting gets a softer extraction path to keep bitterness in check.');
-  }
-
-  if (solubility === 'low') {
-    tempDeltaC += 0.3;
-    brewTimeDeltaSec += 5;
-    grindBiases.push('finer');
-    notes.push('Low-solubility coffee gets a small extraction lift.');
-  } else if (solubility === 'high') {
-    tempDeltaC -= 0.3;
-    brewTimeDeltaSec -= 5;
-    ratioDelta += 0.03;
-    grindBiases.push('coarser');
-    notes.push('High-solubility coffee is relaxed slightly to keep the cup from running heavy.');
-  }
-
-  ratioDelta = clamp(roundTo(ratioDelta, 2), -0.16, 0.16);
-  tempDeltaC = clamp(roundTo(tempDeltaC, 1), -1.2, 1.2);
-  brewTimeDeltaSec = Math.round(clamp(brewTimeDeltaSec, -20, 20));
-
-  const state: BeanProfileState = {
-    altitudeMasl: altitudeMasl ?? undefined,
-    beanDensityGml: beanDensityGml ?? undefined,
-    roastDevelopment: roastDevelopment || undefined,
-    solubility: solubility || undefined,
-    active: altitudeMasl !== null || beanDensityGml !== null || Boolean(roastDevelopment) || Boolean(solubility),
-    summary:
-      altitudeMasl !== null || beanDensityGml !== null || Boolean(roastDevelopment) || Boolean(solubility)
-        ? [
-            altitudeMasl !== null ? `${Math.round(altitudeMasl)} masl` : null,
-            beanDensityGml !== null ? `${roundTo(beanDensityGml, 2)} g/ml` : null,
-            roastDevelopment ? roastDevelopment.replace(/_/g, ' ') : null,
-            solubility || null,
-          ].filter(Boolean).join(' · ')
-        : 'No bean-profile modifier active.',
-    notes,
-  };
-
-  if (state.active) {
-    confidenceNotes.push(`Bean profile modifiers active: ${state.summary}.`);
-  } else {
-    confidenceNotes.push('Bean profile left neutral; no bean-specific modifier was applied.');
-  }
-
-  return {
-    ratioDelta,
-    tempDeltaC,
-    brewTimeDeltaSec,
-    grindBias: combineBias(...grindBiases),
-    notes,
-    confidenceNotes,
-    state,
-  };
-}
-
-const PROCESS_CURATED_MODIFIERS: Record<string, NonNullable<ProcessCatalogEntry['numericModifiers']>> = {
-  natural: {
-    ratioDelta: 0.05,
-    tempDeltaC: -0.3,
-    brewTimeDeltaSec: -5,
-    grindBias: 'coarser',
-  },
-  honey: {
-    ratioDelta: 0.03,
-    tempDeltaC: -0.1,
-    brewTimeDeltaSec: -2,
-    grindBias: 'coarser',
-  },
-  pulped_natural: {
-    ratioDelta: 0.03,
-    tempDeltaC: -0.1,
-    brewTimeDeltaSec: -2,
-    grindBias: 'coarser',
-  },
-  wet_hulled: {
-    ratioDelta: 0.04,
-    tempDeltaC: -0.4,
-    brewTimeDeltaSec: -6,
-    grindBias: 'coarser',
-  },
-  anaerobic: {
-    ratioDelta: 0.07,
-    tempDeltaC: -0.4,
-    brewTimeDeltaSec: -6,
-    grindBias: 'coarser',
-  },
-  carbonic_maceration: {
-    ratioDelta: 0.08,
-    tempDeltaC: -0.5,
-    brewTimeDeltaSec: -7,
-    grindBias: 'coarser',
-  },
-  extended_fermentation: {
-    ratioDelta: 0.06,
-    tempDeltaC: -0.4,
-    brewTimeDeltaSec: -6,
-    grindBias: 'coarser',
-  },
-  lactic: {
-    ratioDelta: 0.05,
-    tempDeltaC: -0.3,
-    brewTimeDeltaSec: -5,
-    grindBias: 'coarser',
-  },
-  yeast_inoculated: {
-    ratioDelta: 0.05,
-    tempDeltaC: -0.3,
-    brewTimeDeltaSec: -5,
-    grindBias: 'coarser',
-  },
-  thermal_shock: {
-    ratioDelta: 0.06,
-    tempDeltaC: -0.4,
-    brewTimeDeltaSec: -6,
-    grindBias: 'coarser',
-  },
-  decaf: {
-    ratioDelta: 0.05,
-    tempDeltaC: -0.4,
-    brewTimeDeltaSec: -6,
-    grindBias: 'coarser',
-  },
-};
-
-const VARIETY_CURATED_MODIFIERS: Record<string, NonNullable<VarietyCatalogEntry['numericModifiers']>> = {
-  geisha: {
-    ratioDelta: 0.04,
-    tempDeltaC: -0.3,
-    brewTimeDeltaSec: -4,
-    grindBias: 'coarser',
-  },
-  abyssinia: {
-    ratioDelta: 0.03,
-    tempDeltaC: -0.2,
-    brewTimeDeltaSec: -3,
-    grindBias: 'coarser',
-  },
-  ethiopian_heirloom: {
-    ratioDelta: 0.03,
-    tempDeltaC: -0.2,
-    brewTimeDeltaSec: -3,
-    grindBias: 'coarser',
-  },
-  sl28: {
-    ratioDelta: 0.03,
-    tempDeltaC: -0.2,
-    brewTimeDeltaSec: -3,
-    grindBias: 'coarser',
-  },
-  sl34: {
-    ratioDelta: 0.02,
-    tempDeltaC: -0.2,
-    brewTimeDeltaSec: -2,
-    grindBias: 'coarser',
-  },
-  pacamara: {
-    ratioDelta: -0.03,
-    tempDeltaC: 0.2,
-    brewTimeDeltaSec: 4,
-    grindBias: 'finer',
-  },
-  maragogipe: {
-    ratioDelta: -0.03,
-    tempDeltaC: 0.2,
-    brewTimeDeltaSec: 4,
-    grindBias: 'finer',
-  },
-  robusta: {
-    ratioDelta: 0.05,
-    tempDeltaC: -0.4,
-    brewTimeDeltaSec: -6,
-    grindBias: 'coarser',
-  },
-};
-
-function mergeProcessModifiers(entry: ProcessCatalogEntry | undefined): Partial<NonNullable<ProcessCatalogEntry['numericModifiers']>> {
-  if (!entry) return {};
-  const curated = PROCESS_CURATED_MODIFIERS[entry.id];
-  return {
-    ...(curated || {}),
-    ...(entry.numericModifiers || {}),
-  };
-}
-
-function mergeVarietyModifiers(entry: VarietyCatalogEntry | undefined): Partial<NonNullable<VarietyCatalogEntry['numericModifiers']>> {
-  if (!entry) return {};
-  const curated = VARIETY_CURATED_MODIFIERS[entry.id];
-  return {
-    ...(curated || {}),
-    ...(entry.numericModifiers || {}),
-  };
-}
-
-function resolveWaterAdjustmentAdvice(water: {
-  tdsPpm: number;
-  hardnessPpm: number;
-  alkalinityPpm: number;
-}) {
-  const warnings: string[] = [];
-  const adjustments: string[] = [];
-
-  if (water.hardnessPpm < 40) {
-    warnings.push('Hardness air berada di bawah rentang rekomendasi.');
-    adjustments.push('Naikkan suhu kecil +1C hanya setelah tasting, atau gunakan grind sedikit lebih halus.');
-  }
-  if (water.alkalinityPpm < 30) {
-    warnings.push('Alkalinity rendah dapat membuat acidity terasa tajam.');
-    adjustments.push('Jaga agitasi tetap rapi sebelum mengencangkan grind.');
-  }
-  if (water.tdsPpm < 30) {
-    warnings.push('TDS sangat rendah; air ini lebih cocok sebagai base remineralisasi daripada brew-ready water.');
-    adjustments.push('Pertimbangkan blend dengan air mineral lebih tinggi TDS/GH/KH.');
-  }
-
-  return { warnings, adjustments };
-}
-
-function canUseWaterBrandAutofill(waterBrand?: WaterBrandProfile) {
-  return Boolean(
-    waterBrand
-    && waterBrand.presetStatus === 'autofill'
-    && waterBrand.isBrewReady
-    && waterBrand.resolvedMinerals
-    && waterBrand.resolvedMinerals.derivation !== 'estimated_from_classification',
-  );
-}
-
-function deriveWaterMineralProfile(input: AiBrewFormState, guidance: WaterGuidance, waterBrand?: WaterBrandProfile) {
-  const canUseBrandPreset = input.waterMode === 'brand' && canUseWaterBrandAutofill(waterBrand);
-  const presetTdsPpm = canUseBrandPreset
-    ? (waterBrand?.resolvedMinerals?.tdsPpm ?? waterBrand?.chemistry.tdsPpm ?? null)
-    : null;
-  const presetHardnessPpm = canUseBrandPreset
-    ? (waterBrand?.resolvedMinerals?.hardnessPpm ?? waterBrand?.chemistry.hardnessPpm ?? null)
-    : null;
-  const presetAlkalinityPpm = canUseBrandPreset
-    ? (waterBrand?.resolvedMinerals?.alkalinityPpm ?? waterBrand?.chemistry.alkalinityPpm ?? null)
-    : null;
-  const tdsPpm = parseRequiredNumber('Water TDS', input.waterTdsPpm || String(presetTdsPpm ?? ''), 0, 600);
-  const hardnessPpm = parseRequiredNumber('Water hardness', input.waterHardnessPpm || String(presetHardnessPpm ?? ''), 0, 500);
-  const alkalinityPpm = parseRequiredNumber('Water alkalinity', input.waterAlkalinityPpm || String(presetAlkalinityPpm ?? ''), 0, 400);
-  const mineralDerivation: NonNullable<BrewPlan['waterMineralDerivation']> = canUseBrandPreset && !input.waterCustomized
-    ? waterBrand?.resolvedMinerals?.derivation || 'manual'
-    : 'manual';
-
-  let ratioDelta = 0;
-  let tempDeltaC = 0;
-  let brewTimeDeltaSec = 0;
-  const notes: string[] = [...guidance.notes];
-  const warnings: string[] = [];
-  const confidenceNotes: string[] = [];
-
-  if (input.waterMode === 'brand' && waterBrand) {
-    notes.unshift(
-      input.waterCustomized
-        ? `${waterBrand.shortLabel} was selected as the brand baseline, then adjusted manually.`
-        : `${waterBrand.shortLabel} brand water profile is active for this brew plan.`,
-    );
-    if (waterBrand.presetStatus !== 'autofill') {
-      confidenceNotes.push(`${waterBrand.shortLabel} does not have a full autofill panel in this catalog version.`);
-    }
-    if (waterBrand.resolvedMinerals?.derivation === 'estimated_from_classification') {
-      confidenceNotes.push(`${waterBrand.shortLabel} minerals were estimated from the water classification baseline.`);
-      warnings.push(`${waterBrand.shortLabel}: Estimated, verify manually.`);
-    }
-    if (!waterBrand.isBrewReady) {
-      confidenceNotes.push(...(waterBrand.brewBlockReason || []));
-      warnings.push(...(waterBrand.brewBlockReason || []));
-    }
-    if (waterBrand.classification === 'zero_mineral_ro') {
-      warnings.push('Water is too low-mineral for ready-brew use; add minerals manually.');
-    }
-    if (waterBrand.classification === 'alkaline_caution') {
-      warnings.push('Alkaline water can mute acidity; verify manually before treating it as filter friendly.');
-    }
-    if (waterBrand.classification === 'high_buffer') {
-      warnings.push('High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans.');
-    }
-  } else {
-    notes.unshift('Manual mineral input is active for this brew plan.');
-  }
-
-  if (tdsPpm < guidance.recommended.tdsPpm[0]) {
-    ratioDelta -= 0.05;
-    tempDeltaC += 0.3;
-    notes.push('Low-TDS water may need a touch more thermal energy.');
-  }
-  if (tdsPpm > guidance.recommended.tdsPpm[1]) {
-    ratioDelta += 0.05;
-    tempDeltaC -= 0.3;
-    notes.push('Higher-TDS water can read fuller and heavier with the same brew settings.');
-  }
-  if (hardnessPpm < guidance.recommended.hardnessPpm[0]) {
-    tempDeltaC += 0.4;
-    warnings.push(guidance.caution.tooSoft);
-    confidenceNotes.push('Water hardness is below the recommended band.');
-  } else if (hardnessPpm > guidance.recommended.hardnessPpm[1]) {
-    tempDeltaC -= 0.5;
-    ratioDelta += 0.05;
-    warnings.push(guidance.caution.tooHard);
-    confidenceNotes.push('Water hardness is above the recommended band.');
-  }
-
-  if (alkalinityPpm < guidance.recommended.alkalinityPpm[0]) {
-    brewTimeDeltaSec -= 4;
-    warnings.push(guidance.caution.tooLowAlkalinity);
-    confidenceNotes.push('Water alkalinity is below the recommended band.');
-  } else if (alkalinityPpm > guidance.recommended.alkalinityPpm[1]) {
-    tempDeltaC -= 0.2;
-    warnings.push(guidance.caution.tooHighAlkalinity);
-    confidenceNotes.push('Water alkalinity is above the recommended band.');
-  }
-
-  const waterAdvice = resolveWaterAdjustmentAdvice({ tdsPpm, hardnessPpm, alkalinityPpm });
-  warnings.push(...waterAdvice.warnings);
-  notes.push(...waterAdvice.adjustments);
-
-  let styleLabel = 'Balanced mineral input';
-  if (hardnessPpm < guidance.recommended.hardnessPpm[0] && alkalinityPpm < guidance.recommended.alkalinityPpm[0]) {
-    styleLabel = 'Soft / low buffer water';
-  } else if (hardnessPpm > guidance.recommended.hardnessPpm[1] || alkalinityPpm > guidance.recommended.alkalinityPpm[1]) {
-    styleLabel = 'Hard / buffered water';
-  } else if (tdsPpm < guidance.recommended.tdsPpm[0]) {
-    styleLabel = 'Low-TDS water';
-  } else if (tdsPpm > guidance.recommended.tdsPpm[1]) {
-    styleLabel = 'High-TDS water';
-  }
-
-  return {
-    minerals: {
-      tdsPpm,
-      hardnessPpm,
-      alkalinityPpm,
-      notes: input.waterNotes.trim() || undefined,
-      styleLabel,
-    } satisfies WaterMineralInput,
-    ratioDelta,
-    tempDeltaC,
-    brewTimeDeltaSec,
-    notes,
-    warnings,
-    confidenceNotes,
-    mineralDerivation,
-  };
-}
-
 function findFallbackDeviceProfile(catalog: AiBrewCatalog, methodFamily: AiBrewMethodFamily, brewMode: 'hot' | 'iced') {
   return catalog.deviceProfiles.find((item) => !item.exactMatch && item.methodFamily === methodFamily && item.brewMode === brewMode);
 }
@@ -4343,145 +4113,6 @@ export function resolveDeviceProfileSelection(
     profile: fallback,
     mode: 'family_fallback' as const,
     fallbackUsed: true,
-  };
-}
-
-export function resolveGrinderSettingReference(
-  catalog: AiBrewCatalog,
-  grinder: EquipmentCatalogEntry,
-  deviceProfile: DeviceBrewProfile,
-  brewMode: 'hot' | 'iced',
-) {
-  const modeMatch = (entry: GrinderSettingReference) => entry.brewMode === brewMode || entry.brewMode === 'both';
-  const exact = catalog.grinderSettings.find((entry) =>
-    entry.grinderId === grinder.id
-    && modeMatch(entry)
-    && entry.profileIds.includes(deviceProfile.id),
-  );
-  if (exact) return exact;
-
-  const familyIds = catalog.deviceProfiles
-    .filter((entry) => !entry.exactMatch && entry.methodFamily === deviceProfile.methodFamily && entry.brewMode === brewMode)
-    .map((entry) => entry.id);
-
-  const familySetting = catalog.grinderSettings.find((entry) =>
-    entry.grinderId === grinder.id
-    && modeMatch(entry)
-    && entry.profileIds.some((profileId) => familyIds.includes(profileId)),
-  );
-  if (familySetting) return familySetting;
-
-  const baseline = grinder.grindBands?.medium?.trim();
-  if (!baseline) return undefined;
-
-  const hasCatalogBandProvenance = grinder.sourceUrls.length > 0
-    && grinder.verificationLevel !== 'dataset_unverified'
-    && grinder.verificationLevel !== 'fallback';
-
-  return {
-    id: `${hasCatalogBandProvenance ? 'catalog' : 'derived'}_${grinder.id}_${brewMode}`,
-    grinderId: grinder.id,
-    brewMode,
-    profileIds: [],
-    rangeLabel: baseline,
-    parsedRange: grinder.grindBands?.parsedMedium || null,
-    note: hasCatalogBandProvenance
-      ? 'No profile-specific grinder chart is stored yet; using this grinder published pour-over band as the deterministic baseline.'
-      : 'No profile-specific grinder chart found; using this grinder medium filter band as deterministic baseline.',
-    source: hasCatalogBandProvenance ? 'catalog_pour_over_band' : 'derived_from_grinder_band',
-    sourceUrls: grinder.sourceUrls,
-    verificationLevel: hasCatalogBandProvenance ? grinder.verificationLevel : 'fallback',
-    verifiedAt: hasCatalogBandProvenance ? grinder.verifiedAt : catalog.catalogVersion,
-    popularityTier: grinder.popularityTier,
-    marketSegment: grinder.marketSegment,
-    releaseStatus: grinder.releaseStatus,
-    confidence: hasCatalogBandProvenance ? grinder.confidence : 'low',
-    catalogVersion: catalog.catalogVersion,
-  };
-}
-
-function isFeimaStyleGrinder(grinder: EquipmentCatalogEntry) {
-  const haystack = normalizeSearchHaystack([
-    grinder.id,
-    grinder.name,
-    grinder.brand,
-    grinder.typeLabel,
-    grinder.searchText,
-  ]);
-  return haystackHasAny(haystack, [/\b600n\b/i, /\bfeima\b/i, /\blatina\b/i, /\bflying eagle\b/i]);
-}
-
-function formatParsedSetting(value: number, parsed: ParsedNumericRange) {
-  const rounded = roundTo(value, parsed.precision);
-  const text = parsed.precision > 0 ? rounded.toFixed(parsed.precision) : String(Math.round(rounded));
-  return `${text} ${parsed.unitLabel}`.trim();
-}
-
-function formatGrindRecommendation(params: {
-  primary: string;
-  lowerCorrection?: string;
-  upperCorrection?: string;
-}) {
-  return {
-    headline: `Starting grind: ${params.primary}`,
-    correction:
-      `If sour/thin: ${params.lowerCorrection || 'slightly finer'}. `
-      + `If bitter/dry/stalled: ${params.upperCorrection || 'slightly coarser'}.`,
-  };
-}
-
-function buildGrindRecommendation(
-  grinder: EquipmentCatalogEntry,
-  setting: GrinderSettingReference | undefined,
-  grindBias: GrindBias,
-  roastLevel: RoastLevel,
-  brewMode: 'hot' | 'iced',
-) {
-  if (setting?.parsedRange) {
-    const adjusted = adjustRange(setting.parsedRange, grindBias, roastLevel, brewMode);
-    if (isFeimaStyleGrinder(grinder)) {
-      const recommendation = formatGrindRecommendation({
-        primary: 'setting 4-5',
-        lowerCorrection: 'setting 4-4',
-        upperCorrection: 'setting 5-0',
-      });
-      return {
-        grindBandLabel: setting.rangeLabel,
-        grindRecommendation: `${recommendation.headline}. Correction range: setting 4-4 to setting 5-0. ${recommendation.correction}`,
-        confidenceNotes: [setting.note],
-        verificationLevel: setting.verificationLevel,
-      };
-    }
-    const primary = formatParsedSetting((adjusted.min + adjusted.max) / 2, setting.parsedRange);
-    const recommendation = formatGrindRecommendation({
-      primary,
-      lowerCorrection: formatParsedSetting(adjusted.min, setting.parsedRange),
-      upperCorrection: formatParsedSetting(adjusted.max, setting.parsedRange),
-    });
-    return {
-      grindBandLabel: setting.rangeLabel,
-      grindRecommendation: `${recommendation.headline}. Correction range: ${formatParsedSetting(adjusted.min, setting.parsedRange)} to ${formatParsedSetting(adjusted.max, setting.parsedRange)}. ${recommendation.correction}`,
-      confidenceNotes: [setting.note],
-      verificationLevel: setting.verificationLevel,
-    };
-  }
-
-  if (setting) {
-    const recommendation = formatGrindRecommendation({ primary: setting.rangeLabel });
-    return {
-      grindBandLabel: setting.rangeLabel,
-      grindRecommendation: `${recommendation.headline}. ${recommendation.correction}${grindBias === 'same' ? '' : ` Bias ${grindBias}.`}`,
-      confidenceNotes: [setting.note],
-      verificationLevel: setting.verificationLevel,
-    };
-  }
-
-  const baseline = grinder.grindBands?.medium || grinder.typeLabel;
-  return {
-    grindBandLabel: baseline || 'No verified setting yet',
-    grindRecommendation: `No verified setting yet. Start near ${baseline || "your grinder's medium filter range"} and bias ${grindBias}.`,
-    confidenceNotes: ['No verified grinder setting is stored for this grinder and brew family yet.'],
-    verificationLevel: 'fallback' as const,
   };
 }
 
@@ -4826,8 +4457,12 @@ function finalizePlanCore(
   });
 
   const grindSettingMode = grinderSetting?.id.startsWith('derived_') ? 'derived_baseline' : 'catalog_reference';
+  const temperatureWarnings = waterTempC >= 97 && methodFamily !== 'moka_pot' && methodFamily !== 'espresso'
+    ? ['Suhu 97C+ adalah mode ekstraksi tinggi. Aman untuk kopi padat/light roast atau konsentrat es, tetapi turunkan 1-2C jika roast medium-dark/dark, air low-buffer, atau rasa mulai pahit/seret.']
+    : [];
   const warnings = normalizeNoteList(
     [deviceSelection.fallbackUsed ? `Using ${deviceSelection.profile.label} family fallback profile.` : undefined],
+    temperatureWarnings,
     waterProfile.warnings,
     baseGuardrails.warnings,
   );
@@ -5182,6 +4817,8 @@ export interface AiBrewOptimizationPatch {
   waterTempC?: number;
   totalTimeSeconds?: number;
   hotWaterSharePercent?: number;
+  pourStyleHint?: string;
+  grindGuidance?: string;
   steps?: AiBrewOptimizationStepPatch[];
 }
 
@@ -5190,71 +4827,6 @@ export interface AiBrewOptimizationResult {
   applied: boolean;
   diagnostics: string[];
   rejected: string[];
-}
-
-function resolveOptimizationDeltaBounds(methodFamily: AiBrewMethodFamily) {
-  switch (methodFamily) {
-    case 'espresso':
-      return { ratio: 0.25, tempC: 1.5, timeSec: 5 };
-    case 'cold_brew':
-      return { ratio: 1.2, tempC: 4, timeSec: 3600 };
-    case 'batch_brew':
-      return { ratio: 0.7, tempC: 2, timeSec: 60 };
-    case 'moka_pot':
-      return { ratio: 0.45, tempC: 2, timeSec: 35 };
-    default:
-      return { ratio: 0.6, tempC: 2, timeSec: 45 };
-  }
-}
-
-function resolveOptimizationTimeBounds(methodFamily: AiBrewMethodFamily) {
-  if (methodFamily === 'cold_brew') return { min: 21600, max: 64800 };
-  if (methodFamily === 'espresso') return { min: 20, max: 45 };
-  return { min: 75, max: 420 };
-}
-
-function finitePatchNumber(value: number | undefined) {
-  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
-}
-
-function clampPatchValue(
-  value: number | undefined,
-  fallback: number,
-  min: number,
-  max: number,
-  label: string,
-  diagnostics: string[],
-) {
-  if (value === undefined) return fallback;
-  const next = clamp(value, min, max);
-  if (Math.abs(next - value) > 0.001) {
-    diagnostics.push(`${label} clamped from ${roundTo(value, 2)} to ${roundTo(next, 2)}.`);
-  }
-  return next;
-}
-
-function sanitizeOptimizationControl(value: string | undefined) {
-  const normalized = String(value || '').replace(/\s+/g, ' ').trim();
-  if (!normalized || normalized.length > 180) return undefined;
-  if (/\b(if\s+sour|if\s+bitter|next\s+cup|next\s+brew|optional|to taste|adjust as needed)\b/i.test(normalized)) {
-    return undefined;
-  }
-  if (/\b(?:increase|decrease|raise|lower|coarsen|finer|coarser|change|adjust|bump|drop|reduce)\s+(?:the\s+)?(?:grind|temperature|temp|ratio|dose|water|time)\b/i.test(normalized)) {
-    return undefined;
-  }
-  if (/\d+(?:\.\d+)?\s*(?:ml|g|c|°c|sec|secs|second|seconds|min|mins|minute|minutes)\b|1\s*:\s*\d/i.test(normalized)) {
-    return undefined;
-  }
-  return normalized;
-}
-
-function resolveStepPatch(patches: AiBrewOptimizationStepPatch[], step: BrewPlanStep, index: number) {
-  return patches.find((patch) => {
-    if (patch.stepId && patch.stepId === step.id) return true;
-    const rawIndex = finitePatchNumber(patch.index);
-    if (rawIndex === undefined) return false;
-    return Math.round(rawIndex) === index + 1 || Math.round(rawIndex) === index;
-  });
 }
 
 function rebuildOptimizedSteps(
@@ -5414,24 +4986,36 @@ export function applyAiBrewOptimizationPatch(
   const iceSharePercent = roundTo(totalWaterMl > 0 ? (iceMl / totalWaterMl) * 100 : 0, 0);
 
   const tempBounds = plan.methodFamily === 'cold_brew' ? { min: 4, max: 25 } : { min: 78, max: 98 };
-  const waterTempC = Math.round(clampPatchValue(
+  const minPatchedTempC = Math.max(tempBounds.min, plan.waterTempC - deltaBounds.tempC);
+  const maxPatchedTempC = Math.min(tempBounds.max, plan.waterTempC + deltaBounds.tempC);
+  const rawWaterTempC = clampPatchValue(
     finitePatchNumber(patch.waterTempC),
     plan.waterTempC,
-    Math.max(tempBounds.min, plan.waterTempC - deltaBounds.tempC),
-    Math.min(tempBounds.max, plan.waterTempC + deltaBounds.tempC),
+    minPatchedTempC,
+    maxPatchedTempC,
     'temperature',
     diagnostics,
-  ));
+  );
+  const waterTempC = clamp(Math.round(rawWaterTempC), minPatchedTempC, maxPatchedTempC);
   const methodTimeBounds = resolveOptimizationTimeBounds(plan.methodFamily);
-  const totalTimeSeconds = roundBaristaTimeSeconds(clampPatchValue(
+  const minPatchedTimeSeconds = Math.max(methodTimeBounds.min, plan.totalTimeSeconds - deltaBounds.timeSec);
+  const maxPatchedTimeSeconds = Math.min(methodTimeBounds.max, plan.totalTimeSeconds + deltaBounds.timeSec);
+  const rawTotalTimeSeconds = clampPatchValue(
     finitePatchNumber(patch.totalTimeSeconds),
     plan.totalTimeSeconds,
-    Math.max(methodTimeBounds.min, plan.totalTimeSeconds - deltaBounds.timeSec),
-    Math.min(methodTimeBounds.max, plan.totalTimeSeconds + deltaBounds.timeSec),
+    minPatchedTimeSeconds,
+    maxPatchedTimeSeconds,
     'brew time',
     diagnostics,
-  ), plan.methodFamily);
-  const steps = rebuildOptimizedSteps(plan, hotWaterMl, totalTimeSeconds, patch.steps || []);
+  );
+  const totalTimeSeconds = clamp(
+    roundBaristaTimeSeconds(rawTotalTimeSeconds, plan.methodFamily),
+    minPatchedTimeSeconds,
+    maxPatchedTimeSeconds,
+  );
+  const styleHint = sanitizeOptimizationPourStyleHint(patch.pourStyleHint);
+  const patchSteps = patch.steps?.length ? patch.steps : buildStyleHintStepPatches(plan, styleHint);
+  const steps = rebuildOptimizedSteps(plan, hotWaterMl, totalTimeSeconds, patchSteps);
   const brewOutputs = buildBrewOutputs({ method, doseG: plan.doseG, waterMl: hotWaterMl, ratio: nextRatio });
   const estimatedBrewOutputMl = plan.brewMode === 'iced'
     ? roundEstimatedCupOutputMl(estimateCupOutputMl(hotWaterMl, plan.doseG, plan.brewMode), plan.methodFamily)
@@ -5443,6 +5027,7 @@ export function applyAiBrewOptimizationPatch(
   const baseGuardrails = validateBrewInputs({ method, doseG: plan.doseG, waterMl: totalWaterMl, ratio: nextRatio }, { roastLevel: plan.roastLevel });
   const baseConformance = evaluateConformance({ method, doseG: plan.doseG, waterMl: totalWaterMl, ratio: nextRatio }, { roastLevel: plan.roastLevel });
   const optimizationReason = patch.reason?.trim().slice(0, 220);
+  const grindGuidance = sanitizeOptimizationGrindGuidance(patch.grindGuidance, plan);
   const warnings = normalizeNoteList(plan.warnings, baseGuardrails.warnings);
   const nextPlan = {
     ...plan,
@@ -5486,6 +5071,7 @@ export function applyAiBrewOptimizationPatch(
     notes: normalizeNoteList(
       plan.notes,
       optimizationReason ? [`AI optimizer: ${optimizationReason}`] : ['AI optimizer adjusted the deterministic brew envelope within guardrails.'],
+      grindGuidance ? [`AI grind guidance: ${grindGuidance}`] : [],
     ),
     warnings,
     guardrails: {
@@ -5719,8 +5305,14 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
     successLabel: id ? 'Tanda selesai' : 'Finish cue',
     successCue: defaultSuccess,
     watch: id
-      ? ['Ikuti checkpoint berurutan.', 'Jangan ubah rasio, suhu, atau grind di tengah seduhan.']
-      : ['Follow checkpoints in order.', 'Do not change ratio, temperature, or grind mid-brew.'],
+      ? [
+          'Ikuti checkpoint berurutan sebagai output utama.',
+          'Baca flow time dulu: terlalu cepat biasanya perlu sedikit lebih halus, terlalu lambat biasanya perlu sedikit lebih kasar.',
+        ]
+      : [
+          'Follow checkpoints in order as the main output.',
+          'Read flow time first: too fast usually needs slightly finer grind, too slow usually needs slightly coarser grind.',
+        ],
   };
 
   switch (plan.methodFamily) {

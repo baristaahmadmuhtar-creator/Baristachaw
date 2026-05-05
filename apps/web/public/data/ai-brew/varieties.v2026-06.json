@@ -1,5 +1,5 @@
 {
-  "catalogVersion": "2026.06.1-ai-brew-variety-plus",
+  "catalogVersion": "2026.06.5-global-origin-plus",
   "items": [
     {
       "id": "abyssinia",
@@ -28,6 +28,121 @@
       ]
     },
     {
+      "id": "acaia",
+      "label": "Acaia",
+      "group": "brazil-selection",
+      "aliases": [
+        "acaia"
+      ],
+      "origins": [
+        "Brazil"
+      ],
+      "originNotes": "Brazilian Mundo Novo-line selection commonly seen in Brazilian lots.",
+      "notes": [
+        "Use as Brazilian sweetness context; verify exact cultivar from producer data."
+      ],
+      "searchText": "acaia acaia brazil brazil-selection",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "acaua",
+      "label": "Acaua",
+      "group": "brazil-selection",
+      "aliases": [
+        "acaua"
+      ],
+      "origins": [
+        "Brazil"
+      ],
+      "originNotes": "Brazilian disease-resistant selection.",
+      "notes": [
+        "Curated as Brazil selection; sensory outcome remains lot-dependent."
+      ],
+      "searchText": "acaua acaua brazil brazil-selection",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "anacafe_14",
+      "label": "Anacafe 14",
+      "group": "disease-resistant",
+      "aliases": [
+        "anacaf? 14",
+        "anacafe14"
+      ],
+      "origins": [
+        "Guatemala",
+        "Central America"
+      ],
+      "originNotes": "Central American variety listed in variety references.",
+      "notes": [
+        "Good search cue for Guatemala lots; do not infer cup profile without roast/process context."
+      ],
+      "searchText": "anacafe 14 anacaf? 14 anacafe14 guatemala central america disease-resistant",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "andina",
+      "label": "Andina",
+      "group": "disease-resistant",
+      "aliases": [
+        "variedad andina"
+      ],
+      "origins": [
+        "Colombia",
+        "Andes"
+      ],
+      "originNotes": "Andean regional variety cue.",
+      "notes": [
+        "Use as Colombia/Andes search cue with conservative calibration."
+      ],
+      "popularityTier": "regional_common",
+      "marketSegment": "commercial_specialty_bridge",
+      "releaseStatus": "established",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "andina variedad andina colombia andes disease-resistant",
+      "catalogVersion": "2026.06.5-global-origin-plus"
+    },
+    {
       "id": "andungsari",
       "label": "Andungsari",
       "group": "regional-selection",
@@ -53,6 +168,34 @@
       "origins": [
         "Indonesia"
       ]
+    },
+    {
+      "id": "anfilloo",
+      "label": "Anfilloo",
+      "group": "ethiopian-landrace",
+      "aliases": [
+        "anfiloo"
+      ],
+      "origins": [
+        "Ethiopia"
+      ],
+      "originNotes": "Ethiopian landrace/local variety reference.",
+      "notes": [
+        "Treat as Ethiopian lineage context; do not over-specify farm or altitude."
+      ],
+      "searchText": "anfilloo anfiloo ethiopia ethiopian-landrace",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
     },
     {
       "id": "arara",
@@ -156,6 +299,35 @@
       ],
       "origins": [
         "Kenya"
+      ]
+    },
+    {
+      "id": "blp_4",
+      "label": "BLP-4",
+      "group": "indonesia-selection",
+      "aliases": [
+        "blp4",
+        "blp 4"
+      ],
+      "originNotes": "Indonesian arabica variety appearing in public agronomy research alongside Gayo-1 and Sigararutang.",
+      "source": "academic-curation",
+      "sourceUrls": [
+        "https://garuda.kemdiktisaintek.go.id/journal/view/15868?issue=Vol+5%2C+No+1+%282021%29%3A+Agrotechnology+Research+Journal",
+        "https://jurnal.uns.ac.id/arj/article/download/44868/pdf"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Niche Indonesian agronomy reference; use only when the bag or producer identifies BLP-4."
+      ],
+      "searchText": "blp-4 blp4 blp 4 indonesia-selection indonesia",
+      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
+      "origins": [
+        "Indonesia"
       ]
     },
     {
@@ -272,6 +444,213 @@
       ]
     },
     {
+      "id": "bourbon_mayaguez_139",
+      "label": "Bourbon Mayaguez 139",
+      "group": "classic-arabica",
+      "aliases": [
+        "bm 139",
+        "mayaguez 139"
+      ],
+      "origins": [
+        "Rwanda",
+        "Burundi",
+        "Latin America"
+      ],
+      "originNotes": "Bourbon-line selection used in variety references.",
+      "notes": [
+        "Use as Bourbon-family sweetness context only."
+      ],
+      "searchText": "bourbon mayaguez 139 bm 139 mayaguez 139 rwanda burundi latin america classic-arabica",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "bourbon_mayaguez_71",
+      "label": "Bourbon Mayaguez 71",
+      "group": "bourbon-lineage",
+      "aliases": [
+        "bm 71",
+        "mayaguez 71"
+      ],
+      "origins": [
+        "Puerto Rico",
+        "Latin America"
+      ],
+      "originNotes": "Bourbon Mayaguez selection referenced by WCR.",
+      "notes": [
+        "Bourbon-lineage cue; preserve sweetness and do not overfit without process data."
+      ],
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
+      "searchText": "bourbon mayaguez 71 bm 71 mayaguez 71 bourbon-lineage puerto rico latin america"
+    },
+    {
+      "id": "bourbon_pointu",
+      "label": "Bourbon Pointu",
+      "group": "bourbon",
+      "aliases": [
+        "laurina bourbon",
+        "pointed bourbon"
+      ],
+      "origins": [
+        "Reunion",
+        "Global"
+      ],
+      "originNotes": "Bourbon/Laurina lineage cue.",
+      "notes": [
+        "Delicate variety cue; keep extraction clean and avoid overclaiming caffeine or origin without data."
+      ],
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "bourbon pointu laurina bourbon pointed bourbon reunion global bourbon",
+      "catalogVersion": "2026.06.5-global-origin-plus"
+    },
+    {
+      "id": "bp_534",
+      "label": "BP 534",
+      "group": "canephora",
+      "aliases": [
+        "bp534",
+        "robusta bp 534"
+      ],
+      "origins": [
+        "Indonesia"
+      ],
+      "originNotes": "WCR robusta catalog notes BP 534 as commonly grown by farmers in Indonesia.",
+      "notes": [
+        "Canephora/Robusta clone context; use body-first baseline and calibration warning."
+      ],
+      "searchText": "bp 534 bp534 robusta bp 534 indonesia canephora",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research-robusta-catalog",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/robusta/varieties"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "bp_936",
+      "label": "BP 936",
+      "group": "canephora",
+      "aliases": [
+        "bp936",
+        "robusta bp 936"
+      ],
+      "origins": [
+        "Indonesia"
+      ],
+      "originNotes": "WCR robusta catalog lists BP 936 with broad adaptability.",
+      "notes": [
+        "Canephora/Robusta clone context; verify producer documentation when available."
+      ],
+      "searchText": "bp 936 bp936 robusta bp 936 indonesia canephora",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research-robusta-catalog",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/robusta/varieties"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "bp_939",
+      "label": "BP 939",
+      "group": "canephora",
+      "aliases": [
+        "bp939",
+        "robusta bp 939"
+      ],
+      "origins": [
+        "Indonesia"
+      ],
+      "originNotes": "WCR robusta catalog lists BP 939 among robusta varieties.",
+      "notes": [
+        "Canephora/Robusta clone context; keep extraction conservative."
+      ],
+      "searchText": "bp 939 bp939 robusta bp 939 indonesia canephora",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research-robusta-catalog",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/robusta/varieties"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "brs_2314",
+      "label": "BRS 2314",
+      "group": "canephora",
+      "aliases": [
+        "brs2314",
+        "fine robusta brs 2314"
+      ],
+      "origins": [
+        "Brazil"
+      ],
+      "originNotes": "WCR robusta catalog flags BRS 2314 as a fine robusta reference.",
+      "notes": [
+        "Canephora/Robusta clone context; use curated baseline, not official sensory guarantee."
+      ],
+      "searchText": "brs 2314 brs2314 fine robusta brs 2314 brazil canephora",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research-robusta-catalog",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/robusta/varieties"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
       "id": "castillo",
       "label": "Castillo",
       "group": "disease-resistant",
@@ -327,6 +706,63 @@
       ]
     },
     {
+      "id": "catimor_129",
+      "label": "Catimor 129",
+      "group": "introgressed",
+      "aliases": [
+        "catimor-129"
+      ],
+      "origins": [
+        "Central America",
+        "Asia",
+        "Africa"
+      ],
+      "originNotes": "Catimor-line variety from WCR catalog context.",
+      "notes": [
+        "Introgressed lineage cue; watch for bitterness if roast is developed."
+      ],
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
+      "searchText": "catimor 129 catimor-129 introgressed central america asia africa"
+    },
+    {
+      "id": "catisic",
+      "label": "Catisic",
+      "group": "disease-resistant",
+      "aliases": [],
+      "origins": [
+        "El Salvador",
+        "Central America"
+      ],
+      "originNotes": "Catimor-line selection found in Central American references.",
+      "notes": [
+        "Disease-resistant lineage cue; do not infer final cup without process/roast."
+      ],
+      "searchText": "catisic el salvador central america disease-resistant",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
       "id": "catuai",
       "label": "Catuai",
       "group": "classic-arabica",
@@ -358,6 +794,66 @@
       ]
     },
     {
+      "id": "catuai_144",
+      "label": "Catuai 144",
+      "group": "catuai",
+      "aliases": [
+        "catua? 144",
+        "catuai amarelo 144"
+      ],
+      "origins": [
+        "Brazil",
+        "Latin America"
+      ],
+      "originNotes": "Catuai regional selection cue.",
+      "notes": [
+        "Use as sweetness/body context with roast and process guardrails."
+      ],
+      "popularityTier": "regional_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "catuai 144 catua? 144 catuai amarelo 144 brazil latin america catuai",
+      "catalogVersion": "2026.06.5-global-origin-plus"
+    },
+    {
+      "id": "catuai_99",
+      "label": "Catuai 99",
+      "group": "catuai",
+      "aliases": [
+        "catua? 99",
+        "catuai vermelho 99"
+      ],
+      "origins": [
+        "Brazil",
+        "Latin America"
+      ],
+      "originNotes": "Catuai regional selection cue.",
+      "notes": [
+        "Use as sweetness/body context with roast and process guardrails."
+      ],
+      "popularityTier": "regional_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "catuai 99 catua? 99 catuai vermelho 99 brazil latin america catuai",
+      "catalogVersion": "2026.06.5-global-origin-plus"
+    },
+    {
       "id": "caturra",
       "label": "Caturra",
       "group": "classic-arabica",
@@ -386,6 +882,34 @@
       ]
     },
     {
+      "id": "caturra_chiroso",
+      "label": "Caturra Chiroso",
+      "group": "caturra",
+      "aliases": [
+        "chiroso caturra"
+      ],
+      "origins": [
+        "Colombia"
+      ],
+      "originNotes": "Colombian Chiroso/Caturra naming cue seen in specialty lots.",
+      "notes": [
+        "Use as Colombia clarity/sweetness cue; do not infer Geisha/Gesha."
+      ],
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "caturra chiroso chiroso caturra colombia caturra",
+      "catalogVersion": "2026.06.5-global-origin-plus"
+    },
+    {
       "id": "cauvery",
       "label": "Cauvery",
       "group": "south-asia-lineage",
@@ -411,6 +935,34 @@
       "origins": [
         "India"
       ]
+    },
+    {
+      "id": "cenicafe_1",
+      "label": "Cenicafe 1",
+      "group": "disease-resistant",
+      "aliases": [
+        "cenicafe 1"
+      ],
+      "origins": [
+        "Colombia"
+      ],
+      "originNotes": "Colombian selection in variety references.",
+      "notes": [
+        "Colombia origin cue; recipe still follows roast/process input."
+      ],
+      "searchText": "cenicaf? 1 cenicafe 1 colombia disease-resistant",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
     },
     {
       "id": "centroamericano_h1",
@@ -441,6 +993,42 @@
         "Nicaragua",
         "El Salvador",
         "Honduras"
+      ]
+    },
+    {
+      "source": "world-coffee-research",
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.4-ai-brew-origin-actionable",
+      "id": "centroamericano",
+      "label": "Centroamericano H1",
+      "group": "f1-hybrid",
+      "aliases": [
+        "centroamericano",
+        "h1",
+        "centroamericano h1",
+        "f1 hybrid h1"
+      ],
+      "origins": [
+        "Central America",
+        "Costa Rica",
+        "Honduras",
+        "El Salvador",
+        "Guatemala"
+      ],
+      "originNotes": "F1 hybrid lineage T5296 x Rume Sudan; WCR notes very good quality potential when well-managed at higher elevation.",
+      "notes": [
+        "Use as F1/highland clarity-sweetness context; do not assume processing style from variety alone."
+      ],
+      "searchText": "centroamericano h1 centroamericano h1 centroamericano h1 f1 hybrid h1 central america costa rica honduras el salvador guatemala f1-hybrid",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://varieties.worldcoffeeresearch.org/varieties/centroamericano"
       ]
     },
     {
@@ -521,6 +1109,35 @@
       ]
     },
     {
+      "id": "colombia_variety",
+      "label": "Colombia",
+      "group": "disease-resistant",
+      "aliases": [
+        "variedad colombia",
+        "colombia cultivar"
+      ],
+      "origins": [
+        "Colombia"
+      ],
+      "originNotes": "Colombian disease-resistant variety name; keep distinct from country origin Colombia.",
+      "notes": [
+        "Good search cue for Colombian lots, but origin and cultivar must stay separate in UI copy."
+      ],
+      "popularityTier": "regional_common",
+      "marketSegment": "commercial_specialty_bridge",
+      "releaseStatus": "established",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "colombia variedad colombia colombia cultivar disease-resistant",
+      "catalogVersion": "2026.06.5-global-origin-plus"
+    },
+    {
       "id": "conilon",
       "label": "Conilon",
       "group": "canephora",
@@ -547,6 +1164,36 @@
       "origins": [
         "Brazil"
       ]
+    },
+    {
+      "id": "costa_rica_95",
+      "label": "Costa Rica 95",
+      "group": "disease-resistant",
+      "aliases": [
+        "cr95",
+        "costa rica 95"
+      ],
+      "origins": [
+        "Costa Rica",
+        "Central America"
+      ],
+      "originNotes": "Sarchimor/Catimor-line Central American variety reference.",
+      "notes": [
+        "Use as Central America disease-resistant cue only."
+      ],
+      "searchText": "costa rica 95 cr95 costa rica 95 costa rica central america disease-resistant",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
     },
     {
       "id": "ethiopian_heirloom",
@@ -576,6 +1223,100 @@
       ]
     },
     {
+      "id": "ethiopian_landrace",
+      "label": "Ethiopian Landrace",
+      "group": "landrace",
+      "aliases": [
+        "ethiopia landrace",
+        "local landrace",
+        "ethiopian local"
+      ],
+      "origins": [
+        "Ethiopia"
+      ],
+      "originNotes": "General landrace descriptor for Ethiopian lots when exact variety is not provided.",
+      "notes": [
+        "Broad descriptor only; AI Brew must not invent a named variety from this label."
+      ],
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
+      "searchText": "ethiopian landrace ethiopia landrace local landrace ethiopian local landrace ethiopia"
+    },
+    {
+      "id": "ethiopian_landrace_mix",
+      "label": "Ethiopian Landrace Mix",
+      "group": "lot-composition",
+      "aliases": [
+        "ethiopian heirloom",
+        "heirloom mix",
+        "landrace blend",
+        "regional landrace"
+      ],
+      "originNotes": "Safer label for Ethiopian lots described broadly as heirloom/landrace without a single named variety.",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/countries/ethiopia",
+        "https://varieties.worldcoffeeresearch.org/"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Use this when Ethiopian bags say heirloom or landrace without a named JARC selection; do not invent 74110/74112 or Gesha."
+      ],
+      "searchText": "ethiopian landrace mix ethiopian heirloom heirloom mix landrace blend regional landrace ethiopia",
+      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
+      "origins": [
+        "Ethiopia"
+      ]
+    },
+    {
+      "id": "excelsa",
+      "label": "Excelsa",
+      "group": "non-arabica",
+      "aliases": [
+        "coffea excelsa",
+        "liberica excelsa"
+      ],
+      "originNotes": "Non-arabica coffee type seen in Southeast Asian lots; UI should not treat it as Arabica without explicit producer data.",
+      "source": "species-curation",
+      "sourceUrls": [
+        "https://perfectdailygrind.com/2021/05/what-is-excelsa-coffee/",
+        "https://greencoffeecollective.com/blogs/learn/excelsa-coffee-s-overlooked-alternative"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Treat as non-arabica / liberica-adjacent context; AI Brew should avoid Arabica cultivar assumptions and lean on roast, process, and tasting feedback."
+      ],
+      "searchText": "excelsa coffea excelsa liberica excelsa non-arabica philippines indonesia malaysia vietnam",
+      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
+      "origins": [
+        "Philippines",
+        "Indonesia",
+        "Malaysia",
+        "Vietnam",
+        "Southeast Asia"
+      ]
+    },
+    {
       "id": "gayo_1",
       "label": "Gayo 1",
       "group": "indonesia-selection",
@@ -602,6 +1343,36 @@
       "origins": [
         "Indonesia"
       ]
+    },
+    {
+      "id": "gayo_2",
+      "label": "Gayo 2",
+      "group": "regional-selection",
+      "aliases": [
+        "gayo II",
+        "gayo-2"
+      ],
+      "origins": [
+        "Indonesia",
+        "Aceh",
+        "Gayo"
+      ],
+      "originNotes": "Aceh/Gayo regional variety cue.",
+      "notes": [
+        "Use as Indonesian structured profile context; do not infer wet-hulled unless process is selected."
+      ],
+      "popularityTier": "regional_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "source": "regional-curation",
+      "sourceUrls": [
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "gayo 2 gayo ii gayo-2 indonesia aceh gayo regional-selection",
+      "catalogVersion": "2026.06.5-global-origin-plus"
     },
     {
       "id": "geisha",
@@ -634,6 +1405,123 @@
       ]
     },
     {
+      "id": "gesha_1931",
+      "label": "Gesha 1931",
+      "group": "specialty-reference",
+      "aliases": [
+        "geisha 1931"
+      ],
+      "origins": [
+        "Panama",
+        "Ethiopia",
+        "Latin America"
+      ],
+      "originNotes": "Gesha/Geisha-line specialty reference; exact lot identity must come from producer/roaster.",
+      "notes": [
+        "Allowed to use Geisha/Gesha language only when selected or explicit in user input."
+      ],
+      "searchText": "gesha 1931 geisha 1931 panama ethiopia latin america specialty-reference",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "harrar_rwanda",
+      "label": "Harrar Rwanda",
+      "group": "east-africa-selection",
+      "aliases": [
+        "harrar rwanda"
+      ],
+      "origins": [
+        "Rwanda",
+        "East Africa"
+      ],
+      "originNotes": "East African regional selection included in WCR catalog context.",
+      "notes": [
+        "Use as regional lineage signal only when stated by producer or roaster."
+      ],
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
+      "searchText": "harrar rwanda harrar rwanda east-africa-selection rwanda east africa"
+    },
+    {
+      "id": "iapar_59",
+      "label": "IAPAR 59",
+      "group": "disease-resistant",
+      "aliases": [
+        "iapar59"
+      ],
+      "origins": [
+        "Brazil",
+        "Latin America"
+      ],
+      "originNotes": "Brazilian/Latin American disease-resistant variety reference.",
+      "notes": [
+        "Use as agronomic lineage cue, not as sensory certainty."
+      ],
+      "searchText": "iapar 59 iapar59 brazil latin america disease-resistant",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "icatu",
+      "label": "Icatu",
+      "group": "brazil-selection",
+      "aliases": [
+        "icatu amarelo",
+        "icatu vermelho"
+      ],
+      "origins": [
+        "Brazil"
+      ],
+      "originNotes": "Brazilian Arabica x Robusta-derived selection in variety references.",
+      "notes": [
+        "Can add body/sweetness context; keep calibration modest."
+      ],
+      "searchText": "icatu icatu amarelo icatu vermelho brazil brazil-selection",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
       "id": "ihcafe_90",
       "label": "IHCAFE 90",
       "group": "disease-resistant",
@@ -659,6 +1547,36 @@
       "origins": [
         "Honduras"
       ]
+    },
+    {
+      "id": "jackson_2_1257",
+      "label": "Jackson 2/1257",
+      "group": "east-africa-selection",
+      "aliases": [
+        "jackson 2-1257"
+      ],
+      "origins": [
+        "Rwanda",
+        "Burundi",
+        "East Africa"
+      ],
+      "originNotes": "East African selection referenced in WCR catalog context.",
+      "notes": [
+        "Use for search and provenance; keep deterministic adjustment mild."
+      ],
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
+      "searchText": "jackson 2/1257 jackson 2-1257 east-africa-selection rwanda burundi east africa"
     },
     {
       "id": "java",
@@ -692,6 +1610,34 @@
       ]
     },
     {
+      "id": "jember",
+      "label": "Jember",
+      "group": "indonesia-selection",
+      "aliases": [
+        "s795 jember"
+      ],
+      "origins": [
+        "Indonesia"
+      ],
+      "originNotes": "Regional Indonesian naming often associated with S795/Jember material.",
+      "notes": [
+        "Regional name can vary; keep as curated search cue."
+      ],
+      "searchText": "jember s795 jember indonesia indonesia-selection",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
       "id": "k7",
       "label": "K7",
       "group": "regional-selection",
@@ -719,6 +1665,34 @@
         "Indonesia",
         "Myanmar"
       ]
+    },
+    {
+      "id": "kartika",
+      "label": "Kartika",
+      "group": "regional-selection",
+      "aliases": [
+        "kartika 1",
+        "kartika 2"
+      ],
+      "origins": [
+        "Indonesia"
+      ],
+      "originNotes": "Indonesian regional variety cue used in local lot descriptions.",
+      "notes": [
+        "Treat as Indonesia regional selection; exact cup depends heavily on island, altitude, and process."
+      ],
+      "popularityTier": "regional_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "source": "regional-curation",
+      "sourceUrls": [
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "kartika kartika 1 kartika 2 indonesia regional-selection",
+      "catalogVersion": "2026.06.5-global-origin-plus"
     },
     {
       "id": "kartika_1",
@@ -807,6 +1781,66 @@
       ]
     },
     {
+      "id": "komasti",
+      "label": "Komasti",
+      "group": "indonesia-selection",
+      "aliases": [
+        "composite andungsari",
+        "komposit andungsari",
+        "komasti arabica"
+      ],
+      "originNotes": "Indonesian arabica variety promoted by ICCRI/WCR demo work for climate-resilient farmer trials.",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/news/2023/komasti-demo-plot",
+        "https://worldcoffeeresearch.org/countries/indonesia"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "Indonesian cultivar context; keep recipe anchored to process, roast, and target profile until producer data is explicit."
+      ],
+      "searchText": "komasti composite andungsari komposit andungsari komasti arabica indonesia-selection indonesia",
+      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
+      "origins": [
+        "Indonesia"
+      ]
+    },
+    {
+      "id": "kp423",
+      "label": "KP423",
+      "group": "east-africa-selection",
+      "aliases": [
+        "kp 423"
+      ],
+      "origins": [
+        "Kenya",
+        "Rwanda",
+        "Uganda"
+      ],
+      "originNotes": "East African selection from WCR catalog context.",
+      "notes": [
+        "Lower commonness in consumer-facing labels; keep as provenance cue, not a flavor guarantee."
+      ],
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
+      "searchText": "kp423 kp 423 east-africa-selection kenya rwanda uganda"
+    },
+    {
       "id": "laurina",
       "label": "Laurina / Bourbon Pointu",
       "group": "specialty-reference",
@@ -835,6 +1869,33 @@
         "Brazil",
         "Central America"
       ]
+    },
+    {
+      "id": "lempira",
+      "label": "Lempira",
+      "group": "disease-resistant",
+      "aliases": [],
+      "origins": [
+        "Honduras",
+        "Central America"
+      ],
+      "originNotes": "Honduran disease-resistant variety reference.",
+      "notes": [
+        "Central American cue; use process/roast for final brew character."
+      ],
+      "searchText": "lempira honduras central america disease-resistant",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
     },
     {
       "id": "liberica",
@@ -896,6 +1957,64 @@
       ]
     },
     {
+      "id": "linie_s",
+      "label": "Linie S",
+      "group": "regional-selection",
+      "aliases": [
+        "line s",
+        "linie-s"
+      ],
+      "origins": [
+        "Indonesia"
+      ],
+      "originNotes": "Indonesian regional selection cue.",
+      "notes": [
+        "Use as regional search synonym and keep brew adjustment conservative."
+      ],
+      "popularityTier": "regional_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "source": "regional-curation",
+      "sourceUrls": [
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "linie s line s linie-s indonesia regional-selection",
+      "catalogVersion": "2026.06.5-global-origin-plus"
+    },
+    {
+      "id": "maracaturra",
+      "label": "Maracaturra",
+      "group": "specialty-reference",
+      "aliases": [
+        "maragogipe x caturra"
+      ],
+      "origins": [
+        "Nicaragua",
+        "El Salvador",
+        "Central America"
+      ],
+      "originNotes": "Large-bean Maragogipe/Caturra-related specialty selection.",
+      "notes": [
+        "Large-bean structured profile; may need slightly more extraction development."
+      ],
+      "searchText": "maracaturra maragogipe x caturra nicaragua el salvador central america specialty-reference",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
       "id": "maragogipe",
       "label": "Maragogipe",
       "group": "specialty-reference",
@@ -952,6 +2071,132 @@
       ]
     },
     {
+      "id": "mibirizi",
+      "label": "Mibirizi",
+      "group": "east-africa-selection",
+      "aliases": [],
+      "origins": [
+        "Rwanda",
+        "Burundi",
+        "East Africa"
+      ],
+      "originNotes": "Historic East African selection included in WCR references.",
+      "notes": [
+        "Good for catalog matching; do not infer exact acidity/body without lot data."
+      ],
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
+      "searchText": "mibirizi east-africa-selection rwanda burundi east africa"
+    },
+    {
+      "id": "milenio",
+      "label": "Milenio",
+      "group": "hybrid-f1",
+      "aliases": [
+        "h10",
+        "milenio h10"
+      ],
+      "origins": [
+        "Central America",
+        "Costa Rica",
+        "Nicaragua"
+      ],
+      "originNotes": "F1 hybrid reference in variety catalogs.",
+      "notes": [
+        "Use as modern hybrid cue; avoid sensory overclaim."
+      ],
+      "searchText": "milenio h10 milenio h10 central america costa rica nicaragua hybrid-f1",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "mixed_variety",
+      "label": "Mixed Variety",
+      "group": "lot-composition",
+      "aliases": [
+        "mixed varieties",
+        "blend variety",
+        "variety blend",
+        "multi variety",
+        "campuran varietas"
+      ],
+      "originNotes": "Lot-level composition label for bags that list multiple cultivars or do not disclose a single variety.",
+      "source": "lot-composition-curation",
+      "sourceUrls": [
+        "https://varieties.worldcoffeeresearch.org/"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Use process, roast, water, and target profile as the main brew drivers; do not apply cultivar-specific numeric shifts for mixed lots."
+      ],
+      "searchText": "mixed variety mixed varieties blend variety variety blend multi variety campuran varietas",
+      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.1-ai-brew-variety-plus",
+      "origins": [
+        "Global",
+        "Indonesia",
+        "Brazil",
+        "Colombia",
+        "Ethiopia"
+      ]
+    },
+    {
+      "id": "moka",
+      "label": "Moka / Mokka",
+      "group": "specialty-reference",
+      "aliases": [
+        "mokka",
+        "mocha variety"
+      ],
+      "origins": [
+        "Yemen",
+        "Ethiopia",
+        "Reunion",
+        "Global"
+      ],
+      "originNotes": "Small-bean specialty descriptor; confirm spelling on the bag.",
+      "notes": [
+        "Niche variety cue; protect aromatics with conservative heat and agitation."
+      ],
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
+      "searchText": "moka / mokka mokka mocha variety specialty-reference yemen ethiopia reunion global"
+    },
+    {
       "id": "mokka",
       "label": "Mokka / Moka",
       "group": "specialty-reference",
@@ -982,6 +2227,33 @@
       ]
     },
     {
+      "id": "mundo_maya",
+      "label": "Mundo Maya",
+      "group": "hybrid-f1",
+      "aliases": [],
+      "origins": [
+        "Mexico",
+        "Central America"
+      ],
+      "originNotes": "F1 hybrid reference associated with Central America.",
+      "notes": [
+        "Use as modern hybrid cue; avoid sensory overclaim."
+      ],
+      "searchText": "mundo maya mexico central america hybrid-f1",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
       "id": "mundo_novo",
       "label": "Mundo Novo",
       "group": "classic-arabica",
@@ -1004,6 +2276,94 @@
       "origins": [
         "Brazil"
       ]
+    },
+    {
+      "id": "n39",
+      "label": "N39",
+      "group": "bourbon-typica",
+      "aliases": [
+        "n 39"
+      ],
+      "origins": [
+        "Tanzania",
+        "East Africa"
+      ],
+      "originNotes": "East African Bourbon-related selection used in regional breeding references.",
+      "notes": [
+        "Use as East Africa clarity context; do not infer exact sensory profile without lot data."
+      ],
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "n39 n 39 tanzania east africa bourbon-typica",
+      "catalogVersion": "2026.06.5-global-origin-plus"
+    },
+    {
+      "id": "kr1",
+      "label": "NARO-Kituza Robusta 1 KR1",
+      "group": "canephora",
+      "aliases": [
+        "kr1",
+        "kituza robusta 1"
+      ],
+      "origins": [
+        "Uganda"
+      ],
+      "originNotes": "WCR robusta catalog lists NARO-Kituza robusta clones.",
+      "notes": [
+        "Canephora clone context; use body-first baseline with calibration note."
+      ],
+      "searchText": "naro-kituza robusta 1 kr1 kr1 kituza robusta 1 uganda canephora",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research-robusta-catalog",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/robusta/varieties"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "nyasaland",
+      "label": "Nyasaland",
+      "group": "east-africa-selection",
+      "aliases": [
+        "nyasa"
+      ],
+      "origins": [
+        "Malawi",
+        "Tanzania",
+        "Uganda"
+      ],
+      "originNotes": "Historic East African lineage marker.",
+      "notes": [
+        "Treat as origin-lineage context; keep recipe shifts mild."
+      ],
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
+      "searchText": "nyasaland nyasa east-africa-selection malawi tanzania uganda"
     },
     {
       "id": "obata",
@@ -1058,6 +2418,61 @@
       "origins": [
         "Colombia"
       ]
+    },
+    {
+      "id": "orange_bourbon",
+      "label": "Orange Bourbon",
+      "group": "bourbon",
+      "aliases": [
+        "bourbon orange"
+      ],
+      "origins": [
+        "Latin America",
+        "Africa"
+      ],
+      "originNotes": "Bourbon color mutation cue used in specialty lot descriptions.",
+      "notes": [
+        "Use as sweetness cue; final cup still depends on process and roast."
+      ],
+      "popularityTier": "specialty_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "orange bourbon bourbon orange latin america africa bourbon",
+      "catalogVersion": "2026.06.5-global-origin-plus"
+    },
+    {
+      "id": "oro_azteca",
+      "label": "Oro Azteca",
+      "group": "disease-resistant",
+      "aliases": [],
+      "origins": [
+        "Mexico"
+      ],
+      "originNotes": "Mexican variety reference.",
+      "notes": [
+        "Mexico origin cue; final recipe still follows roast/process."
+      ],
+      "searchText": "oro azteca mexico disease-resistant",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
     },
     {
       "id": "p88",
@@ -1138,6 +2553,65 @@
       ]
     },
     {
+      "id": "pache",
+      "label": "Pache",
+      "group": "classic-arabica",
+      "aliases": [
+        "pache comun",
+        "pache com?n"
+      ],
+      "origins": [
+        "Guatemala",
+        "Central America"
+      ],
+      "originNotes": "Guatemalan Typica mutation/reference variety.",
+      "notes": [
+        "Use as Central American classic Arabica cue."
+      ],
+      "searchText": "pache pache comun pache com?n guatemala central america classic-arabica",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "pache_colis",
+      "label": "Pache Colis",
+      "group": "classic-arabica",
+      "aliases": [
+        "pache colis"
+      ],
+      "origins": [
+        "Guatemala",
+        "Central America"
+      ],
+      "originNotes": "Guatemalan Pache-related variety reference.",
+      "notes": [
+        "Use as classic Arabica lineage cue only."
+      ],
+      "searchText": "pache colis pache colis guatemala central america classic-arabica",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
       "id": "parainema",
       "label": "Parainema",
       "group": "disease-resistant",
@@ -1193,6 +2667,93 @@
       ]
     },
     {
+      "id": "pop3303_21",
+      "label": "Pop3303/21",
+      "group": "east-africa-selection",
+      "aliases": [
+        "pop 3303/21",
+        "pop3303-21"
+      ],
+      "origins": [
+        "East Africa"
+      ],
+      "originNotes": "Selection listed in WCR variety expansion context.",
+      "notes": [
+        "Rare label; use only for catalog search/provenance unless producer data adds detail."
+      ],
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
+      "searchText": "pop3303/21 pop 3303/21 pop3303-21 east-africa-selection east africa"
+    },
+    {
+      "id": "rab_c15",
+      "label": "RAB C15",
+      "group": "east-africa-selection",
+      "aliases": [
+        "rabc15"
+      ],
+      "origins": [
+        "Rwanda",
+        "East Africa"
+      ],
+      "originNotes": "Rwandan/East African variety reference in WCR catalog context.",
+      "notes": [
+        "Use as region and lineage cue only; cup profile still depends on lot details."
+      ],
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
+      "searchText": "rab c15 rabc15 east-africa-selection rwanda east africa"
+    },
+    {
+      "id": "rasuna",
+      "label": "Rasuna",
+      "group": "indonesia-selection",
+      "aliases": [
+        "wahana rasuna",
+        "sumatra rasuna"
+      ],
+      "originNotes": "Sumatra cultivar described as a Catimor x Typica cross in Wahana/Sumatra trade references.",
+      "source": "regional-curation",
+      "sourceUrls": [
+        "https://drwakefield.com/coffees/sumatra-wahana-rasuna-w/",
+        "https://sucafina.com/apac/origins/indonesia"
+      ],
+      "verificationLevel": "curated",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "notes": [
+        "Use as Indonesian lot context only; do not force earthy/body assumptions unless process and roast also support them."
+      ],
+      "searchText": "rasuna wahana rasuna sumatra rasuna indonesia-selection indonesia catimor typica",
+      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
+      "origins": [
+        "Indonesia"
+      ]
+    },
+    {
       "id": "robusta",
       "label": "Robusta / Canephora",
       "group": "canephora",
@@ -1226,6 +2787,35 @@
       ]
     },
     {
+      "id": "roubi_1",
+      "label": "Roubi 1",
+      "group": "canephora",
+      "aliases": [
+        "robusta roubi 1"
+      ],
+      "origins": [
+        "Cameroon",
+        "Africa"
+      ],
+      "originNotes": "WCR robusta catalog lists Roubi clones.",
+      "notes": [
+        "Canephora/Robusta clone context; verify lot details."
+      ],
+      "searchText": "roubi 1 robusta roubi 1 cameroon africa canephora",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research-robusta-catalog",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/robusta/varieties"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
       "id": "ruiru_11",
       "label": "Ruiru 11",
       "group": "kenyan-selection",
@@ -1250,6 +2840,38 @@
       ],
       "origins": [
         "Kenya"
+      ]
+    },
+    {
+      "source": "world-coffee-research",
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.4-ai-brew-origin-actionable",
+      "id": "rume_sudan",
+      "label": "Rume Sudan",
+      "group": "ethiopian-landrace",
+      "aliases": [
+        "sudan rume",
+        "sudan rume landrace"
+      ],
+      "origins": [
+        "Sudan",
+        "Central America",
+        "Global breeding programs"
+      ],
+      "originNotes": "Ethiopian landrace parent used in several F1/hybrid breeding lines.",
+      "notes": [
+        "Use as highland/landrace context only; cup expression still depends on lot, process, and altitude."
+      ],
+      "searchText": "rume sudan sudan rume ethiopian landrace f1 hybrid parent centroamericano starmaya",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://varieties.worldcoffeeresearch.org/varieties/centroamericano"
       ]
     },
     {
@@ -1284,9 +2906,11 @@
       "label": "S795",
       "group": "regional-selection",
       "aliases": [
-        "s 795"
+        "s 795",
+        "selection 795",
+        "sln 795"
       ],
-      "searchText": "s795 s 795",
+      "searchText": "s795 s 795 selection 795 sln 795 india indonesia regional-selection",
       "originNotes": "Widely referenced in Indonesian production.",
       "source": "regional-curation",
       "sourceUrls": [
@@ -1367,6 +2991,35 @@
       "catalogVersion": "2026.06.1-ai-brew-variety-plus"
     },
     {
+      "id": "sigarar_utang",
+      "label": "Sigarar Utang",
+      "group": "regional-selection",
+      "aliases": [
+        "sigararutang",
+        "siga rar utang"
+      ],
+      "origins": [
+        "Indonesia",
+        "Sumatra"
+      ],
+      "originNotes": "Indonesian/Sumatran regional variety cue.",
+      "notes": [
+        "Use as Sumatra body/sweetness cue, not as a farm/processing claim."
+      ],
+      "popularityTier": "regional_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "source": "regional-curation",
+      "sourceUrls": [
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "sigarar utang sigararutang siga rar utang indonesia sumatra regional-selection",
+      "catalogVersion": "2026.06.5-global-origin-plus"
+    },
+    {
       "id": "sigararutang",
       "label": "Sigararutang",
       "group": "regional-selection",
@@ -1391,6 +3044,36 @@
       "origins": [
         "Indonesia"
       ]
+    },
+    {
+      "id": "sl14",
+      "label": "SL14",
+      "group": "kenyan-selection",
+      "aliases": [
+        "sl 14"
+      ],
+      "origins": [
+        "Kenya",
+        "Uganda",
+        "Rwanda"
+      ],
+      "originNotes": "East African selection included in WCR variety references.",
+      "notes": [
+        "Use as an East African selection cue; process and roast still dominate brew behavior."
+      ],
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
+      "searchText": "sl14 sl 14 kenyan-selection kenya uganda rwanda"
     },
     {
       "id": "sl28",
@@ -1441,6 +3124,35 @@
         "Kenya",
         "China"
       ]
+    },
+    {
+      "id": "sln_9",
+      "label": "SLN 9",
+      "group": "india-selection",
+      "aliases": [
+        "selection 9",
+        "sln9"
+      ],
+      "origins": [
+        "India"
+      ],
+      "originNotes": "Indian selection cue commonly seen in South Asian catalog references.",
+      "notes": [
+        "Use as South Asia body/spice context only when paired with origin/process."
+      ],
+      "popularityTier": "regional_common",
+      "marketSegment": "small_market",
+      "releaseStatus": "established",
+      "source": "regional-curation",
+      "sourceUrls": [
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://www.croptrust.org/knowledge-hub/crops/coffee/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "sln 9 selection 9 sln9 india india-selection",
+      "catalogVersion": "2026.06.5-global-origin-plus"
     },
     {
       "id": "sln5b",
@@ -1563,6 +3275,122 @@
       ]
     },
     {
+      "id": "starmaya",
+      "label": "Starmaya",
+      "group": "hybrid-f1",
+      "aliases": [
+        "f1 starmaya"
+      ],
+      "origins": [
+        "Nicaragua",
+        "Central America"
+      ],
+      "originNotes": "F1 hybrid variety reference.",
+      "notes": [
+        "Use as modern hybrid cue; keep recipe changes modest."
+      ],
+      "searchText": "starmaya f1 starmaya nicaragua central america hybrid-f1",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "t5175",
+      "label": "T5175",
+      "group": "disease-resistant",
+      "aliases": [
+        "t-5175"
+      ],
+      "origins": [
+        "Latin America",
+        "Central America"
+      ],
+      "originNotes": "Catimor-line variety reference.",
+      "notes": [
+        "Disease-resistant lineage cue; do not infer cup profile alone."
+      ],
+      "searchText": "t5175 t-5175 latin america central america disease-resistant",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "t5296",
+      "label": "T5296",
+      "group": "disease-resistant",
+      "aliases": [
+        "t-5296"
+      ],
+      "origins": [
+        "Latin America",
+        "Central America"
+      ],
+      "originNotes": "Sarchimor-line variety reference.",
+      "notes": [
+        "Disease-resistant lineage cue; do not infer cup profile alone."
+      ],
+      "searchText": "t5296 t-5296 latin america central america disease-resistant",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "t8667",
+      "label": "T8667",
+      "group": "disease-resistant",
+      "aliases": [
+        "t-8667"
+      ],
+      "origins": [
+        "Latin America",
+        "Central America"
+      ],
+      "originNotes": "Catimor-line variety reference.",
+      "notes": [
+        "Disease-resistant lineage cue; do not infer cup profile alone."
+      ],
+      "searchText": "t8667 t-8667 latin america central america disease-resistant",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
       "id": "tabi",
       "label": "Tabi",
       "group": "disease-resistant",
@@ -1588,6 +3416,70 @@
       "origins": [
         "Colombia"
       ]
+    },
+    {
+      "source": "world-coffee-research",
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.4-ai-brew-origin-actionable",
+      "id": "tekisic",
+      "label": "Tekisic",
+      "group": "bourbon-typica",
+      "aliases": [
+        "tekisic improved bourbon",
+        "improved bourbon"
+      ],
+      "origins": [
+        "El Salvador",
+        "Guatemala",
+        "Central America"
+      ],
+      "originNotes": "Bourbon selection from El Salvador; WCR notes high-altitude cup quality potential.",
+      "notes": [
+        "Treat as Bourbon-family sweetness context; verify exact lot identity from producer data."
+      ],
+      "searchText": "tekisic improved bourbon el salvador guatemala central america bourbon selection high altitude",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://varieties.worldcoffeeresearch.org/varieties/tekisic"
+      ]
+    },
+    {
+      "id": "timor_hybrid",
+      "label": "Timor Hybrid",
+      "group": "introgressed",
+      "aliases": [
+        "hibrido de timor",
+        "hd t",
+        "hdt",
+        "tim tim"
+      ],
+      "origins": [
+        "Timor-Leste",
+        "Indonesia"
+      ],
+      "originNotes": "Introgressed lineage widely referenced in disease-resistant varieties.",
+      "notes": [
+        "Lineage cue; do not treat as a single sensory style."
+      ],
+      "popularityTier": "specialty_common",
+      "marketSegment": "commercial_specialty_bridge",
+      "releaseStatus": "established",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "confidence": "medium",
+      "searchText": "timor hybrid hibrido de timor hd t hdt tim tim timor-leste indonesia introgressed",
+      "catalogVersion": "2026.06.5-global-origin-plus"
     },
     {
       "id": "timtim",
@@ -1618,6 +3510,144 @@
         "India",
         "Vietnam"
       ]
+    },
+    {
+      "id": "topazio",
+      "label": "Topazio",
+      "group": "brazil-selection",
+      "aliases": [
+        "topazio"
+      ],
+      "origins": [
+        "Brazil"
+      ],
+      "originNotes": "Brazilian selection in variety references.",
+      "notes": [
+        "Brazil sweetness cue; keep sensory claims conservative."
+      ],
+      "searchText": "top?zio topazio brazil brazil-selection",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "tr4",
+      "label": "TR4",
+      "group": "canephora",
+      "aliases": [
+        "robusta tr4"
+      ],
+      "origins": [
+        "Vietnam"
+      ],
+      "originNotes": "WCR robusta catalog lists TR clones.",
+      "notes": [
+        "Vietnam canephora context; use robusta/body-first baseline."
+      ],
+      "searchText": "tr4 robusta tr4 vietnam canephora",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research-robusta-catalog",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/robusta/varieties"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "tr9",
+      "label": "TR9",
+      "group": "canephora",
+      "aliases": [
+        "robusta tr9"
+      ],
+      "origins": [
+        "Vietnam"
+      ],
+      "originNotes": "WCR robusta catalog lists TR clones.",
+      "notes": [
+        "Vietnam canephora context; use robusta/body-first baseline."
+      ],
+      "searchText": "tr9 robusta tr9 vietnam canephora",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research-robusta-catalog",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/robusta/varieties"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "trs1",
+      "label": "TRS1",
+      "group": "canephora",
+      "aliases": [
+        "robusta trs1"
+      ],
+      "origins": [
+        "Vietnam"
+      ],
+      "originNotes": "WCR robusta catalog lists TRS1.",
+      "notes": [
+        "Vietnam canephora context; use robusta/body-first baseline."
+      ],
+      "searchText": "trs1 robusta trs1 vietnam canephora",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research-robusta-catalog",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/robusta/varieties"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
+      "id": "tupi",
+      "label": "Tupi",
+      "group": "brazil-selection",
+      "aliases": [],
+      "origins": [
+        "Brazil"
+      ],
+      "originNotes": "Brazilian disease-resistant selection in variety references.",
+      "notes": [
+        "Brazil lineage cue; keep recipe shifts modest."
+      ],
+      "searchText": "tupi brazil brazil-selection",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
     },
     {
       "id": "typica",
@@ -1705,11 +3735,45 @@
       ]
     },
     {
+      "id": "venecia",
+      "label": "Venecia",
+      "group": "classic-arabica",
+      "aliases": [
+        "venecia bourbon"
+      ],
+      "origins": [
+        "Costa Rica",
+        "Central America"
+      ],
+      "originNotes": "Costa Rican variety reference.",
+      "notes": [
+        "Central America cue; final extraction follows process/roast."
+      ],
+      "searchText": "venecia costa rica central america classic-arabica",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "world-coffee-research",
+      "sourceUrls": [
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog",
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://varieties.worldcoffeeresearch.org/varieties/venecia"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium"
+    },
+    {
       "id": "villa_sarchi",
       "label": "Villa Sarchi",
       "group": "classic-arabica",
-      "aliases": [],
-      "searchText": "villa sarchi",
+      "aliases": [
+        "villalobos",
+        "villalobos bourbon",
+        "la luisa"
+      ],
+      "searchText": "villa sarchi villalobos bourbon la luisa",
       "originNotes": "Bourbon mutation common in Central America.",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -1813,193 +3877,6 @@
         "Brazil",
         "Honduras",
         "Costa Rica"
-      ]
-    },
-    {
-      "id": "mixed_variety",
-      "label": "Mixed Variety",
-      "group": "lot-composition",
-      "aliases": [
-        "mixed varieties",
-        "blend variety",
-        "variety blend",
-        "multi variety",
-        "campuran varietas"
-      ],
-      "originNotes": "Lot-level composition label for bags that list multiple cultivars or do not disclose a single variety.",
-      "source": "lot-composition-curation",
-      "sourceUrls": [
-        "https://varieties.worldcoffeeresearch.org/"
-      ],
-      "verificationLevel": "curated",
-      "popularityTier": "widely_used",
-      "marketSegment": "specialty_mainstream",
-      "releaseStatus": "established",
-      "confidence": "medium",
-      "notes": [
-        "Use process, roast, water, and target profile as the main brew drivers; do not apply cultivar-specific numeric shifts for mixed lots."
-      ],
-      "searchText": "mixed variety mixed varieties blend variety variety blend multi variety campuran varietas",
-      "verifiedAt": "2026-05-04",
-      "catalogVersion": "2026.06.1-ai-brew-variety-plus",
-      "origins": [
-        "Global",
-        "Indonesia",
-        "Brazil",
-        "Colombia",
-        "Ethiopia"
-      ]
-    },
-    {
-      "id": "komasti",
-      "label": "Komasti",
-      "group": "indonesia-selection",
-      "aliases": [
-        "composite andungsari",
-        "komposit andungsari",
-        "komasti arabica"
-      ],
-      "originNotes": "Indonesian arabica variety promoted by ICCRI/WCR demo work for climate-resilient farmer trials.",
-      "source": "world-coffee-research",
-      "sourceUrls": [
-        "https://worldcoffeeresearch.org/news/2023/komasti-demo-plot",
-        "https://worldcoffeeresearch.org/countries/indonesia"
-      ],
-      "verificationLevel": "curated",
-      "popularityTier": "emerging",
-      "marketSegment": "specialty_mainstream",
-      "releaseStatus": "new",
-      "confidence": "medium",
-      "notes": [
-        "Indonesian cultivar context; keep recipe anchored to process, roast, and target profile until producer data is explicit."
-      ],
-      "searchText": "komasti composite andungsari komposit andungsari komasti arabica indonesia-selection indonesia",
-      "verifiedAt": "2026-05-04",
-      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
-      "origins": [
-        "Indonesia"
-      ]
-    },
-    {
-      "id": "rasuna",
-      "label": "Rasuna",
-      "group": "indonesia-selection",
-      "aliases": [
-        "wahana rasuna",
-        "sumatra rasuna"
-      ],
-      "originNotes": "Sumatra cultivar described as a Catimor x Typica cross in Wahana/Sumatra trade references.",
-      "source": "regional-curation",
-      "sourceUrls": [
-        "https://drwakefield.com/coffees/sumatra-wahana-rasuna-w/",
-        "https://sucafina.com/apac/origins/indonesia"
-      ],
-      "verificationLevel": "curated",
-      "popularityTier": "specialty_common",
-      "marketSegment": "specialty_mainstream",
-      "releaseStatus": "established",
-      "confidence": "medium",
-      "notes": [
-        "Use as Indonesian lot context only; do not force earthy/body assumptions unless process and roast also support them."
-      ],
-      "searchText": "rasuna wahana rasuna sumatra rasuna indonesia-selection indonesia catimor typica",
-      "verifiedAt": "2026-05-04",
-      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
-      "origins": [
-        "Indonesia"
-      ]
-    },
-    {
-      "id": "blp_4",
-      "label": "BLP-4",
-      "group": "indonesia-selection",
-      "aliases": [
-        "blp4",
-        "blp 4"
-      ],
-      "originNotes": "Indonesian arabica variety appearing in public agronomy research alongside Gayo-1 and Sigararutang.",
-      "source": "academic-curation",
-      "sourceUrls": [
-        "https://garuda.kemdiktisaintek.go.id/journal/view/15868?issue=Vol+5%2C+No+1+%282021%29%3A+Agrotechnology+Research+Journal",
-        "https://jurnal.uns.ac.id/arj/article/download/44868/pdf"
-      ],
-      "verificationLevel": "curated",
-      "popularityTier": "niche",
-      "marketSegment": "small_market",
-      "releaseStatus": "established",
-      "confidence": "medium",
-      "notes": [
-        "Niche Indonesian agronomy reference; use only when the bag or producer identifies BLP-4."
-      ],
-      "searchText": "blp-4 blp4 blp 4 indonesia-selection indonesia",
-      "verifiedAt": "2026-05-04",
-      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
-      "origins": [
-        "Indonesia"
-      ]
-    },
-    {
-      "id": "excelsa",
-      "label": "Excelsa",
-      "group": "non-arabica",
-      "aliases": [
-        "coffea excelsa",
-        "liberica excelsa"
-      ],
-      "originNotes": "Non-arabica coffee type seen in Southeast Asian lots; UI should not treat it as Arabica without explicit producer data.",
-      "source": "species-curation",
-      "sourceUrls": [
-        "https://perfectdailygrind.com/2021/05/what-is-excelsa-coffee/",
-        "https://greencoffeecollective.com/blogs/learn/excelsa-coffee-s-overlooked-alternative"
-      ],
-      "verificationLevel": "curated",
-      "popularityTier": "emerging",
-      "marketSegment": "small_market",
-      "releaseStatus": "established",
-      "confidence": "medium",
-      "notes": [
-        "Treat as non-arabica / liberica-adjacent context; AI Brew should avoid Arabica cultivar assumptions and lean on roast, process, and tasting feedback."
-      ],
-      "searchText": "excelsa coffea excelsa liberica excelsa non-arabica philippines indonesia malaysia vietnam",
-      "verifiedAt": "2026-05-04",
-      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
-      "origins": [
-        "Philippines",
-        "Indonesia",
-        "Malaysia",
-        "Vietnam",
-        "Southeast Asia"
-      ]
-    },
-    {
-      "id": "ethiopian_landrace_mix",
-      "label": "Ethiopian Landrace Mix",
-      "group": "lot-composition",
-      "aliases": [
-        "ethiopian heirloom",
-        "heirloom mix",
-        "landrace blend",
-        "regional landrace"
-      ],
-      "originNotes": "Safer label for Ethiopian lots described broadly as heirloom/landrace without a single named variety.",
-      "source": "world-coffee-research",
-      "sourceUrls": [
-        "https://worldcoffeeresearch.org/countries/ethiopia",
-        "https://varieties.worldcoffeeresearch.org/"
-      ],
-      "verificationLevel": "curated",
-      "popularityTier": "widely_used",
-      "marketSegment": "specialty_mainstream",
-      "releaseStatus": "established",
-      "confidence": "medium",
-      "notes": [
-        "Use this when Ethiopian bags say heirloom or landrace without a named JARC selection; do not invent 74110/74112 or Gesha."
-      ],
-      "searchText": "ethiopian landrace mix ethiopian heirloom heirloom mix landrace blend regional landrace ethiopia",
-      "verifiedAt": "2026-05-04",
-      "catalogVersion": "2026.06.2-ai-brew-variety-plus",
-      "origins": [
-        "Ethiopia"
       ]
     },
     {

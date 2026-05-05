@@ -188,7 +188,7 @@ function localizeBeanProfileSummary(text: string) {
     .replace(/\blow\b/gi, 'rendah')
     .replace(/\bmedium\b/gi, 'sedang')
     .replace(/\bhigh\b/gi, 'tinggi')
-    .replace(/\s+(?:Â·|·)\s+/g, ' · ');
+    .replace(/\s+(?:\u00c3\u0082\u00c2\u00b7|\u00c2\u00b7|\u00b7)\s+/g, ' \u00b7 ');
 }
 
 export function localizeAiBrewDynamicText(text: string, language?: string) {
@@ -212,7 +212,7 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/^Device profile source: (.+)\.$/i, 'Sumber profil alat: $1.')
     .replace(/^Grinder setting source: (.+)\.$/i, 'Sumber setting grinder: $1.')
     .replace(/^Using (.+) family fallback profile\.$/i, 'Menggunakan profil fallback family $1.')
-    .replace(/^Bean profile modifiers active: (.+)\.$/i, (_, summary: string) => `Modifier profil bean aktif: ${localizeBeanProfileSummary(summary)}.`)
+    .replace(/^Bean profile modifiers active: (.+)\.$/i, (_, summary: string) => 'Modifier profil bean aktif: ' + localizeBeanProfileSummary(summary) + '.')
     .replace(/^(.+?) was selected as the brand baseline, then adjusted manually\.$/i, '$1 dipakai sebagai baseline brand lalu disesuaikan manual.')
     .replace(/^(.+?) brand water profile is active for this brew plan\.$/i, 'Profil air brand $1 aktif untuk brew plan ini.')
     .replace(/^(.+?) does not have a full autofill panel in this catalog version\.$/i, '$1 belum punya panel autofill lengkap di versi katalog ini.')
@@ -222,12 +222,12 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/^Operator knowledge active: (\d+) matched note\(s\) from knowledge_v1\.xlsx\.$/i, 'Knowledge operator aktif: $1 catatan cocok dari knowledge_v1.xlsx.')
     .replace(/^AeroPress service floor protects medium and lighter roasts from under-extraction; preheat, then press steadily instead of using a very low kettle temperature\.$/i, 'AeroPress dinaikkan ke suhu aman agar roast medium atau lebih ringan tidak kurang ekstraksi; panaskan chamber, lalu tekan stabil.')
     .replace(/^French Press temperature kept in a calm immersion band so body builds without extracting harsh fines\.$/i, 'Suhu French Press dijaga di rentang immersion yang tenang agar body terbentuk tanpa menarik fines pahit.')
-    .replace(/^Delicate Geisha\/Gesha iced profile capped at 92-94(?:Ã‚?Â°?|Â°)C to protect floral aroma while keeping Japanese-style concentration\.$/i, 'Profil Geisha/Gesha es dibatasi 92-94°C agar aroma floral tetap aman sambil menjaga konsentrat Japanese style.')
+    .replace(/^Delicate Geisha\/Gesha iced profile capped at 92-94.*C to protect floral aroma while keeping Japanese-style concentration\.$/i, 'Profil Geisha/Gesha es dibatasi 92-94\u00b0C agar aroma floral tetap aman sambil menjaga konsentrat Japanese style.')
     .replace(/^Structured Indonesian iced profile uses lower kettle energy so body stays sweet instead of bitter or burnt\.$/i, 'Profil es Indonesia yang body-nya tebal memakai energi kettle lebih rendah agar tetap manis, tidak pahit atau gosong.')
     .replace(/^Washed Colombia on April iced gets a little more kettle energy to lift caramel, red-apple, and citrus sweetness\.$/i, 'Washed Colombia pada April iced diberi sedikit energi kettle tambahan untuk mengangkat caramel, red apple, dan citrus sweetness.')
-    .replace(/^Washed Kenya light\/medium-light profile lifted toward 94-96(?:Ã‚?Â°?|Â°)C so berry, citrus, and bergamot notes extract clearly\.$/i, 'Washed Kenya light/medium-light diarahkan ke 94-96°C agar berry, citrus, dan bergamot keluar jelas.')
-    .replace(/^Washed Ethiopia\/Yirgacheffe light profile lifted toward 94-96(?:Ã‚?Â°?|Â°)C to open citrus, honey, and floral clarity\.$/i, 'Washed Ethiopia/Yirgacheffe light diarahkan ke 94-96°C untuk membuka citrus, honey, dan floral clarity.')
-    .replace(/^Washed Central America light\/medium-light profile nudged toward 93-95(?:Ã‚?Â°?|Â°)C for citrus, caramel, and clean sweetness\.$/i, 'Washed Central America light/medium-light diarahkan ke 93-95°C untuk citrus, caramel, dan clean sweetness.')
+    .replace(/^Washed Kenya light\/medium-light profile lifted toward 94-96.*C so berry, citrus, and bergamot notes extract clearly\.$/i, 'Washed Kenya light/medium-light diarahkan ke 94-96\u00b0C agar berry, citrus, dan bergamot keluar jelas.')
+    .replace(/^Washed Ethiopia\/Yirgacheffe light profile lifted toward 94-96.*C to open citrus, honey, and floral clarity\.$/i, 'Washed Ethiopia/Yirgacheffe light diarahkan ke 94-96\u00b0C untuk membuka citrus, honey, dan floral clarity.')
+    .replace(/^Washed Central America light\/medium-light profile nudged toward 93-95.*C for citrus, caramel, and clean sweetness\.$/i, 'Washed Central America light/medium-light diarahkan ke 93-95\u00b0C untuk citrus, caramel, dan clean sweetness.')
     .replace(/^Bright washed highland profile uses a slightly warmer filter envelope so clarity does not turn thin\.$/i, 'Profil washed highland yang bright memakai envelope sedikit lebih panas agar clarity tidak terasa tipis.')
     .replace(/^Barista temperature calibration active: (.+)\.$/i, 'Kalibrasi suhu barista aktif: $1.')
     .replace(/^Water source: (.+) \((.+)\)\.$/i, 'Sumber air: $1 ($2).')
@@ -237,7 +237,7 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/^Brew (\d+(?:\.\d+)?) ml hot over (\d+(?:\.\d+)?) ml\/g ice \((.+)\)\. Final ratio is 1:(\d+(?:\.\d+)?); hot concentrate extracts at 1:(\d+(?:\.\d+)?)\. Keep pours compact to hold sweetness and clarity, then stir the chilled server after drawdown so service is not confused with another brew step\.$/i, 'Seduh $1 ml air panas di atas $2 ml/g es ($3). Rasio final 1:$4; konsentrat panas terekstraksi di 1:$5. Jaga tuangan tetap rapat, lalu aduk server setelah drawdown supaya tahap saji tidak terlihat seperti langkah seduh tambahan.')
     .replace(/^Brew (\d+(?:\.\d+)?) ml hot over (\d+(?:\.\d+)?) ml\/g ice \((.+)\)\. Keep pours compact to hold sweetness and clarity\.$/i, 'Seduh $1 ml air panas di atas $2 ml/g es ($3). Jaga tuangan tetap rapat untuk menjaga manis dan kejernihan.')
     .replace(/^Iced split source: final beverage ratio 1:(\d+(?:\.\d+)?), hot extraction ratio 1:(\d+(?:\.\d+)?), hot\/ice (.+)\.$/i, 'Sumber split seduh es: rasio final 1:$1, rasio ekstraksi panas 1:$2, panas/es $3.')
-    .replace(/^Use the full (\d+(?:\.\d+)?) ml as brew water and keep kettle near (\d+(?:\.\d+)?)(?:Â?°?|°)C with calm, center-focused pours\.$/i, 'Gunakan penuh $1 ml sebagai air seduh dan jaga kettle di sekitar $2°C dengan tuangan tenang yang fokus ke tengah.');
+    .replace(/^Use the full (\d+(?:\.\d+)?) ml as brew water and keep kettle near (\d+(?:\.\d+)?).*C with calm, center-focused pours\.$/i, 'Gunakan penuh $1 ml sebagai air seduh dan jaga kettle di sekitar $2\u00b0C dengan tuangan tenang yang fokus ke tengah.');
 
   const localized = normalized
     .replace(/^No verified setting yet\. Start near (.+) and bias (.+)\.$/i, 'Belum ada setting terverifikasi. Mulai di sekitar $1 lalu arahkan ke $2.')

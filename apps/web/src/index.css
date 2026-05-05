@@ -853,8 +853,20 @@
     border: 1px solid color-mix(in srgb, var(--panel-border-soft) 86%, transparent);
   }
 
+  .route-loading-panel .route-loading-badge {
+    color: #0f172a;
+  }
+
+  .route-loading-panel .text-secondary {
+    color: #334155;
+  }
+
   :root.dark .route-loading-badge {
     color: #f8fafc;
+  }
+
+  :root.dark .route-loading-panel .text-secondary {
+    color: #e2e8f0;
   }
 
   .route-loading-bar,

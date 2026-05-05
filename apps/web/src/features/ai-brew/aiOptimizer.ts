@@ -98,6 +98,20 @@ export function parseAiBrewOptimizationPatch(raw: string | null | undefined): Ai
         ?? source.hotWaterShare
         ?? source.hotShare,
       ),
+      pourStyleHint: typeof source.pourStyleHint === 'string'
+        ? source.pourStyleHint
+        : typeof source.pourStyle === 'string'
+          ? source.pourStyle
+          : typeof source.cadence === 'string'
+            ? source.cadence
+            : undefined,
+      grindGuidance: typeof source.grindGuidance === 'string'
+        ? source.grindGuidance
+        : typeof source.grindAdjustment === 'string'
+          ? source.grindAdjustment
+          : typeof source.grindNote === 'string'
+            ? source.grindNote
+            : undefined,
       steps,
     };
   } catch {

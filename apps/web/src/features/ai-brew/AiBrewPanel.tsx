@@ -55,6 +55,11 @@ import {
 import { syncAiBrewLibraryToCloud } from './cloudSync';
 import { parseAiBrewOptimizationPatch } from './aiOptimizer';
 import {
+  buildAiBrewTasteLoopMarkdown,
+  resolveAiBrewActionPriorities,
+  resolveAiBrewConfidenceBadges,
+} from './experience';
+import {
   isIndonesianAiBrewLanguage,
   localizeAiBrewDynamicText,
   localizeAiBrewRoastLabel,
@@ -398,6 +403,8 @@ const COPY = {
     feedbackSaveNote: 'Save note',
     feedbackSaved: 'Taste feedback saved.',
     feedbackSaveFailed: 'Unable to save taste feedback right now.',
+    feedbackCoachTitle: 'Next Brew Adjustment',
+    feedbackCoachHint: 'Smallest safe correction for the next brew.',
     unavailable: 'AI Brew catalog is unavailable right now.',
     loadingCatalog: 'Loading catalog...',
     restoredPlan: 'Restored your last AI Brew plan from this device.',
@@ -467,6 +474,7 @@ const COPY = {
     flowNow: 'Now',
     flowUpNext: 'Up next',
     coachDescription: 'AI is optional. Use it only for a short fix or explanation.',
+    coachCostHint: 'AI is called only on Generate, Coach, or Taste Check. Other panels use the local planner to keep token use lean.',
     coachEmpty: 'Choose one brief.',
     coachExplainHint: 'Why this plan fits the bean, water, and target.',
     coachTroubleshootHint: 'What to change first when the cup tastes off.',
@@ -781,6 +789,8 @@ const COPY = {
     feedbackSaveNote: 'Simpan catatan',
     feedbackSaved: 'Catatan rasa tersimpan.',
     feedbackSaveFailed: 'Catatan rasa belum bisa disimpan sekarang.',
+    feedbackCoachTitle: 'Koreksi Seduhan Berikutnya',
+    feedbackCoachHint: 'Koreksi aman paling kecil untuk seduhan berikutnya.',
     unavailable: 'Katalog AI Brew belum bisa dimuat sekarang.',
     loadingCatalog: 'Memuat katalog...',
     restoredPlan: 'Plan terakhir dipulihkan.',
@@ -850,6 +860,7 @@ const COPY = {
     flowNow: 'Sekarang',
     flowUpNext: 'Berikutnya',
     coachDescription: 'AI opsional. Pakai hanya untuk penjelasan atau koreksi rasa singkat.',
+    coachCostHint: 'AI hanya dipanggil saat Generate, Coach, atau Cek rasa. Panel lain memakai planner lokal agar token tetap hemat.',
     coachEmpty: 'Pilih satu brief.',
     coachExplainHint: 'Mengapa plan ini cocok dengan bean, air, dan target.',
     coachTroubleshootHint: 'Apa yang paling dulu diubah saat rasa mulai meleset.',
@@ -1192,9 +1203,12 @@ function selectDefaultAiResponse(
       const guarded = plan
         ? sanitizeAiCoachMarkdown({ action: mode, markdown, plan })
         : { markdown, risk: 'none' as const, replacements: [] };
+      const localizedMarkdown = localizeAiBrewMarkdownLanguage(guarded.markdown, language);
       return {
         title: getAiCoachTitle(copy, mode),
-        markdown: guarded.markdown,
+        markdown: plan && hasAiBrewLanguageLeak(localizedMarkdown, language)
+          ? buildDeterministicAiCoachMarkdown(plan, mode, language)
+          : localizedMarkdown,
       };
     }
   }
@@ -1257,12 +1271,73 @@ function createHybridAiSequenceProgress(
 
 function withLanguageLock(promptBody: string, language: string) {
   if (/^id(?:-|$)/i.test(language)) {
-    return `${promptBody}\n\nKunci bahasa: jawab sepenuhnya dalam Bahasa Indonesia. Jangan gunakan bahasa lain untuk judul, bullet, label, catatan, maupun fallback. Pertahankan struktur heading, bullet, dan angka secara konsisten.`;
+    return `${promptBody}\n\nKunci bahasa: jawab sepenuhnya dalam Bahasa Indonesia. Jangan gunakan bahasa lain untuk judul, bullet, label, catatan, maupun fallback. Nama alat, nama brand, istilah umum seperti bloom/drawdown/server/bed, dan satuan tetap boleh dipertahankan. Pertahankan struktur heading, bullet, dan angka secara konsisten.`;
   }
   if (/^ar(?:-|$)/i.test(language)) {
     return `${promptBody}\n\nقفل اللغة: أجب بالكامل باللغة العربية. لا تستخدم أي لغة أخرى في العناوين أو النقاط أو التسميات أو الملاحظات أو النصوص الاحتياطية. حافظ على بنية العناوين والنقاط والأرقام كما هي.`;
   }
   return promptBody + '\n\nLanguage lock: respond fully in ' + language + '. Keep all headings, bullets, and numbers structurally consistent.';
+}
+
+function localizeAiBrewMarkdownLanguage(markdown: string, language: string) {
+  if (!isIndonesianAiBrewLanguage(language) || !markdown.trim()) return markdown;
+  const headingMap: Record<string, string> = {
+    '## Service Pattern': '## Pola Seduh',
+    '## Sequence': '## Urutan Seduh',
+    '## Watch': '## Pantau',
+    '## Quick Dial': '## Setelan Cepat',
+    '## Control Points': '## Titik Kontrol',
+    '## Why It Fits': '## Kenapa Cocok',
+    '## Focus': '## Fokus',
+    '## Steps': '## Langkah',
+    '### Why it fits': '### Kenapa cocok',
+    '### Why It Fits': '### Kenapa cocok',
+    '### What to protect': '### Yang perlu dijaga',
+    '### Source notes': '### Catatan sumber',
+  };
+
+  return markdown
+    .split('\n')
+    .map((line) => {
+      const trimmed = line.trim();
+      const heading = headingMap[trimmed];
+      if (heading) return line.replace(trimmed, heading);
+
+      const prefixMatch = line.match(/^(\s*(?:[-*]\s+|\d+\.\s+)?)(.*)$/);
+      const prefix = prefixMatch?.[1] || '';
+      const body = prefixMatch?.[2] || line;
+      const localizedBody = localizeAiBrewDynamicText(body, language)
+        .replace(/\bStarting grind:/gi, 'Gilingan awal:')
+        .replace(/\bCorrection range:/gi, 'Rentang koreksi:')
+        .replace(/\bIf sour\/thin:/gi, 'Jika asam/tipis:')
+        .replace(/\bIf bitter\/dry\/stalled:/gi, 'Jika pahit/kering/macet:')
+        .replace(/\bIf bitter\/stalled:/gi, 'Jika pahit/macet:')
+        .replace(/\bSource setting grind:/gi, 'Sumber setting grinder:')
+        .replace(/\bGrind recommendation:/gi, 'Rekomendasi gilingan:')
+        .replace(/\bTotal input\b/gi, 'Total input')
+        .replace(/\bHot water\b/gi, 'Air panas')
+        .replace(/\bIce in server\b/gi, 'Es di server')
+        .replace(/\bEstimated cup output\b/gi, 'Estimasi hasil cangkir')
+        .replace(/\bFinal ratio\b/gi, 'Rasio final')
+        .replace(/\bBrew time\b/gi, 'Waktu seduh')
+        .replace(/\bTemperature\b/gi, 'Suhu')
+        .replace(/\bWatch\b/gi, 'Pantau')
+        .replace(/\bService Pattern\b/gi, 'Pola seduh')
+        .replace(/\bSequence\b/gi, 'Urutan seduh')
+        .replace(/\bControl Points\b/gi, 'Titik kontrol')
+        .replace(/\bQuick Dial\b/gi, 'Setelan cepat');
+      return `${prefix}${localizedBody}`;
+    })
+    .join('\n');
+}
+
+function hasAiBrewLanguageLeak(markdown: string, language: string) {
+  if (!isIndonesianAiBrewLanguage(language) || !markdown.trim()) return false;
+  return [
+    /^#{2,3}\s+(Service Pattern|Sequence|Watch|Quick Dial|Control Points|Why It Fits|Focus|Steps)\b/im,
+    /\b(Starting grind|Correction range|If sour\/thin|If bitter\/dry\/stalled|Estimated cup output|Brew time|Hot water|Ice in server)\b/i,
+    /\b(Answer|Analysis|Recommendation|Trade-off|What to watch)\b/i,
+  ].some((pattern) => pattern.test(markdown));
 }
 
 async function normalizeMarkdownToLanguage(
@@ -1282,9 +1357,9 @@ async function normalizeMarkdownToLanguage(
   ].join('\n');
   try {
     const translated = await raceChatResponse(translationPrompt, requestContext);
-    return translated?.trim() || markdown;
+    return localizeAiBrewMarkdownLanguage(translated?.trim() || markdown, language);
   } catch {
-    return markdown;
+    return localizeAiBrewMarkdownLanguage(markdown, language);
   }
 }
 
@@ -1298,10 +1373,7 @@ async function normalizeSequenceMarkdownToLanguage(
   if (/^en(?:-|$)/i.test(language)) return markdown;
   const translationPrompt = [
     'Translate the markdown below fully into ' + language + ' using concise, natural barista language.',
-    'Keep these headings exactly unchanged:',
-    '## Service Pattern',
-    '## Sequence',
-    '## Watch',
+    'For Indonesian, translate these headings exactly as: ## Pola Seduh, ## Urutan Seduh, ## Pantau.',
     'For every numbered Sequence line, keep the deterministic checkpoint prefix unchanged through the operation text, including pour, wait, release, drawdown, and all ml/time targets.',
     'Translate only the control instruction after that fixed checkpoint prefix.',
     'Keep numbering, line order, and all numeric values unchanged.',
@@ -1314,9 +1386,9 @@ async function normalizeSequenceMarkdownToLanguage(
     const translated = await raceChatResponse(translationPrompt, requestContext, {
       timeoutMs: options?.timeoutMs,
     });
-    return translated?.trim() || markdown;
+    return localizeAiBrewMarkdownLanguage(translated?.trim() || markdown, language);
   } catch {
-    return markdown;
+    return localizeAiBrewMarkdownLanguage(markdown, language);
   }
 }
 
@@ -1338,7 +1410,7 @@ function looksLikeUnstrippedSequenceInstruction(plan: BrewPlan, instruction: str
   return false;
 }
 
-function resolveDisplaySequenceOverlay(plan: BrewPlan, canonicalMarkdown: string, displayMarkdown: string) {
+function resolveDisplaySequenceOverlay(plan: BrewPlan, canonicalMarkdown: string, displayMarkdown: string, language: string) {
   const canonicalOverlay = extractSequenceOverlayFromMarkdown(plan, canonicalMarkdown);
   const localizedOverlay = extractSequenceOverlayFromMarkdown(plan, displayMarkdown);
   const canonicalServicePattern = stripSequenceBullets(canonicalOverlay.servicePattern);
@@ -1350,10 +1422,14 @@ function resolveDisplaySequenceOverlay(plan: BrewPlan, canonicalMarkdown: string
     servicePattern: servicePattern.length > 0 ? servicePattern : canonicalServicePattern,
     watch: watch.length > 0 ? watch : canonicalWatch,
     stepInstructions: localizedOverlay.steps.map((step, index) => {
+      const fallbackInstruction = localizeAiBrewDynamicText(
+        canonicalOverlay.steps[index]?.instruction || plan.steps[index]?.note || step.instruction,
+        language,
+      );
       if (looksLikeUnstrippedSequenceInstruction(plan, step.instruction, index)) {
-        return canonicalOverlay.steps[index]?.instruction || plan.steps[index]?.note || step.instruction;
+        return fallbackInstruction;
       }
-      return step.instruction;
+      return localizeAiBrewDynamicText(step.instruction, language);
     }),
   };
 }
@@ -1434,10 +1510,10 @@ async function runHybridSequenceUpdate(
     markdown: displayMarkdown,
     plan: nextPlan,
   });
-  const safeDisplayMarkdown = guardedDisplay.risk === 'high'
-    ? canonicalOverlay.markdown
+  const safeDisplayMarkdown = guardedDisplay.risk === 'high' || hasAiBrewLanguageLeak(guardedDisplay.markdown, options.language)
+    ? localizeAiBrewMarkdownLanguage(canonicalOverlay.markdown, options.language)
     : guardedDisplay.markdown;
-  const displayOverlay = resolveDisplaySequenceOverlay(nextPlan, canonicalOverlay.markdown, safeDisplayMarkdown);
+  const displayOverlay = resolveDisplaySequenceOverlay(nextPlan, canonicalOverlay.markdown, safeDisplayMarkdown, options.language);
 
   const fallbackDiagnostics = [
     ...(canonicalOverlay.usedFallback
@@ -1517,14 +1593,14 @@ function buildGuardrailAiOptimizationCandidates(plan: BrewPlan): AiBrewOptimizat
   const iced = plan.brewMode === 'iced';
   const espresso = plan.methodFamily === 'espresso';
   const coldBrew = plan.methodFamily === 'cold_brew';
-  const ratioStep = espresso ? 0.1 : coldBrew ? 0.5 : 0.2;
-  const timeStep = espresso ? 2 : coldBrew ? 1800 : iced ? 10 : 8;
-  const ratioDirection = intent === 'body' || intent === 'sweetness' ? -1 : 1;
+  const ratioStep = espresso ? 0.05 : coldBrew ? 0.35 : 0.1;
+  const timeStep = espresso ? 2 : coldBrew ? 1800 : 10;
   const tempDirection = intent === 'body' || plan.roastLevel === 'dark' ? -1 : 1;
   const timeDirection = intent === 'clarity' ? -1 : 1;
   const hotShareDirection = intent === 'clarity' ? -1 : 1;
+  const pourStyleHint = intent === 'sweetness' || intent === 'body' ? 'pulse_light' : 'balanced';
   const reason = [
-    'AI Brew guardrail optimizer created a safe numeric micro-adjustment after the online optimizer was unavailable or not directly usable.',
+    'AI Brew guardrail optimizer created a controlled micro-patch after the online optimizer was unavailable or not directly usable.',
     iced
       ? 'Japanese-style iced remains hot concentrate over measured ice.'
       : 'Hot brew envelope stays inside method and roast limits.',
@@ -1534,19 +1610,23 @@ function buildGuardrailAiOptimizationCandidates(plan: BrewPlan): AiBrewOptimizat
     {
       reason,
       confidence: 0.72,
-      recommendedRatio: plan.recommendedRatio + (ratioStep * ratioDirection),
+      pourStyleHint,
       waterTempC: plan.waterTempC + tempDirection,
       totalTimeSeconds: plan.totalTimeSeconds + (timeStep * timeDirection),
       hotWaterSharePercent: iced
         ? plan.hotWaterSharePercent + (2 * hotShareDirection)
         : undefined,
+      grindGuidance: intent === 'clarity'
+        ? 'Keep the deterministic grind; if the cup tastes dull, move only slightly coarser after tasting.'
+        : 'Keep the deterministic grind; if the cup tastes thin, move only slightly finer after tasting.',
     },
     {
       reason,
       confidence: 0.68,
-      recommendedRatio: plan.recommendedRatio - (ratioStep * ratioDirection),
+      recommendedRatio: plan.recommendedRatio + (intent === 'body' || intent === 'sweetness' ? -ratioStep : ratioStep),
       waterTempC: plan.waterTempC + (plan.waterTempC >= 94 ? -1 : 1),
       totalTimeSeconds: plan.totalTimeSeconds + timeStep,
+      pourStyleHint,
       hotWaterSharePercent: iced
         ? plan.hotWaterSharePercent + (plan.hotWaterSharePercent >= 64 ? -2 : 2)
         : undefined,
@@ -2788,6 +2868,8 @@ function PlanResultDialog({
   const displaySummary = compactResultSummaryForDisplay(localizedSummary, plan, language);
   const methodBrief = buildPlanMethodBrief(plan, language);
   const aiEngineOnline = planUsesOnlineAi(plan);
+  const confidenceBadges = resolveAiBrewConfidenceBadges(plan, language);
+  const actionPriorities = resolveAiBrewActionPriorities(plan, language);
   const planHeaderWater = formatPlanHeaderWater(plan, language);
   const localizedWaterStyle = localizeAiBrewWaterStyle(plan.waterMinerals.styleLabel, language);
   const localizedGrindRecommendation = formatGrindTextForDisplay(plan.grindRecommendation, language);
@@ -2819,6 +2901,12 @@ function PlanResultDialog({
   const resultMetricCardClass = 'rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/84 p-3';
   const resultChipClass = 'rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-medium text-secondary';
   const resultActionButtonClass = 'min-h-[44px] w-full rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-center text-[13px] font-medium leading-4 text-primary transition-colors hover:border-blue-500/20 hover:bg-surface-alpha sm:w-auto sm:text-sm sm:whitespace-nowrap';
+  const confidenceBadgeClass = (tone: string) => {
+    if (tone === 'emerald') return 'border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300';
+    if (tone === 'amber') return 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300';
+    if (tone === 'blue') return 'border-blue-500/18 bg-blue-500/10 text-blue-700 dark:text-blue-300';
+    return 'panel-divider-subtle bg-[var(--bg-base)] text-secondary';
+  };
   const saveButtonLabel = saving
     ? (id ? 'Menyimpan...' : 'Saving...')
     : saveSuccess
@@ -2943,6 +3031,34 @@ function PlanResultDialog({
                 <p className="mt-2 max-w-3xl text-sm leading-5 text-secondary">
                   {displaySummary}
                 </p>
+                <div className="mt-3 rounded-2xl border border-blue-500/18 bg-blue-500/[0.07] px-3 py-3" data-testid="ai-brew-action-priorities">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Target size={14} className="text-blue-500" />
+                    <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
+                      {id ? 'Prioritas aksi' : 'Action priorities'}
+                    </p>
+                  </div>
+                  <ol className="space-y-1.5 text-sm leading-5 text-secondary">
+                    {actionPriorities.map((item, index) => (
+                      <li key={`${index}-${item}`} className="grid grid-cols-[1.5rem_minmax(0,1fr)] gap-2">
+                        <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[11px] font-semibold text-white">
+                          {index + 1}
+                        </span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1.5" data-testid="ai-brew-confidence-labels">
+                  {confidenceBadges.map((badge) => (
+                    <span
+                      key={badge.label}
+                      className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${confidenceBadgeClass(badge.tone)}`}
+                    >
+                      {badge.label}
+                    </span>
+                  ))}
+                </div>
               </div>
 
               <div className="mt-3 grid gap-2.5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
@@ -2997,11 +3113,7 @@ function PlanResultDialog({
                 aria-labelledby={activeTabId}
                 className="flex flex-col gap-5"
               >
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 xl:grid-cols-6">
-                <div className={resultMetricCardClass}>
-                  <p className="text-[11px] uppercase tracking-widest text-secondary">{methodBrief.primaryLabel}</p>
-                  <p className="mt-1 text-xl font-semibold text-primary sm:text-2xl">{methodBrief.primaryValue}</p>
-                </div>
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 xl:grid-cols-5">
                 <div className={resultMetricCardClass}>
                   <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.cupOutput}</p>
                   <p className="mt-1 text-xl font-semibold text-primary sm:text-2xl">{formatRoundedMl(plan.estimatedCupOutputMl)}</p>
@@ -3253,6 +3365,18 @@ function PlanResultDialog({
                     >
                       {copy.feedbackSaveNote}
                     </button>
+                    {feedback && (
+                      <div
+                        className="chat-markdown prose prose-sm mt-3 max-w-none rounded-2xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-3 text-primary prose-headings:text-primary prose-strong:text-primary"
+                        data-testid="ai-brew-taste-loop"
+                      >
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
+                          {copy.feedbackCoachTitle}
+                        </p>
+                        <Markdown>{buildAiBrewTasteLoopMarkdown(plan, feedback, language)}</Markdown>
+                        <p className="mt-2 text-xs text-secondary">{copy.feedbackCoachHint}</p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="rounded-[1.4rem] border panel-divider-subtle panel-soft p-4">
@@ -3389,8 +3513,8 @@ function PlanResultDialog({
                         <p className="mt-1 text-3xl font-semibold text-primary">{formatGuideTime(flowProgressSeconds)}</p>
                       </div>
                       <div className="rounded-2xl bg-[var(--bg-base)]/82 p-3">
-                        <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowRemaining}</p>
-                        <p className="mt-1 text-3xl font-semibold text-primary">{formatGuideTime(flowRemainingSeconds)}</p>
+                        <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowMetricNext}</p>
+                        <p className="mt-1 text-3xl font-semibold text-primary">{formatGuideTime(flowStepRemainingSeconds)}</p>
                       </div>
                     </div>
 
@@ -3429,8 +3553,8 @@ function PlanResultDialog({
                           <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
                         </span>
                         <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowMetricNext}</span>
-                          <span className="font-semibold text-primary">{formatGuideTime(flowStepRemainingSeconds)}</span>
+                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowRemaining}</span>
+                          <span className="font-semibold text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
                         </span>
                         <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
                           <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowMetricTotal}</span>
@@ -3580,6 +3704,7 @@ function PlanResultDialog({
                 <p className="text-sm text-secondary">{copy.coachDescription}</p>
                 <div className="mt-3 space-y-1 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2 text-xs leading-5 text-secondary">
                   <p>{id ? 'Coach mengikuti planner deterministic. Angka resep tidak diubah oleh AI.' : 'Coach follows the deterministic planner. AI does not change recipe numbers.'}</p>
+                  <p>{copy.coachCostHint}</p>
                   {hasLowConfidenceCoachData && (
                     <p>{id ? 'Sebagian data bersifat curated/estimated; gunakan sebagai baseline, bukan klaim final.' : 'Some data is curated/estimated; use it as a baseline, not a final factual claim.'}</p>
                   )}
@@ -4965,13 +5090,13 @@ export function AiBrewPanel({
         }
 
         if (!optimized.applied) {
+          if (requireOnlineAiGenerate) {
+            throw new Error('ai_brew_optimizer_unavailable');
+          }
           const synthesized = applyGuardrailAiOptimizationSynthesis(nextPlan);
           if (synthesized.applied) {
             optimized = synthesized;
           } else {
-            if (requireOnlineAiGenerate) {
-              throw new Error('ai_brew_optimizer_unavailable');
-            }
             console.warn(
               copy.aiOptimizationNoChange,
               synthesized.rejected.length > 0 ? synthesized.rejected : synthesized.diagnostics,
@@ -5101,6 +5226,64 @@ export function AiBrewPanel({
     setNotice(copy.savedFavorite);
   }
 
+  async function runAiTasteFeedbackCoach(nextFeedback: BrewTasteFeedback) {
+    if (!plan) return;
+    const deterministicMarkdown = buildAiBrewTasteLoopMarkdown(plan, nextFeedback, language);
+    setAiResponse({ title: copy.feedbackCoachTitle, markdown: deterministicMarkdown });
+
+    if (nextFeedback.rating === 'great' || !canUsePaidAiBrew || aiBusy) return;
+
+    setAiBusy('troubleshoot');
+    setAiError(null);
+    try {
+      const basePrompt = buildTroubleshootPrompt(plan, language);
+      const promptBody = [
+        basePrompt.body,
+        '',
+        'Taste feedback context for this finished brew:',
+        `- rating: ${nextFeedback.rating}`,
+        `- user note: ${nextFeedback.note || 'none'}`,
+        '',
+        'Return only a next-brew adjustment. Do not rewrite the current recipe.',
+        'Use this order: smallest grind correction, pouring/agitation, then temperature +/-1 C if still needed.',
+        'Do not change dose or ratio. Do not invent bean facts.',
+      ].join('\n');
+      const requestContext = {
+        responseProfile: {
+          language,
+          verbosity: 'short' as const,
+          format: 'steps' as const,
+          tone: 'professional' as const,
+        },
+        clientContext: {
+          platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
+          surface: 'tools' as const,
+          feature: 'ai_brew' as const,
+          appLanguage: language,
+          action: 'taste_feedback',
+        },
+      };
+      const rawMarkdown = (await deepThinkingResponseDetailed(withLanguageLock(promptBody, language), requestContext)).text;
+      const markdown = await normalizeMarkdownToLanguage(rawMarkdown, language, requestContext);
+      const guarded = sanitizeAiCoachMarkdown({ action: 'troubleshoot', markdown, plan });
+      const safeMarkdown = guarded.risk === 'high' || hasAiBrewLanguageLeak(guarded.markdown, language)
+        ? deterministicMarkdown
+        : guarded.markdown;
+      setAiResponse({ title: copy.feedbackCoachTitle, markdown: safeMarkdown });
+      const nextPlan = mergeAiNotesIntoPlan(plan, { troubleshoot: safeMarkdown });
+      setPlan(nextPlan);
+      saveLastGeneratedBrewPlan(nextPlan);
+      if (activeJournalId) {
+        await updateBrewJournalAiNotes(activeJournalId, { troubleshoot: safeMarkdown });
+      }
+    } catch (error) {
+      console.warn(copy.feedbackCoachHint, error);
+      setAiResponse({ title: copy.feedbackCoachTitle, markdown: deterministicMarkdown });
+    } finally {
+      setAiBusy(null);
+    }
+  }
+
   async function handleSaveTasteFeedback(rating: BrewTasteFeedbackRating) {
     if (!plan || saving) return;
     const now = Date.now();
@@ -5138,6 +5321,7 @@ export function AiBrewPanel({
       setFeedbackNoteDraft(nextFeedback.note || '');
       await refreshSavedViews();
       setSaveSuccess(copy.feedbackSaved);
+      void runAiTasteFeedbackCoach(nextFeedback);
     } catch {
       setSaveError(copy.feedbackSaveFailed);
     } finally {
@@ -5182,12 +5366,16 @@ export function AiBrewPanel({
         : await raceChatResponse(lockedPrompt, requestContext);
       const markdown = await normalizeMarkdownToLanguage(rawMarkdown, language, requestContext);
       const guarded = sanitizeAiCoachMarkdown({ action: mode, markdown, plan });
-      const safeMarkdown = guarded.risk === 'high'
-        ? sanitizeAiCoachMarkdown({
-            action: mode,
-            markdown: sanitizeBrewNarrative(buildDeterministicAiCoachMarkdown(plan, mode, language), plan),
-            plan,
-          }).markdown
+      const fallbackMarkdown = sanitizeAiCoachMarkdown({
+        action: mode,
+        markdown: sanitizeBrewNarrative(
+          localizeAiBrewMarkdownLanguage(buildDeterministicAiCoachMarkdown(plan, mode, language), language),
+          plan,
+        ),
+        plan,
+      }).markdown;
+      const safeMarkdown = guarded.risk === 'high' || hasAiBrewLanguageLeak(guarded.markdown, language)
+        ? fallbackMarkdown
         : guarded.markdown;
       setAiResponse({ title: prompt.title, markdown: safeMarkdown });
       const nextPlan = mergeAiNotesIntoPlan(plan, { [mode]: safeMarkdown });

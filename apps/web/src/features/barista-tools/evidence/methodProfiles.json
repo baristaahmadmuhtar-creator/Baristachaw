@@ -309,8 +309,8 @@
           95
         ],
         "brewTimeRangeSec": [
-          240,
-          330
+          205,
+          275
         ]
       },
       "ratioPolicy": {
@@ -351,8 +351,8 @@
           95
         ],
         "brewTimeRangeSec": [
-          210,
-          300
+          180,
+          260
         ]
       },
       "ratioPolicy": {

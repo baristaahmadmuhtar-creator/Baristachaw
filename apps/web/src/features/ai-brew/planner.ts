@@ -1081,6 +1081,8 @@ type AdaptiveShareContext = {
   targetProfileId: string;
   targetProfileLabel: string;
   methodFamily: AiBrewMethodFamily;
+  dripperId?: string;
+  dripperName?: string;
   filterStyle: DeviceBrewProfile['filterStyle'];
   brewMode: 'hot' | 'iced';
   roastLevel: RoastLevel;
@@ -1108,6 +1110,39 @@ type AdaptiveShareContext = {
   originTargetMethodMiddleShareDelta: number;
   originTargetMethodLastShareDelta: number;
 };
+
+function isHarioSwitchContext(context: Pick<AdaptiveShareContext, 'dripperId' | 'dripperName'>) {
+  const haystack = `${context.dripperId || ''} ${context.dripperName || ''}`.toLowerCase();
+  return /\bhario[-\s]?switch\b|\bswitch\b/.test(haystack);
+}
+
+function resolveImmersionReleaseCopy(context: AdaptiveShareContext) {
+  if (isHarioSwitchContext(context)) {
+    return {
+      brewerName: 'Hario Switch',
+      closedCue: 'Keep the switch closed',
+      releaseCue: 'open the switch',
+      setOnServerCue: 'Set the Hario Switch on the server',
+      bloomPrep: 'Rinse the V60-style paper and preheat the brewer/server first, then close the switch before adding coffee and brew water.',
+      openingDetail: 'Keep the switch closed, wet the full bed evenly, and let immersion start doing the work without rushing the opening.',
+      middleDetail: 'Keep the switch closed and add water calmly; let immersion carry extraction instead of forcing turbulence.',
+      lateDetail: 'Keep the switch closed through the later contact window; avoid stirring late so the release stays clean.',
+      finishDetail: 'Open the switch cleanly and let the bed drain on its own; do not stir, shake, or top up during the finishing drain.',
+    };
+  }
+
+  return {
+    brewerName: 'Clever',
+    closedCue: 'Keep the Clever closed',
+    releaseCue: 'open the valve',
+    setOnServerCue: 'Place the Clever on the server',
+    bloomPrep: 'Rinse the paper and preheat the brewer first, then close the valve before adding coffee and brew water.',
+    openingDetail: 'Wet the entire bed evenly and let immersion start doing the work; the opening should feel full, not rushed.',
+    middleDetail: 'Add the next water calmly and let immersion carry extraction; there is no need to force agitation the way you would on an open dripper.',
+    lateDetail: 'Hold the later middle phase calm and avoid stirring; Clever rewards a settled bed before the release.',
+    finishDetail: 'Open the valve cleanly and let the bed release on its own; do not stir or shake the brewer during the finishing drain.',
+  };
+}
 
 function resolveTargetIntent(label: string, targetProfileId?: string): TargetIntent {
   const normalizedId = String(targetProfileId || '').toLowerCase();
@@ -3676,7 +3711,7 @@ function buildBaristaStepPracticalCue(context: AdaptiveShareContext, phase: Adap
   }
 
   if (context.methodFamily === 'clever_dripper' && phase === 'bloom') {
-    return 'Rinse the paper and preheat the brewer first, then close the valve before adding coffee and brew water.';
+    return resolveImmersionReleaseCopy(context).bloomPrep;
   }
 
   return undefined;
@@ -3801,18 +3836,21 @@ function buildMethodFamilyStepInstruction(params: {
       }
       break;
     case 'clever_dripper':
+      {
+        const immersionCopy = resolveImmersionReleaseCopy(context);
       if (phase === 'bloom') {
         quickNote = 'Saturate the full bed evenly and let immersion start building sweetness.';
-        detail = 'Wet the entire bed evenly and let immersion start doing the work; the opening should feel full, not rushed.';
+        detail = immersionCopy.openingDetail;
       } else if (phase === 'early_middle') {
         quickNote = 'Use the middle phase to build immersion gently rather than chasing more turbulence.';
-        detail = 'Add the next water calmly and let immersion carry extraction; there is no need to force agitation the way you would on an open dripper.';
+        detail = immersionCopy.middleDetail;
       } else if (phase === 'late_middle') {
         quickNote = 'Keep the later immersion phase quiet so the release stays clean.';
-        detail = 'Hold the later middle phase calm and avoid stirring; Clever rewards a settled bed before the release.';
+        detail = immersionCopy.lateDetail;
       } else {
         quickNote = 'Open the release cleanly and let the bed drain without stirring the finish.';
-        detail = 'Open the valve cleanly and let the bed release on its own; do not stir or shake the brewer during the finishing drain.';
+        detail = immersionCopy.finishDetail;
+      }
       }
       break;
     case 'french_press':
@@ -3996,6 +4034,7 @@ function buildSteps(
   const timeIncrementSeconds = resolveBaristaTimeIncrementSeconds(adaptiveShareContext.methodFamily);
   if (adaptiveShareContext.methodFamily === 'clever_dripper' && profile.steps.length === 1) {
     const sourceStep = profile.steps[0];
+    const immersionCopy = resolveImmersionReleaseCopy(adaptiveShareContext);
     const finalWindowBounds = resolveMethodFamilyFinalWindowBounds(adaptiveShareContext.methodFamily, adaptiveShareContext.brewMode);
     const finalWindow = roundBaristaTimeSeconds(
       clamp(totalTimeSeconds * 0.32, finalWindowBounds.min, finalWindowBounds.max),
@@ -4039,7 +4078,7 @@ function buildSteps(
         targetVolumeMl: hotWaterMl,
         note: 'Hold immersion contact; do not add more water at this checkpoint.',
         hybridInstruction: joinInstructionText(
-          'Keep the Clever closed and let contact time do the work; no extra pour is needed here.',
+          `${immersionCopy.closedCue} and let contact time do the work; no extra pour is needed here.`,
           buildAdaptivePhaseFocusCue(adaptiveShareContext, 'early_middle'),
           'Keep immersion stable before release.',
         ),
@@ -4053,7 +4092,7 @@ function buildSteps(
         targetVolumeMl: hotWaterMl,
         note: 'Open the release and let the brew drain cleanly without extra water.',
         hybridInstruction: joinInstructionText(
-          'Place the Clever on the server, open the valve, and let the coffee drain on its own without stirring or topping up.',
+          `${immersionCopy.setOnServerCue}, ${immersionCopy.releaseCue}, and let the coffee drain on its own without stirring or topping up.`,
           buildAdaptivePhaseFocusCue(adaptiveShareContext, 'finish'),
           sourceStep.note,
         ),
@@ -4123,16 +4162,18 @@ function buildSteps(
     let note = phaseInstruction.note;
     let hybridInstruction = phaseInstruction.hybridInstruction;
     if (adaptiveShareContext.methodFamily === 'clever_dripper' && kind === 'wait') {
+      const immersionCopy = resolveImmersionReleaseCopy(adaptiveShareContext);
       note = 'Hold immersion contact; do not add more water at this checkpoint.';
       hybridInstruction = joinInstructionText(
-        'Keep the Clever closed and let contact time do the work; no extra pour is needed here.',
+        `${immersionCopy.closedCue} and let contact time do the work; no extra pour is needed here.`,
         buildAdaptivePhaseFocusCue(adaptiveShareContext, phase),
         step.note,
       );
     } else if (adaptiveShareContext.methodFamily === 'clever_dripper' && kind === 'release') {
+      const immersionCopy = resolveImmersionReleaseCopy(adaptiveShareContext);
       note = 'Open the release and let the brew drain cleanly without extra water.';
       hybridInstruction = joinInstructionText(
-        'Place the Clever on the server, open the valve, and let the coffee drain on its own without stirring or topping up.',
+        `${immersionCopy.setOnServerCue}, ${immersionCopy.releaseCue}, and let the coffee drain on its own without stirring or topping up.`,
         buildAdaptivePhaseFocusCue(adaptiveShareContext, phase),
         step.note,
       );
@@ -4541,6 +4582,8 @@ function finalizePlanCore(
     targetProfileId: targetProfile.id,
     targetProfileLabel: targetProfile.label,
     methodFamily,
+    dripperId: dripper.id,
+    dripperName: dripper.name,
     filterStyle: controlledDeviceProfile.filterStyle,
     brewMode: input.brewMode,
     roastLevel: input.roastLevel,

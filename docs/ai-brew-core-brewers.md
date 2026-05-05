@@ -38,6 +38,8 @@ eksperimental, atau butuh kalibrasi.
      switch di checkpoint release tanpa swirl berat.
    - Iced: hot concentrate dilepas langsung ke es terukur, lalu server diaduk
      5-8 detik.
+   - Guard UI: panduan harus menyebut Hario Switch/switch, bukan copy Clever
+     generic, meskipun keduanya memakai method family immersion-release.
    - Risiko: late agitation membuat cup keruh; preheat body kaca penting.
 
 6. Kalita Wave 155 / 185
@@ -55,6 +57,7 @@ eksperimental, atau butuh kalibrasi.
    - Status MVP: siap untuk immersion-release.
    - Fokus SOP: steep tenang, release bersih, jangan swirl berat menjelang
      release.
+   - Guard UI: panduan tetap menyebut Clever/valve, bukan Hario Switch.
    - Risiko: contact time terlalu panjang membuat cup muddy.
 
 9. Bialetti Moka Pot

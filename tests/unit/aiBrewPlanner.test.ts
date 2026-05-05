@@ -1469,6 +1469,14 @@ test('Hario Switch uses hybrid immersion release sequence without changing V60 b
     hot.steps.map((step) => `${step.label} ${step.note}`).join(' '),
     /valve|switch|release/i,
   );
+  assert.match(
+    hot.steps.map((step) => step.hybridInstruction || '').join(' '),
+    /Hario Switch|switch/i,
+  );
+  assert.doesNotMatch(
+    hot.steps.map((step) => step.hybridInstruction || '').join(' '),
+    /\bClever\b/,
+  );
   const hotBrief = buildPlanMethodBrief(hot, 'id');
   assert.match(hotBrief.controlValue, /Valve tertutup|switch/i);
   assert.match(hotBrief.watch.join(' '), /preheat|switch|swirl/i);

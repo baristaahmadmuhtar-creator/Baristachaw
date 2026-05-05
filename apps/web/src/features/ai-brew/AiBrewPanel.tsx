@@ -978,6 +978,7 @@ const CORE_BREWER_IDS = [
   'aeropress',
   'french-press',
   'hario-v60',
+  'hario-switch',
   'kalita-wave-155-185',
   'chemex',
   'clever-dripper',

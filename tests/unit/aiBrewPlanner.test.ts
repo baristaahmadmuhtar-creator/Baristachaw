@@ -5,6 +5,7 @@ import {
   applyAiBrewOptimizationPatch,
   buildAiBrewPlan,
   buildAiBrewPlanProgressively,
+  buildPlanMethodBrief,
   buildLocalizedPlanRecipeSteps,
   createDefaultAiBrewFormState,
   createQuickAiBrewFormState,
@@ -88,6 +89,26 @@ const catalog: AiBrewCatalog = {
       releaseStatus: 'established',
       confidence: 'low',
       methodFamily: 'v60',
+    },
+    {
+      id: 'hario-switch',
+      kind: 'dripper',
+      name: 'Hario Switch',
+      brand: 'Hario',
+      typeLabel: 'Immersion Switch',
+      description: 'Hybrid V60-style immersion release dripper.',
+      searchText: 'hario switch immersion hybrid v60 release',
+      catalogVersion: 'test-v2',
+      source: 'test',
+      sourceUrls: ['https://example.com/hario-switch'],
+      verificationLevel: 'official',
+      verifiedAt: '2026-03-09',
+      popularityTier: 'specialty_common',
+      marketSegment: 'specialty_mainstream',
+      releaseStatus: 'established',
+      confidence: 'high',
+      methodFamily: 'clever_dripper',
+      defaultProfileId: 'profile_hario_switch_hot',
     },
   ],
   grinders: [
@@ -265,6 +286,24 @@ const catalog: AiBrewCatalog = {
       releaseStatus: 'established',
       confidence: 'high',
       notes: ['Pacamara structure reference.'],
+    },
+    {
+      id: 'ombligon',
+      label: 'Ombligon',
+      group: 'specialty-reference',
+      aliases: ['colombia ombligon'],
+      searchText: 'ombligon colombia huila natural',
+      originNotes: 'Colombian specialty selection used as a high-aroma natural baseline.',
+      origins: ['Colombia'],
+      source: 'test',
+      sourceUrls: ['https://example.com/ombligon'],
+      verificationLevel: 'curated',
+      verifiedAt: '2026-05-05',
+      popularityTier: 'specialty_niche',
+      marketSegment: 'competition_specialty',
+      releaseStatus: 'established',
+      confidence: 'medium',
+      notes: ['Curated high-aroma natural test fixture; no official numeric recipe assumption.'],
     },
   ],
   waterBrands: [
@@ -589,6 +628,66 @@ const catalog: AiBrewCatalog = {
       verifiedAt: '2026-03-09',
       popularityTier: 'widely_used',
       marketSegment: 'mass_market',
+      releaseStatus: 'established',
+      confidence: 'medium',
+      catalogVersion: 'test-v2',
+    },
+    {
+      id: 'profile_hario_switch_hot',
+      label: 'Hario Switch Hot',
+      brewMode: 'hot',
+      dripperIds: ['hario-switch'],
+      methodFamily: 'clever_dripper',
+      brewMethodId: 'clever_dripper',
+      exactMatch: true,
+      filterStyle: 'immersion',
+      ratioDelta: 0.45,
+      tempDeltaC: -2.2,
+      brewTimeDeltaSec: -25,
+      grindBias: 'coarser',
+      note: 'Hybrid immersion release baseline.',
+      steps: [
+        { id: 'bloom', label: 'Closed Bloom', kind: 'pour', share: 0.19, startSeconds: 0, note: 'Valve closed. Rinse/preheat first, then wet all grounds evenly.' },
+        { id: 'pour_1', label: 'Closed Fill', kind: 'pour', share: 0.5, startSeconds: 30, note: 'Still closed. Pour calmly to most of target.' },
+        { id: 'pour_2', label: 'Top Up Closed', kind: 'pour', share: 0.31, startSeconds: 90, note: 'Top up to target and let slurry settle.' },
+        { id: 'release', label: 'Open Valve', kind: 'release', share: 0, startSeconds: 150, note: 'Open the switch cleanly.' },
+        { id: 'finish', label: 'Serve', kind: 'serve', share: 0, startSeconds: 165, note: 'Serve after drawdown.' },
+      ],
+      source: 'test',
+      sourceUrls: ['https://example.com/hario-switch-profile'],
+      verificationLevel: 'curated',
+      verifiedAt: '2026-03-09',
+      popularityTier: 'specialty_common',
+      marketSegment: 'specialty_mainstream',
+      releaseStatus: 'established',
+      confidence: 'medium',
+      catalogVersion: 'test-v2',
+    },
+    {
+      id: 'profile_hario_switch_iced',
+      label: 'Hario Switch Japanese Iced',
+      brewMode: 'iced',
+      dripperIds: ['hario-switch'],
+      methodFamily: 'clever_dripper',
+      brewMethodId: 'clever_dripper_iced',
+      exactMatch: true,
+      filterStyle: 'immersion',
+      ratioDelta: -0.22,
+      tempDeltaC: 0.2,
+      brewTimeDeltaSec: 12,
+      grindBias: 'same',
+      note: 'Hybrid immersion iced baseline.',
+      steps: [
+        { id: 'charge', label: 'Charge Closed', kind: 'pour', share: 1, startSeconds: 0, note: 'Valve closed. Add hot water target and steep briefly.' },
+        { id: 'release', label: 'Release Over Ice', kind: 'release', share: 0, startSeconds: 120, note: 'Open the switch over measured ice.' },
+        { id: 'finish', label: 'Stir Server', kind: 'serve', share: 0, startSeconds: 165, note: 'Stir server before serving.' },
+      ],
+      source: 'test',
+      sourceUrls: ['https://example.com/hario-switch-iced-profile'],
+      verificationLevel: 'curated',
+      verifiedAt: '2026-03-09',
+      popularityTier: 'specialty_common',
+      marketSegment: 'specialty_mainstream',
       releaseStatus: 'established',
       confidence: 'medium',
       catalogVersion: 'test-v2',
@@ -1233,6 +1332,62 @@ test('V60 More Sweetness calibration handles Japanese iced, hot, water, grind, p
   assert.equal(resolveBrewerProfileTrustStatus({ deviceProfileMode: 'family_fallback', confidence: 'low' }), 'calibration_required');
 });
 
+test('V60 natural Ombligon sweetness plans use lower temperature and longer bloom without changing medium washed baseline', () => {
+  const hot = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'hot',
+    coffeeName: 'Colombia Huila Natural Ombligon',
+    doseG: '15',
+    process: 'natural',
+    variety: 'ombligon',
+    roastLevel: 'medium_light',
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'more_sweetness',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, catalog);
+  assertPlanEnvelope(hot);
+  assert.ok(hot.totalWaterMl >= 225 && hot.totalWaterMl <= 230);
+  assert.ok(hot.finalBeverageRatio >= 15 && hot.finalBeverageRatio <= 15.4);
+  assert.ok(hot.waterTempC >= 90 && hot.waterTempC <= 92);
+  assert.ok(hot.totalTimeSeconds >= 160 && hot.totalTimeSeconds <= 175);
+  const hotPours = hot.steps.filter((step) => step.pourVolumeMl > 0);
+  assert.ok(hotPours.length >= 3);
+  assert.ok(hotPours[0].pourVolumeMl >= 40 && hotPours[0].pourVolumeMl <= 50);
+  assert.match(hot.notes.join(' '), /natural high-aroma|longer bloom/i);
+
+  const iced = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'iced',
+    coffeeName: 'Colombia Huila Natural Ombligon',
+    doseG: '15',
+    process: 'natural',
+    variety: 'ombligon',
+    roastLevel: 'medium_light',
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'more_sweetness',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, catalog);
+  assertPlanEnvelope(iced);
+  assert.equal(iced.hotWaterMl, 135);
+  assert.ok(iced.iceMl >= 85 && iced.iceMl <= 95);
+  assert.equal(iced.hotWaterMl + iced.iceMl, iced.totalWaterMl);
+  assert.ok(iced.finalBeverageRatio >= 14.8 && iced.finalBeverageRatio <= 15.2);
+  assert.ok(iced.hotExtractionRatio >= 8.9 && iced.hotExtractionRatio <= 9.1);
+  assert.ok(iced.waterTempC >= 91 && iced.waterTempC <= 93);
+  assert.ok(iced.totalTimeSeconds >= 145 && iced.totalTimeSeconds <= 175);
+  assert.ok(iced.estimatedCupOutputMl < iced.totalWaterMl);
+  const icedPours = iced.steps.filter((step) => step.pourVolumeMl > 0);
+  assert.ok(icedPours[0].pourVolumeMl >= 40 && icedPours[0].pourVolumeMl <= 50);
+});
+
 test('V60 hot auto plan keeps structured global coffees flexible with four positive pours', () => {
   const assertStructuredPlan = (plan: ReturnType<typeof buildAiBrewPlan>) => {
     const pours = plan.steps.filter((step) => step.pourVolumeMl > 0);
@@ -1284,6 +1439,49 @@ test('V60 hot auto plan keeps structured global coffees flexible with four posit
     pourCount: 'auto',
   }, catalog);
   assertStructuredPlan(brazilPlan);
+});
+
+test('Hario Switch uses hybrid immersion release sequence without changing V60 behavior', () => {
+  const base = {
+    ...createDefaultAiBrewFormState(catalog),
+    coffeeName: 'Colombia Huila washed',
+    doseG: '15',
+    process: 'washed',
+    roastLevel: 'medium' as const,
+    dripperId: 'hario-switch',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'more_sweetness',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  };
+
+  const hot = buildAiBrewPlan({ ...base, brewMode: 'hot' }, catalog);
+  assertPlanEnvelope(hot);
+  assert.equal(hot.methodFamily, 'clever_dripper');
+  assert.equal(hot.deviceProfileMode, 'exact');
+  assert.equal(hot.deviceProfileId, 'profile_hario_switch_hot');
+  assert.equal(hot.ratioToolMethodId, 'clever_dripper');
+  assert.equal(hot.steps.filter((step) => step.pourVolumeMl > 0).length, 3);
+  assert.ok(hot.steps.some((step) => step.kind === 'release' && step.pourVolumeMl === 0));
+  assert.match(
+    hot.steps.map((step) => `${step.label} ${step.note}`).join(' '),
+    /valve|switch|release/i,
+  );
+  const hotBrief = buildPlanMethodBrief(hot, 'id');
+  assert.match(hotBrief.controlValue, /Valve tertutup|switch/i);
+  assert.match(hotBrief.watch.join(' '), /preheat|switch|swirl/i);
+
+  const iced = buildAiBrewPlan({ ...base, brewMode: 'iced' }, catalog);
+  assertPlanEnvelope(iced);
+  assert.equal(iced.methodFamily, 'clever_dripper');
+  assert.equal(iced.deviceProfileMode, 'exact');
+  assert.equal(iced.deviceProfileId, 'profile_hario_switch_iced');
+  assert.equal(iced.ratioToolMethodId, 'clever_dripper_iced');
+  assert.equal(iced.hotWaterMl + iced.iceMl, iced.totalWaterMl);
+  assert.ok(iced.estimatedCupOutputMl < iced.totalWaterMl);
+  assert.ok(iced.steps.some((step) => step.kind === 'release' && /ice|es/i.test(`${step.label} ${step.note}`)));
 });
 
 test('AI Brew defaults target profile from process, variety, and altitude without overriding explicit target', () => {

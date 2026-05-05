@@ -640,6 +640,12 @@
       "brewTimeDeltaSec": 1,
       "grindBias": "same"
     },
+    "ombligon": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
     "kartika": {
       "ratioDelta": -0.01,
       "tempDeltaC": -0.1,

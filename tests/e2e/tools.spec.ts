@@ -337,6 +337,7 @@ test('ai brew brewer picker prioritizes complete method catalog and search alias
   await expect(page.getByTestId('ai-brew-picker-option-dripper-espresso-machine')).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-dripper-aeropress')).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-dripper-french-press')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-picker-option-dripper-hario-switch')).toBeVisible();
 
   const search = page.getByTestId('ai-brew-picker-search-dripper');
   const searchCases = [

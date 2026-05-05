@@ -1971,42 +1971,48 @@
         {
           "id": "bloom",
           "label": "Closed Bloom",
+          "kind": "pour",
           "share": 0.19,
           "startSeconds": 0,
-          "note": "Valve closed. Wet all grounds evenly and bloom for 30 seconds."
+          "note": "Valve closed. Rinse/preheat first, then wet all grounds evenly and bloom for 30 seconds."
         },
         {
           "id": "pour_1",
-          "label": "Second Pour",
+          "label": "Closed Fill",
+          "kind": "pour",
           "share": 0.5,
           "startSeconds": 30,
-          "note": "Still closed. Pour to most of the target while keeping turbulence gentle."
+          "note": "Still closed. Pour to most of the target with calm spiral flow; avoid heavy agitation."
         },
         {
           "id": "pour_2",
-          "label": "Final Pour",
+          "label": "Top Up Closed",
+          "kind": "pour",
           "share": 0.31,
           "startSeconds": 90,
-          "note": "Top up to final brew water before release."
+          "note": "Top up to final brew water, give one gentle swirl only if the bed is uneven, then let it settle."
         },
         {
           "id": "release",
           "label": "Open Valve",
+          "kind": "release",
           "share": 0,
           "startSeconds": 150,
-          "note": "Open the valve and let the bed drain without extra stirring."
+          "note": "Open the switch cleanly and let the bed drain without extra stirring or shaking."
         },
         {
           "id": "finish",
-          "label": "Finish",
+          "label": "Serve",
+          "kind": "serve",
           "share": 0,
           "startSeconds": 165,
-          "note": "Serve once drawdown is complete."
+          "note": "Serve once drawdown is complete; if the cup tastes muddy, use a slightly coarser grind next brew."
         }
       ],
       "source": "hario-curation",
       "sourceUrls": [
-        "https://www.hario-europe.com/pages/v60-recipes"
+        "https://www.hario-usa.com/products/switch-immersion-dripper",
+        "https://www.hario-europe.com/products/v60-immersion-dripper-switch?variant=47850484400451"
       ],
       "verificationLevel": "curated",
       "verifiedAt": "2026-03-09",
@@ -2036,14 +2042,32 @@
         {
           "id": "charge",
           "label": "Charge Closed",
+          "kind": "pour",
           "share": 1,
           "startSeconds": 0,
-          "note": "Valve closed. Charge full hot-water target, stir once, steep briefly, then release over ice."
+          "note": "Valve closed. Add the full hot-water target over the coffee, stir once gently, then steep briefly."
+        },
+        {
+          "id": "release",
+          "label": "Release Over Ice",
+          "kind": "release",
+          "share": 0,
+          "startSeconds": 120,
+          "note": "Open the switch over measured ice and let the concentrate drain without shaking the brewer."
+        },
+        {
+          "id": "finish",
+          "label": "Stir Server",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Stir the server 5-8 seconds so hot concentrate and ice integrate before serving."
         }
       ],
       "source": "hario-curation",
       "sourceUrls": [
-        "https://www.hario-europe.com/pages/v60-recipes"
+        "https://www.hario-usa.com/products/switch-immersion-dripper",
+        "https://www.hario-europe.com/products/v60-immersion-dripper-switch?variant=47850484400451"
       ],
       "verificationLevel": "curated",
       "verifiedAt": "2026-03-09",

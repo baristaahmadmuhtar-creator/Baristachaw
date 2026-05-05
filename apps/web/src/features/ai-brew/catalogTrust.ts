@@ -51,8 +51,8 @@ export const BREWER_FAMILY_OVERRIDES: Record<string, BrewerFamilyOverride> = {
   },
   'hario-switch': {
     family: 'clever_dripper',
-    trust: 'experimental',
-    baseline: 'Immersion hybrid',
+    trust: 'derived',
+    baseline: 'V60 + immersion release',
   },
   'nextlevel-pulsar': {
     family: 'april',

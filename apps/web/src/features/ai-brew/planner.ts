@@ -301,6 +301,15 @@ function buildControlledPourStarts(count: number, input: AiBrewFormState) {
 
 function buildControlledPourShares(count: number, input: AiBrewFormState) {
   const style = input.pourStyle === 'auto' ? 'balanced' : input.pourStyle;
+  if (
+    input.brewMode === 'iced'
+    && input.targetProfileId === 'more_sweetness'
+    && count === 3
+    && isLightOrMediumLightRoast(input.roastLevel)
+    && hasHighAromaNaturalCue(input)
+  ) {
+    return normalizePourShares([0.28, 0.47, 0.25]);
+  }
   if (input.brewMode === 'iced' && input.targetProfileId === 'more_sweetness' && input.roastLevel === 'medium' && count === 3) {
     return normalizePourShares([0.22, 0.52, 0.26]);
   }
@@ -1080,6 +1089,8 @@ type AdaptiveShareContext = {
   hardnessPpm: number;
   alkalinityPpm: number;
   processId?: string;
+  varietyId?: string;
+  highAromaNatural?: boolean;
   doseG: number;
   doseScale: number;
   flavorDirection: TargetIntent;
@@ -1209,6 +1220,7 @@ const SWEETNESS_VARIETY_IDS = new Set([
   'caturra_chiroso',
   'orange_bourbon',
   'andina',
+  'ombligon',
 ]);
 
 const BODY_VARIETY_IDS = new Set([
@@ -1390,6 +1402,65 @@ function isMediumOrDarkerRoast(roastLevel: RoastLevel) {
   return roastLevel === 'medium' || roastLevel === 'medium_dark' || roastLevel === 'dark';
 }
 
+function isNaturalLikeProcess(processEntry?: ProcessCatalogEntry, explicitProcess?: string, customProcess?: string) {
+  const processId = String(processEntry?.id || explicitProcess || '').toLowerCase();
+  if (SWEETNESS_PROCESS_IDS.has(processId) || BODY_PROCESS_IDS.has(processId)) {
+    if (/(natural|honey|anaerobic|carbonic|maceration|fermentation|lactic|yeast|koji|co_fermented)/i.test(processId)) {
+      return true;
+    }
+  }
+  const processText = normalizeSearchHaystack([
+    explicitProcess,
+    customProcess,
+    processEntry?.id,
+    processEntry?.label,
+    processEntry?.searchText,
+    ...(processEntry?.aliases || []),
+  ]);
+  return haystackHasAny(processText, [
+    /\bnatural\b/i,
+    /\bhoney\b/i,
+    /\banaerobic\b/i,
+    /\bcarbonic\b/i,
+    /\bmaceration\b/i,
+    /\bfermentation\b/i,
+    /\blactic\b/i,
+    /\byeast\b/i,
+    /\bkoji\b/i,
+  ]);
+}
+
+function hasHighAromaNaturalCue(
+  input: AiBrewFormState,
+  processEntry?: ProcessCatalogEntry,
+  varietyEntry?: VarietyCatalogEntry,
+) {
+  if (!isNaturalLikeProcess(processEntry, input.process, input.customProcess)) {
+    return false;
+  }
+  const haystack = normalizeSearchHaystack([
+    input.coffeeName,
+    input.customVariety,
+    varietyEntry?.id,
+    varietyEntry?.label,
+    varietyEntry?.searchText,
+    ...(varietyEntry?.aliases || []),
+    ...(varietyEntry?.origins || []),
+  ]);
+  return haystackHasAny(haystack, [
+    /\bombligon\b/i,
+    /\bcolombia\b/i,
+    /\bhuila\b/i,
+    /\bcauca\b/i,
+    /\bnarino\b/i,
+    /\bnariño\b/i,
+    /\bpanama\b/i,
+    /\bboquete\b/i,
+    /\bgesha\b/i,
+    /\bgeisha\b/i,
+  ]);
+}
+
 function createNeutralTemperatureCalibration(): TemperatureCalibration {
   return {
     tempDeltaC: 0,
@@ -1446,6 +1517,10 @@ function deriveBaristaTemperatureCalibration(params: {
   const isAntigua = haystackHasAny(coffeeText, [/\bantigua\b/i, /\bguatemala\b/i]);
   const isCostaRica = haystackHasAny(coffeeText, [/\bcosta rica\b/i, /\btarrazu\b/i]);
   const isColombia = haystackHasAny(coffeeText, [/\bcolombia\b/i, /\bexcelso\b/i, /\bhuila\b/i, /\bcauca\b/i]);
+  const isHighAromaNatural = hasHighAromaNaturalCue(params.input, params.processEntry, params.varietyEntry);
+  const isNaturalSweetnessTarget = isHighAromaNatural
+    && params.input.targetProfileId === 'more_sweetness'
+    && isLightOrMediumLightRoast(params.input.roastLevel);
 
   if (params.methodFamily === 'aeropress') {
     calibration.minTempC = isMediumOrDarkerRoast(params.input.roastLevel) ? 88 : 90;
@@ -1466,7 +1541,13 @@ function deriveBaristaTemperatureCalibration(params: {
   }
 
   if (params.brewMode === 'iced' && ICED_MANUAL_POUR_OVER_FAMILIES.has(params.methodFamily)) {
-    if (params.methodFamily === 'v60' && params.input.targetProfileId === 'more_sweetness' && params.input.roastLevel === 'medium') {
+    if (isNaturalSweetnessTarget) {
+      calibration.minTempC = 91;
+      calibration.maxTempC = 93;
+      calibration.tempDeltaC -= 1.3;
+      calibration.notes.push('Natural high-aroma Japanese-iced profile is capped around 91-93C so fruit sweetness stays clean without harsh ferment notes.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: natural high-aroma iced sweetness cap.');
+    } else if (params.methodFamily === 'v60' && params.input.targetProfileId === 'more_sweetness' && params.input.roastLevel === 'medium') {
       calibration.minTempC = 93;
       calibration.maxTempC = 95;
       calibration.tempDeltaC += 0.2;
@@ -1495,7 +1576,13 @@ function deriveBaristaTemperatureCalibration(params: {
   }
 
   if (params.brewMode === 'hot' && ICED_MANUAL_POUR_OVER_FAMILIES.has(params.methodFamily)) {
-    if (params.methodFamily === 'v60' && params.input.targetProfileId === 'more_sweetness' && params.input.roastLevel === 'medium') {
+    if (isNaturalSweetnessTarget) {
+      calibration.minTempC = 90;
+      calibration.maxTempC = 92;
+      calibration.tempDeltaC -= 1.1;
+      calibration.notes.push('Natural high-aroma hot filter profile stays around 90-92C with calmer agitation to protect fruit sweetness and avoid a rough finish.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: natural high-aroma hot sweetness cap.');
+    } else if (params.methodFamily === 'v60' && params.input.targetProfileId === 'more_sweetness' && params.input.roastLevel === 'medium') {
       calibration.minTempC = 92;
       calibration.maxTempC = 94;
       calibration.tempDeltaC += 0.1;
@@ -2106,14 +2193,50 @@ function deriveV60SweetnessServiceCalibration(params: {
   methodFamily: AiBrewMethodFamily;
   deviceProfile: DeviceBrewProfile;
   waterProfile: ReturnType<typeof deriveWaterMineralProfile>;
+  processEntry?: ProcessCatalogEntry;
+  varietyEntry?: VarietyCatalogEntry;
 }) {
   if (
     params.methodFamily !== 'v60'
     || !params.deviceProfile.exactMatch
     || !params.deviceProfile.dripperIds.includes('hario-v60')
     || params.input.targetProfileId !== 'more_sweetness'
-    || params.input.roastLevel !== 'medium'
   ) {
+    return null;
+  }
+
+  const highAromaNaturalSweetness = hasHighAromaNaturalCue(params.input, params.processEntry, params.varietyEntry)
+    && isLightOrMediumLightRoast(params.input.roastLevel);
+  if (highAromaNaturalSweetness) {
+    if (params.input.brewMode === 'iced') {
+      return {
+        recommendedRatio: 15,
+        hotExtractionRatio: 9,
+        timeMinSec: 145,
+        timeMaxSec: 175,
+        notes: [
+          'V60 Japanese-iced natural sweetness calibration keeps hot concentrate near 1:9, uses a heavier ice split, and avoids high kettle energy.',
+        ],
+        confidenceNotes: [
+          'Natural high-aroma V60 iced baseline active: about 135 g hot water plus 90 g ice for a 15 g dose.',
+        ],
+      };
+    }
+    return {
+      recommendedRatio: 15.05,
+      hotExtractionRatio: null,
+      timeMinSec: 160,
+      timeMaxSec: 175,
+      notes: [
+        'V60 hot natural sweetness calibration uses a compact service ratio, longer bloom, and calm pours so fruit sweetness lands without rough ferment notes.',
+      ],
+      confidenceNotes: [
+        'Natural high-aroma V60 hot baseline active: about 225 g water, 90-92C, and a 2:40-2:55 service window for 15 g.',
+      ],
+    };
+  }
+
+  if (params.input.roastLevel !== 'medium') {
     return null;
   }
 
@@ -3365,6 +3488,34 @@ function buildAdaptiveStepShares(profile: DeviceBrewProfile, context: AdaptiveSh
     }
   }
 
+  const gasHeavyNatural = Boolean(context.processId && isNaturalLikeProcess(undefined, context.processId));
+  const highAromaNatural = Boolean(context.highAromaNatural)
+    || (gasHeavyNatural && Boolean(context.varietyId && SWEETNESS_VARIETY_IDS.has(context.varietyId)));
+  const shouldFrontLoadNaturalBloom = highAromaNatural
+    || (gasHeavyNatural && context.targetProfileId === 'more_sweetness' && isLightOrMediumLightRoast(context.roastLevel));
+  if (
+    shouldFrontLoadNaturalBloom
+    && (context.methodFamily === 'v60'
+      || context.methodFamily === 'chemex'
+      || context.methodFamily === 'kalita_wave'
+      || context.methodFamily === 'april'
+      || context.methodFamily === 'origami'
+      || context.methodFamily === 'kono'
+      || context.methodFamily === 'melitta')
+  ) {
+    const firstLift = highAromaNatural ? 0.06 : 0.045;
+    const lastTrim = highAromaNatural ? 0.035 : 0.025;
+    deltas[first] += firstLift;
+    deltas[last] -= lastTrim;
+    if (middleLeft === middleRight) {
+      deltas[middleLeft] -= firstLift - lastTrim;
+    } else {
+      const middleTrim = (firstLift - lastTrim) / 2;
+      deltas[middleLeft] -= middleTrim;
+      deltas[middleRight] -= middleTrim;
+    }
+  }
+
   const extractionResistance = resolveExtractionResistance(context);
   if (extractionResistance !== 0) {
     const resistanceDelta = 0.015 * extractionResistance;
@@ -4183,6 +4334,8 @@ function finalizePlanCore(
     methodFamily,
     deviceProfile: deviceSelection.profile,
     waterProfile,
+    processEntry,
+    varietyEntry,
   });
 
   const ratioLowerBound = method.ratioRange[0] - 0.75;
@@ -4396,6 +4549,8 @@ function finalizePlanCore(
     hardnessPpm: waterProfile.minerals.hardnessPpm,
     alkalinityPpm: waterProfile.minerals.alkalinityPpm,
     processId: processEntry?.id,
+    varietyId: varietyEntry?.id,
+    highAromaNatural: hasHighAromaNaturalCue(input, processEntry, varietyEntry),
     doseG,
     doseScale: doseAdjustment.normalizedOffset,
     flavorDirection: flavorAlignment.dominantAxis,
@@ -5416,6 +5571,20 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
           : ['Do not over-stir while the upper chamber is active.', 'Cut heat on time so the finish stays clean.'],
       };
     case 'clever_dripper':
+      if (plan.dripper.id === 'hario-switch') {
+        return {
+          ...common,
+          controlValue: id
+            ? 'Valve tertutup untuk bloom/steep, lalu buka switch bersih di checkpoint release.'
+            : 'Keep the valve closed for bloom/steep, then open the switch cleanly at the release checkpoint.',
+          successCue: id
+            ? 'Release stabil, bed tidak terguncang, dan cup tetap manis tanpa finish keruh.'
+            : 'Release flows steadily, the bed stays settled, and the cup keeps sweetness without a muddy finish.',
+          watch: id
+            ? ['Rinse filter dan preheat body kaca sebelum mulai.', 'Jangan swirl berat tepat sebelum membuka switch.']
+            : ['Rinse the filter and preheat the glass body first.', 'Avoid heavy swirling right before opening the switch.'],
+        };
+      }
       return {
         ...common,
         controlValue: id

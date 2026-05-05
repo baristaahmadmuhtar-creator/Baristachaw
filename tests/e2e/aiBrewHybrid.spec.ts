@@ -224,17 +224,20 @@ test('ai brew taste feedback is saved in the local brew journal', async ({ page 
   const feedbackPanel = page.getByTestId('ai-brew-taste-feedback');
   await expect(feedbackPanel).toBeVisible({ timeout: 60_000 });
   await feedbackPanel.scrollIntoViewIfNeeded();
-  await page.getByTestId('ai-brew-feedback-note').fill('Drawdown cepat, grind satu klik lebih halus.');
-  await page.getByTestId('ai-brew-feedback-sour').click();
+  await feedbackPanel.locator('summary').click();
+  await feedbackPanel.getByTestId('ai-brew-feedback-note').fill('Drawdown cepat, grind satu klik lebih halus.');
+  await feedbackPanel.getByTestId('ai-brew-feedback-sour').click();
   await expect(page.getByTestId('ai-brew-save-success')).toContainText(/Catatan rasa tersimpan|Taste feedback saved/i);
-  await expect(page.getByTestId('ai-brew-feedback-sour')).toHaveAttribute('aria-pressed', 'true');
+  await expect(feedbackPanel.getByTestId('ai-brew-feedback-sour')).toHaveAttribute('aria-pressed', 'true');
 
   await page.getByRole('button', { name: /Tutup output plan|Close planned output/i }).click();
   await page.getByTestId('ai-brew-history-tab-recent').click();
   await expect(page.getByTestId('ai-brew-history-item')).toContainText(/Terlalu asam|Too sour/i);
   await page.getByTestId('ai-brew-history-item').click();
-  await expect(page.getByTestId('ai-brew-feedback-note')).toHaveValue(/Drawdown cepat/i);
-  await expect(page.getByTestId('ai-brew-feedback-sour')).toHaveAttribute('aria-pressed', 'true');
+  const reloadedFeedbackPanel = page.getByTestId('ai-brew-taste-feedback');
+  await reloadedFeedbackPanel.locator('summary').click();
+  await expect(reloadedFeedbackPanel.getByTestId('ai-brew-feedback-note')).toHaveValue(/Drawdown cepat/i);
+  await expect(reloadedFeedbackPanel.getByTestId('ai-brew-feedback-sour')).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('ai brew auto sequence keeps deterministic sequence when AI responses timeout', async ({ page }) => {
@@ -406,7 +409,7 @@ test('ai brew iced sequence falls back when AI omits explicit hot-ice split pair
   const plan = await readStoredPlan(page);
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toContainText(`${plan.hotWaterMl} ml`);
-  await expect(result).toContainText(`${plan.iceMl} ml`);
+  await expect(result).toContainText(new RegExp(`${plan.iceMl}\\s*(ml|g)`, 'i'));
   await expectCanonicalSequencePrefixes(sequenceNote);
 });
 

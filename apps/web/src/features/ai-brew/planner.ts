@@ -4960,11 +4960,8 @@ export function createQuickAiBrewFormState(input: AiBrewFormState, catalog?: AiB
   const sanitized = sanitizeAiBrewFormState(input, catalog);
   return {
     ...sanitized,
-    process: '',
-    customProcess: '',
-    variety: '',
-    customVariety: '',
-    waterNotes: '',
+    customProcess: sanitized.process === CUSTOM_ENTRY_ID ? sanitized.customProcess : '',
+    customVariety: sanitized.variety === CUSTOM_ENTRY_ID ? sanitized.customVariety : '',
     altitudeMasl: '',
     beanDensityGml: '',
     roastDevelopment: '',

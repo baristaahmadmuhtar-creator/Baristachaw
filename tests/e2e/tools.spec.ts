@@ -293,6 +293,12 @@ test('ai brew reveals custom process, variety, and water inputs', async ({ page 
   await expect(page.getByTestId('ai-brew-open-quick')).toBeVisible();
   await expect(page.getByTestId('ai-brew-open-pro')).toBeVisible();
 
+  await openAiBrewQuickMode(page);
+  await expect(page.getByTestId('ai-brew-process-picker')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-variety-picker')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-bean-profile-toggle')).toHaveCount(0);
+  await page.getByTestId('ai-brew-close-quick').click();
+
   await openAiBrewProMode(page);
   await page.getByTestId('ai-brew-process-picker').click();
   await page.getByRole('button', { name: /Select custom process/i }).click();

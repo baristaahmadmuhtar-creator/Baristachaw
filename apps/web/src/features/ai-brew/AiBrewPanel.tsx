@@ -91,7 +91,6 @@ import {
   resolveGrinderSettingReference,
   sanitizeAiBrewFormState,
   supportsAiBrewIcedMode,
-  type AiBrewOptimizationPatch,
   type AiBrewGenerationProgress,
   type AiBrewGenerationStageId,
 } from './planner';
@@ -1683,84 +1682,6 @@ async function runHybridOptimizationUpdate(
   );
 
   return applyAiBrewOptimizationPatch(nextPlan, parseAiBrewOptimizationPatch(aiText));
-}
-
-function resolveAiBrewOptimizationIntent(plan: BrewPlan) {
-  const target = `${plan.targetProfileId} ${plan.targetProfileLabel}`.toLowerCase();
-  if (/\b(acid|acidity|bright|clarity|clear|clean|citrus|floral|juicy|cerah|jernih)\b/i.test(target)) {
-    return 'clarity';
-  }
-  if (/\b(body|depth|heavy|texture|syrupy|tebal|bodi)\b/i.test(target)) {
-    return 'body';
-  }
-  if (/\b(sweet|sweetness|round|manis|madu|gula)\b/i.test(target)) {
-    return 'sweetness';
-  }
-  return 'balanced';
-}
-
-function buildGuardrailAiOptimizationCandidates(plan: BrewPlan): AiBrewOptimizationPatch[] {
-  const intent = resolveAiBrewOptimizationIntent(plan);
-  const iced = plan.brewMode === 'iced';
-  const espresso = plan.methodFamily === 'espresso';
-  const coldBrew = plan.methodFamily === 'cold_brew';
-  const ratioStep = espresso ? 0.05 : coldBrew ? 0.35 : 0.1;
-  const timeStep = espresso ? 2 : coldBrew ? 1800 : 10;
-  const tempDirection = intent === 'body' || plan.roastLevel === 'dark' ? -1 : 1;
-  const timeDirection = intent === 'clarity' ? -1 : 1;
-  const hotShareDirection = intent === 'clarity' ? -1 : 1;
-  const pourStyleHint = intent === 'sweetness' || intent === 'body' ? 'pulse_light' : 'balanced';
-  const reason = [
-    'AI Brew guardrail optimizer created a controlled micro-patch after the online optimizer was unavailable or not directly usable.',
-    iced
-      ? 'Japanese-style iced remains hot concentrate over measured ice.'
-      : 'Hot brew envelope stays inside method and roast limits.',
-  ].join(' ');
-
-  return [
-    {
-      reason,
-      confidence: 0.72,
-      pourStyleHint,
-      waterTempC: plan.waterTempC + tempDirection,
-      totalTimeSeconds: plan.totalTimeSeconds + (timeStep * timeDirection),
-      hotWaterSharePercent: iced
-        ? plan.hotWaterSharePercent + (2 * hotShareDirection)
-        : undefined,
-      grindGuidance: intent === 'clarity'
-        ? 'Keep the deterministic grind; if the cup tastes dull, move only slightly coarser after tasting.'
-        : 'Keep the deterministic grind; if the cup tastes thin, move only slightly finer after tasting.',
-    },
-    {
-      reason,
-      confidence: 0.68,
-      recommendedRatio: plan.recommendedRatio + (intent === 'body' || intent === 'sweetness' ? -ratioStep : ratioStep),
-      waterTempC: plan.waterTempC + (plan.waterTempC >= 94 ? -1 : 1),
-      totalTimeSeconds: plan.totalTimeSeconds + timeStep,
-      pourStyleHint,
-      hotWaterSharePercent: iced
-        ? plan.hotWaterSharePercent + (plan.hotWaterSharePercent >= 64 ? -2 : 2)
-        : undefined,
-    },
-    {
-      reason,
-      confidence: 0.64,
-      waterTempC: plan.waterTempC + (plan.waterTempC >= 94 ? -1 : 1),
-      totalTimeSeconds: plan.totalTimeSeconds + (plan.totalTimeSeconds >= 300 ? -timeStep : timeStep),
-      hotWaterSharePercent: iced
-        ? plan.hotWaterSharePercent + (plan.hotWaterSharePercent >= 64 ? -1 : 1)
-        : undefined,
-    },
-  ];
-}
-
-function applyGuardrailAiOptimizationSynthesis(plan: BrewPlan) {
-  let latest = applyAiBrewOptimizationPatch(plan, null);
-  for (const patch of buildGuardrailAiOptimizationCandidates(plan)) {
-    latest = applyAiBrewOptimizationPatch(plan, patch);
-    if (latest.applied) return latest;
-  }
-  return latest;
 }
 
 function nowId(prefix: string) {
@@ -5305,15 +5226,10 @@ export function AiBrewPanel({
           if (requireOnlineAiGenerate) {
             throw new Error('ai_brew_optimizer_unavailable');
           }
-          const synthesized = applyGuardrailAiOptimizationSynthesis(nextPlan);
-          if (synthesized.applied) {
-            optimized = synthesized;
-          } else {
-            console.warn(
-              copy.aiOptimizationNoChange,
-              synthesized.rejected.length > 0 ? synthesized.rejected : synthesized.diagnostics,
-            );
-          }
+          console.warn(
+            copy.aiOptimizationNoChange,
+            optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
+          );
         }
 
         if (optimized.applied) {
@@ -6419,13 +6335,14 @@ export function AiBrewPanel({
                 </div>
               </div>
 
-              {isPro && (
-                <div className="glass-card p-4 sm:p-5">
-                  <div className="mb-3 flex items-center gap-2">
-                    <SlidersHorizontal size={16} className="text-blue-500" />
-                    <h3 className="text-base font-semibold">{copy.proDetails}</h3>
-                  </div>
-                  <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
+              <div className="glass-card p-4 sm:p-5">
+                <div className="mb-3 flex items-center gap-2">
+                  <SlidersHorizontal size={16} className="text-blue-500" />
+                  <h3 className="text-base font-semibold">
+                    {isPro ? copy.proDetails : `${copy.quickMode} - ${copy.process} / ${copy.variety}`}
+                  </h3>
+                </div>
+                <div className={`grid gap-4 ${isPro ? 'xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]' : ''}`}>
                     <div className="space-y-3.5">
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
@@ -6491,183 +6408,186 @@ export function AiBrewPanel({
                         </div>
                       )}
 
-                      <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3">
-                        <div className="flex flex-col gap-1">
-                          <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.precisionControlTitle}</h4>
-                          <p className="text-xs leading-5 text-secondary">{copy.precisionControlHint}</p>
-                        </div>
-                        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                          <div>
-                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetRatio}</label>
-                            <input
-                              name="ai-brew-target-ratio"
-                              type="number"
-                              min="13"
-                              max="17"
-                              step="0.1"
-                              inputMode="decimal"
-                              value={formState.targetRatio}
-                              onChange={(event) => updateForm('targetRatio', event.target.value)}
-                              placeholder={copy.targetRatioPlaceholder}
-                              aria-label={copy.targetRatio}
-                              className="glass-input h-12 w-full px-4 text-base"
-                              data-testid="ai-brew-target-ratio"
-                            />
-                            <p className="mt-1 text-xs leading-5 text-secondary" data-testid="ai-brew-target-ratio-hint">{copy.targetRatioHint}</p>
-                          </div>
-                          <div>
-                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetWaterMl}</label>
-                            <input
-                              name="ai-brew-target-water"
-                              type="number"
-                              min="15"
-                              max="2500"
-                              step="5"
-                              inputMode="numeric"
-                              value={formState.targetWaterMl}
-                              onChange={(event) => updateForm('targetWaterMl', event.target.value)}
-                              placeholder={copy.targetWaterMlPlaceholder}
-                              aria-label={copy.targetWaterMl}
-                              className="glass-input h-12 w-full px-4 text-base"
-                              data-testid="ai-brew-target-water"
-                            />
-                          </div>
-                          <div>
-                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetTempC}</label>
-                            <input
-                              name="ai-brew-target-temp"
-                              type="number"
-                              min="4"
-                              max="98"
-                              step="1"
-                              inputMode="numeric"
-                              value={formState.targetTempC}
-                              onChange={(event) => updateForm('targetTempC', event.target.value)}
-                              placeholder={copy.targetTempCPlaceholder}
-                              aria-label={copy.targetTempC}
-                              className="glass-input h-12 w-full px-4 text-base"
-                              data-testid="ai-brew-target-temp"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {pourControlPanel}
-
-                      <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div>
-                            <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.beanProfileTitle}</h4>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setShowBeanProfileEditor((prev) => !prev)}
-                            className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-sm font-medium text-primary"
-                            data-testid="ai-brew-bean-profile-toggle"
-                          >
-                            {showBeanProfileEditor ? copy.beanProfileHide : copy.beanProfileShow}
-                          </button>
-                        </div>
-
-                        {showBeanProfileEditor ? (
-                          <div className="mt-4 space-y-3.5">
-                            <div className="grid gap-4 sm:grid-cols-2">
+                      {isPro && (
+                        <>
+                          <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3">
+                            <div className="flex flex-col gap-1">
+                              <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.precisionControlTitle}</h4>
+                              <p className="text-xs leading-5 text-secondary">{copy.precisionControlHint}</p>
+                            </div>
+                            <div className="mt-3 grid gap-3 sm:grid-cols-3">
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.altitudeMasl}</label>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetRatio}</label>
                                 <input
-                                  name="ai-brew-bean-altitude"
+                                  name="ai-brew-target-ratio"
                                   type="number"
-                                  min="0"
-                                  max="3200"
-                                  step="10"
-                                  value={formState.altitudeMasl}
-                                  onChange={(event) => updateForm('altitudeMasl', event.target.value)}
+                                  min="13"
+                                  max="17"
+                                  step="0.1"
+                                  inputMode="decimal"
+                                  value={formState.targetRatio}
+                                  onChange={(event) => updateForm('targetRatio', event.target.value)}
+                                  placeholder={copy.targetRatioPlaceholder}
+                                  aria-label={copy.targetRatio}
                                   className="glass-input h-12 w-full px-4 text-base"
-                                  data-testid="ai-brew-bean-altitude"
+                                  data-testid="ai-brew-target-ratio"
+                                />
+                                <p className="mt-1 text-xs leading-5 text-secondary" data-testid="ai-brew-target-ratio-hint">{copy.targetRatioHint}</p>
+                              </div>
+                              <div>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetWaterMl}</label>
+                                <input
+                                  name="ai-brew-target-water"
+                                  type="number"
+                                  min="15"
+                                  max="2500"
+                                  step="5"
+                                  inputMode="numeric"
+                                  value={formState.targetWaterMl}
+                                  onChange={(event) => updateForm('targetWaterMl', event.target.value)}
+                                  placeholder={copy.targetWaterMlPlaceholder}
+                                  aria-label={copy.targetWaterMl}
+                                  className="glass-input h-12 w-full px-4 text-base"
+                                  data-testid="ai-brew-target-water"
                                 />
                               </div>
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.beanDensity}</label>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetTempC}</label>
                                 <input
-                                  name="ai-brew-bean-density"
+                                  name="ai-brew-target-temp"
                                   type="number"
-                                  min="0.55"
-                                  max="0.95"
-                                  step="0.01"
-                                  value={formState.beanDensityGml}
-                                  onChange={(event) => updateForm('beanDensityGml', event.target.value)}
+                                  min="4"
+                                  max="98"
+                                  step="1"
+                                  inputMode="numeric"
+                                  value={formState.targetTempC}
+                                  onChange={(event) => updateForm('targetTempC', event.target.value)}
+                                  placeholder={copy.targetTempCPlaceholder}
+                                  aria-label={copy.targetTempC}
                                   className="glass-input h-12 w-full px-4 text-base"
-                                  data-testid="ai-brew-bean-density"
+                                  data-testid="ai-brew-target-temp"
                                 />
                               </div>
                             </div>
-
-                            <div>
-                              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.roastDevelopmentTitle}</label>
-                              <div className="grid grid-cols-3 gap-2">
-                                {ROAST_DEVELOPMENT_OPTIONS.map((option) => {
-                                  const label = option.value === 'underdeveloped'
-                                    ? copy.roastDevelopmentUnderdeveloped
-                                    : option.value === 'balanced'
-                                      ? copy.roastDevelopmentBalanced
-                                      : copy.roastDevelopmentDeveloped;
-                                  return (
-                                    <button
-                                      key={option.value}
-                                      type="button"
-                                      onClick={() => updateForm('roastDevelopment', formState.roastDevelopment === option.value ? '' : option.value)}
-                                      className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.roastDevelopment === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
-                                      data-testid={`ai-brew-bean-roast-${option.value}`}
-                                    >
-                                      {label}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.solubilityTitle}</label>
-                              <div className="grid grid-cols-3 gap-2">
-                                {SOLUBILITY_OPTIONS.map((option) => {
-                                  const label = option.value === 'low'
-                                    ? copy.solubilityLow
-                                    : option.value === 'medium'
-                                      ? copy.solubilityMedium
-                                      : copy.solubilityHigh;
-                                  return (
-                                    <button
-                                      key={option.value}
-                                      type="button"
-                                      onClick={() => updateForm('solubility', formState.solubility === option.value ? '' : option.value)}
-                                      className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.solubility === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
-                                      data-testid={`ai-brew-bean-solubility-${option.value}`}
-                                    >
-                                      {label}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-
-                            <div className="rounded-xl bg-[var(--bg-base)] px-3 py-3 text-sm text-secondary" data-testid="ai-brew-bean-profile-summary">
-                              {(buildBeanProfileSummary(formState)
-                                .replace(' masl', ' m')
-                                .replace(' g/ml', ' density')
-                              ) || copy.beanProfileNeutral}
-                            </div>
                           </div>
-                        ) : (
-                          <div className="mt-4 rounded-xl bg-[var(--bg-base)] px-3 py-3 text-sm text-secondary" data-testid="ai-brew-bean-profile-summary">
-                            {buildBeanProfileSummary(formState) || copy.beanProfileNeutral}
+
+                          {pourControlPanel}
+
+                          <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3">
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div>
+                                <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.beanProfileTitle}</h4>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setShowBeanProfileEditor((prev) => !prev)}
+                                className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-sm font-medium text-primary"
+                                data-testid="ai-brew-bean-profile-toggle"
+                              >
+                                {showBeanProfileEditor ? copy.beanProfileHide : copy.beanProfileShow}
+                              </button>
+                            </div>
+
+                            {showBeanProfileEditor ? (
+                              <div className="mt-4 space-y-3.5">
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                  <div>
+                                    <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.altitudeMasl}</label>
+                                    <input
+                                      name="ai-brew-bean-altitude"
+                                      type="number"
+                                      min="0"
+                                      max="3200"
+                                      step="10"
+                                      value={formState.altitudeMasl}
+                                      onChange={(event) => updateForm('altitudeMasl', event.target.value)}
+                                      className="glass-input h-12 w-full px-4 text-base"
+                                      data-testid="ai-brew-bean-altitude"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.beanDensity}</label>
+                                    <input
+                                      name="ai-brew-bean-density"
+                                      type="number"
+                                      min="0.55"
+                                      max="0.95"
+                                      step="0.01"
+                                      value={formState.beanDensityGml}
+                                      onChange={(event) => updateForm('beanDensityGml', event.target.value)}
+                                      className="glass-input h-12 w-full px-4 text-base"
+                                      data-testid="ai-brew-bean-density"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.roastDevelopmentTitle}</label>
+                                  <div className="grid grid-cols-3 gap-2">
+                                    {ROAST_DEVELOPMENT_OPTIONS.map((option) => {
+                                      const label = option.value === 'underdeveloped'
+                                        ? copy.roastDevelopmentUnderdeveloped
+                                        : option.value === 'balanced'
+                                          ? copy.roastDevelopmentBalanced
+                                          : copy.roastDevelopmentDeveloped;
+                                      return (
+                                        <button
+                                          key={option.value}
+                                          type="button"
+                                          onClick={() => updateForm('roastDevelopment', formState.roastDevelopment === option.value ? '' : option.value)}
+                                          className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.roastDevelopment === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
+                                          data-testid={`ai-brew-bean-roast-${option.value}`}
+                                        >
+                                          {label}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.solubilityTitle}</label>
+                                  <div className="grid grid-cols-3 gap-2">
+                                    {SOLUBILITY_OPTIONS.map((option) => {
+                                      const label = option.value === 'low'
+                                        ? copy.solubilityLow
+                                        : option.value === 'medium'
+                                          ? copy.solubilityMedium
+                                          : copy.solubilityHigh;
+                                      return (
+                                        <button
+                                          key={option.value}
+                                          type="button"
+                                          onClick={() => updateForm('solubility', formState.solubility === option.value ? '' : option.value)}
+                                          className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.solubility === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
+                                          data-testid={`ai-brew-bean-solubility-${option.value}`}
+                                        >
+                                          {label}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+
+                                <div className="rounded-xl bg-[var(--bg-base)] px-3 py-3 text-sm text-secondary" data-testid="ai-brew-bean-profile-summary">
+                                  {(buildBeanProfileSummary(formState)
+                                    .replace(' masl', ' m')
+                                    .replace(' g/ml', ' density')
+                                  ) || copy.beanProfileNeutral}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="mt-4 rounded-xl bg-[var(--bg-base)] px-3 py-3 text-sm text-secondary" data-testid="ai-brew-bean-profile-summary">
+                                {buildBeanProfileSummary(formState) || copy.beanProfileNeutral}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
+                        </>
+                      )}
 
                     </div>
                   </div>
                 </div>
-              )}
 
             </div>
           </div>

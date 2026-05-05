@@ -2740,7 +2740,7 @@ test('buildAiBrewPlan keeps neutral quick and neutral pro-style inputs on the sa
   );
 });
 
-test('createQuickAiBrewFormState strips hidden precision-only modifiers before generation', () => {
+test('createQuickAiBrewFormState keeps coffee context and strips hidden precision-only modifiers before generation', () => {
   const quickInput = createQuickAiBrewFormState({
     ...createDefaultAiBrewFormState(catalog),
     coffeeName: 'Quick Sanitizer QA',
@@ -2766,21 +2766,61 @@ test('createQuickAiBrewFormState strips hidden precision-only modifiers before g
   }, catalog);
 
   assert.equal(quickInput.brewMode, 'iced');
-  assert.equal(quickInput.process, '');
+  assert.equal(quickInput.process, 'natural');
   assert.equal(quickInput.customProcess, '');
-  assert.equal(quickInput.variety, '');
+  assert.equal(quickInput.variety, 'geisha');
   assert.equal(quickInput.customVariety, '');
   assert.equal(quickInput.altitudeMasl, '');
   assert.equal(quickInput.beanDensityGml, '');
   assert.equal(quickInput.roastDevelopment, '');
   assert.equal(quickInput.solubility, '');
-  assert.equal(quickInput.waterNotes, '');
+  assert.equal(quickInput.waterNotes, 'extra buffer');
   assert.equal(quickInput.targetRatio, '');
   assert.equal(quickInput.targetWaterMl, '');
   assert.equal(quickInput.targetTempC, '');
   assert.equal(quickInput.waterTdsPpm, '95');
   assert.equal(quickInput.pourStyle, 'pulse');
   assert.equal(quickInput.pourCount, '5');
+
+  const customQuickInput = createQuickAiBrewFormState({
+    ...createDefaultAiBrewFormState(catalog),
+    process: 'custom',
+    customProcess: 'carbonic maceration',
+    variety: 'custom',
+    customVariety: 'local landrace',
+  }, catalog);
+
+  assert.equal(customQuickInput.process, 'custom');
+  assert.equal(customQuickInput.customProcess, 'carbonic maceration');
+  assert.equal(customQuickInput.variety, 'custom');
+  assert.equal(customQuickInput.customVariety, 'local landrace');
+});
+
+test('createQuickAiBrewFormState applies process and variety to the generated recipe core', () => {
+  const base = {
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'hot' as const,
+    coffeeName: 'Colombia Huila Natural Ombligon',
+    doseG: '15',
+    process: 'natural',
+    variety: 'ombligon',
+    roastLevel: 'medium_light' as const,
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'more_sweetness',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  };
+  const quickPlan = buildAiBrewPlan(createQuickAiBrewFormState(base, catalog), catalog);
+  const proPlan = buildAiBrewPlan(base, catalog);
+
+  assert.equal(quickPlan.process, 'Natural');
+  assert.equal(quickPlan.variety, 'Ombligon');
+  assert.equal(quickPlan.recommendedRatio, proPlan.recommendedRatio);
+  assert.equal(quickPlan.waterTempC, proPlan.waterTempC);
+  assert.equal(quickPlan.totalTimeSeconds, proPlan.totalTimeSeconds);
 });
 
 test('precision targets can override ratio, total water, and temperature within guardrails', () => {

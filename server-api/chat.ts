@@ -560,11 +560,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         : '';
     const usageFeature = aiUsageFeatureFromContext(rawChatFeature, rawChatSurface);
     const paidFeature: PaidAiFeature = rawChatFeature === 'ai_brew' || rawChatFeature === 'brew' ? 'brew' : 'chat';
+    const rawChatMode = String(req.body?.mode || '').trim().toLowerCase();
     const aiAccess = await requirePaidAiAccess({
         requestId,
         auth: authResult.auth,
         rawClientContext: rawChatClientContext,
         feature: paidFeature,
+        quotaKind: rawChatMode === 'deep' || rawChatMode === 'deep_think' ? 'deep' : 'ai',
     });
     if (aiAccess.ok === false) {
         return res.status(aiAccess.statusCode).json({

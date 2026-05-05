@@ -62,16 +62,21 @@ Before Play Store launch, the admin console should show:
 - Native-only screens can call `ApiClient.getAccountStatus()` with the mobile bearer token.
 - Maintenance banners are user-facing; admin routes hide the banner because `/admin` has the dedicated Maintenance tab.
 
-## Remaining Paid-Launch Wiring
+## Paid-Launch Quota Wiring
 
-The admin console includes plan management and quota definitions. Paid launch still needs quota middleware connected to:
+The admin console includes plan management and quota definitions. Core paid AI quota enforcement is wired through `PLAN_ENFORCEMENT_ENABLED` and the Supabase RPC `public.consume_app_quota`.
 
-- `/api/ai`
-- `/api/chat`
-- scanner/image edit routes
-- speech/transcription routes
+Before setting `PLAN_ENFORCEMENT_ENABLED=true`, deploy `supabase/admin_management.sql` so `public.consume_app_quota` exists and verify `/api/ai` plus `/api/chat` consume daily quota for:
+
+- `ai_daily_limit`: chat, search, AI Brew, text/attachment actions.
+- `deep_daily_limit`: deep chat/deep think, also counted against AI daily usage.
+- `scanner_daily_limit`: scanner and latte-art image actions.
+
+Keep `PLAN_QUOTA_STRICT_ENABLED=false` during schema rollout so verified paid users can continue when only the quota RPC is unavailable. Turn it on after the RPC is deployed and monitored.
 
 Use `app_users.plan_code`, `app_users.billing_status`, `app_plans.*_daily_limit`, `user_entitlements`, and `app_usage_daily` as the source of truth.
+
+Remaining post-MVP quota expansions: collection write quotas, image edit cost accounting, speech seconds, and token/cost reconciliation into `app_usage_daily`.
 
 ## Supabase and Payment Setup Notes
 

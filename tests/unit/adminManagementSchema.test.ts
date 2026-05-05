@@ -29,3 +29,13 @@ test('admin management schema supports app store and realtime entitlement sync',
   assert.match(sql, /alter publication supabase_realtime add table public\.user_entitlements/i);
   assert.match(sql, /alter publication supabase_realtime add table public\.app_plans/i);
 });
+
+test('admin management schema includes atomic app quota consumption RPC', () => {
+  const sql = schemaText();
+  assert.match(sql, /create or replace function public\.consume_app_quota/i);
+  assert.match(sql, /for update/i);
+  assert.match(sql, /ai_requests = ai_requests \+ v_amount/i);
+  assert.match(sql, /deep_requests = deep_requests \+ v_amount/i);
+  assert.match(sql, /scanner_runs = scanner_runs \+ v_amount/i);
+  assert.match(sql, /grant execute on function public\.consume_app_quota/i);
+});

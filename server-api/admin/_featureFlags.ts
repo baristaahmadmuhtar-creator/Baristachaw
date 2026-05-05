@@ -202,6 +202,18 @@ export function normalizeFeatureFlagPatch(rawPatch: unknown): FeatureFlagPatch {
   return patch;
 }
 
+function flagEnvAliases(flag: AdminFeatureFlag): string[] {
+  const aliases = [flag.key];
+  if (flag.key.startsWith('ai_provider_')) {
+    aliases.push(flag.key.replace(/^ai_provider_/, ''));
+  }
+  return aliases;
+}
+
+function envListHasFlag(list: Set<string>, flag: AdminFeatureFlag): boolean {
+  return flagEnvAliases(flag).some((alias) => list.has(alias));
+}
+
 export function featureFlagFromSupabase(row: any): AdminFeatureFlag {
   const key = normalizeFeatureFlagKey(row.key || row.flag_key);
   const defaultFlag = DEFAULT_FEATURE_FLAGS.find((flag) => flag.key === key);
@@ -227,9 +239,9 @@ export function buildRuntimeFeatureFlags(patches?: Map<string, FeatureFlagPatch>
   return DEFAULT_FEATURE_FLAGS.map((flag) => {
     const patch = patches?.get(flag.key);
     const statusFromEnv =
-      (globalMaintenance && flag.key === 'global_app') || maintenanceKeys.has(flag.key)
+      (globalMaintenance && flag.key === 'global_app') || envListHasFlag(maintenanceKeys, flag)
         ? 'maintenance'
-        : disabledKeys.has(flag.key)
+        : envListHasFlag(disabledKeys, flag)
           ? 'disabled'
           : flag.status;
     const messageFromEnv = statusFromEnv === 'available'

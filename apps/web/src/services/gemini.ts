@@ -24,6 +24,7 @@ const CLIENT_KEY_DISABLED_MESSAGE = "Client-side API keys are disabled. Please u
 const MULTIMODAL_AI_ACTIONS = new Set(["analyze_image", "analyze_attachment", "edit_latte_art", "transcribe"]);
 const SERVER_CHAT_DEFAULT_MESSAGE_MAX_CHARS = 1800;
 const SERVER_CHAT_TOOLS_MESSAGE_MAX_CHARS = 12000;
+const SERVER_STRUCTURED_AI_PROMPT_MAX_CHARS = 12000;
 
 function getAppLanguage() {
   if (typeof document !== "undefined" && document.documentElement?.lang) {
@@ -230,6 +231,13 @@ export interface StructuredTextDetailedPayload {
   degraded?: boolean;
   details?: string;
   requestId?: string;
+}
+
+export interface AiTextRequestOptions {
+  model?: string;
+  timeoutMs?: number;
+  fallbackToStructured?: boolean;
+  fallbackToChat?: boolean;
 }
 
 export class SearchWebError extends Error {
@@ -449,10 +457,7 @@ async function serverChat(
 export async function raceChatResponse(
   prompt: string,
   requestContext?: ChatRequestContextPayload,
-  options?: {
-    model?: string;
-    timeoutMs?: number;
-  },
+  options?: AiTextRequestOptions,
 ) {
   const fallbackMessage = localize(
     "Sorry, I could not process your request. Please try again.",
@@ -465,11 +470,22 @@ export async function raceChatResponse(
     : SERVER_CHAT_DEFAULT_MESSAGE_MAX_CHARS;
   const shouldBypassChatRoute = normalizedPrompt.trim().length > targetChatLimit;
 
+  if (normalizedPrompt.trim().length > SERVER_STRUCTURED_AI_PROMPT_MAX_CHARS) {
+    logDev("[gemini] prompt skipped before structured fallback: over server limit", {
+      promptLength: normalizedPrompt.trim().length,
+      maxChars: SERVER_STRUCTURED_AI_PROMPT_MAX_CHARS,
+      feature: requestContext?.clientContext?.feature,
+      surface: requestContext?.clientContext?.surface,
+    });
+    return fallbackMessage;
+  }
+
   if (!shouldBypassChatRoute) {
     try {
       return await serverChat(normalizedPrompt, requestContext, { timeoutMs: options?.timeoutMs });
     } catch (error) {
       if (isAiAccessError(error)) throw error;
+      if (options?.fallbackToStructured === false) return fallbackMessage;
       // fall through to structured AI fallback
     }
   }
@@ -840,9 +856,7 @@ async function structuredTextResponseDetailed(
   action: "fast" | "balanced",
   prompt: string,
   requestContext?: ChatRequestContextPayload,
-  options?: {
-    model?: string;
-  },
+  options?: AiTextRequestOptions,
 ): Promise<StructuredTextDetailedPayload> {
   const strictPrompt = withStrictAnswerInstruction(prompt, action === 'fast' ? 'fast' : 'normal');
   const fallbackMessage = localize(
@@ -851,12 +865,21 @@ async function structuredTextResponseDetailed(
     "Ø¹Ø°Ø±Ù‹Ø§ØŒ ØªØ¹Ø°Ø±Øª Ù…Ø¹Ø§Ù„Ø¬Ø© Ø·Ù„Ø¨Ùƒ. ÙŠØ±Ø¬Ù‰ Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø© Ù…Ø±Ø© Ø£Ø®Ø±Ù‰.",
   );
 
+  if (strictPrompt.trim().length > SERVER_STRUCTURED_AI_PROMPT_MAX_CHARS) {
+    throw new StructuredTextModeError(`${action} request is too large for structured AI.`, {
+      errorCode: "validation_error",
+      retryable: false,
+      details: `prompt_length=${strictPrompt.trim().length}; max=${SERVER_STRUCTURED_AI_PROMPT_MAX_CHARS}`,
+    });
+  }
+
   try {
     const result = await serverAi(
       action,
       strictPrompt,
       options?.model ? { model: options.model } : undefined,
       requestContext,
+      { timeoutMs: options?.timeoutMs },
     );
     const text = String(result.text || '').trim();
     if (!text) {
@@ -875,8 +898,25 @@ async function structuredTextResponseDetailed(
       requestId: result.requestId,
     };
   } catch (error) {
+    if (options?.fallbackToChat === false) {
+      if (error instanceof StructuredTextModeError) throw error;
+      if (error instanceof ServerAiError) {
+        throw new StructuredTextModeError(error.message, {
+          requestId: error.requestId,
+          errorCode: error.errorCode,
+          retryable: error.retryable,
+          provider: error.provider,
+          degraded: error.degraded,
+          details: error.message,
+        });
+      }
+      throw new StructuredTextModeError(fallbackMessage, {
+        retryable: true,
+        details: error instanceof Error ? error.message : CLIENT_KEY_DISABLED_MESSAGE,
+      });
+    }
     try {
-      const fallbackText = await serverChat(strictPrompt, requestContext);
+      const fallbackText = await serverChat(strictPrompt, requestContext, { timeoutMs: options?.timeoutMs });
       const text = String(fallbackText || '').trim();
       if (text) {
         return {
@@ -910,9 +950,7 @@ async function structuredTextResponseDetailed(
 export async function fastResponseDetailed(
   prompt: string,
   requestContext?: ChatRequestContextPayload,
-  options?: {
-    model?: string;
-  },
+  options?: AiTextRequestOptions,
 ): Promise<StructuredTextDetailedPayload> {
   return structuredTextResponseDetailed("fast", prompt, requestContext, options);
 }
@@ -920,9 +958,7 @@ export async function fastResponseDetailed(
 export async function balancedResponseDetailed(
   prompt: string,
   requestContext?: ChatRequestContextPayload,
-  options?: {
-    model?: string;
-  },
+  options?: AiTextRequestOptions,
 ): Promise<StructuredTextDetailedPayload> {
   return structuredTextResponseDetailed("balanced", prompt, requestContext, options);
 }
@@ -930,9 +966,7 @@ export async function balancedResponseDetailed(
 export async function fastResponseLegacy(
   prompt: string,
   requestContext?: ChatRequestContextPayload,
-  options?: {
-    model?: string;
-  },
+  options?: AiTextRequestOptions,
 ) {
   try {
     const result = await serverAi(
@@ -940,11 +974,12 @@ export async function fastResponseLegacy(
       prompt,
       options?.model ? { model: options.model } : undefined,
       requestContext,
+      { timeoutMs: options?.timeoutMs },
     );
     return result.text || localize("Sorry, I could not process your request. Please try again.", "Maaf, permintaan Anda belum bisa diproses. Silakan coba lagi.", "عذرًا، تعذرت معالجة طلبك. يرجى المحاولة مرة أخرى.");
   } catch {
     try {
-      return await serverChat(prompt, requestContext);
+      return await serverChat(prompt, requestContext, { timeoutMs: options?.timeoutMs });
     } catch {
       return localize("Sorry, I could not process your request. Please try again.", "Maaf, permintaan Anda belum bisa diproses. Silakan coba lagi.", "عذرًا، تعذرت معالجة طلبك. يرجى المحاولة مرة أخرى.");
     }
@@ -954,9 +989,7 @@ export async function fastResponseLegacy(
 export async function fastResponse(
   prompt: string,
   requestContext?: ChatRequestContextPayload,
-  options?: {
-    model?: string;
-  },
+  options?: AiTextRequestOptions,
 ) {
   const result = await fastResponseDetailed(prompt, requestContext, options);
   return result.text;
@@ -997,10 +1030,11 @@ export async function deepThinkingResponse(prompt: string, requestContext?: Chat
 export async function deepThinkingResponseDetailed(
   prompt: string,
   requestContext?: ChatRequestContextPayload,
+  options?: Pick<AiTextRequestOptions, 'timeoutMs'>,
 ): Promise<DeepThinkingDetailedPayload> {
   const strictPrompt = withStrictAnswerInstruction(prompt, 'deep');
   try {
-    const result = await serverAi("deep_think", strictPrompt, undefined, requestContext);
+    const result = await serverAi("deep_think", strictPrompt, undefined, requestContext, { timeoutMs: options?.timeoutMs });
     const text = String(result.text || '').trim();
     if (!text) {
       throw new DeepThinkingError('Deep response was empty.', {

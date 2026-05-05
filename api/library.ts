@@ -4,6 +4,10 @@ import syncHandler from '../server-api/library/sync.js';
 type Handler = (req: VercelRequest, res: VercelResponse) => unknown;
 
 function routePath(req: VercelRequest): string {
+  const path = req.query.path;
+  if (Array.isArray(path)) return path.map((item) => String(item || '').trim()).filter(Boolean).join('/');
+  if (typeof path === 'string' && path.trim()) return path.trim();
+
   const raw = req.query.route;
   if (Array.isArray(raw)) return raw.map((item) => String(item || '').trim()).filter(Boolean).join('/');
   if (typeof raw === 'string' && raw.trim()) return raw.trim();
@@ -18,4 +22,3 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   return res.status(404).json({ error: 'Not found' });
 }
-

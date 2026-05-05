@@ -36,7 +36,7 @@ import { useNavbar } from '../../context/NavbarContext';
 import { useAiAccessGate } from '../../components/billing/AiAccessGate';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useRuntimeDisplayMode } from '../../hooks/useRuntimeDisplayMode';
-import { raceChatResponse, deepThinkingResponseDetailed } from '../../services/gemini';
+import { balancedResponseDetailed, raceChatResponse, deepThinkingResponseDetailed } from '../../services/gemini';
 import { createRecipeCollectionItem, saveCollectionItem, saveRecipe } from '../../services/storageService';
 import type { Recipe } from '../../types';
 import {
@@ -44,6 +44,7 @@ import {
   buildExplainPrompt,
   buildOptimizationPrompt,
   buildSequenceGuidePrompt,
+  buildSequenceRepairPrompt,
   buildTroubleshootPrompt,
 } from './prompts';
 import { buildDeterministicAiCoachMarkdown } from './coachNotes';
@@ -137,9 +138,13 @@ import type {
 
 const CUSTOM_ENTRY_ID = 'custom';
 const OMITTED_ENTRY_ID = '__omitted__';
-const AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS = 14000;
-const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 9000;
-const AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS = 1800;
+const AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS = 4500;
+const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 4500;
+const AI_BREW_HYBRID_REPAIR_TIMEOUT_MS = 3500;
+const AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS = 1200;
+const AI_BREW_COACH_FAST_TIMEOUT_MS = 5000;
+const AI_BREW_COACH_DEEP_TIMEOUT_MS = 8500;
+const AI_BREW_COACH_TRANSLATION_TIMEOUT_MS = 1200;
 const AI_BREW_FEEDBACK_NOTE_MAX_LENGTH = 240;
 const AI_BREW_ONLINE_PROVIDER_STACK = 'Groq Llama 3.3 70B, Gemini 2.5 Flash, DeepSeek Chat, Mistral Large, OpenAI GPT-4o mini, OpenRouter Llama fallback';
 const COPY = {
@@ -1383,10 +1388,30 @@ function hasAiBrewLanguageLeak(markdown: string, language: string) {
   ].some((pattern) => pattern.test(markdown));
 }
 
+function isAiBrewGenericFailureMarkdown(markdown: string) {
+  const value = String(markdown || '').trim().toLowerCase();
+  if (!value) return true;
+  const firstBlock = value.split(/\n{2,}/)[0]?.trim() || value;
+  if (firstBlock.length > 240) return false;
+  return [
+    'maaf, permintaan',
+    'belum bisa diproses',
+    'silakan coba lagi',
+    'coba lagi ya',
+    'sorry, i could not process',
+    'please try again',
+    'ai service unavailable',
+    'layanan ai tidak tersedia',
+    'deep mode is unavailable',
+    'mode deep tidak tersedia',
+  ].some((snippet) => firstBlock.includes(snippet));
+}
+
 async function normalizeMarkdownToLanguage(
   markdown: string,
   language: string,
   requestContext: any,
+  options?: { timeoutMs?: number },
 ) {
   if (!markdown.trim()) return markdown;
   if (/^en(?:-|$)/i.test(language)) return markdown;
@@ -1399,7 +1424,10 @@ async function normalizeMarkdownToLanguage(
     markdown,
   ].join('\n');
   try {
-    const translated = await raceChatResponse(translationPrompt, requestContext);
+    const translated = await raceChatResponse(translationPrompt, requestContext, {
+      timeoutMs: options?.timeoutMs,
+      fallbackToStructured: false,
+    });
     return localizeAiBrewMarkdownLanguage(translated?.trim() || markdown, language);
   } catch {
     return localizeAiBrewMarkdownLanguage(markdown, language);
@@ -1503,6 +1531,17 @@ function applyHybridSequenceToPlan(
   } satisfies BrewPlan;
 }
 
+function shouldRetryHybridSequence(errors: string[]) {
+  const joined = errors.join(' | ').toLowerCase();
+  return Boolean(
+    joined.includes('response is too short')
+    || joined.includes('missing required heading')
+    || joined.includes('got 0')
+    || joined.includes('ai response indicated service unavailability')
+    || joined.includes('ai response timed out'),
+  );
+}
+
 async function runHybridSequenceUpdate(
   nextPlan: BrewPlan,
   options: {
@@ -1528,12 +1567,38 @@ async function runHybridSequenceUpdate(
     },
   };
 
-  const aiText = await raceChatResponse(
-    buildSequenceGuidePrompt(nextPlan).body,
+  const sequencePrompt = buildSequenceGuidePrompt(nextPlan).body;
+  let aiText = await raceChatResponse(
+    sequencePrompt,
     canonicalRequestContext,
-    { timeoutMs: AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS },
+    {
+      timeoutMs: AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS,
+      fallbackToStructured: false,
+    },
   );
-  const canonicalOverlay = composeHybridSequenceOverlay(nextPlan, aiText);
+
+  let canonicalOverlay = composeHybridSequenceOverlay(nextPlan, aiText);
+  if (canonicalOverlay.usedFallback && shouldRetryHybridSequence(canonicalOverlay.validation.errors)) {
+    try {
+      const repairPrompt = buildSequenceRepairPrompt(
+        nextPlan,
+        canonicalOverlay.validation.errors,
+        'en',
+      ).body;
+      const repair = await balancedResponseDetailed(
+        repairPrompt,
+        canonicalRequestContext,
+        {
+          timeoutMs: AI_BREW_HYBRID_REPAIR_TIMEOUT_MS,
+          fallbackToChat: false,
+        },
+      );
+      aiText = repair.text;
+      canonicalOverlay = composeHybridSequenceOverlay(nextPlan, aiText);
+    } catch {
+      // Keep the deterministic fallback from the first pass.
+    }
+  }
   const displayMarkdown = await normalizeSequenceMarkdownToLanguage(
     canonicalOverlay.markdown,
     options.language,
@@ -1611,7 +1676,10 @@ async function runHybridOptimizationUpdate(
         : ''
     }`,
     canonicalRequestContext,
-    { timeoutMs: AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS },
+    {
+      timeoutMs: AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS,
+      fallbackToStructured: false,
+    },
   );
 
   return applyAiBrewOptimizationPatch(nextPlan, parseAiBrewOptimizationPatch(aiText));
@@ -2398,6 +2466,12 @@ function getAiBrewSequenceFallbackMessage(language: string) {
   return isIndonesianAiBrewLanguage(language)
     ? 'Instruksi AI tambahan belum dipakai. Sistem memakai urutan seduh tervalidasi agar hasil tetap stabil.'
     : 'The extra AI layer was skipped. The validated brew sequence is being used to keep the result stable.';
+}
+
+function logAiBrewSequenceFallback(language: string, details: unknown) {
+  if (import.meta.env.DEV) {
+    console.warn(getAiBrewSequenceFallbackMessage(language), details);
+  }
 }
 
 function getAiBrewOptimizationFallbackMessage(language: string) {
@@ -3478,6 +3552,7 @@ function PlanResultDialog({
                     <label className="mt-3 block">
                       <span className="mb-2 block text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.feedbackNote}</span>
                       <textarea
+                        name="ai-brew-feedback-note"
                         value={feedbackNoteDraft}
                         onChange={(event) => onFeedbackNoteChange(event.target.value.slice(0, AI_BREW_FEEDBACK_NOTE_MAX_LENGTH))}
                         placeholder={copy.feedbackNotePlaceholder}
@@ -5262,11 +5337,11 @@ export function AiBrewPanel({
               stepInstructions: hybridSequence.stepInstructions,
             });
             if (hybridSequence.fallbackDiagnostics.length > 0) {
-              console.warn(getAiBrewSequenceFallbackMessage(language), hybridSequence.fallbackDiagnostics);
+              logAiBrewSequenceFallback(language, hybridSequence.fallbackDiagnostics);
             }
           }
         } catch (error) {
-          console.warn(getAiBrewSequenceFallbackMessage(language), error);
+          logAiBrewSequenceFallback(language, error);
         }
       }
       const journalEntry: BrewJournalEntry = {
@@ -5400,10 +5475,18 @@ export function AiBrewPanel({
           action: 'taste_feedback',
         },
       };
-      const rawMarkdown = (await deepThinkingResponseDetailed(withLanguageLock(promptBody, language), requestContext)).text;
-      const markdown = await normalizeMarkdownToLanguage(rawMarkdown, language, requestContext);
+      const rawMarkdown = (await deepThinkingResponseDetailed(withLanguageLock(promptBody, language), requestContext, {
+        timeoutMs: AI_BREW_COACH_DEEP_TIMEOUT_MS,
+      })).text;
+      const markdown = await normalizeMarkdownToLanguage(rawMarkdown, language, requestContext, {
+        timeoutMs: AI_BREW_COACH_TRANSLATION_TIMEOUT_MS,
+      });
       const guarded = sanitizeAiCoachMarkdown({ action: 'troubleshoot', markdown, plan });
-      const safeMarkdown = guarded.risk === 'high' || hasAiBrewLanguageLeak(guarded.markdown, language)
+      const safeMarkdown = guarded.risk === 'high'
+        || isAiBrewGenericFailureMarkdown(rawMarkdown)
+        || isAiBrewGenericFailureMarkdown(markdown)
+        || isAiBrewGenericFailureMarkdown(guarded.markdown)
+        || hasAiBrewLanguageLeak(guarded.markdown, language)
         ? deterministicMarkdown
         : guarded.markdown;
       setAiResponse({ title: copy.feedbackCoachTitle, markdown: safeMarkdown });
@@ -5474,15 +5557,54 @@ export function AiBrewPanel({
       return;
     }
 
+    const prompt =
+      mode === 'explain'
+        ? buildExplainPrompt(plan, language)
+        : mode === 'troubleshoot'
+          ? buildTroubleshootPrompt(plan, language)
+          : buildAdjustPrompt(plan, language);
+    const fallbackMarkdown = sanitizeAiCoachMarkdown({
+      action: mode,
+      markdown: sanitizeBrewNarrative(
+        localizeAiBrewMarkdownLanguage(buildDeterministicAiCoachMarkdown(plan, mode, language), language),
+        plan,
+      ),
+      plan,
+    }).markdown;
+    const commitCoachMarkdown = async (markdown: string) => {
+      setAiResponse({ title: prompt.title, markdown });
+      const nextPlan = mergeAiNotesIntoPlan(plan, { [mode]: markdown });
+      setPlan(nextPlan);
+      saveLastGeneratedBrewPlan(nextPlan);
+      if (activeJournalId) {
+        try {
+          await updateBrewJournalAiNotes(activeJournalId, { [mode]: markdown });
+          void syncAiBrewLibraryToCloud({
+            aiBrewJournal: [{
+              id: activeJournalId,
+              fingerprint: nextPlan.fingerprint,
+              title: buildLocalizedPlanRecipeName(nextPlan, language),
+              locale: language,
+              createdAt: nextPlan.createdAt,
+              updatedAt: Date.now(),
+              plan: nextPlan,
+              aiNotes: nextPlan.aiNotes,
+              feedback: activeFeedback || undefined,
+            }],
+          });
+          await refreshSavedViews();
+        } catch (storageError) {
+          if (import.meta.env.DEV) {
+            console.warn('AI Brew coach note save skipped.', storageError);
+          }
+        }
+      }
+    };
+
     setAiBusy(mode);
     setAiError(null);
+    setAiResponse({ title: prompt.title, markdown: fallbackMarkdown });
     try {
-      const prompt =
-        mode === 'explain'
-          ? buildExplainPrompt(plan, language)
-          : mode === 'troubleshoot'
-            ? buildTroubleshootPrompt(plan, language)
-            : buildAdjustPrompt(plan, language);
       const requestContext = {
         responseProfile: {
           language,
@@ -5499,44 +5621,28 @@ export function AiBrewPanel({
       };
       const lockedPrompt = withLanguageLock(prompt.body, language);
       const rawMarkdown = mode === 'troubleshoot'
-        ? (await deepThinkingResponseDetailed(lockedPrompt, requestContext)).text
-        : await raceChatResponse(lockedPrompt, requestContext);
-      const markdown = await normalizeMarkdownToLanguage(rawMarkdown, language, requestContext);
+        ? (await deepThinkingResponseDetailed(lockedPrompt, requestContext, { timeoutMs: AI_BREW_COACH_DEEP_TIMEOUT_MS })).text
+        : await raceChatResponse(lockedPrompt, requestContext, {
+            timeoutMs: AI_BREW_COACH_FAST_TIMEOUT_MS,
+            fallbackToStructured: false,
+          });
+      const markdown = await normalizeMarkdownToLanguage(rawMarkdown, language, requestContext, {
+        timeoutMs: AI_BREW_COACH_TRANSLATION_TIMEOUT_MS,
+      });
       const guarded = sanitizeAiCoachMarkdown({ action: mode, markdown, plan });
-      const fallbackMarkdown = sanitizeAiCoachMarkdown({
-        action: mode,
-        markdown: sanitizeBrewNarrative(
-          localizeAiBrewMarkdownLanguage(buildDeterministicAiCoachMarkdown(plan, mode, language), language),
-          plan,
-        ),
-        plan,
-      }).markdown;
-      const safeMarkdown = guarded.risk === 'high' || hasAiBrewLanguageLeak(guarded.markdown, language)
+      const safeMarkdown = guarded.risk === 'high'
+        || isAiBrewGenericFailureMarkdown(rawMarkdown)
+        || isAiBrewGenericFailureMarkdown(markdown)
+        || isAiBrewGenericFailureMarkdown(guarded.markdown)
+        || hasAiBrewLanguageLeak(guarded.markdown, language)
         ? fallbackMarkdown
         : guarded.markdown;
-      setAiResponse({ title: prompt.title, markdown: safeMarkdown });
-      const nextPlan = mergeAiNotesIntoPlan(plan, { [mode]: safeMarkdown });
-      setPlan(nextPlan);
-      saveLastGeneratedBrewPlan(nextPlan);
-      if (activeJournalId) {
-        await updateBrewJournalAiNotes(activeJournalId, { [mode]: safeMarkdown });
-        void syncAiBrewLibraryToCloud({
-          aiBrewJournal: [{
-            id: activeJournalId,
-            fingerprint: nextPlan.fingerprint,
-            title: buildLocalizedPlanRecipeName(nextPlan, language),
-            locale: language,
-            createdAt: nextPlan.createdAt,
-            updatedAt: Date.now(),
-            plan: nextPlan,
-            aiNotes: nextPlan.aiNotes,
-            feedback: activeFeedback || undefined,
-          }],
-        });
-        await refreshSavedViews();
-      }
+      await commitCoachMarkdown(safeMarkdown);
     } catch (error) {
-      setAiError(getAiBrewFriendlyErrorMessage(error, language, copy.coachFallback));
+      if (import.meta.env.DEV) {
+        console.warn(getAiBrewFriendlyErrorMessage(error, language, copy.coachFallback), error);
+      }
+      await commitCoachMarkdown(fallbackMarkdown);
     } finally {
       setAiBusy(null);
     }
@@ -5946,6 +6052,7 @@ export function AiBrewPanel({
                     <div>
                       <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.coffeeName}</label>
                       <input
+                        name="ai-brew-coffee-name"
                         type="text"
                         value={formState.coffeeName}
                         onChange={(event) => updateForm('coffeeName', event.target.value)}
@@ -5960,6 +6067,7 @@ export function AiBrewPanel({
                       <div>
                         <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.dose}</label>
                         <input
+                          name="ai-brew-dose"
                           type="number"
                           min="10"
                           max="20"
@@ -6236,6 +6344,7 @@ export function AiBrewPanel({
                               <div>
                                 <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.tds}</label>
                                 <input
+                                  name="ai-brew-water-tds"
                                   type="number"
                                   min="0"
                                   max="600"
@@ -6250,6 +6359,7 @@ export function AiBrewPanel({
                               <div>
                                 <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.hardness}</label>
                                 <input
+                                  name="ai-brew-water-hardness"
                                   type="number"
                                   min="0"
                                   max="500"
@@ -6264,6 +6374,7 @@ export function AiBrewPanel({
                               <div>
                                 <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.alkalinity}</label>
                                 <input
+                                  name="ai-brew-water-alkalinity"
                                   type="number"
                                   min="0"
                                   max="400"
@@ -6279,6 +6390,7 @@ export function AiBrewPanel({
                                 <div>
                                   <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.waterNotes}</label>
                                   <input
+                                    name="ai-brew-water-notes"
                                     type="text"
                                     value={formState.waterNotes}
                                     onChange={(event) => updateForm('waterNotes', event.target.value)}
@@ -6353,6 +6465,7 @@ export function AiBrewPanel({
                         <div>
                           <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherProcess}</label>
                           <input
+                            name="ai-brew-process-custom"
                             type="text"
                             value={formState.customProcess}
                             onChange={(event) => updateForm('customProcess', event.target.value)}
@@ -6367,6 +6480,7 @@ export function AiBrewPanel({
                         <div>
                           <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherVariety}</label>
                           <input
+                            name="ai-brew-variety-custom"
                             type="text"
                             value={formState.customVariety}
                             onChange={(event) => updateForm('customVariety', event.target.value)}
@@ -6386,6 +6500,7 @@ export function AiBrewPanel({
                           <div>
                             <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetRatio}</label>
                             <input
+                              name="ai-brew-target-ratio"
                               type="number"
                               min="13"
                               max="17"
@@ -6403,6 +6518,7 @@ export function AiBrewPanel({
                           <div>
                             <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetWaterMl}</label>
                             <input
+                              name="ai-brew-target-water"
                               type="number"
                               min="15"
                               max="2500"
@@ -6419,6 +6535,7 @@ export function AiBrewPanel({
                           <div>
                             <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetTempC}</label>
                             <input
+                              name="ai-brew-target-temp"
                               type="number"
                               min="4"
                               max="98"
@@ -6458,6 +6575,7 @@ export function AiBrewPanel({
                               <div>
                                 <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.altitudeMasl}</label>
                                 <input
+                                  name="ai-brew-bean-altitude"
                                   type="number"
                                   min="0"
                                   max="3200"
@@ -6471,6 +6589,7 @@ export function AiBrewPanel({
                               <div>
                                 <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.beanDensity}</label>
                                 <input
+                                  name="ai-brew-bean-density"
                                   type="number"
                                   min="0.55"
                                   max="0.95"

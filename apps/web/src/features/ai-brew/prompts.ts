@@ -539,6 +539,54 @@ export function buildSequenceGuidePrompt(plan: BrewPlan, language?: string): AiB
   };
 }
 
+export function buildSequenceRepairPrompt(
+  plan: BrewPlan,
+  errors: string[] = [],
+  language?: string,
+): AiBrewPromptContext {
+  const failureSummary = errors
+    .slice(0, 6)
+    .map((item) => item.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .join(' | ') || 'invalid or incomplete sequence response';
+
+  return {
+    title: isIndonesianAiBrewLanguage(language) ? 'Perbaikan Catatan AI' : 'AI Sequence Repair',
+    body: [
+      'You are the AI Brew sequence repair composer. Return markdown only.',
+      `Repair these validation failures: ${failureSummary}`,
+      '',
+      'Use this exact structure and no extra headings:',
+      '## Service Pattern',
+      '- style bullet anchored to brewer/method and target profile',
+      '- mode bullet anchored to hot/iced behavior and water/bean context',
+      '## Sequence',
+      `Use exactly ${plan.steps.length} numbered steps, one per deterministic checkpoint.`,
+      '## Watch',
+      '- method+target monitoring bullet',
+      '- deterministic envelope monitoring bullet with numeric anchors',
+      '',
+      'Hard rules:',
+      '- Start each Sequence line with the exact deterministic checkpoint prefix from the envelope.',
+      '- Keep every dose, ratio, water, ice, temperature, time, and cumulative target unchanged.',
+      '- Do not add steps, bypass/top-up water, extra ice, extra equipment, another brewer, or next-cup troubleshooting.',
+      '- Sequence lines must spread method/device, target-profile, and water/bean anchors across multiple steps.',
+      '- Vary phase language: entry cue first, cadence/flow cues in middle, closure cue last.',
+      '- Return complete markdown only, starting with ## Service Pattern.',
+      '',
+      `Context anchors: brewer=${plan.dripper.name}; method=${plan.methodFamily}; mode=${plan.brewMode}; target=${plan.targetProfileLabel}; coffee=${plan.coffeeName}; process=${plan.process}; variety=${plan.variety}; roast=${plan.roastLevel}; water=${plan.waterBrandLabel || plan.waterMode}; minerals=TDS ${plan.waterMinerals.tdsPpm} ppm, hardness ${plan.waterMinerals.hardnessPpm} ppm, alkalinity ${plan.waterMinerals.alkalinityPpm} ppm; bean=${plan.beanProfile.active ? plan.beanProfile.summary : 'neutral'}.`,
+      '',
+      buildPlannerEnvelope(plan),
+      '',
+      buildStepRoleMap(plan),
+      '',
+      buildMethodCueChecklist(plan),
+      '',
+      buildTargetIntentChecklist(plan),
+    ].join('\n'),
+  };
+}
+
 export function buildAdjustPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
   return {
     title: isIndonesianAiBrewLanguage(language) ? 'Dorong Target' : 'Push Target',

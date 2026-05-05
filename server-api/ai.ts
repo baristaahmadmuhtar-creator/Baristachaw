@@ -1995,6 +1995,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       auth: authResult.auth,
       rawClientContext,
       feature: paidFeature,
+      quotaKind: action === 'deep_think'
+        ? 'deep'
+        : paidFeature === 'scanner'
+          ? 'scanner'
+          : 'ai',
     });
     if (aiAccess.ok === false) {
       return res.status(aiAccess.statusCode).json({

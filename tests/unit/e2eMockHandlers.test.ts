@@ -263,3 +263,49 @@ test('ai handler returns structured brew_sequence e2e mock payload', async () =>
   assert.match(structured.displayMarkdown, /## Urutan Seduh/);
   assert.equal(res.headers.get('x-provider'), 'QA_E2E');
 });
+
+test('ai handler returns JSON brew_optimize e2e mock payload', async () => {
+  const req = {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${authToken()}`,
+      'x-e2e-mock': '1',
+    },
+    body: {
+      action: 'brew_optimize',
+      prompt: 'Return JSON only for Hario V60 optimization within the deterministic envelope.',
+      responseProfile: {
+        language: 'id',
+        verbosity: 'short',
+        format: 'plain',
+        tone: 'professional',
+        ambiguityPolicy: 'assume',
+      },
+      clientContext: {
+        platform: 'web',
+        surface: 'tools',
+        feature: 'ai_brew',
+        appLanguage: 'id',
+        acceptLanguage: 'id-ID,id;q=0.9',
+      },
+    },
+    cookies: {},
+    query: {},
+    socket: {
+      remoteAddress: '203.0.113.74',
+    },
+  } as any;
+  const res = createMockRes() as any;
+
+  await aiHandler(req, res);
+
+  assert.equal(res.statusCode, 200);
+  const payload = JSON.parse(res.body);
+  const structured = JSON.parse(String(payload.text || ''));
+  assert.equal(payload.ok, true);
+  assert.equal(payload.action, 'brew_optimize');
+  assert.equal(payload.provider, 'QA_E2E');
+  assert.equal(typeof structured.reason, 'string');
+  assert.equal(structured.pourStyleHint, 'pulse_light');
+  assert.ok(Array.isArray(structured.steps));
+});

@@ -160,6 +160,28 @@ export function buildE2eMockAiPayload(action: string, language?: string) {
         model,
         degraded: false,
       };
+    case 'brew_optimize':
+      return {
+        ok: true,
+        action,
+        text: JSON.stringify({
+          reason: normalizedLanguage.startsWith('id')
+            ? 'Patch kecil untuk menjaga manis tanpa mengubah envelope utama.'
+            : 'Small patch to protect sweetness without changing the main envelope.',
+          confidence: 0.72,
+          totalTimeSeconds: 170,
+          pourStyleHint: 'pulse_light',
+          grindGuidance: normalizedLanguage.startsWith('id')
+            ? 'Sedikit lebih halus hanya bila drawdown terlalu cepat.'
+            : 'Slightly finer only if drawdown runs too fast.',
+          steps: [
+            { index: 1, control: normalizedLanguage.startsWith('id') ? 'Jaga aliran tengah tetap stabil.' : 'Keep the center stream stable.' },
+          ],
+        }),
+        provider,
+        model,
+        degraded: false,
+      };
     case 'deep_think':
       return {
         ok: true,

@@ -36,7 +36,7 @@ import { useNavbar } from '../../context/NavbarContext';
 import { useAiAccessGate } from '../../components/billing/AiAccessGate';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useRuntimeDisplayMode } from '../../hooks/useRuntimeDisplayMode';
-import { brewSequenceResponseDetailed, raceChatResponse, deepThinkingResponseDetailed, fastResponseDetailed } from '../../services/gemini';
+import { brewSequenceResponseDetailed, brewOptimizeResponseDetailed, raceChatResponse, deepThinkingResponseDetailed, fastResponseDetailed } from '../../services/gemini';
 import { createRecipeCollectionItem, saveCollectionItem, saveRecipe } from '../../services/storageService';
 import type { Recipe } from '../../types';
 import {
@@ -1643,7 +1643,7 @@ async function runHybridOptimizationUpdate(
     },
   };
 
-  const aiResult = await fastResponseDetailed(
+  const aiResult = await brewOptimizeResponseDetailed(
     `${buildOptimizationPrompt(nextPlan, options.language).body}${
       options.repair
         ? '\n\nRepair pass: the previous response did not create a validated numeric delta. Return JSON only with at least one small safe numeric change inside the allowed guardrails.'
@@ -1652,7 +1652,6 @@ async function runHybridOptimizationUpdate(
     canonicalRequestContext,
     {
       timeoutMs: AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS,
-      fallbackToChat: false,
     },
   );
 
@@ -5247,18 +5246,22 @@ export function AiBrewPanel({
             language,
           });
         } catch (error) {
-          console.warn(
-            getAiBrewOptimizationFallbackMessage(language),
-            error instanceof Error ? error.message : String(error || 'request_failed'),
-          );
+          if (import.meta.env.DEV) {
+            console.warn(
+              getAiBrewOptimizationFallbackMessage(language),
+              error instanceof Error ? error.message : String(error || 'request_failed'),
+            );
+          }
           optimized = applyAiBrewOptimizationPatch(nextPlan, null);
         }
 
         if (!optimized.applied) {
-          console.warn(
-            getAiBrewOptimizationFallbackMessage(language),
-            optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
-          );
+          if (import.meta.env.DEV) {
+            console.warn(
+              getAiBrewOptimizationFallbackMessage(language),
+              optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
+            );
+          }
           try {
             optimized = await runHybridOptimizationUpdate(nextPlan, {
               enabled: true,
@@ -5267,10 +5270,12 @@ export function AiBrewPanel({
               repair: true,
             });
           } catch (error) {
-            console.warn(
-              getAiBrewOptimizationFallbackMessage(language),
-              error instanceof Error ? error.message : String(error || 'repair_failed'),
-            );
+            if (import.meta.env.DEV) {
+              console.warn(
+                getAiBrewOptimizationFallbackMessage(language),
+                error instanceof Error ? error.message : String(error || 'repair_failed'),
+              );
+            }
             optimized = applyAiBrewOptimizationPatch(nextPlan, null);
           }
         }
@@ -5283,10 +5288,12 @@ export function AiBrewPanel({
           if (synthesized.applied) {
             optimized = synthesized;
           } else {
-            console.warn(
-              copy.aiOptimizationNoChange,
-              synthesized.rejected.length > 0 ? synthesized.rejected : synthesized.diagnostics,
-            );
+            if (import.meta.env.DEV) {
+              console.warn(
+                copy.aiOptimizationNoChange,
+                synthesized.rejected.length > 0 ? synthesized.rejected : synthesized.diagnostics,
+              );
+            }
           }
         }
 

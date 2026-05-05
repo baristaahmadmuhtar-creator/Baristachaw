@@ -989,6 +989,32 @@ export async function brewSequenceResponseDetailed(
   };
 }
 
+export async function brewOptimizeResponseDetailed(
+  prompt: string,
+  requestContext?: ChatRequestContextPayload,
+  options?: Pick<AiTextRequestOptions, 'timeoutMs'>,
+): Promise<StructuredTextDetailedPayload> {
+  const result = await serverAi("brew_optimize", prompt, undefined, requestContext, {
+    timeoutMs: options?.timeoutMs,
+  });
+  const text = String(result.text || '').trim();
+  if (!text) {
+    throw new StructuredTextModeError("brew_optimize response was empty.", {
+      requestId: result.requestId,
+      provider: result.provider,
+      degraded: result.degraded,
+      details: result.details,
+    });
+  }
+  return {
+    text,
+    provider: result.provider,
+    degraded: result.degraded,
+    details: result.details,
+    requestId: result.requestId,
+  };
+}
+
 export async function fastResponseLegacy(
   prompt: string,
   requestContext?: ChatRequestContextPayload,

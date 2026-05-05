@@ -774,6 +774,33 @@ const BREW_SEQUENCE_PROVIDER_CHAIN: OpenAiCompatConfig[] = [
   },
 ];
 
+const BREW_OPTIMIZE_PROVIDER_CHAIN: OpenAiCompatConfig[] = [
+  {
+    provider: 'GROQ',
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    model: 'llama-3.1-8b-instant',
+    timeoutMs: 3800,
+  },
+  {
+    provider: 'DEEPSEEK',
+    url: 'https://api.deepseek.com/chat/completions',
+    model: 'deepseek-chat',
+    timeoutMs: 4200,
+  },
+  {
+    provider: 'MISTRAL',
+    url: 'https://api.mistral.ai/v1/chat/completions',
+    model: 'mistral-large-latest',
+    timeoutMs: 4800,
+  },
+  {
+    provider: 'OPENROUTER',
+    url: 'https://openrouter.ai/api/v1/chat/completions',
+    model: 'meta-llama/llama-3.2-3b-instruct:free',
+    timeoutMs: 4800,
+  },
+];
+
 const OPENAI_IMAGE_EDIT_URL = 'https://api.openai.com/v1/images/edits';
 const OPENAI_IMAGE_EDIT_DEFAULTS: OpenAiImageEditConfig = {
   model: (process.env.OPENAI_IMAGE_EDIT_MODEL || process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1.5').trim() || 'gpt-image-1.5',
@@ -1508,7 +1535,7 @@ function buildPromptOrchestration(
   const ambiguityEnabled = isEnvFlagEnabled('AI_AMBIGUITY_ASK_FIRST_ENABLED', true);
   const shouldEnforce = languageEnabled || expectationEnabled || ambiguityEnabled;
 
-  if (action === 'brew_sequence') {
+  if (action === 'brew_sequence' || action === 'brew_optimize') {
     const resolved = shouldEnforce
       ? buildResponseOrchestration(prompt, mode, responseProfile, clientContext, conversationContext, agentProfile)
       : defaultProfile;
@@ -1673,6 +1700,53 @@ async function callBrewSequenceFallback(
 
   if (lastError) throw lastError;
   throw createApiError('no_key', 'No brew sequence providers configured', 503, false, 'BREW_SEQUENCE');
+}
+
+function buildBrewOptimizePrompts(
+  prompt: string,
+  resolved: ResolvedResponseProfile,
+): { system: string; user: string } {
+  const language = resolved.language || 'en';
+  return {
+    system: [
+      'You are Baristachaw brew_optimize, a strict numeric patch generator for a deterministic coffee planner.',
+      'Return JSON only. No markdown fences, no apology, no commentary outside JSON.',
+      'Never return plain text fallback messages. If unsure, return the smallest safe JSON patch.',
+      'Do not change dose, brew mode, brewer, grinder, water minerals, method family, selected step count, or facts not in the prompt.',
+      'Allowed output keys only: reason, confidence, recommendedRatio, waterTempC, totalTimeSeconds, hotWaterSharePercent, pourStyleHint, grindGuidance, steps.',
+      'steps items may only contain index, stepId, startSeconds, pourVolumeMl, control.',
+      'All numeric fields must be finite numbers. Do not use null, NaN, Infinity, comments, or extra prose.',
+      'At least one controlled patch key must be present besides reason/confidence.',
+      `Step control language: ${language}.`,
+    ].join('\n'),
+    user: prompt,
+  };
+}
+
+async function callBrewOptimizeFallback(
+  prompt: string,
+  resolved: ResolvedResponseProfile,
+  requestId: string,
+): Promise<{ text: string; provider: OpenAiCompatProvider; model: string }> {
+  const prompts = buildBrewOptimizePrompts(prompt, resolved);
+  let lastError: unknown = null;
+  for (const cfg of getEnabledAiProviderConfigs(BREW_OPTIMIZE_PROVIDER_CHAIN)) {
+    try {
+      const text = await withRetry(
+        key => callOpenAiCompatibleText(key, cfg, prompts.system, prompts.user, 360),
+        { provider: cfg.provider, requestId, action: 'brew_optimize', maxRetries: 1 },
+      );
+      return { text, provider: cfg.provider, model: cfg.model };
+    } catch (error) {
+      lastError = error;
+      console.error(
+        `[api/ai][${requestId}] action=brew_optimize serial_fallback_fail provider=${cfg.provider} details="${sanitizeErrorDetails(error)}"`,
+      );
+    }
+  }
+
+  if (lastError) throw lastError;
+  throw createApiError('no_key', 'No brew optimize providers configured', 503, false, 'BREW_OPTIMIZE');
 }
 
 async function callStructuredTextFallback(
@@ -1966,6 +2040,7 @@ function normalizeAction(value: unknown): StructuredAiAction | null {
     'analyze_attachment',
     'edit_latte_art',
     'brew_sequence',
+    'brew_optimize',
     'fast',
     'balanced',
     'deep_think',
@@ -2125,7 +2200,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     );
   }
 
-  if ((action === 'fast' || action === 'balanced' || action === 'deep_think' || action === 'brew_sequence') && prompt.trim().length > STRUCTURED_AI_PROMPT_MAX_CHARS) {
+  if ((action === 'fast' || action === 'balanced' || action === 'deep_think' || action === 'brew_sequence' || action === 'brew_optimize') && prompt.trim().length > STRUCTURED_AI_PROMPT_MAX_CHARS) {
     return sendBadRequest(
       res,
       requestId,
@@ -2231,6 +2306,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         route: '/api/ai',
         action,
         mode: 'brew_sequence',
+        outcome: 'success',
+        inputTokens: estimateAiTokenCount(promptForModel),
+        outputTokens: estimateAiTokenCount(text),
+        latencyMs,
+      });
+      return res.json({
+        ok: true,
+        requestId,
+        action,
+        text,
+        provider: fallback.provider,
+        model: fallback.model,
+        degraded: false,
+      });
+    }
+
+    if (action === 'brew_optimize') {
+      const optimizeStartedAt = Date.now();
+      const fallback = await callBrewOptimizeFallback(
+        promptForModel,
+        promptPlan.resolved,
+        requestId,
+      );
+      const text = sanitizeModelText(fallback.text);
+      if (!text) {
+        throw createApiError('provider_error', 'Brew optimize provider returned empty text', 502, true, fallback.provider);
+      }
+      const latencyMs = Date.now() - optimizeStartedAt;
+      res.setHeader('X-Provider', fallback.provider);
+      res.setHeader('X-Model', fallback.model);
+      res.setHeader('X-AI-Route', 'serial-brew-optimize');
+      console.info(
+        `[api/ai][${requestId}] action=brew_optimize ok latency=${Date.now() - startedAt}ms provider=${fallback.provider} model=${fallback.model} route=serial`,
+      );
+      recordAiProviderUsage({
+        provider: fallback.provider,
+        model: fallback.model,
+        feature: usageFeature,
+        route: '/api/ai',
+        action,
+        mode: 'brew_optimize',
         outcome: 'success',
         inputTokens: estimateAiTokenCount(promptForModel),
         outputTokens: estimateAiTokenCount(text),

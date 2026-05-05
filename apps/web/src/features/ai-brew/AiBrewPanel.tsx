@@ -261,7 +261,7 @@ const COPY = {
     waterNoBrand: 'Choose water.',
     waterBrandNeedsManual: 'Add minerals before brew.',
     waterBrandPartialFilled: 'Complete missing minerals.',
-    waterBrandEstimated: 'Estimated — verify manually',
+    waterBrandEstimated: 'Estimated - verify manually',
     waterBrandEstimatedNote: 'Estimated values are only a placeholder. Verify manually before brewing.',
     waterBrandAutofilled: 'Minerals loaded from the selected brand profile.',
     waterBrandCustomized: 'Brand minerals were adjusted manually for this brew.',
@@ -277,9 +277,9 @@ const COPY = {
     waterCompleteMineralsApplied: 'Minerals completed. Review the notes, then generate.',
     waterCompleteMineralsUnavailable: 'Choose a water brand first.',
     waterCompleteMineralsRoNote: 'For RO/low-mineral water, this is a remineralization target, not the original label profile.',
-    waterCompleteMineralsEstimatedNote: 'Classification baseline — verify manually before publishing this as a brand profile.',
+    waterCompleteMineralsEstimatedNote: 'Classification baseline - verify manually before publishing this as a brand profile.',
     waterWhyManualTitle: 'Why manual?',
-    waterWhyManualBody: 'Manual is required when the mineral panel is incomplete, estimated, too low-mineral, alkaline/high-buffer, or not backed by a trusted public source. This prevents false “ready brew” claims and bad recipes.',
+    waterWhyManualBody: 'Manual is required when the mineral panel is incomplete, estimated, too low-mineral, alkaline/high-buffer, or not backed by a trusted public source. This prevents false "ready brew" claims and bad recipes.',
     waterEditMinerals: 'Edit minerals',
     waterHideMinerals: 'Hide minerals',
     waterSummary: 'Minerals',
@@ -302,8 +302,8 @@ const COPY = {
     emptyRecent: 'Generate once to start your local journal.',
     emptyFavorites: 'Favorite a plan to pin it here.',
     emptyPlan: 'Pick Quick or Precision to build a brew.',
-    actionPrioritiesTitle: 'Next brew moves',
-    actionPrioritiesDescription: 'Start with the first item. Change one variable at a time so the cup stays easy to evaluate.',
+    actionPrioritiesTitle: 'Start here',
+    actionPrioritiesDescription: 'Practical moves for the next brew. Change one variable at a time.',
     warningsDescription: 'Review before brewing. These notes follow the selected language and the current water, grinder, and brewer status.',
     summaryTitle: 'Result',
     methodBriefTitle: 'Method Focus',
@@ -650,7 +650,7 @@ const COPY = {
     waterNoBrand: 'Pilih air.',
     waterBrandNeedsManual: 'Isi mineral dulu.',
     waterBrandPartialFilled: 'Lengkapi mineral yang kosong.',
-    waterBrandEstimated: 'Estimasi — verifikasi manual',
+    waterBrandEstimated: 'Estimasi - verifikasi manual',
     waterBrandEstimatedNote: 'Nilai estimasi hanya placeholder. Verifikasi manual sebelum seduh.',
     waterBrandAutofilled: 'Mineral dimuat dari profil brand terpilih.',
     waterBrandCustomized: 'Mineral brand sudah disesuaikan manual untuk brew ini.',
@@ -666,9 +666,9 @@ const COPY = {
     waterCompleteMineralsApplied: 'Mineral sudah dilengkapi. Cek catatan, lalu buat seduhan.',
     waterCompleteMineralsUnavailable: 'Pilih brand air dulu.',
     waterCompleteMineralsRoNote: 'Untuk air RO/low-mineral, ini target remineralisasi, bukan profil mineral asli label.',
-    waterCompleteMineralsEstimatedNote: 'Baseline klasifikasi — verifikasi manual sebelum dipublikasikan sebagai profil brand.',
+    waterCompleteMineralsEstimatedNote: 'Baseline klasifikasi - verifikasi manual sebelum dipublikasikan sebagai profil brand.',
     waterWhyManualTitle: 'Kenapa manual?',
-    waterWhyManualBody: 'Manual wajib ketika panel mineral belum lengkap, masih estimasi, terlalu rendah mineral, alkaline/high-buffer, atau belum didukung sumber publik tepercaya. Ini mencegah klaim “siap seduh” yang salah dan resep yang buruk.',
+    waterWhyManualBody: 'Manual wajib ketika panel mineral belum lengkap, masih estimasi, terlalu rendah mineral, alkaline/high-buffer, atau belum didukung sumber publik tepercaya. Ini mencegah klaim "siap seduh" yang salah dan resep yang buruk.',
     waterEditMinerals: 'Edit mineral',
     waterHideMinerals: 'Sembunyikan mineral',
     waterSummary: 'Mineral',
@@ -691,8 +691,8 @@ const COPY = {
     emptyRecent: 'Buat satu seduhan untuk mulai jurnal lokal.',
     emptyFavorites: 'Tandai favorit agar resep muncul di sini.',
     emptyPlan: 'Pilih Cepat atau Presisi untuk menyusun seduhan.',
-    actionPrioritiesTitle: 'Langkah berikutnya',
-    actionPrioritiesDescription: 'Mulai dari urutan pertama. Ubah satu variabel dulu agar rasa mudah dievaluasi.',
+    actionPrioritiesTitle: 'Mulai dari sini',
+    actionPrioritiesDescription: 'Aksi praktis untuk seduhan ini. Ubah satu variabel saja.',
     warningsDescription: 'Baca sebelum seduh. Catatan ini mengikuti bahasa aplikasi dan status air, grinder, serta alat yang dipakai.',
     summaryTitle: 'Hasil',
     methodBriefTitle: 'Kunci Metode',
@@ -1140,13 +1140,13 @@ function buildPremiumResultSummary(plan: BrewPlan, language: string) {
       ? `rasio final 1:${formatBrewRatio(plan.finalBeverageRatio)}`
       : `final ratio 1:${formatBrewRatio(plan.finalBeverageRatio)}`;
     return id
-      ? `${plan.dripper.name} - seduh es. ${dose} kopi, ${split}, ${ratio}, ${temperature}, selesai sekitar ${time}. Target: ${target}.`
-      : `${plan.dripper.name} - ice brew. ${dose} coffee, ${split}, ${ratio}, ${temperature}, finish around ${time}. Target: ${target}.`;
+      ? `${dose} -> ${split}; ${ratio}; hasil sekitar ${formatRoundedMl(plan.estimatedCupOutputMl)}. ${temperature}, selesai ${time}.`
+      : `${dose} -> ${split}; ${ratio}; about ${formatRoundedMl(plan.estimatedCupOutputMl)} in cup. ${temperature}, finish ${time}.`;
   }
 
   return id
-    ? `${plan.dripper.name} - seduh panas. ${dose} kopi, ${formatRoundedMl(plan.totalWaterMl)} air, rasio 1:${formatBrewRatio(plan.recommendedRatio)}, ${temperature}, selesai sekitar ${time}. Target: ${target}.`
-    : `${plan.dripper.name} - hot brew. ${dose} coffee, ${formatRoundedMl(plan.totalWaterMl)} water, ratio 1:${formatBrewRatio(plan.recommendedRatio)}, ${temperature}, finish around ${time}. Target: ${target}.`;
+    ? `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} air; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; selesai ${time}. Target ${target}.`
+    : `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} water; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; finish ${time}. Target ${target}.`;
 }
 
 function planUsesOnlineAi(plan: BrewPlan) {
@@ -1207,6 +1207,16 @@ function formatGrindTextForDisplay(value: string, language?: string) {
     .replace(/\b(clicks|turns|numbers|settings|steps|notches|notch)\b/gi, (unit) =>
       localizeGrindUnitLabel(unit, language),
     );
+}
+
+function formatGrindHeadlineForDisplay(value: string, language?: string) {
+  const id = isIndonesianAiBrewLanguage(language || '');
+  const firstSentence = value
+    .split(/\.\s+(?:Correction range|If sour\/thin|If bitter\/dry\/stalled|Bias)\b/i)[0]
+    ?.trim() || value.trim();
+  return formatGrindTextForDisplay(firstSentence, language)
+    .replace(/\bStarting grind:/gi, id ? 'Gilingan awal:' : 'Starting grind:')
+    .replace(/\bReference official grinder chart\b/gi, id ? 'Lihat chart resmi grinder' : 'Reference official grinder chart');
 }
 
 function getAiCoachTitle(copy: CopySet, mode: AiCoachMode) {
@@ -2959,6 +2969,7 @@ function PlanResultDialog({
   const planHeaderWater = formatPlanHeaderWater(plan, language);
   const localizedWaterStyle = localizeAiBrewWaterStyle(plan.waterMinerals.styleLabel, language);
   const localizedGrindRecommendation = formatGrindTextForDisplay(plan.grindRecommendation, language);
+  const localizedGrindHeadline = formatGrindHeadlineForDisplay(plan.grindRecommendation || plan.grindSettingReference, language);
   const localizedGrindBandLabel = formatGrindTextForDisplay(plan.grindBandLabel, language);
   const localizedGrindSettingReference = formatGrindTextForDisplay(plan.grindSettingReference, language);
   const localizedWarnings = [
@@ -3080,12 +3091,43 @@ function PlanResultDialog({
                   </span>
                 </div>
                 <h3 className="text-lg font-semibold tracking-tight text-primary sm:text-xl">{buildLocalizedPlanRecipeName(plan, language)}</h3>
-                <p className="mt-1 text-sm text-secondary">
-                  {formatRoundedGrams(plan.doseG)} | {planHeaderWater} | {formatGuideTime(plan.totalTimeSeconds)} | {formatRoundedTemperature(plan.waterTempC)}
-                </p>
+                <div className="mt-2 flex flex-wrap gap-1.5 text-xs font-semibold text-secondary">
+                  <span className={resultChipClass}>{formatRoundedGrams(plan.doseG)}</span>
+                  <span className={resultChipClass}>{planHeaderWater}</span>
+                  <span className={resultChipClass}>{formatGuideTime(plan.totalTimeSeconds)}</span>
+                  <span className={resultChipClass}>{formatRoundedTemperature(plan.waterTempC)}</span>
+                </div>
                 <p id={descriptionId} className="sr-only">
-                  {formatRoundedGrams(plan.doseG)} · {planHeaderWater} · {formatGuideTime(plan.totalTimeSeconds)} · {formatRoundedTemperature(plan.waterTempC)}
+                  {formatRoundedGrams(plan.doseG)} - {planHeaderWater} - {formatGuideTime(plan.totalTimeSeconds)} - {formatRoundedTemperature(plan.waterTempC)}
                 </p>
+                <div
+                  className="mt-3 rounded-[1.15rem] border border-blue-500/18 bg-gradient-to-br from-blue-500/[0.12] via-blue-500/[0.06] to-transparent px-3 py-2.5"
+                  data-testid="ai-brew-result-brief"
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.2)]">
+                      <Sparkles size={13} />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
+                        {id ? 'Ringkasan seduh' : 'Brew brief'}
+                      </p>
+                      <p className="mt-1 text-[13px] leading-5 text-primary">
+                        {displaySummary}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1.5" data-testid="ai-brew-confidence-labels">
+                  {confidenceBadges.map((badge) => (
+                    <span
+                      key={badge.label}
+                      className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${confidenceBadgeClass(badge.tone)}`}
+                    >
+                      {badge.label}
+                    </span>
+                  ))}
+                </div>
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
                   <button type="button" onClick={onEditInputs} className={resultActionButtonClass}>
                     {copy.editInputs}
@@ -3113,40 +3155,6 @@ function PlanResultDialog({
                   >
                     {copy.flowTab}
                   </button>
-                </div>
-                <p className="mt-2 max-w-3xl text-sm leading-5 text-secondary">
-                  {displaySummary}
-                </p>
-                <div className="mt-3 rounded-2xl border border-blue-500/18 bg-blue-500/[0.07] px-3 py-3" data-testid="ai-brew-action-priorities">
-                  <div className="mb-2 flex items-start gap-2">
-                    <Target size={15} className="mt-0.5 shrink-0 text-blue-500" />
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
-                        {copy.actionPrioritiesTitle}
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-secondary">{copy.actionPrioritiesDescription}</p>
-                    </div>
-                  </div>
-                  <ol className="grid gap-2 text-sm leading-5 text-secondary sm:grid-cols-3">
-                    {actionPriorities.map((item, index) => (
-                      <li key={`${index}-${item}`} className="grid grid-cols-[1.65rem_minmax(0,1fr)] gap-2 rounded-xl bg-[var(--bg-base)]/72 px-2.5 py-2">
-                        <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[11px] font-semibold text-white">
-                          {index + 1}
-                        </span>
-                        <span className="min-w-0">{item}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-1.5" data-testid="ai-brew-confidence-labels">
-                  {confidenceBadges.map((badge) => (
-                    <span
-                      key={badge.label}
-                      className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${confidenceBadgeClass(badge.tone)}`}
-                    >
-                      {badge.label}
-                    </span>
-                  ))}
                 </div>
               </div>
 
@@ -3226,7 +3234,7 @@ function PlanResultDialog({
                     <Gauge size={12} />
                     <span>{copy.grind}</span>
                   </div>
-                  <p className="mt-1 text-sm font-semibold text-primary">{localizedGrindRecommendation}</p>
+                  <p className="mt-1 text-sm font-semibold text-primary">{localizedGrindHeadline}</p>
                   <p className="mt-1 text-xs text-secondary">{localizedGrindBandLabel}</p>
                 </div>
                 <div className={resultMetricCardClass}>
@@ -3236,10 +3244,39 @@ function PlanResultDialog({
                   </div>
                   <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{formatRoundedMl(plan.hotWaterMl)}</p>
                   {plan.iceMl > 0 && (
-                    <p className="mt-1 text-xs text-secondary">1:{formatBrewRatio(plan.hotExtractionRatio)} · {copy.ice}: {formatRoundedMl(plan.iceMl)}</p>
+                    <p className="mt-1 text-xs text-secondary">1:{formatBrewRatio(plan.hotExtractionRatio)}{' - '}{copy.ice}: {formatRoundedGrams(plan.iceMl)}</p>
                   )}
                 </div>
               </div>
+
+              {actionPriorities.length > 0 && (
+                <div
+                  className="rounded-[1.2rem] border border-blue-500/18 bg-[var(--bg-base)]/72 p-3"
+                  data-testid="ai-brew-action-priorities"
+                >
+                  <div className="mb-2 flex min-w-0 items-start gap-2">
+                    <Target size={15} className="mt-0.5 shrink-0 text-blue-500" />
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
+                        {copy.actionPrioritiesTitle}
+                      </p>
+                      <p className="mt-0.5 text-xs leading-5 text-secondary">
+                        {copy.actionPrioritiesDescription}
+                      </p>
+                    </div>
+                  </div>
+                  <ol className="grid gap-2 text-[13px] leading-5 text-secondary sm:grid-cols-2">
+                    {actionPriorities.slice(0, 3).map((item, index) => (
+                      <li key={`${index}-${item}`} className="flex items-start gap-2 rounded-xl bg-surface-alpha px-3 py-2">
+                        <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-semibold text-white">
+                          {index + 1}
+                        </span>
+                        <span className="min-w-0">{item}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
 
               {plan.iceMl > 0 && (
                 <div
@@ -3288,7 +3325,7 @@ function PlanResultDialog({
                       <p>{formatRoundedMl(plan.totalWaterMl)} water at {formatRoundedTemperature(plan.waterTempC)}</p>
                       <p>{copy.grind}: {localizedGrindRecommendation}</p>
                       <p>{copy.time}: {formatTime(plan.totalTimeSeconds)}</p>
-                      <p>{plan.waterBrandLabel || copy.waterSelectedManual} · TDS {plan.waterMinerals.tdsPpm} · GH {plan.waterMinerals.hardnessPpm} · KH {plan.waterMinerals.alkalinityPpm}</p>
+                      <p>{plan.waterBrandLabel || copy.waterSelectedManual} - TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm}</p>
                     </div>
                   </div>
                   <div className="rounded-2xl bg-surface-alpha p-4">
@@ -3296,7 +3333,7 @@ function PlanResultDialog({
                     <div className="mt-3 space-y-2 text-sm text-secondary">
                       {plan.steps.map((step, index) => (
                         <p key={step.id}>
-                          {index + 1}. {formatGuideTime(step.startSeconds)} · {localizeAiBrewStepLabel(step.label, language)} · {buildAiBrewStepActionText(step, language)}
+                          {index + 1}. {formatGuideTime(step.startSeconds)} - {localizeAiBrewStepLabel(step.label, language)} - {buildAiBrewStepActionText(step, language)}
                         </p>
                       ))}
                     </div>
@@ -3378,7 +3415,7 @@ function PlanResultDialog({
                           <div className="flex items-start gap-3">
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-500/12 text-sm font-semibold text-blue-400">
                               {index + 1}
-                              <p className="text-xs text-secondary">{formatGuideTime(step.startSeconds)} · {formatRoundedMl(step.pourVolumeMl)} pour · {formatRoundedMl(step.targetVolumeMl)} target</p>
+                              <p className="text-xs text-secondary">{formatGuideTime(step.startSeconds)} - {formatRoundedMl(step.pourVolumeMl)} pour - {formatRoundedMl(step.targetVolumeMl)} target</p>
                             </div>
                             <span className="rounded-full border border-blue-500/12 bg-[var(--bg-base)] px-3.5 py-2 text-sm font-semibold text-primary shadow-[0_8px_18px_rgba(15,23,42,0.12)]">
                               {formatRoundedMl(step.pourVolumeMl)}
@@ -3399,7 +3436,7 @@ function PlanResultDialog({
                     title={copy.methodBriefWatch}
                     summary={methodBrief.watch[0]}
                     icon={<Target size={15} />}
-                    defaultOpen
+                    defaultOpen={false}
                     tone="blue"
                   >
                     <ul className="space-y-2 text-sm leading-5 text-secondary">
@@ -3413,7 +3450,7 @@ function PlanResultDialog({
                     title={copy.feedbackTitle}
                     summary={copy.feedbackDescription}
                     icon={<Coffee size={15} />}
-                    defaultOpen
+                    defaultOpen={false}
                     testId="ai-brew-taste-feedback"
                   >
                     <div className="mt-3 grid grid-cols-2 gap-2">
@@ -3480,7 +3517,7 @@ function PlanResultDialog({
                     <div className="rounded-2xl bg-surface-alpha p-3">
                       <p className="text-sm font-semibold text-primary">{plan.waterBrandLabel || copy.waterSelectedManual}</p>
                       <p className="mt-1 text-xs text-secondary">
-                        TDS {plan.waterMinerals.tdsPpm} · GH {plan.waterMinerals.hardnessPpm} · KH {plan.waterMinerals.alkalinityPpm}
+                        TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm}
                       </p>
                       <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-secondary">
                         <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
@@ -3522,7 +3559,7 @@ function PlanResultDialog({
                         <div className="rounded-xl bg-surface-alpha px-3 py-3">
                           <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grindSource}</p>
                           <p className="mt-1 font-medium text-primary">{localizedGrindSettingReference}</p>
-                          <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} · {formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}</p>
+                          <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} - {formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}</p>
                           <p className="mt-2 text-xs">{copy.grindCalibrationNote}</p>
                         </div>
                         <div className="rounded-xl bg-surface-alpha px-3 py-3">
@@ -3644,7 +3681,7 @@ function PlanResultDialog({
                         {plan.iceMl > 0 && (
                           <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
                             <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.ice}</span>
-                            <span className="font-semibold text-primary">{formatRoundedMl(plan.iceMl)}</span>
+                            <span className="font-semibold text-primary">{formatRoundedGrams(plan.iceMl)}</span>
                           </span>
                         )}
                         <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
@@ -3900,7 +3937,7 @@ function PlanResultDialog({
                     <div className="rounded-xl bg-surface-alpha px-3 py-3">
                       <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grindSource}</p>
                       <p className="mt-1 font-medium text-primary">{localizedGrindSettingReference}</p>
-                      <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} · {formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}</p>
+                      <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} - {formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}</p>
                       <p className="mt-2 text-xs">{copy.grindCalibrationNote}</p>
                     </div>
                     <div className="rounded-xl bg-surface-alpha px-3 py-3">
@@ -3939,7 +3976,7 @@ function PlanResultDialog({
                         )}
                       </div>
                     <p className="mt-2 text-xs text-secondary">
-                      TDS {plan.waterMinerals.tdsPpm} · GH {plan.waterMinerals.hardnessPpm} · KH {plan.waterMinerals.alkalinityPpm}
+                      TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-secondary">
                       <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
@@ -4090,8 +4127,8 @@ function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopyS
       ? formatGrinderReferenceLabel(copy, item.verificationLevel)
       : '';
     const subtitle = kind === 'grinder'
-      ? [item.brand, item.typeLabel].filter(Boolean).join(' · ')
-      : item.brand ? `${item.brand} · ${item.typeLabel}` : item.typeLabel;
+      ? [item.brand, item.typeLabel].filter(Boolean).join(' - ')
+      : item.brand ? `${item.brand} - ${item.typeLabel}` : item.typeLabel;
     const description = kind === 'dripper'
       ? [trustDetail, item.description].filter(Boolean).join(' - ')
       : '';
@@ -4133,7 +4170,7 @@ function buildWaterChemistryLabel(item: WaterBrandProfile, language?: string) {
     profile.hardnessPpm !== null ? `GH ${profile.hardnessPpm}` : null,
     profile.alkalinityPpm !== null ? `KH ${profile.alkalinityPpm}` : null,
   ].filter(Boolean);
-  if (parts.length > 0) return parts.join(' · ');
+  if (parts.length > 0) return parts.join(' - ');
   return localizeAiBrewWaterClassificationLabel(item.classificationLabel, language);
 }
 
@@ -4149,7 +4186,7 @@ function buildWaterPickerSubtitle(item: WaterBrandProfile, copy: CopySet, langua
     status,
     classification,
     item.marketCode.toUpperCase(),
-  ].filter(Boolean).join(' · ');
+  ].filter(Boolean).join(' - ');
 }
 
 function rangePenalty(value: number, min: number, max: number) {
@@ -4496,7 +4533,7 @@ function buildBeanProfileSummary(formState: AiBrewFormState) {
     formState.beanDensityGml ? `${formState.beanDensityGml} g/ml` : null,
     formState.roastDevelopment ? formState.roastDevelopment.replace(/_/g, ' ') : null,
     formState.solubility || null,
-  ].filter(Boolean).join(' · ');
+  ].filter(Boolean).join(' - ');
 }
 
 function normalizeBeanProfileFieldMerge(next: AiBrewFormState, key: keyof AiBrewFormState) {
@@ -4862,9 +4899,9 @@ export function AiBrewPanel({
         ? selectedWaterBrand?.resolvedMinerals?.derivation
         : 'manual';
       const waterDetail = formState.waterMode === 'brand' && selectedWaterBrand
-        ? `${buildWaterChemistryLabel(selectedWaterBrand, language)} · ${formatWaterDerivationLabel(copy, waterDerivation)}`
+        ? `${buildWaterChemistryLabel(selectedWaterBrand, language)} - ${formatWaterDerivationLabel(copy, waterDerivation)}`
         : nextMineralsReady
-          ? `TDS ${formState.waterTdsPpm} · GH ${formState.waterHardnessPpm} · KH ${formState.waterAlkalinityPpm}`
+          ? `TDS ${formState.waterTdsPpm} - GH ${formState.waterHardnessPpm} - KH ${formState.waterAlkalinityPpm}`
           : copy.waterRequired;
       const beanProfileSummary = buildBeanProfileSummary(formState);
       const beanProfileActive = Boolean(beanProfileSummary);
@@ -5744,7 +5781,7 @@ export function AiBrewPanel({
       { value: '4', label: copy.pourCount4 },
       { value: '5', label: copy.pourCount5 },
     ] as const;
-    const dialogTitle = `${copy.title} · ${isPro ? copy.proBuilderTitle : copy.quickBuilderTitle}`;
+    const dialogTitle = `${copy.title} - ${isPro ? copy.proBuilderTitle : copy.quickBuilderTitle}`;
     const pourControlPanel = selectedDripperSupportsPourControl ? (
       <div className="rounded-[1.1rem] panel-soft p-3" data-testid="ai-brew-pour-control-panel">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
@@ -5902,7 +5939,7 @@ export function AiBrewPanel({
                 <div className="glass-card p-4 sm:p-5">
                   <div className="mb-3 flex items-center gap-2">
                     <Coffee size={16} className="text-blue-500" />
-                    <h3 className="text-base font-semibold">{copy.quickMode} · {copy.coffeeTitle}</h3>
+                    <h3 className="text-base font-semibold">{copy.quickMode} - {copy.coffeeTitle}</h3>
                   </div>
                   <div className="space-y-3.5">
                     <div>
@@ -5975,7 +6012,7 @@ export function AiBrewPanel({
                 <div className="glass-card p-4 sm:p-5">
                   <div className="mb-3 flex items-center gap-2">
                     <Beaker size={16} className="text-amber-500" />
-                    <h3 className="text-base font-semibold">{copy.quickMode} · {copy.equipmentTitle}</h3>
+                    <h3 className="text-base font-semibold">{copy.quickMode} - {copy.equipmentTitle}</h3>
                   </div>
                   <div className="space-y-3.5">
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -6256,8 +6293,8 @@ export function AiBrewPanel({
                                 <p className="font-semibold text-primary">{copy.waterGuidance}</p>
                                 <p className="mt-1">
                                   TDS {catalog.waterGuidance.recommended.tdsPpm[0]}-{catalog.waterGuidance.recommended.tdsPpm[1]}
-                                  {' · '}GH {catalog.waterGuidance.recommended.hardnessPpm[0]}-{catalog.waterGuidance.recommended.hardnessPpm[1]}
-                                  {' · '}KH {catalog.waterGuidance.recommended.alkalinityPpm[0]}-{catalog.waterGuidance.recommended.alkalinityPpm[1]}
+                                  {' - '}GH {catalog.waterGuidance.recommended.hardnessPpm[0]}-{catalog.waterGuidance.recommended.hardnessPpm[1]}
+                                  {' - '}KH {catalog.waterGuidance.recommended.alkalinityPpm[0]}-{catalog.waterGuidance.recommended.alkalinityPpm[1]}
                                 </p>
                               </div>
                             )}
@@ -6695,7 +6732,7 @@ export function AiBrewPanel({
                     >
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-primary">{preset.title}</p>
-                        <p className="mt-1 text-xs text-secondary">{preset.plan.dripper.name} · {localizeAiBrewTargetProfile(preset.plan.targetProfileId, preset.plan.targetProfileLabel, language)}</p>
+                        <p className="mt-1 text-xs text-secondary">{preset.plan.dripper.name} - {localizeAiBrewTargetProfile(preset.plan.targetProfileId, preset.plan.targetProfileLabel, language)}</p>
                       </div>
                       <span className="rounded-xl bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">{copy.load}</span>
                     </button>
@@ -6717,7 +6754,7 @@ export function AiBrewPanel({
                   >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-primary">{entry.title}</p>
-                      <p className="mt-1 text-xs text-secondary">{resolveModeLabel(copy, entry.plan.brewMode, entry.plan.methodFamily)} · {entry.plan.dripper.name}</p>
+                      <p className="mt-1 text-xs text-secondary">{resolveModeLabel(copy, entry.plan.brewMode, entry.plan.methodFamily)} - {entry.plan.dripper.name}</p>
                       {entry.feedback && (
                         <p className="mt-2 inline-flex rounded-full bg-blue-500/10 px-2 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
                           {formatBrewFeedbackRating(copy, entry.feedback.rating)}

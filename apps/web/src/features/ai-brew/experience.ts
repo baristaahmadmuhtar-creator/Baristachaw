@@ -121,24 +121,21 @@ export function resolveAiBrewBeanCharacterInsights(plan: BrewPlan, language: str
 
 export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
-  const grind = plan.grindRecommendation || plan.grindSettingReference;
   const mainWater = plan.brewMode === 'iced'
     ? `${plan.hotWaterMl} ml ${id ? 'air panas + ' : 'hot water + '}${plan.iceMl} g ${id ? 'es' : 'ice'}`
     : `${plan.totalWaterMl} ml ${id ? 'air seduh' : 'brew water'}`;
   const beanCue = resolveAiBrewBeanCharacterInsights(plan, language)[0];
   const priorities = [
     id
-      ? `Ikuti output utama dulu: ${mainWater}, ${Math.round(plan.waterTempC)}C, ${formatTimeLabel(plan.totalTimeSeconds)}, ${grind}.`
-      : `Follow the main output first: ${mainWater}, ${Math.round(plan.waterTempC)}C, ${formatTimeLabel(plan.totalTimeSeconds)}, ${grind}.`,
+      ? `Ikuti output utama: ${mainWater}, ${Math.round(plan.waterTempC)}°C, selesai sekitar ${formatTimeLabel(plan.totalTimeSeconds)}.`
+      : `Brew the main numbers first: ${mainWater}, ${Math.round(plan.waterTempC)}°C, finish around ${formatTimeLabel(plan.totalTimeSeconds)}.`,
     id
-      ? 'Kontrol flow time sebelum mengubah grind: kalau drawdown jauh terlalu cepat, cup biasanya asam/tipis; kalau jauh terlalu lambat, cup sering pahit/seret.'
-      : 'Read flow time before changing grind: a much faster drawdown often tastes sour/thin; a much slower drawdown often tastes bitter/dry.',
+      ? 'Pakai setting grinder awal sebagai baseline; ubah satu variabel dulu setelah melihat drawdown dan rasa.'
+      : 'Use the starting grinder setting as the baseline; make small corrections only after drawdown and tasting.',
     id
-      ? 'Koreksi satu variabel saja pada brew berikutnya: asam/tipis -> sedikit lebih halus atau pulse ringan; pahit/macet -> sedikit lebih kasar atau kurangi agitasi.'
-      : 'Change only one variable on the next brew: sour/thin -> slightly finer or light pulse; bitter/stalled -> slightly coarser or less agitation.',
+      ? 'Jika asam/tipis: sedikit lebih halus atau pulse ringan. Jika pahit/macet: sedikit lebih kasar atau kurangi agitasi.'
+      : 'If sour/thin: slightly finer or light pulse. If bitter/stalled: slightly coarser or less agitation.',
   ];
-
-  if (beanCue) priorities.push(beanCue);
 
   if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady) {
     priorities.push(id
@@ -156,7 +153,9 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
       : 'Brewer profile is not exact; use this as a baseline and calibrate with actual taste.');
   }
 
-  return priorities.slice(0, 5);
+  if (beanCue && priorities.length < 4) priorities.push(beanCue);
+
+  return priorities.slice(0, 4);
 }
 
 function formatTimeLabel(seconds: number) {

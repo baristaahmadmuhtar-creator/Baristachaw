@@ -722,12 +722,6 @@ const OPENAI_COMPAT_FALLBACKS: OpenAiCompatConfig[] = [
     timeoutMs: 15000,
   },
   {
-    provider: 'OPENAI',
-    url: 'https://api.openai.com/v1/chat/completions',
-    model: 'gpt-4o-mini',
-    timeoutMs: 15000,
-  },
-  {
     provider: 'DEEPSEEK',
     url: 'https://api.deepseek.com/chat/completions',
     model: 'deepseek-chat',
@@ -744,6 +738,39 @@ const OPENAI_COMPAT_FALLBACKS: OpenAiCompatConfig[] = [
     url: 'https://openrouter.ai/api/v1/chat/completions',
     model: 'meta-llama/llama-3.2-3b-instruct:free',
     timeoutMs: 15000,
+  },
+  {
+    provider: 'OPENAI',
+    url: 'https://api.openai.com/v1/chat/completions',
+    model: 'gpt-4o-mini',
+    timeoutMs: 15000,
+  },
+];
+
+const BREW_SEQUENCE_PROVIDER_CHAIN: OpenAiCompatConfig[] = [
+  {
+    provider: 'GROQ',
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    model: 'llama-3.1-8b-instant',
+    timeoutMs: 4200,
+  },
+  {
+    provider: 'DEEPSEEK',
+    url: 'https://api.deepseek.com/chat/completions',
+    model: 'deepseek-chat',
+    timeoutMs: 4200,
+  },
+  {
+    provider: 'MISTRAL',
+    url: 'https://api.mistral.ai/v1/chat/completions',
+    model: 'mistral-large-latest',
+    timeoutMs: 5200,
+  },
+  {
+    provider: 'OPENROUTER',
+    url: 'https://openrouter.ai/api/v1/chat/completions',
+    model: 'meta-llama/llama-3.2-3b-instruct:free',
+    timeoutMs: 5200,
   },
 ];
 
@@ -1481,6 +1508,31 @@ function buildPromptOrchestration(
   const ambiguityEnabled = isEnvFlagEnabled('AI_AMBIGUITY_ASK_FIRST_ENABLED', true);
   const shouldEnforce = languageEnabled || expectationEnabled || ambiguityEnabled;
 
+  if (action === 'brew_sequence') {
+    const resolved = shouldEnforce
+      ? buildResponseOrchestration(prompt, mode, responseProfile, clientContext, conversationContext, agentProfile)
+      : defaultProfile;
+    const effective: ResolvedResponseProfile = {
+      language: languageEnabled ? resolved.language : defaultProfile.language,
+      expectation: {
+        ...resolved.expectation,
+        ...(expectationEnabled ? {} : defaultProfile.expectation),
+        ambiguityPolicy: ambiguityEnabled
+          ? resolved.expectation.ambiguityPolicy
+          : defaultProfile.expectation.ambiguityPolicy,
+        ambiguityRisk: ambiguityEnabled
+          ? resolved.expectation.ambiguityRisk
+          : defaultProfile.expectation.ambiguityRisk,
+      },
+    };
+    return {
+      prompt,
+      resolved: effective,
+      mode,
+      enforced: false,
+    };
+  }
+
   if (!shouldEnforce) {
     return {
       prompt,
@@ -1573,6 +1625,54 @@ function buildFallbackPrompts(
     system: `You are Baristachaw, an expert coffee assistant following SCA best practices. Do not roleplay as a cashier, POS bot, or take a drink order unless the user explicitly asks for an ordering simulation. For greetings or very short openers, greet back briefly and ask what they need. ${languageLock} ${expectationLock}`,
     user: `Think deeply, provide structured recommendations and tradeoffs:\n${prompt}`,
   };
+}
+
+function buildBrewSequencePrompts(
+  prompt: string,
+  resolved: ResolvedResponseProfile,
+): { system: string; user: string } {
+  const language = resolved.language || 'en';
+  return {
+    system: [
+      'You are Baristachaw brew_sequence, a strict specialty-coffee SOP generator.',
+      'Use only the deterministic recipe envelope supplied by the app. Never change dose, water, ice, temperature, time, step count, pour volume, cumulative target, method, grinder, water minerals, or bean facts.',
+      'Return JSON only. No markdown fences, no apology, no commentary outside JSON.',
+      'JSON shape: {"canonicalMarkdown":"...","displayMarkdown":"..."}',
+      'canonicalMarkdown must be English markdown with exactly these headings in this order: ## Service Pattern, ## Sequence, ## Watch.',
+      'displayMarkdown must keep the same numbers, line order, and operational meaning in the requested UI language. If the requested language is English, displayMarkdown may equal canonicalMarkdown.',
+      'Every Sequence step must include the deterministic label, timestamp, pour volume, cumulative target volume, and a short operational cue.',
+      'If iced, explicitly preserve the hot-water and ice split. Ice is bypass in the server, not an extra pour through the bed.',
+      'If unsure, copy the deterministic values and keep the instruction conservative.',
+      `Requested UI language: ${language}.`,
+    ].join('\n'),
+    user: prompt,
+  };
+}
+
+async function callBrewSequenceFallback(
+  prompt: string,
+  resolved: ResolvedResponseProfile,
+  requestId: string,
+): Promise<{ text: string; provider: OpenAiCompatProvider; model: string }> {
+  const prompts = buildBrewSequencePrompts(prompt, resolved);
+  let lastError: unknown = null;
+  for (const cfg of getEnabledAiProviderConfigs(BREW_SEQUENCE_PROVIDER_CHAIN)) {
+    try {
+      const text = await withRetry(
+        key => callOpenAiCompatibleText(key, cfg, prompts.system, prompts.user, 950),
+        { provider: cfg.provider, requestId, action: 'brew_sequence', maxRetries: 1 },
+      );
+      return { text, provider: cfg.provider, model: cfg.model };
+    } catch (error) {
+      lastError = error;
+      console.error(
+        `[api/ai][${requestId}] action=brew_sequence serial_fallback_fail provider=${cfg.provider} details="${sanitizeErrorDetails(error)}"`,
+      );
+    }
+  }
+
+  if (lastError) throw lastError;
+  throw createApiError('no_key', 'No brew sequence providers configured', 503, false, 'BREW_SEQUENCE');
 }
 
 async function callStructuredTextFallback(
@@ -1865,6 +1965,7 @@ function normalizeAction(value: unknown): StructuredAiAction | null {
     'analyze_image',
     'analyze_attachment',
     'edit_latte_art',
+    'brew_sequence',
     'fast',
     'balanced',
     'deep_think',
@@ -2024,7 +2125,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     );
   }
 
-  if ((action === 'fast' || action === 'balanced' || action === 'deep_think') && prompt.trim().length > STRUCTURED_AI_PROMPT_MAX_CHARS) {
+  if ((action === 'fast' || action === 'balanced' || action === 'deep_think' || action === 'brew_sequence') && prompt.trim().length > STRUCTURED_AI_PROMPT_MAX_CHARS) {
     return sendBadRequest(
       res,
       requestId,
@@ -2103,6 +2204,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     if (textContent && (typeof textContent !== 'string' || textContent.length > 50_000)) {
       return sendBadRequest(res, requestId, action, 'textContent must be a string under 50000 chars');
+    }
+
+    if (action === 'brew_sequence') {
+      const sequenceStartedAt = Date.now();
+      const fallback = await callBrewSequenceFallback(
+        promptForModel,
+        promptPlan.resolved,
+        requestId,
+      );
+      const text = sanitizeModelText(fallback.text);
+      if (!text) {
+        throw createApiError('provider_error', 'Brew sequence provider returned empty text', 502, true, fallback.provider);
+      }
+      const latencyMs = Date.now() - sequenceStartedAt;
+      res.setHeader('X-Provider', fallback.provider);
+      res.setHeader('X-Model', fallback.model);
+      res.setHeader('X-AI-Route', 'serial-brew-sequence');
+      console.info(
+        `[api/ai][${requestId}] action=brew_sequence ok latency=${Date.now() - startedAt}ms provider=${fallback.provider} model=${fallback.model} route=serial`,
+      );
+      recordAiProviderUsage({
+        provider: fallback.provider,
+        model: fallback.model,
+        feature: usageFeature,
+        route: '/api/ai',
+        action,
+        mode: 'brew_sequence',
+        outcome: 'success',
+        inputTokens: estimateAiTokenCount(promptForModel),
+        outputTokens: estimateAiTokenCount(text),
+        latencyMs,
+      });
+      return res.json({
+        ok: true,
+        requestId,
+        action,
+        text,
+        provider: fallback.provider,
+        model: fallback.model,
+        degraded: false,
+      });
     }
 
     if (action === 'analyze_image') {

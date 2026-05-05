@@ -36,15 +36,14 @@ import { useNavbar } from '../../context/NavbarContext';
 import { useAiAccessGate } from '../../components/billing/AiAccessGate';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useRuntimeDisplayMode } from '../../hooks/useRuntimeDisplayMode';
-import { balancedResponseDetailed, raceChatResponse, deepThinkingResponseDetailed } from '../../services/gemini';
+import { brewSequenceResponseDetailed, raceChatResponse, deepThinkingResponseDetailed, fastResponseDetailed } from '../../services/gemini';
 import { createRecipeCollectionItem, saveCollectionItem, saveRecipe } from '../../services/storageService';
 import type { Recipe } from '../../types';
 import {
   buildAdjustPrompt,
   buildExplainPrompt,
   buildOptimizationPrompt,
-  buildSequenceGuidePrompt,
-  buildSequenceRepairPrompt,
+  buildSequenceServerPrompt,
   buildTroubleshootPrompt,
 } from './prompts';
 import { buildDeterministicAiCoachMarkdown } from './coachNotes';
@@ -108,11 +107,13 @@ import {
   listRecentBrewJournalEntries,
   loadAiBrewFormDraft,
   loadCachedAiBrewCatalogSnapshot,
+  loadCachedAiBrewSequenceOverlay,
   loadLastGeneratedBrewPlan,
   saveAiBrewFormDraft,
   saveBrewJournalEntry,
   saveBrewPreset,
   saveCachedAiBrewCatalogSnapshot,
+  saveCachedAiBrewSequenceOverlay,
   saveLastGeneratedBrewPlan,
   updateBrewJournalAiNotes,
   updateBrewJournalFeedback,
@@ -139,9 +140,7 @@ import type {
 const CUSTOM_ENTRY_ID = 'custom';
 const OMITTED_ENTRY_ID = '__omitted__';
 const AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS = 4500;
-const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 4500;
-const AI_BREW_HYBRID_REPAIR_TIMEOUT_MS = 3500;
-const AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS = 1200;
+const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 7000;
 const AI_BREW_COACH_FAST_TIMEOUT_MS = 5000;
 const AI_BREW_COACH_DEEP_TIMEOUT_MS = 8500;
 const AI_BREW_COACH_TRANSLATION_TIMEOUT_MS = 1200;
@@ -1415,6 +1414,8 @@ async function normalizeMarkdownToLanguage(
 ) {
   if (!markdown.trim()) return markdown;
   if (/^en(?:-|$)/i.test(language)) return markdown;
+  const locallyLocalized = localizeAiBrewMarkdownLanguage(markdown, language);
+  if (!hasAiBrewLanguageLeak(locallyLocalized, language)) return locallyLocalized;
   const translationPrompt = [
     'Translate the markdown below fully into ' + language + ' using concise, natural barista language.',
     'Keep structure exactly: headings, list numbering, line breaks, and all numeric values unchanged.',
@@ -1424,40 +1425,11 @@ async function normalizeMarkdownToLanguage(
     markdown,
   ].join('\n');
   try {
-    const translated = await raceChatResponse(translationPrompt, requestContext, {
+    const translated = await fastResponseDetailed(translationPrompt, requestContext, {
       timeoutMs: options?.timeoutMs,
-      fallbackToStructured: false,
+      fallbackToChat: false,
     });
-    return localizeAiBrewMarkdownLanguage(translated?.trim() || markdown, language);
-  } catch {
-    return localizeAiBrewMarkdownLanguage(markdown, language);
-  }
-}
-
-async function normalizeSequenceMarkdownToLanguage(
-  markdown: string,
-  language: string,
-  requestContext: any,
-  options?: { timeoutMs?: number },
-) {
-  if (!markdown.trim()) return markdown;
-  if (/^en(?:-|$)/i.test(language)) return markdown;
-  const translationPrompt = [
-    'Translate the markdown below fully into ' + language + ' using concise, natural barista language.',
-    'For Indonesian, translate these headings exactly as: ## Pola Seduh, ## Urutan Seduh, ## Pantau.',
-    'For every numbered Sequence line, keep the deterministic checkpoint prefix unchanged through the operation text, including pour, wait, release, drawdown, and all ml/time targets.',
-    'Translate only the control instruction after that fixed checkpoint prefix.',
-    'Keep numbering, line order, and all numeric values unchanged.',
-    'Use short service-ready sentences. For Indonesian, prefer natural terms like "tuang", "target", "bed", "server", and "drawdown"; avoid stiff textbook phrasing.',
-    'Return only translated markdown.',
-    '',
-    markdown,
-  ].join('\n');
-  try {
-    const translated = await raceChatResponse(translationPrompt, requestContext, {
-      timeoutMs: options?.timeoutMs,
-    });
-    return localizeAiBrewMarkdownLanguage(translated?.trim() || markdown, language);
+    return localizeAiBrewMarkdownLanguage(translated.text?.trim() || markdown, language);
   } catch {
     return localizeAiBrewMarkdownLanguage(markdown, language);
   }
@@ -1531,15 +1503,29 @@ function applyHybridSequenceToPlan(
   } satisfies BrewPlan;
 }
 
-function shouldRetryHybridSequence(errors: string[]) {
-  const joined = errors.join(' | ').toLowerCase();
-  return Boolean(
-    joined.includes('response is too short')
-    || joined.includes('missing required heading')
-    || joined.includes('got 0')
-    || joined.includes('ai response indicated service unavailability')
-    || joined.includes('ai response timed out'),
-  );
+function parseBrewSequenceResponseText(raw: string) {
+  const text = String(raw || '').trim();
+  const unwrapped = text
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
+  try {
+    const parsed = JSON.parse(unwrapped) as { canonicalMarkdown?: unknown; displayMarkdown?: unknown };
+    const canonicalMarkdown = typeof parsed?.canonicalMarkdown === 'string' ? parsed.canonicalMarkdown.trim() : '';
+    const displayMarkdown = typeof parsed?.displayMarkdown === 'string' ? parsed.displayMarkdown.trim() : '';
+    if (canonicalMarkdown || displayMarkdown) {
+      return {
+        canonicalMarkdown: canonicalMarkdown || displayMarkdown,
+        displayMarkdown,
+      };
+    }
+  } catch {
+    // Non-JSON providers are still accepted as canonical markdown and guarded below.
+  }
+  return {
+    canonicalMarkdown: text,
+    displayMarkdown: '',
+  };
 }
 
 async function runHybridSequenceUpdate(
@@ -1551,6 +1537,21 @@ async function runHybridSequenceUpdate(
   },
 ) {
   if (!options.enabled) return null;
+  const cached = loadCachedAiBrewSequenceOverlay(
+    nextPlan.fingerprint,
+    options.language,
+    nextPlan.catalogVersion,
+  );
+  if (cached) {
+    return {
+      markdown: cached.markdown,
+      canonicalMarkdown: cached.canonicalMarkdown,
+      servicePattern: cached.servicePattern,
+      watch: cached.watch,
+      stepInstructions: cached.stepInstructions,
+      fallbackDiagnostics: cached.fallbackDiagnostics,
+    };
+  }
 
   const canonicalRequestContext = {
     responseProfile: {
@@ -1567,52 +1568,17 @@ async function runHybridSequenceUpdate(
     },
   };
 
-  const sequencePrompt = buildSequenceGuidePrompt(nextPlan).body;
-  let aiText = await raceChatResponse(
+  const sequencePrompt = buildSequenceServerPrompt(nextPlan, options.language).body;
+  const response = await brewSequenceResponseDetailed(
     sequencePrompt,
     canonicalRequestContext,
-    {
-      timeoutMs: AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS,
-      fallbackToStructured: false,
-    },
+    { timeoutMs: AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS },
   );
-
-  let canonicalOverlay = composeHybridSequenceOverlay(nextPlan, aiText);
-  if (canonicalOverlay.usedFallback && shouldRetryHybridSequence(canonicalOverlay.validation.errors)) {
-    try {
-      const repairPrompt = buildSequenceRepairPrompt(
-        nextPlan,
-        canonicalOverlay.validation.errors,
-        'en',
-      ).body;
-      const repair = await balancedResponseDetailed(
-        repairPrompt,
-        canonicalRequestContext,
-        {
-          timeoutMs: AI_BREW_HYBRID_REPAIR_TIMEOUT_MS,
-          fallbackToChat: false,
-        },
-      );
-      aiText = repair.text;
-      canonicalOverlay = composeHybridSequenceOverlay(nextPlan, aiText);
-    } catch {
-      // Keep the deterministic fallback from the first pass.
-    }
-  }
-  const displayMarkdown = await normalizeSequenceMarkdownToLanguage(
-    canonicalOverlay.markdown,
-    options.language,
-    {
-      ...canonicalRequestContext,
-      responseProfile: {
-        language: options.language,
-        verbosity: 'comprehensive' as const,
-        format: 'steps' as const,
-        tone: 'professional' as const,
-      },
-    },
-    { timeoutMs: AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS },
-  );
+  const parsed = parseBrewSequenceResponseText(response.text);
+  const canonicalOverlay = composeHybridSequenceOverlay(nextPlan, parsed.canonicalMarkdown);
+  const displayMarkdown = canonicalOverlay.usedFallback
+    ? localizeAiBrewMarkdownLanguage(canonicalOverlay.markdown, options.language)
+    : parsed.displayMarkdown || localizeAiBrewMarkdownLanguage(canonicalOverlay.markdown, options.language);
   const guardedDisplay = sanitizeAiCoachMarkdown({
     action: 'sequence',
     markdown: displayMarkdown,
@@ -1631,7 +1597,7 @@ async function runHybridSequenceUpdate(
       : []),
   ];
 
-  return {
+  const result = {
     markdown: safeDisplayMarkdown,
     canonicalMarkdown: canonicalOverlay.markdown,
     servicePattern: displayOverlay.servicePattern,
@@ -1639,6 +1605,14 @@ async function runHybridSequenceUpdate(
     stepInstructions: displayOverlay.stepInstructions,
     fallbackDiagnostics,
   };
+  saveCachedAiBrewSequenceOverlay({
+    fingerprint: nextPlan.fingerprint,
+    catalogVersion: nextPlan.catalogVersion,
+    language: options.language,
+    ...result,
+    provider: response.provider,
+  });
+  return result;
 }
 
 async function runHybridOptimizationUpdate(
@@ -1669,7 +1643,7 @@ async function runHybridOptimizationUpdate(
     },
   };
 
-  const aiText = await raceChatResponse(
+  const aiResult = await fastResponseDetailed(
     `${buildOptimizationPrompt(nextPlan, options.language).body}${
       options.repair
         ? '\n\nRepair pass: the previous response did not create a validated numeric delta. Return JSON only with at least one small safe numeric change inside the allowed guardrails.'
@@ -1678,11 +1652,11 @@ async function runHybridOptimizationUpdate(
     canonicalRequestContext,
     {
       timeoutMs: AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS,
-      fallbackToStructured: false,
+      fallbackToChat: false,
     },
   );
 
-  return applyAiBrewOptimizationPatch(nextPlan, parseAiBrewOptimizationPatch(aiText));
+  return applyAiBrewOptimizationPatch(nextPlan, parseAiBrewOptimizationPatch(aiResult.text));
 }
 
 function resolveAiBrewOptimizationIntent(plan: BrewPlan) {

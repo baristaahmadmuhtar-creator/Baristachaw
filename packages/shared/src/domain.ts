@@ -3,6 +3,7 @@ export type AiAction =
   | 'analyze_image'
   | 'analyze_attachment'
   | 'edit_latte_art'
+  | 'brew_sequence'
   | 'fast'
   | 'balanced'
   | 'deep_think'

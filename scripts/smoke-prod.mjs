@@ -3,6 +3,8 @@ import { runSmoke } from './smoke-runner.mjs';
 const baseUrl = process.env.BASE_URL || 'https://baristaclaw.vercel.app';
 const deepHealthToken = process.env.HEALTHCHECK_TOKEN || '';
 const bearerToken = process.env.PROD_SMOKE_BEARER_TOKEN || process.env.SMOKE_BEARER_TOKEN || '';
+const email = process.env.PROD_SMOKE_EMAIL || process.env.SMOKE_EMAIL || '';
+const password = process.env.PROD_SMOKE_PASSWORD || process.env.SMOKE_PASSWORD || '';
 const samples = process.env.PROD_SMOKE_SAMPLES || '15';
 const p95FastMs = process.env.PROD_SMOKE_P95_FAST_MS || '2000';
 const p95NormalMs = process.env.PROD_SMOKE_P95_NORMAL_MS || '4000';
@@ -14,6 +16,8 @@ runSmoke({
   label: 'production',
   deepHealthToken: deepHealthToken || undefined,
   bearerToken: bearerToken || undefined,
+  email: email || undefined,
+  password: password || undefined,
   samples,
   p95FastMs,
   p95NormalMs,

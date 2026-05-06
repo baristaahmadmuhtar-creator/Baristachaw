@@ -177,7 +177,7 @@ test('ai brew auto sequence keeps deterministic operational steps when mocked AI
   await qaLogin(page.request);
   await mockAiApis(page);
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -216,7 +216,7 @@ test('ai brew taste feedback is saved in the local brew journal', async ({ page 
   await qaLogin(page.request);
   await mockAiApis(page);
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Taste Feedback Loop');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -257,7 +257,7 @@ test('ai brew auto sequence keeps deterministic sequence when AI responses timeo
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Timeout Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -299,7 +299,7 @@ test('ai brew auto sequence falls back when mocked AI mixes conflicting method c
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Method-Conflict Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -341,7 +341,7 @@ test('ai brew auto sequence falls back when AI references unsupported hardware t
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Unsupported Hardware Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -398,7 +398,7 @@ test('ai brew iced sequence falls back when AI omits explicit hot-ice split pair
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await page.getByTestId('ai-brew-builder-mode-iced').click();
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Iced Split Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
@@ -445,7 +445,7 @@ test('ai brew auto sequence falls back when AI wait timing exceeds deterministic
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Cadence Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -486,7 +486,7 @@ test('ai brew auto sequence falls back when AI repeats one template shell across
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Template-Shell Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -527,7 +527,7 @@ test('ai brew auto sequence falls back when AI changes brew parameters mid-seque
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Mid-Run Shift Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -568,7 +568,7 @@ test('ai brew auto sequence falls back when AI chains second pour checkpoint ins
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Multi-Pour Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -610,7 +610,7 @@ test('ai brew auto sequence falls back when step 1 carries closure-phase wording
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Phase Intent Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -653,7 +653,7 @@ test('ai brew auto sequence repairs weak watch section while preserving valid AI
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Partial Repair');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -697,7 +697,7 @@ test('ai brew auto sequence falls back when AI uses hedging language in sequence
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Hedging Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -738,7 +738,7 @@ test('ai brew auto sequence normalizes safe free-form AI steps into deterministi
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Step Normalization Repair');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -785,7 +785,7 @@ test('ai brew auto sequence repairs non-canonical deterministic prefix formattin
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Prefix Normalization Repair');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -827,7 +827,7 @@ test('ai brew auto sequence repairs shifted deterministic timestamps from AI bac
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Timestamp Checkpoint Repair');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -869,7 +869,7 @@ test('ai brew auto sequence falls back when AI injects extra absolute clock time
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Extra Clock Tail Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -909,7 +909,7 @@ test('ai brew auto sequence falls back when balanced target drifts into body-onl
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Balanced Drift Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -966,7 +966,7 @@ test('ai brew auto sequence repairs conflicting method cues in support sections 
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Method Cue Repair');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -1010,7 +1010,7 @@ test('ai brew auto sequence falls back when body target mixes conflicting acidit
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Body Conflict Fallback');
   await clickTargetProfile(page, 'quick', 'More Body');
   await pickWater(page, 'aqua', 'aqua-id');
@@ -1052,7 +1052,7 @@ test('ai brew auto sequence falls back when one body-target step mixes opposing 
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Single-Line Body Conflict');
   await clickTargetProfile(page, 'quick', 'More Body');
   await pickWater(page, 'aqua', 'aqua-id');
@@ -1109,7 +1109,7 @@ test('ai brew auto sequence falls back when AI injects post-brew dilution top-up
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Dilution Topup Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -1149,7 +1149,7 @@ test('ai brew auto sequence falls back when AI injects next-cup troubleshooting 
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Next-Cup Step Fallback');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -1164,7 +1164,7 @@ test('ai brew deterministic sequence changes checkpoint timeline across target c
   await qaLogin(page.request);
   await mockAiApis(page);
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Timeline Context Shift');
   await pickWater(page, 'aqua', 'aqua-id');
 
@@ -1347,7 +1347,7 @@ test('ai brew auto sequence repairs generic service pattern while preserving val
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Service Pattern Repair');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -1394,7 +1394,7 @@ test('ai brew auto sequence repairs watch section without deterministic envelope
     await route.continue();
   });
 
-  await openQuickBuilder(page);
+  await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Watch Envelope Repair');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();

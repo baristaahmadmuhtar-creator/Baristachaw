@@ -146,6 +146,42 @@ async function requestAny(baseUrl, path, options = {}) {
   }
 }
 
+async function resolveEmailAuthCookie(baseUrl, results, email, password) {
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  const rawPassword = String(password || '');
+  if (!normalizedEmail || !rawPassword) return '';
+
+  const origin = baseUrl.replace(/\/+$/, '');
+  try {
+    const login = await requestAny(baseUrl, '/api/auth/email?mode=login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: origin,
+      },
+      body: JSON.stringify({
+        email: normalizedEmail,
+        password: rawPassword,
+      }),
+      timeoutMs: DEFAULT_TIMEOUT_MS,
+    });
+    const cookieHeader = extractCookieHeader(login.response);
+    if (
+      login.response.status === 200
+      && login.json?.authenticated === true
+      && login.json?.user?.id
+      && /auth_token=/.test(cookieHeader)
+    ) {
+      pass(results, 'POST /api/auth/email paid login', `user=${String(login.json.user.id).slice(0, 48)}`);
+      return cookieHeader;
+    }
+    fail(results, 'POST /api/auth/email paid login', `http=${login.response.status} body=${login.text.slice(0, 160)}`);
+  } catch (error) {
+    fail(results, 'POST /api/auth/email paid login', `request_failed=${String(error instanceof Error ? error.message : error).slice(0, 160)}`);
+  }
+  return '';
+}
+
 function pass(results, name, details) {
   results.push({ ok: true, name, details });
 }
@@ -296,19 +332,22 @@ async function runAuthenticatedModeChecks({
   baseUrl,
   results,
   bearerToken,
+  authCookie,
   samples,
   targets,
   aiDelayMs,
   useE2eMock,
 }) {
   const tokens = parseTokenList(bearerToken);
-  if (!tokens.length) {
-    fail(results, 'auth token', 'no bearer token provided for authenticated checks');
+  const cookieHeader = String(authCookie || '').trim();
+  if (!tokens.length && !cookieHeader) {
+    fail(results, 'auth token', 'no bearer token or login cookie provided for authenticated checks');
     return;
   }
-  const normalToken = tokens[0];
-  const fastToken = tokens[0];
-  const deepToken = tokens[1] || tokens[0];
+  const normalToken = tokens[0] || '';
+  const fastToken = tokens[0] || '';
+  const deepToken = tokens[1] || tokens[0] || '';
+  const authHeader = (token) => (cookieHeader ? { Cookie: cookieHeader } : { Authorization: `Bearer ${token}` });
 
   const timings = {
     normal: [],
@@ -325,7 +364,7 @@ async function runAuthenticatedModeChecks({
     const me = await requestAny(baseUrl, '/api/auth/me', {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${normalToken}`,
+        ...authHeader(normalToken),
       },
       timeoutMs: DEFAULT_TIMEOUT_MS,
     });
@@ -342,7 +381,7 @@ async function runAuthenticatedModeChecks({
     const account = await requestAny(baseUrl, '/api/account/status', {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${normalToken}`,
+        ...authHeader(normalToken),
       },
       timeoutMs: DEFAULT_TIMEOUT_MS,
     });
@@ -359,7 +398,7 @@ async function runAuthenticatedModeChecks({
   for (let i = 1; i <= samples; i++) {
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${normalToken}`,
+      ...authHeader(normalToken),
       ...mockHeaders,
     };
     try {
@@ -402,7 +441,7 @@ async function runAuthenticatedModeChecks({
   for (let i = 1; i <= samples; i++) {
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${normalToken}`,
+      ...authHeader(normalToken),
       ...mockHeaders,
     };
     try {
@@ -450,7 +489,7 @@ async function runAuthenticatedModeChecks({
   for (let i = 1; i <= samples; i++) {
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${fastToken}`,
+      ...authHeader(fastToken),
       ...mockHeaders,
     };
     try {
@@ -494,7 +533,7 @@ async function runAuthenticatedModeChecks({
   for (let i = 1; i <= samples; i++) {
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${deepToken}`,
+      ...authHeader(deepToken),
       ...mockHeaders,
     };
     try {
@@ -567,7 +606,7 @@ async function runAuthenticatedModeChecks({
   for (const scenario of languageScenarios) {
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${fastToken}`,
+      ...authHeader(fastToken),
       ...mockHeaders,
     };
     try {
@@ -615,7 +654,7 @@ async function runAuthenticatedModeChecks({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${fastToken}`,
+        ...authHeader(fastToken),
         ...mockHeaders,
       },
       timeoutMs: chatTimeoutMs,
@@ -987,6 +1026,8 @@ export async function runSmoke({
   label,
   deepHealthToken,
   bearerToken,
+  email,
+  password,
   testAuthToken,
   useE2eMock,
   samples,
@@ -1036,11 +1077,16 @@ export async function runSmoke({
   await runUnauthSecurityChecks(baseUrl, results, Boolean(expectTestAuthDisabled));
   await runGuestModeChecks(baseUrl, results);
 
-  if (bearerToken && String(bearerToken).trim()) {
+  const emailAuthCookie = bearerToken && String(bearerToken).trim()
+    ? ''
+    : await resolveEmailAuthCookie(baseUrl, results, email, password);
+
+  if ((bearerToken && String(bearerToken).trim()) || emailAuthCookie) {
     await runAuthenticatedModeChecks({
       baseUrl,
       results,
-      bearerToken: String(bearerToken).trim(),
+      bearerToken: String(bearerToken || '').trim(),
+      authCookie: emailAuthCookie,
       samples: effectiveSamples,
       targets,
       aiDelayMs: effectiveAiDelayMs,

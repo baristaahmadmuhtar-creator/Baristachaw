@@ -2936,9 +2936,12 @@ function AiProviderPanel({
           <div>
             <p className="text-sm font-semibold text-primary">{admin.text('aiBrewFallbackTitle')}</p>
             <p className="mt-1 text-xs leading-5 text-secondary">{admin.text('aiBrewFallbackSubtitle')}</p>
+            <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">
+              {admin.text('aiBrewFallbackThreshold')} {admin.number(snapshot.aiBrewFallbacks.thresholdPct || 8)}%
+            </p>
           </div>
           <StatusBadge
-            value={snapshot.aiBrewFallbacks.totalEvents > 0 ? 'warn' : 'pass'}
+            value={snapshot.aiBrewFallbacks.status || (snapshot.aiBrewFallbacks.totalEvents > 0 ? 'warn' : 'pass')}
             label={`${admin.text('aiBrewFallbackRate')} ${admin.number(snapshot.aiBrewFallbacks.fallbackRatePct)}%`}
           />
         </div>
@@ -2955,6 +2958,30 @@ function AiProviderPanel({
             </div>
           ))}
         </div>
+        {snapshot.aiBrewFallbacks.trend?.length ? (
+          <div className="mt-4 rounded-xl bg-surface-alpha px-3 py-3">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{admin.text('aiBrewFallbackTrend')}</p>
+              <span className="text-xs font-semibold text-secondary">
+                {admin.number(snapshot.aiBrewFallbacks.trend[snapshot.aiBrewFallbacks.trend.length - 1]?.fallbackRatePct || 0)}%
+              </span>
+            </div>
+            <div className="grid grid-cols-7 gap-1.5">
+              {snapshot.aiBrewFallbacks.trend.map((bucket) => (
+                <div key={bucket.date} className="flex min-h-20 flex-col justify-end gap-1">
+                  <div className="flex h-14 items-end rounded-lg bg-[var(--bg-base)]/72 px-1.5 py-1">
+                    <div
+                      className={clsx('w-full rounded-md', bucket.status === 'fail' ? 'bg-rose-500' : bucket.status === 'warn' ? 'bg-amber-500' : 'bg-emerald-500')}
+                      style={{ height: `${Math.max(6, Math.min(100, bucket.fallbackRatePct))}%` }}
+                      title={`${bucket.date}: ${bucket.fallbackRatePct}% / ${bucket.totalEvents}`}
+                    />
+                  </div>
+                  <p className="truncate text-center text-[10px] font-medium text-tertiary">{bucket.date.slice(5)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
         <div className="mt-4 space-y-2">
           {snapshot.aiBrewFallbacks.recentEvents.length ? snapshot.aiBrewFallbacks.recentEvents.slice(0, 5).map((event) => (
             <div key={event.id} className="grid gap-1 rounded-xl bg-surface-alpha px-3 py-2 text-xs text-secondary sm:grid-cols-[auto_1fr_auto] sm:items-center">

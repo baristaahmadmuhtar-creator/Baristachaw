@@ -167,6 +167,16 @@ type AdminAiBrewFallbackEvent = {
   detail: string;
 };
 
+type AdminAiBrewFallbackTrendBucket = {
+  date: string;
+  totalEvents: number;
+  optimizerRejected: number;
+  optimizerNoChange: number;
+  sequenceFallback: number;
+  fallbackRatePct: number;
+  status: CheckStatus;
+};
+
 type AdminAiBrewFallbackSnapshot = {
   source: 'admin_audit_events' | 'runtime_audit';
   totalEvents: number;
@@ -174,6 +184,9 @@ type AdminAiBrewFallbackSnapshot = {
   optimizerNoChange: number;
   sequenceFallback: number;
   fallbackRatePct: number;
+  thresholdPct: number;
+  status: CheckStatus;
+  trend: AdminAiBrewFallbackTrendBucket[];
   recentEvents: AdminAiBrewFallbackEvent[];
 };
 
@@ -975,12 +988,67 @@ function classifyAiBrewFallbackEvent(event: AdminAuditEvent): AdminAiBrewFallbac
   return null;
 }
 
+const AI_BREW_FALLBACK_WARN_THRESHOLD_PCT = 8;
+const AI_BREW_FALLBACK_FAIL_THRESHOLD_PCT = 20;
+
+function aiBrewFallbackStatus(ratePct: number): CheckStatus {
+  if (ratePct >= AI_BREW_FALLBACK_FAIL_THRESHOLD_PCT) return 'fail';
+  if (ratePct >= AI_BREW_FALLBACK_WARN_THRESHOLD_PCT) return 'warn';
+  return 'pass';
+}
+
+function dateBucketKey(value: string | number | Date) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (!Number.isFinite(date.getTime())) return new Date().toISOString().slice(0, 10);
+  return date.toISOString().slice(0, 10);
+}
+
+function buildAiBrewFallbackTrend(
+  events: AdminAiBrewFallbackEvent[],
+  ai: AiProviderAdminSnapshot,
+): AdminAiBrewFallbackTrendBucket[] {
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const buckets = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(today);
+    date.setUTCDate(today.getUTCDate() - (6 - index));
+    return {
+      date: dateBucketKey(date),
+      totalEvents: 0,
+      optimizerRejected: 0,
+      optimizerNoChange: 0,
+      sequenceFallback: 0,
+    };
+  });
+  const bucketMap = new Map(buckets.map((bucket) => [bucket.date, bucket]));
+
+  for (const event of events) {
+    const bucket = bucketMap.get(dateBucketKey(event.createdAt));
+    if (!bucket) continue;
+    bucket.totalEvents += 1;
+    if (event.kind === 'optimizer_rejected') bucket.optimizerRejected += 1;
+    else if (event.kind === 'optimizer_no_change') bucket.optimizerNoChange += 1;
+    else if (event.kind === 'sequence_fallback') bucket.sequenceFallback += 1;
+  }
+
+  const dailyAiRequests = Math.max(1, Math.ceil(Math.max(0, ai.usage.today.requests) / 7));
+  return buckets.map((bucket) => {
+    const denominator = Math.max(bucket.totalEvents, bucket.totalEvents + dailyAiRequests);
+    const fallbackRatePct = denominator > 0 ? Math.round((bucket.totalEvents / denominator) * 100) : 0;
+    return {
+      ...bucket,
+      fallbackRatePct,
+      status: aiBrewFallbackStatus(fallbackRatePct),
+    };
+  });
+}
+
 function buildAiBrewFallbackSnapshot(
   audit: AdminAuditEvent[],
   ai: AiProviderAdminSnapshot,
   source: AdminAiBrewFallbackSnapshot['source'],
 ): AdminAiBrewFallbackSnapshot {
-  const recentEvents = audit
+  const fallbackEvents = audit
     .map((event): AdminAiBrewFallbackEvent | null => {
       const kind = classifyAiBrewFallbackEvent(event);
       if (!kind) return null;
@@ -992,20 +1060,24 @@ function buildAiBrewFallbackSnapshot(
         detail: event.detail.slice(0, 220),
       };
     })
-    .filter((event): event is AdminAiBrewFallbackEvent => Boolean(event))
-    .slice(0, 12);
-  const optimizerRejected = recentEvents.filter((event) => event.kind === 'optimizer_rejected').length;
-  const optimizerNoChange = recentEvents.filter((event) => event.kind === 'optimizer_no_change').length;
-  const sequenceFallback = recentEvents.filter((event) => event.kind === 'sequence_fallback').length;
-  const totalEvents = recentEvents.length;
+    .filter((event): event is AdminAiBrewFallbackEvent => Boolean(event));
+  const recentEvents = fallbackEvents.slice(0, 12);
+  const optimizerRejected = fallbackEvents.filter((event) => event.kind === 'optimizer_rejected').length;
+  const optimizerNoChange = fallbackEvents.filter((event) => event.kind === 'optimizer_no_change').length;
+  const sequenceFallback = fallbackEvents.filter((event) => event.kind === 'sequence_fallback').length;
+  const totalEvents = fallbackEvents.length;
   const denominator = Math.max(totalEvents, totalEvents + ai.usage.today.requests);
+  const fallbackRatePct = denominator > 0 ? Math.round((totalEvents / denominator) * 100) : 0;
   return {
     source,
     totalEvents,
     optimizerRejected,
     optimizerNoChange,
     sequenceFallback,
-    fallbackRatePct: denominator > 0 ? Math.round((totalEvents / denominator) * 100) : 0,
+    fallbackRatePct,
+    thresholdPct: AI_BREW_FALLBACK_WARN_THRESHOLD_PCT,
+    status: aiBrewFallbackStatus(fallbackRatePct),
+    trend: buildAiBrewFallbackTrend(fallbackEvents, ai),
     recentEvents,
   };
 }

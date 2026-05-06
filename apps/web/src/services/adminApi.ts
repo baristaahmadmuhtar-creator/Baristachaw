@@ -144,6 +144,16 @@ export type AdminAiBrewFallbackEvent = {
   detail: string;
 };
 
+export type AdminAiBrewFallbackTrendBucket = {
+  date: string;
+  totalEvents: number;
+  optimizerRejected: number;
+  optimizerNoChange: number;
+  sequenceFallback: number;
+  fallbackRatePct: number;
+  status: CheckStatus;
+};
+
 export type AdminAiBrewFallbackSnapshot = {
   source: 'admin_audit_events' | 'runtime_audit';
   totalEvents: number;
@@ -151,6 +161,9 @@ export type AdminAiBrewFallbackSnapshot = {
   optimizerNoChange: number;
   sequenceFallback: number;
   fallbackRatePct: number;
+  thresholdPct: number;
+  status: CheckStatus;
+  trend: AdminAiBrewFallbackTrendBucket[];
   recentEvents: AdminAiBrewFallbackEvent[];
 };
 

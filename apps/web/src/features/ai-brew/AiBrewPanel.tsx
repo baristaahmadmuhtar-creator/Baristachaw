@@ -2879,6 +2879,7 @@ function PlanResultDialog({
   open,
   language,
   copy,
+  resultMode,
   plan,
   currentPreset,
   aiCoachDisabled,
@@ -2908,6 +2909,7 @@ function PlanResultDialog({
   open: boolean;
   language: string;
   copy: CopySet;
+  resultMode: FormMode;
   plan: BrewPlan | null;
   currentPreset?: BrewPreset;
   aiCoachDisabled: boolean;
@@ -2935,20 +2937,27 @@ function PlanResultDialog({
   onOpenAuth: () => void;
 }) {
   const descriptionId = useId();
-  const [activeTab, setActiveTab] = useState<ResultTab>('plan');
+  const [activeTab, setActiveTab] = useState<ResultTab>(resultMode === 'quick' ? 'flow' : 'plan');
   const [flowElapsedSeconds, setFlowElapsedSeconds] = useState(0);
   const [flowAccumulatedSeconds, setFlowAccumulatedSeconds] = useState(0);
   const [flowRunning, setFlowRunning] = useState(false);
   const [flowStartedAtMs, setFlowStartedAtMs] = useState<number | null>(null);
+  const isQuickResult = resultMode === 'quick';
 
   useEffect(() => {
     if (!open) return;
-    setActiveTab('plan');
+    setActiveTab(isQuickResult ? 'flow' : 'plan');
     setFlowElapsedSeconds(0);
     setFlowAccumulatedSeconds(0);
     setFlowRunning(false);
     setFlowStartedAtMs(null);
-  }, [open]);
+  }, [open, isQuickResult]);
+
+  useEffect(() => {
+    if (isQuickResult && activeTab !== 'flow') {
+      setActiveTab('flow');
+    }
+  }, [activeTab, isQuickResult]);
 
   useEffect(() => {
     setFlowElapsedSeconds(0);
@@ -2980,11 +2989,13 @@ function PlanResultDialog({
 
   if (!plan) return null;
 
-  const resultTabs: Array<{ id: ResultTab; label: string }> = [
-    { id: 'plan', label: copy.planTab },
-    { id: 'flow', label: copy.flowTab },
-    { id: 'coach', label: copy.coachTab },
-  ];
+  const resultTabs: Array<{ id: ResultTab; label: string }> = isQuickResult
+    ? [{ id: 'flow', label: copy.flowTab }]
+    : [
+        { id: 'plan', label: copy.planTab },
+        { id: 'flow', label: copy.flowTab },
+        { id: 'coach', label: copy.coachTab },
+      ];
   const showLegacySourcesTab = false;
   const coachActions: Array<{ mode: AiCoachMode; label: string; hint: string }> = [
     { mode: 'explain', label: copy.explain, hint: copy.coachExplainHint },
@@ -3096,7 +3107,7 @@ function PlanResultDialog({
             paddingBottom: 'calc(28px + var(--bottom-safe-capped, 0px))',
           }}
           tabIndex={0}
-          aria-labelledby={activeTabId}
+          aria-labelledby={isQuickResult ? undefined : activeTabId}
         >
           <div className="space-y-5">
             <div className={resultHeaderClass}>
@@ -3141,24 +3152,26 @@ function PlanResultDialog({
                 <p id={descriptionId} className="sr-only">
                   {formatRoundedGrams(plan.doseG)} - {planHeaderWater} - {formatGuideTime(plan.totalTimeSeconds)} - {formatRoundedTemperature(plan.waterTempC)}
                 </p>
-                <div
-                  className="mt-3 rounded-[1.15rem] border border-blue-500/18 bg-gradient-to-br from-blue-500/[0.12] via-blue-500/[0.06] to-transparent px-3 py-2.5"
-                  data-testid="ai-brew-result-brief"
-                >
-                  <div className="flex items-start gap-2">
-                    <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.2)]">
-                      <Sparkles size={13} />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
-                        {id ? 'Ringkasan seduh' : 'Brew brief'}
-                      </p>
-                      <p className="mt-1 text-[13px] leading-5 text-primary">
-                        {displaySummary}
-                      </p>
+                {!isQuickResult && (
+                  <div
+                    className="mt-3 rounded-[1.15rem] border border-blue-500/18 bg-gradient-to-br from-blue-500/[0.12] via-blue-500/[0.06] to-transparent px-3 py-2.5"
+                    data-testid="ai-brew-result-brief"
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.2)]">
+                        <Sparkles size={13} />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
+                          {id ? 'Ringkasan seduh' : 'Brew brief'}
+                        </p>
+                        <p className="mt-1 text-[13px] leading-5 text-primary">
+                          {displaySummary}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
                 <div className="mt-3 flex flex-wrap gap-1.5" data-testid="ai-brew-confidence-labels">
                   {confidenceBadges.map((badge) => (
                     <span
@@ -3188,18 +3201,21 @@ function PlanResultDialog({
                       {currentPreset ? copy.unfavorite : copy.favorite}
                     </span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('flow')}
-                    className={resultActionButtonClass}
-                    data-testid="ai-brew-open-flow"
-                  >
-                    {copy.flowTab}
-                  </button>
+                  {!isQuickResult && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('flow')}
+                      className={resultActionButtonClass}
+                      data-testid="ai-brew-open-flow"
+                    >
+                      {copy.flowTab}
+                    </button>
+                  )}
                 </div>
               </div>
 
-              <div className="mt-3 grid gap-2.5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
+              {resultTabs.length > 1 && (
+                <div className="mt-3 grid gap-2.5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
                 <div
                   role="tablist"
                   aria-label={copy.summaryTitle}
@@ -3226,7 +3242,8 @@ function PlanResultDialog({
                     </button>
                   ))}
                 </div>
-              </div>
+                </div>
+              )}
 
               {saveSuccess && (
                 <div
@@ -3244,7 +3261,7 @@ function PlanResultDialog({
               )}
             </div>
 
-            {activeTab === 'plan' && (
+            {!isQuickResult && activeTab === 'plan' && (
               <div
                 id={activeTabPanelId}
                 role="tabpanel"
@@ -3668,7 +3685,7 @@ function PlanResultDialog({
               <div
                 id={activeTabPanelId}
                 role="tabpanel"
-                aria-labelledby={activeTabId}
+                aria-labelledby={isQuickResult ? undefined : activeTabId}
                 className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]"
               >
                 <div className="space-y-5">
@@ -3791,7 +3808,60 @@ function PlanResultDialog({
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3" data-testid={isQuickResult ? 'ai-brew-sequence-section' : undefined}>
+                  {isQuickResult && (
+                    <div
+                      className="rounded-[1.2rem] border border-blue-500/18 bg-blue-500/[0.08] p-3.5"
+                      data-testid="ai-brew-sequence-note"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <Waves size={16} className="text-blue-500" />
+                          <h4 className="text-sm font-semibold text-primary">{copy.recipe}</h4>
+                        </div>
+                        <span className="rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
+                          {plan.steps.length} {copy.stepCountSuffix}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-5 text-secondary">
+                        {id
+                          ? 'Mulai dari bloom, jaga tuangan stabil, lalu selesaikan sesuai target volume dan waktu.'
+                          : 'Start with the bloom, keep pouring steady, then finish on the target volume and time.'}
+                      </p>
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                        {[
+                          { label: copy.totalWater, value: formatRoundedMl(plan.totalWaterMl) },
+                          { label: copy.temp, value: formatRoundedTemperature(plan.waterTempC) },
+                          { label: copy.time, value: formatGuideTime(plan.totalTimeSeconds) },
+                          { label: copy.grind, value: localizedGrindHeadline },
+                        ].map((item) => (
+                          <span key={item.label} className="rounded-xl bg-[var(--bg-base)]/82 px-2.5 py-2 text-secondary">
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
+                            <span className="font-semibold text-primary">{item.value}</span>
+                          </span>
+                        ))}
+                      </div>
+                      {plan.iceMl > 0 && (
+                        <div
+                          className="mt-3 grid gap-2 rounded-xl border border-sky-500/20 bg-sky-500/[0.08] px-3 py-2.5 text-xs text-secondary sm:grid-cols-3"
+                          data-testid="ai-brew-iced-calibration"
+                        >
+                          <span>
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
+                            <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
+                          </span>
+                          <span>
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.hotConcentrate}</span>
+                            <span className="font-semibold text-primary">1:{formatBrewRatio(plan.hotExtractionRatio)}</span>
+                          </span>
+                          <span>
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.ice}</span>
+                            <span className="font-semibold text-primary">{formatRoundedGrams(plan.iceMl)}</span>
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {plan.steps.map((step, index) => {
                     const state = index < flowActiveStepIndex
                       ? 'done'
@@ -3814,7 +3884,7 @@ function PlanResultDialog({
                               ? 'border-emerald-500/18 bg-emerald-500/[0.08]'
                               : 'panel-divider-subtle panel-soft'
                         }`}
-                        data-testid={`ai-brew-flow-step-${index + 1}`}
+                        data-testid={isQuickResult ? `ai-brew-step-card-${index + 1}` : `ai-brew-flow-step-${index + 1}`}
                       >
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div className="space-y-1">
@@ -3867,7 +3937,7 @@ function PlanResultDialog({
               </div>
             )}
 
-            {activeTab === 'coach' && (
+            {!isQuickResult && activeTab === 'coach' && (
               <div
                 id={activeTabPanelId}
                 role="tabpanel"
@@ -4650,6 +4720,7 @@ export function AiBrewPanel({
   const [pickerKind, setPickerKind] = useState<PickerKind>(null);
   const [pickerRestoreFocusTarget, setPickerRestoreFocusTarget] = useState<HTMLElement | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
+  const [resultMode, setResultMode] = useState<FormMode>('pro');
   const [showProvenance, setShowProvenance] = useState(false);
   const [journalEntries, setJournalEntries] = useState<BrewJournalEntry[]>([]);
   const [presets, setPresets] = useState<BrewPreset[]>([]);
@@ -4711,6 +4782,7 @@ export function AiBrewPanel({
     clearSaveFeedback();
     syncTasteFeedback(null);
     setActiveBuilderModal(null);
+    setResultMode('pro');
     setResultOpen(shouldOpen);
     setAiResponse(selectDefaultAiResponse(copy, storedPlan.aiNotes, storedPlan, language));
   }
@@ -5008,9 +5080,9 @@ export function AiBrewPanel({
   const generationStageDetail = getGenerationStageDetail(generationProgress, copy, language);
   const aiBrewFallbackFlag = accountStatusSnapshot?.featureFlags.find((flag) => flag.key === 'ai_brew_fallback');
   const aiBrewFallbackEnabled = !aiBrewFallbackFlag || aiBrewFallbackFlag.status === 'available';
-  const requireOnlineAiGenerate = !aiBrewFallbackEnabled;
   const canUsePaidAiBrew = hasPaidAiAccess && !isOffline;
-  const canUseHybridAiSequence = Boolean(activeBuilderModal) && canUsePaidAiBrew;
+  const canUseHybridAiSequence = activeBuilderModal === 'pro' && canUsePaidAiBrew;
+  const requireOnlineAiGenerate = activeBuilderModal === 'pro' && !aiBrewFallbackEnabled;
   const aiEngineReadyLabel = canUseHybridAiSequence
     ? requireOnlineAiGenerate ? copy.aiEngineStrictReady : copy.aiEngineReady
     : requireOnlineAiGenerate ? copy.aiEngineStrictRequired : copy.aiEngineLocalValidated;
@@ -5194,7 +5266,8 @@ export function AiBrewPanel({
     setAiError(null);
     clearSaveFeedback();
     syncTasteFeedback(null);
-    const generationFormState = activeBuilderModal === 'quick'
+    const generationMode = activeBuilderModal === 'quick' ? 'quick' : 'pro';
+    const generationFormState = generationMode === 'quick'
       ? createQuickAiBrewFormState(formState, catalog)
       : sanitizeAiBrewFormState(formState, catalog);
 
@@ -5342,6 +5415,7 @@ export function AiBrewPanel({
       setShowProvenance(nextPlan.provenanceAttentionNeeded);
       setActiveJournalId(journalEntry.id);
       setActiveBuilderModal(null);
+      setResultMode(generationMode);
       setResultOpen(true);
       setFormState(generationFormState);
       saveLastGeneratedBrewPlan(nextPlan);
@@ -5362,6 +5436,7 @@ export function AiBrewPanel({
     if (!catalog) return;
     setPlan(null);
     setResultOpen(false);
+    setResultMode('pro');
     setShowProvenance(false);
     setAiResponse(null);
     setAiError(null);
@@ -5644,6 +5719,7 @@ export function AiBrewPanel({
     clearSaveFeedback();
     syncTasteFeedback(feedback);
     setActiveBuilderModal(null);
+    setResultMode('pro');
     setResultOpen(true);
     saveLastGeneratedBrewPlan(nextPlan);
     setAiResponse(selectDefaultAiResponse(copy, nextPlan.aiNotes, nextPlan, language));
@@ -6920,6 +6996,7 @@ export function AiBrewPanel({
         open={resultOpen}
         language={language}
         copy={copy}
+        resultMode={resultMode}
         plan={plan}
         currentPreset={currentPreset}
         aiCoachDisabled={aiCoachDisabled}

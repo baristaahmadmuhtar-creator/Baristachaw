@@ -1544,6 +1544,80 @@ test('AI Brew defaults target profile from process, variety, and altitude withou
   assert.equal(manualSweetness.targetProfileId, 'more_sweetness');
 });
 
+test('AI Brew shared core calibrates 10-20 g target profile, dose, process, and custom variety signals', () => {
+  assert.equal(resolveDefaultTargetProfileIdForBean({
+    coffeeName: 'Panama Gesha washed',
+    process: 'washed',
+    variety: 'custom',
+    customVariety: 'Panama Gesha landrace',
+    altitudeMasl: '1850',
+    roastLevel: 'light',
+  }, catalog), 'more_acidity');
+
+  assert.equal(resolveDefaultTargetProfileIdForBean({
+    coffeeName: 'Indonesia Catimor compact body',
+    process: 'washed',
+    variety: 'custom',
+    customVariety: 'Catimor Timtim S795',
+    roastLevel: 'medium',
+  }, catalog), 'more_body');
+
+  const scenarios = [
+    {
+      coffeeName: 'Compact Gesha clarity',
+      doseG: '10',
+      process: 'washed',
+      customVariety: 'Panama Gesha',
+      targetProfileId: 'more_acidity',
+    },
+    {
+      coffeeName: 'Mid Bourbon sweetness',
+      doseG: '15',
+      process: 'natural',
+      customVariety: 'Pink Bourbon Caturra',
+      targetProfileId: 'more_sweetness',
+    },
+    {
+      coffeeName: 'Large Catimor body control',
+      doseG: '20',
+      process: 'wet_hulled',
+      customVariety: 'Catimor Timtim S795',
+      targetProfileId: 'more_acidity',
+    },
+  ] as const;
+
+  for (const scenario of scenarios) {
+    const base = {
+      ...createDefaultAiBrewFormState(catalog),
+      brewMode: 'hot' as const,
+      coffeeName: scenario.coffeeName,
+      doseG: scenario.doseG,
+      process: scenario.process,
+      variety: 'custom',
+      customVariety: scenario.customVariety,
+      roastLevel: 'medium_light' as const,
+      dripperId: 'hario-v60',
+      grinderId: '1zpresso-k-ultra',
+      targetProfileId: scenario.targetProfileId,
+      waterMode: 'manual' as const,
+      waterTdsPpm: '95',
+      waterHardnessPpm: '55',
+      waterAlkalinityPpm: '40',
+    };
+    const quickPlan = buildAiBrewPlan(createQuickAiBrewFormState(base, catalog), catalog);
+    const proPlan = buildAiBrewPlan(base, catalog);
+    const diagnostics = [...quickPlan.notes, ...quickPlan.confidenceNotes].join(' ');
+
+    assertPlanEnvelope(quickPlan);
+    assert.equal(quickPlan.variety, scenario.customVariety);
+    assert.equal(quickPlan.recommendedRatio, proPlan.recommendedRatio);
+    assert.equal(quickPlan.waterTempC, proPlan.waterTempC);
+    assert.equal(quickPlan.totalTimeSeconds, proPlan.totalTimeSeconds);
+    assert.match(diagnostics, /Dose-target-variety calibration active/i);
+    assert.ok(quickPlan.doseG >= 10 && quickPlan.doseG <= 20);
+  }
+});
+
 test('AI Brew precision controls honor barista-friendly dose and ratio while keeping filter prep in the guide', () => {
   const plan = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),

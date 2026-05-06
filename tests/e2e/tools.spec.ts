@@ -141,6 +141,13 @@ function formatAiBrewDisplayRatio(value: number) {
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }
 
+function formatAiBrewTimerValue(totalSeconds: number) {
+  const safeSeconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
+  const minutes = Math.floor(safeSeconds / 60);
+  const seconds = safeSeconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
 test('tools tabs expose accessible tab semantics and keyboard navigation', async ({ page }) => {
   const aiTab = page.getByRole('tab', { name: 'AI Brew' });
   const timerTab = page.getByRole('tab', { name: 'Timer' });
@@ -666,8 +673,8 @@ test('ai brew can hand off an iced plan into timer and ratio tools', async ({ pa
 
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toContainText(/Ice|Es|Seduh Es/i);
-  const brewTimeText = ((await result.textContent()) || '').match(/(\d{2}:\d{2})/)?.[1];
-  expect(brewTimeText).toBeTruthy();
+  const timerPlan = await readStoredAiBrewPlan(page);
+  const brewTimeText = formatAiBrewTimerValue(timerPlan.totalTimeSeconds);
 
   await page.getByTestId('ai-brew-use-timer').click();
   await expect(page.getByRole('tab', { name: /^(Timer|Pengatur Waktu)$/i })).toHaveClass(/bg-white/);
@@ -712,7 +719,7 @@ test('authenticated users can request ai coaching manually from the result panel
   await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
-  await openAiBrewQuickMode(page);
+  await openAiBrewProMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Manual Coach');
   await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -726,7 +733,7 @@ test('authenticated users can request ai coaching manually from the result panel
 });
 
 test('ai brew coach guard blocks unsafe AI claims and keeps deterministic values', async ({ page }) => {
-  await openAiBrewQuickMode(page);
+  await openAiBrewProMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'Bolinda Caranavi Coach Guard');
   await switchAiBrewToManualWater(page, { tds: '9', hardness: '6.6', alkalinity: '5.5' });
   await page.getByTestId('ai-brew-generate').click();
@@ -753,7 +760,7 @@ test('ai brew coach guard blocks unsafe AI claims and keeps deterministic values
 });
 
 test('ai brew discloses exact-profile provenance when a niche dripper now has a curated match', async ({ page }) => {
-  await openAiBrewQuickMode(page);
+  await openAiBrewProMode(page);
   await page.getByTestId('ai-brew-dripper-picker').click();
   await page.getByLabel(/Search catalog|Search AI Brew catalog|Cari catalog/i).fill('Latina');
   await page.getByRole('button', { name: /Select brewer Latina Cono|Select dripper Latina Cono/i }).click();

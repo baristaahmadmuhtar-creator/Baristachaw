@@ -2,7 +2,6 @@ import { spawn } from 'node:child_process';
 
 const NPM_BIN = 'npm';
 const BASE_URL = process.env.BASE_URL || 'https://baristaclaw.vercel.app';
-const REQUIRED_ENV = ['PROD_SMOKE_BEARER_TOKEN'];
 
 function run(command, args, env = process.env) {
   return new Promise((resolve, reject) => {
@@ -20,10 +19,13 @@ function run(command, args, env = process.env) {
 }
 
 async function main() {
-  for (const name of REQUIRED_ENV) {
-    if (!String(process.env[name] || '').trim()) {
-      throw new Error(`Missing required env: ${name}`);
-    }
+  const hasBearerToken = Boolean(String(process.env.PROD_SMOKE_BEARER_TOKEN || process.env.SMOKE_BEARER_TOKEN || '').trim());
+  const hasEmailLogin = Boolean(
+    String(process.env.PROD_SMOKE_EMAIL || process.env.SMOKE_EMAIL || '').trim()
+    && String(process.env.PROD_SMOKE_PASSWORD || process.env.SMOKE_PASSWORD || '').trim(),
+  );
+  if (!hasBearerToken && !hasEmailLogin) {
+    throw new Error('Missing production smoke auth: set PROD_SMOKE_BEARER_TOKEN or PROD_SMOKE_EMAIL + PROD_SMOKE_PASSWORD.');
   }
 
   const env = {

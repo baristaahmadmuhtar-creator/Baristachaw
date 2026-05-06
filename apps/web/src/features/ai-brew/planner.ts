@@ -1285,6 +1285,37 @@ const BODY_VARIETY_IDS = new Set([
   'timor_hybrid',
 ]);
 
+type VarietyIntentSignal = {
+  acidity: boolean;
+  sweetness: boolean;
+  body: boolean;
+  sourceLabel: string;
+};
+
+const VARIETY_CLARITY_PATTERN = /\b(geisha|gesha|sl\s?28|sl\s?34|ethiopian\s+heirloom|heirloom|landrace|wush\s?wush|rume\s+sudan|caturra\s+chiroso|bourbon\s+pointu|sidra|wush|yirgacheffe)\b/i;
+const VARIETY_SWEETNESS_PATTERN = /\b(bourbon|yellow\s+bourbon|orange\s+bourbon|pink\s+bourbon|red\s+bourbon|caturra|catuai|catua[iy]|typica|mundo\s+novo|mokka|sidra|ombligon|acaia|arara|blue\s+mountain|tekisic|kartika|andungsari|kartika)\b/i;
+const VARIETY_BODY_PATTERN = /\b(robusta|conilon|canephora|liberica|excelsa|pacamara|maracaturra|maragogipe|maracatu|catimor|timor|tim\s?tim|s795|ateng|sigarar|jember|linie\s+s|gayo\s*2|andungsari|bp\s?534|bp\s?936|bp\s?939)\b/i;
+
+function inferVarietyIntentSignal(params: {
+  varietyId?: string;
+  varietyEntry?: VarietyCatalogEntry;
+  customVarietyText?: string;
+}): VarietyIntentSignal {
+  const varietyId = String(params.varietyId || params.varietyEntry?.id || '').toLowerCase();
+  const haystack = normalizeSearchHaystack([
+    varietyId,
+    params.customVarietyText,
+    params.varietyEntry?.label,
+    params.varietyEntry?.searchText,
+    ...(params.varietyEntry?.aliases || []),
+  ]);
+  const acidity = CLARITY_VARIETY_IDS.has(varietyId) || VARIETY_CLARITY_PATTERN.test(haystack);
+  const sweetness = SWEETNESS_VARIETY_IDS.has(varietyId) || VARIETY_SWEETNESS_PATTERN.test(haystack);
+  const body = BODY_VARIETY_IDS.has(varietyId) || VARIETY_BODY_PATTERN.test(haystack);
+  const sourceLabel = params.varietyEntry?.label || params.customVarietyText || varietyId || 'variety context';
+  return { acidity, sweetness, body, sourceLabel };
+}
+
 export function resolveDefaultTargetProfileIdForBean(
   input: Partial<AiBrewFormState>,
   catalog?: AiBrewCatalog,
@@ -1311,11 +1342,16 @@ export function resolveDefaultTargetProfileIdForBean(
   const altitude = Number.parseFloat(String(input.altitudeMasl || ''));
   const roastLevel = input.roastLevel || 'medium';
   const hasTarget = (id: string) => !catalog || catalog.targetProfiles.some((profile) => profile.id === id);
+  const varietySignal = inferVarietyIntentSignal({
+    varietyId,
+    varietyEntry,
+    customVarietyText: input.customVariety,
+  });
 
   if (
     processId === 'wet_hulled'
     || /\b(wet[-\s]?hulled|giling\s+basah|sumatra|mandheling|gayo|robusta|conilon|canephora|liberica|excelsa)\b/i.test(haystack)
-    || BODY_VARIETY_IDS.has(varietyId)
+    || varietySignal.body
   ) {
     return hasTarget('more_body') ? 'more_body' : 'balance_clean';
   }
@@ -1323,7 +1359,7 @@ export function resolveDefaultTargetProfileIdForBean(
   if (
     SWEETNESS_PROCESS_IDS.has(processId)
     || /\b(natural|honey|anaerobic|carbonic|lactic|yeast|fermentation)\b/i.test(haystack)
-    || SWEETNESS_VARIETY_IDS.has(varietyId)
+    || varietySignal.sweetness
   ) {
     if (roastLevel === 'medium_dark' || roastLevel === 'dark') {
       return hasTarget('more_body') ? 'more_body' : 'more_sweetness';
@@ -1340,7 +1376,7 @@ export function resolveDefaultTargetProfileIdForBean(
     return hasTarget('more_acidity') ? 'more_acidity' : 'balance_clean';
   }
 
-  if (CLARITY_VARIETY_IDS.has(varietyId)) {
+  if (varietySignal.acidity) {
     return hasTarget('more_acidity') ? 'more_acidity' : 'balance_clean';
   }
 
@@ -1970,12 +2006,107 @@ function deriveDoseAdjustment(
   };
 }
 
+const SERVICE_DOSE_TARGET_METHODS = new Set<AiBrewMethodFamily>([
+  'v60',
+  'origami',
+  'kono',
+  'kalita_wave',
+  'melitta',
+  'april',
+  'chemex',
+  'clever_dripper',
+  'aeropress',
+  'siphon',
+]);
+
+function deriveServiceDoseTargetAdjustment(params: {
+  doseG: number;
+  methodFamily: AiBrewMethodFamily;
+  brewMode: 'hot' | 'iced';
+  targetProfileLabel: string;
+  targetProfileId?: string;
+  processEntry?: ProcessCatalogEntry;
+  varietyEntry?: VarietyCatalogEntry;
+  customVarietyText?: string;
+}): CalibrationAdjustment {
+  const adjustment = createNeutralCalibrationAdjustment();
+  if (!SERVICE_DOSE_TARGET_METHODS.has(params.methodFamily)) return adjustment;
+  if (params.doseG < 10 || params.doseG > 20) return adjustment;
+
+  const targetIntent = resolveTargetIntent(params.targetProfileLabel, params.targetProfileId);
+  const processId = params.processEntry?.id || '';
+  const varietySignal = inferVarietyIntentSignal({
+    varietyId: params.varietyEntry?.id,
+    varietyEntry: params.varietyEntry,
+    customVarietyText: params.customVarietyText,
+  });
+  const clarityBean = CLARITY_PROCESS_IDS.has(processId) || varietySignal.acidity;
+  const sweetnessBean = SWEETNESS_PROCESS_IDS.has(processId) || varietySignal.sweetness;
+  const bodyBean = BODY_PROCESS_IDS.has(processId) || varietySignal.body;
+  const doseBand =
+    params.doseG <= 12
+      ? 'compact'
+      : params.doseG >= 18
+        ? 'large'
+        : 'standard';
+
+  if (doseBand === 'compact') {
+    adjustment.ratioDelta -= 0.02;
+    adjustment.tempDeltaC += 0.1;
+    adjustment.brewTimeDeltaSec += 3;
+    adjustment.grindBias = 'finer';
+    adjustment.notes.push('Compact 10-12 g service dose kept the bed slightly tighter so the guide does not taste thin.');
+  } else if (doseBand === 'large') {
+    adjustment.ratioDelta += 0.02;
+    adjustment.tempDeltaC -= 0.1;
+    adjustment.brewTimeDeltaSec -= 2;
+    adjustment.grindBias = 'coarser';
+    adjustment.notes.push('Large 18-20 g service dose opened extraction slightly to keep flow and clarity practical.');
+  }
+
+  if (targetIntent === 'acidity' && bodyBean) {
+    adjustment.ratioDelta += 0.02;
+    adjustment.tempDeltaC -= 0.1;
+    adjustment.brewTimeDeltaSec -= 3;
+    adjustment.grindBias = 'coarser';
+    adjustment.notes.push('Clarity target moderated a body-heavy bean signal so the cup avoids muddy extraction.');
+  } else if (targetIntent === 'body' && (clarityBean || doseBand === 'compact')) {
+    adjustment.ratioDelta -= 0.01;
+    adjustment.tempDeltaC += 0.1;
+    adjustment.brewTimeDeltaSec += 3;
+    adjustment.grindBias = 'finer';
+    adjustment.notes.push('Body target reinforced contact time for a clarity-leaning or compact service recipe.');
+  } else if (targetIntent === 'sweetness' && sweetnessBean) {
+    adjustment.ratioDelta -= 0.01;
+    adjustment.tempDeltaC += 0.1;
+    if (adjustment.grindBias !== 'coarser') adjustment.grindBias = 'finer';
+    adjustment.notes.push('Sweetness target protected soluble aroma compounds from the active process or variety signal.');
+  } else if (targetIntent === 'acidity' && clarityBean && doseBand === 'compact') {
+    adjustment.ratioDelta += 0.01;
+    adjustment.brewTimeDeltaSec -= 2;
+    adjustment.notes.push('Compact clarity recipe stayed open enough for a crisp finish.');
+  }
+
+  adjustment.ratioDelta = roundTo(clamp(adjustment.ratioDelta, -0.05, 0.05), 2);
+  adjustment.tempDeltaC = roundTo(clamp(adjustment.tempDeltaC, -0.3, 0.3), 1);
+  adjustment.brewTimeDeltaSec = Math.round(clamp(adjustment.brewTimeDeltaSec, -6, 8));
+
+  if (adjustment.notes.length > 0) {
+    adjustment.confidenceNotes.push(
+      `Dose-target-variety calibration active for ${roundTo(params.doseG, 1)} g ${params.methodFamily.replace(/_/g, ' ')} ${params.brewMode} service.`,
+    );
+  }
+
+  return adjustment;
+}
+
 function deriveFlavorAlignmentAdjustment(params: {
   targetProfileLabel: string;
   targetProfileId?: string;
   roastLevel: RoastLevel;
   processEntry?: ProcessCatalogEntry;
   varietyEntry?: VarietyCatalogEntry;
+  customVarietyText?: string;
   waterProfile: ReturnType<typeof deriveWaterMineralProfile>;
   originAdjustment: OriginCalibrationAdjustment;
 }): FlavorAlignmentAdjustment {
@@ -2003,6 +2134,14 @@ function deriveFlavorAlignmentAdjustment(params: {
   if (CLARITY_VARIETY_IDS.has(varietyId)) scores.acidity += 1.05;
   if (SWEETNESS_VARIETY_IDS.has(varietyId)) scores.sweetness += 0.9;
   if (BODY_VARIETY_IDS.has(varietyId)) scores.body += 1.05;
+  const varietySignal = inferVarietyIntentSignal({
+    varietyId,
+    varietyEntry: params.varietyEntry,
+    customVarietyText: params.customVarietyText,
+  });
+  if (!params.varietyEntry && varietySignal.acidity) scores.acidity += 0.85;
+  if (!params.varietyEntry && varietySignal.sweetness) scores.sweetness += 0.75;
+  if (!params.varietyEntry && varietySignal.body) scores.body += 0.85;
 
   if (params.roastLevel === 'light') scores.acidity += 1;
   else if (params.roastLevel === 'medium_light') scores.acidity += 0.55;
@@ -4333,6 +4472,16 @@ function finalizePlanCore(
   const beanProfileAdjustment = deriveBeanProfileAdjustment(input);
   const originAdjustment = deriveOriginAdjustment(input, processEntry, varietyEntry, targetProfile.label, targetProfile.id);
   const doseAdjustment = deriveDoseAdjustment(doseG, methodFamily, input.brewMode);
+  const serviceDoseTargetAdjustment = deriveServiceDoseTargetAdjustment({
+    doseG,
+    methodFamily,
+    brewMode: input.brewMode,
+    targetProfileLabel: targetProfile.label,
+    targetProfileId: targetProfile.id,
+    processEntry,
+    varietyEntry,
+    customVarietyText: input.variety === CUSTOM_ENTRY_ID ? input.customVariety : '',
+  });
   const methodFamilyAdjustment = deriveMethodFamilyAdjustment({
     methodFamily,
     filterStyle: deviceSelection.profile.filterStyle,
@@ -4359,6 +4508,7 @@ function finalizePlanCore(
     roastLevel: input.roastLevel,
     processEntry,
     varietyEntry,
+    customVarietyText: input.variety === CUSTOM_ENTRY_ID ? input.customVariety : '',
     waterProfile,
     originAdjustment,
   });
@@ -4394,6 +4544,7 @@ function finalizePlanCore(
       + originAdjustment.ratioDelta
       + originTargetMethodAdjustment.ratioDelta
       + doseAdjustment.ratioDelta
+      + serviceDoseTargetAdjustment.ratioDelta
       + flavorAlignment.ratioDelta
       + (input.brewMode === 'iced' ? -0.65 : 0),
     ratioLowerBound,
@@ -4507,6 +4658,7 @@ function finalizePlanCore(
     + originAdjustment.tempDeltaC
     + originTargetMethodAdjustment.tempDeltaC
     + doseAdjustment.tempDeltaC
+    + serviceDoseTargetAdjustment.tempDeltaC
     + flavorAlignment.tempDeltaC
     + baristaTemperatureCalibration.tempDeltaC;
   const calibratedTempMin = Math.max(methodTempBounds.min, baristaTemperatureCalibration.minTempC ?? methodTempBounds.min);
@@ -4548,6 +4700,7 @@ function finalizePlanCore(
       + originAdjustment.brewTimeDeltaSec
       + originTargetMethodAdjustment.brewTimeDeltaSec
       + doseAdjustment.brewTimeDeltaSec
+      + serviceDoseTargetAdjustment.brewTimeDeltaSec
       + flavorAlignment.brewTimeDeltaSec
       + (input.brewMode === 'iced' ? -5 : 0),
     serviceTimeBounds.min,
@@ -4575,6 +4728,7 @@ function finalizePlanCore(
     originAdjustment.grindBias,
     originTargetMethodAdjustment.grindBias,
     doseAdjustment.grindBias,
+    serviceDoseTargetAdjustment.grindBias,
     flavorAlignment.grindBias,
   );
   const grindDetails = buildGrindRecommendation(grinder, grinderSetting, grindBias, input.roastLevel, input.brewMode);
@@ -4677,6 +4831,7 @@ function finalizePlanCore(
     originAdjustment.notes,
     originTargetMethodAdjustment.notes,
     doseAdjustment.notes,
+    serviceDoseTargetAdjustment.notes,
     flavorAlignment.notes,
     baristaTemperatureCalibration.notes,
     v60SweetnessServiceCalibration?.notes || [],
@@ -4716,6 +4871,7 @@ function finalizePlanCore(
     originAdjustment.confidenceNotes,
     originTargetMethodAdjustment.confidenceNotes,
     doseAdjustment.confidenceNotes,
+    serviceDoseTargetAdjustment.confidenceNotes,
     flavorAlignment.confidenceNotes,
     baristaTemperatureCalibration.confidenceNotes,
     v60SweetnessServiceCalibration?.confidenceNotes || [],

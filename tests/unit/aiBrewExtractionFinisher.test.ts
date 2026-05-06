@@ -85,11 +85,11 @@ test('extraction finisher pushes sour cups toward deeper extraction on hard-to-o
   const finisher = buildExtractionFinisher(createPlan());
 
   assert.match(finisher.finalRead, /harder-to-dissolve coffee/i);
-  assert.match(finisher.adjustments[0].action, /raise water temperature|grinder 0\.5 to 1 step finer/i);
+  assert.match(finisher.adjustments[0].action, /grinder 0\.5 step finer first|\+1 C only/i);
   assert.match(finisher.adjustments[0].why, /under-extraction|did not extract deeply enough/i);
 });
 
-test('extraction finisher cools down bitter dark-roast brews before wider recipe changes', () => {
+test('extraction finisher moves bitter dark-roast brews through grind and agitation before temperature', () => {
   const finisher = buildExtractionFinisher(createPlan({
     roastLevel: 'dark',
     waterTempC: 94,
@@ -104,10 +104,10 @@ test('extraction finisher cools down bitter dark-roast brews before wider recipe
 
   const bitter = finisher.adjustments.find((item) => item.taste === 'bitter');
   assert.ok(bitter);
-  assert.match(bitter.action, /lower water temperature by 1 c/i);
+  assert.match(bitter.action, /grinder 0\.5 step coarser|reduce agitation|-1 C only/i);
 });
 
-test('extraction finisher tightens ratio first when an iced brew tastes thin', () => {
+test('extraction finisher fixes bypass and contact before ratio when an iced brew tastes thin', () => {
   const finisher = buildExtractionFinisher(createPlan({
     brewMode: 'iced',
     hotWaterMl: 150,
@@ -117,7 +117,8 @@ test('extraction finisher tightens ratio first when an iced brew tastes thin', (
 
   const thin = finisher.adjustments.find((item) => item.taste === 'thin');
   assert.ok(thin);
-  assert.match(thin.action, /tighten the brew ratio by 0\.3 to 0\.5/i);
+  assert.match(thin.action, /same ratio|middle pour|contact|bypass/i);
+  assert.doesNotMatch(thin.action, /tighten the brew ratio|change dose|increase dose/i);
   assert.match(finisher.recipeReasoning[0], /150 ml hot \/ 90 ml ice|hot \/ 90 ml ice/i);
 });
 

@@ -343,7 +343,13 @@
       "group": "experimental",
       "aliases": [
         "co-fermented",
-        "fruit coferment"
+        "fruit coferment",
+        "co_fermented",
+        "Co-fermented",
+        "cofermented",
+        "co fermentation",
+        "fruit co-ferment",
+        "infused fermentation"
       ],
       "source": "curated-reference",
       "sourceUrls": [
@@ -356,48 +362,38 @@
       "releaseStatus": "new",
       "confidence": "low",
       "notes": [
-        "Experimental co-fermentation descriptor with high sensory variability; do not auto-apply aggressive numeric shifts."
+        "Experimental co-fermentation descriptor with high sensory variability; do not auto-apply aggressive numeric shifts.",
+        "High-variability descriptor. Do not infer fruit ingredients unless the user/catalog explicitly provides them."
       ],
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "origins": [
         "Colombia",
         "China",
         "Indonesia",
-        "Panama"
-      ]
-    },
-    {
-      "id": "co_fermented",
-      "label": "Co-fermented",
-      "group": "experimental",
-      "aliases": [
-        "cofermented",
-        "co fermentation",
-        "fruit co-ferment",
-        "infused fermentation"
-      ],
-      "popularityTier": "emerging",
-      "marketSegment": "small_market",
-      "releaseStatus": "new",
-      "origins": [
-        "Colombia",
-        "Costa Rica",
         "Panama",
-        "Indonesia",
+        "Costa Rica",
         "Global"
       ],
-      "notes": [
-        "High-variability descriptor. Do not infer fruit ingredients unless the user/catalog explicitly provides them."
+      "searchText": "co-fermented cofermented co fermentation fruit co-ferment infused fermentation colombia costa rica panama indonesia global experimental co-ferment co-fermented co-fermented fruit coferment co_fermented cofermented co fermentation fruit co-ferment infused fermentation",
+      "reviewStatus": "needs_review",
+      "lastReviewedAt": "2026-05-06",
+      "reviewNotes": [
+        "Merged co_fermented into coferment as an alias to avoid duplicate canonical process concepts."
       ],
-      "source": "curated-specialty-reference",
-      "sourceUrls": [
-        "https://sca.coffee/research/coffee-processing-glossary"
-      ],
-      "verificationLevel": "curated",
-      "verifiedAt": "2026-05-05",
-      "confidence": "low",
-      "searchText": "co-fermented cofermented co fermentation fruit co-ferment infused fermentation colombia costa rica panama indonesia global experimental",
-      "catalogVersion": "2026.06.5-global-origin-plus"
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      },
+      "sensoryBias": {
+        "acidity": 0,
+        "sweetness": 2,
+        "body": 1,
+        "clarity": -2,
+        "fermentIntensity": 3,
+        "bitternessRisk": 2,
+        "aromaVolatility": 3
+      }
     },
     {
       "id": "cold_fermentation",

@@ -342,6 +342,7 @@ test('ai brew reveals custom process, variety, and water inputs', async ({ page 
 test('ai brew keeps pour controls out of quick mode and inside precision details', async ({ page }) => {
   await openAiBrewQuickMode(page);
   await expect(page.getByTestId('ai-brew-pour-control-panel')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-method-option-panel')).toHaveCount(0);
   await expect(page.getByTestId('ai-brew-pour-style-auto')).toHaveCount(0);
   await page.getByTestId('ai-brew-close-quick').click();
 
@@ -349,6 +350,20 @@ test('ai brew keeps pour controls out of quick mode and inside precision details
   await expect(page.getByTestId('ai-brew-target-ratio')).toBeVisible();
   await expect(page.getByTestId('ai-brew-pour-control-panel')).toBeVisible();
   await expect(page.getByTestId('ai-brew-pour-style-auto')).toBeVisible();
+
+  await page.getByTestId('ai-brew-dripper-picker').click();
+  await page.getByTestId('ai-brew-picker-search-dripper').fill('origami');
+  await page.getByTestId('ai-brew-picker-option-dripper-origami-dripper-s-m').click();
+  await expect(page.getByTestId('ai-brew-method-option-panel')).toBeVisible();
+  await page.getByTestId('ai-brew-origami-filter-wave').click();
+  await expect(page.getByTestId('ai-brew-origami-filter-wave')).toHaveAttribute('aria-pressed', 'true');
+
+  await page.getByTestId('ai-brew-dripper-picker').click();
+  await page.getByTestId('ai-brew-picker-search-dripper').fill('aeropress');
+  await page.getByTestId('ai-brew-picker-option-dripper-aeropress').click();
+  await expect(page.getByTestId('ai-brew-method-option-panel')).toBeVisible();
+  await page.getByTestId('ai-brew-aeropress-style-bypass').click();
+  await expect(page.getByTestId('ai-brew-aeropress-style-bypass')).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('ai brew brewer picker prioritizes complete method catalog and search aliases', async ({ page }) => {

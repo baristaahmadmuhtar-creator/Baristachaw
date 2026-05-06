@@ -56,6 +56,62 @@
         "Control drawdown so the body feels syrupy, not muddy."
       ],
       "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "floral_transparent",
+      "label": "Floral & Transparent",
+      "description": "Delicate high-altitude or washed coffees with a cleaner aromatic finish and lower agitation.",
+      "ratioDelta": 0.18,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser",
+      "notes": [
+        "Use for floral, washed, high-altitude, Geisha/Gesha, SL, and Ethiopian landrace cues.",
+        "Keep agitation calm and finish clean rather than pushing heavy extraction."
+      ],
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "fruit_forward",
+      "label": "Fruit-Forward",
+      "description": "Aroma-preserving profile for natural, anaerobic, carbonic, and high-aroma lots with conservative extraction pressure.",
+      "ratioDelta": 0.12,
+      "tempDeltaC": -0.35,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "coarser",
+      "notes": [
+        "Use when process cues suggest high aroma or fermentation variability.",
+        "Protect fruit-like aromatics without claiming added fruit ingredients unless the process text says so."
+      ],
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "soft_round",
+      "label": "Soft & Round",
+      "description": "Rounded sweetness profile for honey, pulped natural, medium roast, Brazil, nutty, and chocolate-leaning coffees.",
+      "ratioDelta": -0.08,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 4,
+      "grindBias": "same",
+      "notes": [
+        "Use for soft sweetness and approachable texture without making the bed muddy.",
+        "Keep pour control even and avoid late heavy agitation."
+      ],
+      "catalogVersion": "2026.03.09-ai-brew-v1"
+    },
+    {
+      "id": "dense_comforting",
+      "label": "Dense & Comforting",
+      "description": "Body-forward profile for wet-hulled, canephora, liberica, excelsa, chocolate, spice, and low-clarity body cues.",
+      "ratioDelta": -0.18,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": 8,
+      "grindBias": "finer",
+      "notes": [
+        "Build tactile body while keeping bitterness protected by controlled temperature and agitation.",
+        "Use clarity warnings when process or species cues are broad, earthy, or high-buffer water is selected."
+      ],
+      "catalogVersion": "2026.03.09-ai-brew-v1"
     }
   ]
 }

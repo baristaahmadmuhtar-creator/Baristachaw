@@ -4,16 +4,22 @@ import type {
   CatalogConfidence,
   CatalogMarketSegment,
   CatalogPopularityTier,
+  CatalogReviewStatus,
   CatalogReleaseStatus,
+  CatalogSensoryBias,
   DeviceBrewProfile,
   EquipmentCatalogEntry,
   GrinderSettingReference,
   ParsedNumericRange,
+  ProcessRiskModel,
   ProcessCatalogEntry,
   RawDripperCatalogEntry,
   RawGrinderCatalogEntry,
   TargetProfile,
+  VarietyCultivarType,
   VarietyCatalogEntry,
+  VarietyLineageGroup,
+  VarietyTaxonomySpecies,
   VerificationLevel,
   WaterBrandProfile,
   WaterClassification,
@@ -344,13 +350,249 @@ function normalizeSearchEntry<T extends { id: string; label: string; aliases: st
   const normalizedOrigins = Array.isArray(entry.origins)
     ? Array.from(new Set(entry.origins.map((value) => String(value || '').trim()).filter(Boolean)))
     : undefined;
+  const reviewStatus = normalizeCatalogReviewStatus(entry);
+  const reviewNotes = normalizeReviewNotes(entry, reviewStatus);
 
   return {
     ...entry,
     origins: normalizedOrigins,
     searchText: entry.searchText || buildSearchText(entry.label, entry.group, ...entry.aliases),
     catalogVersion: entry.catalogVersion || CATALOG_VERSION,
+    reviewStatus,
+    lastReviewedAt: (entry as Partial<CatalogProvenanceLike>).lastReviewedAt || entry.verifiedAt,
+    reviewNotes,
+  } as T;
+}
+
+type CatalogProvenanceLike = {
+  source: string;
+  sourceUrls: string[];
+  verificationLevel: VerificationLevel;
+  verifiedAt: string;
+  confidence: CatalogConfidence;
+  reviewStatus?: CatalogReviewStatus;
+  lastReviewedAt?: string;
+  reviewNotes?: string[];
+};
+
+const PROCESS_CANONICAL_ID_ALIASES: Record<string, string> = {
+  co_fermented: 'coferment',
+  cofermented: 'coferment',
+};
+
+function normalizeCatalogReviewStatus(entry: CatalogProvenanceLike): CatalogReviewStatus {
+  if (entry.reviewStatus) return entry.reviewStatus;
+  const sourceUrls = entry.sourceUrls || [];
+  const hasPublicSource = sourceUrls.some((url) => /^https?:\/\//i.test(url));
+  const hasLocalSource = sourceUrls.some((url) => /^local:/i.test(url));
+  if (entry.confidence === 'low' || hasLocalSource) return 'needs_review';
+  if (entry.verificationLevel === 'official' && entry.confidence === 'high' && hasPublicSource) return 'fresh';
+  if (
+    (entry.verificationLevel === 'curated' || entry.verificationLevel === 'community_verified')
+    && (entry.confidence === 'high' || entry.confidence === 'medium')
+    && hasPublicSource
+  ) {
+    return 'fresh';
+  }
+  return hasPublicSource ? 'needs_review' : 'needs_review';
+}
+
+function normalizeReviewNotes(entry: CatalogProvenanceLike, reviewStatus: CatalogReviewStatus) {
+  const notes = Array.isArray(entry.reviewNotes)
+    ? entry.reviewNotes.map((value) => String(value || '').trim()).filter(Boolean)
+    : [];
+  if (reviewStatus === 'needs_review' && notes.length === 0) {
+    notes.push('Review catalog evidence before treating this as an official deterministic reference.');
+  }
+  if ((entry.sourceUrls || []).some((url) => /^local:/i.test(url))) {
+    notes.push('Local snapshot source is not public evidence.');
+  }
+  return Array.from(new Set(notes));
+}
+
+function safeSensoryBias(bias?: Partial<CatalogSensoryBias> | null): CatalogSensoryBias {
+  return {
+    acidity: clampIntegerBias(bias?.acidity, -2, 2) as CatalogSensoryBias['acidity'],
+    sweetness: clampIntegerBias(bias?.sweetness, -2, 2) as CatalogSensoryBias['sweetness'],
+    body: clampIntegerBias(bias?.body, -2, 2) as CatalogSensoryBias['body'],
+    clarity: clampIntegerBias(bias?.clarity, -2, 2) as CatalogSensoryBias['clarity'],
+    fermentIntensity: clampIntegerBias(bias?.fermentIntensity, 0, 3) as CatalogSensoryBias['fermentIntensity'],
+    bitternessRisk: clampIntegerBias(bias?.bitternessRisk, 0, 3) as CatalogSensoryBias['bitternessRisk'],
+    aromaVolatility: clampIntegerBias(bias?.aromaVolatility, 0, 3) as CatalogSensoryBias['aromaVolatility'],
   };
+}
+
+function clampIntegerBias(value: unknown, min: number, max: number) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 0;
+  return Math.min(max, Math.max(min, Math.round(numeric)));
+}
+
+function catalogHaystack(entry: { id: string; label: string; group: string; aliases: string[]; searchText?: string }) {
+  return buildSearchText(entry.id, entry.label, entry.group, entry.searchText, ...entry.aliases);
+}
+
+function normalizeLineageGroup(group: string, id = '', label = ''): VarietyLineageGroup {
+  const haystack = buildSearchText(group, id, label).replace(/-/g, '_');
+  if (/\b(ethiopian_landrace|ethiopian_heirloom|heirloom|landrace)\b/.test(haystack)) return 'ethiopian_landrace';
+  if (/\b(bourbon|typica|caturra|catuai|villa_sarchi|mundo_novo|classic_arabica)\b/.test(haystack)) return 'bourbon_typica';
+  if (/\b(introgressed|catimor|sarchimor|timor|disease_resistant|india_selection|south_asia)\b/.test(haystack)) return 'introgressed';
+  if (/\b(f1_hybrid|hybrid_f1|centroamericano|starmaya|milkyway)\b/.test(haystack)) return 'f1_hybrid';
+  if (/\b(canephora|robusta|conilon|clone)\b/.test(haystack)) return 'canephora_clone';
+  if (/\b(liberica|excelsa|non_arabica|species_level)\b/.test(haystack)) return 'liberica_excelsa';
+  if (/\b(brazil_selection|mundo_novo|yellow_bourbon)\b/.test(haystack)) return 'brazil_selection';
+  if (/\b(kenyan_selection|east_africa_selection|sl28|sl34|ruiru|batian)\b/.test(haystack)) return 'kenyan_selection';
+  if (/\b(indonesia_selection|s795|timtim|sigarar|ateng|linie_s)\b/.test(haystack)) return 'indonesia_selection';
+  if (/\b(regional_selection)\b/.test(haystack)) return 'regional_selection';
+  if (/\b(specialty_reference|geisha|gesha|sidra|wush_wush|pink_bourbon)\b/.test(haystack)) return 'specialty_reference';
+  return 'unknown';
+}
+
+function inferVarietySpecies(entry: VarietyCatalogEntry, lineageGroup: VarietyLineageGroup): VarietyTaxonomySpecies {
+  const haystack = catalogHaystack(entry);
+  if (/\b(canephora|robusta|conilon)\b/.test(haystack) || lineageGroup === 'canephora_clone') return 'canephora';
+  if (/\bliberica\b/.test(haystack)) return 'liberica';
+  if (/\bexcelsa\b/.test(haystack)) return 'excelsa';
+  if (/\bhybrid\b/.test(haystack) && /\b(interspecific|canephora|robusta|timor)\b/.test(haystack)) return 'hybrid';
+  if (lineageGroup === 'liberica_excelsa') return 'hybrid';
+  return lineageGroup === 'unknown' ? 'unknown' : 'arabica';
+}
+
+function inferCultivarType(entry: VarietyCatalogEntry, lineageGroup: VarietyLineageGroup): VarietyCultivarType {
+  const haystack = catalogHaystack(entry);
+  if (/\b(mixed|blend|lot_composition|variety_mix|cultivar_mix)\b/.test(haystack)) return 'mixed_lot';
+  if (/\b(landrace|heirloom)\b/.test(haystack) || lineageGroup === 'ethiopian_landrace') return 'landrace';
+  if (/\b(clone|bp_\d+|kr\d+|conilon)\b/.test(haystack) || lineageGroup === 'canephora_clone') return 'clone';
+  if (/\b(species_level|liberica|excelsa|robusta|canephora)\b/.test(haystack)) return 'botanical_variety';
+  if (/\b(alias|regional)\b/.test(haystack)) return 'regional_alias';
+  if (/\b(marketing|trade_name)\b/.test(haystack)) return 'marketing_label';
+  return lineageGroup === 'unknown' ? 'unknown' : 'cultivar';
+}
+
+function inferVarietySensoryBias(entry: VarietyCatalogEntry, lineageGroup: VarietyLineageGroup): CatalogSensoryBias {
+  if (entry.sensoryBias) return safeSensoryBias(entry.sensoryBias);
+  switch (lineageGroup) {
+    case 'ethiopian_landrace':
+    case 'specialty_reference':
+      return safeSensoryBias({ acidity: 2, sweetness: 1, body: -1, clarity: 2, aromaVolatility: 2 });
+    case 'kenyan_selection':
+      return safeSensoryBias({ acidity: 2, sweetness: 1, body: 0, clarity: 2, aromaVolatility: 2 });
+    case 'canephora_clone':
+    case 'liberica_excelsa':
+      return safeSensoryBias({ acidity: -1, sweetness: 0, body: 2, clarity: -1, bitternessRisk: 2, aromaVolatility: 1 });
+    case 'brazil_selection':
+    case 'bourbon_typica':
+      return safeSensoryBias({ acidity: 0, sweetness: 1, body: 1, clarity: 0, aromaVolatility: 1 });
+    case 'introgressed':
+      return safeSensoryBias({ acidity: 0, sweetness: 0, body: 1, clarity: -1, bitternessRisk: 1 });
+    case 'indonesia_selection':
+      return safeSensoryBias({ acidity: -1, sweetness: 1, body: 1, clarity: -1, bitternessRisk: 1 });
+    case 'f1_hybrid':
+      return safeSensoryBias({ acidity: 1, sweetness: 1, body: 0, clarity: 1, aromaVolatility: 1 });
+    case 'regional_selection':
+    case 'classic_arabica':
+    case 'unknown':
+    default:
+      return safeSensoryBias();
+  }
+}
+
+function inferProcessSensoryBias(entry: ProcessCatalogEntry): CatalogSensoryBias {
+  if (entry.sensoryBias) return safeSensoryBias(entry.sensoryBias);
+  const haystack = catalogHaystack(entry);
+  if (/\b(coferment|co_ferment|co-ferment|infused|fruit_maceration|koji|enzyme|thermal_shock)\b/.test(haystack)) {
+    return safeSensoryBias({ acidity: 0, sweetness: 2, body: 1, clarity: -2, fermentIntensity: 3, bitternessRisk: 2, aromaVolatility: 3 });
+  }
+  if (/\b(anaerobic|carbonic|lactic|yeast|extended_fermentation|mosto|submerged)\b/.test(haystack)) {
+    return safeSensoryBias({ acidity: 0, sweetness: 1, body: 1, clarity: -1, fermentIntensity: 2, bitternessRisk: 1, aromaVolatility: 3 });
+  }
+  if (/\b(wet_hulled|giling_basah|semi_washed_indonesia)\b/.test(haystack)) {
+    return safeSensoryBias({ acidity: -1, sweetness: 1, body: 2, clarity: -1, fermentIntensity: 1, bitternessRisk: 1, aromaVolatility: 1 });
+  }
+  if (/\b(natural|dry_process|honey|pulped_natural|raisin)\b/.test(haystack)) {
+    return safeSensoryBias({ acidity: 0, sweetness: 2, body: 1, clarity: -1, fermentIntensity: 1, bitternessRisk: 1, aromaVolatility: 2 });
+  }
+  if (/\b(decaf|sugarcane|swiss_water|mountain_water)\b/.test(haystack)) {
+    return safeSensoryBias({ acidity: -1, sweetness: -1, body: 0, clarity: -1, fermentIntensity: 0, bitternessRisk: 1, aromaVolatility: 0 });
+  }
+  if (/\b(washed|fully_washed|double_washed|mechanically_demucilaged|wet_process)\b/.test(haystack)) {
+    return safeSensoryBias({ acidity: 1, sweetness: 0, body: -1, clarity: 2, fermentIntensity: 0, bitternessRisk: 0, aromaVolatility: 1 });
+  }
+  return safeSensoryBias();
+}
+
+function inferProcessRisk(entry: ProcessCatalogEntry): ProcessRiskModel {
+  if (entry.processRisk) return entry.processRisk;
+  const haystack = catalogHaystack(entry);
+  if (/\b(coferment|co_ferment|co-ferment|infused|fruit_maceration|koji|enzyme|thermal_shock)\b/.test(haystack)) {
+    return { variability: 'high', overFermentRisk: 'high', recommendationMode: 'taste_feedback_required' };
+  }
+  if (/\b(anaerobic|carbonic|lactic|yeast|extended_fermentation|mosto|submerged)\b/.test(haystack)) {
+    return { variability: 'high', overFermentRisk: 'high', recommendationMode: 'conservative' };
+  }
+  if (/\b(natural|dry_process|honey|pulped_natural|wet_hulled|giling_basah)\b/.test(haystack)) {
+    return { variability: 'medium', overFermentRisk: 'medium', recommendationMode: 'conservative' };
+  }
+  if (/\b(washed|fully_washed|double_washed|mechanically_demucilaged|wet_process)\b/.test(haystack)) {
+    return { variability: 'low', overFermentRisk: 'low', recommendationMode: 'deterministic' };
+  }
+  return { variability: 'medium', overFermentRisk: 'medium', recommendationMode: 'conservative' };
+}
+
+function normalizeVarietyEntry(entry: VarietyCatalogEntry): VarietyCatalogEntry {
+  const base = normalizeSearchEntry(entry);
+  const taxonomyInput = (base.taxonomy || {}) as Partial<NonNullable<VarietyCatalogEntry['taxonomy']>>;
+  const lineageGroup = taxonomyInput.lineageGroup || normalizeLineageGroup(base.group, base.id, base.label);
+  const taxonomy = {
+    species: taxonomyInput.species || inferVarietySpecies(base, lineageGroup),
+    lineageGroup,
+    cultivarType: taxonomyInput.cultivarType || inferCultivarType(base, lineageGroup),
+    parentage: taxonomyInput.parentage,
+  };
+  return {
+    ...base,
+    taxonomy,
+    sensoryBias: inferVarietySensoryBias(base, lineageGroup),
+  };
+}
+
+function normalizeProcessEntry(entry: ProcessCatalogEntry): ProcessCatalogEntry {
+  const base = normalizeSearchEntry(entry);
+  return {
+    ...base,
+    sensoryBias: inferProcessSensoryBias(base),
+    processRisk: inferProcessRisk(base),
+  };
+}
+
+function normalizeProcessEntries(entries: ProcessCatalogEntry[]) {
+  const byId = new Map<string, ProcessCatalogEntry>();
+  for (const rawEntry of entries) {
+    const canonicalId = PROCESS_CANONICAL_ID_ALIASES[rawEntry.id] || rawEntry.id;
+    const entry = normalizeProcessEntry({
+      ...rawEntry,
+      id: canonicalId,
+      aliases: Array.from(new Set([rawEntry.id, ...(rawEntry.aliases || [])].filter((value) => value !== canonicalId))),
+    });
+    const existing = byId.get(canonicalId);
+    if (!existing) {
+      byId.set(canonicalId, entry);
+      continue;
+    }
+    byId.set(canonicalId, {
+      ...existing,
+      aliases: Array.from(new Set([...existing.aliases, rawEntry.id, ...entry.aliases].filter(Boolean))),
+      searchText: buildSearchText(existing.searchText, entry.searchText, rawEntry.id),
+      notes: Array.from(new Set([...existing.notes, ...entry.notes])),
+      reviewStatus: 'conflicting',
+      reviewNotes: Array.from(new Set([
+        ...(existing.reviewNotes || []),
+        ...(entry.reviewNotes || []),
+        `Merged duplicate process concept "${rawEntry.id}" into canonical "${canonicalId}".`,
+      ])),
+    });
+  }
+  return Array.from(byId.values());
 }
 
 function normalizeDeviceProfile(profile: DeviceBrewProfile): DeviceBrewProfile {
@@ -911,8 +1153,8 @@ export async function loadAiBrewCatalog(): Promise<AiBrewCatalog> {
         grinders: grinderItems.map((entry) =>
           normalizeGrinder(entry, signalMap.get(`grinder:${slugify(entry.name)}`)),
         ),
-        processes: processItems.map(normalizeSearchEntry),
-        varieties: varietyItems.map(normalizeSearchEntry),
+        processes: normalizeProcessEntries(processItems),
+        varieties: varietyItems.map(normalizeVarietyEntry),
         waterBrands: waterBrandItems.map(normalizeWaterBrand),
         waterGuidance: {
           ...waterGuidance.item,
@@ -943,11 +1185,16 @@ export function findGrinder(catalog: AiBrewCatalog, id: string) {
 }
 
 export function findProcessEntry(catalog: AiBrewCatalog, id: string) {
-  return catalog.processes.find((item) => item.id === id);
+  const requestedId = String(id || '').trim();
+  const canonicalId = PROCESS_CANONICAL_ID_ALIASES[requestedId] || requestedId;
+  return catalog.processes.find((item) => item.id === canonicalId)
+    || catalog.processes.find((item) => item.aliases.some((alias) => alias === requestedId));
 }
 
 export function findVarietyEntry(catalog: AiBrewCatalog, id: string) {
-  return catalog.varieties.find((item) => item.id === id);
+  const requestedId = String(id || '').trim();
+  return catalog.varieties.find((item) => item.id === requestedId)
+    || catalog.varieties.find((item) => item.aliases.some((alias) => alias === requestedId));
 }
 
 export function findWaterBrand(catalog: AiBrewCatalog, id: string) {

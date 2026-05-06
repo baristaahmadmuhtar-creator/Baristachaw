@@ -184,6 +184,19 @@ const COPY = {
     pourCount4: '4 pours',
     pourCount5: '5 pours',
     pourControlHint: '',
+    methodOptionTitle: 'Method setup',
+    origamiFilterTitle: 'Origami filter',
+    origamiFilterAuto: 'Auto',
+    origamiFilterCone: 'Cone',
+    origamiFilterWave: 'Wave',
+    aeropressStyleTitle: 'AeroPress style',
+    aeropressStyleAuto: 'Auto',
+    aeropressStyleStandard: 'Standard',
+    aeropressStyleInverted: 'Inverted',
+    aeropressStyleBypass: 'Bypass',
+    aeropressStyleNoBypass: 'No bypass',
+    aeropressStyleBrightClean: 'Bright clean',
+    aeropressStyleSweetBody: 'Sweet body',
     precisionControlTitle: 'Precision targets',
     precisionControlHint: 'Optional. Filter brewers work best around 1:13-1:17; Auto picks a safe default from the brewer, roast, and target.',
     targetRatio: 'Ratio target',
@@ -431,6 +444,10 @@ const COPY = {
     sweetness: 'More Sweetness',
     acidity: 'More Acidity',
     body: 'More Body',
+    floralTransparent: 'Floral & Transparent',
+    fruitForward: 'Fruit-Forward',
+    softRound: 'Soft & Round',
+    denseComforting: 'Dense & Comforting',
     openResult: 'Open result workspace',
     editInputs: 'Edit inputs',
     closeResult: 'Close planned output',
@@ -443,6 +460,16 @@ const COPY = {
     verifiedCurated: 'Curated',
     verifiedDataset: 'Dataset',
     verifiedFallback: 'Fallback',
+    lowConfidence: 'Low confidence',
+    reviewFresh: 'Fresh',
+    reviewNeedsReview: 'Needs review',
+    reviewConflicting: 'Conflicting',
+    reviewDeprecated: 'Deprecated',
+    highVariability: 'High variability',
+    autoTargetSuggested: 'Auto target suggested',
+    species: 'Species',
+    lineage: 'Lineage',
+    processRisk: 'Process risk',
     widelyUsed: 'Widely used',
     specialtyCommon: 'Specialty common',
     emerging: 'Emerging',
@@ -573,6 +600,19 @@ const COPY = {
     pourCount4: '4 tuang',
     pourCount5: '5 tuang',
     pourControlHint: '',
+    methodOptionTitle: 'Setelan metode',
+    origamiFilterTitle: 'Filter Origami',
+    origamiFilterAuto: 'Auto',
+    origamiFilterCone: 'Cone',
+    origamiFilterWave: 'Wave',
+    aeropressStyleTitle: 'Gaya AeroPress',
+    aeropressStyleAuto: 'Auto',
+    aeropressStyleStandard: 'Standard',
+    aeropressStyleInverted: 'Inverted',
+    aeropressStyleBypass: 'Bypass',
+    aeropressStyleNoBypass: 'Tanpa bypass',
+    aeropressStyleBrightClean: 'Bright clean',
+    aeropressStyleSweetBody: 'Sweet body',
     precisionControlTitle: 'Target presisi',
     precisionControlHint: 'Opsional. Filter manual paling aman di sekitar 1:13-1:17; Auto memilih default dari alat, sangrai, dan target.',
     targetRatio: 'Rasio target',
@@ -820,6 +860,10 @@ const COPY = {
     sweetness: 'Lebih Manis',
     acidity: 'Lebih Cerah',
     body: 'Body Lebih Tebal',
+    floralTransparent: 'Floral & Transparan',
+    fruitForward: 'Buah Lebih Menonjol',
+    softRound: 'Lembut & Bulat',
+    denseComforting: 'Tebal & Nyaman',
     openResult: 'Buka workspace hasil',
     editInputs: 'Edit input',
     closeResult: 'Tutup output plan',
@@ -832,6 +876,16 @@ const COPY = {
     verifiedCurated: 'Kurasi',
     verifiedDataset: 'Dataset',
     verifiedFallback: 'Fallback',
+    lowConfidence: 'Keyakinan rendah',
+    reviewFresh: 'Terkini',
+    reviewNeedsReview: 'Perlu ditinjau',
+    reviewConflicting: 'Perlu dirapikan',
+    reviewDeprecated: 'Deprecated',
+    highVariability: 'Variabilitas tinggi',
+    autoTargetSuggested: 'Target otomatis disarankan',
+    species: 'Spesies',
+    lineage: 'Garis keturunan',
+    processRisk: 'Risiko proses',
     widelyUsed: 'Paling umum',
     specialtyCommon: 'Umum di specialty',
     emerging: 'Sedang naik',
@@ -1733,6 +1787,51 @@ function formatVerification(copy: CopySet, verification: VerificationLevel) {
   }
 }
 
+function formatReviewStatus(copy: CopySet, status?: BrewPlan['processReviewStatus']) {
+  switch (status) {
+    case 'fresh':
+      return copy.reviewFresh;
+    case 'needs_review':
+      return copy.reviewNeedsReview;
+    case 'conflicting':
+      return copy.reviewConflicting;
+    case 'deprecated':
+      return copy.reviewDeprecated;
+    default:
+      return '';
+  }
+}
+
+function formatTaxonomyBadge(value: string | undefined) {
+  return String(value || '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+    .trim();
+}
+
+function buildProcessBadges(copy: CopySet, entry: ProcessCatalogEntry) {
+  const badges = [
+    formatVerification(copy, entry.verificationLevel),
+    entry.confidence === 'low' ? copy.lowConfidence : '',
+    formatReviewStatus(copy, entry.reviewStatus),
+    entry.processRisk?.variability === 'high' ? copy.highVariability : '',
+  ].filter(Boolean);
+  return Array.from(new Set(badges)).slice(0, 4);
+}
+
+function buildVarietyBadges(copy: CopySet, entry: VarietyCatalogEntry) {
+  const species = formatTaxonomyBadge(entry.taxonomy?.species);
+  const lineage = formatTaxonomyBadge(entry.taxonomy?.lineageGroup);
+  const badges = [
+    formatVerification(copy, entry.verificationLevel),
+    entry.confidence === 'low' ? copy.lowConfidence : '',
+    formatReviewStatus(copy, entry.reviewStatus),
+    species ? `${copy.species}: ${species}` : '',
+    lineage && lineage !== 'Unknown' ? `${copy.lineage}: ${lineage}` : '',
+  ].filter(Boolean);
+  return Array.from(new Set(badges)).slice(0, 5);
+}
+
 function formatDeviceProfileMode(copy: CopySet, mode: BrewPlan['deviceProfileMode']) {
   switch (mode) {
     case 'derived_template':
@@ -1789,7 +1888,12 @@ function translateTargetProfileLabel(copy: CopySet, profileId: string) {
   if (profileId === 'balance_clean') return copy.balance;
   if (profileId === 'more_sweetness') return copy.sweetness;
   if (profileId === 'more_acidity') return copy.acidity;
-  return copy.body;
+  if (profileId === 'more_body') return copy.body;
+  if (profileId === 'floral_transparent') return copy.floralTransparent;
+  if (profileId === 'fruit_forward') return copy.fruitForward;
+  if (profileId === 'soft_round') return copy.softRound;
+  if (profileId === 'dense_comforting') return copy.denseComforting;
+  return copy.balance;
 }
 
 function formatGenerationRatio(value?: number) {
@@ -2115,11 +2219,11 @@ function buildAiBrewDeterministicStepDetailPoints(
       points,
       plan.methodFamily === 'chemex'
         ? (id
-          ? 'Bilas filter Chemex sampai hangat, lalu buang air bilasan sebelum kopi masuk.'
-          : 'Rinse the Chemex filter until warm, then discard rinse water before adding coffee.')
+          ? 'Bilas filter Chemex sampai hangat, buang air bilasan, lalu tara timbangan sebelum kopi masuk.'
+          : 'Rinse the Chemex filter until warm, discard rinse water, then tare the scale before adding coffee.')
         : (id
-          ? 'Bilas filter dan panaskan alat/server dulu; buang air bilasan sebelum mulai.'
-          : 'Rinse the filter and preheat the brewer/server first; discard rinse water before brewing.'),
+          ? 'Bilas filter dan panaskan alat/server dulu; buang air bilasan lalu tara timbangan sebelum mulai.'
+          : 'Rinse the filter and preheat the brewer/server first; discard rinse water, then tare the scale before brewing.'),
     );
   }
 
@@ -2128,8 +2232,8 @@ function buildAiBrewDeterministicStepDetailPoints(
       addUniqueAiBrewDetailPoint(
         points,
         id
-          ? `Timbang ${formatRoundedGrams(plan.iceMl)} es di server sebelum mulai; bed kopi hanya menerima ${formatRoundedMl(plan.hotWaterMl)} air panas.`
-          : `Weigh ${formatRoundedGrams(plan.iceMl)} ice in the server before brewing; the bed only receives ${formatRoundedMl(plan.hotWaterMl)} hot water.`,
+          ? `Tara timbangan, lalu timbang ${formatRoundedGrams(plan.iceMl)} es di server sebelum mulai; bed kopi hanya menerima ${formatRoundedMl(plan.hotWaterMl)} air panas.`
+          : `Tare the scale, then weigh ${formatRoundedGrams(plan.iceMl)} ice in the server before brewing; the bed only receives ${formatRoundedMl(plan.hotWaterMl)} hot water.`,
       );
     }
 
@@ -3082,8 +3186,8 @@ function PlanResultDialog({
       label: copy.finalRatio,
       value: `1:${formatBrewRatio(plan.finalBeverageRatio)}`,
       detail: id
-        ? `Disetel untuk target ${localizedTargetProfileLabel}, proses ${localizedProcessLabel}, varietas ${localizedVarietyLabel}, dan output ${formatRoundedMl(plan.estimatedCupOutputMl)}.`
-        : `Set for ${localizedTargetProfileLabel}, ${localizedProcessLabel} process, ${localizedVarietyLabel} variety, and ${formatRoundedMl(plan.estimatedCupOutputMl)} output.`,
+        ? `Disetel untuk target ${localizedTargetProfileLabel}, proses ${localizedProcessLabel}, varietas ${localizedVarietyLabel}, dan output ${formatRoundedMl(plan.estimatedCupOutputMl)}.${plan.targetProfileSuggestionReason ? ` ${localizeAiBrewDynamicText(plan.targetProfileSuggestionReason, language)}` : ''}`
+        : `Set for ${localizedTargetProfileLabel}, ${localizedProcessLabel} process, ${localizedVarietyLabel} variety, and ${formatRoundedMl(plan.estimatedCupOutputMl)} output.${plan.targetProfileSuggestionReason ? ` ${plan.targetProfileSuggestionReason}` : ''}`,
     },
     {
       label: copy.temp,
@@ -3150,6 +3254,42 @@ function PlanResultDialog({
       time: plan.totalTimeSeconds + 15,
       grind: id ? 'Lebih halus terkontrol' : 'Controlled finer grind',
       flow: id ? 'Kontak lebih penuh, tuang tenang' : 'Fuller contact, calmer pour',
+    },
+    {
+      id: 'floral_transparent',
+      label: copy.floralTransparent,
+      ratio: plan.finalBeverageRatio + 0.3,
+      temp: Math.max(78, plan.waterTempC - 1),
+      time: Math.max(75, plan.totalTimeSeconds - 8),
+      grind: id ? 'Lebih kasar ringan' : 'Slightly coarser',
+      flow: id ? 'Tuang rendah, agitasi minim' : 'Low pour, minimal agitation',
+    },
+    {
+      id: 'fruit_forward',
+      label: copy.fruitForward,
+      ratio: plan.finalBeverageRatio + 0.2,
+      temp: Math.max(78, plan.waterTempC - 1),
+      time: Math.max(75, plan.totalTimeSeconds - 6),
+      grind: id ? 'Sedikit lebih kasar' : 'Slightly coarser',
+      flow: id ? 'Aroma dijaga, jangan over-agitate' : 'Aroma protected, avoid over-agitation',
+    },
+    {
+      id: 'soft_round',
+      label: copy.softRound,
+      ratio: Math.max(8, plan.finalBeverageRatio - 0.1),
+      temp: plan.waterTempC,
+      time: plan.totalTimeSeconds + 5,
+      grind: id ? 'Sama atau sedikit halus' : 'Same or slightly finer',
+      flow: id ? 'Pulse halus, body tetap bersih' : 'Gentle pulses, clean body',
+    },
+    {
+      id: 'dense_comforting',
+      label: copy.denseComforting,
+      ratio: Math.max(8, plan.finalBeverageRatio - 0.4),
+      temp: plan.waterTempC,
+      time: plan.totalTimeSeconds + 12,
+      grind: id ? 'Lebih halus aman' : 'Safely finer',
+      flow: id ? 'Kontak penuh, cegah pahit' : 'Full contact, protect bitterness',
     },
   ];
   const precisionToleranceItems = [
@@ -3291,6 +3431,16 @@ function PlanResultDialog({
                   <span className={resultChipClass}>
                     {localizedTargetProfileLabel}
                   </span>
+                  {plan.targetProfileAutoSuggested && (
+                    <span className={`${resultChipClass} border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300`}>
+                      {copy.autoTargetSuggested}
+                    </span>
+                  )}
+                  {plan.processRisk?.variability === 'high' && (
+                    <span className={`${resultChipClass} border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300`}>
+                      {copy.highVariability}
+                    </span>
+                  )}
                   <span className={`${resultChipClass} inline-flex items-center gap-1.5 ${
                     aiEngineOnline
                       ? 'border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300'
@@ -4160,6 +4310,7 @@ function PlanResultDialog({
                     const activeCue = methodFocusCue || quickNote;
                     const showStepNote = state === 'current' && Boolean(activeCue);
                     const stepDetailPoints = buildAiBrewStepDetailPoints(plan, step, index, language);
+                    const stepMetrics = buildAiBrewStepMetrics(step, language);
 
                     return (
                       <div
@@ -4195,6 +4346,19 @@ function PlanResultDialog({
                             </span>
                           </div>
                         </div>
+                        {isQuickResult && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {stepMetrics.map((item) => (
+                              <span
+                                key={`${step.id}-quick-${item.label}`}
+                                className="rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] text-secondary"
+                              >
+                                <span className="mr-1 font-medium text-tertiary">{item.label}</span>
+                                <span className="font-semibold text-primary">{item.value}</span>
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         {showStepNote && (
                           <p className="mt-2 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">{activeCue}</p>
                         )}
@@ -4445,7 +4609,7 @@ function buildProcessPickerOptions(catalog: AiBrewCatalog, copy: CopySet) {
     description: entry.notes[0],
     searchText: `${entry.searchText} ${entry.group} ${entry.aliases.join(' ')}`.toLowerCase(),
     section: entry.group,
-    badges: [formatVerification(copy, entry.verificationLevel)],
+    badges: buildProcessBadges(copy, entry),
     ariaLabel: copy.pickerSelectProcess.replace('{label}', entry.label),
   })));
   options.push({
@@ -4475,7 +4639,7 @@ function buildVarietyPickerOptions(catalog: AiBrewCatalog, copy: CopySet) {
     description: entry.originNotes,
     searchText: `${entry.searchText} ${entry.group} ${entry.aliases.join(' ')}`.toLowerCase(),
     section: entry.group,
-    badges: [formatVerification(copy, entry.verificationLevel)],
+    badges: buildVarietyBadges(copy, entry),
     ariaLabel: copy.pickerSelectVariety.replace('{label}', entry.label),
   })));
   options.push({
@@ -5278,7 +5442,17 @@ export function AiBrewPanel({
       ...profile,
       translatedLabel: translateTargetProfileLabel(copy, profile.id),
     }));
-  }, [catalog, copy.acidity, copy.balance, copy.body, copy.sweetness]);
+  }, [
+    catalog,
+    copy.acidity,
+    copy.balance,
+    copy.body,
+    copy.denseComforting,
+    copy.floralTransparent,
+    copy.fruitForward,
+    copy.softRound,
+    copy.sweetness,
+  ]);
 
   const currentGenerationStage = generationProgress?.id || generationStage;
   const inputAnalysis = useMemo(() => {
@@ -5290,7 +5464,13 @@ export function AiBrewPanel({
         && sanitized.waterHardnessPpm
         && sanitized.waterAlkalinityPpm,
       );
-      const deviceSelection = resolveDeviceProfileSelection(catalog, selectedDripper, sanitized.brewMode);
+      const previewDoseG = Number.parseFloat(sanitized.doseG);
+      const deviceSelection = resolveDeviceProfileSelection(catalog, selectedDripper, sanitized.brewMode, {
+        doseG: Number.isFinite(previewDoseG) ? previewDoseG : undefined,
+        origamiFilterStyle: sanitized.origamiFilterStyle,
+        aeropressStyle: sanitized.aeropressStyle,
+        targetProfileId: sanitized.targetProfileId,
+      });
       const grinderSetting = resolveGrinderSettingReference(catalog, selectedGrinder, deviceSelection.profile, sanitized.brewMode);
       const waterStatusLabel = formState.waterMode === 'brand' && selectedWaterBrand
         ? formatWaterReadinessStatus(copy, {
@@ -6270,7 +6450,79 @@ export function AiBrewPanel({
       { value: '4', label: copy.pourCount4 },
       { value: '5', label: copy.pourCount5 },
     ] as const;
+    const origamiFilterOptions = [
+      { value: 'auto', label: copy.origamiFilterAuto },
+      { value: 'cone', label: copy.origamiFilterCone },
+      { value: 'wave', label: copy.origamiFilterWave },
+    ] as const;
+    const aeropressStyleOptions = [
+      { value: 'auto', label: copy.aeropressStyleAuto },
+      { value: 'standard', label: copy.aeropressStyleStandard },
+      { value: 'inverted', label: copy.aeropressStyleInverted },
+      { value: 'bypass', label: copy.aeropressStyleBypass },
+      { value: 'no_bypass', label: copy.aeropressStyleNoBypass },
+      { value: 'bright_clean', label: copy.aeropressStyleBrightClean },
+      { value: 'sweet_body', label: copy.aeropressStyleSweetBody },
+    ] as const;
     const dialogTitle = isPro ? `${copy.title} - ${copy.proBuilderTitle}` : copy.title;
+    const showOrigamiFilterControl = isPro && selectedDripper?.methodFamily === 'origami';
+    const showAeroPressStyleControl = isPro && selectedDripper?.methodFamily === 'aeropress';
+    const methodOptionPanel = showOrigamiFilterControl || showAeroPressStyleControl ? (
+      <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3" data-testid="ai-brew-method-option-panel">
+        <div className="flex flex-col gap-1">
+          <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.methodOptionTitle}</h4>
+        </div>
+        <div className="mt-3 space-y-3">
+          {showOrigamiFilterControl ? (
+            <div>
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.origamiFilterTitle}</p>
+              <div className="grid grid-cols-3 gap-2">
+                {origamiFilterOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('origamiFilterStyle', option.value)}
+                    className={`min-h-[42px] rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+                      formState.origamiFilterStyle === option.value
+                        ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.18)]'
+                        : 'bg-[var(--bg-base)] text-secondary hover:text-primary'
+                    }`}
+                    aria-pressed={formState.origamiFilterStyle === option.value}
+                    data-testid={`ai-brew-origami-filter-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {showAeroPressStyleControl ? (
+            <div>
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.aeropressStyleTitle}</p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                {aeropressStyleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('aeropressStyle', option.value)}
+                    className={`min-h-[42px] rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+                      formState.aeropressStyle === option.value
+                        ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.18)]'
+                        : 'bg-[var(--bg-base)] text-secondary hover:text-primary'
+                    }`}
+                    aria-pressed={formState.aeropressStyle === option.value}
+                    data-testid={`ai-brew-aeropress-style-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    ) : null;
     const pourControlPanel = selectedDripperSupportsPourControl ? (
       <div className="rounded-[1.1rem] panel-soft p-3" data-testid="ai-brew-pour-control-panel">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
@@ -6641,8 +6893,14 @@ export function AiBrewPanel({
                                       {localizeAiBrewWaterClassificationLabel(selectedWaterBrand.classificationLabel, language)}
                                       </span>
                                     </div>
-                                    <p className="mt-1 text-xs text-secondary">{buildWaterChemistryLabel(selectedWaterBrand, language)}</p>
-                                    {buildWaterPolicyWarning(copy, selectedWaterBrand) && (
+                                    {isPro ? (
+                                      <p className="mt-1 text-xs text-secondary">{buildWaterChemistryLabel(selectedWaterBrand, language)}</p>
+                                    ) : (
+                                      <p className="mt-1 text-xs text-secondary">
+                                        {buildWaterChemistryLabel(selectedWaterBrand, language)}
+                                      </p>
+                                    )}
+                                    {isPro && buildWaterPolicyWarning(copy, selectedWaterBrand) && (
                                       <p className="mt-2 rounded-xl bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
                                         {buildWaterPolicyWarning(copy, selectedWaterBrand)}
                                       </p>
@@ -6653,7 +6911,7 @@ export function AiBrewPanel({
                                         <p className="mt-1">{copy.waterWhyManualBody}</p>
                                       </div>
                                     )}
-                                    {waterTargetFitHint && (
+                                    {isPro && waterTargetFitHint && (
                                       <div
                                         className={`mt-3 rounded-xl px-3 py-3 text-xs ${
                                           waterTargetFitHint.tone === 'caution'
@@ -6944,6 +7202,7 @@ export function AiBrewPanel({
                           </div>
 
                           {pourControlPanel}
+                          {methodOptionPanel}
 
                           <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3">
                             <div className="flex flex-wrap items-start justify-between gap-3">

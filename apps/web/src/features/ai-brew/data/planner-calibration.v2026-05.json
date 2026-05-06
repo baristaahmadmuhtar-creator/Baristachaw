@@ -289,6 +289,12 @@
       "tempDeltaC": -0.4,
       "brewTimeDeltaSec": -6,
       "grindBias": "coarser"
+    },
+    "coferment": {
+      "ratioDelta": 0.06,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "coarser"
     }
   },
   "varietyModifiers": {
@@ -1207,5 +1213,91 @@
       "verificationLevel": "curated",
       "confidence": "medium"
     }
-  ]
+  ],
+  "lineageGroupModifiers": {
+    "ethiopian_landrace": {
+      "ratioDelta": 0.03,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -2,
+      "grindBias": "coarser"
+    },
+    "bourbon_typica": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "introgressed": {
+      "ratioDelta": 0.02,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -3,
+      "grindBias": "coarser"
+    },
+    "f1_hybrid": {
+      "ratioDelta": 0,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "canephora_clone": {
+      "ratioDelta": 0.05,
+      "tempDeltaC": -0.4,
+      "brewTimeDeltaSec": -6,
+      "grindBias": "coarser"
+    },
+    "liberica_excelsa": {
+      "ratioDelta": 0.04,
+      "tempDeltaC": -0.3,
+      "brewTimeDeltaSec": -5,
+      "grindBias": "coarser"
+    },
+    "brazil_selection": {
+      "ratioDelta": -0.02,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 2,
+      "grindBias": "same"
+    },
+    "kenyan_selection": {
+      "ratioDelta": 0.03,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -2,
+      "grindBias": "coarser"
+    },
+    "indonesia_selection": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "large_bean": {
+      "ratioDelta": -0.03,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 4,
+      "grindBias": "finer"
+    },
+    "specialty_reference": {
+      "ratioDelta": 0.03,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -3,
+      "grindBias": "coarser"
+    },
+    "regional_selection": {
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 0,
+      "grindBias": "same"
+    },
+    "classic_arabica": {
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 0,
+      "grindBias": "same"
+    },
+    "unknown": {
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
+      "brewTimeDeltaSec": 0,
+      "grindBias": "same"
+    }
+  }
 }

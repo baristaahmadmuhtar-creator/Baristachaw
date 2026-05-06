@@ -22,7 +22,15 @@ function parseEnvFile(relativePath) {
 }
 
 function loadEnv(paths) {
-  return Object.assign({}, ...paths.map(parseEnvFile), process.env);
+  const merged = {};
+  for (const parsed of paths.map(parseEnvFile)) {
+    for (const [key, value] of Object.entries(parsed)) {
+      if (String(value || '').trim() || !(key in merged)) {
+        merged[key] = value;
+      }
+    }
+  }
+  return Object.assign(merged, process.env);
 }
 
 function hasValue(env, key) {
@@ -60,7 +68,8 @@ function checkUrl(list, env, keys, label) {
   }
 }
 
-const serverEnv = loadEnv(['.env.production.local', '.env.local', '.env']);
+const serverEnvPaths = ['.vercel/.env.production.local', '.env.production.local', '.env.local', '.env'];
+const serverEnv = loadEnv(serverEnvPaths);
 const mobileEnv = loadEnv(['apps/mobile/.env']);
 
 const errors = [];
@@ -174,7 +183,7 @@ if (!hasValue(mobileEnv, 'EXPO_PUBLIC_SENTRY_DSN')) {
 }
 
 console.log('Baristachaw production environment check');
-console.log(`Server env sources: .env.production.local, .env.local, .env, process.env`);
+console.log(`Server env sources: ${serverEnvPaths.join(', ')}, process.env`);
 console.log(`Mobile env source: apps/mobile/.env`);
 
 if (errors.length) {

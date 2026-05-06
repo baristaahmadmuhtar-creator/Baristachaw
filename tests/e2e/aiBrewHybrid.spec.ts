@@ -209,6 +209,7 @@ test('ai brew precision builder applies barista target controls and keeps extra 
   expect(plan.notes.join('\n')).toMatch(/precision target temperature active/i);
   await expect(sequenceNote.getByTestId('ai-brew-step-detail-1')).toContainText(/Bilas filter|Rinse the filter|Rinse the paper filter/i);
   await expect(sequenceNote.getByTestId('ai-brew-step-detail-1')).toContainText(/preheat|panaskan/i);
+  await expect(sequenceNote.getByTestId('ai-brew-step-detail-1')).toContainText(/tare|tara/i);
   await expect(sequenceNote.getByTestId('ai-brew-step-detail-1')).toContainText(/Bloom/i);
 });
 

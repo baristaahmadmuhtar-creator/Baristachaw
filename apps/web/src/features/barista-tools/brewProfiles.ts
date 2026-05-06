@@ -95,7 +95,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
     retentionFactor: 2.4,
     processLossMl: 12,
     grindGuidance: 'Medium-coarse for thicker filter paper',
-    scaNotes: 'Clean cup, higher flow resistance from thick filter.',
+    scaNotes: 'Thick bonded paper needs a hard rinse, warm glass, open vent, and a longer stable finish than V60.',
   },
   {
     id: 'chemex_iced',
@@ -109,7 +109,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
     retentionFactor: 2.4,
     processLossMl: 12,
     grindGuidance: 'Medium-coarse, keep the thicker filter open over ice',
-    scaNotes: 'Brew strong over ice while protecting flow through thicker Chemex paper.',
+    scaNotes: 'Hot concentrate over measured ice only; protect thick-paper flow and avoid late bypass water.',
     japaneseSplit: {
       hotWaterShare: 0.64,
       iceShare: 0.36,
@@ -127,7 +127,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
     retentionFactor: 2.2,
     processLossMl: 8,
     grindGuidance: 'Medium grind, flat-bed consistency',
-    scaNotes: 'Stable extraction from flat-bottom geometry.',
+    scaNotes: 'Flat-bed extraction: center-to-small-ring pours, level bed, no wide circular agitation.',
   },
   {
     id: 'kalita_wave_iced',
@@ -191,7 +191,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
     retentionFactor: 2.6,
     processLossMl: 10,
     grindGuidance: 'Coarse, low fines',
-    scaNotes: 'Immersion style, body-forward profile.',
+    scaNotes: 'Immersion workflow: charge, steep, let fines settle, then decant to stop extraction.',
   },
   {
     id: 'aeropress',
@@ -205,7 +205,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
     retentionFactor: 1.9,
     processLossMl: 6,
     grindGuidance: 'Medium-fine (varies with recipe/inversion)',
-    scaNotes: 'Short contact time; pressure-assisted finish.',
+    scaNotes: 'Pressure-assisted immersion: style-specific steep, stir count, press duration, and stop-before-hiss cue.',
   },
   {
     id: 'clever_dripper',
@@ -219,7 +219,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
     retentionFactor: 2.2,
     processLossMl: 8,
     grindGuidance: 'Medium to medium-coarse',
-    scaNotes: 'Hybrid immersion/percolation profile.',
+    scaNotes: 'Steep-and-release workflow first; charge with valve closed, hold immersion, then release cleanly.',
   },
   {
     id: 'clever_dripper_iced',
@@ -347,7 +347,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
     retentionFactor: 2.3,
     processLossMl: 10,
     grindGuidance: 'Medium',
-    scaNotes: 'Vacuum brewing with aromatic clarity.',
+    scaNotes: 'Vacuum workflow: heat, draw-up, add coffee, stir briefly, extract, remove heat, then drawdown.',
   },
   {
     id: 'moka_pot',
@@ -361,7 +361,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
     retentionFactor: 1.8,
     processLossMl: 14,
     grindGuidance: 'Medium-fine (between espresso and filter)',
-    scaNotes: 'Concentrated stovetop brewing, high strength output.',
+    scaNotes: 'Stovetop workflow: level basket, boiler water below valve, moderate heat, stop before sputter.',
   },
   {
     id: 'cold_brew',
@@ -375,7 +375,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
     retentionFactor: 2.7,
     processLossMl: 12,
     grindGuidance: 'Coarse',
-    scaNotes: 'Long immersion; ratio depends on concentrate vs ready-to-drink.',
+    scaNotes: 'Cold immersion workflow: cool-water saturation, long steep, clean filtration, then dilute after brewing if needed.',
   },
   {
     id: 'batch_brew',
@@ -389,7 +389,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
     retentionFactor: 2.2,
     processLossMl: 14,
     grindGuidance: 'Medium, optimized for machine flow rate',
-    scaNotes: 'Cafe batch brewer target with service consistency.',
+    scaNotes: 'Machine workflow: dose per liter, brew volume, spray distribution, drawdown, and batch mixing before service.',
   },
 ];
 

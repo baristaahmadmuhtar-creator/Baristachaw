@@ -9,6 +9,9 @@ export const PROCESS_CURATED_MODIFIERS_V2026_05 =
 export const VARIETY_CURATED_MODIFIERS_V2026_05 =
   calibrationData.varietyModifiers as Record<string, NonNullable<VarietyCatalogEntry['numericModifiers']>>;
 
+export const LINEAGE_GROUP_MODIFIERS_V2026_05 =
+  calibrationData.lineageGroupModifiers as Record<string, NonNullable<VarietyCatalogEntry['numericModifiers']>>;
+
 export const ORIGIN_PROFILE_RULES_V2026_05 =
   calibrationData.originProfiles as Array<{
     profileId: string;

@@ -8,6 +8,29 @@ import type {
 export type AiBrewMode = 'hot' | 'iced';
 export type AiBrewPourStyle = 'auto' | 'balanced' | 'pulse' | 'gentle';
 export type AiBrewPourCount = 'auto' | '3' | '4' | '5';
+export type OrigamiFilterStyle = 'auto' | 'cone' | 'wave';
+export type AeroPressRecipeStyle =
+  | 'auto'
+  | 'standard'
+  | 'inverted'
+  | 'bypass'
+  | 'no_bypass'
+  | 'bright_clean'
+  | 'sweet_body';
+export type MethodWorkflow =
+  | 'pourover'
+  | 'immersion'
+  | 'pressure'
+  | 'stovetop'
+  | 'vacuum'
+  | 'batch'
+  | 'cold_immersion'
+  | 'espresso';
+export type FlatBottomProfileFamily =
+  | 'april_low_agitation'
+  | 'fast_flat_bottom'
+  | 'restricted_flat_bottom'
+  | 'no_bypass';
 
 export type AiBrewMethodFamily =
   | 'v60'
@@ -50,6 +73,45 @@ export type CatalogReleaseStatus =
   | 'legacy';
 
 export type CatalogConfidence = 'high' | 'medium' | 'low';
+export type CatalogReviewStatus = 'fresh' | 'needs_review' | 'deprecated' | 'conflicting';
+export type VarietyTaxonomySpecies = 'arabica' | 'canephora' | 'liberica' | 'excelsa' | 'hybrid' | 'unknown';
+export type VarietyLineageGroup =
+  | 'bourbon_typica'
+  | 'ethiopian_landrace'
+  | 'introgressed'
+  | 'f1_hybrid'
+  | 'canephora_clone'
+  | 'liberica_excelsa'
+  | 'brazil_selection'
+  | 'kenyan_selection'
+  | 'indonesia_selection'
+  | 'regional_selection'
+  | 'classic_arabica'
+  | 'specialty_reference'
+  | 'unknown';
+export type VarietyCultivarType =
+  | 'botanical_variety'
+  | 'cultivar'
+  | 'landrace'
+  | 'clone'
+  | 'regional_alias'
+  | 'marketing_label'
+  | 'mixed_lot'
+  | 'unknown';
+export interface CatalogSensoryBias {
+  acidity: -2 | -1 | 0 | 1 | 2;
+  sweetness: -2 | -1 | 0 | 1 | 2;
+  body: -2 | -1 | 0 | 1 | 2;
+  clarity: -2 | -1 | 0 | 1 | 2;
+  fermentIntensity: 0 | 1 | 2 | 3;
+  bitternessRisk: 0 | 1 | 2 | 3;
+  aromaVolatility: 0 | 1 | 2 | 3;
+}
+export interface ProcessRiskModel {
+  variability: 'low' | 'medium' | 'high';
+  overFermentRisk: 'low' | 'medium' | 'high';
+  recommendationMode: 'deterministic' | 'conservative' | 'taste_feedback_required';
+}
 export type WaterPresetStatus = 'autofill' | 'manual_required' | 'info_only';
 export type WaterMode = 'brand' | 'manual';
 export type WaterMarket = 'id' | 'sg' | 'bn' | 'my' | 'global';
@@ -77,6 +139,9 @@ export interface CatalogProvenance {
   releaseStatus: CatalogReleaseStatus;
   confidence: CatalogConfidence;
   catalogVersion: string;
+  reviewStatus?: CatalogReviewStatus;
+  lastReviewedAt?: string;
+  reviewNotes?: string[];
 }
 
 export interface RawDripperCatalogEntry {
@@ -154,6 +219,13 @@ export interface VarietyCatalogEntry extends CatalogProvenance {
   searchText: string;
   origins?: string[];
   originNotes?: string;
+  taxonomy?: {
+    species: VarietyTaxonomySpecies;
+    lineageGroup: VarietyLineageGroup;
+    cultivarType: VarietyCultivarType;
+    parentage?: string[];
+  };
+  sensoryBias?: CatalogSensoryBias;
   numericModifiers?: {
     ratioDelta?: number;
     tempDeltaC?: number;
@@ -170,6 +242,8 @@ export interface ProcessCatalogEntry extends CatalogProvenance {
   aliases: string[];
   searchText: string;
   origins?: string[];
+  sensoryBias?: CatalogSensoryBias;
+  processRisk?: ProcessRiskModel;
   numericModifiers?: {
     ratioDelta?: number;
     tempDeltaC?: number;
@@ -289,6 +363,9 @@ export interface DeviceBrewProfile extends CatalogProvenance {
   brewMethodId: BrewMethodId;
   exactMatch: boolean;
   filterStyle: 'cone' | 'flat' | 'trapezoid' | 'immersion' | 'pressure' | 'vacuum' | 'stovetop' | 'cold_immersion' | 'batch';
+  methodWorkflow?: MethodWorkflow;
+  flatBottomProfile?: FlatBottomProfileFamily;
+  recipeStyle?: Exclude<AeroPressRecipeStyle, 'auto'>;
   ratioDelta: number;
   tempDeltaC: number;
   brewTimeDeltaSec: number;
@@ -349,6 +426,8 @@ export interface AiBrewFormState {
   targetTempC: string;
   pourStyle: AiBrewPourStyle;
   pourCount: AiBrewPourCount;
+  origamiFilterStyle: OrigamiFilterStyle;
+  aeropressStyle: AeroPressRecipeStyle;
 }
 
 export interface BeanProfileState {
@@ -402,6 +481,8 @@ export interface BrewPlan {
   beanProfile: BeanProfileState;
   targetProfileId: string;
   targetProfileLabel: string;
+  targetProfileAutoSuggested?: boolean;
+  targetProfileSuggestionReason?: string;
   dripper: EquipmentCatalogEntry;
   grinder: EquipmentCatalogEntry;
   waterMode: WaterMode;
@@ -450,6 +531,9 @@ export interface BrewPlan {
   deviceProfileId: string;
   deviceProfileLabel: string;
   deviceProfileMode: DeviceProfileMode;
+  processRisk?: ProcessRiskModel;
+  processReviewStatus?: CatalogReviewStatus;
+  varietyReviewStatus?: CatalogReviewStatus;
   grindSettingReference: string;
   grindSettingMode: GrindSettingMode;
   grindSettingVerification: VerificationLevel;

@@ -28,12 +28,16 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
       dripperIds: string[];
       methodFamily: string;
       brewMethodId: string;
-      steps?: Array<{ id: string; label: string; share: number; note: string }>;
+      methodWorkflow?: string;
+      flatBottomProfile?: string;
+      recipeStyle?: string;
+      steps?: Array<{ id: string; label: string; kind?: string; share: number; note: string }>;
     }>;
   }>('apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json').items;
   const grinderSettings = readJson<{ items: Array<{ id: string; grinderId: string; profileIds: string[]; rangeLabel: string }> }>('apps/web/public/data/ai-brew/grinder-settings.v2026-06.json').items;
   const processes = readJson<{ items: Array<{ id: string; origins?: string[] }> }>('apps/web/public/data/ai-brew/processes.v2026-06.json').items;
   const varieties = readJson<{ items: Array<{ id: string; origins?: string[] }> }>('apps/web/public/data/ai-brew/varieties.v2026-06.json').items;
+  const targetProfiles = readJson<{ items: Array<{ id: string; label: string }> }>('apps/web/public/data/ai-brew/target-profiles.v2026-03.json').items;
   const waters = readJson<{
     items: Array<{
       id: string;
@@ -136,6 +140,56 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
     assert.equal(profile?.exactMatch, true, `${profileId} should be an exact AI Brew profile`);
   }
 
+  for (const requiredProfileId of [
+    'profile_kalita_wave_155_hot',
+    'profile_kalita_wave_185_hot',
+    'profile_kalita_wave_155_iced',
+    'profile_kalita_wave_185_iced',
+    'profile_origami_wave_hot',
+    'profile_origami_wave_iced',
+    'profile_aeropress_inverted_hot',
+    'profile_aeropress_bypass_hot',
+    'profile_aeropress_no_bypass_hot',
+    'profile_aeropress_bright_clean_hot',
+    'profile_aeropress_sweet_body_hot',
+  ]) {
+    assert.ok(profileIds.has(requiredProfileId), `Expected method-specific production profile missing: ${requiredProfileId}`);
+  }
+
+  for (const [profileId, workflow] of [
+    ['profile_clever_dripper_hot', 'immersion'],
+    ['profile_hario_switch_hot', 'immersion'],
+    ['profile_aeropress_hot', 'pressure'],
+    ['profile_french_press_hot', 'immersion'],
+    ['profile_bialetti_moka_pot_hot', 'stovetop'],
+    ['profile_hario_siphon_hot', 'vacuum'],
+    ['profile_batch_brewer_hot', 'batch'],
+    ['profile_toddy_cold_brew_hot', 'cold_immersion'],
+    ['profile_espresso_machine_hot', 'espresso'],
+  ] as const) {
+    const profile = profiles.find((entry) => entry.id === profileId);
+    assert.equal(profile?.methodWorkflow, workflow, `${profileId} should declare ${workflow} workflow`);
+  }
+
+  for (const [profileId, flatFamily] of [
+    ['profile_april_brewer_hot', 'april_low_agitation'],
+    ['profile_orea_hot', 'fast_flat_bottom'],
+    ['profile_timemore_b75_hot', 'fast_flat_bottom'],
+    ['profile_stagg_x_hot', 'restricted_flat_bottom'],
+    ['profile_blue_bottle_hot', 'restricted_flat_bottom'],
+    ['profile_tricolate-brewer_hot', 'no_bypass'],
+    ['profile_nextlevel_pulsar_hot', 'no_bypass'],
+  ] as const) {
+    const profile = profiles.find((entry) => entry.id === profileId);
+    assert.equal(profile?.flatBottomProfile, flatFamily, `${profileId} should map to ${flatFamily}`);
+  }
+
+  const cleverWorkflow = profiles.find((entry) => entry.id === 'profile_clever_dripper_hot')?.steps || [];
+  assert.deepEqual(cleverWorkflow.map((step) => step.kind), ['pour', 'wait', 'release', 'serve'], 'Clever hot should be steep-and-release, not pour pulses');
+  const aeropressBypass = profiles.find((entry) => entry.id === 'profile_aeropress_bypass_hot');
+  assert.equal(aeropressBypass?.recipeStyle, 'bypass');
+  assert.ok(aeropressBypass?.steps?.some((step) => step.kind === 'press'), 'AeroPress bypass should include a press step');
+
   const settingsByGrinder = new Map<string, number>();
   for (const setting of grinderSettings) {
     assert.ok(grinderIds.has(setting.grinderId), `Unknown grinderId in settings: ${setting.grinderId}`);
@@ -152,8 +206,14 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
 
   const processIds = new Set(processes.map((entry) => entry.id));
   assert.equal(processIds.size, processes.length, 'Process catalog should not contain duplicate IDs');
+  assert.equal(processIds.has('co_fermented'), false, 'co_fermented should resolve through coferment alias, not stay a duplicate canonical process');
   for (const required of ['wet_hulled', 'black_honey', 'white_honey', 'anaerobic_washed', 'monsooned', 'red_honey', 'yellow_honey', 'anaerobic_natural', 'anaerobic_honey', 'double_fermentation', 'wine_process', 'wine_yeast_fermentation', 'aerobic_fermentation', 'coferment', 'sequential_fermentation', 'anaerobic_thermal_shock', 'semi_washed', 'lactic_anaerobic', 'enzyme_fermentation', 'extended_fermentation', 'koji_fermentation', 'mossto_fermentation', 'anaerobic_wet_hulled']) {
     assert.ok(processIds.has(required), `Expected process missing: ${required}`);
+  }
+
+  const targetProfileIds = new Set(targetProfiles.map((entry) => entry.id));
+  for (const requiredTarget of ['balance_clean', 'more_sweetness', 'more_acidity', 'more_body', 'floral_transparent', 'fruit_forward', 'soft_round', 'dense_comforting']) {
+    assert.ok(targetProfileIds.has(requiredTarget), `Expected target profile missing: ${requiredTarget}`);
   }
 
   const processOriginCoverage = new Set(processes.flatMap((entry) => entry.origins || []));

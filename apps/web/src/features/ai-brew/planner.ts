@@ -62,6 +62,7 @@ import type {
   AiBrewCatalog,
   AiBrewFormState,
   AiBrewMethodFamily,
+  AeroPressRecipeStyle,
   BeanRoastDevelopment,
   BeanSolubility,
   BrewJournalEntry,
@@ -71,7 +72,9 @@ import type {
   DeviceProfileMode,
   DeviceBrewProfile,
   EquipmentCatalogEntry,
+  FlatBottomProfileFamily,
   GrinderSettingReference,
+  OrigamiFilterStyle,
   ParsedNumericRange,
   ProcessCatalogEntry,
   VarietyCatalogEntry,
@@ -252,6 +255,25 @@ function resolveRequestedPourCount(input: AiBrewFormState, profile: DeviceBrewPr
   if (Number.isFinite(explicitCount)) return clamp(Math.round(explicitCount), 3, 5);
   if (
     profile.methodFamily === 'v60'
+    && input.targetProfileId === 'more_sweetness'
+    && input.brewMode === 'iced'
+    && isLightOrMediumLightRoast(input.roastLevel)
+  ) {
+    const doseG = parseDose(input.doseG);
+    if (doseG <= 18) return 3;
+  }
+  if (
+    profile.methodFamily === 'v60'
+    && profile.exactMatch
+    && profile.dripperIds.includes('hario-v60')
+    && input.targetProfileId === 'more_sweetness'
+    && input.brewMode === 'iced'
+    && isLightOrMediumLightRoast(input.roastLevel)
+  ) {
+    return 3;
+  }
+  if (
+    profile.methodFamily === 'v60'
     && profile.exactMatch
     && profile.dripperIds.includes('hario-v60')
     && input.targetProfileId === 'more_sweetness'
@@ -285,6 +307,9 @@ function resolveRequestedPourCount(input: AiBrewFormState, profile: DeviceBrewPr
 
 function buildControlledPourStarts(count: number, input: AiBrewFormState) {
   const style = input.pourStyle === 'auto' ? 'balanced' : input.pourStyle;
+  if (input.brewMode === 'iced' && input.targetProfileId === 'more_sweetness' && isLightOrMediumLightRoast(input.roastLevel) && count === 3) {
+    return [0, 45, 110];
+  }
   if (input.brewMode === 'iced' && input.targetProfileId === 'more_sweetness' && input.roastLevel === 'medium' && count === 3) {
     return [0, 55, 115];
   }
@@ -306,9 +331,8 @@ function buildControlledPourShares(count: number, input: AiBrewFormState) {
     && input.targetProfileId === 'more_sweetness'
     && count === 3
     && isLightOrMediumLightRoast(input.roastLevel)
-    && hasHighAromaNaturalCue(input)
   ) {
-    return normalizePourShares([0.28, 0.47, 0.25]);
+    return normalizePourShares([0.45, 0.35, 0.2]);
   }
   if (input.brewMode === 'iced' && input.targetProfileId === 'more_sweetness' && input.roastLevel === 'medium' && count === 3) {
     return normalizePourShares([0.22, 0.52, 0.26]);
@@ -373,6 +397,12 @@ function resolveMinimumIcedManualPourOverTimeSeconds(profile: DeviceBrewProfile,
   return (lastPositivePourIndex * minPourGapSeconds) + finalWindowBounds.min;
 }
 
+function resolveMinimumMethodServiceTimeSeconds(methodFamily: AiBrewMethodFamily, brewMode: 'hot' | 'iced') {
+  if (methodFamily === 'chemex') return brewMode === 'iced' ? 190 : 235;
+  if (methodFamily === 'kalita_wave') return brewMode === 'iced' ? 165 : 175;
+  return 0;
+}
+
 function applyPourControlsToProfile(
   profile: DeviceBrewProfile,
   input: AiBrewFormState,
@@ -386,6 +416,40 @@ function applyPourControlsToProfile(
   const shares = buildControlledPourShares(pourCount, input);
   const modePrefix = input.brewMode === 'iced' ? 'Japanese iced' : 'Hot';
   const styleLabel = buildPourStyleLabel(input);
+  const familyStepNote = (isFirst: boolean, isLast: boolean, isSingleMiddlePour: boolean) => {
+    if (methodFamily === 'chemex') {
+      if (input.brewMode === 'iced') {
+        return isFirst
+          ? 'Rinse the Chemex paper hard, preheat the glass, tare the scale, keep measured ice in the server, then bloom as hot concentrate.'
+          : 'Keep the Chemex iced brew as hot concentrate over measured ice only; no late bypass water and no wall chasing.';
+      }
+      return isFirst
+        ? 'Rinse the thick paper hard, preheat the glass, tare the scale, keep the three-layer side at the spout, and bloom fully.'
+        : 'Use stable center-to-mid Chemex flow; avoid pouring down the paper wall or blocking the vent.';
+    }
+    if (methodFamily === 'kalita_wave' || methodFamily === 'melitta' || (methodFamily === 'origami' && profile.filterStyle === 'flat')) {
+      return isFirst
+        ? 'Saturate the flat bed evenly and let it settle level before the next pour.'
+        : isSingleMiddlePour
+          ? 'Use a centered flat-bed pour; keep the bed level and avoid flooding one side.'
+          : isLast
+            ? 'Land the final water evenly and let drawdown finish without a last-second swirl.'
+            : 'Keep each pulse centered and low so the bed stays level.';
+    }
+    if (methodFamily === 'april') {
+      return isFirst
+        ? 'Use a short, even bloom and keep agitation low.'
+        : 'Use short centered pulses with quick kettle resets; avoid stretching the last phase.';
+    }
+    if (input.brewMode === 'iced') {
+      return isFirst
+        ? 'Japanese-style iced: bloom over ice with compact hot water, then keep every next pour as hot concentrate only.'
+        : 'Keep the iced brew as Japanese-style flash brew: pour hot concentrate over measured ice, no late bypass.';
+    }
+    return isFirst
+      ? 'Bloom evenly, then keep the next pours calm and centered.'
+      : 'Keep the pour controlled, even, and aligned to the selected interval.';
+  };
   return {
     ...profile,
     id: `${profile.id}_${input.brewMode}_${input.pourStyle}_${pourCount}p`,
@@ -401,13 +465,7 @@ function applyPourControlsToProfile(
         kind: 'pour',
         share,
         startSeconds: starts[index] ?? index * 40,
-        note: input.brewMode === 'iced'
-          ? isFirst
-            ? 'Japanese-style iced: bloom over ice with compact hot water, then keep every next pour as hot concentrate only.'
-            : 'Keep the iced brew as Japanese-style flash brew: pour hot concentrate over measured ice, no late bypass.'
-          : isFirst
-            ? 'Bloom evenly, then keep the next pours calm and centered.'
-            : 'Keep the pour controlled, even, and aligned to the selected interval.',
+        note: familyStepNote(isFirst, isLast, isSingleMiddlePour),
       };
     }),
   };
@@ -861,6 +919,16 @@ function buildAdaptiveStepStartSeconds(
   const intentForFinalWindow = resolveContextTargetIntent(context);
   const extractionForFinalWindow = resolveExtractionResistance(context);
   const finalWindowBounds = resolveMethodFamilyFinalWindowBounds(context.methodFamily, context.brewMode);
+  if (
+    count === 3
+    && context.brewMode === 'iced'
+    && context.targetProfileId === 'more_sweetness'
+    && isLightOrMediumLightRoast(context.roastLevel)
+    && isIcedManualPourOverFamily(context.methodFamily)
+  ) {
+    const maxFinalStart = Math.max(105, totalTimeSeconds - finalWindowBounds.min);
+    return [0, 45, clamp(110, 105, maxFinalStart)];
+  }
   const adaptiveFinalWindowSeconds = Math.round(clamp(
     34
       + (intentForFinalWindow === 'acidity' ? 6 : intentForFinalWindow === 'body' ? -6 : intentForFinalWindow === 'sweetness' ? 2 : 0)
@@ -1084,6 +1152,8 @@ type AdaptiveShareContext = {
   dripperId?: string;
   dripperName?: string;
   filterStyle: DeviceBrewProfile['filterStyle'];
+  flatBottomProfile?: FlatBottomProfileFamily;
+  recipeStyle?: Exclude<AeroPressRecipeStyle, 'auto'>;
   brewMode: 'hot' | 'iced';
   roastLevel: RoastLevel;
   roastDevelopment?: BeanRoastDevelopment;
@@ -1123,7 +1193,7 @@ function resolveImmersionReleaseCopy(context: AdaptiveShareContext) {
       closedCue: 'Keep the switch closed',
       releaseCue: 'open the switch',
       setOnServerCue: 'Set the Hario Switch on the server',
-      bloomPrep: 'Rinse the V60-style paper and preheat the brewer/server first, then close the switch before adding coffee and brew water.',
+      bloomPrep: 'Rinse the V60-style paper, preheat the brewer/server, and tare the scale first, then close the switch before adding coffee and brew water.',
       openingDetail: 'Keep the switch closed, wet the full bed evenly, and let immersion start doing the work without rushing the opening.',
       middleDetail: 'Keep the switch closed and add water calmly; let immersion carry extraction instead of forcing turbulence.',
       lateDetail: 'Keep the switch closed through the later contact window; avoid stirring late so the release stays clean.',
@@ -1136,7 +1206,7 @@ function resolveImmersionReleaseCopy(context: AdaptiveShareContext) {
     closedCue: 'Keep the Clever closed',
     releaseCue: 'open the valve',
     setOnServerCue: 'Place the Clever on the server',
-    bloomPrep: 'Rinse the paper and preheat the brewer first, then close the valve before adding coffee and brew water.',
+    bloomPrep: 'Rinse the paper, preheat the brewer, and tare the scale first, then close the valve before adding coffee and brew water.',
     openingDetail: 'Wet the entire bed evenly and let immersion start doing the work; the opening should feel full, not rushed.',
     middleDetail: 'Add the next water calmly and let immersion carry extraction; there is no need to force agitation the way you would on an open dripper.',
     lateDetail: 'Hold the later middle phase calm and avoid stirring; Clever rewards a settled bed before the release.',
@@ -1146,9 +1216,9 @@ function resolveImmersionReleaseCopy(context: AdaptiveShareContext) {
 
 function resolveTargetIntent(label: string, targetProfileId?: string): TargetIntent {
   const normalizedId = String(targetProfileId || '').toLowerCase();
-  if (normalizedId.includes('acid') || normalizedId.includes('clarity')) return 'acidity';
-  if (normalizedId.includes('body') || normalizedId.includes('depth')) return 'body';
-  if (normalizedId.includes('sweet')) return 'sweetness';
+  if (normalizedId.includes('acid') || normalizedId.includes('clarity') || normalizedId.includes('floral') || normalizedId.includes('transparent')) return 'acidity';
+  if (normalizedId.includes('body') || normalizedId.includes('depth') || normalizedId.includes('dense') || normalizedId.includes('comforting')) return 'body';
+  if (normalizedId.includes('sweet') || normalizedId.includes('fruit') || normalizedId.includes('round')) return 'sweetness';
 
   const normalized = label.toLowerCase();
   if (normalized.includes('acid')) return 'acidity';
@@ -1316,73 +1386,174 @@ function inferVarietyIntentSignal(params: {
   return { acidity, sweetness, body, sourceLabel };
 }
 
-export function resolveDefaultTargetProfileIdForBean(
+export interface CustomProcessDetection {
+  id: string;
+  confidence: 'high' | 'medium' | 'low';
+  note: string;
+}
+
+export function detectCustomProcess(
   input: Partial<AiBrewFormState>,
   catalog?: AiBrewCatalog,
-) {
+): CustomProcessDetection | null {
+  const haystack = normalizeSearchHaystack([
+    input.customProcess,
+    input.coffeeName,
+    input.customVariety,
+  ]);
+  if (!haystack) return null;
+  const hasProcess = (id: string) => !catalog || Boolean(findProcessEntry(catalog, id));
+  const pick = (id: string, confidence: CustomProcessDetection['confidence'], note: string): CustomProcessDetection | null =>
+    hasProcess(id) ? { id, confidence, note } : null;
+
+  if (/\b(anaerobic\s+natural|natural\s+anaerobic)\b/.test(haystack)) {
+    return pick('natural_anaerobic', 'high', 'Custom process cue mapped to anaerobic natural; numeric changes stay conservative.');
+  }
+  if (/\b(carbonic|cm|maceration)\b/.test(haystack) && /\b(washed|wet\s+process)\b/.test(haystack)) {
+    return pick('carbonic_washed', 'medium', 'Custom process cue mapped to carbonic washed; fermentation risk is treated conservatively.');
+  }
+  if (/\b(carbonic|cm|maceration)\b/.test(haystack) && /\b(natural|dry\s+process)\b/.test(haystack)) {
+    return pick('carbonic_natural', 'medium', 'Custom process cue mapped to carbonic natural; fermentation risk is treated conservatively.');
+  }
+  if (/\b(co[-\s]?ferment|coferment|infused|fruit\s+maceration|fruit[-\s]?infused|koji|enzyme)\b/.test(haystack)) {
+    return pick('coferment', 'medium', 'Experimental process cue mapped to co-ferment/infused; taste feedback is required before pushing extraction.');
+  }
+  if (/\b(giling\s+basah|wet[-\s]?hulled|semi[-\s]?washed\s+indonesia)\b/.test(haystack)) {
+    return pick('wet_hulled', 'high', 'Custom process cue mapped to wet-hulled Indonesian baseline.');
+  }
+  if (/\b(sugarcane|ea\s+decaf|ethyl\s+acetate)\b/.test(haystack) && /\b(decaf|decaffeinated)\b/.test(haystack)) {
+    return pick('sugarcane_decaf', 'high', 'Custom process cue mapped to sugarcane decaf baseline.');
+  }
+  if (/\bswiss\s+water\b/.test(haystack)) {
+    return pick('swiss_water_decaf', 'high', 'Custom process cue mapped to Swiss Water decaf baseline.');
+  }
+  if (/\bmountain\s+water\b/.test(haystack)) {
+    return pick('mountain_water_decaf', 'high', 'Custom process cue mapped to mountain water decaf baseline.');
+  }
+  if (/\b(decaf|decaffeinated)\b/.test(haystack)) {
+    return pick('decaf', 'medium', 'Custom process cue mapped to decaf baseline.');
+  }
+  if (/\b(double\s+washed|fully\s+washed|washed|wet\s+process)\b/.test(haystack)) {
+    if (/\b(kenya|kenyan|double\s+fermentation)\b/.test(haystack)) {
+      return pick('kenya_double_fermentation', 'medium', 'Custom process cue mapped to Kenya double fermentation washed baseline.')
+        || pick('double_washed', 'medium', 'Custom process cue mapped to double washed baseline.');
+    }
+    return pick(/\bdouble\s+washed\b/.test(haystack) ? 'double_washed' : 'washed', 'high', 'Custom process cue mapped to washed baseline.');
+  }
+  if (/\b(honey|pulped\s+natural)\b/.test(haystack)) {
+    return pick(/\bpulped\s+natural\b/.test(haystack) ? 'pulped_natural' : 'honey', 'high', 'Custom process cue mapped to honey/pulped-natural baseline.');
+  }
+  if (/\b(natural|dry\s+process)\b/.test(haystack)) {
+    return pick('natural', 'high', 'Custom process cue mapped to natural baseline.');
+  }
+  if (/\banaerobic\b/.test(haystack)) {
+    return pick('anaerobic', 'medium', 'Custom process cue mapped to anaerobic baseline; numeric changes stay conservative.');
+  }
+  return null;
+}
+
+export function resolveDefaultTargetProfileForBean(
+  input: Partial<AiBrewFormState>,
+  catalog?: AiBrewCatalog,
+): { id?: string; reason: string } {
+  const customProcessDetection = input.process === CUSTOM_ENTRY_ID ? detectCustomProcess(input, catalog) : null;
   const processEntry = input.process && input.process !== CUSTOM_ENTRY_ID && catalog
     ? findProcessEntry(catalog, String(input.process))
-    : undefined;
+    : customProcessDetection && catalog
+      ? findProcessEntry(catalog, customProcessDetection.id)
+      : undefined;
   const varietyEntry = input.variety && input.variety !== CUSTOM_ENTRY_ID && catalog
     ? findVarietyEntry(catalog, String(input.variety))
     : undefined;
-  const processId = String(processEntry?.id || input.process || '').toLowerCase();
+  const processId = String(processEntry?.id || customProcessDetection?.id || input.process || '').toLowerCase();
   const varietyId = String(varietyEntry?.id || input.variety || '').toLowerCase();
   const haystack = normalizeSearchHaystack([
     input.coffeeName,
-    input.customProcess,
+    input.process === CUSTOM_ENTRY_ID || !input.process ? input.customProcess : undefined,
     processEntry?.label,
     processEntry?.searchText,
     ...(processEntry?.aliases || []),
-    input.customVariety,
+    input.variety === CUSTOM_ENTRY_ID || !input.variety ? input.customVariety : undefined,
     varietyEntry?.label,
     varietyEntry?.searchText,
     ...(varietyEntry?.aliases || []),
+    varietyEntry?.taxonomy?.species,
+    varietyEntry?.taxonomy?.lineageGroup,
   ]);
   const altitude = Number.parseFloat(String(input.altitudeMasl || ''));
   const roastLevel = input.roastLevel || 'medium';
   const hasTarget = (id: string) => !catalog || catalog.targetProfiles.some((profile) => profile.id === id);
+  const pickTarget = (ids: string[], reason: string) => ({
+    id: ids.find(hasTarget) || (hasTarget('balance_clean') ? 'balance_clean' : undefined),
+    reason,
+  });
   const varietySignal = inferVarietyIntentSignal({
     varietyId,
     varietyEntry,
-    customVarietyText: input.customVariety,
+    customVarietyText: input.variety === CUSTOM_ENTRY_ID || !input.variety ? input.customVariety : undefined,
   });
+  const lineageGroup = varietyEntry?.taxonomy?.lineageGroup;
+  const species = varietyEntry?.taxonomy?.species;
+  const processBias = processEntry?.sensoryBias;
+  const varietyBias = varietyEntry?.sensoryBias;
+  const clarityCue = (processBias?.clarity || 0) + (varietyBias?.clarity || 0);
+  const sweetnessCue = (processBias?.sweetness || 0) + (varietyBias?.sweetness || 0);
+  const bodyCue = (processBias?.body || 0) + (varietyBias?.body || 0);
 
-  if (
-    processId === 'wet_hulled'
-    || /\b(wet[-\s]?hulled|giling\s+basah|sumatra|mandheling|gayo|robusta|conilon|canephora|liberica|excelsa)\b/i.test(haystack)
-    || varietySignal.body
-  ) {
-    return hasTarget('more_body') ? 'more_body' : 'balance_clean';
+  if (processId === 'wet_hulled' || /\b(wet[-\s]?hulled|giling\s+basah|sumatra|mandheling|gayo|lintong|toraja)\b/i.test(haystack)) {
+    return pickTarget(['dense_comforting', 'more_body'], 'Wet-hulled Indonesian cue: Dense & Comforting suggested.');
   }
-
-  if (
-    SWEETNESS_PROCESS_IDS.has(processId)
-    || /\b(natural|honey|anaerobic|carbonic|lactic|yeast|fermentation)\b/i.test(haystack)
-    || varietySignal.sweetness
-  ) {
-    if (roastLevel === 'medium_dark' || roastLevel === 'dark') {
-      return hasTarget('more_body') ? 'more_body' : 'more_sweetness';
-    }
-    return hasTarget('more_sweetness') ? 'more_sweetness' : 'balance_clean';
+  if (species === 'canephora' || species === 'liberica' || species === 'excelsa' || /\b(robusta|conilon|canephora|liberica|excelsa)\b/i.test(haystack)) {
+    return pickTarget(['dense_comforting', 'more_body'], 'Canephora/non-arabica body cue: Dense & Comforting suggested.');
   }
-
+  if (
+    /\b(geisha|gesha|sl28|sl34|ethiopian\s+landrace|ethiopian\s+heirloom|floral)\b/i.test(haystack)
+    || lineageGroup === 'ethiopian_landrace'
+    || lineageGroup === 'specialty_reference'
+    || lineageGroup === 'kenyan_selection'
+  ) {
+    return pickTarget(['floral_transparent', 'balance_clean'], 'High-clarity variety cue: Floral & Transparent suggested.');
+  }
   if (
     (CLARITY_PROCESS_IDS.has(processId) || /\b(washed|fully\s+washed|double\s+washed|wet\s+process)\b/i.test(haystack))
     && (Number.isFinite(altitude)
       ? altitude >= 1600
       : /\b(high[-\s]?altitude|ethiopia|yirgacheffe|guji|kenya|nyeri|kirinyaga|tarrazu|antigua|huehuetenango|boquete|colombia|huila|cauca|narino|nariño|peru|bolivia|yemen|papua\s+new\s+guinea|png)\b/i.test(haystack))
   ) {
-    return hasTarget('more_acidity') ? 'more_acidity' : 'balance_clean';
+    return pickTarget(['floral_transparent', 'more_acidity'], 'Washed high-altitude cue: Floral & Transparent suggested.');
   }
-
-  if (varietySignal.acidity) {
-    return hasTarget('more_acidity') ? 'more_acidity' : 'balance_clean';
+  if (
+    processEntry?.processRisk?.recommendationMode === 'taste_feedback_required'
+    || /\b(co[-\s]?ferment|coferment|infused|fruit\s+maceration|koji|enzyme|thermal\s+shock)\b/i.test(haystack)
+  ) {
+    return pickTarget(['fruit_forward', 'more_sweetness'], 'Experimental high-variability process cue: Fruit-Forward suggested.');
   }
-
-  return hasTarget('balance_clean') ? 'balance_clean' : undefined;
+  if (
+    SWEETNESS_PROCESS_IDS.has(processId)
+    || /\b(natural|honey|pulped\s+natural|anaerobic|carbonic|lactic|yeast|fermentation)\b/i.test(haystack)
+    || sweetnessCue >= 2
+    || varietySignal.sweetness
+  ) {
+    if (roastLevel === 'medium_dark' || roastLevel === 'dark' || bodyCue >= 2) {
+      return pickTarget(['soft_round', 'more_body'], 'Sweet/body cue: Soft & Round suggested.');
+    }
+    return pickTarget(['fruit_forward', 'more_sweetness'], 'Natural or high-aroma process cue: Fruit-Forward suggested.');
+  }
+  if (varietySignal.acidity || clarityCue >= 2) {
+    return pickTarget(['floral_transparent', 'more_acidity'], 'Clarity variety cue: Floral & Transparent suggested.');
+  }
+  if (varietySignal.body || bodyCue >= 2) {
+    return pickTarget(['dense_comforting', 'more_body'], 'Body variety cue: Dense & Comforting suggested.');
+  }
+  return pickTarget(['balance_clean'], 'Unknown or weak evidence: Balance & Clean suggested.');
 }
 
+export function resolveDefaultTargetProfileIdForBean(
+  input: Partial<AiBrewFormState>,
+  catalog?: AiBrewCatalog,
+) {
+  return resolveDefaultTargetProfileForBean(input, catalog).id;
+}
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -1612,7 +1783,13 @@ function deriveBaristaTemperatureCalibration(params: {
   }
 
   if (params.brewMode === 'iced' && ICED_MANUAL_POUR_OVER_FAMILIES.has(params.methodFamily)) {
-    if (isNaturalSweetnessTarget) {
+    if (params.input.targetProfileId === 'more_sweetness' && isLightOrMediumLightRoast(params.input.roastLevel)) {
+      calibration.minTempC = 96;
+      calibration.maxTempC = 96;
+      calibration.tempDeltaC += 1.2;
+      calibration.notes.push('Japanese-iced More Sweetness light/medium-light baseline is locked at 96C with compact hot concentrate extraction; 97C is reserved for advanced high-extraction tuning.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: safe light-roast Japanese-iced sweetness baseline.');
+    } else if (isNaturalSweetnessTarget) {
       calibration.minTempC = 91;
       calibration.maxTempC = 93;
       calibration.tempDeltaC -= 1.3;
@@ -2006,6 +2183,107 @@ function deriveDoseAdjustment(
   };
 }
 
+function resolveProcessRiskFallback(entry?: ProcessCatalogEntry) {
+  if (!entry) return undefined;
+  if (entry.processRisk) return entry.processRisk;
+  const haystack = normalizeSearchHaystack([
+    entry.id,
+    entry.label,
+    entry.group,
+    entry.searchText,
+    ...(entry.aliases || []),
+  ]);
+  if (/\b(co[-\s]?ferment|coferment|infused|fruit\s+maceration|koji|enzyme|thermal\s+shock)\b/i.test(haystack)) {
+    return { variability: 'high' as const, overFermentRisk: 'high' as const, recommendationMode: 'taste_feedback_required' as const };
+  }
+  if (/\b(anaerobic|carbonic|lactic|yeast|extended\s+fermentation|mosto|submerged)\b/i.test(haystack)) {
+    return { variability: 'high' as const, overFermentRisk: 'high' as const, recommendationMode: 'conservative' as const };
+  }
+  if (/\b(natural|honey|pulped\s+natural|wet[-\s]?hulled|giling\s+basah)\b/i.test(haystack)) {
+    return { variability: 'medium' as const, overFermentRisk: 'medium' as const, recommendationMode: 'conservative' as const };
+  }
+  if (/\b(washed|fully\s+washed|double\s+washed|mechanically\s+demucilaged)\b/i.test(haystack)) {
+    return { variability: 'low' as const, overFermentRisk: 'low' as const, recommendationMode: 'deterministic' as const };
+  }
+  return { variability: 'medium' as const, overFermentRisk: 'medium' as const, recommendationMode: 'conservative' as const };
+}
+
+function deriveSensoryBiasAdjustment(params: {
+  targetProfileId: string;
+  processEntry?: ProcessCatalogEntry;
+  varietyEntry?: VarietyCatalogEntry;
+}): CalibrationAdjustment {
+  const processBias = params.processEntry?.sensoryBias;
+  const varietyBias = params.varietyEntry?.sensoryBias;
+  const processRisk = resolveProcessRiskFallback(params.processEntry);
+  if (!processBias && !varietyBias && !processRisk) return createNeutralCalibrationAdjustment();
+
+  const targetIntent = resolveTargetIntent(params.targetProfileId, params.targetProfileId);
+  const acidity = (processBias?.acidity || 0) + (varietyBias?.acidity || 0);
+  const sweetness = (processBias?.sweetness || 0) + (varietyBias?.sweetness || 0);
+  const body = (processBias?.body || 0) + (varietyBias?.body || 0);
+  const clarity = (processBias?.clarity || 0) + (varietyBias?.clarity || 0);
+  const fermentIntensity = Math.max(processBias?.fermentIntensity || 0, varietyBias?.fermentIntensity || 0);
+  const bitternessRisk = Math.max(processBias?.bitternessRisk || 0, varietyBias?.bitternessRisk || 0);
+  const aromaVolatility = Math.max(processBias?.aromaVolatility || 0, varietyBias?.aromaVolatility || 0);
+  let ratioDelta = 0;
+  let tempDeltaC = 0;
+  let brewTimeDeltaSec = 0;
+  const grindBiases: GrindBias[] = ['same'];
+  const notes: string[] = [];
+  const confidenceNotes: string[] = [];
+
+  if (targetIntent === 'acidity' && (clarity >= 2 || acidity >= 2)) {
+    ratioDelta += 0.02;
+    tempDeltaC -= 0.1;
+    brewTimeDeltaSec -= 1;
+    grindBiases.push('coarser');
+  }
+  if (targetIntent === 'sweetness' && (sweetness >= 2 || aromaVolatility >= 2)) {
+    ratioDelta += 0.01;
+    tempDeltaC -= 0.1;
+    brewTimeDeltaSec -= 1;
+  }
+  if (targetIntent === 'body' && body >= 2) {
+    ratioDelta -= 0.02;
+    brewTimeDeltaSec += 2;
+    grindBiases.push('same');
+  }
+  if (fermentIntensity >= 2 || aromaVolatility >= 2) {
+    ratioDelta += 0.02;
+    tempDeltaC -= 0.15;
+    brewTimeDeltaSec -= 2;
+    grindBiases.push('coarser');
+  }
+  if (bitternessRisk >= 2 || processRisk?.recommendationMode === 'taste_feedback_required') {
+    ratioDelta += 0.02;
+    tempDeltaC -= 0.15;
+    brewTimeDeltaSec -= 2;
+    grindBiases.push('coarser');
+  }
+
+  ratioDelta = roundTo(clamp(ratioDelta, -0.04, 0.04), 2);
+  tempDeltaC = roundTo(clamp(tempDeltaC, -0.3, 0.2), 1);
+  brewTimeDeltaSec = Math.round(clamp(brewTimeDeltaSec, -5, 5));
+
+  if (ratioDelta || tempDeltaC || brewTimeDeltaSec) {
+    notes.push('Sensory taxonomy cue applied as a conservative baseline, not as a fixed flavor claim.');
+    confidenceNotes.push(`Sensory bias active: acidity ${acidity}, sweetness ${sweetness}, body ${body}, clarity ${clarity}, ferment ${fermentIntensity}, bitterness risk ${bitternessRisk}.`);
+  }
+  if (processRisk?.variability === 'high') {
+    notes.push('High-variability process detected; keep first brew conservative and use taste feedback before pushing extraction.');
+  }
+
+  return {
+    ratioDelta,
+    tempDeltaC,
+    brewTimeDeltaSec,
+    grindBias: combineBias(...grindBiases),
+    notes,
+    confidenceNotes,
+  };
+}
+
 const SERVICE_DOSE_TARGET_METHODS = new Set<AiBrewMethodFamily>([
   'v60',
   'origami',
@@ -2384,15 +2662,15 @@ function deriveV60SweetnessServiceCalibration(params: {
   if (highAromaNaturalSweetness) {
     if (params.input.brewMode === 'iced') {
       return {
-        recommendedRatio: 15,
+        recommendedRatio: 13.65,
         hotExtractionRatio: 9,
-        timeMinSec: 145,
-        timeMaxSec: 175,
+        timeMinSec: 185,
+        timeMaxSec: 205,
         notes: [
-          'V60 Japanese-iced natural sweetness calibration keeps hot concentrate near 1:9, uses a heavier ice split, and avoids high kettle energy.',
+          'V60 Japanese-iced natural sweetness calibration keeps hot concentrate near 1:9 with measured ice around the standard sweetness baseline, no late bypass water.',
         ],
         confidenceNotes: [
-          'Natural high-aroma V60 iced baseline active: about 135 g hot water plus 90 g ice for a 15 g dose.',
+          'Natural high-aroma V60 iced baseline active: about 135 g hot water plus 70 g ice for a 15 g dose.',
         ],
       };
     }
@@ -2455,6 +2733,8 @@ function deriveV60SweetnessServiceCalibration(params: {
 function deriveMethodFamilyAdjustment(params: {
   methodFamily: AiBrewMethodFamily;
   filterStyle: DeviceBrewProfile['filterStyle'];
+  flatBottomProfile?: FlatBottomProfileFamily;
+  recipeStyle?: Exclude<AeroPressRecipeStyle, 'auto'>;
   brewMode: 'hot' | 'iced';
   targetProfileLabel: string;
   targetProfileId?: string;
@@ -2478,12 +2758,21 @@ function deriveMethodFamilyAdjustment(params: {
       adjustment.notes.push('V60 family keeps a slightly more open cone-flow profile for clarity and clean drawdown.');
       break;
     case 'origami':
-      adjustment.sequenceSignature = 'clarity_flow';
-      adjustment.ratioDelta = targetIntent === 'sweetness' || targetIntent === 'body' ? 0 : 0.03;
-      adjustment.tempDeltaC = targetIntent === 'sweetness' ? 0.1 : -0.1;
-      adjustment.brewTimeDeltaSec = targetIntent === 'sweetness' ? 1 : -3;
-      adjustment.grindBias = targetIntent === 'sweetness' ? 'same' : 'coarser';
-      adjustment.notes.push('Origami family stays agile and transparent, with a slightly cleaner and faster cone-flow signature.');
+      if (params.filterStyle === 'flat') {
+        adjustment.sequenceSignature = 'flatbed_mid';
+        adjustment.ratioDelta = targetIntent === 'body' || targetIntent === 'sweetness' ? -0.03 : 0;
+        adjustment.tempDeltaC = targetIntent === 'sweetness' ? 0 : -0.1;
+        adjustment.brewTimeDeltaSec = targetIntent === 'acidity' ? 1 : 5;
+        adjustment.grindBias = targetIntent === 'body' ? 'finer' : 'same';
+        adjustment.notes.push('Origami wave-filter profile behaves like a flat bed: level contact, center pours, and calmer drawdown control.');
+      } else {
+        adjustment.sequenceSignature = 'clarity_flow';
+        adjustment.ratioDelta = targetIntent === 'sweetness' || targetIntent === 'body' ? 0 : 0.03;
+        adjustment.tempDeltaC = targetIntent === 'sweetness' ? 0.1 : -0.1;
+        adjustment.brewTimeDeltaSec = targetIntent === 'sweetness' ? 1 : -3;
+        adjustment.grindBias = targetIntent === 'sweetness' ? 'same' : 'coarser';
+        adjustment.notes.push('Origami cone-filter profile stays agile and transparent, with a cleaner and faster cone-flow signature.');
+      }
       break;
     case 'kono':
       adjustment.sequenceSignature = 'sweet_contact';
@@ -2510,20 +2799,44 @@ function deriveMethodFamilyAdjustment(params: {
       adjustment.notes.push('Melitta family adds a little more controlled contact time to keep trapezoid flow stable and forgiving.');
       break;
     case 'april':
-      adjustment.sequenceSignature = 'fast_even';
-      adjustment.ratioDelta = 0.08;
-      adjustment.tempDeltaC = -0.5;
-      adjustment.brewTimeDeltaSec = -12;
-      adjustment.grindBias = 'coarser';
-      adjustment.notes.push('April-style flat-bottom brewing keeps a faster, lower-agitation service profile with evenly controlled pulses.');
+      adjustment.sequenceSignature = params.flatBottomProfile === 'no_bypass'
+        ? 'flatbed_mid'
+        : params.flatBottomProfile === 'restricted_flat_bottom'
+          ? 'flatbed_mid'
+          : 'fast_even';
+      if (params.flatBottomProfile === 'april_low_agitation') {
+        adjustment.ratioDelta = 0.08;
+        adjustment.tempDeltaC = -0.5;
+        adjustment.brewTimeDeltaSec = -12;
+        adjustment.grindBias = 'coarser';
+        adjustment.notes.push('April low-agitation profile keeps a fast, organized pulse recipe without stretching the contact window.');
+      } else if (params.flatBottomProfile === 'restricted_flat_bottom') {
+        adjustment.ratioDelta = -0.04;
+        adjustment.tempDeltaC = -0.2;
+        adjustment.brewTimeDeltaSec = 8;
+        adjustment.grindBias = 'same';
+        adjustment.notes.push('Restricted flat-bottom profile protects flow by slowing the finish slightly and avoiding a choked bed.');
+      } else if (params.flatBottomProfile === 'no_bypass') {
+        adjustment.ratioDelta = -0.02;
+        adjustment.tempDeltaC = -0.1;
+        adjustment.brewTimeDeltaSec = 18;
+        adjustment.grindBias = 'finer';
+        adjustment.notes.push('No-bypass flat-bottom profile uses fuller saturation and a longer finishing window because all water must extract through the bed.');
+      } else {
+        adjustment.ratioDelta = 0.02;
+        adjustment.tempDeltaC = -0.35;
+        adjustment.brewTimeDeltaSec = -8;
+        adjustment.grindBias = 'coarser';
+        adjustment.notes.push('Fast flat-bottom profile keeps low agitation and short centered pulses so flow stays quick without tasting thin.');
+      }
       break;
     case 'chemex':
       adjustment.sequenceSignature = 'thick_filter';
-      adjustment.ratioDelta = 0.16;
+      adjustment.ratioDelta = 0.12;
       adjustment.tempDeltaC = 0.1;
-      adjustment.brewTimeDeltaSec = 18;
+      adjustment.brewTimeDeltaSec = params.brewMode === 'iced' ? 24 : 18;
       adjustment.grindBias = 'coarser';
-      adjustment.notes.push('Chemex family runs a slightly higher ratio and longer window to account for thicker filter resistance and cleaner drawdown.');
+      adjustment.notes.push('Chemex family runs a longer window than V60 because thick bonded paper needs stable flow, not a rushed drawdown.');
       break;
     case 'clever_dripper':
       adjustment.sequenceSignature = 'immersion_release';
@@ -2543,11 +2856,31 @@ function deriveMethodFamilyAdjustment(params: {
       break;
     case 'aeropress':
       adjustment.sequenceSignature = 'pressure_immersion';
-      adjustment.ratioDelta = -0.05;
-      adjustment.tempDeltaC = -1;
-      adjustment.brewTimeDeltaSec = -20;
-      adjustment.grindBias = 'finer';
-      adjustment.notes.push('AeroPress family uses short immersion and a controlled press, so the plan tightens grind and keeps the service window compact.');
+      if (params.recipeStyle === 'bright_clean') {
+        adjustment.ratioDelta = 0.35;
+        adjustment.tempDeltaC = 0.4;
+        adjustment.brewTimeDeltaSec = -15;
+        adjustment.grindBias = 'same';
+        adjustment.notes.push('AeroPress bright-clean style uses shorter contact, moderate agitation, and a controlled press for clarity.');
+      } else if (params.recipeStyle === 'sweet_body') {
+        adjustment.ratioDelta = -0.35;
+        adjustment.tempDeltaC = -0.4;
+        adjustment.brewTimeDeltaSec = 15;
+        adjustment.grindBias = 'finer';
+        adjustment.notes.push('AeroPress sweet-body style extends immersion and presses slower for a denser cup.');
+      } else if (params.recipeStyle === 'bypass') {
+        adjustment.ratioDelta = -0.55;
+        adjustment.tempDeltaC = -0.2;
+        adjustment.brewTimeDeltaSec = -5;
+        adjustment.grindBias = 'finer';
+        adjustment.notes.push('AeroPress bypass style brews a concentrate first, then dilutes after pressing instead of forcing all water through the puck.');
+      } else {
+        adjustment.ratioDelta = -0.05;
+        adjustment.tempDeltaC = -1;
+        adjustment.brewTimeDeltaSec = -20;
+        adjustment.grindBias = 'finer';
+        adjustment.notes.push('AeroPress family uses short immersion and a controlled press, so the plan tightens grind and keeps the service window compact.');
+      }
       break;
     case 'siphon':
       adjustment.sequenceSignature = 'vacuum_clear';
@@ -3361,7 +3694,7 @@ function resolveMethodFamilyFinalWindowBounds(methodFamily: AiBrewMethodFamily, 
     case 'batch_brew':
       return { min: 60, max: 110 };
     case 'chemex':
-      return brewMode === 'iced' ? { min: 70, max: 110 } : { min: 52, max: 96 };
+      return brewMode === 'iced' ? { min: 80, max: 125 } : { min: 75, max: 130 };
     case 'clever_dripper':
       return brewMode === 'iced' ? { min: 42, max: 78 } : { min: 50, max: 88 };
     case 'kono':
@@ -3802,12 +4135,12 @@ function buildBaristaStepPracticalCue(context: AdaptiveShareContext, phase: Adap
   if (isManualPaperFilter) {
     if (phase === 'bloom') {
       if (context.brewMode === 'iced') {
-        return 'Rinse the paper filter separately, preheat the brewer, discard rinse water, then put measured ice in the server before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before the next pour.';
+        return 'Rinse the paper filter separately, preheat the brewer, discard rinse water, tare the scale, then put measured ice in the server before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before the next pour.';
       }
       if (context.methodFamily === 'chemex') {
-        return 'Rinse the thick Chemex paper thoroughly, preheat the brewer/server, and discard rinse water before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before building volume.';
+        return 'Rinse the thick Chemex paper thoroughly, preheat the brewer/server, discard rinse water, and tare the scale before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before building volume.';
       }
-      return 'Rinse the paper filter, preheat the brewer/server, and discard rinse water before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before the next pour.';
+      return 'Rinse the paper filter, preheat the brewer/server, discard rinse water, and tare the scale before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before the next pour.';
     }
     if (phase === 'early_middle') {
       if (context.methodFamily === 'kalita_wave' || context.methodFamily === 'april') {
@@ -3830,7 +4163,7 @@ function buildBaristaStepPracticalCue(context: AdaptiveShareContext, phase: Adap
 
   if (context.methodFamily === 'aeropress') {
     if (phase === 'bloom') {
-      return 'Preheat the chamber and rinse the paper cap first, then wet the compact bed quickly so contact starts evenly.';
+      return 'Preheat the chamber, rinse the paper cap, and tare the scale first, then wet the compact bed quickly so contact starts evenly.';
     }
     if (phase === 'finish') {
       return 'Press with steady pressure and stop before the final dry hiss so bitterness does not enter the cup.';
@@ -3839,7 +4172,7 @@ function buildBaristaStepPracticalCue(context: AdaptiveShareContext, phase: Adap
 
   if (context.methodFamily === 'french_press') {
     if (phase === 'bloom') {
-      return 'Use a coarse, even grind and saturate all grounds; leave the slurry quiet after the first wetting.';
+      return 'Tare the scale, use a coarse even grind, and saturate all grounds; leave the slurry quiet after the first wetting.';
     }
     if (phase === 'late_middle') {
       return 'Around the late steep window, break the crust gently and skim foam or floating grounds without aggressive stirring.';
@@ -3885,14 +4218,28 @@ function buildMethodFamilyStepInstruction(params: {
       }
       break;
     case 'origami':
-      if (phase === 'bloom') {
+      if (context.filterStyle === 'flat') {
+        if (phase === 'bloom') {
+          quickNote = 'Set the wave filter level and saturate the flat bed edge to edge.';
+          detail = 'Use the wave paper like a Kalita bed: wet evenly, keep the base flat, and avoid cone-style wall chasing.';
+        } else if (phase === 'early_middle') {
+          quickNote = 'Pour from center to a small ring so the wave bed stays level.';
+          detail = 'Keep the stream low and centered; Origami with wave paper needs flat-bed contact, not wide circular agitation.';
+        } else if (phase === 'late_middle') {
+          quickNote = 'Hold the later wave phase calm and centered.';
+          detail = 'Let the ribs drain evenly while the bed stays level; do not flood one side or sweep the wall.';
+        } else {
+          quickNote = 'Finish evenly and let the wave-filter drawdown complete.';
+          detail = 'Land the last water across the flat bed and let drawdown finish without a swirl.';
+        }
+      } else if (phase === 'bloom') {
         quickNote = 'Keep the bloom light and even so the faster cone flow stays clean.';
-        detail = 'Wet the bed evenly, but keep the bloom light; Origami opens quickly and does not need extra turbulence to start well.';
+        detail = 'Wet the bed evenly, but keep the bloom light; Origami cone flow opens quickly and does not need extra turbulence to start well.';
       } else if (phase === 'early_middle') {
-        quickNote = 'Use compact pulses and keep the flow agile through the middle.';
-        detail = 'Keep the pulses compact and controlled so the Origami keeps its faster, cleaner cone-flow signature.';
+        quickNote = 'Use compact cone pulses and keep the flow agile through the middle.';
+        detail = 'Keep the pulses compact and controlled so Origami with cone paper keeps its faster, cleaner signature.';
       } else if (phase === 'late_middle') {
-        quickNote = 'Hold the later middle short and tidy so transparency stays high.';
+        quickNote = 'Hold the later cone phase short and tidy so transparency stays high.';
         detail = 'Avoid stretching the late middle phase; let the bed settle between small pulses rather than forcing more contact.';
       } else {
         quickNote = 'Close with a light finishing pour and let the fast drawdown stay clean.';
@@ -3945,15 +4292,43 @@ function buildMethodFamilyStepInstruction(params: {
       }
       break;
     case 'april':
-      if (phase === 'bloom') {
+      if (context.flatBottomProfile === 'no_bypass') {
+        if (phase === 'bloom') {
+          quickNote = 'Saturate the full no-bypass bed evenly before extraction builds.';
+          detail = 'No-bypass brewers need full-bed wetting because every gram of water extracts through the coffee, not around it.';
+        } else if (phase === 'early_middle') {
+          quickNote = 'Pour steadily across the bed and avoid bypass-style edge shortcuts.';
+          detail = 'Keep the stream centered-to-wide only enough to cover the bed; do not chase the wall or flood one channel.';
+        } else if (phase === 'late_middle') {
+          quickNote = 'Hold the late phase stable so the full bed drains evenly.';
+          detail = 'Keep agitation modest and let the no-bypass bed complete extraction without extra swirl.';
+        } else {
+          quickNote = 'Let the no-bypass drawdown finish fully before service.';
+          detail = 'Wait for a clean finish; if it stalls, move coarser next brew instead of shortening the recipe blindly.';
+        }
+      } else if (context.flatBottomProfile === 'restricted_flat_bottom') {
+        if (phase === 'bloom') {
+          quickNote = 'Bloom evenly and protect the restricted outlet from early clogging.';
+          detail = 'Keep the bed level and avoid heavy swirl; restricted flat-bottom brewers punish fines migration.';
+        } else if (phase === 'early_middle') {
+          quickNote = 'Use a calm center pour and keep slurry height controlled.';
+          detail = 'Do not flood the brewer; a lower, steadier slurry protects flow and keeps the cup clean.';
+        } else if (phase === 'late_middle') {
+          quickNote = 'Keep the late pulse small so the outlet stays open.';
+          detail = 'A small top-up is safer than a dramatic spiral when the bed is already dense.';
+        } else {
+          quickNote = 'Finish without swirling and watch for a clean stream-to-drip transition.';
+          detail = 'Let drawdown complete; if the finish chokes, adjust grind coarser rather than adding agitation.';
+        }
+      } else if (phase === 'bloom') {
         quickNote = 'Use a short, even bloom and avoid excess swirl so the flat bed stays fast.';
-        detail = 'Start with a short, even bloom and skip extra agitation; April-style brewing wants a quick, settled opening.';
+        detail = 'Start with a short, even bloom and skip extra agitation; fast flat-bottom brewing wants a quick, settled opening.';
       } else if (phase === 'early_middle') {
-        quickNote = 'Use short, low-agitation pulses and reset the kettle quickly between pours.';
-        detail = 'Keep the early middle pulse-based and low-agitation; let the bed reset briefly instead of stretching the contact window.';
+        quickNote = 'Use short, low-agitation centered pulses and reset quickly.';
+        detail = 'Keep the early middle pulse-based and low-agitation; let the bed reset briefly instead of stretching contact.';
       } else if (phase === 'late_middle') {
         quickNote = 'Keep the late pulses quick and even so the cup stays open.';
-        detail = 'Use another short, even pulse and keep the kettle resets clean; April should feel fast and organized, not saturated and slow.';
+        detail = 'Use another short, even pulse and keep the kettle resets clean; the brew should feel organized, not saturated and slow.';
       } else {
         quickNote = 'Finish early and clean; avoid stretching the last phase.';
         detail = 'Close the recipe without dragging the last phase out; the finish should stay short, clean, and low-agitation.';
@@ -3961,17 +4336,19 @@ function buildMethodFamilyStepInstruction(params: {
       break;
     case 'chemex':
       if (phase === 'bloom') {
-        quickNote = 'Fully wet the thick filter path and the coffee bed before pushing the next pour.';
-        detail = 'Make sure the thick Chemex paper and full bed are properly wet early, then give the bloom time to open before building more volume.';
+        quickNote = 'Rinse hard, preheat the glass, set the three-layer side at the spout, then bloom fully.';
+        detail = 'Use a strong rinse to seat the bonded paper, warm the Chemex, keep the three-layer side facing the spout, and leave the vent open before wetting the bed.';
       } else if (phase === 'early_middle') {
-        quickNote = 'Use a steady stream and let the thick filter manage the flow.';
-        detail = 'Build the middle with a steady stream and let the thicker filter resistance do its work instead of forcing extra turbulence.';
+        quickNote = 'Use a steady center-to-mid stream and let the thick filter manage flow.';
+        detail = 'Build the middle with stable flow; do not chase the paper wall or collapse the vent because that turns Chemex slow and papery.';
       } else if (phase === 'late_middle') {
-        quickNote = 'Keep the later middle open and avoid flooding the filter wall.';
-        detail = 'Protect the late middle by keeping the stream steady and away from the filter wall so the drawdown does not choke.';
+        quickNote = 'Keep the later middle open, stable, and away from the filter wall.';
+        detail = 'Hold a calm slurry height and avoid washing the sides; Chemex should drain longer than V60 but still look open.';
       } else {
-        quickNote = 'Finish before the filter stalls and let the drawdown stay open.';
-        detail = 'Land the final water before the filter slows too far down, then let the Chemex finish without extra swirling or wall rinsing.';
+        quickNote = 'Finish the target water, keep the vent open, and let the thick filter draw down naturally.';
+        detail = context.brewMode === 'iced'
+          ? 'Land only the planned hot concentrate over measured ice; do not add bypass water after drawdown.'
+          : 'Let the final drawdown complete without wall rinsing or extra swirl; adjust coarser next brew if it stalls.';
       }
       break;
     case 'clever_dripper':
@@ -4009,17 +4386,31 @@ function buildMethodFamilyStepInstruction(params: {
       break;
     case 'aeropress':
       if (phase === 'bloom') {
-        quickNote = 'Wet the compact bed quickly and evenly.';
-        detail = 'Add water decisively, wet all grounds, and keep the slurry compact so the short contact window stays controlled.';
+        quickNote = context.recipeStyle === 'inverted'
+          ? 'Assemble inverted safely, then wet the compact bed quickly and evenly.'
+          : 'Wet the compact bed quickly and evenly.';
+        detail = context.recipeStyle === 'inverted'
+          ? 'Use a stable inverted setup, add water decisively, wet all grounds, and keep the slurry compact before attaching the cap.'
+          : 'Add water decisively, wet all grounds, and keep the slurry compact so the short contact window stays controlled.';
       } else if (phase === 'early_middle') {
-        quickNote = 'Use one gentle agitation pass, then let contact settle.';
-        detail = 'Stir or swirl once to even extraction, then stop; AeroPress benefits from control more than constant agitation.';
+        quickNote = context.recipeStyle === 'sweet_body'
+          ? 'Stir 5 times, then let the fuller immersion contact settle.'
+          : context.recipeStyle === 'bright_clean'
+            ? 'Stir 2-3 times, then stop so clarity stays high.'
+            : 'Use one gentle agitation pass, then let contact settle.';
+        detail = 'Use the planned stir count, then stop; AeroPress benefits from repeatable agitation more than constant stirring.';
       } else if (phase === 'late_middle') {
-        quickNote = 'Set up the press before the cup turns heavy.';
-        detail = 'Attach or prepare the cap and keep the brewer stable so the press starts on time.';
+        quickNote = context.recipeStyle === 'bypass'
+          ? 'Prepare the bypass water separately; do not push it through the puck.'
+          : 'Set up the press before the cup turns heavy.';
+        detail = context.recipeStyle === 'bypass'
+          ? 'Keep dilution water ready for after pressing; the extraction phase stays as a concentrate.'
+          : 'Attach or prepare the cap and keep the brewer stable so the press starts on time.';
       } else {
-        quickNote = 'Press steadily and stop before the hiss turns harsh.';
-        detail = 'Apply steady pressure and stop when the target yield is reached or the hiss starts to sound dry.';
+        quickNote = 'Press steadily for the target duration and stop before the hiss turns harsh.';
+        detail = context.recipeStyle === 'bypass'
+          ? 'Press steadily, stop at the hiss or target yield, then dilute in the cup after extraction is separated.'
+          : 'Apply steady pressure and stop when the target yield is reached or the hiss starts to sound dry.';
       }
       break;
     case 'siphon':
@@ -4404,14 +4795,73 @@ function promoteFamilyTemplateToDeviceExact(
   };
 }
 
+type DeviceProfileSelectionOptions = {
+  doseG?: number;
+  origamiFilterStyle?: OrigamiFilterStyle;
+  aeropressStyle?: AeroPressRecipeStyle;
+  targetProfileId?: string;
+};
+
+function profileIdForMode(baseId: string, brewMode: 'hot' | 'iced') {
+  return brewMode === 'iced' ? baseId.replace(/_hot$/, '_iced') : baseId;
+}
+
+function resolveKalitaWaveProfileId(
+  dripper: EquipmentCatalogEntry,
+  brewMode: 'hot' | 'iced',
+  doseG?: number,
+) {
+  const haystack = `${dripper.id} ${dripper.name}`.toLowerCase();
+  if (!/\bkalita\b/.test(haystack) || !/\bwave\b/.test(haystack)) return undefined;
+  const safeDoseG = Number.isFinite(doseG) ? Number(doseG) : 15;
+  const baseId = safeDoseG <= 17 ? 'profile_kalita_wave_155_hot' : 'profile_kalita_wave_185_hot';
+  return profileIdForMode(baseId, brewMode);
+}
+
+function resolveOrigamiProfileId(
+  dripper: EquipmentCatalogEntry,
+  brewMode: 'hot' | 'iced',
+  filterStyle?: OrigamiFilterStyle,
+) {
+  const haystack = `${dripper.id} ${dripper.name} ${dripper.typeLabel}`.toLowerCase();
+  if (!haystack.includes('origami')) return undefined;
+  if (filterStyle === 'wave') return profileIdForMode('profile_origami_wave_hot', brewMode);
+  if (filterStyle === 'cone') return profileIdForMode('profile_origami_hot', brewMode);
+  return undefined;
+}
+
+function resolveAeroPressProfileId(
+  dripper: EquipmentCatalogEntry,
+  brewMode: 'hot' | 'iced',
+  options?: DeviceProfileSelectionOptions,
+) {
+  const haystack = `${dripper.id} ${dripper.name}`.toLowerCase();
+  if (!haystack.includes('aeropress') || brewMode !== 'hot') return undefined;
+  const explicitStyle = options?.aeropressStyle && options.aeropressStyle !== 'auto'
+    ? options.aeropressStyle
+    : undefined;
+  const style = explicitStyle
+    || (options?.targetProfileId === 'more_acidity'
+      ? 'bright_clean'
+      : options?.targetProfileId === 'more_body' || options?.targetProfileId === 'more_sweetness'
+        ? 'sweet_body'
+        : 'standard');
+  return style === 'standard' ? 'profile_aeropress_hot' : `profile_aeropress_${style}_hot`;
+}
+
 export function resolveDeviceProfileSelection(
   catalog: AiBrewCatalog,
   dripper: EquipmentCatalogEntry,
   brewMode: 'hot' | 'iced',
+  options: DeviceProfileSelectionOptions = {},
 ) {
-  const requestedDefaultId = brewMode === 'iced'
-    ? dripper.defaultProfileId?.replace(/_hot$/, '_iced')
-    : dripper.defaultProfileId;
+  const profilePreferenceId = resolveKalitaWaveProfileId(dripper, brewMode, options.doseG)
+    || resolveOrigamiProfileId(dripper, brewMode, options.origamiFilterStyle)
+    || resolveAeroPressProfileId(dripper, brewMode, options);
+  const requestedDefaultId = profilePreferenceId
+    || (brewMode === 'iced'
+      ? dripper.defaultProfileId?.replace(/_hot$/, '_iced')
+      : dripper.defaultProfileId);
 
   const exact =
     (requestedDefaultId
@@ -4458,6 +4908,7 @@ function finalizePlanCore(
   deviceSelection: ReturnType<typeof resolveDeviceProfileSelection>,
   grinderSetting: GrinderSettingReference | undefined,
   waterProfile: ReturnType<typeof deriveWaterMineralProfile>,
+  customProcessDetection?: CustomProcessDetection | null,
 ) {
   const targetProfile = findTargetProfile(catalog, input.targetProfileId) || catalog.targetProfiles[0];
   const methodFamily = deviceSelection.profile.methodFamily || dripper.methodFamily || 'v60';
@@ -4470,6 +4921,11 @@ function finalizePlanCore(
   const processModifiers = mergeProcessModifiers(processEntry);
   const varietyModifiers = mergeVarietyModifiers(varietyEntry);
   const beanProfileAdjustment = deriveBeanProfileAdjustment(input);
+  const sensoryBiasAdjustment = deriveSensoryBiasAdjustment({
+    targetProfileId: targetProfile.id,
+    processEntry,
+    varietyEntry,
+  });
   const originAdjustment = deriveOriginAdjustment(input, processEntry, varietyEntry, targetProfile.label, targetProfile.id);
   const doseAdjustment = deriveDoseAdjustment(doseG, methodFamily, input.brewMode);
   const serviceDoseTargetAdjustment = deriveServiceDoseTargetAdjustment({
@@ -4485,6 +4941,8 @@ function finalizePlanCore(
   const methodFamilyAdjustment = deriveMethodFamilyAdjustment({
     methodFamily,
     filterStyle: deviceSelection.profile.filterStyle,
+    flatBottomProfile: deviceSelection.profile.flatBottomProfile,
+    recipeStyle: deviceSelection.profile.recipeStyle,
     brewMode: input.brewMode,
     targetProfileLabel: targetProfile.label,
     targetProfileId: targetProfile.id,
@@ -4539,6 +4997,7 @@ function finalizePlanCore(
       + (processModifiers.ratioDelta || 0)
       + (varietyModifiers.ratioDelta || 0)
       + beanProfileAdjustment.ratioDelta
+      + sensoryBiasAdjustment.ratioDelta
       + methodFamilyAdjustment.ratioDelta
       + targetFamilyAdjustment.ratioDelta
       + originAdjustment.ratioDelta
@@ -4653,6 +5112,7 @@ function finalizePlanCore(
     + (processModifiers.tempDeltaC || 0)
     + (varietyModifiers.tempDeltaC || 0)
     + beanProfileAdjustment.tempDeltaC
+    + sensoryBiasAdjustment.tempDeltaC
     + methodFamilyAdjustment.tempDeltaC
     + targetFamilyAdjustment.tempDeltaC
     + originAdjustment.tempDeltaC
@@ -4695,6 +5155,7 @@ function finalizePlanCore(
       + (processModifiers.brewTimeDeltaSec || 0)
       + (varietyModifiers.brewTimeDeltaSec || 0)
       + beanProfileAdjustment.brewTimeDeltaSec
+      + sensoryBiasAdjustment.brewTimeDeltaSec
       + methodFamilyAdjustment.brewTimeDeltaSec
       + targetFamilyAdjustment.brewTimeDeltaSec
       + originAdjustment.brewTimeDeltaSec
@@ -4707,8 +5168,13 @@ function finalizePlanCore(
     serviceTimeBounds.max,
   ), methodFamily);
   const minimumServiceTimeSeconds = resolveMinimumIcedManualPourOverTimeSeconds(controlledDeviceProfile, methodFamily, input.brewMode);
+  const minimumMethodServiceTimeSeconds = resolveMinimumMethodServiceTimeSeconds(methodFamily, input.brewMode);
   const totalTimeSeconds = roundBaristaTimeSeconds(
-    clamp(Math.max(baseTotalTimeSeconds, minimumServiceTimeSeconds), serviceTimeBounds.min, serviceTimeBounds.max),
+    clamp(
+      Math.max(baseTotalTimeSeconds, minimumServiceTimeSeconds, minimumMethodServiceTimeSeconds),
+      serviceTimeBounds.min,
+      serviceTimeBounds.max,
+    ),
     methodFamily,
   );
   const hotSplitPercent = roundTo(totalWaterMl > 0 ? (hotWaterMl / totalWaterMl) * 100 : 100, 0);
@@ -4723,6 +5189,7 @@ function finalizePlanCore(
     processModifiers.grindBias || 'same',
     varietyModifiers.grindBias || 'same',
     beanProfileAdjustment.grindBias,
+    sensoryBiasAdjustment.grindBias,
     methodFamilyAdjustment.grindBias,
     targetFamilyAdjustment.grindBias,
     originAdjustment.grindBias,
@@ -4739,6 +5206,8 @@ function finalizePlanCore(
     dripperId: dripper.id,
     dripperName: dripper.name,
     filterStyle: controlledDeviceProfile.filterStyle,
+    flatBottomProfile: controlledDeviceProfile.flatBottomProfile,
+    recipeStyle: controlledDeviceProfile.recipeStyle,
     brewMode: input.brewMode,
     roastLevel: input.roastLevel,
     roastDevelopment: input.roastDevelopment || undefined,
@@ -4790,6 +5259,9 @@ function finalizePlanCore(
     process: processLabel,
     variety: varietyLabel,
   });
+  const processRisk = resolveProcessRiskFallback(processEntry);
+  const targetProfileSuggestion = resolveDefaultTargetProfileForBean(input, catalog);
+  const targetProfileAutoSuggested = targetProfileSuggestion.id === targetProfile.id;
 
   const baseGuardrails = validateBrewInputs({
     method,
@@ -4826,6 +5298,7 @@ function finalizePlanCore(
     processEntry?.notes || [],
     varietyEntry?.notes || [],
     beanProfileAdjustment.notes,
+    sensoryBiasAdjustment.notes,
     methodFamilyAdjustment.notes,
     targetFamilyAdjustment.notes,
     originAdjustment.notes,
@@ -4840,6 +5313,9 @@ function finalizePlanCore(
     [
       !input.process ? 'Process not specified. No automatic process modifier was applied.' : undefined,
       !input.variety ? 'Variety not specified. No automatic variety modifier was applied.' : undefined,
+      customProcessDetection?.note,
+      targetProfileAutoSuggested ? targetProfileSuggestion.reason : undefined,
+      processRisk?.variability === 'high' ? 'High variability process: use taste feedback before increasing extraction pressure.' : undefined,
       buildServiceExecutionNote({
         methodFamily,
         brewMode: input.brewMode,
@@ -4866,6 +5342,7 @@ function finalizePlanCore(
     grindDetails.confidenceNotes,
     waterProfile.confidenceNotes,
     beanProfileAdjustment.confidenceNotes,
+    sensoryBiasAdjustment.confidenceNotes,
     methodFamilyAdjustment.confidenceNotes,
     targetFamilyAdjustment.confidenceNotes,
     originAdjustment.confidenceNotes,
@@ -4885,6 +5362,8 @@ function finalizePlanCore(
         : 'Water source: manual mineral entry.',
       `Device profile source: ${deviceSelection.profile.verificationLevel}.`,
       `Grinder setting source: ${grindDetails.verificationLevel}.`,
+      customProcessDetection ? `Custom process detection: ${customProcessDetection.id} (${customProcessDetection.confidence}).` : undefined,
+      processRisk ? `Process risk: ${processRisk.variability} variability, ${processRisk.recommendationMode}.` : undefined,
       input.brewMode === 'iced'
         ? `Iced split source: final beverage ratio 1:${formatBaristaRatio(finalBeverageRatio)}, hot extraction ratio 1:${formatBaristaRatio(hotExtractionRatio)}, hot/ice ${hotSplitPercent}:${iceSplitPercent}.`
         : undefined,
@@ -4958,6 +5437,8 @@ function finalizePlanCore(
     beanProfile: beanProfileAdjustment.state,
     targetProfileId: targetProfile.id,
     targetProfileLabel: targetProfile.label,
+    targetProfileAutoSuggested,
+    targetProfileSuggestionReason: targetProfileAutoSuggested ? targetProfileSuggestion.reason : undefined,
     dripper,
     grinder,
     waterMode: input.waterMode,
@@ -5009,6 +5490,9 @@ function finalizePlanCore(
     deviceProfileId: deviceSelection.profile.id,
     deviceProfileLabel: deviceSelection.profile.label,
     deviceProfileMode: deviceSelection.mode,
+    processRisk,
+    processReviewStatus: processEntry?.reviewStatus,
+    varietyReviewStatus: varietyEntry?.reviewStatus,
     grindSettingReference: grinderSetting?.rangeLabel || 'No verified setting yet',
     grindSettingMode,
     grindSettingVerification: grindDetails.verificationLevel,
@@ -5048,6 +5532,8 @@ export function createDefaultAiBrewFormState(catalog?: AiBrewCatalog): AiBrewFor
     targetTempC: '',
     pourStyle: 'auto',
     pourCount: 'auto',
+    origamiFilterStyle: 'auto',
+    aeropressStyle: 'auto',
   };
 }
 
@@ -5064,6 +5550,8 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
   const validWaterRegions = new Set(['id', 'sg', 'bn', 'my']);
   const validPourStyles = new Set(['auto', 'balanced', 'pulse', 'gentle']);
   const validPourCounts = new Set(['auto', '3', '4', '5']);
+  const validOrigamiFilterStyles = new Set(['auto', 'cone', 'wave']);
+  const validAeroPressStyles = new Set(['auto', 'standard', 'inverted', 'bypass', 'no_bypass', 'bright_clean', 'sweet_body']);
   const waterBrandId = String(input.waterBrandId || '');
   const dripperId = String(input.dripperId || fallback.dripperId);
   const requestedBrewMode = input.brewMode === 'iced' ? 'iced' : 'hot';
@@ -5109,6 +5597,12 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
     pourCount: validPourCounts.has(String(input.pourCount))
       ? (String(input.pourCount) as AiBrewFormState['pourCount'])
       : fallback.pourCount,
+    origamiFilterStyle: validOrigamiFilterStyles.has(String(input.origamiFilterStyle))
+      ? (String(input.origamiFilterStyle) as AiBrewFormState['origamiFilterStyle'])
+      : fallback.origamiFilterStyle,
+    aeropressStyle: validAeroPressStyles.has(String(input.aeropressStyle))
+      ? (String(input.aeropressStyle) as AiBrewFormState['aeropressStyle'])
+      : fallback.aeropressStyle,
   };
 }
 
@@ -5125,6 +5619,8 @@ export function createQuickAiBrewFormState(input: AiBrewFormState, catalog?: AiB
     targetRatio: '',
     targetWaterMl: '',
     targetTempC: '',
+    origamiFilterStyle: 'auto',
+    aeropressStyle: 'auto',
   };
 }
 
@@ -5133,10 +5629,18 @@ export function buildAiBrewPlan(input: AiBrewFormState, catalog: AiBrewCatalog):
   const dripper = findDripper(catalog, sanitized.dripperId) || catalog.drippers[0];
   const grinder = findGrinder(catalog, sanitized.grinderId) || catalog.grinders[0];
   if (!dripper || !grinder) throw new Error('AI Brew equipment catalog is incomplete.');
-  const processEntry = sanitized.process === CUSTOM_ENTRY_ID ? undefined : findProcessEntry(catalog, sanitized.process);
+  const customProcessDetection = sanitized.process === CUSTOM_ENTRY_ID ? detectCustomProcess(sanitized, catalog) : null;
+  const processEntry = sanitized.process === CUSTOM_ENTRY_ID
+    ? customProcessDetection ? findProcessEntry(catalog, customProcessDetection.id) : undefined
+    : findProcessEntry(catalog, sanitized.process);
   const varietyEntry = sanitized.variety === CUSTOM_ENTRY_ID ? undefined : findVarietyEntry(catalog, sanitized.variety);
   const waterBrand = sanitized.waterBrandId ? findWaterBrand(catalog, sanitized.waterBrandId) : undefined;
-  const deviceSelection = resolveDeviceProfileSelection(catalog, dripper, sanitized.brewMode);
+  const deviceSelection = resolveDeviceProfileSelection(catalog, dripper, sanitized.brewMode, {
+    doseG: parseDose(sanitized.doseG),
+    origamiFilterStyle: sanitized.origamiFilterStyle,
+    aeropressStyle: sanitized.aeropressStyle,
+    targetProfileId: sanitized.targetProfileId,
+  });
   const grinderSetting = resolveGrinderSettingReference(catalog, grinder, deviceSelection.profile, sanitized.brewMode);
   const waterProfile = deriveWaterMineralProfile(sanitized, catalog.waterGuidance, waterBrand);
   return finalizePlanCore(
@@ -5150,6 +5654,7 @@ export function buildAiBrewPlan(input: AiBrewFormState, catalog: AiBrewCatalog):
     deviceSelection,
     grinderSetting,
     waterProfile,
+    customProcessDetection,
   );
 }
 
@@ -5484,7 +5989,10 @@ export async function buildAiBrewPlanProgressively(
   const dripper = findDripper(catalog, sanitized.dripperId) || catalog.drippers[0];
   const grinder = findGrinder(catalog, sanitized.grinderId) || catalog.grinders[0];
   if (!dripper || !grinder) throw new Error('AI Brew equipment catalog is incomplete.');
-  const processEntry = sanitized.process === CUSTOM_ENTRY_ID ? undefined : findProcessEntry(catalog, sanitized.process);
+  const customProcessDetection = sanitized.process === CUSTOM_ENTRY_ID ? detectCustomProcess(sanitized, catalog) : null;
+  const processEntry = sanitized.process === CUSTOM_ENTRY_ID
+    ? customProcessDetection ? findProcessEntry(catalog, customProcessDetection.id) : undefined
+    : findProcessEntry(catalog, sanitized.process);
   const varietyEntry = sanitized.variety === CUSTOM_ENTRY_ID ? undefined : findVarietyEntry(catalog, sanitized.variety);
   const targetProfile = findTargetProfile(catalog, sanitized.targetProfileId) || catalog.targetProfiles[0];
   const waterBrand = sanitized.waterBrandId ? findWaterBrand(catalog, sanitized.waterBrandId) : undefined;
@@ -5507,7 +6015,12 @@ export async function buildAiBrewPlanProgressively(
     resolvedReferenceCount: waterReferenceResolved,
   }));
 
-  const deviceSelection = resolveDeviceProfileSelection(catalog, dripper, sanitized.brewMode);
+  const deviceSelection = resolveDeviceProfileSelection(catalog, dripper, sanitized.brewMode, {
+    doseG: parseDose(sanitized.doseG),
+    origamiFilterStyle: sanitized.origamiFilterStyle,
+    aeropressStyle: sanitized.aeropressStyle,
+    targetProfileId,
+  });
   const deviceReferenceScore = scoreDeviceReference(deviceSelection.mode);
   const matchedReferenceScore = averageScores([waterReferenceScore, deviceReferenceScore]);
 
@@ -5558,6 +6071,7 @@ export async function buildAiBrewPlanProgressively(
     deviceSelection,
     grinderSetting,
     waterProfile,
+    customProcessDetection,
   );
 
   await stage(buildGenerationProgressEvent({
@@ -5777,8 +6291,8 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
             ? 'Release stabil, bed tidak terguncang, dan cup tetap manis tanpa finish keruh.'
             : 'Release flows steadily, the bed stays settled, and the cup keeps sweetness without a muddy finish.',
           watch: id
-            ? ['Rinse filter dan preheat body kaca sebelum mulai.', 'Jangan swirl berat tepat sebelum membuka switch.']
-            : ['Rinse the filter and preheat the glass body first.', 'Avoid heavy swirling right before opening the switch.'],
+            ? ['Rinse filter, preheat body kaca, dan tara timbangan sebelum mulai.', 'Jangan swirl berat tepat sebelum membuka switch.']
+            : ['Rinse the filter, preheat the glass body, and tare the scale first.', 'Avoid heavy swirling right before opening the switch.'],
         };
       }
       return {

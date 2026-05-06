@@ -296,6 +296,17 @@ function buildMethodCueChecklist(plan: BrewPlan) {
 
   if (plan.methodFamily === 'chemex') {
     lines.push('- Include thick-filter control cues (filter wall/bypass/steady flow) across at least two steps.');
+    lines.push('- Include Chemex setup cues when relevant: hard rinse, preheat glass, three-layer side toward spout, and open vent.');
+    if (plan.brewMode === 'iced') {
+      lines.push('- Chemex iced must stay hot concentrate over measured ice; do not add bypass/top-up water after drawdown.');
+    }
+  }
+  if (plan.methodFamily === 'origami') {
+    if (/wave/i.test(`${plan.deviceProfileId} ${plan.deviceProfileLabel}`)) {
+      lines.push('- Origami wave filter must use flat-bed cues: level bed, centered pour, and no wide circular agitation.');
+    } else {
+      lines.push('- Origami cone filter must use cone-flow cues: compact pulses, agile flow, and no wall chasing.');
+    }
   }
   if (plan.methodFamily === 'kalita_wave' || plan.methodFamily === 'april' || plan.methodFamily === 'melitta') {
     lines.push('- Include flat-bed control cues (flat bed/bed height/low-spout/even bed) across at least two steps.');
@@ -455,8 +466,9 @@ export function buildTroubleshootPrompt(plan: BrewPlan, language?: string): AiBr
       'Cover sour, bitter, thin, muddy, hollow, and stalled drawdown outcomes.',
       'Give concrete one-step adjustments first, then explain tradeoffs.',
       'Recommend one smallest change first. Always include: "Mulai dari perubahan terkecil dulu."',
-      'Use this order: small grind correction, pouring/agitation, small temperature correction, ratio only if needed.',
-      'Never overwrite current plan numbers and never change more than one variable at once.',
+      'Use this order: small grind correction, pouring/agitation/contact control, then small temperature correction only if needed.',
+      'Never overwrite current plan numbers. Dose, ratio, total water, hot/ice split, temperature, grind range, total time, and step timing are deterministic source-of-truth.',
+      'Do not recommend changing dose, ratio, target yield, bypass water, or serving dilution as the first move.',
       '',
       buildSharedContext(plan),
     ].join('\n'),
@@ -592,9 +604,9 @@ export function buildAdjustPrompt(plan: BrewPlan, language?: string): AiBrewProm
     title: isIndonesianAiBrewLanguage(language) ? 'Dorong Target' : 'Push Target',
     body: [
       'Suggest how to push this brew toward the selected target profile even harder without breaking balance.',
-      'Return only actionable adjustments to grind, temperature, pour structure, and ratio.',
+      'Return only actionable adjustments to grind, temperature, pour structure, flow, or contact time.',
       'Treat suggestions as next-brew adjustments, not changes to the current deterministic plan.',
-      'Stay inside safe guardrails. Do not suggest extreme temperature, extreme ratio, top-up, bypass, or extra water unless deterministic steps include it.',
+      'Stay inside safe guardrails. Do not suggest ratio changes, dose changes, extreme temperature, top-up, bypass, or extra water unless deterministic steps include it.',
       'Do not invent variety, process, origin, roaster, farm, altitude, water status, grinder source, or brewer trust.',
       '',
       buildSharedContext(plan),
@@ -630,7 +642,7 @@ export function buildSopPrompt(plan: BrewPlan, language?: string): AiBrewPromptC
       '- one water or bean-context watchpoint tied to this plan context',
       '- one adjustment if the cup tastes sour',
       '- one adjustment if the cup tastes bitter',
-      '- both sour and bitter adjustments must be actionable (verb + controllable knob: grind/temp/pour/ratio/time)',
+      '- both sour and bitter adjustments must be actionable (verb + controllable knob: grind/temp/pour/flow/contact time)',
       '- include one concise extraction-finisher watchpoint from the plan context',
       '- do not add extra sections, long explanations, or background education',
       'Prefer concrete numbers already present in the plan. Do not invent new equipment or chemistry data.',
@@ -670,7 +682,7 @@ export function buildSopPrompt(plan: BrewPlan, language?: string): AiBrewPromptC
       'If chemistry values are mentioned (TDS/GH/KH), they must match deterministic planner values exactly.',
       'Do not use generic language like "adjust as needed"; every point must be executable in bar workflow.',
       'Control Points must explicitly contain one sour corrective bullet and one bitter corrective bullet.',
-      'Each sour/bitter corrective bullet must include an actionable verb and a controllable brewing knob (grind/temp/pour/ratio/time/flow).',
+      'Each sour/bitter corrective bullet must include an actionable verb and a controllable brewing knob (grind/temp/pour/time/flow/contact).',
       'Operational steps must include target-intent cues and avoid opposite taste-direction language for the selected profile.',
       'Do not combine opposing taste-direction cues in the same step line (for example body-depth and bright-acidity in one instruction).',
       '- Step phrasing must change by phase and cannot reuse one template shell for all steps.',
@@ -695,7 +707,7 @@ export function buildExtractionFinisherPrompt(plan: BrewPlan, language?: string)
     body: [
       'Create a concise extraction finisher for this brew plan.',
       'Read the plan, water chemistry, roast, and bean profile before giving the final recommendation.',
-      'Stay inside the current recipe envelope. Only use micro-adjustments to grind, temperature, pour structure, or ratio.',
+      'Stay inside the current recipe envelope. Only use micro-adjustments to grind, temperature, pour structure, flow, or contact time.',
       'Use this structure exactly:',
       '## Final Read',
       '- one compact paragraph under 70 words',

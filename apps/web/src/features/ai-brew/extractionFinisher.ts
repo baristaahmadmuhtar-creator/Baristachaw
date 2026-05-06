@@ -52,6 +52,19 @@ function hasSoftWater(plan: BrewPlan) {
   return plan.waterMinerals.hardnessPpm <= 45 || plan.waterMinerals.alkalinityPpm <= 30;
 }
 
+function usesManualDrawdown(plan: BrewPlan) {
+  return [
+    'v60',
+    'origami',
+    'kono',
+    'kalita_wave',
+    'melitta',
+    'april',
+    'chemex',
+    'clever_dripper',
+  ].includes(plan.methodFamily);
+}
+
 function buildTargetTone(plan: BrewPlan, language?: string) {
   if (isIndonesianAiBrewLanguage(language)) {
     switch (plan.targetProfileId) {
@@ -105,7 +118,9 @@ function buildFinalRead(
     if (softWater) {
       return `Dibangun untuk ${targetTone}, dengan air lunak yang lebih menghargai tuangan tenang dan repeatable.`;
     }
-    return `Dibangun untuk ${targetTone} dengan rasio, profil air, dan jendela drawdown yang stabil.`;
+    return usesManualDrawdown(plan)
+      ? `Dibangun untuk ${targetTone} dengan rasio, profil air, dan jendela drawdown yang stabil.`
+      : `Dibangun untuk ${targetTone} dengan rasio, profil air, dan workflow ${plan.dripper.name} yang stabil.`;
   }
 
   if (plan.brewMode === 'iced') {
@@ -123,7 +138,9 @@ function buildFinalRead(
   if (softWater) {
     return `Built for ${targetTone}, with soft water rewarding calm, repeatable pours.`;
   }
-  return `Built for ${targetTone} with a stable ratio, water profile, and drawdown window.`;
+  return usesManualDrawdown(plan)
+    ? `Built for ${targetTone} with a stable ratio, water profile, and drawdown window.`
+    : `Built for ${targetTone} with a stable ratio, water profile, and ${plan.dripper.name} workflow.`;
 }
 
 function buildRecipeReasoning(
@@ -209,6 +226,20 @@ function buildControlPoints(plan: BrewPlan, language?: string) {
   const methodPoint = (() => {
     if (isIndonesianAiBrewLanguage(language)) {
       switch (plan.methodFamily) {
+        case 'espresso':
+          return 'Pantau yield, flow, dan stop cue shot; jangan menambah air seperti filter manual.';
+        case 'aeropress':
+          return 'Pantau steep, jumlah stir, durasi press, dan stop sebelum hiss terakhir dipaksa.';
+        case 'french_press':
+          return 'Pantau immersion, settle fines, dan decant; jangan cari drawdown atau pulse tuang.';
+        case 'moka_pot':
+          return 'Pantau basket rata, air boiler di bawah valve, heat stabil, dan stop sebelum sputter.';
+        case 'siphon':
+          return 'Pantau draw-up, stir singkat, extract di upper chamber, remove heat, lalu drawdown bersih.';
+        case 'batch_brew':
+          return 'Pantau dose per liter, volume mesin, spray pattern, drawdown, dan aduk batch sebelum service.';
+        case 'cold_brew':
+          return 'Pantau saturasi air dingin, steep panjang, lalu filtrasi bersih; jangan pakai workflow hot.';
         case 'chemex':
           return 'Jaga stream menjauh dari dinding filter tebal agar flow tetap terbuka sampai finish.';
         case 'clever_dripper':
@@ -230,6 +261,20 @@ function buildControlPoints(plan: BrewPlan, language?: string) {
     }
 
     switch (plan.methodFamily) {
+      case 'espresso':
+        return 'Watch yield, flow, and shot stop cue; do not add water like a manual filter brew.';
+      case 'aeropress':
+        return 'Watch steep, stir count, press duration, and stop before forcing the final hiss.';
+      case 'french_press':
+        return 'Watch immersion, fines settling, and decanting; do not look for drawdown or pour pulses.';
+      case 'moka_pot':
+        return 'Watch a level basket, boiler water below the valve, stable heat, and stop before sputter.';
+      case 'siphon':
+        return 'Watch draw-up, brief stirring, upper-chamber extraction, heat removal, and clean drawdown.';
+      case 'batch_brew':
+        return 'Watch dose per liter, machine volume, spray pattern, drawdown, and batch mixing before service.';
+      case 'cold_brew':
+        return 'Watch cool-water saturation, long steeping, then clean filtration; do not use a hot workflow.';
       case 'chemex':
         return 'Keep the stream off the thick filter wall so flow stays open through the finish.';
       case 'clever_dripper':
@@ -252,7 +297,7 @@ function buildControlPoints(plan: BrewPlan, language?: string) {
 
   if (isIndonesianAiBrewLanguage(language)) {
     return [
-      `Selesaikan antara ${formatTime(lowerBound)} dan ${formatTime(upperBound)}. Perbaiki flow sebelum mengubah rasio.`,
+      `Selesaikan antara ${formatTime(lowerBound)} dan ${formatTime(upperBound)}. Rasio, dosis, air, suhu, dan timing plan dikunci; perbaiki flow dulu.`,
       methodPoint,
       plan.waterMode === 'manual' || plan.waterCustomized
         ? 'Jangan ubah air dan grind dalam ronde cupping yang sama.'
@@ -261,7 +306,7 @@ function buildControlPoints(plan: BrewPlan, language?: string) {
   }
 
   return [
-    `Finish between ${formatTime(lowerBound)} and ${formatTime(upperBound)}. Fix flow before changing ratio.`,
+    `Finish between ${formatTime(lowerBound)} and ${formatTime(upperBound)}. Ratio, dose, water, temperature, and plan timing are locked; fix flow first.`,
     methodPoint,
     plan.waterMode === 'manual' || plan.waterCustomized
       ? 'Do not change water and grind in the same tasting round.'
@@ -270,15 +315,29 @@ function buildControlPoints(plan: BrewPlan, language?: string) {
 }
 
 function buildSourAdjustment(plan: BrewPlan, hardToExtract: boolean, highBufferWater: boolean, language?: string): ExtractionTasteAdjustment {
-  const useTempFirst = plan.waterTempC <= 90 || (hardToExtract && plan.waterTempC < 93);
+  const mayNeedTempNudge = plan.waterTempC <= 90 || (hardToExtract && plan.waterTempC < 93);
   const action = (() => {
     if (isIndonesianAiBrewLanguage(language)) {
       switch (plan.methodFamily) {
+        case 'espresso':
+          return 'Geser grinder sedikit lebih halus dulu; jaga yield target plan dan hanya rapikan flow bila shot masih asam.';
+        case 'aeropress':
+          return 'Tambah steep 10-15 detik atau stir 1-2 kali lebih banyak sebelum press.';
+        case 'french_press':
+          return 'Tambah steep 20-30 detik sebelum settle, lalu tetap decant bersih.';
+        case 'moka_pot':
+          return 'Gunakan heat lebih stabil dan hentikan tepat sebelum sputter; jika masih asam, grind sedikit lebih halus.';
+        case 'siphon':
+          return 'Tambah extract 10-15 detik di upper chamber dan pertahankan stir singkat.';
+        case 'batch_brew':
+          return 'Grind sedikit lebih halus dan cek distribusi spray; suhu +1 C hanya jika cup berikutnya masih asam.';
+        case 'cold_brew':
+          return 'Tambah steep 1-2 jam atau perbaiki saturasi awal tanpa mengubah rasio concentrate.';
         case 'clever_dripper':
           return 'Tambahkan steep 10-15 detik sebelum release, atau jika steep sudah terasa pas, geser grinder 0.5 step lebih halus.';
         case 'chemex':
-          return useTempFirst
-            ? 'Naikkan suhu air 1 C dan biarkan bloom membuka 5-10 detik lebih lama sambil menjaga stream menjauh dari dinding filter.'
+          return mayNeedTempNudge
+            ? 'Geser grinder 0.5 step lebih halus, beri bloom sedikit lebih lama, lalu suhu +1 C hanya jika seduhan berikutnya masih asam.'
             : 'Geser grinder 0.5 step lebih halus dan beri bloom sedikit lebih lama sebelum build pour.';
         case 'april':
           return 'Geser grinder 0.5 step lebih halus dan buat pulse tengah sedikit lebih penuh tanpa menambah swirl.';
@@ -288,23 +347,37 @@ function buildSourAdjustment(plan: BrewPlan, hardToExtract: boolean, highBufferW
         case 'kono':
           return 'Geser grinder 0.5 step lebih halus atau tahan contact tengah 5-8 detik lebih lama sebelum finish.';
         case 'origami':
-          return useTempFirst
-            ? 'Naikkan suhu air 1 C dan pertahankan pulse tetap ringkas.'
+          return mayNeedTempNudge
+            ? 'Geser grinder 0.5 step lebih halus, jaga pulse tetap ringkas, lalu suhu +1 C hanya jika masih asam.'
             : 'Geser grinder 0.5 step lebih halus dan tetap jaga pulse singkat.';
         case 'v60':
         default:
-          return useTempFirst
-            ? 'Naikkan suhu air 1 C untuk seduhan berikutnya dan pertahankan grind yang sama.'
+          return mayNeedTempNudge
+            ? 'Geser grinder 0.5 step lebih halus dulu; suhu +1 C hanya jika flow dan contact sudah benar tapi cup masih asam.'
             : 'Geser grinder 0.5 sampai 1 step lebih halus dan pertahankan pola tuang yang sama.';
       }
     }
 
     switch (plan.methodFamily) {
+      case 'espresso':
+        return 'Move the grinder slightly finer first; keep the planned target yield and only tidy flow if the shot stays sour.';
+      case 'aeropress':
+        return 'Add 10-15 seconds of steep or 1-2 more gentle stirs before pressing.';
+      case 'french_press':
+        return 'Add 20-30 seconds of steep before settling, then still decant cleanly.';
+      case 'moka_pot':
+        return 'Use steadier heat and stop just before sputter; if still sour, move the grind slightly finer.';
+      case 'siphon':
+        return 'Add 10-15 seconds of upper-chamber extraction and keep the stir brief.';
+      case 'batch_brew':
+        return 'Grind slightly finer and check spray distribution; use +1 C only if the next cup still tastes sour.';
+      case 'cold_brew':
+        return 'Add 1-2 hours of steep or improve initial saturation without changing the concentrate ratio.';
       case 'clever_dripper':
         return 'Add 10-15 seconds of steep before release, or if steep already feels right, move the grinder 0.5 step finer.';
       case 'chemex':
-        return useTempFirst
-          ? 'Raise water temperature by 1 C and let the bloom open 5-10 seconds longer while keeping the stream off the filter wall.'
+        return mayNeedTempNudge
+          ? 'Move the grinder 0.5 step finer, give the bloom slightly more time, then use +1 C only if the next brew stays sour.'
           : 'Move the grinder 0.5 step finer and give the bloom slightly more time before the build pour.';
       case 'april':
         return 'Move the grinder 0.5 step finer and let the middle pulse land slightly fuller without adding swirl.';
@@ -314,13 +387,13 @@ function buildSourAdjustment(plan: BrewPlan, hardToExtract: boolean, highBufferW
       case 'kono':
         return 'Move the grinder 0.5 step finer or hold the centered middle contact 5-8 seconds longer before the finish.';
       case 'origami':
-        return useTempFirst
-          ? 'Raise water temperature by 1 C and keep the pulses compact.'
+        return mayNeedTempNudge
+          ? 'Move the grinder 0.5 step finer, keep the pulses compact, then use +1 C only if sourness remains.'
           : 'Move the grinder 0.5 step finer and keep the pulses short.';
       case 'v60':
       default:
-        return useTempFirst
-          ? 'Raise water temperature by 1 C for the next brew and keep the same grind.'
+        return mayNeedTempNudge
+          ? 'Move the grinder 0.5 step finer first; use +1 C only after flow and contact are already correct but the cup stays sour.'
           : 'Move the grinder 0.5 to 1 step finer and keep the same pour pattern.';
     }
   })();
@@ -338,17 +411,33 @@ function buildSourAdjustment(plan: BrewPlan, hardToExtract: boolean, highBufferW
 }
 
 function buildBitterAdjustment(plan: BrewPlan, easyToExtract: boolean, language?: string): ExtractionTasteAdjustment {
-  const coolFirst = (easyToExtract && plan.waterTempC >= 91) || plan.waterTempC >= 94;
+  const mayNeedTempDrop = (easyToExtract && plan.waterTempC >= 91) || plan.waterTempC >= 94;
   const action = (() => {
     if (isIndonesianAiBrewLanguage(language)) {
       switch (plan.methodFamily) {
+        case 'espresso':
+          return mayNeedTempDrop
+            ? 'Geser grinder sedikit lebih kasar dan kurangi channeling; suhu -1 C hanya jika shot berikutnya tetap pahit.'
+            : 'Geser grinder sedikit lebih kasar dan hentikan shot di yield target.';
+        case 'aeropress':
+          return 'Pendekkan steep 10-15 detik, kurangi stir, dan press tanpa memaksa hiss.';
+        case 'french_press':
+          return 'Decant lebih cepat setelah settle dan hindari menekan plunger sampai fines naik.';
+        case 'moka_pot':
+          return 'Turunkan heat, angkat sebelum sputter, dan dinginkan base jika flow mulai blonding.';
+        case 'siphon':
+          return 'Kurangi extract 10-15 detik atau remove heat lebih cepat sambil menjaga drawdown bersih.';
+        case 'batch_brew':
+          return 'Geser grind sedikit lebih kasar atau pendekkan cycle mesin tanpa mengubah volume brew.';
+        case 'cold_brew':
+          return 'Pendekkan steep 1-2 jam atau encerkan setelah filtrasi; jangan tambah agitasi.';
         case 'clever_dripper':
-          return coolFirst
-            ? 'Turunkan suhu air 1 C atau release 10 detik lebih cepat sebelum mengubah grind.'
+          return mayNeedTempDrop
+            ? 'Geser grinder 0.5 step lebih kasar atau release 10 detik lebih cepat; suhu -1 C hanya jika masih kering.'
             : 'Geser grinder 0.5 step lebih kasar dan jaga release tetap tenang.';
         case 'chemex':
-          return coolFirst
-            ? 'Turunkan suhu air 1 C dan jaga stream menjauh dari dinding filter tebal di fase build.'
+          return mayNeedTempDrop
+            ? 'Geser grinder 0.5 step lebih kasar dan jaga stream menjauh dari dinding filter; suhu -1 C hanya jika masih kering.'
             : 'Geser grinder 0.5 sampai 1 step lebih kasar dan hindari membanjiri kertas di fase akhir.';
         case 'april':
           return 'Geser grinder 0.5 step lebih kasar dan pendekkan pulse agar contact tidak terlalu panjang.';
@@ -360,20 +449,36 @@ function buildBitterAdjustment(plan: BrewPlan, easyToExtract: boolean, language?
         case 'origami':
         case 'v60':
         default:
-          return coolFirst
-            ? 'Turunkan suhu air 1 C sebelum mengubah grind.'
+          return mayNeedTempDrop
+            ? 'Geser grinder 0.5 step lebih kasar dan kurangi agitasi; suhu -1 C hanya jika masih kering.'
             : 'Geser grinder 0.5 sampai 1 step lebih kasar dan buat tuangan akhir lebih lembut.';
       }
     }
 
     switch (plan.methodFamily) {
+      case 'espresso':
+        return mayNeedTempDrop
+          ? 'Move the grinder slightly coarser and reduce channeling; use -1 C only if the next shot stays bitter.'
+          : 'Move the grinder slightly coarser and stop the shot at target yield.';
+      case 'aeropress':
+        return 'Shorten steep by 10-15 seconds, reduce stirring, and press without forcing the hiss.';
+      case 'french_press':
+        return 'Decant earlier after settling and avoid plunging hard enough to lift fines.';
+      case 'moka_pot':
+        return 'Lower heat, remove before sputter, and cool the base if flow starts blonding.';
+      case 'siphon':
+        return 'Shorten extraction by 10-15 seconds or remove heat earlier while keeping drawdown clean.';
+      case 'batch_brew':
+        return 'Move the grind slightly coarser or shorten the machine cycle without changing brew volume.';
+      case 'cold_brew':
+        return 'Shorten steep by 1-2 hours or dilute after filtration; do not add agitation.';
       case 'clever_dripper':
-        return coolFirst
-          ? 'Lower water temperature by 1 C or release 10 seconds earlier before changing the grind.'
+        return mayNeedTempDrop
+          ? 'Move the grinder 0.5 step coarser or release 10 seconds earlier; use -1 C only if dryness remains.'
           : 'Move the grinder 0.5 step coarser and keep the release calm.';
       case 'chemex':
-        return coolFirst
-          ? 'Lower water temperature by 1 C and keep the stream off the thick filter wall during the build.'
+        return mayNeedTempDrop
+          ? 'Move the grinder 0.5 step coarser and keep the stream off the thick filter wall; use -1 C only if dryness remains.'
           : 'Move the grinder 0.5 to 1 step coarser and avoid flooding the paper late in the brew.';
       case 'april':
         return 'Move the grinder 0.5 step coarser and shorten the pulses so contact does not run too long.';
@@ -385,8 +490,8 @@ function buildBitterAdjustment(plan: BrewPlan, easyToExtract: boolean, language?
       case 'origami':
       case 'v60':
       default:
-        return coolFirst
-          ? 'Lower water temperature by 1 C before changing the grind.'
+        return mayNeedTempDrop
+          ? 'Move the grinder 0.5 step coarser and reduce agitation; use -1 C only if the finish still dries out.'
           : 'Move the grinder 0.5 to 1 step coarser and keep the last pour gentler.';
     }
   })();
@@ -399,71 +504,78 @@ function buildBitterAdjustment(plan: BrewPlan, easyToExtract: boolean, language?
   };
 }
 
-function buildThinAdjustment(plan: BrewPlan, softWater: boolean, language?: string): ExtractionTasteAdjustment {
-  const tightenRatioFirst = plan.recommendedRatio >= 16.2 || plan.brewMode === 'iced' || softWater;
+function buildThinAdjustment(plan: BrewPlan, _softWater: boolean, language?: string): ExtractionTasteAdjustment {
   const action = (() => {
     if (isIndonesianAiBrewLanguage(language)) {
       switch (plan.methodFamily) {
+        case 'espresso':
+          return 'Cek channeling dan distribusi puck; geser grind lebih halus sedikit bila flow terlalu cepat, tanpa mengubah yield atau dose.';
+        case 'aeropress':
+          return 'Pilih no-bypass, tingkatkan saturasi awal, dan press stabil tanpa mengubah rasio concentrate.';
+        case 'french_press':
+          return 'Cek decant agar tidak banyak bypass, lalu tambah contact singkat sebelum settle tanpa mengubah rasio.';
+        case 'moka_pot':
+          return 'Pastikan basket terisi rata sesuai plan; koreksi output dengan heat dan distribusi, bukan bypass.';
+        case 'siphon':
+          return 'Tambah extract singkat di upper chamber dan jaga drawdown bersih tanpa mengubah rasio.';
+        case 'batch_brew':
+          return 'Cek bypass basket, spray pattern, dan aduk batch sebelum service supaya konsentrasi merata.';
+        case 'cold_brew':
+          return 'Perbaiki saturasi awal dan filtrasi, lalu sajikan pada dilution plan yang sama.';
         case 'clever_dripper':
-          return tightenRatioFirst
-            ? 'Perketat rasio 0.3 sampai 0.5 dan pertahankan steep yang sama untuk satu seduhan uji.'
-            : 'Pertahankan rasio dan tambah sedikit contact di steep sebelum release, bukan agitasi ekstra.';
+          return 'Pertahankan rasio dan tambah sedikit contact di steep sebelum release, bukan agitasi ekstra.';
         case 'chemex':
-          return tightenRatioFirst
-            ? 'Perketat rasio 0.3 sampai 0.5 dan pertahankan grind yang sama untuk satu seduhan uji.'
-            : 'Pertahankan rasio yang sama dan buat build pour sedikit lebih stabil di tengah tanpa membanjiri filter.';
+          return 'Pertahankan rasio yang sama dan buat build pour sedikit lebih stabil di tengah tanpa membanjiri filter.';
         case 'april':
-          return tightenRatioFirst
-            ? 'Perketat rasio 0.3 dan pertahankan grind yang sama.'
-            : 'Pertahankan rasio dan biarkan pulse kedua membawa sedikit volume lebih besar tanpa menambah jeda.';
+          return 'Pertahankan rasio dan biarkan pulse kedua membawa contact sedikit lebih penuh tanpa menambah jeda.';
         case 'kalita_wave':
         case 'melitta':
-          return tightenRatioFirst
-            ? 'Perketat rasio 0.3 sampai 0.5 dan pertahankan grind yang sama untuk satu seduhan uji.'
-            : 'Pertahankan rasio dan geser sedikit lebih banyak air ke fase tengah sambil menjaga bed tetap rata.';
+          return 'Pertahankan rasio dan geser sedikit lebih banyak contact ke fase tengah sambil menjaga bed tetap rata.';
         case 'v60':
         case 'origami':
         case 'kono':
         default:
-          return tightenRatioFirst
-            ? 'Perketat rasio seduh 0.3 sampai 0.5 dan pertahankan grind yang sama untuk satu seduhan uji.'
-            : 'Pertahankan rasio yang sama dan buat tuangan tengah sedikit lebih penuh untuk menaikkan konsentrasi tanpa menyeret finish.';
+          return 'Pertahankan rasio yang sama dan buat tuangan tengah sedikit lebih penuh untuk menaikkan contact tanpa menyeret finish.';
       }
     }
 
     switch (plan.methodFamily) {
+      case 'espresso':
+        return 'Check channeling and puck distribution; move the grind slightly finer if flow runs fast, without changing yield or dose.';
+      case 'aeropress':
+        return 'Choose no-bypass, improve initial saturation, and press steadily without changing the concentrate ratio.';
+      case 'french_press':
+        return 'Check decanting for bypass, then add a brief contact hold before settling without changing the ratio.';
+      case 'moka_pot':
+        return 'Make sure the basket is full and level; correct output with heat, not bypass.';
+      case 'siphon':
+        return 'Add a brief upper-chamber extraction hold and keep drawdown clean without changing the ratio.';
+      case 'batch_brew':
+        return 'Check basket bypass, spray pattern, and batch mixing before service so concentration is even.';
+      case 'cold_brew':
+        return 'Improve initial saturation and filtration, then serve at the same planned dilution.';
       case 'clever_dripper':
-        return tightenRatioFirst
-          ? 'Tighten the ratio by 0.3 to 0.5 and keep the same steep time for one test brew.'
-          : 'Keep the same ratio and add a touch more steep contact before release instead of extra agitation.';
+        return 'Keep the same ratio and add a touch more steep contact before release instead of extra agitation.';
       case 'chemex':
-        return tightenRatioFirst
-          ? 'Tighten the ratio by 0.3 to 0.5 and keep the same grind for one test brew.'
-          : 'Keep the same ratio and make the build pour steadier through the middle without flooding the filter.';
+        return 'Keep the same ratio and make the build pour steadier through the middle without flooding the filter.';
       case 'april':
-        return tightenRatioFirst
-          ? 'Tighten the ratio by 0.3 and keep the same grind.'
-          : 'Keep the same ratio and let the second pulse carry slightly more volume without longer resets.';
+        return 'Keep the same ratio and let the second pulse carry slightly more contact without longer resets.';
       case 'kalita_wave':
       case 'melitta':
-        return tightenRatioFirst
-          ? 'Tighten the ratio by 0.3 to 0.5 and keep the same grind for one test brew.'
-          : 'Keep the same ratio and shift a little more water into the middle phase while the bed stays level.';
+        return 'Keep the same ratio and shift a little more contact into the middle phase while the bed stays level.';
       case 'v60':
       case 'origami':
       case 'kono':
       default:
-        return tightenRatioFirst
-          ? 'Tighten the brew ratio by 0.3 to 0.5 and keep the same grind for one test brew.'
-          : 'Keep the same ratio and make the middle pour slightly fuller to raise concentration without dragging the finish.';
+        return 'Keep the same ratio and make the middle pour slightly fuller to raise contact without dragging the finish.';
     }
   })();
   return {
     taste: 'thin',
     action,
     why: isIndonesianAiBrewLanguage(language)
-      ? 'Cangkir yang tipis dari setup ini biasanya datang dari konsentrasi rendah atau bypass, bukan hanya dari ukuran grind.'
-      : 'Thin cups from this setup usually come from low concentration or bypass, not only from grind size.',
+      ? 'Cangkir yang tipis dari setup ini biasanya datang dari bypass, flow terlalu cepat, atau contact tengah kurang stabil, bukan alasan untuk langsung mengubah rasio/dosis.'
+      : 'Thin cups from this setup usually come from bypass, fast flow, or unstable middle contact, not a reason to change ratio/dose first.',
   };
 }
 

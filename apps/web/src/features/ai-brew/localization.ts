@@ -31,6 +31,14 @@ export function localizeAiBrewTargetProfile(
       return 'Lebih Cerah';
     case 'more_body':
       return 'Body Lebih Tebal';
+    case 'floral_transparent':
+      return 'Floral & Transparan';
+    case 'fruit_forward':
+      return 'Buah Lebih Menonjol';
+    case 'soft_round':
+      return 'Lembut & Bulat';
+    case 'dense_comforting':
+      return 'Tebal & Nyaman';
     default:
       return fallbackLabel;
   }
@@ -210,6 +218,16 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/^High buffer can mute acidity and flatten floral coffees\.$/i, 'Buffer tinggi bisa meredam acidity dan membuat kopi floral terasa datar.')
     .replace(/^Process not specified\. No automatic process modifier was applied\.$/i, 'Proses belum ditentukan. Tidak ada modifier proses otomatis yang dipakai.')
     .replace(/^Variety not specified\. No automatic variety modifier was applied\.$/i, 'Varietas belum ditentukan. Tidak ada modifier varietas otomatis yang dipakai.')
+    .replace(/^Wet-hulled Indonesian cue: Dense & Comforting suggested\.$/i, 'Cue wet-hulled Indonesia: Tebal & Nyaman disarankan.')
+    .replace(/^Canephora\/non-arabica body cue: Dense & Comforting suggested\.$/i, 'Cue body canephora/non-arabica: Tebal & Nyaman disarankan.')
+    .replace(/^High-clarity variety cue: Floral & Transparent suggested\.$/i, 'Cue varietas berkejernihan tinggi: Floral & Transparan disarankan.')
+    .replace(/^Washed high-altitude cue: Floral & Transparent suggested\.$/i, 'Cue washed dataran tinggi: Floral & Transparan disarankan.')
+    .replace(/^Experimental high-variability process cue: Fruit-Forward suggested\.$/i, 'Cue proses eksperimental variabilitas tinggi: Buah Lebih Menonjol disarankan.')
+    .replace(/^Natural or high-aroma process cue: Fruit-Forward suggested\.$/i, 'Cue proses natural atau aroma tinggi: Buah Lebih Menonjol disarankan.')
+    .replace(/^Sweet\/body cue: Soft & Round suggested\.$/i, 'Cue manis/body: Lembut & Bulat disarankan.')
+    .replace(/^Unknown or weak evidence: Balance & Clean suggested\.$/i, 'Bukti lemah/tidak dikenal: Seimbang & Bersih disarankan.')
+    .replace(/^High variability process: use taste feedback before increasing extraction pressure\.$/i, 'Proses variabilitas tinggi: pakai feedback rasa sebelum menaikkan tekanan ekstraksi.')
+    .replace(/^Sensory taxonomy cue applied as a conservative baseline, not as a fixed flavor claim\.$/i, 'Cue taxonomy sensory dipakai sebagai baseline konservatif, bukan klaim rasa pasti.')
     .replace(/^Exact device profile unavailable; family fallback was used\.$/i, 'Profil alat exact tidak tersedia; fallback family dipakai.')
     .replace(/^Bean profile left neutral; no bean-specific modifier was applied\.$/i, 'Profil bean dibiarkan netral; tidak ada modifier spesifik bean yang dipakai.')
     .replace(/^Water source: manual mineral entry\.$/i, 'Sumber air: input mineral manual.')

@@ -1,14 +1,18 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { config as loadEnv } from 'dotenv';
+import { parse as parseEnv } from 'dotenv';
 
 const ROOT = process.cwd();
-const ENV_FILES = ['.env.production.local', '.env.local'];
+const ENV_FILES = ['.vercel/.env.production.local', '.env.production.local', '.env.local'];
 
 for (const file of ENV_FILES) {
   const fullPath = path.join(ROOT, file);
   if (fs.existsSync(fullPath)) {
-    loadEnv({ path: fullPath, override: false });
+    const parsed = parseEnv(fs.readFileSync(fullPath, 'utf8'));
+    for (const [key, value] of Object.entries(parsed)) {
+      if (!String(value || '').trim()) continue;
+      if (!process.env[key]) process.env[key] = value;
+    }
   }
 }
 

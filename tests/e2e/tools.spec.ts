@@ -148,6 +148,13 @@ function formatAiBrewTimerValue(totalSeconds: number) {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
+function formatAiBrewGuideValue(totalSeconds: number) {
+  const safeSeconds = Math.max(0, Math.round(Number(totalSeconds) || 0));
+  const minutes = Math.floor(safeSeconds / 60);
+  const seconds = safeSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
 test('tools tabs expose accessible tab semantics and keyboard navigation', async ({ page }) => {
   const aiTab = page.getByRole('tab', { name: 'AI Brew' });
   const timerTab = page.getByRole('tab', { name: 'Timer' });
@@ -543,6 +550,14 @@ test('ai brew generates a hot brew plan and saves it to collection', async ({ pa
   await expect(result).toContainText('QA Ethiopia Chelbesa');
   await expect(result.getByTestId('ai-brew-sequence-section')).toContainText(AI_BREW_SEQUENCE_HEADING);
   await expect(result.getByTestId('ai-brew-step-card-1')).toBeVisible();
+  const hotPlan = await readStoredAiBrewPlan(page);
+  const quickSetup = result.getByTestId('ai-brew-quick-setup');
+  await expect(quickSetup.getByTestId('ai-brew-quick-setup-grind')).toBeVisible();
+  await expect(quickSetup.getByTestId('ai-brew-quick-setup-water')).toContainText(`${hotPlan.totalWaterMl} ml`);
+  await expect(quickSetup.getByTestId('ai-brew-quick-setup-ratio')).toContainText(`1:${formatAiBrewDisplayRatio(hotPlan.finalBeverageRatio)}`);
+  await expect(quickSetup.getByTestId('ai-brew-quick-setup-time')).toContainText(formatAiBrewGuideValue(hotPlan.totalTimeSeconds));
+  await expect(quickSetup.getByTestId('ai-brew-quick-setup-temp')).toContainText(/°C/);
+  await expect(result.getByTestId('ai-brew-quick-cues')).toContainText(/Setup|Quick correction|Koreksi cepat/i);
 
   await page.getByTestId('ai-brew-save').click();
   await expect(page.getByText(AI_BREW_SAVED_COLLECTION)).toBeVisible();
@@ -620,6 +635,13 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
 
     if (mode === 'quick') {
       await expect(result.getByTestId('ai-brew-iced-calibration')).toHaveCount(0);
+      const quickSetup = result.getByTestId('ai-brew-quick-setup');
+      await expect(quickSetup.getByTestId('ai-brew-quick-setup-water')).toContainText(`${plan.hotWaterMl} ml`);
+      await expect(quickSetup.getByTestId('ai-brew-quick-setup-ice')).toContainText(new RegExp(`${plan.iceMl}\\s*(ml|g)`, 'i'));
+      await expect(quickSetup.getByTestId('ai-brew-quick-setup-ratio')).toContainText(`1:${formatAiBrewDisplayRatio(plan.finalBeverageRatio)}`);
+      await expect(quickSetup.getByTestId('ai-brew-quick-setup-time')).toContainText(formatAiBrewGuideValue(plan.totalTimeSeconds));
+      await expect(result.getByTestId('ai-brew-quick-cues')).toContainText(`${plan.hotWaterMl} ml`);
+      await expect(result.getByTestId('ai-brew-quick-cues')).toContainText(new RegExp(`${plan.iceMl}\\s*(ml|g)`, 'i'));
       await expect(result.getByTestId('ai-brew-step-card-3')).not.toContainText(/Saji|sajikan|serve/i);
       await expect(result.getByTestId('ai-brew-step-card-4')).toContainText(/Final Pour|Tuang Akhir/i);
     } else {

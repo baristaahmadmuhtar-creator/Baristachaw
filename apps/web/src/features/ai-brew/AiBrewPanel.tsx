@@ -3046,6 +3046,30 @@ function PlanResultDialog({
   const flowCurrentCue = flowCurrentStep
     ? (buildAiBrewStepMethodFocusCue(plan, flowCurrentStep, language) || buildAiBrewStepQuickNote(flowCurrentStep, language))
     : displaySummary;
+  const quickSetupItems = [
+    { id: 'grind', label: copy.grind, value: localizedGrindHeadline },
+    {
+      id: 'water',
+      label: plan.brewMode === 'iced' ? methodBrief.primaryLabel : copy.totalWater,
+      value: plan.brewMode === 'iced' ? formatRoundedMl(plan.hotWaterMl) : formatRoundedMl(plan.totalWaterMl),
+    },
+    ...(plan.iceMl > 0
+      ? [{ id: 'ice', label: copy.ice, value: formatRoundedGrams(plan.iceMl) }]
+      : []),
+    { id: 'ratio', label: copy.finalRatio, value: `1:${formatBrewRatio(plan.finalBeverageRatio)}` },
+    { id: 'time', label: copy.time, value: formatGuideTime(plan.totalTimeSeconds) },
+    { id: 'temp', label: copy.temp, value: formatRoundedTemperature(plan.waterTempC) },
+  ];
+  const quickPrepCue = plan.brewMode === 'iced'
+    ? (id
+      ? `Siapkan ${formatRoundedGrams(plan.iceMl)} es di server, seduh dengan ${formatRoundedMl(plan.hotWaterMl)} air panas, lalu aduk sebelum minum.`
+      : `Set ${formatRoundedGrams(plan.iceMl)} ice in the server, brew with ${formatRoundedMl(plan.hotWaterMl)} hot water, then stir before drinking.`)
+    : (id
+      ? `Siapkan ${formatRoundedMl(plan.totalWaterMl)} air di ${formatRoundedTemperature(plan.waterTempC)}, mulai timer, lalu ikuti langkah dari atas.`
+      : `Set ${formatRoundedMl(plan.totalWaterMl)} water at ${formatRoundedTemperature(plan.waterTempC)}, start the timer, then follow the steps top to bottom.`);
+  const quickCorrectionCue = id
+    ? 'Jika aliran terlalu cepat atau rasa asam tajam, sedikit lebih halus. Jika terlalu lambat, berat, atau pahit, sedikit lebih kasar.'
+    : 'If flow runs too fast or tastes sharply sour, go slightly finer. If it stalls, feels heavy, or turns bitter, go slightly coarser.';
   const resultHeaderClass = 'relative rounded-[1.5rem] border panel-divider-subtle panel-soft px-4 pb-4 pt-5 lg:px-5';
   const resultMetricCardClass = 'rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/84 p-3';
   const resultChipClass = 'rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-medium text-secondary';
@@ -3852,18 +3876,34 @@ function PlanResultDialog({
                           ? 'Ikuti langkah dari atas ke bawah. Fokus ke tuangan stabil, bed rata, dan cue koreksi yang muncul di tiap tahap.'
                           : 'Follow the steps from top to bottom. Focus on steady pouring, an even bed, and the correction cue inside each stage.'}
                       </p>
-                      <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-                        {[
-                          { label: id ? 'Profil' : 'Profile', value: localizedTargetProfileLabel },
-                          { label: copy.grind, value: localizedGrindHeadline },
-                          { label: copy.finalRatio, value: `1:${formatBrewRatio(plan.finalBeverageRatio)}` },
-                          { label: id ? 'Kontrol' : 'Control', value: id ? 'Flow stabil' : 'Stable flow' },
-                        ].map((item) => (
-                          <span key={item.label} className="rounded-xl bg-[var(--bg-base)]/82 px-2.5 py-2 text-secondary">
+                      <div
+                        className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3 xl:grid-cols-6"
+                        data-testid="ai-brew-quick-setup"
+                      >
+                        {quickSetupItems.map((item) => (
+                          <span
+                            key={item.id}
+                            className="rounded-xl bg-[var(--bg-base)]/84 px-2.5 py-2 text-secondary"
+                            data-testid={`ai-brew-quick-setup-${item.id}`}
+                          >
                             <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
                             <span className="font-semibold text-primary">{item.value}</span>
                           </span>
                         ))}
+                      </div>
+                      <div className="mt-3 grid gap-2 text-sm leading-5 sm:grid-cols-2" data-testid="ai-brew-quick-cues">
+                        <div className="rounded-xl border border-blue-500/14 bg-[var(--bg-base)]/74 px-3 py-2.5">
+                          <span className="block text-[10px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
+                            {id ? 'Setup' : 'Setup'}
+                          </span>
+                          <p className="mt-1 text-primary">{quickPrepCue}</p>
+                        </div>
+                        <div className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-3 py-2.5">
+                          <span className="block text-[10px] font-semibold uppercase tracking-widest text-tertiary">
+                            {id ? 'Koreksi cepat' : 'Quick correction'}
+                          </span>
+                          <p className="mt-1 text-secondary">{quickCorrectionCue}</p>
+                        </div>
                       </div>
                     </div>
                   )}

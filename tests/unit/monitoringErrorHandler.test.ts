@@ -75,9 +75,13 @@ test('monitoring endpoint records sanitized client errors into audit', async () 
   await withEnv(TEST_ENV, async () => {
     const originalFetch = globalThis.fetch;
     const originalConsoleError = console.error;
+    const originalConsoleWarn = console.warn;
     let auditWrite: any = null;
     const consoleLines: string[] = [];
     console.error = (...args: unknown[]) => {
+      consoleLines.push(args.map(String).join(' '));
+    };
+    console.warn = (...args: unknown[]) => {
       consoleLines.push(args.map(String).join(' '));
     };
     globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
@@ -102,6 +106,7 @@ test('monitoring endpoint records sanitized client errors into audit', async () 
     } finally {
       globalThis.fetch = originalFetch;
       console.error = originalConsoleError;
+      console.warn = originalConsoleWarn;
     }
 
     assert.equal(res.statusCode, 200);

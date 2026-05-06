@@ -5,6 +5,8 @@ type ErrorReportInput = {
   component?: string;
   source?: 'web' | 'pwa' | 'mobile' | 'admin';
   userId?: string;
+  severity?: 'info' | 'warning' | 'critical';
+  throttleMs?: number;
 };
 
 let installed = false;
@@ -33,11 +35,13 @@ function normalizeError(error: unknown): Pick<ErrorReportInput, 'message' | 'nam
 export function reportClientError(input: ErrorReportInput) {
   if (typeof window === 'undefined') return;
   const now = Date.now();
-  if (now - lastReportAt < 1_500) return;
+  const throttleMs = typeof input.throttleMs === 'number' ? Math.max(0, input.throttleMs) : 1_500;
+  if (throttleMs > 0 && now - lastReportAt < throttleMs) return;
   lastReportAt = now;
+  const { throttleMs: _throttleMs, ...reportInput } = input;
 
   const payload = {
-    ...input,
+    ...reportInput,
     source: input.source || runtimeSurface(),
     url: window.location.href,
     release: import.meta.env.VITE_APP_VERSION || import.meta.env.VITE_VERCEL_GIT_COMMIT_SHA || '',

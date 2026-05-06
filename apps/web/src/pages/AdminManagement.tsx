@@ -2934,6 +2934,41 @@ function AiProviderPanel({
       <div className="rounded-2xl border border-glass bg-[var(--bg-base)]/70 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
+            <p className="text-sm font-semibold text-primary">{admin.text('aiBrewFallbackTitle')}</p>
+            <p className="mt-1 text-xs leading-5 text-secondary">{admin.text('aiBrewFallbackSubtitle')}</p>
+          </div>
+          <StatusBadge
+            value={snapshot.aiBrewFallbacks.totalEvents > 0 ? 'warn' : 'pass'}
+            label={`${admin.text('aiBrewFallbackRate')} ${admin.number(snapshot.aiBrewFallbacks.fallbackRatePct)}%`}
+          />
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-4">
+          {[
+            { label: admin.text('aiBrewFallbackOptimizerRejected'), value: snapshot.aiBrewFallbacks.optimizerRejected },
+            { label: admin.text('aiBrewFallbackNoChange'), value: snapshot.aiBrewFallbacks.optimizerNoChange },
+            { label: admin.text('aiBrewFallbackSequence'), value: snapshot.aiBrewFallbacks.sequenceFallback },
+            { label: admin.text('aiBrewFallbackRecent'), value: snapshot.aiBrewFallbacks.totalEvents },
+          ].map((item) => (
+            <div key={item.label} className="rounded-xl bg-surface-alpha px-3 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-tertiary">{item.label}</p>
+              <p className="mt-1 text-xl font-semibold text-primary">{admin.number(item.value)}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 space-y-2">
+          {snapshot.aiBrewFallbacks.recentEvents.length ? snapshot.aiBrewFallbacks.recentEvents.slice(0, 5).map((event) => (
+            <div key={event.id} className="grid gap-1 rounded-xl bg-surface-alpha px-3 py-2 text-xs text-secondary sm:grid-cols-[auto_1fr_auto] sm:items-center">
+              <span className="font-semibold text-primary">{event.kind.replace(/_/g, ' ')}</span>
+              <span className="min-w-0 truncate">{event.detail}</span>
+              <span className="text-tertiary sm:text-right">{admin.date(event.createdAt)}</span>
+            </div>
+          )) : <p className="rounded-xl bg-surface-alpha px-3 py-4 text-center text-sm text-secondary">{admin.text('aiBrewFallbackNoEvents')}</p>}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-glass bg-[var(--bg-base)]/70 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
             <p className="text-sm font-semibold text-primary">{admin.text('aiBrewUsageTitle')}</p>
             <p className="mt-1 text-xs leading-5 text-secondary">{admin.text('aiBrewUsageSubtitle')}</p>
           </div>

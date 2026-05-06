@@ -4,9 +4,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const schemaPath = path.resolve('supabase/admin_management.sql');
+const productionVerificationPath = path.resolve('supabase/production_verification.sql');
 
 function schemaText() {
   return fs.readFileSync(schemaPath, 'utf8');
+}
+
+function productionVerificationText() {
+  return fs.readFileSync(productionVerificationPath, 'utf8');
 }
 
 test('admin management schema includes billing-ready plan and user columns', () => {
@@ -38,4 +43,11 @@ test('admin management schema includes atomic app quota consumption RPC', () => 
   assert.match(sql, /deep_requests = deep_requests \+ v_amount/i);
   assert.match(sql, /scanner_runs = scanner_runs \+ v_amount/i);
   assert.match(sql, /grant execute on function public\.consume_app_quota/i);
+});
+
+test('production verification explicitly checks consume_app_quota RPC', () => {
+  const sql = productionVerificationText();
+  assert.match(sql, /consume_app_quota_rpc/i);
+  assert.match(sql, /information_schema\.routines/i);
+  assert.match(sql, /routine_name = 'consume_app_quota'/i);
 });

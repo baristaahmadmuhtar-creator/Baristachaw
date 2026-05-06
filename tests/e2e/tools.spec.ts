@@ -626,7 +626,7 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
     await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(plan.finalBeverageRatio)}`);
     await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(plan.hotExtractionRatio)}`);
     await expect(result).toContainText(`${plan.hotWaterMl} ml`);
-    await expect(result).toContainText(`${plan.iceMl} ml`);
+    await expect(result).toContainText(new RegExp(`${plan.iceMl}\\s*(ml|g)`, 'i'));
     await expect(result.getByTestId('ai-brew-step-card-3')).not.toContainText(/Saji|sajikan|serve/i);
     await expect(result.getByTestId('ai-brew-step-card-4')).toContainText(/Final Pour|Tuang Akhir/i);
     return plan;

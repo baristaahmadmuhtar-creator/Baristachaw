@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useDeferredValue, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import Markdown from 'react-markdown';
 import {
@@ -37,6 +37,7 @@ import { useAiAccessGate } from '../../components/billing/AiAccessGate';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useRuntimeDisplayMode } from '../../hooks/useRuntimeDisplayMode';
 import { balancedResponseDetailed, raceChatResponse, deepThinkingResponseDetailed } from '../../services/gemini';
+import { reportClientError } from '../../services/errorReporting';
 import { createRecipeCollectionItem, saveCollectionItem, saveRecipe } from '../../services/storageService';
 import type { Recipe } from '../../types';
 import {
@@ -145,6 +146,9 @@ const AI_BREW_COACH_FAST_TIMEOUT_MS = 5000;
 const AI_BREW_COACH_DEEP_TIMEOUT_MS = 8500;
 const AI_BREW_COACH_TRANSLATION_TIMEOUT_MS = 1200;
 const AI_BREW_FEEDBACK_NOTE_MAX_LENGTH = 240;
+const LARGE_CATALOG_PICKER_KINDS = new Set<NonNullable<PickerKind>>(['process', 'variety']);
+const LARGE_CATALOG_INITIAL_LIMIT = 140;
+const LARGE_CATALOG_SEARCH_LIMIT = 96;
 const AI_BREW_ONLINE_PROVIDER_STACK = 'Groq Llama 3.3 70B, Gemini 2.5 Flash, DeepSeek Chat, Mistral Large, OpenAI GPT-4o mini, OpenRouter Llama fallback';
 const COPY = {
   en: {
@@ -2401,6 +2405,35 @@ function getAiBrewOptimizationFallbackMessage(language: string) {
     : 'AI optimization was skipped. The local planner kept the validated brew numbers.';
 }
 
+function compactAiBrewMonitoringDetails(details: unknown) {
+  if (Array.isArray(details)) {
+    return details.map((item) => String(item)).filter(Boolean).slice(0, 5).join(' | ').slice(0, 180);
+  }
+  if (details instanceof Error) return details.message.slice(0, 180);
+  return String(details || 'no_detail').replace(/\s+/g, ' ').trim().slice(0, 180);
+}
+
+function reportAiBrewRuntimeEvent({
+  name,
+  message,
+  details,
+  platform,
+}: {
+  name: 'ai_brew_optimizer_rejected' | 'ai_brew_optimizer_no_change' | 'ai_brew_sequence_fallback';
+  message: string;
+  details: unknown;
+  platform: 'web' | 'pwa';
+}) {
+  reportClientError({
+    name,
+    message: `${message} details=${compactAiBrewMonitoringDetails(details)}`,
+    component: 'AiBrewRuntime',
+    source: platform,
+    severity: 'warning',
+    throttleMs: 0,
+  });
+}
+
 function getFlowActiveStepIndex(plan: BrewPlan, elapsedSeconds: number) {
   if (plan.steps.length === 0) return -1;
 
@@ -2607,10 +2640,12 @@ function MasterPickerDialog({
   onSelect: (id: string) => void;
 }) {
   const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query);
   const [specialtyExpanded, setSpecialtyExpanded] = useState(false);
   const descriptionId = useId();
   const searchInputId = useId();
   const hasDescription = description.trim().length > 0;
+  const isLargeCatalog = LARGE_CATALOG_PICKER_KINDS.has(kind);
 
   useEffect(() => {
     if (!open) {
@@ -2620,10 +2655,20 @@ function MasterPickerDialog({
   }, [open]);
 
   const filteredItems = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) return items;
-    return items.filter((item) => item.searchText.includes(normalized));
-  }, [items, query]);
+    const normalized = deferredQuery.trim().toLowerCase();
+    if (!normalized) {
+      return isLargeCatalog ? items.slice(0, LARGE_CATALOG_INITIAL_LIMIT) : items;
+    }
+    const terms = normalized.split(/\s+/g).filter(Boolean).slice(0, 6);
+    const limit = isLargeCatalog ? LARGE_CATALOG_SEARCH_LIMIT : Number.POSITIVE_INFINITY;
+    const matches: PickerOption[] = [];
+    for (const item of items) {
+      if (!terms.every((term) => item.searchText.includes(term))) continue;
+      matches.push(item);
+      if (matches.length >= limit) break;
+    }
+    return matches;
+  }, [deferredQuery, isLargeCatalog, items]);
 
   const sections = useMemo(() => {
     const map = new Map<string, PickerOption[]>();
@@ -2695,7 +2740,7 @@ function MasterPickerDialog({
         ) : (
           sections.map(([section, sectionItems]) => {
             const isSpecialtySection = kind === 'dripper' && /specialty|spesialti/i.test(section);
-            const collapsed = isSpecialtySection && query.trim().length === 0 && !specialtyExpanded;
+            const collapsed = isSpecialtySection && deferredQuery.trim().length === 0 && !specialtyExpanded;
             return (
             <div key={section} className="mb-3 last:mb-0">
               {showSectionHeaders && section ? (
@@ -5202,6 +5247,12 @@ export function AiBrewPanel({
         }
 
         if (!optimized.applied) {
+          reportAiBrewRuntimeEvent({
+            name: 'ai_brew_optimizer_rejected',
+            message: getAiBrewOptimizationFallbackMessage(language),
+            details: optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
+            platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
+          });
           console.warn(
             getAiBrewOptimizationFallbackMessage(language),
             optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
@@ -5226,6 +5277,12 @@ export function AiBrewPanel({
           if (requireOnlineAiGenerate) {
             throw new Error('ai_brew_optimizer_unavailable');
           }
+          reportAiBrewRuntimeEvent({
+            name: 'ai_brew_optimizer_no_change',
+            message: copy.aiOptimizationNoChange,
+            details: optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
+            platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
+          });
           console.warn(
             copy.aiOptimizationNoChange,
             optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
@@ -5254,10 +5311,22 @@ export function AiBrewPanel({
             });
             if (hybridSequence.fallbackDiagnostics.length > 0) {
               logAiBrewSequenceFallback(language, hybridSequence.fallbackDiagnostics);
+              reportAiBrewRuntimeEvent({
+                name: 'ai_brew_sequence_fallback',
+                message: getAiBrewSequenceFallbackMessage(language),
+                details: hybridSequence.fallbackDiagnostics,
+                platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
+              });
             }
           }
         } catch (error) {
           logAiBrewSequenceFallback(language, error);
+          reportAiBrewRuntimeEvent({
+            name: 'ai_brew_sequence_fallback',
+            message: getAiBrewSequenceFallbackMessage(language),
+            details: error,
+            platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
+          });
         }
       }
       const journalEntry: BrewJournalEntry = {

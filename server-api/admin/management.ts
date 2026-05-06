@@ -159,6 +159,24 @@ type AdminAuditEvent = {
   severity: 'info' | 'warning' | 'critical';
 };
 
+type AdminAiBrewFallbackEvent = {
+  id: string;
+  createdAt: string;
+  kind: 'optimizer_rejected' | 'optimizer_no_change' | 'sequence_fallback' | 'unknown';
+  source: 'admin_audit_events' | 'runtime_audit';
+  detail: string;
+};
+
+type AdminAiBrewFallbackSnapshot = {
+  source: 'admin_audit_events' | 'runtime_audit';
+  totalEvents: number;
+  optimizerRejected: number;
+  optimizerNoChange: number;
+  sequenceFallback: number;
+  fallbackRatePct: number;
+  recentEvents: AdminAiBrewFallbackEvent[];
+};
+
 type AdminSystemCheck = {
   id: string;
   label: string;
@@ -210,6 +228,7 @@ type AdminSnapshot = {
   launchChecklist: LaunchChecklistItem[];
   featureFlags: AdminFeatureFlag[];
   ai: AiProviderAdminSnapshot;
+  aiBrewFallbacks: AdminAiBrewFallbackSnapshot;
   billing: {
     ready: boolean;
     mode: 'not_configured' | 'test' | 'live_ready';
@@ -947,6 +966,50 @@ function auditFromSupabase(row: any): AdminAuditEvent {
   };
 }
 
+function classifyAiBrewFallbackEvent(event: AdminAuditEvent): AdminAiBrewFallbackEvent['kind'] | null {
+  const text = `${event.action} ${event.target} ${event.detail}`.toLowerCase();
+  if (!text.includes('ai_brew') && !text.includes('ai brew')) return null;
+  if (text.includes('ai_brew_optimizer_no_change') || text.includes('optimizer no change')) return 'optimizer_no_change';
+  if (text.includes('ai_brew_optimizer_rejected') || text.includes('optimizer rejected')) return 'optimizer_rejected';
+  if (text.includes('ai_brew_sequence_fallback') || text.includes('sequence fallback')) return 'sequence_fallback';
+  return null;
+}
+
+function buildAiBrewFallbackSnapshot(
+  audit: AdminAuditEvent[],
+  ai: AiProviderAdminSnapshot,
+  source: AdminAiBrewFallbackSnapshot['source'],
+): AdminAiBrewFallbackSnapshot {
+  const recentEvents = audit
+    .map((event): AdminAiBrewFallbackEvent | null => {
+      const kind = classifyAiBrewFallbackEvent(event);
+      if (!kind) return null;
+      return {
+        id: event.id,
+        createdAt: event.createdAt,
+        kind,
+        source,
+        detail: event.detail.slice(0, 220),
+      };
+    })
+    .filter((event): event is AdminAiBrewFallbackEvent => Boolean(event))
+    .slice(0, 12);
+  const optimizerRejected = recentEvents.filter((event) => event.kind === 'optimizer_rejected').length;
+  const optimizerNoChange = recentEvents.filter((event) => event.kind === 'optimizer_no_change').length;
+  const sequenceFallback = recentEvents.filter((event) => event.kind === 'sequence_fallback').length;
+  const totalEvents = recentEvents.length;
+  const denominator = Math.max(totalEvents, totalEvents + ai.usage.today.requests);
+  return {
+    source,
+    totalEvents,
+    optimizerRejected,
+    optimizerNoChange,
+    sequenceFallback,
+    fallbackRatePct: denominator > 0 ? Math.round((totalEvents / denominator) * 100) : 0,
+    recentEvents,
+  };
+}
+
 function runtimeBilling(
   planCode: PlanCode,
   status: AccountStatus,
@@ -1508,6 +1571,7 @@ function buildChecks(dataMode: DataMode): AdminSystemCheck[] {
   const sentryConfigured = Boolean(readEnv('SENTRY_DSN', 'EXPO_PUBLIC_SENTRY_DSN', 'VITE_SENTRY_DSN'));
   const planEnforcementEnabled = envEnabled('PLAN_ENFORCEMENT_ENABLED');
   const planEnforcementReady = planEnforcementEnabled && dataMode === 'supabase';
+  const quotaStrictEnabled = envEnabled('PLAN_QUOTA_STRICT_ENABLED') || envEnabled('PLAN_ENFORCEMENT_STRICT');
 
   return [
     {
@@ -1602,6 +1666,22 @@ function buildChecks(dataMode: DataMode): AdminSystemCheck[] {
           : 'Enable PLAN_ENFORCEMENT_ENABLED after Supabase admin tables and consume_app_quota RPC are deployed.',
     },
     {
+      id: 'paid_ai_quota_failure_policy',
+      label: 'Paid AI quota failure policy',
+      status: planEnforcementReady && quotaStrictEnabled ? 'pass' : planEnforcementReady ? 'warn' : 'fail',
+      owner: 'Billing',
+      detail: planEnforcementReady && quotaStrictEnabled
+        ? 'Paid AI quota RPC outages fail closed in production strict mode.'
+        : planEnforcementReady
+          ? 'Paid AI quota consumption is enabled, but RPC outages currently soft-open for verified paid users.'
+          : 'Paid AI quota policy cannot be enforced until Supabase-backed plan enforcement is active.',
+      nextAction: planEnforcementReady && quotaStrictEnabled
+        ? undefined
+        : planEnforcementReady
+          ? 'Set PLAN_QUOTA_STRICT_ENABLED=true after confirming consume_app_quota is live in production.'
+          : 'Apply the admin migration, verify consume_app_quota, then enable PLAN_ENFORCEMENT_ENABLED.',
+    },
+    {
       id: 'telemetry',
       label: 'Crash and error telemetry',
       status: sentryConfigured ? 'pass' : 'warn',
@@ -1638,6 +1718,14 @@ function buildLaunchChecklist(checks: AdminSystemCheck[]): LaunchChecklistItem[]
       due: 'now',
       owner: 'Backend',
       action: 'Reject or degrade requests when daily plan quotas are exceeded.',
+    },
+    {
+      id: 'quota_rpc_outage_policy',
+      label: 'Paid AI quota outage policy selected',
+      status: statusFor('paid_ai_quota_failure_policy'),
+      due: 'now',
+      owner: 'Backend',
+      action: 'Use strict fail-closed quota mode for production paid AI after verifying consume_app_quota.',
     },
     {
       id: 'maintenance_controls',
@@ -1838,6 +1926,11 @@ async function buildAdminSnapshot(
 
   const metrics = metricsFromUsers(users);
   const ai = resolveAiProviderAdminSnapshot(featureFlags, aiUsageRange);
+  const aiBrewFallbacks = buildAiBrewFallbackSnapshot(
+    audit,
+    ai,
+    dataMode === 'supabase' ? 'admin_audit_events' : 'runtime_audit',
+  );
   const checks = buildChecks(dataMode);
   const billing = buildBillingSummary(users, plans, dataMode);
   const launchChecklist = buildLaunchChecklist(checks);
@@ -1873,6 +1966,7 @@ async function buildAdminSnapshot(
     launchChecklist,
     featureFlags,
     ai,
+    aiBrewFallbacks,
     billing,
     catalog,
     recipeLibrary,

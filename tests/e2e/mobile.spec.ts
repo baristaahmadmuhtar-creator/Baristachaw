@@ -107,6 +107,74 @@ test('mobile ai brew picker keeps dialog semantics and returns focus on close', 
   await expect(pickerTrigger).toBeFocused();
 });
 
+test('mobile ai brew quick generate supports Indonesian process and variety search', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/tools?tab=ai-brew');
+  await clearClientState(page);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
+
+  await page.getByTestId('ai-brew-open-quick').click();
+  await page.getByTestId('ai-brew-process-picker').click();
+  await page.getByTestId('ai-brew-picker-search-process').fill('giling basah');
+  await page.getByTestId('ai-brew-picker-option-process-wet_hulled').click();
+  await expect(page.getByTestId('ai-brew-process-picker')).toContainText(/Wet Hulled|Giling Basah/i);
+
+  await page.getByTestId('ai-brew-variety-picker').click();
+  await page.getByTestId('ai-brew-picker-search-variety').fill('s795');
+  await page.getByTestId('ai-brew-picker-option-variety-s795').click();
+  await expect(page.getByTestId('ai-brew-variety-picker')).toContainText(/S795/i);
+
+  await page.evaluate(() => {
+    const field = Array.from(document.querySelectorAll<HTMLInputElement>('[data-testid="ai-brew-coffee-name"]'))
+      .find((candidate) => candidate.offsetParent !== null);
+    if (!field) throw new Error('Missing field: ai-brew-coffee-name');
+    const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+    if (!descriptor?.set) throw new Error('Missing input setter: ai-brew-coffee-name');
+    field.scrollIntoView({ block: 'center', inline: 'nearest' });
+    field.focus();
+    descriptor.set.call(field, 'Mobile Indonesia Matrix');
+    field.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    field.dispatchEvent(new Event('change', { bubbles: true }));
+    field.blur();
+  });
+
+  await page.getByTestId('ai-brew-water-mode-manual').click();
+  const setNumericValue = async (testId: string, value: string) => {
+    const input = page.getByTestId(testId);
+    await expect(input).toBeVisible();
+    await page.evaluate(({ nextTestId, nextValue }) => {
+      const field = Array.from(document.querySelectorAll<HTMLInputElement>(`[data-testid="${nextTestId}"]`))
+        .find((candidate) => candidate.offsetParent !== null);
+      if (!field) throw new Error(`Missing field: ${nextTestId}`);
+      const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+      if (!descriptor?.set) throw new Error(`Missing input setter: ${nextTestId}`);
+      field.scrollIntoView({ block: 'center', inline: 'nearest' });
+      field.focus();
+      descriptor.set.call(field, nextValue);
+      field.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+      field.dispatchEvent(new Event('change', { bubbles: true }));
+      field.blur();
+    }, { nextTestId: testId, nextValue: value });
+    await expect(input).toHaveValue(value);
+  };
+  await setNumericValue('ai-brew-water-tds', '96');
+  await setNumericValue('ai-brew-water-hardness', '58');
+  await setNumericValue('ai-brew-water-alkalinity', '42');
+
+  await page.getByTestId('ai-brew-generate').click();
+  const result = page.getByTestId('ai-brew-result');
+  await expect(result).toBeVisible();
+  await expect(result).toContainText('Mobile Indonesia Matrix');
+  const storedPlan = await page.evaluate(() => {
+    const raw = localStorage.getItem('BARISTACHAW_AI_BREW_LAST_PLAN_V5');
+    return raw ? JSON.parse(raw).payload : null;
+  });
+  expect(storedPlan?.process).toMatch(/Wet Hulled|Giling Basah/i);
+  expect(storedPlan?.variety).toMatch(/S795/i);
+  await expect(page.getByTestId('mobile-bottom-nav')).toBeHidden();
+});
+
 test('mobile ai brew builder uses app fullscreen height in pwa profile', async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.includes('Mobile'), 'mobile-only fullscreen contract');
 

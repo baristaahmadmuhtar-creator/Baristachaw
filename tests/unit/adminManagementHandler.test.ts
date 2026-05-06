@@ -148,7 +148,10 @@ test('admin management returns runtime snapshot for allowlisted owner', async ()
   assert.ok(body.featureFlags.some((flag: any) => flag.key === 'ai_brew_fallback' && flag.status === 'available'));
   assert.ok(body.featureFlags.some((flag: any) => flag.key === 'ai_provider_groq' && flag.status === 'available'));
   assert.ok(body.ai && Array.isArray(body.ai.providers));
+  assert.ok(body.aiBrewFallbacks && Array.isArray(body.aiBrewFallbacks.recentEvents));
+  assert.equal(body.aiBrewFallbacks.totalEvents, 0);
   assert.ok(body.checks.some((check: any) => check.id === 'database_persistence' && check.status === 'fail'));
+  assert.ok(body.checks.some((check: any) => check.id === 'paid_ai_quota_failure_policy' && check.status === 'fail'));
 });
 
 test('admin management exposes AI provider inventory without leaking server keys', async () => {
@@ -237,6 +240,7 @@ test('admin management exposes AI Brew provider usage without prompt or key leak
   assert.ok(body.ai.usage.custom.providerBreakdown.some((item: any) => item.key === 'GEMINI' && item.requests === 1));
   assert.ok(body.ai.usage.custom.providerBreakdown.some((item: any) => item.key === 'GROQ' && item.rateLimited === 1));
   assert.equal(body.ai.usage.recentEvents.some((event: any) => event.feature === 'ai_chat'), false);
+  assert.equal(body.aiBrewFallbacks.totalEvents, 0);
   assert.equal(JSON.stringify(body).includes('gsk_live_secret'), false);
 });
 

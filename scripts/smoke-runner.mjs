@@ -86,6 +86,10 @@ function parseTokenList(value) {
     .filter(Boolean);
 }
 
+function isPaidPlanCode(value) {
+  return ['starter', 'pro', 'team', 'enterprise'].includes(String(value || '').trim().toLowerCase());
+}
+
 function splitSetCookieHeader(value) {
   return String(value || '')
     .split(/,(?=\s*[^;,=\s]+=[^;,]*)/g)
@@ -332,6 +336,24 @@ async function runAuthenticatedModeChecks({
     }
   } catch (error) {
     fail(results, 'GET /api/auth/me', `request_failed=${String(error instanceof Error ? error.message : error).slice(0, 160)}`);
+  }
+
+  try {
+    const account = await requestAny(baseUrl, '/api/account/status', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${normalToken}`,
+      },
+      timeoutMs: DEFAULT_TIMEOUT_MS,
+    });
+    const planCode = account.json?.user?.planCode || account.json?.plan?.code;
+    if (account.response.status === 200 && account.json?.ok === true && isPaidPlanCode(planCode)) {
+      pass(results, 'GET /api/account/status paid login', `plan=${planCode}`);
+    } else {
+      fail(results, 'GET /api/account/status paid login', `http=${account.response.status} plan=${String(planCode || 'unknown')} body=${account.text.slice(0, 160)}`);
+    }
+  } catch (error) {
+    fail(results, 'GET /api/account/status paid login', `request_failed=${String(error instanceof Error ? error.message : error).slice(0, 160)}`);
   }
 
   for (let i = 1; i <= samples; i++) {
@@ -588,6 +610,44 @@ async function runAuthenticatedModeChecks({
     if (aiDelayMs > 0) await sleep(Math.max(200, Math.floor(aiDelayMs / 2)));
   }
 
+  try {
+    const quickAiBrew = await requestAny(baseUrl, '/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${fastToken}`,
+        ...mockHeaders,
+      },
+      timeoutMs: chatTimeoutMs,
+      body: JSON.stringify({
+        message: 'AI Brew Quick production smoke: return one concise validated numeric adjustment tip for a Hario V60 washed Indonesian coffee. Mention dose, ratio, temperature, and one pour cue.',
+        mode: 'race',
+        responseProfile: {
+          language: 'en',
+          verbosity: 'short',
+          format: 'plain',
+          tone: 'professional',
+          ambiguityPolicy: 'assume',
+        },
+        clientContext: {
+          platform: 'web',
+          surface: 'tools',
+          feature: 'ai_brew',
+          appLanguage: 'en',
+          acceptLanguage: 'en-US,en;q=0.9',
+          action: 'quick_generate_smoke',
+        },
+      }),
+    });
+    if (quickAiBrew.response.status === 200 && quickAiBrew.text.trim()) {
+      pass(results, 'POST /api/chat paid Quick AI Brew generate', `text=${quickAiBrew.text.slice(0, 80).replace(/\s+/g, ' ')}`);
+    } else {
+      fail(results, 'POST /api/chat paid Quick AI Brew generate', `http=${quickAiBrew.response.status} body=${quickAiBrew.text.slice(0, 160)}`);
+    }
+  } catch (error) {
+    fail(results, 'POST /api/chat paid Quick AI Brew generate', `request_failed=${String(error instanceof Error ? error.message : error).slice(0, 160)}`);
+  }
+
   const p95Normal = percentile(timings.normal, 95);
   const p95Fast = percentile(timings.fast, 95);
 
@@ -688,6 +748,17 @@ async function runQaCookieAuthChecks({
       fail(results, 'GET /api/auth/me qa-cookie', `http=${me.response.status} body=${me.text.slice(0, 160)}`);
     }
 
+    const account = await requestAny(baseUrl, '/api/account/status', {
+      method: 'GET',
+      headers: authHeaders,
+    });
+    const planCode = account.json?.user?.planCode || account.json?.plan?.code;
+    if (account.response.status === 200 && account.json?.ok === true && isPaidPlanCode(planCode)) {
+      pass(results, 'GET /api/account/status qa-cookie paid login', `plan=${planCode}`);
+    } else {
+      fail(results, 'GET /api/account/status qa-cookie paid login', `http=${account.response.status} plan=${String(planCode || 'unknown')} body=${account.text.slice(0, 160)}`);
+    }
+
     const normal = await requestAny(baseUrl, '/api/chat', {
       method: 'POST',
       headers: authHeaders,
@@ -714,6 +785,36 @@ async function runQaCookieAuthChecks({
       pass(results, 'POST /api/chat qa-cookie', `text=${normal.text.slice(0, 80).replace(/\s+/g, ' ')}`);
     } else {
       fail(results, 'POST /api/chat qa-cookie', `http=${normal.response.status} body=${normal.text.slice(0, 160)}`);
+    }
+
+    const quickAiBrew = await requestAny(baseUrl, '/api/chat', {
+      method: 'POST',
+      headers: authHeaders,
+      timeoutMs: 45000,
+      body: JSON.stringify({
+        message: 'AI Brew Quick local smoke: return one concise validated numeric adjustment tip for a Hario V60 washed Indonesian coffee. Mention dose, ratio, temperature, and one pour cue.',
+        mode: 'race',
+        responseProfile: {
+          language: 'en',
+          verbosity: 'short',
+          format: 'plain',
+          tone: 'professional',
+          ambiguityPolicy: 'assume',
+        },
+        clientContext: {
+          platform: 'web',
+          surface: 'tools',
+          feature: 'ai_brew',
+          appLanguage: 'en',
+          acceptLanguage: 'en-US,en;q=0.9',
+          action: 'quick_generate_smoke',
+        },
+      }),
+    });
+    if (quickAiBrew.response.status === 200 && quickAiBrew.text.trim()) {
+      pass(results, 'POST /api/chat Quick AI Brew qa-cookie', `text=${quickAiBrew.text.slice(0, 80).replace(/\s+/g, ' ')}`);
+    } else {
+      fail(results, 'POST /api/chat Quick AI Brew qa-cookie', `http=${quickAiBrew.response.status} body=${quickAiBrew.text.slice(0, 160)}`);
     }
 
     const fast = await requestAny(baseUrl, '/api/ai', {

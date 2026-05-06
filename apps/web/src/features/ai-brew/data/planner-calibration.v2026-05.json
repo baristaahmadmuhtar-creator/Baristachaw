@@ -460,6 +460,18 @@
       "brewTimeDeltaSec": -3,
       "grindBias": "coarser"
     },
+    "andungsari": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "s795": {
+      "ratioDelta": 0.01,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -1,
+      "grindBias": "same"
+    },
     "kr1": {
       "ratioDelta": 0.05,
       "tempDeltaC": -0.4,
@@ -580,6 +592,12 @@
       "brewTimeDeltaSec": -3,
       "grindBias": "coarser"
     },
+    "catimor": {
+      "ratioDelta": 0.03,
+      "tempDeltaC": -0.2,
+      "brewTimeDeltaSec": -3,
+      "grindBias": "coarser"
+    },
     "rab_c15": {
       "ratioDelta": 0.01,
       "tempDeltaC": 0.1,
@@ -658,6 +676,12 @@
       "brewTimeDeltaSec": 2,
       "grindBias": "coarser"
     },
+    "ateng_super": {
+      "ratioDelta": 0.02,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": -2,
+      "grindBias": "coarser"
+    },
     "gayo_2": {
       "ratioDelta": -0.02,
       "tempDeltaC": -0.1,
@@ -679,6 +703,18 @@
     "timor_hybrid": {
       "ratioDelta": -0.01,
       "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "timtim": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": -0.1,
+      "brewTimeDeltaSec": 1,
+      "grindBias": "same"
+    },
+    "typica": {
+      "ratioDelta": -0.01,
+      "tempDeltaC": 0.1,
       "brewTimeDeltaSec": 1,
       "grindBias": "same"
     },

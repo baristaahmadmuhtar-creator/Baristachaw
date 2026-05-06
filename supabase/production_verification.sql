@@ -28,6 +28,23 @@ where table_schema = 'public'
   );
 
 select
+  'consume_app_quota_rpc' as check_name,
+  count(*) as found_count
+from information_schema.routines
+where specific_schema = 'public'
+  and routine_name = 'consume_app_quota'
+  and routine_type = 'FUNCTION';
+
+select
+  routine_schema,
+  routine_name,
+  data_type,
+  security_type
+from information_schema.routines
+where routine_schema = 'public'
+  and routine_name = 'consume_app_quota';
+
+select
   schemaname,
   tablename,
   rowsecurity

@@ -1816,6 +1816,77 @@ test('AI Brew process, variety, and origin knowledge catalog stays expanded and 
   assert.ok(asiaKeywords.has('papua new guinea'));
 });
 
+test('AI Brew regression matrix covers popular Indonesian process and variety combinations', () => {
+  const productionProcesses = readJsonItems<AiBrewCatalog['processes'][number]>('apps/web/public/data/ai-brew/processes.v2026-06.json');
+  const productionVarieties = readJsonItems<AiBrewCatalog['varieties'][number]>('apps/web/public/data/ai-brew/varieties.v2026-06.json');
+  const processIds = ['wet_hulled', 'washed', 'natural', 'honey', 'semi_washed', 'wine_process'];
+  const varietyIds = ['andungsari', 's795', 'ateng_super', 'timtim', 'typica', 'catimor', 'sigarar_utang'];
+  const calibration = JSON.parse(fs.readFileSync('apps/web/src/features/ai-brew/data/planner-calibration.v2026-05.json', 'utf8')) as {
+    processModifiers: Record<string, unknown>;
+    varietyModifiers: Record<string, unknown>;
+  };
+  const allFamilyCatalog = buildAllMethodFamilyCatalog();
+  const matrixCatalog: AiBrewCatalog = {
+    ...allFamilyCatalog,
+    processes: [
+      ...allFamilyCatalog.processes.filter((entry) => !processIds.includes(entry.id)),
+      ...productionProcesses.filter((entry) => processIds.includes(entry.id)),
+    ],
+    varieties: [
+      ...allFamilyCatalog.varieties.filter((entry) => !varietyIds.includes(entry.id)),
+      ...productionVarieties.filter((entry) => varietyIds.includes(entry.id)),
+    ],
+  };
+
+  for (const id of processIds) {
+    assert.ok(matrixCatalog.processes.some((entry) => entry.id === id), `${id} process should be selectable`);
+    assert.ok(calibration.processModifiers[id], `${id} process should have deterministic calibration`);
+  }
+  for (const id of varietyIds) {
+    assert.ok(matrixCatalog.varieties.some((entry) => entry.id === id), `${id} variety should be selectable`);
+    assert.ok(calibration.varietyModifiers[id], `${id} variety should have deterministic calibration`);
+  }
+
+  const baseInput = {
+    ...createDefaultAiBrewFormState(matrixCatalog),
+    doseG: '18',
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '96',
+    waterHardnessPpm: '58',
+    waterAlkalinityPpm: '42',
+  };
+  const scenarios = [
+    ['Gayo wet hulled S795', 'wet_hulled', 's795', 'more_body', 'medium'],
+    ['Java washed Andungsari', 'washed', 'andungsari', 'balance_clean', 'medium_light'],
+    ['Bali natural Typica', 'natural', 'typica', 'more_sweetness', 'light'],
+    ['Flores honey Catimor', 'honey', 'catimor', 'balance_clean', 'medium_light'],
+    ['Sumatra wine Ateng Super', 'wine_process', 'ateng_super', 'more_sweetness', 'medium'],
+    ['Toraja semi washed Timtim', 'semi_washed', 'timtim', 'more_body', 'medium'],
+    ['Kintamani natural Sigarar Utang', 'natural', 'sigarar_utang', 'more_sweetness', 'medium_light'],
+  ] as const;
+
+  for (const [coffeeName, process, variety, targetProfileId, roastLevel] of scenarios) {
+    const quickInput = createQuickAiBrewFormState({
+      ...baseInput,
+      coffeeName,
+      process,
+      variety,
+      targetProfileId,
+      roastLevel,
+    }, matrixCatalog);
+    const plan = buildAiBrewPlan(quickInput, matrixCatalog);
+    const diagnostics = [...plan.notes, ...plan.confidenceNotes].join(' ');
+    assertPlanEnvelope(plan);
+    assert.equal(plan.coffeeName, coffeeName);
+    assert.notEqual(plan.process, 'Not specified');
+    assert.notEqual(plan.variety, 'Not specified');
+    assert.doesNotMatch(diagnostics, /No automatic process modifier|No automatic variety modifier/i, `${coffeeName} should not fall back to missing process/variety calibration`);
+    assert.ok(plan.recommendedRatio >= 13 && plan.recommendedRatio <= 17.5, `${coffeeName} ratio should stay in filter service range`);
+    assert.ok(plan.waterTempC >= 88 && plan.waterTempC <= 97, `${coffeeName} temperature should stay practical`);
+  }
+});
+
 test('AI Brew grinder catalog publish rules keep sources, references, and ranges auditable', () => {
   type RawGrinder = {
     name?: string;

@@ -105,7 +105,18 @@ test('runSmoke uses QA test-auth cookie flow when bearer token is absent', async
     if (path === '/api/auth/me' && method === 'GET' && headers.cookie === 'auth_token=fake.jwt.token') {
       return new Response(JSON.stringify({
         authenticated: true,
-        user: { id: 'smoke-local-qa', email: 'smoke-local@example.com' },
+        user: { id: 'smoke-local-qa', email: 'smoke-local@example.com', planCode: 'starter' },
+      }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    if (path === '/api/account/status' && method === 'GET' && headers.cookie === 'auth_token=fake.jwt.token') {
+      return new Response(JSON.stringify({
+        ok: true,
+        user: { id: 'smoke-local-qa', planCode: 'starter' },
+        plan: { code: 'starter' },
       }), {
         status: 200,
         headers: { 'content-type': 'application/json' },
@@ -266,6 +277,7 @@ test('runSmoke uses QA test-auth cookie flow when bearer token is absent', async
 
   const protectedCalls = calls.filter(call =>
     call.path === '/api/auth/me'
+    || call.path === '/api/account/status'
     || call.path === '/api/auth/logout'
     || (call.path === '/api/chat' && call.headers.cookie)
     || (call.path === '/api/ai' && call.headers.cookie)
@@ -415,6 +427,7 @@ test('runSmoke auto-skips QA test-auth probe when local endpoint is unavailable'
 
   const protectedCalls = calls.filter(call =>
     (call.path === '/api/auth/me' && call.headers.cookie !== 'auth_token=guest.jwt.token')
+    || (call.path === '/api/account/status' && call.headers.cookie)
     || (call.path === '/api/chat' && call.headers.cookie)
     || (call.path === '/api/ai' && call.headers.cookie)
     || call.path === '/api/test-auth/logout',

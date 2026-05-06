@@ -136,6 +136,24 @@ export type AdminAuditEvent = {
   severity: 'info' | 'warning' | 'critical';
 };
 
+export type AdminAiBrewFallbackEvent = {
+  id: string;
+  createdAt: string;
+  kind: 'optimizer_rejected' | 'optimizer_no_change' | 'sequence_fallback' | 'unknown';
+  source: 'admin_audit_events' | 'runtime_audit';
+  detail: string;
+};
+
+export type AdminAiBrewFallbackSnapshot = {
+  source: 'admin_audit_events' | 'runtime_audit';
+  totalEvents: number;
+  optimizerRejected: number;
+  optimizerNoChange: number;
+  sequenceFallback: number;
+  fallbackRatePct: number;
+  recentEvents: AdminAiBrewFallbackEvent[];
+};
+
 export type AdminFeatureFlag = {
   key: string;
   label: string;
@@ -299,6 +317,7 @@ export type AdminSnapshot = {
   launchChecklist: LaunchChecklistItem[];
   featureFlags: AdminFeatureFlag[];
   ai: AdminAiProviderSnapshot;
+  aiBrewFallbacks: AdminAiBrewFallbackSnapshot;
   billing: {
     ready: boolean;
     mode: 'not_configured' | 'test' | 'live_ready';

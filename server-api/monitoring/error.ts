@@ -43,6 +43,12 @@ function safePathFromUrl(value: unknown): string {
   }
 }
 
+function normalizeSeverity(value: unknown): 'info' | 'warning' | 'critical' {
+  const raw = normalizeText(value, 20).toLowerCase();
+  if (raw === 'info' || raw === 'warning' || raw === 'critical') return raw;
+  return 'warning';
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const requestId = createRequestId(req);
   applyCors(req, res, 'POST, OPTIONS');
@@ -76,6 +82,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const release = normalizeText((body as any).release, 80);
   const stack = sanitizeErrorDetails(normalizeText((body as any).stack, 1200), 900);
   const userId = normalizeText((body as any).userId, 80);
+  const severity = normalizeSeverity((body as any).severity);
   const occurredAt = new Date().toISOString();
 
   const event = {
@@ -88,8 +95,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     message,
     release,
     hasStack: Boolean(stack),
+    severity,
   };
-  console.error(JSON.stringify({ level: 'error', type: 'client_error_reported', ...event }));
+  const level = severity === 'critical' ? 'error' : severity === 'info' ? 'info' : 'warn';
+  console[level](JSON.stringify({ level, type: 'client_error_reported', ...event }));
 
   const config = getSupabaseAdminConfig();
   if (config.configured) {
@@ -100,7 +109,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       target_id: route || source,
       action: 'client_error_reported',
       detail: `${source} ${component || 'app'}: ${message}`,
-      severity: 'warning',
+      severity,
       request_id: requestId,
       ip_hash: hashRequestIp(req),
       metadata: {

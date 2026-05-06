@@ -260,8 +260,15 @@ test('mobile ai brew result workspace keeps primary actions inside the viewport'
   await expect(page.getByTestId('ai-brew-result-tab-plan')).toHaveCount(0);
   await expect(page.getByTestId('ai-brew-result-tab-coach')).toHaveCount(0);
   await expect(page.getByTestId('ai-brew-result-brief')).toHaveCount(0);
+  await expect(result.getByTestId('ai-brew-result-metric-strip')).toHaveCount(0);
   await expect(result.getByTestId('ai-brew-sequence-section')).toBeVisible();
   await expect(page.getByTestId('ai-brew-use-timer')).toBeVisible();
+
+  const sequenceBox = await result.getByTestId('ai-brew-sequence-section').boundingBox();
+  const flowBox = await page.getByTestId('ai-brew-flow-toggle').boundingBox();
+  expect(sequenceBox).toBeTruthy();
+  expect(flowBox).toBeTruthy();
+  expect(sequenceBox!.y).toBeLessThan(flowBox!.y);
 
   const actionBox = await page.getByTestId('ai-brew-use-timer').boundingBox();
   const viewport = page.viewportSize();

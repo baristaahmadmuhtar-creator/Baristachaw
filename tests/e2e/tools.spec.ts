@@ -552,19 +552,6 @@ test('ai brew generates a hot brew plan and saves it to collection', async ({ pa
 });
 
 test('ai brew quick and pro modes honor target profile changes in the generated result', async ({ page }) => {
-  const parseMetric = (text: string, labels: string[]) => {
-    for (const label of labels) {
-      const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const match = text.match(new RegExp(`${escapedLabel}\\s*([0-9]+(?:\\.[0-9]+)?)`, 'i'));
-      if (match) return Number(match[1]);
-    }
-    return null;
-  };
-  const parseTimeSeconds = (text: string) => {
-    const match = text.match(/(?:Brew Time|Waktu Seduh)\s*(\d{1,2}):(\d{2})/i);
-    return match ? (Number(match[1]) * 60) + Number(match[2]) : null;
-  };
-
   await openAiBrewQuickMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Target Quick');
   await expect(page.getByTestId('ai-brew-dose')).toHaveAttribute('min', '10');
@@ -576,13 +563,14 @@ test('ai brew quick and pro modes honor target profile changes in the generated 
 
   const quickResult = page.getByTestId('ai-brew-result');
   await expect(quickResult).toContainText(/More Acidity|Lebih Cerah/i);
-  const quickText = (await quickResult.textContent()) || '';
-  const quickWater = parseMetric(quickText, ['Total Water', 'Total Air', 'Total air']);
-  const quickTemp = parseMetric(quickText, ['Temperature', 'Suhu']);
-  const quickTime = parseTimeSeconds(quickText);
-  expect(quickWater).toBeTruthy();
-  expect(quickTemp).toBeTruthy();
-  expect(quickTime).toBeTruthy();
+  await expect(quickResult.getByTestId('ai-brew-result-metric-strip')).toHaveCount(0);
+  const quickPlan = await readStoredAiBrewPlan(page);
+  const quickWater = quickPlan.totalWaterMl;
+  const quickTemp = quickPlan.waterTempC;
+  const quickTime = quickPlan.totalTimeSeconds;
+  expect(quickWater).toBeGreaterThan(0);
+  expect(quickTemp).toBeGreaterThan(0);
+  expect(quickTime).toBeGreaterThan(0);
 
   await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
 
@@ -597,26 +585,25 @@ test('ai brew quick and pro modes honor target profile changes in the generated 
 
   const proResult = page.getByTestId('ai-brew-result');
   await expect(proResult).toContainText(/More Body|Body Lebih Tebal/i);
-  const proText = (await proResult.textContent()) || '';
-  const proWater = parseMetric(proText, ['Total Water', 'Total Air', 'Total air']);
-  const proTemp = parseMetric(proText, ['Temperature', 'Suhu']);
-  const proTime = parseTimeSeconds(proText);
-  expect(proWater).toBeTruthy();
-  expect(proTemp).toBeTruthy();
-  expect(proTime).toBeTruthy();
+  await expect(proResult.getByTestId('ai-brew-result-metric-strip')).toBeVisible();
+  const proPlan = await readStoredAiBrewPlan(page);
+  const proWater = proPlan.totalWaterMl;
+  const proTemp = proPlan.waterTempC;
+  const proTime = proPlan.totalTimeSeconds;
+  expect(proWater).toBeGreaterThan(0);
+  expect(proTemp).toBeGreaterThan(0);
+  expect(proTime).toBeGreaterThan(0);
 
-  expect(proWater!).toBeLessThan(quickWater!);
-  expect(proTemp!).toBeGreaterThanOrEqual(quickTemp!);
-  expect(proTime!).toBeGreaterThan(quickTime!);
+  expect(proWater).toBeLessThan(quickWater);
+  expect(proTemp).toBeGreaterThanOrEqual(quickTemp);
+  expect(proTime).toBeGreaterThan(quickTime);
 });
 
 test('ai brew quick and pro iced modes show final ratio and hot concentrate split', async ({ page }) => {
-  const assertIcedResult = async (coffeeName: string) => {
+  const assertIcedResult = async (coffeeName: string, mode: 'quick' | 'pro') => {
     const result = page.getByTestId('ai-brew-result');
     await expect(result).toContainText(coffeeName);
     await expect(result).toContainText(/Ice|Es|Seduh Es/i);
-    await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Final ratio|Rasio Final/i);
-    await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Hot concentrate|Konsentrat Panas/i);
 
     const plan = await readStoredAiBrewPlan(page);
     expect(plan.brewMode).toBe('iced');
@@ -630,12 +617,20 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
     expect(plan.steps.map((step) => step.kind)).not.toContain('serve');
     expect(plan.steps[2]?.label).toMatch(/Pulse|Pour/i);
     expect(plan.steps[plan.steps.length - 1]?.label).toMatch(/Final Pour|Finish/i);
-    await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(plan.finalBeverageRatio)}`);
-    await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(plan.hotExtractionRatio)}`);
-    await expect(result).toContainText(`${plan.hotWaterMl} ml`);
-    await expect(result).toContainText(new RegExp(`${plan.iceMl}\\s*(ml|g)`, 'i'));
-    await expect(result.getByTestId('ai-brew-step-card-3')).not.toContainText(/Saji|sajikan|serve/i);
-    await expect(result.getByTestId('ai-brew-step-card-4')).toContainText(/Final Pour|Tuang Akhir/i);
+
+    if (mode === 'quick') {
+      await expect(result.getByTestId('ai-brew-iced-calibration')).toHaveCount(0);
+      await expect(result.getByTestId('ai-brew-step-card-3')).not.toContainText(/Saji|sajikan|serve/i);
+      await expect(result.getByTestId('ai-brew-step-card-4')).toContainText(/Final Pour|Tuang Akhir/i);
+    } else {
+      await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Final ratio|Rasio Final/i);
+      await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Hot concentrate|Konsentrat Panas/i);
+      await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(plan.finalBeverageRatio)}`);
+      await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(plan.hotExtractionRatio)}`);
+      await expect(result).toContainText(`${plan.hotWaterMl} ml`);
+      await expect(result).toContainText(new RegExp(`${plan.iceMl}\\s*(ml|g)`, 'i'));
+    }
+
     return plan;
   };
 
@@ -645,7 +640,7 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
   await page.getByTestId('ai-brew-dose').fill('20');
   await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
-  const quickPlan = await assertIcedResult('QA Quick Ice Split');
+  const quickPlan = await assertIcedResult('QA Quick Ice Split', 'quick');
 
   await page.getByRole('button', { name: /Close planned output|Tutup output plan/i }).click();
   await openAiBrewProMode(page);
@@ -655,7 +650,7 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
   await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByRole('button', { name: /More Body|Body Lebih Tebal/i }).click();
   await page.getByTestId('ai-brew-generate').click();
-  const proPlan = await assertIcedResult('QA Pro Ice Split');
+  const proPlan = await assertIcedResult('QA Pro Ice Split', 'pro');
 
   expect(proPlan.targetProfileLabel).toMatch(/Body/i);
   expect(proPlan.fingerprint).not.toBe(quickPlan.fingerprint);

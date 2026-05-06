@@ -3143,14 +3143,21 @@ function PlanResultDialog({
                   </span>
                 </div>
                 <h3 className="text-lg font-semibold tracking-tight text-primary sm:text-xl">{buildLocalizedPlanRecipeName(plan, language)}</h3>
-                <div className="mt-2 flex flex-wrap gap-1.5 text-xs font-semibold text-secondary">
-                  <span className={resultChipClass}>{formatRoundedGrams(plan.doseG)}</span>
-                  <span className={resultChipClass}>{planHeaderWater}</span>
-                  <span className={resultChipClass}>{formatGuideTime(plan.totalTimeSeconds)}</span>
-                  <span className={resultChipClass}>{formatRoundedTemperature(plan.waterTempC)}</span>
-                </div>
+                {!isQuickResult && (
+                  <div
+                    className="mt-2 flex flex-wrap gap-1.5 text-xs font-semibold text-secondary"
+                    data-testid="ai-brew-result-metric-strip"
+                  >
+                    <span className={resultChipClass}>{formatRoundedGrams(plan.doseG)}</span>
+                    <span className={resultChipClass}>{planHeaderWater}</span>
+                    <span className={resultChipClass}>{formatGuideTime(plan.totalTimeSeconds)}</span>
+                    <span className={resultChipClass}>{formatRoundedTemperature(plan.waterTempC)}</span>
+                  </div>
+                )}
                 <p id={descriptionId} className="sr-only">
-                  {formatRoundedGrams(plan.doseG)} - {planHeaderWater} - {formatGuideTime(plan.totalTimeSeconds)} - {formatRoundedTemperature(plan.waterTempC)}
+                  {isQuickResult
+                    ? (id ? 'Hasil Quick AI Brew berisi urutan seduh ringkas dan kontrol barista inti.' : 'Quick AI Brew result with a compact brew sequence and core barista controls.')
+                    : `${formatRoundedGrams(plan.doseG)} - ${planHeaderWater} - ${formatGuideTime(plan.totalTimeSeconds)} - ${formatRoundedTemperature(plan.waterTempC)}`}
                 </p>
                 {!isQuickResult && (
                   <div
@@ -3686,9 +3693,9 @@ function PlanResultDialog({
                 id={activeTabPanelId}
                 role="tabpanel"
                 aria-labelledby={isQuickResult ? undefined : activeTabId}
-                className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]"
+                className={isQuickResult ? 'grid gap-4' : 'grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]'}
               >
-                <div className="space-y-5">
+                <div className={isQuickResult ? 'order-2 space-y-5' : 'space-y-5'}>
                   <div className="rounded-[1.4rem] border border-blue-500/18 bg-blue-500/[0.08] p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
@@ -3728,34 +3735,51 @@ function PlanResultDialog({
                           ? buildAiBrewStepTargetCue(flowCurrentStep, language)
                           : displaySummary}
                       </p>
-                      <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 xl:grid-cols-2">
-                        <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowMetricDose}</span>
-                          <span className="font-semibold text-primary">{formatRoundedGrams(plan.doseG)}</span>
-                        </span>
-                        <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{methodBrief.primaryLabel}</span>
-                          <span className="font-semibold text-primary">{methodBrief.primaryValue}</span>
-                        </span>
-                        {plan.iceMl > 0 && (
+                      {isQuickResult ? (
+                        <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
                           <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.ice}</span>
-                            <span className="font-semibold text-primary">{formatRoundedGrams(plan.iceMl)}</span>
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.grind}</span>
+                            <span className="font-semibold text-primary">{localizedGrindHeadline}</span>
                           </span>
-                        )}
-                        <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
-                          <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
-                        </span>
-                        <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowRemaining}</span>
-                          <span className="font-semibold text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
-                        </span>
-                        <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                          <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowMetricTotal}</span>
-                          <span className="font-semibold text-primary">{formatGuideTime(plan.totalTimeSeconds)}</span>
-                        </span>
-                      </div>
+                          <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
+                            <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
+                          </span>
+                          <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary sm:col-span-1">
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{id ? 'Kontrol' : 'Control'}</span>
+                            <span className="font-semibold text-primary">{id ? 'Flow stabil + bed rata' : 'Stable flow + even bed'}</span>
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 xl:grid-cols-2">
+                          <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowMetricDose}</span>
+                            <span className="font-semibold text-primary">{formatRoundedGrams(plan.doseG)}</span>
+                          </span>
+                          <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{methodBrief.primaryLabel}</span>
+                            <span className="font-semibold text-primary">{methodBrief.primaryValue}</span>
+                          </span>
+                          {plan.iceMl > 0 && (
+                            <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                              <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.ice}</span>
+                              <span className="font-semibold text-primary">{formatRoundedGrams(plan.iceMl)}</span>
+                            </span>
+                          )}
+                          <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
+                            <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
+                          </span>
+                          <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowRemaining}</span>
+                            <span className="font-semibold text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
+                          </span>
+                          <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowMetricTotal}</span>
+                            <span className="font-semibold text-primary">{formatGuideTime(plan.totalTimeSeconds)}</span>
+                          </span>
+                        </div>
+                      )}
                       <p className="mt-3 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">
                         {flowCurrentCue}
                       </p>
@@ -3808,10 +3832,10 @@ function PlanResultDialog({
                   </div>
                 </div>
 
-                <div className="space-y-3" data-testid={isQuickResult ? 'ai-brew-sequence-section' : undefined}>
+                <div className={isQuickResult ? 'order-1 space-y-3' : 'space-y-3'} data-testid={isQuickResult ? 'ai-brew-sequence-section' : undefined}>
                   {isQuickResult && (
                     <div
-                      className="rounded-[1.2rem] border border-blue-500/18 bg-blue-500/[0.08] p-3.5"
+                      className="rounded-[1.2rem] border border-blue-500/18 bg-blue-500/[0.08] p-3.5 shadow-[0_16px_34px_rgba(37,99,235,0.1)]"
                       data-testid="ai-brew-sequence-note"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -3825,15 +3849,15 @@ function PlanResultDialog({
                       </div>
                       <p className="mt-2 text-sm leading-5 text-secondary">
                         {id
-                          ? 'Mulai dari bloom, jaga tuangan stabil, lalu selesaikan sesuai target volume dan waktu.'
-                          : 'Start with the bloom, keep pouring steady, then finish on the target volume and time.'}
+                          ? 'Ikuti langkah dari atas ke bawah. Fokus ke tuangan stabil, bed rata, dan cue koreksi yang muncul di tiap tahap.'
+                          : 'Follow the steps from top to bottom. Focus on steady pouring, an even bed, and the correction cue inside each stage.'}
                       </p>
                       <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
                         {[
-                          { label: copy.totalWater, value: formatRoundedMl(plan.totalWaterMl) },
-                          { label: copy.temp, value: formatRoundedTemperature(plan.waterTempC) },
-                          { label: copy.time, value: formatGuideTime(plan.totalTimeSeconds) },
+                          { label: id ? 'Profil' : 'Profile', value: localizedTargetProfileLabel },
                           { label: copy.grind, value: localizedGrindHeadline },
+                          { label: copy.finalRatio, value: `1:${formatBrewRatio(plan.finalBeverageRatio)}` },
+                          { label: id ? 'Kontrol' : 'Control', value: id ? 'Flow stabil' : 'Stable flow' },
                         ].map((item) => (
                           <span key={item.label} className="rounded-xl bg-[var(--bg-base)]/82 px-2.5 py-2 text-secondary">
                             <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
@@ -3841,25 +3865,6 @@ function PlanResultDialog({
                           </span>
                         ))}
                       </div>
-                      {plan.iceMl > 0 && (
-                        <div
-                          className="mt-3 grid gap-2 rounded-xl border border-sky-500/20 bg-sky-500/[0.08] px-3 py-2.5 text-xs text-secondary sm:grid-cols-3"
-                          data-testid="ai-brew-iced-calibration"
-                        >
-                          <span>
-                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
-                            <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
-                          </span>
-                          <span>
-                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.hotConcentrate}</span>
-                            <span className="font-semibold text-primary">1:{formatBrewRatio(plan.hotExtractionRatio)}</span>
-                          </span>
-                          <span>
-                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.ice}</span>
-                            <span className="font-semibold text-primary">{formatRoundedGrams(plan.iceMl)}</span>
-                          </span>
-                        </div>
-                      )}
                     </div>
                   )}
                   {plan.steps.map((step, index) => {

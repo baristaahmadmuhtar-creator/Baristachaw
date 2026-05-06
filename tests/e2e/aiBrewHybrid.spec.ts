@@ -224,7 +224,7 @@ test('ai brew taste feedback is saved in the local brew journal', async ({ page 
   const feedbackPanel = page.getByTestId('ai-brew-taste-feedback');
   await expect(feedbackPanel).toBeVisible({ timeout: 60_000 });
   await feedbackPanel.scrollIntoViewIfNeeded();
-  await feedbackPanel.locator('summary').click();
+  await expect(feedbackPanel.getByTestId('ai-brew-feedback-note')).toBeVisible();
   await feedbackPanel.getByTestId('ai-brew-feedback-note').fill('Drawdown cepat, grind satu klik lebih halus.');
   await feedbackPanel.getByTestId('ai-brew-feedback-sour').click();
   await expect(page.getByTestId('ai-brew-save-success')).toContainText(/Catatan rasa tersimpan|Taste feedback saved/i);
@@ -235,7 +235,7 @@ test('ai brew taste feedback is saved in the local brew journal', async ({ page 
   await expect(page.getByTestId('ai-brew-history-item')).toContainText(/Terlalu asam|Too sour/i);
   await page.getByTestId('ai-brew-history-item').click();
   const reloadedFeedbackPanel = page.getByTestId('ai-brew-taste-feedback');
-  await reloadedFeedbackPanel.locator('summary').click();
+  await expect(reloadedFeedbackPanel.getByTestId('ai-brew-feedback-note')).toBeVisible();
   await expect(reloadedFeedbackPanel.getByTestId('ai-brew-feedback-note')).toHaveValue(/Drawdown cepat/i);
   await expect(reloadedFeedbackPanel.getByTestId('ai-brew-feedback-sour')).toHaveAttribute('aria-pressed', 'true');
 });

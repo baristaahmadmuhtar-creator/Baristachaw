@@ -311,6 +311,11 @@ test('ai brew reveals custom process, variety, and water inputs', async ({ page 
   await expect(page.getByTestId('ai-brew-process-picker')).toBeVisible();
   await expect(page.getByTestId('ai-brew-variety-picker')).toBeVisible();
   await expect(page.getByTestId('ai-brew-bean-profile-toggle')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-water-picker')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-water-mode-manual')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-water-toggle-minerals')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-water-tds')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-builder-quick').getByText(/Cepat -|Quick -/i)).toHaveCount(0);
   await page.getByTestId('ai-brew-close-quick').click();
 
   await openAiBrewProMode(page);
@@ -428,20 +433,29 @@ test('ai brew water picker modal autofills a published brew-ready brand', async 
   await expect(page.getByTestId('ai-brew-result')).toContainText('Aqua');
 });
 
-test('ai brew water picker shows all deduped waters and keeps estimated brands visible', async ({ page }) => {
+test('ai brew quick water picker stays simple while pro keeps full water coverage', async ({ page }) => {
   await openAiBrewQuickMode(page);
   await page.getByTestId('ai-brew-water-picker').click();
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-pure-life-global')).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-aqua-id')).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-aqua-id')).not.toContainText(/TDS|GH|KH/i);
-  await expect(page.getByTestId('ai-brew-picker-option-water_brand-cleo-id')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-picker-option-water_brand-le-minerale-id')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-picker-option-water_brand-le-minerale-my')).toHaveCount(0);
-  await expect(page.getByTestId('ai-brew-picker-option-water_brand-pure-life-sg')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-picker-option-water_brand-heysong-water-sg')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-picker-option-water_brand-nestle-pure-life-global')).toHaveCount(0);
 
   await page.getByTestId('ai-brew-picker-search-water_brand').fill('volvic');
   await expect(page.getByRole('button', { name: /Select water brand Volvic/i })).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-volvic-sg')).toBeVisible();
+
+  await page.getByRole('button', { name: /Close picker|Tutup picker|Tutup/i }).click();
+  await page.getByTestId('ai-brew-close-quick').click();
+
+  await openAiBrewProMode(page);
+  await page.getByTestId('ai-brew-water-picker').click();
+  await expect(page.getByTestId('ai-brew-picker-option-water_brand-le-minerale-id')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-picker-option-water_brand-le-minerale-my')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-picker-option-water_brand-pure-life-sg')).toHaveCount(0);
+  await page.getByTestId('ai-brew-picker-search-water_brand').fill('heysong');
+  await expect(page.getByTestId('ai-brew-picker-option-water_brand-heysong-water-sg')).toBeVisible();
 });
 
 test('ai brew selecting a published water autofills complete minerals and keeps the editor optional', async ({ page }) => {
@@ -601,6 +615,12 @@ test('ai brew quick and pro modes honor target profile changes in the generated 
   const proResult = page.getByTestId('ai-brew-result');
   await expect(proResult).toContainText(/More Body|Body Lebih Tebal/i);
   await expect(proResult.getByTestId('ai-brew-result-metric-strip')).toBeVisible();
+  await expect(proResult.getByTestId('ai-brew-pro-why-recipe')).toBeVisible();
+  await expect(proResult.getByTestId('ai-brew-pro-target-compare')).toContainText(/More Acidity|Lebih Cerah/i);
+  await expect(proResult.getByTestId('ai-brew-pro-precision-tolerance')).toContainText(/Precision Tolerance|1C|Suhu/i);
+  await expect(proResult.getByTestId('ai-brew-pro-water-bean-intelligence')).toContainText(/TDS|GH|KH|Water|Air/i);
+  await expect(proResult.getByTestId('ai-brew-taste-feedback')).toBeVisible();
+  await expect(proResult.getByTestId('ai-brew-feedback-note')).toBeVisible();
   const proPlan = await readStoredAiBrewPlan(page);
   const proWater = proPlan.totalWaterMl;
   const proTemp = proPlan.waterTempC;

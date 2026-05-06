@@ -3070,6 +3070,140 @@ function PlanResultDialog({
   const quickCorrectionCue = id
     ? 'Jika aliran terlalu cepat atau rasa asam tajam, sedikit lebih halus. Jika terlalu lambat, berat, atau pahit, sedikit lebih kasar.'
     : 'If flow runs too fast or tastes sharply sour, go slightly finer. If it stalls, feels heavy, or turns bitter, go slightly coarser.';
+  const localizedProcessLabel = plan.process || copy.notSpecified;
+  const localizedVarietyLabel = plan.variety || copy.notSpecified;
+  const localizedRoastLabel = localizeAiBrewRoastLabel(plan.roastLevel, language);
+  const waterToleranceMl = Math.max(5, Math.round(plan.totalWaterMl * 0.02));
+  const hotWaterToleranceMl = Math.max(4, Math.round(plan.hotWaterMl * 0.02));
+  const drawdownLowSeconds = Math.max(45, plan.totalTimeSeconds - 15);
+  const drawdownHighSeconds = plan.totalTimeSeconds + 20;
+  const proWhyRecipeItems = [
+    {
+      label: copy.finalRatio,
+      value: `1:${formatBrewRatio(plan.finalBeverageRatio)}`,
+      detail: id
+        ? `Disetel untuk target ${localizedTargetProfileLabel}, proses ${localizedProcessLabel}, varietas ${localizedVarietyLabel}, dan output ${formatRoundedMl(plan.estimatedCupOutputMl)}.`
+        : `Set for ${localizedTargetProfileLabel}, ${localizedProcessLabel} process, ${localizedVarietyLabel} variety, and ${formatRoundedMl(plan.estimatedCupOutputMl)} output.`,
+    },
+    {
+      label: copy.temp,
+      value: formatRoundedTemperature(plan.waterTempC),
+      detail: id
+        ? `${localizedRoastLabel} dan ${localizedWaterStyle} dipakai untuk menjaga ekstraksi tetap jelas tanpa mendorong pahit.`
+        : `${localizedRoastLabel} roast and ${localizedWaterStyle} water keep extraction clear without pushing bitterness.`,
+    },
+    {
+      label: copy.grind,
+      value: localizedGrindHeadline,
+      detail: id
+        ? `${localizedGrindBandLabel}. Referensi grinder: ${localizedGrindSettingReference}.`
+        : `${localizedGrindBandLabel}. Grinder reference: ${localizedGrindSettingReference}.`,
+    },
+    {
+      label: copy.waterSourceUsed,
+      value: plan.waterBrandLabel || copy.waterSelectedManual,
+      detail: id
+        ? `Air ${localizedWaterStyle} dengan TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm} dibaca terhadap target rasa.`
+        : `${localizedWaterStyle} water with TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm} is read against the taste target.`,
+    },
+    {
+      label: copy.recipe,
+      value: `${plan.steps.length} ${copy.stepCountSuffix}`,
+      detail: id
+        ? `Flow mengikuti ${plan.dripper.name}: bloom, pulse, dan target volume dibuat agar drawdown finis sekitar ${formatGuideTime(plan.totalTimeSeconds)}.`
+        : `Flow follows ${plan.dripper.name}: bloom, pulses, and volume targets are shaped to finish around ${formatGuideTime(plan.totalTimeSeconds)}.`,
+    },
+  ];
+  const targetProfileCompareRows = [
+    {
+      id: 'balance_clean',
+      label: copy.balance,
+      ratio: plan.finalBeverageRatio,
+      temp: plan.waterTempC,
+      time: plan.totalTimeSeconds,
+      grind: id ? 'Baseline' : 'Baseline',
+      flow: id ? 'Pulse stabil, agitasi sedang' : 'Steady pulses, moderate agitation',
+    },
+    {
+      id: 'more_acidity',
+      label: copy.acidity,
+      ratio: plan.finalBeverageRatio + 0.4,
+      temp: plan.waterTempC + 1,
+      time: Math.max(75, plan.totalTimeSeconds - 5),
+      grind: id ? 'Sedikit lebih kasar' : 'Slightly coarser',
+      flow: id ? 'Flow lebih ringan, minim agitasi' : 'Lighter flow, lower agitation',
+    },
+    {
+      id: 'more_sweetness',
+      label: copy.sweetness,
+      ratio: plan.finalBeverageRatio + 0.2,
+      temp: plan.waterTempC,
+      time: plan.totalTimeSeconds + 10,
+      grind: id ? 'Sedikit lebih halus' : 'Slightly finer',
+      flow: id ? 'Bloom rapi, pulse halus' : 'Clean bloom, gentle pulses',
+    },
+    {
+      id: 'more_body',
+      label: copy.body,
+      ratio: Math.max(8, plan.finalBeverageRatio - 0.5),
+      temp: plan.waterTempC + 1,
+      time: plan.totalTimeSeconds + 15,
+      grind: id ? 'Lebih halus terkontrol' : 'Controlled finer grind',
+      flow: id ? 'Kontak lebih penuh, tuang tenang' : 'Fuller contact, calmer pour',
+    },
+  ];
+  const precisionToleranceItems = [
+    {
+      label: id ? 'Suhu' : 'Temperature',
+      value: `${formatRoundedTemperature(plan.waterTempC)} \u00b11C`,
+      detail: id ? 'Lewat dari range ini mulai ubah clarity dan bitterness.' : 'Outside this range, clarity and bitterness start to move.',
+    },
+    {
+      label: id ? 'Drawdown ideal' : 'Ideal drawdown',
+      value: `${formatGuideTime(drawdownLowSeconds)}-${formatGuideTime(drawdownHighSeconds)}`,
+      detail: id ? 'Finis lebih cepat: haluskan. Finis lebih lama: kasarkan.' : 'Faster finish: grind finer. Slower finish: grind coarser.',
+    },
+    {
+      label: id ? 'Adjustment grind' : 'Grind adjustment',
+      value: id ? '1-2 klik/angka' : '1-2 clicks/numbers',
+      detail: id ? 'Ubah kecil dulu, lalu seduh ulang dengan air dan suhu yang sama.' : 'Move small first, then rebrew with the same water and temperature.',
+    },
+    {
+      label: id ? 'Target air' : 'Water target',
+      value: `${formatRoundedMl(Math.max(0, plan.totalWaterMl - waterToleranceMl))}-${formatRoundedMl(plan.totalWaterMl + waterToleranceMl)}`,
+      detail: plan.iceMl > 0
+        ? (id
+          ? `Air panas aman ${formatRoundedMl(Math.max(0, plan.hotWaterMl - hotWaterToleranceMl))}-${formatRoundedMl(plan.hotWaterMl + hotWaterToleranceMl)}; es jaga sekitar ${formatRoundedGrams(plan.iceMl)}.`
+          : `Safe hot water ${formatRoundedMl(Math.max(0, plan.hotWaterMl - hotWaterToleranceMl))}-${formatRoundedMl(plan.hotWaterMl + hotWaterToleranceMl)}; keep ice around ${formatRoundedGrams(plan.iceMl)}.`)
+        : (id ? 'Target volume ini menjaga rasio akhir tetap konsisten.' : 'This target keeps the final ratio consistent.'),
+    },
+  ];
+  const waterBeanIntelligenceItems = [
+    {
+      label: copy.waterSourceUsed,
+      value: plan.waterBrandLabel || copy.waterSelectedManual,
+      detail: `TDS ${plan.waterMinerals.tdsPpm} - GH ${plan.waterMinerals.hardnessPpm} - KH ${plan.waterMinerals.alkalinityPpm} - ${localizedWaterStyle}`,
+    },
+    {
+      label: id ? 'Bean' : 'Bean',
+      value: `${localizedProcessLabel} / ${localizedVarietyLabel}`,
+      detail: id
+        ? `${localizedRoastLabel}; altitude ${plan.beanProfile.altitudeMasl ? `${plan.beanProfile.altitudeMasl} mdpl` : copy.notSpecified}; densitas ${plan.beanProfile.beanDensityGml ? `${plan.beanProfile.beanDensityGml} g/ml` : copy.notSpecified}.`
+        : `${localizedRoastLabel}; altitude ${plan.beanProfile.altitudeMasl ? `${plan.beanProfile.altitudeMasl} masl` : copy.notSpecified}; density ${plan.beanProfile.beanDensityGml ? `${plan.beanProfile.beanDensityGml} g/ml` : copy.notSpecified}.`,
+    },
+    {
+      label: copy.dripper,
+      value: plan.dripper.name,
+      detail: id
+        ? `Profil alat ${formatDeviceProfileMode(copy, plan.deviceProfileMode)}; flow disesuaikan dengan keluarga metode ${plan.methodFamily}.`
+        : `Device profile is ${formatDeviceProfileMode(copy, plan.deviceProfileMode)}; flow is matched to ${plan.methodFamily}.`,
+    },
+    {
+      label: copy.grinder,
+      value: plan.grinder.name,
+      detail: `${localizedGrindSettingReference} - ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}`,
+    },
+  ];
   const resultHeaderClass = 'relative rounded-[1.5rem] border panel-divider-subtle panel-soft px-4 pb-4 pt-5 lg:px-5';
   const resultMetricCardClass = 'rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/84 p-3';
   const resultChipClass = 'rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-medium text-secondary';
@@ -3367,6 +3501,114 @@ function PlanResultDialog({
                 </div>
               )}
 
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <section
+                  className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
+                  data-testid="ai-brew-pro-why-recipe"
+                >
+                  <div className="mb-3 flex items-center gap-2">
+                    <Info size={15} className="text-blue-500" />
+                    <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
+                      {id ? 'Kenapa Resep Ini' : 'Why This Recipe'}
+                    </h4>
+                  </div>
+                  <div className="grid gap-2">
+                    {proWhyRecipeItems.map((item) => (
+                      <div key={item.label} className="rounded-xl bg-surface-alpha px-3 py-2.5">
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{item.label}</p>
+                          <p className="text-sm font-semibold text-primary">{item.value}</p>
+                        </div>
+                        <p className="mt-1 text-xs leading-5 text-secondary">{item.detail}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section
+                  className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
+                  data-testid="ai-brew-pro-target-compare"
+                >
+                  <div className="mb-3 flex items-center gap-2">
+                    <Target size={15} className="text-emerald-500" />
+                    <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
+                      {id ? 'Compare Target Profile' : 'Target Profile Compare'}
+                    </h4>
+                  </div>
+                  <div className="grid gap-2">
+                    {targetProfileCompareRows.map((item) => {
+                      const active = item.id === plan.targetProfileId;
+                      return (
+                        <div
+                          key={item.id}
+                          className={`rounded-xl border px-3 py-2.5 ${
+                            active
+                              ? 'border-emerald-500/25 bg-emerald-500/10'
+                              : 'panel-divider-subtle bg-surface-alpha'
+                          }`}
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-sm font-semibold text-primary">{item.label}</p>
+                            <p className="text-[11px] font-semibold text-secondary">
+                              1:{formatBrewRatio(item.ratio)} / {formatRoundedTemperature(item.temp)} / {formatGuideTime(item.time)}
+                            </p>
+                          </div>
+                          <p className="mt-1 text-xs leading-5 text-secondary">
+                            {item.grind} - {item.flow}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              </div>
+
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <section
+                  className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
+                  data-testid="ai-brew-pro-precision-tolerance"
+                >
+                  <div className="mb-3 flex items-center gap-2">
+                    <Gauge size={15} className="text-amber-500" />
+                    <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
+                      {id ? 'Precision Tolerance' : 'Precision Tolerance'}
+                    </h4>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {precisionToleranceItems.map((item) => (
+                      <div key={item.label} className="rounded-xl bg-surface-alpha px-3 py-2.5">
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{item.label}</p>
+                        <p className="mt-1 text-sm font-semibold text-primary">{item.value}</p>
+                        <p className="mt-1 text-xs leading-5 text-secondary">{item.detail}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section
+                  className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
+                  data-testid="ai-brew-pro-water-bean-intelligence"
+                >
+                  <div className="mb-3 flex items-center gap-2">
+                    <FlaskConical size={15} className="text-sky-500" />
+                    <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
+                      {id ? 'Water + Bean Intelligence' : 'Water + Bean Intelligence'}
+                    </h4>
+                  </div>
+                  <div className="grid gap-2">
+                    {waterBeanIntelligenceItems.map((item) => (
+                      <div key={item.label} className="rounded-xl bg-surface-alpha px-3 py-2.5">
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{item.label}</p>
+                          <p className="text-sm font-semibold text-primary">{item.value}</p>
+                        </div>
+                        <p className="mt-1 text-xs leading-5 text-secondary">{item.detail}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
+
               {plan.iceMl > 0 && (
                 <div
                   className="rounded-[1.2rem] border border-sky-500/20 bg-sky-500/[0.08] p-4"
@@ -3539,7 +3781,7 @@ function PlanResultDialog({
                     title={copy.feedbackTitle}
                     summary={copy.feedbackDescription}
                     icon={<Coffee size={15} />}
-                    defaultOpen={false}
+                    defaultOpen
                     testId="ai-brew-taste-feedback"
                   >
                     <div className="mt-3 grid grid-cols-2 gap-2">
@@ -4998,18 +5240,24 @@ export function AiBrewPanel({
     return getUserFacingWaterBrands(catalog.waterBrands);
   }, [catalog]);
 
-  const suggestedWaterBrands = useMemo(() => (
-    getSuggestedWaterBrands(userFacingWaterBrands)
+  const quickSelectableWaterBrands = useMemo(() => (
+    userFacingWaterBrands.filter((item) => isWaterBrandAutofillAllowed(item))
   ), [userFacingWaterBrands]);
+
+  const builderWaterBrands = activeBuilderModal === 'quick' ? quickSelectableWaterBrands : userFacingWaterBrands;
+
+  const suggestedWaterBrands = useMemo(() => (
+    getSuggestedWaterBrands(builderWaterBrands)
+  ), [builderWaterBrands]);
 
   const pickerOptions = useMemo(() => {
     if (!catalog || !pickerKind) return [];
     if (pickerKind === 'process') return buildProcessPickerOptions(catalog, copy);
     if (pickerKind === 'variety') return buildVarietyPickerOptions(catalog, copy);
-    if (pickerKind === 'water_brand') return buildWaterPickerOptions(userFacingWaterBrands, copy, language);
+    if (pickerKind === 'water_brand') return buildWaterPickerOptions(builderWaterBrands, copy, language);
     if (pickerKind === 'dripper') return buildEquipmentPickerOptions(catalog.drippers, copy, 'dripper', language);
     return buildEquipmentPickerOptions(catalog.grinders, copy, 'grinder', language);
-  }, [catalog, copy, language, pickerKind, userFacingWaterBrands]);
+  }, [builderWaterBrands, catalog, copy, language, pickerKind]);
 
   const currentPreset = useMemo(() => {
     if (!plan) return undefined;
@@ -5139,15 +5387,17 @@ export function AiBrewPanel({
     : requireOnlineAiGenerate ? copy.aiEngineStrictRequired : copy.aiEngineLocalValidated;
   const preferredBuilderMode = inferPreferredBuilderMode(formState);
 
+  const isQuickBuilder = activeBuilderModal === 'quick';
   const mineralsReady = Boolean(formState.waterTdsPpm && formState.waterHardnessPpm && formState.waterAlkalinityPpm);
   const selectedWaterBrandCanAutofill = isWaterBrandAutofillAllowed(selectedWaterBrand);
-  const canCompleteWaterMinerals = Boolean(selectedWaterBrand && selectedWaterCompletion && !selectedWaterBrandCanAutofill);
+  const canCompleteWaterMinerals = !isQuickBuilder && Boolean(selectedWaterBrand && selectedWaterCompletion && !selectedWaterBrandCanAutofill);
   const waterNeedsManualEntry = formState.waterMode === 'manual'
     || !selectedWaterBrand
     || !selectedWaterBrandCanAutofill
     || formState.waterCustomized;
-  const shouldShowMineralEditor = showMineralEditor || waterNeedsManualEntry;
-  const canToggleMineralEditor = formState.waterMode === 'brand'
+  const shouldShowMineralEditor = !isQuickBuilder && (showMineralEditor || waterNeedsManualEntry);
+  const canToggleMineralEditor = !isQuickBuilder
+    && formState.waterMode === 'brand'
     && selectedWaterBrandCanAutofill;
 
   useEffect(() => {
@@ -5248,6 +5498,11 @@ export function AiBrewPanel({
     const prefill = buildWaterPrefillValues(brand);
     const knownFieldCount = countKnownWaterFields(brand);
     const canAutofill = isWaterBrandAutofillAllowed(brand);
+
+    if (isQuickBuilder && !canAutofill) {
+      setNotice(copy.waterNoPublishedMatches || copy.waterNoBrand);
+      return;
+    }
 
     setFormState((prev) => ({
       ...prev,
@@ -5802,6 +6057,27 @@ export function AiBrewPanel({
     }
     setFormError(null);
     setShowBeanProfileEditor(false);
+    if (mode === 'quick') {
+      const activeBrand = catalog.waterBrands.find((item) => item.id === formState.waterBrandId);
+      const quickBrand = activeBrand && isWaterBrandAutofillAllowed(activeBrand)
+        ? activeBrand
+        : quickSelectableWaterBrands[0];
+      if (quickBrand) {
+        const prefill = buildWaterPrefillValues(quickBrand);
+        setFormState((prev) => ({
+          ...prev,
+          waterMode: 'brand',
+          waterRegion: quickBrand.marketCode,
+          waterBrandId: quickBrand.id,
+          waterCustomized: false,
+          waterTdsPpm: prefill.waterTdsPpm,
+          waterHardnessPpm: prefill.waterHardnessPpm,
+          waterAlkalinityPpm: prefill.waterAlkalinityPpm,
+          waterNotes: quickBrand.notes[0] || '',
+        }));
+      }
+      setShowMineralEditor(false);
+    }
     setActiveBuilderModal(mode);
   }
 
@@ -5994,7 +6270,7 @@ export function AiBrewPanel({
       { value: '4', label: copy.pourCount4 },
       { value: '5', label: copy.pourCount5 },
     ] as const;
-    const dialogTitle = `${copy.title} - ${isPro ? copy.proBuilderTitle : copy.quickBuilderTitle}`;
+    const dialogTitle = isPro ? `${copy.title} - ${copy.proBuilderTitle}` : copy.title;
     const pourControlPanel = selectedDripperSupportsPourControl ? (
       <div className="rounded-[1.1rem] panel-soft p-3" data-testid="ai-brew-pour-control-panel">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
@@ -6152,7 +6428,7 @@ export function AiBrewPanel({
                 <div className="glass-card p-4 sm:p-5">
                   <div className="mb-3 flex items-center gap-2">
                     <Coffee size={16} className="text-blue-500" />
-                    <h3 className="text-base font-semibold">{copy.quickMode} - {copy.coffeeTitle}</h3>
+                    <h3 className="text-base font-semibold">{copy.coffeeTitle}</h3>
                   </div>
                   <div className="space-y-3.5">
                     <div>
@@ -6227,7 +6503,7 @@ export function AiBrewPanel({
                 <div className="glass-card p-4 sm:p-5">
                   <div className="mb-3 flex items-center gap-2">
                     <Beaker size={16} className="text-amber-500" />
-                    <h3 className="text-base font-semibold">{copy.quickMode} - {copy.equipmentTitle}</h3>
+                    <h3 className="text-base font-semibold">{copy.equipmentTitle}</h3>
                   </div>
                   <div className="space-y-3.5">
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -6270,27 +6546,29 @@ export function AiBrewPanel({
                         <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.waterSourceTitle}</h4>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 rounded-[1rem] panel-soft p-1.5">
-                        <button
-                          type="button"
-                          onClick={() => setWaterMode('brand')}
-                          className={`rounded-[0.9rem] px-4 py-2.5 text-sm font-medium transition-all ${formState.waterMode === 'brand' ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]' : 'text-secondary hover:text-primary'}`}
-                          data-testid="ai-brew-water-mode-brand"
-                        >
-                          {copy.waterBrand}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setWaterMode('manual')}
-                          className={`rounded-[0.9rem] px-4 py-2.5 text-sm font-medium transition-all ${formState.waterMode === 'manual' ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]' : 'text-secondary hover:text-primary'}`}
-                          data-testid="ai-brew-water-mode-manual"
-                        >
-                          {copy.waterManual}
-                        </button>
-                      </div>
+                      {isPro && (
+                        <div className="grid grid-cols-2 gap-2 rounded-[1rem] panel-soft p-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setWaterMode('brand')}
+                            className={`rounded-[0.9rem] px-4 py-2.5 text-sm font-medium transition-all ${formState.waterMode === 'brand' ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]' : 'text-secondary hover:text-primary'}`}
+                            data-testid="ai-brew-water-mode-brand"
+                          >
+                            {copy.waterBrand}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setWaterMode('manual')}
+                            className={`rounded-[0.9rem] px-4 py-2.5 text-sm font-medium transition-all ${formState.waterMode === 'manual' ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]' : 'text-secondary hover:text-primary'}`}
+                            data-testid="ai-brew-water-mode-manual"
+                          >
+                            {copy.waterManual}
+                          </button>
+                        </div>
+                      )}
 
                       <div className="mt-4 space-y-3">
-                        {formState.waterMode === 'brand' ? (
+                        {formState.waterMode === 'brand' || !isPro ? (
                           <div className="space-y-3">
                             <div>
                               <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.waterBrandPicker}</label>
@@ -6323,13 +6601,15 @@ export function AiBrewPanel({
                                     </button>
                                   );
                                 })}
-                                <button
-                                  type="button"
-                                  onClick={() => setWaterMode('manual')}
-                                  className="rounded-full bg-[var(--bg-base)] px-3 py-2 text-xs font-medium text-primary transition-all"
-                                >
-                                  {copy.waterManual}
-                                </button>
+                                {isPro && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setWaterMode('manual')}
+                                    className="rounded-full bg-[var(--bg-base)] px-3 py-2 text-xs font-medium text-primary transition-all"
+                                  >
+                                    {copy.waterManual}
+                                  </button>
+                                )}
                               </div>
                             )}
 
@@ -6347,14 +6627,16 @@ export function AiBrewPanel({
                                           mineralsReady,
                                         })}
                                       </span>
-                                      {isEstimatedWaterBaseline(selectedWaterBrand) && (
+                                      {isPro && isEstimatedWaterBaseline(selectedWaterBrand) && (
                                         <span className="rounded-full bg-amber-500/10 px-2 py-1 text-[11px] font-medium text-amber-700 dark:text-amber-300">
                                           {copy.waterBrandEstimated}
                                         </span>
                                       )}
-                                      <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">
-                                        {formatWaterDerivationLabel(copy, selectedWaterBrand.resolvedMinerals?.derivation)}
-                                      </span>
+                                      {isPro && (
+                                        <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">
+                                          {formatWaterDerivationLabel(copy, selectedWaterBrand.resolvedMinerals?.derivation)}
+                                        </span>
+                                      )}
                                       <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">
                                       {localizeAiBrewWaterClassificationLabel(selectedWaterBrand.classificationLabel, language)}
                                       </span>
@@ -6365,7 +6647,7 @@ export function AiBrewPanel({
                                         {buildWaterPolicyWarning(copy, selectedWaterBrand)}
                                       </p>
                                     )}
-                                    {!selectedWaterBrandCanAutofill && (
+                                    {isPro && !selectedWaterBrandCanAutofill && (
                                       <div className="mt-2 rounded-xl bg-[var(--bg-base)] px-3 py-2 text-xs text-secondary">
                                         <p className="font-semibold text-primary">{copy.waterWhyManualTitle}</p>
                                         <p className="mt-1">{copy.waterWhyManualBody}</p>
@@ -6416,14 +6698,14 @@ export function AiBrewPanel({
                               </div>
                             )}
                           </div>
-                        ) : (
+                        ) : isPro ? (
                           <div className="rounded-2xl bg-surface-alpha p-4">
                             <div className="flex items-center gap-2 text-sm font-semibold text-primary">
                               <FlaskConical size={15} className="text-sky-500" />
                               <span>{copy.waterSelectedManual}</span>
                             </div>
                           </div>
-                        )}
+                        ) : null}
 
                         {shouldShowMineralEditor && (
                           <div className="rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/78 p-4">
@@ -6529,7 +6811,7 @@ export function AiBrewPanel({
                 <div className="mb-3 flex items-center gap-2">
                   <SlidersHorizontal size={16} className="text-blue-500" />
                   <h3 className="text-base font-semibold">
-                    {isPro ? copy.proDetails : `${copy.quickMode} - ${copy.process} / ${copy.variety}`}
+                    {isPro ? copy.proDetails : `${copy.process} / ${copy.variety}`}
                   </h3>
                 </div>
                 <div className={`grid gap-4 ${isPro ? 'xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]' : ''}`}>

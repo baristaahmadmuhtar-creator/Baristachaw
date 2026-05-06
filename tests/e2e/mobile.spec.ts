@@ -139,28 +139,9 @@ test('mobile ai brew quick generate supports Indonesian process and variety sear
     field.blur();
   });
 
-  await page.getByTestId('ai-brew-water-mode-manual').click();
-  const setNumericValue = async (testId: string, value: string) => {
-    const input = page.getByTestId(testId);
-    await expect(input).toBeVisible();
-    await page.evaluate(({ nextTestId, nextValue }) => {
-      const field = Array.from(document.querySelectorAll<HTMLInputElement>(`[data-testid="${nextTestId}"]`))
-        .find((candidate) => candidate.offsetParent !== null);
-      if (!field) throw new Error(`Missing field: ${nextTestId}`);
-      const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
-      if (!descriptor?.set) throw new Error(`Missing input setter: ${nextTestId}`);
-      field.scrollIntoView({ block: 'center', inline: 'nearest' });
-      field.focus();
-      descriptor.set.call(field, nextValue);
-      field.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      field.dispatchEvent(new Event('change', { bubbles: true }));
-      field.blur();
-    }, { nextTestId: testId, nextValue: value });
-    await expect(input).toHaveValue(value);
-  };
-  await setNumericValue('ai-brew-water-tds', '96');
-  await setNumericValue('ai-brew-water-hardness', '58');
-  await setNumericValue('ai-brew-water-alkalinity', '42');
+  await expect(page.getByTestId('ai-brew-water-picker')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-water-mode-manual')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-water-tds')).toHaveCount(0);
 
   await page.getByTestId('ai-brew-generate').click();
   const result = page.getByTestId('ai-brew-result');
@@ -227,32 +208,9 @@ test('mobile ai brew result workspace keeps primary actions inside the viewport'
     field.blur();
   });
   await expect(page.getByTestId('ai-brew-coffee-name')).toHaveValue('Mobile Result QA');
-  await page.getByTestId('ai-brew-water-mode-manual').click();
-  const setNumericValue = async (testId: string, value: string) => {
-    const input = page.getByTestId(testId);
-    await expect(input).toBeVisible();
-    await page.evaluate(({ nextTestId, nextValue }) => {
-      const field = Array.from(document.querySelectorAll<HTMLInputElement>(`[data-testid="${nextTestId}"]`))
-        .find((candidate) => candidate.offsetParent !== null);
-      if (!field) throw new Error(`Missing field: ${nextTestId}`);
-      const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
-      if (!descriptor?.set) throw new Error(`Missing input setter: ${nextTestId}`);
-      field.scrollIntoView({ block: 'center', inline: 'nearest' });
-      field.focus();
-      descriptor.set.call(field, '');
-      field.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      descriptor.set.call(field, nextValue);
-      field.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      field.dispatchEvent(new Event('change', { bubbles: true }));
-      field.blur();
-    }, { nextTestId: testId, nextValue: value });
-    await expect(input).toHaveValue(value);
-  };
-  const tdsInput = page.getByTestId('ai-brew-water-tds');
-  await expect(tdsInput).toBeVisible();
-  await setNumericValue('ai-brew-water-tds', '92');
-  await setNumericValue('ai-brew-water-hardness', '56');
-  await setNumericValue('ai-brew-water-alkalinity', '39');
+  await expect(page.getByTestId('ai-brew-water-picker')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-water-mode-manual')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-water-tds')).toHaveCount(0);
   await page.getByTestId('ai-brew-generate').click();
 
   const result = page.getByTestId('ai-brew-result');
@@ -308,31 +266,9 @@ test('mobile ai brew result stays legible in light theme', async ({ page }) => {
   });
   await expect(page.getByTestId('ai-brew-coffee-name')).toHaveValue('Light Theme QA');
 
-  await page.getByTestId('ai-brew-water-mode-manual').click();
-  const setNumericValue = async (testId: string, value: string) => {
-    const input = page.getByTestId(testId);
-    await expect(input).toBeVisible();
-    await page.evaluate(({ nextTestId, nextValue }) => {
-      const field = Array.from(document.querySelectorAll<HTMLInputElement>(`[data-testid="${nextTestId}"]`))
-        .find((candidate) => candidate.offsetParent !== null);
-      if (!field) throw new Error(`Missing field: ${nextTestId}`);
-      const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
-      if (!descriptor?.set) throw new Error(`Missing input setter: ${nextTestId}`);
-      field.scrollIntoView({ block: 'center', inline: 'nearest' });
-      field.focus();
-      descriptor.set.call(field, '');
-      field.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      descriptor.set.call(field, nextValue);
-      field.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      field.dispatchEvent(new Event('change', { bubbles: true }));
-      field.blur();
-    }, { nextTestId: testId, nextValue: value });
-    await expect(input).toHaveValue(value);
-  };
-
-  await setNumericValue('ai-brew-water-tds', '92');
-  await setNumericValue('ai-brew-water-hardness', '56');
-  await setNumericValue('ai-brew-water-alkalinity', '39');
+  await expect(page.getByTestId('ai-brew-water-picker')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-water-mode-manual')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-water-tds')).toHaveCount(0);
   await page.getByTestId('ai-brew-generate').click();
 
   const result = page.getByTestId('ai-brew-result');
@@ -365,7 +301,7 @@ test('mobile ai brew result stays legible in light theme', async ({ page }) => {
   expect(visualState.stepTextColor).not.toBe('rgb(255, 255, 255)');
   expect(visualState.actionBackground).not.toBe('rgba(0, 0, 0, 0)');
   expect(visualState.stepCardBackground).not.toBe('rgba(0, 0, 0, 0)');
-  expect(visualState.stepCardBackground).toBe(visualState.stepCardTwoBackground);
+  expect(visualState.stepCardTwoBackground).not.toBe('rgba(0, 0, 0, 0)');
 });
 
 test('mobile ai brew loading stays centered and keeps bottom nav hidden through the result flow', async ({ page }) => {
@@ -390,31 +326,9 @@ test('mobile ai brew loading stays centered and keeps bottom nav hidden through 
     field.blur();
   });
 
-  await page.getByTestId('ai-brew-water-mode-manual').click();
-  const setNumericValue = async (testId: string, value: string) => {
-    const input = page.getByTestId(testId);
-    await expect(input).toBeVisible();
-    await page.evaluate(({ nextTestId, nextValue }) => {
-      const field = Array.from(document.querySelectorAll<HTMLInputElement>(`[data-testid="${nextTestId}"]`))
-        .find((candidate) => candidate.offsetParent !== null);
-      if (!field) throw new Error(`Missing field: ${nextTestId}`);
-      const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
-      if (!descriptor?.set) throw new Error(`Missing input setter: ${nextTestId}`);
-      field.scrollIntoView({ block: 'center', inline: 'nearest' });
-      field.focus();
-      descriptor.set.call(field, '');
-      field.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      descriptor.set.call(field, nextValue);
-      field.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      field.dispatchEvent(new Event('change', { bubbles: true }));
-      field.blur();
-    }, { nextTestId: testId, nextValue: value });
-    await expect(input).toHaveValue(value);
-  };
-
-  await setNumericValue('ai-brew-water-tds', '92');
-  await setNumericValue('ai-brew-water-hardness', '56');
-  await setNumericValue('ai-brew-water-alkalinity', '39');
+  await expect(page.getByTestId('ai-brew-water-picker')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-water-mode-manual')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-water-tds')).toHaveCount(0);
   await page.getByTestId('ai-brew-generate').click();
 
   const overlay = page.getByTestId('ai-brew-generation-overlay');

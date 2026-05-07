@@ -144,7 +144,7 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
 
   if (plan.waterClassification === 'zero_mineral_ro') {
     priorities.push(id
-      ? 'Jangan pakai air zero mineral/RO tanpa remineralisasi.'
+      ? 'Jangan dipakai tanpa remineralisasi.'
       : 'Do not use zero-mineral/RO water without remineralization.');
   } else if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady) {
     priorities.push(id

@@ -21,27 +21,32 @@ function hasOnlineAiOptimization(plan: BrewPlan) {
 
 function grinderStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
-  if (plan.grindSettingVerification === 'official') return id ? 'Grinder official' : 'Official grinder';
-  if (plan.grindSettingVerification === 'community_verified') return id ? 'Grinder komunitas' : 'Community grinder';
-  if (plan.grindSettingVerification === 'curated') return id ? 'Grinder curated' : 'Curated grinder';
-  return id ? 'Grinder baseline' : 'Estimated grinder';
+  if (plan.grindSettingMode === 'derived_baseline' || plan.grindSettingVerification === 'fallback') {
+    return id ? 'Grinder Fallback' : 'Grinder Fallback';
+  }
+  if (plan.grindSettingVerification === 'official') return id ? 'Grinder Official' : 'Grinder Official';
+  if (plan.grindSettingVerification === 'community_verified' || plan.grindSettingVerification === 'curated') {
+    return id ? 'Grinder Curated' : 'Grinder Curated';
+  }
+  return id ? 'Grinder Estimated' : 'Grinder Estimated';
 }
 
 function waterStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
-  if (plan.waterClassification === 'zero_mineral_ro') return id ? 'Air zero mineral' : 'Zero-mineral water';
-  if (plan.waterClassification === 'high_buffer') return id ? 'Air high buffer' : 'High-buffer water';
+  if (plan.waterClassification === 'zero_mineral_ro') return id ? 'Zero Mineral / RO' : 'Zero Mineral / RO';
+  if (plan.waterClassification === 'high_buffer') return id ? 'High Buffer' : 'High Buffer';
   if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady) {
-    return id ? 'Data air perlu manual' : 'Water needs manual minerals';
+    return id ? 'Manual Required' : 'Manual Required';
   }
-  return id ? 'Air siap' : 'Water ready';
+  if (plan.waterMineralDerivation === 'estimated_from_classification') return id ? 'Estimated' : 'Estimated';
+  return id ? 'Ready' : 'Ready';
 }
 
 function brewerStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
-  if (plan.deviceProfileMode === 'exact') return id ? 'Profil alat exact' : 'Exact brewer profile';
-  if (plan.deviceProfileMode === 'derived_template') return id ? 'Profil alat turunan' : 'Derived brewer profile';
-  return id ? 'Alat butuh kalibrasi' : 'Brewer needs calibration';
+  if (plan.deviceProfileMode === 'exact') return id ? 'Device Exact' : 'Device Exact';
+  if (plan.deviceProfileMode === 'derived_template') return id ? 'Derived Template' : 'Derived Template';
+  return id ? 'Family Fallback' : 'Family Fallback';
 }
 
 export function resolveAiBrewConfidenceBadges(plan: BrewPlan, language: string): AiBrewConfidenceBadge[] {
@@ -53,13 +58,13 @@ export function resolveAiBrewConfidenceBadges(plan: BrewPlan, language: string):
       label: waterStatusLabel(plan, language),
       tone: plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady
         ? 'amber'
-        : plan.waterClassification === 'high_buffer'
+        : plan.waterClassification === 'high_buffer' || plan.waterMineralDerivation === 'estimated_from_classification'
           ? 'amber'
           : 'emerald',
     },
     {
       label: grinderStatusLabel(plan, language),
-      tone: plan.grindSettingVerification === 'official'
+      tone: plan.grindSettingVerification === 'official' && plan.grindSettingMode !== 'derived_baseline'
         ? 'emerald'
         : plan.grindSettingVerification === 'curated' || plan.grindSettingVerification === 'community_verified'
           ? 'blue'
@@ -137,20 +142,38 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
       : 'If sour/thin: slightly finer or light pulse. If bitter/stalled: slightly coarser or less agitation.',
   ];
 
-  if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady) {
+  if (plan.waterClassification === 'zero_mineral_ro') {
+    priorities.push(id
+      ? 'Jangan pakai air zero mineral/RO tanpa remineralisasi.'
+      : 'Do not use zero-mineral/RO water without remineralization.');
+  } else if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady) {
     priorities.push(id
       ? 'Data air belum siap otomatis; isi mineral manual atau pakai air brew-ready sebelum menilai resep.'
       : 'Water data is not ready for autofill; enter manual minerals or use brew-ready water before judging the recipe.');
   } else if (plan.waterClassification === 'high_buffer') {
     priorities.push(id
-      ? 'Air high-buffer bisa meredam acidity; nilai clarity dulu sebelum menaikkan ekstraksi.'
-      : 'High-buffer water can mute acidity; judge clarity before pushing extraction harder.');
+      ? 'Air berbuffer tinggi bisa membuat acidity/floral lebih muted.'
+      : 'High-buffer water can make acidity/floral taste more muted.');
+  } else if (plan.waterMineralDerivation === 'estimated_from_classification') {
+    priorities.push(id
+      ? 'Mineral air masih estimated; verifikasi manual sebelum menganggapnya brew-ready.'
+      : 'Water minerals are estimated; verify manually before treating it as brew-ready.');
   }
 
   if (plan.deviceProfileMode !== 'exact') {
     priorities.push(id
       ? 'Profil alat bukan exact; jadikan ini baseline dan kalibrasi dengan rasa aktual.'
       : 'Brewer profile is not exact; use this as a baseline and calibrate with actual taste.');
+  }
+
+  if (plan.grindSettingMode === 'derived_baseline' || plan.grindSettingVerification === 'fallback') {
+    priorities.push(id
+      ? 'Estimasi awal, bukan setting resmi. Validasi dengan drawdown dan rasa.'
+      : 'Estimated starting point, not an official setting. Validate with drawdown and taste.');
+  } else if (plan.grindSettingVerification === 'dataset_unverified') {
+    priorities.push(id
+      ? 'Setting grinder masih estimated. Validasi dengan drawdown dan rasa.'
+      : 'Grinder setting is estimated. Validate with drawdown and taste.');
   }
 
   if (beanCue && priorities.length < 4) priorities.push(beanCue);

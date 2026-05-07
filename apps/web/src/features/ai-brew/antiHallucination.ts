@@ -136,6 +136,18 @@ export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
     if (!(plan.estimatedCupOutputMl < plan.totalWaterMl)) {
       reasons.push('iced estimatedCupOutputMl must be lower than totalWaterMl');
     }
+    const volumeTargetSteps = plan.steps.filter((step) => {
+      const kind = step.kind || 'pour';
+      return (kind === 'pour' || kind === 'extract') && step.pourVolumeMl > 0;
+    });
+    const lastVolumeTargetStep = volumeTargetSteps[volumeTargetSteps.length - 1];
+    const totalPouredHotWaterMl = volumeTargetSteps.reduce((sum, step) => sum + step.pourVolumeMl, 0);
+    if (!lastVolumeTargetStep || Math.abs(lastVolumeTargetStep.targetVolumeMl - plan.hotWaterMl) > 1) {
+      reasons.push('iced last hot-water target step must equal hotWaterMl');
+    }
+    if (Math.abs(totalPouredHotWaterMl - plan.hotWaterMl) > 1) {
+      reasons.push('iced pour/extract volume sum must equal hotWaterMl');
+    }
   }
 
   const narrative = [

@@ -269,7 +269,7 @@ const DEFAULT_TARGET_POUR_BEHAVIORS: Record<string, TargetProfilePourBehavior> =
     middleLoadBias: 'balanced',
     finalLoadBias: 'balanced',
     agitation: 'controlled',
-    pourHeight: 'medium',
+    pourHeight: 'low',
     drawdownBias: 'slower',
   },
   floral_transparent: {
@@ -305,7 +305,7 @@ const DEFAULT_TARGET_POUR_BEHAVIORS: Record<string, TargetProfilePourBehavior> =
     middleLoadBias: 'balanced',
     finalLoadBias: 'balanced',
     agitation: 'controlled',
-    pourHeight: 'medium',
+    pourHeight: 'low',
     drawdownBias: 'slower',
   },
 };
@@ -1232,6 +1232,18 @@ type TargetFamilyAdjustment = CalibrationAdjustment & {
   middleShareDelta: number;
   lastShareDelta: number;
 };
+
+type TargetAwareProcessAdjustment = CalibrationAdjustment & {
+  minTempC?: number;
+  maxTempC?: number;
+};
+
+type MethodTargetBehaviorPatch = CalibrationAdjustment;
+
+type StepTechniqueMetadata = Pick<
+  BrewPlanStep,
+  'flowRateMlPerSec' | 'pourPath' | 'pourHeight' | 'agitationLevel'
+>;
 
 type OriginTargetMethodAdjustment = CalibrationAdjustment & {
   finalWindowDeltaSec: number;
@@ -2424,6 +2436,178 @@ function deriveSensoryBiasAdjustment(params: {
     notes,
     confidenceNotes,
   };
+}
+
+function resolveTargetAwareProcessAdjustment(params: {
+  input: AiBrewFormState;
+  targetProfile: TargetProfile;
+  processEntry?: ProcessCatalogEntry;
+  varietyEntry?: VarietyCatalogEntry;
+}): TargetAwareProcessAdjustment {
+  const adjustment: TargetAwareProcessAdjustment = createNeutralCalibrationAdjustment();
+  const targetId = String(params.targetProfile.id || '').toLowerCase();
+  const targetIntent = resolveTargetIntent(params.targetProfile.label, params.targetProfile.id);
+  const processId = String(params.processEntry?.id || params.input.process || '').toLowerCase();
+  const species = params.varietyEntry?.taxonomy?.species;
+  const haystack = normalizeSearchHaystack([
+    params.input.coffeeName,
+    params.input.process,
+    params.input.customProcess,
+    params.processEntry?.id,
+    params.processEntry?.label,
+    params.processEntry?.searchText,
+    ...(params.processEntry?.aliases || []),
+    params.input.variety,
+    params.input.customVariety,
+    params.varietyEntry?.id,
+    params.varietyEntry?.label,
+    params.varietyEntry?.searchText,
+    ...(params.varietyEntry?.aliases || []),
+    params.varietyEntry?.taxonomy?.species,
+    params.varietyEntry?.taxonomy?.lineageGroup,
+  ]);
+  const isSweetnessTarget = targetIntent === 'sweetness' || targetId === 'soft_round';
+  const isBodyTarget = targetIntent === 'body' || targetId === 'dense_comforting';
+  const isFruitTarget = targetId === 'fruit_forward' || targetIntent === 'sweetness';
+  const isClarityTarget = targetIntent === 'acidity' || targetId === 'floral_transparent';
+  const isNatural = processId === 'natural' || /\b(natural|dry\s+process)\b/i.test(haystack);
+  const isHoney = /\b(honey|pulped\s+natural|yellow\s+honey|red\s+honey|black\s+honey|white\s+honey)\b/i.test(haystack);
+  const isWetHulled = processId === 'wet_hulled' || /\b(wet[-\s]?hulled|giling\s+basah|semi[-\s]?washed\s+indonesia|sumatra|mandheling|gayo|lintong)\b/i.test(haystack);
+  const isExperimental = params.processEntry?.processRisk?.recommendationMode === 'taste_feedback_required'
+    || /\b(anaerobic|carbonic|cm\b|co[-\s]?ferment|coferment|infused|fruit\s+maceration|thermal\s+shock|lactic|yeast|extended\s+fermentation)\b/i.test(haystack);
+  const isWashedHighClarity = (CLARITY_PROCESS_IDS.has(processId) || /\b(washed|fully\s+washed|double\s+washed|wet\s+process)\b/i.test(haystack))
+    && /\b(geisha|gesha|sl\s?28|sl\s?34|ethiopia|ethiopian|yirgacheffe|guji|sidama|kenya|nyeri|kirinyaga|floral|high[-\s]?altitude)\b/i.test(haystack);
+  const isNonArabica = species === 'canephora'
+    || species === 'liberica'
+    || species === 'excelsa'
+    || /\b(robusta|conilon|canephora|liberica|excelsa)\b/i.test(haystack);
+
+  if (isNatural && !isExperimental && isSweetnessTarget) {
+    adjustment.tempDeltaC += 0.2;
+    adjustment.grindBias = 'same';
+    adjustment.notes.push('Target-aware process cue: clean natural sweetness is protected with a fuller middle pour, low agitation, and no forced cooler/faster baseline.');
+  }
+
+  if (isHoney && (targetId === 'soft_round' || isSweetnessTarget)) {
+    adjustment.tempDeltaC += 0.1;
+    adjustment.notes.push('Target-aware process cue: honey/pulped-natural keeps a balanced-to-full middle and gentle finish instead of rushing drawdown.');
+  }
+
+  if (isWetHulled && isBodyTarget) {
+    adjustment.tempDeltaC -= 0.2;
+    adjustment.brewTimeDeltaSec += 3;
+    adjustment.maxTempC = 93;
+    adjustment.notes.push('Target-aware process cue: wet-hulled/body profile uses low pour height, controlled agitation, and a 92-93C default cap to protect bitterness.');
+  }
+
+  if (isExperimental && targetId === 'fruit_forward') {
+    adjustment.ratioDelta += 0.02;
+    adjustment.tempDeltaC -= 0.2;
+    adjustment.brewTimeDeltaSec -= 3;
+    adjustment.grindBias = 'coarser';
+    adjustment.maxTempC = 93;
+    adjustment.notes.push('Target-aware process cue: high-variability fruit process keeps the recipe conservative, cooler, lower-agitation, and aroma-protected.');
+  }
+
+  if (isWashedHighClarity && isClarityTarget) {
+    adjustment.ratioDelta += 0.01;
+    adjustment.tempDeltaC -= 0.2;
+    adjustment.brewTimeDeltaSec -= 3;
+    adjustment.grindBias = 'coarser';
+    adjustment.notes.push('Target-aware process cue: washed high-clarity bean protects florals with lower agitation, lower heat, and faster drawdown.');
+  }
+
+  if (isNonArabica && targetId === 'dense_comforting') {
+    adjustment.ratioDelta -= 0.02;
+    adjustment.tempDeltaC -= 0.4;
+    adjustment.brewTimeDeltaSec += 2;
+    adjustment.grindBias = combineBias(adjustment.grindBias, 'coarser');
+    adjustment.maxTempC = Math.min(adjustment.maxTempC ?? 93, 93);
+    adjustment.notes.push('Target-aware variety cue: canephora/liberica/excelsa defaults to dense comfort, controlled agitation, and bitterness protection without claiming floral clarity.');
+  }
+
+  adjustment.ratioDelta = roundTo(clamp(adjustment.ratioDelta, -0.04, 0.04), 2);
+  adjustment.tempDeltaC = roundTo(clamp(adjustment.tempDeltaC, -0.5, 0.3), 1);
+  adjustment.brewTimeDeltaSec = Math.round(clamp(adjustment.brewTimeDeltaSec, -6, 8));
+  if (adjustment.notes.length > 0) {
+    adjustment.confidenceNotes.push('Target-aware process/variety balancing active after catalog process and variety modifiers.');
+  }
+  return adjustment;
+}
+
+function resolveMethodTargetBehaviorPatch(
+  methodFamily: AiBrewMethodFamily,
+  targetProfileId: string,
+  brewMode: 'hot' | 'iced',
+): MethodTargetBehaviorPatch {
+  const patch = createNeutralCalibrationAdjustment();
+  const targetIntent = resolveTargetIntent(targetProfileId, targetProfileId);
+  const isAcidity = targetIntent === 'acidity';
+  const isSweetness = targetIntent === 'sweetness' || targetProfileId === 'soft_round' || targetProfileId === 'fruit_forward';
+  const isBody = targetIntent === 'body' || targetProfileId === 'dense_comforting';
+
+  switch (methodFamily) {
+    case 'aeropress':
+      if (isAcidity) {
+        patch.brewTimeDeltaSec -= 10;
+        patch.notes.push('AeroPress target behavior: shorter steep and gentle press protect brightness.');
+      } else if (isSweetness) {
+        patch.brewTimeDeltaSec += 10;
+        patch.notes.push('AeroPress target behavior: a slightly longer steep or one extra stir builds sweetness without changing dose.');
+      } else if (isBody) {
+        patch.brewTimeDeltaSec += 12;
+        patch.notes.push('AeroPress target behavior: no-bypass style, steady press, and longer contact support body.');
+      }
+      break;
+    case 'french_press':
+      if (isAcidity) {
+        patch.brewTimeDeltaSec -= 15;
+        patch.notes.push('French Press target behavior: shorter steep and earlier decant keep the cup cleaner.');
+      } else if (isSweetness) {
+        patch.brewTimeDeltaSec += 18;
+        patch.notes.push('French Press target behavior: a little longer steep builds sweetness; decant cleanly instead of stirring late.');
+      } else if (isBody) {
+        patch.brewTimeDeltaSec += 20;
+        patch.notes.push('French Press target behavior: settle fines and decant cleanly; do not over-plunge for body.');
+      }
+      break;
+    case 'espresso':
+      if (isAcidity) patch.notes.push('Espresso target behavior: stop earlier only inside the locked yield/flow window and protect even flow.');
+      else if (isSweetness) patch.notes.push('Espresso target behavior: keep stable flow and preserve yield; do not change dose automatically.');
+      else if (isBody) patch.notes.push('Espresso target behavior: tighter flow needs puck prep discipline while dose and yield stay locked.');
+      break;
+    case 'moka_pot':
+      if (isAcidity) patch.notes.push('Moka target behavior: use softer heat and stop before sputter to keep brightness clean.');
+      else if (isSweetness) patch.notes.push('Moka target behavior: stable heat and an early stop protect sweetness from a burnt finish.');
+      else if (isBody) patch.notes.push('Moka target behavior: full level basket and controlled heat build body without harsh pressure.');
+      break;
+    case 'siphon':
+      if (isAcidity) {
+        patch.brewTimeDeltaSec -= 8;
+        patch.notes.push('Siphon target behavior: shorter upper-chamber contact protects aromatics.');
+      } else if (isSweetness || isBody) {
+        patch.brewTimeDeltaSec += 10;
+        patch.notes.push('Siphon target behavior: 8-12 seconds more upper-chamber contact and a gentle stir build sweetness/body.');
+      }
+      break;
+    case 'batch_brew':
+      patch.notes.push('Batch brewer target behavior: tune spray distribution, bed level, dose-per-liter, and batch mixing rather than manual pour cues.');
+      break;
+    case 'cold_brew':
+      if (isAcidity) patch.brewTimeDeltaSec -= brewMode === 'hot' ? 1800 : 0;
+      else if (isSweetness) patch.brewTimeDeltaSec += brewMode === 'hot' ? 1200 : 0;
+      else if (isBody) patch.brewTimeDeltaSec += brewMode === 'hot' ? 2400 : 0;
+      patch.notes.push('Cold brew target behavior: use steep duration, full saturation, clean filtration, and dilution only after filtration.');
+      break;
+    default:
+      break;
+  }
+
+  patch.brewTimeDeltaSec = Math.round(clamp(patch.brewTimeDeltaSec, -1800, 2400));
+  if (patch.notes.length > 0) {
+    patch.confidenceNotes.push(`Method-specific target behavior active for ${methodFamily.replace(/_/g, ' ')} ${targetProfileId}.`);
+  }
+  return patch;
 }
 
 const SERVICE_DOSE_TARGET_METHODS = new Set<AiBrewMethodFamily>([
@@ -4798,6 +4982,168 @@ function buildMethodFamilyStepInstruction(params: {
   };
 }
 
+function resolveStepTechniqueMetadata(
+  context: AdaptiveShareContext,
+  step: Pick<BrewPlanStep, 'kind' | 'pourVolumeMl'>,
+  phase: AdaptiveStepPhase,
+): StepTechniqueMetadata {
+  const kind = step.kind || 'pour';
+  if (kind === 'press') {
+    return {
+      pourPath: 'press',
+      agitationLevel: 'controlled',
+    };
+  }
+  if (kind === 'heat') {
+    return {
+      pourPath: 'heat_control',
+      agitationLevel: 'minimal',
+    };
+  }
+  if (kind === 'extract') {
+    return {
+      flowRateMlPerSec: [1, 2],
+      pourPath: context.methodFamily === 'espresso' ? 'machine_flow' : 'press',
+      agitationLevel: 'controlled',
+    };
+  }
+  if (!isVolumeTargetStepKind(kind) || step.pourVolumeMl <= 0) {
+    return {};
+  }
+
+  if (context.methodFamily === 'aeropress') {
+    return {
+      flowRateMlPerSec: [8, 12],
+      pourPath: 'immersion_charge',
+      pourHeight: 'low',
+      agitationLevel: context.recipeStyle === 'sweet_body' || context.recipeStyle === 'no_bypass' ? 'controlled' : 'low',
+    };
+  }
+  if (context.methodFamily === 'french_press' || context.methodFamily === 'cold_brew' || context.methodFamily === 'clever_dripper') {
+    return {
+      flowRateMlPerSec: [8, 12],
+      pourPath: 'immersion_charge',
+      pourHeight: 'low',
+      agitationLevel: context.methodFamily === 'french_press' ? 'low' : 'minimal',
+    };
+  }
+  if (context.methodFamily === 'moka_pot') {
+    return {
+      pourPath: 'heat_control',
+      agitationLevel: 'minimal',
+    };
+  }
+  if (context.methodFamily === 'batch_brew') {
+    return {
+      pourPath: 'machine_flow',
+      agitationLevel: 'low',
+    };
+  }
+  if (context.methodFamily === 'siphon') {
+    return {
+      flowRateMlPerSec: [7, 10],
+      pourPath: phase === 'bloom' ? 'immersion_charge' : 'center',
+      pourHeight: 'low',
+      agitationLevel: 'controlled',
+    };
+  }
+
+  const targetId = String(context.targetProfileId || '').toLowerCase();
+  const targetIntent = resolveContextTargetIntent(context);
+  let metadata: StepTechniqueMetadata = {
+    flowRateMlPerSec: [5, 6],
+    pourPath: 'center_to_mid',
+    pourHeight: context.pourBehavior?.pourHeight || 'low',
+    agitationLevel: context.pourBehavior?.agitation || 'low',
+  };
+
+  if (targetIntent === 'acidity' || targetId === 'floral_transparent') {
+    metadata = {
+      flowRateMlPerSec: [4, 5],
+      pourPath: 'center_to_mid',
+      pourHeight: 'low',
+      agitationLevel: 'minimal',
+    };
+  } else if (targetIntent === 'sweetness' || targetId === 'fruit_forward' || targetId === 'soft_round') {
+    metadata = {
+      flowRateMlPerSec: [5, 7],
+      pourPath: 'center_to_mid',
+      pourHeight: context.pourBehavior?.pourHeight || 'low',
+      agitationLevel: 'low',
+    };
+  } else if (targetIntent === 'body' || targetId === 'dense_comforting') {
+    metadata = {
+      flowRateMlPerSec: [5, 6],
+      pourPath: phase === 'finish' ? 'center_to_mid' : 'center',
+      pourHeight: 'low',
+      agitationLevel: 'controlled',
+    };
+  }
+
+  if (
+    context.methodFamily === 'kalita_wave'
+    || context.methodFamily === 'april'
+    || context.methodFamily === 'melitta'
+    || context.flatBottomProfile === 'april_low_agitation'
+    || context.flatBottomProfile === 'fast_flat_bottom'
+    || context.flatBottomProfile === 'restricted_flat_bottom'
+    || context.flatBottomProfile === 'no_bypass'
+    || context.filterStyle === 'flat'
+  ) {
+    return {
+      ...metadata,
+      flowRateMlPerSec: context.flatBottomProfile === 'restricted_flat_bottom' || context.flatBottomProfile === 'no_bypass'
+        ? [4, 5]
+        : metadata.flowRateMlPerSec,
+      pourPath: 'flat_center',
+      pourHeight: 'low',
+      agitationLevel: metadata.agitationLevel === 'minimal'
+        ? 'minimal'
+        : context.flatBottomProfile === 'restricted_flat_bottom' || context.flatBottomProfile === 'no_bypass'
+          ? 'controlled'
+          : 'low',
+    };
+  }
+
+  if (context.methodFamily === 'chemex') {
+    return {
+      ...metadata,
+      flowRateMlPerSec: targetIntent === 'acidity' ? [4, 5] : [5, 6],
+      pourPath: 'center_to_mid',
+      pourHeight: 'low',
+      agitationLevel: targetIntent === 'body' ? 'controlled' : 'low',
+    };
+  }
+
+  if (context.methodFamily === 'kono') {
+    return {
+      ...metadata,
+      pourPath: 'center',
+      pourHeight: 'low',
+    };
+  }
+
+  if (context.methodFamily === 'origami' && phase === 'finish') {
+    return {
+      ...metadata,
+      pourPath: 'compact_spiral',
+    };
+  }
+
+  return metadata;
+}
+
+function applyStepTechniqueMetadata(steps: BrewPlanStep[], context: AdaptiveShareContext): BrewPlanStep[] {
+  return steps.map((step, index) => ({
+    ...step,
+    ...resolveStepTechniqueMetadata(
+      context,
+      step,
+      resolveAdaptiveStepPhase(index, steps.length),
+    ),
+  }));
+}
+
 function isIcedManualPourOverFamily(methodFamily: AiBrewMethodFamily) {
   return ICED_MANUAL_POUR_OVER_FAMILIES.has(methodFamily);
 }
@@ -4884,7 +5230,7 @@ function buildSteps(
       context: adaptiveShareContext,
       fallbackNote: 'Charge full hot-water target and start immersion contact.',
     });
-    return [
+    return applyStepTechniqueMetadata([
       {
         id: sourceStep.id === 'charge' ? sourceStep.id : `${sourceStep.id}_charge`,
         label: 'Charge',
@@ -4923,7 +5269,7 @@ function buildSteps(
           sourceStep.note,
         ),
       },
-    ];
+    ], adaptiveShareContext);
   }
   const adaptedStartSeconds = normalizeBaristaStepStartSeconds(
     buildAdaptiveStepStartSeconds(profile, totalTimeSeconds, adaptiveShareContext),
@@ -5019,7 +5365,10 @@ function buildSteps(
       hybridInstruction,
     };
   });
-  return polishIcedManualPourOverSteps(steps, adaptiveShareContext);
+  return applyStepTechniqueMetadata(
+    polishIcedManualPourOverSteps(steps, adaptiveShareContext),
+    adaptiveShareContext,
+  );
 }
 
 function buildSummary(plan: Pick<
@@ -5226,6 +5575,12 @@ function finalizePlanCore(
     processEntry,
     varietyEntry,
   });
+  const targetAwareProcessAdjustment = resolveTargetAwareProcessAdjustment({
+    input,
+    targetProfile,
+    processEntry,
+    varietyEntry,
+  });
   const originAdjustment = deriveOriginAdjustment(input, processEntry, varietyEntry, targetProfile.label, targetProfile.id);
   const doseAdjustment = deriveDoseAdjustment(doseG, methodFamily, input.brewMode);
   const serviceDoseTargetAdjustment = deriveServiceDoseTargetAdjustment({
@@ -5254,6 +5609,7 @@ function finalizePlanCore(
     targetProfileId: targetProfile.id,
     pourBehavior: targetPourBehavior,
   });
+  const methodTargetBehaviorPatch = resolveMethodTargetBehaviorPatch(methodFamily, targetProfile.id, input.brewMode);
   const originTargetMethodAdjustment = deriveOriginTargetMethodAdjustment({
     originProfileId: originAdjustment.profileId,
     methodFamily,
@@ -5299,8 +5655,10 @@ function finalizePlanCore(
       + (varietyModifiers.ratioDelta || 0)
       + beanProfileAdjustment.ratioDelta
       + sensoryBiasAdjustment.ratioDelta
+      + targetAwareProcessAdjustment.ratioDelta
       + methodFamilyAdjustment.ratioDelta
       + targetFamilyAdjustment.ratioDelta
+      + methodTargetBehaviorPatch.ratioDelta
       + originAdjustment.ratioDelta
       + originTargetMethodAdjustment.ratioDelta
       + doseAdjustment.ratioDelta
@@ -5414,8 +5772,10 @@ function finalizePlanCore(
     + (varietyModifiers.tempDeltaC || 0)
     + beanProfileAdjustment.tempDeltaC
     + sensoryBiasAdjustment.tempDeltaC
+    + targetAwareProcessAdjustment.tempDeltaC
     + methodFamilyAdjustment.tempDeltaC
     + targetFamilyAdjustment.tempDeltaC
+    + methodTargetBehaviorPatch.tempDeltaC
     + originAdjustment.tempDeltaC
     + originTargetMethodAdjustment.tempDeltaC
     + doseAdjustment.tempDeltaC
@@ -5425,10 +5785,12 @@ function finalizePlanCore(
   const calibratedTempMin = Math.max(
     methodTempBounds.min,
     v60SweetnessServiceCalibration?.minTempC ?? baristaTemperatureCalibration.minTempC ?? methodTempBounds.min,
+    targetAwareProcessAdjustment.minTempC ?? methodTempBounds.min,
   );
   const calibratedTempMax = Math.min(
     methodTempBounds.max,
     v60SweetnessServiceCalibration?.maxTempC ?? baristaTemperatureCalibration.maxTempC ?? methodTempBounds.max,
+    targetAwareProcessAdjustment.maxTempC ?? methodTempBounds.max,
   );
   const waterTempC = roundTo(targetTempOverrideC ?? clamp(
     typeof v60SweetnessServiceCalibration?.tempC === 'number'
@@ -5465,8 +5827,10 @@ function finalizePlanCore(
       + (varietyModifiers.brewTimeDeltaSec || 0)
       + beanProfileAdjustment.brewTimeDeltaSec
       + sensoryBiasAdjustment.brewTimeDeltaSec
+      + targetAwareProcessAdjustment.brewTimeDeltaSec
       + methodFamilyAdjustment.brewTimeDeltaSec
       + targetFamilyAdjustment.brewTimeDeltaSec
+      + methodTargetBehaviorPatch.brewTimeDeltaSec
       + originAdjustment.brewTimeDeltaSec
       + originTargetMethodAdjustment.brewTimeDeltaSec
       + doseAdjustment.brewTimeDeltaSec
@@ -5499,8 +5863,10 @@ function finalizePlanCore(
     varietyModifiers.grindBias || 'same',
     beanProfileAdjustment.grindBias,
     sensoryBiasAdjustment.grindBias,
+    targetAwareProcessAdjustment.grindBias,
     methodFamilyAdjustment.grindBias,
     targetFamilyAdjustment.grindBias,
+    methodTargetBehaviorPatch.grindBias,
     originAdjustment.grindBias,
     originTargetMethodAdjustment.grindBias,
     doseAdjustment.grindBias,
@@ -5609,8 +5975,10 @@ function finalizePlanCore(
     varietyEntry?.notes || [],
     beanProfileAdjustment.notes,
     sensoryBiasAdjustment.notes,
+    targetAwareProcessAdjustment.notes,
     methodFamilyAdjustment.notes,
     targetFamilyAdjustment.notes,
+    methodTargetBehaviorPatch.notes,
     originAdjustment.notes,
     originTargetMethodAdjustment.notes,
     doseAdjustment.notes,
@@ -5653,8 +6021,10 @@ function finalizePlanCore(
     waterProfile.confidenceNotes,
     beanProfileAdjustment.confidenceNotes,
     sensoryBiasAdjustment.confidenceNotes,
+    targetAwareProcessAdjustment.confidenceNotes,
     methodFamilyAdjustment.confidenceNotes,
     targetFamilyAdjustment.confidenceNotes,
+    methodTargetBehaviorPatch.confidenceNotes,
     originAdjustment.confidenceNotes,
     originTargetMethodAdjustment.confidenceNotes,
     doseAdjustment.confidenceNotes,

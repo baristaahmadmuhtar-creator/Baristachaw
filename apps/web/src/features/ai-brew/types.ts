@@ -467,6 +467,10 @@ export interface BrewPlanStep {
   startSeconds: number;
   targetVolumeMl: number;
   pourVolumeMl: number;
+  flowRateMlPerSec?: [number, number];
+  pourPath?: 'center' | 'center_to_mid' | 'flat_center' | 'compact_spiral' | 'immersion_charge' | 'press' | 'heat_control' | 'machine_flow';
+  pourHeight?: 'low' | 'medium';
+  agitationLevel?: 'minimal' | 'low' | 'controlled' | 'medium';
   note: string;
   hybridInstruction?: string;
 }

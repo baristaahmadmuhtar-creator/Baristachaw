@@ -2430,6 +2430,11 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
     assert.ok(Number.isFinite(plan.hotWaterMl) && plan.hotWaterMl > 0);
     assert.equal(plan.steps.reduce((sum, step) => sum + step.pourVolumeMl, 0), plan.hotWaterMl);
     assert.doesNotMatch(plan.grindRecommendation, /No verified setting yet/i);
+    const positiveSteps = plan.steps.filter((step) => step.pourVolumeMl > 0);
+    assert.ok(positiveSteps.every((step) => step.pourPath && step.agitationLevel), `${plan.deviceProfileId} missing technique metadata`);
+    if (['v60', 'chemex', 'kalita_wave', 'origami', 'april', 'melitta', 'kono'].includes(plan.methodFamily)) {
+      assert.ok(positiveSteps.every((step) => step.flowRateMlPerSec && step.pourHeight), `${plan.deviceProfileId} missing pour-over flow metadata`);
+    }
   };
 
   const v60 = planFor({ dripperId: 'hario-v60' });
@@ -2808,7 +2813,7 @@ test('AI Brew experience layer exposes bean-safe reasoning, confidence labels, a
 
   const badges = resolveAiBrewConfidenceBadges(plan, 'id').map((badge) => badge.label).join(' ');
   assert.match(badges, /Planner Lokal/);
-  assert.match(badges, /Grinder official/);
+  assert.match(badges, /Grinder Official/);
 
   const sourLoop = buildAiBrewTasteLoopMarkdown(plan, { rating: 'sour' }, 'id');
   assert.match(sourLoop, /sedikit lebih halus/i);
@@ -3672,6 +3677,25 @@ test('V60 Japanese iced 15g target snapshots stay deterministic across all targe
     assert.deepEqual(pours.map((step) => step.pourVolumeMl), expected.pours);
     assert.equal(pours.reduce((sum, step) => sum + step.pourVolumeMl, 0), plan.hotWaterMl);
     assert.equal(pours[pours.length - 1]?.targetVolumeMl, plan.hotWaterMl);
+    assert.ok(pours.every((step) => step.flowRateMlPerSec), `${targetProfileId} missing flow metadata`);
+    assert.ok(pours.every((step) => step.pourPath), `${targetProfileId} missing pour path metadata`);
+    assert.ok(pours.every((step) => step.pourHeight), `${targetProfileId} missing pour height metadata`);
+    assert.ok(pours.every((step) => step.agitationLevel), `${targetProfileId} missing agitation metadata`);
+    if (targetProfileId === 'more_acidity' || targetProfileId === 'floral_transparent') {
+      assert.deepEqual(pours[0].flowRateMlPerSec, [4, 5]);
+      assert.equal(pours[0].pourHeight, 'low');
+      assert.equal(pours[0].agitationLevel, 'minimal');
+    }
+    if (targetProfileId === 'more_sweetness' || targetProfileId === 'fruit_forward') {
+      assert.deepEqual(pours.map((step) => step.pourVolumeMl), [30, 70, 35]);
+      assert.equal(pours[1].pourPath, 'center_to_mid');
+      assert.equal(pours[1].agitationLevel, 'low');
+    }
+    if (targetProfileId === 'more_body' || targetProfileId === 'dense_comforting') {
+      assert.deepEqual(pours.map((step) => step.pourVolumeMl), [35, 60, 40]);
+      assert.equal(pours[0].pourHeight, 'low');
+      assert.equal(pours[0].agitationLevel, 'controlled');
+    }
     assert.match(buildLocalizedPlanRecipeSteps(plan, 'en').join('\n'), /hot water/i);
     assert.match(buildLocalizedPlanRecipeSteps(plan, 'id').join('\n'), /air panas/i);
   }
@@ -3687,6 +3711,43 @@ test('V60 Japanese iced 15g target snapshots stay deterministic across all targe
     buildBrewPlanRecipeSignature({ ...balance, targetProfileId: 'duplicate_label_only' } as ReturnType<typeof buildAiBrewPlan>),
     'Recipe signatures must ignore labels so duplicate compare cards can be merged.',
   );
+});
+
+test('AI Brew iced guard blocks invalid hot-water target and pour sum', () => {
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'iced',
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    coffeeName: 'Iced Guard QA',
+    doseG: '15',
+    targetProfileId: 'balance_clean',
+    process: 'washed',
+    variety: 'ethiopian_heirloom',
+    roastLevel: 'medium',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, catalog);
+  const invalidLastTarget = {
+    ...plan,
+    steps: plan.steps.map((step, index) => index === plan.steps.length - 1
+      ? { ...step, targetVolumeMl: step.targetVolumeMl + 5 }
+      : step),
+  };
+  const invalidPourSum = {
+    ...plan,
+    steps: plan.steps.map((step, index) => index === 0
+      ? { ...step, pourVolumeMl: step.pourVolumeMl + 5, targetVolumeMl: step.targetVolumeMl + 5 }
+      : step),
+  };
+
+  assert.equal(validateBrewPlanOutput(plan).allowed, true);
+  assert.equal(validateBrewPlanOutput(invalidLastTarget).allowed, false);
+  assert.match(validateBrewPlanOutput(invalidLastTarget).reason || '', /last hot-water target step must equal hotWaterMl/i);
+  assert.equal(validateBrewPlanOutput(invalidPourSum).allowed, false);
+  assert.match(validateBrewPlanOutput(invalidPourSum).reason || '', /volume sum must equal hotWaterMl/i);
 });
 
 test('buildAiBrewPlan keeps small-dose V60 hot and iced cadence barista-friendly', () => {

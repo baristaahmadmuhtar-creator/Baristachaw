@@ -2406,10 +2406,63 @@ function buildAiBrewStepDetailPoints(
   return points.slice(0, 5);
 }
 
+function formatAiBrewStepFlowRate(step: BrewPlan['steps'][number]) {
+  const [min, max] = step.flowRateMlPerSec || [];
+  if (!Number.isFinite(min) || !Number.isFinite(max)) return '';
+  return `${min}-${max} ml/s`;
+}
+
+function formatAiBrewPourPath(path: BrewPlan['steps'][number]['pourPath'], language: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  switch (path) {
+    case 'center':
+      return id ? 'tengah' : 'center';
+    case 'center_to_mid':
+      return id ? 'tengah-ke-mid' : 'center-to-mid';
+    case 'flat_center':
+      return 'flat-center';
+    case 'compact_spiral':
+      return id ? 'spiral ringkas' : 'compact spiral';
+    case 'immersion_charge':
+      return id ? 'charge immersion' : 'immersion charge';
+    case 'press':
+      return 'press';
+    case 'heat_control':
+      return id ? 'kontrol panas' : 'heat control';
+    case 'machine_flow':
+      return id ? 'flow mesin' : 'machine flow';
+    default:
+      return '';
+  }
+}
+
+function formatAiBrewPourHeight(height: BrewPlan['steps'][number]['pourHeight'], language: string) {
+  if (!height) return '';
+  const id = isIndonesianAiBrewLanguage(language);
+  return height === 'low' ? (id ? 'rendah' : 'low') : (id ? 'sedang' : 'medium');
+}
+
+function formatAiBrewAgitation(level: BrewPlan['steps'][number]['agitationLevel'], language: string) {
+  if (!level) return '';
+  const id = isIndonesianAiBrewLanguage(language);
+  switch (level) {
+    case 'minimal':
+      return 'minimal';
+    case 'low':
+      return id ? 'rendah' : 'low';
+    case 'controlled':
+      return id ? 'terkontrol' : 'controlled';
+    case 'medium':
+      return id ? 'sedang' : 'medium';
+    default:
+      return '';
+  }
+}
+
 function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: string, plan?: BrewPlan) {
   const id = isIndonesianAiBrewLanguage(language);
   const kind = getAiBrewStepKind(step);
-  return [
+  const metrics = [
     {
       label: id ? 'Mulai' : 'Start',
       value: formatGuideTime(step.startSeconds),
@@ -2425,6 +2478,15 @@ function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: strin
       value: formatRoundedMl(step.targetVolumeMl),
     },
   ];
+  const flow = formatAiBrewStepFlowRate(step);
+  const path = formatAiBrewPourPath(step.pourPath, language);
+  const height = formatAiBrewPourHeight(step.pourHeight, language);
+  const agitation = formatAiBrewAgitation(step.agitationLevel, language);
+  if (flow) metrics.push({ label: 'Flow', value: flow });
+  if (path) metrics.push({ label: id ? 'Jalur' : 'Path', value: path });
+  if (height) metrics.push({ label: id ? 'Tinggi' : 'Height', value: height });
+  if (agitation) metrics.push({ label: id ? 'Agitasi' : 'Agitation', value: agitation });
+  return metrics;
 }
 
 function renderAiBrewSequenceStepCard(

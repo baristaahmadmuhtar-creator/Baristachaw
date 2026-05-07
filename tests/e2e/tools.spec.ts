@@ -396,6 +396,47 @@ test('ai brew brewer picker prioritizes complete method catalog and search alias
   }
 });
 
+test('ai brew guide renders workflow-specific phases for non-pour-over methods', async ({ page }) => {
+  const cases = [
+    {
+      query: 'aeropress',
+      optionId: 'aeropress',
+      coffeeName: 'QA AeroPress Workflow',
+      expected: /Charge water|Stir|Steep|Press|Stop before hiss/i,
+    },
+    {
+      query: 'french press',
+      optionId: 'french-press',
+      coffeeName: 'QA French Press Workflow',
+      expected: /Charge water|Steep|Settle|Press gently|Decant/i,
+    },
+    {
+      query: 'moka',
+      optionId: 'bialetti-moka-pot',
+      coffeeName: 'QA Moka Workflow',
+      expected: /Fill boiler|Level basket|Moderate heat|Monitor flow|Stop before sputter/i,
+    },
+  ] as const;
+
+  for (const entry of cases) {
+    await openAiBrewQuickMode(page);
+    await setVisibleInputValue(page, 'ai-brew-coffee-name', entry.coffeeName);
+    await page.getByTestId('ai-brew-dripper-picker').click();
+    await page.getByTestId('ai-brew-picker-search-dripper').fill(entry.query);
+    await page.getByTestId(`ai-brew-picker-option-dripper-${entry.optionId}`).click();
+    await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
+    await page.getByTestId('ai-brew-generate').click();
+
+    const result = page.getByTestId('ai-brew-result');
+    await expect(result).toContainText(entry.coffeeName);
+    await expect(result.getByTestId('ai-brew-sequence-section')).toContainText(entry.expected);
+    const plan = await readStoredAiBrewPlan(page);
+    expect(plan.workflowValidation?.passed).toBe(true);
+    expect(plan.workflowGuideSteps?.length || 0).toBeGreaterThan(plan.steps.length);
+    await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
+  }
+});
+
 test('ai brew grinder picker keeps Feima 600N searchable without exposing alias noise', async ({ page }) => {
   await openAiBrewQuickMode(page);
   await page.getByTestId('ai-brew-grinder-picker').click();
@@ -684,10 +725,9 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
       await expect(quickSetup.getByTestId('ai-brew-quick-setup-time')).toContainText(formatAiBrewGuideValue(plan.totalTimeSeconds));
       await expect(result.getByTestId('ai-brew-quick-cues')).toContainText(`${plan.hotWaterMl} ml`);
       await expect(result.getByTestId('ai-brew-quick-cues')).toContainText(new RegExp(`${plan.iceMl}\\s*(ml|g)`, 'i'));
-      await expect(result.getByTestId('ai-brew-step-card-3')).not.toContainText(/Saji|sajikan|serve/i);
-      await expect(result.getByTestId('ai-brew-step-card-4')).toContainText(/Final Pour|Tuang Akhir/i);
-      await assertTechniqueChips(result.getByTestId('ai-brew-step-card-1'));
-      await expect(result.getByTestId('ai-brew-step-card-1')).toContainText(firstHotTargetText);
+      await expect(result.getByTestId('ai-brew-sequence-section')).toContainText(/Final pour|Final Pour|Tuang Akhir|Drawdown/i);
+      await assertTechniqueChips(result.getByTestId('ai-brew-step-card-2'));
+      await expect(result.getByTestId('ai-brew-step-card-2')).toContainText(firstHotTargetText);
     } else {
       await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Final ratio|Rasio Final/i);
       await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Hot concentrate|Konsentrat Panas/i);
@@ -696,9 +736,9 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
       await expect(result).toContainText(`${plan.hotWaterMl} ml`);
       await expect(result).toContainText(new RegExp(`${plan.iceMl}\\s*(ml|g)`, 'i'));
       await result.getByTestId('ai-brew-result-tab-flow').click();
-      await assertTechniqueChips(result.getByTestId('ai-brew-flow-step-1'));
+      await assertTechniqueChips(result.getByTestId('ai-brew-flow-step-2'));
       await assertTechniqueChips(result.getByTestId('ai-brew-flow-current-step-technique'));
-      await expect(result.getByTestId('ai-brew-flow-step-1')).toContainText(firstHotTargetText);
+      await expect(result.getByTestId('ai-brew-flow-step-2')).toContainText(firstHotTargetText);
     }
 
     return plan;

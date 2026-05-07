@@ -475,6 +475,91 @@ export interface BrewPlanStep {
   hybridInstruction?: string;
 }
 
+export type WorkflowGuideActionType =
+  | 'setup'
+  | 'rinse_preheat'
+  | 'dose'
+  | 'puck_prep'
+  | 'bloom'
+  | 'pour'
+  | 'charge'
+  | 'stir'
+  | 'swirl'
+  | 'steep'
+  | 'release'
+  | 'drawdown'
+  | 'press'
+  | 'heat'
+  | 'monitor_flow'
+  | 'extract'
+  | 'stop'
+  | 'settle'
+  | 'decant'
+  | 'filter'
+  | 'dilute'
+  | 'mix'
+  | 'serve'
+  | 'wait';
+
+export type WorkflowGuideChipKey =
+  | 'flow'
+  | 'path'
+  | 'height'
+  | 'agitation'
+  | 'charge'
+  | 'stir'
+  | 'swirl'
+  | 'steep'
+  | 'press'
+  | 'stop'
+  | 'boiler'
+  | 'basket'
+  | 'heat'
+  | 'flow_cue'
+  | 'dose'
+  | 'yield'
+  | 'shot_time'
+  | 'puck_prep'
+  | 'settle'
+  | 'decant'
+  | 'release'
+  | 'drawdown'
+  | 'draw_up'
+  | 'contact'
+  | 'dose_per_liter'
+  | 'basket_prep'
+  | 'spray'
+  | 'mix_batch'
+  | 'saturation'
+  | 'filter'
+  | 'dilution';
+
+export interface WorkflowGuideTechniqueChip {
+  key: WorkflowGuideChipKey;
+  label: string;
+  value: string;
+}
+
+export interface WorkflowGuideStep extends BrewPlanStep {
+  actionType: WorkflowGuideActionType;
+  primaryText: string;
+  secondaryText?: string;
+  endSeconds?: number;
+  techniqueChips: WorkflowGuideTechniqueChip[];
+  warnings: string[];
+  sourceStepIds: string[];
+  isOperationalOnly: boolean;
+}
+
+export interface MethodWorkflowValidationResult {
+  passed: boolean;
+  status: 'ready' | 'needs_review' | 'blocked';
+  missingPhases: string[];
+  warnings: string[];
+  blockingErrors: string[];
+  readinessScore: number;
+}
+
 export interface BrewPlanAiNotes {
   finisher?: string;
   generate?: string;
@@ -546,6 +631,8 @@ export interface BrewPlan {
   grindBandLabel: string;
   summary: string;
   steps: BrewPlanStep[];
+  workflowGuideSteps?: WorkflowGuideStep[];
+  workflowValidation?: MethodWorkflowValidationResult;
   notes: string[];
   warnings: string[];
   guardrails: BrewGuardrailState;

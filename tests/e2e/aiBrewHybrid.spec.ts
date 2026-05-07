@@ -115,18 +115,28 @@ function formatPlanTime(totalSeconds: number) {
 
 async function expectCanonicalSequencePrefixes(sequenceNote: Locator) {
   const plan = await readStoredPlan(sequenceNote.page());
-  await expect(sequenceNote.locator('[data-testid^="ai-brew-step-card-"]')).toHaveCount(plan.steps.length);
-  for (const [index, step] of plan.steps.entries()) {
+  const displaySteps = plan.workflowGuideSteps?.length ? plan.workflowGuideSteps : plan.steps;
+  await expect(sequenceNote.locator('[data-testid^="ai-brew-step-card-"]')).toHaveCount(displaySteps.length);
+  for (const [index, step] of displaySteps.entries()) {
     const stepCard = sequenceNote.getByTestId(`ai-brew-step-card-${index + 1}`);
     const kind = step.kind || 'pour';
     if (kind === 'pour') {
       await expect(stepCard).toContainText(`+${step.pourVolumeMl} ml`);
     } else {
-      await expect(stepCard).toContainText(kind === 'release' ? /Lepas|Release/i : kind === 'drawdown' ? /Drawdown/i : /Tahan|Wait/i);
+      const actionType = 'actionType' in step ? String(step.actionType) : '';
+      const actionPattern = kind === 'release' || actionType === 'release'
+        ? /Lepas|Release/i
+        : kind === 'drawdown' || actionType === 'drawdown'
+          ? /Drawdown/i
+          : actionType === 'setup' || actionType === 'rinse_preheat'
+            ? /Setup|Prep|Bilas|Rinse/i
+            : /Tahan|Wait|Aksi|Action|Serve|Sajikan/i;
+      await expect(stepCard).toContainText(actionPattern);
     }
     await expect(stepCard).toContainText(formatPlanTime(step.startSeconds));
-    await expect(stepCard).toContainText(String(step.targetVolumeMl));
-    await expect(stepCard.getByTestId(`ai-brew-step-detail-${index + 1}`)).toContainText(/Detail tambahan|Extra detail/i);
+    if (typeof step.targetVolumeMl === 'number' && step.targetVolumeMl > 0) {
+      await expect(stepCard).toContainText(String(step.targetVolumeMl));
+    }
   }
 }
 
@@ -215,10 +225,10 @@ test('ai brew precision builder applies barista target controls and keeps extra 
   expect(plan.recommendedRatio).toBeLessThanOrEqual(15.8);
   expect(plan.notes.join('\n')).toMatch(/precision target ratio active/i);
   expect(plan.notes.join('\n')).toMatch(/precision target temperature active/i);
-  await expect(sequenceNote.getByTestId('ai-brew-step-detail-1')).toContainText(/Bilas filter|Rinse the filter|Rinse the paper filter/i);
-  await expect(sequenceNote.getByTestId('ai-brew-step-detail-1')).toContainText(/preheat|panaskan/i);
-  await expect(sequenceNote.getByTestId('ai-brew-step-detail-1')).toContainText(/tare|tara/i);
-  await expect(sequenceNote.getByTestId('ai-brew-step-detail-1')).toContainText(/Bloom/i);
+  await expect(sequenceNote).toContainText(/Bilas filter|Bilas\/panaskan|Rinse the filter|Rinse the paper filter/i);
+  await expect(sequenceNote).toContainText(/preheat|panaskan/i);
+  await expect(sequenceNote).toContainText(/tare|tara/i);
+  await expect(sequenceNote.getByTestId('ai-brew-step-card-2')).toContainText(/Bloom/i);
 });
 
 test('ai brew taste feedback is saved in the local brew journal', async ({ page }) => {

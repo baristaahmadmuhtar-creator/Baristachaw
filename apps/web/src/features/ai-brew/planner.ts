@@ -36,6 +36,14 @@ import {
 export { resolveGrinderSettingReference } from './grindPlanner.ts';
 import { deriveWaterMineralProfile } from './waterPlanner.ts';
 import {
+  buildWorkflowAwareGuideSteps,
+  validateMethodWorkflowGuide,
+} from './workflowGuide.ts';
+export {
+  buildWorkflowAwareGuideSteps,
+  validateMethodWorkflowGuide,
+} from './workflowGuide.ts';
+import {
   clampRoundedToIncrement,
   estimateCoffeeRetentionMl,
   estimateCupOutputMl,
@@ -6100,7 +6108,7 @@ function finalizePlanCore(
     targetTempC: input.targetTempC,
   }));
 
-  return {
+  const plan = {
     id: nowId('plan'),
     fingerprint,
     createdAt,
@@ -6179,6 +6187,26 @@ function finalizePlanCore(
     fallbackUsed: deviceSelection.fallbackUsed || !grinderSetting,
     provenanceAttentionNeeded,
     confidenceNotes,
+  } satisfies BrewPlan;
+
+  const workflowGuideSteps = buildWorkflowAwareGuideSteps(plan);
+  const workflowValidation = validateMethodWorkflowGuide(plan, workflowGuideSteps);
+  const workflowConfidenceNotes = workflowValidation.passed
+    ? [`Workflow Ready: ${workflowValidation.readinessScore}/100 method guide validation.`]
+    : [
+      `Workflow ${workflowValidation.status === 'blocked' ? 'Blocked' : 'Needs Review'}: ${workflowValidation.readinessScore}/100 method guide validation.`,
+      ...workflowValidation.blockingErrors,
+      ...workflowValidation.warnings,
+    ];
+
+  return {
+    ...plan,
+    workflowGuideSteps,
+    workflowValidation,
+    warnings: workflowValidation.passed
+      ? plan.warnings
+      : normalizeNoteList(plan.warnings, workflowValidation.blockingErrors),
+    confidenceNotes: normalizeNoteList(plan.confidenceNotes, workflowConfidenceNotes),
   } satisfies BrewPlan;
 }
 

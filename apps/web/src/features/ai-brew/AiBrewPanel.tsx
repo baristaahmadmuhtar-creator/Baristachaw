@@ -79,6 +79,7 @@ import {
   buildAiBrewPlan,
   buildAiBrewPlanProgressively,
   buildBrewPlanRecipeSignature,
+  buildWorkflowAwareGuideSteps,
   buildLocalizedPlanRecipeDescription,
   buildLocalizedPlanRecipeName,
   buildLocalizedPlanRecipeSteps,
@@ -137,6 +138,8 @@ import type {
   WaterMode,
   WaterPresetStatus,
   AiBrewEngineMode,
+  WorkflowGuideStep,
+  WorkflowGuideTechniqueChip,
 } from './types';
 
 const CUSTOM_ENTRY_ID = 'custom';
@@ -2029,8 +2032,179 @@ function normalizeAiBrewInstructionText(value: string) {
     .trim();
 }
 
-function getAiBrewStepKind(step: BrewPlan['steps'][number]) {
+type AiBrewDisplayStep = BrewPlan['steps'][number] | WorkflowGuideStep;
+
+function isWorkflowGuideStep(step: AiBrewDisplayStep): step is WorkflowGuideStep {
+  return Array.isArray((step as WorkflowGuideStep).sourceStepIds)
+    && typeof (step as WorkflowGuideStep).actionType === 'string';
+}
+
+function getAiBrewWorkflowGuideSteps(plan: BrewPlan): WorkflowGuideStep[] {
+  return plan.workflowGuideSteps?.length ? plan.workflowGuideSteps : buildWorkflowAwareGuideSteps(plan);
+}
+
+function getAiBrewStepKind(step: AiBrewDisplayStep) {
   return step.kind || 'pour';
+}
+
+function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  if (!id) return chip.label;
+  switch (chip.key) {
+    case 'path':
+      return 'Jalur';
+    case 'height':
+      return 'Tinggi';
+    case 'agitation':
+      return 'Agitasi';
+    case 'charge':
+      return 'Charge';
+    case 'stir':
+      return 'Aduk';
+    case 'swirl':
+      return 'Swirl';
+    case 'steep':
+      return 'Steep';
+    case 'press':
+      return 'Tekan';
+    case 'stop':
+      return 'Stop';
+    case 'boiler':
+      return 'Boiler';
+    case 'basket':
+      return 'Basket';
+    case 'heat':
+      return 'Panas';
+    case 'flow_cue':
+      return 'Cue flow';
+    case 'yield':
+      return 'Yield';
+    case 'shot_time':
+      return 'Waktu shot';
+    case 'puck_prep':
+      return 'Puck prep';
+    case 'settle':
+      return 'Settle';
+    case 'decant':
+      return 'Decant';
+    case 'release':
+      return 'Release';
+    case 'drawdown':
+      return 'Drawdown';
+    case 'draw_up':
+      return 'Draw-up';
+    case 'contact':
+      return 'Kontak';
+    case 'dose_per_liter':
+      return 'Dosis/L';
+    case 'basket_prep':
+      return 'Prep';
+    case 'spray':
+      return 'Spray';
+    case 'mix_batch':
+      return 'Aduk batch';
+    case 'saturation':
+      return 'Saturasi';
+    case 'filter':
+      return 'Filter';
+    case 'dilution':
+      return 'Dilusi';
+    default:
+      return chip.label;
+  }
+}
+
+function localizeWorkflowChipValue(value: string, language: string) {
+  if (!isIndonesianAiBrewLanguage(language)) {
+    return value.replace(/_/g, '-');
+  }
+  return value
+    .replace(/center_to_mid/g, 'tengah-ke-mid')
+    .replace(/flat_center/g, 'flat-center')
+    .replace(/compact_spiral/g, 'spiral ringkas')
+    .replace(/immersion_charge/g, 'charge immersion')
+    .replace(/heat_control/g, 'kontrol panas')
+    .replace(/machine_flow/g, 'flow mesin')
+    .replace(/\blow\b/g, 'rendah')
+    .replace(/\bmedium\b/g, 'sedang')
+    .replace(/\bcontrolled\b/g, 'terkontrol')
+    .replace(/before hiss/g, 'sebelum hiss')
+    .replace(/before sputter/g, 'sebelum sputter')
+    .replace(/below valve/g, 'di bawah valve')
+    .replace(/level, no tamp/g, 'rata, jangan tamp')
+    .replace(/steady stream/g, 'aliran stabil')
+    .replace(/after filtration/g, 'setelah filtrasi')
+    .replace(/before service/g, 'sebelum sajikan')
+    .replace(/open cleanly/g, 'buka bersih')
+    .replace(/all grounds/g, 'semua bubuk');
+}
+
+function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string, plan?: BrewPlan) {
+  if (!isIndonesianAiBrewLanguage(language)) return step.primaryText;
+  const target = formatRoundedMl(step.targetVolumeMl);
+  const pour = formatRoundedMl(step.pourVolumeMl);
+  switch (step.actionType) {
+    case 'rinse_preheat':
+    case 'setup':
+      return plan?.brewMode === 'iced'
+        ? `Bilas/panaskan alat, tara timbangan, lalu siapkan es ${formatRoundedGrams(plan.iceMl)} di server.`
+        : 'Bilas/panaskan alat, tara timbangan, lalu siapkan metode sebelum seduh.';
+    case 'dose':
+      if (plan?.methodFamily === 'espresso') return `Dosis ${formatRoundedGrams(plan.doseG)}, distribusi rata, lalu tamp level.`;
+      return `Dosis ${plan ? formatRoundedGrams(plan.doseG) : ''} dan siapkan bed sesuai metode.`;
+    case 'puck_prep':
+      return 'Distribusi rata, tamp level, dan bersihkan rim basket sebelum shot.';
+    case 'bloom':
+      return plan?.brewMode === 'iced'
+        ? `Bloom ${pour}; target ${target} air panas.`
+        : `Bloom ${pour}; berhenti di target ${target}.`;
+    case 'pour':
+      return plan?.brewMode === 'iced'
+        ? `Tuang ${pour}; target ${target} air panas.`
+        : `Tuang ${pour}; berhenti di target ${target}.`;
+    case 'charge':
+      return `Tuang/charge ${pour || target} dan basahi bed merata.`;
+    case 'stir':
+      return 'Aduk 3-5x atau swirl ringan, lalu hentikan agitasi.';
+    case 'swirl':
+      return 'Swirl ringan sekali saja untuk meratakan slurry.';
+    case 'steep':
+      return step.endSeconds ? `Tunggu/steep sampai ${formatGuideTime(step.endSeconds)}; jangan tambah air.` : 'Tunggu/steep stabil; jangan tambah air.';
+    case 'release':
+      return 'Buka release dengan bersih dan jangan aduk saat drawdown.';
+    case 'drawdown':
+      return plan?.brewMode === 'iced'
+        ? `Biarkan drawdown selesai di target ${formatRoundedMl(plan.hotWaterMl)} air panas; jangan tambah bypass.`
+        : 'Biarkan drawdown selesai natural tanpa tuangan tambahan.';
+    case 'press':
+      return 'Tekan stabil 20-30 detik; stop sebelum hiss terasa kering.';
+    case 'heat':
+      return 'Pakai panas stabil dan moderat sesuai metode.';
+    case 'monitor_flow':
+      return 'Pantau flow; jaga aliran stabil dan stop sesuai cue.';
+    case 'extract':
+      return plan?.methodFamily === 'espresso'
+        ? `Mulai shot dan ekstrak sampai yield ${formatRoundedMl(plan.totalWaterMl)}.`
+        : `Ekstrak sampai target ${target}.`;
+    case 'stop':
+      if (plan?.methodFamily === 'moka_pot') return 'Angkat sebelum sputter kasar atau rasa rebus muncul.';
+      if (plan?.methodFamily === 'espresso') return `Stop di yield ${formatRoundedMl(plan.totalWaterMl)} sesuai window shot.`;
+      return 'Stop sesuai cue metode; jangan paksa fase akhir.';
+    case 'settle':
+      return 'Break crust atau skim pelan, lalu biarkan fines settle.';
+    case 'decant':
+      return 'Decant/pindahkan segera agar ekstraksi berhenti.';
+    case 'filter':
+      return 'Filter atau decant bersih untuk memisahkan kopi dari ampas.';
+    case 'dilute':
+      return 'Dilusi hanya setelah filtrasi bila butuh strength serving.';
+    case 'mix':
+      return 'Aduk batch/carafe pelan sebelum evaluasi rasa atau service.';
+    case 'serve':
+      return 'Sajikan setelah fase metode selesai bersih.';
+    default:
+      return localizeAiBrewDynamicText(step.primaryText, language);
+  }
 }
 
 function resolveModeLabel(copy: CopySet, brewMode: string, methodFamily?: string) {
@@ -2039,8 +2213,34 @@ function resolveModeLabel(copy: CopySet, brewMode: string, methodFamily?: string
   return brewMode === 'iced' ? copy.modeIced : copy.modeHot;
 }
 
-function formatAiBrewStepBadge(step: BrewPlan['steps'][number], language: string) {
+function formatAiBrewStepBadge(step: AiBrewDisplayStep, language: string) {
   const id = isIndonesianAiBrewLanguage(language);
+  if (isWorkflowGuideStep(step) && step.isOperationalOnly && step.pourVolumeMl <= 0) {
+    switch (step.actionType) {
+      case 'stir':
+        return id ? 'Aduk' : 'Stir';
+      case 'steep':
+        return id ? 'Steep' : 'Steep';
+      case 'press':
+        return id ? 'Tekan' : 'Press';
+      case 'heat':
+        return id ? 'Panas' : 'Heat';
+      case 'monitor_flow':
+        return 'Flow';
+      case 'stop':
+        return 'Stop';
+      case 'decant':
+        return id ? 'Decant' : 'Decant';
+      case 'filter':
+        return 'Filter';
+      case 'dilute':
+        return id ? 'Dilusi' : 'Dilute';
+      case 'mix':
+        return id ? 'Aduk' : 'Mix';
+      default:
+        return id ? 'Aksi' : 'Action';
+    }
+  }
   const kind = getAiBrewStepKind(step);
   if (kind === 'release') return id ? 'Lepas' : 'Release';
   if (kind === 'wait') return id ? 'Tahan' : 'Wait';
@@ -2052,7 +2252,8 @@ function formatAiBrewStepBadge(step: BrewPlan['steps'][number], language: string
   return `+${formatRoundedMl(step.pourVolumeMl)}`;
 }
 
-function buildAiBrewStepActionText(step: BrewPlan['steps'][number], language: string, plan?: BrewPlan) {
+function buildAiBrewStepActionText(step: AiBrewDisplayStep, language: string, plan?: BrewPlan) {
+  if (isWorkflowGuideStep(step)) return buildWorkflowGuideActionText(step, language, plan);
   const kind = getAiBrewStepKind(step);
   if (kind === 'release') {
     return isIndonesianAiBrewLanguage(language)
@@ -2094,7 +2295,11 @@ function buildAiBrewStepActionText(step: BrewPlan['steps'][number], language: st
     : `Pour ${formatRoundedMl(step.pourVolumeMl)} to reach ${formatRoundedMl(step.targetVolumeMl)}.`;
 }
 
-function buildAiBrewFlowStepSummary(step: BrewPlan['steps'][number], language: string, plan?: BrewPlan) {
+function buildAiBrewFlowStepSummary(step: AiBrewDisplayStep, language: string, plan?: BrewPlan) {
+  if (isWorkflowGuideStep(step)) {
+    const label = localizeAiBrewStepLabel(step.label, language);
+    return `${formatGuideTime(step.startSeconds)} | ${label} | ${buildWorkflowGuideActionText(step, language, plan)}`;
+  }
   const id = isIndonesianAiBrewLanguage(language);
   const kind = getAiBrewStepKind(step);
   if (kind === 'release') {
@@ -2137,7 +2342,8 @@ function buildAiBrewFlowStepSummary(step: BrewPlan['steps'][number], language: s
     : `${formatGuideTime(step.startSeconds)} | pour +${formatRoundedMl(step.pourVolumeMl)} | target ${formatRoundedMl(step.targetVolumeMl)}`;
 }
 
-function buildAiBrewStepPrimaryCue(step: BrewPlan['steps'][number], language: string) {
+function buildAiBrewStepPrimaryCue(step: AiBrewDisplayStep, language: string, plan?: BrewPlan) {
+  if (isWorkflowGuideStep(step)) return buildWorkflowGuideActionText(step, language, plan);
   const kind = getAiBrewStepKind(step);
   if (kind === 'release') {
     return isIndonesianAiBrewLanguage(language) ? 'Buka release sekarang' : 'Open release now';
@@ -2154,7 +2360,22 @@ function buildAiBrewStepPrimaryCue(step: BrewPlan['steps'][number], language: st
     : `Pour +${formatRoundedMl(step.pourVolumeMl)} now`;
 }
 
-function buildAiBrewStepTargetCue(step: BrewPlan['steps'][number], language: string, plan?: BrewPlan) {
+function buildAiBrewStepTargetCue(step: AiBrewDisplayStep, language: string, plan?: BrewPlan) {
+  if (isWorkflowGuideStep(step)) {
+    if (plan?.brewMode === 'iced' && step.pourVolumeMl > 0) {
+      return isIndonesianAiBrewLanguage(language)
+        ? `Target ${formatRoundedMl(step.targetVolumeMl)} air panas`
+        : `Target ${formatRoundedMl(step.targetVolumeMl)} hot water`;
+    }
+    if (step.pourVolumeMl > 0 || step.targetVolumeMl > 0) {
+      return isIndonesianAiBrewLanguage(language)
+        ? `Target ${formatRoundedMl(step.targetVolumeMl)}`
+        : `Target ${formatRoundedMl(step.targetVolumeMl)}`;
+    }
+    return isIndonesianAiBrewLanguage(language)
+      ? 'Fase operasional tanpa tambah air'
+      : 'Operational phase, no added water';
+  }
   const kind = getAiBrewStepKind(step);
   if (kind === 'release') {
     return isIndonesianAiBrewLanguage(language)
@@ -2186,7 +2407,12 @@ function buildAiBrewStepTargetCue(step: BrewPlan['steps'][number], language: str
     : `Stop at ${formatRoundedMl(step.targetVolumeMl)}`;
 }
 
-function buildAiBrewNextStepCue(step: BrewPlan['steps'][number], remainingSeconds: number, language: string) {
+function buildAiBrewNextStepCue(step: AiBrewDisplayStep, remainingSeconds: number, language: string) {
+  if (isWorkflowGuideStep(step)) {
+    return isIndonesianAiBrewLanguage(language)
+      ? `${localizeAiBrewStepLabel(step.label, language)} dalam ${formatGuideTime(remainingSeconds)}`
+      : `${localizeAiBrewStepLabel(step.label, language)} in ${formatGuideTime(remainingSeconds)}`;
+  }
   const kind = getAiBrewStepKind(step);
   if (kind === 'release') {
     return isIndonesianAiBrewLanguage(language)
@@ -2207,15 +2433,19 @@ function buildAiBrewNextStepCue(step: BrewPlan['steps'][number], remainingSecond
     : `Next pour in ${formatGuideTime(remainingSeconds)}`;
 }
 
-function buildAiBrewStepQuickNote(step: BrewPlan['steps'][number], language: string) {
+function buildAiBrewStepQuickNote(step: AiBrewDisplayStep, language: string) {
+  if (isWorkflowGuideStep(step)) return buildWorkflowGuideActionText(step, language);
   return normalizeAiBrewInstructionText(localizeAiBrewDynamicText(step.note, language));
 }
 
 function buildAiBrewStepMethodFocusCue(
   plan: BrewPlan,
-  step: BrewPlan['steps'][number],
+  step: AiBrewDisplayStep,
   language: string,
 ) {
+  if (isWorkflowGuideStep(step)) {
+    return normalizeAiBrewInstructionText(localizeAiBrewDynamicText(step.secondaryText || step.primaryText, language));
+  }
   const id = isIndonesianAiBrewLanguage(language);
   const kind = getAiBrewStepKind(step);
 
@@ -2281,10 +2511,26 @@ function aiBrewUsesPaperFilter(plan: BrewPlan) {
 
 function buildAiBrewDeterministicStepDetailPoints(
   plan: BrewPlan,
-  step: BrewPlan['steps'][number],
+  step: AiBrewDisplayStep,
   index: number,
   language: string,
 ) {
+  if (isWorkflowGuideStep(step)) {
+    const points: string[] = [];
+    if (step.secondaryText) addUniqueAiBrewDetailPoint(points, localizeAiBrewDynamicText(step.secondaryText, language));
+    if (step.warnings.length > 0) {
+      step.warnings.forEach((warning) => addUniqueAiBrewDetailPoint(points, localizeAiBrewDynamicText(warning, language)));
+    }
+    if (plan.brewMode === 'iced' && step.pourVolumeMl > 0) {
+      addUniqueAiBrewDetailPoint(
+        points,
+        isIndonesianAiBrewLanguage(language)
+          ? `Target volume ini adalah air panas (${formatRoundedMl(plan.hotWaterMl)}), bukan total minuman.`
+          : `This volume target is hot water (${formatRoundedMl(plan.hotWaterMl)}), not total beverage.`,
+      );
+    }
+    return points.slice(0, 5);
+  }
   const id = isIndonesianAiBrewLanguage(language);
   const kind = getAiBrewStepKind(step);
   const points: string[] = [];
@@ -2383,7 +2629,7 @@ function buildAiBrewDeterministicStepDetailPoints(
 
 function buildAiBrewStepDetailPoints(
   plan: BrewPlan,
-  step: BrewPlan['steps'][number],
+  step: AiBrewDisplayStep,
   index: number,
   language: string,
 ) {
@@ -2406,13 +2652,13 @@ function buildAiBrewStepDetailPoints(
   return points.slice(0, 5);
 }
 
-function formatAiBrewStepFlowRate(step: BrewPlan['steps'][number]) {
+function formatAiBrewStepFlowRate(step: AiBrewDisplayStep) {
   const [min, max] = step.flowRateMlPerSec || [];
   if (!Number.isFinite(min) || !Number.isFinite(max)) return '';
   return `${min}-${max} ml/s`;
 }
 
-function formatAiBrewPourPath(path: BrewPlan['steps'][number]['pourPath'], language: string) {
+function formatAiBrewPourPath(path: AiBrewDisplayStep['pourPath'], language: string) {
   const id = isIndonesianAiBrewLanguage(language);
   switch (path) {
     case 'center':
@@ -2436,13 +2682,13 @@ function formatAiBrewPourPath(path: BrewPlan['steps'][number]['pourPath'], langu
   }
 }
 
-function formatAiBrewPourHeight(height: BrewPlan['steps'][number]['pourHeight'], language: string) {
+function formatAiBrewPourHeight(height: AiBrewDisplayStep['pourHeight'], language: string) {
   if (!height) return '';
   const id = isIndonesianAiBrewLanguage(language);
   return height === 'low' ? (id ? 'rendah' : 'low') : (id ? 'sedang' : 'medium');
 }
 
-function formatAiBrewAgitation(level: BrewPlan['steps'][number]['agitationLevel'], language: string) {
+function formatAiBrewAgitation(level: AiBrewDisplayStep['agitationLevel'], language: string) {
   if (!level) return '';
   const id = isIndonesianAiBrewLanguage(language);
   switch (level) {
@@ -2459,7 +2705,7 @@ function formatAiBrewAgitation(level: BrewPlan['steps'][number]['agitationLevel'
   }
 }
 
-function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: string, plan?: BrewPlan) {
+function buildAiBrewStepMetrics(step: AiBrewDisplayStep, language: string, plan?: BrewPlan) {
   const id = isIndonesianAiBrewLanguage(language);
   const kind = getAiBrewStepKind(step);
   const icedHotTarget = plan?.brewMode === 'iced' && step.pourVolumeMl > 0;
@@ -2468,17 +2714,31 @@ function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: strin
       label: id ? 'Mulai' : 'Start',
       value: formatGuideTime(step.startSeconds),
     },
-    {
-      label: kind === 'pour' ? (id ? 'Tuang' : 'Pour') : kind === 'extract' ? (id ? 'Yield' : 'Yield') : (id ? 'Aksi' : 'Action'),
-      value: kind === 'pour' || kind === 'extract' ? formatRoundedMl(step.pourVolumeMl) : formatAiBrewStepBadge(step, language),
-    },
-    {
-      label: id ? 'Target' : 'Target',
-      value: icedHotTarget
-        ? `${formatRoundedMl(step.targetVolumeMl)} ${id ? 'air panas' : 'hot water'}`
-        : formatRoundedMl(step.targetVolumeMl),
-    },
   ];
+  const showNumericTarget = !isWorkflowGuideStep(step) || step.pourVolumeMl > 0 || step.targetVolumeMl > 0;
+  if (showNumericTarget) {
+    metrics.push(
+      {
+        label: kind === 'pour' ? (id ? 'Tuang' : 'Pour') : kind === 'extract' ? (id ? 'Yield' : 'Yield') : (id ? 'Aksi' : 'Action'),
+        value: kind === 'pour' || kind === 'extract' ? formatRoundedMl(step.pourVolumeMl) : formatAiBrewStepBadge(step, language),
+      },
+      {
+        label: id ? 'Target' : 'Target',
+        value: icedHotTarget
+          ? `${formatRoundedMl(step.targetVolumeMl)} ${id ? 'air panas' : 'hot water'}`
+          : formatRoundedMl(step.targetVolumeMl),
+      },
+    );
+  }
+  if (isWorkflowGuideStep(step) && step.techniqueChips.length > 0) {
+    step.techniqueChips.forEach((item) => {
+      metrics.push({
+        label: localizeWorkflowChipLabel(item, language),
+        value: localizeWorkflowChipValue(item.value, language),
+      });
+    });
+    return metrics;
+  }
   const flow = formatAiBrewStepFlowRate(step);
   const path = formatAiBrewPourPath(step.pourPath, language);
   const height = formatAiBrewPourHeight(step.pourHeight, language);
@@ -2520,7 +2780,7 @@ function renderAiBrewStepMetricChips(
 
 function renderAiBrewSequenceStepCard(
   plan: BrewPlan,
-  step: BrewPlan['steps'][number],
+  step: AiBrewDisplayStep,
   index: number,
   language: string,
 ) {
@@ -2701,11 +2961,11 @@ function reportAiBrewRuntimeEvent({
   });
 }
 
-function getFlowActiveStepIndex(plan: BrewPlan, elapsedSeconds: number) {
-  if (plan.steps.length === 0) return -1;
+function getFlowActiveStepIndex(steps: AiBrewDisplayStep[], elapsedSeconds: number) {
+  if (steps.length === 0) return -1;
 
-  for (let index = plan.steps.length - 1; index >= 0; index -= 1) {
-    if (elapsedSeconds >= plan.steps[index].startSeconds) {
+  for (let index = steps.length - 1; index >= 0; index -= 1) {
+    if (elapsedSeconds >= steps[index].startSeconds) {
       return index;
     }
   }
@@ -3373,6 +3633,10 @@ function PlanResultDialog({
     return () => window.clearInterval(intervalId);
   }, [plan, flowAccumulatedSeconds, flowRunning, flowStartedAtMs]);
 
+  const workflowGuideSteps = useMemo(() => (
+    plan ? getAiBrewWorkflowGuideSteps(plan) : []
+  ), [plan]);
+
   if (!plan) return null;
 
   const resultTabs: Array<{ id: ResultTab; label: string }> = isQuickResult
@@ -3400,6 +3664,7 @@ function PlanResultDialog({
   const activeTabId = `ai-brew-result-tab-${activeTab}`;
   const id = isIndonesianAiBrewLanguage(language);
   const waterSourceLinks = plan.waterBrandSourceUrls || [];
+  const workflowValidation = plan.workflowValidation;
   const localizedTargetProfileLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language);
   const displaySummary = compactResultSummaryForDisplay(buildPremiumResultSummary(plan, language), plan, language);
   const methodBrief = buildPlanMethodBrief(plan, language);
@@ -3417,9 +3682,9 @@ function PlanResultDialog({
     ...plan.warnings.map((item) => localizeAiBrewDynamicText(item, language)),
   ];
   const flowProgressSeconds = Math.min(plan.totalTimeSeconds, flowElapsedSeconds);
-  const flowActiveStepIndex = getFlowActiveStepIndex(plan, flowProgressSeconds);
-  const flowCurrentStep = plan.steps[flowActiveStepIndex] || null;
-  const flowNextStep = flowActiveStepIndex >= 0 ? plan.steps[flowActiveStepIndex + 1] || null : plan.steps[0] || null;
+  const flowActiveStepIndex = getFlowActiveStepIndex(workflowGuideSteps, flowProgressSeconds);
+  const flowCurrentStep = workflowGuideSteps[flowActiveStepIndex] || null;
+  const flowNextStep = flowActiveStepIndex >= 0 ? workflowGuideSteps[flowActiveStepIndex + 1] || null : workflowGuideSteps[0] || null;
   const flowRemainingSeconds = Math.max(0, plan.totalTimeSeconds - flowProgressSeconds);
   const flowStepRemainingSeconds = flowNextStep
     ? Math.max(0, flowNextStep.startSeconds - flowProgressSeconds)
@@ -3496,10 +3761,10 @@ function PlanResultDialog({
     },
     {
       label: copy.recipe,
-      value: `${plan.steps.length} ${copy.stepCountSuffix}`,
+      value: `${workflowGuideSteps.length} ${copy.stepCountSuffix}`,
       detail: id
-        ? `Flow mengikuti ${plan.dripper.name}: bloom, pulse, dan target volume dibuat agar drawdown finis sekitar ${formatGuideTime(plan.totalTimeSeconds)}.`
-        : `Flow follows ${plan.dripper.name}: bloom, pulses, and volume targets are shaped to finish around ${formatGuideTime(plan.totalTimeSeconds)}.`,
+        ? `Panduan mengikuti ${plan.dripper.name}: workflow metode, target volume, dan timer dibuat agar finish sekitar ${formatGuideTime(plan.totalTimeSeconds)}.`
+        : `Guide follows ${plan.dripper.name}: method workflow, volume targets, and timer are shaped to finish around ${formatGuideTime(plan.totalTimeSeconds)}.`,
     },
   ];
   const targetProfileCompareRows = buildTargetProfileCompareRows(targetComparePlans, plan, language);
@@ -3699,6 +3964,24 @@ function PlanResultDialog({
                   </div>
                 )}
                 <div className="mt-3 flex flex-wrap gap-1.5" data-testid="ai-brew-confidence-labels">
+                  {workflowValidation && (
+                    <span
+                      className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+                        workflowValidation.status === 'ready'
+                          ? confidenceBadgeClass('emerald')
+                          : workflowValidation.status === 'blocked'
+                            ? 'border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                            : confidenceBadgeClass('amber')
+                      }`}
+                      data-testid="ai-brew-workflow-status"
+                    >
+                      {workflowValidation.status === 'ready'
+                        ? (id ? 'Workflow Ready' : 'Workflow Ready')
+                        : workflowValidation.status === 'blocked'
+                          ? (id ? 'Workflow Blocked' : 'Workflow Blocked')
+                          : (id ? 'Workflow Perlu Review' : 'Workflow Needs Review')}
+                    </span>
+                  )}
                   {confidenceBadges.map((badge) => (
                     <span
                       key={badge.label}
@@ -4092,12 +4375,12 @@ function PlanResultDialog({
                           {saveButtonLabel}
                         </button>
                         <span className="rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
-                          {plan.steps.length} {copy.stepCountSuffix}
+                          {workflowGuideSteps.length} {copy.stepCountSuffix}
                         </span>
                       </div>
                     </div>
                     <div className="space-y-2.5">
-                      {plan.steps.map((step, index) => renderAiBrewSequenceStepCard(plan, step, index, language))}
+                      {workflowGuideSteps.map((step, index) => renderAiBrewSequenceStepCard(plan, step, index, language))}
                       {/*
                       {plan.steps.map((step, index) => {
                         const localizedStepLabel = localizeAiBrewStepLabel(step.label, language);
@@ -4364,8 +4647,8 @@ function PlanResultDialog({
                       </p>
                       <p className="mt-2 text-2xl font-semibold leading-tight text-primary sm:text-3xl">
                         {flowCurrentStep
-                          ? buildAiBrewStepPrimaryCue(flowCurrentStep, language)
-                          : `${plan.steps.length} ${copy.stepCountSuffix}`}
+                          ? buildAiBrewStepPrimaryCue(flowCurrentStep, language, plan)
+                          : `${workflowGuideSteps.length} ${copy.stepCountSuffix}`}
                       </p>
                       <p className="mt-1 text-base font-semibold text-blue-700 dark:text-blue-300">
                         {flowCurrentStep
@@ -4489,7 +4772,7 @@ function PlanResultDialog({
                           <h4 className="text-sm font-semibold text-primary">{copy.recipe}</h4>
                         </div>
                         <span className="rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
-                          {plan.steps.length} {copy.stepCountSuffix}
+                          {workflowGuideSteps.length} {copy.stepCountSuffix}
                         </span>
                       </div>
                       <p className="mt-2 text-sm leading-5 text-secondary">
@@ -4528,7 +4811,7 @@ function PlanResultDialog({
                       </div>
                     </div>
                   )}
-                  {plan.steps.map((step, index) => {
+                  {workflowGuideSteps.map((step, index) => {
                     const state = index < flowActiveStepIndex
                       ? 'done'
                       : index === flowActiveStepIndex

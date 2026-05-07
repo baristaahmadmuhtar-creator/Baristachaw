@@ -6,6 +6,7 @@ import {
   buildAiBrewPlan,
   buildAiBrewPlanProgressively,
   buildBrewPlanRecipeSignature,
+  buildWorkflowAwareGuideSteps,
   buildPlanMethodBrief,
   buildLocalizedPlanRecipeSteps,
   createDefaultAiBrewFormState,
@@ -16,6 +17,7 @@ import {
   resolveGrinderSettingReference,
   sanitizeAiBrewFormState,
   supportsAiBrewIcedMode,
+  validateMethodWorkflowGuide,
   type AiBrewGenerationProgress,
 } from '../../apps/web/src/features/ai-brew/planner.ts';
 import {
@@ -2555,6 +2557,105 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
     assert.doesNotMatch(textFor(entry.plan), /\b(Pulse 1|Pulse 2|Final Pour|Center Pour|Second Pour)\b/i);
     assert.equal(positivePourCount(entry.plan), 1);
   }
+});
+
+test('workflow-aware guide expands all-method operational phases and validates readiness', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const planFor = (overrides: Partial<AiBrewFormState>) => buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(productionCatalog),
+    brewMode: 'hot',
+    coffeeName: 'Workflow QA',
+    doseG: overrides.dripperId === 'toddy-cold-brew' ? '60' : overrides.dripperId === 'batch-brewer' ? '55' : '18',
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+    process: 'washed',
+    variety: 'bourbon',
+    ...overrides,
+  }, productionCatalog);
+  const cases: Array<{ label: string; plan: ReturnType<typeof buildAiBrewPlan>; pattern: RegExp }> = [
+    { label: 'AeroPress', plan: planFor({ dripperId: 'aeropress', aeropressStyle: 'standard' }), pattern: /charge[\s\S]*stir[\s\S]*steep[\s\S]*press[\s\S]*hiss/i },
+    { label: 'French Press', plan: planFor({ dripperId: 'french-press' }), pattern: /charge[\s\S]*steep[\s\S]*(settle|crust)[\s\S]*(press|decant)/i },
+    { label: 'Clever', plan: planFor({ dripperId: 'clever-dripper' }), pattern: /charge[\s\S]*steep[\s\S]*release[\s\S]*drawdown/i },
+    { label: 'Moka', plan: planFor({ dripperId: 'bialetti-moka-pot' }), pattern: /below valve[\s\S]*basket[\s\S]*heat[\s\S]*sputter/i },
+    { label: 'Espresso', plan: planFor({ dripperId: 'espresso-machine' }), pattern: /dose[\s\S]*(puck|tamp)[\s\S]*(shot|yield)[\s\S]*flow[\s\S]*stop/i },
+    { label: 'Siphon', plan: planFor({ dripperId: 'hario-siphon' }), pattern: /draw-up[\s\S]*stir[\s\S]*contact[\s\S]*drawdown/i },
+    { label: 'Batch', plan: planFor({ dripperId: 'batch-brewer' }), pattern: /(dose\/l|dose per liter)[\s\S]*spray[\s\S]*drawdown[\s\S]*mix batch/i },
+    { label: 'Cold Brew', plan: planFor({ dripperId: 'toddy-cold-brew' }), pattern: /saturate[\s\S]*steep[\s\S]*filter[\s\S]*(after filtration|dilute)/i },
+  ];
+
+  for (const entry of cases) {
+    const guide = entry.plan.workflowGuideSteps || buildWorkflowAwareGuideSteps(entry.plan);
+    const validation = entry.plan.workflowValidation || validateMethodWorkflowGuide(entry.plan, guide);
+    const text = guide.map((step) => `${step.label} ${step.actionType} ${step.primaryText} ${step.secondaryText || ''} ${step.techniqueChips.map((chip) => `${chip.label} ${chip.value}`).join(' ')}`).join('\n');
+    assert.equal(validation.passed, true, `${entry.label} workflow should pass: ${validation.blockingErrors.join('; ')}`);
+    assert.match(text, entry.pattern, `${entry.label} guide should include required phases`);
+    assert.doesNotMatch(text, /\b(Pulse 1|Pulse 2|Final Pour|Center Pour)\b/i, `${entry.label} should not use generic V60 labels`);
+  }
+});
+
+test('workflow validator blocks too-simple or method-wrong guide output', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const aeropress = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(productionCatalog),
+    dripperId: 'aeropress',
+    aeropressStyle: 'standard',
+    doseG: '18',
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, productionCatalog);
+  const aeropressChargeOnly = (aeropress.workflowGuideSteps || buildWorkflowAwareGuideSteps(aeropress))
+    .filter((step) => step.actionType === 'charge')
+    .slice(0, 1);
+  const aeropressValidation = validateMethodWorkflowGuide(aeropress, aeropressChargeOnly);
+  assert.equal(aeropressValidation.passed, false);
+  assert.match(aeropressValidation.blockingErrors.join(' '), /press|hiss|single operational/i);
+
+  const moka = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(productionCatalog),
+    dripperId: 'bialetti-moka-pot',
+    doseG: '18',
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, productionCatalog);
+  const mokaBadGuide = (moka.workflowGuideSteps || buildWorkflowAwareGuideSteps(moka)).map((step) => ({
+    ...step,
+    primaryText: `${step.primaryText} bloom final pour center-to-mid`,
+  }));
+  const mokaValidation = validateMethodWorkflowGuide(moka, mokaBadGuide);
+  assert.equal(mokaValidation.passed, false);
+  assert.match(mokaValidation.blockingErrors.join(' '), /Moka Pot workflow contains pour-over wording/i);
+});
+
+test('workflow-aware V60 iced guide keeps hot-water target explicit', () => {
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'iced',
+    dripperId: 'hario-v60',
+    doseG: '15',
+    targetProfileId: 'more_sweetness',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, catalog);
+  const guide = plan.workflowGuideSteps || buildWorkflowAwareGuideSteps(plan);
+  const validation = plan.workflowValidation || validateMethodWorkflowGuide(plan, guide);
+  const text = guide.map((step) => `${step.label} ${step.primaryText} ${step.techniqueChips.map((chip) => chip.value).join(' ')}`).join('\n');
+  const lastPour = plan.steps.filter((step) => step.pourVolumeMl > 0).at(-1);
+
+  assert.equal(validation.passed, true, validation.blockingErrors.join('; '));
+  assert.equal(plan.hotWaterMl + plan.iceMl, plan.totalWaterMl);
+  assert.equal(lastPour?.targetVolumeMl, plan.hotWaterMl);
+  assert.match(text, new RegExp(`Target ${plan.hotWaterMl} ml hot water`, 'i'));
+  assert.match(text, /Flow|center_to_mid|low|minimal|agitation/i);
 });
 
 test('AI Brew water catalog blocks private sources, zero-mineral autofill, and estimated facts', () => {

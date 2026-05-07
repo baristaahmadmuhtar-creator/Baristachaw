@@ -154,6 +154,7 @@ export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
     plan.summary,
     ...plan.notes,
     ...plan.warnings,
+    ...(plan.workflowGuideSteps || []).map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''}`),
     ...(plan.aiNotes ? Object.values(plan.aiNotes).filter(Boolean) : []),
   ].join('\n');
   const sanitized = sanitizeBrewNarrative(narrative, plan);
@@ -169,7 +170,27 @@ export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
     reasons.push('conflicting grind display');
   }
 
-  const blocked = reasons.some((reason) => /not finite|must equal|must be lower|conflicting/.test(reason));
+  if (plan.workflowValidation && !plan.workflowValidation.passed) {
+    reasons.push(`workflow guide failed validation: ${plan.workflowValidation.blockingErrors.join(', ')}`);
+  }
+
+  if (plan.methodFamily === 'aeropress' && /final pour|drawdown bed|wall rinse/i.test(narrative)) {
+    reasons.push('AeroPress narrative contains pour-over workflow wording');
+  }
+  if (plan.methodFamily === 'french_press' && /final pour|bloom pour|center-to-mid/i.test(narrative)) {
+    reasons.push('French Press narrative contains pour-over workflow wording');
+  }
+  if (plan.methodFamily === 'moka_pot' && /bloom|final pour|center-to-mid|kettle pour/i.test(narrative)) {
+    reasons.push('Moka Pot narrative contains pour-over workflow wording');
+  }
+  if (plan.methodFamily === 'espresso' && /bloom|kettle|filter wall|final pour|add water/i.test(narrative)) {
+    reasons.push('Espresso narrative contains filter-brew workflow wording');
+  }
+  if (plan.methodFamily === 'cold_brew' && /hot bloom|kettle temperature|hot pour/i.test(narrative)) {
+    reasons.push('Cold Brew narrative contains hot workflow wording');
+  }
+
+  const blocked = reasons.some((reason) => /not finite|must equal|must be lower|conflicting|workflow guide failed|workflow wording/.test(reason));
   return {
     allowed: !blocked,
     risk: reasons.length === 0 ? 'none' : blocked ? 'blocked' : 'medium',

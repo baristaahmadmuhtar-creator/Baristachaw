@@ -10,7 +10,7 @@ const LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
 const AI_BREW_SEQUENCE_HEADING = /Brew Sequence|Urutan Seduh/i;
 const AI_BREW_SAVED_COLLECTION = /Recipe saved to Collection\.|Recipe tersimpan ke Collection\./i;
 const AI_BREW_CLOSE_OUTPUT = /Close planned output|Tutup output plan/i;
-const AI_BREW_EXPLAIN_PLAN = /Explain Plan|Jelaskan Resep/i;
+const AI_BREW_EXPLAIN_PLAN = /Explain with AI|Jelaskan dengan AI/i;
 const AI_BREW_EXACT_PROFILE = /Exact profile|Profil exact/i;
 
 test.beforeEach(async ({ page }) => {

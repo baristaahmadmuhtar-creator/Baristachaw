@@ -31,7 +31,6 @@ import {
 } from 'lucide-react';
 import { useGlobalState } from '../../context/GlobalState';
 import { useAuthModal } from '../../context/AuthModalContext';
-import { useAccountStatus } from '../../context/AccountStatusContext';
 import { useNavbar } from '../../context/NavbarContext';
 import { useAiAccessGate } from '../../components/billing/AiAccessGate';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
@@ -42,6 +41,7 @@ import { createRecipeCollectionItem, saveCollectionItem, saveRecipe } from '../.
 import type { Recipe } from '../../types';
 import {
   buildAdjustPrompt,
+  buildAiAssistPrompt,
   buildExplainPrompt,
   buildOptimizationPrompt,
   buildSequenceGuidePrompt,
@@ -134,6 +134,7 @@ import type {
   WaterBrandProfile,
   WaterMode,
   WaterPresetStatus,
+  AiBrewEngineMode,
 } from './types';
 
 const CUSTOM_ENTRY_ID = 'custom';
@@ -146,10 +147,10 @@ const AI_BREW_COACH_FAST_TIMEOUT_MS = 5000;
 const AI_BREW_COACH_DEEP_TIMEOUT_MS = 8500;
 const AI_BREW_COACH_TRANSLATION_TIMEOUT_MS = 1200;
 const AI_BREW_FEEDBACK_NOTE_MAX_LENGTH = 240;
+const AI_BREW_ASSIST_PROMPT_VERSION = 'assist-v2026-05-06';
 const LARGE_CATALOG_PICKER_KINDS = new Set<NonNullable<PickerKind>>(['process', 'variety']);
 const LARGE_CATALOG_INITIAL_LIMIT = 140;
 const LARGE_CATALOG_SEARCH_LIMIT = 96;
-const AI_BREW_ONLINE_PROVIDER_STACK = 'Groq Llama 3.3 70B, Gemini 2.5 Flash, DeepSeek Chat, Mistral Large, OpenAI GPT-4o mini, OpenRouter Llama fallback';
 const COPY = {
   en: {
     title: 'AI Brew',
@@ -368,22 +369,35 @@ const COPY = {
     unfavorite: 'Unfavorite',
     aiCoach: 'AI Coach',
     aiFinisher: 'Extraction Finisher',
-    explain: 'Explain Plan',
+    explain: 'Explain with AI',
     troubleshoot: 'Fix Taste',
-    adjust: 'Push Target',
+    rewriteGuide: 'Make Guide Friendlier',
+    deepAnalysis: 'Deep Brew Analysis',
+    adjust: 'Safe AI Optimization',
     aiSop: 'Standardize SOP',
     aiGenerateBrief: 'AI Assist',
     aiSequenceGuide: 'AI Notes',
     aiGenerateLoading: 'Refreshing short notes...',
-    aiEngineReady: 'AI ready',
-    aiEngineStrictReady: 'Strict AI',
-    aiEngineStrictRequired: 'AI server required',
-    aiEngineProviderStack: `Online engine: ${AI_BREW_ONLINE_PROVIDER_STACK}.`,
-    aiFallbackDisabledByAdmin: 'Strict mode is active. Online AI optimizes the plan, then the deterministic planner validates every number before it is shown.',
-    aiEngineOnlineOptimized: 'AI optimized',
-    aiEngineLocalValidated: 'AI off',
-    aiEngineWorkingOnline: 'AI optimizing',
-    aiEngineWorkingLocal: 'AI off',
+    aiEngineReady: 'AI Assist not used yet',
+    aiEngineStrictReady: 'AI + Planner Validated',
+    aiEngineStrictRequired: 'AI Assist unavailable',
+    aiEngineProviderStack: '',
+    aiFallbackDisabledByAdmin: 'AI is only used when you tap an AI Assist action.',
+    aiEngineOnlineOptimized: 'AI + Planner Validated',
+    aiEngineLocalValidated: 'Local Planner',
+    aiEnginePrecisionPlanner: 'Precision Planner',
+    aiEngineWorkingOnline: 'AI Assist working...',
+    aiEngineWorkingLocal: 'Local Planner',
+    aiPrecisionAssistNote: 'AI is only used when you tap an AI Assist action.',
+    aiAssistNotUsed: 'AI Assist not used yet',
+    aiAssistActive: 'AI Assist active',
+    aiAssistUsedExplanation: 'AI used for explanation',
+    aiAssistUsedTasteFix: 'AI used for taste fix',
+    aiAssistUsedRewrite: 'Guide made friendlier by AI',
+    aiAssistUsedDeepAnalysis: 'AI used for deep analysis',
+    aiAssistCacheReused: 'Cached AI answer reused.',
+    aiOptimizationAccepted: 'AI suggested a small adjustment and the planner validated it.',
+    aiOptimizationRejectedProtected: 'AI suggestion was not used because it tried to change protected recipe numbers. The planner recipe was kept. Use this as your baseline and adjust one variable at a time.',
     updateNotes: 'Refresh Notes',
     updatingNotes: 'Refreshing Notes',
     aiNotesManualHint: 'Use AI only when needed.',
@@ -413,7 +427,7 @@ const COPY = {
     generated: 'Brew plan saved to local history.',
     generatedAi: 'Brew plan saved. AI optimization applied.',
     generatedLocal: 'Brew plan saved with local planner.',
-    aiOptimizationNoChange: 'AI could not produce a safe numeric adjustment, so the validated planner result was kept.',
+    aiOptimizationNoChange: 'AI suggestion was not used. The planner kept the safer recipe.',
     savedCollection: 'Recipe saved to Collection.',
     saveCollectionFailed: 'Unable to save this brew to Collection right now.',
     savedFavorite: 'Saved to favorites.',
@@ -514,7 +528,7 @@ const COPY = {
     flowNow: 'Now',
     flowUpNext: 'Up next',
     coachDescription: 'AI is optional. Use it only for a short fix or explanation.',
-    coachCostHint: 'AI is called only on Generate, Coach, or Taste Check. Other panels use the local planner to keep token use lean.',
+    coachCostHint: 'AI Assist runs only when you tap one of these actions.',
     coachEmpty: 'Choose one brief.',
     coachExplainHint: 'Why this plan fits the bean, water, and target.',
     coachTroubleshootHint: 'What to change first when the cup tastes off.',
@@ -784,22 +798,35 @@ const COPY = {
     unfavorite: 'Hapus Favorit',
     aiCoach: 'Panduan AI',
     aiFinisher: 'Finalisasi Ekstraksi',
-    explain: 'Jelaskan Resep',
+    explain: 'Jelaskan dengan AI',
     troubleshoot: 'Perbaiki Rasa',
-    adjust: 'Dorong Target',
+    rewriteGuide: 'Buat Panduan Lebih Ramah',
+    deepAnalysis: 'Analisis Dalam',
+    adjust: 'Optimasi Aman AI',
     aiSop: 'Standarkan SOP',
     aiGenerateBrief: 'Asisten AI',
     aiSequenceGuide: 'Catatan AI',
     aiGenerateLoading: 'Memperbarui catatan singkat...',
-    aiEngineReady: 'Siap AI',
-    aiEngineStrictReady: 'Strict AI',
-    aiEngineStrictRequired: 'Perlu server AI',
-    aiEngineProviderStack: `Engine online: ${AI_BREW_ONLINE_PROVIDER_STACK}.`,
-    aiFallbackDisabledByAdmin: 'Mode ketat aktif. AI online mengoptimalkan plan, lalu planner deterministik memvalidasi semua angka sebelum ditampilkan.',
-    aiEngineOnlineOptimized: 'AI dioptimalkan',
-    aiEngineLocalValidated: 'AI nonaktif',
-    aiEngineWorkingOnline: 'AI mengoptimalkan',
-    aiEngineWorkingLocal: 'AI nonaktif',
+    aiEngineReady: 'AI Assist belum dipakai',
+    aiEngineStrictReady: 'AI + Tervalidasi Planner',
+    aiEngineStrictRequired: 'AI Assist belum tersedia',
+    aiEngineProviderStack: '',
+    aiFallbackDisabledByAdmin: 'AI hanya dipakai saat kamu menekan tombol AI Assist.',
+    aiEngineOnlineOptimized: 'AI + Tervalidasi Planner',
+    aiEngineLocalValidated: 'Planner Lokal',
+    aiEnginePrecisionPlanner: 'Planner Presisi',
+    aiEngineWorkingOnline: 'AI Assist bekerja...',
+    aiEngineWorkingLocal: 'Planner Lokal',
+    aiPrecisionAssistNote: 'AI hanya dipakai saat kamu menekan tombol AI Assist.',
+    aiAssistNotUsed: 'AI Assist belum dipakai',
+    aiAssistActive: 'AI Assist aktif',
+    aiAssistUsedExplanation: 'AI dipakai untuk penjelasan',
+    aiAssistUsedTasteFix: 'AI dipakai untuk perbaikan rasa',
+    aiAssistUsedRewrite: 'Panduan dibuat lebih ramah oleh AI',
+    aiAssistUsedDeepAnalysis: 'AI dipakai untuk analisis dalam',
+    aiAssistCacheReused: 'Jawaban AI sebelumnya digunakan ulang.',
+    aiOptimizationAccepted: 'AI memberi penyesuaian kecil dan planner sudah memvalidasi hasilnya.',
+    aiOptimizationRejectedProtected: 'Saran AI tidak dipakai karena mencoba mengubah angka penting. Resep planner tetap dipertahankan. Gunakan hasil ini sebagai baseline, lalu koreksi satu variabel saja.',
     updateNotes: 'Perbarui Catatan',
     updatingNotes: 'Memperbarui Catatan',
     aiNotesManualHint: 'Pakai AI hanya saat perlu.',
@@ -829,7 +856,7 @@ const COPY = {
     generated: 'Brew plan tersimpan ke history lokal.',
     generatedAi: 'Brew plan tersimpan. Optimasi AI diterapkan.',
     generatedLocal: 'Brew plan tersimpan dengan planner lokal.',
-    aiOptimizationNoChange: 'AI belum memberi penyesuaian angka yang aman, jadi hasil planner tervalidasi tetap dipakai.',
+    aiOptimizationNoChange: 'Saran AI tidak dipakai. Planner mempertahankan resep yang lebih aman.',
     savedCollection: 'Recipe tersimpan ke Collection.',
     saveCollectionFailed: 'Recipe ini belum bisa disimpan ke Collection sekarang.',
     savedFavorite: 'Masuk ke favorit.',
@@ -930,7 +957,7 @@ const COPY = {
     flowNow: 'Sekarang',
     flowUpNext: 'Berikutnya',
     coachDescription: 'AI opsional. Pakai hanya untuk penjelasan atau koreksi rasa singkat.',
-    coachCostHint: 'AI hanya dipanggil saat Generate, Coach, atau Cek rasa. Panel lain memakai planner lokal agar token tetap hemat.',
+    coachCostHint: 'AI Assist hanya berjalan saat kamu menekan salah satu aksi ini.',
     coachEmpty: 'Pilih satu brief.',
     coachExplainHint: 'Mengapa plan ini cocok dengan bean, air, dan target.',
     coachTroubleshootHint: 'Apa yang paling dulu diubah saat rasa mulai meleset.',
@@ -1006,7 +1033,7 @@ const SOLUBILITY_OPTIONS = [
 ] as const;
 
 type PickerKind = 'process' | 'variety' | 'dripper' | 'grinder' | 'water_brand' | null;
-type AiCoachMode = 'explain' | 'troubleshoot' | 'adjust';
+type AiCoachMode = 'explain' | 'troubleshoot' | 'rewrite' | 'deep_analysis' | 'adjust';
 type FormMode = 'quick' | 'pro';
 type HistoryStripTab = 'latest' | 'favorites' | 'recent';
 type ResultTab = 'plan' | 'flow' | 'coach';
@@ -1288,10 +1315,46 @@ function getAiCoachTitle(copy: CopySet, mode: AiCoachMode) {
       return copy.explain;
     case 'troubleshoot':
       return copy.troubleshoot;
+    case 'rewrite':
+      return copy.rewriteGuide;
+    case 'deep_analysis':
+      return copy.deepAnalysis;
     case 'adjust':
     default:
       return copy.adjust;
   }
+}
+
+function mapCoachModeToGuardAction(mode: AiCoachMode): 'explain' | 'troubleshoot' | 'adjust' {
+  if (mode === 'troubleshoot') return 'troubleshoot';
+  if (mode === 'adjust') return 'adjust';
+  return 'explain';
+}
+
+function mapCoachModeToAiNotesKey(mode: AiCoachMode): keyof NonNullable<BrewPlan['aiNotes']> {
+  if (mode === 'rewrite') return 'rewrite';
+  if (mode === 'deep_analysis') return 'deepAnalysis';
+  return mode;
+}
+
+function mapCoachModeToEngineMode(mode: AiCoachMode): AiBrewEngineMode {
+  switch (mode) {
+    case 'troubleshoot':
+      return 'ai_assist_taste_fix';
+    case 'rewrite':
+      return 'ai_assist_rewrite';
+    case 'deep_analysis':
+      return 'ai_assist_deep_analysis';
+    case 'adjust':
+      return 'strict_hybrid_optimization';
+    case 'explain':
+    default:
+      return 'ai_assist_explain';
+  }
+}
+
+function buildAiAssistCacheKey(plan: BrewPlan, mode: AiCoachMode, language: string) {
+  return `${AI_BREW_ASSIST_PROMPT_VERSION}:${plan.fingerprint}:${mode}:${language}`;
 }
 
 function selectDefaultAiResponse(
@@ -1301,18 +1364,19 @@ function selectDefaultAiResponse(
   language?: string,
 ) {
   if (aiNotes) {
-    const orderedModes: AiCoachMode[] = ['explain', 'troubleshoot', 'adjust'];
+    const orderedModes: AiCoachMode[] = ['explain', 'troubleshoot', 'rewrite', 'deep_analysis', 'adjust'];
     for (const mode of orderedModes) {
-      const markdown = aiNotes[mode];
-      if (!markdown) continue;
+      const markdown = aiNotes[mapCoachModeToAiNotesKey(mode)];
+      if (typeof markdown !== 'string' || !markdown) continue;
+      const guardAction = mapCoachModeToGuardAction(mode);
       const guarded = plan
-        ? sanitizeAiCoachMarkdown({ action: mode, markdown, plan })
+        ? sanitizeAiCoachMarkdown({ action: guardAction, markdown, plan })
         : { markdown, risk: 'none' as const, replacements: [] };
       const localizedMarkdown = localizeAiBrewMarkdownLanguage(guarded.markdown, language);
       return {
         title: getAiCoachTitle(copy, mode),
         markdown: plan && hasAiBrewLanguageLeak(localizedMarkdown, language)
-          ? buildDeterministicAiCoachMarkdown(plan, mode, language)
+          ? buildDeterministicAiCoachMarkdown(plan, guardAction, language)
           : localizedMarkdown,
       };
     }
@@ -3104,6 +3168,8 @@ function PlanResultDialog({
   const coachActions: Array<{ mode: AiCoachMode; label: string; hint: string }> = [
     { mode: 'explain', label: copy.explain, hint: copy.coachExplainHint },
     { mode: 'troubleshoot', label: copy.troubleshoot, hint: copy.coachTroubleshootHint },
+    { mode: 'rewrite', label: copy.rewriteGuide, hint: copy.aiNotesManualHint },
+    { mode: 'deep_analysis', label: copy.deepAnalysis, hint: copy.coachAdjustHint },
     { mode: 'adjust', label: copy.adjust, hint: copy.coachAdjustHint },
   ];
   const hasLowConfidenceCoachData = plan.provenanceAttentionNeeded
@@ -5125,7 +5191,6 @@ export function AiBrewPanel({
   const { hideNav, showNav } = useNavbar();
   const { isOffline } = useNetworkStatus();
   const { isPwa } = useRuntimeDisplayMode();
-  const { snapshot: accountStatusSnapshot } = useAccountStatus();
   const fallbackCopy = useMemo(() => ({
     ...COPY.en,
     title: t.toolsTabAiBrew || COPY.en.title,
@@ -5193,6 +5258,7 @@ export function AiBrewPanel({
   const [showMineralEditor, setShowMineralEditor] = useState(false);
   const [showBeanProfileEditor, setShowBeanProfileEditor] = useState(false);
   const generationStartedAtRef = useRef<number | null>(null);
+  const aiAssistCacheRef = useRef(new Map<string, { title: string; markdown: string }>());
 
   useEffect(() => {
     if (!generationBusy) {
@@ -5551,20 +5617,16 @@ export function AiBrewPanel({
     ) * 100,
   );
   const generationStageDetail = getGenerationStageDetail(generationProgress, copy, language);
-  const aiBrewFallbackFlag = accountStatusSnapshot?.featureFlags.find((flag) => flag.key === 'ai_brew_fallback');
-  const aiBrewFallbackEnabled = !aiBrewFallbackFlag || aiBrewFallbackFlag.status === 'available';
   const canUsePaidAiBrew = hasPaidAiAccess && !isOffline;
-  const canUseHybridAiSequence = activeBuilderModal === 'pro' && canUsePaidAiBrew;
-  const requireOnlineAiGenerate = activeBuilderModal === 'pro' && !aiBrewFallbackEnabled;
-  const aiEngineReadyLabel = canUseHybridAiSequence
-    ? requireOnlineAiGenerate ? copy.aiEngineStrictReady : copy.aiEngineReady
-    : requireOnlineAiGenerate ? copy.aiEngineStrictRequired : copy.aiEngineLocalValidated;
-  const aiEngineWorkingLabel = canUseHybridAiSequence
-    ? requireOnlineAiGenerate ? copy.aiEngineStrictReady : copy.aiEngineWorkingOnline
-    : requireOnlineAiGenerate ? copy.aiEngineStrictRequired : copy.aiEngineWorkingLocal;
-  const aiEngineLaunchLabel = canUsePaidAiBrew
-    ? requireOnlineAiGenerate ? copy.aiEngineStrictReady : copy.aiEngineReady
-    : requireOnlineAiGenerate ? copy.aiEngineStrictRequired : copy.aiEngineLocalValidated;
+  const canUseHybridAiSequence = false;
+  const requireOnlineAiGenerate = false;
+  const activeEngineMode: AiBrewEngineMode = activeBuilderModal === 'pro'
+    ? 'precision_planner'
+    : 'local_planner';
+  const aiEngineReadyLabel = activeEngineMode === 'precision_planner'
+    ? copy.aiEnginePrecisionPlanner
+    : copy.aiEngineLocalValidated;
+  const aiEngineWorkingLabel = aiEngineReadyLabel;
   const preferredBuilderMode = inferPreferredBuilderMode(formState);
 
   const isQuickBuilder = activeBuilderModal === 'quick';
@@ -5983,7 +6045,8 @@ export function AiBrewPanel({
     const deterministicMarkdown = buildAiBrewTasteLoopMarkdown(plan, nextFeedback, language);
     setAiResponse({ title: copy.feedbackCoachTitle, markdown: deterministicMarkdown });
 
-    if (nextFeedback.rating === 'great' || !canUsePaidAiBrew || aiBusy) return;
+    const onlineTasteFeedbackAiEnabled = false;
+    if (!onlineTasteFeedbackAiEnabled || nextFeedback.rating === 'great' || !canUsePaidAiBrew || aiBusy) return;
 
     setAiBusy('troubleshoot');
     setAiError(null);
@@ -6097,28 +6160,43 @@ export function AiBrewPanel({
       return;
     }
 
+    const engineMode = mapCoachModeToEngineMode(mode);
     const prompt =
       mode === 'explain'
         ? buildExplainPrompt(plan, language)
         : mode === 'troubleshoot'
           ? buildTroubleshootPrompt(plan, language)
-          : buildAdjustPrompt(plan, language);
+          : mode === 'adjust'
+            ? buildAdjustPrompt(plan, language)
+            : buildAiAssistPrompt(engineMode, plan, language);
+    const guardAction = mapCoachModeToGuardAction(mode);
+    const notesKey = mapCoachModeToAiNotesKey(mode);
     const fallbackMarkdown = sanitizeAiCoachMarkdown({
-      action: mode,
+      action: guardAction,
       markdown: sanitizeBrewNarrative(
-        localizeAiBrewMarkdownLanguage(buildDeterministicAiCoachMarkdown(plan, mode, language), language),
+        localizeAiBrewMarkdownLanguage(buildDeterministicAiCoachMarkdown(plan, guardAction, language), language),
         plan,
       ),
       plan,
     }).markdown;
-    const commitCoachMarkdown = async (markdown: string) => {
-      setAiResponse({ title: prompt.title, markdown });
-      const nextPlan = mergeAiNotesIntoPlan(plan, { [mode]: markdown });
+    const cacheKey = buildAiAssistCacheKey(plan, mode, language);
+    const cached = aiAssistCacheRef.current.get(cacheKey);
+    if (cached) {
+      setAiResponse(cached);
+      setNotice(copy.aiAssistCacheReused);
+      return;
+    }
+
+    const commitCoachMarkdown = async (markdown: string, currentPlan: BrewPlan = plan) => {
+      const response = { title: prompt.title, markdown };
+      setAiResponse(response);
+      aiAssistCacheRef.current.set(cacheKey, response);
+      const nextPlan = mergeAiNotesIntoPlan(currentPlan, { [notesKey]: markdown });
       setPlan(nextPlan);
       saveLastGeneratedBrewPlan(nextPlan);
       if (activeJournalId) {
         try {
-          await updateBrewJournalAiNotes(activeJournalId, { [mode]: markdown });
+          await updateBrewJournalAiNotes(activeJournalId, { [notesKey]: markdown });
           void syncAiBrewLibraryToCloud({
             aiBrewJournal: [{
               id: activeJournalId,
@@ -6145,10 +6223,33 @@ export function AiBrewPanel({
     setAiError(null);
     setAiResponse({ title: prompt.title, markdown: fallbackMarkdown });
     try {
+      if (mode === 'adjust') {
+        const optimized = await runHybridOptimizationUpdate(plan, {
+          enabled: true,
+          platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
+          language,
+        });
+        const safeMarkdown = optimized.applied
+          ? `### ${copy.aiEngineOnlineOptimized}\n${copy.aiOptimizationAccepted}`
+          : `### ${copy.aiEngineLocalValidated}\n${copy.aiOptimizationRejectedProtected}`;
+        if (optimized.applied) {
+          await commitCoachMarkdown(safeMarkdown, optimized.plan);
+        } else {
+          reportAiBrewRuntimeEvent({
+            name: 'ai_brew_optimizer_rejected',
+            message: copy.aiOptimizationNoChange,
+            details: optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
+            platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
+          });
+          await commitCoachMarkdown(safeMarkdown);
+        }
+        return;
+      }
+
       const requestContext = {
         responseProfile: {
           language,
-          verbosity: 'comprehensive' as const,
+          verbosity: mode === 'deep_analysis' ? ('comprehensive' as const) : ('short' as const),
           format: mode === 'troubleshoot' ? ('steps' as const) : ('bullets' as const),
           tone: 'professional' as const,
         },
@@ -6160,7 +6261,7 @@ export function AiBrewPanel({
         },
       };
       const lockedPrompt = withLanguageLock(prompt.body, language);
-      const rawMarkdown = mode === 'troubleshoot'
+      const rawMarkdown = mode === 'troubleshoot' || mode === 'deep_analysis'
         ? (await deepThinkingResponseDetailed(lockedPrompt, requestContext, { timeoutMs: AI_BREW_COACH_DEEP_TIMEOUT_MS })).text
         : await raceChatResponse(lockedPrompt, requestContext, {
             timeoutMs: AI_BREW_COACH_FAST_TIMEOUT_MS,
@@ -6169,7 +6270,7 @@ export function AiBrewPanel({
       const markdown = await normalizeMarkdownToLanguage(rawMarkdown, language, requestContext, {
         timeoutMs: AI_BREW_COACH_TRANSLATION_TIMEOUT_MS,
       });
-      const guarded = sanitizeAiCoachMarkdown({ action: mode, markdown, plan });
+      const guarded = sanitizeAiCoachMarkdown({ action: guardAction, markdown, plan });
       const safeMarkdown = guarded.risk === 'high'
         || isAiBrewGenericFailureMarkdown(rawMarkdown)
         || isAiBrewGenericFailureMarkdown(markdown)
@@ -6316,7 +6417,7 @@ export function AiBrewPanel({
     const currentStageNumber = generationStageIndex >= 0 ? generationStageIndex + 1 : 1;
     const normalizedStageIndex = generationStageIndex >= 0 ? generationStageIndex : 0;
     const elapsedLabel = formatTime(Math.max(0, Math.floor(generationElapsedMs / 1000)));
-    const EngineIcon = canUseHybridAiSequence ? Brain : Sparkles;
+    const EngineIcon = activeBuilderModal === 'pro' ? Brain : Sparkles;
     const engineLabel = aiEngineWorkingLabel;
     const loadingSteps = [
       {
@@ -6333,8 +6434,8 @@ export function AiBrewPanel({
       },
       {
         key: 'sequence',
-        label: canUseHybridAiSequence
-          ? (id ? 'AI' : 'AI')
+        label: activeBuilderModal === 'pro'
+          ? (id ? 'Presisi' : 'Precision')
           : (id ? 'Urutan' : 'Sequence'),
         start: 4,
         end: totalStages - 1,
@@ -6357,11 +6458,7 @@ export function AiBrewPanel({
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-300">
             <Loader2 size={20} className="animate-spin" />
           </div>
-          <div className={`mx-auto mt-3 inline-flex items-center justify-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${
-            canUseHybridAiSequence
-              ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-400/30 dark:bg-blue-950 dark:text-blue-100'
-              : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/30 dark:bg-rose-950 dark:text-rose-100'
-          }`}>
+          <div className="mx-auto mt-3 inline-flex items-center justify-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-blue-700 dark:border-blue-400/30 dark:bg-blue-950 dark:text-blue-100">
             <EngineIcon size={13} />
             <span>{engineLabel}</span>
           </div>
@@ -6607,21 +6704,16 @@ export function AiBrewPanel({
                   <X size={18} />
                 </button>
                 <div className="pr-12">
-                  <div className={`mb-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
-                    canUseHybridAiSequence
-                      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-300'
-                      : 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
-                  }`}>
-                    {canUseHybridAiSequence ? <Brain size={13} /> : <Sparkles size={13} />}
+                  <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-300">
+                    {isPro ? <Brain size={13} /> : <Sparkles size={13} />}
                     <span>{isPro ? copy.proMode : copy.quickMode}</span>
                     <span className="opacity-70">
                       {aiEngineReadyLabel}
                     </span>
                   </div>
                   <h3 className="text-base font-semibold tracking-tight text-primary lg:text-xl">{dialogTitle}</h3>
-                  <p className="mt-1 text-xs leading-5 text-secondary">{copy.aiEngineProviderStack}</p>
-                  {requireOnlineAiGenerate ? (
-                    <p className="mt-1 text-xs leading-5 text-amber-600 dark:text-amber-300">{copy.aiFallbackDisabledByAdmin}</p>
+                  {isPro ? (
+                    <p className="mt-1 text-xs leading-5 text-secondary">{copy.aiPrecisionAssistNote}</p>
                   ) : null}
                 </div>
 
@@ -7382,13 +7474,9 @@ export function AiBrewPanel({
                 data-testid="ai-brew-open-quick"
               >
                 <div className="text-base font-semibold text-primary">{copy.quickMode}</div>
-                <div className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                  canUsePaidAiBrew
-                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-300'
-                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
-                }`}>
-                  {canUsePaidAiBrew ? <Brain size={12} /> : <Sparkles size={12} />}
-                  {aiEngineLaunchLabel}
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
+                  <Sparkles size={12} />
+                  {copy.aiEngineLocalValidated}
                 </div>
               </button>
               <button
@@ -7399,13 +7487,9 @@ export function AiBrewPanel({
                 data-testid="ai-brew-open-pro"
               >
                 <div className="text-base font-semibold text-primary">{copy.proMode}</div>
-                <div className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                  canUsePaidAiBrew
-                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-300'
-                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-300'
-                }`}>
-                  {canUsePaidAiBrew ? <Brain size={12} /> : <Sparkles size={12} />}
-                  {aiEngineLaunchLabel}
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
+                  <Brain size={12} />
+                  {copy.aiEnginePrecisionPlanner}
                 </div>
               </button>
             </div>

@@ -16,6 +16,14 @@ async function qaLogin(request: APIRequestContext) {
 test.afterEach(async ({ page }) => {
   await qaLogout(page.request);
 });
+
+test.beforeEach(async ({}, testInfo) => {
+  test.skip(
+    /auto sequence/i.test(testInfo.title),
+    'Automatic AI sequence generation is disabled by product decision; AI Assist is now on-demand and composer guardrails remain covered by unit tests.',
+  );
+});
+
 async function openQuickBuilder(page: import('@playwright/test').Page) {
   await page.goto('/tools');
   await clearClientState(page);

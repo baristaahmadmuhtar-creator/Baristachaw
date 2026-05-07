@@ -78,3 +78,14 @@ test('language-sensitive source files do not contain placeholder mojibake', () =
     }
   }
 });
+
+test('AI Brew normal user copy hides provider internals and old engine labels', () => {
+  const source = readFileSync('apps/web/src/features/ai-brew/AiBrewPanel.tsx', 'utf8');
+
+  assert.doesNotMatch(source, /['"]AI off['"]|['"]AI optimized['"]|['"]AI optimizing['"]/i);
+  assert.doesNotMatch(source, /Groq Llama|Gemini 2\.5|DeepSeek Chat|OpenRouter Llama|estimated USD|token count|provider stack/i);
+  assert.match(source, /Local Planner/);
+  assert.match(source, /Planner Lokal/);
+  assert.match(source, /Precision Planner/);
+  assert.match(source, /Planner Presisi/);
+});

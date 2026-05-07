@@ -39,7 +39,14 @@ import {
   saveCachedAiBrewCatalogSnapshot,
   saveLastGeneratedBrewPlan,
 } from '../../apps/web/src/features/ai-brew/storage.ts';
-import { buildGenerateBriefPrompt } from '../../apps/web/src/features/ai-brew/prompts.ts';
+import {
+  buildAiAssistPrompt,
+  buildExplainPrompt,
+  buildGenerateBriefPrompt,
+  buildOptimizationPrompt,
+  buildTroubleshootPrompt,
+  estimatePromptSize,
+} from '../../apps/web/src/features/ai-brew/prompts.ts';
 import { resolveBrewerProfileTrustStatus } from '../../apps/web/src/features/ai-brew/catalogTrust.ts';
 import { sanitizeBrewNarrative, validateBrewPlanOutput } from '../../apps/web/src/features/ai-brew/antiHallucination.ts';
 import { sanitizeAiCoachMarkdown } from '../../apps/web/src/features/ai-brew/coachGuard.ts';
@@ -1378,6 +1385,24 @@ test('V60 More Sweetness calibration handles Japanese iced, hot, water, grind, p
     waterAlkalinityPpm: '40',
   }, catalog);
   assert.match(buildGenerateBriefPrompt(geishaPlan, 'id').body, /geisha|gesha/i);
+
+  const promptCases = [
+    [buildExplainPrompt(iced, 'id'), 2500],
+    [buildTroubleshootPrompt(iced, 'id'), 2500],
+    [buildGenerateBriefPrompt(iced, 'id'), 2000],
+    [buildAiAssistPrompt('ai_assist_deep_analysis', iced, 'id'), 4000],
+    [buildOptimizationPrompt(iced, 'id'), 2500],
+  ] as const;
+  for (const [prompt, maxChars] of promptCases) {
+    assert.ok(
+      estimatePromptSize(prompt.body) <= maxChars,
+      `${prompt.title} prompt exceeded ${maxChars} chars: ${estimatePromptSize(prompt.body)}`,
+    );
+    assert.doesNotMatch(
+      prompt.body,
+      /deterministic envelope|cadence profile|operation progression profile|target-intent checklist|method cue checklist|structured patch|validator clamp|extraction pressure profile/i,
+    );
+  }
 
   const feimaPlan = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),
@@ -2746,7 +2771,7 @@ test('AI Brew experience layer exposes bean-safe reasoning, confidence labels, a
   assert.doesNotMatch(insights, /Geisha|Gesha/i);
 
   const badges = resolveAiBrewConfidenceBadges(plan, 'id').map((badge) => badge.label).join(' ');
-  assert.match(badges, /Planner aman/);
+  assert.match(badges, /Planner Lokal/);
   assert.match(badges, /Grinder official/);
 
   const sourLoop = buildAiBrewTasteLoopMarkdown(plan, { rating: 'sour' }, 'id');

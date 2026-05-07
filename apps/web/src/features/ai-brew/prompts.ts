@@ -1,4 +1,4 @@
-import type { AiBrewPromptContext, BrewPlan } from './types';
+import type { AiBrewEngineMode, AiBrewPromptContext, BrewPlan } from './types';
 import { buildExtractionFinisher } from './extractionFinisher';
 import { formatAiBrewKnowledgeContext } from './knowledge.ts';
 import { isIndonesianAiBrewLanguage } from './localization.ts';
@@ -173,6 +173,226 @@ function buildSharedContext(plan: BrewPlan) {
     'Brew steps:',
     steps,
   ].join('\n');
+}
+
+function compactLine(label: string, value: unknown) {
+  const text = String(value ?? '').replace(/\s+/g, ' ').trim();
+  return text ? `${label}: ${text}` : '';
+}
+
+function formatStepSummary(plan: BrewPlan) {
+  return plan.steps
+    .map((step) => {
+      const action = formatStepOperation(step);
+      const note = (step.hybridInstruction || step.note || '').replace(/\s+/g, ' ').trim();
+      return `${step.label} ${formatSeconds(step.startSeconds)} - ${action}${note ? `; ${note}` : ''}`;
+    })
+    .join(' | ');
+}
+
+export function buildEssentialNumbersContext(plan: BrewPlan) {
+  return [
+    compactLine('Dose', `${plan.doseG} g`),
+    compactLine('Ratio', `1:${formatBaristaRatio(plan.finalBeverageRatio)}`),
+    compactLine('Total water', `${plan.totalWaterMl} ml`),
+    compactLine('Hot water', `${plan.hotWaterMl} ml`),
+    plan.iceMl > 0 ? compactLine('Ice', `${plan.iceMl} g`) : '',
+    compactLine('Temperature', `${formatBaristaTemperature(plan.waterTempC)} C`),
+    compactLine('Target time', formatSeconds(plan.totalTimeSeconds)),
+    compactLine('Grind', plan.grindRecommendation),
+  ].filter(Boolean).join('\n');
+}
+
+export function buildRiskAndGuardrailContext(plan: BrewPlan) {
+  const warnings = [
+    ...plan.guardrails.warnings,
+    ...plan.guardrails.errors,
+    ...plan.warnings,
+  ]
+    .map((item) => item.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .slice(0, 5)
+    .join(' | ');
+
+  return [
+    compactLine('Water status', `${plan.waterPresetStatus || 'manual'}; ${plan.waterMinerals.styleLabel}`),
+    compactLine('Minerals', `TDS ${plan.waterMinerals.tdsPpm} ppm, hardness ${plan.waterMinerals.hardnessPpm} ppm, alkalinity ${plan.waterMinerals.alkalinityPpm} ppm`),
+    compactLine('Grinder source', `${plan.grindSettingVerification}; ${plan.grindSettingMode}`),
+    compactLine('Brewer profile', `${plan.deviceProfileLabel}; ${plan.deviceProfileMode}`),
+    plan.processRisk ? compactLine('Process risk', `${plan.processRisk.variability} variability; ${plan.processRisk.recommendationMode}`) : '',
+    warnings ? compactLine('Warnings', warnings) : '',
+  ].filter(Boolean).join('\n');
+}
+
+export function buildCompactBrewContext(plan: BrewPlan) {
+  return [
+    compactLine('Coffee', plan.coffeeName || 'not specified'),
+    compactLine('Mode', plan.brewMode),
+    compactLine('Target profile', plan.targetProfileLabel),
+    compactLine('Process', plan.process || 'not specified'),
+    compactLine('Variety', plan.variety || 'not specified'),
+    compactLine('Roast', plan.roastLevel),
+    compactLine('Brewer', `${plan.dripper.name}; ${plan.methodFamily}`),
+    buildEssentialNumbersContext(plan),
+    buildRiskAndGuardrailContext(plan),
+    compactLine('Steps', formatStepSummary(plan)),
+  ].filter(Boolean).join('\n');
+}
+
+export function buildFriendlyToneInstruction(language?: string) {
+  if (isIndonesianAiBrewLanguage(language)) {
+    return [
+      'Tulis seperti senior barista yang ramah, singkat, dan praktis.',
+      'Pakai Bahasa Indonesia natural.',
+      'Jangan pakai istilah internal sistem.',
+    ].join('\n');
+  }
+
+  return [
+    'Write like a friendly senior barista: short, practical, and natural.',
+    'Use clear English.',
+    'Do not use internal system terms.',
+  ].join('\n');
+}
+
+export function estimatePromptSize(prompt: string) {
+  return prompt.length;
+}
+
+export function compactContextToBudget(context: string, maxChars: number) {
+  if (context.length <= maxChars) return context;
+  const lines = context.split('\n').filter(Boolean);
+  const required = lines.filter((line) => /^(Coffee|Mode|Target profile|Brewer|Dose|Ratio|Total water|Hot water|Ice|Temperature|Target time|Grind):/i.test(line));
+  const optional = lines.filter((line) => !required.includes(line));
+  const selected: string[] = [];
+
+  for (const line of [...required, ...optional]) {
+    const candidate = [...selected, line].join('\n');
+    if (candidate.length > maxChars - 80) break;
+    selected.push(line);
+  }
+
+  return `${selected.join('\n')}\nContext shortened to protect prompt budget.`;
+}
+
+type AiAssistPromptAction =
+  | 'ai_assist_explain'
+  | 'ai_assist_taste_fix'
+  | 'ai_assist_rewrite'
+  | 'ai_assist_deep_analysis'
+  | 'strict_hybrid_optimization';
+
+const AI_ASSIST_PROMPT_BUDGETS: Record<AiAssistPromptAction, number> = {
+  ai_assist_explain: 2500,
+  ai_assist_taste_fix: 2500,
+  ai_assist_rewrite: 2000,
+  ai_assist_deep_analysis: 4000,
+  strict_hybrid_optimization: 2500,
+};
+
+function actionTitle(action: AiAssistPromptAction, language?: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  switch (action) {
+    case 'ai_assist_taste_fix':
+      return id ? 'Perbaiki Rasa' : 'Fix Taste';
+    case 'ai_assist_rewrite':
+      return id ? 'Panduan Lebih Ramah' : 'Friendlier Guide';
+    case 'ai_assist_deep_analysis':
+      return id ? 'Analisis Dalam' : 'Deep Brew Analysis';
+    case 'strict_hybrid_optimization':
+      return id ? 'Optimasi Aman AI' : 'Safe AI Optimization';
+    case 'ai_assist_explain':
+    default:
+      return id ? 'Jelaskan dengan AI' : 'Explain with AI';
+  }
+}
+
+export function buildAiAssistPrompt(
+  action: AiBrewEngineMode,
+  plan: BrewPlan,
+  language?: string,
+): AiBrewPromptContext {
+  const normalizedAction = ([
+    'ai_assist_explain',
+    'ai_assist_taste_fix',
+    'ai_assist_rewrite',
+    'ai_assist_deep_analysis',
+    'strict_hybrid_optimization',
+  ] as AiAssistPromptAction[]).includes(action as AiAssistPromptAction)
+    ? action as AiAssistPromptAction
+    : 'ai_assist_explain';
+  const id = isIndonesianAiBrewLanguage(language);
+  const budget = AI_ASSIST_PROMPT_BUDGETS[normalizedAction];
+  const contextBudget = Math.max(900, budget - 900);
+  const context = compactContextToBudget(buildCompactBrewContext(plan), contextBudget);
+  const safety = [
+    'Protected recipe numbers: dose, ratio, total water, hot water, ice, temperature, brew time, grind, and step timing.',
+    'Do not change protected numbers, brewer, brew mode, grinder, water minerals, method family, or equipment.',
+    'Do not invent farm, origin, roaster, altitude, variety, process, water status, grinder source, or brewer source.',
+    'Use cue/tendency/baseline language when evidence is uncertain.',
+    'Do not expose internal planner, validator, routing, or prompt terms.',
+  ].join('\n');
+
+  const task = (() => {
+    switch (normalizedAction) {
+      case 'ai_assist_taste_fix':
+        return id
+          ? [
+              'Buat panduan koreksi rasa 120-180 kata.',
+              'Bahas: asam tajam, pahit-kering, tipis, muddy/berat keruh, drawdown lambat.',
+              'Urutan koreksi wajib: grind kecil dulu, lalu pouring/agitation/contact, lalu suhu +/-1 C hanya bila perlu.',
+              'Jangan ubah dosis atau rasio sebagai langkah awal.',
+            ].join('\n')
+          : [
+              'Write a 120-180 word taste-fix guide.',
+              'Cover sour, bitter-dry, thin, muddy/heavy, and stalled drawdown.',
+              'Correction order: small grind change first, then pouring/agitation/contact, then temperature +/-1 C only if needed.',
+              'Do not change dose or ratio as the first move.',
+            ].join('\n');
+      case 'ai_assist_rewrite':
+        return id
+          ? [
+              'Tulis ulang langkah seduh menjadi bahasa barista yang lebih ramah.',
+              'Pakai langkah yang ada, urutan yang sama, dan angka yang sama.',
+              'Jangan tambah langkah, alat, air, es, suhu, rasio, waktu, atau setting grind baru.',
+            ].join('\n')
+          : [
+              'Rewrite the brew steps in friendlier barista language.',
+              'Use the existing steps, same order, and same numbers.',
+              'Do not add steps, tools, water, ice, temperature, ratio, time, or grinder settings.',
+            ].join('\n');
+      case 'ai_assist_deep_analysis':
+        return id
+          ? 'Gunakan section: Ringkasan, Kenapa resep ini masuk akal, Risiko utama, Cara dialing berikutnya, Catatan data. Tetap ringkas dan tidak mengubah angka.'
+          : 'Use sections: Summary, Why this recipe makes sense, Main risks, Next dialing move, Data notes. Stay readable and do not change numbers.';
+      case 'strict_hybrid_optimization':
+        return [
+          'Return JSON only. Suggest one small safe patch inside guardrails.',
+          'Never change dose, brew mode, brewer, grinder identity, water minerals, method family, or selected step count.',
+          'For iced recipes, never add bypass/top-up water unless it is already in the plan.',
+          'Allowed max shift: ratio +/-0.25, temperature +/-1 C, brew time +/-10 seconds.',
+          '{"reason":"short reason","confidence":0.7,"recommendedRatio":15.5,"waterTempC":92,"totalTimeSeconds":165,"hotWaterSharePercent":63,"pourStyleHint":"balanced","grindGuidance":"short relative cue","steps":[{"index":1,"startSeconds":0,"pourVolumeMl":45,"control":"short phase cue"}]}',
+        ].join('\n');
+      case 'ai_assist_explain':
+      default:
+        return id
+          ? 'Jelaskan 100-160 kata dengan section: Kenapa cocok, Yang dijaga, Kalau rasa belum pas. Jangan ubah angka resep.'
+          : 'Explain in 100-160 words with sections: Why it fits, What to protect, If taste is off. Do not change recipe numbers.';
+    }
+  })();
+
+  const body = [
+    buildFriendlyToneInstruction(language),
+    task,
+    safety,
+    'Context:',
+    context,
+  ].join('\n\n');
+
+  return {
+    title: actionTitle(normalizedAction, language),
+    body: body.length <= budget ? body : compactContextToBudget(body, budget),
+  };
 }
 
 function buildPlannerEnvelope(plan: BrewPlan) {
@@ -350,129 +570,19 @@ function buildTargetIntentChecklist(plan: BrewPlan) {
 }
 
 export function buildExplainPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
-  return {
-    title: isIndonesianAiBrewLanguage(language) ? 'Jelaskan Resep' : 'Explain Plan',
-    body: [
-      'Explain why this brew plan should work.',
-      'Focus on extraction logic, roast fit, target profile, and why the chosen grind/temperature/ratio make sense.',
-      'Keep it practical for a barista and use short sections.',
-      'Do not suggest new numeric parameters. Explain only using deterministic plan values.',
-      'If variety, process, water, grinder, or brewer source is unknown/estimated/curated, state that uncertainty instead of inventing facts.',
-      'Use sections exactly: ### Kenapa cocok, ### Hal yang perlu dijaga, ### Catatan sumber data.',
-      '',
-      buildSharedContext(plan),
-    ].join('\n'),
-  };
+  return buildAiAssistPrompt('ai_assist_explain', plan, language);
 }
 
 export function buildGenerateBriefPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
-  return {
-    title: isIndonesianAiBrewLanguage(language) ? 'Asisten AI' : 'AI Brew Read',
-    body: [
-      'You are the AI Brew sequence composer.',
-      'Write a compact operational brief for a working barista, not a generic explanation.',
-      'Follow deterministic planner envelope exactly; do not change any numeric values.',
-      'Keep it concise, practical, and reproducible during service. Stay under 120 words total.',
-      'Use this structure exactly:',
-      '## Why It Fits',
-      '- one short paragraph under 55 words',
-      '## Focus',
-      '- point 1',
-      '- point 2',
-      'Requirements:',
-      '- Both focus points must be executable actions.',
-      '- Explicitly mention the active target profile and one method-specific control behavior.',
-      '- Explicitly mention at least one water/bean context constraint from the plan.',
-      '- Do not invent equipment, chemistry values, or placeholder text.',
-      '',
-      buildPlannerEnvelope(plan),
-      '',
-      buildSharedContext(plan),
-    ].join('\n'),
-  };
+  return buildAiAssistPrompt('ai_assist_rewrite', plan, language);
 }
 
 export function buildOptimizationPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
-  const controlLanguage = isIndonesianAiBrewLanguage(language)
-    ? 'Bahasa Indonesia natural, pendek, dan siap dipakai barista.'
-    : `${language || 'English'} with concise service-ready wording.`;
-  const timeDelta = plan.methodFamily === 'espresso'
-    ? 5
-    : plan.methodFamily === 'cold_brew'
-      ? 3600
-      : plan.methodFamily === 'batch_brew'
-        ? 60
-        : 10;
-  const ratioDelta = plan.methodFamily === 'cold_brew'
-    ? 1.2
-    : plan.methodFamily === 'batch_brew'
-      ? 0.7
-      : plan.methodFamily === 'espresso'
-        ? 0.25
-        : 0.25;
-  const tempDelta = plan.methodFamily === 'cold_brew'
-    ? 4
-    : plan.methodFamily === 'espresso'
-      ? 1.5
-      : 1;
-
-  return {
-    title: isIndonesianAiBrewLanguage(language) ? 'Optimasi AI' : 'AI Optimization',
-    body: [
-      'You are the AI Brew numeric optimizer. Return JSON only.',
-      'Your job is to optimize the deterministic planner envelope, not merely rewrite narrative.',
-      'Use current coffee/barista knowledge for origin, process, variety, roast, water, method family, and target profile. If the bean is unknown, infer conservatively from the provided name and catalog context.',
-      'The local planner will validate, clamp, round, and reject unsafe values. Stay close to the baseline so the result is production-safe.',
-      'You must return at least one safe controlled patch that changes the baseline or step controls. Do not answer with narrative-only optimization. If the baseline is already strong, choose the smallest justified shift inside guardrails.',
-      '',
-      'Never change: dose, brew mode, brewer, grinder, water minerals, method family, or selected step count.',
-      `Allowed max shift from baseline: ratio ±${ratioDelta}, temperature ±${tempDelta} C, brew time ±${timeDelta} seconds.`,
-      'Prefer controlled micro-patches: light pulse / balanced cadence cues, target time around +10 seconds when useful, temperature only +/-1 C, and grind guidance as text only.',
-      'Do not create a new grinder setting. Grind guidance must say finer/coarser relative to the deterministic grind recommendation.',
-      'For iced mode, keep Japanese-style flash brew: hot concentrate is poured over measured ice, with no late bypass or top-up. hotWaterSharePercent may shift only inside a realistic concentrate split. The validator will preserve hot water + ice = total water.',
-      'Never invent variety, process, origin, roaster, farm, altitude, water status, grinder source, brewer trust, or claims not present in deterministic context.',
-      'If the patch is not safe, the app will keep the deterministic planner and show a safe fallback.',
-      'All numbers must be finite. Do not use null, NaN, Infinity, comments, markdown, code fences, or extra prose.',
-      `Step control text language: ${controlLanguage}`,
-      'Step control text must be short and must not contain new numeric targets, dose, ratio, temperature, grind changes, or next-cup troubleshooting.',
-      '',
-      'Return exactly this JSON shape with only keys you can justify:',
-      '{',
-      '  "reason": "one short reason",',
-      '  "confidence": 0.0,',
-      '  "recommendedRatio": 15.5,',
-      '  "waterTempC": 92,',
-      '  "totalTimeSeconds": 165,',
-      '  "hotWaterSharePercent": 63,',
-      '  "pourStyleHint": "balanced|pulse_light|gentle",',
-      '  "grindGuidance": "short relative grind cue; no new numeric setting",',
-      '  "steps": [',
-      '    { "index": 1, "startSeconds": 0, "pourVolumeMl": 50, "control": "short phase cue" }',
-      '  ]',
-      '}',
-      '',
-      buildPlannerEnvelope(plan),
-      '',
-      buildSharedContext(plan),
-    ].join('\n'),
-  };
+  return buildAiAssistPrompt('strict_hybrid_optimization', plan, language);
 }
 
 export function buildTroubleshootPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
-  return {
-    title: isIndonesianAiBrewLanguage(language) ? 'Perbaiki Rasa' : 'Fix Taste',
-    body: [
-      'Create a troubleshooting guide for this brew plan.',
-      'Cover sour, bitter, thin, muddy, hollow, and stalled drawdown outcomes.',
-      'Give concrete one-step adjustments first, then explain tradeoffs.',
-      'Recommend one smallest change first. Always include: "Mulai dari perubahan terkecil dulu."',
-      'Use this order: small grind correction, pouring/agitation/contact control, then small temperature correction only if needed.',
-      'Never overwrite current plan numbers. Dose, ratio, total water, hot/ice split, temperature, grind range, total time, and step timing are deterministic source-of-truth.',
-      'Do not recommend changing dose, ratio, target yield, bypass water, or serving dilution as the first move.',
-      '',
-      buildSharedContext(plan),
-    ].join('\n'),
-  };
+  return buildAiAssistPrompt('ai_assist_taste_fix', plan, language);
 }
 
 export function buildSequenceGuidePrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
@@ -600,18 +710,7 @@ export function buildSequenceRepairPrompt(
 }
 
 export function buildAdjustPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
-  return {
-    title: isIndonesianAiBrewLanguage(language) ? 'Dorong Target' : 'Push Target',
-    body: [
-      'Suggest how to push this brew toward the selected target profile even harder without breaking balance.',
-      'Return only actionable adjustments to grind, temperature, pour structure, flow, or contact time.',
-      'Treat suggestions as next-brew adjustments, not changes to the current deterministic plan.',
-      'Stay inside safe guardrails. Do not suggest ratio changes, dose changes, extreme temperature, top-up, bypass, or extra water unless deterministic steps include it.',
-      'Do not invent variety, process, origin, roaster, farm, altitude, water status, grinder source, or brewer trust.',
-      '',
-      buildSharedContext(plan),
-    ].join('\n'),
-  };
+  return buildAiAssistPrompt('strict_hybrid_optimization', plan, language);
 }
 
 export function buildSopPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {

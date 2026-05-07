@@ -17,6 +17,15 @@ export type AeroPressRecipeStyle =
   | 'no_bypass'
   | 'bright_clean'
   | 'sweet_body';
+export type AiBrewEngineMode =
+  | 'local_planner'
+  | 'precision_planner'
+  | 'ai_assist_explain'
+  | 'ai_assist_taste_fix'
+  | 'ai_assist_rewrite'
+  | 'ai_assist_deep_analysis'
+  | 'strict_hybrid_optimization'
+  | 'full_ai_disabled';
 export type MethodWorkflow =
   | 'pourover'
   | 'immersion'
@@ -460,6 +469,8 @@ export interface BrewPlanAiNotes {
   sequenceWatch?: string[];
   explain?: string;
   troubleshoot?: string;
+  rewrite?: string;
+  deepAnalysis?: string;
   adjust?: string;
   sop?: string;
 }

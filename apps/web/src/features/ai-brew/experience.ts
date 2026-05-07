@@ -47,8 +47,8 @@ function brewerStatusLabel(plan: BrewPlan, language: string) {
 export function resolveAiBrewConfidenceBadges(plan: BrewPlan, language: string): AiBrewConfidenceBadge[] {
   return [
     hasOnlineAiOptimization(plan)
-      ? { label: isIndonesian(language) ? 'AI mengoptimalkan' : 'AI optimized', tone: 'blue' as const }
-      : { label: isIndonesian(language) ? 'Planner aman' : 'Planner safe', tone: 'slate' as const },
+      ? { label: isIndonesian(language) ? 'AI + Tervalidasi Planner' : 'AI + Planner Validated', tone: 'blue' as const }
+      : { label: isIndonesian(language) ? 'Planner Lokal' : 'Local Planner', tone: 'slate' as const },
     {
       label: waterStatusLabel(plan, language),
       tone: plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady

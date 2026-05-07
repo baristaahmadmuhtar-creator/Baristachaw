@@ -3079,36 +3079,36 @@ function buildTargetProfileEffectText(targetProfileId: string, language: string)
   switch (targetProfileId) {
     case 'more_acidity':
       return id
-        ? 'Target effect: rasio sedikit lebih panjang, suhu lebih rendah, waktu lebih cepat, grind sedikit lebih kasar, bloom singkat, agitasi minimal.'
+        ? 'Efek target: rasio sedikit lebih panjang, suhu lebih rendah, waktu lebih cepat, grind sedikit lebih kasar, bloom singkat, agitasi minimal.'
         : 'Target effect: slightly longer ratio, lower temperature, faster time, slightly coarser grind, shorter bloom, minimal agitation.';
     case 'floral_transparent':
       return id
-        ? 'Target effect: suhu lebih rendah, tuangan rendah, agitasi minimal, drawdown lebih cepat untuk menjaga floral dan clarity.'
+        ? 'Efek target: suhu lebih rendah, tuangan rendah, agitasi minimal, drawdown lebih cepat untuk menjaga floral dan clarity.'
         : 'Target effect: lower heat, low pour height, minimal agitation, faster drawdown to protect florals and clarity.';
     case 'more_sweetness':
       return id
-        ? 'Target effect: middle pour lebih penuh, bloom 45 detik, agitasi rendah, finish ringan agar sweetness tidak berat.'
+        ? 'Efek target: tuangan tengah lebih penuh, bloom 45 detik, agitasi rendah, akhir seduhan ringan agar sweetness tetap bersih.'
         : 'Target effect: fuller middle pour, 45 sec bloom, low agitation, lighter finish so sweetness stays clean.';
     case 'fruit_forward':
       return id
-        ? 'Target effect: aroma dijaga, middle pour penuh, suhu konservatif, tidak over-agitate proses aromatik.'
+        ? 'Efek target: aroma dijaga, tuangan tengah penuh, suhu konservatif, dan proses aromatik tidak dibuat terlalu agresif.'
         : 'Target effect: preserve aroma, fuller middle pour, conservative temperature, avoid over-agitating aromatic processes.';
     case 'more_body':
       return id
-        ? 'Target effect: bloom lebih penuh, kontak lebih lama, grind cenderung lebih halus, drawdown lebih lambat.'
+        ? 'Efek target: bloom lebih penuh, kontak lebih lama, grind cenderung lebih halus, drawdown lebih lambat, tuangan tetap rendah.'
         : 'Target effect: fuller bloom, longer contact, generally finer grind, slower drawdown.';
     case 'dense_comforting':
       return id
-        ? 'Target effect: body lebih padat, bloom 2.3x, kontak terkontrol, lindungi pahit pada finish.'
+        ? 'Efek target: body lebih padat, bloom 2.3x, kontak terkontrol, tuangan rendah, lindungi pahit pada akhir seduhan.'
         : 'Target effect: denser body, 2.3x bloom, controlled contact, protect bitterness in the finish.';
     case 'soft_round':
       return id
-        ? 'Target effect: bloom 2.1-2.2x, finish lembut, sweetness/body naik tanpa membuat cup keruh.'
+        ? 'Efek target: bloom 2.1-2.2x, akhir seduhan lembut, sweetness/body naik tanpa membuat cup keruh.'
         : 'Target effect: 2.1-2.2x bloom, gentle finish, more sweetness/body without making the cup muddy.';
     case 'balance_clean':
     default:
       return id
-        ? 'Target effect: baseline bersih, bloom 2x, pulse seimbang, agitasi rendah, drawdown normal.'
+        ? 'Efek target: baseline bersih, bloom 2x, pulse seimbang, agitasi rendah, drawdown normal.'
         : 'Target effect: clean baseline, 2x bloom, balanced pulses, low agitation, normal drawdown.';
   }
 }
@@ -3124,7 +3124,7 @@ function buildTargetProfileCompareReason(plan: BrewPlan, balancePlan: BrewPlan |
   const id = isIndonesianAiBrewLanguage(language);
   const targetId = plan.targetProfileId;
   const base = id
-    ? 'Final computed menggabungkan target effect dengan modifier bean, air, grinder, dan device.'
+    ? 'Hasil final menggabungkan efek target dengan modifier bean, air, grinder, dan device.'
     : 'Final computed combines the target effect with bean, water, grinder, and device modifiers.';
   if (!balancePlan || targetId === 'balance_clean') return base;
   if (
@@ -3132,7 +3132,7 @@ function buildTargetProfileCompareReason(plan: BrewPlan, balancePlan: BrewPlan |
     && plan.waterTempC > balancePlan.waterTempC
   ) {
     return id
-      ? 'Computed final lebih panas karena modifier bean/device/air meminta tekanan ekstraksi lebih besar.'
+      ? 'Hasil final lebih panas karena modifier bean/device/air meminta tekanan ekstraksi lebih besar.'
       : 'Computed final is hotter because bean/device/water modifiers required more extraction pressure.';
   }
   if (
@@ -3148,7 +3148,7 @@ function buildTargetProfileCompareReason(plan: BrewPlan, balancePlan: BrewPlan |
     && plan.grindBias === 'coarser'
   ) {
     return id
-      ? 'Computed final memakai grind lebih kasar karena risiko proses/flow lebih tinggi; sweetness dijaga lewat middle pour dan kontrol agitasi.'
+      ? 'Hasil final memakai grind lebih kasar karena risiko proses/flow lebih tinggi; sweetness dijaga lewat tuangan tengah dan kontrol agitasi.'
       : 'Computed final uses a coarser grind because process/flow risk is higher; sweetness is protected through middle pour and agitation control.';
   }
   return base;
@@ -3837,14 +3837,14 @@ function PlanResultDialog({
                             {item.effect}
                           </p>
                           <p className="mt-1 text-xs leading-5 text-secondary">
-                            {id ? 'Final computed' : 'Final computed'}: {item.finalComputed}
+                            {id ? 'Hasil final' : 'Final computed'}: {item.finalComputed}
                           </p>
                           <p className="mt-1 text-xs leading-5 text-tertiary">
-                            {id ? 'Why' : 'Why'}: {item.why}
+                            {id ? 'Alasan' : 'Why'}: {item.why}
                           </p>
                           {item.sameRecipe && (
                             <span className="mt-2 inline-flex rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-amber-700 dark:text-amber-300">
-                              {id ? 'same deterministic recipe' : 'same deterministic recipe'}
+                              {id ? 'resep deterministik sama' : 'same deterministic recipe'}
                             </span>
                           )}
                         </div>

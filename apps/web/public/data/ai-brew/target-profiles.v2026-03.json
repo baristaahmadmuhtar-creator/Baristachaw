@@ -84,7 +84,7 @@
         "middleLoadBias": "balanced",
         "finalLoadBias": "balanced",
         "agitation": "controlled",
-        "pourHeight": "medium",
+        "pourHeight": "low",
         "drawdownBias": "slower"
       },
       "notes": [
@@ -176,7 +176,7 @@
         "middleLoadBias": "balanced",
         "finalLoadBias": "balanced",
         "agitation": "controlled",
-        "pourHeight": "medium",
+        "pourHeight": "low",
         "drawdownBias": "slower"
       },
       "notes": [

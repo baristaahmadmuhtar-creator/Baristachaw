@@ -153,7 +153,7 @@ async function resolveEmailAuthCookie(baseUrl, results, email, password) {
 
   const origin = baseUrl.replace(/\/+$/, '');
   try {
-    const login = await requestAny(baseUrl, '/api/auth/email?mode=login', {
+    const login = await requestAny(baseUrl, '/api/auth/email/signin', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

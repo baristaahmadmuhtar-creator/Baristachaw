@@ -1,6 +1,16 @@
 import { test, expect } from '@playwright/test';
+import { qaLogin, qaLogout } from '../fixtures/auth';
+import { buildQaUser } from '../fixtures/test-data';
 
 const MOBILE_ROUTES_WITH_NAV = ['/', '/scanner', '/tools', '/collection'];
+
+test.beforeEach(async ({ page }) => {
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+});
+
+test.afterEach(async ({ page }) => {
+  await qaLogout(page.request);
+});
 
 test('mobile bottom nav floats slightly above the home indicator across core routes', async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.includes('Mobile'), 'mobile-only layout contract');
@@ -40,11 +50,11 @@ test('bottom nav is icon-only visually while keeping accessible link names', asy
   const nav = page.getByTestId('mobile-bottom-nav-surface');
   await expect(nav).toBeVisible();
 
-  await expect(nav.getByRole('link', { name: 'Home' })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Scan' })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Tools' })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Collection' })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Chat' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /^(Home|Beranda)$/i })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /^(Scan|Scanner|Pemindai|Pengimbas)$/i })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /^(Tools|Alat)$/i })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /^(Collection|Koleksi)$/i })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /^(Chat|Obrolan)$/i })).toBeVisible();
 
   const visualLabelCount = await nav.evaluate((el) => {
     const spans = Array.from(el.querySelectorAll('span'));

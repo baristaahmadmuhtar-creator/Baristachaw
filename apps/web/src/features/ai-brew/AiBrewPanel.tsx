@@ -2462,6 +2462,7 @@ function formatAiBrewAgitation(level: BrewPlan['steps'][number]['agitationLevel'
 function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: string, plan?: BrewPlan) {
   const id = isIndonesianAiBrewLanguage(language);
   const kind = getAiBrewStepKind(step);
+  const icedHotTarget = plan?.brewMode === 'iced' && step.pourVolumeMl > 0;
   const metrics = [
     {
       label: id ? 'Mulai' : 'Start',
@@ -2472,10 +2473,10 @@ function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: strin
       value: kind === 'pour' || kind === 'extract' ? formatRoundedMl(step.pourVolumeMl) : formatAiBrewStepBadge(step, language),
     },
     {
-      label: plan?.brewMode === 'iced' && step.pourVolumeMl > 0
-        ? (id ? 'Target panas' : 'Hot target')
-        : (id ? 'Target' : 'Target'),
-      value: formatRoundedMl(step.targetVolumeMl),
+      label: id ? 'Target' : 'Target',
+      value: icedHotTarget
+        ? `${formatRoundedMl(step.targetVolumeMl)} ${id ? 'air panas' : 'hot water'}`
+        : formatRoundedMl(step.targetVolumeMl),
     },
   ];
   const flow = formatAiBrewStepFlowRate(step);
@@ -2487,6 +2488,34 @@ function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: strin
   if (height) metrics.push({ label: id ? 'Tinggi' : 'Height', value: height });
   if (agitation) metrics.push({ label: id ? 'Agitasi' : 'Agitation', value: agitation });
   return metrics;
+}
+
+function renderAiBrewStepMetricChips(
+  metrics: Array<{ label: string; value: string }>,
+  keyPrefix: string,
+  options?: {
+    className?: string;
+    chipClassName?: string;
+    testId?: string;
+  },
+) {
+  if (metrics.length === 0) return null;
+  const className = options?.className || 'flex flex-wrap gap-1.5';
+  const chipClassName = options?.chipClassName || 'rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] text-secondary';
+
+  return (
+    <div className={className} data-testid={options?.testId}>
+      {metrics.map((item) => (
+        <span
+          key={`${keyPrefix}-${item.label}`}
+          className={chipClassName}
+        >
+          <span className="mr-1 font-medium text-tertiary">{item.label}</span>
+          <span className="font-semibold text-primary">{item.value}</span>
+        </span>
+      ))}
+    </div>
+  );
 }
 
 function renderAiBrewSequenceStepCard(
@@ -2505,7 +2534,6 @@ function renderAiBrewSequenceStepCard(
   const conciseCue = methodFocusCue || stepQuickNote;
   const showConciseCue = Boolean(conciseCue) && conciseCue.toLowerCase() !== normalizedActionText;
   const stepCardClass = 'rounded-[1rem] border panel-divider-subtle panel-soft p-3 sm:p-3.5';
-  const metricChipClass = 'rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] text-secondary';
 
   return (
     <motion.div
@@ -2531,19 +2559,9 @@ function renderAiBrewSequenceStepCard(
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-1.5">
-            {stepMetrics.map((item) => (
-              <span
-                key={`${step.id}-${item.label}`}
-                className={metricChipClass}
-              >
-                <span className="mr-1 font-medium text-tertiary">
-                  {item.label}
-                </span>
-                <span className="font-semibold text-primary">{item.value}</span>
-              </span>
-            ))}
-          </div>
+          {renderAiBrewStepMetricChips(stepMetrics, `${step.id}-sequence`, {
+            testId: `ai-brew-step-technique-${index + 1}`,
+          })}
 
           {showConciseCue && (
             <p className="rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">
@@ -4354,6 +4372,14 @@ function PlanResultDialog({
                           ? buildAiBrewStepTargetCue(flowCurrentStep, language, plan)
                           : displaySummary}
                       </p>
+                      {flowCurrentStep && renderAiBrewStepMetricChips(
+                        buildAiBrewStepMetrics(flowCurrentStep, language, plan),
+                        `${flowCurrentStep.id}-active`,
+                        {
+                          className: 'mt-3 flex flex-wrap gap-1.5',
+                          testId: 'ai-brew-flow-current-step-technique',
+                        },
+                      )}
                       {isQuickResult ? (
                         <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
                           <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
@@ -4549,19 +4575,10 @@ function PlanResultDialog({
                             </span>
                           </div>
                         </div>
-                        {isQuickResult && (
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {stepMetrics.map((item) => (
-                              <span
-                                key={`${step.id}-quick-${item.label}`}
-                                className="rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] text-secondary"
-                              >
-                                <span className="mr-1 font-medium text-tertiary">{item.label}</span>
-                                <span className="font-semibold text-primary">{item.value}</span>
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                        {renderAiBrewStepMetricChips(stepMetrics, `${step.id}-flow`, {
+                          className: 'mt-2 flex flex-wrap gap-1.5',
+                          testId: isQuickResult ? `ai-brew-quick-step-technique-${index + 1}` : `ai-brew-flow-step-technique-${index + 1}`,
+                        })}
                         {showStepNote && (
                           <p className="mt-2 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">{activeCue}</p>
                         )}

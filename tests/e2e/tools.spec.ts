@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Locator } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
 import { buildQaUser } from '../fixtures/test-data';
 import { mockAiApis } from '../helpers/network';
@@ -667,6 +667,13 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
     expect(plan.steps.map((step) => step.kind)).not.toContain('serve');
     expect(plan.steps[2]?.label).toMatch(/Pulse|Pour/i);
     expect(plan.steps[plan.steps.length - 1]?.label).toMatch(/Final Pour|Finish/i);
+    const firstHotTargetText = new RegExp(`${Math.round(plan.steps[0]?.targetVolumeMl || plan.hotWaterMl)}\\s*ml\\s*(hot water|air panas)`, 'i');
+    const assertTechniqueChips = async (container: Locator) => {
+      await expect(container).toContainText(/Flow/i);
+      await expect(container).toContainText(/Path|Jalur/i);
+      await expect(container).toContainText(/Height|Tinggi/i);
+      await expect(container).toContainText(/Agitation|Agitasi/i);
+    };
 
     if (mode === 'quick') {
       await expect(result.getByTestId('ai-brew-iced-calibration')).toHaveCount(0);
@@ -679,6 +686,8 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
       await expect(result.getByTestId('ai-brew-quick-cues')).toContainText(new RegExp(`${plan.iceMl}\\s*(ml|g)`, 'i'));
       await expect(result.getByTestId('ai-brew-step-card-3')).not.toContainText(/Saji|sajikan|serve/i);
       await expect(result.getByTestId('ai-brew-step-card-4')).toContainText(/Final Pour|Tuang Akhir/i);
+      await assertTechniqueChips(result.getByTestId('ai-brew-step-card-1'));
+      await expect(result.getByTestId('ai-brew-step-card-1')).toContainText(firstHotTargetText);
     } else {
       await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Final ratio|Rasio Final/i);
       await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Hot concentrate|Konsentrat Panas/i);
@@ -686,6 +695,10 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
       await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(plan.hotExtractionRatio)}`);
       await expect(result).toContainText(`${plan.hotWaterMl} ml`);
       await expect(result).toContainText(new RegExp(`${plan.iceMl}\\s*(ml|g)`, 'i'));
+      await result.getByTestId('ai-brew-result-tab-flow').click();
+      await assertTechniqueChips(result.getByTestId('ai-brew-flow-step-1'));
+      await assertTechniqueChips(result.getByTestId('ai-brew-flow-current-step-technique'));
+      await expect(result.getByTestId('ai-brew-flow-step-1')).toContainText(firstHotTargetText);
     }
 
     return plan;

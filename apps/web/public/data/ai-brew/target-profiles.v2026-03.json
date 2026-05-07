@@ -9,6 +9,15 @@
       "tempDeltaC": 0,
       "brewTimeDeltaSec": 0,
       "grindBias": "same",
+      "pourBehavior": {
+        "bloomMultiplier": 2,
+        "bloomTimeSec": 42,
+        "middleLoadBias": "balanced",
+        "finalLoadBias": "balanced",
+        "agitation": "low",
+        "pourHeight": "low",
+        "drawdownBias": "normal"
+      },
       "notes": [
         "Use as the baseline when dialing a new coffee.",
         "Prioritize even agitation and repeatable pour height."
@@ -23,6 +32,15 @@
       "tempDeltaC": 0.6,
       "brewTimeDeltaSec": 10,
       "grindBias": "finer",
+      "pourBehavior": {
+        "bloomMultiplier": 2,
+        "bloomTimeSec": 45,
+        "middleLoadBias": "full",
+        "finalLoadBias": "light",
+        "agitation": "low",
+        "pourHeight": "medium",
+        "drawdownBias": "normal"
+      },
       "notes": [
         "Finer grind and slightly longer contact time raise sweetness.",
         "Avoid over-agitation late in the brew."
@@ -37,6 +55,15 @@
       "tempDeltaC": -0.5,
       "brewTimeDeltaSec": -10,
       "grindBias": "coarser",
+      "pourBehavior": {
+        "bloomMultiplier": 2,
+        "bloomTimeSec": 35,
+        "middleLoadBias": "light",
+        "finalLoadBias": "gentle",
+        "agitation": "minimal",
+        "pourHeight": "low",
+        "drawdownBias": "faster"
+      },
       "notes": [
         "Coarser grind and a shorter brew highlight top notes and florals.",
         "Keep the bloom disciplined to prevent channeling."
@@ -51,6 +78,15 @@
       "tempDeltaC": 0.3,
       "brewTimeDeltaSec": 12,
       "grindBias": "finer",
+      "pourBehavior": {
+        "bloomMultiplier": 2.3,
+        "bloomTimeSec": 58,
+        "middleLoadBias": "balanced",
+        "finalLoadBias": "balanced",
+        "agitation": "controlled",
+        "pourHeight": "medium",
+        "drawdownBias": "slower"
+      },
       "notes": [
         "Finer grind with slightly tighter ratio builds texture.",
         "Control drawdown so the body feels syrupy, not muddy."
@@ -65,6 +101,15 @@
       "tempDeltaC": -0.3,
       "brewTimeDeltaSec": -6,
       "grindBias": "coarser",
+      "pourBehavior": {
+        "bloomMultiplier": 2,
+        "bloomTimeSec": 35,
+        "middleLoadBias": "light",
+        "finalLoadBias": "gentle",
+        "agitation": "minimal",
+        "pourHeight": "low",
+        "drawdownBias": "faster"
+      },
       "notes": [
         "Use for floral, washed, high-altitude, Geisha/Gesha, SL, and Ethiopian landrace cues.",
         "Keep agitation calm and finish clean rather than pushing heavy extraction."
@@ -79,6 +124,15 @@
       "tempDeltaC": -0.35,
       "brewTimeDeltaSec": -5,
       "grindBias": "coarser",
+      "pourBehavior": {
+        "bloomMultiplier": 2,
+        "bloomTimeSec": 45,
+        "middleLoadBias": "full",
+        "finalLoadBias": "gentle",
+        "agitation": "low",
+        "pourHeight": "low",
+        "drawdownBias": "normal"
+      },
       "notes": [
         "Use when process cues suggest high aroma or fermentation variability.",
         "Protect fruit-like aromatics without claiming added fruit ingredients unless the process text says so."
@@ -93,6 +147,15 @@
       "tempDeltaC": 0.1,
       "brewTimeDeltaSec": 4,
       "grindBias": "same",
+      "pourBehavior": {
+        "bloomMultiplier": 2.2,
+        "bloomTimeSec": 50,
+        "middleLoadBias": "balanced",
+        "finalLoadBias": "gentle",
+        "agitation": "low",
+        "pourHeight": "low",
+        "drawdownBias": "normal"
+      },
       "notes": [
         "Use for soft sweetness and approachable texture without making the bed muddy.",
         "Keep pour control even and avoid late heavy agitation."
@@ -107,6 +170,15 @@
       "tempDeltaC": -0.1,
       "brewTimeDeltaSec": 8,
       "grindBias": "finer",
+      "pourBehavior": {
+        "bloomMultiplier": 2.3,
+        "bloomTimeSec": 58,
+        "middleLoadBias": "balanced",
+        "finalLoadBias": "balanced",
+        "agitation": "controlled",
+        "pourHeight": "medium",
+        "drawdownBias": "slower"
+      },
       "notes": [
         "Build tactile body while keeping bitterness protected by controlled temperature and agitation.",
         "Use clarity warnings when process or species cues are broad, earthy, or high-buffer water is selected."

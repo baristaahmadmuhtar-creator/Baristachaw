@@ -77,6 +77,7 @@ import type {
   OrigamiFilterStyle,
   ParsedNumericRange,
   ProcessCatalogEntry,
+  TargetProfile,
   VarietyCatalogEntry,
   VerificationLevel,
   WaterBrandProfile,
@@ -232,6 +233,105 @@ function normalizePourShares(shares: number[]) {
   return normalized;
 }
 
+type TargetProfilePourBehavior = NonNullable<TargetProfile['pourBehavior']>;
+
+const DEFAULT_TARGET_POUR_BEHAVIORS: Record<string, TargetProfilePourBehavior> = {
+  balance_clean: {
+    bloomMultiplier: 2,
+    bloomTimeSec: 42,
+    middleLoadBias: 'balanced',
+    finalLoadBias: 'balanced',
+    agitation: 'low',
+    pourHeight: 'low',
+    drawdownBias: 'normal',
+  },
+  more_acidity: {
+    bloomMultiplier: 2,
+    bloomTimeSec: 35,
+    middleLoadBias: 'light',
+    finalLoadBias: 'gentle',
+    agitation: 'minimal',
+    pourHeight: 'low',
+    drawdownBias: 'faster',
+  },
+  more_sweetness: {
+    bloomMultiplier: 2,
+    bloomTimeSec: 45,
+    middleLoadBias: 'full',
+    finalLoadBias: 'light',
+    agitation: 'low',
+    pourHeight: 'medium',
+    drawdownBias: 'normal',
+  },
+  more_body: {
+    bloomMultiplier: 2.3,
+    bloomTimeSec: 58,
+    middleLoadBias: 'balanced',
+    finalLoadBias: 'balanced',
+    agitation: 'controlled',
+    pourHeight: 'medium',
+    drawdownBias: 'slower',
+  },
+  floral_transparent: {
+    bloomMultiplier: 2,
+    bloomTimeSec: 35,
+    middleLoadBias: 'light',
+    finalLoadBias: 'gentle',
+    agitation: 'minimal',
+    pourHeight: 'low',
+    drawdownBias: 'faster',
+  },
+  fruit_forward: {
+    bloomMultiplier: 2,
+    bloomTimeSec: 45,
+    middleLoadBias: 'full',
+    finalLoadBias: 'gentle',
+    agitation: 'low',
+    pourHeight: 'low',
+    drawdownBias: 'normal',
+  },
+  soft_round: {
+    bloomMultiplier: 2.2,
+    bloomTimeSec: 50,
+    middleLoadBias: 'balanced',
+    finalLoadBias: 'gentle',
+    agitation: 'low',
+    pourHeight: 'low',
+    drawdownBias: 'normal',
+  },
+  dense_comforting: {
+    bloomMultiplier: 2.3,
+    bloomTimeSec: 58,
+    middleLoadBias: 'balanced',
+    finalLoadBias: 'balanced',
+    agitation: 'controlled',
+    pourHeight: 'medium',
+    drawdownBias: 'slower',
+  },
+};
+
+function resolveTargetPourBehavior(targetProfileId?: string, profile?: Pick<TargetProfile, 'pourBehavior'> | null) {
+  return profile?.pourBehavior || DEFAULT_TARGET_POUR_BEHAVIORS[String(targetProfileId || '').toLowerCase()];
+}
+
+function resolveV60IcedThreePourShares(targetProfileId?: string) {
+  switch (String(targetProfileId || '').toLowerCase()) {
+    case 'more_acidity':
+    case 'floral_transparent':
+    case 'balance_clean':
+      return normalizePourShares([30, 60, 45]);
+    case 'more_sweetness':
+    case 'fruit_forward':
+      return normalizePourShares([30, 70, 35]);
+    case 'more_body':
+    case 'dense_comforting':
+    case 'soft_round':
+      return normalizePourShares([35, 60, 40]);
+    default:
+      return null;
+  }
+}
+
 function hasStructuredBodyCoffeeCue(input: AiBrewFormState) {
   return /\b(?:sumatra|lintong|lake\s*toba|toba|mandheling|gayo|java|sulawesi|toraja|bali|flores|papua|timor|indonesia|brazil|cerrado|minas|mogiana|vietnam|india|monsooned|wet[-\s_]?hulled|giling\s+basah|natural|honey|pulped\s+natural|anaerobic|carbonic|lactic|bourbon|catuai|caturra|mundo\s+novo|catimor|sarchimor|robusta|liberica|excelsa|body|full[-\s]?body|chocolate|cocoa|molasses|spice|earthy|low[-\s]?acid)\b/i.test([
     input.coffeeName,
@@ -253,6 +353,17 @@ function shouldUseFrontLoadedHotV60PourMap(input: AiBrewFormState) {
 function resolveRequestedPourCount(input: AiBrewFormState, profile: DeviceBrewProfile) {
   const explicitCount = Number.parseInt(input.pourCount, 10);
   if (Number.isFinite(explicitCount)) return clamp(Math.round(explicitCount), 3, 5);
+  if (
+    profile.methodFamily === 'v60'
+    && profile.exactMatch
+    && profile.dripperIds.includes('hario-v60')
+    && input.brewMode === 'iced'
+  ) {
+    const doseG = parseDose(input.doseG);
+    if (doseG <= 18) return 3;
+    if (doseG <= 26) return 4;
+    return 5;
+  }
   if (
     profile.methodFamily === 'v60'
     && input.targetProfileId === 'more_sweetness'
@@ -307,11 +418,11 @@ function resolveRequestedPourCount(input: AiBrewFormState, profile: DeviceBrewPr
 
 function buildControlledPourStarts(count: number, input: AiBrewFormState) {
   const style = input.pourStyle === 'auto' ? 'balanced' : input.pourStyle;
-  if (input.brewMode === 'iced' && input.targetProfileId === 'more_sweetness' && isLightOrMediumLightRoast(input.roastLevel) && count === 3) {
-    return [0, 45, 110];
-  }
-  if (input.brewMode === 'iced' && input.targetProfileId === 'more_sweetness' && input.roastLevel === 'medium' && count === 3) {
-    return [0, 55, 115];
+  if (input.brewMode === 'iced' && count === 3) {
+    const behavior = resolveTargetPourBehavior(input.targetProfileId);
+    const bloomTime = Math.round(behavior?.bloomTimeSec || 42);
+    const middleGap = behavior?.middleLoadBias === 'full' ? 65 : behavior?.drawdownBias === 'faster' ? 55 : 60;
+    return [0, bloomTime, bloomTime + middleGap];
   }
   if (input.brewMode === 'hot' && style === 'balanced' && count === 4) {
     return [0, 30, 60, 90];
@@ -326,16 +437,9 @@ function buildControlledPourStarts(count: number, input: AiBrewFormState) {
 
 function buildControlledPourShares(count: number, input: AiBrewFormState) {
   const style = input.pourStyle === 'auto' ? 'balanced' : input.pourStyle;
-  if (
-    input.brewMode === 'iced'
-    && input.targetProfileId === 'more_sweetness'
-    && count === 3
-    && isLightOrMediumLightRoast(input.roastLevel)
-  ) {
-    return normalizePourShares([0.45, 0.35, 0.2]);
-  }
-  if (input.brewMode === 'iced' && input.targetProfileId === 'more_sweetness' && input.roastLevel === 'medium' && count === 3) {
-    return normalizePourShares([0.22, 0.52, 0.26]);
+  if (input.brewMode === 'iced' && count === 3) {
+    const v60IcedShares = resolveV60IcedThreePourShares(input.targetProfileId);
+    if (v60IcedShares) return v60IcedShares;
   }
   if (input.brewMode === 'hot' && style === 'balanced' && count === 4 && shouldUseFrontLoadedHotV60PourMap(input)) {
     return normalizePourShares([0.14, 0.36, 0.25, 0.25]);
@@ -919,15 +1023,16 @@ function buildAdaptiveStepStartSeconds(
   const intentForFinalWindow = resolveContextTargetIntent(context);
   const extractionForFinalWindow = resolveExtractionResistance(context);
   const finalWindowBounds = resolveMethodFamilyFinalWindowBounds(context.methodFamily, context.brewMode);
-  if (
-    count === 3
-    && context.brewMode === 'iced'
-    && context.targetProfileId === 'more_sweetness'
-    && isLightOrMediumLightRoast(context.roastLevel)
-    && isIcedManualPourOverFamily(context.methodFamily)
-  ) {
+  if (count === 3 && context.brewMode === 'iced' && isIcedManualPourOverFamily(context.methodFamily)) {
+    const behavior = context.pourBehavior || resolveTargetPourBehavior(context.targetProfileId);
+    const bloomTime = roundBaristaTimeSeconds(clamp(behavior?.bloomTimeSec || 42, 30, 60), context.methodFamily);
+    const middleGap = behavior?.middleLoadBias === 'full'
+      ? 65
+      : behavior?.drawdownBias === 'faster'
+        ? 55
+        : 60;
     const maxFinalStart = Math.max(105, totalTimeSeconds - finalWindowBounds.min);
-    return [0, 45, clamp(110, 105, maxFinalStart)];
+    return [0, bloomTime, clamp(bloomTime + middleGap, 90, maxFinalStart)];
   }
   const adaptiveFinalWindowSeconds = Math.round(clamp(
     34
@@ -1148,6 +1253,7 @@ type TemperatureCalibration = {
 type AdaptiveShareContext = {
   targetProfileId: string;
   targetProfileLabel: string;
+  pourBehavior?: TargetProfilePourBehavior;
   methodFamily: AiBrewMethodFamily;
   dripperId?: string;
   dripperName?: string;
@@ -1499,6 +1605,26 @@ export function resolveDefaultTargetProfileForBean(
   const clarityCue = (processBias?.clarity || 0) + (varietyBias?.clarity || 0);
   const sweetnessCue = (processBias?.sweetness || 0) + (varietyBias?.sweetness || 0);
   const bodyCue = (processBias?.body || 0) + (varietyBias?.body || 0);
+  const washedCue = CLARITY_PROCESS_IDS.has(processId)
+    || /\b(washed|fully\s+washed|double\s+washed|wet\s+process|kenya\s+double\s+fermentation)\b/i.test(haystack);
+  const highAltitudeCue = Number.isFinite(altitude)
+    ? altitude >= 1600
+    : /\b(high[-\s]?altitude|ethiopia|yirgacheffe|guji|kenya|nyeri|kirinyaga|tarrazu|antigua|huehuetenango|boquete|colombia|huila|cauca|narino|nari|peru|bolivia|yemen|papua\s+new\s+guinea|png)\b/i.test(haystack);
+  const highClarityVarietyCue = /\b(geisha|gesha|sl28|sl34|ethiopian\s+landrace|ethiopian\s+heirloom|floral)\b/i.test(haystack)
+    || lineageGroup === 'ethiopian_landrace'
+    || lineageGroup === 'specialty_reference'
+    || lineageGroup === 'kenyan_selection'
+    || varietySignal.acidity
+    || clarityCue >= 2;
+  const experimentalProcessCue = processEntry?.processRisk?.recommendationMode === 'taste_feedback_required'
+    || /\b(co[-\s]?ferment|coferment|infused|fruit\s+maceration|koji|enzyme|thermal\s+shock)\b/i.test(haystack);
+  const anaerobicFruitCue = /\b(anaerobic\s+natural|carbonic|cm\b|maceration|anaerobic|lactic|yeast|extended\s+fermentation)\b/i.test(haystack);
+  const naturalCleanCue = SWEETNESS_PROCESS_IDS.has(processId)
+    || /\b(natural|dry\s+process|honey|pulped\s+natural)\b/i.test(haystack)
+    || sweetnessCue >= 2
+    || varietySignal.sweetness;
+  const brazilSoftCue = /\b(brazil|brasil|cerrado|minas|mogiana|chocolate|cocoa|cacao|nutty|almond|hazelnut|caramel)\b/i.test(haystack)
+    || (roastLevel === 'medium' && (sweetnessCue >= 1 || bodyCue >= 1) && !highClarityVarietyCue);
 
   if (processId === 'wet_hulled' || /\b(wet[-\s]?hulled|giling\s+basah|sumatra|mandheling|gayo|lintong|toraja)\b/i.test(haystack)) {
     return pickTarget(['dense_comforting', 'more_body'], 'Wet-hulled Indonesian cue: Dense & Comforting suggested.');
@@ -1506,13 +1632,29 @@ export function resolveDefaultTargetProfileForBean(
   if (species === 'canephora' || species === 'liberica' || species === 'excelsa' || /\b(robusta|conilon|canephora|liberica|excelsa)\b/i.test(haystack)) {
     return pickTarget(['dense_comforting', 'more_body'], 'Canephora/non-arabica body cue: Dense & Comforting suggested.');
   }
-  if (
-    /\b(geisha|gesha|sl28|sl34|ethiopian\s+landrace|ethiopian\s+heirloom|floral)\b/i.test(haystack)
-    || lineageGroup === 'ethiopian_landrace'
-    || lineageGroup === 'specialty_reference'
-    || lineageGroup === 'kenyan_selection'
-  ) {
+  if (experimentalProcessCue || anaerobicFruitCue) {
+    return pickTarget(['fruit_forward', 'more_sweetness'], 'Experimental or anaerobic fruit-process cue: Fruit-Forward suggested.');
+  }
+  if (washedCue && (highAltitudeCue || highClarityVarietyCue)) {
+    return pickTarget(['floral_transparent', 'more_acidity'], 'Washed high-altitude or floral cue: Floral & Transparent suggested.');
+  }
+  if (washedCue && (bodyCue >= 2 || varietySignal.body || /\b(indonesia|catimor|timtim|s795|body|compact)\b/i.test(haystack))) {
+    return pickTarget(['dense_comforting', 'more_body'], 'Washed body or Indonesian variety cue: Dense & Comforting suggested.');
+  }
+  if (washedCue) {
+    return pickTarget(['balance_clean'], 'Washed process cue: Balance & Clean suggested.');
+  }
+  if (highClarityVarietyCue) {
     return pickTarget(['floral_transparent', 'balance_clean'], 'High-clarity variety cue: Floral & Transparent suggested.');
+  }
+  if (brazilSoftCue) {
+    return pickTarget(['soft_round', 'more_sweetness'], 'Brazil, nutty, chocolate, or medium-roast cue: Soft & Round suggested.');
+  }
+  if (naturalCleanCue) {
+    if (roastLevel === 'medium_dark' || roastLevel === 'dark' || bodyCue >= 2 || varietySignal.body) {
+      return pickTarget(['soft_round', 'more_body'], 'Sweet/body cue: Soft & Round suggested.');
+    }
+    return pickTarget(['more_sweetness', 'fruit_forward'], 'Natural, honey, or clean sweetness cue: More Sweetness suggested.');
   }
   if (
     (CLARITY_PROCESS_IDS.has(processId) || /\b(washed|fully\s+washed|double\s+washed|wet\s+process)\b/i.test(haystack))
@@ -1784,11 +1926,11 @@ function deriveBaristaTemperatureCalibration(params: {
 
   if (params.brewMode === 'iced' && ICED_MANUAL_POUR_OVER_FAMILIES.has(params.methodFamily)) {
     if (params.input.targetProfileId === 'more_sweetness' && isLightOrMediumLightRoast(params.input.roastLevel)) {
-      calibration.minTempC = 96;
-      calibration.maxTempC = 96;
-      calibration.tempDeltaC += 1.2;
-      calibration.notes.push('Japanese-iced More Sweetness light/medium-light baseline is locked at 96C with compact hot concentrate extraction; 97C is reserved for advanced high-extraction tuning.');
-      calibration.confidenceNotes.push('Barista temperature calibration active: safe light-roast Japanese-iced sweetness baseline.');
+      calibration.minTempC = 92;
+      calibration.maxTempC = 93;
+      calibration.tempDeltaC -= 0.8;
+      calibration.notes.push('Japanese-iced More Sweetness light/medium-light baseline is capped at 92-93C; higher heat is reserved only for explicit hard-to-extract cues.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: safe light-roast Japanese-iced sweetness cap.');
     } else if (isNaturalSweetnessTarget) {
       calibration.minTempC = 91;
       calibration.maxTempC = 93;
@@ -1797,9 +1939,9 @@ function deriveBaristaTemperatureCalibration(params: {
       calibration.confidenceNotes.push('Barista temperature calibration active: natural high-aroma iced sweetness cap.');
     } else if (params.methodFamily === 'v60' && params.input.targetProfileId === 'more_sweetness' && params.input.roastLevel === 'medium') {
       calibration.minTempC = 93;
-      calibration.maxTempC = 95;
-      calibration.tempDeltaC += 0.2;
-      calibration.notes.push('V60 Japanese-iced More Sweetness medium roast is held around 94C: enough extraction power for hot concentrate without pushing aromatics harsh.');
+      calibration.maxTempC = 93;
+      calibration.tempDeltaC -= 0.4;
+      calibration.notes.push('V60 Japanese-iced More Sweetness medium roast is held around 93C for compact extraction without pushing aromatics harsh.');
       calibration.confidenceNotes.push('Barista temperature calibration active: V60 Japanese-iced sweetness envelope.');
     } else if (isGeisha) {
       calibration.minTempC = 92;
@@ -2640,6 +2782,18 @@ function resolveIcedHotWaterShare(params: {
   return roundTo(clamp(hotWaterShare, ratioAwareMin, ratioAwareMax), 2);
 }
 
+type V60ServiceCalibration = {
+  recommendedRatio: number;
+  hotExtractionRatio: number | null;
+  timeMinSec: number;
+  timeMaxSec: number;
+  tempC?: number;
+  minTempC?: number;
+  maxTempC?: number;
+  notes: string[];
+  confidenceNotes: string[];
+};
+
 function deriveV60SweetnessServiceCalibration(params: {
   input: AiBrewFormState;
   methodFamily: AiBrewMethodFamily;
@@ -2647,33 +2801,140 @@ function deriveV60SweetnessServiceCalibration(params: {
   waterProfile: ReturnType<typeof deriveWaterMineralProfile>;
   processEntry?: ProcessCatalogEntry;
   varietyEntry?: VarietyCatalogEntry;
-}) {
+}): V60ServiceCalibration | null {
   if (
     params.methodFamily !== 'v60'
     || !params.deviceProfile.exactMatch
     || !params.deviceProfile.dripperIds.includes('hario-v60')
-    || params.input.targetProfileId !== 'more_sweetness'
   ) {
+    return null;
+  }
+
+  if (params.input.brewMode === 'iced') {
+    const targetId = params.input.targetProfileId || 'balance_clean';
+    const density = Number.parseFloat(String(params.input.beanDensityGml || ''));
+    const hardToExtractBody = (targetId === 'more_body' || targetId === 'dense_comforting')
+      && isLightOrMediumLightRoast(params.input.roastLevel)
+      && (
+        params.input.roastDevelopment === 'underdeveloped'
+        || params.input.solubility === 'low'
+        || (Number.isFinite(density) && density >= 0.75)
+      );
+    const icedTargetMatrix: Record<string, {
+      recommendedRatio: number;
+      hotExtractionRatio: number;
+      timeMinSec: number;
+      timeMaxSec: number;
+      tempC: number;
+      minTempC: number;
+      maxTempC: number;
+      note: string;
+    }> = {
+      floral_transparent: {
+        recommendedRatio: 14.33,
+        hotExtractionRatio: 9,
+        timeMinSec: 170,
+        timeMaxSec: 185,
+        tempC: 92,
+        minTempC: 92,
+        maxTempC: 93,
+        note: 'V60 Japanese-iced Floral & Transparent calibration uses 135 g hot water and 80 g measured ice for a light, clean finish.',
+      },
+      more_acidity: {
+        recommendedRatio: 14.33,
+        hotExtractionRatio: 9,
+        timeMinSec: 170,
+        timeMaxSec: 185,
+        tempC: 92,
+        minTempC: 92,
+        maxTempC: 93,
+        note: 'V60 Japanese-iced More Acidity calibration keeps temperature low and drawdown quick so brightness stays clean.',
+      },
+      balance_clean: {
+        recommendedRatio: 14,
+        hotExtractionRatio: 9,
+        timeMinSec: 180,
+        timeMaxSec: 190,
+        tempC: 93,
+        minTempC: 93,
+        maxTempC: 93,
+        note: 'V60 Japanese-iced Balance calibration uses 135 g hot water and 75 g measured ice for a clear baseline.',
+      },
+      more_sweetness: {
+        recommendedRatio: 14,
+        hotExtractionRatio: 9,
+        timeMinSec: 185,
+        timeMaxSec: 200,
+        tempC: 93,
+        minTempC: 92,
+        maxTempC: 93,
+        note: 'V60 Japanese-iced More Sweetness calibration loads the middle pour for sweetness while keeping measured ice separate.',
+      },
+      fruit_forward: {
+        recommendedRatio: 14,
+        hotExtractionRatio: 9,
+        timeMinSec: 185,
+        timeMaxSec: 200,
+        tempC: 92,
+        minTempC: 92,
+        maxTempC: 93,
+        note: 'V60 Japanese-iced Fruit-Forward calibration preserves aroma with cooler heat, full middle pour, and no late bypass water.',
+      },
+      soft_round: {
+        recommendedRatio: 14,
+        hotExtractionRatio: 9,
+        timeMinSec: 190,
+        timeMaxSec: 205,
+        tempC: 93,
+        minTempC: 92,
+        maxTempC: 93,
+        note: 'V60 Japanese-iced Soft & Round calibration uses a fuller bloom and gentle finish to keep sweetness round.',
+      },
+      more_body: {
+        recommendedRatio: 13.67,
+        hotExtractionRatio: 9,
+        timeMinSec: 195,
+        timeMaxSec: 215,
+        tempC: hardToExtractBody ? 94 : 93,
+        minTempC: 92,
+        maxTempC: hardToExtractBody ? 94 : 93,
+        note: hardToExtractBody
+          ? 'V60 Japanese-iced More Body calibration allows 94C only because light or low-solubility cues need more extraction pressure.'
+          : 'V60 Japanese-iced More Body calibration uses 135 g hot water and 70 g measured ice for density without late bypass water.',
+      },
+      dense_comforting: {
+        recommendedRatio: 13.67,
+        hotExtractionRatio: 9,
+        timeMinSec: 195,
+        timeMaxSec: 215,
+        tempC: hardToExtractBody ? 94 : 93,
+        minTempC: 92,
+        maxTempC: hardToExtractBody ? 94 : 93,
+        note: hardToExtractBody
+          ? 'V60 Japanese-iced Dense & Comforting calibration allows 94C only because light or low-solubility cues need more extraction pressure.'
+          : 'V60 Japanese-iced Dense & Comforting calibration keeps the hot phase at 135 g and uses 70 g measured ice for compact body.',
+      },
+    };
+    const calibration = icedTargetMatrix[targetId] || icedTargetMatrix.balance_clean;
+    return {
+      ...calibration,
+      notes: [
+        calibration.note,
+        'Exact Hario V60 Japanese iced profile active: final beverage is hot concentrate plus measured ice; do not add bypass water after brewing.',
+      ],
+      confidenceNotes: [
+        `V60 iced 15 g benchmark active for ${targetId}: hot concentrate 1:9 with target-specific measured ice.`,
+      ],
+    };
+  }
+
+  if (params.input.targetProfileId !== 'more_sweetness') {
     return null;
   }
 
   const highAromaNaturalSweetness = hasHighAromaNaturalCue(params.input, params.processEntry, params.varietyEntry)
     && isLightOrMediumLightRoast(params.input.roastLevel);
   if (highAromaNaturalSweetness) {
-    if (params.input.brewMode === 'iced') {
-      return {
-        recommendedRatio: 13.65,
-        hotExtractionRatio: 9,
-        timeMinSec: 185,
-        timeMaxSec: 205,
-        notes: [
-          'V60 Japanese-iced natural sweetness calibration keeps hot concentrate near 1:9 with measured ice around the standard sweetness baseline, no late bypass water.',
-        ],
-        confidenceNotes: [
-          'Natural high-aroma V60 iced baseline active: about 135 g hot water plus 70 g ice for a 15 g dose.',
-        ],
-      };
-    }
     return {
       recommendedRatio: 15.05,
       hotExtractionRatio: null,
@@ -2690,21 +2951,6 @@ function deriveV60SweetnessServiceCalibration(params: {
 
   if (params.input.roastLevel !== 'medium') {
     return null;
-  }
-
-  if (params.input.brewMode === 'iced') {
-    return {
-      recommendedRatio: 13.65,
-      hotExtractionRatio: 9,
-      timeMinSec: 185,
-      timeMaxSec: 205,
-      notes: [
-        'V60 Japanese-iced More Sweetness calibration uses a 1:9 hot concentrate and moderate ice load so total input is not mistaken for cup output.',
-      ],
-      confidenceNotes: [
-        'V60 iced sweetness baseline active: about 135 g hot water plus 70 g ice for a 15 g dose.',
-      ],
-    };
   }
 
   const lowMineral = params.waterProfile.minerals.hardnessPpm < 40 || params.waterProfile.minerals.alkalinityPpm < 30;
@@ -2941,6 +3187,7 @@ function deriveTargetFamilyAdjustment(params: {
   brewMode: 'hot' | 'iced';
   targetProfileLabel: string;
   targetProfileId?: string;
+  pourBehavior?: TargetProfilePourBehavior;
 }): TargetFamilyAdjustment {
   const adjustment: TargetFamilyAdjustment = {
     ...createNeutralCalibrationAdjustment(),
@@ -2952,13 +3199,13 @@ function deriveTargetFamilyAdjustment(params: {
     lastShareDelta: 0,
   };
   const targetIntent = resolveTargetIntent(params.targetProfileLabel, params.targetProfileId);
-  if (targetIntent === 'balanced') return adjustment;
 
   const methodLabel = params.methodFamily.replace(/_/g, ' ');
 
-  switch (params.methodFamily) {
-    case 'v60':
-      if (targetIntent === 'acidity') {
+  if (targetIntent !== 'balanced') {
+    switch (params.methodFamily) {
+      case 'v60':
+        if (targetIntent === 'acidity') {
         adjustment.ratioDelta = 0.03;
         adjustment.tempDeltaC = -0.2;
         adjustment.brewTimeDeltaSec = -5;
@@ -2985,9 +3232,9 @@ function deriveTargetFamilyAdjustment(params: {
         adjustment.firstShareDelta = 0.016;
         adjustment.lastShareDelta = -0.016;
       }
-      break;
-    case 'origami':
-      if (targetIntent === 'acidity') {
+        break;
+      case 'origami':
+        if (targetIntent === 'acidity') {
         adjustment.ratioDelta = 0.03;
         adjustment.tempDeltaC = -0.2;
         adjustment.brewTimeDeltaSec = -6;
@@ -3012,9 +3259,9 @@ function deriveTargetFamilyAdjustment(params: {
         adjustment.firstShareDelta = 0.01;
         adjustment.lastShareDelta = -0.01;
       }
-      break;
-    case 'kono':
-      if (targetIntent === 'acidity') {
+        break;
+      case 'kono':
+        if (targetIntent === 'acidity') {
         adjustment.ratioDelta = 0.01;
         adjustment.tempDeltaC = -0.1;
         adjustment.brewTimeDeltaSec = -2;
@@ -3041,10 +3288,10 @@ function deriveTargetFamilyAdjustment(params: {
         adjustment.middleShareDelta = 0.01;
         adjustment.lastShareDelta = -0.026;
       }
-      break;
-    case 'kalita_wave':
-    case 'melitta':
-      if (targetIntent === 'acidity') {
+        break;
+      case 'kalita_wave':
+      case 'melitta':
+        if (targetIntent === 'acidity') {
         adjustment.ratioDelta = 0.01;
         adjustment.tempDeltaC = -0.1;
         adjustment.brewTimeDeltaSec = -2;
@@ -3072,9 +3319,9 @@ function deriveTargetFamilyAdjustment(params: {
         adjustment.middleShareDelta = 0.016;
         adjustment.lastShareDelta = -0.028;
       }
-      break;
-    case 'april':
-      if (targetIntent === 'acidity') {
+        break;
+      case 'april':
+        if (targetIntent === 'acidity') {
         adjustment.ratioDelta = 0.04;
         adjustment.tempDeltaC = -0.2;
         adjustment.brewTimeDeltaSec = -7;
@@ -3100,9 +3347,9 @@ function deriveTargetFamilyAdjustment(params: {
         adjustment.middleShareDelta = 0.008;
         adjustment.lastShareDelta = -0.02;
       }
-      break;
-    case 'chemex':
-      if (targetIntent === 'acidity') {
+        break;
+      case 'chemex':
+        if (targetIntent === 'acidity') {
         adjustment.ratioDelta = 0.01;
         adjustment.tempDeltaC = -0.1;
         adjustment.brewTimeDeltaSec = -3;
@@ -3127,9 +3374,9 @@ function deriveTargetFamilyAdjustment(params: {
         adjustment.middleShareDelta = 0.01;
         adjustment.lastShareDelta = -0.028;
       }
-      break;
-    case 'clever_dripper':
-      if (targetIntent === 'acidity') {
+        break;
+      case 'clever_dripper':
+        if (targetIntent === 'acidity') {
         adjustment.ratioDelta = 0.03;
         adjustment.tempDeltaC = -0.2;
         adjustment.brewTimeDeltaSec = -8;
@@ -3155,9 +3402,47 @@ function deriveTargetFamilyAdjustment(params: {
         adjustment.middleShareDelta = 0.012;
         adjustment.lastShareDelta = -0.038;
       }
-      break;
-    default:
-      break;
+        break;
+      default:
+        break;
+    }
+  }
+
+  const behavior = params.pourBehavior || resolveTargetPourBehavior(params.targetProfileId);
+  if (behavior) {
+    if (behavior.middleLoadBias === 'full') {
+      adjustment.middleShift += 0.12;
+      adjustment.middleShareDelta += 0.018;
+      adjustment.lastShareDelta -= 0.01;
+    } else if (behavior.middleLoadBias === 'light') {
+      adjustment.middleShift -= 0.05;
+      adjustment.middleShareDelta -= 0.012;
+      adjustment.lastShareDelta += 0.012;
+    }
+
+    if (behavior.finalLoadBias === 'light') {
+      adjustment.lastShareDelta -= 0.014;
+      adjustment.middleShareDelta += 0.01;
+    } else if (behavior.finalLoadBias === 'gentle') {
+      adjustment.lastShareDelta -= 0.006;
+    }
+
+    if (behavior.agitation === 'minimal') {
+      adjustment.tempDeltaC -= 0.1;
+      adjustment.brewTimeDeltaSec -= 2;
+      adjustment.directionalShift += 0.04;
+    } else if (behavior.agitation === 'controlled') {
+      adjustment.brewTimeDeltaSec += 4;
+      adjustment.directionalShift -= 0.04;
+    }
+
+    if (behavior.drawdownBias === 'faster') {
+      adjustment.brewTimeDeltaSec -= 3;
+      adjustment.finalWindowDeltaSec += 4;
+    } else if (behavior.drawdownBias === 'slower') {
+      adjustment.brewTimeDeltaSec += 5;
+      adjustment.finalWindowDeltaSec += 6;
+    }
   }
 
   if (params.brewMode === 'iced') {
@@ -3173,6 +3458,9 @@ function deriveTargetFamilyAdjustment(params: {
   }
 
   adjustment.notes.push(`Target-to-device calibration sharpened ${targetIntent} handling for ${methodLabel}.`);
+  if (behavior) {
+    adjustment.notes.push(`Target pour behavior active: bloom ${behavior.bloomMultiplier || 2}x, ${behavior.bloomTimeSec || 42}s, ${behavior.agitation || 'low'} agitation, ${behavior.drawdownBias || 'normal'} drawdown bias.`);
+  }
   adjustment.confidenceNotes.push(`Target-method calibration active: ${targetIntent} x ${methodLabel}.`);
   return adjustment;
 }
@@ -3941,6 +4229,11 @@ function buildAdaptiveStepShares(profile: DeviceBrewProfile, context: AdaptiveSh
     return normalizeSharesToUnit(profile.steps.map((step) => step.share));
   }
 
+  if (context.brewMode === 'iced' && context.methodFamily === 'v60' && count === 3) {
+    const v60IcedShares = resolveV60IcedThreePourShares(context.targetProfileId);
+    if (v60IcedShares) return v60IcedShares;
+  }
+
   const base = normalizeSharesToUnit(profile.steps.map((step) => step.share));
   const intent = resolveContextTargetIntent(context);
 
@@ -3999,7 +4292,8 @@ function buildAdaptiveStepShares(profile: DeviceBrewProfile, context: AdaptiveSh
   const highAromaNatural = Boolean(context.highAromaNatural)
     || (gasHeavyNatural && Boolean(context.varietyId && SWEETNESS_VARIETY_IDS.has(context.varietyId)));
   const shouldFrontLoadNaturalBloom = highAromaNatural
-    || (gasHeavyNatural && context.targetProfileId === 'more_sweetness' && isLightOrMediumLightRoast(context.roastLevel));
+    && context.targetProfileId !== 'more_sweetness'
+    && context.targetProfileId !== 'fruit_forward';
   if (
     shouldFrontLoadNaturalBloom
     && (context.methodFamily === 'v60'
@@ -4134,13 +4428,15 @@ function buildBaristaStepPracticalCue(context: AdaptiveShareContext, phase: Adap
 
   if (isManualPaperFilter) {
     if (phase === 'bloom') {
+      const bloomMultiplier = context.pourBehavior?.bloomMultiplier || 2;
+      const bloomTimeSec = context.pourBehavior?.bloomTimeSec || (context.brewMode === 'iced' ? 45 : 42);
       if (context.brewMode === 'iced') {
-        return 'Rinse the paper filter separately, preheat the brewer, discard rinse water, tare the scale, then put measured ice in the server before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before the next pour.';
+        return `Rinse the paper filter separately, preheat the brewer, discard rinse water, tare the scale, then put measured ice in the server before dosing coffee. Bloom with about ${formatBaristaRatio(bloomMultiplier)}x coffee weight and wait ${bloomTimeSec} seconds before the next pour.`;
       }
       if (context.methodFamily === 'chemex') {
-        return 'Rinse the thick Chemex paper thoroughly, preheat the brewer/server, discard rinse water, and tare the scale before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before building volume.';
+        return `Rinse the thick Chemex paper thoroughly, preheat the brewer/server, discard rinse water, and tare the scale before dosing coffee. Bloom with about ${formatBaristaRatio(bloomMultiplier)}x coffee weight and wait ${bloomTimeSec} seconds before building volume.`;
       }
-      return 'Rinse the paper filter, preheat the brewer/server, discard rinse water, and tare the scale before dosing coffee. Bloom with about 2-3x coffee weight and wait 30-45 seconds before the next pour.';
+      return `Rinse the paper filter, preheat the brewer/server, discard rinse water, and tare the scale before dosing coffee. Bloom with about ${formatBaristaRatio(bloomMultiplier)}x coffee weight and wait ${bloomTimeSec} seconds before the next pour.`;
     }
     if (phase === 'early_middle') {
       if (context.methodFamily === 'kalita_wave' || context.methodFamily === 'april') {
@@ -4544,7 +4840,7 @@ function polishIcedManualPourOverSteps(
         ...nextStep,
         hybridInstruction: joinInstructionText(
           nextStep.hybridInstruction,
-          'Land the final hot-water target only; the ice is intentional bypass, not another pour through the bed.',
+          `Target ${nextStep.targetVolumeMl} ml hot water. Land the final hot-water target only; the ice is intentional bypass, not another pour through the bed.`,
         ),
       };
     }
@@ -4666,7 +4962,10 @@ function buildSteps(
       ? remainingWater
       : Math.max(0, remainingWater - minimumReserveMl);
     const bloomFloorMl = index === pourIndexes[0] && supportsAiBrewPourControls(adaptiveShareContext.methodFamily)
-      ? roundBaristaVolumeMl(adaptiveShareContext.doseG * 2, adaptiveShareContext.methodFamily)
+      ? roundBaristaVolumeMl(
+        adaptiveShareContext.doseG * (adaptiveShareContext.pourBehavior?.bloomMultiplier || 2),
+        adaptiveShareContext.methodFamily,
+      )
       : 0;
     const baseMinPourVolumeMl = !isLastPourStep && rawShare > 0 && maxPourVolumeMl >= volumeIncrementMl
       ? volumeIncrementMl
@@ -4911,6 +5210,7 @@ function finalizePlanCore(
   customProcessDetection?: CustomProcessDetection | null,
 ) {
   const targetProfile = findTargetProfile(catalog, input.targetProfileId) || catalog.targetProfiles[0];
+  const targetPourBehavior = resolveTargetPourBehavior(targetProfile.id, targetProfile);
   const methodFamily = deviceSelection.profile.methodFamily || dripper.methodFamily || 'v60';
   const methodId = resolveProfileBrewMethodId(deviceSelection.profile, methodFamily, input.brewMode);
   const ratioToolMethodId = methodId;
@@ -4952,6 +5252,7 @@ function finalizePlanCore(
     brewMode: input.brewMode,
     targetProfileLabel: targetProfile.label,
     targetProfileId: targetProfile.id,
+    pourBehavior: targetPourBehavior,
   });
   const originTargetMethodAdjustment = deriveOriginTargetMethodAdjustment({
     originProfileId: originAdjustment.profileId,
@@ -5121,10 +5422,18 @@ function finalizePlanCore(
     + serviceDoseTargetAdjustment.tempDeltaC
     + flavorAlignment.tempDeltaC
     + baristaTemperatureCalibration.tempDeltaC;
-  const calibratedTempMin = Math.max(methodTempBounds.min, baristaTemperatureCalibration.minTempC ?? methodTempBounds.min);
-  const calibratedTempMax = Math.min(methodTempBounds.max, baristaTemperatureCalibration.maxTempC ?? methodTempBounds.max);
+  const calibratedTempMin = Math.max(
+    methodTempBounds.min,
+    v60SweetnessServiceCalibration?.minTempC ?? baristaTemperatureCalibration.minTempC ?? methodTempBounds.min,
+  );
+  const calibratedTempMax = Math.min(
+    methodTempBounds.max,
+    v60SweetnessServiceCalibration?.maxTempC ?? baristaTemperatureCalibration.maxTempC ?? methodTempBounds.max,
+  );
   const waterTempC = roundTo(targetTempOverrideC ?? clamp(
-    baseWaterTempC,
+    typeof v60SweetnessServiceCalibration?.tempC === 'number'
+      ? v60SweetnessServiceCalibration.tempC
+      : baseWaterTempC,
     Math.min(calibratedTempMin, calibratedTempMax),
     Math.max(calibratedTempMin, calibratedTempMax),
   ), 1);
@@ -5202,6 +5511,7 @@ function finalizePlanCore(
   const steps = buildSteps(controlledDeviceProfile, hotWaterMl, totalTimeSeconds, {
     targetProfileId: targetProfile.id,
     targetProfileLabel: targetProfile.label,
+    pourBehavior: targetPourBehavior,
     methodFamily,
     dripperId: dripper.id,
     dripperName: dripper.name,
@@ -6371,7 +6681,7 @@ export function buildPlanRecipeDescription(plan: BrewPlan, locale?: string) {
     : `${plan.summary} Gear: ${gear}.${split}${waterSource}`;
 }
 
-function buildPlanRecipeStepAction(step: BrewPlan['steps'][number], locale?: string) {
+function buildPlanRecipeStepAction(step: BrewPlan['steps'][number], locale?: string, plan?: BrewPlan) {
   const id = isIndonesianLocale(locale);
   const kind = step.kind || 'pour';
 
@@ -6410,6 +6720,11 @@ function buildPlanRecipeStepAction(step: BrewPlan['steps'][number], locale?: str
       ? `pisahkan dan sajikan; target tetap ${step.targetVolumeMl} ml`
       : `separate and serve; target stays ${step.targetVolumeMl} ml`;
   }
+  if (plan?.brewMode === 'iced' && step.pourVolumeMl > 0) {
+    return id
+      ? `tuang ${step.pourVolumeMl} ml hingga target ${step.targetVolumeMl} ml air panas`
+      : `pour ${step.pourVolumeMl} ml to reach ${step.targetVolumeMl} ml hot water`;
+  }
   return id
     ? `tuang ${step.pourVolumeMl} ml hingga mencapai ${step.targetVolumeMl} ml`
     : `pour ${step.pourVolumeMl} ml to reach ${step.targetVolumeMl} ml`;
@@ -6419,8 +6734,8 @@ export function buildPlanRecipeSteps(plan: BrewPlan, locale?: string) {
   const id = isIndonesianLocale(locale);
   return plan.steps.map((step) =>
     id
-      ? `${step.label} (${formatTime(step.startSeconds)}): ${buildPlanRecipeStepAction(step, locale)}. ${step.hybridInstruction || step.note}`
-      : `${step.label} (${formatTime(step.startSeconds)}): ${buildPlanRecipeStepAction(step, locale)}. ${step.hybridInstruction || step.note}`
+      ? `${step.label} (${formatTime(step.startSeconds)}): ${buildPlanRecipeStepAction(step, locale, plan)}. ${step.hybridInstruction || step.note}`
+      : `${step.label} (${formatTime(step.startSeconds)}): ${buildPlanRecipeStepAction(step, locale, plan)}. ${step.hybridInstruction || step.note}`
   );
 }
 
@@ -6476,9 +6791,29 @@ export function buildLocalizedPlanRecipeSteps(plan: BrewPlan, locale?: string) {
   const id = isIndonesianLocale(locale);
   return plan.steps.map((step) =>
     id
-      ? `${localizeAiBrewStepLabel(step.label, locale)} (${formatTime(step.startSeconds)}): ${buildPlanRecipeStepAction(step, locale)}. ${localizeAiBrewDynamicText(step.hybridInstruction || step.note, locale)}`
-      : `${localizeAiBrewStepLabel(step.label, locale)} (${formatTime(step.startSeconds)}): ${buildPlanRecipeStepAction(step, locale)}. ${localizeAiBrewDynamicText(step.hybridInstruction || step.note, locale)}`
+      ? `${localizeAiBrewStepLabel(step.label, locale)} (${formatTime(step.startSeconds)}): ${buildPlanRecipeStepAction(step, locale, plan)}. ${localizeAiBrewDynamicText(step.hybridInstruction || step.note, locale)}`
+      : `${localizeAiBrewStepLabel(step.label, locale)} (${formatTime(step.startSeconds)}): ${buildPlanRecipeStepAction(step, locale, plan)}. ${localizeAiBrewDynamicText(step.hybridInstruction || step.note, locale)}`
   );
+}
+
+export function buildBrewPlanRecipeSignature(plan: Pick<
+  BrewPlan,
+  'finalBeverageRatio' | 'hotExtractionRatio' | 'totalWaterMl' | 'hotWaterMl' | 'iceMl' | 'waterTempC' | 'totalTimeSeconds' | 'steps'
+>) {
+  return JSON.stringify({
+    finalBeverageRatio: roundTo(plan.finalBeverageRatio, 2),
+    hotExtractionRatio: roundTo(plan.hotExtractionRatio, 2),
+    totalWaterMl: roundTo(plan.totalWaterMl, 0),
+    hotWaterMl: roundTo(plan.hotWaterMl, 0),
+    iceMl: roundTo(plan.iceMl, 0),
+    waterTempC: roundTo(plan.waterTempC, 1),
+    totalTimeSeconds: Math.round(plan.totalTimeSeconds),
+    steps: plan.steps.map((step) => ({
+      startSeconds: Math.round(step.startSeconds),
+      pourVolumeMl: roundTo(step.pourVolumeMl, 0),
+      targetVolumeMl: roundTo(step.targetVolumeMl, 0),
+    })),
+  });
 }
 
 export function buildPlanRecipeMetadata(plan: BrewPlan) {

@@ -332,6 +332,16 @@ export interface WaterMineralInput {
   styleLabel: string;
 }
 
+export interface TargetProfilePourBehavior {
+  bloomMultiplier?: number;
+  bloomTimeSec?: number;
+  middleLoadBias?: 'light' | 'balanced' | 'full';
+  finalLoadBias?: 'light' | 'balanced' | 'gentle';
+  agitation?: 'minimal' | 'low' | 'medium' | 'controlled';
+  pourHeight?: 'low' | 'medium';
+  drawdownBias?: 'faster' | 'normal' | 'slower';
+}
+
 export interface TargetProfile {
   id: string;
   label: string;
@@ -340,6 +350,7 @@ export interface TargetProfile {
   tempDeltaC: number;
   brewTimeDeltaSec: number;
   grindBias: GrindBias;
+  pourBehavior?: TargetProfilePourBehavior;
   notes: string[];
   catalogVersion: string;
 }

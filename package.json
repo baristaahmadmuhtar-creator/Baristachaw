@@ -35,6 +35,7 @@
         "test:e2e:prod": "LIVE_E2E=1 playwright test tests/e2e --project=chromium --project=firefox --project=webkit",
         "test:a11y": "playwright test tests/a11y --project=chromium",
         "test:a11y:prod": "LIVE_E2E=1 playwright test tests/a11y --project=chromium",
+        "test:ai-brew": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs --test --test-isolation=none tests/unit/aiBrew*.test.ts",
         "test:unit": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs --test --test-isolation=none tests/unit/**/*.test.ts",
         "test:unit:sandbox": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs --test --test-isolation=none tests/unit/**/*.test.ts",
         "test:perf": "node tests/perf/run-lighthouse.mjs",

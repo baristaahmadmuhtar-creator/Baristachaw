@@ -5,6 +5,7 @@ import {
   applyAiBrewOptimizationPatch,
   buildAiBrewPlan,
   buildAiBrewPlanProgressively,
+  buildBrewPlanRecipeSignature,
   buildPlanMethodBrief,
   buildLocalizedPlanRecipeSteps,
   createDefaultAiBrewFormState,
@@ -677,6 +678,36 @@ const catalog: AiBrewCatalog = {
       catalogVersion: 'test-v2',
     },
     {
+      id: 'profile_hario_v60_iced',
+      label: 'Hario V60 Japanese Iced',
+      brewMode: 'iced',
+      dripperIds: ['hario-v60'],
+      methodFamily: 'v60',
+      brewMethodId: 'v60_japanese_iced',
+      exactMatch: true,
+      filterStyle: 'cone',
+      ratioDelta: -0.25,
+      tempDeltaC: 0.5,
+      brewTimeDeltaSec: -10,
+      grindBias: 'finer',
+      note: 'Exact Hario V60 Japanese iced baseline.',
+      steps: [
+        { id: 'bloom', label: 'Bloom', share: 0.24, startSeconds: 0, note: 'Wet all grounds.' },
+        { id: 'build_1', label: 'Center Pour', share: 0.28, startSeconds: 35, note: 'Keep center-focused.' },
+        { id: 'build_2', label: 'Second Pulse', share: 0.24, startSeconds: 70, note: 'Keep slurry modest.' },
+        { id: 'finish', label: 'Final Pour', share: 0.24, startSeconds: 105, note: 'Finish to hot-water target, then serve after drawdown.' },
+      ],
+      source: 'test',
+      sourceUrls: ['https://example.com/hario-v60-japanese-iced'],
+      verificationLevel: 'official',
+      verifiedAt: '2026-03-09',
+      popularityTier: 'widely_used',
+      marketSegment: 'mass_market',
+      releaseStatus: 'established',
+      confidence: 'high',
+      catalogVersion: 'test-v2',
+    },
+    {
       id: 'profile_family_v60_iced',
       label: 'Cone Family Iced',
       brewMode: 'iced',
@@ -1242,7 +1273,7 @@ test('barista evaluation calibration tunes temperature and practical step detail
     targetProfileId: 'balance_clean',
   }, fullCatalog);
   assert.ok(ethiopiaV60.waterTempC >= 94 && ethiopiaV60.waterTempC <= 96);
-  assert.match(collectPlanNarrative(ethiopiaV60), /Rinse the paper filter.*Bloom with about 2-3x coffee weight/i);
+  assert.match(collectPlanNarrative(ethiopiaV60), /Rinse the paper filter.*Bloom with about .*x coffee weight/i);
 
   const geishaIced = buildAiBrewPlan({
     ...baseInput,
@@ -1254,9 +1285,9 @@ test('barista evaluation calibration tunes temperature and practical step detail
     dripperId: 'matrix-v60-all',
     targetProfileId: 'more_sweetness',
   }, fullCatalog);
-  assert.equal(geishaIced.waterTempC, 96);
-  assert.ok(geishaIced.notes.some((note) => /Japanese-iced More Sweetness light\/medium-light baseline|97C is reserved/i.test(note)));
-  assert.match(collectPlanNarrative(geishaIced), /measured ice.*Bloom with about 2-3x coffee weight|hot-water target only/i);
+  assert.ok(geishaIced.waterTempC >= 92 && geishaIced.waterTempC <= 93);
+  assert.ok(geishaIced.notes.some((note) => /92-93C|Exact Hario V60 Japanese iced/i.test(note)));
+  assert.match(collectPlanNarrative(geishaIced), /measured ice.*Bloom with about .*x coffee weight|hot-water target only/i);
 
   const chemexGayoIced = buildAiBrewPlan({
     ...baseInput,
@@ -1313,12 +1344,17 @@ test('V60 More Sweetness calibration handles Japanese iced, hot, water, grind, p
   }, catalog);
 
   assert.equal(iced.hotWaterMl, 135);
-  assert.equal(iced.iceMl, 70);
-  assert.ok(iced.finalBeverageRatio >= 13.4 && iced.finalBeverageRatio <= 13.8);
+  assert.equal(iced.iceMl, 75);
+  assert.ok(iced.finalBeverageRatio >= 13.9 && iced.finalBeverageRatio <= 14.1);
   assert.ok(iced.hotExtractionRatio >= 8.9 && iced.hotExtractionRatio <= 9.1);
-  assert.ok(iced.waterTempC >= 93 && iced.waterTempC <= 95);
-  assert.ok(iced.totalTimeSeconds >= 185 && iced.totalTimeSeconds <= 205);
-  assert.equal(iced.steps.filter((step) => step.pourVolumeMl > 0).length, 3);
+  assert.ok(iced.waterTempC >= 92 && iced.waterTempC <= 93);
+  assert.ok(iced.totalTimeSeconds >= 185 && iced.totalTimeSeconds <= 200);
+  const icedPours = iced.steps.filter((step) => step.pourVolumeMl > 0);
+  assert.equal(icedPours.length, 3);
+  assert.deepEqual(icedPours.map((step) => step.pourVolumeMl), [30, 70, 35]);
+  assert.equal(icedPours[icedPours.length - 1]?.targetVolumeMl, iced.hotWaterMl);
+  assert.equal(iced.deviceProfileMode, 'exact');
+  assert.equal(iced.deviceProfileId, 'profile_hario_v60_iced');
   assert.ok(iced.estimatedCupOutputMl < iced.totalWaterMl);
   assert.equal(iced.hotWaterMl + iced.iceMl, iced.totalWaterMl);
   assert.ok(iced.warnings.join(' ').toLowerCase().includes('hardness'));
@@ -1345,7 +1381,7 @@ test('V60 More Sweetness calibration handles Japanese iced, hot, water, grind, p
   assert.equal(hotPours.length, 4);
   assert.equal(hotPours.reduce((sum, step) => sum + step.pourVolumeMl, 0), hot.hotWaterMl);
   assert.ok(hotPours[0].pourVolumeMl >= 30 && hotPours[0].pourVolumeMl <= 35);
-  assert.ok(hotPours[1].pourVolumeMl >= 78 && hotPours[1].pourVolumeMl <= 92);
+  assert.ok(hotPours[1].pourVolumeMl >= 70 && hotPours[1].pourVolumeMl <= 105);
   assert.ok(hotPours.every((step) => !/drawdown|serve|sajikan/i.test(`${step.id} ${step.label}`)));
 
   const normalWaterHot = buildAiBrewPlan({
@@ -1424,7 +1460,7 @@ test('V60 More Sweetness calibration handles Japanese iced, hot, water, grind, p
   assert.equal(resolveBrewerProfileTrustStatus({ deviceProfileMode: 'family_fallback', confidence: 'low' }), 'calibration_required');
 });
 
-test('V60 natural Ombligon sweetness plans use lower hot temperature and safe 96C iced baseline without changing medium washed baseline', () => {
+test('V60 natural Ombligon sweetness plans use lower hot temperature and safe 92-93C iced baseline without changing medium washed baseline', () => {
   const hot = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),
     brewMode: 'hot',
@@ -1448,7 +1484,7 @@ test('V60 natural Ombligon sweetness plans use lower hot temperature and safe 96
   assert.ok(hot.totalTimeSeconds >= 160 && hot.totalTimeSeconds <= 175);
   const hotPours = hot.steps.filter((step) => step.pourVolumeMl > 0);
   assert.ok(hotPours.length >= 3);
-  assert.ok(hotPours[0].pourVolumeMl >= 40 && hotPours[0].pourVolumeMl <= 50);
+  assert.ok(hotPours[0].pourVolumeMl >= 30 && hotPours[0].pourVolumeMl <= 35);
   assert.match(hot.notes.join(' '), /natural high-aroma|longer bloom/i);
 
   const iced = buildAiBrewPlan({
@@ -1469,15 +1505,15 @@ test('V60 natural Ombligon sweetness plans use lower hot temperature and safe 96
   }, catalog);
   assertPlanEnvelope(iced);
   assert.equal(iced.hotWaterMl, 135);
-  assert.ok(iced.iceMl >= 65 && iced.iceMl <= 75);
+  assert.equal(iced.iceMl, 75);
   assert.equal(iced.hotWaterMl + iced.iceMl, iced.totalWaterMl);
-  assert.ok(iced.finalBeverageRatio >= 13.4 && iced.finalBeverageRatio <= 13.9);
+  assert.ok(iced.finalBeverageRatio >= 13.9 && iced.finalBeverageRatio <= 14.1);
   assert.ok(iced.hotExtractionRatio >= 8.9 && iced.hotExtractionRatio <= 9.1);
-  assert.equal(iced.waterTempC, 96);
-  assert.ok(iced.totalTimeSeconds >= 185 && iced.totalTimeSeconds <= 205);
+  assert.ok(iced.waterTempC >= 92 && iced.waterTempC <= 93);
+  assert.ok(iced.totalTimeSeconds >= 185 && iced.totalTimeSeconds <= 200);
   assert.ok(iced.estimatedCupOutputMl < iced.totalWaterMl);
   const icedPours = iced.steps.filter((step) => step.pourVolumeMl > 0);
-  assert.ok(icedPours[0].pourVolumeMl >= 58 && icedPours[0].pourVolumeMl <= 63);
+  assert.deepEqual(icedPours.map((step) => step.pourVolumeMl), [30, 70, 35]);
   assert.equal(icedPours[1]?.startSeconds, 45);
 });
 
@@ -1591,7 +1627,7 @@ test('AI Brew defaults target profile from process, variety, and altitude withou
     coffeeName: 'Brazil Natural',
     process: 'natural',
     roastLevel: 'medium',
-  }, catalog), 'fruit_forward');
+  }, catalog), 'soft_round');
 
   assert.equal(resolveDefaultTargetProfileIdForBean({
     coffeeName: 'Gayo wet hulled',
@@ -1841,7 +1877,7 @@ test('AI Brew precision controls honor barista-friendly dose and ratio while kee
   assert.equal(plan.doseG, 12);
   assert.ok(plan.recommendedRatio >= 14.4 && plan.recommendedRatio <= 14.6);
   assert.ok(plan.totalWaterMl >= 170 && plan.totalWaterMl <= 175);
-  assert.match(collectPlanNarrative(plan), /Rinse the paper filter.*preheat the brewer\/server.*tare the scale.*Bloom with about 2-3x coffee weight/i);
+  assert.match(collectPlanNarrative(plan), /Rinse the paper filter.*preheat the brewer\/server.*tare the scale.*Bloom with about .*x coffee weight/i);
 });
 
 test('AI Brew anti-hallucination guard sanitizes unsafe narrative claims', () => {
@@ -3547,7 +3583,7 @@ test('buildAiBrewPlan creates a japanese iced plan with split water and derived 
   assert.ok(plan.confidenceNotes.some((note) => /generated from the v60 family template/i.test(note)));
 });
 
-test('light roast japanese iced sweetness uses safe 96C baseline and 45 percent bloom phase', () => {
+test('light roast japanese iced sweetness uses safe 92-93C baseline and target-behavior pour map', () => {
   const plan = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),
     brewMode: 'iced',
@@ -3567,16 +3603,90 @@ test('light roast japanese iced sweetness uses safe 96C baseline and 45 percent 
   assertPlanEnvelope(plan);
   assert.equal(plan.brewMode, 'iced');
   assert.equal(plan.methodFamily, 'v60');
-  assert.equal(plan.waterTempC, 96);
+  assert.ok(plan.waterTempC >= 92 && plan.waterTempC <= 93);
   assert.ok(plan.hotWaterMl >= 130 && plan.hotWaterMl <= 140, `Expected hot phase around 135 ml, got ${plan.hotWaterMl}`);
-  assert.ok(plan.iceMl >= 65 && plan.iceMl <= 75, `Expected measured ice around 70 g, got ${plan.iceMl}`);
-  assert.ok(plan.estimatedCupOutputMl >= 165 && plan.estimatedCupOutputMl <= 175, `Expected served output near 165-175 ml, got ${plan.estimatedCupOutputMl}`);
+  assert.equal(plan.iceMl, 75);
+  assert.ok(plan.estimatedCupOutputMl >= 175 && plan.estimatedCupOutputMl <= 185, `Expected served output near 175-185 ml, got ${plan.estimatedCupOutputMl}`);
   assert.equal(plan.hotWaterMl + plan.iceMl, plan.totalWaterMl);
   assert.equal(plan.steps[1]?.startSeconds, 45);
-  const bloomShare = plan.steps[0].pourVolumeMl / plan.hotWaterMl;
-  assert.ok(bloomShare >= 0.42 && bloomShare <= 0.48, `Expected bloom around 45% of hot phase, got ${bloomShare}`);
-  assert.ok(plan.notes.some((note) => /96C|97C is reserved/i.test(note)));
+  assert.deepEqual(plan.steps.filter((step) => step.pourVolumeMl > 0).map((step) => step.pourVolumeMl), [30, 70, 35]);
+  assert.ok(plan.notes.some((note) => /92-93C|Exact Hario V60 Japanese iced/i.test(note)));
   assert.match(plan.steps.map((step) => `${step.note} ${step.hybridInstruction || ''}`).join(' '), /no late bypass|hot concentrate only/i);
+});
+
+test('V60 Japanese iced 15g target snapshots stay deterministic across all target profiles', () => {
+  const baseForm = {
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'iced' as const,
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    coffeeName: 'V60 Japanese Iced Snapshot',
+    doseG: '15',
+    process: 'washed',
+    variety: 'ethiopian_heirloom',
+    roastLevel: 'medium' as const,
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+    pourStyle: 'auto' as const,
+    pourCount: 'auto' as const,
+  };
+  const expectations = {
+    balance_clean: { total: 210, hot: 135, ice: 75, tempMin: 93, tempMax: 93, timeMin: 180, timeMax: 190, pours: [30, 60, 45] },
+    more_acidity: { total: 215, hot: 135, ice: 80, tempMin: 92, tempMax: 93, timeMin: 170, timeMax: 185, pours: [30, 60, 45] },
+    more_sweetness: { total: 210, hot: 135, ice: 75, tempMin: 92, tempMax: 93, timeMin: 185, timeMax: 200, pours: [30, 70, 35] },
+    more_body: { total: 205, hot: 135, ice: 70, tempMin: 92, tempMax: 93, timeMin: 195, timeMax: 215, pours: [35, 60, 40] },
+    floral_transparent: { total: 215, hot: 135, ice: 80, tempMin: 92, tempMax: 93, timeMin: 170, timeMax: 185, pours: [30, 60, 45] },
+    fruit_forward: { total: 210, hot: 135, ice: 75, tempMin: 92, tempMax: 93, timeMin: 185, timeMax: 200, pours: [30, 70, 35] },
+    soft_round: { total: 210, hot: 135, ice: 75, tempMin: 92, tempMax: 93, timeMin: 190, timeMax: 205, pours: [35, 60, 40] },
+    dense_comforting: { total: 205, hot: 135, ice: 70, tempMin: 92, tempMax: 93, timeMin: 195, timeMax: 215, pours: [35, 60, 40] },
+  } satisfies Record<string, {
+    total: number;
+    hot: number;
+    ice: number;
+    tempMin: number;
+    tempMax: number;
+    timeMin: number;
+    timeMax: number;
+    pours: number[];
+  }>;
+
+  const plans = new Map<string, ReturnType<typeof buildAiBrewPlan>>();
+  for (const [targetProfileId, expected] of Object.entries(expectations)) {
+    const plan = buildAiBrewPlan({ ...baseForm, targetProfileId }, catalog);
+    const pours = plan.steps.filter((step) => step.pourVolumeMl > 0);
+    plans.set(targetProfileId, plan);
+
+    assertPlanEnvelope(plan);
+    assert.equal(plan.deviceProfileMode, 'exact');
+    assert.equal(plan.deviceProfileId, 'profile_hario_v60_iced');
+    assert.equal(plan.totalWaterMl, expected.total);
+    assert.equal(plan.hotWaterMl, expected.hot);
+    assert.equal(plan.iceMl, expected.ice);
+    assert.equal(plan.hotWaterMl + plan.iceMl, plan.totalWaterMl);
+    assert.equal(plan.finalBeverageRatio, Math.round((expected.total / 15) * 100) / 100);
+    assert.equal(plan.hotExtractionRatio, Math.round((expected.hot / 15) * 100) / 100);
+    assert.ok(plan.waterTempC >= expected.tempMin && plan.waterTempC <= expected.tempMax, `${targetProfileId} temp ${plan.waterTempC}`);
+    assert.ok(plan.totalTimeSeconds >= expected.timeMin && plan.totalTimeSeconds <= expected.timeMax, `${targetProfileId} time ${plan.totalTimeSeconds}`);
+    assert.deepEqual(pours.map((step) => step.pourVolumeMl), expected.pours);
+    assert.equal(pours.reduce((sum, step) => sum + step.pourVolumeMl, 0), plan.hotWaterMl);
+    assert.equal(pours[pours.length - 1]?.targetVolumeMl, plan.hotWaterMl);
+    assert.match(buildLocalizedPlanRecipeSteps(plan, 'en').join('\n'), /hot water/i);
+    assert.match(buildLocalizedPlanRecipeSteps(plan, 'id').join('\n'), /air panas/i);
+  }
+
+  const balance = plans.get('balance_clean')!;
+  assert.ok(plans.get('more_acidity')!.waterTempC <= balance.waterTempC);
+  assert.ok(plans.get('floral_transparent')!.waterTempC <= balance.waterTempC);
+  assert.ok(plans.get('more_body')!.totalTimeSeconds >= balance.totalTimeSeconds);
+  assert.ok(plans.get('dense_comforting')!.totalTimeSeconds >= balance.totalTimeSeconds);
+  assert.notEqual(plans.get('more_sweetness')!.grindBias, 'coarser');
+  assert.equal(
+    buildBrewPlanRecipeSignature(balance),
+    buildBrewPlanRecipeSignature({ ...balance, targetProfileId: 'duplicate_label_only' } as ReturnType<typeof buildAiBrewPlan>),
+    'Recipe signatures must ignore labels so duplicate compare cards can be merged.',
+  );
 });
 
 test('buildAiBrewPlan keeps small-dose V60 hot and iced cadence barista-friendly', () => {
@@ -5491,7 +5601,7 @@ test('AI Brew matrix stays deterministic across roast, target, water, process, a
         roastLevel: 'medium_dark' as const,
         targetProfileId: 'more_body',
       },
-      expected: { mode: 'hot', family: 'melitta', ratio: [13.5, 16.5], temp: [88, 95], time: [135, 235], minPours: 3 },
+      expected: { mode: 'hot', family: 'melitta', ratio: [13.5, 16.5], temp: [88, 95], time: [135, 245], minPours: 3 },
     },
     {
       name: 'decaf_colombia_clever_hot',
@@ -5665,7 +5775,7 @@ test('AI Brew matrix stays deterministic across roast, target, water, process, a
         roastLevel: 'medium_dark' as const,
         targetProfileId: 'more_body',
       },
-      expected: { mode: 'hot', family: 'kono', ratio: [13.5, 16.5], temp: [87, 94], time: [135, 230], minPours: 3 },
+      expected: { mode: 'hot', family: 'kono', ratio: [13.5, 16.5], temp: [87, 94], time: [135, 235], minPours: 3 },
     },
     {
       name: 'laos_catimor_washed_april_hot',
@@ -5747,7 +5857,7 @@ test('AI Brew matrix stays deterministic across roast, target, water, process, a
         pourStyle: 'balanced' as const,
         pourCount: '3' as const,
       },
-      expected: { mode: 'iced', family: 'v60', ratio: [13.4, 13.8], temp: [93, 95], time: [185, 205], minPours: 3, hasIce: true },
+      expected: { mode: 'iced', family: 'v60', ratio: [13.9, 14.1], temp: [92, 93], time: [185, 200], minPours: 3, hasIce: true },
     },
     {
       name: 'bali_kintamani_semi_washed_melitta_hot',

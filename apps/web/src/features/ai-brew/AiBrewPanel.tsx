@@ -76,7 +76,9 @@ import {
 } from './localization.ts';
 import {
   AI_BREW_GENERATION_STAGES,
+  buildAiBrewPlan,
   buildAiBrewPlanProgressively,
+  buildBrewPlanRecipeSignature,
   buildLocalizedPlanRecipeDescription,
   buildLocalizedPlanRecipeName,
   buildLocalizedPlanRecipeSteps,
@@ -1223,15 +1225,15 @@ function buildPremiumResultSummary(plan: BrewPlan, language: string) {
   const time = formatTime(plan.totalTimeSeconds);
 
   if (plan.brewMode === 'iced') {
-    const split = id
-      ? `${formatRoundedMl(plan.hotWaterMl)} air panas + ${formatRoundedGrams(plan.iceMl)} es`
-      : `${formatRoundedMl(plan.hotWaterMl)} hot water + ${formatRoundedGrams(plan.iceMl)} ice`;
-    const ratio = id
-      ? `rasio final 1:${formatBrewRatio(plan.finalBeverageRatio)}`
-      : `final ratio 1:${formatBrewRatio(plan.finalBeverageRatio)}`;
+    const finalBeverage = formatRoundedMl(plan.totalWaterMl);
+    const hotWater = formatRoundedMl(plan.hotWaterMl);
+    const ice = formatRoundedGrams(plan.iceMl);
+    const finalRatio = `1:${formatBrewRatio(plan.finalBeverageRatio)}`;
+    const hotRatio = `1:${formatBrewRatio(plan.hotExtractionRatio)}`;
+    const estimatedCup = formatRoundedMl(plan.estimatedCupOutputMl);
     return id
-      ? `${dose} -> ${split}; ${ratio}; hasil sekitar ${formatRoundedMl(plan.estimatedCupOutputMl)}. ${temperature}, selesai ${time}.`
-      : `${dose} -> ${split}; ${ratio}; about ${formatRoundedMl(plan.estimatedCupOutputMl)} in cup. ${temperature}, finish ${time}.`;
+      ? `Dose ${dose}; final beverage/total input ${finalBeverage}; air panas ${hotWater}; es di server ${ice}; rasio final ${finalRatio}; rasio ekstraksi panas ${hotRatio}; estimasi hasil cangkir ${estimatedCup}. ${temperature}, selesai ${time}.`
+      : `Dose ${dose}; final beverage/total input ${finalBeverage}; hot water ${hotWater}; ice in server ${ice}; final ratio ${finalRatio}; hot extraction ratio ${hotRatio}; estimated cup output ${estimatedCup}. ${temperature}, finish ${time}.`;
   }
 
   return id
@@ -2050,7 +2052,7 @@ function formatAiBrewStepBadge(step: BrewPlan['steps'][number], language: string
   return `+${formatRoundedMl(step.pourVolumeMl)}`;
 }
 
-function buildAiBrewStepActionText(step: BrewPlan['steps'][number], language: string) {
+function buildAiBrewStepActionText(step: BrewPlan['steps'][number], language: string, plan?: BrewPlan) {
   const kind = getAiBrewStepKind(step);
   if (kind === 'release') {
     return isIndonesianAiBrewLanguage(language)
@@ -2082,12 +2084,17 @@ function buildAiBrewStepActionText(step: BrewPlan['steps'][number], language: st
       ? `Pisahkan dari ampas dan sajikan. Target tetap ${formatRoundedMl(step.targetVolumeMl)}.`
       : `Separate from grounds and serve. Target stays ${formatRoundedMl(step.targetVolumeMl)}.`;
   }
+  if (plan?.brewMode === 'iced' && step.pourVolumeMl > 0) {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Tuang ${formatRoundedMl(step.pourVolumeMl)} hingga target ${formatRoundedMl(step.targetVolumeMl)} air panas.`
+      : `Pour ${formatRoundedMl(step.pourVolumeMl)} to reach ${formatRoundedMl(step.targetVolumeMl)} hot water.`;
+  }
   return isIndonesianAiBrewLanguage(language)
     ? `Tuang ${formatRoundedMl(step.pourVolumeMl)} hingga target ${formatRoundedMl(step.targetVolumeMl)}.`
     : `Pour ${formatRoundedMl(step.pourVolumeMl)} to reach ${formatRoundedMl(step.targetVolumeMl)}.`;
 }
 
-function buildAiBrewFlowStepSummary(step: BrewPlan['steps'][number], language: string) {
+function buildAiBrewFlowStepSummary(step: BrewPlan['steps'][number], language: string, plan?: BrewPlan) {
   const id = isIndonesianAiBrewLanguage(language);
   const kind = getAiBrewStepKind(step);
   if (kind === 'release') {
@@ -2120,6 +2127,11 @@ function buildAiBrewFlowStepSummary(step: BrewPlan['steps'][number], language: s
       ? `${formatGuideTime(step.startSeconds)} | sajikan | target ${formatRoundedMl(step.targetVolumeMl)}`
       : `${formatGuideTime(step.startSeconds)} | serve | target ${formatRoundedMl(step.targetVolumeMl)}`;
   }
+  if (plan?.brewMode === 'iced' && step.pourVolumeMl > 0) {
+    return id
+      ? `${formatGuideTime(step.startSeconds)} | tuang +${formatRoundedMl(step.pourVolumeMl)} | target ${formatRoundedMl(step.targetVolumeMl)} air panas`
+      : `${formatGuideTime(step.startSeconds)} | pour +${formatRoundedMl(step.pourVolumeMl)} | target ${formatRoundedMl(step.targetVolumeMl)} hot water`;
+  }
   return id
     ? `${formatGuideTime(step.startSeconds)} | tuang +${formatRoundedMl(step.pourVolumeMl)} | target ${formatRoundedMl(step.targetVolumeMl)}`
     : `${formatGuideTime(step.startSeconds)} | pour +${formatRoundedMl(step.pourVolumeMl)} | target ${formatRoundedMl(step.targetVolumeMl)}`;
@@ -2142,7 +2154,7 @@ function buildAiBrewStepPrimaryCue(step: BrewPlan['steps'][number], language: st
     : `Pour +${formatRoundedMl(step.pourVolumeMl)} now`;
 }
 
-function buildAiBrewStepTargetCue(step: BrewPlan['steps'][number], language: string) {
+function buildAiBrewStepTargetCue(step: BrewPlan['steps'][number], language: string, plan?: BrewPlan) {
   const kind = getAiBrewStepKind(step);
   if (kind === 'release') {
     return isIndonesianAiBrewLanguage(language)
@@ -2163,6 +2175,11 @@ function buildAiBrewStepTargetCue(step: BrewPlan['steps'][number], language: str
     return isIndonesianAiBrewLanguage(language)
       ? `Target tetap ${formatRoundedMl(step.targetVolumeMl)}`
       : `Target stays ${formatRoundedMl(step.targetVolumeMl)}`;
+  }
+  if (plan?.brewMode === 'iced' && step.pourVolumeMl > 0) {
+    return isIndonesianAiBrewLanguage(language)
+      ? `Berhenti di target ${formatRoundedMl(step.targetVolumeMl)} air panas`
+      : `Stop at ${formatRoundedMl(step.targetVolumeMl)} hot water`;
   }
   return isIndonesianAiBrewLanguage(language)
     ? `Berhenti di target ${formatRoundedMl(step.targetVolumeMl)}`
@@ -2389,7 +2406,7 @@ function buildAiBrewStepDetailPoints(
   return points.slice(0, 5);
 }
 
-function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: string) {
+function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: string, plan?: BrewPlan) {
   const id = isIndonesianAiBrewLanguage(language);
   const kind = getAiBrewStepKind(step);
   return [
@@ -2402,7 +2419,9 @@ function buildAiBrewStepMetrics(step: BrewPlan['steps'][number], language: strin
       value: kind === 'pour' || kind === 'extract' ? formatRoundedMl(step.pourVolumeMl) : formatAiBrewStepBadge(step, language),
     },
     {
-      label: id ? 'Target' : 'Target',
+      label: plan?.brewMode === 'iced' && step.pourVolumeMl > 0
+        ? (id ? 'Target panas' : 'Hot target')
+        : (id ? 'Target' : 'Target'),
       value: formatRoundedMl(step.targetVolumeMl),
     },
   ];
@@ -2415,10 +2434,10 @@ function renderAiBrewSequenceStepCard(
   language: string,
 ) {
   const localizedStepLabel = localizeAiBrewStepLabel(step.label, language);
-  const stepActionText = buildAiBrewStepActionText(step, language);
+  const stepActionText = buildAiBrewStepActionText(step, language, plan);
   const stepQuickNote = buildAiBrewStepQuickNote(step, language);
   const stepDetailPoints = buildAiBrewStepDetailPoints(plan, step, index, language);
-  const stepMetrics = buildAiBrewStepMetrics(step, language);
+  const stepMetrics = buildAiBrewStepMetrics(step, language, plan);
   const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
   const normalizedActionText = normalizeAiBrewInstructionText(stepActionText).toLowerCase();
   const conciseCue = methodFocusCue || stepQuickNote;
@@ -2662,6 +2681,7 @@ function FocusLockedDialog({
   restoreFocusTarget,
   className,
   style,
+  disableMotionShift = false,
   children,
 }: {
   open: boolean;
@@ -2671,6 +2691,7 @@ function FocusLockedDialog({
   restoreFocusTarget?: HTMLElement | null;
   className: string;
   style?: CSSProperties;
+  disableMotionShift?: boolean;
   children: React.ReactNode;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -2755,9 +2776,9 @@ function FocusLockedDialog({
             onClick={onClose}
           />
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: disableMotionShift ? 0 : 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 18 }}
+            exit={{ opacity: 0, y: disableMotionShift ? 0 : 18 }}
             transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
             ref={dialogRef}
             role="dialog"
@@ -3043,12 +3064,128 @@ function ResultDisclosureSection({
   );
 }
 
+type TargetProfileCompareRow = {
+  id: string;
+  label: string;
+  effect: string;
+  finalComputed: string;
+  why: string;
+  active: boolean;
+  sameRecipe: boolean;
+};
+
+function buildTargetProfileEffectText(targetProfileId: string, language: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  switch (targetProfileId) {
+    case 'more_acidity':
+      return id
+        ? 'Target effect: rasio sedikit lebih panjang, suhu lebih rendah, waktu lebih cepat, grind sedikit lebih kasar, bloom singkat, agitasi minimal.'
+        : 'Target effect: slightly longer ratio, lower temperature, faster time, slightly coarser grind, shorter bloom, minimal agitation.';
+    case 'floral_transparent':
+      return id
+        ? 'Target effect: suhu lebih rendah, tuangan rendah, agitasi minimal, drawdown lebih cepat untuk menjaga floral dan clarity.'
+        : 'Target effect: lower heat, low pour height, minimal agitation, faster drawdown to protect florals and clarity.';
+    case 'more_sweetness':
+      return id
+        ? 'Target effect: middle pour lebih penuh, bloom 45 detik, agitasi rendah, finish ringan agar sweetness tidak berat.'
+        : 'Target effect: fuller middle pour, 45 sec bloom, low agitation, lighter finish so sweetness stays clean.';
+    case 'fruit_forward':
+      return id
+        ? 'Target effect: aroma dijaga, middle pour penuh, suhu konservatif, tidak over-agitate proses aromatik.'
+        : 'Target effect: preserve aroma, fuller middle pour, conservative temperature, avoid over-agitating aromatic processes.';
+    case 'more_body':
+      return id
+        ? 'Target effect: bloom lebih penuh, kontak lebih lama, grind cenderung lebih halus, drawdown lebih lambat.'
+        : 'Target effect: fuller bloom, longer contact, generally finer grind, slower drawdown.';
+    case 'dense_comforting':
+      return id
+        ? 'Target effect: body lebih padat, bloom 2.3x, kontak terkontrol, lindungi pahit pada finish.'
+        : 'Target effect: denser body, 2.3x bloom, controlled contact, protect bitterness in the finish.';
+    case 'soft_round':
+      return id
+        ? 'Target effect: bloom 2.1-2.2x, finish lembut, sweetness/body naik tanpa membuat cup keruh.'
+        : 'Target effect: 2.1-2.2x bloom, gentle finish, more sweetness/body without making the cup muddy.';
+    case 'balance_clean':
+    default:
+      return id
+        ? 'Target effect: baseline bersih, bloom 2x, pulse seimbang, agitasi rendah, drawdown normal.'
+        : 'Target effect: clean baseline, 2x bloom, balanced pulses, low agitation, normal drawdown.';
+  }
+}
+
+function formatTargetProfileFinalComputed(plan: BrewPlan) {
+  const ratio = plan.iceMl > 0
+    ? `1:${formatBrewRatio(plan.finalBeverageRatio)} / hot 1:${formatBrewRatio(plan.hotExtractionRatio)}`
+    : `1:${formatBrewRatio(plan.finalBeverageRatio)}`;
+  return `${ratio} / ${formatRoundedTemperature(plan.waterTempC)} / ${formatGuideTime(plan.totalTimeSeconds)}`;
+}
+
+function buildTargetProfileCompareReason(plan: BrewPlan, balancePlan: BrewPlan | undefined, language: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  const targetId = plan.targetProfileId;
+  const base = id
+    ? 'Final computed menggabungkan target effect dengan modifier bean, air, grinder, dan device.'
+    : 'Final computed combines the target effect with bean, water, grinder, and device modifiers.';
+  if (!balancePlan || targetId === 'balance_clean') return base;
+  if (
+    (targetId === 'more_acidity' || targetId === 'floral_transparent')
+    && plan.waterTempC > balancePlan.waterTempC
+  ) {
+    return id
+      ? 'Computed final lebih panas karena modifier bean/device/air meminta tekanan ekstraksi lebih besar.'
+      : 'Computed final is hotter because bean/device/water modifiers required more extraction pressure.';
+  }
+  if (
+    (targetId === 'more_body' || targetId === 'dense_comforting')
+    && plan.totalTimeSeconds < balancePlan.totalTimeSeconds
+  ) {
+    return id
+      ? 'Peringatan: target body biasanya tidak boleh lebih cepat dari balance; cek modifier device atau override manual.'
+      : 'Warning: body targets should not be faster than balance; check device modifiers or manual overrides.';
+  }
+  if (
+    (targetId === 'more_sweetness' || targetId === 'fruit_forward')
+    && plan.grindBias === 'coarser'
+  ) {
+    return id
+      ? 'Computed final memakai grind lebih kasar karena risiko proses/flow lebih tinggi; sweetness dijaga lewat middle pour dan kontrol agitasi.'
+      : 'Computed final uses a coarser grind because process/flow risk is higher; sweetness is protected through middle pour and agitation control.';
+  }
+  return base;
+}
+
+function buildTargetProfileCompareRows(targetComparePlans: BrewPlan[] | undefined, currentPlan: BrewPlan, language: string) {
+  const plans = targetComparePlans && targetComparePlans.length > 0 ? targetComparePlans : [currentPlan];
+  const balancePlan = plans.find((item) => item.targetProfileId === 'balance_clean');
+  const groups = new Map<string, BrewPlan[]>();
+  for (const item of plans) {
+    const signature = buildBrewPlanRecipeSignature(item);
+    groups.set(signature, [...(groups.get(signature) || []), item]);
+  }
+
+  return Array.from(groups.values()).map((group): TargetProfileCompareRow => {
+    const representative = group.find((item) => item.targetProfileId === currentPlan.targetProfileId) || group[0];
+    const labels = group.map((item) => localizeAiBrewTargetProfile(item.targetProfileId, item.targetProfileLabel, language));
+    const uniqueLabels = Array.from(new Set(labels));
+    return {
+      id: group.map((item) => item.targetProfileId).join('__'),
+      label: uniqueLabels.join(' / '),
+      effect: buildTargetProfileEffectText(representative.targetProfileId, language),
+      finalComputed: formatTargetProfileFinalComputed(representative),
+      why: buildTargetProfileCompareReason(representative, balancePlan, language),
+      active: group.some((item) => item.targetProfileId === currentPlan.targetProfileId),
+      sameRecipe: group.length > 1,
+    };
+  });
+}
+
 function PlanResultDialog({
   open,
   language,
   copy,
   resultMode,
   plan,
+  targetComparePlans,
   currentPreset,
   aiCoachDisabled,
   aiCoachReason,
@@ -3079,6 +3216,7 @@ function PlanResultDialog({
   copy: CopySet;
   resultMode: FormMode;
   plan: BrewPlan | null;
+  targetComparePlans?: BrewPlan[];
   currentPreset?: BrewPreset;
   aiCoachDisabled: boolean;
   aiCoachReason: string | null;
@@ -3284,80 +3422,7 @@ function PlanResultDialog({
         : `Flow follows ${plan.dripper.name}: bloom, pulses, and volume targets are shaped to finish around ${formatGuideTime(plan.totalTimeSeconds)}.`,
     },
   ];
-  const targetProfileCompareRows = [
-    {
-      id: 'balance_clean',
-      label: copy.balance,
-      ratio: plan.finalBeverageRatio,
-      temp: plan.waterTempC,
-      time: plan.totalTimeSeconds,
-      grind: id ? 'Baseline' : 'Baseline',
-      flow: id ? 'Pulse stabil, agitasi sedang' : 'Steady pulses, moderate agitation',
-    },
-    {
-      id: 'more_acidity',
-      label: copy.acidity,
-      ratio: plan.finalBeverageRatio + 0.4,
-      temp: plan.waterTempC + 1,
-      time: Math.max(75, plan.totalTimeSeconds - 5),
-      grind: id ? 'Sedikit lebih kasar' : 'Slightly coarser',
-      flow: id ? 'Flow lebih ringan, minim agitasi' : 'Lighter flow, lower agitation',
-    },
-    {
-      id: 'more_sweetness',
-      label: copy.sweetness,
-      ratio: plan.finalBeverageRatio + 0.2,
-      temp: plan.waterTempC,
-      time: plan.totalTimeSeconds + 10,
-      grind: id ? 'Sedikit lebih halus' : 'Slightly finer',
-      flow: id ? 'Bloom rapi, pulse halus' : 'Clean bloom, gentle pulses',
-    },
-    {
-      id: 'more_body',
-      label: copy.body,
-      ratio: Math.max(8, plan.finalBeverageRatio - 0.5),
-      temp: plan.waterTempC + 1,
-      time: plan.totalTimeSeconds + 15,
-      grind: id ? 'Lebih halus terkontrol' : 'Controlled finer grind',
-      flow: id ? 'Kontak lebih penuh, tuang tenang' : 'Fuller contact, calmer pour',
-    },
-    {
-      id: 'floral_transparent',
-      label: copy.floralTransparent,
-      ratio: plan.finalBeverageRatio + 0.3,
-      temp: Math.max(78, plan.waterTempC - 1),
-      time: Math.max(75, plan.totalTimeSeconds - 8),
-      grind: id ? 'Lebih kasar ringan' : 'Slightly coarser',
-      flow: id ? 'Tuang rendah, agitasi minim' : 'Low pour, minimal agitation',
-    },
-    {
-      id: 'fruit_forward',
-      label: copy.fruitForward,
-      ratio: plan.finalBeverageRatio + 0.2,
-      temp: Math.max(78, plan.waterTempC - 1),
-      time: Math.max(75, plan.totalTimeSeconds - 6),
-      grind: id ? 'Sedikit lebih kasar' : 'Slightly coarser',
-      flow: id ? 'Aroma dijaga, jangan over-agitate' : 'Aroma protected, avoid over-agitation',
-    },
-    {
-      id: 'soft_round',
-      label: copy.softRound,
-      ratio: Math.max(8, plan.finalBeverageRatio - 0.1),
-      temp: plan.waterTempC,
-      time: plan.totalTimeSeconds + 5,
-      grind: id ? 'Sama atau sedikit halus' : 'Same or slightly finer',
-      flow: id ? 'Pulse halus, body tetap bersih' : 'Gentle pulses, clean body',
-    },
-    {
-      id: 'dense_comforting',
-      label: copy.denseComforting,
-      ratio: Math.max(8, plan.finalBeverageRatio - 0.4),
-      temp: plan.waterTempC,
-      time: plan.totalTimeSeconds + 12,
-      grind: id ? 'Lebih halus aman' : 'Safely finer',
-      flow: id ? 'Kontak penuh, cegah pahit' : 'Full contact, protect bitterness',
-    },
-  ];
+  const targetProfileCompareRows = buildTargetProfileCompareRows(targetComparePlans, plan, language);
   const precisionToleranceItems = [
     {
       label: id ? 'Suhu' : 'Temperature',
@@ -3753,12 +3818,11 @@ function PlanResultDialog({
                   </div>
                   <div className="grid gap-2">
                     {targetProfileCompareRows.map((item) => {
-                      const active = item.id === plan.targetProfileId;
                       return (
                         <div
                           key={item.id}
                           className={`rounded-xl border px-3 py-2.5 ${
-                            active
+                            item.active
                               ? 'border-emerald-500/25 bg-emerald-500/10'
                               : 'panel-divider-subtle bg-surface-alpha'
                           }`}
@@ -3766,12 +3830,23 @@ function PlanResultDialog({
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <p className="text-sm font-semibold text-primary">{item.label}</p>
                             <p className="text-[11px] font-semibold text-secondary">
-                              1:{formatBrewRatio(item.ratio)} / {formatRoundedTemperature(item.temp)} / {formatGuideTime(item.time)}
+                              {item.finalComputed}
                             </p>
                           </div>
                           <p className="mt-1 text-xs leading-5 text-secondary">
-                            {item.grind} - {item.flow}
+                            {item.effect}
                           </p>
+                          <p className="mt-1 text-xs leading-5 text-secondary">
+                            {id ? 'Final computed' : 'Final computed'}: {item.finalComputed}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-tertiary">
+                            {id ? 'Why' : 'Why'}: {item.why}
+                          </p>
+                          {item.sameRecipe && (
+                            <span className="mt-2 inline-flex rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-amber-700 dark:text-amber-300">
+                              {id ? 'same deterministic recipe' : 'same deterministic recipe'}
+                            </span>
+                          )}
                         </div>
                       );
                     })}
@@ -3880,7 +3955,7 @@ function PlanResultDialog({
                     <div className="mt-3 space-y-2 text-sm text-secondary">
                       {plan.steps.map((step, index) => (
                         <p key={step.id}>
-                          {index + 1}. {formatGuideTime(step.startSeconds)} - {localizeAiBrewStepLabel(step.label, language)} - {buildAiBrewStepActionText(step, language)}
+                          {index + 1}. {formatGuideTime(step.startSeconds)} - {localizeAiBrewStepLabel(step.label, language)} - {buildAiBrewStepActionText(step, language, plan)}
                         </p>
                       ))}
                     </div>
@@ -3946,10 +4021,10 @@ function PlanResultDialog({
                       {/*
                       {plan.steps.map((step, index) => {
                         const localizedStepLabel = localizeAiBrewStepLabel(step.label, language);
-                        const stepActionText = buildAiBrewStepActionText(step, language);
+                        const stepActionText = buildAiBrewStepActionText(step, language, plan);
                         const stepQuickNote = buildAiBrewStepQuickNote(step, language);
                         const stepDetailPoints = buildAiBrewStepDetailPoints(step, language);
-                        const stepMetrics = buildAiBrewStepMetrics(step, language);
+                        const stepMetrics = buildAiBrewStepMetrics(step, language, plan);
 
                         return (
                         <motion.div
@@ -4214,7 +4289,7 @@ function PlanResultDialog({
                       </p>
                       <p className="mt-1 text-base font-semibold text-blue-700 dark:text-blue-300">
                         {flowCurrentStep
-                          ? buildAiBrewStepTargetCue(flowCurrentStep, language)
+                          ? buildAiBrewStepTargetCue(flowCurrentStep, language, plan)
                           : displaySummary}
                       </p>
                       {isQuickResult ? (
@@ -4376,7 +4451,7 @@ function PlanResultDialog({
                     const activeCue = methodFocusCue || quickNote;
                     const showStepNote = state === 'current' && Boolean(activeCue);
                     const stepDetailPoints = buildAiBrewStepDetailPoints(plan, step, index, language);
-                    const stepMetrics = buildAiBrewStepMetrics(step, language);
+                    const stepMetrics = buildAiBrewStepMetrics(step, language, plan);
 
                     return (
                       <div
@@ -4404,7 +4479,7 @@ function PlanResultDialog({
                               </span>
                               <p className="text-sm font-semibold text-primary">{localizeAiBrewStepLabel(step.label, language)}</p>
                             </div>
-                            <p className="text-sm text-secondary">{buildAiBrewFlowStepSummary(step, language)}</p>
+                            <p className="text-sm text-secondary">{buildAiBrewFlowStepSummary(step, language, plan)}</p>
                           </div>
                           <div className="space-y-1 text-right">
                             <span className="inline-flex rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-primary">
@@ -5445,6 +5520,17 @@ export function AiBrewPanel({
     if (!catalog) return null;
     return catalog.targetProfiles.find((item) => item.id === formState.targetProfileId) || catalog.targetProfiles[0] || null;
   }, [catalog, formState.targetProfileId]);
+
+  const targetComparePlans = useMemo(() => {
+    if (!catalog || !plan) return [] as BrewPlan[];
+    return catalog.targetProfiles.flatMap((profile) => {
+      try {
+        return [buildAiBrewPlan({ ...plan.formState, targetProfileId: profile.id }, catalog)];
+      } catch {
+        return [];
+      }
+    });
+  }, [catalog, plan]);
 
   const selectedWaterBrand = useMemo(() => {
     if (!catalog || !formState.waterBrandId) return null;
@@ -6681,6 +6767,7 @@ export function AiBrewPanel({
         onClose={closeBuilder}
         ariaLabel={dialogTitle}
         className="fixed inset-0 z-[111] h-[calc(var(--fullscreen-modal-height)_+_1px)] max-h-[calc(var(--fullscreen-modal-height)_+_1px)] overflow-hidden bg-[var(--bg-base)]/98 lg:inset-6 lg:mx-auto lg:h-auto lg:max-h-[calc(var(--fullscreen-modal-height)_-_3rem)] lg:max-w-5xl lg:rounded-[2rem] lg:border lg:border-glass lg:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
+        disableMotionShift
       >
         <div className="relative flex h-full flex-col" data-testid={`ai-brew-builder-${mode}`}>
           <div
@@ -7668,6 +7755,7 @@ export function AiBrewPanel({
         copy={copy}
         resultMode={resultMode}
         plan={plan}
+        targetComparePlans={targetComparePlans}
         currentPreset={currentPreset}
         aiCoachDisabled={aiCoachDisabled}
         aiCoachReason={aiCoachReason}

@@ -1,6 +1,5 @@
-import { useDeferredValue, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { lazy, Suspense, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import Markdown from 'react-markdown';
 import {
   ArrowRight,
   AlertTriangle,
@@ -35,19 +34,9 @@ import { useNavbar } from '../../context/NavbarContext';
 import { useAiAccessGate } from '../../components/billing/AiAccessGate';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useRuntimeDisplayMode } from '../../hooks/useRuntimeDisplayMode';
-import { balancedResponseDetailed, raceChatResponse, deepThinkingResponseDetailed } from '../../services/gemini';
 import { reportClientError } from '../../services/errorReporting';
 import { createRecipeCollectionItem, saveCollectionItem, saveRecipe } from '../../services/storageService';
 import type { Recipe } from '../../types';
-import {
-  buildAdjustPrompt,
-  buildAiAssistPrompt,
-  buildExplainPrompt,
-  buildOptimizationPrompt,
-  buildSequenceGuidePrompt,
-  buildSequenceRepairPrompt,
-  buildTroubleshootPrompt,
-} from './prompts';
 import { buildDeterministicAiCoachMarkdown } from './coachNotes';
 import { sanitizeBrewNarrative } from './antiHallucination';
 import { sanitizeAiCoachMarkdown } from './coachGuard';
@@ -57,9 +46,9 @@ import {
   extractSequenceOverlayFromMarkdown,
 } from './aiComposer';
 import { syncAiBrewLibraryToCloud } from './cloudSync';
-import { parseAiBrewOptimizationPatch } from './aiOptimizer';
 import {
   buildAiBrewTasteLoopMarkdown,
+  buildTasteFeedbackCorrection,
   resolveAiBrewActionPriorities,
   resolveAiBrewConfidenceBadges,
 } from './experience';
@@ -156,6 +145,7 @@ const AI_BREW_ASSIST_PROMPT_VERSION = 'assist-v2026-05-06';
 const LARGE_CATALOG_PICKER_KINDS = new Set<NonNullable<PickerKind>>(['process', 'variety']);
 const LARGE_CATALOG_INITIAL_LIMIT = 140;
 const LARGE_CATALOG_SEARCH_LIMIT = 96;
+const Markdown = lazy(async () => ({ default: (await import('react-markdown')).default }));
 const COPY = {
   en: {
     title: 'AI Brew',
@@ -443,6 +433,9 @@ const COPY = {
     feedbackSour: 'Too sour',
     feedbackBitter: 'Too bitter',
     feedbackThin: 'Too thin',
+    feedbackFlat: 'Flat / muted',
+    feedbackMuddy: 'Muddy',
+    feedbackAstringent: 'Astringent',
     feedbackNote: 'Short note',
     feedbackNotePlaceholder: 'e.g. drawdown was fast, cup felt sharp, grind one click finer next time',
     feedbackSaveNote: 'Save note',
@@ -450,6 +443,20 @@ const COPY = {
     feedbackSaveFailed: 'Unable to save taste feedback right now.',
     feedbackCoachTitle: 'Next Brew Adjustment',
     feedbackCoachHint: 'Smallest safe correction for the next brew.',
+    guideDensitySimple: 'Simple',
+    guideDensityPro: 'Pro',
+    expectedCupTitle: 'Expected Cup',
+    cupAcidity: 'Acidity',
+    cupSweetness: 'Sweetness',
+    cupBody: 'Body',
+    cupClarity: 'Clarity',
+    cupBitterRisk: 'Bitter risk',
+    cupAroma: 'Aroma',
+    confidenceRecipe: 'Recipe Confidence',
+    confidenceWater: 'Water Confidence',
+    confidenceGrinder: 'Grinder Confidence',
+    confidenceWorkflow: 'Workflow Confidence',
+    confidenceCatalog: 'Catalog Confidence',
     unavailable: 'AI Brew catalog is unavailable right now.',
     loadingCatalog: 'Loading catalog...',
     restoredPlan: 'Restored your last AI Brew plan from this device.',
@@ -872,6 +879,9 @@ const COPY = {
     feedbackSour: 'Terlalu asam',
     feedbackBitter: 'Terlalu pahit',
     feedbackThin: 'Terlalu tipis',
+    feedbackFlat: 'Flat / muted',
+    feedbackMuddy: 'Keruh / berat',
+    feedbackAstringent: 'Sepat',
     feedbackNote: 'Catatan singkat',
     feedbackNotePlaceholder: 'mis. drawdown cepat, rasa tajam, grind satu klik lebih halus',
     feedbackSaveNote: 'Simpan catatan',
@@ -879,6 +889,20 @@ const COPY = {
     feedbackSaveFailed: 'Catatan rasa belum bisa disimpan sekarang.',
     feedbackCoachTitle: 'Koreksi Seduhan Berikutnya',
     feedbackCoachHint: 'Koreksi aman paling kecil untuk seduhan berikutnya.',
+    guideDensitySimple: 'Ringkas',
+    guideDensityPro: 'Pro',
+    expectedCupTitle: 'Expected Cup',
+    cupAcidity: 'Acidity',
+    cupSweetness: 'Manis',
+    cupBody: 'Body',
+    cupClarity: 'Clarity',
+    cupBitterRisk: 'Risiko pahit',
+    cupAroma: 'Aroma',
+    confidenceRecipe: 'Recipe Confidence',
+    confidenceWater: 'Water Confidence',
+    confidenceGrinder: 'Grinder Confidence',
+    confidenceWorkflow: 'Workflow Confidence',
+    confidenceCatalog: 'Catalog Confidence',
     unavailable: 'Katalog AI Brew belum bisa dimuat sekarang.',
     loadingCatalog: 'Memuat katalog...',
     restoredPlan: 'Plan terakhir dipulihkan.',
@@ -1042,6 +1066,7 @@ type AiCoachMode = 'explain' | 'troubleshoot' | 'rewrite' | 'deep_analysis' | 'a
 type FormMode = 'quick' | 'pro';
 type HistoryStripTab = 'latest' | 'favorites' | 'recent';
 type ResultTab = 'plan' | 'flow' | 'coach';
+type AiBrewGuideDensity = 'basic' | 'pro';
 type CopySet = Record<string, string>;
 
 const AI_BREW_POUR_CONTROL_FAMILIES = new Set<AiBrewMethodFamily>([
@@ -1550,6 +1575,7 @@ async function normalizeMarkdownToLanguage(
     markdown,
   ].join('\n');
   try {
+    const { raceChatResponse } = await import('../../services/gemini');
     const translated = await raceChatResponse(translationPrompt, requestContext, {
       timeoutMs: options?.timeoutMs,
       fallbackToStructured: false,
@@ -1580,6 +1606,7 @@ async function normalizeSequenceMarkdownToLanguage(
     markdown,
   ].join('\n');
   try {
+    const { raceChatResponse } = await import('../../services/gemini');
     const translated = await raceChatResponse(translationPrompt, requestContext, {
       timeoutMs: options?.timeoutMs,
     });
@@ -1693,6 +1720,8 @@ async function runHybridSequenceUpdate(
     },
   };
 
+  const { buildSequenceGuidePrompt, buildSequenceRepairPrompt } = await import('./prompts');
+  const { balancedResponseDetailed, raceChatResponse } = await import('../../services/gemini');
   const sequencePrompt = buildSequenceGuidePrompt(nextPlan).body;
   let aiText = await raceChatResponse(
     sequencePrompt,
@@ -1795,6 +1824,9 @@ async function runHybridOptimizationUpdate(
     },
   };
 
+  const { buildOptimizationPrompt } = await import('./prompts');
+  const { raceChatResponse } = await import('../../services/gemini');
+  const { parseAiBrewOptimizationPatch } = await import('./aiOptimizer');
   const aiText = await raceChatResponse(
     `${buildOptimizationPrompt(nextPlan, options.language).body}${
       options.repair
@@ -1944,8 +1976,14 @@ function formatBrewFeedbackRating(copy: CopySet, rating: BrewTasteFeedbackRating
     case 'bitter':
       return copy.feedbackBitter;
     case 'thin':
-    default:
       return copy.feedbackThin;
+    case 'flat':
+      return copy.feedbackFlat;
+    case 'muddy':
+      return copy.feedbackMuddy;
+    case 'astringent':
+    default:
+      return copy.feedbackAstringent;
   }
 }
 
@@ -2750,6 +2788,16 @@ function buildAiBrewStepMetrics(step: AiBrewDisplayStep, language: string, plan?
   return metrics;
 }
 
+function filterAiBrewStepMetricsForDensity(
+  metrics: Array<{ label: string; value: string }>,
+  density: AiBrewGuideDensity,
+) {
+  if (density === 'pro') return metrics;
+  const keep = new Set(['Start', 'Mulai', 'Target', 'Pour', 'Tuang', 'Yield', 'Action', 'Aksi', 'Charge', 'Steep', 'Press', 'Stop', 'Tekan']);
+  const filtered = metrics.filter((item) => keep.has(item.label));
+  return filtered.length > 0 ? filtered.slice(0, 4) : metrics.slice(0, 2);
+}
+
 function renderAiBrewStepMetricChips(
   metrics: Array<{ label: string; value: string }>,
   keyPrefix: string,
@@ -2783,12 +2831,13 @@ function renderAiBrewSequenceStepCard(
   step: AiBrewDisplayStep,
   index: number,
   language: string,
+  density: AiBrewGuideDensity = 'pro',
 ) {
   const localizedStepLabel = localizeAiBrewStepLabel(step.label, language);
   const stepActionText = buildAiBrewStepActionText(step, language, plan);
   const stepQuickNote = buildAiBrewStepQuickNote(step, language);
   const stepDetailPoints = buildAiBrewStepDetailPoints(plan, step, index, language);
-  const stepMetrics = buildAiBrewStepMetrics(step, language, plan);
+  const stepMetrics = filterAiBrewStepMetricsForDensity(buildAiBrewStepMetrics(step, language, plan), density);
   const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
   const normalizedActionText = normalizeAiBrewInstructionText(stepActionText).toLowerCase();
   const conciseCue = methodFocusCue || stepQuickNote;
@@ -2829,7 +2878,7 @@ function renderAiBrewSequenceStepCard(
             </p>
           )}
 
-          {stepDetailPoints.length > 0 && (
+          {density === 'pro' && stepDetailPoints.length > 0 && (
             <details
               className="group rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/72 px-3 py-2"
               data-testid={`ai-brew-step-detail-${index + 1}`}
@@ -3589,10 +3638,12 @@ function PlanResultDialog({
   const [flowRunning, setFlowRunning] = useState(false);
   const [flowStartedAtMs, setFlowStartedAtMs] = useState<number | null>(null);
   const isQuickResult = resultMode === 'quick';
+  const [guideDensity, setGuideDensity] = useState<AiBrewGuideDensity>(isQuickResult ? 'basic' : 'pro');
 
   useEffect(() => {
     if (!open) return;
     setActiveTab(isQuickResult ? 'flow' : 'plan');
+    setGuideDensity(isQuickResult ? 'basic' : 'pro');
     setFlowElapsedSeconds(0);
     setFlowAccumulatedSeconds(0);
     setFlowRunning(false);
@@ -3840,7 +3891,54 @@ function PlanResultDialog({
     { rating: 'sour', label: copy.feedbackSour },
     { rating: 'bitter', label: copy.feedbackBitter },
     { rating: 'thin', label: copy.feedbackThin },
+    { rating: 'flat', label: copy.feedbackFlat },
+    { rating: 'muddy', label: copy.feedbackMuddy },
+    { rating: 'astringent', label: copy.feedbackAstringent },
   ];
+  const activeFeedbackCorrection = feedback ? buildTasteFeedbackCorrection(plan, feedback.rating, language) : null;
+  const expectedCup = plan.expectedCupProfile;
+  const expectedCupItems = expectedCup ? [
+    { label: copy.cupAcidity, value: expectedCup.acidity },
+    { label: copy.cupSweetness, value: expectedCup.sweetness },
+    { label: copy.cupBody, value: expectedCup.body },
+    { label: copy.cupClarity, value: expectedCup.clarity },
+    { label: copy.cupBitterRisk, value: expectedCup.bitterRisk },
+    ...(typeof expectedCup.aromaIntensity === 'number' ? [{ label: copy.cupAroma, value: expectedCup.aromaIntensity }] : []),
+  ] : [];
+  const readinessItems = plan.readinessScores ? [
+    { label: copy.confidenceRecipe, value: plan.readinessScores.recipe },
+    { label: copy.confidenceWater, value: plan.readinessScores.water },
+    { label: copy.confidenceGrinder, value: plan.readinessScores.grinder },
+    { label: copy.confidenceWorkflow, value: plan.readinessScores.workflow },
+    { label: copy.confidenceCatalog, value: plan.readinessScores.catalog },
+  ] : [];
+  const guideDensityToggle = (
+    <div
+      className="inline-flex rounded-full border panel-divider-subtle bg-[var(--bg-base)] p-1"
+      data-testid="ai-brew-guide-density-toggle"
+      aria-label={id ? 'Mode tampilan panduan' : 'Guide display mode'}
+    >
+      {([
+        ['basic', copy.guideDensitySimple],
+        ['pro', copy.guideDensityPro],
+      ] as const).map(([density, label]) => (
+        <button
+          key={density}
+          type="button"
+          onClick={() => setGuideDensity(density)}
+          className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+            guideDensity === density
+              ? 'bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)]'
+              : 'text-secondary hover:text-primary'
+          }`}
+          data-testid={`ai-brew-guide-density-${density}`}
+          aria-pressed={guideDensity === density}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
 
   function startFlowTimer() {
     if (flowProgressSeconds >= plan.totalTimeSeconds) {
@@ -3991,6 +4089,49 @@ function PlanResultDialog({
                     </span>
                   ))}
                 </div>
+                {(expectedCup || readinessItems.length > 0) && (
+                  <div
+                    className="mt-3 grid gap-2 rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-3 text-xs sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+                    data-testid="ai-brew-expected-cup"
+                  >
+                    {expectedCup && (
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.expectedCupTitle}</p>
+                          <span className="rounded-full bg-surface-alpha px-2 py-0.5 text-[10px] font-semibold text-secondary">
+                            {expectedCup.confidence}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {expectedCupItems.map((item) => (
+                            <span key={item.label} className="rounded-full border panel-divider-subtle bg-surface-alpha px-2 py-1 text-secondary">
+                              <span className="mr-1 text-tertiary">{item.label}</span>
+                              <span className="font-semibold text-primary">{item.value}/5</span>
+                            </span>
+                          ))}
+                        </div>
+                        {(expectedCup.warnings[0] || expectedCup.reasons[0]) && (
+                          <p className="mt-2 text-[12px] leading-5 text-secondary">
+                            {localizeAiBrewDynamicText(expectedCup.warnings[0] || expectedCup.reasons[0], language)}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {readinessItems.length > 0 && (
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.confidence}</p>
+                        <div className="mt-2 grid gap-1.5">
+                          {readinessItems.map((item) => (
+                            <div key={item.label} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                              <span className="truncate text-secondary">{item.label}</span>
+                              <span className="font-semibold text-primary">{item.value}/100</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
                   <button type="button" onClick={onEditInputs} className={resultActionButtonClass}>
                     {copy.editInputs}
@@ -4363,6 +4504,7 @@ function PlanResultDialog({
                         </div>
                       </div>
                       <div className="flex shrink-0 flex-wrap items-center gap-2">
+                        {guideDensityToggle}
                         <button
                           type="button"
                           onClick={onSaveRecipe}
@@ -4380,7 +4522,7 @@ function PlanResultDialog({
                       </div>
                     </div>
                     <div className="space-y-2.5">
-                      {workflowGuideSteps.map((step, index) => renderAiBrewSequenceStepCard(plan, step, index, language))}
+                      {workflowGuideSteps.map((step, index) => renderAiBrewSequenceStepCard(plan, step, index, language, guideDensity))}
                       {/*
                       {plan.steps.map((step, index) => {
                         const localizedStepLabel = localizeAiBrewStepLabel(step.label, language);
@@ -4488,7 +4630,15 @@ function PlanResultDialog({
                         <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
                           {copy.feedbackCoachTitle}
                         </p>
-                        <Markdown>{buildAiBrewTasteLoopMarkdown(plan, feedback, language)}</Markdown>
+                        {activeFeedbackCorrection && (
+                          <div className="mb-2 grid gap-1.5 text-sm leading-5">
+                            <p><strong>{id ? 'Langkah utama' : 'Primary move'}:</strong> {activeFeedbackCorrection.primaryCorrection}</p>
+                            <p><strong>{id ? 'Cadangan' : 'Backup'}:</strong> {activeFeedbackCorrection.backupCorrection}</p>
+                          </div>
+                        )}
+                        <Suspense fallback={<p className="text-sm text-secondary">{copy.loadingCatalog}</p>}>
+                          <Markdown>{buildAiBrewTasteLoopMarkdown(plan, feedback, language)}</Markdown>
+                        </Suspense>
                         <p className="mt-2 text-xs text-secondary">{copy.feedbackCoachHint}</p>
                       </div>
                     )}
@@ -4714,6 +4864,7 @@ function PlanResultDialog({
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">
+                      {guideDensityToggle}
                       <button
                         type="button"
                         onClick={flowRunning ? pauseFlowTimer : startFlowTimer}
@@ -4822,7 +4973,7 @@ function PlanResultDialog({
                     const activeCue = methodFocusCue || quickNote;
                     const showStepNote = state === 'current' && Boolean(activeCue);
                     const stepDetailPoints = buildAiBrewStepDetailPoints(plan, step, index, language);
-                    const stepMetrics = buildAiBrewStepMetrics(step, language, plan);
+                    const stepMetrics = filterAiBrewStepMetricsForDensity(buildAiBrewStepMetrics(step, language, plan), guideDensity);
 
                     return (
                       <div
@@ -4865,7 +5016,7 @@ function PlanResultDialog({
                         {showStepNote && (
                           <p className="mt-2 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">{activeCue}</p>
                         )}
-                        {stepDetailPoints.length > 0 && (
+                        {guideDensity === 'pro' && stepDetailPoints.length > 0 && (
                           <details
                             className="group mt-2 rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/72 px-3 py-2"
                             data-testid={`ai-brew-flow-step-detail-${index + 1}`}
@@ -4967,7 +5118,9 @@ function PlanResultDialog({
                   <div className="mt-4 rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/82 p-4">
                     <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{aiResponse.title}</p>
                     <div className="chat-markdown prose prose-sm mt-3 max-w-none text-primary prose-headings:text-primary prose-strong:text-primary">
-                      <Markdown>{aiResponse.markdown}</Markdown>
+                      <Suspense fallback={<p className="text-sm text-secondary">{copy.aiBusy}</p>}>
+                        <Markdown>{aiResponse.markdown}</Markdown>
+                      </Suspense>
                     </div>
                   </div>
                 )}
@@ -6499,6 +6652,8 @@ export function AiBrewPanel({
     setAiBusy('troubleshoot');
     setAiError(null);
     try {
+      const { buildTroubleshootPrompt } = await import('./prompts');
+      const { deepThinkingResponseDetailed } = await import('../../services/gemini');
       const basePrompt = buildTroubleshootPrompt(plan, language);
       const promptBody = [
         basePrompt.body,
@@ -6609,6 +6764,12 @@ export function AiBrewPanel({
     }
 
     const engineMode = mapCoachModeToEngineMode(mode);
+    const {
+      buildAdjustPrompt,
+      buildAiAssistPrompt,
+      buildExplainPrompt,
+      buildTroubleshootPrompt,
+    } = await import('./prompts');
     const prompt =
       mode === 'explain'
         ? buildExplainPrompt(plan, language)
@@ -6709,6 +6870,7 @@ export function AiBrewPanel({
         },
       };
       const lockedPrompt = withLanguageLock(prompt.body, language);
+      const { deepThinkingResponseDetailed, raceChatResponse } = await import('../../services/gemini');
       const rawMarkdown = mode === 'troubleshoot' || mode === 'deep_analysis'
         ? (await deepThinkingResponseDetailed(lockedPrompt, requestContext, { timeoutMs: AI_BREW_COACH_DEEP_TIMEOUT_MS })).text
         : await raceChatResponse(lockedPrompt, requestContext, {

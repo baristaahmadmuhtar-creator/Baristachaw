@@ -726,6 +726,8 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
       await expect(result.getByTestId('ai-brew-quick-cues')).toContainText(`${plan.hotWaterMl} ml`);
       await expect(result.getByTestId('ai-brew-quick-cues')).toContainText(new RegExp(`${plan.iceMl}\\s*(ml|g)`, 'i'));
       await expect(result.getByTestId('ai-brew-sequence-section')).toContainText(/Final pour|Final Pour|Tuang Akhir|Drawdown/i);
+      await expect(result.getByTestId('ai-brew-guide-density-basic')).toHaveAttribute('aria-pressed', 'true');
+      await result.getByTestId('ai-brew-guide-density-pro').click();
       await assertTechniqueChips(result.getByTestId('ai-brew-step-card-2'));
       await expect(result.getByTestId('ai-brew-step-card-2')).toContainText(firstHotTargetText);
     } else {
@@ -736,6 +738,7 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
       await expect(result).toContainText(`${plan.hotWaterMl} ml`);
       await expect(result).toContainText(new RegExp(`${plan.iceMl}\\s*(ml|g)`, 'i'));
       await result.getByTestId('ai-brew-result-tab-flow').click();
+      await expect(result.getByTestId('ai-brew-guide-density-pro')).toHaveAttribute('aria-pressed', 'true');
       await assertTechniqueChips(result.getByTestId('ai-brew-flow-step-2'));
       await assertTechniqueChips(result.getByTestId('ai-brew-flow-current-step-technique'));
       await expect(result.getByTestId('ai-brew-flow-step-2')).toContainText(firstHotTargetText);

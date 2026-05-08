@@ -587,7 +587,7 @@ function buildEspressoGuide(plan: BrewPlan): WorkflowGuideStep[] {
       actionType: 'monitor_flow',
       startSeconds: Math.max(1, Math.round(plan.totalTimeSeconds * 0.35)),
       targetVolumeMl: plan.totalWaterMl,
-      primaryText: 'Read flow and channeling; do not add water or extend a bad shot.',
+      primaryText: 'Read flow and channeling; stop at yield instead of extending a bad shot.',
       techniqueChips: [chip('flow_cue', 'Flow', 'stable')],
     }),
     operationalStep({

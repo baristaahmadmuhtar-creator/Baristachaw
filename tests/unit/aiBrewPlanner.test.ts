@@ -55,6 +55,7 @@ import { sanitizeBrewNarrative, validateBrewPlanOutput } from '../../apps/web/sr
 import { sanitizeAiCoachMarkdown } from '../../apps/web/src/features/ai-brew/coachGuard.ts';
 import {
   buildAiBrewTasteLoopMarkdown,
+  buildTasteFeedbackCorrection,
   resolveAiBrewActionPriorities,
   resolveAiBrewBeanCharacterInsights,
   resolveAiBrewConfidenceBadges,
@@ -2656,6 +2657,199 @@ test('workflow-aware V60 iced guide keeps hot-water target explicit', () => {
   assert.equal(lastPour?.targetVolumeMl, plan.hotWaterMl);
   assert.match(text, new RegExp(`Target ${plan.hotWaterMl} ml hot water`, 'i'));
   assert.match(text, /Flow|center_to_mid|low|minimal|agitation/i);
+});
+
+test('expected cup profile and readiness scores reflect target, bean, water, and grinder trust', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const base = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  };
+  const washedFloral = buildAiBrewPlan({
+    ...base,
+    coffeeName: 'Ethiopia washed gesha floral',
+    process: 'washed',
+    variety: 'geisha',
+    roastLevel: 'light',
+    targetProfileId: 'floral_transparent',
+  }, productionCatalog);
+  const naturalSweet = buildAiBrewPlan({
+    ...base,
+    coffeeName: 'Ethiopia natural heirloom sweet',
+    process: 'natural',
+    variety: 'ethiopian_heirloom',
+    roastLevel: 'medium_light',
+    targetProfileId: 'more_sweetness',
+  }, productionCatalog);
+  const wetHulledDense = buildAiBrewPlan({
+    ...base,
+    coffeeName: 'Gayo wet hulled dense',
+    process: 'wet_hulled',
+    variety: 'ateng_super',
+    roastLevel: 'medium',
+    targetProfileId: 'dense_comforting',
+  }, productionCatalog);
+
+  assert.ok(washedFloral.expectedCupProfile);
+  assert.ok(naturalSweet.expectedCupProfile);
+  assert.ok(wetHulledDense.expectedCupProfile);
+  assert.ok(washedFloral.expectedCupProfile.clarity >= 4);
+  assert.ok(washedFloral.expectedCupProfile.acidity >= 4);
+  assert.ok(naturalSweet.expectedCupProfile.sweetness >= 4);
+  assert.ok(naturalSweet.expectedCupProfile.body >= 3);
+  assert.ok(wetHulledDense.expectedCupProfile.body >= 4);
+  assert.ok(wetHulledDense.expectedCupProfile.clarity <= washedFloral.expectedCupProfile.clarity);
+  assert.ok(washedFloral.readinessScores?.workflow && washedFloral.readinessScores.workflow >= 90);
+
+  const highBuffer = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    coffeeName: 'High buffer floral',
+    process: 'washed',
+    variety: 'gesha',
+    waterMode: 'brand',
+    waterBrandId: 'evian-sg',
+    targetProfileId: 'floral_transparent',
+  }, catalog);
+  assert.match(highBuffer.expectedCupProfile?.warnings.join(' ') || '', /High-buffer water/i);
+  assert.ok((highBuffer.readinessScores?.water || 0) < 85);
+
+  const zeroMineral = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    coffeeName: 'RO needs minerals',
+    process: 'washed',
+    variety: 'bourbon',
+    waterMode: 'brand',
+    waterBrandId: 'amidis-id',
+    waterCustomized: true,
+    waterTdsPpm: '8',
+    waterHardnessPpm: '2',
+    waterAlkalinityPpm: '1',
+    targetProfileId: 'balance_clean',
+  }, catalog);
+  assert.equal(zeroMineral.expectedCupProfile?.confidence, 'low');
+  assert.ok((zeroMineral.readinessScores?.water || 100) < 60);
+  assert.match(zeroMineral.expectedCupProfile?.warnings.join(' ') || '', /Zero-mineral|RO/i);
+});
+
+test('taste feedback correction is one-knob, method-correct, and keeps protected numbers locked', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const planFor = (dripperName: RegExp, overrides: Partial<AiBrewFormState> = {}) => {
+    const dripper = productionCatalog.drippers.find((item) => dripperName.test(item.name));
+    assert.ok(dripper, `Missing dripper ${dripperName}`);
+    return buildAiBrewPlan({
+      ...createDefaultAiBrewFormState(productionCatalog),
+      coffeeName: 'Feedback QA',
+      dripperId: dripper.id,
+      doseG: dripper.id === 'toddy-cold-brew' ? '60' : '18',
+      grinderId: '1zpresso-k-ultra',
+      waterMode: 'manual' as const,
+      waterTdsPpm: '95',
+      waterHardnessPpm: '55',
+      waterAlkalinityPpm: '40',
+      process: 'washed',
+      variety: 'bourbon',
+      ...overrides,
+    }, productionCatalog);
+  };
+
+  const cases = [
+    { label: 'V60 sour', plan: planFor(/^Hario V60$/i), rating: 'sour' as const, expected: /finer|lebih halus/i, forbidden: /add water|tambah air|change ratio|ubah rasio/i },
+    { label: 'AeroPress bitter', plan: planFor(/^AeroPress$/i), rating: 'bitter' as const, expected: /press|hiss|steep|tekan/i, forbidden: /final pour|drawdown bed/i },
+    { label: 'French Press muddy', plan: planFor(/^French Press$/i), rating: 'muddy' as const, expected: /settle|decant|diamkan/i, forbidden: /pour lower|tuang rendah|final pour/i },
+    { label: 'Moka bitter', plan: planFor(/^Bialetti Moka Pot$/i), rating: 'bitter' as const, expected: /heat|sputter|panas/i, forbidden: /bloom|final pour/i },
+    { label: 'Espresso sour', plan: planFor(/^Espresso Machine$/i), rating: 'sour' as const, expected: /puck|tamp|flow|halus/i, forbidden: /add water|tambah air|bloom/i },
+    { label: 'Cold Brew thin', plan: planFor(/^Toddy Cold Brew$/i), rating: 'thin' as const, expected: /saturation|steep|filtration|saturasi/i, forbidden: /kettle|temperature|bloom/i },
+  ];
+
+  for (const entry of cases) {
+    const correction = buildTasteFeedbackCorrection(entry.plan, entry.rating, 'id');
+    const text = `${correction.primaryCorrection} ${correction.backupCorrection} ${correction.guardrail}`;
+    assert.equal(correction.protectedNumbersLocked, true, entry.label);
+    assert.match(text, entry.expected, entry.label);
+    assert.doesNotMatch(text, entry.forbidden, entry.label);
+    assert.match(buildAiBrewTasteLoopMarkdown(entry.plan, { rating: entry.rating }, 'id'), /Dosis|rasio|total air|timing step/i);
+  }
+});
+
+test('all-method public snapshot matrix includes workflow, expected cup, feedback, and guard validation', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const findDripperId = (pattern: RegExp) => {
+    const dripper = productionCatalog.drippers.find((item) => pattern.test(item.name));
+    assert.ok(dripper, `Missing dripper ${pattern}`);
+    return dripper.id;
+  };
+  const base = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'All Method Snapshot QA',
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+    process: 'washed',
+    variety: 'bourbon',
+    roastLevel: 'medium_light' as const,
+  };
+  const cases: Array<{
+    label: string;
+    input: Partial<AiBrewFormState>;
+    required: RegExp;
+    forbidden?: RegExp;
+    minGuide: number;
+  }> = [
+    { label: 'Hario V60 hot', input: { dripperId: findDripperId(/^Hario V60$/i) }, required: /bloom[\s\S]*pour[\s\S]*drawdown/i, minGuide: 4 },
+    { label: 'Hario V60 iced', input: { dripperId: findDripperId(/^Hario V60$/i), brewMode: 'iced', targetProfileId: 'more_sweetness' }, required: /hot water|air panas/i, minGuide: 4 },
+    { label: 'Chemex hot', input: { dripperId: findDripperId(/^Chemex$/i) }, required: /thick|filter|vent|drawdown/i, minGuide: 4 },
+    { label: 'Chemex iced', input: { dripperId: findDripperId(/^Chemex$/i), brewMode: 'iced' }, required: /hot water|ice|air panas/i, minGuide: 4 },
+    { label: 'Kalita hot', input: { dripperId: findDripperId(/Kalita Wave/i) }, required: /flat|bed|drawdown/i, minGuide: 4 },
+    { label: 'Kalita iced', input: { dripperId: findDripperId(/Kalita Wave/i), brewMode: 'iced' }, required: /hot water|air panas|flat/i, minGuide: 4 },
+    { label: 'Origami cone hot', input: { dripperId: findDripperId(/Origami/i), origamiFilterStyle: 'cone' }, required: /bloom|drawdown|spiral|center/i, minGuide: 4 },
+    { label: 'Origami wave hot', input: { dripperId: findDripperId(/Origami/i), origamiFilterStyle: 'wave' }, required: /flat|bed|drawdown/i, minGuide: 4 },
+    { label: 'April hot', input: { dripperId: findDripperId(/^April Brewer$/i) }, required: /flat|bed|drawdown/i, minGuide: 4 },
+    { label: 'Melitta hot', input: { dripperId: findDripperId(/^Melitta$/i) }, required: /trapezoid|drawdown|pour/i, minGuide: 4 },
+    { label: 'Kono hot', input: { dripperId: findDripperId(/^Kono Meimon$/i) }, required: /center|drawdown|pour/i, minGuide: 4 },
+    { label: 'Clever hot', input: { dripperId: findDripperId(/^Clever Dripper$/i) }, required: /charge[\s\S]*steep[\s\S]*release[\s\S]*drawdown/i, forbidden: /Final Pour/i, minGuide: 5 },
+    { label: 'AeroPress hot', input: { dripperId: findDripperId(/^AeroPress$/i), aeropressStyle: 'standard' }, required: /charge[\s\S]*stir[\s\S]*steep[\s\S]*press[\s\S]*hiss/i, forbidden: /final pour|drawdown bed/i, minGuide: 6 },
+    { label: 'French Press hot', input: { dripperId: findDripperId(/^French Press$/i) }, required: /charge[\s\S]*steep[\s\S]*settle[\s\S]*decant/i, forbidden: /final pour|bloom/i, minGuide: 5 },
+    { label: 'Moka Pot hot', input: { dripperId: findDripperId(/^Bialetti Moka Pot$/i) }, required: /boiler[\s\S]*basket[\s\S]*heat[\s\S]*sputter/i, forbidden: /bloom|final pour/i, minGuide: 4 },
+    { label: 'Siphon hot', input: { dripperId: findDripperId(/^Hario Siphon$/i) }, required: /draw-up[\s\S]*stir[\s\S]*contact[\s\S]*drawdown/i, forbidden: /final pour/i, minGuide: 5 },
+    { label: 'Batch Brewer hot', input: { dripperId: findDripperId(/^Batch Brewer$/i), doseG: '55' }, required: /dose\/l|spray|drawdown|mix batch/i, forbidden: /manual pour|bloom pour/i, minGuide: 5 },
+    { label: 'Espresso hot', input: { dripperId: findDripperId(/^Espresso Machine$/i) }, required: /dose[\s\S]*puck[\s\S]*(shot|yield)[\s\S]*flow[\s\S]*stop/i, forbidden: /bloom|kettle|final pour/i, minGuide: 5 },
+    { label: 'Cold Brew', input: { dripperId: findDripperId(/^Toddy Cold Brew$/i), doseG: '60' }, required: /saturate[\s\S]*steep[\s\S]*filter[\s\S]*dilute/i, forbidden: /bloom|kettle/i, minGuide: 4 },
+  ];
+
+  for (const entry of cases) {
+    const plan = buildAiBrewPlan({ ...base, ...entry.input }, productionCatalog);
+    const guide = plan.workflowGuideSteps || buildWorkflowAwareGuideSteps(plan);
+    const text = guide.map((step) => `${step.label} ${step.actionType} ${step.primaryText} ${step.secondaryText || ''} ${step.techniqueChips.map((chip) => `${chip.label} ${chip.value}`).join(' ')}`).join('\n');
+    assert.equal(plan.workflowValidation?.passed, true, `${entry.label}: ${plan.workflowValidation?.blockingErrors.join('; ')}`);
+    assert.ok((plan.workflowValidation?.readinessScore || 0) >= 90, `${entry.label} readiness should be >=90`);
+    assert.ok(guide.length >= entry.minGuide, `${entry.label} guide should have enough phases`);
+    assert.match(text, entry.required, `${entry.label} required workflow phases`);
+    if (entry.forbidden) assert.doesNotMatch(text, entry.forbidden, `${entry.label} forbidden wording`);
+    assert.ok(plan.expectedCupProfile, `${entry.label} expected cup profile`);
+    assert.ok(plan.readinessScores, `${entry.label} readiness scores`);
+    const guard = validateBrewPlanOutput(plan);
+    assert.equal(guard.allowed, true, `${entry.label} anti-hallucination guard: ${guard.reason || 'no reason'}`);
+    for (const rating of ['sour', 'bitter', 'thin'] as const) {
+      const correction = buildTasteFeedbackCorrection(plan, rating, 'en');
+      assert.equal(correction.protectedNumbersLocked, true, `${entry.label} ${rating} correction`);
+      const correctionText = `${correction.primaryCorrection} ${correction.backupCorrection}`.toLowerCase();
+      if (plan.methodFamily === 'espresso') assert.doesNotMatch(correctionText, /add water|bloom|kettle/);
+      if (plan.methodFamily === 'moka_pot') assert.doesNotMatch(correctionText, /bloom|final pour/);
+      if (plan.methodFamily === 'cold_brew') assert.doesNotMatch(correctionText, /kettle|raise temperature/);
+    }
+    if (plan.brewMode === 'iced') {
+      const pourSteps = plan.steps.filter((step) => step.pourVolumeMl > 0 || step.kind === 'extract');
+      assert.equal(plan.hotWaterMl + plan.iceMl, plan.totalWaterMl, `${entry.label} iced split`);
+      assert.equal(pourSteps.at(-1)?.targetVolumeMl, plan.hotWaterMl, `${entry.label} final hot target`);
+      assert.ok(text.match(/hot water|air panas/i), `${entry.label} explicit hot water target`);
+    }
+  }
 });
 
 test('AI Brew water catalog blocks private sources, zero-mineral autofill, and estimated facts', () => {

@@ -560,6 +560,28 @@ export interface MethodWorkflowValidationResult {
   readinessScore: number;
 }
 
+export type AiBrewScoreConfidence = 'high' | 'medium' | 'low';
+
+export interface ExpectedCupProfile {
+  acidity: number;
+  sweetness: number;
+  body: number;
+  clarity: number;
+  bitterRisk: number;
+  aromaIntensity?: number;
+  confidence: AiBrewScoreConfidence;
+  reasons: string[];
+  warnings: string[];
+}
+
+export interface AiBrewReadinessScores {
+  recipe: number;
+  water: number;
+  grinder: number;
+  workflow: number;
+  catalog: number;
+}
+
 export interface BrewPlanAiNotes {
   finisher?: string;
   generate?: string;
@@ -633,6 +655,8 @@ export interface BrewPlan {
   steps: BrewPlanStep[];
   workflowGuideSteps?: WorkflowGuideStep[];
   workflowValidation?: MethodWorkflowValidationResult;
+  expectedCupProfile?: ExpectedCupProfile;
+  readinessScores?: AiBrewReadinessScores;
   notes: string[];
   warnings: string[];
   guardrails: BrewGuardrailState;
@@ -668,7 +692,23 @@ export interface BrewJournalEntry {
   feedback?: BrewTasteFeedback;
 }
 
-export type BrewTasteFeedbackRating = 'great' | 'sour' | 'bitter' | 'thin';
+export type BrewTasteFeedbackRating =
+  | 'great'
+  | 'sour'
+  | 'bitter'
+  | 'thin'
+  | 'flat'
+  | 'muddy'
+  | 'astringent';
+
+export interface BrewTasteFeedbackCorrection {
+  rating: BrewTasteFeedbackRating;
+  primaryCorrection: string;
+  backupCorrection: string;
+  guardrail: string;
+  methodFamily: AiBrewMethodFamily;
+  protectedNumbersLocked: true;
+}
 
 export interface BrewTasteFeedback {
   rating: BrewTasteFeedbackRating;

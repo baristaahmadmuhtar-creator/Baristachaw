@@ -40,6 +40,14 @@ export interface AiBrewDataEnrichmentBlueprint {
   recipeCorpusSources: AiBrewExternalDataSourceBlueprint[];
 }
 
+export type AiBrewFutureSourceRole =
+  | 'world_coffee_research_variety_lineage'
+  | 'cqi_sensory_reference'
+  | 'roastdb_market_catalog_license_review'
+  | 'coffee_review_style_tasting_trends_license_review'
+  | 'aeroprecipe_recipe_inspiration_license_review'
+  | 'manufacturer_method_baseline_license_review';
+
 // External data must not be imported into production catalogs unless licenseStatus
 // explicitly allows the intended use. Sources such as WCR, CQI, RoastDB,
 // CoffeeReview-style datasets, AeroPrecipe, and manufacturer guides should be

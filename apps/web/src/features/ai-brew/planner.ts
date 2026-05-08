@@ -39,6 +39,10 @@ import {
   buildWorkflowAwareGuideSteps,
   validateMethodWorkflowGuide,
 } from './workflowGuide.ts';
+import {
+  buildAiBrewReadinessScores,
+  buildExpectedCupProfile,
+} from './cupProfile.ts';
 export {
   buildWorkflowAwareGuideSteps,
   validateMethodWorkflowGuide,
@@ -3651,7 +3655,11 @@ function deriveTargetFamilyAdjustment(params: {
 
   adjustment.notes.push(`Target-to-device calibration sharpened ${targetIntent} handling for ${methodLabel}.`);
   if (behavior) {
-    adjustment.notes.push(`Target pour behavior active: bloom ${behavior.bloomMultiplier || 2}x, ${behavior.bloomTimeSec || 42}s, ${behavior.agitation || 'low'} agitation, ${behavior.drawdownBias || 'normal'} drawdown bias.`);
+    if (supportsAiBrewPourControls(params.methodFamily)) {
+      adjustment.notes.push(`Target pour behavior active: bloom ${behavior.bloomMultiplier || 2}x, ${behavior.bloomTimeSec || 42}s, ${behavior.agitation || 'low'} agitation, ${behavior.drawdownBias || 'normal'} drawdown bias.`);
+    } else {
+      adjustment.notes.push(`Target method behavior active: ${behavior.agitation || 'low'} agitation/contact guidance with ${behavior.drawdownBias || 'normal'} service pacing.`);
+    }
   }
   adjustment.confidenceNotes.push(`Target-method calibration active: ${targetIntent} x ${methodLabel}.`);
   return adjustment;
@@ -5415,7 +5423,7 @@ function buildServiceExecutionNote(params: {
     case 'cold_brew':
       return `Use ${params.totalWaterMl} ml cool water, saturate the coarse bed fully, then separate the concentrate before dilution or service.`;
     case 'espresso':
-      return `Treat ${params.totalWaterMl} ml as the target shot yield, not kettle water; stop by yield, time, and flow together.`;
+      return `Treat ${params.totalWaterMl} ml as the target shot yield, not a filter-brew pour volume; stop by yield, time, and flow together.`;
     case 'moka_pot':
       return `Fill the base below the safety valve, keep heat moderate, and remove from heat before the brew boils or sputters harshly.`;
     case 'batch_brew':
@@ -6199,7 +6207,7 @@ function finalizePlanCore(
       ...workflowValidation.warnings,
     ];
 
-  return {
+  const planWithWorkflow = {
     ...plan,
     workflowGuideSteps,
     workflowValidation,
@@ -6207,6 +6215,12 @@ function finalizePlanCore(
       ? plan.warnings
       : normalizeNoteList(plan.warnings, workflowValidation.blockingErrors),
     confidenceNotes: normalizeNoteList(plan.confidenceNotes, workflowConfidenceNotes),
+  } satisfies BrewPlan;
+
+  return {
+    ...planWithWorkflow,
+    expectedCupProfile: buildExpectedCupProfile(planWithWorkflow, processEntry, varietyEntry, targetProfile),
+    readinessScores: buildAiBrewReadinessScores(planWithWorkflow),
   } satisfies BrewPlan;
 }
 
@@ -6901,8 +6915,8 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
           ? 'Aliran menyempit bersih dan shot berhenti di target yield sebelum blonding agresif.'
           : 'Flow narrows cleanly and the shot stops at target yield before aggressive blonding.',
         watch: id
-          ? ['Yield adalah minuman di cup, bukan air ketel.', 'Lihat flow dan waktu bersamaan sebelum menghentikan shot.']
-          : ['Yield is beverage output, not kettle water.', 'Read flow and time together before stopping the shot.'],
+          ? ['Yield adalah minuman espresso di cup, bukan air seduh filter.', 'Lihat flow dan waktu bersamaan sebelum menghentikan shot.']
+          : ['Yield is espresso beverage output, not a filter-brew pour volume.', 'Read flow and time together before stopping the shot.'],
       };
     case 'moka_pot':
       return {

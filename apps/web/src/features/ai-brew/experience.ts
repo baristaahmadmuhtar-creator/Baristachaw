@@ -1,4 +1,4 @@
-import type { BrewPlan, BrewTasteFeedback, BrewTasteFeedbackRating } from './types';
+import type { BrewPlan, BrewTasteFeedback, BrewTasteFeedbackCorrection, BrewTasteFeedbackRating } from './types';
 
 export type AiBrewConfidenceTone = 'blue' | 'emerald' | 'amber' | 'slate';
 
@@ -187,17 +187,155 @@ function formatTimeLabel(seconds: number) {
   return `${minutes}:${String(remainder).padStart(2, '0')}`;
 }
 
-function formatTempDelta(plan: BrewPlan, delta: number, language: string) {
-  const next = Math.round(plan.waterTempC + delta);
-  return isIndonesian(language) ? `${next}C` : `${next}C`;
-}
-
 function feedbackLabel(rating: BrewTasteFeedbackRating, language: string) {
   const id = isIndonesian(language);
   if (rating === 'great') return id ? 'sudah enak' : 'landed well';
   if (rating === 'sour') return id ? 'terlalu asam' : 'too sour';
   if (rating === 'bitter') return id ? 'terlalu pahit' : 'too bitter';
-  return id ? 'terlalu tipis' : 'too thin';
+  if (rating === 'thin') return id ? 'terlalu tipis' : 'too thin';
+  if (rating === 'flat') return id ? 'flat/muted' : 'flat/muted';
+  if (rating === 'muddy') return id ? 'keruh/berat' : 'muddy/heavy';
+  return id ? 'sepat/astringent' : 'astringent';
+}
+
+function protectedGuardrail(language: string) {
+  return isIndonesian(language)
+    ? 'Dosis, rasio, total air, air panas/es, mode seduh, alat, grinder, dan timing step tetap dikunci.'
+    : 'Dose, ratio, total water, hot water/ice, brew mode, brewer, grinder, and step timing stay locked.';
+}
+
+function methodCorrection(
+  plan: BrewPlan,
+  rating: BrewTasteFeedbackRating,
+  language: string,
+): Pick<BrewTasteFeedbackCorrection, 'primaryCorrection' | 'backupCorrection'> {
+  const id = isIndonesian(language);
+  const grind = plan.grindRecommendation || plan.grindSettingReference;
+  const waterWarning = plan.waterClassification === 'high_buffer'
+    ? (id ? 'Cek air dulu: buffer tinggi bisa membuat acidity/floral muted.' : 'Check water first: high buffer can mute acidity/floral.')
+    : plan.waterClassification === 'zero_mineral_ro'
+      ? (id ? 'Cek air dulu: RO/zero mineral perlu remineralisasi.' : 'Check water first: RO/zero-mineral water needs remineralization.')
+      : '';
+
+  const generic = {
+    great: {
+      primaryCorrection: id ? `Pertahankan ${grind} dan ulangi flow yang sama.` : `Keep ${grind} and repeat the same flow.`,
+      backupCorrection: id ? 'Simpan plan ini sebagai baseline untuk bean yang sama.' : 'Save this plan as the baseline for the same bean.',
+    },
+    sour: {
+      primaryCorrection: id ? `Coba sedikit lebih halus, sekitar 0.5 step dari ${grind}.` : `Try slightly finer, about 0.5 step from ${grind}.`,
+      backupCorrection: id ? 'Jika flow sudah benar tapi masih tajam, naikkan suhu 1C pada seduhan berikutnya.' : 'If flow is correct but still sharp, raise temperature 1C on the next brew.',
+    },
+    bitter: {
+      primaryCorrection: id ? `Coba 0.5 step lebih kasar dari ${grind}.` : `Try 0.5 step coarser than ${grind}.`,
+      backupCorrection: id ? 'Kurangi agitasi akhir; suhu turun 1C hanya jika finish tetap kering.' : 'Reduce final agitation; lower temperature 1C only if the finish stays dry.',
+    },
+    thin: {
+      primaryCorrection: id ? `Jangan ubah dosis/rasio; coba sedikit lebih halus, sekitar 0.5 step dari ${grind}.` : `Do not change dose/ratio; try slightly finer, about 0.5 step from ${grind}.`,
+      backupCorrection: id ? 'Perbaiki bloom/saturasi dan jaga kontak tengah lebih stabil.' : 'Improve bloom/saturation and keep middle contact steadier.',
+    },
+    flat: {
+      primaryCorrection: waterWarning || (id ? 'Kurangi contact sedikit atau pilih target lebih bright untuk seduhan berikutnya.' : 'Reduce contact slightly or choose a brighter target next brew.'),
+      backupCorrection: id ? 'Jaga pouring lebih tenang; jangan tambah agitasi besar.' : 'Keep pouring calmer; do not add heavy agitation.',
+    },
+    muddy: {
+      primaryCorrection: id ? 'Kurangi agitasi dan hindari mengejar dinding filter.' : 'Reduce agitation and avoid chasing the filter wall.',
+      backupCorrection: id ? `Jika masih keruh, coba 0.5 step lebih kasar dari ${grind}.` : `If it stays muddy, try 0.5 step coarser than ${grind}.`,
+    },
+    astringent: {
+      primaryCorrection: id ? `Coba 0.5 step lebih kasar dari ${grind} dan jaga tuangan akhir lebih lembut.` : `Try 0.5 step coarser than ${grind} and keep the final pour gentler.`,
+      backupCorrection: id ? 'Turunkan suhu 1C hanya jika finish tetap sepat setelah flow rapi.' : 'Lower temperature 1C only if the finish stays astringent after flow is clean.',
+    },
+  } satisfies Record<BrewTasteFeedbackRating, Pick<BrewTasteFeedbackCorrection, 'primaryCorrection' | 'backupCorrection'>>;
+
+  if (plan.methodFamily === 'aeropress') {
+    if (rating === 'sour') return {
+      primaryCorrection: id ? `Coba sedikit lebih halus, sekitar 0.5 step dari ${grind}.` : `Try slightly finer, about 0.5 step from ${grind}.`,
+      backupCorrection: id ? 'Atau tambah steep 10 detik; jangan ubah dosis/rasio.' : 'Or add 10 seconds steep; do not change dose/ratio.',
+    };
+    if (rating === 'bitter' || rating === 'astringent') return {
+      primaryCorrection: id ? 'Kurangi steep 10 detik atau tekan lebih pelan.' : 'Reduce steep by 10 seconds or press more gently.',
+      backupCorrection: id ? 'Stop sebelum hiss; jangan tekan sampai kering.' : 'Stop before hiss; do not press the puck dry.',
+    };
+    if (rating === 'thin') return {
+      primaryCorrection: id ? 'Gunakan no-bypass/press lebih stabil pada seduhan berikutnya.' : 'Use no-bypass or a steadier press next brew.',
+      backupCorrection: id ? `Jika masih tipis, coba 0.5 step lebih halus dari ${grind}.` : `If still thin, try 0.5 step finer than ${grind}.`,
+    };
+    if (rating === 'muddy') return {
+      primaryCorrection: id ? 'Kurangi stir count; cukup 3 adukan ringan.' : 'Reduce stir count; keep it to 3 gentle stirs.',
+      backupCorrection: id ? 'Tekan lebih pelan dan stop sebelum hiss.' : 'Press more gently and stop before hiss.',
+    };
+  }
+
+  if (plan.methodFamily === 'french_press') {
+    if (rating === 'sour') return {
+      primaryCorrection: id ? 'Tambah steep 15-20 detik pada seduhan berikutnya.' : 'Add 15-20 seconds steep on the next brew.',
+      backupCorrection: id ? `Jika masih tajam, coba sedikit lebih halus dari ${grind}.` : `If still sharp, try slightly finer than ${grind}.`,
+    };
+    if (rating === 'bitter' || rating === 'astringent') return {
+      primaryCorrection: id ? 'Decant lebih cepat dan jangan ganggu fines saat pindah.' : 'Decant earlier and avoid disturbing fines.',
+      backupCorrection: id ? 'Tekan plunger pelan; jangan over-plunge.' : 'Press the plunger gently; do not over-plunge.',
+    };
+    if (rating === 'muddy') return {
+      primaryCorrection: id ? 'Diamkan settle lebih lama sebelum decant.' : 'Let it settle longer before decanting.',
+      backupCorrection: id ? 'Pindahkan lebih bersih dan jangan aduk ulang crust/fines.' : 'Decant cleaner and do not re-stir crust/fines.',
+    };
+  }
+
+  if (plan.methodFamily === 'moka_pot') {
+    if (rating === 'sour' || rating === 'thin') return {
+      primaryCorrection: id ? `Coba sedikit lebih halus dari ${grind}.` : `Try slightly finer than ${grind}.`,
+      backupCorrection: id ? 'Stabilkan panas; jangan terlalu rendah sampai flow putus.' : 'Stabilize heat; do not run so low that flow breaks.',
+    };
+    if (rating === 'bitter' || rating === 'muddy' || rating === 'astringent') return {
+      primaryCorrection: id ? 'Turunkan panas dan stop sebelum sputter.' : 'Lower heat and stop before sputter.',
+      backupCorrection: id ? 'Jaga basket rata penuh tanpa tamp.' : 'Keep the basket level and full without tamping.',
+    };
+  }
+
+  if (plan.methodFamily === 'espresso') {
+    if (rating === 'sour') return {
+      primaryCorrection: id ? `Coba sedikit lebih halus, sekitar 0.5 step dari ${grind}.` : `Try slightly finer, about 0.5 step from ${grind}.`,
+      backupCorrection: id ? 'Perbaiki distribusi/tamp agar flow lebih stabil.' : 'Improve distribution/tamp so flow stabilizes.',
+    };
+    if (rating === 'bitter' || rating === 'astringent') return {
+      primaryCorrection: id ? `Coba 0.5 step lebih kasar dari ${grind}.` : `Try 0.5 step coarser than ${grind}.`,
+      backupCorrection: id ? 'Stop tepat di yield; target minuman tetap dikunci.' : 'Stop at yield; keep the beverage target locked.',
+    };
+    if (rating === 'thin') return {
+      primaryCorrection: id ? 'Perbaiki puck prep dan stabilkan flow.' : 'Improve puck prep and stabilize flow.',
+      backupCorrection: id ? `Jika masih cepat/tipis, coba 0.5 step lebih halus dari ${grind}.` : `If still fast/thin, try 0.5 step finer than ${grind}.`,
+    };
+  }
+
+  if (plan.methodFamily === 'cold_brew') {
+    if (rating === 'sour' || rating === 'thin') return {
+      primaryCorrection: id ? 'Perbaiki saturasi awal dan tambah steep 2 jam.' : 'Improve initial saturation and add 2 hours steep.',
+      backupCorrection: id ? 'Atur dilution setelah filtrasi saja; jangan tambah air saat brewing.' : 'Adjust dilution after filtration only; do not add water during brewing.',
+    };
+    if (rating === 'bitter' || rating === 'muddy' || rating === 'astringent') return {
+      primaryCorrection: id ? 'Kurangi steep 2 jam atau pakai grind sedikit lebih kasar.' : 'Reduce steep by 2 hours or grind slightly coarser.',
+      backupCorrection: id ? 'Filtrasi lebih bersih sebelum dilution.' : 'Filter cleaner before dilution.',
+    };
+  }
+
+  return generic[rating];
+}
+
+export function buildTasteFeedbackCorrection(
+  plan: BrewPlan,
+  rating: BrewTasteFeedbackRating,
+  language = 'id',
+): BrewTasteFeedbackCorrection {
+  const correction = methodCorrection(plan, rating, language);
+  return {
+    rating,
+    methodFamily: plan.methodFamily,
+    primaryCorrection: correction.primaryCorrection,
+    backupCorrection: correction.backupCorrection,
+    guardrail: protectedGuardrail(language),
+    protectedNumbersLocked: true,
+  };
 }
 
 export function buildAiBrewTasteLoopMarkdown(
@@ -206,71 +344,20 @@ export function buildAiBrewTasteLoopMarkdown(
   language: string,
 ) {
   const id = isIndonesian(language);
-  const grind = plan.grindRecommendation || plan.grindSettingReference;
   const note = feedback.note?.trim();
+  const correction = buildTasteFeedbackCorrection(plan, feedback.rating, language);
   const title = id ? '## Koreksi seduhan berikutnya' : '## Next brew adjustment';
   const intro = id
     ? `Hasil dicatat sebagai **${feedbackLabel(feedback.rating, language)}**. Mulai dari perubahan terkecil dulu.`
     : `The cup was marked **${feedbackLabel(feedback.rating, language)}**. Start with the smallest change first.`;
 
-  const lines = (() => {
-    if (feedback.rating === 'great') {
-      return id
-        ? [
-            `Pertahankan ${grind}.`,
-            `Jangan ubah rasio, dosis, atau suhu. Simpan plan ini sebagai baseline.`,
-            'Ulangi flow yang sama untuk memastikan konsisten.',
-          ]
-        : [
-            `Keep ${grind}.`,
-            'Do not change ratio, dose, or temperature. Save this plan as the baseline.',
-            'Repeat the same flow once to confirm consistency.',
-          ];
-    }
-    if (feedback.rating === 'sour') {
-      return id
-        ? [
-            `Coba sedikit lebih halus dari ${grind}.`,
-            'Jaga tuangan lebih stabil; kalau perlu pakai pulse ringan, bukan agitasi besar.',
-            `Jika masih tajam setelah tasting kedua, naikkan suhu kecil ke ${formatTempDelta(plan, 1, language)}.`,
-          ]
-        : [
-            `Try slightly finer than ${grind}.`,
-            'Keep pouring steadier; use light pulse rather than heavy agitation.',
-            `If it is still sharp after the second tasting, raise temperature slightly to ${formatTempDelta(plan, 1, language)}.`,
-          ];
-    }
-    if (feedback.rating === 'bitter') {
-      return id
-        ? [
-            `Coba sedikit lebih kasar dari ${grind}.`,
-            'Kurangi agitasi dan jaga spout lebih rendah agar bed tidak pecah.',
-            `Jika finish tetap seret, turunkan suhu kecil ke ${formatTempDelta(plan, -1, language)}.`,
-          ]
-        : [
-            `Try slightly coarser than ${grind}.`,
-            'Reduce agitation and keep the spout lower so the bed does not break.',
-            `If the finish stays dry, lower temperature slightly to ${formatTempDelta(plan, -1, language)}.`,
-          ];
-    }
-    return id
-      ? [
-          `Pertahankan dosis dan rasio; coba sedikit lebih halus dari ${grind}.`,
-          'Pakai pulse ringan agar kontak air lebih merata.',
-          `Jika masih watery, tambah target waktu sekitar 10 detik pada seduhan berikutnya.`,
-        ]
-      : [
-          `Keep dose and ratio; try slightly finer than ${grind}.`,
-          'Use light pulse so water contact is more even.',
-          'If it is still watery, add about 10 seconds to the next brew target.',
-        ];
-  })();
-
   return [
     title,
     intro,
     '',
-    ...lines.map((line) => `- ${line}`),
+    `- ${id ? 'Langkah utama' : 'Primary move'}: ${correction.primaryCorrection}`,
+    `- ${id ? 'Cadangan' : 'Backup'}: ${correction.backupCorrection}`,
+    `- ${id ? 'Guardrail' : 'Guardrail'}: ${correction.guardrail}`,
     note ? `\n${id ? 'Catatan user' : 'User note'}: ${note}` : '',
   ].filter(Boolean).join('\n');
 }

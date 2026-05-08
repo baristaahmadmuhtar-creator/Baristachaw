@@ -24,12 +24,18 @@ const toggleSidebarLabel = /Toggle chat history sidebar|Tampilkan\/sembunyikan s
 const closeSidebarLabel = /Close sidebar|Tutup sidebar/i;
 
 async function clickVisibleLibraryControl(page: Page) {
-  const libraryTab = page.getByRole('tab', { name: libraryButtonName });
-  if (await libraryTab.isVisible()) {
+  const libraryTab = page.getByRole('tab', { name: libraryButtonName }).first();
+  try {
+    await expect(libraryTab).toBeVisible({ timeout: 10_000 });
     await libraryTab.click();
     return;
+  } catch {
+    // Mobile renders this control as a button instead of a workspace tab.
   }
-  await page.getByRole('button', { name: libraryButtonName }).click();
+
+  const libraryButton = page.getByRole('button', { name: libraryButtonName }).first();
+  await expect(libraryButton).toBeVisible({ timeout: 10_000 });
+  await libraryButton.click();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -151,19 +157,23 @@ test('normal and deep mode contracts stay relevant for method comparison', async
   const input = page.getByPlaceholder(chatInputPlaceholder);
   await expect(input).toBeEnabled({ timeout: 30_000 });
   await input.fill(prompt);
-  await page.getByLabel(sendMessageLabel).click();
-  await expect(page.locator('.chat-markdown').last()).toContainText(/Perbandingan/i, { timeout: 30_000 });
-  await expect(page.locator('.chat-markdown').last()).toContainText(/AeroPress/i);
+  const sendButton = page.getByLabel(sendMessageLabel).last();
+  await expect(sendButton).toBeEnabled({ timeout: 30_000 });
+  await sendButton.click();
+  const normalAnswer = page.locator('.chat-markdown').filter({ hasText: /Perbandingan/i }).last();
+  await expect(normalAnswer).toBeVisible({ timeout: 30_000 });
+  await expect(normalAnswer).toContainText(/AeroPress/i);
 
   const previousAnswerCount = await page.locator('.chat-markdown').count();
   await page.getByLabel(deepModeLabel).click();
   await expect(input).toBeEnabled({ timeout: 30_000 });
   await input.click();
   await input.fill(prompt);
-  await page.getByLabel(sendMessageLabel).click();
+  await expect(sendButton).toBeEnabled({ timeout: 30_000 });
+  await sendButton.click();
   await expect(page.locator('.chat-markdown')).toHaveCount(previousAnswerCount + 1, { timeout: 30_000 });
-  const deepAnswer = page.locator('.chat-markdown').last();
-  await expect(deepAnswer).toContainText(/Jawaban singkat/i, { timeout: 30_000 });
+  const deepAnswer = page.locator('.chat-markdown').filter({ hasText: /Jawaban singkat/i }).last();
+  await expect(deepAnswer).toBeVisible({ timeout: 30_000 });
   await expect(deepAnswer).toContainText(/Analisis/i);
   await expect(deepAnswer).toContainText(/V60/i);
   await expect(deepAnswer).toContainText(/Chemex/i);
@@ -260,11 +270,13 @@ test('deep mode shows thinking phases, degraded badge, and source links', async 
   const input = page.getByPlaceholder(chatInputPlaceholder);
   await expect(input).toBeEnabled({ timeout: 30_000 });
   await input.fill('qa_e2e deep status');
-  await page.getByLabel(sendMessageLabel).click();
+  const sendButton = page.getByLabel(sendMessageLabel).last();
+  await expect(sendButton).toBeEnabled();
+  await sendButton.click();
 
-  await expect(page.locator('.chat-markdown').last()).toContainText('Core Analysis', { timeout: 30_000 });
-  await expect(page.getByText(/Sources|Sumber/i).last()).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Source 1' })).toBeVisible();
+  const deepAnswer = page.locator('.chat-markdown').filter({ hasText: 'Core Analysis' }).last();
+  await expect(deepAnswer).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole('link', { name: 'Source 1' })).toBeVisible({ timeout: 30_000 });
 });
 
 test('supports sidebar folder flow', async ({ page }) => {

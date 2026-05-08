@@ -52,7 +52,7 @@ export function MaintenanceBanner() {
           animate={{ y: 0 }}
           exit={{ y: -12 }}
           transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-          className={`${minimized ? 'hidden' : 'block'} pointer-events-auto fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.25rem)] left-3 right-3 z-[70] rounded-2xl border border-blue-200/30 bg-slate-950/92 px-3.5 py-2.5 text-sm text-white shadow-[0_10px_24px_rgba(0,0,0,0.20)] backdrop-blur dark:border-blue-300/20 lg:bottom-auto lg:left-[calc(var(--desktop-rail-current-width,var(--desktop-rail-width-expanded))+1rem)] lg:right-4 lg:top-[calc(env(safe-area-inset-top,0px)+0.75rem)] lg:max-w-3xl`}
+          className={`${minimized ? 'hidden' : 'block'} pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5.25rem)] left-3 right-3 z-[70] rounded-2xl border border-blue-200/30 bg-slate-950/92 px-3.5 py-2.5 text-sm text-white shadow-[0_10px_24px_rgba(0,0,0,0.20)] backdrop-blur dark:border-blue-300/20 lg:bottom-auto lg:left-[calc(var(--desktop-rail-current-width,var(--desktop-rail-width-expanded))+1rem)] lg:right-4 lg:top-[calc(env(safe-area-inset-top,0px)+0.75rem)] lg:max-w-3xl`}
           role="status"
           aria-live="polite"
         >
@@ -66,7 +66,7 @@ export function MaintenanceBanner() {
           </div>
           <button
             type="button"
-            className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-white transition hover:bg-white/14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            className="pointer-events-auto absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-white transition hover:bg-white/14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
             onClick={() => setMinimizedKey(noticeKey)}
             aria-label="Minimize maintenance notice"
           >

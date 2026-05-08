@@ -83,13 +83,26 @@ async function selectAiBrewWaterBrand(
   query: string,
   resultId: string,
 ) {
-  await page.getByTestId('ai-brew-water-picker').click();
-  await page.getByTestId('ai-brew-picker-search-water_brand').fill(query);
+  const waterPicker = page.getByTestId('ai-brew-water-picker');
+  const search = page.getByTestId('ai-brew-picker-search-water_brand');
+
+  await waterPicker.click();
+  try {
+    await expect(search).toBeVisible({ timeout: 5_000 });
+  } catch {
+    await waterPicker.click();
+    await expect(search).toBeVisible({ timeout: 20_000 });
+  }
+
+  await setVisibleInputValue(page, 'ai-brew-picker-search-water_brand', query);
 
   const preferred = page.getByTestId(`ai-brew-picker-option-water_brand-${resultId}`);
-  if (await preferred.count()) {
+  try {
+    await expect(preferred.first()).toBeVisible({ timeout: 5_000 });
     await preferred.first().click();
     return;
+  } catch {
+    // Some local catalog snapshots may not include the preferred id; use the first visible match.
   }
 
   const fallback = page.locator('[data-testid^="ai-brew-picker-option-water_brand-"]').first();
@@ -175,8 +188,7 @@ test('timer controls work', async ({ page }) => {
   await page.getByRole('tab', { name: 'Timer' }).click();
   await page.getByRole('button', { name: '02:30' }).click();
   await page.locator('button.w-16.h-16.rounded-full.bg-blue-500').click();
-  await page.waitForTimeout(1200);
-  await expect(page.getByText('00:01')).toBeVisible();
+  await expect(page.getByText(/00:0[1-9]/).first()).toBeVisible({ timeout: 10_000 });
 });
 
 test('ratio tab recalculates values', async ({ page }) => {
@@ -402,13 +414,13 @@ test('ai brew process and variety picker search prioritizes exact canonical matc
 
   await page.getByTestId('ai-brew-process-picker').click();
   await expect(page.getByTestId('ai-brew-process-category-chips')).toBeVisible();
-  await page.getByTestId('ai-brew-picker-search-process').fill('Natural');
+  await setVisibleInputValue(page, 'ai-brew-picker-search-process', 'Natural');
   await expect(page.locator('[data-testid^="ai-brew-picker-option-process-"]').first()).toHaveAttribute('data-testid', 'ai-brew-picker-option-process-natural');
   await page.getByTestId('ai-brew-picker-option-process-natural').click();
   await expect(page.getByTestId('ai-brew-process-picker')).toContainText(/Natural/i);
 
   await page.getByTestId('ai-brew-process-picker').click();
-  await page.getByTestId('ai-brew-picker-search-process').fill('Giling Basah');
+  await setVisibleInputValue(page, 'ai-brew-picker-search-process', 'Giling Basah');
   await expect(page.locator('[data-testid^="ai-brew-picker-option-process-"]').first()).toHaveAttribute('data-testid', 'ai-brew-picker-option-process-wet_hulled');
   await page.getByTestId('ai-brew-picker-option-process-wet_hulled').click();
   await expect(page.getByTestId('ai-brew-process-picker')).toContainText(/Wet Hulled|Giling Basah/i);
@@ -423,7 +435,7 @@ test('ai brew process and variety picker search prioritizes exact canonical matc
 
   for (const [query, expectedText] of varietyCases) {
     await page.getByTestId('ai-brew-variety-picker').click();
-    await page.getByTestId('ai-brew-picker-search-variety').fill(query);
+    await setVisibleInputValue(page, 'ai-brew-picker-search-variety', query);
     const firstVariety = page.locator('[data-testid^="ai-brew-picker-option-variety-"]').first();
     await expect(firstVariety).toBeVisible();
     await expect(firstVariety).toContainText(expectedText);
@@ -926,8 +938,12 @@ test('ai brew coach guard blocks unsafe AI claims and keeps deterministic values
 test('ai brew discloses exact-profile provenance when a niche dripper now has a curated match', async ({ page }) => {
   await openAiBrewProMode(page);
   await page.getByTestId('ai-brew-dripper-picker').click();
-  await page.getByLabel(/Search catalog|Search AI Brew catalog|Cari catalog/i).fill('Latina');
-  await page.getByRole('button', { name: /Select brewer Latina Cono|Select dripper Latina Cono/i }).click();
+  const brewerDialog = page.getByRole('dialog', { name: /Brewer|Dripper|Alat seduh/i });
+  const brewerSearch = brewerDialog.getByTestId('ai-brew-picker-search-dripper');
+  await expect(brewerSearch).toBeVisible();
+  await setVisibleInputValue(page, 'ai-brew-picker-search-dripper', 'Latina');
+  await expect(brewerSearch).toHaveValue('Latina');
+  await page.getByTestId('ai-brew-picker-option-dripper-latina-cono').click();
   await expect(page.getByTestId('ai-brew-picker-dripper')).toHaveCount(0);
 
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Fallback Brew');

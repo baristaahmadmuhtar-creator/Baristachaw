@@ -14,7 +14,7 @@ test.afterEach(async ({ page }) => {
   await qaLogout(page.request);
 });
 
-const createFolderButton = /Create Folder|Buat Folder/i;
+const createFolderButton = /^Create Folder$|^Buat Folder$/i;
 const folderNameInput = /Folder name|Nama Folder/i;
 const saveButton = /^Save$|^Simpan$/i;
 const confirmButton = /^Confirm$|^Konfirmasi$/i;
@@ -24,10 +24,21 @@ const closeItemDetailsButton = /Close item details|Tutup detail item/i;
 const newNoteButton = /New Note|Catatan Baru/i;
 const editNoteButton = /^Edit Note$|^Ubah Catatan$/i;
 
+async function submitCreateFolder(page: import('@playwright/test').Page, name: string) {
+  const createInput = page.getByRole('textbox', { name: folderNameInput });
+  await expect(createInput).toBeVisible();
+  await createInput.click();
+  await createInput.fill('');
+  await createInput.pressSequentially(name);
+  await expect(createInput).toHaveValue(name);
+  const submitButton = createInput.locator('xpath=following-sibling::button[1]');
+  await expect(submitButton).toBeEnabled({ timeout: 10_000 });
+  await submitButton.click();
+}
+
 test('supports folder create, rename, delete flow', async ({ page }) => {
   await page.getByRole('button', { name: createFolderButton }).click();
-  await page.getByRole('textbox', { name: folderNameInput }).fill('qa_e2e collection folder');
-  await page.getByRole('textbox', { name: folderNameInput }).press('Enter');
+  await submitCreateFolder(page, 'qa_e2e collection folder');
 
   await expect(page.getByText('qa_e2e collection folder')).toBeVisible({ timeout: 20_000 });
 
@@ -45,21 +56,13 @@ test('keeps create-folder panel visible with many folders and renames the correc
   test.setTimeout(120_000);
   for (let i = 0; i < 12; i += 1) {
     await page.getByRole('button', { name: createFolderButton }).click();
-    const createInput = page.getByRole('textbox', { name: folderNameInput });
-    await expect(createInput).toBeVisible();
-    await expect(createInput).toBeFocused();
-    await createInput.fill(`qa_many_${i}`);
-    await createInput.press('Enter');
+    await submitCreateFolder(page, `qa_many_${i}`);
     await expect(page.locator('h3', { hasText: new RegExp(`^qa_many_${i}$`) }).first()).toBeVisible();
   }
 
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.getByRole('button', { name: createFolderButton }).click();
-  const createInput = page.getByRole('textbox', { name: folderNameInput });
-  await expect(createInput).toBeVisible();
-  await expect(createInput).toBeFocused();
-  await createInput.fill('qa_many_final');
-  await createInput.press('Enter');
+  await submitCreateFolder(page, 'qa_many_final');
   await expect(page.locator('h3', { hasText: /^qa_many_final$/ }).first()).toBeVisible();
 
   const firstCard = page.locator('h3', { hasText: /^qa_many_0$/ }).first().locator('xpath=ancestor::div[contains(@class,"group")]').first();

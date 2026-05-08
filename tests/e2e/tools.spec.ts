@@ -390,7 +390,10 @@ test('ai brew brewer picker prioritizes complete method catalog and search alias
   await expect(page.getByTestId('ai-brew-picker-option-dripper-espresso-machine')).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-dripper-aeropress')).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-dripper-french-press')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-picker-option-dripper-hario-switch')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-picker-option-dripper-hario-switch-02')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-picker-option-dripper-hario-switch-03')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-picker-option-dripper-mugen-x-switch')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-picker-option-dripper-hario-switch')).toHaveCount(0);
 
   const search = page.getByTestId('ai-brew-picker-search-dripper');
   const searchCases = [
@@ -401,6 +404,8 @@ test('ai brew brewer picker prioritizes complete method catalog and search alias
     ['moka', 'bialetti-moka-pot'],
     ['batch', 'batch-brewer'],
     ['siphon', 'hario-siphon'],
+    ['switch 03', 'hario-switch-03'],
+    ['mugen switch', 'mugen-x-switch'],
   ] as const;
 
   for (const [query, expectedId] of searchCases) {

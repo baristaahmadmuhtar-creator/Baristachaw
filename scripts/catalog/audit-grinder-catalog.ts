@@ -7,6 +7,7 @@ type AuditStatus =
   | 'CONFLICTING_RANGE'
   | 'UNPARSEABLE_RANGE'
   | 'DUPLICATE_OR_AMBIGUOUS_MODEL'
+  | 'MISSING_SWITCH_PHYSICAL_CONSTRAINTS'
   | 'OK_CURATED'
   | 'OK_OFFICIAL';
 
@@ -35,6 +36,20 @@ type GrinderSetting = {
   sourceUrls?: string[];
   confidence?: string;
   verifiedAt?: string;
+};
+
+type DeviceProfile = {
+  id?: string;
+  methodFamily?: string;
+  exactMatch?: boolean;
+  dripperIds?: string[];
+  physicalConstraints?: {
+    finishedCapacityMl?: number;
+    recommendedClosedPhaseMaxMl?: number;
+    workingHeadspaceMl?: number;
+    filterSize?: string;
+    coneType?: string;
+  };
 };
 
 type ParsedRange = {
@@ -152,7 +167,7 @@ function report(status: AuditStatus, subject: string, detail: string, fatal = fa
 
 const grinders = readItems<RawGrinder>(grinderPath);
 const settings = readItems<GrinderSetting>(settingPath);
-const profiles = readItems<{ id?: string }>(profilePath);
+const profiles = readItems<DeviceProfile>(profilePath);
 const profileIds = new Set(profiles.map((profile) => profile.id).filter(Boolean));
 const grinderIds = new Set<string>();
 const rows: ReturnType<typeof report>[] = [];
@@ -352,6 +367,30 @@ for (const matcher of duplicateMatchers) {
       aggregate.risks.familyAliasAmbiguity += 1;
       rows.push(report('DUPLICATE_OR_AMBIGUOUS_MODEL', names.join(', '), 'Model family needs source-level review before promotion to official.', false));
     }
+  }
+}
+
+for (const profile of profiles) {
+  const dripperIds = profile.dripperIds || [];
+  const isExactSwitch = profile.methodFamily === 'hario_switch'
+    && profile.exactMatch
+    && dripperIds.some((id) => id === 'hario-switch-02' || id === 'hario-switch-03' || id === 'mugen-x-switch');
+  if (!isExactSwitch) continue;
+  const constraints = profile.physicalConstraints;
+  const missing = [
+    !constraints?.finishedCapacityMl ? 'finishedCapacityMl' : '',
+    !constraints?.recommendedClosedPhaseMaxMl ? 'recommendedClosedPhaseMaxMl' : '',
+    !constraints?.workingHeadspaceMl ? 'workingHeadspaceMl' : '',
+    !constraints?.filterSize ? 'filterSize' : '',
+    !constraints?.coneType ? 'coneType' : '',
+  ].filter(Boolean);
+  if (missing.length > 0) {
+    rows.push(report(
+      'MISSING_SWITCH_PHYSICAL_CONSTRAINTS',
+      profile.id || 'unknown-profile',
+      `Exact Hario Switch profile is missing physical constraint field(s): ${missing.join(', ')}.`,
+      true,
+    ));
   }
 }
 

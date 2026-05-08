@@ -1162,7 +1162,7 @@
       "label": "Immersion Dripper Family Hot",
       "brewMode": "hot",
       "dripperIds": [],
-      "methodFamily": "clever_dripper",
+      "methodFamily": "hario_switch",
       "brewMethodId": "clever_dripper",
       "exactMatch": false,
       "filterStyle": "immersion",
@@ -1223,7 +1223,7 @@
       "label": "Immersion Dripper Family Japanese Iced",
       "brewMode": "iced",
       "dripperIds": [],
-      "methodFamily": "clever_dripper",
+      "methodFamily": "hario_switch",
       "brewMethodId": "clever_dripper_iced",
       "exactMatch": false,
       "filterStyle": "immersion",
@@ -2043,7 +2043,7 @@
       "dripperIds": [
         "hario-switch"
       ],
-      "methodFamily": "clever_dripper",
+      "methodFamily": "hario_switch",
       "brewMethodId": "clever_dripper",
       "exactMatch": true,
       "filterStyle": "immersion",
@@ -2115,7 +2115,7 @@
       "dripperIds": [
         "hario-switch"
       ],
-      "methodFamily": "clever_dripper",
+      "methodFamily": "hario_switch",
       "brewMethodId": "clever_dripper_iced",
       "exactMatch": true,
       "filterStyle": "immersion",
@@ -2171,6 +2171,512 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "methodWorkflow": "immersion"
+    },
+    {
+      "id": "profile_hario_switch_02_hot",
+      "label": "Hario Switch 02 Hot Hybrid",
+      "brewMode": "hot",
+      "dripperIds": [
+        "hario-switch-02"
+      ],
+      "methodFamily": "hario_switch",
+      "brewMethodId": "clever_dripper",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "methodWorkflow": "immersion",
+      "methodProgramme": "immersion_then_percolation",
+      "physicalConstraints": {
+        "finishedCapacityMl": 200,
+        "recommendedClosedPhaseMaxMl": 180,
+        "workingHeadspaceMl": 20,
+        "filterSize": "V60 02",
+        "coneType": "v60"
+      },
+      "ratioDelta": 0.25,
+      "tempDeltaC": -2.2,
+      "brewTimeDeltaSec": 6,
+      "grindBias": "coarser",
+      "note": "Switch 02 hot uses a safe hybrid: closed bloom, release, open fill, short drawdown, serve.",
+      "steps": [
+        {
+          "id": "closed_bloom",
+          "label": "Closed Bloom",
+          "kind": "pour",
+          "share": 0.35,
+          "startSeconds": 0,
+          "note": "Valve closed. Wet the bed evenly while staying inside the 02 chamber limit.",
+          "valveState": "closed",
+          "chamberState": "bloom"
+        },
+        {
+          "id": "release_bloom",
+          "label": "Open Switch",
+          "kind": "release",
+          "share": 0,
+          "startSeconds": 40,
+          "note": "Open the switch before the larger fill so the 02 chamber is not overloaded.",
+          "valveState": "open",
+          "chamberState": "releasing"
+        },
+        {
+          "id": "open_fill",
+          "label": "Open Fill",
+          "kind": "pour",
+          "share": 0.65,
+          "startSeconds": 55,
+          "note": "Valve open. Fill to the final target as percolation, not a closed hold.",
+          "valveState": "open",
+          "chamberState": "percolation"
+        },
+        {
+          "id": "drawdown",
+          "label": "Drawdown",
+          "kind": "drawdown",
+          "share": 0,
+          "startSeconds": 155,
+          "note": "Let drawdown finish cleanly without topping up.",
+          "valveState": "open",
+          "chamberState": "drawdown"
+        },
+        {
+          "id": "serve",
+          "label": "Serve",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 215,
+          "note": "Serve after drawdown; go slightly coarser if the cup turns muddy.",
+          "valveState": "open",
+          "chamberState": "served"
+        }
+      ],
+      "source": "hario-official-with-curated-workflow",
+      "sourceUrls": [
+        "https://global.hario.com/product/coffee/dripper/SSD.html"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_hario_switch_02_iced",
+      "label": "Hario Switch 02 Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "hario-switch-02"
+      ],
+      "methodFamily": "hario_switch",
+      "brewMethodId": "clever_dripper_iced",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "methodWorkflow": "immersion",
+      "methodProgramme": "full_immersion",
+      "physicalConstraints": {
+        "finishedCapacityMl": 200,
+        "recommendedClosedPhaseMaxMl": 180,
+        "workingHeadspaceMl": 20,
+        "filterSize": "V60 02",
+        "coneType": "v60"
+      },
+      "ratioDelta": -0.22,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 12,
+      "grindBias": "same",
+      "note": "Switch 02 iced keeps the hot phase below the chamber limit, then releases over measured ice.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge Closed",
+          "kind": "pour",
+          "share": 1,
+          "startSeconds": 0,
+          "note": "Valve closed. Add the full hot-water target while measured ice waits in the server.",
+          "valveState": "closed",
+          "chamberState": "immersion"
+        },
+        {
+          "id": "steep",
+          "label": "Steep Closed",
+          "kind": "wait",
+          "share": 0,
+          "startSeconds": 85,
+          "note": "Hold a short immersion contact; do not add extra water.",
+          "valveState": "closed",
+          "chamberState": "immersion"
+        },
+        {
+          "id": "release",
+          "label": "Open Over Ice",
+          "kind": "release",
+          "share": 0,
+          "startSeconds": 125,
+          "note": "Open the switch over measured ice and let concentrate drain cleanly.",
+          "valveState": "open",
+          "chamberState": "releasing"
+        },
+        {
+          "id": "finish",
+          "label": "Stir Server",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 170,
+          "note": "Stir the server 5-8 seconds before serving.",
+          "valveState": "open",
+          "chamberState": "served"
+        }
+      ],
+      "source": "hario-official-with-curated-workflow",
+      "sourceUrls": [
+        "https://global.hario.com/product/coffee/dripper/SSD.html"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_hario_switch_03_hot",
+      "label": "Hario Switch 03 Hot Hybrid",
+      "brewMode": "hot",
+      "dripperIds": [
+        "hario-switch-03"
+      ],
+      "methodFamily": "hario_switch",
+      "brewMethodId": "clever_dripper",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "methodWorkflow": "immersion",
+      "methodProgramme": "bloom_then_immersion",
+      "physicalConstraints": {
+        "finishedCapacityMl": 360,
+        "recommendedClosedPhaseMaxMl": 320,
+        "workingHeadspaceMl": 40,
+        "filterSize": "V60 03",
+        "coneType": "v60"
+      },
+      "ratioDelta": 0.45,
+      "tempDeltaC": -2.2,
+      "brewTimeDeltaSec": 10,
+      "grindBias": "coarser",
+      "note": "Switch 03 hot can hold a larger closed bloom/fill before release.",
+      "steps": [
+        {
+          "id": "closed_bloom",
+          "label": "Closed Bloom",
+          "kind": "pour",
+          "share": 0.35,
+          "startSeconds": 0,
+          "note": "Valve closed. Wet all grounds evenly.",
+          "valveState": "closed",
+          "chamberState": "bloom"
+        },
+        {
+          "id": "closed_fill",
+          "label": "Closed Fill",
+          "kind": "pour",
+          "share": 0.65,
+          "startSeconds": 35,
+          "note": "Still closed. Fill calmly to the target and avoid heavy agitation.",
+          "valveState": "closed",
+          "chamberState": "filling"
+        },
+        {
+          "id": "steep",
+          "label": "Steep Closed",
+          "kind": "wait",
+          "share": 0,
+          "startSeconds": 110,
+          "note": "Hold immersion contact quietly before opening.",
+          "valveState": "closed",
+          "chamberState": "immersion"
+        },
+        {
+          "id": "release",
+          "label": "Open Switch",
+          "kind": "release",
+          "share": 0,
+          "startSeconds": 165,
+          "note": "Open the switch cleanly and let the bed drain without stirring.",
+          "valveState": "open",
+          "chamberState": "releasing"
+        },
+        {
+          "id": "serve",
+          "label": "Serve",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 225,
+          "note": "Serve after drawdown; if muddy, go slightly coarser next brew.",
+          "valveState": "open",
+          "chamberState": "served"
+        }
+      ],
+      "source": "hario-official-with-curated-workflow",
+      "sourceUrls": [
+        "https://global.hario.com/product/coffee/dripper/SSD.html"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_hario_switch_03_iced",
+      "label": "Hario Switch 03 Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "hario-switch-03"
+      ],
+      "methodFamily": "hario_switch",
+      "brewMethodId": "clever_dripper_iced",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "methodWorkflow": "immersion",
+      "methodProgramme": "full_immersion",
+      "physicalConstraints": {
+        "finishedCapacityMl": 360,
+        "recommendedClosedPhaseMaxMl": 320,
+        "workingHeadspaceMl": 40,
+        "filterSize": "V60 03",
+        "coneType": "v60"
+      },
+      "ratioDelta": -0.22,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 12,
+      "grindBias": "same",
+      "note": "Switch 03 iced uses closed hot immersion released over measured ice; no bypass water after release.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge Closed",
+          "kind": "pour",
+          "share": 1,
+          "startSeconds": 0,
+          "note": "Valve closed. Add the full hot-water target over coffee while measured ice waits in server.",
+          "valveState": "closed",
+          "chamberState": "immersion"
+        },
+        {
+          "id": "steep",
+          "label": "Steep Closed",
+          "kind": "wait",
+          "share": 0,
+          "startSeconds": 85,
+          "note": "Hold a short immersion contact; do not add extra water.",
+          "valveState": "closed",
+          "chamberState": "immersion"
+        },
+        {
+          "id": "release",
+          "label": "Open Over Ice",
+          "kind": "release",
+          "share": 0,
+          "startSeconds": 125,
+          "note": "Open the switch over measured ice and let concentrate drain cleanly.",
+          "valveState": "open",
+          "chamberState": "releasing"
+        },
+        {
+          "id": "finish",
+          "label": "Stir Server",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 170,
+          "note": "Stir the server 5-8 seconds before serving.",
+          "valveState": "open",
+          "chamberState": "served"
+        }
+      ],
+      "source": "hario-official-with-curated-workflow",
+      "sourceUrls": [
+        "https://global.hario.com/product/coffee/dripper/SSD.html"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_mugen_x_switch_hot",
+      "label": "MUGEN x SWITCH Hot Hybrid",
+      "brewMode": "hot",
+      "dripperIds": [
+        "mugen-x-switch"
+      ],
+      "methodFamily": "hario_switch",
+      "brewMethodId": "clever_dripper",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "methodWorkflow": "immersion",
+      "methodProgramme": "competition_hybrid",
+      "physicalConstraints": {
+        "finishedCapacityMl": 200,
+        "recommendedClosedPhaseMaxMl": 180,
+        "workingHeadspaceMl": 20,
+        "filterSize": "V60 02",
+        "coneType": "mugen"
+      },
+      "ratioDelta": 0.25,
+      "tempDeltaC": -2.4,
+      "brewTimeDeltaSec": 4,
+      "grindBias": "coarser",
+      "note": "MUGEN x SWITCH uses a low-bypass cone with Switch valve timing; keep closed loads inside 200 ml capacity.",
+      "steps": [
+        {
+          "id": "closed_bloom",
+          "label": "Closed Bloom",
+          "kind": "pour",
+          "share": 0.35,
+          "startSeconds": 0,
+          "note": "Valve closed. Wet the bed evenly in the MUGEN cone.",
+          "valveState": "closed",
+          "chamberState": "bloom"
+        },
+        {
+          "id": "release_bloom",
+          "label": "Open Switch",
+          "kind": "release",
+          "share": 0,
+          "startSeconds": 40,
+          "note": "Open before the larger fill to protect the 02 chamber capacity.",
+          "valveState": "open",
+          "chamberState": "releasing"
+        },
+        {
+          "id": "open_fill",
+          "label": "Open Fill",
+          "kind": "pour",
+          "share": 0.65,
+          "startSeconds": 55,
+          "note": "Valve open. Fill to final target with compact low-agitation pouring.",
+          "valveState": "open",
+          "chamberState": "percolation"
+        },
+        {
+          "id": "drawdown",
+          "label": "Drawdown",
+          "kind": "drawdown",
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let drawdown finish cleanly.",
+          "valveState": "open",
+          "chamberState": "drawdown"
+        },
+        {
+          "id": "serve",
+          "label": "Serve",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 210,
+          "note": "Serve after drawdown.",
+          "valveState": "open",
+          "chamberState": "served"
+        }
+      ],
+      "source": "hario-official-with-curated-workflow",
+      "sourceUrls": [
+        "https://global.hario.com/product/coffee/dripper/VDSM.html",
+        "https://www.hario-usa.com/products/mugen-switch"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
+    },
+    {
+      "id": "profile_mugen_x_switch_iced",
+      "label": "MUGEN x SWITCH Japanese Iced",
+      "brewMode": "iced",
+      "dripperIds": [
+        "mugen-x-switch"
+      ],
+      "methodFamily": "hario_switch",
+      "brewMethodId": "clever_dripper_iced",
+      "exactMatch": true,
+      "filterStyle": "immersion",
+      "methodWorkflow": "immersion",
+      "methodProgramme": "full_immersion",
+      "physicalConstraints": {
+        "finishedCapacityMl": 200,
+        "recommendedClosedPhaseMaxMl": 180,
+        "workingHeadspaceMl": 20,
+        "filterSize": "V60 02",
+        "coneType": "mugen"
+      },
+      "ratioDelta": -0.22,
+      "tempDeltaC": 0.2,
+      "brewTimeDeltaSec": 12,
+      "grindBias": "same",
+      "note": "MUGEN x SWITCH iced keeps the closed hot phase below the 02 chamber limit before release over ice.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge Closed",
+          "kind": "pour",
+          "share": 1,
+          "startSeconds": 0,
+          "note": "Valve closed. Add the full hot-water target while measured ice waits in server.",
+          "valveState": "closed",
+          "chamberState": "immersion"
+        },
+        {
+          "id": "steep",
+          "label": "Steep Closed",
+          "kind": "wait",
+          "share": 0,
+          "startSeconds": 85,
+          "note": "Hold a short immersion contact; do not add extra water.",
+          "valveState": "closed",
+          "chamberState": "immersion"
+        },
+        {
+          "id": "release",
+          "label": "Open Over Ice",
+          "kind": "release",
+          "share": 0,
+          "startSeconds": 125,
+          "note": "Open the switch over measured ice and let concentrate drain cleanly.",
+          "valveState": "open",
+          "chamberState": "releasing"
+        },
+        {
+          "id": "finish",
+          "label": "Stir Server",
+          "kind": "serve",
+          "share": 0,
+          "startSeconds": 170,
+          "note": "Stir the server 5-8 seconds before serving.",
+          "valveState": "open",
+          "chamberState": "served"
+        }
+      ],
+      "source": "hario-official-with-curated-workflow",
+      "sourceUrls": [
+        "https://global.hario.com/product/coffee/dripper/VDSM.html",
+        "https://www.hario-usa.com/products/mugen-switch"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2"
     },
     {
       "id": "profile_hario_v60_hot",

@@ -83,6 +83,7 @@ import type {
   BrewTemplateStepKind,
   DeviceProfileMode,
   DeviceBrewProfile,
+  DevicePhysicalConstraints,
   EquipmentCatalogEntry,
   FlatBottomProfileFamily,
   GrinderSettingReference,
@@ -94,6 +95,7 @@ import type {
   VerificationLevel,
   WaterBrandProfile,
   WaterGuidance,
+  SwitchBrewProgramme,
 } from './types.ts';
 
 export type AiBrewGenerationStageId =
@@ -173,6 +175,7 @@ const ICED_METHOD_FAMILIES = new Set<AiBrewMethodFamily>([
   'april',
   'chemex',
   'clever_dripper',
+  'hario_switch',
 ]);
 
 const ICED_MANUAL_POUR_OVER_FAMILIES = new Set<AiBrewMethodFamily>([
@@ -204,6 +207,7 @@ const ICED_HOT_EXTRACTION_RATIO_BOUNDS: Record<AiBrewMethodFamily, { min: number
   april: { min: 8.8, max: 10.4 },
   chemex: { min: 9.0, max: 10.8 },
   clever_dripper: { min: 9.2, max: 10.8 },
+  hario_switch: { min: 9.2, max: 10.8 },
   french_press: { min: 9.2, max: 10.8 },
   aeropress: { min: 8.8, max: 10.5 },
   siphon: { min: 9.0, max: 10.8 },
@@ -808,6 +812,7 @@ function resolveTargetWaterOverrideBounds(methodFamily: AiBrewMethodFamily, dose
     chemex: 1200,
     kalita_wave: 850,
     clever_dripper: 750,
+    hario_switch: 750,
     origami: 850,
     april: 850,
     melitta: 850,
@@ -825,6 +830,7 @@ function resolveTargetWaterOverrideBounds(methodFamily: AiBrewMethodFamily, dose
     chemex: 120,
     kalita_wave: 80,
     clever_dripper: 100,
+    hario_switch: 100,
     origami: 80,
     april: 80,
     melitta: 80,
@@ -882,6 +888,7 @@ function resolveMethodId(methodFamily: AiBrewMethodFamily): BrewMethodId {
     case 'aeropress':
       return 'aeropress';
     case 'clever_dripper':
+    case 'hario_switch':
       return 'clever_dripper';
     case 'origami':
       return 'origami';
@@ -913,6 +920,7 @@ function resolveIcedMethodId(methodFamily: AiBrewMethodFamily): BrewMethodId {
     case 'melitta':
       return 'melitta_iced';
     case 'clever_dripper':
+    case 'hario_switch':
       return 'clever_dripper_iced';
     case 'origami':
       return 'origami_iced';
@@ -1284,6 +1292,8 @@ type AdaptiveShareContext = {
   filterStyle: DeviceBrewProfile['filterStyle'];
   flatBottomProfile?: FlatBottomProfileFamily;
   recipeStyle?: Exclude<AeroPressRecipeStyle, 'auto'>;
+  physicalConstraints?: DevicePhysicalConstraints;
+  methodProgramme?: SwitchBrewProgramme | string;
   brewMode: 'hot' | 'iced';
   roastLevel: RoastLevel;
   roastDevelopment?: BeanRoastDevelopment;
@@ -2293,6 +2303,7 @@ function resolveNominalDoseG(methodFamily: AiBrewMethodFamily, brewMode: 'hot' |
       case 'siphon':
         return 20;
       case 'clever_dripper':
+      case 'hario_switch':
       case 'aeropress':
       case 'moka_pot':
         return 18;
@@ -2320,7 +2331,7 @@ function deriveDoseAdjustment(
   const nominalDoseG = resolveNominalDoseG(methodFamily, brewMode);
   const responseScale = methodFamily === 'chemex'
     ? 0.8
-    : methodFamily === 'clever_dripper' || methodFamily === 'french_press' || methodFamily === 'cold_brew' || methodFamily === 'batch_brew'
+    : methodFamily === 'clever_dripper' || methodFamily === 'hario_switch' || methodFamily === 'french_press' || methodFamily === 'cold_brew' || methodFamily === 'batch_brew'
       ? 0.7
       : methodFamily === 'april' || methodFamily === 'aeropress' || methodFamily === 'espresso'
         ? 0.85
@@ -3281,12 +3292,15 @@ function deriveMethodFamilyAdjustment(params: {
       adjustment.notes.push('Chemex family runs a longer window than V60 because thick bonded paper needs stable flow, not a rushed drawdown.');
       break;
     case 'clever_dripper':
+    case 'hario_switch':
       adjustment.sequenceSignature = 'immersion_release';
       adjustment.ratioDelta = -0.15;
       adjustment.tempDeltaC = -0.3;
       adjustment.brewTimeDeltaSec = 20;
       adjustment.grindBias = 'coarser';
-      adjustment.notes.push('Clever Dripper family protects immersion sweetness first, then releases through a calmer finishing phase.');
+      adjustment.notes.push(params.methodFamily === 'hario_switch'
+        ? 'Hario Switch family protects valve state, chamber capacity, and immersion-release timing before drawdown.'
+        : 'Clever Dripper family protects immersion sweetness first, then releases through a calmer finishing phase.');
       break;
     case 'french_press':
       adjustment.sequenceSignature = 'immersion_press';
@@ -4149,6 +4163,7 @@ function resolveMethodFamilyFinalWindowDelta(methodFamily: AiBrewMethodFamily) {
     case 'chemex':
       return 8;
     case 'clever_dripper':
+    case 'hario_switch':
       return 10;
     case 'kono':
       return 5;
@@ -4184,6 +4199,7 @@ function resolveMethodFamilyFinalWindowBounds(methodFamily: AiBrewMethodFamily, 
     case 'chemex':
       return brewMode === 'iced' ? { min: 80, max: 125 } : { min: 75, max: 130 };
     case 'clever_dripper':
+    case 'hario_switch':
       return brewMode === 'iced' ? { min: 42, max: 78 } : { min: 50, max: 88 };
     case 'kono':
       return brewMode === 'iced' ? { min: 58, max: 88 } : { min: 38, max: 78 };
@@ -4223,6 +4239,7 @@ function resolveMethodFamilyDirectionalShift(methodFamily: AiBrewMethodFamily) {
     case 'chemex':
       return -0.12;
     case 'clever_dripper':
+    case 'hario_switch':
       return -0.35;
     case 'april':
       return 0.04;
@@ -4308,6 +4325,7 @@ function buildMethodFamilyShareDeltas(methodFamily: AiBrewMethodFamily, count: n
       deltas[last] -= 0.024;
       break;
     case 'clever_dripper':
+    case 'hario_switch':
       deltas[first] += 0.05;
       deltas[last] -= 0.05;
       if (count > 3) {
@@ -4340,7 +4358,7 @@ function inferBrewStepKind(
   if (step.kind) return step.kind;
   const signature = `${step.id} ${step.label} ${step.note}`.toLowerCase();
   const hasPositiveShare = Number.isFinite(step.share) && step.share > 0;
-  if (context.methodFamily === 'clever_dripper') {
+  if (context.methodFamily === 'clever_dripper' || context.methodFamily === 'hario_switch') {
     if (index === 0) return 'pour';
     if (/\b(open valve|open the valve|release to cup|release and let|drain cleanly|activate drain|drawdown)\b/.test(signature) || index === stepCount - 1) return 'release';
     if (/hold|steep|wait|rest|valve|release|finish|pour/.test(signature) || index > 0) return 'wait';
@@ -4848,6 +4866,7 @@ function buildMethodFamilyStepInstruction(params: {
       }
       break;
     case 'clever_dripper':
+    case 'hario_switch':
       {
         const immersionCopy = resolveImmersionReleaseCopy(context);
       if (phase === 'bloom') {
@@ -5211,6 +5230,36 @@ function polishIcedManualPourOverSteps(
   });
 }
 
+function inferSwitchValveState(step: DeviceBrewProfile['steps'][number], kind: BrewTemplateStepKind) {
+  if (step.valveState) return step.valveState;
+  const signature = `${step.id} ${step.label} ${step.note}`.toLowerCase();
+  if (kind === 'release' || kind === 'drawdown' || kind === 'serve' || /\b(open|release|drawdown|serve)\b/.test(signature)) {
+    return 'open' as const;
+  }
+  if (/\b(closed|close|steep)\b/.test(signature)) return 'closed' as const;
+  return undefined;
+}
+
+function inferSwitchChamberState(step: DeviceBrewProfile['steps'][number], kind: BrewTemplateStepKind) {
+  if (step.chamberState) return step.chamberState;
+  const signature = `${step.id} ${step.label} ${step.note}`.toLowerCase();
+  if (kind === 'serve') return 'served' as const;
+  if (kind === 'drawdown') return 'drawdown' as const;
+  if (kind === 'release' || /\brelease|open\b/.test(signature)) return 'releasing' as const;
+  if (/\bbloom\b/.test(signature)) return 'bloom' as const;
+  if (/\bfill|charge\b/.test(signature)) return 'filling' as const;
+  if (/\bpercolation|open fill\b/.test(signature)) return 'percolation' as const;
+  if (kind === 'wait' || /\bsteep|hold|immersion\b/.test(signature)) return 'immersion' as const;
+  return undefined;
+}
+
+function targetVolumeForChamberLoad(kind: BrewTemplateStepKind, valveState: ReturnType<typeof inferSwitchValveState>, targetVolumeMl: number) {
+  if (kind === 'serve') return 0;
+  if (kind === 'drawdown') return targetVolumeMl;
+  if (valveState === 'open' && (kind === 'pour' || kind === 'release')) return targetVolumeMl;
+  return targetVolumeMl;
+}
+
 function buildSteps(
   profile: DeviceBrewProfile,
   hotWaterMl: number,
@@ -5370,6 +5419,13 @@ function buildSteps(
       );
     }
 
+    const isHarioSwitch = adaptiveShareContext.methodFamily === 'hario_switch';
+    const valveState = isHarioSwitch ? inferSwitchValveState(step, kind) : undefined;
+    const chamberState = isHarioSwitch ? inferSwitchChamberState(step, kind) : undefined;
+    const chamberLoadMl = isHarioSwitch
+      ? Math.max(0, step.chamberLoadMl ?? targetVolumeForChamberLoad(kind, valveState, runningTotal))
+      : undefined;
+
     return {
       id: step.id,
       label: step.label,
@@ -5377,6 +5433,10 @@ function buildSteps(
       startSeconds: adaptedStartSeconds[index] ?? step.startSeconds,
       pourVolumeMl,
       targetVolumeMl: runningTotal,
+      valveState,
+      chamberState,
+      chamberLoadMl,
+      switchProgramme: isHarioSwitch ? (step.switchProgramme || adaptiveShareContext.methodProgramme as SwitchBrewProgramme | undefined) : undefined,
       note,
       hybridInstruction,
     };
@@ -5900,6 +5960,8 @@ function finalizePlanCore(
     filterStyle: controlledDeviceProfile.filterStyle,
     flatBottomProfile: controlledDeviceProfile.flatBottomProfile,
     recipeStyle: controlledDeviceProfile.recipeStyle,
+    physicalConstraints: controlledDeviceProfile.physicalConstraints,
+    methodProgramme: controlledDeviceProfile.methodProgramme,
     brewMode: input.brewMode,
     roastLevel: input.roastLevel,
     roastDevelopment: input.roastDevelopment || undefined,
@@ -6172,6 +6234,8 @@ function finalizePlanCore(
     grindBandLabel: grindDetails.grindBandLabel,
     summary,
     steps,
+    devicePhysicalConstraints: controlledDeviceProfile.physicalConstraints,
+    methodProgramme: controlledDeviceProfile.methodProgramme,
     notes,
     warnings,
     guardrails: {
@@ -7001,6 +7065,19 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
         watch: id
           ? ['Jangan over-stir saat upper chamber aktif.', 'Cut heat tepat waktu supaya finish tidak kasar.']
           : ['Do not over-stir while the upper chamber is active.', 'Cut heat on time so the finish stays clean.'],
+      };
+    case 'hario_switch':
+      return {
+        ...common,
+        controlValue: id
+          ? 'Katup Switch mengatur fase tertutup/terbuka; ikuti target muatan chamber dan checkpoint release.'
+          : 'Switch valve controls closed/open phases; follow chamber load targets and the release checkpoint.',
+        successCue: id
+          ? 'Release stabil, bed tidak terguncang, dan cup tetap manis tanpa finish keruh.'
+          : 'Release flows steadily, the bed stays settled, and the cup keeps sweetness without a muddy finish.',
+        watch: id
+          ? ['Rinse filter, preheat body kaca, dan tara timbangan sebelum mulai.', 'Jangan lewati batas muatan chamber saat katup tertutup.']
+          : ['Rinse the filter, preheat the glass body, and tare the scale first.', 'Do not exceed chamber load while the valve is closed.'],
       };
     case 'clever_dripper':
       if (plan.dripper.id === 'hario-switch') {

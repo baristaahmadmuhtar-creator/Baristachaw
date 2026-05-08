@@ -141,8 +141,95 @@ const catalog: AiBrewCatalog = {
       marketSegment: 'specialty_mainstream',
       releaseStatus: 'established',
       confidence: 'high',
-      methodFamily: 'clever_dripper',
+      methodFamily: 'hario_switch',
       defaultProfileId: 'profile_hario_switch_hot',
+      hidden: true,
+      deprecated: true,
+      migrationTargetIds: ['hario-switch-02', 'hario-switch-03', 'mugen-x-switch'],
+    },
+    {
+      id: 'hario-switch-02',
+      kind: 'dripper',
+      name: 'Hario Switch 02',
+      brand: 'Hario',
+      typeLabel: 'Immersion Switch 02',
+      description: 'Exact 200 ml Switch.',
+      searchText: 'hario switch 02 immersion hybrid valve',
+      catalogVersion: 'test-v2',
+      source: 'test',
+      sourceUrls: ['https://example.com/hario-switch-02'],
+      verificationLevel: 'official',
+      verifiedAt: '2026-05-09',
+      popularityTier: 'specialty_common',
+      marketSegment: 'specialty_mainstream',
+      releaseStatus: 'established',
+      confidence: 'high',
+      methodFamily: 'hario_switch',
+      defaultProfileId: 'profile_hario_switch_02_hot',
+      physicalConstraints: {
+        finishedCapacityMl: 200,
+        recommendedClosedPhaseMaxMl: 180,
+        workingHeadspaceMl: 20,
+        filterSize: 'V60 02',
+        coneType: 'v60',
+      },
+      methodProgramme: 'immersion_then_percolation',
+    },
+    {
+      id: 'hario-switch-03',
+      kind: 'dripper',
+      name: 'Hario Switch 03',
+      brand: 'Hario',
+      typeLabel: 'Immersion Switch 03',
+      description: 'Exact 360 ml Switch.',
+      searchText: 'hario switch 03 immersion hybrid valve',
+      catalogVersion: 'test-v2',
+      source: 'test',
+      sourceUrls: ['https://example.com/hario-switch-03'],
+      verificationLevel: 'official',
+      verifiedAt: '2026-05-09',
+      popularityTier: 'specialty_common',
+      marketSegment: 'specialty_mainstream',
+      releaseStatus: 'established',
+      confidence: 'high',
+      methodFamily: 'hario_switch',
+      defaultProfileId: 'profile_hario_switch_03_hot',
+      physicalConstraints: {
+        finishedCapacityMl: 360,
+        recommendedClosedPhaseMaxMl: 320,
+        workingHeadspaceMl: 40,
+        filterSize: 'V60 03',
+        coneType: 'v60',
+      },
+      methodProgramme: 'bloom_then_immersion',
+    },
+    {
+      id: 'mugen-x-switch',
+      kind: 'dripper',
+      name: 'MUGEN x SWITCH',
+      brand: 'Hario',
+      typeLabel: 'MUGEN x SWITCH 02',
+      description: 'Exact MUGEN x SWITCH 02.',
+      searchText: 'mugen switch hario immersion hybrid valve',
+      catalogVersion: 'test-v2',
+      source: 'test',
+      sourceUrls: ['https://example.com/mugen-x-switch'],
+      verificationLevel: 'official',
+      verifiedAt: '2026-05-09',
+      popularityTier: 'specialty_common',
+      marketSegment: 'specialty_mainstream',
+      releaseStatus: 'established',
+      confidence: 'high',
+      methodFamily: 'hario_switch',
+      defaultProfileId: 'profile_mugen_x_switch_hot',
+      physicalConstraints: {
+        finishedCapacityMl: 200,
+        recommendedClosedPhaseMaxMl: 180,
+        workingHeadspaceMl: 20,
+        filterSize: 'V60 02',
+        coneType: 'mugen',
+      },
+      methodProgramme: 'competition_hybrid',
     },
   ],
   grinders: [
@@ -745,7 +832,7 @@ const catalog: AiBrewCatalog = {
       label: 'Hario Switch Hot',
       brewMode: 'hot',
       dripperIds: ['hario-switch'],
-      methodFamily: 'clever_dripper',
+      methodFamily: 'hario_switch',
       brewMethodId: 'clever_dripper',
       exactMatch: true,
       filterStyle: 'immersion',
@@ -772,11 +859,79 @@ const catalog: AiBrewCatalog = {
       catalogVersion: 'test-v2',
     },
     {
+      id: 'profile_hario_switch_02_hot',
+      label: 'Hario Switch 02 Hot Hybrid',
+      brewMode: 'hot',
+      dripperIds: ['hario-switch-02'],
+      methodFamily: 'hario_switch',
+      brewMethodId: 'clever_dripper',
+      exactMatch: true,
+      filterStyle: 'immersion',
+      methodWorkflow: 'immersion',
+      methodProgramme: 'immersion_then_percolation',
+      physicalConstraints: { finishedCapacityMl: 200, recommendedClosedPhaseMaxMl: 180, workingHeadspaceMl: 20, filterSize: 'V60 02', coneType: 'v60' },
+      ratioDelta: 0.25,
+      tempDeltaC: -2.2,
+      brewTimeDeltaSec: 6,
+      grindBias: 'coarser',
+      note: 'Safe Switch 02 hybrid baseline.',
+      steps: [
+        { id: 'closed_bloom', label: 'Closed Bloom', kind: 'pour', share: 0.35, startSeconds: 0, note: 'Valve closed. Wet the bed evenly.', valveState: 'closed', chamberState: 'bloom' },
+        { id: 'release_bloom', label: 'Open Switch', kind: 'release', share: 0, startSeconds: 40, note: 'Open before larger fill.', valveState: 'open', chamberState: 'releasing' },
+        { id: 'open_fill', label: 'Open Fill', kind: 'pour', share: 0.65, startSeconds: 55, note: 'Valve open. Fill to target.', valveState: 'open', chamberState: 'percolation' },
+        { id: 'drawdown', label: 'Drawdown', kind: 'drawdown', share: 0, startSeconds: 155, note: 'Let drawdown finish.', valveState: 'open', chamberState: 'drawdown' },
+        { id: 'serve', label: 'Serve', kind: 'serve', share: 0, startSeconds: 215, note: 'Serve after drawdown.', valveState: 'open', chamberState: 'served' },
+      ],
+      source: 'test',
+      sourceUrls: ['https://example.com/hario-switch-02-profile'],
+      verificationLevel: 'official',
+      verifiedAt: '2026-05-09',
+      popularityTier: 'specialty_common',
+      marketSegment: 'specialty_mainstream',
+      releaseStatus: 'established',
+      confidence: 'high',
+      catalogVersion: 'test-v2',
+    },
+    {
+      id: 'profile_hario_switch_03_hot',
+      label: 'Hario Switch 03 Hot Hybrid',
+      brewMode: 'hot',
+      dripperIds: ['hario-switch-03'],
+      methodFamily: 'hario_switch',
+      brewMethodId: 'clever_dripper',
+      exactMatch: true,
+      filterStyle: 'immersion',
+      methodWorkflow: 'immersion',
+      methodProgramme: 'bloom_then_immersion',
+      physicalConstraints: { finishedCapacityMl: 360, recommendedClosedPhaseMaxMl: 320, workingHeadspaceMl: 40, filterSize: 'V60 03', coneType: 'v60' },
+      ratioDelta: 0.45,
+      tempDeltaC: -2.2,
+      brewTimeDeltaSec: 10,
+      grindBias: 'coarser',
+      note: 'Switch 03 closed fill baseline.',
+      steps: [
+        { id: 'closed_bloom', label: 'Closed Bloom', kind: 'pour', share: 0.35, startSeconds: 0, note: 'Valve closed. Wet all grounds evenly.', valveState: 'closed', chamberState: 'bloom' },
+        { id: 'closed_fill', label: 'Closed Fill', kind: 'pour', share: 0.65, startSeconds: 35, note: 'Still closed. Fill calmly to target water.', valveState: 'closed', chamberState: 'filling' },
+        { id: 'steep', label: 'Steep Closed', kind: 'wait', share: 0, startSeconds: 110, note: 'Hold immersion contact quietly.', valveState: 'closed', chamberState: 'immersion' },
+        { id: 'release', label: 'Open Switch', kind: 'release', share: 0, startSeconds: 165, note: 'Open the switch cleanly.', valveState: 'open', chamberState: 'releasing' },
+        { id: 'serve', label: 'Serve', kind: 'serve', share: 0, startSeconds: 225, note: 'Serve after drawdown.', valveState: 'open', chamberState: 'served' },
+      ],
+      source: 'test',
+      sourceUrls: ['https://example.com/hario-switch-03-profile'],
+      verificationLevel: 'official',
+      verifiedAt: '2026-05-09',
+      popularityTier: 'specialty_common',
+      marketSegment: 'specialty_mainstream',
+      releaseStatus: 'established',
+      confidence: 'high',
+      catalogVersion: 'test-v2',
+    },
+    {
       id: 'profile_hario_switch_iced',
       label: 'Hario Switch Japanese Iced',
       brewMode: 'iced',
       dripperIds: ['hario-switch'],
-      methodFamily: 'clever_dripper',
+      methodFamily: 'hario_switch',
       brewMethodId: 'clever_dripper_iced',
       exactMatch: true,
       filterStyle: 'immersion',
@@ -798,6 +953,39 @@ const catalog: AiBrewCatalog = {
       marketSegment: 'specialty_mainstream',
       releaseStatus: 'established',
       confidence: 'medium',
+      catalogVersion: 'test-v2',
+    },
+    {
+      id: 'profile_hario_switch_03_iced',
+      label: 'Hario Switch 03 Japanese Iced',
+      brewMode: 'iced',
+      dripperIds: ['hario-switch-03'],
+      methodFamily: 'hario_switch',
+      brewMethodId: 'clever_dripper_iced',
+      exactMatch: true,
+      filterStyle: 'immersion',
+      methodWorkflow: 'immersion',
+      methodProgramme: 'full_immersion',
+      physicalConstraints: { finishedCapacityMl: 360, recommendedClosedPhaseMaxMl: 320, workingHeadspaceMl: 40, filterSize: 'V60 03', coneType: 'v60' },
+      ratioDelta: -0.22,
+      tempDeltaC: 0.2,
+      brewTimeDeltaSec: 12,
+      grindBias: 'same',
+      note: 'Switch 03 iced baseline.',
+      steps: [
+        { id: 'charge', label: 'Charge Closed', kind: 'pour', share: 1, startSeconds: 0, note: 'Valve closed. Add hot water target and steep briefly.', valveState: 'closed', chamberState: 'immersion' },
+        { id: 'steep', label: 'Steep Closed', kind: 'wait', share: 0, startSeconds: 85, note: 'Hold short immersion contact.', valveState: 'closed', chamberState: 'immersion' },
+        { id: 'release', label: 'Release Over Ice', kind: 'release', share: 0, startSeconds: 120, note: 'Open the switch over measured ice.', valveState: 'open', chamberState: 'releasing' },
+        { id: 'finish', label: 'Stir Server', kind: 'serve', share: 0, startSeconds: 165, note: 'Stir server before serving.', valveState: 'open', chamberState: 'served' },
+      ],
+      source: 'test',
+      sourceUrls: ['https://example.com/hario-switch-03-iced-profile'],
+      verificationLevel: 'official',
+      verifiedAt: '2026-05-09',
+      popularityTier: 'specialty_common',
+      marketSegment: 'specialty_mainstream',
+      releaseStatus: 'established',
+      confidence: 'high',
       catalogVersion: 'test-v2',
     },
   ],
@@ -1573,14 +1761,14 @@ test('V60 hot auto plan keeps structured global coffees flexible with four posit
   assertStructuredPlan(brazilPlan);
 });
 
-test('Hario Switch uses hybrid immersion release sequence without changing V60 behavior', () => {
+test('Hario Switch exact variants preserve every volume checkpoint without changing V60 behavior', () => {
   const base = {
     ...createDefaultAiBrewFormState(catalog),
     coffeeName: 'Colombia Huila washed',
-    doseG: '15',
+    doseG: '20',
     process: 'washed',
     roastLevel: 'medium' as const,
-    dripperId: 'hario-switch',
+    dripperId: 'hario-switch-03',
     grinderId: '1zpresso-k-ultra',
     targetProfileId: 'more_sweetness',
     waterMode: 'manual' as const,
@@ -1591,13 +1779,21 @@ test('Hario Switch uses hybrid immersion release sequence without changing V60 b
 
   const hot = buildAiBrewPlan({ ...base, brewMode: 'hot' }, catalog);
   assertPlanEnvelope(hot);
-  assert.equal(hot.methodFamily, 'clever_dripper');
+  assert.equal(hot.methodFamily, 'hario_switch');
   assert.equal(hot.deviceProfileMode, 'exact');
-  assert.equal(hot.deviceProfileId, 'profile_hario_switch_hot');
+  assert.equal(hot.deviceProfileId, 'profile_hario_switch_03_hot');
   assert.equal(hot.ratioToolMethodId, 'clever_dripper');
   assert.equal(hot.steps.filter((step) => step.pourVolumeMl > 0).length, 2);
+  assert.equal(hot.workflowValidation?.status, 'ready');
+  assert.equal(hot.devicePhysicalConstraints?.finishedCapacityMl, 360);
+  assert.ok(hot.steps.every((step) => step.valveState || step.kind === 'serve'));
+  const sourceVolumeIds = hot.steps.filter((step) => step.pourVolumeMl > 0).map((step) => step.id);
+  const guideSourceIds = new Set((hot.workflowGuideSteps || []).flatMap((step) => step.sourceStepIds));
+  assert.deepEqual(sourceVolumeIds.filter((id) => !guideSourceIds.has(id)), []);
   assert.ok(hot.steps.some((step) => step.kind === 'wait' && step.pourVolumeMl === 0));
   assert.ok(hot.steps.some((step) => step.kind === 'release' && step.pourVolumeMl === 0));
+  assert.ok((hot.workflowGuideSteps || []).some((step) => step.techniqueChips.some((chip) => chip.key === 'valve' && chip.value === 'closed')));
+  assert.ok((hot.workflowGuideSteps || []).some((step) => step.techniqueChips.some((chip) => chip.key === 'chamber_load')));
   assert.match(
     hot.steps.map((step) => `${step.label} ${step.note}`).join(' '),
     /valve|switch|release/i,
@@ -1616,13 +1812,91 @@ test('Hario Switch uses hybrid immersion release sequence without changing V60 b
 
   const iced = buildAiBrewPlan({ ...base, brewMode: 'iced' }, catalog);
   assertPlanEnvelope(iced);
-  assert.equal(iced.methodFamily, 'clever_dripper');
+  assert.equal(iced.methodFamily, 'hario_switch');
   assert.equal(iced.deviceProfileMode, 'exact');
-  assert.equal(iced.deviceProfileId, 'profile_hario_switch_iced');
+  assert.equal(iced.deviceProfileId, 'profile_hario_switch_03_iced');
   assert.equal(iced.ratioToolMethodId, 'clever_dripper_iced');
   assert.equal(iced.hotWaterMl + iced.iceMl, iced.totalWaterMl);
   assert.ok(iced.estimatedCupOutputMl < iced.totalWaterMl);
   assert.ok(iced.steps.some((step) => step.kind === 'release' && /ice|es/i.test(`${step.label} ${step.note}`)));
+});
+
+test('Hario Switch 02 guards chamber capacity and legacy Switch requires exact size', () => {
+  const switch02 = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'hot',
+    coffeeName: 'Colombia Huila washed',
+    doseG: '20',
+    process: 'washed',
+    roastLevel: 'medium',
+    dripperId: 'hario-switch-02',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'more_sweetness',
+    targetWaterMl: '300',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, catalog);
+  assert.equal(switch02.methodFamily, 'hario_switch');
+  assert.equal(switch02.deviceProfileId, 'profile_hario_switch_02_hot');
+  assert.equal(switch02.workflowValidation?.status, 'ready');
+  assert.ok(Math.max(...switch02.steps.filter((step) => step.valveState === 'closed').map((step) => step.chamberLoadMl || 0)) <= 180);
+  const positiveStepIds = switch02.steps.filter((step) => step.pourVolumeMl > 0).map((step) => step.id);
+  const guideSourceIds = new Set((switch02.workflowGuideSteps || []).flatMap((step) => step.sourceStepIds));
+  assert.deepEqual(positiveStepIds.filter((id) => !guideSourceIds.has(id)), []);
+
+  const legacy = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'hot',
+    coffeeName: 'Colombia Huila washed',
+    doseG: '15',
+    process: 'washed',
+    roastLevel: 'medium',
+    dripperId: 'hario-switch',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'more_sweetness',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, catalog);
+  assert.equal(legacy.methodFamily, 'hario_switch');
+  assert.equal(legacy.workflowValidation?.status, 'blocked');
+  assert.match((legacy.workflowValidation?.blockingErrors || []).join(' '), /Choose Switch 02, Switch 03, or MUGEN x SWITCH/i);
+
+  const unsafeGuide = buildWorkflowAwareGuideSteps({
+    ...switch02,
+    methodProgramme: 'full_immersion',
+    hotWaterMl: 300,
+    steps: [{
+      ...switch02.steps[0],
+      id: 'unsafe_full_charge',
+      label: 'Unsafe Full Charge',
+      pourVolumeMl: 300,
+      targetVolumeMl: 300,
+      valveState: 'closed',
+      chamberState: 'immersion',
+      chamberLoadMl: 300,
+    }],
+  });
+  const unsafeValidation = validateMethodWorkflowGuide({
+    ...switch02,
+    methodProgramme: 'full_immersion',
+    hotWaterMl: 300,
+    steps: [{
+      ...switch02.steps[0],
+      id: 'unsafe_full_charge',
+      label: 'Unsafe Full Charge',
+      pourVolumeMl: 300,
+      targetVolumeMl: 300,
+      valveState: 'closed',
+      chamberState: 'immersion',
+      chamberLoadMl: 300,
+    }],
+  }, unsafeGuide);
+  assert.equal(unsafeValidation.status, 'blocked');
+  assert.match(unsafeValidation.blockingErrors.join(' '), /exceeds safe|Full-immersion/i);
 });
 
 test('AI Brew defaults target profile from process, variety, and altitude without overriding explicit target', () => {
@@ -2007,7 +2281,9 @@ function buildProductionAiBrewCatalogForTests(): AiBrewCatalog {
 
   const drippers = readJsonItems<RawDripperCatalogEntry>('apps/web/public/data/ai-brew/drippers.v2026-03.json')
     .map((entry): EquipmentCatalogEntry => ({
-      id: catalogSlug(entry.name),
+      id: typeof entry.id === 'string' && entry.id.trim() && !/^\d+$/.test(entry.id.trim())
+        ? catalogSlug(entry.id)
+        : catalogSlug(entry.name),
       kind: 'dripper',
       name: entry.name,
       brand: entry.brand,
@@ -2015,6 +2291,18 @@ function buildProductionAiBrewCatalogForTests(): AiBrewCatalog {
       description: entry.description || undefined,
       searchText: `${entry.name} ${entry.brand || ''} ${entry.type} ${entry.description || ''}`.toLowerCase(),
       methodFamily: inferDripperMethodFamily(entry.name, entry.type),
+      defaultProfileId: entry.id === 'hario-switch-02'
+        ? 'profile_hario_switch_02_hot'
+        : entry.id === 'hario-switch-03'
+          ? 'profile_hario_switch_03_hot'
+          : entry.id === 'mugen-x-switch'
+            ? 'profile_mugen_x_switch_hot'
+            : undefined,
+      hidden: entry.hidden,
+      deprecated: entry.deprecated,
+      migrationTargetIds: entry.migrationTargetIds,
+      physicalConstraints: entry.physicalConstraints,
+      methodProgramme: entry.methodProgramme,
       ...provenance(entry),
     }));
 
@@ -2500,12 +2788,12 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
   assert.ok(pulsar.steps.some((step) => step.kind === 'wait' || step.kind === 'release'));
 
   const clever = planFor({ dripperId: 'clever-dripper' });
-  const switchPlan = planFor({ dripperId: 'hario-switch' });
+  const switchPlan = planFor({ dripperId: 'hario-switch-03' });
   assert.equal(clever.deviceProfileId, 'profile_clever_dripper_hot');
   assert.deepEqual(clever.steps.map((step) => step.kind), ['pour', 'wait', 'release', 'serve']);
   assert.equal(positivePourCount(clever), 1);
   assert.match(textFor(clever), /steep-and-release|full-water charge|not a V60 pulse/i);
-  assert.equal(switchPlan.deviceProfileId, 'profile_hario_switch_hot');
+  assert.equal(switchPlan.deviceProfileId, 'profile_hario_switch_03_hot');
   assert.deepEqual(switchPlan.steps.map((step) => step.kind), ['pour', 'pour', 'wait', 'release', 'serve']);
   assert.ok(positivePourCount(switchPlan) <= 2);
   assert.match(textFor(switchPlan), /closed bloom|closed fill|open switch/i);

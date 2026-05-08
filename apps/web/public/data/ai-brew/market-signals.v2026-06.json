@@ -445,6 +445,55 @@
       "confidence": "high"
     },
     {
+      "id": "hario-switch-02",
+      "kind": "dripper",
+      "description": "Exact Switch 02 profile with 200 ml finished-capacity guardrails.",
+      "defaultProfileId": "profile_hario_switch_02_hot",
+      "source": "hario-official",
+      "sourceUrls": [
+        "https://global.hario.com/product/coffee/dripper/SSD.html"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "hario-switch-03",
+      "kind": "dripper",
+      "description": "Exact Switch 03 profile with 360 ml finished-capacity guardrails.",
+      "defaultProfileId": "profile_hario_switch_03_hot",
+      "source": "hario-official",
+      "sourceUrls": [
+        "https://global.hario.com/product/coffee/dripper/SSD.html"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
+      "id": "mugen-x-switch",
+      "kind": "dripper",
+      "description": "MUGEN x SWITCH 02 profile with MUGEN cone and Switch valve workflow.",
+      "defaultProfileId": "profile_mugen_x_switch_hot",
+      "source": "hario-official",
+      "sourceUrls": [
+        "https://global.hario.com/product/coffee/dripper/VDSM.html",
+        "https://www.hario-usa.com/products/mugen-switch"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-09",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
       "id": "hario-v60",
       "kind": "dripper",
       "description": "Global cone dripper baseline used as the reference point for manual filter brewing.",

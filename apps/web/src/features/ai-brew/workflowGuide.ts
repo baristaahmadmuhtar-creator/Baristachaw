@@ -3,6 +3,9 @@ import type {
   BrewPlan,
   BrewPlanStep,
   MethodWorkflowValidationResult,
+  SwitchBrewProgramme,
+  SwitchChamberState,
+  SwitchValveState,
   WorkflowGuideActionType,
   WorkflowGuideStep,
   WorkflowGuideTechniqueChip,
@@ -62,8 +65,21 @@ function agitationChip(step: BrewPlanStep) {
   return step.agitationLevel ? chip('agitation', 'Agitation', step.agitationLevel) : null;
 }
 
+function formatSwitchProgramme(programme: SwitchBrewProgramme | string) {
+  return String(programme).replace(/_/g, ' ');
+}
+
 function techniqueChipsFromStep(step: BrewPlanStep): WorkflowGuideTechniqueChip[] {
-  return [flowChip(step), pathChip(step), heightChip(step), agitationChip(step)].filter(Boolean) as WorkflowGuideTechniqueChip[];
+  return [
+    flowChip(step),
+    pathChip(step),
+    heightChip(step),
+    agitationChip(step),
+    step.valveState ? chip('valve', 'Valve', step.valveState) : null,
+    step.chamberState ? chip('chamber', 'Chamber', step.chamberState) : null,
+    Number.isFinite(step.chamberLoadMl) ? chip('chamber_load', 'Chamber load', formatMl(step.chamberLoadMl || 0)) : null,
+    step.switchProgramme ? chip('programme', 'Programme', formatSwitchProgramme(step.switchProgramme)) : null,
+  ].filter(Boolean) as WorkflowGuideTechniqueChip[];
 }
 
 function normalizeStart(seconds: number) {
@@ -115,6 +131,10 @@ function operationalStep(params: {
   warnings?: string[];
   sourceStepIds?: string[];
   kind?: BrewPlanStep['kind'];
+  valveState?: SwitchValveState;
+  chamberState?: SwitchChamberState;
+  chamberLoadMl?: number;
+  switchProgramme?: SwitchBrewProgramme;
 }): WorkflowGuideStep {
   return {
     id: params.id,
@@ -124,6 +144,10 @@ function operationalStep(params: {
     endSeconds: typeof params.endSeconds === 'number' ? normalizeStart(params.endSeconds) : undefined,
     targetVolumeMl: Math.max(0, Math.round(params.targetVolumeMl || 0)),
     pourVolumeMl: Math.max(0, Math.round(params.pourVolumeMl || 0)),
+    valveState: params.valveState,
+    chamberState: params.chamberState,
+    chamberLoadMl: params.chamberLoadMl,
+    switchProgramme: params.switchProgramme,
     actionType: params.actionType,
     primaryText: params.primaryText,
     secondaryText: params.secondaryText,
@@ -483,6 +507,86 @@ function buildCleverGuide(plan: BrewPlan): WorkflowGuideStep[] {
   ]);
 }
 
+function switchActionType(step: BrewPlanStep): WorkflowGuideActionType {
+  if (step.kind === 'release') return 'release';
+  if (step.kind === 'drawdown') return 'drawdown';
+  if (step.kind === 'serve') return 'serve';
+  if (step.kind === 'wait') return 'steep';
+  return step.pourVolumeMl > 0 ? 'charge' : 'wait';
+}
+
+function buildSwitchPrimaryText(plan: BrewPlan, step: BrewPlanStep) {
+  const valve = step.valveState ? `Valve ${step.valveState}. ` : '';
+  const targetLabel = plan.brewMode === 'iced' ? 'hot water target' : 'target';
+  if (step.pourVolumeMl > 0) {
+    return `${valve}Pour ${formatMl(step.pourVolumeMl)} to ${formatMl(step.targetVolumeMl)} ${targetLabel}.`;
+  }
+  if (step.kind === 'release') {
+    return `${valve || 'Valve open. '}Release at ${formatMl(step.targetVolumeMl || plan.hotWaterMl)} and let the bed drain cleanly.`;
+  }
+  if (step.kind === 'drawdown') {
+    return `${valve || 'Valve open. '}Let drawdown finish without topping up.`;
+  }
+  if (step.kind === 'serve') {
+    return 'Serve after drawdown; do not add late bypass water unless it is already in the deterministic plan.';
+  }
+  return `${valve}Hold contact until ${formatTime(step.startSeconds)}; keep the chamber load stable.`;
+}
+
+function buildHarioSwitchGuide(plan: BrewPlan): WorkflowGuideStep[] {
+  const programme = (plan.methodProgramme || 'auto') as SwitchBrewProgramme;
+  const guideSteps: WorkflowGuideStep[] = [
+    operationalStep({
+      id: 'guide_hario_switch_setup',
+      label: 'Rinse, preheat, and set valve',
+      actionType: 'rinse_preheat',
+      startSeconds: 0,
+      primaryText: 'Rinse the V60 paper, preheat brewer/server, tare the scale, and set the Switch valve for the programme.',
+      techniqueChips: [
+        chip('programme', 'Programme', formatSwitchProgramme(programme)),
+        chip('valve', 'Valve', 'set before brewing'),
+      ],
+      switchProgramme: programme,
+      valveState: 'closed',
+      chamberState: 'empty',
+    }),
+  ];
+
+  for (const step of plan.steps) {
+    const switchChips = techniqueChipsFromStep({
+      ...step,
+      switchProgramme: step.switchProgramme || programme,
+    });
+    guideSteps.push(sourceStep(switchActionType(step), step, {
+      id: `guide_hario_switch_${step.id}`,
+      label: step.label,
+      primaryText: buildSwitchPrimaryText(plan, step),
+      secondaryText: step.hybridInstruction || step.note,
+      techniqueChips: switchChips,
+    }));
+  }
+
+  if (!guideSteps.some((step) => step.actionType === 'serve')) {
+    guideSteps.push(operationalStep({
+      id: 'guide_hario_switch_serve',
+      label: 'Serve',
+      actionType: 'serve',
+      startSeconds: plan.totalTimeSeconds,
+      targetVolumeMl: plan.hotWaterMl,
+      primaryText: 'Serve after drawdown and record chamber timing for the next dial-in.',
+      techniqueChips: [
+        chip('programme', 'Programme', formatSwitchProgramme(programme)),
+        chip('chamber', 'Chamber', 'served'),
+      ],
+      switchProgramme: programme,
+      valveState: 'open',
+      chamberState: 'served',
+    }));
+  }
+
+  return stepsSorted(guideSteps);
+}
+
 function buildMokaGuide(plan: BrewPlan): WorkflowGuideStep[] {
   const heat = findKind(plan, 'heat');
   const serve = findKind(plan, 'serve') || plan.steps.at(-1);
@@ -799,6 +903,7 @@ function buildColdBrewGuide(plan: BrewPlan): WorkflowGuideStep[] {
 export function buildWorkflowAwareGuideSteps(plan: BrewPlan): WorkflowGuideStep[] {
   if (plan.methodFamily === 'aeropress') return buildAeroPressGuide(plan);
   if (plan.methodFamily === 'french_press') return buildFrenchPressGuide(plan);
+  if (plan.methodFamily === 'hario_switch') return buildHarioSwitchGuide(plan);
   if (plan.methodFamily === 'clever_dripper') return buildCleverGuide(plan);
   if (plan.methodFamily === 'moka_pot') return buildMokaGuide(plan);
   if (plan.methodFamily === 'espresso') return buildEspressoGuide(plan);
@@ -853,6 +958,44 @@ function validateIcedEnvelope(plan: BrewPlan, blockingErrors: string[]) {
   }
 }
 
+function validateHarioSwitchWorkflow(plan: BrewPlan, guideSteps: WorkflowGuideStep[], blockingErrors: string[], warnings: string[]) {
+  if (plan.dripper.id === 'hario-switch') {
+    blockingErrors.push('Legacy Hario Switch profile is size-ambiguous. Choose Switch 02, Switch 03, or MUGEN x SWITCH before brewing.');
+  }
+
+  const preservedStepIds = new Set(guideSteps.flatMap((step) => step.sourceStepIds));
+  const missingVolumeSteps = plan.steps
+    .filter((step) => step.pourVolumeMl > 0)
+    .filter((step) => !preservedStepIds.has(step.id));
+  if (missingVolumeSteps.length > 0) {
+    blockingErrors.push(`Hario Switch guide dropped volume checkpoint(s): ${missingVolumeSteps.map((step) => step.id).join(', ')}.`);
+  }
+
+  const constraints = plan.devicePhysicalConstraints;
+  const closedLimit = constraints?.recommendedClosedPhaseMaxMl || constraints?.finishedCapacityMl;
+  if (!closedLimit) {
+    blockingErrors.push('Hario Switch exact profile is missing chamber capacity constraints.');
+    return;
+  }
+
+  const closedLoads = plan.steps
+    .filter((step) => step.valveState === 'closed')
+    .map((step) => step.chamberLoadMl ?? step.targetVolumeMl)
+    .filter((value) => Number.isFinite(value) && value > 0);
+  const maxClosedLoad = Math.max(0, ...closedLoads);
+  if (maxClosedLoad > closedLimit + 1) {
+    blockingErrors.push(`Hario Switch closed chamber load ${Math.round(maxClosedLoad)} ml exceeds safe ${Math.round(closedLimit)} ml. Choose Switch 03 or a hybrid programme.`);
+  }
+
+  if (plan.methodProgramme === 'full_immersion' && plan.hotWaterMl > closedLimit + 1) {
+    blockingErrors.push(`Full-immersion Switch programme needs ${Math.round(plan.hotWaterMl)} ml closed capacity, above safe ${Math.round(closedLimit)} ml.`);
+  }
+
+  if (!constraints.finishedCapacityMl || !constraints.filterSize) {
+    warnings.push('Hario Switch profile needs complete capacity and filter-size evidence before public-ready confidence.');
+  }
+}
+
 export function validateMethodWorkflowGuide(plan: BrewPlan, guideSteps: WorkflowGuideStep[]): MethodWorkflowValidationResult {
   const missingPhases: string[] = [];
   const warnings: string[] = [];
@@ -876,6 +1019,14 @@ export function validateMethodWorkflowGuide(plan: BrewPlan, guideSteps: Workflow
   }
 
   switch (plan.methodFamily) {
+    case 'hario_switch':
+      requirePhase(accumulator, phases, 'valve state', /valve|closed|open/);
+      requirePhase(accumulator, phases, 'chamber state', /chamber|immersion|percolation/);
+      requirePhase(accumulator, phases, 'release/open', /release|open/);
+      requirePhase(accumulator, phases, 'serve', 'serve');
+      validateHarioSwitchWorkflow(plan, guideSteps, blockingErrors, warnings);
+      if (phases.has(/generic clever only|single charge only/)) blockingErrors.push('Hario Switch workflow must not collapse to a generic single-charge Clever guide.');
+      break;
     case 'aeropress':
       requirePhase(accumulator, phases, 'charge', /charge|water/);
       requirePhase(accumulator, phases, 'stir/swirl', /stir|swirl/);

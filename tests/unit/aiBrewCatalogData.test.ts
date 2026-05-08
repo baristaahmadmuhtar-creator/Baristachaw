@@ -158,7 +158,9 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
 
   for (const [profileId, workflow] of [
     ['profile_clever_dripper_hot', 'immersion'],
-    ['profile_hario_switch_hot', 'immersion'],
+    ['profile_hario_switch_02_hot', 'immersion'],
+    ['profile_hario_switch_03_hot', 'immersion'],
+    ['profile_mugen_x_switch_hot', 'immersion'],
     ['profile_aeropress_hot', 'pressure'],
     ['profile_french_press_hot', 'immersion'],
     ['profile_bialetti_moka_pot_hot', 'stovetop'],
@@ -169,6 +171,18 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   ] as const) {
     const profile = profiles.find((entry) => entry.id === profileId);
     assert.equal(profile?.methodWorkflow, workflow, `${profileId} should declare ${workflow} workflow`);
+  }
+
+  for (const [profileId, capacity, filterSize] of [
+    ['profile_hario_switch_02_hot', 200, 'V60 02'],
+    ['profile_hario_switch_03_hot', 360, 'V60 03'],
+    ['profile_mugen_x_switch_hot', 200, 'V60 02'],
+  ] as const) {
+    const profile = profiles.find((entry) => entry.id === profileId);
+    assert.equal(profile?.methodFamily, 'hario_switch', `${profileId} should use first-class Switch method family`);
+    assert.equal(profile?.physicalConstraints?.finishedCapacityMl, capacity, `${profileId} should carry official finished capacity`);
+    assert.equal(profile?.physicalConstraints?.filterSize, filterSize, `${profileId} should carry filter size`);
+    assert.ok(profile?.physicalConstraints?.recommendedClosedPhaseMaxMl, `${profileId} should cap closed chamber load`);
   }
 
   for (const [profileId, flatFamily] of [

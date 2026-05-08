@@ -171,6 +171,7 @@ const METHOD_CUE_PATTERNS: Partial<Record<BrewPlan['methodFamily'], RegExp>> = {
   batch_brew: /\b(batch|machine|brew\s+cycle|basket|spray|drawdown|carafe|bed)\b/i,
   french_press: /\b(french\s+press|press\s+pot|immersion|steep|press|plunge|decant|separate)\b/i,
   aeropress: /\b(aeropress|immersion|steep|press|plunge|hiss|cap|filter)\b/i,
+  hario_switch: /\b(hario\s+switch|switch|valve|closed|open|release|chamber|immersion|percolation)\b/i,
   siphon: /\b(siphon|syphon|vacuum|heat|upper\s+chamber|drawdown|stir|agitate)\b/i,
 };
 const RELATIVE_VALUE_CONTEXT_PATTERN = /\b(by|raise|raised|increase|increased|decrease|decreased|lower|lowered|higher|hotter|cooler|drop|dropped|bump|bumped|more|less)\b/i;
@@ -184,6 +185,7 @@ const METHOD_FAMILY_ALIASES: Record<BrewPlan['methodFamily'], string[]> = {
   chemex: ['chemex'],
   kalita_wave: ['kalita', 'kalita wave'],
   clever_dripper: ['clever dripper', 'clever'],
+  hario_switch: ['hario switch', 'switch', 'mugen switch'],
   origami: ['origami'],
   april: ['april dripper', 'april brewer', 'april'],
   melitta: ['melitta'],

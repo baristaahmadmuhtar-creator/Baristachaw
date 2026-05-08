@@ -1133,7 +1133,9 @@ const CORE_BREWER_IDS = [
   'aeropress',
   'french-press',
   'hario-v60',
-  'hario-switch',
+  'hario-switch-02',
+  'hario-switch-03',
+  'mugen-x-switch',
   'kalita-wave-155-185',
   'chemex',
   'clever-dripper',
@@ -1163,6 +1165,7 @@ const METHOD_FAMILY_SEARCH_ALIASES: Record<AiBrewMethodFamily, string> = {
   chemex: 'chemex glass pour over thick paper',
   kalita_wave: 'kalita wave flat bottom wave filter',
   clever_dripper: 'clever dripper switch immersion release steep',
+  hario_switch: 'hario switch mugen valve closed open immersion release hybrid',
   origami: 'origami cone wave folded dripper',
   april: 'april brewer flat bottom pulse',
   melitta: 'melitta trapezoid 102',
@@ -2163,6 +2166,14 @@ function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: s
       return 'Decant';
     case 'release':
       return 'Release';
+    case 'valve':
+      return 'Katup';
+    case 'chamber':
+      return 'Ruang';
+    case 'chamber_load':
+      return 'Muatan';
+    case 'programme':
+      return 'Program';
     case 'drawdown':
       return 'Drawdown';
     case 'draw_up':
@@ -2199,6 +2210,13 @@ function localizeWorkflowChipValue(value: string, language: string) {
     .replace(/immersion_charge/g, 'charge immersion')
     .replace(/heat_control/g, 'kontrol panas')
     .replace(/machine_flow/g, 'flow mesin')
+    .replace(/closed/g, 'tertutup')
+    .replace(/open/g, 'terbuka')
+    .replace(/bloom then immersion/g, 'bloom lalu immersion')
+    .replace(/immersion then percolation/g, 'immersion lalu perkolasi')
+    .replace(/percolation then immersion/g, 'perkolasi lalu immersion')
+    .replace(/temperature shift hybrid/g, 'hybrid suhu bertahap')
+    .replace(/competition hybrid/g, 'hybrid kompetisi')
     .replace(/\blow\b/g, 'rendah')
     .replace(/\bmedium\b/g, 'sedang')
     .replace(/\bcontrolled\b/g, 'terkontrol')
@@ -2829,7 +2847,7 @@ function filterAiBrewStepMetricsForDensity(
   density: AiBrewGuideDensity,
 ) {
   if (density === 'pro') return metrics;
-  const keep = new Set(['Start', 'Mulai', 'Target', 'Pour', 'Tuang', 'Yield', 'Action', 'Aksi', 'Charge', 'Steep', 'Press', 'Stop', 'Tekan']);
+  const keep = new Set(['Start', 'Mulai', 'Target', 'Pour', 'Tuang', 'Yield', 'Action', 'Aksi', 'Charge', 'Steep', 'Press', 'Stop', 'Tekan', 'Valve', 'Katup', 'Chamber', 'Ruang', 'Chamber load', 'Muatan', 'Programme', 'Program']);
   const filtered = metrics.filter((item) => keep.has(item.label));
   return filtered.length > 0 ? filtered.slice(0, 4) : metrics.slice(0, 2);
 }
@@ -3907,6 +3925,7 @@ function PlanResultDialog({
   const id = isIndonesianAiBrewLanguage(language);
   const waterSourceLinks = plan.waterBrandSourceUrls || [];
   const workflowValidation = plan.workflowValidation;
+  const workflowBlocked = workflowValidation?.status === 'blocked';
   const localizedTargetProfileLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language);
   const displaySummary = compactResultSummaryForDisplay(buildPremiumResultSummary(plan, language), plan, language);
   const methodBrief = buildPlanMethodBrief(plan, language);
@@ -4332,13 +4351,13 @@ function PlanResultDialog({
                   <button type="button" onClick={onEditInputs} className={resultActionButtonClass}>
                     {copy.editInputs}
                   </button>
-                  <button type="button" onClick={() => onUseInTimer(plan.totalTimeSeconds)} className={resultActionButtonClass} data-testid="ai-brew-use-timer" aria-label={copy.ariaUseInTimer.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
+                  <button type="button" onClick={() => onUseInTimer(plan.totalTimeSeconds)} disabled={workflowBlocked} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-use-timer" aria-label={copy.ariaUseInTimer.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
                     {copy.useInTimer}
                   </button>
                   <button type="button" onClick={() => onUseInRatio(plan)} className={resultActionButtonClass} data-testid="ai-brew-use-ratio" aria-label={copy.ariaUseInRatio.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
                     {copy.useInRatio}
                   </button>
-                  <button type="button" onClick={onSaveRecipe} disabled={saving} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-save" aria-label={copy.ariaSaveToCollection.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
+                  <button type="button" onClick={onSaveRecipe} disabled={saving || workflowBlocked} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-save" aria-label={copy.ariaSaveToCollection.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
                     {saveButtonLabel}
                   </button>
                   <button type="button" onClick={onToggleFavorite} className={resultActionButtonClass} data-testid="ai-brew-favorite" aria-label={(currentPreset ? copy.ariaFavoriteRemove : copy.ariaFavoriteAdd).replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
@@ -4730,7 +4749,7 @@ function PlanResultDialog({
                         <button
                           type="button"
                           onClick={onSaveRecipe}
-                          disabled={saving}
+                          disabled={saving || workflowBlocked}
                           className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-3 text-xs font-semibold text-blue-700 transition-colors hover:border-blue-500/30 hover:bg-blue-500/[0.08] disabled:cursor-not-allowed disabled:opacity-55 dark:text-blue-300"
                           data-testid="ai-brew-save-inline"
                           aria-label={copy.ariaSaveToCollection.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}
@@ -5091,7 +5110,8 @@ function PlanResultDialog({
                       <button
                         type="button"
                         onClick={flowRunning ? pauseFlowTimer : startFlowTimer}
-                        className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]"
+                        disabled={workflowBlocked}
+                        className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)] disabled:cursor-not-allowed disabled:opacity-55"
                         data-testid="ai-brew-flow-toggle"
                       >
                         {flowRunning ? <Pause size={15} /> : <Play size={15} />}
@@ -5109,7 +5129,8 @@ function PlanResultDialog({
                       <button
                         type="button"
                         onClick={() => onUseInTimer(plan.totalTimeSeconds)}
-                        className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-4 py-2 text-sm font-medium text-primary"
+                        disabled={workflowBlocked}
+                        className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-4 py-2 text-sm font-medium text-primary disabled:cursor-not-allowed disabled:opacity-55"
                         data-testid="ai-brew-flow-open-timer"
                       >
                         {copy.flowOpenTimer}
@@ -5548,13 +5569,16 @@ function buildVarietyPickerOptions(catalog: AiBrewCatalog, copy: CopySet) {
 }
 
 function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopySet, kind: 'dripper' | 'grinder', language?: string) {
+  const selectableItems = kind === 'dripper'
+    ? items.filter((item) => !item.hidden)
+    : items;
   const displayItems = kind === 'dripper'
-    ? [...items].sort((a, b) => {
+    ? [...selectableItems].sort((a, b) => {
       const priorityDelta = scoreBrewerDisplayOrder(a) - scoreBrewerDisplayOrder(b);
       if (priorityDelta !== 0) return priorityDelta;
       return a.name.localeCompare(b.name);
     })
-    : [...items].sort((a, b) => {
+    : [...selectableItems].sort((a, b) => {
       const priorityDelta = scoreGrinderDisplayOrder(a) - scoreGrinderDisplayOrder(b);
       if (priorityDelta !== 0) return priorityDelta;
       return a.name.localeCompare(b.name);
@@ -6867,6 +6891,12 @@ export function AiBrewPanel({
 
   async function handleSaveRecipe() {
     if (!plan || saving) return;
+    if (plan.workflowValidation?.status === 'blocked') {
+      setSaveError(isIndonesianAiBrewLanguage(language)
+        ? 'Resep belum bisa disimpan karena panduan seduh masih diblokir.'
+        : 'Recipe cannot be saved while the workflow guide is blocked.');
+      return;
+    }
     setSaving(true);
     setSaveSuccess(null);
     setSaveError(null);
@@ -7029,6 +7059,12 @@ export function AiBrewPanel({
 
   async function runAiCoach(mode: AiCoachMode) {
     if (!plan) return;
+    if (plan.workflowValidation?.status === 'blocked') {
+      setAiError(isIndonesianAiBrewLanguage(language)
+        ? 'AI Assist dikunci karena panduan seduh masih diblokir. Pilih ukuran Switch exact atau programme yang aman dulu.'
+        : 'AI Assist is locked because the brew guide is blocked. Choose an exact Switch size or a safe programme first.');
+      return;
+    }
     if (!ensureAiAccess(`ai_brew_${mode}`)) return;
     if (isOffline) {
       setAiError(copy.aiOffline);
@@ -7204,7 +7240,7 @@ export function AiBrewPanel({
           ? copy.dripper
           : copy.grinder
     : copy.process;
-  const aiCoachDisabled = !plan || isOffline || aiBusy !== null;
+  const aiCoachDisabled = !plan || isOffline || aiBusy !== null || plan.workflowValidation?.status === 'blocked';
   const aiCoachReason = !plan
     ? null
     : isOffline

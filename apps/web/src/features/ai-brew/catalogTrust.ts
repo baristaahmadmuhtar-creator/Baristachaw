@@ -50,9 +50,9 @@ export const BREWER_FAMILY_OVERRIDES: Record<string, BrewerFamilyOverride> = {
     baseline: 'Flat bottom',
   },
   'hario-switch': {
-    family: 'clever_dripper',
-    trust: 'derived',
-    baseline: 'V60 + immersion release',
+    family: 'hario_switch',
+    trust: 'calibration_required',
+    baseline: 'Choose exact Switch 02, Switch 03, or MUGEN x SWITCH',
   },
   'nextlevel-pulsar': {
     family: 'april',
@@ -78,8 +78,6 @@ const EXPERIMENTAL_MATCHERS = [
   'variable',
   'gabi',
   'vietnam',
-  'switch',
-  'mugen',
   'hybrid',
 ];
 
@@ -99,12 +97,12 @@ export function resolveBrewerProfileTrustStatus(params: {
     return override.trust;
   }
 
-  if (EXPERIMENTAL_MATCHERS.some((keyword) => name.includes(keyword))) {
-    return 'experimental';
-  }
-
   if (params.deviceProfileMode === 'exact' && params.exactMatch && params.confidence === 'high') {
     return 'exact';
+  }
+
+  if (EXPERIMENTAL_MATCHERS.some((keyword) => name.includes(keyword))) {
+    return 'experimental';
   }
 
   if (params.deviceProfileMode === 'derived_template') {

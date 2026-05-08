@@ -76,7 +76,80 @@
       "name": "Hario Switch",
       "brand": "Hario",
       "type": "Immersion Switch",
-      "source": "user_dataset"
+      "source": "hario-official",
+      "sourceUrls": [
+        "https://global.hario.com/product/coffee/dripper/SSD.html"
+      ],
+      "verificationLevel": "official",
+      "confidence": "high",
+      "hidden": true,
+      "deprecated": true,
+      "migrationTargetIds": [
+        "hario-switch-02",
+        "hario-switch-03",
+        "mugen-x-switch"
+      ]
+    },
+    {
+      "id": "hario-switch-02",
+      "name": "Hario Switch 02",
+      "brand": "Hario",
+      "type": "Immersion Switch 02",
+      "source": "hario-official",
+      "sourceUrls": [
+        "https://global.hario.com/product/coffee/dripper/SSD.html"
+      ],
+      "verificationLevel": "official",
+      "confidence": "high",
+      "physicalConstraints": {
+        "finishedCapacityMl": 200,
+        "recommendedClosedPhaseMaxMl": 180,
+        "workingHeadspaceMl": 20,
+        "filterSize": "V60 02",
+        "coneType": "v60"
+      },
+      "methodProgramme": "bloom_then_immersion"
+    },
+    {
+      "id": "hario-switch-03",
+      "name": "Hario Switch 03",
+      "brand": "Hario",
+      "type": "Immersion Switch 03",
+      "source": "hario-official",
+      "sourceUrls": [
+        "https://global.hario.com/product/coffee/dripper/SSD.html"
+      ],
+      "verificationLevel": "official",
+      "confidence": "high",
+      "physicalConstraints": {
+        "finishedCapacityMl": 360,
+        "recommendedClosedPhaseMaxMl": 320,
+        "workingHeadspaceMl": 40,
+        "filterSize": "V60 03",
+        "coneType": "v60"
+      },
+      "methodProgramme": "bloom_then_immersion"
+    },
+    {
+      "id": "mugen-x-switch",
+      "name": "MUGEN x SWITCH",
+      "brand": "Hario",
+      "type": "MUGEN x SWITCH 02",
+      "source": "hario-official",
+      "sourceUrls": [
+        "https://global.hario.com/product/coffee/dripper/VDSM.html",
+        "https://www.hario-usa.com/products/mugen-switch"
+      ],
+      "verificationLevel": "official",
+      "confidence": "high",
+      "physicalConstraints": {
+        "finishedCapacityMl": 200,
+        "recommendedClosedPhaseMaxMl": 180,
+        "workingHeadspaceMl": 20,
+        "filterSize": "V60 02",
+        "coneType": "mugen"
+      },
+      "methodProgramme": "competition_hybrid"
     },
     {
       "id": 42,

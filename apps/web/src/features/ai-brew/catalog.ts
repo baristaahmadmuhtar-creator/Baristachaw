@@ -226,7 +226,8 @@ export function inferDripperMethodFamily(name: string, typeLabel: string): AiBre
   if (haystack.includes('cold brew')) return 'cold_brew';
   if (haystack.includes('batch brewer') || haystack.includes('batch brew') || haystack.includes('automatic brewer')) return 'batch_brew';
   if (haystack.includes('chemex')) return 'chemex';
-  if (haystack.includes('switch') || haystack.includes('clever') || haystack.includes('immersion')) {
+  if (haystack.includes('switch')) return 'hario_switch';
+  if (haystack.includes('clever') || haystack.includes('immersion')) {
     return 'clever_dripper';
   }
   if (haystack.includes('melitta') || haystack.includes('trapezoid') || haystack.includes('kalita 102')) {
@@ -294,8 +295,11 @@ function applyEquipmentProvenance(
 }
 
 function normalizeDripper(raw: RawDripperCatalogEntry, override?: MarketSignalRecord): EquipmentCatalogEntry {
+  const explicitId = typeof raw.id === 'string' && raw.id.trim() && !/^\d+$/.test(raw.id.trim())
+    ? slugify(raw.id)
+    : undefined;
   return {
-    id: slugify(raw.name),
+    id: explicitId || slugify(raw.name),
     kind: 'dripper',
     name: raw.name,
     brand: raw.brand,
@@ -304,6 +308,11 @@ function normalizeDripper(raw: RawDripperCatalogEntry, override?: MarketSignalRe
     searchText: buildSearchText(raw.name, raw.brand, raw.type, override?.description, raw.description || undefined),
     methodFamily: inferDripperMethodFamily(raw.name, raw.type),
     defaultProfileId: override?.defaultProfileId,
+    hidden: raw.hidden,
+    deprecated: raw.deprecated,
+    migrationTargetIds: raw.migrationTargetIds,
+    physicalConstraints: raw.physicalConstraints,
+    methodProgramme: raw.methodProgramme,
     ...applyEquipmentProvenance(raw, override),
   };
 }
@@ -1147,9 +1156,16 @@ export async function loadAiBrewCatalog(): Promise<AiBrewCatalog> {
           || getCollectionVersion(grinders)
           || getCollectionVersion(targets)
           || CATALOG_VERSION,
-        drippers: dripperItems.map((entry) =>
-          normalizeDripper(entry, signalMap.get(`dripper:${slugify(entry.name)}`)),
-        ),
+        drippers: dripperItems.map((entry) => {
+          const explicitId = typeof entry.id === 'string' && entry.id.trim() && !/^\d+$/.test(entry.id.trim())
+            ? slugify(entry.id)
+            : undefined;
+          return normalizeDripper(
+            entry,
+            signalMap.get(`dripper:${explicitId || ''}`)
+              || signalMap.get(`dripper:${slugify(entry.name)}`),
+          );
+        }),
         grinders: grinderItems.map((entry) =>
           normalizeGrinder(entry, signalMap.get(`grinder:${slugify(entry.name)}`)),
         ),

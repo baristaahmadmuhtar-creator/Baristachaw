@@ -46,6 +46,7 @@ export type AiBrewMethodFamily =
   | 'chemex'
   | 'kalita_wave'
   | 'clever_dripper'
+  | 'hario_switch'
   | 'origami'
   | 'april'
   | 'melitta'
@@ -125,6 +126,68 @@ export type WaterPresetStatus = 'autofill' | 'manual_required' | 'info_only';
 export type WaterMode = 'brand' | 'manual';
 export type WaterMarket = 'id' | 'sg' | 'bn' | 'my' | 'global';
 export type WaterPublishState = 'published' | 'review_only' | 'rejected';
+export type SwitchBrewProgramme =
+  | 'auto'
+  | 'full_immersion'
+  | 'bloom_then_immersion'
+  | 'percolation_then_immersion'
+  | 'immersion_then_percolation'
+  | 'temperature_shift_hybrid'
+  | 'competition_hybrid';
+export type SwitchValveState = 'closed' | 'open' | 'transition';
+export type SwitchChamberState =
+  | 'empty'
+  | 'bloom'
+  | 'filling'
+  | 'immersion'
+  | 'percolation'
+  | 'releasing'
+  | 'drawdown'
+  | 'served';
+export interface DevicePhysicalConstraints {
+  finishedCapacityMl?: number;
+  recommendedClosedPhaseMaxMl?: number;
+  workingHeadspaceMl?: number;
+  filterSize?: string;
+  coneType?: 'v60' | 'mugen' | 'flat' | 'trapezoid' | 'custom';
+}
+export type WaterEvidenceProvenance =
+  | 'official_label_or_lab'
+  | 'official_brand_site'
+  | 'regulator_or_distributor'
+  | 'curated_public_reference'
+  | 'internal_curated_snapshot'
+  | 'user_manual_input'
+  | 'classification_estimate'
+  | 'remineralisation_target';
+export type WaterReadyDecision =
+  | 'brew_ready'
+  | 'manual_mineral'
+  | 'estimated'
+  | 'ro_base_remineralise'
+  | 'high_buffer_caution'
+  | 'needs_review'
+  | 'blocked';
+export type WaterRecommendedAction =
+  | 'use_as_is'
+  | 'manual_measurement_required'
+  | 'remineralise_first'
+  | 'verify_market_sku'
+  | 'use_with_caution'
+  | 'review_before_publish';
+export type GrinderReferenceType =
+  | 'official_chart'
+  | 'community_verified'
+  | 'curated_baseline'
+  | 'derived_from_grinder_band'
+  | 'fallback_estimate'
+  | 'user_calibration';
+export interface GrinderUserCalibrationOverlay {
+  zeroPointMethod?: string;
+  burrTouchOffset?: string;
+  personalFilterSweetSpot?: string;
+  beanRoastNotes?: string;
+}
 export type BeanRoastDevelopment = '' | 'underdeveloped' | 'balanced' | 'developed';
 export type BeanSolubility = '' | 'low' | 'medium' | 'high';
 export type DeviceProfileMode = 'exact' | 'derived_template' | 'family_fallback';
@@ -171,6 +234,11 @@ export interface RawDripperCatalogEntry {
   releaseStatus?: CatalogReleaseStatus;
   confidence?: CatalogConfidence;
   catalogVersion?: string;
+  hidden?: boolean;
+  deprecated?: boolean;
+  migrationTargetIds?: string[];
+  physicalConstraints?: DevicePhysicalConstraints;
+  methodProgramme?: SwitchBrewProgramme | string;
 }
 
 export interface RawGrinderCatalogEntry {
@@ -212,6 +280,11 @@ export interface EquipmentCatalogEntry extends CatalogProvenance {
   searchText: string;
   methodFamily?: AiBrewMethodFamily;
   defaultProfileId?: string;
+  hidden?: boolean;
+  deprecated?: boolean;
+  migrationTargetIds?: string[];
+  physicalConstraints?: DevicePhysicalConstraints;
+  methodProgramme?: SwitchBrewProgramme | string;
   grindBands?: {
     coarse: string;
     medium: string;
@@ -322,6 +395,16 @@ export interface WaterBrandProfile extends CatalogProvenance {
   classificationCaution?: string;
   chemistry: WaterChemistry;
   resolvedMinerals?: WaterBrandResolvedMinerals | null;
+  provenanceLadder?: WaterEvidenceProvenance;
+  plantScope?: string;
+  skuScope?: string;
+  collectedAt?: string;
+  reviewDueAt?: string;
+  evidenceId?: string;
+  sourceHash?: string;
+  readyDecision?: WaterReadyDecision;
+  readyReason?: string;
+  recommendedAction?: WaterRecommendedAction;
 }
 
 export interface WaterMineralInput {
@@ -372,6 +455,10 @@ export interface BrewTemplateStep {
   share: number;
   startSeconds: number;
   note: string;
+  valveState?: SwitchValveState;
+  chamberState?: SwitchChamberState;
+  chamberLoadMl?: number;
+  switchProgramme?: SwitchBrewProgramme;
 }
 
 export interface DeviceBrewProfile extends CatalogProvenance {
@@ -386,6 +473,8 @@ export interface DeviceBrewProfile extends CatalogProvenance {
   methodWorkflow?: MethodWorkflow;
   flatBottomProfile?: FlatBottomProfileFamily;
   recipeStyle?: Exclude<AeroPressRecipeStyle, 'auto'>;
+  physicalConstraints?: DevicePhysicalConstraints;
+  methodProgramme?: SwitchBrewProgramme | string;
   ratioDelta: number;
   tempDeltaC: number;
   brewTimeDeltaSec: number;
@@ -402,6 +491,10 @@ export interface GrinderSettingReference extends CatalogProvenance {
   rangeLabel: string;
   parsedRange?: ParsedNumericRange | null;
   note: string;
+  referenceType?: GrinderReferenceType;
+  zeroPointMethod?: string;
+  calibrationRequired?: boolean;
+  userCalibrationOverlay?: GrinderUserCalibrationOverlay;
 }
 
 export interface AiBrewCatalog {
@@ -471,6 +564,10 @@ export interface BrewPlanStep {
   pourPath?: 'center' | 'center_to_mid' | 'flat_center' | 'compact_spiral' | 'immersion_charge' | 'press' | 'heat_control' | 'machine_flow';
   pourHeight?: 'low' | 'medium';
   agitationLevel?: 'minimal' | 'low' | 'controlled' | 'medium';
+  valveState?: SwitchValveState;
+  chamberState?: SwitchChamberState;
+  chamberLoadMl?: number;
+  switchProgramme?: SwitchBrewProgramme;
   note: string;
   hybridInstruction?: string;
 }
@@ -523,6 +620,10 @@ export type WorkflowGuideChipKey =
   | 'settle'
   | 'decant'
   | 'release'
+  | 'valve'
+  | 'chamber'
+  | 'chamber_load'
+  | 'programme'
   | 'drawdown'
   | 'draw_up'
   | 'contact'
@@ -655,6 +756,8 @@ export interface BrewPlan {
   steps: BrewPlanStep[];
   workflowGuideSteps?: WorkflowGuideStep[];
   workflowValidation?: MethodWorkflowValidationResult;
+  devicePhysicalConstraints?: DevicePhysicalConstraints;
+  methodProgramme?: SwitchBrewProgramme | string;
   expectedCupProfile?: ExpectedCupProfile;
   readinessScores?: AiBrewReadinessScores;
   notes: string[];

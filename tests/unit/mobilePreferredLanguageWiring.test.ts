@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
-const ROOT = 'C:/Users/Alpha/Downloads/Baristachaw';
+const ROOT = process.cwd();
 
 const FILES = [
   'apps/mobile/App.tsx',
@@ -17,7 +18,7 @@ const FILES = [
 
 test('mobile shell and non-chat screens read preferred app language instead of raw device locale', () => {
   for (const relativePath of FILES) {
-    const source = readFileSync(`${ROOT}/${relativePath}`, 'utf8');
+    const source = readFileSync(path.join(ROOT, relativePath), 'utf8');
     assert.match(source, /usePreferredMobileLanguage/, `${relativePath} should use the preferred mobile language hook`);
     assert.doesNotMatch(
       source,

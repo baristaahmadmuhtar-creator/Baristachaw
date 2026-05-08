@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
-const ROOT = 'C:/Users/Alpha/Downloads/Baristachaw';
+const ROOT = process.cwd();
 
 test('mobile web parity URL carries preferred language into the web app', () => {
-  const source = readFileSync(`${ROOT}/apps/mobile/src/screens/WebParityScreen.tsx`, 'utf8');
+  const source = readFileSync(path.join(ROOT, 'apps/mobile/src/screens/WebParityScreen.tsx'), 'utf8');
 
   assert.match(source, /url\.searchParams\.set\('language', language\)/);
   assert.match(source, /language=\$\{languageParam\}/);
@@ -13,7 +14,7 @@ test('mobile web parity URL carries preferred language into the web app', () => 
 });
 
 test('web global language bootstrap accepts parity language query params', () => {
-  const source = readFileSync(`${ROOT}/apps/web/src/context/GlobalState.tsx`, 'utf8');
+  const source = readFileSync(path.join(ROOT, 'apps/web/src/context/GlobalState.tsx'), 'utf8');
 
   assert.match(source, /params\.get\('language'\)/);
   assert.match(source, /params\.get\('lang'\)/);

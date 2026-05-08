@@ -3,6 +3,10 @@
     "private": true,
     "version": "1.0.0",
     "type": "module",
+    "engines": {
+        "node": ">=24.0.0",
+        "npm": ">=11.0.0"
+    },
     "workspaces": [
         "apps/*",
         "packages/*"
@@ -17,7 +21,7 @@
         "catalog:audit:grinders": "tsx scripts/catalog/audit-grinder-catalog.ts",
         "catalog:audit:waters": "tsx scripts/catalog/audit-water-catalog.ts",
         "catalog:audit": "npm run catalog:audit:grinders && npm run catalog:audit:waters",
-        "catalog:audit:report": "tsx scripts/catalog/audit-grinder-catalog.ts --report-dir=artifacts/catalog-audit && tsx scripts/catalog/audit-water-catalog.ts --report-dir=artifacts/catalog-audit",
+        "catalog:audit:report": "tsx scripts/catalog/audit-grinder-catalog.ts --report-dir=artifacts/ai-brew-audit && tsx scripts/catalog/audit-water-catalog.ts --report-dir=artifacts/ai-brew-audit && tsx scripts/catalog/build-ai-brew-data-quality-report.ts --report-dir=artifacts/ai-brew-audit",
         "preview": "npm run preview --workspace @baristachaw/web",
         "start": "tsx server.ts",
         "lint": "npm run lint:root && npm run lint --workspace @baristachaw/design-tokens && npm run lint --workspace @baristachaw/shared && npm run lint --workspace @baristachaw/web",

@@ -1605,12 +1605,14 @@ select:focus-visible {
   }
 
   html[data-keyboard-open="true"] .page-container {
-    padding-bottom: var(--page-padding-bottom);
+    padding-bottom: calc(var(--safe-bottom) + 0.25rem) !important;
+    scroll-padding-bottom: calc(var(--safe-bottom) + 0.25rem);
   }
 
   html[data-pwa][data-keyboard-open="true"] .page-container,
   html[data-ios-standalone][data-keyboard-open="true"] .page-container {
     padding-bottom: 0 !important;
+    scroll-padding-bottom: 0;
   }
 
   button:focus-visible,

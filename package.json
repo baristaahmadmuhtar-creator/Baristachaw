@@ -17,6 +17,7 @@
         "catalog:audit:grinders": "tsx scripts/catalog/audit-grinder-catalog.ts",
         "catalog:audit:waters": "tsx scripts/catalog/audit-water-catalog.ts",
         "catalog:audit": "npm run catalog:audit:grinders && npm run catalog:audit:waters",
+        "catalog:audit:report": "tsx scripts/catalog/audit-grinder-catalog.ts --report-dir=artifacts/catalog-audit && tsx scripts/catalog/audit-water-catalog.ts --report-dir=artifacts/catalog-audit",
         "preview": "npm run preview --workspace @baristachaw/web",
         "start": "tsx server.ts",
         "lint": "npm run lint:root && npm run lint --workspace @baristachaw/design-tokens && npm run lint --workspace @baristachaw/shared && npm run lint --workspace @baristachaw/web",

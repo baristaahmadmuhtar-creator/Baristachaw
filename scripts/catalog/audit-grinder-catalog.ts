@@ -11,6 +11,7 @@ type AuditStatus =
   | 'OK_OFFICIAL';
 
 type RawGrinder = {
+  id?: string | number;
   name?: string;
   brand?: string;
   type?: string;
@@ -32,6 +33,8 @@ type GrinderSetting = {
   verificationLevel?: string;
   sourceUrl?: string;
   sourceUrls?: string[];
+  confidence?: string;
+  verifiedAt?: string;
 };
 
 type ParsedRange = {
@@ -44,6 +47,8 @@ const root = process.cwd();
 const grinderPath = path.join(root, 'apps/web/public/data/ai-brew/grinders.v2026-03.json');
 const settingPath = path.join(root, 'apps/web/public/data/ai-brew/grinder-settings.v2026-06.json');
 const profilePath = path.join(root, 'apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json');
+const reportDirArg = process.argv.find((arg) => arg.startsWith('--report-dir='));
+const reportDir = reportDirArg ? path.resolve(root, reportDirArg.slice('--report-dir='.length)) : '';
 
 function readItems<T>(filePath: string): T[] {
   const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8')) as { items?: T[] };
@@ -69,6 +74,36 @@ function normalizeRangeUnit(label: string) {
   if (/setting/.test(normalized)) return 'setting';
   if (/micron|µm|um/.test(normalized)) return 'micron';
   return normalized.replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function safeCell(value: unknown) {
+  const text = String(value ?? '').replace(/\r?\n/g, ' ').trim();
+  return text.replace(/\|/g, '\\|') || '-';
+}
+
+function sourceDomain(url?: string) {
+  const value = String(url || '');
+  if (/^https?:\/\//i.test(value)) {
+    try {
+      return new URL(value).hostname.replace(/^www\./, '');
+    } catch {
+      return 'invalid-url';
+    }
+  }
+  if (/^local:/i.test(value)) return 'local';
+  return 'missing';
+}
+
+function increment(map: Record<string, number>, key: unknown) {
+  const normalized = String(key ?? 'missing') || 'missing';
+  map[normalized] = (map[normalized] || 0) + 1;
+}
+
+function toMarkdownTable(headers: string[], tableRows: string[][]) {
+  const header = `| ${headers.map(safeCell).join(' | ')} |`;
+  const divider = `| ${headers.map(() => '---').join(' | ')} |`;
+  const body = tableRows.map((row) => `| ${row.map(safeCell).join(' | ')} |`);
+  return [header, divider, ...body].join('\n');
 }
 
 function isExplicitReference(label?: string) {
@@ -121,12 +156,52 @@ const profiles = readItems<{ id?: string }>(profilePath);
 const profileIds = new Set(profiles.map((profile) => profile.id).filter(Boolean));
 const grinderIds = new Set<string>();
 const rows: ReturnType<typeof report>[] = [];
+const aggregate = {
+  byVerificationLevel: {} as Record<string, number>,
+  bySource: {} as Record<string, number>,
+  byConfidence: {} as Record<string, number>,
+  byBrand: {} as Record<string, number>,
+  byGrinderType: {} as Record<string, number>,
+  byUnitFamily: {} as Record<string, number>,
+  bySourceDomain: {} as Record<string, number>,
+  byRangeParseability: {} as Record<string, number>,
+  risks: {
+    datasetUnverifiedLowConfidence: 0,
+    sourceMissing: 0,
+    conflictingMediumRanges: 0,
+    familyAliasAmbiguity: 0,
+    referenceOnlyNoCalibrationAid: 0,
+    missingBrand: 0,
+    missingVerifiedAt: 0,
+    overlyPreciseWithoutPrimaryEvidence: 0,
+  },
+};
+const auditTable: Array<Record<string, string>> = [];
 
 for (const grinder of grinders) {
   const name = String(grinder.name || '').trim();
   const id = slugify(name);
   const urls = sourceUrls(grinder);
   const verification = effectiveVerification(grinder);
+  const parsedMedium = parseRange(grinder.medium);
+  const unitStyle = parsedMedium?.unit || (isExplicitReference(grinder.medium) ? 'reference-only' : normalizeRangeUnit(String(grinder.type || 'unknown')));
+  const sourceDomains = urls.map(sourceDomain);
+
+  increment(aggregate.byVerificationLevel, verification);
+  increment(aggregate.bySource, grinder.source);
+  increment(aggregate.byConfidence, grinder.confidence || (verification === 'official' ? 'high' : 'missing'));
+  increment(aggregate.byBrand, grinder.brand || 'missing');
+  increment(aggregate.byGrinderType, grinder.type);
+  increment(aggregate.byUnitFamily, unitStyle);
+  increment(aggregate.byRangeParseability, parsedMedium || isExplicitReference(grinder.medium) ? 'parseable_or_reference' : 'unparseable');
+  for (const domain of sourceDomains.length ? sourceDomains : ['missing']) increment(aggregate.bySourceDomain, domain);
+  if (verification === 'dataset_unverified' && (grinder.confidence || 'low') === 'low') aggregate.risks.datasetUnverifiedLowConfidence += 1;
+  if (urls.length === 0) aggregate.risks.sourceMissing += 1;
+  if (!grinder.brand) aggregate.risks.missingBrand += 1;
+  if (['official', 'community_verified', 'curated'].includes(verification) && !('verifiedAt' in grinder)) aggregate.risks.missingVerifiedAt += 1;
+  if (verification !== 'official' && /(?:\d+\.\d{2,}|\d+\s*-\s*\d+\.\d{2,})/.test(`${grinder.coarse} ${grinder.medium} ${grinder.fine}`)) {
+    aggregate.risks.overlyPreciseWithoutPrimaryEvidence += 1;
+  }
 
   if (!name || !id) {
     rows.push(report('NEEDS_SOURCE', name || '(unnamed grinder)', 'Missing non-empty name or stable normalized id.', true));
@@ -167,6 +242,51 @@ for (const grinder of grinders) {
   }
 
   rows.push(report(verification === 'official' ? 'OK_OFFICIAL' : 'OK_CURATED', name, `${verification} source policy checked.`, false));
+
+  let riskReason = 'none';
+  let recommendedAction = 'use as published starting point';
+  let calibrationSupportStatus = 'range available';
+  let uiLabel = verification === 'official' ? 'Official' : verification === 'curated' ? 'Curated' : verification === 'community_verified' ? 'Curated' : 'Estimated';
+  const evidenceGap: string[] = [];
+  if (urls.length === 0) evidenceGap.push('public source missing');
+  if (!grinder.brand) evidenceGap.push('brand missing');
+  if (!parsedMedium && isExplicitReference(grinder.medium)) {
+    calibrationSupportStatus = 'reference-only';
+    if (!settings.some((setting) => setting.grinderId === id)) {
+      aggregate.risks.referenceOnlyNoCalibrationAid += 1;
+      evidenceGap.push('model-specific calibration aid missing');
+    }
+  } else if (!parsedMedium) {
+    calibrationSupportStatus = 'unparseable range';
+    evidenceGap.push('medium range not parseable');
+  }
+  if (verification === 'dataset_unverified') {
+    riskReason = 'dataset-unverified starting point';
+    recommendedAction = 'show fallback/estimated label and ask user to validate by drawdown and taste';
+    uiLabel = 'Fallback';
+  } else if (verification === 'curated') {
+    riskReason = 'curated secondary evidence';
+    recommendedAction = 'show curated label, not official';
+    uiLabel = 'Curated';
+  }
+
+  auditTable.push({
+    id,
+    name,
+    brand: grinder.brand || 'missing',
+    currentVerification: verification,
+    currentConfidence: grinder.confidence || (verification === 'official' ? 'high' : 'missing'),
+    sourceTypes: grinder.source || 'missing',
+    primarySourceDomain: sourceDomain(urls[0]),
+    unitStyle,
+    currentRangeFormat: grinder.medium || 'missing',
+    riskReason,
+    recommendedAction,
+    evidenceGap: evidenceGap.join('; ') || 'none',
+    calibrationSupportStatus,
+    uiLabel,
+    notes: grinder.type || '',
+  });
 }
 
 for (const setting of settings) {
@@ -185,6 +305,9 @@ for (const setting of settings) {
   if (['official', 'community_verified', 'curated'].includes(String(setting.verificationLevel || '')) && sourceUrls(setting).length === 0) {
     rows.push(report('NEEDS_SOURCE', id, 'Verified grinder setting has no sourceUrls.', true));
   }
+  if (['official', 'community_verified', 'curated'].includes(String(setting.verificationLevel || '')) && !setting.verifiedAt) {
+    aggregate.risks.missingVerifiedAt += 1;
+  }
 }
 
 const rawById = new Map(grinders.map((grinder) => [slugify(String(grinder.name || '')), grinder]));
@@ -200,6 +323,7 @@ for (const setting of settings) {
   const settingSpan = Math.max(1, settingRange.max - settingRange.min);
   const midpointGap = Math.abs(((rawRange.min + rawRange.max) / 2) - ((settingRange.min + settingRange.max) / 2));
   if (!overlap && midpointGap > Math.max(rawSpan, settingSpan) * 0.75) {
+    aggregate.risks.conflictingMediumRanges += 1;
     rows.push(report(
       'CONFLICTING_RANGE',
       `${grinder.name} / ${setting.id}`,
@@ -225,6 +349,7 @@ for (const matcher of duplicateMatchers) {
   }
   for (const names of compactNames.values()) {
     if (names.length > 1 || names.some((name) => /\/| series\b/i.test(name))) {
+      aggregate.risks.familyAliasAmbiguity += 1;
       rows.push(report('DUPLICATE_OR_AMBIGUOUS_MODEL', names.join(', '), 'Model family needs source-level review before promotion to official.', false));
     }
   }
@@ -240,8 +365,81 @@ console.log('Grinder catalog audit report');
 for (const [status, count] of Object.entries(counts).sort()) {
   console.log(`- ${status}: ${count}`);
 }
+console.log('Grinder catalog aggregate risk summary');
+for (const [status, count] of Object.entries(aggregate.risks).sort()) {
+  console.log(`- ${status}: ${count}`);
+}
 for (const row of rows.filter((item) => item.fatal || item.status === 'DUPLICATE_OR_AMBIGUOUS_MODEL')) {
   console.log(`[${row.status}] ${row.subject} :: ${row.detail}`);
+}
+
+if (reportDir) {
+  fs.mkdirSync(reportDir, { recursive: true });
+  const jsonPath = path.join(reportDir, 'grinder-audit-report.json');
+  const mdPath = path.join(reportDir, 'grinder-audit-report.md');
+  const tableHeaders = [
+    'id',
+    'name',
+    'brand',
+    'current verification',
+    'current confidence',
+    'source type(s)',
+    'primary source domain',
+    'unit style',
+    'current range format',
+    'risk reason',
+    'recommended action',
+    'evidence gap',
+    'calibration support status',
+    'UI label to show',
+    'notes',
+  ];
+  const tableRows = auditTable.map((row) => [
+    row.id,
+    row.name,
+    row.brand,
+    row.currentVerification,
+    row.currentConfidence,
+    row.sourceTypes,
+    row.primarySourceDomain,
+    row.unitStyle,
+    row.currentRangeFormat,
+    row.riskReason,
+    row.recommendedAction,
+    row.evidenceGap,
+    row.calibrationSupportStatus,
+    row.uiLabel,
+    row.notes,
+  ]);
+  fs.writeFileSync(jsonPath, JSON.stringify({
+    generatedAt: new Date().toISOString(),
+    catalogPath: path.relative(root, grinderPath),
+    settingPath: path.relative(root, settingPath),
+    counts,
+    aggregate,
+    rows,
+    auditTable,
+  }, null, 2));
+  fs.writeFileSync(mdPath, [
+    '# Grinder Catalog Audit Report',
+    '',
+    `Generated: ${new Date().toISOString()}`,
+    '',
+    '## Status Counts',
+    '',
+    toMarkdownTable(['status', 'count'], Object.entries(counts).sort().map(([status, count]) => [status, String(count)])),
+    '',
+    '## Risk Counts',
+    '',
+    toMarkdownTable(['risk', 'count'], Object.entries(aggregate.risks).sort().map(([status, count]) => [status, String(count)])),
+    '',
+    '## Grinder Audit Table',
+    '',
+    toMarkdownTable(tableHeaders, tableRows),
+    '',
+  ].join('\n'));
+  console.log(`Wrote grinder audit report: ${path.relative(root, jsonPath)}`);
+  console.log(`Wrote grinder audit report: ${path.relative(root, mdPath)}`);
 }
 
 if (fatalRows.length > 0) {

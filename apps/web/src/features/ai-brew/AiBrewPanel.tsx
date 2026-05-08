@@ -157,8 +157,8 @@ const COPY = {
     brewerVerifiedBadge: 'Ready profile',
     waterTitle: 'Water Minerals',
     waterSourceTitle: 'Water Source',
-    waterBrand: 'Merek',
-    waterManual: 'Manual',
+    waterBrand: 'Brand',
+    waterManual: 'Manual mineral',
     waterBrandPicker: 'Water',
     waterQuickPicks: 'Suggested',
     waterQuickPicksDescription: '',
@@ -237,6 +237,7 @@ const COPY = {
     waterStatusManualRequired: 'Manual Required',
     waterStatusHighBuffer: 'High Buffer',
     waterStatusZeroMineral: 'Zero Mineral',
+    waterStatusEstimated: 'Estimated',
     grindVerified: 'Verified grind reference',
     grindOfficialReference: 'Official reference',
     grindCuratedReference: 'Curated reference',
@@ -274,7 +275,7 @@ const COPY = {
     waterInfoOnly: 'Info only',
     waterNeedsMinerals: 'Needs minerals',
     waterSelectedBrand: 'Selected brand',
-    waterSelectedManual: 'Manual mineral input',
+    waterSelectedManual: 'Manual mineral',
     waterNoBrand: 'Choose water.',
     waterBrandNeedsManual: 'Add minerals before brew.',
     waterBrandPartialFilled: 'Complete missing minerals.',
@@ -299,6 +300,9 @@ const COPY = {
     waterWhyManualBody: 'Manual is required when the mineral panel is incomplete, estimated, too low-mineral, alkaline/high-buffer, or not backed by a trusted public source. This prevents false "ready brew" claims and bad recipes.',
     waterEditMinerals: 'Edit minerals',
     waterHideMinerals: 'Hide minerals',
+    waterPresetIdealFilter: 'Ideal filter',
+    waterPresetHighBuffer: 'High buffer',
+    waterPresetLowMineral: 'Low mineral',
     waterSummary: 'Minerals',
     waterReadyBrew: 'Ready brew water',
     waterReadyBrewDescription: '',
@@ -418,6 +422,12 @@ const COPY = {
     pickerSearchLabel: 'Search catalog',
     pickerHelp: '',
     pickerClose: 'Close picker',
+    pickerCategoryAll: 'All',
+    pickerCategoryCommon: 'Common',
+    pickerCategoryFermented: 'Fermented',
+    pickerCategoryRegional: 'Regional',
+    pickerCategoryExperimental: 'Experimental',
+    pickerCategorySpecial: 'Special',
     noPickerResults: 'No matching catalog entries.',
     generated: 'Brew plan saved to local history.',
     generatedAi: 'Brew plan saved. AI optimization applied.',
@@ -445,6 +455,8 @@ const COPY = {
     feedbackCoachHint: 'Smallest safe correction for the next brew.',
     guideDensitySimple: 'Simple',
     guideDensityPro: 'Pro',
+    guideDensitySimpleHint: 'Core steps for a quick brew.',
+    guideDensityProHint: 'Full flow, path, pour height, and agitation detail.',
     expectedCupTitle: 'Expected Cup',
     cupAcidity: 'Acidity',
     cupSweetness: 'Sweetness',
@@ -603,8 +615,8 @@ const COPY = {
     brewerVerifiedBadge: 'Profil siap',
     waterTitle: 'Mineral Air',
     waterSourceTitle: 'Sumber Air',
-    waterBrand: 'Merek',
-    waterManual: 'Manual',
+    waterBrand: 'Brand air',
+    waterManual: 'Mineral manual',
     waterBrandPicker: 'Air',
     waterQuickPicks: 'Saran',
     waterQuickPicksDescription: '',
@@ -679,10 +691,11 @@ const COPY = {
     inputAnalysisDescription: '',
     waterReadyNow: 'Air siap',
     waterNeedsInput: 'Mineral wajib diisi',
-    waterStatusReady: 'Ready',
-    waterStatusManualRequired: 'Manual Required',
-    waterStatusHighBuffer: 'High Buffer',
-    waterStatusZeroMineral: 'Zero Mineral',
+    waterStatusReady: 'Siap seduh',
+    waterStatusManualRequired: 'Perlu input manual',
+    waterStatusHighBuffer: 'Buffer tinggi',
+    waterStatusZeroMineral: 'Mineral nol / RO',
+    waterStatusEstimated: 'Estimasi',
     grindVerified: 'Referensi grind terverifikasi',
     grindOfficialReference: 'Referensi resmi',
     grindCuratedReference: 'Referensi kurasi',
@@ -720,7 +733,7 @@ const COPY = {
     waterInfoOnly: 'Hanya info',
     waterNeedsMinerals: 'Perlu mineral',
     waterSelectedBrand: 'Brand terpilih',
-    waterSelectedManual: 'Input mineral manual',
+    waterSelectedManual: 'Mineral manual',
     waterNoBrand: 'Pilih air.',
     waterBrandNeedsManual: 'Isi mineral dulu.',
     waterBrandPartialFilled: 'Lengkapi mineral yang kosong.',
@@ -745,6 +758,9 @@ const COPY = {
     waterWhyManualBody: 'Manual wajib ketika panel mineral belum lengkap, masih estimasi, terlalu rendah mineral, alkaline/high-buffer, atau belum didukung sumber publik tepercaya. Ini mencegah klaim "siap seduh" yang salah dan resep yang buruk.',
     waterEditMinerals: 'Edit mineral',
     waterHideMinerals: 'Sembunyikan mineral',
+    waterPresetIdealFilter: 'Ideal filter',
+    waterPresetHighBuffer: 'Buffer tinggi',
+    waterPresetLowMineral: 'Mineral rendah',
     waterSummary: 'Mineral',
     waterReadyBrew: 'Air siap seduh',
     waterReadyBrewDescription: '',
@@ -864,6 +880,12 @@ const COPY = {
     pickerSearchLabel: 'Cari katalog',
     pickerHelp: '',
     pickerClose: 'Tutup picker',
+    pickerCategoryAll: 'Semua',
+    pickerCategoryCommon: 'Common',
+    pickerCategoryFermented: 'Fermentasi',
+    pickerCategoryRegional: 'Regional',
+    pickerCategoryExperimental: 'Eksperimental',
+    pickerCategorySpecial: 'Khusus',
     noPickerResults: 'Tidak ada entri katalog yang cocok.',
     generated: 'Brew plan tersimpan ke history lokal.',
     generatedAi: 'Brew plan tersimpan. Optimasi AI diterapkan.',
@@ -891,18 +913,20 @@ const COPY = {
     feedbackCoachHint: 'Koreksi aman paling kecil untuk seduhan berikutnya.',
     guideDensitySimple: 'Ringkas',
     guideDensityPro: 'Pro',
-    expectedCupTitle: 'Expected Cup',
-    cupAcidity: 'Acidity',
+    guideDensitySimpleHint: 'Langkah inti untuk cepat dipakai.',
+    guideDensityProHint: 'Detail flow, jalur, tinggi tuang, dan agitasi.',
+    expectedCupTitle: 'Prediksi Rasa',
+    cupAcidity: 'Asam',
     cupSweetness: 'Manis',
     cupBody: 'Body',
-    cupClarity: 'Clarity',
+    cupClarity: 'Bersih / Jernih',
     cupBitterRisk: 'Risiko pahit',
     cupAroma: 'Aroma',
-    confidenceRecipe: 'Recipe Confidence',
-    confidenceWater: 'Water Confidence',
-    confidenceGrinder: 'Grinder Confidence',
-    confidenceWorkflow: 'Workflow Confidence',
-    confidenceCatalog: 'Catalog Confidence',
+    confidenceRecipe: 'Keyakinan Resep',
+    confidenceWater: 'Keyakinan Air',
+    confidenceGrinder: 'Keyakinan Grinder',
+    confidenceWorkflow: 'Keyakinan Panduan',
+    confidenceCatalog: 'Keyakinan Data',
     unavailable: 'Katalog AI Brew belum bisa dimuat sekarang.',
     loadingCatalog: 'Memuat katalog...',
     restoredPlan: 'Plan terakhir dipulihkan.',
@@ -1068,6 +1092,7 @@ type HistoryStripTab = 'latest' | 'favorites' | 'recent';
 type ResultTab = 'plan' | 'flow' | 'coach';
 type AiBrewGuideDensity = 'basic' | 'pro';
 type CopySet = Record<string, string>;
+type ProcessPickerCategory = 'common' | 'fermented' | 'regional' | 'experimental' | 'special';
 
 const AI_BREW_POUR_CONTROL_FAMILIES = new Set<AiBrewMethodFamily>([
   'v60',
@@ -1079,12 +1104,23 @@ const AI_BREW_POUR_CONTROL_FAMILIES = new Set<AiBrewMethodFamily>([
   'chemex',
 ]);
 
+const PROCESS_PICKER_CATEGORIES: ProcessPickerCategory[] = ['common', 'fermented', 'regional', 'experimental', 'special'];
+const COMMON_PROCESS_PRIORITY = new Map([
+  ['washed', 0],
+  ['natural', 1],
+  ['honey', 2],
+  ['wet_hulled', 3],
+]);
+
 interface PickerOption {
   id: string;
   label: string;
   subtitle?: string;
   description?: string;
   searchText: string;
+  aliases?: string[];
+  canonicalTerms?: string[];
+  processCategory?: ProcessPickerCategory;
   section: string;
   badges: string[];
   ariaLabel: string;
@@ -3186,6 +3222,105 @@ function FocusLockedDialog({
   );
 }
 
+function getProcessPickerCategoryLabel(copy: CopySet, category: ProcessPickerCategory | 'all') {
+  switch (category) {
+    case 'common':
+      return copy.pickerCategoryCommon;
+    case 'fermented':
+      return copy.pickerCategoryFermented;
+    case 'regional':
+      return copy.pickerCategoryRegional;
+    case 'experimental':
+      return copy.pickerCategoryExperimental;
+    case 'special':
+      return copy.pickerCategorySpecial;
+    case 'all':
+    default:
+      return copy.pickerCategoryAll;
+  }
+}
+
+function getProcessPickerCategory(entry: ProcessCatalogEntry): ProcessPickerCategory {
+  const text = normalizeSearchText(`${entry.id} ${entry.label} ${entry.group} ${(entry.aliases || []).join(' ')}`);
+  if (COMMON_PROCESS_PRIORITY.has(entry.id)) return 'common';
+  if (/\b(washed|natural|honey|wet hulled|giling basah)\b/.test(text) && !/\b(anaerobic|carbonic|thermal|coferment|co ferment|infused|maceration|koji|enzyme|yeast|lactic)\b/.test(text)) {
+    return 'common';
+  }
+  if (/\b(sumatra|gayo|mandheling|lintong|toraja|indonesia|semi washed|giling basah|wet hulled|monsooned)\b/.test(text)) {
+    return 'regional';
+  }
+  if (/\b(coferment|co fermented|infused|fruit maceration|thermal shock|koji|enzyme|mossto)\b/.test(text)) {
+    return 'experimental';
+  }
+  if (/\b(anaerobic|carbonic|lactic|yeast|fermentation|fermented|extended)\b/.test(text)) {
+    return 'fermented';
+  }
+  return 'special';
+}
+
+function sortProcessEntriesForPicker(entries: ProcessCatalogEntry[]) {
+  const categoryRank = new Map<ProcessPickerCategory, number>(
+    PROCESS_PICKER_CATEGORIES.map((category, index) => [category, index]),
+  );
+  return [...entries].sort((left, right) => {
+    const leftCategory = getProcessPickerCategory(left);
+    const rightCategory = getProcessPickerCategory(right);
+    const categoryDelta = (categoryRank.get(leftCategory) ?? 99) - (categoryRank.get(rightCategory) ?? 99);
+    if (categoryDelta !== 0) return categoryDelta;
+    const commonDelta = (COMMON_PROCESS_PRIORITY.get(left.id) ?? 99) - (COMMON_PROCESS_PRIORITY.get(right.id) ?? 99);
+    if (commonDelta !== 0) return commonDelta;
+    return left.label.localeCompare(right.label);
+  });
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function getPickerSearchScore(item: PickerOption, normalizedQuery: string, terms: string[]) {
+  const label = normalizeSearchText(item.label);
+  const id = normalizeSearchText(item.id);
+  const aliases = (item.aliases || []).map(normalizeSearchText).filter(Boolean);
+  const canonicalTerms = (item.canonicalTerms || []).map(normalizeSearchText).filter(Boolean);
+  const haystack = normalizeSearchText([
+    item.searchText,
+    item.subtitle || '',
+    item.description || '',
+    item.section || '',
+    aliases.join(' '),
+    canonicalTerms.join(' '),
+  ].join(' '));
+
+  if (!terms.every((term) => haystack.includes(term))) return Number.POSITIVE_INFINITY;
+  if (label === normalizedQuery) return 0;
+  if (id === normalizedQuery || aliases.includes(normalizedQuery) || canonicalTerms.includes(normalizedQuery)) return 1;
+  if (label.startsWith(normalizedQuery)) return 2;
+  if (new RegExp(`(^|\\s)${escapeRegExp(normalizedQuery)}($|\\s)`).test(label)) return 3;
+  if (canonicalTerms.some((term) => term.startsWith(normalizedQuery))) return 4;
+  if (aliases.some((term) => term.includes(normalizedQuery))) return 5;
+  const labelIndex = label.indexOf(normalizedQuery);
+  if (labelIndex >= 0) return 6 + (labelIndex / 100);
+  return 20;
+}
+
+function rankPickerOptionsForSearch(items: PickerOption[], normalizedQuery: string, limit: number) {
+  const terms = normalizedQuery.split(/\s+/g).filter(Boolean).slice(0, 6);
+  return items
+    .map((item, index) => ({
+      item,
+      index,
+      score: getPickerSearchScore(item, normalizedQuery, terms),
+    }))
+    .filter((entry) => Number.isFinite(entry.score))
+    .sort((left, right) => {
+      const scoreDelta = left.score - right.score;
+      if (scoreDelta !== 0) return scoreDelta;
+      return left.index - right.index;
+    })
+    .slice(0, limit)
+    .map((entry) => entry.item);
+}
+
 function MasterPickerDialog({
   open,
   kind,
@@ -3220,33 +3355,56 @@ function MasterPickerDialog({
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
   const [specialtyExpanded, setSpecialtyExpanded] = useState(false);
+  const [activeProcessCategory, setActiveProcessCategory] = useState<ProcessPickerCategory | 'all'>('all');
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const lastScrollTopByKindRef = useRef<Record<string, number>>({});
   const descriptionId = useId();
   const searchInputId = useId();
   const hasDescription = description.trim().length > 0;
   const isLargeCatalog = LARGE_CATALOG_PICKER_KINDS.has(kind);
+  const showProcessCategories = kind === 'process';
+
+  function persistPickerScrollPosition() {
+    if (!scrollContainerRef.current) return;
+    lastScrollTopByKindRef.current[kind] = scrollContainerRef.current.scrollTop;
+  }
+
+  function closePickerDialog() {
+    persistPickerScrollPosition();
+    onClose();
+  }
 
   useEffect(() => {
     if (!open) {
       setQuery('');
       setSpecialtyExpanded(false);
+      setActiveProcessCategory('all');
     }
-  }, [open]);
+    if (open) {
+      window.setTimeout(() => {
+        if (!scrollContainerRef.current) return;
+        scrollContainerRef.current.scrollTop = lastScrollTopByKindRef.current[kind] || 0;
+      }, 40);
+    }
+  }, [kind, open]);
 
   const filteredItems = useMemo(() => {
-    const normalized = deferredQuery.trim().toLowerCase();
+    const normalized = normalizeSearchText(deferredQuery);
+    const categoryFilteredItems = showProcessCategories && activeProcessCategory !== 'all' && !normalized
+      ? items.filter((item) => item.processCategory === activeProcessCategory)
+      : items;
     if (!normalized) {
-      return isLargeCatalog ? items.slice(0, LARGE_CATALOG_INITIAL_LIMIT) : items;
+      return isLargeCatalog ? categoryFilteredItems.slice(0, LARGE_CATALOG_INITIAL_LIMIT) : categoryFilteredItems;
     }
-    const terms = normalized.split(/\s+/g).filter(Boolean).slice(0, 6);
     const limit = isLargeCatalog ? LARGE_CATALOG_SEARCH_LIMIT : Number.POSITIVE_INFINITY;
-    const matches: PickerOption[] = [];
-    for (const item of items) {
-      if (!terms.every((term) => item.searchText.includes(term))) continue;
-      matches.push(item);
-      if (matches.length >= limit) break;
-    }
-    return matches;
-  }, [deferredQuery, isLargeCatalog, items]);
+    return rankPickerOptionsForSearch(items, normalized, limit);
+  }, [activeProcessCategory, deferredQuery, isLargeCatalog, items, showProcessCategories]);
+
+  useEffect(() => {
+    if (!open || !scrollContainerRef.current) return;
+    if (!deferredQuery.trim() && activeProcessCategory === 'all') return;
+    scrollContainerRef.current.scrollTop = 0;
+  }, [activeProcessCategory, deferredQuery, open]);
 
   const sections = useMemo(() => {
     const map = new Map<string, PickerOption[]>();
@@ -3262,7 +3420,7 @@ function MasterPickerDialog({
   return (
     <FocusLockedDialog
       open={open}
-      onClose={onClose}
+      onClose={closePickerDialog}
       ariaLabel={ariaLabel || title}
       ariaDescribedBy={hasDescription ? descriptionId : undefined}
       restoreFocusTarget={restoreFocusTarget}
@@ -3281,7 +3439,7 @@ function MasterPickerDialog({
         </div>
         <button
           type="button"
-          onClick={onClose}
+          onClick={closePickerDialog}
           className="icon-touch-button glass-button"
           aria-label={closeLabel}
         >
@@ -3300,16 +3458,51 @@ function MasterPickerDialog({
           data-autofocus="true"
           type="text"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            if (showProcessCategories) setActiveProcessCategory('all');
+          }}
           placeholder={searchPlaceholder}
           className="glass-input h-11 w-full pl-10 pr-4 text-sm"
         />
       </div>
 
+      {showProcessCategories && (
+        <div
+          className="mb-3 flex gap-2 overflow-x-auto pb-1"
+          data-testid="ai-brew-process-category-chips"
+        >
+          {(['all', ...PROCESS_PICKER_CATEGORIES] as const).map((category) => {
+            const active = activeProcessCategory === category;
+            return (
+              <button
+                key={category}
+                type="button"
+                onClick={() => {
+                  setQuery('');
+                  setActiveProcessCategory(category);
+                }}
+                className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  active
+                    ? 'bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.2)]'
+                    : 'bg-surface-alpha text-secondary hover:text-primary'
+                }`}
+                data-testid={`ai-brew-process-category-${category}`}
+                aria-pressed={active}
+              >
+                {getProcessPickerCategoryLabel(COPY[language === 'id' ? 'id' : 'en'], category)}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <div
+        ref={scrollContainerRef}
         className="overflow-y-auto overscroll-contain rounded-2xl border panel-divider-subtle panel-soft p-2"
         style={{
           maxHeight: 'min(68vh, calc(var(--fullscreen-modal-height, 100dvh) - var(--safe-top, 0px) - var(--bottom-safe-capped, 0px) - 12rem))',
+          WebkitOverflowScrolling: 'touch',
         }}
         data-testid={`ai-brew-picker-${kind}`}
       >
@@ -3355,7 +3548,7 @@ function MasterPickerDialog({
                     type="button"
                     onClick={() => {
                       onSelect(item.id);
-                      onClose();
+                      closePickerDialog();
                     }}
                     className={`flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left transition-colors ${
                       item.tone === 'highlight'
@@ -3651,12 +3844,6 @@ function PlanResultDialog({
   }, [open, isQuickResult]);
 
   useEffect(() => {
-    if (isQuickResult && activeTab !== 'flow') {
-      setActiveTab('flow');
-    }
-  }, [activeTab, isQuickResult]);
-
-  useEffect(() => {
     setFlowElapsedSeconds(0);
     setFlowAccumulatedSeconds(0);
     setFlowRunning(false);
@@ -3691,7 +3878,10 @@ function PlanResultDialog({
   if (!plan) return null;
 
   const resultTabs: Array<{ id: ResultTab; label: string }> = isQuickResult
-    ? [{ id: 'flow', label: copy.flowTab }]
+    ? [
+        { id: 'flow', label: copy.flowTab },
+        { id: 'coach', label: copy.coachTab },
+      ]
     : [
         { id: 'plan', label: copy.planTab },
         { id: 'flow', label: copy.flowTab },
@@ -3705,6 +3895,7 @@ function PlanResultDialog({
     { mode: 'deep_analysis', label: copy.deepAnalysis, hint: copy.coachAdjustHint },
     { mode: 'adjust', label: copy.adjust, hint: copy.coachAdjustHint },
   ];
+  const visibleAiAssistActions = coachActions.filter((action) => action.mode !== 'adjust');
   const hasLowConfidenceCoachData = plan.provenanceAttentionNeeded
     || plan.grindSettingVerification !== 'official'
     || plan.deviceProfileMode !== 'exact'
@@ -3913,30 +4104,35 @@ function PlanResultDialog({
     { label: copy.confidenceCatalog, value: plan.readinessScores.catalog },
   ] : [];
   const guideDensityToggle = (
-    <div
-      className="inline-flex rounded-full border panel-divider-subtle bg-[var(--bg-base)] p-1"
-      data-testid="ai-brew-guide-density-toggle"
-      aria-label={id ? 'Mode tampilan panduan' : 'Guide display mode'}
-    >
-      {([
-        ['basic', copy.guideDensitySimple],
-        ['pro', copy.guideDensityPro],
-      ] as const).map(([density, label]) => (
-        <button
-          key={density}
-          type="button"
-          onClick={() => setGuideDensity(density)}
-          className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-            guideDensity === density
-              ? 'bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)]'
-              : 'text-secondary hover:text-primary'
-          }`}
-          data-testid={`ai-brew-guide-density-${density}`}
-          aria-pressed={guideDensity === density}
-        >
-          {label}
-        </button>
-      ))}
+    <div className="flex flex-wrap items-center gap-2">
+      <div
+        className="inline-flex rounded-full border panel-divider-subtle bg-[var(--bg-base)] p-1"
+        data-testid="ai-brew-guide-density-toggle"
+        aria-label={id ? 'Mode tampilan panduan' : 'Guide display mode'}
+      >
+        {([
+          ['basic', copy.guideDensitySimple],
+          ['pro', copy.guideDensityPro],
+        ] as const).map(([density, label]) => (
+          <button
+            key={density}
+            type="button"
+            onClick={() => setGuideDensity(density)}
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+              guideDensity === density
+                ? 'bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.22)]'
+                : 'text-secondary hover:text-primary'
+            }`}
+            data-testid={`ai-brew-guide-density-${density}`}
+            aria-pressed={guideDensity === density}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <span className="text-xs leading-5 text-secondary">
+        {guideDensity === 'basic' ? copy.guideDensitySimpleHint : copy.guideDensityProHint}
+      </span>
     </div>
   );
 
@@ -4161,6 +4357,32 @@ function PlanResultDialog({
                       {copy.flowTab}
                     </button>
                   )}
+                </div>
+                <div
+                  className="mt-3 rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/72 p-2.5"
+                  data-testid="ai-brew-ai-assist-actions"
+                >
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.aiGenerateBrief}</p>
+                    <p className="text-xs text-secondary">{copy.coachCostHint}</p>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                    {visibleAiAssistActions.map((action) => (
+                      <button
+                        key={action.mode}
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('coach');
+                          onRunAiCoach(action.mode);
+                        }}
+                        disabled={aiCoachDisabled}
+                        className="rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2 text-left text-sm font-semibold text-primary transition-colors hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45"
+                        data-testid={`ai-brew-ai-assist-${action.mode}`}
+                      >
+                        {aiBusy === action.mode ? copy.aiEngineWorkingOnline : action.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -4662,6 +4884,7 @@ function PlanResultDialog({
                             presetStatus: plan.waterPresetStatus,
                             isBrewReady: plan.waterIsBrewReady,
                             mineralsReady: true,
+                            mineralDerivation: plan.waterMineralDerivation,
                           })}
                         </span>
                         {plan.waterPresetStatus && (
@@ -5186,6 +5409,7 @@ function PlanResultDialog({
                             presetStatus: plan.waterPresetStatus,
                             isBrewReady: plan.waterIsBrewReady,
                             mineralsReady: true,
+                            mineralDerivation: plan.waterMineralDerivation,
                           })}
                         </span>
                         {plan.waterPresetStatus && (
@@ -5257,22 +5481,32 @@ function buildProcessPickerOptions(catalog: AiBrewCatalog, copy: CopySet) {
     section: 'default',
     badges: [],
     ariaLabel: copy.pickerSkipProcess,
+    processCategory: 'special',
   }];
-  options.push(...catalog.processes.map((entry): PickerOption => ({
-    id: entry.id,
-    label: entry.label,
-    subtitle: `${copy.processGroup}: ${entry.group}`,
-    description: entry.notes[0],
-    searchText: `${entry.searchText} ${entry.group} ${entry.aliases.join(' ')}`.toLowerCase(),
-    section: entry.group,
-    badges: buildProcessBadges(copy, entry),
-    ariaLabel: copy.pickerSelectProcess.replace('{label}', entry.label),
-  })));
+  options.push(...sortProcessEntriesForPicker(catalog.processes).map((entry): PickerOption => {
+    const category = getProcessPickerCategory(entry);
+    return {
+      id: entry.id,
+      label: entry.label,
+      subtitle: `${copy.processGroup}: ${entry.group}`,
+      description: entry.notes[0],
+      searchText: normalizeSearchText(`${entry.searchText} ${entry.group} ${entry.aliases.join(' ')}`),
+      aliases: entry.aliases,
+      canonicalTerms: [entry.id, entry.label, ...entry.aliases],
+      processCategory: category,
+      section: getProcessPickerCategoryLabel(copy, category),
+      badges: buildProcessBadges(copy, entry),
+      ariaLabel: copy.pickerSelectProcess.replace('{label}', entry.label),
+    };
+  }));
   options.push({
     id: CUSTOM_ENTRY_ID,
     label: copy.manualEntry,
-    searchText: `${copy.manualEntry} custom process`.toLowerCase(),
-    section: 'manual',
+    searchText: normalizeSearchText(`${copy.manualEntry} custom process`),
+    aliases: ['custom process'],
+    canonicalTerms: [CUSTOM_ENTRY_ID, copy.manualEntry],
+    processCategory: 'special',
+    section: getProcessPickerCategoryLabel(copy, 'special'),
     badges: [],
     ariaLabel: copy.pickerSelectCustomProcess,
   });
@@ -5293,7 +5527,9 @@ function buildVarietyPickerOptions(catalog: AiBrewCatalog, copy: CopySet) {
     label: entry.label,
     subtitle: `${copy.varietyGroup}: ${entry.group}`,
     description: entry.originNotes,
-    searchText: `${entry.searchText} ${entry.group} ${entry.aliases.join(' ')}`.toLowerCase(),
+    searchText: normalizeSearchText(`${entry.searchText} ${entry.group} ${entry.aliases.join(' ')}`),
+    aliases: entry.aliases,
+    canonicalTerms: [entry.id, entry.label, ...entry.aliases],
     section: entry.group,
     badges: buildVarietyBadges(copy, entry),
     ariaLabel: copy.pickerSelectVariety.replace('{label}', entry.label),
@@ -5301,7 +5537,9 @@ function buildVarietyPickerOptions(catalog: AiBrewCatalog, copy: CopySet) {
   options.push({
     id: CUSTOM_ENTRY_ID,
     label: copy.manualEntry,
-    searchText: `${copy.manualEntry} custom variety`.toLowerCase(),
+    searchText: normalizeSearchText(`${copy.manualEntry} custom variety`),
+    aliases: ['custom variety'],
+    canonicalTerms: [CUSTOM_ENTRY_ID, copy.manualEntry],
     section: 'manual',
     badges: [],
     ariaLabel: copy.pickerSelectCustomVariety,
@@ -5399,6 +5637,7 @@ function buildWaterPickerSubtitle(item: WaterBrandProfile, copy: CopySet, langua
     presetStatus: item.presetStatus,
     isBrewReady: item.isBrewReady,
     mineralsReady: item.presetStatus === 'autofill',
+    mineralDerivation: item.resolvedMinerals?.derivation,
   });
   const classification = localizeAiBrewWaterClassificationLabel(item.classificationLabel, language);
   return [
@@ -5539,6 +5778,19 @@ function formatWaterMineralInput(value: number) {
   return Number.isInteger(value) ? String(value) : value.toFixed(1).replace(/\.0$/, '');
 }
 
+function isWaterMineralInputInRange(value: string, min: number, max: number) {
+  const parsed = Number(String(value || '').trim());
+  return Number.isFinite(parsed) && parsed >= min && parsed <= max;
+}
+
+function areWaterMineralInputsReady(formState: Pick<AiBrewFormState, 'waterTdsPpm' | 'waterHardnessPpm' | 'waterAlkalinityPpm'>) {
+  return (
+    isWaterMineralInputInRange(formState.waterTdsPpm, 0, 600)
+    && isWaterMineralInputInRange(formState.waterHardnessPpm, 0, 500)
+    && isWaterMineralInputInRange(formState.waterAlkalinityPpm, 0, 400)
+  );
+}
+
 function countKnownWaterFields(item: WaterBrandProfile | null | undefined) {
   if (!item) return 0;
   const profile = getWaterNumericProfile(item);
@@ -5587,9 +5839,12 @@ function formatWaterReadinessStatus(copy: CopySet, params: {
   presetStatus?: BrewPlan['waterPresetStatus'];
   isBrewReady?: boolean;
   mineralsReady?: boolean;
+  mineralDerivation?: BrewPlan['waterMineralDerivation'];
 }) {
   if (params.classification === 'zero_mineral_ro') return copy.waterStatusZeroMineral;
   if (params.classification === 'high_buffer') return copy.waterStatusHighBuffer;
+  if (params.mineralDerivation === 'manual') return copy.waterDerivationManual;
+  if (params.mineralDerivation === 'estimated_from_classification') return copy.waterStatusEstimated;
   if (params.presetStatus === 'manual_required' || params.isBrewReady === false || params.mineralsReady === false) {
     return copy.waterStatusManualRequired;
   }
@@ -6075,7 +6330,7 @@ export function AiBrewPanel({
     userFacingWaterBrands.filter((item) => isWaterBrandAutofillAllowed(item))
   ), [userFacingWaterBrands]);
 
-  const builderWaterBrands = activeBuilderModal === 'quick' ? quickSelectableWaterBrands : userFacingWaterBrands;
+  const builderWaterBrands = userFacingWaterBrands;
 
   const suggestedWaterBrands = useMemo(() => (
     getSuggestedWaterBrands(builderWaterBrands)
@@ -6126,11 +6381,7 @@ export function AiBrewPanel({
     if (!catalog || !selectedDripper || !selectedGrinder) return null;
     try {
       const sanitized = sanitizeAiBrewFormState(formState, catalog);
-      const nextMineralsReady = Boolean(
-        sanitized.waterTdsPpm
-        && sanitized.waterHardnessPpm
-        && sanitized.waterAlkalinityPpm,
-      );
+      const nextMineralsReady = areWaterMineralInputsReady(sanitized);
       const previewDoseG = Number.parseFloat(sanitized.doseG);
       const deviceSelection = resolveDeviceProfileSelection(catalog, selectedDripper, sanitized.brewMode, {
         doseG: Number.isFinite(previewDoseG) ? previewDoseG : undefined,
@@ -6145,8 +6396,9 @@ export function AiBrewPanel({
           presetStatus: selectedWaterBrand.presetStatus,
           isBrewReady: selectedWaterBrand.isBrewReady,
           mineralsReady: nextMineralsReady,
+          mineralDerivation: selectedWaterBrand.resolvedMinerals?.derivation,
         })
-        : formatWaterReadinessStatus(copy, { mineralsReady: nextMineralsReady });
+        : formatWaterReadinessStatus(copy, { mineralsReady: nextMineralsReady, mineralDerivation: 'manual' });
       const waterNeedsAttention = waterStatusLabel !== copy.waterStatusReady;
       const waterStatusTone = nextMineralsReady && !waterNeedsAttention ? 'emerald' : 'amber';
       const waterDerivation = formState.waterMode === 'brand'
@@ -6231,14 +6483,19 @@ export function AiBrewPanel({
   const preferredBuilderMode = inferPreferredBuilderMode(formState);
 
   const isQuickBuilder = activeBuilderModal === 'quick';
-  const mineralsReady = Boolean(formState.waterTdsPpm && formState.waterHardnessPpm && formState.waterAlkalinityPpm);
+  const mineralsReady = areWaterMineralInputsReady(formState);
   const selectedWaterBrandCanAutofill = isWaterBrandAutofillAllowed(selectedWaterBrand);
-  const canCompleteWaterMinerals = !isQuickBuilder && Boolean(selectedWaterBrand && selectedWaterCompletion && !selectedWaterBrandCanAutofill);
+  const waterReadyForGeneration = mineralsReady && (
+    formState.waterMode === 'manual'
+    || selectedWaterBrandCanAutofill
+    || formState.waterCustomized
+  );
+  const canCompleteWaterMinerals = Boolean(selectedWaterBrand && selectedWaterCompletion && !selectedWaterBrandCanAutofill);
   const waterNeedsManualEntry = formState.waterMode === 'manual'
     || !selectedWaterBrand
     || !selectedWaterBrandCanAutofill
     || formState.waterCustomized;
-  const shouldShowMineralEditor = !isQuickBuilder && (showMineralEditor || waterNeedsManualEntry);
+  const shouldShowMineralEditor = showMineralEditor || waterNeedsManualEntry;
   const canToggleMineralEditor = !isQuickBuilder
     && formState.waterMode === 'brand'
     && selectedWaterBrandCanAutofill;
@@ -6342,11 +6599,6 @@ export function AiBrewPanel({
     const knownFieldCount = countKnownWaterFields(brand);
     const canAutofill = isWaterBrandAutofillAllowed(brand);
 
-    if (isQuickBuilder && !canAutofill) {
-      setNotice(copy.waterNoPublishedMatches || copy.waterNoBrand);
-      return;
-    }
-
     setFormState((prev) => ({
       ...prev,
       waterMode: 'brand',
@@ -6397,6 +6649,26 @@ export function AiBrewPanel({
     setNotice(copy.waterCompleteMineralsApplied);
   }
 
+  function applyManualWaterPreset(values: {
+    tds: number;
+    hardness: number;
+    alkalinity: number;
+    note: string;
+  }) {
+    setFormState((prev) => ({
+      ...prev,
+      waterMode: 'manual',
+      waterBrandId: '',
+      waterCustomized: true,
+      waterTdsPpm: formatWaterMineralInput(values.tds),
+      waterHardnessPpm: formatWaterMineralInput(values.hardness),
+      waterAlkalinityPpm: formatWaterMineralInput(values.alkalinity),
+      waterNotes: values.note,
+    }));
+    setShowMineralEditor(true);
+    setFormError(null);
+  }
+
   async function handleGeneratePlan() {
     if (!catalog) return;
     if (!ensureAiAccess('ai_brew_generate')) return;
@@ -6419,7 +6691,7 @@ export function AiBrewPanel({
       return;
     }
 
-    if (!mineralsReady) {
+    if (!waterReadyForGeneration) {
       setFormError(
         generationFormState.waterMode === 'brand' && selectedWaterBrand?.presetStatus !== 'autofill'
           ? copy.waterBrandNeedsManual
@@ -7501,29 +7773,27 @@ export function AiBrewPanel({
                         <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.waterSourceTitle}</h4>
                       </div>
 
-                      {isPro && (
-                        <div className="grid grid-cols-2 gap-2 rounded-[1rem] panel-soft p-1.5">
-                          <button
-                            type="button"
-                            onClick={() => setWaterMode('brand')}
-                            className={`rounded-[0.9rem] px-4 py-2.5 text-sm font-medium transition-all ${formState.waterMode === 'brand' ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]' : 'text-secondary hover:text-primary'}`}
-                            data-testid="ai-brew-water-mode-brand"
-                          >
-                            {copy.waterBrand}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setWaterMode('manual')}
-                            className={`rounded-[0.9rem] px-4 py-2.5 text-sm font-medium transition-all ${formState.waterMode === 'manual' ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]' : 'text-secondary hover:text-primary'}`}
-                            data-testid="ai-brew-water-mode-manual"
-                          >
-                            {copy.waterManual}
-                          </button>
-                        </div>
-                      )}
+                      <div className="grid grid-cols-2 gap-2 rounded-[1rem] panel-soft p-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setWaterMode('brand')}
+                          className={`rounded-[0.9rem] px-4 py-2.5 text-sm font-medium transition-all ${formState.waterMode === 'brand' ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]' : 'text-secondary hover:text-primary'}`}
+                          data-testid="ai-brew-water-mode-brand"
+                        >
+                          {copy.waterBrand}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setWaterMode('manual')}
+                          className={`rounded-[0.9rem] px-4 py-2.5 text-sm font-medium transition-all ${formState.waterMode === 'manual' ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]' : 'text-secondary hover:text-primary'}`}
+                          data-testid="ai-brew-water-mode-manual"
+                        >
+                          {copy.waterManual}
+                        </button>
+                      </div>
 
                       <div className="mt-4 space-y-3">
-                        {formState.waterMode === 'brand' || !isPro ? (
+                        {formState.waterMode === 'brand' ? (
                           <div className="space-y-3">
                             <div>
                               <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.waterBrandPicker}</label>
@@ -7556,15 +7826,13 @@ export function AiBrewPanel({
                                     </button>
                                   );
                                 })}
-                                {isPro && (
-                                  <button
-                                    type="button"
-                                    onClick={() => setWaterMode('manual')}
-                                    className="rounded-full bg-[var(--bg-base)] px-3 py-2 text-xs font-medium text-primary transition-all"
-                                  >
-                                    {copy.waterManual}
-                                  </button>
-                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => setWaterMode('manual')}
+                                  className="rounded-full bg-[var(--bg-base)] px-3 py-2 text-xs font-medium text-primary transition-all"
+                                >
+                                  {copy.waterManual}
+                                </button>
                               </div>
                             )}
 
@@ -7580,18 +7848,17 @@ export function AiBrewPanel({
                                           presetStatus: selectedWaterBrand.presetStatus,
                                           isBrewReady: selectedWaterBrand.isBrewReady,
                                           mineralsReady,
+                                          mineralDerivation: selectedWaterBrand.resolvedMinerals?.derivation,
                                         })}
                                       </span>
-                                      {isPro && isEstimatedWaterBaseline(selectedWaterBrand) && (
+                                      {isEstimatedWaterBaseline(selectedWaterBrand) && (
                                         <span className="rounded-full bg-amber-500/10 px-2 py-1 text-[11px] font-medium text-amber-700 dark:text-amber-300">
                                           {copy.waterBrandEstimated}
                                         </span>
                                       )}
-                                      {isPro && (
-                                        <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">
-                                          {formatWaterDerivationLabel(copy, selectedWaterBrand.resolvedMinerals?.derivation)}
-                                        </span>
-                                      )}
+                                      <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">
+                                        {formatWaterDerivationLabel(copy, selectedWaterBrand.resolvedMinerals?.derivation)}
+                                      </span>
                                       <span className="rounded-full bg-[var(--bg-base)] px-2 py-1 text-[11px] font-medium text-secondary">
                                       {localizeAiBrewWaterClassificationLabel(selectedWaterBrand.classificationLabel, language)}
                                       </span>
@@ -7603,12 +7870,12 @@ export function AiBrewPanel({
                                         {buildWaterChemistryLabel(selectedWaterBrand, language)}
                                       </p>
                                     )}
-                                    {isPro && buildWaterPolicyWarning(copy, selectedWaterBrand) && (
+                                    {buildWaterPolicyWarning(copy, selectedWaterBrand) && (
                                       <p className="mt-2 rounded-xl bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
                                         {buildWaterPolicyWarning(copy, selectedWaterBrand)}
                                       </p>
                                     )}
-                                    {isPro && !selectedWaterBrandCanAutofill && (
+                                    {!selectedWaterBrandCanAutofill && (
                                       <div className="mt-2 rounded-xl bg-[var(--bg-base)] px-3 py-2 text-xs text-secondary">
                                         <p className="font-semibold text-primary">{copy.waterWhyManualTitle}</p>
                                         <p className="mt-1">{copy.waterWhyManualBody}</p>
@@ -7659,14 +7926,14 @@ export function AiBrewPanel({
                               </div>
                             )}
                           </div>
-                        ) : isPro ? (
+                        ) : (
                           <div className="rounded-2xl bg-surface-alpha p-4">
                             <div className="flex items-center gap-2 text-sm font-semibold text-primary">
                               <FlaskConical size={15} className="text-sky-500" />
                               <span>{copy.waterSelectedManual}</span>
                             </div>
                           </div>
-                        ) : null}
+                        )}
 
                         {shouldShowMineralEditor && (
                           <div className="rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/78 p-4">
@@ -7674,6 +7941,30 @@ export function AiBrewPanel({
                               <SlidersHorizontal size={15} className="text-blue-500" />
                               <h5 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.waterSummary}</h5>
                             </div>
+                            {formState.waterMode === 'manual' && (
+                              <div className="mb-3 flex flex-wrap gap-2" data-testid="ai-brew-water-manual-presets">
+                                {[
+                                  { id: 'ideal-filter', label: copy.waterPresetIdealFilter, tds: 90, hardness: 55, alkalinity: 40 },
+                                  { id: 'high-buffer', label: copy.waterPresetHighBuffer, tds: 220, hardness: 120, alkalinity: 120 },
+                                  { id: 'low-mineral', label: copy.waterPresetLowMineral, tds: 5, hardness: 2, alkalinity: 1 },
+                                ].map((preset) => (
+                                  <button
+                                    key={preset.id}
+                                    type="button"
+                                    onClick={() => applyManualWaterPreset({
+                                      tds: preset.tds,
+                                      hardness: preset.hardness,
+                                      alkalinity: preset.alkalinity,
+                                      note: preset.label,
+                                    })}
+                                    className="rounded-full bg-surface-alpha px-3 py-2 text-xs font-semibold text-primary transition-colors hover:bg-surface-alpha-hover"
+                                    data-testid={`ai-brew-water-preset-${preset.id}`}
+                                  >
+                                    {preset.label}: TDS {preset.tds} / GH {preset.hardness} / KH {preset.alkalinity}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
                             {canCompleteWaterMinerals && selectedWaterCompletion && (
                               <div
                                 className="mb-3 rounded-xl bg-blue-500/10 px-3 py-2 text-xs text-blue-700 dark:text-blue-200"
@@ -7735,20 +8026,18 @@ export function AiBrewPanel({
                                   data-testid="ai-brew-water-alkalinity"
                                 />
                               </div>
-                              {isPro && (
-                                <div>
-                                  <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.waterNotes}</label>
-                                  <input
-                                    name="ai-brew-water-notes"
-                                    type="text"
-                                    value={formState.waterNotes}
-                                    onChange={(event) => updateForm('waterNotes', event.target.value)}
-                                    placeholder={copy.waterNotesPlaceholder}
-                                    className="glass-input h-12 w-full px-4 text-base"
-                                    data-testid="ai-brew-water-notes"
-                                  />
-                                </div>
-                              )}
+                              <div>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.waterNotes}</label>
+                                <input
+                                  name="ai-brew-water-notes"
+                                  type="text"
+                                  value={formState.waterNotes}
+                                  onChange={(event) => updateForm('waterNotes', event.target.value)}
+                                  placeholder={copy.waterNotesPlaceholder}
+                                  className="glass-input h-12 w-full px-4 text-base"
+                                  data-testid="ai-brew-water-notes"
+                                />
+                              </div>
                             </div>
                             {catalog && (
                               <div className="mt-3 rounded-xl bg-surface-alpha px-3 py-3 text-xs text-secondary">
@@ -8034,7 +8323,7 @@ export function AiBrewPanel({
               <button
                 type="button"
                 onClick={() => { void handleGeneratePlan(); }}
-                disabled={!catalog || generationBusy || !mineralsReady}
+                disabled={!catalog || generationBusy || !waterReadyForGeneration}
                 className="inline-flex h-12 min-w-[10rem] flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-[0_10px_26px_rgba(37,99,235,0.24)] transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-55 sm:flex-none"
                 data-testid="ai-brew-generate"
               >
@@ -8048,7 +8337,7 @@ export function AiBrewPanel({
               >
                 {copy.reset}
               </button>
-              {!mineralsReady && (
+              {!waterReadyForGeneration && (
                 <div className="w-full rounded-xl bg-[var(--bg-base)] px-3 py-2.5 text-xs text-secondary sm:w-auto">
                   {copy.waterRequired}
                 </div>

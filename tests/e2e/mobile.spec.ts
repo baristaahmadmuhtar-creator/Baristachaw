@@ -140,7 +140,7 @@ test('mobile ai brew quick generate supports Indonesian process and variety sear
   });
 
   await expect(page.getByTestId('ai-brew-water-picker')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-water-mode-manual')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-water-mode-manual')).toBeVisible();
   await expect(page.getByTestId('ai-brew-water-tds')).toHaveCount(0);
 
   await page.getByTestId('ai-brew-generate').click();
@@ -209,14 +209,14 @@ test('mobile ai brew result workspace keeps primary actions inside the viewport'
   });
   await expect(page.getByTestId('ai-brew-coffee-name')).toHaveValue('Mobile Result QA');
   await expect(page.getByTestId('ai-brew-water-picker')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-water-mode-manual')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-water-mode-manual')).toBeVisible();
   await expect(page.getByTestId('ai-brew-water-tds')).toHaveCount(0);
   await page.getByTestId('ai-brew-generate').click();
 
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toBeVisible();
   await expect(page.getByTestId('ai-brew-result-tab-plan')).toHaveCount(0);
-  await expect(page.getByTestId('ai-brew-result-tab-coach')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-result-tab-coach')).toBeVisible();
   await expect(page.getByTestId('ai-brew-result-brief')).toHaveCount(0);
   await expect(result.getByTestId('ai-brew-result-metric-strip')).toHaveCount(0);
   await expect(result.getByTestId('ai-brew-sequence-section')).toBeVisible();
@@ -267,7 +267,7 @@ test('mobile ai brew result stays legible in light theme', async ({ page }) => {
   await expect(page.getByTestId('ai-brew-coffee-name')).toHaveValue('Light Theme QA');
 
   await expect(page.getByTestId('ai-brew-water-picker')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-water-mode-manual')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-water-mode-manual')).toBeVisible();
   await expect(page.getByTestId('ai-brew-water-tds')).toHaveCount(0);
   await page.getByTestId('ai-brew-generate').click();
 
@@ -327,7 +327,7 @@ test('mobile ai brew loading stays centered and keeps bottom nav hidden through 
   });
 
   await expect(page.getByTestId('ai-brew-water-picker')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-water-mode-manual')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-water-mode-manual')).toBeVisible();
   await expect(page.getByTestId('ai-brew-water-tds')).toHaveCount(0);
   await page.getByTestId('ai-brew-generate').click();
 

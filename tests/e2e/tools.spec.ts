@@ -10,7 +10,6 @@ const LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
 const AI_BREW_SEQUENCE_HEADING = /Brew Sequence|Urutan Seduh/i;
 const AI_BREW_SAVED_COLLECTION = /Recipe saved to Collection\.|Recipe tersimpan ke Collection\./i;
 const AI_BREW_CLOSE_OUTPUT = /Close planned output|Tutup output plan/i;
-const AI_BREW_EXPLAIN_PLAN = /Explain with AI|Jelaskan dengan AI/i;
 const AI_BREW_EXACT_PROFILE = /Exact profile|Profil exact/i;
 
 test.beforeEach(async ({ page }) => {
@@ -312,9 +311,11 @@ test('ai brew reveals custom process, variety, and water inputs', async ({ page 
   await expect(page.getByTestId('ai-brew-variety-picker')).toBeVisible();
   await expect(page.getByTestId('ai-brew-bean-profile-toggle')).toHaveCount(0);
   await expect(page.getByTestId('ai-brew-water-picker')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-water-mode-manual')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-water-mode-manual')).toBeVisible();
   await expect(page.getByTestId('ai-brew-water-toggle-minerals')).toHaveCount(0);
-  await expect(page.getByTestId('ai-brew-water-tds')).toHaveCount(0);
+  await page.getByTestId('ai-brew-water-mode-manual').click();
+  await expect(page.getByTestId('ai-brew-water-tds')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-water-preset-ideal-filter')).toBeVisible();
   await expect(page.getByTestId('ai-brew-builder-quick').getByText(/Cepat -|Quick -/i)).toHaveCount(0);
   await page.getByTestId('ai-brew-close-quick').click();
 
@@ -393,6 +394,40 @@ test('ai brew brewer picker prioritizes complete method catalog and search alias
   for (const [query, expectedId] of searchCases) {
     await search.fill(query);
     await expect(page.getByTestId(`ai-brew-picker-option-dripper-${expectedId}`)).toBeVisible();
+  }
+});
+
+test('ai brew process and variety picker search prioritizes exact canonical matches', async ({ page }) => {
+  await openAiBrewQuickMode(page);
+
+  await page.getByTestId('ai-brew-process-picker').click();
+  await expect(page.getByTestId('ai-brew-process-category-chips')).toBeVisible();
+  await page.getByTestId('ai-brew-picker-search-process').fill('Natural');
+  await expect(page.locator('[data-testid^="ai-brew-picker-option-process-"]').first()).toHaveAttribute('data-testid', 'ai-brew-picker-option-process-natural');
+  await page.getByTestId('ai-brew-picker-option-process-natural').click();
+  await expect(page.getByTestId('ai-brew-process-picker')).toContainText(/Natural/i);
+
+  await page.getByTestId('ai-brew-process-picker').click();
+  await page.getByTestId('ai-brew-picker-search-process').fill('Giling Basah');
+  await expect(page.locator('[data-testid^="ai-brew-picker-option-process-"]').first()).toHaveAttribute('data-testid', 'ai-brew-picker-option-process-wet_hulled');
+  await page.getByTestId('ai-brew-picker-option-process-wet_hulled').click();
+  await expect(page.getByTestId('ai-brew-process-picker')).toContainText(/Wet Hulled|Giling Basah/i);
+
+  const varietyCases = [
+    ['Ethiopian', /Ethiopian|Landrace|Heirloom/i],
+    ['Bourbon', /Bourbon/i],
+    ['Caturra', /Caturra/i],
+    ['Geisha', /Geisha|Gesha/i],
+    ['Gesha', /Geisha|Gesha/i],
+  ] as const;
+
+  for (const [query, expectedText] of varietyCases) {
+    await page.getByTestId('ai-brew-variety-picker').click();
+    await page.getByTestId('ai-brew-picker-search-variety').fill(query);
+    const firstVariety = page.locator('[data-testid^="ai-brew-picker-option-variety-"]').first();
+    await expect(firstVariety).toBeVisible();
+    await expect(firstVariety).toContainText(expectedText);
+    await page.getByRole('button', { name: /Close picker|Tutup picker|Tutup/i }).click();
   }
 });
 
@@ -489,14 +524,35 @@ test('ai brew water picker modal autofills a published brew-ready brand', async 
   await expect(page.getByTestId('ai-brew-result')).toContainText('Aqua');
 });
 
+test('ai brew quick manual mineral presets can generate safe water baselines', async ({ page }) => {
+  await openAiBrewQuickMode(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Manual Minerals Quick');
+  await switchAiBrewToManualWater(page);
+  await page.getByTestId('ai-brew-water-preset-ideal-filter').click();
+
+  await expect(page.getByTestId('ai-brew-water-tds')).toHaveValue('90');
+  await expect(page.getByTestId('ai-brew-water-hardness')).toHaveValue('55');
+  await expect(page.getByTestId('ai-brew-water-alkalinity')).toHaveValue('40');
+  await expect(page.getByTestId('ai-brew-generate')).toBeEnabled();
+
+  await page.getByTestId('ai-brew-generate').click();
+  const result = page.getByTestId('ai-brew-result');
+  await expect(result).toContainText('QA Manual Minerals Quick');
+  await expect(result).toContainText(/Manual mineral/i);
+  const plan = await readStoredAiBrewPlan(page);
+  expect(plan.waterMode).toBe('manual');
+  expect(plan.waterMinerals.tdsPpm).toBe(90);
+  expect(plan.waterMinerals.hardnessPpm).toBe(55);
+  expect(plan.waterMinerals.alkalinityPpm).toBe(40);
+});
+
 test('ai brew quick water picker stays simple while pro keeps full water coverage', async ({ page }) => {
   await openAiBrewQuickMode(page);
   await page.getByTestId('ai-brew-water-picker').click();
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-pure-life-global')).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-aqua-id')).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-aqua-id')).not.toContainText(/TDS|GH|KH/i);
-  await expect(page.getByTestId('ai-brew-picker-option-water_brand-heysong-water-sg')).toHaveCount(0);
-  await expect(page.getByTestId('ai-brew-picker-option-water_brand-nestle-pure-life-global')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-picker-option-water_brand-le-minerale-id')).toBeVisible();
 
   await page.getByTestId('ai-brew-picker-search-water_brand').fill('volvic');
   await expect(page.getByRole('button', { name: /Select water brand Volvic/i })).toBeVisible();
@@ -835,7 +891,7 @@ test('authenticated users can request ai coaching manually from the result panel
   await expect(page.getByTestId('ai-brew-sequence-note')).toContainText(AI_BREW_SEQUENCE_HEADING);
 
   await page.getByTestId('ai-brew-result-tab-coach').click();
-  await page.getByRole('button', { name: AI_BREW_EXPLAIN_PLAN }).click();
+  await page.getByTestId('ai-brew-ai-assist-explain').click();
   await expect(page.getByText(/Mocked Response/i).first()).toBeVisible();
   await expect(page.getByText(/qa_e2e mocked response for UI flow validation/i).first()).toBeVisible();
 });
@@ -859,7 +915,7 @@ test('ai brew coach guard blocks unsafe AI claims and keeps deterministic values
 
   await page.getByTestId('ai-brew-result-tab-coach').click();
   await expect(page.getByText(/Coach follows the deterministic planner|Coach mengikuti planner deterministic/i)).toBeVisible();
-  await page.getByRole('button', { name: AI_BREW_EXPLAIN_PLAN }).click();
+  await page.getByTestId('ai-brew-ai-assist-explain').click();
   const coachPanel = page.locator('.chat-markdown').last();
   await expect(coachPanel).toBeVisible({ timeout: 30_000 });
   await expect(coachPanel).not.toContainText(/Geisha|Gesha|ideal water|Profil exact|999 ml|setting 9/i);

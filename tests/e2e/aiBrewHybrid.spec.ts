@@ -95,6 +95,34 @@ async function readStoredPlan(page: import('@playwright/test').Page): Promise<Br
   return parsed.payload;
 }
 
+async function openResultGuide(page: import('@playwright/test').Page) {
+  const result = page.getByTestId('ai-brew-result');
+  await expect(result).toBeVisible({ timeout: 60_000 });
+  await result.getByTestId('ai-brew-result-tab-details').click();
+  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
+  await expect(sequenceNote).toBeVisible({ timeout: 60_000 });
+  return sequenceNote;
+}
+
+async function openResultDetails(page: import('@playwright/test').Page) {
+  const result = page.getByTestId('ai-brew-result');
+  await expect(result).toBeVisible({ timeout: 60_000 });
+  await result.getByTestId('ai-brew-result-tab-details').click();
+  return result;
+}
+
+async function openProSection(
+  page: import('@playwright/test').Page,
+  section: 'recipe' | 'bean' | 'water' | 'grinder' | 'method' | 'confidence',
+) {
+  const trigger = page.getByTestId(`ai-brew-pro-accordion-trigger-${section}`);
+  await expect(trigger).toBeVisible();
+  if ((await trigger.getAttribute('aria-expanded')) !== 'true') {
+    await trigger.click();
+  }
+  await expect(page.getByTestId(`ai-brew-pro-accordion-panel-${section}`)).toBeVisible();
+}
+
 function readStoredSequenceMarkdown(plan: BrewPlan) {
   return plan.aiNotes.sequenceCanonical || plan.aiNotes.sequence || '';
 }
@@ -212,13 +240,13 @@ test('ai brew precision builder applies barista target controls and keeps extra 
   await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Precision Target Controls');
   await setVisibleInputValue(page, 'ai-brew-dose', '15');
+  await openProSection(page, 'recipe');
   await setVisibleInputValue(page, 'ai-brew-target-ratio', '15.5');
   await setVisibleInputValue(page, 'ai-brew-target-temp', '92');
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
-  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
-  await expect(sequenceNote).toBeVisible({ timeout: 60_000 });
+  const sequenceNote = await openResultGuide(page);
   const plan = await readStoredPlan(page);
   expect(plan.waterTempC).toBe(92);
   expect(plan.recommendedRatio).toBeGreaterThanOrEqual(15.4);
@@ -240,6 +268,7 @@ test('ai brew taste feedback is saved in the local brew journal', async ({ page 
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
+  await openResultDetails(page);
   const feedbackPanel = page.getByTestId('ai-brew-taste-feedback');
   await expect(feedbackPanel).toBeVisible({ timeout: 60_000 });
   await feedbackPanel.scrollIntoViewIfNeeded();
@@ -253,6 +282,7 @@ test('ai brew taste feedback is saved in the local brew journal', async ({ page 
   await page.getByTestId('ai-brew-history-tab-recent').click();
   await expect(page.getByTestId('ai-brew-history-item')).toContainText(/Terlalu asam|Too sour/i);
   await page.getByTestId('ai-brew-history-item').click();
+  await openResultDetails(page);
   const reloadedFeedbackPanel = page.getByTestId('ai-brew-taste-feedback');
   await expect(reloadedFeedbackPanel.getByTestId('ai-brew-feedback-note')).toBeVisible();
   await expect(reloadedFeedbackPanel.getByTestId('ai-brew-feedback-note')).toHaveValue(/Drawdown cepat/i);
@@ -423,8 +453,7 @@ test('ai brew iced sequence falls back when AI omits explicit hot-ice split pair
   await pickWater(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
 
-  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
-  await expect(sequenceNote).toBeVisible({ timeout: 60_000 });
+  const sequenceNote = await openResultGuide(page);
   const plan = await readStoredPlan(page);
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toContainText(`${plan.hotWaterMl} ml`);
@@ -1188,8 +1217,7 @@ test('ai brew deterministic sequence changes checkpoint timeline across target c
   await pickWater(page, 'aqua', 'aqua-id');
 
   await page.getByTestId('ai-brew-generate').click();
-  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
-  await expect(sequenceNote).toBeVisible({ timeout: 60_000 });
+  const sequenceNote = await openResultGuide(page);
   const baselinePlan = await readStoredPlan(page);
   const baselineTimes = baselinePlan.steps.map((step) => step.startSeconds);
   const baselinePours = baselinePlan.steps.map((step) => `${step.pourVolumeMl}->${step.targetVolumeMl}`);
@@ -1199,7 +1227,7 @@ test('ai brew deterministic sequence changes checkpoint timeline across target c
   await page.getByRole('button', { name: /Edit input|Edit inputs|Ubah input/i }).click();
   await clickTargetProfile(page, 'quick', 'More Body');
   await page.getByTestId('ai-brew-generate').click();
-  await expect(sequenceNote).toBeVisible({ timeout: 60_000 });
+  await openResultGuide(page);
   const bodyPlan = await readStoredPlan(page);
   const bodyTimes = bodyPlan.steps.map((step) => step.startSeconds);
   const bodyPours = bodyPlan.steps.map((step) => `${step.pourVolumeMl}->${step.targetVolumeMl}`);
@@ -1221,8 +1249,7 @@ test('ai brew deterministic sequence changes pour-map structure across bean extr
   await pickWater(page, 'aqua', 'aqua-id');
 
   await page.getByTestId('ai-brew-generate').click();
-  const sequenceNote = page.getByTestId('ai-brew-sequence-note');
-  await expect(sequenceNote).toBeVisible({ timeout: 60_000 });
+  await openResultGuide(page);
   const baselinePlan = await readStoredPlan(page);
   const baselinePourSteps = baselinePlan.steps.filter((step) => step.pourVolumeMl > 0);
   const baselinePours = baselinePourSteps.map((step) => step.pourVolumeMl);
@@ -1230,11 +1257,12 @@ test('ai brew deterministic sequence changes pour-map structure across bean extr
   await expect(baselinePours.length).toBeGreaterThan(2);
 
   await page.getByRole('button', { name: /Edit input|Edit inputs|Ubah input/i }).click();
+  await openProSection(page, 'bean');
   await page.getByTestId('ai-brew-bean-profile-toggle').click();
   await page.getByTestId('ai-brew-bean-roast-underdeveloped').click();
   await page.getByTestId('ai-brew-bean-solubility-low').click();
   await page.getByTestId('ai-brew-generate').click();
-  await expect(sequenceNote).toBeVisible({ timeout: 60_000 });
+  await openResultGuide(page);
   const resistantPlan = await readStoredPlan(page);
   const resistantPourSteps = resistantPlan.steps.filter((step) => step.pourVolumeMl > 0);
   const resistantPours = resistantPourSteps.map((step) => step.pourVolumeMl);

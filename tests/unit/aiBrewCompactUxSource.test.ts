@@ -25,3 +25,29 @@ test('AI Brew mobile result has a compact action bar', () => {
   assert.match(SOURCE, /data-testid="ai-brew-result-action-save"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-action-edit"/);
 });
+
+test('AI Brew Pro mode uses compact summary and controlled accordions', () => {
+  assert.match(SOURCE, /data-testid="ai-brew-pro-summary"/);
+  assert.match(SOURCE, /data-testid=\{`ai-brew-pro-accordion-\$\{sectionId\}`\}/);
+  for (const section of ['recipe', 'bean', 'water', 'grinder', 'method', 'confidence']) {
+    assert.match(SOURCE, new RegExp(`sectionId="${section}"`));
+  }
+  assert.match(SOURCE, /aria-expanded=\{open\}/);
+  assert.match(SOURCE, /activeSection === sectionId/);
+});
+
+test('AI Brew generated result uses compact tabs before dense detail', () => {
+  assert.match(SOURCE, /data-testid="ai-brew-result-summary-panel"/);
+  assert.match(SOURCE, /data-testid="ai-brew-result-guide-panel"/);
+  assert.match(SOURCE, /data-testid="ai-brew-result-coach-panel"/);
+  assert.match(SOURCE, /data-testid="ai-brew-result-detail-panel"/);
+  assert.match(SOURCE, /setActiveTab\('plan'\)/);
+  assert.match(SOURCE, /\{ id: 'details', label: copy\.detailTab \}/);
+});
+
+test('AI Brew Pro keeps advanced AI tools collapsed and no AI auto-run', () => {
+  assert.match(SOURCE, /primaryAiAssistActions/);
+  assert.match(SOURCE, /advancedAiAssistActions/);
+  assert.match(SOURCE, /<details className="group mt-3 rounded-xl/);
+  assert.doesNotMatch(SOURCE, /useEffect\(\(\) => \{\s*onRunAiCoach/s);
+});

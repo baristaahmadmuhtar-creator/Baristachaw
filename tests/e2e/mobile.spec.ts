@@ -216,10 +216,13 @@ test('mobile ai brew result workspace keeps primary actions inside the viewport'
 
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toBeVisible();
-  await expect(page.getByTestId('ai-brew-result-tab-plan')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-result-tab-plan')).toBeVisible();
   await expect(page.getByTestId('ai-brew-result-tab-coach')).toBeVisible();
   await expect(page.getByTestId('ai-brew-result-brief')).toHaveCount(0);
-  await expect(result.getByTestId('ai-brew-result-metric-strip')).toHaveCount(0);
+  await expect(result.getByTestId('ai-brew-result-summary-panel')).toBeVisible();
+  await expect(result.getByTestId('ai-brew-result-summary-metric-strip')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-result-action-bar')).toBeVisible();
+  await page.getByTestId('ai-brew-result-tab-flow').click();
   await expect(result.getByTestId('ai-brew-sequence-section')).toBeVisible();
   await expect(result.getByTestId('ai-brew-quick-setup')).toBeVisible();
   await expect(result.getByTestId('ai-brew-quick-cues')).toBeVisible();
@@ -274,7 +277,8 @@ test('mobile ai brew result stays legible in light theme', async ({ page }) => {
 
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toBeVisible();
-  await expect(result.getByText('Light Theme QA')).toBeVisible();
+  await expect(result.locator('h3').filter({ hasText: 'Light Theme QA' })).toBeVisible();
+  await page.getByTestId('ai-brew-result-tab-flow').click();
   await expect(result.getByTestId('ai-brew-step-card-1')).toBeVisible();
 
   const visualState = await page.evaluate(() => {
@@ -354,6 +358,7 @@ test('mobile ai brew loading stays centered and keeps bottom nav hidden through 
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toBeVisible();
   await expect(page.getByTestId('mobile-bottom-nav')).toBeHidden();
+  await page.getByTestId('ai-brew-result-tab-flow').click();
   await expect(result.getByTestId('ai-brew-sequence-section')).toBeVisible();
 });
 

@@ -78,6 +78,18 @@ async function openAiBrewProMode(page: import('@playwright/test').Page) {
   await expect(page.getByTestId('ai-brew-builder-pro')).toBeVisible();
 }
 
+async function openAiBrewProSection(
+  page: import('@playwright/test').Page,
+  section: 'recipe' | 'bean' | 'water' | 'grinder' | 'method' | 'confidence',
+) {
+  const trigger = page.getByTestId(`ai-brew-pro-accordion-trigger-${section}`);
+  await expect(trigger).toBeVisible();
+  if ((await trigger.getAttribute('aria-expanded')) !== 'true') {
+    await trigger.click();
+  }
+  await expect(page.getByTestId(`ai-brew-pro-accordion-panel-${section}`)).toBeVisible();
+}
+
 async function selectAiBrewWaterBrand(
   page: import('@playwright/test').Page,
   query: string,
@@ -336,6 +348,7 @@ test('ai brew reveals custom process, variety, and water inputs', async ({ page 
   await page.getByTestId('ai-brew-close-quick').click();
 
   await openAiBrewProMode(page);
+  await openAiBrewProSection(page, 'bean');
   await page.getByTestId('ai-brew-process-picker').click();
   await page.getByRole('button', { name: /Select custom process/i }).click();
   await expect(page.getByTestId('ai-brew-process-custom')).toBeVisible();
@@ -364,6 +377,7 @@ test('ai brew keeps pour controls out of quick mode and inside precision details
   await page.getByTestId('ai-brew-close-quick').click();
 
   await openAiBrewProMode(page);
+  await openAiBrewProSection(page, 'recipe');
   await expect(page.getByTestId('ai-brew-target-ratio')).toBeVisible();
   await expect(page.getByTestId('ai-brew-pour-control-panel')).toBeVisible();
   await expect(page.getByTestId('ai-brew-pour-style-auto')).toBeVisible();
@@ -371,6 +385,7 @@ test('ai brew keeps pour controls out of quick mode and inside precision details
   await page.getByTestId('ai-brew-dripper-picker').click();
   await page.getByTestId('ai-brew-picker-search-dripper').fill('origami');
   await page.getByTestId('ai-brew-picker-option-dripper-origami-dripper-s-m').click();
+  await openAiBrewProSection(page, 'method');
   await expect(page.getByTestId('ai-brew-method-option-panel')).toBeVisible();
   await page.getByTestId('ai-brew-origami-filter-wave').click();
   await expect(page.getByTestId('ai-brew-origami-filter-wave')).toHaveAttribute('aria-pressed', 'true');
@@ -442,6 +457,7 @@ test('ai brew Hario Switch quick plan defaults to safe Hybrid Balanced with valv
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toContainText('QA Switch Hybrid Balanced');
   await expect(result.getByTestId('ai-brew-switch-result-summary')).toContainText(/Hybrid Balanced|Hybrid seimbang/i);
+  await result.getByTestId('ai-brew-result-tab-flow').click();
   await expect(result.getByTestId('ai-brew-sequence-section')).toContainText(/Closed|Open|Release|Katup|Buka/i);
 
   const plan = await readStoredAiBrewPlan(page);
@@ -554,6 +570,7 @@ test('ai brew guide renders workflow-specific phases for non-pour-over methods',
 
     const result = page.getByTestId('ai-brew-result');
     await expect(result).toContainText(entry.coffeeName);
+    await result.getByTestId('ai-brew-result-tab-flow').click();
     await expect(result.getByTestId('ai-brew-sequence-section')).toContainText(entry.expected);
     const plan = await readStoredAiBrewPlan(page);
     expect(plan.workflowValidation?.passed).toBe(true);
@@ -744,6 +761,7 @@ test('ai brew pro bean profile updates the analysis state while quick stays mini
   await page.getByTestId('ai-brew-close-quick').click();
 
   await openAiBrewProMode(page);
+  await openAiBrewProSection(page, 'bean');
   await page.getByTestId('ai-brew-bean-profile-toggle').click();
   await expect(page.getByTestId('ai-brew-bean-altitude')).toBeVisible();
   await expect(page.getByTestId('ai-brew-bean-density')).toBeVisible();
@@ -764,6 +782,7 @@ test('ai brew generates a hot brew plan and saves it to collection', async ({ pa
 
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toContainText('QA Ethiopia Chelbesa');
+  await result.getByTestId('ai-brew-result-tab-flow').click();
   await expect(result.getByTestId('ai-brew-sequence-section')).toContainText(AI_BREW_SEQUENCE_HEADING);
   await expect(result.getByTestId('ai-brew-step-card-1')).toBeVisible();
   const hotPlan = await readStoredAiBrewPlan(page);
@@ -807,6 +826,7 @@ test('ai brew quick and pro modes honor target profile changes in the generated 
 
   await openAiBrewProMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Target Pro');
+  await openAiBrewProSection(page, 'recipe');
   await expect(page.getByTestId('ai-brew-target-ratio')).toHaveAttribute('min', '13');
   await expect(page.getByTestId('ai-brew-target-ratio')).toHaveAttribute('max', '17');
   await expect(page.getByTestId('ai-brew-target-ratio-hint')).toContainText(/1:13-1:17/);
@@ -817,6 +837,7 @@ test('ai brew quick and pro modes honor target profile changes in the generated 
   const proResult = page.getByTestId('ai-brew-result');
   await expect(proResult).toContainText(/More Body|Body Lebih Tebal/i);
   await expect(proResult.getByTestId('ai-brew-result-metric-strip')).toBeVisible();
+  await proResult.getByTestId('ai-brew-result-tab-details').click();
   await expect(proResult.getByTestId('ai-brew-pro-why-recipe')).toBeVisible();
   await expect(proResult.getByTestId('ai-brew-pro-target-compare')).toContainText(/More Acidity|Lebih Cerah/i);
   await expect(proResult.getByTestId('ai-brew-pro-precision-tolerance')).toContainText(/Precision Tolerance|1C|Suhu/i);
@@ -863,6 +884,7 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
     };
 
     if (mode === 'quick') {
+      await result.getByTestId('ai-brew-result-tab-flow').click();
       await expect(result.getByTestId('ai-brew-iced-calibration')).toHaveCount(0);
       const quickSetup = result.getByTestId('ai-brew-quick-setup');
       await expect(quickSetup.getByTestId('ai-brew-quick-setup-water')).toContainText(`${plan.hotWaterMl} ml`);
@@ -877,6 +899,7 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
       await assertTechniqueChips(result.getByTestId('ai-brew-step-card-2'));
       await expect(result.getByTestId('ai-brew-step-card-2')).toContainText(firstHotTargetText);
     } else {
+      await result.getByTestId('ai-brew-result-tab-details').click();
       await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Final ratio|Rasio Final/i);
       await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Hot concentrate|Konsentrat Panas/i);
       await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(plan.finalBeverageRatio)}`);
@@ -884,6 +907,7 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
       await expect(result).toContainText(`${plan.hotWaterMl} ml`);
       await expect(result).toContainText(new RegExp(`${plan.iceMl}\\s*(ml|g)`, 'i'));
       await result.getByTestId('ai-brew-result-tab-flow').click();
+      await result.getByTestId('ai-brew-guide-density-pro').click();
       await expect(result.getByTestId('ai-brew-guide-density-pro')).toHaveAttribute('aria-pressed', 'true');
       await assertTechniqueChips(result.getByTestId('ai-brew-flow-step-2'));
       await assertTechniqueChips(result.getByTestId('ai-brew-flow-current-step-technique'));
@@ -978,6 +1002,7 @@ test('authenticated users can request ai coaching manually from the result panel
   await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
   await expect(page.getByTestId('ai-brew-result')).toBeVisible();
+  await page.getByTestId('ai-brew-result').getByTestId('ai-brew-result-tab-details').click();
   await expect(page.getByTestId('ai-brew-sequence-note')).toContainText(AI_BREW_SEQUENCE_HEADING);
 
   await page.getByTestId('ai-brew-result-tab-coach').click();
@@ -1029,6 +1054,7 @@ test('ai brew discloses exact-profile provenance when a niche dripper now has a 
   await page.getByTestId('ai-brew-generate').click();
 
   const result = page.getByTestId('ai-brew-result');
+  await result.getByTestId('ai-brew-result-tab-details').click();
   await expect(result).toContainText(AI_BREW_EXACT_PROFILE);
   await expect(result).toContainText(/Exact device profile matched: Latina Cono Hot\.|Profil exact cocok: Latina Cono Hot\./i);
 });

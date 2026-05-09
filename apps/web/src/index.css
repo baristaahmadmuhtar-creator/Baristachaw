@@ -1852,6 +1852,29 @@ video {
   touch-action: manipulation;
 }
 
+.ai-brew-compact-shell [data-testid="ai-brew-mobile-generate-bar"],
+.ai-brew-compact-shell [data-testid="ai-brew-result-action-bar"] {
+  padding-left: max(0.75rem, var(--safe-left, 0px));
+  padding-right: max(0.75rem, var(--safe-right, 0px));
+}
+
+.ai-brew-compact-shell [data-testid^="ai-brew-pro-accordion-trigger-"],
+.ai-brew-compact-shell [role="tab"],
+.ai-brew-compact-shell [data-testid="ai-brew-mobile-generate-bar"] button,
+.ai-brew-compact-shell [data-testid="ai-brew-result-action-bar"] button {
+  min-height: 44px;
+}
+
+.ai-brew-compact-shell [data-testid^="ai-brew-pro-accordion-panel-"] {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .ai-brew-compact-shell [data-testid="ai-brew-result"] {
+    max-width: 100vw;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .chat-send-morph,
   .thinking-pulse,

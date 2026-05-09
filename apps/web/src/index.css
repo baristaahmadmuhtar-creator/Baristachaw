@@ -1838,6 +1838,20 @@ video {
   pointer-events: none;
 }
 
+.ai-brew-compact-shell {
+  overflow-x: clip;
+}
+
+@supports not (overflow: clip) {
+  .ai-brew-compact-shell {
+    overflow-x: hidden;
+  }
+}
+
+.ai-brew-compact-shell button {
+  touch-action: manipulation;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .chat-send-morph,
   .thinking-pulse,

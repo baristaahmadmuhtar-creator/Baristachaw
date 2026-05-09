@@ -115,6 +115,7 @@ test('mobile ai brew quick generate supports Indonesian process and variety sear
   await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
 
   await page.getByTestId('ai-brew-open-quick').click();
+  await page.getByTestId('ai-brew-bean-details-toggle').click();
   await page.getByTestId('ai-brew-process-picker').click();
   await page.getByTestId('ai-brew-picker-search-process').fill('giling basah');
   await page.getByTestId('ai-brew-picker-option-process-wet_hulled').click();

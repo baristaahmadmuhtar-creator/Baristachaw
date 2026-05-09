@@ -319,6 +319,10 @@ test('ai brew reveals custom process, variety, and water inputs', async ({ page 
   await expect(page.getByTestId('ai-brew-open-pro')).toBeVisible();
 
   await openAiBrewQuickMode(page);
+  await expect(page.getByTestId('ai-brew-bean-details-summary')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-process-picker')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-variety-picker')).toHaveCount(0);
+  await page.getByTestId('ai-brew-bean-details-toggle').click();
   await expect(page.getByTestId('ai-brew-process-picker')).toBeVisible();
   await expect(page.getByTestId('ai-brew-variety-picker')).toBeVisible();
   await expect(page.getByTestId('ai-brew-bean-profile-toggle')).toHaveCount(0);
@@ -422,9 +426,15 @@ test('ai brew Hario Switch quick plan defaults to safe Hybrid Balanced with valv
   await page.getByTestId('ai-brew-picker-option-dripper-hario-switch-03').click();
 
   await expect(page.getByTestId('ai-brew-switch-section')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-switch-size-hario-switch-03')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByTestId('ai-brew-switch-dose-15')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-switch-selected-size')).toContainText(/Switch 03/i);
+  await expect(page.getByTestId('ai-brew-switch-size-hario-switch-03')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-switch-dose-15')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-dose-chip-15')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-switch-preset-summary')).toContainText(/Auto: Hybrid Balanced|Auto: Hybrid seimbang/i);
+  await page.getByTestId('ai-brew-switch-preset-toggle').click();
+  await expect(page.getByTestId('ai-brew-switch-preset-sheet')).toBeVisible();
   await expect(page.getByTestId('ai-brew-switch-preset-auto')).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
 
   await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -455,8 +465,11 @@ test('ai brew MUGEN x SWITCH keeps its own preset and 200 ml compatibility model
   await page.getByTestId('ai-brew-picker-option-dripper-mugen-x-switch').click();
 
   await expect(page.getByTestId('ai-brew-switch-section')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-switch-size-mugen-x-switch')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('ai-brew-switch-selected-size')).toContainText(/MUGEN/i);
+  await expect(page.getByTestId('ai-brew-switch-size-mugen-x-switch')).toHaveCount(0);
+  await page.getByTestId('ai-brew-switch-preset-toggle').click();
   await expect(page.getByTestId('ai-brew-switch-preset-mugen_everyday_hybrid')).toBeVisible();
+  await page.keyboard.press('Escape');
 
   await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -475,6 +488,7 @@ test('ai brew MUGEN x SWITCH keeps its own preset and 200 ml compatibility model
 
 test('ai brew process and variety picker search prioritizes exact canonical matches', async ({ page }) => {
   await openAiBrewQuickMode(page);
+  await page.getByTestId('ai-brew-bean-details-toggle').click();
 
   await page.getByTestId('ai-brew-process-picker').click();
   await expect(page.getByTestId('ai-brew-process-category-chips')).toBeVisible();

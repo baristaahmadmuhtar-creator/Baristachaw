@@ -465,13 +465,27 @@ const COPY = {
     guideDensityPro: 'Pro',
     guideDensitySimpleHint: 'Core steps for a quick brew.',
     guideDensityProHint: 'Full flow, path, pour height, and agitation detail.',
-    switchSectionTitle: 'Hario Switch setup',
-    switchSectionSummary: 'Pick exact size, dose, and a preset. Quick mode can auto-select Hybrid Balanced when you leave preset on Auto.',
+    switchSectionTitle: 'Setup Switch',
+    switchSectionSummary: 'Auto picks a safe preset from brewer size, dose, and taste target. Leave Auto on for the safest daily cup.',
     switchTeachingTitle: 'How Switch can brew',
     switchSizeTitle: 'Switch size',
-    switchDoseTitle: 'Dose chips',
-    switchPresetTitle: 'Switch preset',
+    switchDoseTitle: 'Dose shortcuts',
+    switchPresetTitle: 'Preset',
     switchAutoPreset: 'Auto safe preset',
+    switchChangePreset: 'Change preset',
+    switchSelectedSize: 'Selected size',
+    switchDoseSafety: 'Dose safety',
+    switchValvePath: 'Valve path',
+    switchSafety: 'Safety',
+    switchSafetySafe: 'Safe',
+    switchSafetyCaution: 'Caution',
+    switchSafetyBlocked: 'Blocked',
+    switchAutoHybridBalanced: 'Auto: Hybrid Balanced',
+    switchAutoIcedHybrid: 'Auto: Iced Hybrid',
+    switchAutoMugenHybrid: 'Auto: MUGEN Everyday Hybrid',
+    switchPresetSheetTitle: 'Choose Switch preset',
+    switchPresetSheetSummary: 'Compact cards first. Details stay hidden until you need them.',
+    switchPresetDetailToggle: 'Detail',
     switchPresetBestFor: 'Best for',
     switchPresetCupShape: 'Cup shape',
     switchPresetRisk: 'Risk',
@@ -480,10 +494,16 @@ const COPY = {
     switchWhyPreset: 'Why this preset',
     switchWatch: 'What to watch',
     switchHardwareFactOfficial: 'Hardware fact: official HARIO.',
-    switchWorkflowCurated: 'Recipe preset: curated synthesis.',
-    switchExpectedModel: 'Expected Cup is a prediction, not a guarantee.',
-    switchStudioTitle: 'Switch Studio',
-    switchStudioSummary: 'Valve path, chamber load, programme, and release checkpoints stay visible in Pro mode.',
+    switchWorkflowCurated: 'BaristaChaw curated preset.',
+    switchExpectedModel: 'Predicted cup, not a guarantee.',
+    switchStudioTitle: 'Switch Details',
+    switchStudioSummary: 'Valve path, chamber load, programme, and release checkpoints stay organized here.',
+    beanDetailsOptional: 'Bean details optional',
+    beanDetailsHint: 'Natural, washed, variety, and origin improve accuracy, but Quick mode can generate without them.',
+    beanDetailsAdd: 'Add bean detail',
+    beanDetailsHide: 'Hide bean detail',
+    quickSummaryAuto: 'Let Auto keep this brew safe.',
+    moreAiTools: 'More AI tools',
     expectedCupTitle: 'Expected Cup',
     cupAcidity: 'Acidity',
     cupSweetness: 'Sweetness',
@@ -942,13 +962,27 @@ const COPY = {
     guideDensityPro: 'Pro',
     guideDensitySimpleHint: 'Langkah inti untuk cepat dipakai.',
     guideDensityProHint: 'Detail flow, jalur, tinggi tuang, dan agitasi.',
-    switchSectionTitle: 'Setup Hario Switch',
-    switchSectionSummary: 'Pilih ukuran, dosis, dan preset. Di mode Cepat, biarkan Auto kalau ingin Hybrid seimbang yang aman.',
+    switchSectionTitle: 'Setup Switch',
+    switchSectionSummary: 'Auto pilih preset aman dari ukuran, dosis, dan target rasa. Biarkan Auto untuk seduhan harian yang aman.',
     switchTeachingTitle: 'Cara Switch bekerja',
     switchSizeTitle: 'Ukuran Switch',
-    switchDoseTitle: 'Chip dosis',
-    switchPresetTitle: 'Preset Switch',
+    switchDoseTitle: 'Shortcut dosis',
+    switchPresetTitle: 'Preset',
     switchAutoPreset: 'Preset aman otomatis',
+    switchChangePreset: 'Ubah preset',
+    switchSelectedSize: 'Ukuran terpilih',
+    switchDoseSafety: 'Keamanan dosis',
+    switchValvePath: 'Jalur katup',
+    switchSafety: 'Safety',
+    switchSafetySafe: 'Aman',
+    switchSafetyCaution: 'Hati-hati',
+    switchSafetyBlocked: 'Diblokir',
+    switchAutoHybridBalanced: 'Auto: Hybrid seimbang',
+    switchAutoIcedHybrid: 'Auto: Iced Hybrid',
+    switchAutoMugenHybrid: 'Auto: MUGEN Everyday Hybrid',
+    switchPresetSheetTitle: 'Pilih preset Switch',
+    switchPresetSheetSummary: 'Kartu ringkas dulu. Detail dibuka hanya saat perlu.',
+    switchPresetDetailToggle: 'Detail',
     switchPresetBestFor: 'Cocok untuk',
     switchPresetCupShape: 'Bentuk rasa',
     switchPresetRisk: 'Risiko',
@@ -957,10 +991,16 @@ const COPY = {
     switchWhyPreset: 'Kenapa preset ini',
     switchWatch: 'Yang perlu diperhatikan',
     switchHardwareFactOfficial: 'Fakta hardware: resmi HARIO.',
-    switchWorkflowCurated: 'Preset resep: sintesis kurasi.',
-    switchExpectedModel: 'Prediksi Rasa adalah model, bukan hasil pasti.',
-    switchStudioTitle: 'Switch Studio',
-    switchStudioSummary: 'Jalur katup, muatan ruang, program, dan titik buka/release tampil lengkap di mode Pro.',
+    switchWorkflowCurated: 'Preset racikan BaristaChaw.',
+    switchExpectedModel: 'Prediksi rasa, bukan jaminan.',
+    switchStudioTitle: 'Detail Switch',
+    switchStudioSummary: 'Jalur katup, muatan ruang, program, dan titik buka/release disusun di sini.',
+    beanDetailsOptional: 'Detail bean opsional',
+    beanDetailsHint: 'Natural, washed, varietas, dan origin membuat resep lebih akurat, tapi mode Cepat tetap bisa jalan tanpa itu.',
+    beanDetailsAdd: 'Tambah detail bean',
+    beanDetailsHide: 'Sembunyikan detail bean',
+    quickSummaryAuto: 'Biarkan Auto untuk hasil aman.',
+    moreAiTools: 'Tool AI lainnya',
     expectedCupTitle: 'Prediksi Rasa',
     cupAcidity: 'Asam',
     cupSweetness: 'Manis',
@@ -3959,7 +3999,12 @@ function PlanResultDialog({
     { mode: 'deep_analysis', label: copy.deepAnalysis, hint: copy.coachAdjustHint },
     { mode: 'adjust', label: copy.adjust, hint: copy.coachAdjustHint },
   ];
-  const visibleAiAssistActions = coachActions.filter((action) => action.mode !== 'adjust');
+  const primaryAiAssistActions = coachActions.filter((action) => (
+    action.mode === 'explain' || action.mode === 'troubleshoot' || action.mode === 'rewrite'
+  ));
+  const advancedAiAssistActions = coachActions.filter((action) => (
+    action.mode === 'deep_analysis' || action.mode === 'adjust'
+  ));
   const hasLowConfidenceCoachData = plan.provenanceAttentionNeeded
     || plan.grindSettingVerification !== 'official'
     || plan.deviceProfileMode !== 'exact'
@@ -4465,8 +4510,8 @@ function PlanResultDialog({
                     <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.aiGenerateBrief}</p>
                     <p className="text-xs text-secondary">{copy.coachCostHint}</p>
                   </div>
-                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                    {visibleAiAssistActions.map((action) => (
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {primaryAiAssistActions.map((action) => (
                       <button
                         key={action.mode}
                         type="button"
@@ -4482,6 +4527,31 @@ function PlanResultDialog({
                       </button>
                     ))}
                   </div>
+                  {advancedAiAssistActions.length > 0 && (
+                    <details className="group mt-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-primary">
+                        <span>{copy.moreAiTools}</span>
+                        <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
+                      </summary>
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                        {advancedAiAssistActions.map((action) => (
+                          <button
+                            key={action.mode}
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('coach');
+                              onRunAiCoach(action.mode);
+                            }}
+                            disabled={aiCoachDisabled}
+                            className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-left text-sm font-semibold text-primary transition-colors hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45"
+                            data-testid={`ai-brew-ai-assist-${action.mode}`}
+                          >
+                            {aiBusy === action.mode ? copy.aiEngineWorkingOnline : action.label}
+                          </button>
+                        ))}
+                      </div>
+                    </details>
+                  )}
                 </div>
               </div>
 
@@ -5387,7 +5457,7 @@ function PlanResultDialog({
                   )}
                 </div>
                 <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                  {coachActions.map((action) => (
+                  {primaryAiAssistActions.map((action) => (
                     <button
                       key={action.mode}
                       type="button"
@@ -5400,6 +5470,28 @@ function PlanResultDialog({
                     </button>
                   ))}
                 </div>
+                {advancedAiAssistActions.length > 0 && (
+                  <details className="group mt-3 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-primary">
+                      <span>{copy.moreAiTools}</span>
+                      <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
+                    </summary>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      {advancedAiAssistActions.map((action) => (
+                        <button
+                          key={action.mode}
+                          type="button"
+                          onClick={() => onRunAiCoach(action.mode)}
+                          disabled={aiCoachDisabled}
+                          className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-3 text-left transition-colors hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          <p className="text-sm font-semibold text-primary">{action.label}</p>
+                          <p className="mt-1 text-xs leading-5 text-secondary">{action.hint}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </details>
+                )}
 
                 {aiCoachReason && !aiBusy && (
                   <div className="mt-3 rounded-xl border border-blue-500/15 bg-blue-500/10 px-3 py-2 text-sm text-blue-700 dark:text-blue-300" role="status" aria-live="polite" aria-atomic="true">
@@ -5567,6 +5659,41 @@ function PlanResultDialog({
               </div>
               </div>
             )}
+          </div>
+        </div>
+        <div
+          className="shrink-0 border-t panel-divider-subtle bg-[var(--bg-base)]/96 px-3 py-2 backdrop-blur lg:hidden"
+          style={{ paddingBottom: 'calc(8px + var(--bottom-safe-capped, 0px))' }}
+          data-testid="ai-brew-result-action-bar"
+        >
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={flowRunning ? pauseFlowTimer : startFlowTimer}
+              disabled={workflowBlocked}
+              className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-55"
+              data-testid="ai-brew-result-action-start"
+            >
+              {flowRunning ? <Pause size={14} /> : <Play size={14} />}
+              {flowRunning ? copy.flowPause : copy.flowStart}
+            </button>
+            <button
+              type="button"
+              onClick={onSaveRecipe}
+              disabled={saving || workflowBlocked}
+              className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary disabled:cursor-not-allowed disabled:opacity-55"
+              data-testid="ai-brew-result-action-save"
+            >
+              {saveSuccess ? copy.saved : copy.save}
+            </button>
+            <button
+              type="button"
+              onClick={onEditInputs}
+              className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
+              data-testid="ai-brew-result-action-edit"
+            >
+              {copy.editInputs}
+            </button>
           </div>
         </div>
       </div>
@@ -6185,7 +6312,7 @@ export function AiBrewPanel({
   const [pickerKind, setPickerKind] = useState<PickerKind>(null);
   const [pickerRestoreFocusTarget, setPickerRestoreFocusTarget] = useState<HTMLElement | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
-  const [resultMode, setResultMode] = useState<FormMode>('pro');
+  const [resultMode, setResultMode] = useState<FormMode>('quick');
   const [showProvenance, setShowProvenance] = useState(false);
   const [journalEntries, setJournalEntries] = useState<BrewJournalEntry[]>([]);
   const [presets, setPresets] = useState<BrewPreset[]>([]);
@@ -6206,6 +6333,9 @@ export function AiBrewPanel({
   const [generationElapsedMs, setGenerationElapsedMs] = useState(0);
   const [showMineralEditor, setShowMineralEditor] = useState(false);
   const [showBeanProfileEditor, setShowBeanProfileEditor] = useState(false);
+  const [showQuickBeanDetails, setShowQuickBeanDetails] = useState(false);
+  const [showQuickSwitchPresetSheet, setShowQuickSwitchPresetSheet] = useState(false);
+  const switchPresetSheetRef = useRef<HTMLDivElement | null>(null);
   const generationStartedAtRef = useRef<number | null>(null);
   const aiAssistCacheRef = useRef(new Map<string, { title: string; markdown: string }>());
 
@@ -6230,6 +6360,20 @@ export function AiBrewPanel({
     return () => window.clearInterval(intervalId);
   }, [generationBusy]);
 
+  useEffect(() => {
+    if (!showQuickSwitchPresetSheet) return undefined;
+    const focusTarget = switchPresetSheetRef.current?.querySelector<HTMLElement>('[data-sheet-autofocus="true"]');
+    if (!focusTarget) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      try {
+        focusTarget.focus({ preventScroll: true });
+      } catch {
+        focusTarget.focus();
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [showQuickSwitchPresetSheet]);
+
   const shouldHideAppNav = activeBuilderModal !== null || pickerKind !== null || resultOpen || generationBusy;
 
   useEffect(() => {
@@ -6248,7 +6392,7 @@ export function AiBrewPanel({
     clearSaveFeedback();
     syncTasteFeedback(null);
     setActiveBuilderModal(null);
-    setResultMode('pro');
+    setResultMode('quick');
     setResultOpen(shouldOpen);
     setAiResponse(selectDefaultAiResponse(copy, storedPlan.aiNotes, storedPlan, language));
   }
@@ -6955,7 +7099,7 @@ export function AiBrewPanel({
     if (!catalog) return;
     setPlan(null);
     setResultOpen(false);
-    setResultMode('pro');
+    setResultMode('quick');
     setShowProvenance(false);
     setAiResponse(null);
     setAiError(null);
@@ -6965,6 +7109,8 @@ export function AiBrewPanel({
     setActiveJournalId(null);
     setShowMineralEditor(false);
     setShowBeanProfileEditor(false);
+    setShowQuickBeanDetails(false);
+    setShowQuickSwitchPresetSheet(false);
     setTargetProfileTouched(false);
     setFormState(createDefaultAiBrewFormState(catalog));
   }
@@ -7298,7 +7444,7 @@ export function AiBrewPanel({
     clearSaveFeedback();
     syncTasteFeedback(feedback);
     setActiveBuilderModal(null);
-    setResultMode('pro');
+    setResultMode(feedback ? 'pro' : 'quick');
     setResultOpen(true);
     saveLastGeneratedBrewPlan(nextPlan);
     setAiResponse(selectDefaultAiResponse(copy, nextPlan.aiNotes, nextPlan, language));
@@ -7364,6 +7510,8 @@ export function AiBrewPanel({
     setActiveBuilderModal(null);
     setFormError(null);
     setShowBeanProfileEditor(false);
+    setShowQuickBeanDetails(false);
+    setShowQuickSwitchPresetSheet(false);
   }
 
   function handleEditInputs() {
@@ -7560,6 +7708,7 @@ export function AiBrewPanel({
       { value: 'sweet_body', label: copy.aeropressStyleSweetBody },
     ] as const;
     const dialogTitle = isPro ? `${copy.title} - ${copy.proBuilderTitle}` : copy.title;
+    const showBeanDetailsControls = isPro || showQuickBeanDetails;
     const showOrigamiFilterControl = isPro && selectedDripper?.methodFamily === 'origami';
     const showAeroPressStyleControl = isPro && selectedDripper?.methodFamily === 'aeropress';
     const methodOptionPanel = showOrigamiFilterControl || showAeroPressStyleControl ? (
@@ -7692,6 +7841,143 @@ export function AiBrewPanel({
       .sort((a, b) => a - b);
     const selectedSwitchPreset = switchPresetOptions.find((preset) => preset.id === formState.switchPresetId)
       || getSwitchPresets(catalog || undefined).find((preset) => preset.id === formState.switchPresetId);
+    const isSwitchDripper = selectedDripper?.methodFamily === 'hario_switch';
+    const selectedSwitchIsExact = Boolean(selectedDripper?.id && isExactHarioSwitchDripperId(selectedDripper.id));
+    const showSwitchSizeChooser = isSwitchDripper && !selectedSwitchIsExact;
+    const parsedDoseG = Number.parseFloat(formState.doseG || '0');
+    const selectedSwitchCapacity = selectedDripper?.physicalConstraints?.finishedCapacityMl;
+    const selectedSwitchClosedMax = selectedDripper?.physicalConstraints?.recommendedClosedPhaseMaxMl;
+    const selectedSwitchSizeLabel = selectedDripper ? getSwitchSizeLabel(selectedDripper) : copy.notSpecified;
+    const selectedSwitchPresetLabel = selectedSwitchPreset
+      ? (isIndonesianAiBrewLanguage(language) ? selectedSwitchPreset.labelId || selectedSwitchPreset.label : selectedSwitchPreset.label)
+      : selectedDripper?.id === 'mugen-x-switch'
+        ? copy.switchAutoMugenHybrid
+        : formState.brewMode === 'iced'
+          ? copy.switchAutoIcedHybrid
+          : copy.switchAutoHybridBalanced;
+    const switchValvePathLabel = formState.switchPresetId === 'v60_mode'
+      ? (isIndonesianAiBrewLanguage(language) ? 'Katup terbuka dari awal' : 'Valve open from start')
+      : formState.brewMode === 'iced' || formState.switchPresetId === 'iced_hybrid'
+        ? (isIndonesianAiBrewLanguage(language) ? 'Tutup -> buka di atas es' : 'Closed -> release over ice')
+        : (isIndonesianAiBrewLanguage(language) ? 'Tutup -> buka' : 'Closed -> open');
+    const switchSafetyTone = selectedDripper?.id === 'hario-switch-02' && parsedDoseG >= 20
+      ? 'caution'
+      : selectedDripper?.id === 'mugen-x-switch' && parsedDoseG > 15
+        ? 'caution'
+        : 'safe';
+    const switchSafetyLabel = switchSafetyTone === 'caution' ? copy.switchSafetyCaution : copy.switchSafetySafe;
+    const switchSafetyMessage = switchSafetyTone === 'caution'
+      ? (isIndonesianAiBrewLanguage(language)
+        ? `${selectedSwitchSizeLabel}: ${formatRoundedGrams(parsedDoseG || 0)} butuh mode V60 atau hybrid konservatif.`
+        : `${selectedSwitchSizeLabel}: ${formatRoundedGrams(parsedDoseG || 0)} needs V60 mode or a conservative hybrid.`)
+      : (isIndonesianAiBrewLanguage(language)
+        ? `${selectedSwitchSizeLabel} aman untuk dosis ini dengan Auto.`
+        : `${selectedSwitchSizeLabel} is safe for this dose on Auto.`);
+    const renderSwitchPresetButton = (preset: SwitchPublicPreset, compact = false, closeAfterSelect = false) => {
+      const active = formState.switchPresetId === preset.id;
+      const presetLabel = isIndonesianAiBrewLanguage(language) ? preset.labelId || preset.label : preset.label;
+      return (
+        <button
+          key={preset.id}
+          type="button"
+          onClick={() => {
+            setFormState((prev) => ({
+              ...prev,
+              switchPresetId: preset.id as SwitchPublicPresetId,
+              switchTeachingMode: preset.teachingMode,
+              brewMode: preset.iced ? 'iced' : prev.brewMode,
+            }));
+            if (closeAfterSelect) setShowQuickSwitchPresetSheet(false);
+          }}
+          className={`min-h-[44px] rounded-xl border p-3 text-left transition-all ${
+            active ? 'border-blue-500/28 bg-blue-500/10 shadow-[0_12px_26px_rgba(37,99,235,0.14)]' : 'border-[var(--panel-border-soft)] bg-[var(--bg-base)] hover:border-blue-500/22'
+          }`}
+          data-testid={`ai-brew-switch-preset-${preset.id}`}
+          aria-pressed={active}
+        >
+          <span className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-sm font-semibold text-primary">{presetLabel}</span>
+            {active && <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-semibold text-white">Auto</span>}
+          </span>
+          <span className="mt-1 block text-xs leading-5 text-secondary">
+            {copy.switchPresetCupShape}: {preset.cupShape}
+          </span>
+          <span className="mt-1 block text-xs leading-5 text-secondary">
+            {copy.switchPresetBestFor}: {preset.bestFor.slice(0, compact ? 2 : 3).join(', ')}
+          </span>
+          <span className="mt-1 block text-xs leading-5 text-secondary">
+            {copy.switchPresetRisk}: {preset.easiestMistake}
+          </span>
+          {!compact && (
+            <span className="mt-1 block text-[11px] leading-4 text-secondary">
+              {copy.switchPresetSize}: {preset.safeSizeCompatibility.join(' | ')}
+            </span>
+          )}
+        </button>
+      );
+    };
+    const switchPresetSheet = !isPro && isSwitchDripper && showQuickSwitchPresetSheet ? (
+      <div className="fixed inset-0 z-[140] flex items-end bg-black/35 px-2 pb-2 sm:items-center sm:justify-center sm:p-6" data-testid="ai-brew-switch-preset-sheet-backdrop">
+        <button
+          type="button"
+          className="absolute inset-0 cursor-default"
+          aria-label={copy.pickerClose}
+          onClick={() => setShowQuickSwitchPresetSheet(false)}
+        />
+        <div
+          ref={switchPresetSheetRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={copy.switchPresetSheetTitle}
+          className="relative z-[1] max-h-[82vh] w-full max-w-2xl overflow-y-auto rounded-[1.4rem] border border-glass bg-[var(--bg-base)] p-4 shadow-[0_-18px_42px_rgba(0,0,0,0.25)]"
+          data-testid="ai-brew-switch-preset-sheet"
+          onKeyDown={(event) => {
+            if (event.key !== 'Escape') return;
+            event.preventDefault();
+            event.stopPropagation();
+            setShowQuickSwitchPresetSheet(false);
+          }}
+        >
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <div>
+              <h4 className="text-base font-semibold text-primary">{copy.switchPresetSheetTitle}</h4>
+              <p className="mt-1 text-xs leading-5 text-secondary">{copy.switchPresetSheetSummary}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowQuickSwitchPresetSheet(false)}
+              className="icon-touch-button glass-button"
+              aria-label={copy.pickerClose}
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <div className="mb-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                updateForm('switchPresetId', '');
+                setShowQuickSwitchPresetSheet(false);
+              }}
+              className={`min-h-[44px] rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
+                !formState.switchPresetId ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-primary'
+              }`}
+              data-testid="ai-brew-switch-preset-auto"
+              aria-pressed={!formState.switchPresetId}
+              data-sheet-autofocus="true"
+            >
+              {copy.switchAutoPreset}
+            </button>
+            <span className="rounded-full bg-surface-alpha px-3 py-2 text-xs font-semibold text-secondary">
+              {selectedSwitchSizeLabel}
+            </span>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {switchPresetOptions.map((preset) => renderSwitchPresetButton(preset, true, true))}
+          </div>
+        </div>
+      </div>
+    ) : null;
     const switchPanel = selectedDripper?.methodFamily === 'hario_switch' ? (
       <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3" data-testid="ai-brew-switch-section">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
@@ -7704,9 +7990,43 @@ export function AiBrewPanel({
           </span>
         </div>
 
-        <div className="mt-3 grid gap-3 lg:grid-cols-[0.82fr_1.18fr]">
-          <div className="space-y-3">
-            <div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4" data-testid="ai-brew-switch-quick-summary">
+          <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-tertiary">{copy.switchSelectedSize}</p>
+            <p className="mt-1 text-sm font-semibold text-primary" data-testid="ai-brew-switch-selected-size">
+              {selectedSwitchSizeLabel}
+            </p>
+            {selectedSwitchCapacity ? <p className="text-xs text-secondary">{selectedSwitchCapacity} ml</p> : null}
+          </div>
+          <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-tertiary">{copy.dose}</p>
+            <p className="mt-1 text-sm font-semibold text-primary">{formatRoundedGrams(parsedDoseG || 0)}</p>
+            {selectedSwitchClosedMax ? <p className="text-xs text-secondary">{`closed <= ${selectedSwitchClosedMax} ml`}</p> : null}
+          </div>
+          <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-tertiary">{copy.switchPresetTitle}</p>
+            <p className="mt-1 text-sm font-semibold text-primary" data-testid="ai-brew-switch-preset-summary">{selectedSwitchPresetLabel}</p>
+          </div>
+          <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-tertiary">{copy.switchValvePath}</p>
+            <p className="mt-1 text-sm font-semibold text-primary" aria-label={switchValvePathLabel}>{switchValvePathLabel}</p>
+          </div>
+        </div>
+
+        <div
+          className={`mt-3 rounded-xl px-3 py-2 text-xs leading-5 ${
+            switchSafetyTone === 'caution'
+              ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
+              : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+          }`}
+          data-testid="ai-brew-switch-safety-summary"
+        >
+          <span className="font-semibold">{copy.switchSafety}: {switchSafetyLabel}.</span>{' '}
+          {switchSafetyMessage}
+        </div>
+
+        {showSwitchSizeChooser && (
+          <div className="mt-3">
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.switchSizeTitle}</p>
               <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
                 {switchSizeOptions.map((item) => {
@@ -7743,57 +8063,75 @@ export function AiBrewPanel({
                 })}
               </div>
             </div>
+        )}
 
-            {switchDoseOptions.length > 0 ? (
-              <div>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.switchDoseTitle}</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {switchDoseOptions.map((dose) => {
-                    const active = Math.round(Number.parseFloat(formState.doseG || '0')) === dose;
-                    return (
-                      <button
-                        key={dose}
-                        type="button"
-                        onClick={() => updateForm('doseG', String(dose))}
-                        className={`min-h-[40px] rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
-                          active ? 'bg-blue-600 text-white shadow-[0_10px_22px_rgba(37,99,235,0.18)]' : 'bg-[var(--bg-base)] text-secondary hover:text-primary'
-                        }`}
-                        data-testid={`ai-brew-switch-dose-${dose}`}
-                        aria-pressed={active}
-                      >
-                        {dose} g
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-
-            <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.switchTeachingTitle}</p>
-              <div className="mt-2 grid gap-2">
-                {(catalog?.switchKnowledge?.teachingMethods || []).map((method) => (
-                  <button
-                    key={method.id}
-                    type="button"
-                    onClick={() => updateForm('switchTeachingMode', method.id)}
-                    className={`rounded-xl px-3 py-2 text-left transition-colors ${
-                      formState.switchTeachingMode === method.id ? 'bg-blue-500/10 text-primary' : 'bg-surface-alpha text-secondary hover:text-primary'
-                    }`}
-                    data-testid={`ai-brew-switch-teaching-${method.id}`}
-                    aria-pressed={formState.switchTeachingMode === method.id}
-                  >
-                    <span className="block text-xs font-semibold">{method.label}</span>
-                    <span className="mt-0.5 block text-[11px] leading-4">{method.description}</span>
-                  </button>
-                ))}
-              </div>
+        {!isPro ? (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[var(--bg-base)] px-3 py-2">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-primary">{copy.quickSummaryAuto}</p>
+              <p className="text-xs text-secondary">{selectedSwitchPreset?.why || copy.switchWorkflowCurated}</p>
             </div>
+            <button
+              type="button"
+              onClick={() => setShowQuickSwitchPresetSheet(true)}
+              className="min-h-[44px] rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.2)]"
+              data-testid="ai-brew-switch-preset-toggle"
+            >
+              {copy.switchChangePreset}
+            </button>
           </div>
+        ) : (
+          <div className="mt-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2" data-testid="ai-brew-switch-studio">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.switchStudioTitle}</p>
+                <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                  switchSafetyTone === 'caution'
+                    ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                    : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                }`}>
+                  {switchSafetyLabel}
+                </span>
+              </div>
+              <p className="mt-1 text-xs leading-5 text-secondary">{copy.switchStudioSummary}</p>
+              <div className="mt-3 grid gap-2">
+                <span className="rounded-xl bg-surface-alpha px-3 py-2 text-xs text-secondary">
+                  <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.switchValvePath}</span>
+                  <span className="font-semibold text-primary">{switchValvePathLabel}</span>
+                </span>
+                <span className="rounded-xl bg-surface-alpha px-3 py-2 text-xs text-secondary">
+                  <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.switchPresetTitle}</span>
+                  <span className="font-semibold text-primary">{selectedSwitchPresetLabel}</span>
+                </span>
+              </div>
+              <details className="group mt-3 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-primary">
+                  <span>{copy.switchTeachingTitle}</span>
+                  <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="mt-2 grid gap-2">
+                  {(catalog?.switchKnowledge?.teachingMethods || []).map((method) => (
+                    <button
+                      key={method.id}
+                      type="button"
+                      onClick={() => updateForm('switchTeachingMode', method.id)}
+                      className={`rounded-xl px-3 py-2 text-left transition-colors ${
+                        formState.switchTeachingMode === method.id ? 'bg-blue-500/10 text-primary' : 'bg-[var(--bg-base)] text-secondary hover:text-primary'
+                      }`}
+                      data-testid={`ai-brew-switch-teaching-${method.id}`}
+                      aria-pressed={formState.switchTeachingMode === method.id}
+                    >
+                      <span className="block text-xs font-semibold">{method.label}</span>
+                      <span className="mt-0.5 block text-[11px] leading-4">{method.description}</span>
+                    </button>
+                  ))}
+                </div>
+              </details>
+            </div>
 
-          <div>
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.switchPresetTitle}</p>
+            <div>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.switchPresetTitle}</p>
               <button
                 type="button"
                 onClick={() => updateForm('switchPresetId', '')}
@@ -7807,42 +8145,7 @@ export function AiBrewPanel({
               </button>
             </div>
             <div className="grid gap-2 md:grid-cols-2">
-              {switchPresetOptions.map((preset: SwitchPublicPreset) => {
-                const active = formState.switchPresetId === preset.id;
-                return (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => setFormState((prev) => ({
-                      ...prev,
-                      switchPresetId: preset.id as SwitchPublicPresetId,
-                      switchTeachingMode: preset.teachingMode,
-                      brewMode: preset.iced ? 'iced' : prev.brewMode,
-                    }))}
-                    className={`min-h-[146px] rounded-xl border p-3 text-left transition-all ${
-                      active ? 'border-blue-500/28 bg-blue-500/10 shadow-[0_12px_26px_rgba(37,99,235,0.14)]' : 'border-[var(--panel-border-soft)] bg-[var(--bg-base)] hover:border-blue-500/22'
-                    }`}
-                    data-testid={`ai-brew-switch-preset-${preset.id}`}
-                    aria-pressed={active}
-                  >
-                    <span className="block text-sm font-semibold text-primary">{isIndonesianAiBrewLanguage(language) ? preset.labelId || preset.label : preset.label}</span>
-                    <span className="mt-1 block text-xs leading-5 text-secondary">
-                      {copy.switchPresetCupShape}: {preset.cupShape}
-                    </span>
-                    <span className="mt-1 block text-xs leading-5 text-secondary">
-                      {copy.switchPresetBestFor}: {preset.bestFor.slice(0, 3).join(', ')}
-                    </span>
-                    <span className="mt-1 block text-xs leading-5 text-secondary">
-                      {copy.switchPresetRisk}: {preset.easiestMistake}
-                    </span>
-                    {isPro ? (
-                      <span className="mt-1 block text-[11px] leading-4 text-secondary">
-                        {copy.switchPresetSize}: {preset.safeSizeCompatibility.join(' | ')}
-                      </span>
-                    ) : null}
-                  </button>
-                );
-              })}
+              {switchPresetOptions.map((preset) => renderSwitchPresetButton(preset, false))}
             </div>
             <div className="mt-3 rounded-xl bg-[var(--bg-base)] px-3 py-2 text-xs leading-5 text-secondary">
               <p>
@@ -7856,13 +8159,20 @@ export function AiBrewPanel({
             </div>
           </div>
         </div>
+        )}
       </div>
     ) : null;
 
     return (
       <FocusLockedDialog
         open={activeBuilderModal === mode}
-        onClose={closeBuilder}
+        onClose={() => {
+          if (showQuickSwitchPresetSheet) {
+            setShowQuickSwitchPresetSheet(false);
+            return;
+          }
+          closeBuilder();
+        }}
         ariaLabel={dialogTitle}
         className="fixed inset-0 z-[111] h-[calc(var(--fullscreen-modal-height)_+_1px)] max-h-[calc(var(--fullscreen-modal-height)_+_1px)] overflow-hidden bg-[var(--bg-base)]/98 lg:inset-6 lg:mx-auto lg:h-auto lg:max-h-[calc(var(--fullscreen-modal-height)_-_3rem)] lg:max-w-5xl lg:rounded-[2rem] lg:border lg:border-glass lg:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
         disableMotionShift
@@ -7990,6 +8300,28 @@ export function AiBrewPanel({
                           data-testid="ai-brew-dose"
                         />
                         <p className="mt-1 text-xs leading-5 text-secondary" data-testid="ai-brew-dose-range-hint">{copy.doseRangeHint}</p>
+                        {isSwitchDripper && switchDoseOptions.length > 0 ? (
+                          <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1" data-testid="ai-brew-dose-shortcuts">
+                            {switchDoseOptions.map((dose) => {
+                              const active = Math.round(Number.parseFloat(formState.doseG || '0')) === dose;
+                              return (
+                                <button
+                                  key={dose}
+                                  type="button"
+                                  onClick={() => updateForm('doseG', String(dose))}
+                                  className={`min-h-[36px] shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                                    active ? 'bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.18)]' : 'bg-surface-alpha text-secondary hover:text-primary'
+                                  }`}
+                                  data-testid={`ai-brew-dose-chip-${dose}`}
+                                  aria-pressed={active}
+                                  aria-label={`${copy.dose} ${dose} g`}
+                                >
+                                  {dose} g
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : null}
                       </div>
                       <div>
                         <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.roast}</label>
@@ -8361,12 +8693,36 @@ export function AiBrewPanel({
               </div>
 
               <div className="glass-card p-4 sm:p-5">
-                <div className="mb-3 flex items-center gap-2">
-                  <SlidersHorizontal size={16} className="text-blue-500" />
-                  <h3 className="text-base font-semibold">
-                    {isPro ? copy.proDetails : `${copy.process} / ${copy.variety}`}
-                  </h3>
+                <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-start gap-2">
+                    <SlidersHorizontal size={16} className="mt-0.5 shrink-0 text-blue-500" />
+                    <div className="min-w-0">
+                      <h3 className="text-base font-semibold">
+                        {isPro ? copy.proDetails : copy.beanDetailsOptional}
+                      </h3>
+                      {!isPro && (
+                        <p className="mt-1 text-xs leading-5 text-secondary">{copy.beanDetailsHint}</p>
+                      )}
+                    </div>
+                  </div>
+                  {!isPro && (
+                    <button
+                      type="button"
+                      onClick={() => setShowQuickBeanDetails((prev) => !prev)}
+                      className="min-h-[44px] rounded-xl bg-[var(--bg-base)] px-3 py-2 text-sm font-semibold text-primary"
+                      data-testid="ai-brew-bean-details-toggle"
+                      aria-expanded={showQuickBeanDetails}
+                    >
+                      {showQuickBeanDetails ? copy.beanDetailsHide : copy.beanDetailsAdd}
+                    </button>
+                  )}
                 </div>
+                {!showBeanDetailsControls ? (
+                  <div className="rounded-[1.1rem] border panel-divider-subtle bg-[var(--bg-base)]/78 px-3 py-3 text-sm text-secondary" data-testid="ai-brew-bean-details-summary">
+                    <span className="font-semibold text-primary">{copy.quickSummaryAuto}</span>{' '}
+                    {copy.process}: {selectedProcessLabel || copy.notSpecified}; {copy.variety}: {selectedVarietyLabel || copy.notSpecified}.
+                  </div>
+                ) : (
                 <div className={`grid gap-4 ${isPro ? 'xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]' : ''}`}>
                     <div className="space-y-3.5">
                       <div className="grid gap-4 sm:grid-cols-2">
@@ -8614,6 +8970,7 @@ export function AiBrewPanel({
 
                     </div>
                   </div>
+                )}
                 </div>
 
             </div>
@@ -8648,6 +9005,7 @@ export function AiBrewPanel({
               )}
             </div>
           </div>
+          {switchPresetSheet}
           {renderGenerationOverlay()}
         </div>
       </FocusLockedDialog>
@@ -8655,7 +9013,7 @@ export function AiBrewPanel({
   }
 
   return (
-    <div className="space-y-5 pb-28 lg:pb-0" data-testid="ai-brew-panel">
+    <div className="ai-brew-compact-shell space-y-5 pb-28 lg:pb-0" data-testid="ai-brew-panel">
       {aiAccessGateModal}
       <div aria-hidden={activeBuilderModal !== null || resultOpen} className="mx-auto max-w-4xl space-y-5">
         <div className="glass-card p-5 lg:p-6">

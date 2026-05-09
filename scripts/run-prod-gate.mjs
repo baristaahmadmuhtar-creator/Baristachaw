@@ -1,4 +1,9 @@
 import { spawn } from 'node:child_process';
+import {
+  SMOKE_AUTH_ENV_GROUPS,
+  checkRuntimeEnv,
+  printSafeEnvReport,
+} from './lib/env-check.mjs';
 
 const NPM_BIN = 'npm';
 const BASE_URL = process.env.BASE_URL || 'https://baristaclaw.vercel.app';
@@ -19,13 +24,15 @@ function run(command, args, env = process.env) {
 }
 
 async function main() {
-  const hasBearerToken = Boolean(String(process.env.PROD_SMOKE_BEARER_TOKEN || process.env.SMOKE_BEARER_TOKEN || '').trim());
-  const hasEmailLogin = Boolean(
-    String(process.env.PROD_SMOKE_EMAIL || process.env.SMOKE_EMAIL || '').trim()
-    && String(process.env.PROD_SMOKE_PASSWORD || process.env.SMOKE_PASSWORD || '').trim(),
-  );
-  if (!hasBearerToken && !hasEmailLogin) {
-    throw new Error('Missing production smoke auth: set PROD_SMOKE_BEARER_TOKEN or PROD_SMOKE_EMAIL + PROD_SMOKE_PASSWORD.');
+  const authReport = checkRuntimeEnv(SMOKE_AUTH_ENV_GROUPS, {
+    env: process.env,
+    mode: 'runtime',
+    target: 'process.env',
+    allowLocalUnavailable: false,
+  });
+  printSafeEnvReport(authReport, { title: 'Production smoke auth env gate' });
+  if (!authReport.ok) {
+    throw new Error('Missing production smoke auth runtime env: set PROD_SMOKE_BEARER_TOKEN or PROD_SMOKE_EMAIL + PROD_SMOKE_PASSWORD in secure runtime.');
   }
 
   const env = {
@@ -33,7 +40,7 @@ async function main() {
     BASE_URL,
   };
 
-  await run(NPM_BIN, ['run', 'smoke:prod'], env);
+  await run(NPM_BIN, ['run', 'smoke:prod:auth'], env);
 }
 
 main().catch((error) => {

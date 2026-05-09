@@ -35,3 +35,111 @@ jobs:
         run: npm run release:verify
         env:
           CI: "1"
+
+  final-production-gate:
+    name: Final Production Gate
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    env:
+      CI: "1"
+      BASE_URL: https://baristaclaw.vercel.app
+      APP_URL: https://baristaclaw.vercel.app
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      ADMIN_EMAILS: ${{ secrets.ADMIN_EMAILS }}
+      HEALTHCHECK_TOKEN: ${{ secrets.HEALTHCHECK_TOKEN }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      EXPO_PUBLIC_API_BASE_URL: https://baristaclaw.vercel.app
+      EXPO_PUBLIC_WEB_APP_URL: https://baristaclaw.vercel.app
+      EXPO_PUBLIC_APP_SCHEME: baristachaw
+      EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+      PROD_SMOKE_BEARER_TOKEN: ${{ secrets.PROD_SMOKE_BEARER_TOKEN }}
+      PROD_SMOKE_EMAIL: ${{ secrets.PROD_SMOKE_EMAIL }}
+      PROD_SMOKE_PASSWORD: ${{ secrets.PROD_SMOKE_PASSWORD }}
+      PROD_SMOKE_SAMPLES: "3"
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@50.5.0
+
+      - name: Link Vercel project
+        shell: bash
+        run: |
+          test -n "$VERCEL_TOKEN"
+          test -n "$VERCEL_ORG_ID"
+          test -n "$VERCEL_PROJECT_ID"
+          mkdir -p .vercel
+          printf '{"orgId":"%s","projectId":"%s"}' "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" > .vercel/project.json
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Catalog audit
+        run: npm run catalog:audit
+
+      - name: Catalog audit report
+        run: npm run catalog:audit:report
+
+      - name: AI Brew unit tests
+        run: npm run test:ai-brew
+
+      - name: AI Brew Switch unit tests
+        run: npm run test:ai-brew:switch
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Build
+        run: npm run build
+
+      - name: Release verification
+        run: npm run release:verify
+
+      - name: Switch E2E
+        run: npm run test:e2e:switch
+
+      - name: Switch mobile E2E
+        run: npm run test:e2e:switch:mobile
+
+      - name: A11y
+        run: npm run test:a11y
+
+      - name: Vercel env-name presence
+        run: npm run prod:env:check -- --mode=vercel
+
+      - name: Secure runtime env injection
+        run: npm run prod:env:check -- --mode=runtime
+
+      - name: Production public smoke
+        run: npm run smoke:prod
+
+      - name: Production authenticated smoke
+        run: npm run smoke:prod:auth
+
+      - name: Production gate
+        run: npm run test:prod:gate
+
+      - name: Final launch doctor
+        run: npm run launch:doctor -- --mode=final

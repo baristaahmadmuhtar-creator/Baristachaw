@@ -434,3 +434,113 @@ test('runSmoke auto-skips QA test-auth probe when local endpoint is unavailable'
   );
   assert.equal(protectedCalls.length, 0);
 });
+
+test('runSmoke fails when strict authenticated production smoke is skipped', async () => {
+  const originalFetch = globalThis.fetch;
+  const originalLog = console.log;
+  const originalError = console.error;
+
+  console.log = () => {};
+  console.error = () => {};
+
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    const url = typeof input === 'string'
+      ? input
+      : input instanceof URL
+        ? input.toString()
+        : input.url;
+    const parsed = new URL(url);
+    const path = `${parsed.pathname}${parsed.search}`;
+    const method = String(init?.method || 'GET').toUpperCase();
+    const headers = toHeaderRecord(init?.headers);
+
+    if (path === '/api/health' && method === 'GET') {
+      return new Response(JSON.stringify({ status: 'ok' }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+          'x-frame-options': 'DENY',
+          'x-content-type-options': 'nosniff',
+          'referrer-policy': 'same-origin',
+          'permissions-policy': 'camera=()',
+          'strict-transport-security': 'max-age=31536000',
+          'content-security-policy': "default-src 'self'",
+        },
+      });
+    }
+
+    if (path === '/api/health?deep=1' && method === 'GET') {
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    if ((path === '/api/chat' || path === '/api/ai') && method === 'POST') {
+      return new Response(JSON.stringify({ errorCode: 'auth_required' }), {
+        status: 401,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    if (path === '/api/test-auth/login' && method === 'POST') {
+      return new Response(JSON.stringify({ error: 'Not found' }), {
+        status: 404,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    if (path === '/api/auth/guest' && method === 'POST') {
+      return new Response(JSON.stringify({
+        authenticated: true,
+        user: { id: 'guest-smoke-user', isGuest: true, provider: 'guest' },
+      }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+          'set-cookie': 'auth_token=guest.jwt.token; Path=/; HttpOnly; SameSite=Lax',
+        },
+      });
+    }
+
+    if (path === '/api/auth/me?soft=1' && method === 'GET' && headers.cookie === 'auth_token=guest.jwt.token') {
+      return new Response(JSON.stringify({
+        authenticated: true,
+        user: { id: 'guest-smoke-user', isGuest: true, provider: 'guest' },
+      }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    if (path === '/api/auth/logout' && method === 'POST' && headers.cookie === 'auth_token=guest.jwt.token') {
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+          'set-cookie': 'auth_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
+        },
+      });
+    }
+
+    throw new Error(`Unhandled fetch: ${method} ${path}`);
+  }) as typeof fetch;
+
+  try {
+    await assert.rejects(
+      () => runSmoke({
+        baseUrl: 'http://127.0.0.1:3000',
+        label: 'unit-prod',
+        expectTestAuthDisabled: true,
+        requireAuthenticatedChecks: true,
+        samples: '1',
+        aiDelayMs: '1',
+      }),
+      /Smoke test failed/,
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+    console.log = originalLog;
+    console.error = originalError;
+  }
+});

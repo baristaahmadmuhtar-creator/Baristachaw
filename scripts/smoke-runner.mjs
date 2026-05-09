@@ -1036,6 +1036,7 @@ export async function runSmoke({
   p95DeepMs,
   expectTestAuthDisabled,
   allowUnavailableTestAuth,
+  requireAuthenticatedChecks,
   aiDelayMs,
 }) {
   const results = [];
@@ -1101,7 +1102,12 @@ export async function runSmoke({
       allowUnavailableTestAuth: Boolean(allowUnavailableTestAuth),
     });
   } else {
-    pass(results, 'authenticated mode checks', 'skipped (no bearer token or QA test auth provided)');
+    const details = 'auth_smoke_skipped (no bearer token, email/password, or QA test auth provided)';
+    if (requireAuthenticatedChecks) {
+      fail(results, 'authenticated mode checks', details);
+    } else {
+      pass(results, 'authenticated mode checks', details);
+    }
   }
 
   summarize(results, label, baseUrl);

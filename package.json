@@ -29,6 +29,7 @@
         "check": "npm run lint && npm run build",
         "smoke:local": "node scripts/smoke-local.mjs",
         "smoke:prod": "node scripts/smoke-prod.mjs",
+        "smoke:prod:auth": "node scripts/smoke-prod.mjs --require-auth",
         "supabase:quota:verify": "node scripts/verify-supabase-quota-rpc.mjs",
         "prod:env:check": "node scripts/check-production-env.mjs",
         "launch:doctor": "node scripts/launch-readiness.mjs",

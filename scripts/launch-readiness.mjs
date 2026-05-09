@@ -1,24 +1,29 @@
 import { spawn } from 'node:child_process';
 
 const isWindows = process.platform === 'win32';
+const mode = process.argv.find(arg => arg.startsWith('--mode='))?.slice('--mode='.length) || 'local';
 
-const checks = [
+function npmArgs(script, extraArgs = []) {
+  return ['run', script, ...extraArgs];
+}
+
+const baseChecks = [
   {
     name: 'Production env',
     command: 'npm',
-    args: ['run', 'prod:env:check'],
+    args: npmArgs('prod:env:check', ['--', '--mode=local']),
     blocker: true,
   },
   {
     name: 'Mobile auth env',
     command: 'npm',
-    args: ['run', 'mobile:auth:check'],
+    args: npmArgs('mobile:auth:check'),
     blocker: true,
   },
   {
     name: 'Type-check and web build',
     command: 'npm',
-    args: ['run', 'check'],
+    args: npmArgs('check'),
     blocker: true,
   },
   {
@@ -40,10 +45,63 @@ const checks = [
   {
     name: 'Catalog data audit',
     command: 'npm',
-    args: ['run', 'catalog:audit'],
+    args: npmArgs('catalog:audit'),
     blocker: true,
   },
 ];
+
+const finalChecks = [
+  {
+    name: 'Vercel production env-name presence',
+    command: 'npm',
+    args: npmArgs('prod:env:check', ['--', '--mode=vercel']),
+    blocker: true,
+  },
+  {
+    name: 'Secure runtime env injection',
+    command: 'npm',
+    args: npmArgs('prod:env:check', ['--', '--mode=runtime']),
+    blocker: true,
+  },
+  {
+    name: 'Mobile auth env',
+    command: 'npm',
+    args: npmArgs('mobile:auth:check'),
+    blocker: true,
+  },
+  {
+    name: 'Release verification',
+    command: 'npm',
+    args: npmArgs('release:verify'),
+    blocker: true,
+  },
+  {
+    name: 'Catalog data audit',
+    command: 'npm',
+    args: npmArgs('catalog:audit'),
+    blocker: true,
+  },
+  {
+    name: 'Production public smoke',
+    command: 'npm',
+    args: npmArgs('smoke:prod'),
+    blocker: true,
+  },
+  {
+    name: 'Production authenticated smoke',
+    command: 'npm',
+    args: npmArgs('smoke:prod:auth'),
+    blocker: true,
+  },
+  {
+    name: 'Production gate',
+    command: 'npm',
+    args: npmArgs('test:prod:gate'),
+    blocker: true,
+  },
+];
+
+const checks = mode === 'final' ? finalChecks : baseChecks;
 
 function runCheck(check) {
   return new Promise((resolve) => {
@@ -75,10 +133,15 @@ function runCheck(check) {
 
 const results = [];
 for (const check of checks) {
-  results.push(await runCheck(check));
+  const result = await runCheck(check);
+  results.push(result);
+  if (mode === 'final' && check.blocker && result.code !== 0) {
+    console.log(`\nStopping final gate after blocker failure: ${check.name}`);
+    break;
+  }
 }
 
-console.log('\nLaunch readiness summary');
+console.log(`\nLaunch readiness summary (${mode})`);
 for (const result of results) {
   const status = result.code === 0 ? 'pass' : 'fail';
   console.log(`- ${status}: ${result.name}`);
@@ -88,6 +151,8 @@ const failedBlockers = results.filter((result) => result.blocker && result.code 
 if (failedBlockers.length > 0) {
   console.log('\nStatus: belum siap launch. Tutup blocker di atas lalu jalankan lagi: npm run launch:doctor');
   process.exitCode = 1;
+} else if (mode === 'final') {
+  console.log('\nStatus: final production gate passed. Public launch may proceed after merge/deploy policy is satisfied.');
 } else {
   console.log('\nStatus: code dan env utama siap untuk smoke test production.');
 }

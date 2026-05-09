@@ -10,6 +10,8 @@ const p95FastMs = process.env.PROD_SMOKE_P95_FAST_MS || '2000';
 const p95NormalMs = process.env.PROD_SMOKE_P95_NORMAL_MS || '4000';
 const p95DeepMs = process.env.PROD_SMOKE_P95_DEEP_MS || '8000';
 const aiDelayMs = process.env.PROD_SMOKE_AI_DELAY_MS || '2200';
+const requireAuthenticatedChecks = process.argv.includes('--require-auth')
+  || process.env.PROD_SMOKE_REQUIRE_AUTH === '1';
 
 runSmoke({
   baseUrl,
@@ -24,6 +26,7 @@ runSmoke({
   p95DeepMs,
   aiDelayMs,
   expectTestAuthDisabled: true,
+  requireAuthenticatedChecks,
 }).catch(error => {
   console.error('[smoke:prod] failed:', error instanceof Error ? error.message : String(error));
   process.exitCode = 1;

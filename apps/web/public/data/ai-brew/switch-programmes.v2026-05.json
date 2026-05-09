@@ -1,0 +1,448 @@
+{
+  "catalogVersion": "2026.05.0-switch-programmes",
+  "publicPresets": [
+    {
+      "id": "immersion_sweet",
+      "label": "Switch Immersion Sweet",
+      "labelId": "Immersion manis",
+      "teachingMode": "full_immersion",
+      "defaultProgramme": "full_immersion_sweet",
+      "quickEligible": true,
+      "proOnly": false,
+      "defaultUse": "Sweet washed, honey, or easy daily cups.",
+      "cupShape": "Sweet, rounded, forgiving.",
+      "bestFor": ["washed", "honey", "daily cup", "soft sweetness"],
+      "easiestMistake": "Letting the closed phase run too long until the cup turns flat or muddy.",
+      "whenNotToUse": "Very delicate floral coffees with high-buffer water or doses that exceed safe closed load.",
+      "safeSizeCompatibility": ["Switch 02: 10-12 g", "Switch 03: 10-20 g", "MUGEN x SWITCH: 10-12 g"],
+      "compatibleDripperIds": ["hario-switch-02", "hario-switch-03", "mugen-x-switch"],
+      "preferredDripperIds": ["hario-switch-03"],
+      "defaultDoseG": 15,
+      "doseG": [10, 12, 15, 18, 20],
+      "iced": false,
+      "internalProgrammes": ["full_immersion_sweet"],
+      "expectedCupShift": {
+        "acidity": -0.2,
+        "sweetness": 0.8,
+        "body": 0.5,
+        "clarity": -0.3,
+        "bitterRisk": 0.1,
+        "aromaIntensity": 0.2
+      },
+      "why": "Closed contact gives sweetness with low agitation, then the release cleans up the finish.",
+      "watch": "Keep the slurry calm and open before the cup turns heavy.",
+      "provenance": {
+        "hardwareVerificationLevel": "official",
+        "workflowVerificationLevel": "curated_synthesis",
+        "sensoryModelConfidence": "medium",
+        "curatedFromSources": [
+          {
+            "label": "HARIO Switch official",
+            "url": "https://global.hario.com/product/coffee/dripper/SSD.html",
+            "sourceType": "official_hardware"
+          },
+          {
+            "label": "Kurasu Switch method guide",
+            "url": "https://kurasu.kyoto/blogs/kurasu-journal/switch",
+            "sourceType": "barista_curated"
+          }
+        ],
+        "reviewedAt": "2026-05-09",
+        "evidenceUpdatedAt": "2026-05-09"
+      }
+    },
+    {
+      "id": "immersion_heavy_body",
+      "label": "Switch Immersion Heavy Body",
+      "labelId": "Immersion body tebal",
+      "teachingMode": "full_immersion",
+      "defaultProgramme": "full_immersion_heavy_body",
+      "quickEligible": true,
+      "proOnly": false,
+      "defaultUse": "Natural, wet-hulled, medium roast, or dense comfort cups.",
+      "cupShape": "Fuller, thicker, more syrupy.",
+      "bestFor": ["natural", "wet hulled", "medium roast", "heavy body"],
+      "easiestMistake": "Too much closed load or agitation can make the cup muddy.",
+      "whenNotToUse": "Small Switch 02 doses above 12 g, fragile floral coffees, or already-heavy water.",
+      "safeSizeCompatibility": ["Switch 02: 10-12 g", "Switch 03: 10-20 g", "MUGEN x SWITCH: use caution"],
+      "compatibleDripperIds": ["hario-switch-02", "hario-switch-03", "mugen-x-switch"],
+      "preferredDripperIds": ["hario-switch-03"],
+      "defaultDoseG": 15,
+      "doseG": [10, 12, 15, 18, 20],
+      "iced": false,
+      "internalProgrammes": ["full_immersion_heavy_body"],
+      "expectedCupShift": {
+        "acidity": -0.3,
+        "sweetness": 0.5,
+        "body": 1,
+        "clarity": -0.6,
+        "bitterRisk": 0.4,
+        "aromaIntensity": 0.2
+      },
+      "why": "Longer closed contact and quiet release build body without changing dose or ratio first.",
+      "watch": "Stop chasing body once the finish starts to dry or the bed gets silty.",
+      "provenance": {
+        "hardwareVerificationLevel": "official",
+        "workflowVerificationLevel": "curated_synthesis",
+        "sensoryModelConfidence": "medium",
+        "curatedFromSources": [
+          {
+            "label": "HARIO Switch official",
+            "url": "https://global.hario.com/product/coffee/dripper/SSD.html",
+            "sourceType": "official_hardware"
+          },
+          {
+            "label": "Kurasu Switch recipes",
+            "url": "https://kurasu.kyoto/blogs/kurasu-journal/2-brewing-recipes-with-hario-immersion-dripper-switch",
+            "sourceType": "barista_curated"
+          }
+        ],
+        "reviewedAt": "2026-05-09",
+        "evidenceUpdatedAt": "2026-05-09"
+      }
+    },
+    {
+      "id": "hybrid_balanced",
+      "label": "Switch Hybrid Balanced",
+      "labelId": "Hybrid seimbang",
+      "teachingMode": "hybrid",
+      "defaultProgramme": "bloom_then_immersion",
+      "quickEligible": true,
+      "proOnly": false,
+      "defaultUse": "The safest all-round Switch default for most coffees.",
+      "cupShape": "Sweet and clean with controlled body.",
+      "bestFor": ["daily brew", "unknown coffee", "balanced sweetness", "first Switch recipe"],
+      "easiestMistake": "Closing too much water on Switch 02 instead of using a hybrid open-fill.",
+      "whenNotToUse": "Use V60 Mode for maximum transparency or Heavy Body for intentionally dense cups.",
+      "safeSizeCompatibility": ["Switch 02: hybrid open-fill", "Switch 03: 10-20 g", "MUGEN x SWITCH: everyday hybrid"],
+      "compatibleDripperIds": ["hario-switch-02", "hario-switch-03", "mugen-x-switch"],
+      "preferredDripperIds": ["hario-switch-02", "hario-switch-03"],
+      "defaultDoseG": 15,
+      "doseG": [10, 12, 15, 18, 20],
+      "iced": false,
+      "internalProgrammes": ["bloom_then_immersion", "immersion_then_percolation"],
+      "expectedCupShift": {
+        "acidity": 0.1,
+        "sweetness": 0.4,
+        "body": 0.2,
+        "clarity": 0.2,
+        "bitterRisk": -0.1,
+        "aromaIntensity": 0.1
+      },
+      "why": "A small controlled closed phase gives sweetness while open phases keep the finish clean.",
+      "watch": "Watch chamber load on 02; release before the bed feels stalled.",
+      "provenance": {
+        "hardwareVerificationLevel": "official",
+        "workflowVerificationLevel": "curated_synthesis",
+        "sensoryModelConfidence": "medium",
+        "curatedFromSources": [
+          {
+            "label": "HARIO Switch official",
+            "url": "https://global.hario.com/product/coffee/dripper/SSD.html",
+            "sourceType": "official_hardware"
+          },
+          {
+            "label": "Partners Coffee Hario Switch recipe",
+            "url": "https://help.partnerscoffee.com/en-US/hario-switch-413861",
+            "sourceType": "barista_curated"
+          }
+        ],
+        "reviewedAt": "2026-05-09",
+        "evidenceUpdatedAt": "2026-05-09"
+      }
+    },
+    {
+      "id": "hybrid_bright_clean",
+      "label": "Switch Hybrid Bright Clean",
+      "labelId": "Hybrid cerah bersih",
+      "teachingMode": "hybrid",
+      "defaultProgramme": "percolation_then_immersion",
+      "quickEligible": true,
+      "proOnly": false,
+      "defaultUse": "Washed, floral, bright, or fruit-definition targets.",
+      "cupShape": "Transparent, bright, clean, and fruit-defined.",
+      "bestFor": ["washed", "floral", "more acidity", "fruit clarity"],
+      "easiestMistake": "Too much agitation or high-buffer water can mute the floral finish.",
+      "whenNotToUse": "Very dark roasts or users who want a thick comfort cup.",
+      "safeSizeCompatibility": ["Switch 02: safe hybrid", "Switch 03: safe hybrid", "MUGEN x SWITCH: use lower agitation"],
+      "compatibleDripperIds": ["hario-switch-02", "hario-switch-03", "mugen-x-switch"],
+      "preferredDripperIds": ["hario-switch-03"],
+      "defaultDoseG": 15,
+      "doseG": [10, 12, 15, 18, 20],
+      "iced": false,
+      "internalProgrammes": ["percolation_then_immersion", "temperature_shift_hybrid"],
+      "expectedCupShift": {
+        "acidity": 0.6,
+        "sweetness": 0.1,
+        "body": -0.2,
+        "clarity": 0.7,
+        "bitterRisk": -0.2,
+        "aromaIntensity": 0.4
+      },
+      "why": "Open early flow keeps fines moving cleanly; a short capture phase adds sweetness without hiding acidity.",
+      "watch": "Protect florals with low agitation and release before the cup gets heavy.",
+      "provenance": {
+        "hardwareVerificationLevel": "official",
+        "workflowVerificationLevel": "curated_synthesis",
+        "sensoryModelConfidence": "medium",
+        "curatedFromSources": [
+          {
+            "label": "HARIO Switch official",
+            "url": "https://global.hario.com/product/coffee/dripper/SSD.html",
+            "sourceType": "official_hardware"
+          },
+          {
+            "label": "Kurasu Switch method guide",
+            "url": "https://kurasu.kyoto/blogs/kurasu-journal/switch",
+            "sourceType": "barista_curated"
+          }
+        ],
+        "reviewedAt": "2026-05-09",
+        "evidenceUpdatedAt": "2026-05-09"
+      }
+    },
+    {
+      "id": "v60_mode",
+      "label": "Switch V60 Mode",
+      "labelId": "Mode V60",
+      "teachingMode": "full_percolation_v60_mode",
+      "defaultProgramme": "full_percolation_v60_mode",
+      "quickEligible": true,
+      "proOnly": false,
+      "defaultUse": "Switch used open as a clean percolation brewer.",
+      "cupShape": "Clean, transparent, V60-like, less forgiving.",
+      "bestFor": ["clarity", "transparent cups", "V60-like workflow"],
+      "easiestMistake": "Assuming the plan has immersion when the valve is intentionally open.",
+      "whenNotToUse": "When the coffee needs more contact time or users want easy sweetness.",
+      "safeSizeCompatibility": ["Switch 02: safe", "Switch 03: safe", "MUGEN x SWITCH: low-bypass variant"],
+      "compatibleDripperIds": ["hario-switch-02", "hario-switch-03", "mugen-x-switch"],
+      "preferredDripperIds": ["hario-switch-02", "hario-switch-03"],
+      "defaultDoseG": 15,
+      "doseG": [10, 12, 15, 18, 20],
+      "iced": false,
+      "internalProgrammes": ["full_percolation_v60_mode"],
+      "expectedCupShift": {
+        "acidity": 0.4,
+        "sweetness": -0.1,
+        "body": -0.4,
+        "clarity": 0.8,
+        "bitterRisk": 0,
+        "aromaIntensity": 0.2
+      },
+      "why": "The valve stays open, so the Switch behaves like a percolation brewer rather than an immersion dripper.",
+      "watch": "Flow and grind matter more because the recipe is less forgiving.",
+      "provenance": {
+        "hardwareVerificationLevel": "official",
+        "workflowVerificationLevel": "curated_synthesis",
+        "sensoryModelConfidence": "medium",
+        "curatedFromSources": [
+          {
+            "label": "HARIO Switch official",
+            "url": "https://global.hario.com/product/coffee/dripper/SSD.html",
+            "sourceType": "official_hardware"
+          },
+          {
+            "label": "Kurasu Switch method guide",
+            "url": "https://kurasu.kyoto/blogs/kurasu-journal/switch",
+            "sourceType": "barista_curated"
+          }
+        ],
+        "reviewedAt": "2026-05-09",
+        "evidenceUpdatedAt": "2026-05-09"
+      }
+    },
+    {
+      "id": "iced_hybrid",
+      "label": "Switch Iced Hybrid",
+      "labelId": "Hybrid es",
+      "teachingMode": "hybrid",
+      "defaultProgramme": "iced_hybrid",
+      "quickEligible": true,
+      "proOnly": false,
+      "defaultUse": "Japanese iced Switch with explicit hot-water and ice split.",
+      "cupShape": "Fresh, bright, clear, with preserved sweetness.",
+      "bestFor": ["iced", "floral iced", "fruit clarity", "sweet concentrate"],
+      "easiestMistake": "Adding hidden bypass water after brewing instead of respecting the hot/ice split.",
+      "whenNotToUse": "When no ice is available or the chamber load exceeds safe closed capacity.",
+      "safeSizeCompatibility": ["Switch 02: normal iced hot phase", "Switch 03: larger iced recipes", "MUGEN x SWITCH: smaller iced hybrid"],
+      "compatibleDripperIds": ["hario-switch-02", "hario-switch-03", "mugen-x-switch"],
+      "preferredDripperIds": ["hario-switch-02", "hario-switch-03"],
+      "defaultDoseG": 15,
+      "doseG": [10, 12, 15, 18, 20],
+      "iced": true,
+      "internalProgrammes": ["iced_hybrid"],
+      "expectedCupShift": {
+        "acidity": 0.5,
+        "sweetness": 0.2,
+        "body": -0.1,
+        "clarity": 0.5,
+        "bitterRisk": -0.2,
+        "aromaIntensity": 0.3
+      },
+      "why": "A controlled hot concentrate extracts sweetness before the brew releases directly onto ice.",
+      "watch": "Use only the planned hot water; do not add hidden bypass after brewing.",
+      "provenance": {
+        "hardwareVerificationLevel": "official",
+        "workflowVerificationLevel": "curated_synthesis",
+        "sensoryModelConfidence": "medium",
+        "curatedFromSources": [
+          {
+            "label": "HARIO Switch official",
+            "url": "https://global.hario.com/product/coffee/dripper/SSD.html",
+            "sourceType": "official_hardware"
+          },
+          {
+            "label": "Kurasu Switch recipes",
+            "url": "https://kurasu.kyoto/blogs/kurasu-journal/2-brewing-recipes-with-hario-immersion-dripper-switch",
+            "sourceType": "barista_curated"
+          }
+        ],
+        "reviewedAt": "2026-05-09",
+        "evidenceUpdatedAt": "2026-05-09"
+      }
+    },
+    {
+      "id": "mugen_everyday_hybrid",
+      "label": "MUGEN x SWITCH Everyday Hybrid",
+      "labelId": "MUGEN hybrid harian",
+      "teachingMode": "hybrid",
+      "defaultProgramme": "competition_hybrid",
+      "quickEligible": true,
+      "proOnly": false,
+      "mugenOnly": true,
+      "defaultUse": "MUGEN x SWITCH everyday low-bypass hybrid.",
+      "cupShape": "Sweet, focused, low-bypass, with a clean release.",
+      "bestFor": ["MUGEN x SWITCH", "low-bypass cup", "controlled sweetness"],
+      "easiestMistake": "Treating the MUGEN cone like Switch 03 and overloading the 200 ml chamber.",
+      "whenNotToUse": "Large 20 g full-immersion recipes or recipes needing Switch 03 chamber space.",
+      "safeSizeCompatibility": ["MUGEN x SWITCH: 10-12 g immersion, 15-18 g hybrid"],
+      "compatibleDripperIds": ["mugen-x-switch"],
+      "preferredDripperIds": ["mugen-x-switch"],
+      "defaultDoseG": 12,
+      "doseG": [10, 12, 15, 18],
+      "iced": false,
+      "internalProgrammes": ["competition_hybrid", "temperature_shift_hybrid"],
+      "expectedCupShift": {
+        "acidity": 0.2,
+        "sweetness": 0.4,
+        "body": 0.2,
+        "clarity": 0.3,
+        "bitterRisk": 0,
+        "aromaIntensity": 0.2
+      },
+      "why": "The MUGEN cone lowers bypass, so the hybrid path keeps contact controlled without pretending it is a Switch 03.",
+      "watch": "Keep chamber load under 180 ml and use lower agitation than a classic V60.",
+      "provenance": {
+        "hardwareVerificationLevel": "official",
+        "workflowVerificationLevel": "curated_synthesis",
+        "sensoryModelConfidence": "medium",
+        "curatedFromSources": [
+          {
+            "label": "HARIO MUGEN x SWITCH official",
+            "url": "https://global.hario.com/product/new/mugen_x_switch_dripper.html",
+            "sourceType": "official_hardware"
+          },
+          {
+            "label": "HARIO USA MUGEN x SWITCH",
+            "url": "https://www.hario-usa.com/products/mugen-switch",
+            "sourceType": "official_hardware"
+          }
+        ],
+        "reviewedAt": "2026-05-09",
+        "evidenceUpdatedAt": "2026-05-09"
+      }
+    }
+  ],
+  "internalProgrammes": [
+    {
+      "id": "full_immersion_sweet",
+      "label": "Full immersion sweet",
+      "teachingMode": "full_immersion",
+      "proOnly": false,
+      "sourceStatus": "curated_synthesis",
+      "stepIntent": "Charge closed, hold quietly, release cleanly.",
+      "valvePath": ["closed", "closed", "open"],
+      "compatiblePresetIds": ["immersion_sweet"]
+    },
+    {
+      "id": "full_immersion_heavy_body",
+      "label": "Full immersion heavy body",
+      "teachingMode": "full_immersion",
+      "proOnly": false,
+      "sourceStatus": "curated_synthesis",
+      "stepIntent": "Longer closed contact for syrupy body, with muddy-risk guardrails.",
+      "valvePath": ["closed", "closed", "open"],
+      "compatiblePresetIds": ["immersion_heavy_body"]
+    },
+    {
+      "id": "bloom_then_immersion",
+      "label": "Bloom then immersion",
+      "teachingMode": "hybrid",
+      "proOnly": false,
+      "sourceStatus": "curated_synthesis",
+      "stepIntent": "Closed bloom or capture, then safe fill and release.",
+      "valvePath": ["closed", "closed", "open"],
+      "compatiblePresetIds": ["hybrid_balanced"]
+    },
+    {
+      "id": "immersion_then_percolation",
+      "label": "Immersion then percolation",
+      "teachingMode": "hybrid",
+      "proOnly": true,
+      "sourceStatus": "curated_synthesis",
+      "stepIntent": "Build sweetness closed, finish open for cleanliness.",
+      "valvePath": ["closed", "open", "open"],
+      "compatiblePresetIds": ["hybrid_balanced"]
+    },
+    {
+      "id": "percolation_then_immersion",
+      "label": "Percolation then immersion",
+      "teachingMode": "hybrid",
+      "proOnly": false,
+      "sourceStatus": "curated_synthesis",
+      "stepIntent": "Open early clarity, short capture, then release.",
+      "valvePath": ["open", "open", "closed", "open"],
+      "compatiblePresetIds": ["hybrid_bright_clean"]
+    },
+    {
+      "id": "full_percolation_v60_mode",
+      "label": "Full percolation V60 mode",
+      "teachingMode": "full_percolation_v60_mode",
+      "proOnly": false,
+      "sourceStatus": "curated_synthesis",
+      "stepIntent": "Valve stays open and the Switch behaves like a percolation dripper.",
+      "valvePath": ["open", "open", "open"],
+      "compatiblePresetIds": ["v60_mode"]
+    },
+    {
+      "id": "temperature_shift_hybrid",
+      "label": "Temperature shift hybrid",
+      "teachingMode": "hybrid",
+      "proOnly": true,
+      "sourceStatus": "curated_synthesis",
+      "stepIntent": "Use staged temperature intent without claiming copied official recipe status.",
+      "valvePath": ["open", "closed", "open"],
+      "compatiblePresetIds": ["hybrid_bright_clean", "mugen_everyday_hybrid"]
+    },
+    {
+      "id": "iced_hybrid",
+      "label": "Iced hybrid",
+      "teachingMode": "hybrid",
+      "proOnly": false,
+      "sourceStatus": "curated_synthesis",
+      "stepIntent": "Closed hot concentrate released over ice with no hidden bypass.",
+      "valvePath": ["closed", "closed", "open"],
+      "compatiblePresetIds": ["iced_hybrid"]
+    },
+    {
+      "id": "competition_hybrid",
+      "label": "Competition hybrid",
+      "teachingMode": "hybrid",
+      "proOnly": true,
+      "sourceStatus": "curated_synthesis",
+      "stepIntent": "Advanced curated pattern inspired by official champion examples, not copied as an official recipe.",
+      "valvePath": ["open", "closed", "open"],
+      "compatiblePresetIds": ["mugen_everyday_hybrid"]
+    }
+  ]
+}

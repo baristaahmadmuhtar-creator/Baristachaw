@@ -15,6 +15,11 @@ import type {
   ProcessCatalogEntry,
   RawDripperCatalogEntry,
   RawGrinderCatalogEntry,
+  SwitchDoseMatrixRow,
+  SwitchInternalProgramme,
+  SwitchKnowledge,
+  SwitchPublicPreset,
+  SwitchTroubleshootingEntry,
   TargetProfile,
   VarietyCultivarType,
   VarietyCatalogEntry,
@@ -42,6 +47,10 @@ const FILES = {
   deviceProfiles: `${DATA_BASE}/device-brew-profiles.v2026-06.json`,
   grinderSettings: `${DATA_BASE}/grinder-settings.v2026-06.json`,
   marketSignals: `${DATA_BASE}/market-signals.v2026-06.json`,
+  switchProgrammes: `${DATA_BASE}/switch-programmes.v2026-05.json`,
+  switchDoseMatrix: `${DATA_BASE}/switch-dose-matrix.v2026-05.json`,
+  switchTroubleshooting: `${DATA_BASE}/switch-troubleshooting.v2026-05.json`,
+  switchKnowledge: `${DATA_BASE}/switch-knowledge.v2026-05.json`,
 } as const;
 
 type EquipmentKind = 'dripper' | 'grinder';
@@ -57,6 +66,27 @@ type JsonCollectionPayload<T> = JsonCollection<T> | T[];
 interface WaterGuidanceFile {
   catalogVersion?: string;
   item: WaterGuidance;
+}
+
+interface SwitchProgrammesFile {
+  catalogVersion?: string;
+  publicPresets?: SwitchPublicPreset[];
+  internalProgrammes?: SwitchInternalProgramme[];
+}
+
+interface SwitchDoseMatrixFile {
+  catalogVersion?: string;
+  rows?: SwitchDoseMatrixRow[];
+}
+
+interface SwitchTroubleshootingFile {
+  catalogVersion?: string;
+  items?: SwitchTroubleshootingEntry[];
+}
+
+interface SwitchKnowledgeFile {
+  catalogVersion?: string;
+  item?: SwitchKnowledge;
 }
 
 interface RawPlatformWaterEntry {
@@ -1117,6 +1147,10 @@ export async function loadAiBrewCatalog(): Promise<AiBrewCatalog> {
     readJson<JsonCollectionPayload<DeviceBrewProfile>>(FILES.deviceProfiles),
     readJson<JsonCollectionPayload<GrinderSettingReference>>(FILES.grinderSettings),
     readJson<MarketSignalsFile>(FILES.marketSignals),
+    readJson<SwitchProgrammesFile>(FILES.switchProgrammes),
+    readJson<SwitchDoseMatrixFile>(FILES.switchDoseMatrix),
+    readJson<SwitchTroubleshootingFile>(FILES.switchTroubleshooting),
+    readJson<SwitchKnowledgeFile>(FILES.switchKnowledge),
   ])
     .then(([
       drippers,
@@ -1129,6 +1163,10 @@ export async function loadAiBrewCatalog(): Promise<AiBrewCatalog> {
       deviceProfiles,
       grinderSettings,
       marketSignals,
+      switchProgrammes,
+      switchDoseMatrix,
+      switchTroubleshooting,
+      switchKnowledge,
     ]) => {
       const dripperItems = getCollectionItems(drippers);
       const grinderItems = getCollectionItems(grinders);
@@ -1151,6 +1189,10 @@ export async function loadAiBrewCatalog(): Promise<AiBrewCatalog> {
           || waterGuidance.catalogVersion
           || getCollectionVersion(deviceProfiles)
           || getCollectionVersion(grinderSettings)
+          || switchProgrammes.catalogVersion
+          || switchDoseMatrix.catalogVersion
+          || switchTroubleshooting.catalogVersion
+          || switchKnowledge.catalogVersion
           || marketSignals.catalogVersion
           || getCollectionVersion(drippers)
           || getCollectionVersion(grinders)
@@ -1182,6 +1224,11 @@ export async function loadAiBrewCatalog(): Promise<AiBrewCatalog> {
         })),
         deviceProfiles: deviceProfileItems.map(normalizeDeviceProfile),
         grinderSettings: grinderSettingItems.map(normalizeGrinderSetting),
+        switchPresets: Array.isArray(switchProgrammes.publicPresets) ? switchProgrammes.publicPresets : [],
+        switchProgrammes: Array.isArray(switchProgrammes.internalProgrammes) ? switchProgrammes.internalProgrammes : [],
+        switchDoseMatrix: Array.isArray(switchDoseMatrix.rows) ? switchDoseMatrix.rows : [],
+        switchTroubleshooting: Array.isArray(switchTroubleshooting.items) ? switchTroubleshooting.items : [],
+        switchKnowledge: switchKnowledge.item,
       } satisfies AiBrewCatalog;
     })
     .catch((error) => {

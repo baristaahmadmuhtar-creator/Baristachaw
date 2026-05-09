@@ -1899,6 +1899,107 @@ test('Hario Switch 02 guards chamber capacity and legacy Switch requires exact s
   assert.match(unsafeValidation.blockingErrors.join(' '), /exceeds safe|Full-immersion/i);
 });
 
+test('production Hario Switch presets choose safe defaults and preserve programme provenance', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const base = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    brewMode: 'hot' as const,
+    coffeeName: 'Switch QA washed',
+    doseG: '15',
+    process: 'washed',
+    variety: 'bourbon',
+    roastLevel: 'medium' as const,
+    dripperId: 'hario-switch-03',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'balance_clean',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  };
+
+  const quickDefault = buildAiBrewPlan(base, productionCatalog);
+  assert.equal(quickDefault.methodFamily, 'hario_switch');
+  assert.equal(quickDefault.switchPresetId, 'hybrid_balanced');
+  assert.equal(quickDefault.methodProgramme, 'bloom_then_immersion');
+  assert.equal(quickDefault.switchCompatibility?.status, 'safe');
+  assert.equal(quickDefault.switchProvenance?.hardwareVerificationLevel, 'official');
+  assert.equal(quickDefault.switchProvenance?.workflowVerificationLevel, 'curated_synthesis');
+  assert.equal(quickDefault.switchProvenance?.sensoryModelConfidence, 'medium');
+  assert.match(quickDefault.switchWhy || '', /closed|sweetness|open/i);
+  assert.ok((quickDefault.workflowGuideSteps || []).some((step) => step.techniqueChips.some((chip) => chip.key === 'programme')));
+
+  const switch03Large = buildAiBrewPlan({
+    ...base,
+    doseG: '20',
+    targetWaterMl: '300',
+    switchPresetId: 'hybrid_balanced',
+  }, productionCatalog);
+  assert.equal(switch03Large.workflowValidation?.status, 'ready');
+  assert.equal(switch03Large.switchDoseMatrixRowId, 'switch03-20');
+  assert.ok(switch03Large.steps.filter((step) => step.pourVolumeMl > 0).length >= 2);
+  assert.equal(
+    switch03Large.steps.filter((step) => step.pourVolumeMl > 0).filter((step) => {
+      const guideIds = new Set((switch03Large.workflowGuideSteps || []).flatMap((guideStep) => guideStep.sourceStepIds));
+      return !guideIds.has(step.id);
+    }).length,
+    0,
+  );
+
+  const mugen = buildAiBrewPlan({
+    ...base,
+    dripperId: 'mugen-x-switch',
+    doseG: '12',
+  }, productionCatalog);
+  assert.equal(mugen.switchPresetId, 'mugen_everyday_hybrid');
+  assert.equal(mugen.devicePhysicalConstraints?.finishedCapacityMl, 200);
+  assert.equal(mugen.devicePhysicalConstraints?.coneType, 'mugen');
+  assert.notEqual(mugen.devicePhysicalConstraints?.finishedCapacityMl, switch03Large.devicePhysicalConstraints?.finishedCapacityMl);
+});
+
+test('Hario Switch public presets alter expected cup and keep corrections number-safe', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const base = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    brewMode: 'hot' as const,
+    coffeeName: 'Switch sensory QA',
+    doseG: '15',
+    process: 'washed',
+    variety: 'bourbon',
+    roastLevel: 'medium' as const,
+    dripperId: 'hario-switch-03',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'balance_clean',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  };
+
+  const sweet = buildAiBrewPlan({ ...base, switchPresetId: 'immersion_sweet' }, productionCatalog);
+  const heavy = buildAiBrewPlan({ ...base, switchPresetId: 'immersion_heavy_body' }, productionCatalog);
+  const bright = buildAiBrewPlan({ ...base, switchPresetId: 'hybrid_bright_clean' }, productionCatalog);
+  const v60Mode = buildAiBrewPlan({ ...base, switchPresetId: 'v60_mode' }, productionCatalog);
+  const iced = buildAiBrewPlan({ ...base, brewMode: 'iced', switchPresetId: 'iced_hybrid' }, productionCatalog);
+
+  assert.ok((sweet.expectedCupProfile?.sweetness || 0) >= (bright.expectedCupProfile?.sweetness || 0));
+  assert.ok((heavy.expectedCupProfile?.body || 0) >= (bright.expectedCupProfile?.body || 0));
+  assert.ok((bright.expectedCupProfile?.clarity || 0) >= (heavy.expectedCupProfile?.clarity || 0));
+  assert.equal(v60Mode.methodProgramme, 'full_percolation_v60_mode');
+  assert.equal(v60Mode.workflowValidation?.status, 'ready');
+  assert.ok(v60Mode.steps.filter((step) => step.pourVolumeMl > 0).every((step) => step.valveState === 'open'));
+  assert.equal(iced.methodProgramme, 'iced_hybrid');
+  assert.equal(iced.hotWaterMl + iced.iceMl, iced.totalWaterMl);
+  assert.match(
+    [...iced.notes, ...(iced.workflowGuideSteps || []).map((step) => step.primaryText)].join(' '),
+    /no bypass|do not add late bypass/i,
+  );
+
+  const bitter = buildTasteFeedbackCorrection(heavy, 'bitter', 'id');
+  assert.match(`${bitter.primaryCorrection} ${bitter.backupCorrection}`, /release|buka|kasar|tertutup/i);
+  assert.doesNotMatch(`${bitter.primaryCorrection} ${bitter.backupCorrection}`, /ubah dosis|ubah rasio|change dose|change ratio/i);
+});
+
 test('AI Brew defaults target profile from process, variety, and altitude without overriding explicit target', () => {
   assert.equal(resolveDefaultTargetProfileIdForBean({
     coffeeName: 'Brazil Natural',
@@ -2243,6 +2344,10 @@ function readJsonItems<T>(filePath: string): T[] {
   return Array.isArray(parsed.items) ? parsed.items : [];
 }
 
+function readJsonFile<T>(filePath: string): T {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8')) as T;
+}
+
 function catalogSlug(value: string) {
   return value
     .toLowerCase()
@@ -2323,9 +2428,22 @@ function buildProductionAiBrewCatalogForTests(): AiBrewCatalog {
       ...provenance(entry),
     }));
 
-  const waterGuidanceFile = JSON.parse(fs.readFileSync('apps/web/public/data/ai-brew/water-guidance.v2026-06.json', 'utf8')) as {
+  const waterGuidanceFile = readJsonFile<{
     item: WaterGuidance;
-  };
+  }>('apps/web/public/data/ai-brew/water-guidance.v2026-06.json');
+  const switchProgrammesFile = readJsonFile<{
+    publicPresets: NonNullable<AiBrewCatalog['switchPresets']>;
+    internalProgrammes: NonNullable<AiBrewCatalog['switchProgrammes']>;
+  }>('apps/web/public/data/ai-brew/switch-programmes.v2026-05.json');
+  const switchDoseMatrixFile = readJsonFile<{
+    rows: NonNullable<AiBrewCatalog['switchDoseMatrix']>;
+  }>('apps/web/public/data/ai-brew/switch-dose-matrix.v2026-05.json');
+  const switchTroubleshootingFile = readJsonFile<{
+    items: NonNullable<AiBrewCatalog['switchTroubleshooting']>;
+  }>('apps/web/public/data/ai-brew/switch-troubleshooting.v2026-05.json');
+  const switchKnowledgeFile = readJsonFile<{
+    item: NonNullable<AiBrewCatalog['switchKnowledge']>;
+  }>('apps/web/public/data/ai-brew/switch-knowledge.v2026-05.json');
 
   return {
     catalogVersion,
@@ -2342,6 +2460,11 @@ function buildProductionAiBrewCatalogForTests(): AiBrewCatalog {
         ...entry,
         parsedRange: entry.parsedRange || parseNumericRange(entry.rangeLabel),
       })),
+    switchPresets: switchProgrammesFile.publicPresets,
+    switchProgrammes: switchProgrammesFile.internalProgrammes,
+    switchDoseMatrix: switchDoseMatrixFile.rows,
+    switchTroubleshooting: switchTroubleshootingFile.items,
+    switchKnowledge: switchKnowledgeFile.item,
   };
 }
 

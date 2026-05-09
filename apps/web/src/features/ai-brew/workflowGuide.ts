@@ -987,7 +987,7 @@ function validateHarioSwitchWorkflow(plan: BrewPlan, guideSteps: WorkflowGuideSt
     blockingErrors.push(`Hario Switch closed chamber load ${Math.round(maxClosedLoad)} ml exceeds safe ${Math.round(closedLimit)} ml. Choose Switch 03 or a hybrid programme.`);
   }
 
-  if (plan.methodProgramme === 'full_immersion' && plan.hotWaterMl > closedLimit + 1) {
+  if (String(plan.methodProgramme || '').startsWith('full_immersion') && plan.hotWaterMl > closedLimit + 1) {
     blockingErrors.push(`Full-immersion Switch programme needs ${Math.round(plan.hotWaterMl)} ml closed capacity, above safe ${Math.round(closedLimit)} ml.`);
   }
 
@@ -1022,7 +1022,11 @@ export function validateMethodWorkflowGuide(plan: BrewPlan, guideSteps: Workflow
     case 'hario_switch':
       requirePhase(accumulator, phases, 'valve state', /valve|closed|open/);
       requirePhase(accumulator, phases, 'chamber state', /chamber|immersion|percolation/);
-      requirePhase(accumulator, phases, 'release/open', /release|open/);
+      if (plan.methodProgramme === 'full_percolation_v60_mode' || plan.switchPresetId === 'v60_mode') {
+        requirePhase(accumulator, phases, 'open percolation', /open|percolation/);
+      } else {
+        requirePhase(accumulator, phases, 'release/open', /release|open/);
+      }
       requirePhase(accumulator, phases, 'serve', 'serve');
       validateHarioSwitchWorkflow(plan, guideSteps, blockingErrors, warnings);
       if (phases.has(/generic clever only|single charge only/)) blockingErrors.push('Hario Switch workflow must not collapse to a generic single-charge Clever guide.');

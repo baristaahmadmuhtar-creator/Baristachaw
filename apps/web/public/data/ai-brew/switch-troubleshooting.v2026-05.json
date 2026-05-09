@@ -1,0 +1,54 @@
+{
+  "catalogVersion": "2026.05.0-switch-troubleshooting",
+  "items": [
+    {
+      "rating": "sour",
+      "presetIds": ["immersion_sweet", "hybrid_balanced", "hybrid_bright_clean", "v60_mode", "iced_hybrid", "mugen_everyday_hybrid"],
+      "primaryCorrection": "Grind one step finer or keep the closed/contact phase 10 seconds longer if chamber load is still safe.",
+      "backupCorrection": "Use a slightly slower open pour before changing temperature.",
+      "guardrail": "Do not change dose or ratio first, and do not exceed safe chamber load."
+    },
+    {
+      "rating": "thin",
+      "presetIds": ["immersion_sweet", "hybrid_balanced", "hybrid_bright_clean", "v60_mode", "iced_hybrid", "mugen_everyday_hybrid"],
+      "primaryCorrection": "Improve saturation and add a little more controlled contact before changing dose.",
+      "backupCorrection": "If the valve path is mostly open, use Hybrid Balanced instead of pure V60 Mode.",
+      "guardrail": "Keep dose, ratio, hot-water split, and dripper size locked."
+    },
+    {
+      "rating": "bitter",
+      "presetIds": ["immersion_sweet", "immersion_heavy_body", "hybrid_balanced", "hybrid_bright_clean", "v60_mode", "iced_hybrid", "mugen_everyday_hybrid"],
+      "primaryCorrection": "Grind one step coarser or open/release 10 seconds earlier.",
+      "backupCorrection": "Reduce final agitation and avoid holding a full closed chamber too long.",
+      "guardrail": "Do not dilute or change ratio as the first fix."
+    },
+    {
+      "rating": "astringent",
+      "presetIds": ["immersion_sweet", "immersion_heavy_body", "hybrid_balanced", "hybrid_bright_clean", "v60_mode", "iced_hybrid", "mugen_everyday_hybrid"],
+      "primaryCorrection": "Coarsen slightly and release earlier so fines do not sit in a drying bed.",
+      "backupCorrection": "Use lower agitation and keep the valve transition clean.",
+      "guardrail": "Do not add bypass water unless the deterministic iced plan already includes it."
+    },
+    {
+      "rating": "muddy",
+      "presetIds": ["immersion_sweet", "immersion_heavy_body", "hybrid_balanced", "hybrid_bright_clean", "v60_mode", "iced_hybrid", "mugen_everyday_hybrid"],
+      "primaryCorrection": "Reduce closed load or open earlier; keep the slurry calmer.",
+      "backupCorrection": "Grind slightly coarser and avoid extra swirl after release.",
+      "guardrail": "Never overfill Switch 02/MUGEN to chase body."
+    },
+    {
+      "rating": "flat",
+      "presetIds": ["immersion_sweet", "immersion_heavy_body", "hybrid_balanced", "hybrid_bright_clean", "v60_mode", "iced_hybrid", "mugen_everyday_hybrid"],
+      "primaryCorrection": "Release earlier or choose Hybrid Bright Clean if the water is high-buffer.",
+      "backupCorrection": "Check KH/alkalinity and use manual minerals before changing the recipe ratio.",
+      "guardrail": "Treat flatness as contact/water/preset first, not a dose change."
+    },
+    {
+      "rating": "great",
+      "presetIds": ["immersion_sweet", "immersion_heavy_body", "hybrid_balanced", "hybrid_bright_clean", "v60_mode", "iced_hybrid", "mugen_everyday_hybrid"],
+      "primaryCorrection": "Keep the same grind, valve path, and release checkpoint for the next brew.",
+      "backupCorrection": "Record water, grinder, and drawdown as the calibration baseline.",
+      "guardrail": "Do not optimise away a good cup."
+    }
+  ]
+}

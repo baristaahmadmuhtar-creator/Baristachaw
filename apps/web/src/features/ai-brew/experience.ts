@@ -248,6 +248,45 @@ function methodCorrection(
     },
   } satisfies Record<BrewTasteFeedbackRating, Pick<BrewTasteFeedbackCorrection, 'primaryCorrection' | 'backupCorrection'>>;
 
+  if (plan.methodFamily === 'hario_switch') {
+    if (rating === 'great') return {
+      primaryCorrection: id ? 'Pertahankan gilingan, titik buka/release, dan jalur katup yang sama.' : 'Keep the same grind, release checkpoint, and valve path.',
+      backupCorrection: id ? 'Catat muatan ruang, drawdown, air, dan grinder sebagai baseline Switch.' : 'Record chamber load, drawdown, water, and grinder as the Switch baseline.',
+    };
+    if (rating === 'sour' || rating === 'thin') return {
+      primaryCorrection: id
+        ? `Coba sedikit lebih halus dari ${grind}, atau tambah kontak tertutup 10 detik jika muatan ruang masih aman.`
+        : `Try slightly finer than ${grind}, or add 10 seconds closed contact if chamber load remains safe.`,
+      backupCorrection: id
+        ? 'Jika Mode V60 terasa tipis, pindah ke Hybrid seimbang sebelum mengubah dosis/rasio.'
+        : 'If V60 Mode tastes thin, move to Hybrid Balanced before changing dose/ratio.',
+    };
+    if (rating === 'bitter' || rating === 'astringent') return {
+      primaryCorrection: id
+        ? 'Buka/release 10 detik lebih awal atau coba 0.5 step lebih kasar.'
+        : 'Open/release 10 seconds earlier or try 0.5 step coarser.',
+      backupCorrection: id
+        ? 'Kurangi agitasi akhir; jangan tahan ruang tertutup penuh terlalu lama.'
+        : 'Reduce final agitation; do not hold a full closed chamber too long.',
+    };
+    if (rating === 'muddy') return {
+      primaryCorrection: id
+        ? 'Kurangi muatan ruang tertutup atau buka lebih awal; jaga slurry lebih tenang.'
+        : 'Reduce closed chamber load or open earlier; keep the slurry calmer.',
+      backupCorrection: id
+        ? 'Coba sedikit lebih kasar dan hindari swirl setelah release.'
+        : 'Try slightly coarser and avoid swirl after release.',
+    };
+    if (rating === 'flat') return {
+      primaryCorrection: waterWarning || (id
+        ? 'Release lebih awal atau gunakan Hybrid cerah bersih untuk mengangkat clarity.'
+        : 'Release earlier or use Hybrid Bright Clean to lift clarity.'),
+      backupCorrection: id
+        ? 'Cek KH/alkalinity dan gunakan mineral manual sebelum mengubah rasio.'
+        : 'Check KH/alkalinity and use manual minerals before changing ratio.',
+    };
+  }
+
   if (plan.methodFamily === 'aeropress') {
     if (rating === 'sour') return {
       primaryCorrection: id ? `Coba sedikit lebih halus, sekitar 0.5 step dari ${grind}.` : `Try slightly finer, about 0.5 step from ${grind}.`,

@@ -1,0 +1,62 @@
+{
+  "catalogVersion": "2026.05.0-switch-knowledge",
+  "item": {
+    "teachingMethods": [
+      {
+        "id": "full_immersion",
+        "label": "Immersion penuh",
+        "shortLabel": "Immersion",
+        "description": "Katup tertutup menahan air dan kopi untuk kontak penuh, lalu dibuka untuk release.",
+        "bestFor": "Manis, body, dan rasa yang mudah diulang.",
+        "risk": "Bisa flat atau keruh jika muatan ruang terlalu besar atau kontak terlalu lama."
+      },
+      {
+        "id": "full_percolation_v60_mode",
+        "label": "Mode V60",
+        "shortLabel": "V60 Mode",
+        "description": "Katup terbuka sepanjang seduh; Switch dipakai seperti dripper perkolasi.",
+        "bestFor": "Kejernihan, transparansi, dan rasa floral.",
+        "risk": "Kurang forgiving; flow dan gilingan lebih terasa."
+      },
+      {
+        "id": "hybrid",
+        "label": "Hybrid",
+        "shortLabel": "Hybrid",
+        "description": "Menggabungkan fase katup tertutup dan terbuka agar manis tetap ada tanpa kehilangan bersihnya cup.",
+        "bestFor": "Default paling aman untuk kebanyakan kopi.",
+        "risk": "Butuh perhatian pada titik buka/release dan muatan ruang."
+      }
+    ],
+    "hardwareFacts": [
+      {
+        "dripperId": "hario-switch-02",
+        "label": "HARIO Switch 02",
+        "capacityMl": 200,
+        "safeClosedPhaseMaxMl": 180,
+        "sourceUrl": "https://global.hario.com/product/coffee/dripper/SSD.html",
+        "verificationLevel": "official"
+      },
+      {
+        "dripperId": "hario-switch-03",
+        "label": "HARIO Switch 03",
+        "capacityMl": 360,
+        "safeClosedPhaseMaxMl": 320,
+        "sourceUrl": "https://global.hario.com/product/coffee/dripper/SSD.html",
+        "verificationLevel": "official"
+      },
+      {
+        "dripperId": "mugen-x-switch",
+        "label": "MUGEN x SWITCH",
+        "capacityMl": 200,
+        "safeClosedPhaseMaxMl": 180,
+        "sourceUrl": "https://global.hario.com/product/new/mugen_x_switch_dripper.html",
+        "verificationLevel": "official"
+      }
+    ],
+    "provenanceCopy": {
+      "hardware": "Fakta hardware: resmi HARIO.",
+      "workflow": "Preset resep: sintesis kurasi dari sumber resmi dan praktik barista, bukan klaim resep resmi.",
+      "sensory": "Prediksi Rasa adalah model arah rasa, bukan hasil pasti."
+    }
+  }
+}

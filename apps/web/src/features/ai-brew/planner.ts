@@ -43,6 +43,7 @@ import {
   buildAiBrewReadinessScores,
   buildExpectedCupProfile,
 } from './cupProfile.ts';
+import { resolveSwitchPlanSelection } from './switchPlanner.ts';
 export {
   buildWorkflowAwareGuideSteps,
   validateMethodWorkflowGuide,
@@ -5636,12 +5637,25 @@ function finalizePlanCore(
 ) {
   const targetProfile = findTargetProfile(catalog, input.targetProfileId) || catalog.targetProfiles[0];
   const targetPourBehavior = resolveTargetPourBehavior(targetProfile.id, targetProfile);
-  const methodFamily = deviceSelection.profile.methodFamily || dripper.methodFamily || 'v60';
-  const methodId = resolveProfileBrewMethodId(deviceSelection.profile, methodFamily, input.brewMode);
+  const doseG = parseDose(input.doseG);
+  const preliminaryMethodFamily = deviceSelection.profile.methodFamily || dripper.methodFamily || 'v60';
+  const switchSelection = preliminaryMethodFamily === 'hario_switch'
+    ? resolveSwitchPlanSelection({
+      input,
+      catalog,
+      dripper,
+      profile: deviceSelection.profile,
+      targetProfile,
+      processEntry,
+      doseG,
+    })
+    : null;
+  const effectiveDeviceProfile = switchSelection?.adjustedProfile || deviceSelection.profile;
+  const methodFamily = effectiveDeviceProfile.methodFamily || dripper.methodFamily || 'v60';
+  const methodId = resolveProfileBrewMethodId(effectiveDeviceProfile, methodFamily, input.brewMode);
   const ratioToolMethodId = methodId;
   const method = BREW_METHOD_MAP[methodId];
   const roastAdjustedTargets = buildRoastAdjustedTargets(method, input.roastLevel);
-  const doseG = parseDose(input.doseG);
 
   const processModifiers = mergeProcessModifiers(processEntry);
   const varietyModifiers = mergeVarietyModifiers(varietyEntry);
@@ -5671,9 +5685,9 @@ function finalizePlanCore(
   });
   const methodFamilyAdjustment = deriveMethodFamilyAdjustment({
     methodFamily,
-    filterStyle: deviceSelection.profile.filterStyle,
-    flatBottomProfile: deviceSelection.profile.flatBottomProfile,
-    recipeStyle: deviceSelection.profile.recipeStyle,
+    filterStyle: effectiveDeviceProfile.filterStyle,
+    flatBottomProfile: effectiveDeviceProfile.flatBottomProfile,
+    recipeStyle: effectiveDeviceProfile.recipeStyle,
     brewMode: input.brewMode,
     targetProfileLabel: targetProfile.label,
     targetProfileId: targetProfile.id,
@@ -5714,7 +5728,7 @@ function finalizePlanCore(
   const v60SweetnessServiceCalibration = deriveV60SweetnessServiceCalibration({
     input,
     methodFamily,
-    deviceProfile: deviceSelection.profile,
+    deviceProfile: effectiveDeviceProfile,
     waterProfile,
     processEntry,
     varietyEntry,
@@ -5724,7 +5738,7 @@ function finalizePlanCore(
   const ratioUpperBound = method.ratioRange[1] + 0.75;
   const baseRecommendedRatio = roundTo(clamp(
     roastAdjustedTargets.adjustedRatioDefault
-      + deviceSelection.profile.ratioDelta
+      + effectiveDeviceProfile.ratioDelta
       + waterProfile.ratioDelta
       + targetProfile.ratioDelta
       + (processModifiers.ratioDelta || 0)
@@ -5841,7 +5855,7 @@ function finalizePlanCore(
     methodTempBounds.max,
   );
   const baseWaterTempC = midpoint(roastAdjustedTargets.adjustedTempRangeC, 1)
-    + deviceSelection.profile.tempDeltaC
+    + effectiveDeviceProfile.tempDeltaC
     + waterProfile.tempDeltaC
     + targetProfile.tempDeltaC
     + (processModifiers.tempDeltaC || 0)
@@ -5892,11 +5906,11 @@ function finalizePlanCore(
       max: Math.min(methodTimeBounds.max, v60SweetnessServiceCalibration.timeMaxSec),
     }
     : methodTimeBounds;
-  const controlledDeviceProfile = applyPourControlsToProfile(deviceSelection.profile, input, methodFamily);
+  const controlledDeviceProfile = applyPourControlsToProfile(effectiveDeviceProfile, input, methodFamily);
   const pourControlNote = buildPourControlNote(input, methodFamily);
   const baseTotalTimeSeconds = roundBaristaTimeSeconds(clamp(
     midpoint(roastAdjustedTargets.adjustedBrewTimeRangeSec, 0)
-      + deviceSelection.profile.brewTimeDeltaSec
+      + effectiveDeviceProfile.brewTimeDeltaSec
       + waterProfile.brewTimeDeltaSec
       + targetProfile.brewTimeDeltaSec
       + (processModifiers.brewTimeDeltaSec || 0)
@@ -5934,7 +5948,7 @@ function finalizePlanCore(
   const grindBias = combineBias(
     roastAdjustedTargets.suggestedGrindBias,
     targetProfile.grindBias,
-    deviceSelection.profile.grindBias,
+    effectiveDeviceProfile.grindBias,
     processModifiers.grindBias || 'same',
     varietyModifiers.grindBias || 'same',
     beanProfileAdjustment.grindBias,
@@ -6039,7 +6053,7 @@ function finalizePlanCore(
     ? ['Suhu 97C+ adalah mode ekstraksi tinggi. Aman untuk kopi padat/light roast atau konsentrat es, tetapi turunkan 1-2C jika roast medium-dark/dark, air low-buffer, atau rasa mulai pahit/seret.']
     : [];
   const warnings = normalizeNoteList(
-    [deviceSelection.fallbackUsed ? `Using ${deviceSelection.profile.label} family fallback profile.` : undefined],
+    [deviceSelection.fallbackUsed ? `Using ${effectiveDeviceProfile.label} family fallback profile.` : undefined],
     temperatureWarnings,
     waterProfile.warnings,
     baseGuardrails.warnings,
@@ -6093,8 +6107,8 @@ function finalizePlanCore(
     [deviceSelection.fallbackUsed
       ? 'Exact device profile unavailable; family fallback was used.'
       : isDerivedTemplateProfile
-        ? `Device profile was generated from the ${deviceSelection.profile.methodFamily} family template for ${dripper.name}.`
-        : `Exact device profile matched: ${deviceSelection.profile.label}.`],
+        ? `Device profile was generated from the ${effectiveDeviceProfile.methodFamily} family template for ${dripper.name}.`
+        : `Exact device profile matched: ${effectiveDeviceProfile.label}.`],
     grindDetails.confidenceNotes,
     waterProfile.confidenceNotes,
     beanProfileAdjustment.confidenceNotes,
@@ -6118,7 +6132,7 @@ function finalizePlanCore(
       waterBrand
         ? `Water source: ${waterBrand.shortLabel} (${input.waterCustomized ? 'customized' : waterBrand.presetStatus}).`
         : 'Water source: manual mineral entry.',
-      `Device profile source: ${deviceSelection.profile.verificationLevel}.`,
+      `Device profile source: ${effectiveDeviceProfile.verificationLevel}.`,
       `Grinder setting source: ${grindDetails.verificationLevel}.`,
       customProcessDetection ? `Custom process detection: ${customProcessDetection.id} (${customProcessDetection.confidence}).` : undefined,
       processRisk ? `Process risk: ${processRisk.variability} variability, ${processRisk.recommendationMode}.` : undefined,
@@ -6155,8 +6169,10 @@ function finalizePlanCore(
     dripperId: dripper.id,
     grinderId: grinder.id,
     targetProfileId: targetProfile.id,
-    deviceProfileId: deviceSelection.profile.id,
+    deviceProfileId: effectiveDeviceProfile.id,
     grindSettingId: grinderSetting?.id,
+    switchPresetId: switchSelection?.preset.id,
+    switchDoseMatrixRowId: switchSelection?.doseRow?.id,
     pourStyle: input.pourStyle,
     pourCount: input.pourCount,
     ratio: recommendedRatio,
@@ -6236,6 +6252,15 @@ function finalizePlanCore(
     steps,
     devicePhysicalConstraints: controlledDeviceProfile.physicalConstraints,
     methodProgramme: controlledDeviceProfile.methodProgramme,
+    switchPresetId: switchSelection?.preset.id,
+    switchPresetLabel: switchSelection?.preset.label,
+    switchTeachingMode: switchSelection?.preset.teachingMode,
+    switchDoseMatrixRowId: switchSelection?.doseRow?.id,
+    switchCompatibility: switchSelection?.compatibility,
+    switchProvenance: switchSelection?.preset.provenance,
+    switchExpectedCupShift: switchSelection?.preset.expectedCupShift,
+    switchWhy: switchSelection?.preset.why,
+    switchWatch: switchSelection?.preset.watch,
     notes,
     warnings,
     guardrails: {
@@ -6247,8 +6272,8 @@ function finalizePlanCore(
       standardsHits: baseConformance.standardsHits,
       standardsMisses: normalizeNoteList(baseConformance.standardsMisses, waterProfile.warnings),
     },
-    deviceProfileId: deviceSelection.profile.id,
-    deviceProfileLabel: deviceSelection.profile.label,
+    deviceProfileId: effectiveDeviceProfile.id,
+    deviceProfileLabel: effectiveDeviceProfile.label,
     deviceProfileMode: deviceSelection.mode,
     processRisk,
     processReviewStatus: processEntry?.reviewStatus,
@@ -6320,6 +6345,8 @@ export function createDefaultAiBrewFormState(catalog?: AiBrewCatalog): AiBrewFor
     pourCount: 'auto',
     origamiFilterStyle: 'auto',
     aeropressStyle: 'auto',
+    switchPresetId: '',
+    switchTeachingMode: '',
   };
 }
 
@@ -6338,6 +6365,8 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
   const validPourCounts = new Set(['auto', '3', '4', '5']);
   const validOrigamiFilterStyles = new Set(['auto', 'cone', 'wave']);
   const validAeroPressStyles = new Set(['auto', 'standard', 'inverted', 'bypass', 'no_bypass', 'bright_clean', 'sweet_body']);
+  const validSwitchPresetIds = new Set(['', ...(catalog?.switchPresets || []).map((item) => item.id)]);
+  const validSwitchTeachingModes = new Set(['', 'full_immersion', 'full_percolation_v60_mode', 'hybrid']);
   const waterBrandId = String(input.waterBrandId || '');
   const dripperId = String(input.dripperId || fallback.dripperId);
   const requestedBrewMode = input.brewMode === 'iced' ? 'iced' : 'hot';
@@ -6389,6 +6418,12 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
     aeropressStyle: validAeroPressStyles.has(String(input.aeropressStyle))
       ? (String(input.aeropressStyle) as AiBrewFormState['aeropressStyle'])
       : fallback.aeropressStyle,
+    switchPresetId: validSwitchPresetIds.has(String(input.switchPresetId || ''))
+      ? (String(input.switchPresetId || '') as AiBrewFormState['switchPresetId'])
+      : fallback.switchPresetId,
+    switchTeachingMode: validSwitchTeachingModes.has(String(input.switchTeachingMode || ''))
+      ? (String(input.switchTeachingMode || '') as AiBrewFormState['switchTeachingMode'])
+      : fallback.switchTeachingMode,
   };
 }
 

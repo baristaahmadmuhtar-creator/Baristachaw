@@ -129,11 +129,31 @@ export type WaterPublishState = 'published' | 'review_only' | 'rejected';
 export type SwitchBrewProgramme =
   | 'auto'
   | 'full_immersion'
+  | 'full_immersion_sweet'
+  | 'full_immersion_heavy_body'
   | 'bloom_then_immersion'
   | 'percolation_then_immersion'
   | 'immersion_then_percolation'
+  | 'full_percolation_v60_mode'
   | 'temperature_shift_hybrid'
+  | 'iced_hybrid'
   | 'competition_hybrid';
+export type SwitchPublicPresetId =
+  | 'immersion_sweet'
+  | 'immersion_heavy_body'
+  | 'hybrid_balanced'
+  | 'hybrid_bright_clean'
+  | 'v60_mode'
+  | 'iced_hybrid'
+  | 'mugen_everyday_hybrid';
+export type SwitchTeachingMode = 'full_immersion' | 'full_percolation_v60_mode' | 'hybrid';
+export type SwitchWorkflowVerificationLevel = 'official_recipe' | 'curated_synthesis' | 'internal_model';
+export type SwitchSourceType =
+  | 'official_hardware'
+  | 'official_recipe'
+  | 'barista_curated'
+  | 'education'
+  | 'internal_model';
 export type SwitchValveState = 'closed' | 'open' | 'transition';
 export type SwitchChamberState =
   | 'empty'
@@ -150,6 +170,125 @@ export interface DevicePhysicalConstraints {
   workingHeadspaceMl?: number;
   filterSize?: string;
   coneType?: 'v60' | 'mugen' | 'flat' | 'trapezoid' | 'custom';
+}
+export interface SwitchSourceReference {
+  label: string;
+  url: string;
+  sourceType: SwitchSourceType;
+}
+
+export interface SwitchExpectedCupShift {
+  acidity?: number;
+  sweetness?: number;
+  body?: number;
+  clarity?: number;
+  bitterRisk?: number;
+  aromaIntensity?: number;
+}
+
+export interface SwitchProgrammeProvenance {
+  hardwareVerificationLevel: VerificationLevel;
+  workflowVerificationLevel: SwitchWorkflowVerificationLevel;
+  sensoryModelConfidence: AiBrewScoreConfidence;
+  curatedFromSources: SwitchSourceReference[];
+  reviewedAt: string;
+  evidenceUpdatedAt: string;
+}
+
+export interface SwitchPublicPreset {
+  id: SwitchPublicPresetId;
+  label: string;
+  labelId?: string;
+  teachingMode: SwitchTeachingMode;
+  defaultProgramme: SwitchBrewProgramme;
+  quickEligible: boolean;
+  proOnly: boolean;
+  mugenOnly?: boolean;
+  defaultUse: string;
+  cupShape: string;
+  bestFor: string[];
+  easiestMistake: string;
+  whenNotToUse: string;
+  safeSizeCompatibility: string[];
+  compatibleDripperIds: string[];
+  preferredDripperIds?: string[];
+  defaultDoseG?: number;
+  doseG: number[];
+  iced: boolean;
+  internalProgrammes: SwitchBrewProgramme[];
+  expectedCupShift: SwitchExpectedCupShift;
+  why: string;
+  watch: string;
+  provenance: SwitchProgrammeProvenance;
+}
+
+export interface SwitchInternalProgramme {
+  id: SwitchBrewProgramme;
+  label: string;
+  teachingMode: SwitchTeachingMode;
+  proOnly: boolean;
+  sourceStatus: SwitchWorkflowVerificationLevel;
+  stepIntent: string;
+  valvePath: SwitchValveState[];
+  compatiblePresetIds: SwitchPublicPresetId[];
+}
+
+export interface SwitchDoseMatrixRow {
+  id: string;
+  dripperId: string;
+  doseG: number;
+  defaultTotalWaterMl: number;
+  minTotalWaterMl: number;
+  maxTotalWaterMl: number;
+  safeClosedPhaseMaxMl: number;
+  recommendedPresetIds: SwitchPublicPresetId[];
+  blockedPresetIds: SwitchPublicPresetId[];
+  cautionPresetIds: SwitchPublicPresetId[];
+  note: string;
+}
+
+export interface SwitchTroubleshootingEntry {
+  rating: BrewTasteFeedbackRating;
+  presetIds: SwitchPublicPresetId[];
+  primaryCorrection: string;
+  backupCorrection: string;
+  guardrail: string;
+}
+
+export interface SwitchKnowledgeMethod {
+  id: SwitchTeachingMode;
+  label: string;
+  shortLabel: string;
+  description: string;
+  bestFor: string;
+  risk: string;
+}
+
+export interface SwitchKnowledgeHardwareFact {
+  dripperId: string;
+  label: string;
+  capacityMl: number;
+  safeClosedPhaseMaxMl: number;
+  sourceUrl: string;
+  verificationLevel: VerificationLevel;
+}
+
+export interface SwitchKnowledge {
+  teachingMethods: SwitchKnowledgeMethod[];
+  hardwareFacts: SwitchKnowledgeHardwareFact[];
+  provenanceCopy: {
+    hardware: string;
+    workflow: string;
+    sensory: string;
+  };
+}
+
+export interface SwitchCompatibilityState {
+  status: 'safe' | 'caution' | 'blocked';
+  sizeLabel: string;
+  doseLabel: string;
+  message: string;
+  compatiblePresetIds: SwitchPublicPresetId[];
 }
 export type WaterEvidenceProvenance =
   | 'official_label_or_lab'
@@ -508,6 +647,11 @@ export interface AiBrewCatalog {
   targetProfiles: TargetProfile[];
   deviceProfiles: DeviceBrewProfile[];
   grinderSettings: GrinderSettingReference[];
+  switchPresets?: SwitchPublicPreset[];
+  switchProgrammes?: SwitchInternalProgramme[];
+  switchDoseMatrix?: SwitchDoseMatrixRow[];
+  switchTroubleshooting?: SwitchTroubleshootingEntry[];
+  switchKnowledge?: SwitchKnowledge;
 }
 
 export interface AiBrewFormState {
@@ -541,6 +685,8 @@ export interface AiBrewFormState {
   pourCount: AiBrewPourCount;
   origamiFilterStyle: OrigamiFilterStyle;
   aeropressStyle: AeroPressRecipeStyle;
+  switchPresetId?: SwitchPublicPresetId | '';
+  switchTeachingMode?: SwitchTeachingMode | '';
 }
 
 export interface BeanProfileState {
@@ -758,6 +904,15 @@ export interface BrewPlan {
   workflowValidation?: MethodWorkflowValidationResult;
   devicePhysicalConstraints?: DevicePhysicalConstraints;
   methodProgramme?: SwitchBrewProgramme | string;
+  switchPresetId?: SwitchPublicPresetId;
+  switchPresetLabel?: string;
+  switchTeachingMode?: SwitchTeachingMode;
+  switchDoseMatrixRowId?: string;
+  switchCompatibility?: SwitchCompatibilityState;
+  switchProvenance?: SwitchProgrammeProvenance;
+  switchExpectedCupShift?: SwitchExpectedCupShift;
+  switchWhy?: string;
+  switchWatch?: string;
   expectedCupProfile?: ExpectedCupProfile;
   readinessScores?: AiBrewReadinessScores;
   notes: string[];

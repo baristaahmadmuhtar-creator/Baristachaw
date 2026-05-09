@@ -414,6 +414,65 @@ test('ai brew brewer picker prioritizes complete method catalog and search alias
   }
 });
 
+test('ai brew Hario Switch quick plan defaults to safe Hybrid Balanced with valve checkpoints', async ({ page }) => {
+  await openAiBrewQuickMode(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Switch Hybrid Balanced');
+  await page.getByTestId('ai-brew-dripper-picker').click();
+  await page.getByTestId('ai-brew-picker-search-dripper').fill('switch 03');
+  await page.getByTestId('ai-brew-picker-option-dripper-hario-switch-03').click();
+
+  await expect(page.getByTestId('ai-brew-switch-section')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-switch-size-hario-switch-03')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('ai-brew-switch-dose-15')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-switch-preset-auto')).toHaveAttribute('aria-pressed', 'true');
+
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const result = page.getByTestId('ai-brew-result');
+  await expect(result).toContainText('QA Switch Hybrid Balanced');
+  await expect(result.getByTestId('ai-brew-switch-result-summary')).toContainText(/Hybrid Balanced|Hybrid seimbang/i);
+  await expect(result.getByTestId('ai-brew-sequence-section')).toContainText(/Closed|Open|Release|Katup|Buka/i);
+
+  const plan = await readStoredAiBrewPlan(page);
+  expect(plan.dripper.id).toBe('hario-switch-03');
+  expect(plan.methodFamily).toBe('hario_switch');
+  expect(plan.switchPresetId).toBe('hybrid_balanced');
+  expect(plan.switchProvenance?.hardwareVerificationLevel).toBe('official');
+  expect(plan.switchProvenance?.workflowVerificationLevel).toBe('curated_synthesis');
+  expect(plan.switchCompatibility?.status).toBe('safe');
+  const sourceWaterSteps = plan.steps.filter((step) => (step.pourVolumeMl || 0) > 0);
+  for (const sourceStep of sourceWaterSteps) {
+    expect(plan.workflowGuideSteps?.some((guideStep) => guideStep.sourceStepIds?.includes(sourceStep.id))).toBe(true);
+  }
+});
+
+test('ai brew MUGEN x SWITCH keeps its own preset and 200 ml compatibility model', async ({ page }) => {
+  await openAiBrewQuickMode(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA MUGEN Switch');
+  await page.getByTestId('ai-brew-dripper-picker').click();
+  await page.getByTestId('ai-brew-picker-search-dripper').fill('mugen switch');
+  await page.getByTestId('ai-brew-picker-option-dripper-mugen-x-switch').click();
+
+  await expect(page.getByTestId('ai-brew-switch-section')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-switch-size-mugen-x-switch')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('ai-brew-switch-preset-mugen_everyday_hybrid')).toBeVisible();
+
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
+  await page.getByTestId('ai-brew-generate').click();
+  await expect(page.getByTestId('ai-brew-result')).toContainText('QA MUGEN Switch', { timeout: 30_000 });
+
+  const plan = await readStoredAiBrewPlan(page);
+  expect(plan.dripper.id).toBe('mugen-x-switch');
+  expect(plan.methodFamily).toBe('hario_switch');
+  expect(plan.switchPresetId).toBe('mugen_everyday_hybrid');
+  expect(plan.switchCompatibility?.status).toBe('safe');
+  expect(plan.switchCompatibility?.sizeLabel).toMatch(/MUGEN/i);
+  expect(plan.devicePhysicalConstraints?.finishedCapacityMl).toBe(200);
+  expect(plan.switchWhy || '').toMatch(/MUGEN|low-bypass|hybrid/i);
+  await expect(page.getByTestId('ai-brew-result').getByTestId('ai-brew-switch-result-summary')).toContainText(/MUGEN/i);
+});
+
 test('ai brew process and variety picker search prioritizes exact canonical matches', async ({ page }) => {
   await openAiBrewQuickMode(page);
 

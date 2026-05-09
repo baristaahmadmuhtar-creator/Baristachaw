@@ -6,6 +6,7 @@ import type {
   TargetProfile,
   VarietyCatalogEntry,
 } from './types';
+import { adjustScoresForSwitchPreset } from './switchPlanner.ts';
 
 function clampScore(value: number) {
   return Math.max(1, Math.min(5, Math.round(value)));
@@ -132,6 +133,24 @@ export function buildExpectedCupProfile(
   } else if (plan.methodFamily === 'french_press' || plan.methodFamily === 'cold_brew') {
     body += 0.45;
     clarity -= 0.35;
+  } else if (plan.methodFamily === 'hario_switch') {
+    const adjusted = adjustScoresForSwitchPreset(plan.switchExpectedCupShift, {
+      acidity,
+      sweetness,
+      body,
+      clarity,
+      bitterRisk,
+      aromaIntensity,
+    });
+    acidity = adjusted.acidity;
+    sweetness = adjusted.sweetness;
+    body = adjusted.body;
+    clarity = adjusted.clarity;
+    bitterRisk = adjusted.bitterRisk;
+    aromaIntensity = adjusted.aromaIntensity;
+    if (plan.switchPresetLabel) {
+      reasons.push(`${plan.switchPresetLabel} preset shapes Switch sweetness, clarity, body, and valve timing.`);
+    }
   }
 
   let confidence: ExpectedCupProfile['confidence'] = 'high';
@@ -161,6 +180,10 @@ export function buildExpectedCupProfile(
   if (plan.workflowValidation && !plan.workflowValidation.passed) {
     confidence = 'low';
     warnings.push('Workflow validation did not pass, so sensory prediction is not release-grade.');
+  }
+  if (plan.methodFamily === 'hario_switch' && plan.switchProvenance?.sensoryModelConfidence === 'medium' && confidence === 'high') {
+    confidence = 'medium';
+    warnings.push('Switch preset cup profile is a curated prediction, not a guaranteed result.');
   }
 
   return {

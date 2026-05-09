@@ -38,6 +38,31 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   const processes = readJson<{ items: Array<{ id: string; origins?: string[] }> }>('apps/web/public/data/ai-brew/processes.v2026-06.json').items;
   const varieties = readJson<{ items: Array<{ id: string; origins?: string[] }> }>('apps/web/public/data/ai-brew/varieties.v2026-06.json').items;
   const targetProfiles = readJson<{ items: Array<{ id: string; label: string }> }>('apps/web/public/data/ai-brew/target-profiles.v2026-03.json').items;
+  const switchProgrammes = readJson<{
+    publicPresets: Array<{
+      id: string;
+      defaultProgramme: string;
+      compatibleDripperIds: string[];
+      provenance: {
+        hardwareVerificationLevel: string;
+        workflowVerificationLevel: string;
+        sensoryModelConfidence: string;
+      };
+    }>;
+    internalProgrammes: Array<{ id: string }>;
+  }>('apps/web/public/data/ai-brew/switch-programmes.v2026-05.json');
+  const switchDoseMatrix = readJson<{
+    rows: Array<{
+      id: string;
+      dripperId: string;
+      doseG: number;
+      defaultTotalWaterMl: number;
+      safeClosedPhaseMaxMl: number;
+      blockedPresetIds: string[];
+    }>;
+  }>('apps/web/public/data/ai-brew/switch-dose-matrix.v2026-05.json');
+  const switchTroubleshooting = readJson<{ items: Array<{ rating: string; primaryCorrection: string; guardrail: string }> }>('apps/web/public/data/ai-brew/switch-troubleshooting.v2026-05.json');
+  const switchKnowledge = readJson<{ item: { teachingMethods: Array<{ id: string }>; hardwareFacts: Array<{ dripperId: string; capacityMl: number; verificationLevel: string }> } }>('apps/web/public/data/ai-brew/switch-knowledge.v2026-05.json');
   const waters = readJson<{
     items: Array<{
       id: string;
@@ -184,6 +209,33 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
     assert.equal(profile?.physicalConstraints?.filterSize, filterSize, `${profileId} should carry filter size`);
     assert.ok(profile?.physicalConstraints?.recommendedClosedPhaseMaxMl, `${profileId} should cap closed chamber load`);
   }
+
+  const presetIds = new Set(switchProgrammes.publicPresets.map((entry) => entry.id));
+  for (const requiredPreset of ['immersion_sweet', 'immersion_heavy_body', 'hybrid_balanced', 'hybrid_bright_clean', 'v60_mode', 'iced_hybrid', 'mugen_everyday_hybrid']) {
+    assert.ok(presetIds.has(requiredPreset), `Missing Switch public preset ${requiredPreset}`);
+  }
+  const programmeIds = new Set(switchProgrammes.internalProgrammes.map((entry) => entry.id));
+  for (const requiredProgramme of ['full_immersion_sweet', 'full_immersion_heavy_body', 'full_percolation_v60_mode', 'iced_hybrid', 'competition_hybrid']) {
+    assert.ok(programmeIds.has(requiredProgramme), `Missing Switch internal programme ${requiredProgramme}`);
+  }
+  for (const preset of switchProgrammes.publicPresets) {
+    assert.equal(preset.provenance.hardwareVerificationLevel, 'official', `${preset.id} should keep official hardware provenance`);
+    assert.equal(preset.provenance.workflowVerificationLevel, 'curated_synthesis', `${preset.id} should not claim official recipe status`);
+    assert.ok(preset.compatibleDripperIds.every((id) => ['hario-switch-02', 'hario-switch-03', 'mugen-x-switch'].includes(id)), `${preset.id} should only target exact Switch variants`);
+  }
+  for (const dripperId of ['hario-switch-02', 'hario-switch-03', 'mugen-x-switch']) {
+    for (const doseG of dripperId === 'mugen-x-switch' ? [10, 12, 15, 18] : [10, 12, 15, 18, 20]) {
+      assert.ok(
+        switchDoseMatrix.rows.some((row) => row.dripperId === dripperId && row.doseG === doseG),
+        `Missing Switch dose row ${dripperId} ${doseG}g`,
+      );
+    }
+  }
+  assert.ok(switchDoseMatrix.rows.some((row) => row.id === 'switch02-20' && row.blockedPresetIds.includes('immersion_sweet')), 'Switch 02 20 g should block full immersion presets');
+  assert.ok(switchDoseMatrix.rows.some((row) => row.id === 'switch03-20' && row.defaultTotalWaterMl === 300), 'Switch 03 20 g should intentionally support around 300 ml');
+  assert.ok(switchTroubleshooting.items.some((entry) => entry.rating === 'muddy' && /muatan|closed|chamber/i.test(`${entry.primaryCorrection} ${entry.guardrail}`)), 'Switch troubleshooting should include chamber-load muddy correction');
+  assert.ok(switchKnowledge.item.teachingMethods.some((entry) => entry.id === 'hybrid'), 'Switch knowledge should teach hybrid mode');
+  assert.ok(switchKnowledge.item.hardwareFacts.some((entry) => entry.dripperId === 'hario-switch-03' && entry.capacityMl === 360 && entry.verificationLevel === 'official'), 'Switch knowledge should keep Switch 03 official capacity');
 
   for (const [profileId, flatFamily] of [
     ['profile_april_brewer_hot', 'april_low_agitation'],

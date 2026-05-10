@@ -444,11 +444,9 @@ test('ai brew Hario Switch quick plan defaults to safe Hybrid Balanced with valv
   await expect(page.getByTestId('ai-brew-switch-size-hario-switch-03')).toHaveCount(0);
   await expect(page.getByTestId('ai-brew-switch-dose-15')).toHaveCount(0);
   await expect(page.getByTestId('ai-brew-dose-chip-15')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-switch-preset-summary')).toContainText(/Auto: Hybrid Balanced|Auto: Hybrid seimbang/i);
-  await page.getByTestId('ai-brew-switch-preset-toggle').click();
-  await expect(page.getByTestId('ai-brew-switch-preset-sheet')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-switch-preset-auto')).toHaveAttribute('aria-pressed', 'true');
-  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('ai-brew-brew-mode-method-panel')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-switch-preset-auto-inline')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('ai-brew-switch-method-strip')).toContainText(/Auto by taste target|Auto ikut Profil Target/i);
 
   await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -482,9 +480,7 @@ test('ai brew MUGEN x SWITCH keeps its own preset and 200 ml compatibility model
   await expect(page.getByTestId('ai-brew-switch-section')).toBeVisible();
   await expect(page.getByTestId('ai-brew-switch-selected-size')).toContainText(/MUGEN/i);
   await expect(page.getByTestId('ai-brew-switch-size-mugen-x-switch')).toHaveCount(0);
-  await page.getByTestId('ai-brew-switch-preset-toggle').click();
-  await expect(page.getByTestId('ai-brew-switch-preset-mugen_everyday_hybrid')).toBeVisible();
-  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('ai-brew-switch-preset-inline-mugen_everyday_hybrid')).toBeVisible();
 
   await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();

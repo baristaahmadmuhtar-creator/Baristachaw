@@ -5,12 +5,13 @@ import test from 'node:test';
 const SOURCE = readFileSync('apps/web/src/features/ai-brew/AiBrewPanel.tsx', 'utf8');
 
 test('AI Brew quick mode keeps Switch setup compact and single-source-of-truth', () => {
-  assert.match(SOURCE, /data-testid="ai-brew-switch-preset-toggle"/);
+  assert.match(SOURCE, /data-testid="ai-brew-brew-mode-method-panel"/);
   assert.match(SOURCE, /data-testid="ai-brew-switch-method-strip"/);
   assert.match(SOURCE, /data-testid="ai-brew-switch-preset-auto-inline"/);
   assert.match(SOURCE, /data-testid="ai-brew-switch-selected-size"/);
   assert.match(SOURCE, /data-testid="ai-brew-dose-shortcuts"/);
   assert.doesNotMatch(SOURCE, /data-testid=\{`ai-brew-switch-dose-/);
+  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-switch-preset-toggle"/);
 });
 
 test('AI Brew quick mode keeps optional bean detail and AI tools collapsed', () => {
@@ -35,7 +36,7 @@ test('AI Brew Pro mode uses visible bean detail and controlled accordions', () =
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-pro-summary"/);
   assert.match(SOURCE, /data-testid="ai-brew-pro-bean-required"/);
   assert.match(SOURCE, /data-testid="ai-brew-switch-inline-methods"/);
-  assert.match(SOURCE, /isPro && isSwitchDripper/);
+  assert.match(SOURCE, /brewModeAndMethodPanel/);
   assert.doesNotMatch(SOURCE, /\{switchPanel\}\s*\{methodOptionPanel\}/);
   assert.match(SOURCE, /data-testid=\{`ai-brew-pro-accordion-\$\{sectionId\}`\}/);
   for (const section of ['recipe', 'water', 'grinder', 'method', 'confidence']) {

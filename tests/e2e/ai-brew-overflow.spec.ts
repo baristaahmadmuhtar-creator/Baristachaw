@@ -165,7 +165,7 @@ test('AI Brew Hario Switch Presisi builder and result never create page-level ho
   }
 });
 
-test('AI Brew Switch variants and preset sheet stay bounded on mobile', async ({ page }) => {
+test('AI Brew Switch variants and inline method strip stay bounded on mobile', async ({ page }) => {
   const browserErrors = collectFatalBrowserErrors(page);
   await resetTools(page, 390, 844);
 
@@ -187,31 +187,23 @@ test('AI Brew Switch variants and preset sheet stay bounded on mobile', async ({
 
   await openQuickBuilder(page);
   await selectDripper(page, 'switch 03', 'hario-switch-03');
-  await page.getByTestId('ai-brew-switch-preset-toggle').click();
-  const sheet = page.getByTestId('ai-brew-switch-preset-sheet');
-  await expect(sheet).toBeVisible();
-  await expectNoHorizontalOverflow(page, 'switch preset sheet open');
-  await page.getByTestId('ai-brew-switch-preset-auto').click();
-  await expect(sheet).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-brew-mode-method-panel')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-switch-method-strip')).toBeVisible();
+  await expectNoHorizontalOverflow(page, 'switch method strip open');
+  await page.getByTestId('ai-brew-switch-preset-auto-inline').click();
 
-  for (const preset of ['immersion_sweet', 'immersion_heavy_body', 'hybrid_balanced', 'hybrid_bright_clean', 'v60_mode', 'iced_hybrid'] as const) {
-    if (preset === 'iced_hybrid') {
-      await page.getByRole('button', { name: /Seduh Es|Iced/i }).click();
+  for (const method of ['immersion_sweet', 'immersion_heavy_body', 'hybrid_balanced', 'hybrid_bright_clean', 'v60_mode', 'iced_hybrid'] as const) {
+    if (method === 'iced_hybrid') {
+      await page.getByTestId('ai-brew-builder-mode-iced').click();
+    } else {
+      await page.getByTestId('ai-brew-builder-mode-hot').click();
     }
-    await page.getByTestId('ai-brew-switch-preset-toggle').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(150);
-    await page.getByTestId('ai-brew-switch-preset-toggle').click({ force: true });
-    await expect(page.getByTestId('ai-brew-switch-preset-sheet')).toBeVisible();
-    await expectNoHorizontalOverflow(page, `switch preset sheet ${preset}`);
-    await page.getByTestId(`ai-brew-switch-preset-${preset}`).click();
-    await expect(page.getByTestId('ai-brew-switch-preset-sheet')).toHaveCount(0);
-    await expect(page.getByTestId('ai-brew-switch-preset-toggle')).toBeFocused();
+    await expect(page.getByTestId(`ai-brew-switch-preset-inline-${method}`)).toBeVisible();
+    await page.getByTestId(`ai-brew-switch-preset-inline-${method}`).click();
+    await expectNoHorizontalOverflow(page, `switch inline method ${method}`);
   }
 
-  await page.getByTestId('ai-brew-switch-preset-toggle').click();
-  await page.keyboard.press('Escape');
-  await expect(page.getByTestId('ai-brew-switch-preset-sheet')).toHaveCount(0);
-  browserErrors.expectNoFatalErrors('switch preset sheet');
+  browserErrors.expectNoFatalErrors('switch method strip');
 });
 
 test('AI Brew long-text and non-Switch flows stay within viewport', async ({ page }) => {

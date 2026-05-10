@@ -831,9 +831,10 @@ test('ai brew quick and pro modes honor target profile changes in the generated 
 
   const proResult = page.getByTestId('ai-brew-result');
   await expect(proResult).toContainText(/More Body|Body Lebih Tebal/i);
-  await expect(proResult.getByTestId('ai-brew-result-metric-strip')).toBeVisible();
-  await proResult.getByTestId('ai-brew-result-tab-details').click();
+  await expect(proResult.getByTestId('ai-brew-result-metric-strip')).toHaveCount(0);
+  await expect(proResult.getByTestId('ai-brew-result-summary-metric-strip')).toBeVisible();
   await expect(proResult.getByTestId('ai-brew-pro-why-recipe')).toBeVisible();
+  await proResult.getByTestId('ai-brew-result-tab-details').click();
   await expect(proResult.getByTestId('ai-brew-pro-target-compare')).toContainText(/More Acidity|Lebih Cerah/i);
   await expect(proResult.getByTestId('ai-brew-pro-precision-tolerance')).toContainText(/Precision Tolerance|1C|Suhu/i);
   await expect(proResult.getByTestId('ai-brew-pro-water-bean-intelligence')).toContainText(/TDS|GH|KH|Water|Air/i);

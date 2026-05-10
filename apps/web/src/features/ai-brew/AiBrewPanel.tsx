@@ -50,7 +50,6 @@ import {
   buildAiBrewTasteLoopMarkdown,
   buildTasteFeedbackCorrection,
   resolveAiBrewActionPriorities,
-  resolveAiBrewConfidenceBadges,
 } from './experience';
 import {
   getSwitchDoseRows,
@@ -4114,7 +4113,6 @@ function PlanResultDialog({
   const displaySummary = compactResultSummaryForDisplay(buildPremiumResultSummary(plan, language), plan, language);
   const methodBrief = buildPlanMethodBrief(plan, language);
   const aiEngineOnline = planUsesOnlineAi(plan);
-  const confidenceBadges = resolveAiBrewConfidenceBadges(plan, language);
   const actionPriorities = resolveAiBrewActionPriorities(plan, language);
   const planHeaderWater = formatPlanHeaderWater(plan, language);
   const localizedWaterStyle = localizeAiBrewWaterStyle(plan.waterMinerals.styleLabel, language);
@@ -4179,41 +4177,40 @@ function PlanResultDialog({
   const hotWaterToleranceMl = Math.max(4, Math.round(plan.hotWaterMl * 0.02));
   const drawdownLowSeconds = Math.max(45, plan.totalTimeSeconds - 15);
   const drawdownHighSeconds = plan.totalTimeSeconds + 20;
-  const proWhyRecipeItems = [
+  const summaryWhyRecipeItems = [
     {
-      label: copy.finalRatio,
-      value: `1:${formatBrewRatio(plan.finalBeverageRatio)}`,
+      label: id ? 'Target rasa' : 'Taste target',
+      value: localizedTargetProfileLabel,
       detail: id
-        ? `Disetel untuk target ${localizedTargetProfileLabel}, proses ${localizedProcessLabel}, varietas ${localizedVarietyLabel}, dan output ${formatRoundedMl(plan.estimatedCupOutputMl)}.${plan.targetProfileSuggestionReason ? ` ${localizeAiBrewDynamicText(plan.targetProfileSuggestionReason, language)}` : ''}`
-        : `Set for ${localizedTargetProfileLabel}, ${localizedProcessLabel} process, ${localizedVarietyLabel} variety, and ${formatRoundedMl(plan.estimatedCupOutputMl)} output.${plan.targetProfileSuggestionReason ? ` ${plan.targetProfileSuggestionReason}` : ''}`,
+        ? `${buildTargetProfileEffectText(plan.targetProfileId, language)}${plan.targetProfileSuggestionReason ? ` ${localizeAiBrewDynamicText(plan.targetProfileSuggestionReason, language)}` : ''}`
+        : `${buildTargetProfileEffectText(plan.targetProfileId, language)}${plan.targetProfileSuggestionReason ? ` ${plan.targetProfileSuggestionReason}` : ''}`,
     },
     {
-      label: copy.temp,
-      value: formatRoundedTemperature(plan.waterTempC),
+      label: id ? 'Keseimbangan ekstraksi' : 'Extraction balance',
+      value: `${plan.iceMl > 0 ? `1:${formatBrewRatio(plan.finalBeverageRatio)} / hot 1:${formatBrewRatio(plan.hotExtractionRatio)}` : `1:${formatBrewRatio(plan.finalBeverageRatio)}`} · ${formatRoundedTemperature(plan.waterTempC)} · ${formatGuideTime(plan.totalTimeSeconds)}`,
       detail: id
-        ? `${localizedRoastLabel} dan ${localizedWaterStyle} dipakai untuk menjaga ekstraksi tetap jelas tanpa mendorong pahit.`
-        : `${localizedRoastLabel} roast and ${localizedWaterStyle} water keep extraction clear without pushing bitterness.`,
+        ? `${localizedRoastLabel}, proses ${localizedProcessLabel}, dan ${localizedWaterStyle} dibaca bersama supaya sweetness naik tanpa menutup clarity atau mendorong pahit.`
+        : `${localizedRoastLabel} roast, ${localizedProcessLabel} process, and ${localizedWaterStyle} water are read together so sweetness can rise without muting clarity or pushing bitterness.`,
     },
     {
-      label: copy.grind,
-      value: localizedGrindHeadline,
+      label: id ? 'Air + grinder' : 'Water + grinder',
+      value: `${plan.waterBrandLabel || copy.waterSelectedManual} · ${localizedGrindHeadline}`,
       detail: id
-        ? `${localizedGrindBandLabel}. Referensi grinder: ${localizedGrindSettingReference}.`
-        : `${localizedGrindBandLabel}. Grinder reference: ${localizedGrindSettingReference}.`,
+        ? `Air memakai TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder ditampilkan sebagai ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)} agar tidak overclaim.`
+        : `Water uses TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder is labelled ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)} so the plan does not overclaim precision.`,
     },
     {
-      label: copy.waterSourceUsed,
-      value: plan.waterBrandLabel || copy.waterSelectedManual,
-      detail: id
-        ? `Air ${localizedWaterStyle} dengan TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm} dibaca terhadap target rasa.`
-        : `${localizedWaterStyle} water with TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm} is read against the taste target.`,
-    },
-    {
-      label: copy.recipe,
-      value: `${workflowGuideSteps.length} ${copy.stepCountSuffix}`,
-      detail: id
-        ? `Panduan mengikuti ${plan.dripper.name}: workflow metode, target volume, dan timer dibuat agar finish sekitar ${formatGuideTime(plan.totalTimeSeconds)}.`
-        : `Guide follows ${plan.dripper.name}: method workflow, volume targets, and timer are shaped to finish around ${formatGuideTime(plan.totalTimeSeconds)}.`,
+      label: id ? 'Alat & workflow' : 'Brewer workflow',
+      value: plan.methodFamily === 'hario_switch'
+        ? (plan.switchPresetLabel || plan.dripper.name)
+        : plan.dripper.name,
+      detail: plan.methodFamily === 'hario_switch'
+        ? (id
+          ? `${plan.switchWhy || 'Metode Switch mengikuti target rasa, ukuran alat, dan dosis.'} ${plan.switchWatch || plan.switchCompatibility?.message || 'Jaga angka ml, target kumulatif, dan status katup saat seduh.'}`
+          : `${plan.switchWhy || 'Switch method follows the taste target, brewer size, and dose.'} ${plan.switchWatch || plan.switchCompatibility?.message || 'Keep ml, cumulative targets, and valve state visible while brewing.'}`)
+        : (id
+          ? `${methodBrief.primaryLabel}: ${methodBrief.watch[0] || 'Ikuti urutan dari atas; ubah satu variabel saja setelah mencicipi.'}`
+          : `${methodBrief.primaryLabel}: ${methodBrief.watch[0] || 'Follow the guide top to bottom; change one variable only after tasting.'}`),
     },
   ];
   const targetProfileCompareRows = buildTargetProfileCompareRows(targetComparePlans, plan, language);
@@ -4273,12 +4270,6 @@ function PlanResultDialog({
   const resultMetricCardClass = 'min-w-0 max-w-full rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/84 p-3 [overflow-wrap:anywhere]';
   const resultChipClass = 'max-w-full rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-medium text-secondary [overflow-wrap:anywhere]';
   const resultActionButtonClass = 'min-h-[44px] min-w-0 w-full rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-center text-[13px] font-medium leading-4 text-primary transition-colors hover:border-blue-500/20 hover:bg-surface-alpha sm:w-auto sm:text-sm sm:whitespace-nowrap';
-  const confidenceBadgeClass = (tone: string) => {
-    if (tone === 'emerald') return 'border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300';
-    if (tone === 'amber') return 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300';
-    if (tone === 'blue') return 'border-blue-500/18 bg-blue-500/10 text-blue-700 dark:text-blue-300';
-    return 'panel-divider-subtle bg-[var(--bg-base)] text-secondary';
-  };
   const saveButtonLabel = saving
     ? (id ? 'Menyimpan...' : 'Saving...')
     : saveSuccess
@@ -4450,56 +4441,11 @@ function PlanResultDialog({
                   </span>
                 </div>
                 <h3 className="break-words text-lg font-semibold tracking-tight text-primary sm:text-xl">{buildLocalizedPlanRecipeName(plan, language)}</h3>
-                {!isQuickResult && (
-                  <div
-                    className="mt-2 flex min-w-0 max-w-full flex-wrap gap-1.5 text-xs font-semibold text-secondary"
-                    data-testid="ai-brew-result-metric-strip"
-                  >
-                    <span className={resultChipClass}>{formatRoundedGrams(plan.doseG)}</span>
-                    <span className={resultChipClass}>{planHeaderWater}</span>
-                    <span className={resultChipClass}>{formatGuideTime(plan.totalTimeSeconds)}</span>
-                    <span className={resultChipClass}>{formatRoundedTemperature(plan.waterTempC)}</span>
-                  </div>
-                )}
                 <p id={descriptionId} className="sr-only">
                   {isQuickResult
                     ? (id ? 'Hasil Quick AI Brew berisi urutan seduh ringkas dan kontrol barista inti.' : 'Quick AI Brew result with a compact brew sequence and core barista controls.')
                     : `${formatRoundedGrams(plan.doseG)} - ${planHeaderWater} - ${formatGuideTime(plan.totalTimeSeconds)} - ${formatRoundedTemperature(plan.waterTempC)}`}
                 </p>
-                <div className="mt-3 flex min-w-0 max-w-full flex-wrap gap-1.5" data-testid="ai-brew-confidence-labels">
-                  <span
-                    className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${confidenceBadgeClass('slate')}`}
-                    data-testid="ai-brew-result-water-source"
-                  >
-                    {plan.waterBrandLabel || (id ? 'Air manual' : 'Manual water')}
-                  </span>
-                  {workflowValidation && (
-                    <span
-                      className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
-                        workflowValidation.status === 'ready'
-                          ? confidenceBadgeClass('emerald')
-                          : workflowValidation.status === 'blocked'
-                            ? 'border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-300'
-                            : confidenceBadgeClass('amber')
-                      }`}
-                      data-testid="ai-brew-workflow-status"
-                    >
-                      {workflowValidation.status === 'ready'
-                        ? (id ? 'Workflow Ready' : 'Workflow Ready')
-                        : workflowValidation.status === 'blocked'
-                          ? (id ? 'Workflow Blocked' : 'Workflow Blocked')
-                          : (id ? 'Workflow Perlu Review' : 'Workflow Needs Review')}
-                    </span>
-                  )}
-                  {confidenceBadges.map((badge) => (
-                    <span
-                      key={badge.label}
-                      className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${confidenceBadgeClass(badge.tone)}`}
-                    >
-                      {badge.label}
-                    </span>
-                  ))}
-                </div>
                 {(expectedCup || readinessItems.length > 0) && (
                   <div
                     className="mt-3 min-w-0 max-w-full overflow-hidden rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-2.5 text-xs [overflow-wrap:anywhere]"
@@ -4546,40 +4492,6 @@ function PlanResultDialog({
                         </div>
                       </details>
                     )}
-                  </div>
-                )}
-                {plan.methodFamily === 'hario_switch' && plan.switchPresetLabel && (
-                  <div
-                    className="mt-3 min-w-0 max-w-full overflow-hidden rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-3 text-xs [overflow-wrap:anywhere]"
-                    data-testid="ai-brew-switch-result-summary"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.switchSectionTitle}</p>
-                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                        plan.switchCompatibility?.status === 'blocked'
-                          ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
-                          : plan.switchCompatibility?.status === 'caution'
-                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
-                            : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-                      }`}>
-                        {plan.switchCompatibility?.status || 'safe'}
-                      </span>
-                    </div>
-                    <div className="mt-2 grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[repeat(2,minmax(0,1fr))]">
-                      <div>
-                        <p className="font-semibold text-primary">{plan.switchPresetLabel}</p>
-                        <p className="mt-1 leading-5 text-secondary">{plan.switchWhy}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-primary">{copy.switchWatch}</p>
-                        <p className="mt-1 leading-5 text-secondary">{plan.switchWatch || plan.switchCompatibility?.message}</p>
-                      </div>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      <span className="rounded-full bg-surface-alpha px-2 py-1 text-secondary">{copy.switchHardwareFactOfficial}</span>
-                      <span className="rounded-full bg-surface-alpha px-2 py-1 text-secondary">{copy.switchWorkflowCurated}</span>
-                      <span className="rounded-full bg-surface-alpha px-2 py-1 text-secondary">{copy.switchExpectedModel}</span>
-                    </div>
                   </div>
                 )}
                 <div className="mt-3 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 sm:flex sm:flex-wrap sm:items-center">
@@ -4712,7 +4624,7 @@ function PlanResultDialog({
                     ))}
                   </div>
                   {plan.methodFamily === 'hario_switch' && (
-                    <div className="mt-3 flex min-w-0 max-w-full flex-wrap gap-1.5 text-xs" data-testid="ai-brew-result-switch-compact">
+                    <div className="mt-3 flex min-w-0 max-w-full flex-wrap gap-1.5 text-xs" data-testid="ai-brew-switch-result-summary">
                       <span className={resultChipClass}>{plan.switchPresetLabel || (id ? 'Metode Switch' : 'Switch method')}</span>
                       <span className={resultChipClass}>{resultSwitchValvePathLabel}</span>
                       {plan.switchCompatibility?.message && (
@@ -4723,6 +4635,36 @@ function PlanResultDialog({
                     </div>
                   )}
                 </div>
+
+                <section
+                  className="min-w-0 max-w-full overflow-hidden rounded-[1.1rem] border panel-divider-subtle bg-[var(--bg-base)]/78 p-3.5"
+                  data-testid="ai-brew-pro-why-recipe"
+                >
+                  <div className="flex min-w-0 items-start gap-2.5">
+                    <Info size={16} className="mt-0.5 shrink-0 text-blue-500" />
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
+                        {id ? 'Kenapa Resep Ini' : 'Why This Recipe'}
+                      </h4>
+                      <p className="mt-1 text-xs leading-5 text-secondary">
+                        {id
+                          ? 'Inti keputusan planner: target rasa, ekstraksi, air, grinder, dan workflow alat diringkas tanpa klaim 100% pasti.'
+                          : 'Planner decision summary: taste target, extraction, water, grinder, and brewer workflow without claiming certainty.'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    {summaryWhyRecipeItems.map((item) => (
+                      <div key={item.label} className="min-w-0 rounded-xl bg-surface-alpha px-3 py-2.5 [overflow-wrap:anywhere]">
+                        <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
+                          <p className="text-[10px] font-semibold uppercase tracking-widest text-secondary">{item.label}</p>
+                          <p className="min-w-0 break-words text-sm font-semibold text-primary">{item.value}</p>
+                        </div>
+                        <p className="mt-1 text-xs leading-5 text-secondary">{item.detail}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
 
                 {actionPriorities.length > 0 && (
                   <div
@@ -4814,30 +4756,7 @@ function PlanResultDialog({
                 </div>
               </div>
 
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-                <section
-                  className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
-                  data-testid="ai-brew-pro-why-recipe"
-                >
-                  <div className="mb-3 flex items-center gap-2">
-                    <Info size={15} className="text-blue-500" />
-                    <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
-                      {id ? 'Kenapa Resep Ini' : 'Why This Recipe'}
-                    </h4>
-                  </div>
-                  <div className="grid gap-2">
-                    {proWhyRecipeItems.map((item) => (
-                      <div key={item.label} className="rounded-xl bg-surface-alpha px-3 py-2.5">
-                        <div className="flex flex-wrap items-baseline justify-between gap-2">
-                          <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{item.label}</p>
-                          <p className="text-sm font-semibold text-primary">{item.value}</p>
-                        </div>
-                        <p className="mt-1 text-xs leading-5 text-secondary">{item.detail}</p>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
+              <div className="grid gap-4">
                 <section
                   className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
                   data-testid="ai-brew-pro-target-compare"

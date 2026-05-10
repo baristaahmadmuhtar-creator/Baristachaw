@@ -52,6 +52,10 @@ test('AI Brew generated result uses compact tabs before dense detail', () => {
   assert.match(SOURCE, /data-testid="ai-brew-result-guide-panel"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-coach-panel"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-detail-panel"/);
+  assert.match(SOURCE, /data-testid="ai-brew-pro-why-recipe"/);
+  assert.match(SOURCE, /summaryWhyRecipeItems/);
+  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-confidence-labels"/);
+  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-metric-strip"/);
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-guide-preview"/);
   assert.doesNotMatch(SOURCE, /expectedCupItems\.map\(\(item\) =>/);
   assert.match(SOURCE, /setActiveTab\('plan'\)/);

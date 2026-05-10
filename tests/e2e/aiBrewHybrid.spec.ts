@@ -1257,7 +1257,6 @@ test('ai brew deterministic sequence changes pour-map structure across bean extr
   await expect(baselinePours.length).toBeGreaterThan(2);
 
   await page.getByRole('button', { name: /Edit input|Edit inputs|Ubah input/i }).click();
-  await openProSection(page, 'bean');
   await page.getByTestId('ai-brew-bean-profile-toggle').click();
   await page.getByTestId('ai-brew-bean-roast-underdeveloped').click();
   await page.getByTestId('ai-brew-bean-solubility-low').click();

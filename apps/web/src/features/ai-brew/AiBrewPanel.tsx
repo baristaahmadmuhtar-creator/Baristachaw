@@ -354,7 +354,7 @@ const COPY = {
     temp: 'Temperature',
     time: 'Brew Time',
     grind: 'Grind',
-    recipe: 'Brew Sequence',
+    recipe: 'Brew Guide',
     stepCountSuffix: 'steps',
     sopCard: 'Standard SOP',
     sopQuickDial: 'Quick Dial',
@@ -852,7 +852,7 @@ const COPY = {
     temp: 'Suhu',
     time: 'Waktu Seduh',
     grind: 'Gilingan',
-    recipe: 'Urutan Seduh',
+    recipe: 'Panduan Seduh',
     stepCountSuffix: 'langkah',
     sopCard: 'SOP Seduh',
     sopQuickDial: 'Ringkasan Cepat',
@@ -2991,6 +2991,7 @@ function renderAiBrewSequenceStepCard(
   index: number,
   language: string,
   density: AiBrewGuideDensity = 'pro',
+  detailsDefaultOpen = false,
 ) {
   const localizedStepLabel = localizeAiBrewStepLabel(step.label, language);
   const stepActionText = buildAiBrewStepActionText(step, language, plan);
@@ -3039,6 +3040,7 @@ function renderAiBrewSequenceStepCard(
 
           {density === 'pro' && stepDetailPoints.length > 0 && (
             <details
+              open={detailsDefaultOpen}
               className="group rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/72 px-3 py-2"
               data-testid={`ai-brew-step-detail-${index + 1}`}
             >
@@ -4014,16 +4016,23 @@ function PlanResultDialog({
   const [flowStartedAtMs, setFlowStartedAtMs] = useState<number | null>(null);
   const isQuickResult = resultMode === 'quick';
   const [guideDensity, setGuideDensity] = useState<AiBrewGuideDensity>('basic');
+  const pendingTasteFocusRef = useRef(false);
 
   useEffect(() => {
     if (!open) return;
     setActiveTab('plan');
-    setGuideDensity('basic');
+    setGuideDensity(isQuickResult ? 'basic' : 'pro');
     setFlowElapsedSeconds(0);
     setFlowAccumulatedSeconds(0);
     setFlowRunning(false);
     setFlowStartedAtMs(null);
   }, [open, isQuickResult]);
+
+  useEffect(() => {
+    if (!open || activeTab !== 'details' || !pendingTasteFocusRef.current || typeof window === 'undefined') return;
+    pendingTasteFocusRef.current = false;
+    scrollTasteFeedbackIntoView();
+  }, [activeTab, open]);
 
   useEffect(() => {
     setFlowElapsedSeconds(0);
@@ -4302,7 +4311,6 @@ function PlanResultDialog({
     { label: copy.confidenceCatalog, value: plan.readinessScores.catalog },
   ] : [];
   const compactExpectedCupItems = expectedCupItems.slice(0, 4);
-  const compactReadinessItems = readinessItems.slice(0, 3);
   const guideDensityToggle = (
     <div className="flex flex-wrap items-center gap-2">
       <div
@@ -4357,6 +4365,27 @@ function PlanResultDialog({
     setFlowAccumulatedSeconds(0);
     setFlowRunning(false);
     setFlowStartedAtMs(null);
+  }
+
+  function scrollTasteFeedbackIntoView() {
+    if (typeof window === 'undefined') return;
+    window.requestAnimationFrame(() => {
+      const feedbackPanel = document.querySelector<HTMLElement>('[data-testid="ai-brew-taste-feedback"]');
+      if (!feedbackPanel) return;
+      feedbackPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const focusTarget = feedbackPanel.querySelector<HTMLElement>('button, textarea, input, select, [tabindex]:not([tabindex="-1"])');
+      focusTarget?.focus({ preventScroll: true });
+    });
+  }
+
+  function openTasteFeedback() {
+    pendingTasteFocusRef.current = true;
+    if (activeTab === 'details') {
+      pendingTasteFocusRef.current = false;
+      scrollTasteFeedbackIntoView();
+      return;
+    }
+    setActiveTab('details');
   }
 
   return (
@@ -4437,26 +4466,6 @@ function PlanResultDialog({
                     ? (id ? 'Hasil Quick AI Brew berisi urutan seduh ringkas dan kontrol barista inti.' : 'Quick AI Brew result with a compact brew sequence and core barista controls.')
                     : `${formatRoundedGrams(plan.doseG)} - ${planHeaderWater} - ${formatGuideTime(plan.totalTimeSeconds)} - ${formatRoundedTemperature(plan.waterTempC)}`}
                 </p>
-                {!isQuickResult && (
-                  <div
-                    className="mt-3 rounded-[1.15rem] border border-blue-500/18 bg-gradient-to-br from-blue-500/[0.12] via-blue-500/[0.06] to-transparent px-3 py-2.5"
-                    data-testid="ai-brew-result-brief"
-                  >
-                    <div className="flex items-start gap-2">
-                      <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.2)]">
-                        <Sparkles size={13} />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
-                          {id ? 'Ringkasan seduh' : 'Brew brief'}
-                        </p>
-                        <p className="mt-1 text-[13px] leading-5 text-primary">
-                          {displaySummary}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
                 <div className="mt-3 flex flex-wrap gap-1.5" data-testid="ai-brew-confidence-labels">
                   <span
                     className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${confidenceBadgeClass('slate')}`}
@@ -4508,14 +4517,8 @@ function PlanResultDialog({
                           <span className="font-semibold text-primary">{item.value}/5</span>
                         </span>
                       ))}
-                      {compactReadinessItems.map((item) => (
-                        <span key={item.label} className="rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2 py-1 text-secondary">
-                          <span className="mr-1 text-tertiary">{item.label}</span>
-                          <span className="font-semibold text-primary">{item.value}</span>
-                        </span>
-                      ))}
                     </div>
-                    {(expectedCupItems.length > compactExpectedCupItems.length || readinessItems.length > compactReadinessItems.length || expectedCup?.warnings[0] || expectedCup?.reasons[0]) && (
+                    {(expectedCupItems.length > compactExpectedCupItems.length || readinessItems.length > 0 || expectedCup?.warnings[0] || expectedCup?.reasons[0]) && (
                       <details className="group mt-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-primary">
                           <span>{id ? 'Detail prediksi & keyakinan' : 'Prediction & confidence detail'}</span>
@@ -4728,7 +4731,36 @@ function PlanResultDialog({
                   )}
                 </div>
 
-                <div className="grid gap-2 sm:grid-cols-2" data-testid="ai-brew-result-summary-actions">
+                {actionPriorities.length > 0 && (
+                  <div
+                    className="rounded-[1.1rem] border border-blue-500/18 bg-[var(--bg-base)]/78 p-3"
+                    data-testid="ai-brew-action-priorities"
+                  >
+                    <div className="mb-2 flex min-w-0 items-start gap-2">
+                      <Target size={15} className="mt-0.5 shrink-0 text-blue-500" />
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
+                          {copy.actionPrioritiesTitle}
+                        </p>
+                        <p className="mt-0.5 text-xs leading-5 text-secondary">
+                          {copy.actionPrioritiesDescription}
+                        </p>
+                      </div>
+                    </div>
+                    <ol className="grid gap-2 text-[13px] leading-5 text-secondary sm:grid-cols-3">
+                      {actionPriorities.slice(0, 3).map((item, index) => (
+                        <li key={`${index}-${item}`} className="flex items-start gap-2 rounded-xl bg-surface-alpha px-3 py-2">
+                          <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-semibold text-white">
+                            {index + 1}
+                          </span>
+                          <span className="min-w-0">{compactAiBrewInstruction(item, 96)}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
+                <div className="grid gap-2" data-testid="ai-brew-result-summary-actions">
                   <button
                     type="button"
                     onClick={() => setActiveTab('flow')}
@@ -4737,15 +4769,6 @@ function PlanResultDialog({
                   >
                     <Play size={15} />
                     {id ? 'Mulai panduan seduh' : 'Start brew guide'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('details')}
-                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-4 py-2.5 text-sm font-semibold text-primary"
-                    data-testid="ai-brew-result-check-taste"
-                  >
-                    <Sparkles size={15} />
-                    {id ? 'Cek rasa' : 'Taste check'}
                   </button>
                 </div>
               </div>
@@ -4797,35 +4820,6 @@ function PlanResultDialog({
                   )}
                 </div>
               </div>
-
-              {actionPriorities.length > 0 && (
-                <div
-                  className="rounded-[1.2rem] border border-blue-500/18 bg-[var(--bg-base)]/72 p-3"
-                  data-testid="ai-brew-action-priorities"
-                >
-                  <div className="mb-2 flex min-w-0 items-start gap-2">
-                    <Target size={15} className="mt-0.5 shrink-0 text-blue-500" />
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
-                        {copy.actionPrioritiesTitle}
-                      </p>
-                      <p className="mt-0.5 text-xs leading-5 text-secondary">
-                        {copy.actionPrioritiesDescription}
-                      </p>
-                    </div>
-                  </div>
-                  <ol className="grid gap-2 text-[13px] leading-5 text-secondary sm:grid-cols-2">
-                    {actionPriorities.slice(0, 3).map((item, index) => (
-                      <li key={`${index}-${item}`} className="flex items-start gap-2 rounded-xl bg-surface-alpha px-3 py-2">
-                        <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-semibold text-white">
-                          {index + 1}
-                        </span>
-                        <span className="min-w-0">{item}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              )}
 
               <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                 <section
@@ -5026,8 +5020,8 @@ function PlanResultDialog({
                         </div>
                         <p className="max-w-2xl text-sm text-secondary">
                           {isIndonesianAiBrewLanguage(language)
-                            ? 'Ikuti dari atas ke bawah. Detail tambahan hanya dibuka saat perlu.'
-                            : 'Follow top to bottom. Open extra detail only when needed.'}
+                            ? 'Ikuti timer. Angka penting tetap terlihat; detail teknik untuk Pro.'
+                            : 'Follow the timer. Core numbers stay visible; technique detail is for Pro.'}
                         </p>
                         <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-secondary">
                           <span className={resultChipClass}>
@@ -5063,7 +5057,7 @@ function PlanResultDialog({
                       </div>
                     </div>
                     <div className="space-y-2.5">
-                      {workflowGuideSteps.map((step, index) => renderAiBrewSequenceStepCard(plan, step, index, language, guideDensity))}
+                      {workflowGuideSteps.map((step, index) => renderAiBrewSequenceStepCard(plan, step, index, language, guideDensity, !isQuickResult && guideDensity === 'pro'))}
                       {/*
                       {plan.steps.map((step, index) => {
                         const localizedStepLabel = localizeAiBrewStepLabel(step.label, language);
@@ -5445,7 +5439,7 @@ function PlanResultDialog({
                         {flowCurrentCompactCue}
                       </p>
                       {guideDensity === 'pro' && flowCurrentMetrics.detail.length > 0 && (
-                        <details className="group mt-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
+                        <details open={!isQuickResult && guideDensity === 'pro'} className="group mt-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
                           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-primary">
                             <span>{id ? 'Detail teknik' : 'Technique detail'}</span>
                             <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
@@ -5616,6 +5610,7 @@ function PlanResultDialog({
                         )}
                         {guideDensity === 'pro' && (stepDetailPoints.length > 0 || stepMetricGroups.detail.length > 0) && (
                           <details
+                            open={!isQuickResult && guideDensity === 'pro'}
                             className="group mt-2 rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/72 px-3 py-2"
                             data-testid={`ai-brew-flow-step-detail-${index + 1}`}
                           >
@@ -5901,7 +5896,7 @@ function PlanResultDialog({
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('details')}
+              onClick={openTasteFeedback}
               className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
               data-testid="ai-brew-result-action-check-taste"
             >
@@ -8483,41 +8478,6 @@ export function AiBrewPanel({
 
               {renderFeedback(true)}
 
-              {isPro && (
-                <div className="rounded-[1.25rem] border border-blue-500/18 bg-blue-500/[0.07] p-3.5 lg:p-4" data-testid="ai-brew-pro-summary">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">{copy.proMode}</p>
-                      <h4 className="mt-1 text-base font-semibold text-primary">
-                        {isIndonesianAiBrewLanguage(language) ? 'Kontrol lengkap, tetap ringkas.' : 'Full control, kept compact.'}
-                      </h4>
-                    </div>
-                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                      isSwitchDripper && switchSafetyTone === 'caution'
-                        ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
-                        : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-                    }`}>
-                      {isSwitchDripper ? switchSafetyLabel : (isIndonesianAiBrewLanguage(language) ? 'Aman' : 'Safe')}
-                    </span>
-                  </div>
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3 lg:grid-cols-6">
-                    {[
-                      { id: 'brewer', label: copy.dripper, value: selectedDripper?.name || copy.notSpecified },
-                      { id: 'dose', label: copy.dose, value: `${formState.doseG || '15'} g` },
-                      { id: 'target', label: copy.profileTitle, value: selectedTargetProfile ? translateTargetProfileLabel(copy, selectedTargetProfile.id) : copy.notSpecified },
-                      { id: 'water', label: copy.waterSourceTitle, value: formState.waterMode === 'manual' ? copy.waterSelectedManual : (selectedWaterBrand?.shortLabel || copy.waterBrand) },
-                      { id: 'grinder', label: copy.grinder, value: selectedGrinder?.name || copy.notSpecified },
-                      { id: 'control', label: copy.recipe, value: isIndonesianAiBrewLanguage(language) ? 'Auto aman' : 'Safe auto' },
-                    ].map((item) => (
-                      <span key={item.id} className="min-w-0 rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/82 px-2.5 py-2">
-                        <span className="block truncate text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
-                        <span className="block truncate font-semibold text-primary">{item.value}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               <div className={`grid gap-4 ${isPro ? 'xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : ''}`}>
                 <div className="glass-card p-4 sm:p-5">
                   <div className="mb-3 flex items-center gap-2">
@@ -8613,6 +8573,200 @@ export function AiBrewPanel({
                         ))}
                       </div>
                     </div>
+
+                    {isPro && (
+                      <div
+                        className="rounded-[1.1rem] border border-blue-500/18 bg-blue-500/[0.06] p-3"
+                        data-testid="ai-brew-pro-bean-required"
+                      >
+                        <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <Coffee size={15} className="text-blue-500" />
+                              <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
+                                {isIndonesianAiBrewLanguage(language) ? 'Bean Detail' : 'Bean Detail'}
+                              </h4>
+                            </div>
+                            <p className="mt-1 text-xs leading-5 text-secondary">
+                              {isIndonesianAiBrewLanguage(language)
+                                ? 'Wajib untuk Presisi: proses dan varietas membantu target rasa lebih tepat.'
+                                : 'Required for Precision: process and variety help the taste target land better.'}
+                            </p>
+                          </div>
+                          <span className="rounded-full bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
+                            {selectedProcessLabel || copy.notSpecified} · {selectedVarietyLabel || copy.notSpecified}
+                          </span>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div>
+                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.process}</label>
+                            <button
+                              type="button"
+                              onClick={(event) => openPicker('process', event.currentTarget)}
+                              className="glass-input flex h-12 w-full items-center justify-between gap-3 px-4 text-left"
+                              data-testid="ai-brew-process-picker"
+                              aria-haspopup="dialog"
+                              aria-expanded={pickerKind === 'process'}
+                              aria-label={copy.openProcessPicker}
+                            >
+                              <span className="truncate">{selectedProcessLabel}</span>
+                              <ArrowRight size={16} className="shrink-0 text-secondary" />
+                            </button>
+                          </div>
+                          <div>
+                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.variety}</label>
+                            <button
+                              type="button"
+                              onClick={(event) => openPicker('variety', event.currentTarget)}
+                              className="glass-input flex h-12 w-full items-center justify-between gap-3 px-4 text-left"
+                              data-testid="ai-brew-variety-picker"
+                              aria-haspopup="dialog"
+                              aria-expanded={pickerKind === 'variety'}
+                              aria-label={copy.openVarietyPicker}
+                            >
+                              <span className="truncate">{selectedVarietyLabel}</span>
+                              <ArrowRight size={16} className="shrink-0 text-secondary" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {formState.process === CUSTOM_ENTRY_ID && (
+                          <div className="mt-3">
+                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherProcess}</label>
+                            <input
+                              name="ai-brew-process-custom"
+                              type="text"
+                              value={formState.customProcess}
+                              onChange={(event) => updateForm('customProcess', event.target.value)}
+                              aria-label={copy.otherProcess}
+                              className="glass-input h-12 w-full px-4 text-base"
+                              data-testid="ai-brew-process-custom"
+                            />
+                          </div>
+                        )}
+
+                        {formState.variety === CUSTOM_ENTRY_ID && (
+                          <div className="mt-3">
+                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherVariety}</label>
+                            <input
+                              name="ai-brew-variety-custom"
+                              type="text"
+                              value={formState.customVariety}
+                              onChange={(event) => updateForm('customVariety', event.target.value)}
+                              aria-label={copy.otherVariety}
+                              className="glass-input h-12 w-full px-4 text-base"
+                              data-testid="ai-brew-variety-custom"
+                            />
+                          </div>
+                        )}
+
+                        <div className="mt-3 rounded-[1rem] border panel-divider-subtle panel-soft p-3">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                              <h5 className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.beanProfileTitle}</h5>
+                              <p className="mt-1 text-xs leading-5 text-secondary">{copy.beanProfileNeutral}</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setShowBeanProfileEditor((prev) => !prev)}
+                              className="min-h-[44px] rounded-xl bg-[var(--bg-base)] px-3 py-2 text-sm font-medium text-primary"
+                              data-testid="ai-brew-bean-profile-toggle"
+                              aria-expanded={showBeanProfileEditor}
+                            >
+                              {showBeanProfileEditor ? copy.beanProfileHide : copy.beanProfileShow}
+                            </button>
+                          </div>
+
+                          {showBeanProfileEditor ? (
+                            <div className="mt-4 space-y-3.5">
+                              <div className="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                  <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.altitudeMasl}</label>
+                                  <input
+                                    name="ai-brew-bean-altitude"
+                                    type="number"
+                                    min="0"
+                                    max="3200"
+                                    step="10"
+                                    value={formState.altitudeMasl}
+                                    onChange={(event) => updateForm('altitudeMasl', event.target.value)}
+                                    className="glass-input h-12 w-full px-4 text-base"
+                                    data-testid="ai-brew-bean-altitude"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.beanDensity}</label>
+                                  <input
+                                    name="ai-brew-bean-density"
+                                    type="number"
+                                    min="0.55"
+                                    max="0.95"
+                                    step="0.01"
+                                    value={formState.beanDensityGml}
+                                    onChange={(event) => updateForm('beanDensityGml', event.target.value)}
+                                    className="glass-input h-12 w-full px-4 text-base"
+                                    data-testid="ai-brew-bean-density"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.roastDevelopmentTitle}</label>
+                                <div className="grid grid-cols-3 gap-2">
+                                  {ROAST_DEVELOPMENT_OPTIONS.map((option) => {
+                                    const label = option.value === 'underdeveloped'
+                                      ? copy.roastDevelopmentUnderdeveloped
+                                      : option.value === 'balanced'
+                                        ? copy.roastDevelopmentBalanced
+                                        : copy.roastDevelopmentDeveloped;
+                                    return (
+                                      <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => updateForm('roastDevelopment', formState.roastDevelopment === option.value ? '' : option.value)}
+                                        className={`min-h-[44px] rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.roastDevelopment === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
+                                        data-testid={`ai-brew-bean-roast-${option.value}`}
+                                      >
+                                        {label}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                              <div>
+                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.solubilityTitle}</label>
+                                <div className="grid grid-cols-3 gap-2">
+                                  {SOLUBILITY_OPTIONS.map((option) => {
+                                    const label = option.value === 'low'
+                                      ? copy.solubilityLow
+                                      : option.value === 'medium'
+                                        ? copy.solubilityMedium
+                                        : copy.solubilityHigh;
+                                    return (
+                                      <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => updateForm('solubility', formState.solubility === option.value ? '' : option.value)}
+                                        className={`min-h-[44px] rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.solubility === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
+                                        data-testid={`ai-brew-bean-solubility-${option.value}`}
+                                      >
+                                        {label}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                              <div className="rounded-xl bg-[var(--bg-base)] px-3 py-3 text-sm text-secondary" data-testid="ai-brew-bean-profile-summary">
+                                {(buildBeanProfileSummary(formState).replace(' masl', ' m').replace(' g/ml', ' density')) || copy.beanProfileNeutral}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="mt-4 rounded-xl bg-[var(--bg-base)] px-3 py-3 text-sm text-secondary" data-testid="ai-brew-bean-profile-summary">
+                              {buildBeanProfileSummary(formState) || copy.beanProfileNeutral}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -9019,188 +9173,6 @@ export function AiBrewPanel({
                     </div>
                     <div className="mt-3">
                       {pourControlPanel}
-                    </div>
-                  </ProBuilderAccordion>
-
-                  <ProBuilderAccordion
-                    sectionId="bean"
-                    activeSection={activeProSection}
-                    onActiveSectionChange={setActiveProSection}
-                    title={isIndonesianAiBrewLanguage(language) ? 'Bean Detail' : 'Bean Detail'}
-                    summary={`${copy.process}: ${selectedProcessLabel || copy.notSpecified} - ${copy.variety}: ${selectedVarietyLabel || copy.notSpecified}`}
-                    icon={<Coffee size={15} />}
-                  >
-                    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
-                      <div className="space-y-3.5">
-                        <div className="grid gap-4 sm:grid-cols-2">
-                          <div>
-                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.process}</label>
-                            <button
-                              type="button"
-                              onClick={(event) => openPicker('process', event.currentTarget)}
-                              className="glass-input flex h-12 w-full items-center justify-between gap-3 px-4 text-left"
-                              data-testid="ai-brew-process-picker"
-                              aria-haspopup="dialog"
-                              aria-expanded={pickerKind === 'process'}
-                              aria-label={copy.openProcessPicker}
-                            >
-                              <span className="truncate">{selectedProcessLabel}</span>
-                              <ArrowRight size={16} className="shrink-0 text-secondary" />
-                            </button>
-                          </div>
-                          <div>
-                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.variety}</label>
-                            <button
-                              type="button"
-                              onClick={(event) => openPicker('variety', event.currentTarget)}
-                              className="glass-input flex h-12 w-full items-center justify-between gap-3 px-4 text-left"
-                              data-testid="ai-brew-variety-picker"
-                              aria-haspopup="dialog"
-                              aria-expanded={pickerKind === 'variety'}
-                              aria-label={copy.openVarietyPicker}
-                            >
-                              <span className="truncate">{selectedVarietyLabel}</span>
-                              <ArrowRight size={16} className="shrink-0 text-secondary" />
-                            </button>
-                          </div>
-                        </div>
-
-                        {formState.process === CUSTOM_ENTRY_ID && (
-                          <div>
-                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherProcess}</label>
-                            <input
-                              name="ai-brew-process-custom"
-                              type="text"
-                              value={formState.customProcess}
-                              onChange={(event) => updateForm('customProcess', event.target.value)}
-                              aria-label={copy.otherProcess}
-                              className="glass-input h-12 w-full px-4 text-base"
-                              data-testid="ai-brew-process-custom"
-                            />
-                          </div>
-                        )}
-
-                        {formState.variety === CUSTOM_ENTRY_ID && (
-                          <div>
-                            <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherVariety}</label>
-                            <input
-                              name="ai-brew-variety-custom"
-                              type="text"
-                              value={formState.customVariety}
-                              onChange={(event) => updateForm('customVariety', event.target.value)}
-                              aria-label={copy.otherVariety}
-                              className="glass-input h-12 w-full px-4 text-base"
-                              data-testid="ai-brew-variety-custom"
-                            />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div>
-                            <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.beanProfileTitle}</h4>
-                            <p className="mt-1 text-xs leading-5 text-secondary">{copy.beanProfileNeutral}</p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setShowBeanProfileEditor((prev) => !prev)}
-                            className="min-h-[44px] rounded-xl bg-[var(--bg-base)] px-3 py-2 text-sm font-medium text-primary"
-                            data-testid="ai-brew-bean-profile-toggle"
-                            aria-expanded={showBeanProfileEditor}
-                          >
-                            {showBeanProfileEditor ? copy.beanProfileHide : copy.beanProfileShow}
-                          </button>
-                        </div>
-
-                        {showBeanProfileEditor ? (
-                          <div className="mt-4 space-y-3.5">
-                            <div className="grid gap-4 sm:grid-cols-2">
-                              <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.altitudeMasl}</label>
-                                <input
-                                  name="ai-brew-bean-altitude"
-                                  type="number"
-                                  min="0"
-                                  max="3200"
-                                  step="10"
-                                  value={formState.altitudeMasl}
-                                  onChange={(event) => updateForm('altitudeMasl', event.target.value)}
-                                  className="glass-input h-12 w-full px-4 text-base"
-                                  data-testid="ai-brew-bean-altitude"
-                                />
-                              </div>
-                              <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.beanDensity}</label>
-                                <input
-                                  name="ai-brew-bean-density"
-                                  type="number"
-                                  min="0.55"
-                                  max="0.95"
-                                  step="0.01"
-                                  value={formState.beanDensityGml}
-                                  onChange={(event) => updateForm('beanDensityGml', event.target.value)}
-                                  className="glass-input h-12 w-full px-4 text-base"
-                                  data-testid="ai-brew-bean-density"
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.roastDevelopmentTitle}</label>
-                              <div className="grid grid-cols-3 gap-2">
-                                {ROAST_DEVELOPMENT_OPTIONS.map((option) => {
-                                  const label = option.value === 'underdeveloped'
-                                    ? copy.roastDevelopmentUnderdeveloped
-                                    : option.value === 'balanced'
-                                      ? copy.roastDevelopmentBalanced
-                                      : copy.roastDevelopmentDeveloped;
-                                  return (
-                                    <button
-                                      key={option.value}
-                                      type="button"
-                                      onClick={() => updateForm('roastDevelopment', formState.roastDevelopment === option.value ? '' : option.value)}
-                                      className={`min-h-[44px] rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.roastDevelopment === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
-                                      data-testid={`ai-brew-bean-roast-${option.value}`}
-                                    >
-                                      {label}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                            <div>
-                              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.solubilityTitle}</label>
-                              <div className="grid grid-cols-3 gap-2">
-                                {SOLUBILITY_OPTIONS.map((option) => {
-                                  const label = option.value === 'low'
-                                    ? copy.solubilityLow
-                                    : option.value === 'medium'
-                                      ? copy.solubilityMedium
-                                      : copy.solubilityHigh;
-                                  return (
-                                    <button
-                                      key={option.value}
-                                      type="button"
-                                      onClick={() => updateForm('solubility', formState.solubility === option.value ? '' : option.value)}
-                                      className={`min-h-[44px] rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.solubility === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
-                                      data-testid={`ai-brew-bean-solubility-${option.value}`}
-                                    >
-                                      {label}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                            <div className="rounded-xl bg-[var(--bg-base)] px-3 py-3 text-sm text-secondary" data-testid="ai-brew-bean-profile-summary">
-                              {(buildBeanProfileSummary(formState).replace(' masl', ' m').replace(' g/ml', ' density')) || copy.beanProfileNeutral}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="mt-4 rounded-xl bg-[var(--bg-base)] px-3 py-3 text-sm text-secondary" data-testid="ai-brew-bean-profile-summary">
-                            {buildBeanProfileSummary(formState) || copy.beanProfileNeutral}
-                          </div>
-                        )}
-                      </div>
                     </div>
                   </ProBuilderAccordion>
 

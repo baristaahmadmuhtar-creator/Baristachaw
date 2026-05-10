@@ -25,15 +25,18 @@ test('AI Brew mobile result has a compact action bar', () => {
   assert.match(SOURCE, /data-testid="ai-brew-result-action-save"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-action-edit"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-action-check-taste"/);
-  assert.match(SOURCE, /data-testid="ai-brew-result-check-taste"/);
+  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-check-taste"/);
+  assert.match(SOURCE, /openTasteFeedback/);
 });
 
-test('AI Brew Pro mode uses compact summary and controlled accordions', () => {
-  assert.match(SOURCE, /data-testid="ai-brew-pro-summary"/);
+test('AI Brew Pro mode uses visible bean detail and controlled accordions', () => {
+  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-pro-summary"/);
+  assert.match(SOURCE, /data-testid="ai-brew-pro-bean-required"/);
   assert.match(SOURCE, /data-testid=\{`ai-brew-pro-accordion-\$\{sectionId\}`\}/);
-  for (const section of ['recipe', 'bean', 'water', 'grinder', 'method', 'confidence']) {
+  for (const section of ['recipe', 'water', 'grinder', 'method', 'confidence']) {
     assert.match(SOURCE, new RegExp(`sectionId="${section}"`));
   }
+  assert.doesNotMatch(SOURCE, /sectionId="bean"/);
   assert.match(SOURCE, /aria-expanded=\{open\}/);
   assert.match(SOURCE, /activeSection === sectionId/);
 });
@@ -45,6 +48,7 @@ test('AI Brew generated result uses compact tabs before dense detail', () => {
   assert.match(SOURCE, /data-testid="ai-brew-result-detail-panel"/);
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-guide-preview"/);
   assert.match(SOURCE, /setActiveTab\('plan'\)/);
+  assert.match(SOURCE, /setGuideDensity\(isQuickResult \? 'basic' : 'pro'\)/);
   assert.match(SOURCE, /\{ id: 'details', label: copy\.detailTab \}/);
 });
 

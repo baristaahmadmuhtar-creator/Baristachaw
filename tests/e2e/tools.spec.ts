@@ -7,7 +7,7 @@ import { continueAsGuestFromAuthGate } from '../helpers/authGate';
 import type { BrewPlan } from '../../apps/web/src/features/ai-brew/types';
 
 const LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
-const AI_BREW_SEQUENCE_HEADING = /Brew Sequence|Urutan Seduh/i;
+const AI_BREW_SEQUENCE_HEADING = /Brew Guide|Brew Sequence|Panduan Seduh|Urutan Seduh/i;
 const AI_BREW_SAVED_COLLECTION = /Recipe saved to Collection\.|Recipe tersimpan ke Collection\./i;
 const AI_BREW_CLOSE_OUTPUT = /Close planned output|Tutup output plan/i;
 const AI_BREW_EXACT_PROFILE = /Exact profile|Profil exact/i;
@@ -348,7 +348,6 @@ test('ai brew reveals custom process, variety, and water inputs', async ({ page 
   await page.getByTestId('ai-brew-close-quick').click();
 
   await openAiBrewProMode(page);
-  await openAiBrewProSection(page, 'bean');
   await page.getByTestId('ai-brew-process-picker').click();
   await page.getByRole('button', { name: /Select custom process/i }).click();
   await expect(page.getByTestId('ai-brew-process-custom')).toBeVisible();
@@ -761,7 +760,7 @@ test('ai brew pro bean profile updates the analysis state while quick stays mini
   await page.getByTestId('ai-brew-close-quick').click();
 
   await openAiBrewProMode(page);
-  await openAiBrewProSection(page, 'bean');
+  await expect(page.getByTestId('ai-brew-pro-bean-required')).toBeVisible();
   await page.getByTestId('ai-brew-bean-profile-toggle').click();
   await expect(page.getByTestId('ai-brew-bean-altitude')).toBeVisible();
   await expect(page.getByTestId('ai-brew-bean-density')).toBeVisible();

@@ -3549,17 +3549,17 @@ function MasterPickerDialog({
       ariaLabel={ariaLabel || title}
       ariaDescribedBy={hasDescription ? descriptionId : undefined}
       restoreFocusTarget={restoreFocusTarget}
-      className="fixed inset-x-0 bottom-0 z-[111] mx-auto flex w-full max-w-3xl flex-col overflow-hidden rounded-t-[1.8rem] border border-glass bg-[var(--bg-base)]/96 px-4 pb-4 pt-4 shadow-[0_-18px_40px_rgba(0,0,0,0.24)] lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:rounded-[1.8rem] lg:px-5"
+      className="fixed inset-x-0 bottom-0 z-[111] mx-auto flex w-full max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-t-[1.8rem] border border-glass bg-[var(--bg-base)]/96 px-4 pb-4 pt-4 shadow-[0_-18px_40px_rgba(0,0,0,0.24)] lg:bottom-auto lg:top-1/2 lg:max-w-3xl lg:-translate-y-1/2 lg:rounded-[1.8rem] lg:px-5"
       style={{
         maxHeight: 'min(88vh, calc(var(--fullscreen-modal-height, 100dvh) - var(--safe-top, 0px) - 12px))',
         paddingBottom: 'max(1rem, calc(var(--bottom-safe-capped, 0px) + 1rem))',
       }}
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-lg font-semibold text-primary">{title}</h3>
+      <div className="mb-3 flex min-w-0 items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="break-words text-lg font-semibold text-primary">{title}</h3>
           {hasDescription && (
-            <p id={descriptionId} className="text-sm text-secondary">{description}</p>
+            <p id={descriptionId} className="break-words text-sm text-secondary">{description}</p>
           )}
         </div>
         <button
@@ -3594,7 +3594,7 @@ function MasterPickerDialog({
 
       {showProcessCategories && (
         <div
-          className="mb-3 flex gap-2 overflow-x-auto pb-1"
+          className="mb-3 flex max-w-full gap-2 overflow-x-auto pb-1"
           data-testid="ai-brew-process-category-chips"
         >
           {(['all', ...PROCESS_PICKER_CATEGORIES] as const).map((category) => {
@@ -3624,7 +3624,7 @@ function MasterPickerDialog({
 
       <div
         ref={scrollContainerRef}
-        className="overflow-y-auto overscroll-contain rounded-2xl border panel-divider-subtle panel-soft p-2"
+        className="max-w-full overflow-y-auto overflow-x-hidden overscroll-contain rounded-2xl border panel-divider-subtle panel-soft p-2"
         style={{
           maxHeight: 'min(68vh, calc(var(--fullscreen-modal-height, 100dvh) - var(--safe-top, 0px) - var(--bottom-safe-capped, 0px) - 12rem))',
           WebkitOverflowScrolling: 'touch',
@@ -3794,14 +3794,14 @@ function ProBuilderAccordion({
 
   return (
     <section
-      className="rounded-[1.15rem] border panel-divider-subtle panel-soft"
+      className="min-w-0 max-w-full overflow-hidden rounded-[1.15rem] border panel-divider-subtle panel-soft"
       data-testid={`ai-brew-pro-accordion-${sectionId}`}
     >
       <button
         id={triggerId}
         type="button"
         onClick={() => onActiveSectionChange(open ? null : sectionId)}
-        className="flex min-h-[56px] w-full items-center justify-between gap-3 px-3.5 py-3 text-left"
+        className="flex min-h-[56px] min-w-0 w-full items-center justify-between gap-3 px-3.5 py-3 text-left"
         aria-expanded={open}
         aria-controls={panelId}
         data-testid={`ai-brew-pro-accordion-trigger-${sectionId}`}
@@ -3809,7 +3809,7 @@ function ProBuilderAccordion({
         <span className="flex min-w-0 items-start gap-2.5">
           <span className="mt-0.5 shrink-0 text-blue-500">{icon}</span>
           <span className="min-w-0">
-            <span className="block text-sm font-semibold text-primary">{title}</span>
+            <span className="block break-words text-sm font-semibold text-primary">{title}</span>
             <span className="mt-0.5 block truncate text-xs text-secondary">{summary}</span>
           </span>
         </span>
@@ -3820,7 +3820,7 @@ function ProBuilderAccordion({
           id={panelId}
           role="region"
           aria-labelledby={triggerId}
-          className="border-t panel-divider-subtle px-3.5 pb-3.5 pt-3"
+          className="min-w-0 max-w-full overflow-x-clip border-t panel-divider-subtle px-3.5 pb-3.5 pt-3 [overflow-wrap:anywhere]"
           data-testid={`ai-brew-pro-accordion-panel-${sectionId}`}
         >
           {children}
@@ -4269,10 +4269,10 @@ function PlanResultDialog({
       detail: `${localizedGrindSettingReference} - ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}`,
     },
   ];
-  const resultHeaderClass = 'relative rounded-[1.5rem] border panel-divider-subtle panel-soft px-4 pb-4 pt-5 lg:px-5';
-  const resultMetricCardClass = 'rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/84 p-3';
-  const resultChipClass = 'rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-medium text-secondary';
-  const resultActionButtonClass = 'min-h-[44px] w-full rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-center text-[13px] font-medium leading-4 text-primary transition-colors hover:border-blue-500/20 hover:bg-surface-alpha sm:w-auto sm:text-sm sm:whitespace-nowrap';
+  const resultHeaderClass = 'relative min-w-0 max-w-full overflow-hidden rounded-[1.5rem] border panel-divider-subtle panel-soft px-4 pb-4 pt-5 lg:px-5';
+  const resultMetricCardClass = 'min-w-0 max-w-full rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/84 p-3 [overflow-wrap:anywhere]';
+  const resultChipClass = 'max-w-full rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-medium text-secondary [overflow-wrap:anywhere]';
+  const resultActionButtonClass = 'min-h-[44px] min-w-0 w-full rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-center text-[13px] font-medium leading-4 text-primary transition-colors hover:border-blue-500/20 hover:bg-surface-alpha sm:w-auto sm:text-sm sm:whitespace-nowrap';
   const confidenceBadgeClass = (tone: string) => {
     if (tone === 'emerald') return 'border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300';
     if (tone === 'amber') return 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300';
@@ -4394,11 +4394,11 @@ function PlanResultDialog({
       onClose={onClose}
       ariaLabel={copy.summaryTitle}
       ariaDescribedBy={descriptionId}
-      className="fixed inset-0 z-[111] h-[var(--fullscreen-modal-height)] max-h-[var(--fullscreen-modal-height)] overflow-hidden bg-[var(--bg-base)]/98 lg:inset-6 lg:mx-auto lg:h-auto lg:max-h-[calc(var(--fullscreen-modal-height)_-_3rem)] lg:max-w-6xl lg:rounded-[2rem] lg:border lg:border-glass lg:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
+      className="fixed inset-0 z-[111] h-[var(--fullscreen-modal-height)] max-h-[var(--fullscreen-modal-height)] max-w-full overflow-hidden bg-[var(--bg-base)]/98 lg:inset-6 lg:mx-auto lg:h-auto lg:max-h-[calc(var(--fullscreen-modal-height)_-_3rem)] lg:max-w-6xl lg:rounded-[2rem] lg:border lg:border-glass lg:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
     >
-      <div className="flex h-full flex-col" data-testid="ai-brew-result">
+      <div className="flex h-full min-w-0 max-w-full flex-col overflow-hidden" data-testid="ai-brew-result">
         <div
-          className="flex-1 overflow-y-auto overscroll-contain px-4 pb-6 pt-4 lg:px-6 lg:pb-8 lg:pt-6"
+          className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4 pb-6 pt-4 lg:px-6 lg:pb-8 lg:pt-6"
           style={{
             paddingTop: 'calc(16px + var(--safe-top, 0px))',
             paddingBottom: 'calc(28px + var(--bottom-safe-capped, 0px))',
@@ -4417,7 +4417,7 @@ function PlanResultDialog({
               >
                 <X size={18} />
               </button>
-              <div className="pr-12">
+              <div className="min-w-0 pr-12">
                 <div className="mb-2 flex flex-wrap items-center gap-1.5">
                   {plan.deviceProfileMode !== 'exact' && (
                     <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300">
@@ -4449,10 +4449,10 @@ function PlanResultDialog({
                     {aiEngineOnline ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
                   </span>
                 </div>
-                <h3 className="text-lg font-semibold tracking-tight text-primary sm:text-xl">{buildLocalizedPlanRecipeName(plan, language)}</h3>
+                <h3 className="break-words text-lg font-semibold tracking-tight text-primary sm:text-xl">{buildLocalizedPlanRecipeName(plan, language)}</h3>
                 {!isQuickResult && (
                   <div
-                    className="mt-2 flex flex-wrap gap-1.5 text-xs font-semibold text-secondary"
+                    className="mt-2 flex min-w-0 max-w-full flex-wrap gap-1.5 text-xs font-semibold text-secondary"
                     data-testid="ai-brew-result-metric-strip"
                   >
                     <span className={resultChipClass}>{formatRoundedGrams(plan.doseG)}</span>
@@ -4466,7 +4466,7 @@ function PlanResultDialog({
                     ? (id ? 'Hasil Quick AI Brew berisi urutan seduh ringkas dan kontrol barista inti.' : 'Quick AI Brew result with a compact brew sequence and core barista controls.')
                     : `${formatRoundedGrams(plan.doseG)} - ${planHeaderWater} - ${formatGuideTime(plan.totalTimeSeconds)} - ${formatRoundedTemperature(plan.waterTempC)}`}
                 </p>
-                <div className="mt-3 flex flex-wrap gap-1.5" data-testid="ai-brew-confidence-labels">
+                <div className="mt-3 flex min-w-0 max-w-full flex-wrap gap-1.5" data-testid="ai-brew-confidence-labels">
                   <span
                     className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${confidenceBadgeClass('slate')}`}
                     data-testid="ai-brew-result-water-source"
@@ -4502,10 +4502,10 @@ function PlanResultDialog({
                 </div>
                 {(expectedCup || readinessItems.length > 0) && (
                   <div
-                    className="mt-3 rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-2.5 text-xs"
+                    className="mt-3 min-w-0 max-w-full overflow-hidden rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-2.5 text-xs [overflow-wrap:anywhere]"
                     data-testid="ai-brew-expected-cup"
                   >
-                    <div className="flex flex-wrap items-center gap-1.5">
+                    <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                       {expectedCup && (
                         <span className="rounded-full bg-surface-alpha px-2 py-1 font-semibold text-primary">
                           {copy.expectedCupTitle}: {expectedCup.confidence}
@@ -4550,7 +4550,7 @@ function PlanResultDialog({
                 )}
                 {plan.methodFamily === 'hario_switch' && plan.switchPresetLabel && (
                   <div
-                    className="mt-3 rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-3 text-xs"
+                    className="mt-3 min-w-0 max-w-full overflow-hidden rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-3 text-xs [overflow-wrap:anywhere]"
                     data-testid="ai-brew-switch-result-summary"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -4565,7 +4565,7 @@ function PlanResultDialog({
                         {plan.switchCompatibility?.status || 'safe'}
                       </span>
                     </div>
-                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    <div className="mt-2 grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[repeat(2,minmax(0,1fr))]">
                       <div>
                         <p className="font-semibold text-primary">{plan.switchPresetLabel}</p>
                         <p className="mt-1 leading-5 text-secondary">{plan.switchWhy}</p>
@@ -4582,7 +4582,7 @@ function PlanResultDialog({
                     </div>
                   </div>
                 )}
-                <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+                <div className="mt-3 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 sm:flex sm:flex-wrap sm:items-center">
                   <button type="button" onClick={onEditInputs} className={resultActionButtonClass}>
                     {copy.editInputs}
                   </button>
@@ -4619,7 +4619,7 @@ function PlanResultDialog({
                 <div
                   role="tablist"
                   aria-label={copy.summaryTitle}
-                  className="grid w-full grid-cols-4 gap-1.5 rounded-[0.95rem] panel-soft p-1.5 xl:max-w-lg"
+                  className="grid min-w-0 w-full max-w-full grid-cols-[repeat(4,minmax(0,1fr))] gap-1.5 rounded-[0.95rem] panel-soft p-1.5 xl:max-w-lg"
                 >
                   {resultTabs.map((tab) => (
                     <button
@@ -4631,7 +4631,7 @@ function PlanResultDialog({
                       aria-controls={`ai-brew-result-panel-${tab.id}`}
                       tabIndex={activeTab === tab.id ? 0 : -1}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`rounded-[0.8rem] px-2.5 py-2 text-sm font-medium transition-all ${
+                      className={`min-w-0 overflow-hidden rounded-[0.8rem] px-2 py-2 text-xs font-medium leading-4 transition-all sm:px-2.5 sm:text-sm ${
                         activeTab === tab.id
                           ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.2)]'
                           : 'text-secondary hover:text-primary'
@@ -4666,19 +4666,19 @@ function PlanResultDialog({
                 id={activeTabPanelId}
                 role="tabpanel"
                 aria-labelledby={activeTabId}
-                className="grid gap-4"
+                className="grid min-w-0 max-w-full gap-4 overflow-x-clip"
                 data-testid="ai-brew-result-summary-panel"
               >
-                <div className="rounded-[1.25rem] border border-blue-500/18 bg-blue-500/[0.07] p-3.5 lg:p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 max-w-full overflow-hidden rounded-[1.25rem] border border-blue-500/18 bg-blue-500/[0.07] p-3.5 lg:p-4">
+                  <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
                         {copy.planTab}
                       </p>
-                      <h4 className="mt-1 text-base font-semibold text-primary">
+                      <h4 className="mt-1 break-words text-base font-semibold text-primary">
                         {buildLocalizedPlanRecipeName(plan, language)}
                       </h4>
-                      <p className="mt-1 max-w-2xl text-sm leading-5 text-secondary">
+                      <p className="mt-1 max-w-2xl break-words text-sm leading-5 text-secondary">
                         {displaySummary}
                       </p>
                     </div>
@@ -4696,7 +4696,7 @@ function PlanResultDialog({
                           : (id ? 'Perlu review' : 'Needs review')}
                     </span>
                   </div>
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3 lg:grid-cols-6" data-testid="ai-brew-result-summary-metric-strip">
+                  <div className="mt-3 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 text-xs sm:grid-cols-[repeat(3,minmax(0,1fr))] lg:grid-cols-[repeat(6,minmax(0,1fr))]" data-testid="ai-brew-result-summary-metric-strip">
                     {[
                       { id: 'dose', label: copy.dose, value: formatRoundedGrams(plan.doseG) },
                       { id: 'water', label: plan.brewMode === 'iced' ? (id ? 'Input air' : 'Water input') : copy.totalWater, value: planHeaderWater },
@@ -4705,14 +4705,14 @@ function PlanResultDialog({
                       { id: 'temp', label: copy.temp, value: formatRoundedTemperature(plan.waterTempC) },
                       { id: 'grind', label: copy.grind, value: localizedGrindHeadline },
                     ].map((item) => (
-                      <span key={item.id} className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/82 px-2.5 py-2 text-secondary">
+                      <span key={item.id} className="min-w-0 max-w-full rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/82 px-2.5 py-2 text-secondary">
                         <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
-                        <span className="font-semibold text-primary">{item.value}</span>
+                        <span className="block break-words font-semibold text-primary">{item.value}</span>
                       </span>
                     ))}
                   </div>
                   {plan.methodFamily === 'hario_switch' && (
-                    <div className="mt-3 flex flex-wrap gap-1.5 text-xs" data-testid="ai-brew-result-switch-compact">
+                    <div className="mt-3 flex min-w-0 max-w-full flex-wrap gap-1.5 text-xs" data-testid="ai-brew-result-switch-compact">
                       <span className={resultChipClass}>{plan.switchPresetLabel || (id ? 'Preset Switch' : 'Switch preset')}</span>
                       <span className={resultChipClass}>{resultSwitchValvePathLabel}</span>
                       {plan.switchCompatibility?.message && (
@@ -4726,7 +4726,7 @@ function PlanResultDialog({
 
                 {actionPriorities.length > 0 && (
                   <div
-                    className="rounded-[1.1rem] border border-blue-500/18 bg-[var(--bg-base)]/78 p-3"
+                    className="min-w-0 max-w-full overflow-hidden rounded-[1.1rem] border border-blue-500/18 bg-[var(--bg-base)]/78 p-3"
                     data-testid="ai-brew-action-priorities"
                   >
                     <div className="mb-2 flex min-w-0 items-start gap-2">
@@ -4740,7 +4740,7 @@ function PlanResultDialog({
                         </p>
                       </div>
                     </div>
-                    <ol className="grid gap-2 text-[13px] leading-5 text-secondary sm:grid-cols-3">
+                    <ol className="grid grid-cols-[minmax(0,1fr)] gap-2 text-[13px] leading-5 text-secondary sm:grid-cols-[repeat(3,minmax(0,1fr))]">
                       {actionPriorities.slice(0, 3).map((item, index) => (
                         <li key={`${index}-${item}`} className="flex items-start gap-2 rounded-xl bg-surface-alpha px-3 py-2">
                           <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-semibold text-white">
@@ -4772,10 +4772,10 @@ function PlanResultDialog({
                 id={activeTabPanelId}
                 role="tabpanel"
                 aria-labelledby={activeTabId}
-                className="flex flex-col gap-5"
+                className="flex min-w-0 max-w-full flex-col gap-5 overflow-x-clip"
                 data-testid="ai-brew-result-detail-panel"
               >
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 xl:grid-cols-5">
+              <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2.5 sm:grid-cols-[repeat(2,minmax(0,1fr))] xl:grid-cols-[repeat(5,minmax(0,1fr))]">
                 <div className={resultMetricCardClass}>
                   <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.cupOutput}</p>
                   <p className="mt-1 text-xl font-semibold text-primary sm:text-2xl">{formatRoundedMl(plan.estimatedCupOutputMl)}</p>
@@ -5641,10 +5641,10 @@ function PlanResultDialog({
                 id={activeTabPanelId}
                 role="tabpanel"
                 aria-labelledby={activeTabId}
-                className="space-y-5"
+                className="min-w-0 max-w-full space-y-5 overflow-x-clip"
                 data-testid="ai-brew-result-coach-panel"
               >
-              <div className="rounded-[1.4rem] border panel-divider-subtle panel-soft p-4">
+              <div className="min-w-0 max-w-full overflow-hidden rounded-[1.4rem] border panel-divider-subtle panel-soft p-4 [overflow-wrap:anywhere]">
                 <div className="mb-3 flex items-center gap-2">
                   <Brain size={15} className="text-blue-500" />
                   <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.aiCoach}</h4>
@@ -5657,14 +5657,14 @@ function PlanResultDialog({
                     <p>{id ? 'Sebagian data bersifat curated/estimated; gunakan sebagai baseline, bukan klaim final.' : 'Some data is curated/estimated; use it as a baseline, not a final factual claim.'}</p>
                   )}
                 </div>
-                <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
                   {primaryAiAssistActions.map((action) => (
                     <button
                       key={action.mode}
                       type="button"
                       onClick={() => onRunAiCoach(action.mode)}
                       disabled={aiCoachDisabled}
-                      className="rounded-2xl border panel-divider-subtle bg-surface-alpha px-3 py-3 text-left transition-colors hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45"
+                      className="min-w-0 rounded-2xl border panel-divider-subtle bg-surface-alpha px-3 py-3 text-left transition-colors hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45"
                       data-testid={`ai-brew-ai-assist-${action.mode}`}
                     >
                       <p className="text-sm font-semibold text-primary">{action.label}</p>
@@ -5678,14 +5678,14 @@ function PlanResultDialog({
                       <span>{copy.moreAiTools}</span>
                       <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
                     </summary>
-                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <div className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[repeat(2,minmax(0,1fr))]">
                       {advancedAiAssistActions.map((action) => (
                         <button
                           key={action.mode}
                           type="button"
                           onClick={() => onRunAiCoach(action.mode)}
                           disabled={aiCoachDisabled}
-                          className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-3 text-left transition-colors hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45"
+                          className="min-w-0 rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-3 text-left transition-colors hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45"
                           data-testid={`ai-brew-ai-assist-${action.mode}`}
                         >
                           <p className="text-sm font-semibold text-primary">{action.label}</p>
@@ -5734,9 +5734,9 @@ function PlanResultDialog({
                 )}
 
                 {aiResponse && !aiBusy && (
-                  <div className="mt-4 rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/82 p-4">
+                  <div className="mt-4 min-w-0 max-w-full overflow-hidden rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/82 p-4 [overflow-wrap:anywhere]">
                     <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{aiResponse.title}</p>
-                    <div className="chat-markdown prose prose-sm mt-3 max-w-none text-primary prose-headings:text-primary prose-strong:text-primary">
+                    <div className="chat-markdown prose prose-sm mt-3 max-w-none break-words text-primary prose-headings:text-primary prose-strong:text-primary [overflow-wrap:anywhere]">
                       <Suspense fallback={<p className="text-sm text-secondary">{copy.aiBusy}</p>}>
                         <Markdown>{aiResponse.markdown}</Markdown>
                       </Suspense>
@@ -5752,7 +5752,7 @@ function PlanResultDialog({
                 id={activeTabPanelId}
                 role="tabpanel"
                 aria-labelledby={activeTabId}
-                className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.95fr)]"
+                className="grid min-w-0 max-w-full gap-5 overflow-x-clip xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.95fr)]"
               >
               <div className="space-y-5">
                 <div className="rounded-[1.4rem] border panel-divider-subtle panel-soft p-4">
@@ -5865,16 +5865,16 @@ function PlanResultDialog({
           </div>
         </div>
         <div
-          className="shrink-0 border-t panel-divider-subtle bg-[var(--bg-base)]/96 px-3 py-2 backdrop-blur lg:hidden"
+          className="shrink-0 max-w-full overflow-hidden border-t panel-divider-subtle bg-[var(--bg-base)]/96 px-3 py-2 backdrop-blur lg:hidden"
           style={{ paddingBottom: 'calc(8px + var(--bottom-safe-capped, 0px))' }}
           data-testid="ai-brew-result-action-bar"
         >
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-[repeat(3,minmax(0,1fr))] gap-2">
             <button
               type="button"
               onClick={onSaveRecipe}
               disabled={saving || workflowBlocked}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-55"
+              className="inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-55"
               data-testid="ai-brew-result-action-save"
             >
               {saveSuccess ? copy.saved : copy.save}
@@ -5882,7 +5882,7 @@ function PlanResultDialog({
             <button
               type="button"
               onClick={onEditInputs}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
+              className="inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
               data-testid="ai-brew-result-action-edit"
             >
               {copy.editInputs}
@@ -5890,7 +5890,7 @@ function PlanResultDialog({
             <button
               type="button"
               onClick={openTasteFeedback}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
+              className="inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
               data-testid="ai-brew-result-action-check-taste"
             >
               {copy.feedbackTitle}
@@ -6538,6 +6538,7 @@ export function AiBrewPanel({
   const [showQuickSwitchPresetSheet, setShowQuickSwitchPresetSheet] = useState(false);
   const [activeProSection, setActiveProSection] = useState<ProBuilderSectionId | null>(null);
   const switchPresetSheetRef = useRef<HTMLDivElement | null>(null);
+  const switchPresetToggleRef = useRef<HTMLButtonElement | null>(null);
   const generationStartedAtRef = useRef<number | null>(null);
   const aiAssistCacheRef = useRef(new Map<string, { title: string; markdown: string }>());
 
@@ -6705,6 +6706,30 @@ export function AiBrewPanel({
     setActiveFeedback(feedback || null);
     setFeedbackNoteDraft(feedback?.note || '');
   }
+
+  function closeQuickSwitchPresetSheet(restoreFocus = true) {
+    setShowQuickSwitchPresetSheet(false);
+    if (!restoreFocus) return;
+    window.setTimeout(() => {
+      try {
+        switchPresetToggleRef.current?.focus({ preventScroll: true });
+      } catch {
+        switchPresetToggleRef.current?.focus();
+      }
+    }, 0);
+  }
+
+  useEffect(() => {
+    if (!showQuickSwitchPresetSheet) return undefined;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeQuickSwitchPresetSheet();
+    };
+    window.addEventListener('keydown', handleEscape, true);
+    return () => window.removeEventListener('keydown', handleEscape, true);
+  }, [showQuickSwitchPresetSheet]);
 
   const selectedProcessLabel = useMemo(() => {
     if (!catalog) return copy.openPicker;
@@ -8095,29 +8120,29 @@ export function AiBrewPanel({
               switchTeachingMode: preset.teachingMode,
               brewMode: preset.iced ? 'iced' : prev.brewMode,
             }));
-            if (closeAfterSelect) setShowQuickSwitchPresetSheet(false);
+            if (closeAfterSelect) closeQuickSwitchPresetSheet();
           }}
-          className={`min-h-[44px] rounded-xl border p-3 text-left transition-all ${
+          className={`min-h-[44px] min-w-0 max-w-full overflow-hidden rounded-xl border p-3 text-left transition-all ${
             active ? 'border-blue-500/28 bg-blue-500/10 shadow-[0_12px_26px_rgba(37,99,235,0.14)]' : 'border-[var(--panel-border-soft)] bg-[var(--bg-base)] hover:border-blue-500/22'
           }`}
           data-testid={`ai-brew-switch-preset-${preset.id}`}
           aria-pressed={active}
         >
-          <span className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-sm font-semibold text-primary">{presetLabel}</span>
+          <span className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+            <span className="min-w-0 break-words text-sm font-semibold text-primary">{presetLabel}</span>
             {active && <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-semibold text-white">Auto</span>}
           </span>
-          <span className="mt-1 block text-xs leading-5 text-secondary">
+          <span className="mt-1 block text-xs leading-5 text-secondary [overflow-wrap:anywhere]">
             {copy.switchPresetCupShape}: {preset.cupShape}
           </span>
-          <span className="mt-1 block text-xs leading-5 text-secondary">
+          <span className="mt-1 block text-xs leading-5 text-secondary [overflow-wrap:anywhere]">
             {copy.switchPresetBestFor}: {preset.bestFor.slice(0, compact ? 2 : 3).join(', ')}
           </span>
-          <span className="mt-1 block text-xs leading-5 text-secondary">
+          <span className="mt-1 block text-xs leading-5 text-secondary [overflow-wrap:anywhere]">
             {copy.switchPresetRisk}: {preset.easiestMistake}
           </span>
           {!compact && (
-            <span className="mt-1 block text-[11px] leading-4 text-secondary">
+            <span className="mt-1 block text-[11px] leading-4 text-secondary [overflow-wrap:anywhere]">
               {copy.switchPresetSize}: {preset.safeSizeCompatibility.join(' | ')}
             </span>
           )}
@@ -8125,35 +8150,35 @@ export function AiBrewPanel({
       );
     };
     const switchPresetSheet = !isPro && isSwitchDripper && showQuickSwitchPresetSheet ? (
-      <div className="fixed inset-0 z-[140] flex items-end bg-black/35 px-2 pb-2 sm:items-center sm:justify-center sm:p-6" data-testid="ai-brew-switch-preset-sheet-backdrop">
+      <div className="fixed inset-0 z-[140] flex max-w-full items-end overflow-x-hidden bg-black/35 px-2 pb-2 sm:items-center sm:justify-center sm:p-6" data-testid="ai-brew-switch-preset-sheet-backdrop">
         <button
           type="button"
           className="absolute inset-0 cursor-default"
           aria-label={copy.pickerClose}
-          onClick={() => setShowQuickSwitchPresetSheet(false)}
+          onClick={() => closeQuickSwitchPresetSheet()}
         />
         <div
           ref={switchPresetSheetRef}
           role="dialog"
           aria-modal="true"
           aria-label={copy.switchPresetSheetTitle}
-          className="relative z-[1] max-h-[82vh] w-full max-w-2xl overflow-y-auto rounded-[1.4rem] border border-glass bg-[var(--bg-base)] p-4 shadow-[0_-18px_42px_rgba(0,0,0,0.25)]"
+          className="relative z-[1] max-h-[82vh] w-full max-w-[calc(100vw-1rem)] overflow-y-auto overflow-x-hidden rounded-[1.4rem] border border-glass bg-[var(--bg-base)] p-4 shadow-[0_-18px_42px_rgba(0,0,0,0.25)] sm:max-w-2xl"
           data-testid="ai-brew-switch-preset-sheet"
           onKeyDown={(event) => {
             if (event.key !== 'Escape') return;
             event.preventDefault();
             event.stopPropagation();
-            setShowQuickSwitchPresetSheet(false);
+            closeQuickSwitchPresetSheet();
           }}
         >
-          <div className="mb-3 flex items-start justify-between gap-3">
-            <div>
-              <h4 className="text-base font-semibold text-primary">{copy.switchPresetSheetTitle}</h4>
-              <p className="mt-1 text-xs leading-5 text-secondary">{copy.switchPresetSheetSummary}</p>
+          <div className="mb-3 flex min-w-0 items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h4 className="break-words text-base font-semibold text-primary">{copy.switchPresetSheetTitle}</h4>
+              <p className="mt-1 break-words text-xs leading-5 text-secondary">{copy.switchPresetSheetSummary}</p>
             </div>
             <button
               type="button"
-              onClick={() => setShowQuickSwitchPresetSheet(false)}
+              onClick={() => closeQuickSwitchPresetSheet()}
               className="icon-touch-button glass-button"
               aria-label={copy.pickerClose}
             >
@@ -8165,7 +8190,7 @@ export function AiBrewPanel({
               type="button"
               onClick={() => {
                 updateForm('switchPresetId', '');
-                setShowQuickSwitchPresetSheet(false);
+                closeQuickSwitchPresetSheet();
               }}
               className={`min-h-[44px] rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
                 !formState.switchPresetId ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-primary'
@@ -8180,49 +8205,49 @@ export function AiBrewPanel({
               {selectedSwitchSizeLabel}
             </span>
           </div>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[repeat(2,minmax(0,1fr))]">
             {switchPresetOptions.map((preset) => renderSwitchPresetButton(preset, true, true))}
           </div>
         </div>
       </div>
     ) : null;
     const switchPanel = selectedDripper?.methodFamily === 'hario_switch' ? (
-      <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3" data-testid="ai-brew-switch-section">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-          <div>
+      <div className="min-w-0 max-w-full overflow-hidden rounded-[1.1rem] border panel-divider-subtle panel-soft p-3 [overflow-wrap:anywhere]" data-testid="ai-brew-switch-section">
+        <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.switchSectionTitle}</p>
-            <p className="mt-1 text-xs leading-5 text-secondary">{copy.switchSectionSummary}</p>
+            <p className="mt-1 break-words text-xs leading-5 text-secondary">{copy.switchSectionSummary}</p>
           </div>
           <span className="rounded-full bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-secondary">
             {copy.switchHardwareFactOfficial}
           </span>
         </div>
 
-        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4" data-testid="ai-brew-switch-quick-summary">
-          <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+        <div className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[repeat(2,minmax(0,1fr))] lg:grid-cols-[repeat(4,minmax(0,1fr))]" data-testid="ai-brew-switch-quick-summary">
+          <div className="min-w-0 rounded-xl bg-[var(--bg-base)] px-3 py-2">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-tertiary">{copy.switchSelectedSize}</p>
             <p className="mt-1 text-sm font-semibold text-primary" data-testid="ai-brew-switch-selected-size">
               {selectedSwitchSizeLabel}
             </p>
             {selectedSwitchCapacity ? <p className="text-xs text-secondary">{selectedSwitchCapacity} ml</p> : null}
           </div>
-          <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+          <div className="min-w-0 rounded-xl bg-[var(--bg-base)] px-3 py-2">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-tertiary">{copy.dose}</p>
             <p className="mt-1 text-sm font-semibold text-primary">{formatRoundedGrams(parsedDoseG || 0)}</p>
             {selectedSwitchClosedMax ? <p className="text-xs text-secondary">{`closed <= ${selectedSwitchClosedMax} ml`}</p> : null}
           </div>
-          <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+          <div className="min-w-0 rounded-xl bg-[var(--bg-base)] px-3 py-2">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-tertiary">{copy.switchPresetTitle}</p>
             <p className="mt-1 text-sm font-semibold text-primary" data-testid="ai-brew-switch-preset-summary">{selectedSwitchPresetLabel}</p>
           </div>
-          <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2">
+          <div className="min-w-0 rounded-xl bg-[var(--bg-base)] px-3 py-2">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-tertiary">{copy.switchValvePath}</p>
             <p className="mt-1 text-sm font-semibold text-primary" aria-label={switchValvePathLabel}>{switchValvePathLabel}</p>
           </div>
         </div>
 
         <div
-          className={`mt-3 rounded-xl px-3 py-2 text-xs leading-5 ${
+          className={`mt-3 min-w-0 max-w-full rounded-xl px-3 py-2 text-xs leading-5 ${
             switchSafetyTone === 'caution'
               ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
               : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
@@ -8273,21 +8298,21 @@ export function AiBrewPanel({
             </div>
         )}
 
-        <div className="mt-3 rounded-xl bg-[var(--bg-base)] px-3 py-2" data-testid="ai-brew-switch-method-strip">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="mt-3 min-w-0 max-w-full overflow-hidden rounded-xl bg-[var(--bg-base)] px-3 py-2" data-testid="ai-brew-switch-method-strip">
+            <div className="mb-2 flex min-w-0 flex-wrap items-center justify-between gap-2">
               <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.switchPresetTitle}</p>
               <span className="text-[11px] font-medium text-secondary">
                 {isIndonesianAiBrewLanguage(language) ? 'Auto mengikuti target rasa' : 'Auto follows taste target'}
               </span>
             </div>
             <div
-              className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+              className="flex max-w-full gap-2 overflow-x-auto pb-1"
               aria-label={isIndonesianAiBrewLanguage(language) ? 'Pilih metode Hario Switch' : 'Choose Hario Switch method'}
             >
               <button
                 type="button"
                 onClick={() => updateForm('switchPresetId', '')}
-                className={`min-h-[44px] shrink-0 rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
+                className={`min-h-[44px] max-w-[13rem] shrink-0 truncate rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
                   !formState.switchPresetId ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-primary hover:bg-surface-alpha-hover'
                 }`}
                 data-testid="ai-brew-switch-preset-auto-inline"
@@ -8310,7 +8335,7 @@ export function AiBrewPanel({
                         brewMode: preset.iced ? 'iced' : prev.brewMode,
                       }));
                     }}
-                    className={`min-h-[44px] shrink-0 rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
+                    className={`min-h-[44px] max-w-[13rem] shrink-0 truncate rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
                       active ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-primary hover:bg-surface-alpha-hover'
                     }`}
                     data-testid={`ai-brew-switch-preset-inline-${preset.id}`}
@@ -8332,6 +8357,7 @@ export function AiBrewPanel({
             <button
               type="button"
               onClick={() => setShowQuickSwitchPresetSheet(true)}
+              ref={switchPresetToggleRef}
               className="min-h-[44px] rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.2)]"
               data-testid="ai-brew-switch-preset-toggle"
             >
@@ -8432,19 +8458,19 @@ export function AiBrewPanel({
           closeBuilder();
         }}
         ariaLabel={dialogTitle}
-        className="fixed inset-0 z-[111] h-[calc(var(--fullscreen-modal-height)_+_1px)] max-h-[calc(var(--fullscreen-modal-height)_+_1px)] overflow-hidden bg-[var(--bg-base)]/98 lg:inset-6 lg:mx-auto lg:h-auto lg:max-h-[calc(var(--fullscreen-modal-height)_-_3rem)] lg:max-w-5xl lg:rounded-[2rem] lg:border lg:border-glass lg:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
+        className="fixed inset-0 z-[111] h-[calc(var(--fullscreen-modal-height)_+_1px)] max-h-[calc(var(--fullscreen-modal-height)_+_1px)] max-w-full overflow-hidden bg-[var(--bg-base)]/98 lg:inset-6 lg:mx-auto lg:h-auto lg:max-h-[calc(var(--fullscreen-modal-height)_-_3rem)] lg:max-w-5xl lg:rounded-[2rem] lg:border lg:border-glass lg:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
         disableMotionShift
       >
-        <div className="relative flex h-full flex-col" data-testid={`ai-brew-builder-${mode}`}>
+        <div className="relative flex h-full min-w-0 max-w-full flex-col overflow-hidden" data-testid={`ai-brew-builder-${mode}`}>
           <div
-            className="flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-3 lg:px-6 lg:pb-6 lg:pt-6"
+            className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-3 pb-3 pt-3 lg:px-6 lg:pb-6 lg:pt-6"
             style={{
               paddingTop: 'calc(12px + var(--safe-top, 0px))',
               paddingBottom: 'calc(28px + var(--bottom-safe-capped, 0px))',
             }}
           >
-            <div className="space-y-4">
-              <div className="relative rounded-[1.25rem] border panel-divider-subtle bg-surface-alpha/75 px-3.5 pb-3.5 pt-4 lg:px-5 lg:pb-4 lg:pt-5">
+            <div className="min-w-0 max-w-full space-y-4">
+              <div className="relative min-w-0 max-w-full overflow-hidden rounded-[1.25rem] border panel-divider-subtle bg-surface-alpha/75 px-3.5 pb-3.5 pt-4 lg:px-5 lg:pb-4 lg:pt-5">
                 <div className="mx-auto mb-3 h-1.5 w-14 rounded-full bg-[var(--panel-border-soft)] lg:hidden" />
                 <button
                   type="button"
@@ -8456,7 +8482,7 @@ export function AiBrewPanel({
                 >
                   <X size={18} />
                 </button>
-                <div className="pr-12">
+                <div className="min-w-0 pr-12">
                   <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-300">
                     {isPro ? <Brain size={13} /> : <Sparkles size={13} />}
                     <span>{isPro ? copy.proMode : copy.quickMode}</span>
@@ -9583,16 +9609,16 @@ export function AiBrewPanel({
             </div>
           </div>
           <div
-            className="shrink-0 border-t panel-divider-subtle bg-[var(--bg-base)] px-3 py-3 lg:px-6 lg:py-4"
+            className="shrink-0 max-w-full overflow-hidden border-t panel-divider-subtle bg-[var(--bg-base)] px-3 py-3 lg:px-6 lg:py-4"
             style={{ paddingBottom: 'calc(12px + var(--bottom-safe-capped, 0px))' }}
             data-testid="ai-brew-builder-footer"
           >
-            <div className="flex flex-wrap items-center gap-2.5" data-testid="ai-brew-mobile-generate-bar">
+            <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2.5" data-testid="ai-brew-mobile-generate-bar">
               <button
                 type="button"
                 onClick={() => { void handleGeneratePlan(); }}
                 disabled={!catalog || generationBusy || !waterReadyForGeneration}
-                className="inline-flex h-12 min-w-[10rem] flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-[0_10px_26px_rgba(37,99,235,0.24)] transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-55 sm:flex-none"
+                className="inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-[0_10px_26px_rgba(37,99,235,0.24)] transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-55 sm:min-w-[10rem] sm:flex-none"
                 data-testid="ai-brew-generate"
               >
                 {generationBusy ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}

@@ -1839,6 +1839,7 @@ video {
 }
 
 .ai-brew-compact-shell {
+  max-width: 100%;
   overflow-x: clip;
 }
 
@@ -1849,7 +1850,34 @@ video {
 }
 
 .ai-brew-compact-shell button {
+  max-width: 100%;
   touch-action: manipulation;
+}
+
+.ai-brew-compact-shell,
+.ai-brew-compact-shell [data-testid="ai-brew-panel"],
+.ai-brew-compact-shell [data-testid^="ai-brew-builder-"],
+.ai-brew-compact-shell [data-testid="ai-brew-result"],
+.ai-brew-compact-shell [data-testid="ai-brew-switch-section"],
+.ai-brew-compact-shell [data-testid="ai-brew-switch-inline-methods"],
+.ai-brew-compact-shell [data-testid="ai-brew-switch-method-strip"],
+.ai-brew-compact-shell [data-testid="ai-brew-switch-preset-sheet"],
+.ai-brew-compact-shell [data-testid="ai-brew-result-summary-panel"],
+.ai-brew-compact-shell [data-testid="ai-brew-result-guide-panel"],
+.ai-brew-compact-shell [data-testid="ai-brew-result-coach-panel"],
+.ai-brew-compact-shell [data-testid="ai-brew-result-detail-panel"] {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.ai-brew-compact-shell [data-testid="ai-brew-switch-preset-sheet"],
+.ai-brew-compact-shell [data-testid^="ai-brew-pro-accordion-panel-"],
+.ai-brew-compact-shell [data-testid="ai-brew-result-summary-metric-strip"],
+.ai-brew-compact-shell [data-testid="ai-brew-result-switch-compact"],
+.ai-brew-compact-shell [data-testid="ai-brew-result-action-bar"],
+.ai-brew-compact-shell [data-testid="ai-brew-mobile-generate-bar"] {
+  overflow-x: clip;
 }
 
 .ai-brew-compact-shell [data-testid="ai-brew-mobile-generate-bar"],
@@ -1867,6 +1895,18 @@ video {
 
 .ai-brew-compact-shell [data-testid^="ai-brew-pro-accordion-panel-"] {
   overflow-wrap: anywhere;
+}
+
+.ai-brew-compact-shell .chat-markdown,
+.ai-brew-compact-shell .chat-markdown * {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.ai-brew-compact-shell .chat-markdown pre,
+.ai-brew-compact-shell .chat-markdown code {
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 @media (max-width: 640px) {

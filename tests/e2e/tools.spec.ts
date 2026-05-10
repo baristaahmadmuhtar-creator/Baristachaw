@@ -909,8 +909,10 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
       await result.getByTestId('ai-brew-result-tab-flow').click();
       await result.getByTestId('ai-brew-guide-density-pro').click();
       await expect(result.getByTestId('ai-brew-guide-density-pro')).toHaveAttribute('aria-pressed', 'true');
-      await assertTechniqueChips(result.getByTestId('ai-brew-flow-step-2'));
-      await assertTechniqueChips(result.getByTestId('ai-brew-flow-current-step-technique'));
+      await result.getByTestId('ai-brew-flow-step-detail-2').locator('summary').click();
+      await result.locator('details:has([data-testid="ai-brew-flow-current-step-technique-detail"]) summary').click();
+      await assertTechniqueChips(result.getByTestId('ai-brew-flow-step-technique-detail-2'));
+      await assertTechniqueChips(result.getByTestId('ai-brew-flow-current-step-technique-detail'));
       await expect(result.getByTestId('ai-brew-flow-step-2')).toContainText(firstHotTargetText);
     }
 

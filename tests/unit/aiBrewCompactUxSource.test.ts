@@ -21,9 +21,11 @@ test('AI Brew quick mode keeps optional bean detail and AI tools collapsed', () 
 
 test('AI Brew mobile result has a compact action bar', () => {
   assert.match(SOURCE, /data-testid="ai-brew-result-action-bar"/);
-  assert.match(SOURCE, /data-testid="ai-brew-result-action-start"/);
+  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-action-start"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-action-save"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-action-edit"/);
+  assert.match(SOURCE, /data-testid="ai-brew-result-action-check-taste"/);
+  assert.match(SOURCE, /data-testid="ai-brew-result-check-taste"/);
 });
 
 test('AI Brew Pro mode uses compact summary and controlled accordions', () => {
@@ -41,6 +43,7 @@ test('AI Brew generated result uses compact tabs before dense detail', () => {
   assert.match(SOURCE, /data-testid="ai-brew-result-guide-panel"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-coach-panel"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-detail-panel"/);
+  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-guide-preview"/);
   assert.match(SOURCE, /setActiveTab\('plan'\)/);
   assert.match(SOURCE, /\{ id: 'details', label: copy\.detailTab \}/);
 });

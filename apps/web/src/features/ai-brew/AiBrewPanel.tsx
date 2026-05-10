@@ -2941,6 +2941,22 @@ function filterAiBrewStepMetricsForDensity(
   return filtered.length > 0 ? filtered.slice(0, 4) : metrics.slice(0, 2);
 }
 
+function splitAiBrewStepMetrics(
+  metrics: Array<{ label: string; value: string }>,
+) {
+  const core = filterAiBrewStepMetricsForDensity(metrics, 'basic');
+  const coreKeys = new Set(core.map((item) => `${item.label}:${item.value}`));
+  const detail = metrics.filter((item) => !coreKeys.has(`${item.label}:${item.value}`));
+  return { core, detail };
+}
+
+function compactAiBrewInstruction(text: string, maxLength = 132) {
+  const normalized = normalizeAiBrewInstructionText(text);
+  const firstSentence = normalized.split(/(?<=[.!?])\s+/)[0] || normalized;
+  if (firstSentence.length <= maxLength) return firstSentence;
+  return `${firstSentence.slice(0, Math.max(0, maxLength - 3)).trim()}...`;
+}
+
 function renderAiBrewStepMetricChips(
   metrics: Array<{ label: string; value: string }>,
   keyPrefix: string,
@@ -4119,6 +4135,10 @@ function PlanResultDialog({
   const flowCurrentCue = flowCurrentStep
     ? (buildAiBrewStepMethodFocusCue(plan, flowCurrentStep, language) || buildAiBrewStepQuickNote(flowCurrentStep, language))
     : displaySummary;
+  const flowCurrentCompactCue = compactAiBrewInstruction(flowCurrentCue);
+  const flowCurrentMetrics = flowCurrentStep
+    ? splitAiBrewStepMetrics(buildAiBrewStepMetrics(flowCurrentStep, language, plan))
+    : { core: [], detail: [] };
   const quickSetupItems = [
     { id: 'grind', label: copy.grind, value: localizedGrindHeadline },
     {
@@ -4281,6 +4301,8 @@ function PlanResultDialog({
     { label: copy.confidenceWorkflow, value: plan.readinessScores.workflow },
     { label: copy.confidenceCatalog, value: plan.readinessScores.catalog },
   ] : [];
+  const compactExpectedCupItems = expectedCupItems.slice(0, 4);
+  const compactReadinessItems = readinessItems.slice(0, 3);
   const guideDensityToggle = (
     <div className="flex flex-wrap items-center gap-2">
       <div
@@ -4471,44 +4493,62 @@ function PlanResultDialog({
                 </div>
                 {(expectedCup || readinessItems.length > 0) && (
                   <div
-                    className="mt-3 grid gap-2 rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-3 text-xs sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]"
+                    className="mt-3 rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-2.5 text-xs"
                     data-testid="ai-brew-expected-cup"
                   >
-                    {expectedCup && (
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.expectedCupTitle}</p>
-                          <span className="rounded-full bg-surface-alpha px-2 py-0.5 text-[10px] font-semibold text-secondary">
-                            {expectedCup.confidence}
-                          </span>
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {expectedCupItems.map((item) => (
-                            <span key={item.label} className="rounded-full border panel-divider-subtle bg-surface-alpha px-2 py-1 text-secondary">
-                              <span className="mr-1 text-tertiary">{item.label}</span>
-                              <span className="font-semibold text-primary">{item.value}/5</span>
-                            </span>
-                          ))}
-                        </div>
-                        {(expectedCup.warnings[0] || expectedCup.reasons[0]) && (
-                          <p className="mt-2 text-[12px] leading-5 text-secondary">
-                            {localizeAiBrewDynamicText(expectedCup.warnings[0] || expectedCup.reasons[0], language)}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                    {readinessItems.length > 0 && (
-                      <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.confidence}</p>
-                        <div className="mt-2 grid gap-1.5">
-                          {readinessItems.map((item) => (
-                            <div key={item.label} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-                              <span className="truncate text-secondary">{item.label}</span>
-                              <span className="font-semibold text-primary">{item.value}/100</span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {expectedCup && (
+                        <span className="rounded-full bg-surface-alpha px-2 py-1 font-semibold text-primary">
+                          {copy.expectedCupTitle}: {expectedCup.confidence}
+                        </span>
+                      )}
+                      {compactExpectedCupItems.map((item) => (
+                        <span key={item.label} className="rounded-full border panel-divider-subtle bg-surface-alpha px-2 py-1 text-secondary">
+                          <span className="mr-1 text-tertiary">{item.label}</span>
+                          <span className="font-semibold text-primary">{item.value}/5</span>
+                        </span>
+                      ))}
+                      {compactReadinessItems.map((item) => (
+                        <span key={item.label} className="rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2 py-1 text-secondary">
+                          <span className="mr-1 text-tertiary">{item.label}</span>
+                          <span className="font-semibold text-primary">{item.value}</span>
+                        </span>
+                      ))}
+                    </div>
+                    {(expectedCupItems.length > compactExpectedCupItems.length || readinessItems.length > compactReadinessItems.length || expectedCup?.warnings[0] || expectedCup?.reasons[0]) && (
+                      <details className="group mt-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-primary">
+                          <span>{id ? 'Detail prediksi & keyakinan' : 'Prediction & confidence detail'}</span>
+                          <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
+                        </summary>
+                        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                          {expectedCup && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {expectedCupItems.map((item) => (
+                                <span key={item.label} className="rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2 py-1 text-secondary">
+                                  <span className="mr-1 text-tertiary">{item.label}</span>
+                                  <span className="font-semibold text-primary">{item.value}/5</span>
+                                </span>
+                              ))}
+                              {(expectedCup.warnings[0] || expectedCup.reasons[0]) && (
+                                <p className="w-full text-[12px] leading-5 text-secondary">
+                                  {localizeAiBrewDynamicText(expectedCup.warnings[0] || expectedCup.reasons[0], language)}
+                                </p>
+                              )}
                             </div>
-                          ))}
+                          )}
+                          {readinessItems.length > 0 && (
+                            <div className="grid gap-1.5">
+                              {readinessItems.map((item) => (
+                                <div key={item.label} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                                  <span className="truncate text-secondary">{item.label}</span>
+                                  <span className="font-semibold text-primary">{item.value}/100</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      </div>
+                      </details>
                     )}
                   </div>
                 )}
@@ -4574,57 +4614,6 @@ function PlanResultDialog({
                     >
                       {copy.flowTab}
                     </button>
-                  )}
-                </div>
-                <div
-                  className="mt-3 rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/72 p-2.5"
-                  data-testid="ai-brew-ai-assist-actions"
-                >
-                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.aiGenerateBrief}</p>
-                    <p className="text-xs text-secondary">{copy.coachCostHint}</p>
-                  </div>
-                  <div className="grid gap-2 sm:grid-cols-3">
-                    {primaryAiAssistActions.map((action) => (
-                      <button
-                        key={action.mode}
-                        type="button"
-                        onClick={() => {
-                          setActiveTab('coach');
-                          onRunAiCoach(action.mode);
-                        }}
-                        disabled={aiCoachDisabled}
-                        className="rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2 text-left text-sm font-semibold text-primary transition-colors hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45"
-                        data-testid={`ai-brew-ai-assist-${action.mode}`}
-                      >
-                        {aiBusy === action.mode ? copy.aiEngineWorkingOnline : action.label}
-                      </button>
-                    ))}
-                  </div>
-                  {advancedAiAssistActions.length > 0 && (
-                    <details className="group mt-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
-                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-primary">
-                        <span>{copy.moreAiTools}</span>
-                        <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
-                      </summary>
-                      <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                        {advancedAiAssistActions.map((action) => (
-                          <button
-                            key={action.mode}
-                            type="button"
-                            onClick={() => {
-                              setActiveTab('coach');
-                              onRunAiCoach(action.mode);
-                            }}
-                            disabled={aiCoachDisabled}
-                            className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-left text-sm font-semibold text-primary transition-colors hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45"
-                            data-testid={`ai-brew-ai-assist-${action.mode}`}
-                          >
-                            {aiBusy === action.mode ? copy.aiEngineWorkingOnline : action.label}
-                          </button>
-                        ))}
-                      </div>
-                    </details>
                   )}
                 </div>
               </div>
@@ -4714,13 +4703,12 @@ function PlanResultDialog({
                   <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3 lg:grid-cols-6" data-testid="ai-brew-result-summary-metric-strip">
                     {[
                       { id: 'dose', label: copy.dose, value: formatRoundedGrams(plan.doseG) },
-                      { id: 'water', label: plan.brewMode === 'iced' ? copy.hotConcentrate : copy.totalWater, value: methodBrief.primaryValue },
-                      ...(plan.iceMl > 0 ? [{ id: 'ice', label: copy.ice, value: formatRoundedGrams(plan.iceMl) }] : []),
+                      { id: 'water', label: plan.brewMode === 'iced' ? (id ? 'Input air' : 'Water input') : copy.totalWater, value: planHeaderWater },
                       { id: 'ratio', label: copy.finalRatio, value: `1:${formatBrewRatio(plan.finalBeverageRatio)}` },
+                      { id: 'time', label: copy.time, value: formatGuideTime(plan.totalTimeSeconds) },
                       { id: 'temp', label: copy.temp, value: formatRoundedTemperature(plan.waterTempC) },
                       { id: 'grind', label: copy.grind, value: localizedGrindHeadline },
-                      { id: 'time', label: copy.time, value: formatGuideTime(plan.totalTimeSeconds) },
-                    ].slice(0, 6).map((item) => (
+                    ].map((item) => (
                       <span key={item.id} className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/82 px-2.5 py-2 text-secondary">
                         <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
                         <span className="font-semibold text-primary">{item.value}</span>
@@ -4740,45 +4728,25 @@ function PlanResultDialog({
                   )}
                 </div>
 
-                <div className="rounded-[1.2rem] border panel-divider-subtle panel-soft p-3.5" data-testid="ai-brew-result-guide-preview">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <Waves size={16} className="text-blue-500" />
-                      <h4 className="text-sm font-semibold text-primary">{copy.flowTab}</h4>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('flow')}
-                      className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
-                      data-testid="ai-brew-result-open-guide"
-                    >
-                      {copy.flowTab}
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2">
-                    {workflowGuideSteps.slice(0, 3).map((step, index) => {
-                      const stepMetrics = filterAiBrewStepMetricsForDensity(buildAiBrewStepMetrics(step, language, plan), 'basic');
-                      return (
-                        <div key={`summary-step-${step.id}`} className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/72 px-3 py-2.5" data-testid={`ai-brew-result-summary-step-${index + 1}`}>
-                          <div className="flex flex-wrap items-start justify-between gap-2">
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-primary">
-                                {index + 1}. {formatGuideTime(step.startSeconds)} - {localizeAiBrewStepLabel(step.label, language)}
-                              </p>
-                              <p className="mt-0.5 text-sm text-secondary">{buildAiBrewStepPrimaryCue(step, language, plan)}</p>
-                            </div>
-                            <span className="rounded-full bg-surface-alpha px-2.5 py-1 text-[11px] font-semibold text-primary">
-                              {buildAiBrewStepTargetCue(step, language, plan)}
-                            </span>
-                          </div>
-                          {renderAiBrewStepMetricChips(stepMetrics, `${step.id}-summary`, {
-                            className: 'mt-2 flex flex-wrap gap-1.5',
-                            testId: `ai-brew-result-summary-step-technique-${index + 1}`,
-                          })}
-                        </div>
-                      );
-                    })}
-                  </div>
+                <div className="grid gap-2 sm:grid-cols-2" data-testid="ai-brew-result-summary-actions">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('flow')}
+                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.2)]"
+                    data-testid="ai-brew-result-open-guide"
+                  >
+                    <Play size={15} />
+                    {id ? 'Mulai panduan seduh' : 'Start brew guide'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('details')}
+                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-4 py-2.5 text-sm font-semibold text-primary"
+                    data-testid="ai-brew-result-check-taste"
+                  >
+                    <Sparkles size={15} />
+                    {id ? 'Cek rasa' : 'Taste check'}
+                  </button>
                 </div>
               </div>
             )}
@@ -5421,7 +5389,7 @@ function PlanResultDialog({
                           : displaySummary}
                       </p>
                       {flowCurrentStep && renderAiBrewStepMetricChips(
-                        buildAiBrewStepMetrics(flowCurrentStep, language, plan),
+                        flowCurrentMetrics.core,
                         `${flowCurrentStep.id}-active`,
                         {
                           className: 'mt-3 flex flex-wrap gap-1.5',
@@ -5474,8 +5442,20 @@ function PlanResultDialog({
                         </div>
                       )}
                       <p className="mt-3 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">
-                        {flowCurrentCue}
+                        {flowCurrentCompactCue}
                       </p>
+                      {guideDensity === 'pro' && flowCurrentMetrics.detail.length > 0 && (
+                        <details className="group mt-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
+                          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-primary">
+                            <span>{id ? 'Detail teknik' : 'Technique detail'}</span>
+                            <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
+                          </summary>
+                          {renderAiBrewStepMetricChips(flowCurrentMetrics.detail, `${flowCurrentStep?.id || 'current'}-active-detail`, {
+                            className: 'mt-2 flex flex-wrap gap-1.5',
+                            testId: 'ai-brew-flow-current-step-technique-detail',
+                          })}
+                        </details>
+                      )}
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">
@@ -5588,9 +5568,10 @@ function PlanResultDialog({
                     const quickNote = buildAiBrewStepQuickNote(step, language);
                     const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
                     const activeCue = methodFocusCue || quickNote;
-                    const showStepNote = state === 'current' && Boolean(activeCue);
+                    const compactActiveCue = compactAiBrewInstruction(activeCue);
+                    const showStepNote = state === 'current' && Boolean(compactActiveCue);
                     const stepDetailPoints = buildAiBrewStepDetailPoints(plan, step, index, language);
-                    const stepMetrics = filterAiBrewStepMetricsForDensity(buildAiBrewStepMetrics(step, language, plan), guideDensity);
+                    const stepMetricGroups = splitAiBrewStepMetrics(buildAiBrewStepMetrics(step, language, plan));
 
                     return (
                       <div
@@ -5626,14 +5607,14 @@ function PlanResultDialog({
                             </span>
                           </div>
                         </div>
-                        {renderAiBrewStepMetricChips(stepMetrics, `${step.id}-flow`, {
+                        {renderAiBrewStepMetricChips(stepMetricGroups.core, `${step.id}-flow`, {
                           className: 'mt-2 flex flex-wrap gap-1.5',
                           testId: isQuickResult ? `ai-brew-quick-step-technique-${index + 1}` : `ai-brew-flow-step-technique-${index + 1}`,
                         })}
                         {showStepNote && (
-                          <p className="mt-2 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">{activeCue}</p>
+                          <p className="mt-2 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">{compactActiveCue}</p>
                         )}
-                        {guideDensity === 'pro' && stepDetailPoints.length > 0 && (
+                        {guideDensity === 'pro' && (stepDetailPoints.length > 0 || stepMetricGroups.detail.length > 0) && (
                           <details
                             className="group mt-2 rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/72 px-3 py-2"
                             data-testid={`ai-brew-flow-step-detail-${index + 1}`}
@@ -5643,6 +5624,14 @@ function PlanResultDialog({
                               <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
                             </summary>
                             <ul className="mt-2.5 space-y-2 text-sm leading-5 text-secondary">
+                              {stepMetricGroups.detail.length > 0 && (
+                                <li className="block">
+                                  {renderAiBrewStepMetricChips(stepMetricGroups.detail, `${step.id}-flow-detail`, {
+                                    className: 'flex flex-wrap gap-1.5',
+                                    testId: `ai-brew-flow-step-technique-detail-${index + 1}`,
+                                  })}
+                                </li>
+                              )}
                               {stepDetailPoints.map((point) => (
                                 <li key={`${step.id}-flow-${point}`} className="flex items-start gap-2">
                                   <span className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400" />
@@ -5688,6 +5677,7 @@ function PlanResultDialog({
                       onClick={() => onRunAiCoach(action.mode)}
                       disabled={aiCoachDisabled}
                       className="rounded-2xl border panel-divider-subtle bg-surface-alpha px-3 py-3 text-left transition-colors hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45"
+                      data-testid={`ai-brew-ai-assist-${action.mode}`}
                     >
                       <p className="text-sm font-semibold text-primary">{action.label}</p>
                       <p className="mt-1 text-xs leading-5 text-secondary">{action.hint}</p>
@@ -5708,6 +5698,7 @@ function PlanResultDialog({
                           onClick={() => onRunAiCoach(action.mode)}
                           disabled={aiCoachDisabled}
                           className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-3 text-left transition-colors hover:bg-surface-alpha-hover disabled:cursor-not-allowed disabled:opacity-45"
+                          data-testid={`ai-brew-ai-assist-${action.mode}`}
                         >
                           <p className="text-sm font-semibold text-primary">{action.label}</p>
                           <p className="mt-1 text-xs leading-5 text-secondary">{action.hint}</p>
@@ -5893,19 +5884,9 @@ function PlanResultDialog({
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
-              onClick={flowRunning ? pauseFlowTimer : startFlowTimer}
-              disabled={workflowBlocked}
-              className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-55"
-              data-testid="ai-brew-result-action-start"
-            >
-              {flowRunning ? <Pause size={14} /> : <Play size={14} />}
-              {flowRunning ? copy.flowPause : copy.flowStart}
-            </button>
-            <button
-              type="button"
               onClick={onSaveRecipe}
               disabled={saving || workflowBlocked}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary disabled:cursor-not-allowed disabled:opacity-55"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-55"
               data-testid="ai-brew-result-action-save"
             >
               {saveSuccess ? copy.saved : copy.save}
@@ -5917,6 +5898,14 @@ function PlanResultDialog({
               data-testid="ai-brew-result-action-edit"
             >
               {copy.editInputs}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('details')}
+              className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
+              data-testid="ai-brew-result-action-check-taste"
+            >
+              {copy.feedbackTitle}
             </button>
           </div>
         </div>

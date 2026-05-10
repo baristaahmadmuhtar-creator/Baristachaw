@@ -6,6 +6,8 @@ const SOURCE = readFileSync('apps/web/src/features/ai-brew/AiBrewPanel.tsx', 'ut
 
 test('AI Brew quick mode keeps Switch setup compact and single-source-of-truth', () => {
   assert.match(SOURCE, /data-testid="ai-brew-switch-preset-toggle"/);
+  assert.match(SOURCE, /data-testid="ai-brew-switch-method-strip"/);
+  assert.match(SOURCE, /data-testid="ai-brew-switch-preset-auto-inline"/);
   assert.match(SOURCE, /data-testid="ai-brew-switch-selected-size"/);
   assert.match(SOURCE, /data-testid="ai-brew-dose-shortcuts"/);
   assert.doesNotMatch(SOURCE, /data-testid=\{`ai-brew-switch-dose-/);
@@ -32,6 +34,8 @@ test('AI Brew mobile result has a compact action bar', () => {
 test('AI Brew Pro mode uses visible bean detail and controlled accordions', () => {
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-pro-summary"/);
   assert.match(SOURCE, /data-testid="ai-brew-pro-bean-required"/);
+  assert.match(SOURCE, /data-testid="ai-brew-switch-inline-methods"/);
+  assert.match(SOURCE, /isPro && isSwitchDripper/);
   assert.match(SOURCE, /data-testid=\{`ai-brew-pro-accordion-\$\{sectionId\}`\}/);
   for (const section of ['recipe', 'water', 'grinder', 'method', 'confidence']) {
     assert.match(SOURCE, new RegExp(`sectionId="${section}"`));
@@ -47,6 +51,7 @@ test('AI Brew generated result uses compact tabs before dense detail', () => {
   assert.match(SOURCE, /data-testid="ai-brew-result-coach-panel"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-detail-panel"/);
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-guide-preview"/);
+  assert.doesNotMatch(SOURCE, /expectedCupItems\.map\(\(item\) =>/);
   assert.match(SOURCE, /setActiveTab\('plan'\)/);
   assert.match(SOURCE, /setGuideDensity\(isQuickResult \? 'basic' : 'pro'\)/);
   assert.match(SOURCE, /\{ id: 'details', label: copy\.detailTab \}/);

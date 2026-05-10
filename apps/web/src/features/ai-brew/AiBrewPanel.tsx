@@ -4518,26 +4518,19 @@ function PlanResultDialog({
                         </span>
                       ))}
                     </div>
-                    {(expectedCupItems.length > compactExpectedCupItems.length || readinessItems.length > 0 || expectedCup?.warnings[0] || expectedCup?.reasons[0]) && (
+                    {(readinessItems.length > 0 || expectedCup?.warnings[0] || expectedCup?.reasons[0]) && (
                       <details className="group mt-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-primary">
                           <span>{id ? 'Detail prediksi & keyakinan' : 'Prediction & confidence detail'}</span>
                           <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
                         </summary>
                         <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                          {expectedCup && (
-                            <div className="flex flex-wrap gap-1.5">
-                              {expectedCupItems.map((item) => (
-                                <span key={item.label} className="rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2 py-1 text-secondary">
-                                  <span className="mr-1 text-tertiary">{item.label}</span>
-                                  <span className="font-semibold text-primary">{item.value}/5</span>
-                                </span>
-                              ))}
-                              {(expectedCup.warnings[0] || expectedCup.reasons[0]) && (
-                                <p className="w-full text-[12px] leading-5 text-secondary">
-                                  {localizeAiBrewDynamicText(expectedCup.warnings[0] || expectedCup.reasons[0], language)}
-                                </p>
-                              )}
+                          {(expectedCup?.warnings[0] || expectedCup?.reasons[0]) && (
+                            <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-[12px] leading-5 text-secondary">
+                              <p className="font-semibold text-primary">{copy.expectedCupTitle}</p>
+                              <p className="mt-1">
+                                {localizeAiBrewDynamicText((expectedCup?.warnings[0] || expectedCup?.reasons[0]) ?? '', language)}
+                              </p>
                             </div>
                           )}
                           {readinessItems.length > 0 && (
@@ -8281,6 +8274,58 @@ export function AiBrewPanel({
         )}
 
         {!isPro ? (
+          <div className="mt-3 rounded-xl bg-[var(--bg-base)] px-3 py-2" data-testid="ai-brew-switch-method-strip">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.switchPresetTitle}</p>
+              <span className="text-[11px] font-medium text-secondary">
+                {isIndonesianAiBrewLanguage(language) ? 'Auto mengikuti target rasa' : 'Auto follows taste target'}
+              </span>
+            </div>
+            <div
+              className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+              aria-label={isIndonesianAiBrewLanguage(language) ? 'Pilih metode Hario Switch' : 'Choose Hario Switch method'}
+            >
+              <button
+                type="button"
+                onClick={() => updateForm('switchPresetId', '')}
+                className={`min-h-[44px] shrink-0 rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
+                  !formState.switchPresetId ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-primary hover:bg-surface-alpha-hover'
+                }`}
+                data-testid="ai-brew-switch-preset-auto-inline"
+                aria-pressed={!formState.switchPresetId}
+              >
+                {copy.switchAutoPreset}
+              </button>
+              {switchPresetOptions.map((preset) => {
+                const active = formState.switchPresetId === preset.id;
+                const presetLabel = isIndonesianAiBrewLanguage(language) ? preset.labelId || preset.label : preset.label;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => {
+                      setFormState((prev) => ({
+                        ...prev,
+                        switchPresetId: preset.id as SwitchPublicPresetId,
+                        switchTeachingMode: preset.teachingMode,
+                        brewMode: preset.iced ? 'iced' : prev.brewMode,
+                      }));
+                    }}
+                    className={`min-h-[44px] shrink-0 rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
+                      active ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-primary hover:bg-surface-alpha-hover'
+                    }`}
+                    data-testid={`ai-brew-switch-preset-inline-${preset.id}`}
+                    aria-pressed={active}
+                  >
+                    {presetLabel}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
+        {!isPro ? (
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[var(--bg-base)] px-3 py-2">
             <div className="min-w-0">
               <p className="text-xs font-semibold text-primary">{copy.quickSummaryAuto}</p>
@@ -8809,6 +8854,11 @@ export function AiBrewPanel({
                         </button>
                       </div>
                     </div>
+                    {isPro && isSwitchDripper ? (
+                      <div data-testid="ai-brew-switch-inline-methods">
+                        {switchPanel}
+                      </div>
+                    ) : null}
 
                     <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3">
                       <div className="mb-3 flex items-center gap-2">
@@ -9220,7 +9270,6 @@ export function AiBrewPanel({
                     icon={<Waves size={15} />}
                   >
                     <div className="space-y-3">
-                      {switchPanel}
                       {methodOptionPanel}
                     </div>
                   </ProBuilderAccordion>

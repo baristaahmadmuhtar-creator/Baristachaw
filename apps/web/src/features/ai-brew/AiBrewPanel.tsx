@@ -8273,8 +8273,7 @@ export function AiBrewPanel({
             </div>
         )}
 
-        {!isPro ? (
-          <div className="mt-3 rounded-xl bg-[var(--bg-base)] px-3 py-2" data-testid="ai-brew-switch-method-strip">
+        <div className="mt-3 rounded-xl bg-[var(--bg-base)] px-3 py-2" data-testid="ai-brew-switch-method-strip">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.switchPresetTitle}</p>
               <span className="text-[11px] font-medium text-secondary">
@@ -8323,7 +8322,6 @@ export function AiBrewPanel({
               })}
             </div>
           </div>
-        ) : null}
 
         {!isPro ? (
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[var(--bg-base)] px-3 py-2">
@@ -9462,7 +9460,6 @@ export function AiBrewPanel({
                           </div>
 
                           {pourControlPanel}
-                          {switchPanel}
                           {methodOptionPanel}
 
                           <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3">

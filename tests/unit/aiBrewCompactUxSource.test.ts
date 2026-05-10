@@ -36,6 +36,7 @@ test('AI Brew Pro mode uses visible bean detail and controlled accordions', () =
   assert.match(SOURCE, /data-testid="ai-brew-pro-bean-required"/);
   assert.match(SOURCE, /data-testid="ai-brew-switch-inline-methods"/);
   assert.match(SOURCE, /isPro && isSwitchDripper/);
+  assert.doesNotMatch(SOURCE, /\{switchPanel\}\s*\{methodOptionPanel\}/);
   assert.match(SOURCE, /data-testid=\{`ai-brew-pro-accordion-\$\{sectionId\}`\}/);
   for (const section of ['recipe', 'water', 'grinder', 'method', 'confidence']) {
     assert.match(SOURCE, new RegExp(`sectionId="${section}"`));

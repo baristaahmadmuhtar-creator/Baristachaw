@@ -48,6 +48,11 @@ function writeVersionedStorage<T>(key: string, payload: T) {
   }
 }
 
+function hasRequiredProductionDrippers(snapshot: AiBrewCatalog) {
+  const dripperIds = new Set(snapshot.drippers.map((item) => item.id));
+  return ['hario-switch-02', 'hario-switch-03', 'mugen-x-switch'].every((id) => dripperIds.has(id));
+}
+
 export function loadAiBrewFormDraft<T>(fallback: T): T {
   try {
     const raw = localStorage.getItem(AI_BREW_FORM_STORAGE_KEY);
@@ -82,6 +87,7 @@ export function loadCachedAiBrewCatalogSnapshot(): AiBrewCatalog | null {
   ) {
     return null;
   }
+  if (!hasRequiredProductionDrippers(snapshot)) return null;
   return snapshot;
 }
 

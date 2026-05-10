@@ -6765,6 +6765,20 @@ test('ai brew catalog snapshot storage rejects stale snapshots that miss target 
   assert.equal(loadCachedAiBrewCatalogSnapshot(), null);
 });
 
+test('ai brew catalog snapshot storage rejects stale snapshots that miss exact Switch variants', () => {
+  installLocalStorageMock();
+  localStorage.setItem('BARISTACHAW_AI_BREW_CATALOG_SNAPSHOT_V5', JSON.stringify({
+    schemaVersion: 5,
+    savedAt: Date.now(),
+    payload: {
+      ...catalog,
+      drippers: catalog.drippers.filter((item) => item.id !== 'hario-switch-03'),
+    },
+  }));
+
+  assert.equal(loadCachedAiBrewCatalogSnapshot(), null);
+});
+
 test('last generated brew plan storage restores matching catalog versions only', () => {
   installLocalStorageMock();
   const plan = buildAiBrewPlan({

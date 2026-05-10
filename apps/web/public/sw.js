@@ -1,5 +1,5 @@
-const SHELL_CACHE = 'baristachaw-shell-v20';
-const API_CACHE = 'baristachaw-api-v20';
+const SHELL_CACHE = 'baristachaw-shell-v21';
+const API_CACHE = 'baristachaw-api-v21';
 
 const SHELL_ASSETS = [
   '/',
@@ -91,6 +91,21 @@ async function cacheFirstStatic(request) {
   return response;
 }
 
+async function networkFirstStatic(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok && request.method === 'GET') {
+      const cache = await caches.open(SHELL_CACHE);
+      await cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    return Response.error();
+  }
+}
+
 async function networkFirstNavigation(request) {
   try {
     const response = await fetch(request);
@@ -120,6 +135,11 @@ self.addEventListener('fetch', (event) => {
 
   if (request.mode === 'navigate') {
     event.respondWith(networkFirstNavigation(request));
+    return;
+  }
+
+  if (url.pathname.startsWith('/data/ai-brew/') || url.pathname.startsWith('/data/catalog/')) {
+    event.respondWith(networkFirstStatic(request));
     return;
   }
 

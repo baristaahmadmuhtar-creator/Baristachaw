@@ -50,7 +50,11 @@ function writeVersionedStorage<T>(key: string, payload: T) {
 
 function hasRequiredProductionDrippers(snapshot: AiBrewCatalog) {
   const dripperIds = new Set(snapshot.drippers.map((item) => item.id));
-  return ['hario-switch-02', 'hario-switch-03', 'mugen-x-switch'].every((id) => dripperIds.has(id));
+  const visibleLegacySwitch = snapshot.drippers.some((item) => (
+    item.id === 'hario-switch' && (!item.hidden || !item.deprecated)
+  ));
+  return !visibleLegacySwitch
+    && ['hario-switch-02', 'hario-switch-03', 'mugen-x-switch'].every((id) => dripperIds.has(id));
 }
 
 export function loadAiBrewFormDraft<T>(fallback: T): T {

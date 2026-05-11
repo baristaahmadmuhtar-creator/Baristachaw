@@ -1929,6 +1929,45 @@ test('production Hario Switch presets choose safe defaults and preserve programm
   assert.match(quickDefault.switchWhy || '', /closed|sweetness|open/i);
   assert.ok((quickDefault.workflowGuideSteps || []).some((step) => step.techniqueChips.some((chip) => chip.key === 'programme')));
 
+  const brightAuto = buildAiBrewPlan({
+    ...base,
+    targetProfileId: 'floral_transparent',
+    process: 'washed',
+  }, productionCatalog);
+  assert.equal(brightAuto.switchPresetId, 'hybrid_bright_clean');
+  assert.equal(brightAuto.methodProgramme, 'percolation_then_immersion');
+  assert.ok(brightAuto.steps.filter((step) => step.pourVolumeMl > 0).some((step) => step.valveState === 'open'));
+  assert.ok(brightAuto.steps.filter((step) => step.pourVolumeMl > 0).some((step) => step.valveState === 'closed'));
+
+  const sweetAuto = buildAiBrewPlan({
+    ...base,
+    targetProfileId: 'more_sweetness',
+    process: 'washed',
+  }, productionCatalog);
+  assert.equal(sweetAuto.switchPresetId, 'immersion_sweet');
+  assert.ok(sweetAuto.steps.filter((step) => step.pourVolumeMl > 0).length >= 2);
+
+  const bodyAuto = buildAiBrewPlan({
+    ...base,
+    doseG: '12',
+    targetProfileId: 'dense_comforting',
+    process: 'wet_hulled',
+  }, productionCatalog);
+  assert.equal(bodyAuto.switchPresetId, 'immersion_heavy_body');
+  assert.equal(bodyAuto.workflowValidation?.status, 'ready');
+
+  const switch02LargeAuto = buildAiBrewPlan({
+    ...base,
+    dripperId: 'hario-switch-02',
+    doseG: '20',
+    targetWaterMl: '300',
+    targetProfileId: 'dense_comforting',
+    process: 'wet_hulled',
+  }, productionCatalog);
+  assert.equal(switch02LargeAuto.switchPresetId, 'v60_mode');
+  assert.equal(switch02LargeAuto.workflowValidation?.status, 'ready');
+  assert.ok(switch02LargeAuto.steps.filter((step) => step.pourVolumeMl > 0).every((step) => step.valveState === 'open'));
+
   const switch03Large = buildAiBrewPlan({
     ...base,
     doseG: '20',
@@ -2917,9 +2956,9 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
   assert.equal(positivePourCount(clever), 1);
   assert.match(textFor(clever), /steep-and-release|full-water charge|not a V60 pulse/i);
   assert.equal(switchPlan.deviceProfileId, 'profile_hario_switch_03_hot');
-  assert.deepEqual(switchPlan.steps.map((step) => step.kind), ['pour', 'pour', 'wait', 'release', 'serve']);
-  assert.ok(positivePourCount(switchPlan) <= 2);
-  assert.match(textFor(switchPlan), /closed bloom|closed fill|open switch/i);
+  assert.deepEqual(switchPlan.steps.map((step) => step.kind), ['pour', 'pour', 'release', 'pour', 'drawdown', 'serve']);
+  assert.ok(positivePourCount(switchPlan) <= 3);
+  assert.match(textFor(switchPlan), /closed bloom|closed sweeten|open finish|open switch/i);
 
   const aeropressPlans = {
     standard: planFor({ dripperId: 'aeropress', aeropressStyle: 'standard' }),

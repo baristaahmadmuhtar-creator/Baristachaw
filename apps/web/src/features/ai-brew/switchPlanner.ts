@@ -85,7 +85,8 @@ function getCompatiblePreset(catalog: AiBrewCatalog, id: SwitchPublicPresetId, d
 
 function isBodyTarget(targetProfile?: TargetProfile) {
   const haystack = `${targetProfile?.id || ''} ${targetProfile?.label || ''}`.toLowerCase();
-  return /body|dense|comfort|round/.test(haystack);
+  if (targetProfile?.id === 'soft_round') return false;
+  return /body|dense|comfort/.test(haystack);
 }
 
 function isSweetTarget(targetProfile?: TargetProfile) {
@@ -99,9 +100,174 @@ function isBrightTarget(targetProfile?: TargetProfile) {
   return /acid|floral|bright|transparent/.test(haystack);
 }
 
+function isFruitTarget(targetProfile?: TargetProfile) {
+  const haystack = `${targetProfile?.id || ''} ${targetProfile?.label || ''}`.toLowerCase();
+  return /fruit|aroma/.test(haystack);
+}
+
+function isSoftRoundTarget(targetProfile?: TargetProfile) {
+  const haystack = `${targetProfile?.id || ''} ${targetProfile?.label || ''}`.toLowerCase();
+  return /soft|round/.test(haystack);
+}
+
+function isBalancedTarget(targetProfile?: TargetProfile) {
+  const haystack = `${targetProfile?.id || ''} ${targetProfile?.label || ''}`.toLowerCase();
+  return !targetProfile || targetProfile.id === 'balance_clean' || /balance|clean/.test(haystack);
+}
+
+function processHaystack(processEntry?: ProcessCatalogEntry) {
+  return `${processEntry?.id || ''} ${processEntry?.label || ''}`.toLowerCase();
+}
+
 function isHeavyProcess(processEntry?: ProcessCatalogEntry) {
+  const haystack = processHaystack(processEntry);
+  return /wet|hulled|giling|sumatra|body|robusta|canephora/.test(haystack);
+}
+
+function isFermentProcess(processEntry?: ProcessCatalogEntry) {
+  const haystack = processHaystack(processEntry);
+  return /natural|anaerobic|carbonic|ferment|honey/.test(haystack);
+}
+
+function isClarityProcess(processEntry?: ProcessCatalogEntry) {
+  const haystack = processHaystack(processEntry);
+  return /washed|floral|geisha|gesha|ethiop|kenya|sl28|sl34/.test(haystack);
+}
+
+function isDarkOrRoastyProcess(processEntry?: ProcessCatalogEntry) {
   const haystack = `${processEntry?.id || ''} ${processEntry?.label || ''}`.toLowerCase();
-  return /natural|wet|hulled|giling|anaerobic/.test(haystack);
+  return /dark|roast|smoke|chocolate/.test(haystack);
+}
+
+const AUTO_SWITCH_PRESET_IDS: SwitchPublicPresetId[] = [
+  'hybrid_balanced',
+  'hybrid_bright_clean',
+  'immersion_sweet',
+  'immersion_heavy_body',
+  'v60_mode',
+  'iced_hybrid',
+  'mugen_everyday_hybrid',
+];
+
+function scoreSwitchAutoPreset(
+  presetId: SwitchPublicPresetId,
+  params: {
+    dripperId: string;
+    doseRow?: SwitchDoseMatrixRow;
+    targetProfile?: TargetProfile;
+    processEntry?: ProcessCatalogEntry;
+  },
+) {
+  const { dripperId, doseRow, targetProfile, processEntry } = params;
+  if (doseRow?.blockedPresetIds.includes(presetId)) return Number.NEGATIVE_INFINITY;
+
+  let score = 0;
+  const targetId = targetProfile?.id || 'balance_clean';
+  const isMugen = dripperId === 'mugen-x-switch';
+
+  if (isBalancedTarget(targetProfile)) {
+    if (presetId === 'hybrid_balanced') score += 10;
+    if (presetId === 'mugen_everyday_hybrid') score += 11;
+    if (presetId === 'hybrid_bright_clean') score += 3;
+    if (presetId === 'immersion_sweet') score += 2;
+    if (presetId === 'v60_mode') score += 1;
+  }
+
+  if (targetId === 'more_sweetness' || isSweetTarget(targetProfile)) {
+    if (presetId === 'immersion_sweet') score += 12;
+    if (presetId === 'hybrid_balanced') score += 7;
+    if (presetId === 'mugen_everyday_hybrid') score += 7;
+    if (presetId === 'immersion_heavy_body') score += 3;
+    if (presetId === 'hybrid_bright_clean') score -= 2;
+    if (presetId === 'v60_mode') score -= 4;
+  }
+
+  if (targetId === 'soft_round' || isSoftRoundTarget(targetProfile)) {
+    if (presetId === 'immersion_sweet') score += 9;
+    if (presetId === 'hybrid_balanced') score += 7;
+    if (presetId === 'mugen_everyday_hybrid') score += 7;
+    if (presetId === 'immersion_heavy_body') score += 2;
+    if (presetId === 'v60_mode') score -= 2;
+  }
+
+  if (targetId === 'more_body' || targetId === 'dense_comforting' || isBodyTarget(targetProfile)) {
+    if (presetId === 'immersion_heavy_body') score += 13;
+    if (presetId === 'hybrid_balanced') score += 6;
+    if (presetId === 'mugen_everyday_hybrid') score += 6;
+    if (presetId === 'immersion_sweet') score += 3;
+    if (presetId === 'hybrid_bright_clean') score -= 4;
+    if (presetId === 'v60_mode') score -= 5;
+  }
+
+  if (targetId === 'more_acidity' || targetId === 'floral_transparent' || isBrightTarget(targetProfile)) {
+    if (presetId === 'hybrid_bright_clean') score += 13;
+    if (presetId === 'v60_mode') score += targetId === 'floral_transparent' ? 8 : 6;
+    if (presetId === 'hybrid_balanced') score += 3;
+    if (presetId === 'mugen_everyday_hybrid') score += 3;
+    if (presetId === 'immersion_sweet') score -= 5;
+    if (presetId === 'immersion_heavy_body') score -= 9;
+  }
+
+  if (targetId === 'fruit_forward' || isFruitTarget(targetProfile)) {
+    if (presetId === 'hybrid_bright_clean') score += 8;
+    if (presetId === 'hybrid_balanced') score += 7;
+    if (presetId === 'mugen_everyday_hybrid') score += 7;
+    if (presetId === 'v60_mode') score += 3;
+    if (presetId === 'immersion_sweet') score += 2;
+    if (presetId === 'immersion_heavy_body') score -= 5;
+  }
+
+  if (isClarityProcess(processEntry)) {
+    if (presetId === 'hybrid_bright_clean') score += 3;
+    if (presetId === 'v60_mode') score += 2;
+    if (presetId === 'immersion_heavy_body') score -= 3;
+  }
+
+  if (isFermentProcess(processEntry)) {
+    if (targetId === 'more_body' || targetId === 'dense_comforting') {
+      if (presetId === 'immersion_heavy_body') score += 2;
+      if (presetId === 'hybrid_balanced') score += 2;
+    } else {
+      if (presetId === 'hybrid_balanced') score += 3;
+      if (presetId === 'mugen_everyday_hybrid') score += 3;
+      if (presetId === 'hybrid_bright_clean') score += 1;
+      if (presetId === 'immersion_heavy_body') score -= 2;
+    }
+  }
+
+  if (isHeavyProcess(processEntry)) {
+    if (targetId === 'more_body' || targetId === 'dense_comforting') {
+      if (presetId === 'immersion_heavy_body') score += 4;
+    } else {
+      if (presetId === 'hybrid_balanced') score += 3;
+      if (presetId === 'immersion_heavy_body') score -= 2;
+    }
+  }
+
+  if (isDarkOrRoastyProcess(processEntry)) {
+    if (presetId === 'v60_mode' || presetId === 'hybrid_balanced') score += 2;
+    if (presetId === 'immersion_heavy_body' || presetId === 'immersion_sweet') score -= 3;
+  }
+
+  if (doseRow?.recommendedPresetIds.includes(presetId)) score += 4;
+  if (doseRow?.cautionPresetIds.includes(presetId)) score -= 10;
+
+  if (doseRow && doseRow.defaultTotalWaterMl > doseRow.safeClosedPhaseMaxMl) {
+    if (presetId === 'v60_mode') score += 5;
+    if (presetId === 'hybrid_balanced') score += 3;
+    if (presetId === 'hybrid_bright_clean') score += 2;
+    if (presetId === 'immersion_sweet' || presetId === 'immersion_heavy_body') score -= 8;
+  }
+
+  if (isMugen) {
+    if (presetId === 'mugen_everyday_hybrid') score += 5;
+    if (presetId === 'immersion_heavy_body' || presetId === 'immersion_sweet') score -= 4;
+    if ((targetId === 'more_acidity' || targetId === 'floral_transparent') && presetId === 'v60_mode') score += 3;
+  } else if (presetId === 'mugen_everyday_hybrid') {
+    score -= 100;
+  }
+
+  return score;
 }
 
 function chooseAutoPresetId(params: {
@@ -113,19 +279,13 @@ function chooseAutoPresetId(params: {
 }) {
   const { input, dripperId, doseRow, targetProfile, processEntry } = params;
   if (input.brewMode === 'iced') return 'iced_hybrid' satisfies SwitchPublicPresetId;
-  if (dripperId === 'mugen-x-switch') return 'mugen_everyday_hybrid' satisfies SwitchPublicPresetId;
-  if (isBrightTarget(targetProfile)) return 'hybrid_bright_clean' satisfies SwitchPublicPresetId;
-  if (isBodyTarget(targetProfile) || isHeavyProcess(processEntry)) {
-    return doseRow?.blockedPresetIds.includes('immersion_heavy_body')
-      ? 'hybrid_balanced'
-      : 'immersion_heavy_body';
-  }
-  if (isSweetTarget(targetProfile)) {
-    return doseRow?.blockedPresetIds.includes('immersion_sweet')
-      ? 'hybrid_balanced'
-      : 'immersion_sweet';
-  }
-  return 'hybrid_balanced' satisfies SwitchPublicPresetId;
+  return AUTO_SWITCH_PRESET_IDS
+    .filter((presetId) => dripperId === 'mugen-x-switch' || presetId !== 'mugen_everyday_hybrid')
+    .map((presetId) => ({
+      presetId,
+      score: scoreSwitchAutoPreset(presetId, { dripperId, doseRow, targetProfile, processEntry }),
+    }))
+    .sort((a, b) => b.score - a.score)[0]?.presetId || 'hybrid_balanced';
 }
 
 function resolvePreset(params: {
@@ -194,14 +354,30 @@ function step(params: BrewTemplateStep): BrewTemplateStep {
 
 function fullImmersionSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
   const programme = preset.defaultProgramme;
+  const heavyBody = preset.id === 'immersion_heavy_body';
   return [
     step({
-      id: 'switch_charge_closed',
-      label: 'Closed charge',
+      id: 'switch_closed_bloom',
+      label: 'Closed bloom',
       kind: 'pour',
-      share: 1,
+      share: heavyBody ? 0.26 : 0.22,
       startSeconds: 0,
-      note: 'Katup tertutup. Tuang semua air panas yang direncanakan dengan agitasi rendah.',
+      note: heavyBody
+        ? 'Katup tertutup. Bloom tenang sampai bed basah penuh; jangan swirl keras.'
+        : 'Katup tertutup. Bloom 2-3x dosis dengan tuang lembut untuk sweetness.',
+      valveState: 'closed',
+      chamberState: 'bloom',
+      switchProgramme: programme,
+    }),
+    step({
+      id: 'switch_closed_fill',
+      label: heavyBody ? 'Body fill' : 'Sweet fill',
+      kind: 'pour',
+      share: heavyBody ? 0.74 : 0.78,
+      startSeconds: heavyBody ? 0.24 : 0.22,
+      note: heavyBody
+        ? 'Masih tertutup. Isi sisa air dengan aliran rendah agar body naik tanpa lumpur.'
+        : 'Masih tertutup. Isi sisa air dengan tenang; targetnya manis dan bulat.',
       valveState: 'closed',
       chamberState: 'filling',
       switchProgramme: programme,
@@ -211,8 +387,10 @@ function fullImmersionSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
       label: 'Closed contact',
       kind: 'wait',
       share: 0,
-      startSeconds: 0.55,
-      note: 'Tahan kontak dengan slurry tenang; jangan swirl keras.',
+      startSeconds: heavyBody ? 0.66 : 0.58,
+      note: heavyBody
+        ? 'Tahan kontak sedikit lebih lama; buka sebelum finish mulai kering atau berat.'
+        : 'Tahan kontak singkat; buka sebelum rasa jadi datar.',
       valveState: 'closed',
       chamberState: 'immersion',
       switchProgramme: programme,
@@ -222,8 +400,10 @@ function fullImmersionSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
       label: 'Release',
       kind: 'release',
       share: 0,
-      startSeconds: 0.78,
-      note: 'Buka katup dan biarkan release bersih.',
+      startSeconds: heavyBody ? 0.82 : 0.76,
+      note: heavyBody
+        ? 'Buka katup dan biarkan release bersih; jangan tambah agitasi.'
+        : 'Buka katup saat sweetness sudah cukup, lalu biarkan drain bersih.',
       valveState: 'open',
       chamberState: 'releasing',
       switchProgramme: programme,
@@ -234,7 +414,9 @@ function fullImmersionSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
       kind: 'serve',
       share: 0,
       startSeconds: 1,
-      note: 'Angkat dripper saat flow selesai dan aduk server singkat.',
+      note: heavyBody
+        ? 'Angkat dripper saat flow selesai; aduk server singkat dan cek risiko muddy.'
+        : 'Angkat dripper saat flow selesai dan aduk server 5-8 detik.',
       valveState: 'open',
       chamberState: 'served',
       switchProgramme: programme,
@@ -309,44 +491,55 @@ function balancedHybridSteps(preset: SwitchPublicPreset, row?: SwitchDoseMatrixR
       id: 'switch_closed_bloom',
       label: 'Closed bloom',
       kind: 'pour',
-      share: 0.35,
+      share: 0.25,
       startSeconds: 0,
-      note: 'Katup tertutup. Basahi bed dan biarkan gas keluar.',
+      note: 'Katup tertutup. Bloom tenang untuk sweetness awal tanpa over-agitasi.',
       valveState: 'closed',
       chamberState: 'bloom',
       switchProgramme: programme,
     }),
     step({
-      id: 'switch_closed_fill',
-      label: 'Closed fill',
+      id: 'switch_closed_sweeten',
+      label: 'Closed sweeten',
       kind: 'pour',
-      share: 0.65,
-      startSeconds: 0.30,
-      note: 'Masih tertutup. Isi target dengan agitasi rendah.',
-      valveState: 'closed',
-      chamberState: 'filling',
-      switchProgramme: programme,
-    }),
-    step({
-      id: 'switch_closed_contact',
-      label: 'Closed contact',
-      kind: 'wait',
-      share: 0,
-      startSeconds: 0.58,
-      note: 'Tahan sebentar untuk sweetness; jangan tambah agitasi.',
+      share: 0.42,
+      startSeconds: 0.28,
+      note: 'Masih tertutup. Bangun sweetness sampai muatan ruang aman, lalu siap release.',
       valveState: 'closed',
       chamberState: 'immersion',
       switchProgramme: programme,
     }),
     step({
-      id: 'switch_release',
-      label: 'Release',
+      id: 'switch_release_checkpoint',
+      label: 'Release checkpoint',
       kind: 'release',
       share: 0,
-      startSeconds: 0.72,
-      note: 'Buka katup saat titik release tercapai.',
+      startSeconds: 0.58,
+      note: 'Buka katup sebelum bed terasa berat; ini menjaga finish tetap bersih.',
       valveState: 'open',
       chamberState: 'releasing',
+      switchProgramme: programme,
+    }),
+    step({
+      id: 'switch_open_finish',
+      label: 'Open finish',
+      kind: 'pour',
+      share: 0.33,
+      startSeconds: 0.66,
+      note: 'Katup terbuka. Selesaikan target dengan aliran pusat-ke-tengah yang bersih.',
+      valveState: 'open',
+      chamberState: 'percolation',
+      switchProgramme: programme,
+    }),
+    step({
+      id: 'switch_drawdown',
+      label: 'Drawdown',
+      kind: 'drawdown',
+      share: 0,
+      startSeconds: 0.88,
+      note: 'Biarkan drawdown selesai tanpa swirl berat.',
+      valveState: 'open',
+      chamberState: 'drawdown',
       switchProgramme: programme,
     }),
     step({
@@ -372,7 +565,7 @@ function brightHybridSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
       kind: 'pour',
       share: 0.32,
       startSeconds: 0,
-      note: 'Katup terbuka. Bloom bersih dengan tuang rendah.',
+      note: 'Katup terbuka. Bloom bersih, rendah, dan tanpa wall-rinse agar floral tetap jelas.',
       valveState: 'open',
       chamberState: 'percolation',
       switchProgramme: programme,
@@ -383,7 +576,7 @@ function brightHybridSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
       kind: 'pour',
       share: 0.48,
       startSeconds: 0.30,
-      note: 'Tetap terbuka untuk menjaga clarity dan flow.',
+      note: 'Tetap terbuka. Bangun target air dengan flow stabil dan agitasi minimal.',
       valveState: 'open',
       chamberState: 'percolation',
       switchProgramme: programme,
@@ -394,7 +587,7 @@ function brightHybridSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
       kind: 'pour',
       share: 0.20,
       startSeconds: 0.62,
-      note: 'Tutup katup sebentar untuk menangkap sweetness akhir.',
+      note: 'Tutup sebentar hanya untuk menangkap sweetness akhir; jangan tahan terlalu lama.',
       valveState: 'closed',
       chamberState: 'immersion',
       switchProgramme: programme,
@@ -405,7 +598,7 @@ function brightHybridSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
       kind: 'release',
       share: 0,
       startSeconds: 0.78,
-      note: 'Buka katup sebelum cup terasa berat.',
+      note: 'Buka katup sebelum body menutup acidity atau aroma.',
       valveState: 'open',
       chamberState: 'releasing',
       switchProgramme: programme,
@@ -489,12 +682,23 @@ function icedHybridSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
   const programme = preset.defaultProgramme;
   return [
     step({
-      id: 'switch_iced_charge',
-      label: 'Closed hot charge',
+      id: 'switch_iced_bloom',
+      label: 'Closed iced bloom',
       kind: 'pour',
-      share: 1,
+      share: 0.35,
       startSeconds: 0,
-      note: 'Katup tertutup. Tuang seluruh air panas target; es sudah di server.',
+      note: 'Katup tertutup. Bloom konsentrat panas; es sudah ditimbang di server.',
+      valveState: 'closed',
+      chamberState: 'bloom',
+      switchProgramme: programme,
+    }),
+    step({
+      id: 'switch_iced_hot_fill',
+      label: 'Closed hot fill',
+      kind: 'pour',
+      share: 0.65,
+      startSeconds: 0.35,
+      note: 'Masih tertutup. Isi target air panas saja; jangan tambah bypass tersembunyi.',
       valveState: 'closed',
       chamberState: 'filling',
       switchProgramme: programme,
@@ -504,8 +708,8 @@ function icedHybridSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
       label: 'Short hot contact',
       kind: 'wait',
       share: 0,
-      startSeconds: 0.55,
-      note: 'Tahan singkat untuk sweetness, tanpa bypass tersembunyi.',
+      startSeconds: 0.58,
+      note: 'Tahan singkat untuk sweetness; target akhir tetap hot water + es.',
       valveState: 'closed',
       chamberState: 'immersion',
       switchProgramme: programme,
@@ -516,7 +720,7 @@ function icedHybridSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
       kind: 'release',
       share: 0,
       startSeconds: 0.75,
-      note: 'Buka katup dan release konsentrat panas langsung ke es.',
+      note: 'Buka katup dan release konsentrat panas langsung ke es di server.',
       valveState: 'open',
       chamberState: 'releasing',
       switchProgramme: programme,
@@ -563,7 +767,7 @@ export function applySwitchPresetToDeviceProfile(
     ...profile,
     methodFamily: 'hario_switch',
     methodProgramme: selection.preset.defaultProgramme,
-    note: `${profile.note} Switch preset: ${selection.preset.label}. ${selection.preset.why}`.trim(),
+    note: `${profile.note} Switch method: ${selection.preset.label}. ${selection.preset.why}`.trim(),
     steps,
   };
 }

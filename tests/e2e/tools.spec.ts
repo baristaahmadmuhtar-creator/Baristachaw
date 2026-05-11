@@ -470,6 +470,31 @@ test('ai brew Hario Switch quick plan defaults to safe Hybrid Balanced with valv
   }
 });
 
+test('ai brew Hario Switch Auto follows taste target before method preference', async ({ page }) => {
+  await openAiBrewQuickMode(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Switch Auto Bright');
+  await page.getByTestId('ai-brew-dripper-picker').click();
+  await page.getByTestId('ai-brew-picker-search-dripper').fill('switch 03');
+  await page.getByTestId('ai-brew-picker-option-dripper-hario-switch-03').click();
+
+  await page.getByTestId('ai-brew-target-profile-floral_transparent').click();
+  await expect(page.getByTestId('ai-brew-switch-preset-auto-inline')).toHaveAttribute('aria-pressed', 'true');
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const result = page.getByTestId('ai-brew-result');
+  await expect(result).toContainText('QA Switch Auto Bright');
+  await expect(result.getByTestId('ai-brew-switch-result-summary')).toContainText(/Bright Clean|cerah bersih|cerah/i);
+  await result.getByTestId('ai-brew-result-tab-flow').click();
+  await expect(result.getByTestId('ai-brew-sequence-section')).toContainText(/Open|Closed|Katup|Tutup|Buka/i);
+
+  const plan = await readStoredAiBrewPlan(page);
+  expect(plan.dripper.id).toBe('hario-switch-03');
+  expect(plan.targetProfileId).toBe('floral_transparent');
+  expect(plan.switchPresetId).toBe('hybrid_bright_clean');
+  expect(plan.methodProgramme).toBe('percolation_then_immersion');
+});
+
 test('ai brew MUGEN x SWITCH keeps its own preset and 200 ml compatibility model', async ({ page }) => {
   await openAiBrewQuickMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA MUGEN Switch');

@@ -125,6 +125,9 @@ test('AI Brew Hario Switch Presisi builder and result never create page-level ho
     await setVisibleInputValue(page, 'ai-brew-coffee-name', `Overflow Switch ${viewport.label}`);
     await selectDripper(page, 'switch 03', 'hario-switch-03');
     await setVisibleInputValue(page, 'ai-brew-dose', '20');
+    await page.getByTestId('ai-brew-target-profile-floral_transparent').click();
+    await expect(page.getByTestId('ai-brew-switch-preset-auto-inline')).toHaveAttribute('aria-pressed', 'true');
+    await expectNoHorizontalOverflow(page, `${viewport.label} target-driven switch auto`);
     await selectWaterBrand(page);
     await expect(page.getByTestId('ai-brew-switch-inline-methods')).toBeVisible();
     await expect(page.getByTestId('ai-brew-switch-method-strip')).toBeVisible();

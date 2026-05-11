@@ -1329,6 +1329,59 @@ function isHarioSwitchContext(context: Pick<AdaptiveShareContext, 'dripperId' | 
 
 function resolveImmersionReleaseCopy(context: AdaptiveShareContext) {
   if (isHarioSwitchContext(context)) {
+    const programme = String(context.methodProgramme || '');
+    if (programme === 'full_percolation_v60_mode') {
+      return {
+        brewerName: 'Hario Switch',
+        closedCue: 'Keep the switch open',
+        releaseCue: 'keep the switch open',
+        setOnServerCue: 'Set the Hario Switch on the server with the valve open',
+        bloomPrep: 'Rinse the V60-style paper, preheat the brewer/server, tare the scale, then leave the switch open before dosing coffee.',
+        openingDetail: 'Leave the valve open from the first bloom; this is percolation mode, not immersion.',
+        middleDetail: 'Keep the valve open and use a clean center-to-mid pour so the cup stays transparent.',
+        lateDetail: 'Finish the hot-water target with the valve still open; do not add a fake release step.',
+        finishDetail: 'Let drawdown finish naturally with the valve open, then stir the server briefly.',
+      };
+    }
+    if (programme === 'percolation_then_immersion' || programme === 'temperature_shift_hybrid') {
+      return {
+        brewerName: 'Hario Switch',
+        closedCue: 'Use the switch briefly closed only for capture',
+        releaseCue: 'open the switch before the cup gets heavy',
+        setOnServerCue: 'Set the Hario Switch on the server and start with open flow',
+        bloomPrep: 'Rinse the V60-style paper, preheat the brewer/server, tare the scale, then start with the valve open for a cleaner bloom.',
+        openingDetail: 'Start open and low-agitation to preserve acidity, florals, and fruit definition.',
+        middleDetail: 'Build most of the hot-water target as open percolation before the short closed capture.',
+        lateDetail: 'Close only briefly for sweetness; avoid turning the bright target into a heavy immersion cup.',
+        finishDetail: 'Open the switch before the finish flattens, then let drawdown stay clean.',
+      };
+    }
+    if (programme === 'iced_hybrid') {
+      return {
+        brewerName: 'Hario Switch',
+        closedCue: 'Keep the switch closed for the hot concentrate',
+        releaseCue: 'open the switch over measured ice',
+        setOnServerCue: 'Set the Hario Switch over a server with measured ice',
+        bloomPrep: 'Rinse the V60-style paper, preheat the brewer, tare the scale, and put measured ice in the server before brewing.',
+        openingDetail: 'Bloom as hot concentrate with the valve closed; ice is already counted in the final input.',
+        middleDetail: 'Add only planned hot water through the bed; do not add hidden bypass later.',
+        lateDetail: 'Keep the closed phase short so the iced cup stays fresh rather than heavy.',
+        finishDetail: 'Release hot concentrate over ice, then stir the server 5-8 seconds.',
+      };
+    }
+    if (programme === 'bloom_then_immersion' || programme === 'immersion_then_percolation' || programme === 'competition_hybrid') {
+      return {
+        brewerName: 'Hario Switch',
+        closedCue: 'Use a controlled closed phase',
+        releaseCue: 'open the switch at the release checkpoint',
+        setOnServerCue: 'Set the Hario Switch on the server and follow the valve checkpoints',
+        bloomPrep: 'Rinse the V60-style paper, preheat the brewer/server, tare the scale, then close the switch for the first sweetness checkpoint.',
+        openingDetail: 'Close for bloom to capture sweetness, but keep the chamber load within the size guardrail.',
+        middleDetail: 'Use the closed phase for sweetness, then release before the bed feels stalled.',
+        lateDetail: 'Finish open if the plan asks for it; this keeps the cup cleaner than a full closed hold.',
+        finishDetail: 'Open the switch cleanly, finish the hot-water target, and avoid late heavy agitation.',
+      };
+    }
     return {
       brewerName: 'Hario Switch',
       closedCue: 'Keep the switch closed',
@@ -4866,23 +4919,66 @@ function buildMethodFamilyStepInstruction(params: {
           : 'Let the final drawdown complete without wall rinsing or extra swirl; adjust coarser next brew if it stalls.';
       }
       break;
-    case 'clever_dripper':
     case 'hario_switch':
       {
         const immersionCopy = resolveImmersionReleaseCopy(context);
-      if (phase === 'bloom') {
-        quickNote = 'Saturate the full bed evenly and let immersion start building sweetness.';
-        detail = immersionCopy.openingDetail;
-      } else if (phase === 'early_middle') {
-        quickNote = 'Use the middle phase to build immersion gently rather than chasing more turbulence.';
-        detail = immersionCopy.middleDetail;
-      } else if (phase === 'late_middle') {
-        quickNote = 'Keep the later immersion phase quiet so the release stays clean.';
-        detail = immersionCopy.lateDetail;
-      } else {
-        quickNote = 'Open the release cleanly and let the bed drain without stirring the finish.';
-        detail = immersionCopy.finishDetail;
+        const programme = String(context.methodProgramme || '');
+        const isOpenMode = programme === 'full_percolation_v60_mode';
+        const isBrightHybrid = programme === 'percolation_then_immersion' || programme === 'temperature_shift_hybrid';
+        const isIcedSwitch = programme === 'iced_hybrid';
+        if (phase === 'bloom') {
+          quickNote = isOpenMode
+            ? 'Valve open from the start; bloom like a clean V60-style brew.'
+            : isBrightHybrid
+              ? 'Start open and gentle so acidity and florals stay clear.'
+              : isIcedSwitch
+                ? 'Bloom the hot concentrate over measured ice in the server.'
+                : 'Wet the full bed evenly and start the planned closed sweetness phase.';
+          detail = immersionCopy.openingDetail;
+        } else if (phase === 'early_middle') {
+          quickNote = isOpenMode
+            ? 'Keep the valve open and build volume with a calm center-to-mid pour.'
+            : isBrightHybrid
+              ? 'Keep this phase clean and open before the short capture.'
+              : isIcedSwitch
+                ? 'Add only planned hot water; the ice is already part of the recipe.'
+                : 'Use the closed phase to build sweetness without forcing turbulence.';
+          detail = immersionCopy.middleDetail;
+        } else if (phase === 'late_middle') {
+          quickNote = isOpenMode
+            ? 'Finish the target with the valve still open; no release checkpoint is needed.'
+            : isBrightHybrid
+              ? 'Close only briefly for sweetness, then release before body gets heavy.'
+              : isIcedSwitch
+                ? 'Keep the hot-contact window short so the iced cup stays fresh.'
+                : 'Release before the bed feels stalled, then finish open if the plan asks for it.';
+          detail = immersionCopy.lateDetail;
+        } else {
+          quickNote = isOpenMode
+            ? 'Let drawdown finish naturally with the valve open.'
+            : isIcedSwitch
+              ? 'Release over ice and stir the server 5-8 seconds.'
+              : 'Open the release cleanly and let the bed drain without stirring the finish.';
+          detail = immersionCopy.finishDetail;
+        }
       }
+      break;
+    case 'clever_dripper':
+      {
+        const immersionCopy = resolveImmersionReleaseCopy(context);
+        if (phase === 'bloom') {
+          quickNote = 'Saturate the full bed evenly and let immersion start building sweetness.';
+          detail = immersionCopy.openingDetail;
+        } else if (phase === 'early_middle') {
+          quickNote = 'Use the middle phase to build immersion gently rather than chasing more turbulence.';
+          detail = immersionCopy.middleDetail;
+        } else if (phase === 'late_middle') {
+          quickNote = 'Keep the later immersion phase quiet so the release stays clean.';
+          detail = immersionCopy.lateDetail;
+        } else {
+          quickNote = 'Open the release cleanly and let the bed drain without stirring the finish.';
+          detail = immersionCopy.finishDetail;
+        }
       }
       break;
     case 'french_press':

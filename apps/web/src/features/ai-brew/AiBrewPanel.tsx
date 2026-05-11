@@ -8307,6 +8307,8 @@ export function AiBrewPanel({
                             type="button"
                             onClick={() => updateForm('targetProfileId', option.id)}
                             className={`rounded-[0.9rem] border p-3 text-left transition-all ${formState.targetProfileId === option.id ? 'border-blue-500/25 bg-blue-500/10 shadow-[0_12px_26px_rgba(37,99,235,0.14)]' : 'border-[var(--panel-border-soft)] bg-surface-alpha hover:border-blue-500/20'}`}
+                            data-testid={`ai-brew-target-profile-${option.id}`}
+                            aria-pressed={formState.targetProfileId === option.id}
                           >
                             <p className="text-sm font-semibold leading-5">{option.translatedLabel}</p>
                           </button>

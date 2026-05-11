@@ -69,3 +69,29 @@ test('AI Brew Pro keeps advanced AI tools collapsed and no AI auto-run', () => {
   assert.match(SOURCE, /<details className="group mt-3 rounded-xl/);
   assert.doesNotMatch(SOURCE, /useEffect\(\(\) => \{\s*onRunAiCoach/s);
 });
+
+test('AI Brew Indonesian release copy localizes critical trust and safety labels', () => {
+  for (const copy of [
+    'Data bean lengkap',
+    'Data bean sebagian',
+    'Bean belum lengkap',
+    'Perlu hati-hati',
+    'Kombinasi tidak aman',
+    'Prediksi rasa, bukan jaminan',
+    'Keyakinan & Sumber',
+    'Keamanan',
+    'Katup tutup',
+    'buka katup',
+    'Muatan ruang',
+    'air turun',
+  ]) {
+    assert.match(SOURCE, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+
+  assert.match(SOURCE, /formatBeanCoverageLabel/);
+  assert.match(SOURCE, /formatAiBrewConfidenceLabel/);
+  assert.match(SOURCE, /Jelaskan dengan AI/);
+  assert.match(SOURCE, /Perbaiki Rasa/);
+  assert.match(SOURCE, /Buat Panduan Lebih Ramah/);
+  assert.match(SOURCE, /Tool AI lainnya/);
+});

@@ -751,7 +751,7 @@ const COPY = {
     grindCuratedReference: 'Referensi kurasi',
     grindCommunityReference: 'Referensi komunitas',
     grindEstimatedBaseline: 'Baseline estimasi',
-    grindCalibrationNote: 'Setting grinder bergantung pada titik nol burr, kalibrasi, sangrai, dan dosis. Mulai dari sini, lalu koreksi dari drawdown dan rasa.',
+    grindCalibrationNote: 'Setting grinder bergantung pada titik nol burr, kalibrasi, sangrai, dan dosis. Mulai dari sini, lalu koreksi dari air turun dan rasa.',
     grindFallback: 'Fallback grind',
     profileExactStatus: 'Profil alat exact',
     profileFallbackStatus: 'Profil fallback family',
@@ -847,7 +847,7 @@ const COPY = {
     finalRatio: 'Rasio Final',
     hotConcentrate: 'Konsentrat Panas',
     iceSetupTitle: 'Setup seduh es',
-    iceSetupDetail: 'Masukkan es ke server dulu, seduh hanya sampai target air panas, biarkan drawdown selesai, lalu aduk 5-8 detik sampai lelehan merata.',
+    iceSetupDetail: 'Masukkan es ke server dulu, seduh hanya sampai target air panas, biarkan air turun selesai, lalu aduk 5-8 detik sampai lelehan merata.',
     cupOutput: 'Estimasi Hasil Cangkir',
     hotWater: 'Air Panas',
     ice: 'Es',
@@ -863,7 +863,7 @@ const COPY = {
     warnings: 'Peringatan',
     standards: 'Standar',
     provenance: 'Sumber Data',
-    confidence: 'Kepercayaan',
+    confidence: 'Keyakinan',
     exactProfile: 'Profil exact',
     derivedTemplateProfile: 'Profil turunan template',
     fallbackProfile: 'Fallback family',
@@ -955,7 +955,7 @@ const COPY = {
     feedbackMuddy: 'Keruh / berat',
     feedbackAstringent: 'Sepat',
     feedbackNote: 'Catatan singkat',
-    feedbackNotePlaceholder: 'mis. drawdown cepat, rasa tajam, grind satu klik lebih halus',
+    feedbackNotePlaceholder: 'mis. air turun cepat, rasa tajam, grind satu klik lebih halus',
     feedbackSaveNote: 'Simpan catatan',
     feedbackSaved: 'Catatan rasa tersimpan.',
     feedbackSaveFailed: 'Catatan rasa belum bisa disimpan sekarang.',
@@ -976,7 +976,7 @@ const COPY = {
     switchSelectedSize: 'Ukuran terpilih',
     switchDoseSafety: 'Keamanan dosis',
     switchValvePath: 'Jalur katup',
-    switchSafety: 'Safety',
+    switchSafety: 'Keamanan',
     switchSafetySafe: 'Aman',
     switchSafetyCaution: 'Hati-hati',
     switchSafetyBlocked: 'Diblokir',
@@ -997,7 +997,7 @@ const COPY = {
     switchWorkflowCurated: 'Metode racikan BaristaChaw.',
     switchExpectedModel: 'Prediksi rasa, bukan jaminan.',
     switchStudioTitle: 'Detail metode',
-    switchStudioSummary: 'Jalur katup, muatan ruang, program, dan titik buka/release disusun di sini.',
+    switchStudioSummary: 'Jalur katup, muatan ruang, program, dan titik buka katup disusun di sini.',
     beanDetailsOptional: 'Detail bean opsional',
     beanDetailsHint: 'Natural, washed, varietas, dan origin membuat resep lebih akurat, tapi mode Cepat tetap bisa jalan tanpa itu.',
     beanDetailsAdd: 'Tambah detail bean',
@@ -1068,7 +1068,7 @@ const COPY = {
     grindSource: 'Sumber setting grind',
     grindCatalogReference: 'Referensi katalog',
     grindDerivedBaseline: 'Baseline turunan',
-    confidenceNotes: 'Catatan kepercayaan',
+    confidenceNotes: 'Catatan keyakinan',
     waterRequired: 'Input mineral manual wajib diisi sebelum generate.',
     openProcessPicker: 'Pilih proses',
     openVarietyPicker: 'Pilih varietas',
@@ -1603,7 +1603,7 @@ function createHybridAiSequenceProgress(
 
 function withLanguageLock(promptBody: string, language: string) {
   if (/^id(?:-|$)/i.test(language)) {
-    return `${promptBody}\n\nKunci bahasa: jawab sepenuhnya dalam Bahasa Indonesia. Jangan gunakan bahasa lain untuk judul, bullet, label, catatan, maupun fallback. Nama alat, nama brand, istilah umum seperti bloom/drawdown/server/bed, dan satuan tetap boleh dipertahankan. Pertahankan struktur heading, bullet, dan angka secara konsisten.`;
+    return `${promptBody}\n\nKunci bahasa: jawab sepenuhnya dalam Bahasa Indonesia. Jangan gunakan bahasa lain untuk judul, bullet, label, catatan, maupun fallback. Nama alat, nama brand, istilah umum seperti bloom/server/bed, dan satuan tetap boleh dipertahankan. Gunakan "air turun" untuk drawdown dan "buka katup" untuk release. Pertahankan struktur heading, bullet, dan angka secara konsisten.`;
   }
   if (/^ar(?:-|$)/i.test(language)) {
     return `${promptBody}\n\nقفل اللغة: أجب بالكامل باللغة العربية. لا تستخدم أي لغة أخرى في العناوين أو النقاط أو التسميات أو الملاحظات أو النصوص الاحتياطية. حافظ على بنية العناوين والنقاط والأرقام كما هي.`;
@@ -1733,7 +1733,7 @@ async function normalizeSequenceMarkdownToLanguage(
     'For every numbered Sequence line, keep the deterministic checkpoint prefix unchanged through the operation text, including pour, wait, release, drawdown, and all ml/time targets.',
     'Translate only the control instruction after that fixed checkpoint prefix.',
     'Keep numbering, line order, and all numeric values unchanged.',
-    'Use short service-ready sentences. For Indonesian, prefer natural terms like "tuang", "target", "bed", "server", and "drawdown"; avoid stiff textbook phrasing.',
+    'Use short service-ready sentences. For Indonesian, prefer natural terms like "tuang", "target", "bed", "server", "air turun", and "buka katup"; avoid stiff textbook phrasing.',
     'Return only translated markdown.',
     '',
     markdown,
@@ -2222,6 +2222,8 @@ function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: s
   const id = isIndonesianAiBrewLanguage(language);
   if (!id) return chip.label;
   switch (chip.key) {
+    case 'flow':
+      return 'Aliran';
     case 'path':
       return 'Jalur';
     case 'height':
@@ -2239,7 +2241,7 @@ function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: s
     case 'press':
       return 'Tekan';
     case 'stop':
-      return 'Stop';
+      return 'Berhenti';
     case 'boiler':
       return 'Boiler';
     case 'basket':
@@ -2249,7 +2251,7 @@ function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: s
     case 'flow_cue':
       return 'Cue flow';
     case 'yield':
-      return 'Yield';
+      return 'Hasil';
     case 'shot_time':
       return 'Waktu shot';
     case 'puck_prep':
@@ -2259,7 +2261,7 @@ function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: s
     case 'decant':
       return 'Decant';
     case 'release':
-      return 'Release';
+      return 'Buka katup';
     case 'valve':
       return 'Katup';
     case 'chamber':
@@ -2269,7 +2271,7 @@ function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: s
     case 'programme':
       return 'Program';
     case 'drawdown':
-      return 'Drawdown';
+      return 'Air turun';
     case 'draw_up':
       return 'Draw-up';
     case 'contact':
@@ -2317,12 +2319,49 @@ function localizeWorkflowChipValue(value: string, language: string) {
     .replace(/before hiss/g, 'sebelum hiss')
     .replace(/before sputter/g, 'sebelum sputter')
     .replace(/below valve/g, 'di bawah valve')
+    .replace(/di bawah valve/g, 'di bawah katup')
     .replace(/level, no tamp/g, 'rata, jangan tamp')
     .replace(/steady stream/g, 'aliran stabil')
     .replace(/after filtration/g, 'setelah filtrasi')
     .replace(/before service/g, 'sebelum sajikan')
     .replace(/open cleanly/g, 'buka bersih')
     .replace(/all grounds/g, 'semua bubuk');
+}
+
+function formatAiBrewConfidenceLabel(value: string | undefined, language: string) {
+  if (!isIndonesianAiBrewLanguage(language)) return value || '';
+  switch ((value || '').toLowerCase()) {
+    case 'high':
+      return 'tinggi';
+    case 'medium':
+      return 'sedang';
+    case 'low':
+      return 'rendah';
+    default:
+      return value || '';
+  }
+}
+
+function formatBeanCoverageLabel(
+  category: NonNullable<BrewPlan['beanCoverage']>['category'],
+  fallbackLabel: string,
+  language: string,
+) {
+  if (!isIndonesianAiBrewLanguage(language)) return fallbackLabel;
+  switch (category) {
+    case 'known_high':
+      return 'Data bean lengkap';
+    case 'partial_medium':
+      return 'Data bean sebagian';
+    case 'unknown_fallback':
+      return 'Bean belum lengkap';
+    case 'risk_caution':
+      return 'Perlu hati-hati';
+    case 'unsupported_unsafe':
+      return 'Kombinasi tidak aman';
+    default:
+      return fallbackLabel;
+  }
 }
 
 function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string, plan?: BrewPlan) {
@@ -2357,17 +2396,17 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
     case 'steep':
       return step.endSeconds ? `Tunggu/steep sampai ${formatGuideTime(step.endSeconds)}; jangan tambah air.` : 'Tunggu/steep stabil; jangan tambah air.';
     case 'release':
-      return 'Buka release dengan bersih dan jangan aduk saat drawdown.';
+      return 'Buka katup dengan bersih dan jangan aduk saat air turun.';
     case 'drawdown':
       return plan?.brewMode === 'iced'
-        ? `Biarkan drawdown selesai di target ${formatRoundedMl(plan.hotWaterMl)} air panas; jangan tambah bypass.`
-        : 'Biarkan drawdown selesai natural tanpa tuangan tambahan.';
+        ? `Biarkan air turun selesai di target ${formatRoundedMl(plan.hotWaterMl)} air panas; jangan tambah bypass.`
+        : 'Biarkan air turun selesai natural tanpa tuangan tambahan.';
     case 'press':
       return 'Tekan stabil 20-30 detik; stop sebelum hiss terasa kering.';
     case 'heat':
       return 'Pakai panas stabil dan moderat sesuai metode.';
     case 'monitor_flow':
-      return 'Pantau flow; jaga aliran stabil dan stop sesuai cue.';
+      return 'Pantau aliran; jaga tetap stabil dan berhenti sesuai cue.';
     case 'extract':
       return plan?.methodFamily === 'espresso'
         ? `Mulai shot dan ekstrak sampai yield ${formatRoundedMl(plan.totalWaterMl)}.`
@@ -2428,9 +2467,9 @@ function formatAiBrewStepBadge(step: AiBrewDisplayStep, language: string) {
     }
   }
   const kind = getAiBrewStepKind(step);
-  if (kind === 'release') return id ? 'Lepas' : 'Release';
+  if (kind === 'release') return id ? 'Buka katup' : 'Release';
   if (kind === 'wait') return id ? 'Tahan' : 'Wait';
-  if (kind === 'drawdown') return id ? 'Drawdown' : 'Drawdown';
+  if (kind === 'drawdown') return id ? 'Air turun' : 'Drawdown';
   if (kind === 'press') return id ? 'Tekan' : 'Press';
   if (kind === 'heat') return id ? 'Panas' : 'Heat';
   if (kind === 'extract') return id ? 'Ekstrak' : 'Extract';
@@ -2443,7 +2482,7 @@ function buildAiBrewStepActionText(step: AiBrewDisplayStep, language: string, pl
   const kind = getAiBrewStepKind(step);
   if (kind === 'release') {
     return isIndonesianAiBrewLanguage(language)
-      ? `Buka release dan biarkan kopi turun bersih di target ${formatRoundedMl(step.targetVolumeMl)}.`
+      ? `Buka katup dan biarkan kopi turun bersih di target ${formatRoundedMl(step.targetVolumeMl)}.`
       : `Open the release and let the brew drain cleanly at ${formatRoundedMl(step.targetVolumeMl)}.`;
   }
   if (kind === 'wait' || kind === 'drawdown') {
@@ -2490,7 +2529,7 @@ function buildAiBrewFlowStepSummary(step: AiBrewDisplayStep, language: string, p
   const kind = getAiBrewStepKind(step);
   if (kind === 'release') {
     return id
-      ? `${formatGuideTime(step.startSeconds)} | buka release | target ${formatRoundedMl(step.targetVolumeMl)}`
+      ? `${formatGuideTime(step.startSeconds)} | buka katup | target ${formatRoundedMl(step.targetVolumeMl)}`
       : `${formatGuideTime(step.startSeconds)} | open release | target ${formatRoundedMl(step.targetVolumeMl)}`;
   }
   if (kind === 'wait' || kind === 'drawdown') {
@@ -2532,7 +2571,7 @@ function buildAiBrewStepPrimaryCue(step: AiBrewDisplayStep, language: string, pl
   if (isWorkflowGuideStep(step)) return buildWorkflowGuideActionText(step, language, plan);
   const kind = getAiBrewStepKind(step);
   if (kind === 'release') {
-    return isIndonesianAiBrewLanguage(language) ? 'Buka release sekarang' : 'Open release now';
+    return isIndonesianAiBrewLanguage(language) ? 'Buka katup sekarang' : 'Open release now';
   }
   if (kind === 'wait' || kind === 'drawdown') {
     return isIndonesianAiBrewLanguage(language) ? 'Tahan, jangan tambah air' : 'Hold, no extra water';
@@ -2602,7 +2641,7 @@ function buildAiBrewNextStepCue(step: AiBrewDisplayStep, remainingSeconds: numbe
   const kind = getAiBrewStepKind(step);
   if (kind === 'release') {
     return isIndonesianAiBrewLanguage(language)
-      ? `Release dalam ${formatGuideTime(remainingSeconds)}`
+      ? `Buka katup dalam ${formatGuideTime(remainingSeconds)}`
       : `Release in ${formatGuideTime(remainingSeconds)}`;
   }
   if (kind === 'wait' || kind === 'drawdown') {
@@ -2647,7 +2686,7 @@ function buildAiBrewStepMethodFocusCue(
       if (kind === 'serve') return id ? 'Fokus: filter/decant bersih agar ekstraksi berhenti.' : 'Focus: filter/decant cleanly so extraction stops.';
       return id ? 'Fokus: hilangkan dry pocket sebelum steep panjang dimulai.' : 'Focus: remove dry pockets before the long steep starts.';
     case 'batch_brew':
-      if (kind === 'drawdown' || kind === 'serve') return id ? 'Fokus: tunggu drawdown selesai, lalu aduk batch sebelum cicip.' : 'Focus: wait for drawdown, then mix the batch before tasting.';
+      if (kind === 'drawdown' || kind === 'serve') return id ? 'Fokus: tunggu air turun selesai, lalu aduk batch sebelum cicip.' : 'Focus: wait for drawdown, then mix the batch before tasting.';
       return id ? 'Fokus: bed basket rata dan siklus mesin tidak diganggu.' : 'Focus: level basket bed and keep the machine cycle undisturbed.';
     case 'french_press':
       if (kind === 'press' || kind === 'serve') return id ? 'Fokus: press pelan lalu decant supaya fines berhenti mengekstrak.' : 'Focus: press slowly, then decant so fines stop extracting.';
@@ -2657,10 +2696,10 @@ function buildAiBrewStepMethodFocusCue(
       return id ? 'Fokus: chamber basah rata dan steep tetap pendek.' : 'Focus: evenly wet chamber and keep the steep compact.';
     case 'siphon':
       if (kind === 'heat') return id ? 'Fokus: heat stabil sampai vacuum bekerja, bukan boiling agresif.' : 'Focus: stable heat until vacuum works, not aggressive boiling.';
-      if (kind === 'drawdown' || kind === 'serve') return id ? 'Fokus: cut heat dan biarkan drawdown selesai tanpa agitasi tambahan.' : 'Focus: cut heat and let drawdown finish without extra agitation.';
+      if (kind === 'drawdown' || kind === 'serve') return id ? 'Fokus: matikan panas dan biarkan air turun selesai tanpa agitasi tambahan.' : 'Focus: cut heat and let drawdown finish without extra agitation.';
       return id ? 'Fokus: agitasi singkat saat upper chamber aktif.' : 'Focus: brief agitation while the upper chamber is active.';
     case 'clever_dripper':
-      if (kind === 'release' || kind === 'drawdown') return id ? 'Fokus: release bersih dan jangan aduk saat drawdown.' : 'Focus: clean release and no stirring during drawdown.';
+      if (kind === 'release' || kind === 'drawdown') return id ? 'Fokus: buka katup bersih dan jangan aduk saat air turun.' : 'Focus: clean release and no stirring during drawdown.';
       return id ? 'Fokus: contact time stabil; immersion jangan terlalu gelisah.' : 'Focus: stable contact time; keep immersion calm.';
     case 'chemex':
       return id ? 'Fokus: flow stabil dan hindari bypass dinding filter tebal.' : 'Focus: stable flow and avoid thick-filter wall bypass.';
@@ -2669,7 +2708,7 @@ function buildAiBrewStepMethodFocusCue(
     case 'melitta':
       return id ? 'Fokus: flat bed tetap rata; pulse pendek lebih aman daripada flooding.' : 'Focus: keep the flat bed level; short pulses are safer than flooding.';
     default:
-      return id ? 'Fokus: aliran dari tengah tetap stabil, bed rapi, dan drawdown bersih.' : 'Focus: stable center-to-mid flow and clean drawdown.';
+      return id ? 'Fokus: aliran dari tengah tetap stabil, bed rapi, dan air turun bersih.' : 'Focus: stable center-to-mid flow and clean drawdown.';
   }
 }
 
@@ -3854,7 +3893,7 @@ function buildTargetProfileEffectText(targetProfileId: string, language: string)
         : 'Target effect: slightly longer ratio, lower temperature, faster time, slightly coarser grind, shorter bloom, minimal agitation.';
     case 'floral_transparent':
       return id
-        ? 'Efek target: suhu lebih rendah, tuangan rendah, agitasi minimal, drawdown lebih cepat untuk menjaga floral dan clarity.'
+        ? 'Efek target: suhu lebih rendah, tuangan rendah, agitasi minimal, air turun lebih cepat untuk menjaga floral dan clarity.'
         : 'Target effect: lower heat, low pour height, minimal agitation, faster drawdown to protect florals and clarity.';
     case 'more_sweetness':
       return id
@@ -3866,7 +3905,7 @@ function buildTargetProfileEffectText(targetProfileId: string, language: string)
         : 'Target effect: preserve aroma, fuller middle pour, conservative temperature, avoid over-agitating aromatic processes.';
     case 'more_body':
       return id
-        ? 'Efek target: bloom lebih penuh, kontak lebih lama, grind cenderung lebih halus, drawdown lebih lambat, tuangan tetap rendah.'
+        ? 'Efek target: bloom lebih penuh, kontak lebih lama, grind cenderung lebih halus, air turun lebih lambat, tuangan tetap rendah.'
         : 'Target effect: fuller bloom, longer contact, generally finer grind, slower drawdown.';
     case 'dense_comforting':
       return id
@@ -3879,7 +3918,7 @@ function buildTargetProfileEffectText(targetProfileId: string, language: string)
     case 'balance_clean':
     default:
       return id
-        ? 'Efek target: baseline bersih, bloom 2x, pulse seimbang, agitasi rendah, drawdown normal.'
+        ? 'Efek target: baseline bersih, bloom 2x, pulse seimbang, agitasi rendah, air turun normal.'
         : 'Target effect: clean baseline, 2x bloom, balanced pulses, low agitation, normal drawdown.';
   }
 }
@@ -4128,6 +4167,16 @@ function PlanResultDialog({
   const localizedGrindHeadline = formatGrindHeadlineForDisplay(plan.grindRecommendation || plan.grindSettingReference, language);
   const localizedGrindBandLabel = formatGrindTextForDisplay(plan.grindBandLabel, language);
   const localizedGrindSettingReference = formatGrindTextForDisplay(plan.grindSettingReference, language);
+  const expectedCup = plan.expectedCupProfile;
+  const localizedBeanCoverageLabel = plan.beanCoverage
+    ? formatBeanCoverageLabel(plan.beanCoverage.category, plan.beanCoverage.label, language)
+    : '';
+  const localizedBeanCoverageConfidence = plan.beanCoverage
+    ? formatAiBrewConfidenceLabel(plan.beanCoverage.confidence, language)
+    : '';
+  const localizedExpectedCupConfidence = expectedCup
+    ? formatAiBrewConfidenceLabel(expectedCup.confidence, language)
+    : '';
   const localizedWarnings = [
     ...plan.guardrails.errors.map((item) => localizeAiBrewDynamicText(item, language)),
     ...plan.warnings.map((item) => localizeAiBrewDynamicText(item, language)),
@@ -4229,7 +4278,7 @@ function PlanResultDialog({
       detail: id ? 'Lewat dari range ini mulai ubah clarity dan bitterness.' : 'Outside this range, clarity and bitterness start to move.',
     },
     {
-      label: id ? 'Drawdown ideal' : 'Ideal drawdown',
+      label: id ? 'Air turun ideal' : 'Ideal drawdown',
       value: `${formatGuideTime(drawdownLowSeconds)}-${formatGuideTime(drawdownHighSeconds)}`,
       detail: id ? 'Finis lebih cepat: haluskan. Finis lebih lama: kasarkan.' : 'Faster finish: grind finer. Slower finish: grind coarser.',
     },
@@ -4293,7 +4342,6 @@ function PlanResultDialog({
     { rating: 'astringent', label: copy.feedbackAstringent },
   ];
   const activeFeedbackCorrection = feedback ? buildTasteFeedbackCorrection(plan, feedback.rating, language) : null;
-  const expectedCup = plan.expectedCupProfile;
   const expectedCupItems = expectedCup ? [
     { label: copy.cupAcidity, value: expectedCup.acidity },
     { label: copy.cupSweetness, value: expectedCup.sweetness },
@@ -4468,13 +4516,17 @@ function PlanResultDialog({
                   >
                     <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                       {plan.beanCoverage && (
-                        <span className={`rounded-full border px-2 py-1 font-semibold ${beanCoverageTone}`} data-testid="ai-brew-bean-coverage">
-                          {plan.beanCoverage.label}
+                        <span
+                          className={`rounded-full border px-2 py-1 font-semibold ${beanCoverageTone}`}
+                          data-testid="ai-brew-bean-coverage"
+                          aria-label={`${copy.beanCoverageTitle}: ${localizedBeanCoverageLabel}`}
+                        >
+                          {localizedBeanCoverageLabel}
                         </span>
                       )}
                       {expectedCup && (
                         <span className="rounded-full bg-surface-alpha px-2 py-1 font-semibold text-primary">
-                          {copy.expectedCupTitle}: {expectedCup.confidence}
+                          {copy.expectedCupTitle}: {localizedExpectedCupConfidence}
                         </span>
                       )}
                       {compactExpectedCupItems.map((item) => (
@@ -4493,7 +4545,7 @@ function PlanResultDialog({
                         <div className="mt-2 grid gap-2 sm:grid-cols-2">
                           {plan.beanCoverage && (
                             <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-[12px] leading-5 text-secondary" data-testid="ai-brew-bean-coverage-detail">
-                              <p className="font-semibold text-primary">{copy.beanCoverageTitle}: {plan.beanCoverage.confidence}</p>
+                              <p className="font-semibold text-primary">{copy.beanCoverageTitle}: {localizedBeanCoverageConfidence}</p>
                               <p className="mt-1">{localizeAiBrewDynamicText(plan.beanCoverage.warnings[0] || plan.beanCoverage.reasons[0] || copy.beanCoverageFallback, language)}</p>
                               <p className="mt-1">{localizeAiBrewDynamicText(plan.beanCoverage.nextAction || copy.beanCoverageTasteLoop, language)}</p>
                             </div>
@@ -8000,8 +8052,8 @@ export function AiBrewPanel({
     const switchValvePathLabel = formState.switchPresetId === 'v60_mode'
       ? (isIndonesianAiBrewLanguage(language) ? 'Katup terbuka dari awal' : 'Valve open from start')
       : formState.brewMode === 'iced' || formState.switchPresetId === 'iced_hybrid'
-        ? (isIndonesianAiBrewLanguage(language) ? 'Tutup -> buka di atas es' : 'Closed -> release over ice')
-        : (isIndonesianAiBrewLanguage(language) ? 'Tutup -> buka' : 'Closed -> open');
+        ? (isIndonesianAiBrewLanguage(language) ? 'Katup tutup -> buka di atas es' : 'Closed -> release over ice')
+        : (isIndonesianAiBrewLanguage(language) ? 'Katup tutup -> buka katup' : 'Closed -> open');
     const switchSafetyTone = selectedDripper?.id === 'hario-switch-02' && parsedDoseG >= 20
       ? 'caution'
       : selectedDripper?.id === 'mugen-x-switch' && parsedDoseG > 15
@@ -8021,7 +8073,7 @@ export function AiBrewPanel({
       if (preset.id === 'hybrid_balanced') return isIndonesianAiBrewLanguage(language) ? 'Hybrid seimbang' : 'Balanced hybrid';
       if (preset.id === 'hybrid_bright_clean') return isIndonesianAiBrewLanguage(language) ? 'Hybrid cerah' : 'Bright hybrid';
       if (preset.id === 'v60_mode') return isIndonesianAiBrewLanguage(language) ? 'Mode V60' : 'V60 mode';
-      if (preset.id === 'iced_hybrid') return isIndonesianAiBrewLanguage(language) ? 'Iced hybrid' : 'Iced hybrid';
+      if (preset.id === 'iced_hybrid') return isIndonesianAiBrewLanguage(language) ? 'Hybrid es' : 'Iced hybrid';
       if (preset.id === 'mugen_everyday_hybrid') return isIndonesianAiBrewLanguage(language) ? 'MUGEN hybrid' : 'MUGEN hybrid';
       return isIndonesianAiBrewLanguage(language) ? preset.labelId || preset.label : preset.label;
     };
@@ -8033,7 +8085,7 @@ export function AiBrewPanel({
             <p className="mt-0.5 text-xs leading-5 text-secondary" data-testid="ai-brew-switch-selected-size">
               {selectedSwitchSizeLabel}
               {selectedSwitchCapacity ? ` - ${selectedSwitchCapacity} ml` : ''}
-              {selectedSwitchClosedMax ? ` - closed <= ${selectedSwitchClosedMax} ml` : ''}
+              {selectedSwitchClosedMax ? ` - ${isIndonesianAiBrewLanguage(language) ? 'katup tertutup' : 'closed'} <= ${selectedSwitchClosedMax} ml` : ''}
             </p>
           </div>
           <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
@@ -9035,7 +9087,7 @@ export function AiBrewPanel({
                     sectionId="confidence"
                     activeSection={activeProSection}
                     onActiveSectionChange={setActiveProSection}
-                    title={isIndonesianAiBrewLanguage(language) ? 'Confidence & Source' : 'Confidence & Source'}
+                    title={isIndonesianAiBrewLanguage(language) ? 'Keyakinan & Sumber' : 'Confidence & Source'}
                     summary={isIndonesianAiBrewLanguage(language) ? 'Prediksi rasa, bukan jaminan.' : 'Taste prediction, not a guarantee.'}
                     icon={<Info size={15} />}
                   >

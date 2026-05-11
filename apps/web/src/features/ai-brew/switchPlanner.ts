@@ -523,29 +523,29 @@ export function resolveSwitchTasteProgramme(params: {
     : roundSwitchSeconds(bloomSeconds + closedPhaseSeconds);
 
   if (fullImmersionRequested && hotReferenceMl > maxClosedLoadMl) {
-    riskWarnings.push(`Full immersion needs ${Math.round(hotReferenceMl)} ml closed load, above safe ${Math.round(maxClosedLoadMl)} ml.`);
+    riskWarnings.push(`Full immersion butuh muatan ruang tertutup ${Math.round(hotReferenceMl)} ml, melebihi batas aman ${Math.round(maxClosedLoadMl)} ml.`);
   }
   if (waterTight && preset.id !== 'v60_mode' && !fullImmersionRequested) {
-    riskWarnings.push(`Keep closed phase at or below ${Math.round(maxClosedLoadMl)} ml; finish with valve open.`);
+    riskWarnings.push(`Jaga fase katup tertutup di ${Math.round(maxClosedLoadMl)} ml atau lebih rendah; selesaikan dengan katup terbuka.`);
   }
   if (params.waterClassification === 'high_buffer' || params.waterClassification === 'alkaline_caution') {
-    riskWarnings.push('High-buffer water can mute brightness; release earlier if cup turns flat.');
+    riskWarnings.push('Air buffer tinggi bisa meredam rasa cerah; buka katup lebih awal jika cangkir terasa datar.');
   }
   if (params.grinderVerification === 'fallback' || params.grinderVerification === 'dataset_unverified') {
-    riskWarnings.push('Grinder reference is low-confidence; validate with drawdown before changing recipe numbers.');
+    riskWarnings.push('Referensi grinder masih rendah keyakinan; validasi air turun sebelum mengubah angka resep.');
   }
   if (isTruthyString(input.switchPresetId)) {
     const brightTarget = intent === 'bright' || intent === 'floral';
     const bodyTarget = intent === 'body' || intent === 'dense';
     const sweetTarget = intent === 'sweet' || intent === 'soft';
     if (brightTarget && (preset.id === 'immersion_heavy_body' || preset.id === 'immersion_sweet')) {
-      riskWarnings.push('Manual preset tidak selaras dengan target bright/floral; clarity bisa turun. Gunakan Hybrid Bright Clean atau V60 Mode jika ingin lebih transparan.');
+      riskWarnings.push('Preset manual kurang selaras dengan target cerah/floral; kejernihan bisa turun. Gunakan Hybrid Bright Clean atau Mode V60 jika ingin lebih transparan.');
     }
     if (bodyTarget && (preset.id === 'v60_mode' || preset.id === 'hybrid_bright_clean')) {
-      riskWarnings.push('Manual preset lebih clean daripada target body; body bisa lebih ringan. Gunakan Heavy Body hanya jika chamber aman.');
+      riskWarnings.push('Preset manual lebih bersih daripada target body; body bisa lebih ringan. Gunakan Heavy Body hanya jika muatan ruang aman.');
     }
     if (sweetTarget && preset.id === 'v60_mode') {
-      riskWarnings.push('Manual V60 Mode lebih transparan daripada target manis/bulat; sweetness bisa lebih ringan.');
+      riskWarnings.push('Mode V60 manual lebih transparan daripada target manis/bulat; rasa manis bisa lebih ringan.');
     }
   }
 
@@ -1103,10 +1103,10 @@ export function validateSwitchStepSafety(params: {
       ? 'caution'
       : 'safe';
   const message = status === 'blocked'
-    ? `Closed chamber peak ${Math.round(Math.max(peakClosedLoadMl, params.hotWaterMl))} ml exceeds safe ${Math.round(maxClosedLoadMl)} ml. Use Switch 03, V60 Mode, or a conservative hybrid.`
+    ? `Puncak muatan ruang tertutup ${Math.round(Math.max(peakClosedLoadMl, params.hotWaterMl))} ml melebihi batas aman ${Math.round(maxClosedLoadMl)} ml. Gunakan Switch 03, Mode V60, atau hybrid konservatif.`
     : status === 'caution'
-      ? `Closed chamber peak ${Math.round(peakClosedLoadMl)} ml is close to safe ${Math.round(maxClosedLoadMl)} ml. Release before the bed stalls.`
-      : `Closed chamber peak ${Math.round(peakClosedLoadMl)} ml stays within safe ${Math.round(maxClosedLoadMl)} ml.`;
+      ? `Puncak muatan ruang tertutup ${Math.round(peakClosedLoadMl)} ml mendekati batas aman ${Math.round(maxClosedLoadMl)} ml. Buka katup sebelum bed mulai macet.`
+      : `Puncak muatan ruang tertutup ${Math.round(peakClosedLoadMl)} ml masih aman di bawah batas ${Math.round(maxClosedLoadMl)} ml.`;
   return {
     status,
     maxClosedLoadMl,

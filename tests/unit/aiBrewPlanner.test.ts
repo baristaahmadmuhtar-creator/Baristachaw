@@ -53,6 +53,7 @@ import {
 import { resolveBrewerProfileTrustStatus } from '../../apps/web/src/features/ai-brew/catalogTrust.ts';
 import { sanitizeBrewNarrative, validateBrewPlanOutput } from '../../apps/web/src/features/ai-brew/antiHallucination.ts';
 import { sanitizeAiCoachMarkdown } from '../../apps/web/src/features/ai-brew/coachGuard.ts';
+import { localizeAiBrewDynamicText } from '../../apps/web/src/features/ai-brew/localization.ts';
 import {
   buildAiBrewTasteLoopMarkdown,
   buildTasteFeedbackCorrection,
@@ -2161,7 +2162,7 @@ test('production Hario Switch presets choose safe defaults and preserve programm
   }, productionCatalog);
   assert.equal(switch02UnsafeHeavy.switchStepValidation?.status, 'blocked');
   assert.equal(switch02UnsafeHeavy.workflowValidation?.status, 'blocked');
-  assert.match((switch02UnsafeHeavy.switchStepValidation?.message || ''), /exceeds safe/i);
+  assert.match((switch02UnsafeHeavy.switchStepValidation?.message || ''), /exceeds safe|melebihi batas aman/i);
 
   const switch03Large = buildAiBrewPlan({
     ...base,
@@ -4137,7 +4138,7 @@ test('AI Brew experience layer exposes bean-safe reasoning, confidence labels, a
 
   const badges = resolveAiBrewConfidenceBadges(plan, 'id').map((badge) => badge.label).join(' ');
   assert.match(badges, /Planner Lokal/);
-  assert.match(badges, /Grinder Official/);
+  assert.match(badges, /Grinder resmi/);
 
   const sourLoop = buildAiBrewTasteLoopMarkdown(plan, { rating: 'sour' }, 'id');
   assert.match(sourLoop, /sedikit lebih halus/i);
@@ -4146,7 +4147,7 @@ test('AI Brew experience layer exposes bean-safe reasoning, confidence labels, a
 
   const priorities = resolveAiBrewActionPriorities(plan, 'id').join(' ');
   assert.match(priorities, /output utama/i);
-  assert.match(priorities, /flow time|drawdown/i);
+  assert.match(priorities, /flow time|air turun|drawdown/i);
   assert.match(priorities, /grind|giling|halus|kasar/i);
   assert.match(priorities, /satu variabel/i);
 });
@@ -6715,6 +6716,79 @@ test('origin-target-method calibration makes origin cues react differently acros
   assert.ok(brazilCleverSweetness.confidenceNotes.some((note) => /origin-method calibration active: brazil sweet x sweetness x clever dripper/i.test(note)));
   assert.ok(gayoKalitaBody.confidenceNotes.some((note) => /origin-method calibration active: indonesia structured x body x kalita wave/i.test(note)));
   assert.ok(yunnanV60Balanced.confidenceNotes.some((note) => /origin-method calibration active: china yunnan fruit clarity x balanced x v60/i.test(note)));
+});
+
+test('Indonesian critical AI Brew trust copy stays localized and honest', () => {
+  const localizedLeakPattern = /\b(Known bean|Partial bean|Unknown bean|Risk bean|Blocked \/ unsafe|safe baseline|taste feedback|confidence|warning|caution|valve closed|valve open|chamber load|Closed chamber|not guarantee|curated prediction)\b/i;
+  const localizedCatalog = buildProductionAiBrewCatalogForTests();
+  const base = {
+    ...createDefaultAiBrewFormState(localizedCatalog),
+    waterMode: 'manual' as const,
+    waterCustomized: true,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  };
+
+  const unknown = buildAiBrewPlan({
+    ...base,
+    coffeeName: '',
+    process: '',
+    variety: '',
+    roastLevel: 'medium',
+    dripperId: 'hario-v60',
+  }, localizedCatalog);
+  assert.equal(unknown.beanCoverage?.category, 'unknown_fallback');
+  const unknownCopy = [
+    unknown.beanCoverage?.label === 'Unknown bean / fallback' ? 'Bean belum lengkap' : unknown.beanCoverage?.label,
+    ...(unknown.beanCoverage?.warnings || []),
+    unknown.beanCoverage?.nextAction,
+  ].filter(Boolean).map((item) => localizeAiBrewDynamicText(String(item), 'id')).join(' ');
+  assert.match(unknownCopy, /Bean belum lengkap|Data beans tidak lengkap|baseline aman|feedback rasa/i);
+  assert.doesNotMatch(unknownCopy, localizedLeakPattern);
+
+  const known = buildAiBrewPlan({
+    ...base,
+    coffeeName: 'Washed Ethiopia QA',
+    process: 'washed',
+    variety: 'bourbon',
+    roastLevel: 'light',
+    dripperId: 'hario-v60',
+  }, localizedCatalog);
+  assert.ok(known.beanCoverage?.category === 'known_high' || known.beanCoverage?.category === 'partial_medium');
+  const badgeText = resolveAiBrewConfidenceBadges(known, 'id').map((badge) => badge.label).join(' ');
+  assert.match(badgeText, /Siap|Grinder resmi|Grinder kurasi|Profil alat exact|Template turunan|Fallback family/i);
+  assert.doesNotMatch(badgeText, /\bReady|Device Exact|Grinder Official|Grinder Curated|Grinder Estimated|High Buffer|Manual Required\b/i);
+
+  const switchUnsafe = buildAiBrewPlan({
+    ...base,
+    coffeeName: 'Switch 02 Body QA',
+    process: 'wet_hulled',
+    variety: 'bourbon',
+    roastLevel: 'medium',
+    dripperId: 'hario-switch-02',
+    doseG: '20',
+    targetWaterMl: '300',
+    targetProfileId: 'more_body',
+    switchPresetId: 'immersion_heavy_body',
+  }, localizedCatalog);
+  assert.equal(switchUnsafe.switchStepValidation?.status, 'blocked');
+  const switchSafetyCopy = [
+    switchUnsafe.switchStepValidation?.message,
+    switchUnsafe.switchWatch,
+    ...(switchUnsafe.switchTasteProgramme?.riskWarnings || []),
+  ].filter(Boolean).map((item) => localizeAiBrewDynamicText(String(item), 'id')).join(' ');
+  assert.match(switchSafetyCopy, /muatan ruang|batas aman|katup|Mode V60|hybrid konservatif/i);
+  assert.doesNotMatch(switchSafetyCopy, localizedLeakPattern);
+
+  const localizedSwitchSteps = buildLocalizedPlanRecipeSteps(switchUnsafe, 'id').join(' ');
+  assert.match(localizedSwitchSteps, /Katup|Target|ml|Buka/i);
+  assert.doesNotMatch(localizedSwitchSteps, /\bvalve closed|valve open|chamber load\b/i);
+
+  const correction = buildTasteFeedbackCorrection(known, 'sour', 'id');
+  const correctionCopy = `${correction.primaryCorrection} ${correction.backupCorrection} ${correction.guardrail}`;
+  assert.match(correctionCopy, /ubah satu variabel|jangan ubah rasio\/dosis|rasa/i);
+  assert.doesNotMatch(correctionCopy, localizedLeakPattern);
 });
 
 test('water chemistry extremes push AI Brew in opposite extraction directions', () => {

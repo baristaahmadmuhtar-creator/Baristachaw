@@ -22,31 +22,31 @@ function hasOnlineAiOptimization(plan: BrewPlan) {
 function grinderStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
   if (plan.grindSettingMode === 'derived_baseline' || plan.grindSettingVerification === 'fallback') {
-    return id ? 'Grinder Fallback' : 'Grinder Fallback';
+    return id ? 'Grinder fallback' : 'Grinder Fallback';
   }
-  if (plan.grindSettingVerification === 'official') return id ? 'Grinder Official' : 'Grinder Official';
+  if (plan.grindSettingVerification === 'official') return id ? 'Grinder resmi' : 'Grinder Official';
   if (plan.grindSettingVerification === 'community_verified' || plan.grindSettingVerification === 'curated') {
-    return id ? 'Grinder Curated' : 'Grinder Curated';
+    return id ? 'Grinder kurasi' : 'Grinder Curated';
   }
-  return id ? 'Grinder Estimated' : 'Grinder Estimated';
+  return id ? 'Grinder estimasi' : 'Grinder Estimated';
 }
 
 function waterStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
-  if (plan.waterClassification === 'zero_mineral_ro') return id ? 'Zero Mineral / RO' : 'Zero Mineral / RO';
-  if (plan.waterClassification === 'high_buffer') return id ? 'High Buffer' : 'High Buffer';
+  if (plan.waterClassification === 'zero_mineral_ro') return id ? 'Mineral nol / RO' : 'Zero Mineral / RO';
+  if (plan.waterClassification === 'high_buffer') return id ? 'Buffer tinggi' : 'High Buffer';
   if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady) {
-    return id ? 'Manual Required' : 'Manual Required';
+    return id ? 'Perlu input manual' : 'Manual Required';
   }
-  if (plan.waterMineralDerivation === 'estimated_from_classification') return id ? 'Estimated' : 'Estimated';
-  return id ? 'Ready' : 'Ready';
+  if (plan.waterMineralDerivation === 'estimated_from_classification') return id ? 'Estimasi' : 'Estimated';
+  return id ? 'Siap' : 'Ready';
 }
 
 function brewerStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
-  if (plan.deviceProfileMode === 'exact') return id ? 'Device Exact' : 'Device Exact';
-  if (plan.deviceProfileMode === 'derived_template') return id ? 'Derived Template' : 'Derived Template';
-  return id ? 'Family Fallback' : 'Family Fallback';
+  if (plan.deviceProfileMode === 'exact') return id ? 'Profil alat exact' : 'Device Exact';
+  if (plan.deviceProfileMode === 'derived_template') return id ? 'Template turunan' : 'Derived Template';
+  return id ? 'Fallback family' : 'Family Fallback';
 }
 
 export function resolveAiBrewConfidenceBadges(plan: BrewPlan, language: string): AiBrewConfidenceBadge[] {
@@ -135,7 +135,7 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
       ? `Ikuti output utama: ${mainWater}, ${Math.round(plan.waterTempC)}°C, selesai sekitar ${formatTimeLabel(plan.totalTimeSeconds)}.`
       : `Brew the main numbers first: ${mainWater}, ${Math.round(plan.waterTempC)}°C, finish around ${formatTimeLabel(plan.totalTimeSeconds)}.`,
     id
-      ? 'Pakai setting grinder awal sebagai baseline; ubah satu variabel dulu setelah melihat drawdown dan rasa.'
+      ? 'Pakai setting grinder awal sebagai baseline; ubah satu variabel dulu setelah melihat air turun dan rasa.'
       : 'Use the starting grinder setting as the baseline; make small corrections only after drawdown and tasting.',
     id
       ? 'Jika asam/tipis: sedikit lebih halus atau pulse ringan. Jika pahit/macet: sedikit lebih kasar atau kurangi agitasi.'
@@ -168,11 +168,11 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
 
   if (plan.grindSettingMode === 'derived_baseline' || plan.grindSettingVerification === 'fallback') {
     priorities.push(id
-      ? 'Estimasi awal, bukan setting resmi. Validasi dengan drawdown dan rasa.'
+      ? 'Estimasi awal, bukan setting resmi. Validasi dengan air turun dan rasa.'
       : 'Estimated starting point, not an official setting. Validate with drawdown and taste.');
   } else if (plan.grindSettingVerification === 'dataset_unverified') {
     priorities.push(id
-      ? 'Setting grinder masih estimated. Validasi dengan drawdown dan rasa.'
+      ? 'Setting grinder masih estimasi. Validasi dengan air turun dan rasa.'
       : 'Grinder setting is estimated. Validate with drawdown and taste.');
   }
 
@@ -200,8 +200,19 @@ function feedbackLabel(rating: BrewTasteFeedbackRating, language: string) {
 
 function protectedGuardrail(language: string) {
   return isIndonesian(language)
-    ? 'Dosis, rasio, total air, air panas/es, mode seduh, alat, grinder, dan timing step tetap dikunci.'
+    ? 'Ubah satu variabel dulu. Dosis, rasio, total air, air panas/es, mode seduh, alat, grinder, dan timing step tetap dikunci.'
     : 'Dose, ratio, total water, hot water/ice, brew mode, brewer, grinder, and step timing stay locked.';
+}
+
+function localizeGrindReference(text: string, language: string) {
+  if (!isIndonesian(language)) return text;
+  return text
+    .replace(/\bStarting grind:/gi, 'Gilingan awal:')
+    .replace(/\bCorrection range:/gi, 'Rentang koreksi:')
+    .replace(/\bIf sour\/thin:/gi, 'Jika asam/tipis:')
+    .replace(/\bIf bitter\/dry\/stalled:/gi, 'Jika pahit/kering/macet:')
+    .replace(/\bnumbers\b/gi, 'angka')
+    .replace(/\bsteps\b/gi, 'step');
 }
 
 function methodCorrection(
@@ -210,7 +221,7 @@ function methodCorrection(
   language: string,
 ): Pick<BrewTasteFeedbackCorrection, 'primaryCorrection' | 'backupCorrection'> {
   const id = isIndonesian(language);
-  const grind = plan.grindRecommendation || plan.grindSettingReference;
+  const grind = localizeGrindReference(plan.grindRecommendation || plan.grindSettingReference, language);
   const waterWarning = plan.waterClassification === 'high_buffer'
     ? (id ? 'Cek air dulu: buffer tinggi bisa membuat acidity/floral muted.' : 'Check water first: high buffer can mute acidity/floral.')
     : plan.waterClassification === 'zero_mineral_ro'
@@ -250,8 +261,8 @@ function methodCorrection(
 
   if (plan.methodFamily === 'hario_switch') {
     if (rating === 'great') return {
-      primaryCorrection: id ? 'Pertahankan gilingan, titik buka/release, dan jalur katup yang sama.' : 'Keep the same grind, release checkpoint, and valve path.',
-      backupCorrection: id ? 'Catat muatan ruang, drawdown, air, dan grinder sebagai baseline Switch.' : 'Record chamber load, drawdown, water, and grinder as the Switch baseline.',
+      primaryCorrection: id ? 'Pertahankan gilingan, titik buka katup, dan jalur katup yang sama.' : 'Keep the same grind, release checkpoint, and valve path.',
+      backupCorrection: id ? 'Catat muatan ruang, air turun, air, dan grinder sebagai baseline Switch.' : 'Record chamber load, drawdown, water, and grinder as the Switch baseline.',
     };
     if (rating === 'sour' || rating === 'thin') return {
       primaryCorrection: id
@@ -263,7 +274,7 @@ function methodCorrection(
     };
     if (rating === 'bitter' || rating === 'astringent') return {
       primaryCorrection: id
-        ? 'Buka/release 10 detik lebih awal atau coba 0.5 step lebih kasar.'
+        ? 'Buka katup 10 detik lebih awal atau coba 0.5 step lebih kasar.'
         : 'Open/release 10 seconds earlier or try 0.5 step coarser.',
       backupCorrection: id
         ? 'Kurangi agitasi akhir; jangan tahan ruang tertutup penuh terlalu lama.'
@@ -274,12 +285,12 @@ function methodCorrection(
         ? 'Kurangi muatan ruang tertutup atau buka lebih awal; jaga slurry lebih tenang.'
         : 'Reduce closed chamber load or open earlier; keep the slurry calmer.',
       backupCorrection: id
-        ? 'Coba sedikit lebih kasar dan hindari swirl setelah release.'
+        ? 'Coba sedikit lebih kasar dan hindari swirl setelah buka katup.'
         : 'Try slightly coarser and avoid swirl after release.',
     };
     if (rating === 'flat') return {
       primaryCorrection: waterWarning || (id
-        ? 'Release lebih awal atau gunakan Hybrid cerah bersih untuk mengangkat clarity.'
+        ? 'Buka katup lebih awal atau gunakan Hybrid cerah bersih untuk mengangkat clarity.'
         : 'Release earlier or use Hybrid Bright Clean to lift clarity.'),
       backupCorrection: id
         ? 'Cek KH/alkalinity dan gunakan mineral manual sebelum mengubah rasio.'

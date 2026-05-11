@@ -1110,11 +1110,18 @@ function assertPlanEnvelope(plan: ReturnType<typeof buildAiBrewPlan>) {
   assertBaristaRoundedPlan(plan);
   for (const [label, value] of finiteValues) {
     assert.ok(Number.isFinite(value), `${label} should be finite`);
+    assert.ok(value >= 0, `${label} should not be negative`);
   }
   for (const [index, step] of plan.steps.entries()) {
     assert.ok(Number.isFinite(step.startSeconds), `step ${index + 1} start should be finite`);
     assert.ok(Number.isFinite(step.pourVolumeMl), `step ${index + 1} pour should be finite`);
     assert.ok(Number.isFinite(step.targetVolumeMl), `step ${index + 1} target should be finite`);
+    assert.ok(step.startSeconds >= 0, `step ${index + 1} start should not be negative`);
+    assert.ok(step.pourVolumeMl >= 0, `step ${index + 1} pour should not be negative`);
+    assert.ok(step.targetVolumeMl >= 0, `step ${index + 1} target should not be negative`);
+    if (index > 0) {
+      assert.ok(step.startSeconds >= plan.steps[index - 1].startSeconds, `step ${index + 1} time should not go backward`);
+    }
   }
   assert.equal(totalPoured, plan.hotWaterMl);
   assert.equal(finalStep?.targetVolumeMl, plan.hotWaterMl);
@@ -1123,8 +1130,140 @@ function assertPlanEnvelope(plan: ReturnType<typeof buildAiBrewPlan>) {
   assert.ok(plan.hotExtractionRatio > 0);
   assert.ok(plan.hotWaterSharePercent >= 0 && plan.hotWaterSharePercent <= 100);
   assert.ok(plan.iceSharePercent >= 0 && plan.iceSharePercent <= 100);
-  assert.ok(plan.waterTempC >= 78 && plan.waterTempC <= 98);
-  assert.ok(plan.totalTimeSeconds >= 75 && plan.totalTimeSeconds <= 420);
+  const minTempC = plan.methodFamily === 'cold_brew' ? 0 : 78;
+  assert.ok(plan.waterTempC >= minTempC && plan.waterTempC <= 98);
+  const maxTimeSeconds = plan.methodFamily === 'cold_brew' ? 48 * 60 * 60 : plan.methodFamily === 'espresso' ? 75 : 420;
+  const minTimeSeconds = plan.methodFamily === 'espresso' ? 15 : 75;
+  assert.ok(plan.totalTimeSeconds >= minTimeSeconds && plan.totalTimeSeconds <= maxTimeSeconds);
+}
+
+type AiBrewPlanForTest = ReturnType<typeof buildAiBrewPlan>;
+
+function summarizeAiBrewPlan(plan: AiBrewPlanForTest) {
+  return {
+    method: plan.methodFamily,
+    targetProfile: plan.targetProfileId,
+    doseG: plan.doseG,
+    totalWaterMl: plan.totalWaterMl,
+    hotWaterMl: plan.hotWaterMl,
+    iceMl: plan.iceMl,
+    ratio: plan.finalBeverageRatio,
+    tempC: plan.waterTempC,
+    grind: plan.grindRecommendation,
+    timeSeconds: plan.totalTimeSeconds,
+    stepCount: plan.steps.length,
+    expectedCup: {
+      acidity: plan.expectedCupProfile?.acidity || 0,
+      sweetness: plan.expectedCupProfile?.sweetness || 0,
+      body: plan.expectedCupProfile?.body || 0,
+      clarity: plan.expectedCupProfile?.clarity || 0,
+      bitterRisk: plan.expectedCupProfile?.bitterRisk || 0,
+      confidence: plan.expectedCupProfile?.confidence || 'low',
+    },
+    beanCoverage: plan.beanCoverage,
+    warnings: normalizeTestStrings(plan.warnings, plan.expectedCupProfile?.warnings || [], plan.beanCoverage?.warnings || []),
+    provenance: {
+      device: plan.deviceProfileMode,
+      grinder: plan.grindSettingVerification,
+      water: plan.waterBrandVerification || plan.waterMineralDerivation || 'manual',
+    },
+  };
+}
+
+function normalizeTestStrings(...groups: Array<Array<string | undefined>>) {
+  return Array.from(new Set(groups.flat().filter((value): value is string => Boolean(value))));
+}
+
+function summarizeSwitchPlan(plan: AiBrewPlanForTest) {
+  const waterSteps = plan.steps.filter((step) => step.pourVolumeMl > 0);
+  const closedLoads = plan.steps
+    .filter((step) => step.valveState === 'closed')
+    .map((step) => step.chamberLoadMl || 0);
+  return {
+    dripper: plan.dripper.name,
+    targetProfile: plan.targetProfileId,
+    presetId: plan.switchPresetId,
+    presetLabel: plan.switchPresetLabel,
+    programme: plan.methodProgramme,
+    doseG: plan.doseG,
+    totalWaterMl: plan.totalWaterMl,
+    hotWaterMl: plan.hotWaterMl,
+    iceMl: plan.iceMl,
+    finalRatio: plan.finalBeverageRatio,
+    bloomMl: plan.switchTasteProgramme?.bloomMl || 0,
+    bloomSeconds: plan.switchTasteProgramme?.bloomSeconds || 0,
+    releaseSeconds: plan.switchTasteProgramme?.releaseSeconds || 0,
+    valvePath: plan.switchTasteProgramme?.valvePath || [],
+    closedPhaseMl: plan.switchTasteProgramme?.closedPhaseMl || 0,
+    openPhaseMl: plan.switchTasteProgramme?.openPhaseMl || 0,
+    closedLoadPeakMl: plan.switchStepValidation?.peakClosedLoadMl || Math.max(0, ...closedLoads),
+    safeClosedMaxMl: plan.switchStepValidation?.maxClosedLoadMl || 0,
+    steps: plan.steps.map((step) => ({
+      id: step.id,
+      startSeconds: step.startSeconds,
+      pourVolumeMl: step.pourVolumeMl,
+      targetVolumeMl: step.targetVolumeMl,
+      valveState: step.valveState,
+      chamberState: step.chamberState,
+      chamberLoadMl: step.chamberLoadMl,
+      flowRate: step.flowRateMlPerSec,
+      pourPath: step.pourPath,
+      agitation: step.agitationLevel,
+    })),
+    expectedCup: {
+      acidity: plan.expectedCupProfile?.acidity || 0,
+      sweetness: plan.expectedCupProfile?.sweetness || 0,
+      body: plan.expectedCupProfile?.body || 0,
+      clarity: plan.expectedCupProfile?.clarity || 0,
+      bitterRisk: plan.expectedCupProfile?.bitterRisk || 0,
+      aroma: plan.expectedCupProfile?.aromaIntensity || 0,
+      confidence: plan.expectedCupProfile?.confidence,
+    },
+    warnings: [
+      ...plan.warnings,
+      ...(plan.workflowValidation?.warnings || []),
+      ...(plan.workflowValidation?.blockingErrors || []),
+      ...(plan.switchTasteProgramme?.riskWarnings || []),
+    ],
+    validationStatus: plan.switchStepValidation?.status,
+  };
+}
+
+function assertSwitchWaterAccounting(plan: AiBrewPlanForTest) {
+  assert.equal(plan.methodFamily, 'hario_switch');
+  const summary = summarizeSwitchPlan(plan);
+  const waterSteps = summary.steps.filter((step) => step.pourVolumeMl > 0);
+  assert.ok(waterSteps.length > 0, `${summary.dripper} should have water steps`);
+  assert.ok(
+    Math.abs(waterSteps.reduce((sum, step) => sum + step.pourVolumeMl, 0) - summary.hotWaterMl) <= 1,
+    `${summary.dripper} pour sum should equal hot water: ${JSON.stringify(summary)}`,
+  );
+  for (let index = 1; index < waterSteps.length; index += 1) {
+    assert.ok(
+      waterSteps[index].targetVolumeMl >= waterSteps[index - 1].targetVolumeMl,
+      `${summary.dripper} target should be monotonic: ${JSON.stringify(summary.steps)}`,
+    );
+  }
+  assert.equal(waterSteps.at(-1)?.targetVolumeMl, summary.hotWaterMl);
+  assert.ok(waterSteps.every((step) => step.flowRate && step.pourPath && step.agitation), `${summary.dripper} missing step technique metadata`);
+  assert.ok((plan.workflowGuideSteps || []).filter((step) => step.pourVolumeMl > 0).every((step) => (
+    /\d+:\d{2}/.test(step.primaryText)
+    && /tuang \d+ ml sampai \d+ ml/.test(step.primaryText)
+    && /Katup (tutup|buka)/.test(step.primaryText)
+  )), `${summary.dripper} Ringkas guide should keep time, valve, pour, and cumulative target`);
+}
+
+function assertSafeSwitchPlan(plan: AiBrewPlanForTest) {
+  const summary = summarizeSwitchPlan(plan);
+  assert.equal(summary.validationStatus, 'safe', `${summary.dripper} should be safe: ${JSON.stringify(summary)}`);
+  assert.ok(summary.closedLoadPeakMl <= summary.safeClosedMaxMl, `${summary.dripper} peak closed load should stay safe: ${JSON.stringify(summary)}`);
+}
+
+function assertUnsafeSwitchPlan(plan: AiBrewPlanForTest) {
+  const summary = summarizeSwitchPlan(plan);
+  assert.ok(summary.validationStatus === 'caution' || summary.validationStatus === 'blocked', `${summary.dripper} should caution/block: ${JSON.stringify(summary)}`);
+  assert.ok((plan.switchStepValidation?.unsafeStepIds.length || 0) > 0 || summary.validationStatus === 'caution');
+  assert.match(plan.switchStepValidation?.message || summary.warnings.join(' '), /safe|aman|exceeds|melewati|muatan|chamber/i);
 }
 
 function getFinalWindowSeconds(plan: ReturnType<typeof buildAiBrewPlan>) {
@@ -1790,6 +1929,10 @@ test('Hario Switch exact variants preserve every volume checkpoint without chang
   const sourceVolumeIds = hot.steps.filter((step) => step.pourVolumeMl > 0).map((step) => step.id);
   const guideSourceIds = new Set((hot.workflowGuideSteps || []).flatMap((step) => step.sourceStepIds));
   assert.deepEqual(sourceVolumeIds.filter((id) => !guideSourceIds.has(id)), []);
+  const switchPourGuideLines = (hot.workflowGuideSteps || []).filter((step) => step.pourVolumeMl > 0);
+  assert.ok(switchPourGuideLines.every((step) => /\d+:\d{2}/.test(step.primaryText)), 'Switch Ringkas guide keeps time in the main line');
+  assert.ok(switchPourGuideLines.every((step) => /tuang \d+ ml sampai \d+ ml/.test(step.primaryText)), 'Switch Ringkas guide keeps pour and cumulative target');
+  assert.ok(switchPourGuideLines.every((step) => /Katup (tutup|buka)/.test(step.primaryText)), 'Switch Ringkas guide keeps valve state');
   assert.ok(hot.steps.some((step) => step.kind === 'wait' && step.pourVolumeMl === 0));
   assert.ok(hot.steps.some((step) => step.kind === 'release' && step.pourVolumeMl === 0));
   assert.ok((hot.workflowGuideSteps || []).some((step) => step.techniqueChips.some((chip) => chip.key === 'valve' && chip.value === 'closed')));
@@ -1923,6 +2066,10 @@ test('production Hario Switch presets choose safe defaults and preserve programm
   assert.equal(quickDefault.switchPresetId, 'hybrid_balanced');
   assert.equal(quickDefault.methodProgramme, 'bloom_then_immersion');
   assert.equal(quickDefault.switchCompatibility?.status, 'safe');
+  assert.equal(quickDefault.switchStepValidation?.status, 'safe');
+  assert.ok((quickDefault.switchTasteProgramme?.bloomRatio || 0) >= 2.5);
+  assert.ok((quickDefault.switchTasteProgramme?.bloomRatio || 0) <= 3);
+  assert.ok((quickDefault.switchTasteProgramme?.closedPhaseMl || 0) > (quickDefault.switchTasteProgramme?.bloomMl || 0));
   assert.equal(quickDefault.switchProvenance?.hardwareVerificationLevel, 'official');
   assert.equal(quickDefault.switchProvenance?.workflowVerificationLevel, 'curated_synthesis');
   assert.equal(quickDefault.switchProvenance?.sensoryModelConfidence, 'medium');
@@ -1936,8 +2083,30 @@ test('production Hario Switch presets choose safe defaults and preserve programm
   }, productionCatalog);
   assert.equal(brightAuto.switchPresetId, 'hybrid_bright_clean');
   assert.equal(brightAuto.methodProgramme, 'percolation_then_immersion');
+  assert.ok((brightAuto.switchTasteProgramme?.bloomRatio || 0) <= 2.5);
+  assert.ok((brightAuto.switchTasteProgramme?.openPhaseMl || 0) > (brightAuto.switchTasteProgramme?.closedPhaseMl || 0));
   assert.ok(brightAuto.steps.filter((step) => step.pourVolumeMl > 0).some((step) => step.valveState === 'open'));
   assert.ok(brightAuto.steps.filter((step) => step.pourVolumeMl > 0).some((step) => step.valveState === 'closed'));
+  assert.ok(brightAuto.steps.filter((step) => step.pourVolumeMl > 0).every((step) => step.flowRateMlPerSec && step.pourPath && step.pourHeight && step.agitationLevel));
+
+  const acidityAuto = buildAiBrewPlan({
+    ...base,
+    targetProfileId: 'more_acidity',
+    process: 'washed',
+  }, productionCatalog);
+  assert.equal(acidityAuto.switchPresetId, 'hybrid_bright_clean');
+  assert.ok((acidityAuto.switchTasteProgramme?.closedPhaseSeconds || 0) <= 45);
+  assert.ok((acidityAuto.expectedCupProfile?.clarity || 0) >= (quickDefault.expectedCupProfile?.clarity || 0));
+
+  const fruitAuto = buildAiBrewPlan({
+    ...base,
+    coffeeName: 'Switch QA natural fruit',
+    targetProfileId: 'fruit_forward',
+    process: 'natural',
+  }, productionCatalog);
+  assert.equal(fruitAuto.switchPresetId, 'hybrid_balanced');
+  assert.ok((fruitAuto.switchTasteProgramme?.bloomRatio || 0) >= 2.5);
+  assert.ok((fruitAuto.switchTasteProgramme?.openPhaseMl || 0) > 0);
 
   const sweetAuto = buildAiBrewPlan({
     ...base,
@@ -1945,7 +2114,18 @@ test('production Hario Switch presets choose safe defaults and preserve programm
     process: 'washed',
   }, productionCatalog);
   assert.equal(sweetAuto.switchPresetId, 'immersion_sweet');
+  assert.ok((sweetAuto.switchTasteProgramme?.bloomRatio || 0) >= 2.8);
+  assert.ok((sweetAuto.switchTasteProgramme?.closedPhaseSeconds || 0) >= 80);
   assert.ok(sweetAuto.steps.filter((step) => step.pourVolumeMl > 0).length >= 2);
+
+  const softAuto = buildAiBrewPlan({
+    ...base,
+    targetProfileId: 'soft_round',
+    process: 'honey',
+  }, productionCatalog);
+  assert.equal(softAuto.switchPresetId, 'immersion_sweet');
+  assert.ok((softAuto.switchTasteProgramme?.bloomRatio || 0) >= 2.8);
+  assert.ok((softAuto.expectedCupProfile?.acidity || 0) <= (acidityAuto.expectedCupProfile?.acidity || 0));
 
   const bodyAuto = buildAiBrewPlan({
     ...base,
@@ -1955,6 +2135,8 @@ test('production Hario Switch presets choose safe defaults and preserve programm
   }, productionCatalog);
   assert.equal(bodyAuto.switchPresetId, 'immersion_heavy_body');
   assert.equal(bodyAuto.workflowValidation?.status, 'ready');
+  assert.equal(bodyAuto.switchStepValidation?.status, 'safe');
+  assert.ok((bodyAuto.switchTasteProgramme?.bloomRatio || 0) >= 3.2);
 
   const switch02LargeAuto = buildAiBrewPlan({
     ...base,
@@ -1966,7 +2148,20 @@ test('production Hario Switch presets choose safe defaults and preserve programm
   }, productionCatalog);
   assert.equal(switch02LargeAuto.switchPresetId, 'v60_mode');
   assert.equal(switch02LargeAuto.workflowValidation?.status, 'ready');
+  assert.equal(switch02LargeAuto.switchStepValidation?.status, 'safe');
+  assert.equal(switch02LargeAuto.switchTasteProgramme?.closedPhaseMl, 0);
   assert.ok(switch02LargeAuto.steps.filter((step) => step.pourVolumeMl > 0).every((step) => step.valveState === 'open'));
+
+  const switch02UnsafeHeavy = buildAiBrewPlan({
+    ...base,
+    dripperId: 'hario-switch-02',
+    doseG: '20',
+    targetWaterMl: '300',
+    switchPresetId: 'immersion_heavy_body',
+  }, productionCatalog);
+  assert.equal(switch02UnsafeHeavy.switchStepValidation?.status, 'blocked');
+  assert.equal(switch02UnsafeHeavy.workflowValidation?.status, 'blocked');
+  assert.match((switch02UnsafeHeavy.switchStepValidation?.message || ''), /exceeds safe/i);
 
   const switch03Large = buildAiBrewPlan({
     ...base,
@@ -1975,6 +2170,7 @@ test('production Hario Switch presets choose safe defaults and preserve programm
     switchPresetId: 'hybrid_balanced',
   }, productionCatalog);
   assert.equal(switch03Large.workflowValidation?.status, 'ready');
+  assert.equal(switch03Large.switchStepValidation?.status, 'safe');
   assert.equal(switch03Large.switchDoseMatrixRowId, 'switch03-20');
   assert.ok(switch03Large.steps.filter((step) => step.pourVolumeMl > 0).length >= 2);
   assert.equal(
@@ -1994,6 +2190,315 @@ test('production Hario Switch presets choose safe defaults and preserve programm
   assert.equal(mugen.devicePhysicalConstraints?.finishedCapacityMl, 200);
   assert.equal(mugen.devicePhysicalConstraints?.coneType, 'mugen');
   assert.notEqual(mugen.devicePhysicalConstraints?.finishedCapacityMl, switch03Large.devicePhysicalConstraints?.finishedCapacityMl);
+
+  const mugen18 = buildAiBrewPlan({
+    ...base,
+    dripperId: 'mugen-x-switch',
+    doseG: '18',
+    targetProfileId: 'dense_comforting',
+    process: 'wet_hulled',
+  }, productionCatalog);
+  assert.equal(mugen18.switchPresetId, 'mugen_everyday_hybrid');
+  assert.equal(mugen18.devicePhysicalConstraints?.finishedCapacityMl, 200);
+  assert.equal(mugen18.switchStepValidation?.status, 'safe');
+  assert.ok((mugen18.switchTasteProgramme?.closedPhaseMl || 0) <= (mugen18.switchStepValidation?.maxClosedLoadMl || 0));
+  assert.match(mugen18.switchWhy || '', /MUGEN|low-bypass|200 ml/i);
+});
+
+test('Hario Switch taste-first snapshot matrix proves numeric target differences and guardrails', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const base = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    brewMode: 'hot' as const,
+    coffeeName: 'Switch taste matrix QA',
+    doseG: '15',
+    process: 'washed',
+    variety: 'bourbon',
+    roastLevel: 'medium' as const,
+    dripperId: 'hario-switch-03',
+    grinderId: '1zpresso-k-ultra',
+    targetProfileId: 'balance_clean',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  };
+
+  const switch03Balance = buildAiBrewPlan({
+    ...base,
+    doseG: '20',
+    targetWaterMl: '300',
+    targetProfileId: 'balance_clean',
+  }, productionCatalog);
+  assertPlanEnvelope(switch03Balance);
+  assertSwitchWaterAccounting(switch03Balance);
+  assertSafeSwitchPlan(switch03Balance);
+  let balanceSummary = summarizeSwitchPlan(switch03Balance);
+  assert.equal(balanceSummary.presetId, 'hybrid_balanced');
+  assert.equal(balanceSummary.hotWaterMl, 300);
+  assert.equal(balanceSummary.steps.some((step) => step.id === 'switch_closed_bloom'), true);
+  assert.equal(balanceSummary.steps.some((step) => step.id === 'switch_closed_sweeten'), true);
+  assert.equal(balanceSummary.steps.some((step) => step.id === 'switch_release_checkpoint'), true);
+  assert.equal(balanceSummary.steps.some((step) => step.id === 'switch_open_finish'), true);
+
+  const switch03Sweet = buildAiBrewPlan({
+    ...base,
+    targetProfileId: 'more_sweetness',
+  }, productionCatalog);
+  assertPlanEnvelope(switch03Sweet);
+  assertSwitchWaterAccounting(switch03Sweet);
+  assertSafeSwitchPlan(switch03Sweet);
+  const sweetSummary = summarizeSwitchPlan(switch03Sweet);
+  assert.ok(['immersion_sweet', 'hybrid_balanced'].includes(String(sweetSummary.presetId)));
+  assert.ok(sweetSummary.bloomMl >= switch03Sweet.doseG * 2.8 && sweetSummary.bloomMl <= switch03Sweet.doseG * 3.4);
+  assert.ok(sweetSummary.closedPhaseMl / sweetSummary.hotWaterMl > balanceSummary.closedPhaseMl / balanceSummary.hotWaterMl);
+  assert.ok(sweetSummary.expectedCup.sweetness >= balanceSummary.expectedCup.sweetness);
+
+  const switch02BodyAuto = buildAiBrewPlan({
+    ...base,
+    dripperId: 'hario-switch-02',
+    doseG: '20',
+    targetWaterMl: '300',
+    targetProfileId: 'more_body',
+    process: 'wet_hulled',
+  }, productionCatalog);
+  assertPlanEnvelope(switch02BodyAuto);
+  assertSwitchWaterAccounting(switch02BodyAuto);
+  assertSafeSwitchPlan(switch02BodyAuto);
+  const switch02AutoSummary = summarizeSwitchPlan(switch02BodyAuto);
+  assert.ok(['v60_mode', 'hybrid_balanced'].includes(String(switch02AutoSummary.presetId)));
+  assert.ok(switch02AutoSummary.closedLoadPeakMl <= switch02AutoSummary.safeClosedMaxMl);
+
+  const switch02BodyManual = buildAiBrewPlan({
+    ...base,
+    dripperId: 'hario-switch-02',
+    doseG: '20',
+    targetWaterMl: '300',
+    targetProfileId: 'more_body',
+    process: 'wet_hulled',
+    switchPresetId: 'immersion_heavy_body',
+  }, productionCatalog);
+  assertUnsafeSwitchPlan(switch02BodyManual);
+  assert.equal(switch02BodyManual.switchPresetId, 'immersion_heavy_body');
+  assert.notEqual(switch02BodyManual.workflowValidation?.status, 'ready');
+
+  const switch03Floral = buildAiBrewPlan({
+    ...base,
+    targetProfileId: 'floral_transparent',
+  }, productionCatalog);
+  assertPlanEnvelope(switch03Floral);
+  assertSwitchWaterAccounting(switch03Floral);
+  assertSafeSwitchPlan(switch03Floral);
+  const floralSummary = summarizeSwitchPlan(switch03Floral);
+  assert.ok(['hybrid_bright_clean', 'v60_mode'].includes(String(floralSummary.presetId)));
+  assert.ok(floralSummary.bloomMl < sweetSummary.bloomMl);
+  assert.ok(floralSummary.closedPhaseMl < sweetSummary.closedPhaseMl);
+  assert.ok(floralSummary.expectedCup.clarity >= balanceSummary.expectedCup.clarity);
+  assert.ok(floralSummary.expectedCup.acidity >= balanceSummary.expectedCup.acidity);
+  assert.ok(floralSummary.expectedCup.body <= sweetSummary.expectedCup.body);
+
+  const switch03Fruit = buildAiBrewPlan({
+    ...base,
+    coffeeName: 'Switch fruit-forward natural',
+    targetProfileId: 'fruit_forward',
+    process: 'natural',
+  }, productionCatalog);
+  assertPlanEnvelope(switch03Fruit);
+  assertSwitchWaterAccounting(switch03Fruit);
+  assertSafeSwitchPlan(switch03Fruit);
+  const fruitSummary = summarizeSwitchPlan(switch03Fruit);
+  assert.ok(['hybrid_balanced', 'hybrid_bright_clean'].includes(String(fruitSummary.presetId)));
+  assert.notEqual(fruitSummary.presetId, 'immersion_heavy_body');
+  assert.ok(fruitSummary.expectedCup.sweetness >= balanceSummary.expectedCup.sweetness - 1);
+  assert.ok(fruitSummary.expectedCup.aroma >= balanceSummary.expectedCup.aroma - 1);
+
+  const switch03Soft = buildAiBrewPlan({
+    ...base,
+    targetProfileId: 'soft_round',
+    process: 'honey',
+  }, productionCatalog);
+  assertPlanEnvelope(switch03Soft);
+  assertSwitchWaterAccounting(switch03Soft);
+  assertSafeSwitchPlan(switch03Soft);
+  const softSummary = summarizeSwitchPlan(switch03Soft);
+  assert.ok(['immersion_sweet', 'hybrid_balanced'].includes(String(softSummary.presetId)));
+  assert.ok(softSummary.steps.filter((step) => step.pourVolumeMl > 0).every((step) => step.agitation === 'low' || step.agitation === 'minimal'));
+  assert.ok(softSummary.expectedCup.acidity <= floralSummary.expectedCup.acidity);
+  assert.ok(softSummary.expectedCup.sweetness >= balanceSummary.expectedCup.sweetness);
+
+  const mugen18 = buildAiBrewPlan({
+    ...base,
+    dripperId: 'mugen-x-switch',
+    doseG: '18',
+    targetProfileId: 'dense_comforting',
+    process: 'wet_hulled',
+  }, productionCatalog);
+  assertPlanEnvelope(mugen18);
+  assertSwitchWaterAccounting(mugen18);
+  assertSafeSwitchPlan(mugen18);
+  const mugenSummary = summarizeSwitchPlan(mugen18);
+  assert.equal(mugenSummary.presetId, 'mugen_everyday_hybrid');
+  assert.equal(mugen18.devicePhysicalConstraints?.finishedCapacityMl, 200);
+  assert.notEqual(mugenSummary.safeClosedMaxMl, switch03Balance.switchStepValidation?.maxClosedLoadMl);
+  assert.match([mugen18.switchWhy, ...mugenSummary.warnings].join(' '), /MUGEN|low-bypass|200 ml/i);
+  assert.notEqual(mugen18.doseG, 20);
+
+  const iced = buildAiBrewPlan({
+    ...base,
+    brewMode: 'iced',
+    targetProfileId: 'more_sweetness',
+    switchPresetId: 'iced_hybrid',
+  }, productionCatalog);
+  assertPlanEnvelope(iced);
+  assertSwitchWaterAccounting(iced);
+  assertSafeSwitchPlan(iced);
+  assert.equal(iced.hotWaterMl + iced.iceMl, iced.totalWaterMl);
+  assert.ok(iced.steps.some((step) => step.kind === 'release' && /ice|es/i.test(`${step.label} ${step.note}`)));
+  assert.match([iced.summary, iced.notes.join(' '), ...(iced.workflowGuideSteps || []).map((step) => step.primaryText)].join(' '), /hot|panas|ice|es/i);
+
+  const v60Mode = buildAiBrewPlan({
+    ...base,
+    switchPresetId: 'v60_mode',
+    targetProfileId: 'floral_transparent',
+  }, productionCatalog);
+  assertPlanEnvelope(v60Mode);
+  assertSwitchWaterAccounting(v60Mode);
+  assertSafeSwitchPlan(v60Mode);
+  const v60ModeSummary = summarizeSwitchPlan(v60Mode);
+  assert.equal(v60ModeSummary.presetId, 'v60_mode');
+  assert.ok(v60Mode.steps.every((step) => step.valveState === 'open'));
+  assert.ok(v60Mode.steps.every((step) => (step.chamberLoadMl || 0) === 0));
+  assert.equal(v60Mode.steps.some((step) => step.kind === 'release'), false);
+  assert.ok(v60ModeSummary.expectedCup.clarity >= balanceSummary.expectedCup.clarity);
+  assert.ok(v60ModeSummary.expectedCup.body <= sweetSummary.expectedCup.body);
+
+  const manualFloralHeavy = buildAiBrewPlan({
+    ...base,
+    targetProfileId: 'floral_transparent',
+    switchPresetId: 'immersion_heavy_body',
+  }, productionCatalog);
+  assert.equal(manualFloralHeavy.switchPresetId, 'immersion_heavy_body');
+  assert.match(summarizeSwitchPlan(manualFloralHeavy).warnings.join(' '), /Manual preset|clarity|Hybrid Bright Clean|V60 Mode/i);
+
+  const v60Hot = buildAiBrewPlan({
+    ...base,
+    dripperId: 'hario-v60',
+    brewMode: 'hot',
+    targetProfileId: 'balance_clean',
+    switchPresetId: '',
+  }, productionCatalog);
+  const v60Iced = buildAiBrewPlan({
+    ...base,
+    dripperId: 'hario-v60',
+    brewMode: 'iced',
+    targetProfileId: 'more_sweetness',
+    switchPresetId: '',
+  }, productionCatalog);
+  assertPlanEnvelope(v60Hot);
+  assertPlanEnvelope(v60Iced);
+  assert.equal(v60Hot.methodFamily, 'v60');
+  assert.equal(v60Iced.methodFamily, 'v60');
+  assert.equal(v60Hot.switchTasteProgramme, undefined);
+  assert.equal(v60Iced.switchTasteProgramme, undefined);
+  assert.equal(v60Iced.hotWaterMl + v60Iced.iceMl, v60Iced.totalWaterMl);
+  assert.doesNotMatch([...v60Hot.steps, ...v60Iced.steps].map((step) => `${step.label} ${step.note}`).join(' '), /Switch|katup|chamber/i);
+
+  balanceSummary = summarizeSwitchPlan(switch03Balance);
+  const numericFingerprints = new Set([
+    balanceSummary,
+    sweetSummary,
+    floralSummary,
+    summarizeSwitchPlan(buildAiBrewPlan({ ...base, targetProfileId: 'more_body', process: 'wet_hulled' }, productionCatalog)),
+  ].map((summary) => JSON.stringify({
+    bloomMl: summary.bloomMl,
+    closedPhaseMl: summary.closedPhaseMl,
+    openPhaseMl: summary.openPhaseMl,
+    releaseSeconds: summary.releaseSeconds,
+    valvePath: summary.valvePath,
+    cup: summary.expectedCup,
+  })));
+  assert.ok(numericFingerprints.size >= 3, `target rasa must change numeric plan, not only copy: ${JSON.stringify([...numericFingerprints])}`);
+});
+
+test('AI Brew release snapshot matrix keeps global methods safe, honest, and method-specific', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const findDripperId = (pattern: RegExp) => {
+    const dripper = productionCatalog.drippers.find((item) => pattern.test(item.name));
+    assert.ok(dripper, `Missing dripper ${pattern}`);
+    return dripper.id;
+  };
+  const base = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Release Snapshot Washed Ethiopia',
+    process: 'washed',
+    variety: 'ethiopian_heirloom',
+    roastLevel: 'light' as const,
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  };
+  const cases: Array<{
+    label: string;
+    input: Partial<AiBrewFormState>;
+    expectedMethod?: AiBrewMethodFamily;
+    requiredText?: RegExp;
+    forbiddenText?: RegExp;
+    expectBlocked?: boolean;
+  }> = [
+    { label: 'Switch 03 20g 300ml Seimbang', input: { dripperId: 'hario-switch-03', doseG: '20', targetWaterMl: '300', targetProfileId: 'balance_clean' }, expectedMethod: 'hario_switch', requiredText: /Katup|Switch|muatan ruang/i },
+    { label: 'Switch 03 15g Manis', input: { dripperId: 'hario-switch-03', targetProfileId: 'more_sweetness' }, expectedMethod: 'hario_switch', requiredText: /Katup|tuang \d+ ml sampai/i },
+    { label: 'Switch 02 20g Body Auto', input: { dripperId: 'hario-switch-02', doseG: '20', targetWaterMl: '300', targetProfileId: 'more_body', process: 'wet_hulled' }, expectedMethod: 'hario_switch', requiredText: /Katup buka|safe|aman/i },
+    { label: 'Switch 02 20g Heavy manual', input: { dripperId: 'hario-switch-02', doseG: '20', targetWaterMl: '300', targetProfileId: 'more_body', process: 'wet_hulled', switchPresetId: 'immersion_heavy_body' }, expectedMethod: 'hario_switch', requiredText: /exceeds|melebihi|blocked|muatan|chamber/i, expectBlocked: true },
+    { label: 'Switch 03 15g Floral Transparan', input: { dripperId: 'hario-switch-03', targetProfileId: 'floral_transparent' }, expectedMethod: 'hario_switch', requiredText: /Katup|tuang \d+ ml sampai/i },
+    { label: 'Switch 03 15g Buah Menonjol', input: { dripperId: 'hario-switch-03', targetProfileId: 'fruit_forward', process: 'natural' }, expectedMethod: 'hario_switch', requiredText: /Katup|tuang \d+ ml sampai/i },
+    { label: 'Switch 03 15g Lembut Bulat', input: { dripperId: 'hario-switch-03', targetProfileId: 'soft_round', process: 'honey' }, expectedMethod: 'hario_switch', requiredText: /Katup|tuang \d+ ml sampai/i },
+    { label: 'MUGEN x SWITCH 18g Dense', input: { dripperId: 'mugen-x-switch', doseG: '18', targetProfileId: 'dense_comforting', process: 'wet_hulled' }, expectedMethod: 'hario_switch', requiredText: /MUGEN|low-bypass|200 ml|Katup/i },
+    { label: 'Switch Iced Hybrid', input: { dripperId: 'hario-switch-03', brewMode: 'iced', switchPresetId: 'iced_hybrid', targetProfileId: 'more_sweetness' }, expectedMethod: 'hario_switch', requiredText: /panas|hot|ice|es/i },
+    { label: 'Switch V60 Mode', input: { dripperId: 'hario-switch-03', switchPresetId: 'v60_mode', targetProfileId: 'floral_transparent' }, expectedMethod: 'hario_switch', requiredText: /Katup buka/i },
+    { label: 'V60 hot light roast', input: { dripperId: findDripperId(/^Hario V60$/i), targetProfileId: 'more_acidity' }, expectedMethod: 'v60', requiredText: /bloom|drawdown/i, forbiddenText: /Katup|Switch|chamber/i },
+    { label: 'V60 iced light roast', input: { dripperId: findDripperId(/^Hario V60$/i), brewMode: 'iced', targetProfileId: 'more_sweetness' }, expectedMethod: 'v60', requiredText: /hot water|air panas|ice|es/i, forbiddenText: /Katup|Switch|chamber/i },
+    { label: 'Kalita balanced', input: { dripperId: findDripperId(/Kalita Wave/i), targetProfileId: 'balance_clean' }, expectedMethod: 'kalita_wave', requiredText: /flat|bed|drawdown/i },
+    { label: 'Chemex clean', input: { dripperId: findDripperId(/^Chemex$/i), targetProfileId: 'floral_transparent' }, expectedMethod: 'chemex', requiredText: /thick|filter|drawdown/i },
+    { label: 'AeroPress sweet', input: { dripperId: findDripperId(/^AeroPress$/i), targetProfileId: 'more_sweetness' }, expectedMethod: 'aeropress', requiredText: /charge|stir|press|hiss/i, forbiddenText: /final pour|wall/i },
+    { label: 'French Press body', input: { dripperId: findDripperId(/^French Press$/i), targetProfileId: 'more_body' }, expectedMethod: 'french_press', requiredText: /charge|steep|settle|decant/i, forbiddenText: /bloom|final pour/i },
+    { label: 'Clever balanced', input: { dripperId: findDripperId(/^Clever Dripper$/i), targetProfileId: 'balance_clean' }, expectedMethod: 'clever_dripper', requiredText: /charge|steep|release|drawdown/i },
+    { label: 'Moka', input: { dripperId: findDripperId(/^Bialetti Moka Pot$/i), targetProfileId: 'dense_comforting' }, expectedMethod: 'moka_pot', requiredText: /boiler|basket|heat|sputter/i, forbiddenText: /bloom|kettle|final pour/i },
+    { label: 'Espresso', input: { dripperId: findDripperId(/^Espresso Machine$/i), targetProfileId: 'balance_clean' }, expectedMethod: 'espresso', requiredText: /dose|puck|shot|yield|flow/i, forbiddenText: /bloom|kettle|drawdown bed/i },
+    { label: 'Cold Brew', input: { dripperId: findDripperId(/^Toddy Cold Brew$/i), doseG: '60', targetProfileId: 'soft_round' }, expectedMethod: 'cold_brew', requiredText: /saturate|steep|filter|dilute/i, forbiddenText: /bloom|kettle|hot water/i },
+  ];
+
+  for (const entry of cases) {
+    const plan = buildAiBrewPlan({ ...base, ...entry.input }, productionCatalog);
+    assertPlanEnvelope(plan);
+    const summary = summarizeAiBrewPlan(plan);
+    assert.equal(summary.method, entry.expectedMethod, entry.label);
+    assert.ok(summary.expectedCup.confidence, `${entry.label} expected cup confidence`);
+    assert.ok(summary.beanCoverage, `${entry.label} bean coverage`);
+    assert.ok(['known_high', 'partial_medium', 'risk_caution', 'unsupported_unsafe', 'unknown_fallback'].includes(summary.beanCoverage?.category || ''), `${entry.label} bean coverage category`);
+    const minSnapshotTempC = summary.method === 'cold_brew' ? 0 : 78;
+    assert.ok(summary.ratio > 0 && summary.tempC >= minSnapshotTempC && summary.tempC <= 98 && summary.timeSeconds > 0, `${entry.label} safe core metrics`);
+    const text = [
+      plan.summary,
+      ...plan.steps.map((step) => `${step.label} ${step.note}`),
+      ...(plan.workflowGuideSteps || []).map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''}`),
+      ...plan.warnings,
+      ...(plan.beanCoverage?.warnings || []),
+    ].join('\n');
+    if (entry.requiredText) assert.match(text, entry.requiredText, `${entry.label} required method language`);
+    if (entry.forbiddenText) assert.doesNotMatch(text, entry.forbiddenText, `${entry.label} forbidden method leakage`);
+    if (entry.expectBlocked) {
+      assert.equal(plan.beanCoverage?.category, 'unsupported_unsafe', `${entry.label} should be unsafe coverage`);
+      assert.ok(plan.switchStepValidation?.status === 'blocked' || plan.workflowValidation?.status === 'blocked');
+    } else {
+      assert.notEqual(plan.beanCoverage?.category, 'unsupported_unsafe', `${entry.label} should not be blocked`);
+    }
+    if (plan.brewMode === 'iced') {
+      assert.equal(plan.hotWaterMl + plan.iceMl, plan.totalWaterMl, `${entry.label} iced split`);
+      assert.ok(/hot water|air panas|target panas/i.test(text), `${entry.label} explicit hot target`);
+    }
+  }
 });
 
 test('Hario Switch public presets alter expected cup and keep corrections number-safe', () => {
@@ -3298,6 +3803,80 @@ test('all-method public snapshot matrix includes workflow, expected cup, feedbac
       assert.equal(plan.hotWaterMl + plan.iceMl, plan.totalWaterMl, `${entry.label} iced split`);
       assert.equal(pourSteps.at(-1)?.targetVolumeMl, plan.hotWaterMl, `${entry.label} final hot target`);
       assert.ok(text.match(/hot water|air panas/i), `${entry.label} explicit hot water target`);
+    }
+  }
+});
+
+test('real-world bean stress matrix always produces safe baseline or honest fallback', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const findDripperId = (pattern: RegExp) => {
+    const dripper = productionCatalog.drippers.find((item) => pattern.test(item.name));
+    assert.ok(dripper, `Missing dripper ${pattern}`);
+    return dripper.id;
+  };
+  const brewerIds = [
+    findDripperId(/^Hario V60$/i),
+    'hario-switch-03',
+    findDripperId(/^Clever Dripper$/i),
+  ];
+  const base = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    doseG: '15',
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+    targetProfileId: 'balance_clean',
+  };
+  const beans: Array<{
+    label: string;
+    input: Partial<AiBrewFormState>;
+    expectedCategory: 'known_high' | 'partial_medium' | 'unknown_fallback' | 'risk_caution';
+    requiredWarning?: RegExp;
+  }> = [
+    { label: 'Washed Ethiopia light floral', input: { coffeeName: 'Washed Ethiopia Yirgacheffe floral', process: 'washed', variety: 'ethiopian_heirloom', roastLevel: 'light', targetProfileId: 'floral_transparent' }, expectedCategory: 'known_high' },
+    { label: 'Natural Ethiopia fruit-forward', input: { coffeeName: 'Natural Ethiopia Guji fruit', process: 'natural', variety: 'ethiopian_heirloom', roastLevel: 'medium_light', targetProfileId: 'fruit_forward' }, expectedCategory: 'known_high' },
+    { label: 'Kenya washed bright', input: { coffeeName: 'Kenya AA Nyeri washed', process: 'washed', variety: 'sl28', roastLevel: 'light', altitudeMasl: '1850', targetProfileId: 'more_acidity' }, expectedCategory: 'known_high' },
+    { label: 'Colombia washed balanced', input: { coffeeName: 'Colombia Huila washed', process: 'washed', variety: 'caturra', roastLevel: 'medium_light' }, expectedCategory: 'known_high' },
+    { label: 'Brazil natural nutty medium', input: { coffeeName: 'Brazil Cerrado natural nutty', process: 'natural', variety: 'bourbon', roastLevel: 'medium', targetProfileId: 'more_sweetness' }, expectedCategory: 'known_high' },
+    { label: 'Sumatra wet-hulled heavy body', input: { coffeeName: 'Sumatra Mandheling wet hulled', process: 'wet_hulled', variety: 'ateng_super', roastLevel: 'medium', targetProfileId: 'more_body' }, expectedCategory: 'risk_caution', requiredWarning: /feedback|variability|caution|body|baseline/i },
+    { label: 'Anaerobic experimental', input: { coffeeName: 'Experimental anaerobic natural Gesha', process: 'natural_anaerobic', customProcess: 'experimental anaerobic natural', variety: 'gesha', roastLevel: 'medium_light', targetProfileId: 'fruit_forward' }, expectedCategory: 'risk_caution', requiredWarning: /feedback|variability|experimental|baseline/i },
+    { label: 'Honey process sweet', input: { coffeeName: 'Costa Rica honey process', process: 'honey', variety: 'catuai', roastLevel: 'medium_light', targetProfileId: 'more_sweetness' }, expectedCategory: 'known_high' },
+    { label: 'Decaf medium roast', input: { coffeeName: 'Colombia sugarcane decaf', process: 'sugarcane_decaf', variety: 'caturra', roastLevel: 'medium', targetProfileId: 'soft_round' }, expectedCategory: 'risk_caution', requiredWarning: /feedback|baseline|caution/i },
+    { label: 'Robusta canephora blend', input: { coffeeName: 'Vietnam robusta canephora blend', process: 'washed', variety: 'robusta', customVariety: 'canephora robusta', roastLevel: 'medium_dark', targetProfileId: 'dense_comforting' }, expectedCategory: 'risk_caution', requiredWarning: /robusta|canephora|bitterness/i },
+    { label: 'Very dark roast smoky', input: { coffeeName: 'Very dark smoky house blend', process: 'washed', roastLevel: 'dark', targetProfileId: 'soft_round' }, expectedCategory: 'risk_caution', requiredWarning: /Dark roast|bitterness|pahit/i },
+    { label: 'Unknown bean no process roast', input: { coffeeName: '', process: '', variety: '', roastLevel: 'medium' }, expectedCategory: 'unknown_fallback', requiredWarning: /Data beans tidak lengkap|safe baseline|baseline aman/i },
+    { label: 'Old roast 45 days', input: { coffeeName: 'Old roast 45 days Colombia washed', process: 'washed', variety: 'caturra', roastLevel: 'medium', solubility: 'high', targetProfileId: 'more_sweetness' }, expectedCategory: 'risk_caution' },
+    { label: 'Fresh roast 2 days', input: { coffeeName: 'Fresh roast 2 days Kenya washed', process: 'washed', variety: 'sl28', roastLevel: 'light', roastDevelopment: 'underdeveloped', solubility: 'low', targetProfileId: 'more_acidity' }, expectedCategory: 'risk_caution' },
+    { label: 'High-density high altitude', input: { coffeeName: 'High-density high altitude Ethiopia washed', process: 'washed', variety: 'ethiopian_heirloom', roastLevel: 'light', altitudeMasl: '2200', beanDensityGml: '0.76', solubility: 'low', targetProfileId: 'floral_transparent' }, expectedCategory: 'risk_caution' },
+    { label: 'Low-density soluble bean', input: { coffeeName: 'Low-density soluble Brazil natural', process: 'natural', variety: 'bourbon', roastLevel: 'medium', beanDensityGml: '0.62', solubility: 'high', targetProfileId: 'more_sweetness' }, expectedCategory: 'risk_caution' },
+  ];
+
+  for (const bean of beans) {
+    for (const dripperId of brewerIds) {
+      const plan = buildAiBrewPlan({ ...base, ...bean.input, dripperId }, productionCatalog);
+      assertPlanEnvelope(plan);
+      const summary = summarizeAiBrewPlan(plan);
+      assert.ok(plan.expectedCupProfile, `${bean.label} ${plan.dripper.name} expected cup`);
+      assert.ok(plan.beanCoverage, `${bean.label} ${plan.dripper.name} bean coverage`);
+      assert.equal(plan.beanCoverage?.category, bean.expectedCategory, `${bean.label} ${plan.dripper.name} coverage: ${JSON.stringify(summary)}`);
+      assert.notEqual(plan.workflowValidation?.status, 'blocked', `${bean.label} ${plan.dripper.name} should produce usable baseline`);
+      assert.equal(validateBrewPlanOutput(plan).allowed, true, `${bean.label} ${plan.dripper.name} anti-hallucination guard`);
+      const correction = buildTasteFeedbackCorrection(plan, 'sour', 'en');
+      assert.equal(correction.protectedNumbersLocked, true, `${bean.label} ${plan.dripper.name} taste correction locks protected numbers`);
+      assert.match(
+        `${correction.primaryCorrection} ${correction.backupCorrection} ${plan.beanCoverage?.nextAction}`,
+        /grind|contact|pour|agitation|feedback|drawdown|timing|brew/i,
+        `${bean.label} ${plan.dripper.name} has actionable taste loop`,
+      );
+      if (bean.requiredWarning) {
+        assert.match(
+          [...(plan.beanCoverage?.warnings || []), ...(plan.confidenceNotes || []), ...plan.warnings].join(' '),
+          bean.requiredWarning,
+          `${bean.label} warning`,
+        );
+      }
     }
   }
 });

@@ -503,6 +503,9 @@ const COPY = {
     beanDetailsHide: 'Hide bean detail',
     quickSummaryAuto: 'Let Auto keep this brew safe.',
     moreAiTools: 'More AI tools',
+    beanCoverageTitle: 'Bean coverage',
+    beanCoverageFallback: 'Bean data is incomplete; AI Brew uses a safe baseline.',
+    beanCoverageTasteLoop: 'Use taste feedback after brewing for the next correction.',
     expectedCupTitle: 'Expected Cup',
     cupAcidity: 'Acidity',
     cupSweetness: 'Sweetness',
@@ -1001,6 +1004,9 @@ const COPY = {
     beanDetailsHide: 'Sembunyikan detail bean',
     quickSummaryAuto: 'Biarkan Auto untuk hasil aman.',
     moreAiTools: 'Tool AI lainnya',
+    beanCoverageTitle: 'Cakupan bean',
+    beanCoverageFallback: 'Data beans tidak lengkap; AI Brew memakai baseline aman.',
+    beanCoverageTasteLoop: 'Gunakan feedback rasa setelah seduh untuk koreksi berikutnya.',
     expectedCupTitle: 'Prediksi Rasa',
     cupAcidity: 'Asam',
     cupSweetness: 'Manis',
@@ -4109,6 +4115,8 @@ function PlanResultDialog({
   const waterSourceLinks = plan.waterBrandSourceUrls || [];
   const workflowValidation = plan.workflowValidation;
   const workflowBlocked = workflowValidation?.status === 'blocked';
+  const switchSafetyStatus = plan.switchStepValidation?.status || plan.switchCompatibility?.status;
+  const switchSafetyMessage = plan.switchStepValidation?.message || plan.switchCompatibility?.message;
   const localizedTargetProfileLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language);
   const displaySummary = compactResultSummaryForDisplay(buildPremiumResultSummary(plan, language), plan, language);
   const methodBrief = buildPlanMethodBrief(plan, language);
@@ -4302,6 +4310,13 @@ function PlanResultDialog({
     { label: copy.confidenceCatalog, value: plan.readinessScores.catalog },
   ] : [];
   const compactExpectedCupItems = expectedCupItems.slice(0, 4);
+  const beanCoverageTone = plan.beanCoverage?.category === 'known_high'
+    ? 'border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+    : plan.beanCoverage?.category === 'unsupported_unsafe'
+      ? 'border-rose-500/18 bg-rose-500/10 text-rose-700 dark:text-rose-300'
+      : plan.beanCoverage?.category === 'risk_caution'
+        ? 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+        : 'border-blue-500/18 bg-blue-500/10 text-blue-700 dark:text-blue-300';
   const guideDensityToggle = (
     <div className="flex flex-wrap items-center gap-2">
       <div
@@ -4446,12 +4461,17 @@ function PlanResultDialog({
                     ? (id ? 'Hasil Quick AI Brew berisi urutan seduh ringkas dan kontrol barista inti.' : 'Quick AI Brew result with a compact brew sequence and core barista controls.')
                     : `${formatRoundedGrams(plan.doseG)} - ${planHeaderWater} - ${formatGuideTime(plan.totalTimeSeconds)} - ${formatRoundedTemperature(plan.waterTempC)}`}
                 </p>
-                {(expectedCup || readinessItems.length > 0) && (
+                {(expectedCup || readinessItems.length > 0 || plan.beanCoverage) && (
                   <div
                     className="mt-3 min-w-0 max-w-full overflow-hidden rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-2.5 text-xs [overflow-wrap:anywhere]"
                     data-testid="ai-brew-expected-cup"
                   >
                     <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                      {plan.beanCoverage && (
+                        <span className={`rounded-full border px-2 py-1 font-semibold ${beanCoverageTone}`} data-testid="ai-brew-bean-coverage">
+                          {plan.beanCoverage.label}
+                        </span>
+                      )}
                       {expectedCup && (
                         <span className="rounded-full bg-surface-alpha px-2 py-1 font-semibold text-primary">
                           {copy.expectedCupTitle}: {expectedCup.confidence}
@@ -4464,13 +4484,20 @@ function PlanResultDialog({
                         </span>
                       ))}
                     </div>
-                    {(readinessItems.length > 0 || expectedCup?.warnings[0] || expectedCup?.reasons[0]) && (
+                    {(readinessItems.length > 0 || expectedCup?.warnings[0] || expectedCup?.reasons[0] || plan.beanCoverage) && (
                       <details className="group mt-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-primary">
                           <span>{id ? 'Detail prediksi & keyakinan' : 'Prediction & confidence detail'}</span>
                           <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
                         </summary>
                         <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                          {plan.beanCoverage && (
+                            <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-[12px] leading-5 text-secondary" data-testid="ai-brew-bean-coverage-detail">
+                              <p className="font-semibold text-primary">{copy.beanCoverageTitle}: {plan.beanCoverage.confidence}</p>
+                              <p className="mt-1">{localizeAiBrewDynamicText(plan.beanCoverage.warnings[0] || plan.beanCoverage.reasons[0] || copy.beanCoverageFallback, language)}</p>
+                              <p className="mt-1">{localizeAiBrewDynamicText(plan.beanCoverage.nextAction || copy.beanCoverageTasteLoop, language)}</p>
+                            </div>
+                          )}
                           {(expectedCup?.warnings[0] || expectedCup?.reasons[0]) && (
                             <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-[12px] leading-5 text-secondary">
                               <p className="font-semibold text-primary">{copy.expectedCupTitle}</p>
@@ -4627,9 +4654,15 @@ function PlanResultDialog({
                     <div className="mt-3 flex min-w-0 max-w-full flex-wrap gap-1.5 text-xs" data-testid="ai-brew-switch-result-summary">
                       <span className={resultChipClass}>{plan.switchPresetLabel || (id ? 'Metode Switch' : 'Switch method')}</span>
                       <span className={resultChipClass}>{resultSwitchValvePathLabel}</span>
-                      {plan.switchCompatibility?.message && (
-                        <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 font-semibold text-amber-700 dark:text-amber-300">
-                          {plan.switchCompatibility.message}
+                      {switchSafetyMessage && (
+                        <span className={`rounded-full border px-2.5 py-1 font-semibold ${
+                          switchSafetyStatus === 'blocked'
+                            ? 'border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                            : switchSafetyStatus === 'caution'
+                              ? 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                              : 'border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                        }`}>
+                          {switchSafetyMessage}
                         </span>
                       )}
                     </div>

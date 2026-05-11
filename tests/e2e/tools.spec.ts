@@ -464,10 +464,19 @@ test('ai brew Hario Switch quick plan defaults to safe Hybrid Balanced with valv
   expect(plan.switchProvenance?.hardwareVerificationLevel).toBe('official');
   expect(plan.switchProvenance?.workflowVerificationLevel).toBe('curated_synthesis');
   expect(plan.switchCompatibility?.status).toBe('safe');
+  expect(plan.switchStepValidation?.status).toBe('safe');
+  expect(plan.switchTasteProgramme?.bloomMl).toBeGreaterThan(0);
+  expect(plan.switchTasteProgramme?.closedPhaseMl).toBeGreaterThan(plan.switchTasteProgramme?.bloomMl || 0);
+  expect(plan.switchTasteProgramme?.openPhaseMl).toBeGreaterThan(0);
   const sourceWaterSteps = plan.steps.filter((step) => (step.pourVolumeMl || 0) > 0);
   for (const sourceStep of sourceWaterSteps) {
     expect(plan.workflowGuideSteps?.some((guideStep) => guideStep.sourceStepIds?.includes(sourceStep.id))).toBe(true);
   }
+  const guideWaterSteps = (plan.workflowGuideSteps || []).filter((step) => (step.pourVolumeMl || 0) > 0);
+  expect(guideWaterSteps.every((step) => /\d+:\d{2}/.test(step.primaryText || ''))).toBe(true);
+  expect(guideWaterSteps.every((step) => /tuang \d+ ml sampai \d+ ml/i.test(step.primaryText || ''))).toBe(true);
+  expect(guideWaterSteps.some((step) => (step.techniqueChips || []).some((chip) => chip.key === 'chamber_load'))).toBe(true);
+  expect(sourceWaterSteps.every((step) => step.flowRateMlPerSec && step.pourPath && step.agitationLevel)).toBe(true);
 });
 
 test('ai brew Hario Switch Auto follows taste target before method preference', async ({ page }) => {
@@ -493,6 +502,10 @@ test('ai brew Hario Switch Auto follows taste target before method preference', 
   expect(plan.targetProfileId).toBe('floral_transparent');
   expect(plan.switchPresetId).toBe('hybrid_bright_clean');
   expect(plan.methodProgramme).toBe('percolation_then_immersion');
+  expect(plan.switchTasteProgramme?.bloomRatio).toBeLessThanOrEqual(2.5);
+  expect(plan.switchTasteProgramme?.openPhaseMl).toBeGreaterThan(plan.switchTasteProgramme?.closedPhaseMl || 0);
+  expect(plan.expectedCupProfile?.clarity).toBeGreaterThanOrEqual(4);
+  expect(plan.steps.filter((step) => (step.pourVolumeMl || 0) > 0).every((step) => step.flowRateMlPerSec && step.pourPath && step.agitationLevel)).toBe(true);
 });
 
 test('ai brew MUGEN x SWITCH keeps its own preset and 200 ml compatibility model', async ({ page }) => {
@@ -518,6 +531,8 @@ test('ai brew MUGEN x SWITCH keeps its own preset and 200 ml compatibility model
   expect(plan.switchCompatibility?.status).toBe('safe');
   expect(plan.switchCompatibility?.sizeLabel).toMatch(/MUGEN/i);
   expect(plan.devicePhysicalConstraints?.finishedCapacityMl).toBe(200);
+  expect(plan.switchStepValidation?.maxClosedLoadMl).toBeLessThan(320);
+  expect(plan.switchStepValidation?.peakClosedLoadMl).toBeLessThanOrEqual(plan.switchStepValidation?.maxClosedLoadMl || 0);
   expect(plan.switchWhy || '').toMatch(/MUGEN|low-bypass|hybrid/i);
   await expect(page.getByTestId('ai-brew-result').getByTestId('ai-brew-switch-result-summary')).toContainText(/MUGEN/i);
 });

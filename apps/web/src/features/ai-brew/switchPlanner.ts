@@ -1,6 +1,10 @@
 import type {
   AiBrewCatalog,
   AiBrewFormState,
+  BrewAgitationLevel,
+  BrewPlanStep,
+  BrewPourHeight,
+  BrewPourPath,
   BrewTemplateStep,
   DeviceBrewProfile,
   EquipmentCatalogEntry,
@@ -10,8 +14,11 @@ import type {
   SwitchExpectedCupShift,
   SwitchPublicPreset,
   SwitchPublicPresetId,
-  SwitchTeachingMode,
+  SwitchStepValidation,
+  SwitchTasteProgrammePlan,
   TargetProfile,
+  VerificationLevel,
+  WaterClassification,
 } from './types.ts';
 
 const SWITCH_EXACT_IDS = new Set(['hario-switch-02', 'hario-switch-03', 'mugen-x-switch']);
@@ -22,6 +29,7 @@ export interface SwitchPlanSelection {
   preset: SwitchPublicPreset;
   doseRow?: SwitchDoseMatrixRow;
   compatibility: SwitchCompatibilityState;
+  tasteProgramme: SwitchTasteProgrammePlan;
   adjustedProfile: DeviceBrewProfile;
 }
 
@@ -348,49 +356,311 @@ function buildCompatibility(
   };
 }
 
+function roundSwitchMl(value: number) {
+  return Math.max(0, Math.round(value / 5) * 5);
+}
+
+function roundSwitchSeconds(value: number) {
+  return Math.max(0, Math.round(value / 5) * 5);
+}
+
+function safeWaterReference(params: { input: AiBrewFormState; doseG: number; row?: SwitchDoseMatrixRow }) {
+  const explicitWater = Number.parseFloat(params.input.targetWaterMl || '');
+  if (Number.isFinite(explicitWater) && explicitWater > 0) return explicitWater;
+  if (params.row?.defaultTotalWaterMl) return params.row.defaultTotalWaterMl;
+  return params.doseG * 15;
+}
+
+function referenceHotWaterMl(params: { input: AiBrewFormState; doseG: number; row?: SwitchDoseMatrixRow }) {
+  const total = safeWaterReference(params);
+  return params.input.brewMode === 'iced' ? roundSwitchMl(total * 0.65) : roundSwitchMl(total);
+}
+
+type SwitchTasteIntent = 'balance' | 'sweet' | 'bright' | 'body' | 'floral' | 'fruit' | 'soft' | 'dense';
+
+function resolveSwitchTasteIntent(targetProfile?: TargetProfile): SwitchTasteIntent {
+  const targetId = targetProfile?.id || 'balance_clean';
+  if (targetId === 'more_sweetness') return 'sweet';
+  if (targetId === 'more_acidity') return 'bright';
+  if (targetId === 'more_body') return 'body';
+  if (targetId === 'floral_transparent') return 'floral';
+  if (targetId === 'fruit_forward') return 'fruit';
+  if (targetId === 'soft_round') return 'soft';
+  if (targetId === 'dense_comforting') return 'dense';
+  return 'balance';
+}
+
+function switchBloomRatioForIntent(intent: SwitchTasteIntent, params: {
+  processEntry?: ProcessCatalogEntry;
+  roastLevel?: AiBrewFormState['roastLevel'];
+}) {
+  let ratio = 2.7;
+  if (intent === 'bright') ratio = 2.25;
+  if (intent === 'floral') ratio = 2.05;
+  if (intent === 'sweet' || intent === 'soft') ratio = 3;
+  if (intent === 'body' || intent === 'dense') ratio = 3.35;
+  if (intent === 'fruit') ratio = 2.8;
+
+  if (isFermentProcess(params.processEntry) && (intent === 'bright' || intent === 'floral')) ratio -= 0.15;
+  if (isHeavyProcess(params.processEntry) && (intent === 'body' || intent === 'dense')) ratio += 0.1;
+  if (params.roastLevel === 'medium_dark' || params.roastLevel === 'dark') ratio -= 0.25;
+  return clamp(ratio, 2, 3.5);
+}
+
+function switchTechniqueForIntent(intent: SwitchTasteIntent, presetId: SwitchPublicPresetId): {
+  flowRateMlPerSec: [number, number];
+  pourPath: BrewPourPath;
+  pourHeight: BrewPourHeight;
+  agitationLevel: BrewAgitationLevel;
+  pourStyle: string;
+} {
+  if (presetId === 'v60_mode' || intent === 'bright' || intent === 'floral') {
+    return {
+      flowRateMlPerSec: [4, 5],
+      pourPath: 'center_to_mid',
+      pourHeight: 'low',
+      agitationLevel: 'minimal',
+      pourStyle: 'clean low-flow center-to-mid',
+    };
+  }
+  if (intent === 'body' || intent === 'dense' || presetId === 'immersion_heavy_body') {
+    return {
+      flowRateMlPerSec: [4, 6],
+      pourPath: 'center',
+      pourHeight: 'low',
+      agitationLevel: 'controlled',
+      pourStyle: 'slow center pour, no hard swirl',
+    };
+  }
+  if (intent === 'sweet' || intent === 'soft' || presetId === 'immersion_sweet') {
+    return {
+      flowRateMlPerSec: [5, 6],
+      pourPath: 'center_to_mid',
+      pourHeight: 'low',
+      agitationLevel: 'low',
+      pourStyle: 'gentle center-to-mid pour',
+    };
+  }
+  return {
+    flowRateMlPerSec: [5, 7],
+    pourPath: 'center_to_mid',
+    pourHeight: 'low',
+    agitationLevel: 'low',
+    pourStyle: 'balanced center-to-mid pour',
+  };
+}
+
+function suggestedSafeSwitchPreset(params: {
+  dripperId: string;
+  targetProfile?: TargetProfile;
+  presetId: SwitchPublicPresetId;
+  brewMode: AiBrewFormState['brewMode'];
+}) {
+  if (params.brewMode === 'iced') return 'iced_hybrid' satisfies SwitchPublicPresetId;
+  if (params.dripperId === 'mugen-x-switch') return 'mugen_everyday_hybrid' satisfies SwitchPublicPresetId;
+  const intent = resolveSwitchTasteIntent(params.targetProfile);
+  if (intent === 'bright' || intent === 'floral') return 'v60_mode' satisfies SwitchPublicPresetId;
+  return 'hybrid_balanced' satisfies SwitchPublicPresetId;
+}
+
+export function resolveSwitchTasteProgramme(params: {
+  input: AiBrewFormState;
+  preset: SwitchPublicPreset;
+  doseRow?: SwitchDoseMatrixRow;
+  dripperId: string;
+  targetProfile?: TargetProfile;
+  processEntry?: ProcessCatalogEntry;
+  doseG: number;
+  waterClassification?: WaterClassification;
+  grinderVerification?: VerificationLevel;
+}): SwitchTasteProgrammePlan {
+  const { input, preset, doseRow, dripperId, targetProfile, processEntry, doseG } = params;
+  const intent = resolveSwitchTasteIntent(targetProfile);
+  const hotReferenceMl = Math.max(60, referenceHotWaterMl({ input, doseG, row: doseRow }));
+  const maxClosedLoadMl = doseRow?.safeClosedPhaseMaxMl || (dripperId === 'hario-switch-03' ? 320 : 180);
+  const technique = switchTechniqueForIntent(intent, preset.id);
+  const bloomRatio = switchBloomRatioForIntent(intent, { processEntry, roastLevel: input.roastLevel });
+  const practicalMinBloomMl = doseG <= 12 ? 25 : 35;
+  const bloomMl = roundSwitchMl(clamp(doseG * bloomRatio, practicalMinBloomMl, Math.min(maxClosedLoadMl, hotReferenceMl - 5)));
+  const isMugen = dripperId === 'mugen-x-switch';
+  const waterTight = hotReferenceMl > maxClosedLoadMl;
+  const riskWarnings: string[] = [];
+
+  let closedRatio = 0.58;
+  if (intent === 'sweet' || intent === 'soft') closedRatio = 0.66;
+  if (intent === 'body' || intent === 'dense') closedRatio = 0.74;
+  if (intent === 'bright' || intent === 'floral') closedRatio = 0.2;
+  if (intent === 'fruit') closedRatio = 0.55;
+  if (preset.id === 'immersion_sweet') closedRatio = 1;
+  if (preset.id === 'immersion_heavy_body') closedRatio = 1;
+  if (preset.id === 'v60_mode') closedRatio = 0;
+  if (preset.id === 'hybrid_bright_clean') closedRatio = Math.min(closedRatio, 0.22);
+  if (preset.id === 'iced_hybrid') closedRatio = waterTight ? 0.55 : 0.68;
+  if (isMugen) closedRatio = Math.min(closedRatio, 0.48);
+
+  const desiredClosedMl = preset.id === 'v60_mode'
+    ? 0
+    : Math.max(bloomMl, roundSwitchMl(hotReferenceMl * closedRatio));
+  const fullImmersionRequested = preset.id === 'immersion_sweet' || preset.id === 'immersion_heavy_body';
+  const closedPhaseMl = preset.id === 'v60_mode'
+    ? 0
+    : fullImmersionRequested
+      ? hotReferenceMl
+      : Math.min(maxClosedLoadMl, desiredClosedMl);
+  const openPhaseMl = Math.max(0, hotReferenceMl - Math.min(hotReferenceMl, closedPhaseMl));
+  const bloomSeconds = roundSwitchSeconds(clamp(
+    intent === 'bright' || intent === 'floral' ? 35 : intent === 'body' || intent === 'dense' ? 55 : intent === 'sweet' || intent === 'soft' ? 50 : 45,
+    30,
+    60,
+  ));
+  const closedPhaseSeconds = roundSwitchSeconds(clamp(
+    intent === 'bright' || intent === 'floral' ? 40 : intent === 'body' || intent === 'dense' ? 105 : intent === 'sweet' || intent === 'soft' ? 90 : 75,
+    35,
+    120,
+  ));
+  const releaseSeconds = preset.id === 'v60_mode'
+    ? 0
+    : roundSwitchSeconds(bloomSeconds + closedPhaseSeconds);
+
+  if (fullImmersionRequested && hotReferenceMl > maxClosedLoadMl) {
+    riskWarnings.push(`Full immersion needs ${Math.round(hotReferenceMl)} ml closed load, above safe ${Math.round(maxClosedLoadMl)} ml.`);
+  }
+  if (waterTight && preset.id !== 'v60_mode' && !fullImmersionRequested) {
+    riskWarnings.push(`Keep closed phase at or below ${Math.round(maxClosedLoadMl)} ml; finish with valve open.`);
+  }
+  if (params.waterClassification === 'high_buffer' || params.waterClassification === 'alkaline_caution') {
+    riskWarnings.push('High-buffer water can mute brightness; release earlier if cup turns flat.');
+  }
+  if (params.grinderVerification === 'fallback' || params.grinderVerification === 'dataset_unverified') {
+    riskWarnings.push('Grinder reference is low-confidence; validate with drawdown before changing recipe numbers.');
+  }
+  if (isTruthyString(input.switchPresetId)) {
+    const brightTarget = intent === 'bright' || intent === 'floral';
+    const bodyTarget = intent === 'body' || intent === 'dense';
+    const sweetTarget = intent === 'sweet' || intent === 'soft';
+    if (brightTarget && (preset.id === 'immersion_heavy_body' || preset.id === 'immersion_sweet')) {
+      riskWarnings.push('Manual preset tidak selaras dengan target bright/floral; clarity bisa turun. Gunakan Hybrid Bright Clean atau V60 Mode jika ingin lebih transparan.');
+    }
+    if (bodyTarget && (preset.id === 'v60_mode' || preset.id === 'hybrid_bright_clean')) {
+      riskWarnings.push('Manual preset lebih clean daripada target body; body bisa lebih ringan. Gunakan Heavy Body hanya jika chamber aman.');
+    }
+    if (sweetTarget && preset.id === 'v60_mode') {
+      riskWarnings.push('Manual V60 Mode lebih transparan daripada target manis/bulat; sweetness bisa lebih ringan.');
+    }
+  }
+
+  const suggestedPresetId = fullImmersionRequested && hotReferenceMl > maxClosedLoadMl
+    ? suggestedSafeSwitchPreset({ dripperId, targetProfile, presetId: preset.id, brewMode: input.brewMode })
+    : undefined;
+  const valvePath = preset.id === 'v60_mode'
+    ? ['open'] as const
+    : openPhaseMl > 0
+      ? ['closed', 'open'] as const
+      : ['closed', 'open'] as const;
+
+  const targetLabel = targetProfile?.label || 'Balance & Clean';
+  const sensoryReason = (() => {
+    if (isMugen) {
+      if (intent === 'bright' || intent === 'floral') return `${targetLabel}: MUGEN low-bypass dipakai dengan fase terbuka lebih bersih agar clarity naik tanpa meniru kapasitas Switch 03.`;
+      if (intent === 'body' || intent === 'dense') return `${targetLabel}: MUGEN low-bypass memberi fokus dan body, tetapi chamber 200 ml dijaga dengan hybrid konservatif.`;
+      return `${targetLabel}: MUGEN low-bypass memberi sweetness terfokus; hybrid aman menjaga chamber 200 ml tetap terkendali.`;
+    }
+    if (preset.id === 'v60_mode') return `${targetLabel}: katup terbuka dari awal agar clarity dan transparansi lebih tinggi.`;
+    if (intent === 'bright' || intent === 'floral') return `${targetLabel}: fase tertutup dibuat pendek supaya acidity, aroma, dan clarity tidak tertutup body.`;
+    if (intent === 'sweet' || intent === 'soft') return `${targetLabel}: bloom lebih besar dan kontak tertutup lembut menangkap sweetness tanpa swirl keras.`;
+    if (intent === 'body' || intent === 'dense') return `${targetLabel}: kontak tertutup lebih panjang menaikkan body, tetapi tetap dibatasi chamber agar tidak muddy.`;
+    if (intent === 'fruit') return `${targetLabel}: closed capture sedang menjaga fruit sweetness, lalu open finish menjaga bersih.`;
+    return `${targetLabel}: closed bloom menangkap sweetness awal, lalu open finish menjaga clean finish.`;
+  })();
+
+  return {
+    presetId: preset.id,
+    bloomMl,
+    bloomRatio: Number(bloomRatio.toFixed(2)),
+    bloomSeconds,
+    closedPhaseMl: Math.round(closedPhaseMl),
+    closedPhaseSeconds,
+    openPhaseMl: Math.round(openPhaseMl),
+    releaseSeconds,
+    pourStyle: technique.pourStyle,
+    flowRateMlPerSec: technique.flowRateMlPerSec,
+    pourPath: technique.pourPath,
+    pourHeight: technique.pourHeight,
+    agitationLevel: technique.agitationLevel,
+    valvePath: [...valvePath],
+    chamberLoadPlan: [
+      {
+        stepId: 'switch_closed_bloom',
+        valveState: preset.id === 'v60_mode' ? 'open' : 'closed',
+        chamberLoadMl: preset.id === 'v60_mode' ? 0 : Math.min(bloomMl, maxClosedLoadMl),
+      },
+      {
+        stepId: 'switch_closed_phase',
+        valveState: preset.id === 'v60_mode' ? 'open' : 'closed',
+        chamberLoadMl: preset.id === 'v60_mode' ? 0 : Math.min(Math.round(closedPhaseMl), maxClosedLoadMl),
+      },
+    ],
+    sensoryReason,
+    riskWarnings,
+    suggestedPresetId,
+  };
+}
+
 function step(params: BrewTemplateStep): BrewTemplateStep {
   return params;
 }
 
-function fullImmersionSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
+function shareFromMl(ml: number, hotReferenceMl: number) {
+  if (hotReferenceMl <= 0) return 0;
+  return clamp(ml / hotReferenceMl, 0, 1);
+}
+
+function targetTechnique(taste: SwitchTasteProgrammePlan, override?: Partial<Pick<BrewTemplateStep, 'flowRateMlPerSec' | 'pourPath' | 'pourHeight' | 'agitationLevel'>>) {
+  return {
+    flowRateMlPerSec: override?.flowRateMlPerSec || taste.flowRateMlPerSec,
+    pourPath: override?.pourPath || taste.pourPath,
+    pourHeight: override?.pourHeight || taste.pourHeight,
+    agitationLevel: override?.agitationLevel || taste.agitationLevel,
+  };
+}
+
+function fullImmersionSteps(preset: SwitchPublicPreset, taste: SwitchTasteProgrammePlan, hotReferenceMl: number): BrewTemplateStep[] {
   const programme = preset.defaultProgramme;
-  const heavyBody = preset.id === 'immersion_heavy_body';
+  const fillMl = Math.max(0, hotReferenceMl - taste.bloomMl);
   return [
     step({
       id: 'switch_closed_bloom',
       label: 'Closed bloom',
       kind: 'pour',
-      share: heavyBody ? 0.26 : 0.22,
+      share: shareFromMl(taste.bloomMl, hotReferenceMl),
       startSeconds: 0,
-      note: heavyBody
-        ? 'Katup tertutup. Bloom tenang sampai bed basah penuh; jangan swirl keras.'
-        : 'Katup tertutup. Bloom 2-3x dosis dengan tuang lembut untuk sweetness.',
+      note: `Katup tertutup. Bloom ${taste.bloomMl} ml (${taste.bloomRatio}x dosis); tuang lembut dan jangan swirl keras.`,
       valveState: 'closed',
       chamberState: 'bloom',
       switchProgramme: programme,
+      ...targetTechnique(taste, { pourPath: 'immersion_charge' }),
     }),
     step({
       id: 'switch_closed_fill',
-      label: heavyBody ? 'Body fill' : 'Sweet fill',
+      label: preset.id === 'immersion_heavy_body' ? 'Body fill' : 'Sweet fill',
       kind: 'pour',
-      share: heavyBody ? 0.74 : 0.78,
-      startSeconds: heavyBody ? 0.24 : 0.22,
-      note: heavyBody
-        ? 'Masih tertutup. Isi sisa air dengan aliran rendah agar body naik tanpa lumpur.'
-        : 'Masih tertutup. Isi sisa air dengan tenang; targetnya manis dan bulat.',
+      share: shareFromMl(fillMl, hotReferenceMl),
+      startSeconds: taste.bloomSeconds,
+      note: preset.id === 'immersion_heavy_body'
+        ? 'Masih tertutup. Isi perlahan untuk body tebal; buka sebelum terasa berat atau muddy.'
+        : 'Masih tertutup. Isi sisa air dengan tenang untuk sweetness dan body bulat.',
       valveState: 'closed',
       chamberState: 'filling',
       switchProgramme: programme,
+      ...targetTechnique(taste, { pourPath: 'immersion_charge' }),
     }),
     step({
       id: 'switch_closed_contact',
       label: 'Closed contact',
       kind: 'wait',
       share: 0,
-      startSeconds: heavyBody ? 0.66 : 0.58,
-      note: heavyBody
-        ? 'Tahan kontak sedikit lebih lama; buka sebelum finish mulai kering atau berat.'
-        : 'Tahan kontak singkat; buka sebelum rasa jadi datar.',
+      startSeconds: Math.max(taste.bloomSeconds + 30, taste.releaseSeconds - 35),
+      note: 'Tahan kontak tertutup secukupnya; buka sebelum flow terasa stall.',
       valveState: 'closed',
       chamberState: 'immersion',
       switchProgramme: programme,
@@ -400,10 +670,8 @@ function fullImmersionSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
       label: 'Release',
       kind: 'release',
       share: 0,
-      startSeconds: heavyBody ? 0.82 : 0.76,
-      note: heavyBody
-        ? 'Buka katup dan biarkan release bersih; jangan tambah agitasi.'
-        : 'Buka katup saat sweetness sudah cukup, lalu biarkan drain bersih.',
+      startSeconds: taste.releaseSeconds,
+      note: 'Buka katup dan biarkan release bersih tanpa agitasi tambahan.',
       valveState: 'open',
       chamberState: 'releasing',
       switchProgramme: programme,
@@ -413,10 +681,8 @@ function fullImmersionSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
       label: 'Serve',
       kind: 'serve',
       share: 0,
-      startSeconds: 1,
-      note: heavyBody
-        ? 'Angkat dripper saat flow selesai; aduk server singkat dan cek risiko muddy.'
-        : 'Angkat dripper saat flow selesai dan aduk server 5-8 detik.',
+      startSeconds: taste.releaseSeconds + 55,
+      note: 'Aduk server 5-8 detik lalu sajikan. Catat jika body mulai muddy.',
       valveState: 'open',
       chamberState: 'served',
       switchProgramme: programme,
@@ -424,120 +690,69 @@ function fullImmersionSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
   ];
 }
 
-function balancedHybridSteps(preset: SwitchPublicPreset, row?: SwitchDoseMatrixRow): BrewTemplateStep[] {
+function balancedHybridSteps(preset: SwitchPublicPreset, taste: SwitchTasteProgrammePlan, hotReferenceMl: number): BrewTemplateStep[] {
   const programme = preset.defaultProgramme;
-  const smallChamber = row ? row.defaultTotalWaterMl > row.safeClosedPhaseMaxMl : false;
-  if (smallChamber) {
-    return [
-      step({
-        id: 'switch_closed_bloom',
-        label: 'Closed bloom',
-        kind: 'pour',
-        share: 0.38,
-        startSeconds: 0,
-        note: 'Katup tertutup. Basahi semua kopi untuk menangkap sweetness awal.',
-        valveState: 'closed',
-        chamberState: 'bloom',
-        switchProgramme: programme,
-      }),
-      step({
-        id: 'switch_release_checkpoint',
-        label: 'Release checkpoint',
-        kind: 'release',
-        share: 0,
-        startSeconds: 0.26,
-        note: 'Buka katup sebelum muatan ruang melewati batas aman.',
-        valveState: 'open',
-        chamberState: 'releasing',
-        switchProgramme: programme,
-      }),
-      step({
-        id: 'switch_open_fill',
-        label: 'Open fill',
-        kind: 'pour',
-        share: 0.62,
-        startSeconds: 0.36,
-        note: 'Katup terbuka. Lanjutkan isi target dengan aliran tenang.',
-        valveState: 'open',
-        chamberState: 'percolation',
-        switchProgramme: programme,
-      }),
-      step({
-        id: 'switch_drawdown',
-        label: 'Drawdown',
-        kind: 'drawdown',
-        share: 0,
-        startSeconds: 0.82,
-        note: 'Biarkan drawdown selesai tanpa swirl berat.',
-        valveState: 'open',
-        chamberState: 'drawdown',
-        switchProgramme: programme,
-      }),
-      step({
-        id: 'switch_serve',
-        label: 'Serve',
-        kind: 'serve',
-        share: 0,
-        startSeconds: 1,
-        note: 'Aduk server singkat lalu sajikan.',
-        valveState: 'open',
-        chamberState: 'served',
-        switchProgramme: programme,
-      }),
-    ];
-  }
+  const closedFillMl = Math.max(0, taste.closedPhaseMl - taste.bloomMl);
+  const openFinishMl = Math.max(0, hotReferenceMl - taste.closedPhaseMl);
   return [
     step({
       id: 'switch_closed_bloom',
       label: 'Closed bloom',
       kind: 'pour',
-      share: 0.25,
+      share: shareFromMl(taste.bloomMl, hotReferenceMl),
       startSeconds: 0,
-      note: 'Katup tertutup. Bloom tenang untuk sweetness awal tanpa over-agitasi.',
+      note: `Katup tertutup. Bloom ${taste.bloomMl} ml untuk sweetness awal; tuang rendah dan tenang.`,
       valveState: 'closed',
       chamberState: 'bloom',
       switchProgramme: programme,
+      ...targetTechnique(taste, { pourPath: 'immersion_charge' }),
     }),
-    step({
-      id: 'switch_closed_sweeten',
-      label: 'Closed sweeten',
-      kind: 'pour',
-      share: 0.42,
-      startSeconds: 0.28,
-      note: 'Masih tertutup. Bangun sweetness sampai muatan ruang aman, lalu siap release.',
-      valveState: 'closed',
-      chamberState: 'immersion',
-      switchProgramme: programme,
-    }),
+    ...(closedFillMl > 0
+      ? [step({
+        id: 'switch_closed_sweeten',
+        label: 'Closed sweeten',
+        kind: 'pour',
+        share: shareFromMl(closedFillMl, hotReferenceMl),
+        startSeconds: taste.bloomSeconds,
+        note: `Masih tertutup. Naikkan muatan ruang sampai sekitar ${taste.closedPhaseMl} ml, lalu siapkan release.`,
+        valveState: 'closed',
+        chamberState: 'immersion',
+        switchProgramme: programme,
+        ...targetTechnique(taste, { pourPath: 'immersion_charge' }),
+      })]
+      : []),
     step({
       id: 'switch_release_checkpoint',
       label: 'Release checkpoint',
       kind: 'release',
       share: 0,
-      startSeconds: 0.58,
-      note: 'Buka katup sebelum bed terasa berat; ini menjaga finish tetap bersih.',
+      startSeconds: taste.releaseSeconds,
+      note: 'Buka katup sebelum bed melambat berat; ini menjaga finish tetap bersih.',
       valveState: 'open',
       chamberState: 'releasing',
       switchProgramme: programme,
     }),
-    step({
-      id: 'switch_open_finish',
-      label: 'Open finish',
-      kind: 'pour',
-      share: 0.33,
-      startSeconds: 0.66,
-      note: 'Katup terbuka. Selesaikan target dengan aliran pusat-ke-tengah yang bersih.',
-      valveState: 'open',
-      chamberState: 'percolation',
-      switchProgramme: programme,
-    }),
+    ...(openFinishMl > 0
+      ? [step({
+        id: 'switch_open_finish',
+        label: 'Open finish',
+        kind: 'pour',
+        share: shareFromMl(openFinishMl, hotReferenceMl),
+        startSeconds: taste.releaseSeconds + 35,
+        note: 'Katup terbuka. Selesaikan target dengan jalur pusat-ke-tengah, tanpa wall-rinse berat.',
+        valveState: 'open',
+        chamberState: 'percolation',
+        switchProgramme: programme,
+        ...targetTechnique(taste),
+      })]
+      : []),
     step({
       id: 'switch_drawdown',
       label: 'Drawdown',
       kind: 'drawdown',
       share: 0,
-      startSeconds: 0.88,
-      note: 'Biarkan drawdown selesai tanpa swirl berat.',
+      startSeconds: taste.releaseSeconds + 80,
+      note: 'Biarkan drawdown selesai natural; jangan tambah air di luar target.',
       valveState: 'open',
       chamberState: 'drawdown',
       switchProgramme: programme,
@@ -547,8 +762,8 @@ function balancedHybridSteps(preset: SwitchPublicPreset, row?: SwitchDoseMatrixR
       label: 'Serve',
       kind: 'serve',
       share: 0,
-      startSeconds: 1,
-      note: 'Aduk server singkat lalu sajikan.',
+      startSeconds: taste.releaseSeconds + 115,
+      note: 'Aduk server 5-8 detik lalu sajikan.',
       valveState: 'open',
       chamberState: 'served',
       switchProgramme: programme,
@@ -556,49 +771,57 @@ function balancedHybridSteps(preset: SwitchPublicPreset, row?: SwitchDoseMatrixR
   ];
 }
 
-function brightHybridSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
+function brightHybridSteps(preset: SwitchPublicPreset, taste: SwitchTasteProgrammePlan, hotReferenceMl: number): BrewTemplateStep[] {
   const programme = preset.defaultProgramme;
+  const closedCaptureMl = Math.max(0, taste.closedPhaseMl);
+  const openBeforeCaptureMl = Math.max(0, hotReferenceMl - closedCaptureMl);
+  const openBloomMl = Math.min(taste.bloomMl, openBeforeCaptureMl);
+  const openBuildMl = Math.max(0, openBeforeCaptureMl - openBloomMl);
   return [
     step({
       id: 'switch_open_bloom',
       label: 'Open bloom',
       kind: 'pour',
-      share: 0.32,
+      share: shareFromMl(openBloomMl, hotReferenceMl),
       startSeconds: 0,
-      note: 'Katup terbuka. Bloom bersih, rendah, dan tanpa wall-rinse agar floral tetap jelas.',
+      note: `Katup terbuka. Bloom bersih ${openBloomMl} ml; jaga flow rendah dan hindari wall-rinse.`,
       valveState: 'open',
       chamberState: 'percolation',
       switchProgramme: programme,
+      ...targetTechnique(taste),
     }),
     step({
       id: 'switch_open_build',
       label: 'Open build',
       kind: 'pour',
-      share: 0.48,
-      startSeconds: 0.30,
-      note: 'Tetap terbuka. Bangun target air dengan flow stabil dan agitasi minimal.',
+      share: shareFromMl(openBuildMl, hotReferenceMl),
+      startSeconds: taste.bloomSeconds,
+      note: 'Tetap terbuka. Bangun clarity dengan aliran stabil dan agitasi minimal.',
       valveState: 'open',
       chamberState: 'percolation',
       switchProgramme: programme,
+      ...targetTechnique(taste),
     }),
     step({
       id: 'switch_closed_capture',
       label: 'Short capture',
       kind: 'pour',
-      share: 0.20,
-      startSeconds: 0.62,
-      note: 'Tutup sebentar hanya untuk menangkap sweetness akhir; jangan tahan terlalu lama.',
+      share: shareFromMl(closedCaptureMl, hotReferenceMl),
+      startSeconds: taste.releaseSeconds - 45,
+      note: `Tutup singkat hanya untuk capture sweetness akhir (${closedCaptureMl} ml). Jangan tahan terlalu lama.`,
       valveState: 'closed',
       chamberState: 'immersion',
+      chamberLoadShare: shareFromMl(closedCaptureMl, hotReferenceMl),
       switchProgramme: programme,
+      ...targetTechnique(taste, { pourPath: 'center' }),
     }),
     step({
       id: 'switch_release',
       label: 'Release',
       kind: 'release',
       share: 0,
-      startSeconds: 0.78,
-      note: 'Buka katup sebelum body menutup acidity atau aroma.',
+      startSeconds: taste.releaseSeconds,
+      note: 'Buka katup lebih awal agar aroma, acidity, dan clarity tidak tertutup body.',
       valveState: 'open',
       chamberState: 'releasing',
       switchProgramme: programme,
@@ -608,7 +831,7 @@ function brightHybridSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
       label: 'Serve',
       kind: 'serve',
       share: 0,
-      startSeconds: 1,
+      startSeconds: taste.releaseSeconds + 75,
       note: 'Aduk server singkat lalu sajikan.',
       valveState: 'open',
       chamberState: 'served',
@@ -617,49 +840,55 @@ function brightHybridSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
   ];
 }
 
-function v60ModeSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
+function v60ModeSteps(preset: SwitchPublicPreset, taste: SwitchTasteProgrammePlan, hotReferenceMl: number): BrewTemplateStep[] {
   const programme = preset.defaultProgramme;
+  const bloomMl = Math.min(taste.bloomMl, hotReferenceMl * 0.32);
+  const middleMl = Math.max(0, (hotReferenceMl - bloomMl) * 0.58);
+  const finishMl = Math.max(0, hotReferenceMl - bloomMl - middleMl);
   return [
     step({
       id: 'switch_v60_bloom',
       label: 'Open bloom',
       kind: 'pour',
-      share: 0.30,
+      share: shareFromMl(bloomMl, hotReferenceMl),
       startSeconds: 0,
-      note: 'Katup terbuka. Perlakukan seperti Mode V60 tanpa fase immersion.',
+      note: `Katup terbuka dari awal. Bloom ${roundSwitchMl(bloomMl)} ml; ini Mode V60, bukan immersion.`,
       valveState: 'open',
       chamberState: 'percolation',
       switchProgramme: programme,
+      ...targetTechnique(taste),
     }),
     step({
       id: 'switch_v60_middle',
       label: 'Open middle',
       kind: 'pour',
-      share: 0.42,
-      startSeconds: 0.35,
-      note: 'Jaga flow stabil dan jangan tutup katup.',
+      share: shareFromMl(middleMl, hotReferenceMl),
+      startSeconds: taste.bloomSeconds + 20,
+      note: 'Jaga katup tetap terbuka dan flow stabil untuk clarity.',
       valveState: 'open',
       chamberState: 'percolation',
       switchProgramme: programme,
+      ...targetTechnique(taste),
     }),
     step({
       id: 'switch_v60_finish',
       label: 'Open finish',
       kind: 'pour',
-      share: 0.28,
-      startSeconds: 0.65,
-      note: 'Selesaikan target dengan jalur tuang bersih.',
+      share: shareFromMl(finishMl, hotReferenceMl),
+      startSeconds: taste.bloomSeconds + 75,
+      note: 'Selesaikan target dengan jalur bersih; jangan tutup katup.',
       valveState: 'open',
       chamberState: 'percolation',
       switchProgramme: programme,
+      ...targetTechnique(taste),
     }),
     step({
       id: 'switch_v60_drawdown',
       label: 'Drawdown',
       kind: 'drawdown',
       share: 0,
-      startSeconds: 0.86,
-      note: 'Drawdown natural; tidak ada titik release karena katup terbuka sejak awal.',
+      startSeconds: taste.bloomSeconds + 120,
+      note: 'Drawdown natural; tidak ada titik release karena katup sudah terbuka.',
       valveState: 'open',
       chamberState: 'drawdown',
       switchProgramme: programme,
@@ -669,7 +898,7 @@ function v60ModeSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
       label: 'Serve',
       kind: 'serve',
       share: 0,
-      startSeconds: 1,
+      startSeconds: taste.bloomSeconds + 155,
       note: 'Aduk server singkat lalu sajikan.',
       valveState: 'open',
       chamberState: 'served',
@@ -678,59 +907,68 @@ function v60ModeSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
   ];
 }
 
-function icedHybridSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
+function icedHybridSteps(preset: SwitchPublicPreset, taste: SwitchTasteProgrammePlan, hotReferenceMl: number): BrewTemplateStep[] {
   const programme = preset.defaultProgramme;
+  const closedFillMl = Math.max(0, taste.closedPhaseMl - taste.bloomMl);
+  const openFinishMl = Math.max(0, hotReferenceMl - taste.closedPhaseMl);
   return [
     step({
       id: 'switch_iced_bloom',
       label: 'Closed iced bloom',
       kind: 'pour',
-      share: 0.35,
+      share: shareFromMl(taste.bloomMl, hotReferenceMl),
       startSeconds: 0,
-      note: 'Katup tertutup. Bloom konsentrat panas; es sudah ditimbang di server.',
+      note: `Katup tertutup. Bloom konsentrat panas ${taste.bloomMl} ml; es sudah ditimbang di server.`,
       valveState: 'closed',
       chamberState: 'bloom',
       switchProgramme: programme,
+      ...targetTechnique(taste, { pourPath: 'immersion_charge' }),
     }),
-    step({
-      id: 'switch_iced_hot_fill',
-      label: 'Closed hot fill',
-      kind: 'pour',
-      share: 0.65,
-      startSeconds: 0.35,
-      note: 'Masih tertutup. Isi target air panas saja; jangan tambah bypass tersembunyi.',
-      valveState: 'closed',
-      chamberState: 'filling',
-      switchProgramme: programme,
-    }),
-    step({
-      id: 'switch_iced_contact',
-      label: 'Short hot contact',
-      kind: 'wait',
-      share: 0,
-      startSeconds: 0.58,
-      note: 'Tahan singkat untuk sweetness; target akhir tetap hot water + es.',
-      valveState: 'closed',
-      chamberState: 'immersion',
-      switchProgramme: programme,
-    }),
+    ...(closedFillMl > 0
+      ? [step({
+        id: 'switch_iced_hot_fill',
+        label: 'Closed hot fill',
+        kind: 'pour',
+        share: shareFromMl(closedFillMl, hotReferenceMl),
+        startSeconds: taste.bloomSeconds,
+        note: `Masih tertutup. Isi target panas tertutup sampai sekitar ${taste.closedPhaseMl} ml; jangan tambah bypass tersembunyi.`,
+        valveState: 'closed',
+        chamberState: 'filling',
+        switchProgramme: programme,
+        ...targetTechnique(taste, { pourPath: 'immersion_charge' }),
+      })]
+      : []),
     step({
       id: 'switch_iced_release',
       label: 'Release over ice',
       kind: 'release',
       share: 0,
-      startSeconds: 0.75,
+      startSeconds: taste.releaseSeconds,
       note: 'Buka katup dan release konsentrat panas langsung ke es di server.',
       valveState: 'open',
       chamberState: 'releasing',
       switchProgramme: programme,
     }),
+    ...(openFinishMl > 0
+      ? [step({
+        id: 'switch_iced_open_finish',
+        label: 'Open hot finish',
+        kind: 'pour',
+        share: shareFromMl(openFinishMl, hotReferenceMl),
+        startSeconds: taste.releaseSeconds + 35,
+        note: 'Katup terbuka. Lanjutkan hanya sampai target air panas; final beverage tetap air panas + es.',
+        valveState: 'open',
+        chamberState: 'percolation',
+        switchProgramme: programme,
+        ...targetTechnique(taste),
+      })]
+      : []),
     step({
       id: 'switch_iced_serve',
       label: 'Stir and serve',
       kind: 'serve',
       share: 0,
-      startSeconds: 1,
+      startSeconds: taste.releaseSeconds + 95,
       note: 'Aduk 5-8 detik agar konsentrat dan es menyatu.',
       valveState: 'open',
       chamberState: 'served',
@@ -739,30 +977,30 @@ function icedHybridSteps(preset: SwitchPublicPreset): BrewTemplateStep[] {
   ];
 }
 
-function stepsForPreset(preset: SwitchPublicPreset, row?: SwitchDoseMatrixRow): BrewTemplateStep[] {
+function stepsForPreset(preset: SwitchPublicPreset, taste: SwitchTasteProgrammePlan): BrewTemplateStep[] {
+  const hotReferenceMl = Math.max(60, taste.closedPhaseMl + taste.openPhaseMl);
   switch (preset.id) {
     case 'immersion_sweet':
     case 'immersion_heavy_body':
-      return fullImmersionSteps(preset);
+      return fullImmersionSteps(preset, taste, hotReferenceMl);
     case 'hybrid_bright_clean':
-      return brightHybridSteps(preset);
+      return brightHybridSteps(preset, taste, hotReferenceMl);
     case 'v60_mode':
-      return v60ModeSteps(preset);
+      return v60ModeSteps(preset, taste, hotReferenceMl);
     case 'iced_hybrid':
-      return icedHybridSteps(preset);
+      return icedHybridSteps(preset, taste, hotReferenceMl);
     case 'mugen_everyday_hybrid':
-      return balancedHybridSteps(preset, row);
     case 'hybrid_balanced':
     default:
-      return balancedHybridSteps(preset, row);
+      return balancedHybridSteps(preset, taste, hotReferenceMl);
   }
 }
 
 export function applySwitchPresetToDeviceProfile(
   profile: DeviceBrewProfile,
-  selection: Pick<SwitchPlanSelection, 'preset' | 'doseRow'>,
+  selection: Pick<SwitchPlanSelection, 'preset' | 'doseRow' | 'tasteProgramme'>,
 ): DeviceBrewProfile {
-  const steps = stepsForPreset(selection.preset, selection.doseRow);
+  const steps = stepsForPreset(selection.preset, selection.tasteProgramme);
   return {
     ...profile,
     methodFamily: 'hario_switch',
@@ -779,13 +1017,15 @@ export function resolveSwitchPlanSelection(params: {
   profile: DeviceBrewProfile;
   targetProfile?: TargetProfile;
   processEntry?: ProcessCatalogEntry;
+  waterClassification?: WaterClassification;
+  grinderVerification?: VerificationLevel;
   doseG: number;
 }): SwitchPlanSelection | null {
-  const { input, catalog, dripper, profile, targetProfile, processEntry, doseG } = params;
+  const { input, catalog, dripper, profile, targetProfile, processEntry, waterClassification, grinderVerification, doseG } = params;
   if (profile.methodFamily !== 'hario_switch' && dripper.methodFamily !== 'hario_switch') return null;
   if (!isExactHarioSwitchDripperId(dripper.id)) return null;
   const doseRow = resolveSwitchDoseRow(catalog, dripper.id, doseG);
-  const preset = resolvePreset({
+  let preset = resolvePreset({
     input,
     catalog,
     dripperId: dripper.id,
@@ -794,12 +1034,86 @@ export function resolveSwitchPlanSelection(params: {
     processEntry,
   });
   if (!preset) return null;
+  let tasteProgramme = resolveSwitchTasteProgramme({
+    input,
+    preset,
+    doseRow,
+    dripperId: dripper.id,
+    targetProfile,
+    processEntry,
+    waterClassification,
+    grinderVerification,
+    doseG,
+  });
+  const explicitPresetSelected = isTruthyString(input.switchPresetId);
+  if (!explicitPresetSelected && tasteProgramme.suggestedPresetId && tasteProgramme.suggestedPresetId !== preset.id) {
+    const safePreset = getCompatiblePreset(catalog, tasteProgramme.suggestedPresetId, dripper.id);
+    if (safePreset && !doseRow?.blockedPresetIds.includes(safePreset.id)) {
+      preset = safePreset;
+      tasteProgramme = resolveSwitchTasteProgramme({
+        input,
+        preset,
+        doseRow,
+        dripperId: dripper.id,
+        targetProfile,
+        processEntry,
+        waterClassification,
+        grinderVerification,
+        doseG,
+      });
+    }
+  }
   const compatibility = buildCompatibility(preset, doseRow, dripper);
   return {
     preset,
     doseRow,
     compatibility,
-    adjustedProfile: applySwitchPresetToDeviceProfile(profile, { preset, doseRow }),
+    tasteProgramme,
+    adjustedProfile: applySwitchPresetToDeviceProfile(profile, { preset, doseRow, tasteProgramme }),
+  };
+}
+
+export function validateSwitchStepSafety(params: {
+  steps: BrewPlanStep[];
+  doseRow?: SwitchDoseMatrixRow;
+  presetId?: SwitchPublicPresetId;
+  hotWaterMl: number;
+  constraints?: { recommendedClosedPhaseMaxMl?: number; finishedCapacityMl?: number };
+  suggestedPresetId?: SwitchPublicPresetId;
+}): SwitchStepValidation {
+  const maxClosedLoadMl = params.doseRow?.safeClosedPhaseMaxMl
+    || params.constraints?.recommendedClosedPhaseMaxMl
+    || params.constraints?.finishedCapacityMl
+    || 0;
+  const closedSteps = params.steps.filter((step) => step.valveState === 'closed');
+  const closedLoads = closedSteps
+    .map((step) => step.chamberLoadMl ?? step.targetVolumeMl)
+    .filter((value) => Number.isFinite(value));
+  const peakClosedLoadMl = Math.max(0, ...closedLoads);
+  const unsafeStepIds = maxClosedLoadMl > 0
+    ? closedSteps
+      .filter((step) => (step.chamberLoadMl ?? step.targetVolumeMl) > maxClosedLoadMl + 1)
+      .map((step) => step.id)
+    : [];
+  const fullImmersion = params.presetId === 'immersion_sweet' || params.presetId === 'immersion_heavy_body';
+  const fullImmersionOverCapacity = fullImmersion && maxClosedLoadMl > 0 && params.hotWaterMl > maxClosedLoadMl + 1;
+  const status: SwitchStepValidation['status'] = unsafeStepIds.length > 0 || fullImmersionOverCapacity
+    ? 'blocked'
+    : maxClosedLoadMl > 0 && peakClosedLoadMl > maxClosedLoadMl * 0.9
+      ? 'caution'
+      : 'safe';
+  const message = status === 'blocked'
+    ? `Closed chamber peak ${Math.round(Math.max(peakClosedLoadMl, params.hotWaterMl))} ml exceeds safe ${Math.round(maxClosedLoadMl)} ml. Use Switch 03, V60 Mode, or a conservative hybrid.`
+    : status === 'caution'
+      ? `Closed chamber peak ${Math.round(peakClosedLoadMl)} ml is close to safe ${Math.round(maxClosedLoadMl)} ml. Release before the bed stalls.`
+      : `Closed chamber peak ${Math.round(peakClosedLoadMl)} ml stays within safe ${Math.round(maxClosedLoadMl)} ml.`;
+  return {
+    status,
+    maxClosedLoadMl,
+    peakClosedLoadMl: Math.round(peakClosedLoadMl),
+    unsafeStepIds,
+    message,
+    suggestedPresetId: status === 'blocked' ? params.suggestedPresetId : undefined,
   };
 }
 

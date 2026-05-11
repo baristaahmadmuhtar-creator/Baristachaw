@@ -151,6 +151,44 @@ export function buildExpectedCupProfile(
     if (plan.switchPresetLabel) {
       reasons.push(`${plan.switchPresetLabel} preset shapes Switch sweetness, clarity, body, and valve timing.`);
     }
+    if (plan.switchTasteProgramme) {
+      const closedShare = plan.hotWaterMl > 0 ? plan.switchTasteProgramme.closedPhaseMl / plan.hotWaterMl : 0;
+      const openShare = plan.hotWaterMl > 0 ? plan.switchTasteProgramme.openPhaseMl / plan.hotWaterMl : 0;
+      const targetId = plan.targetProfileId;
+      if (targetId === 'more_acidity' || targetId === 'floral_transparent') {
+        acidity += openShare >= 0.55 ? 0.35 : 0.15;
+        clarity += openShare >= 0.55 ? 0.35 : 0.2;
+        body -= 0.15;
+      } else if (targetId === 'more_sweetness' || targetId === 'soft_round') {
+        sweetness += closedShare >= 0.45 ? 0.35 : 0.18;
+        body += 0.15;
+      } else if (targetId === 'more_body' || targetId === 'dense_comforting') {
+        body += closedShare >= 0.6 ? 0.45 : 0.25;
+        sweetness += 0.18;
+        clarity -= closedShare >= 0.6 ? 0.25 : 0.1;
+        bitterRisk += closedShare >= 0.72 ? 0.35 : 0.15;
+      } else if (targetId === 'fruit_forward') {
+        aromaIntensity += 0.35;
+        sweetness += 0.2;
+        clarity += openShare >= 0.35 ? 0.15 : 0;
+      }
+      if (plan.switchPresetId === 'v60_mode') {
+        clarity += 0.35;
+        acidity += 0.25;
+        body -= 0.25;
+      }
+      if (plan.switchPresetId === 'iced_hybrid') {
+        clarity += 0.25;
+        acidity += 0.2;
+        bitterRisk -= 0.2;
+      }
+      if (plan.dripper.id === 'mugen-x-switch') {
+        sweetness += 0.2;
+        clarity += 0.1;
+      }
+      reasons.push(plan.switchTasteProgramme.sensoryReason);
+      warnings.push(...plan.switchTasteProgramme.riskWarnings.slice(0, 2));
+    }
   }
 
   let confidence: ExpectedCupProfile['confidence'] = 'high';
@@ -180,6 +218,13 @@ export function buildExpectedCupProfile(
   if (plan.workflowValidation && !plan.workflowValidation.passed) {
     confidence = 'low';
     warnings.push('Workflow validation did not pass, so sensory prediction is not release-grade.');
+  }
+  if (plan.methodFamily === 'hario_switch' && plan.switchStepValidation?.status === 'blocked') {
+    confidence = 'low';
+    warnings.push('Switch chamber validation is blocked; use the suggested safe programme before brewing.');
+  } else if (plan.methodFamily === 'hario_switch' && plan.switchStepValidation?.status === 'caution' && confidence === 'high') {
+    confidence = 'medium';
+    warnings.push('Switch chamber load is close to the safe limit; treat taste prediction as medium confidence.');
   }
   if (plan.methodFamily === 'hario_switch' && plan.switchProvenance?.sensoryModelConfidence === 'medium' && confidence === 'high') {
     confidence = 'medium';

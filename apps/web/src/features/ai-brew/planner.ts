@@ -43,7 +43,7 @@ import {
   buildAiBrewReadinessScores,
   buildExpectedCupProfile,
 } from './cupProfile.ts';
-import { resolveSwitchPlanSelection } from './switchPlanner.ts';
+import { resolveSwitchPlanSelection, validateSwitchStepSafety } from './switchPlanner.ts';
 export {
   buildWorkflowAwareGuideSteps,
   validateMethodWorkflowGuide,
@@ -76,6 +76,8 @@ import type {
   AiBrewFormState,
   AiBrewMethodFamily,
   AeroPressRecipeStyle,
+  BeanCoverageState,
+  BeanProfileState,
   BeanRoastDevelopment,
   BeanSolubility,
   BrewJournalEntry,
@@ -88,15 +90,21 @@ import type {
   EquipmentCatalogEntry,
   FlatBottomProfileFamily,
   GrinderSettingReference,
+  GrindSettingMode,
+  MethodWorkflowValidationResult,
   OrigamiFilterStyle,
   ParsedNumericRange,
+  ProcessRiskModel,
   ProcessCatalogEntry,
   TargetProfile,
   VarietyCatalogEntry,
   VerificationLevel,
+  WaterMode,
   WaterBrandProfile,
   WaterGuidance,
+  WaterMineralInput,
   SwitchBrewProgramme,
+  SwitchStepValidation,
 } from './types.ts';
 
 export type AiBrewGenerationStageId =
@@ -997,6 +1005,143 @@ function joinInstructionText(...parts: Array<string | undefined>) {
         .filter((value): value is string => Boolean(value)),
     ),
   ).join(' ');
+}
+
+function hasValue(value: unknown) {
+  return String(value || '').trim().length > 0;
+}
+
+function buildBeanCoverageState(params: {
+  input: AiBrewFormState;
+  processEntry?: ProcessCatalogEntry;
+  varietyEntry?: VarietyCatalogEntry;
+  processLabel: string;
+  varietyLabel: string;
+  methodFamily: AiBrewMethodFamily;
+  deviceProfileMode: DeviceProfileMode;
+  grindVerification: VerificationLevel;
+  grindSettingMode: GrindSettingMode;
+  waterMode: WaterMode;
+  waterBrand?: WaterBrandProfile;
+  waterMinerals: WaterMineralInput;
+  waterMineralDerivation?: BrewPlan['waterMineralDerivation'];
+  processRisk?: ProcessRiskModel;
+  beanProfile: BeanProfileState;
+  guardrailErrors: string[];
+  workflowStatus?: MethodWorkflowValidationResult['status'];
+  switchValidation?: SwitchStepValidation;
+}): BeanCoverageState {
+  const reasons: string[] = [];
+  const warnings: string[] = [];
+  const beanText = [
+    params.input.coffeeName,
+    params.input.process,
+    params.input.customProcess,
+    params.input.variety,
+    params.input.customVariety,
+    params.processLabel,
+    params.varietyLabel,
+  ].join(' ').toLowerCase();
+
+  const hasProcess = hasValue(params.input.process) || hasValue(params.input.customProcess);
+  const hasVariety = hasValue(params.input.variety) || hasValue(params.input.customVariety);
+  const hasCoffeeName = hasValue(params.input.coffeeName) && !/\b(unknown|test|qa)\b/i.test(params.input.coffeeName);
+  const hasBeanDetail = hasProcess || hasVariety || hasCoffeeName || params.beanProfile.active;
+  const waterKnown = params.waterMode === 'manual'
+    || Boolean(params.waterBrand?.isBrewReady && params.waterBrand?.presetStatus === 'autofill');
+  const grinderKnown = ['official', 'community_verified', 'curated'].includes(params.grindVerification);
+  const exactBrewer = params.deviceProfileMode === 'exact';
+  const unsafe = params.guardrailErrors.length > 0
+    || params.workflowStatus === 'blocked'
+    || params.switchValidation?.status === 'blocked';
+
+  if (hasProcess) reasons.push(`Process known: ${params.processLabel}.`);
+  if (hasVariety) reasons.push(`Variety known: ${params.varietyLabel}.`);
+  if (params.input.roastLevel) reasons.push(`Roast baseline: ${params.input.roastLevel}.`);
+  if (exactBrewer) reasons.push('Exact brewer profile is available.');
+  if (waterKnown) reasons.push(params.waterMode === 'manual' ? 'Manual water minerals provided.' : 'Brew-ready water profile is available.');
+  if (grinderKnown) reasons.push(`Grinder reference is ${params.grindVerification}.`);
+
+  const riskyBean = params.processRisk?.variability === 'high'
+    || params.processRisk?.recommendationMode === 'taste_feedback_required'
+    || params.input.roastLevel === 'dark'
+    || /\b(anaerobic|carbonic|lactic|ferment|co[-\s]?ferment|thermal|infused|decaf|robusta|canephora|liberica|excelsa|wet[-\s_]?hulled|giling\s+basah|old roast|fresh roast|45\+?\s*days|2\s*days|smoky|very dark|low[-\s]?density|high[-\s]?density)\b/i.test(beanText)
+    || (typeof params.beanProfile.beanDensityGml === 'number' && (params.beanProfile.beanDensityGml < 0.65 || params.beanProfile.beanDensityGml > 0.74))
+    || params.beanProfile.solubility === 'low'
+    || params.beanProfile.solubility === 'high'
+    || params.beanProfile.roastDevelopment === 'underdeveloped';
+  const riskyWater = params.waterMinerals.tdsPpm < 30
+    || params.waterMinerals.alkalinityPpm > 85
+    || params.waterBrand?.classification === 'zero_mineral_ro'
+    || params.waterBrand?.classification === 'high_buffer'
+    || params.waterBrand?.classification === 'alkaline_caution'
+    || params.waterMineralDerivation === 'estimated_from_classification';
+  const riskyReference = !exactBrewer
+    || !grinderKnown
+    || params.grindSettingMode === 'derived_baseline'
+    || !waterKnown
+    || params.switchValidation?.status === 'caution';
+
+  if (!hasBeanDetail) warnings.push('Data beans tidak lengkap; AI Brew memakai baseline aman.');
+  if (params.processRisk?.variability === 'high') warnings.push('Process high-variability: validate with taste feedback before increasing extraction.');
+  if (params.input.roastLevel === 'dark') warnings.push('Dark roast: protect bitterness with lower extraction pressure.');
+  if (/\b(robusta|canephora|liberica|excelsa)\b/i.test(beanText)) warnings.push('Non-arabica or robusta/canephora cue: keep bitterness protection active.');
+  if (riskyWater) warnings.push('Water needs caution or manual verification before treating the prediction as high confidence.');
+  if (!grinderKnown) warnings.push('Grinder setting is estimated or fallback; calibrate by drawdown and taste.');
+  if (params.switchValidation && params.switchValidation.status !== 'safe') warnings.push(params.switchValidation.message);
+
+  if (unsafe) {
+    return {
+      category: 'unsupported_unsafe',
+      confidence: 'low',
+      label: 'Blocked / unsafe combination',
+      reasons: normalizeNoteList(reasons, ['Guardrail or workflow validation blocked this combination.']),
+      warnings: normalizeNoteList(warnings, params.guardrailErrors, params.switchValidation ? [params.switchValidation.message] : []),
+      nextAction: 'Adjust dose, water target, brewer size, or unsafe manual preset before brewing.',
+    };
+  }
+
+  if (riskyBean || riskyWater || riskyReference) {
+    return {
+      category: 'risk_caution',
+      confidence: 'medium',
+      label: 'Risk bean / caution',
+      reasons: normalizeNoteList(reasons, ['Safe baseline used with caution flags.']),
+      warnings: normalizeNoteList(warnings),
+      nextAction: 'Brew the conservative baseline, then use taste feedback before changing dose or ratio.',
+    };
+  }
+
+  if (!hasBeanDetail) {
+    return {
+      category: 'unknown_fallback',
+      confidence: 'low',
+      label: 'Unknown bean / fallback',
+      reasons: normalizeNoteList(['No process, variety, origin, or bean profile was provided.']),
+      warnings: normalizeNoteList(warnings),
+      nextAction: 'Use the balanced baseline, then record taste feedback after brewing.',
+    };
+  }
+
+  if (hasProcess && hasVariety && exactBrewer && waterKnown && grinderKnown) {
+    return {
+      category: 'known_high',
+      confidence: 'high',
+      label: 'Known bean / high confidence',
+      reasons: normalizeNoteList(reasons),
+      warnings: normalizeNoteList(warnings),
+      nextAction: 'Brew the plan as a strong starting point; adjust only one variable after tasting.',
+    };
+  }
+
+  return {
+    category: 'partial_medium',
+    confidence: 'medium',
+    label: 'Partial bean / medium confidence',
+    reasons: normalizeNoteList(reasons, ['Some bean detail is missing, so a safe baseline remains active.']),
+    warnings: normalizeNoteList(warnings),
+    nextAction: 'Add process, variety, roast development, or density to improve accuracy; taste feedback remains the first correction loop.',
+  };
 }
 
 function distributeGapBudget(weights: number[], totalBudget: number) {
@@ -4507,6 +4652,9 @@ function buildAdaptiveStepShares(profile: DeviceBrewProfile, context: AdaptiveSh
   }
 
   const base = normalizeSharesToUnit(profile.steps.map((step) => step.share));
+  if (context.methodFamily === 'hario_switch') {
+    return base;
+  }
   const intent = resolveContextTargetIntent(context);
 
   const deltas = Array.from({ length: count }, () => 0);
@@ -5266,14 +5414,21 @@ function resolveStepTechniqueMetadata(
 }
 
 function applyStepTechniqueMetadata(steps: BrewPlanStep[], context: AdaptiveShareContext): BrewPlanStep[] {
-  return steps.map((step, index) => ({
-    ...step,
-    ...resolveStepTechniqueMetadata(
+  return steps.map((step, index) => {
+    const metadata = resolveStepTechniqueMetadata(
       context,
       step,
       resolveAdaptiveStepPhase(index, steps.length),
-    ),
-  }));
+    );
+    return {
+      ...step,
+      ...metadata,
+      flowRateMlPerSec: step.flowRateMlPerSec ?? metadata.flowRateMlPerSec,
+      pourPath: step.pourPath ?? metadata.pourPath,
+      pourHeight: step.pourHeight ?? metadata.pourHeight,
+      agitationLevel: step.agitationLevel ?? metadata.agitationLevel,
+    };
+  });
 }
 
 function isIcedManualPourOverFamily(methodFamily: AiBrewMethodFamily) {
@@ -5352,8 +5507,8 @@ function inferSwitchChamberState(step: DeviceBrewProfile['steps'][number], kind:
 
 function targetVolumeForChamberLoad(kind: BrewTemplateStepKind, valveState: ReturnType<typeof inferSwitchValveState>, targetVolumeMl: number) {
   if (kind === 'serve') return 0;
+  if (valveState === 'open') return 0;
   if (kind === 'drawdown') return targetVolumeMl;
-  if (valveState === 'open' && (kind === 'pour' || kind === 'release')) return targetVolumeMl;
   return targetVolumeMl;
 }
 
@@ -5517,10 +5672,21 @@ function buildSteps(
     }
 
     const isHarioSwitch = adaptiveShareContext.methodFamily === 'hario_switch';
+    if (isHarioSwitch) {
+      note = step.note;
+      hybridInstruction = joinInstructionText(
+        step.note,
+        phaseInstruction.hybridInstruction,
+      );
+    }
     const valveState = isHarioSwitch ? inferSwitchValveState(step, kind) : undefined;
     const chamberState = isHarioSwitch ? inferSwitchChamberState(step, kind) : undefined;
     const chamberLoadMl = isHarioSwitch
-      ? Math.max(0, step.chamberLoadMl ?? targetVolumeForChamberLoad(kind, valveState, runningTotal))
+      ? Math.max(0, step.chamberLoadMl ?? (
+        typeof step.chamberLoadShare === 'number'
+          ? roundTo(hotWaterMl * step.chamberLoadShare, 0)
+          : targetVolumeForChamberLoad(kind, valveState, runningTotal)
+      ))
       : undefined;
 
     return {
@@ -5534,6 +5700,10 @@ function buildSteps(
       chamberState,
       chamberLoadMl,
       switchProgramme: isHarioSwitch ? (step.switchProgramme || adaptiveShareContext.methodProgramme as SwitchBrewProgramme | undefined) : undefined,
+      flowRateMlPerSec: step.flowRateMlPerSec,
+      pourPath: step.pourPath,
+      pourHeight: step.pourHeight,
+      agitationLevel: step.agitationLevel,
       note,
       hybridInstruction,
     };
@@ -5743,6 +5913,8 @@ function finalizePlanCore(
       profile: deviceSelection.profile,
       targetProfile,
       processEntry,
+      waterClassification: waterBrand?.classification,
+      grinderVerification: grinderSetting?.verificationLevel,
       doseG,
     })
     : null;
@@ -6098,6 +6270,16 @@ function finalizePlanCore(
     originTargetMethodMiddleShareDelta: originTargetMethodAdjustment.middleShareDelta,
     originTargetMethodLastShareDelta: originTargetMethodAdjustment.lastShareDelta,
   });
+  const switchStepValidation = switchSelection
+    ? validateSwitchStepSafety({
+      steps,
+      doseRow: switchSelection.doseRow,
+      presetId: switchSelection.preset.id,
+      hotWaterMl,
+      constraints: controlledDeviceProfile.physicalConstraints,
+      suggestedPresetId: switchSelection.tasteProgramme.suggestedPresetId,
+    })
+    : undefined;
 
   const brewOutputs = buildBrewOutputs({
     method,
@@ -6144,7 +6326,7 @@ function finalizePlanCore(
     roastLevel: input.roastLevel,
   });
 
-  const grindSettingMode = grinderSetting?.id.startsWith('derived_') ? 'derived_baseline' : 'catalog_reference';
+  const grindSettingMode: GrindSettingMode = grinderSetting?.id.startsWith('derived_') ? 'derived_baseline' : 'catalog_reference';
   const temperatureWarnings = waterTempC >= 97 && methodFamily !== 'moka_pot' && methodFamily !== 'espresso'
     ? ['Suhu 97C+ adalah mode ekstraksi tinggi. Aman untuk kopi padat/light roast atau konsentrat es, tetapi turunkan 1-2C jika roast medium-dark/dark, air low-buffer, atau rasa mulai pahit/seret.']
     : [];
@@ -6152,6 +6334,8 @@ function finalizePlanCore(
     [deviceSelection.fallbackUsed ? `Using ${effectiveDeviceProfile.label} family fallback profile.` : undefined],
     temperatureWarnings,
     waterProfile.warnings,
+    switchSelection?.tasteProgramme.riskWarnings || [],
+    switchStepValidation && switchStepValidation.status !== 'safe' ? [switchStepValidation.message] : [],
     baseGuardrails.warnings,
   );
   const isDerivedTemplateProfile = deviceSelection.mode === 'derived_template';
@@ -6228,6 +6412,10 @@ function finalizePlanCore(
       waterBrand
         ? `Water source: ${waterBrand.shortLabel} (${input.waterCustomized ? 'customized' : waterBrand.presetStatus}).`
         : 'Water source: manual mineral entry.',
+      switchSelection?.tasteProgramme
+        ? `Switch taste programme: ${switchSelection.tasteProgramme.presetId}, bloom ${switchSelection.tasteProgramme.bloomMl} ml (${switchSelection.tasteProgramme.bloomRatio}x), closed peak target ${switchSelection.tasteProgramme.closedPhaseMl} ml, release ${switchSelection.tasteProgramme.releaseSeconds}s.`
+        : undefined,
+      switchStepValidation ? `Switch chamber validation: ${switchStepValidation.status}, peak ${switchStepValidation.peakClosedLoadMl}/${switchStepValidation.maxClosedLoadMl} ml.` : undefined,
       `Device profile source: ${effectiveDeviceProfile.verificationLevel}.`,
       `Grinder setting source: ${grindDetails.verificationLevel}.`,
       customProcessDetection ? `Custom process detection: ${customProcessDetection.id} (${customProcessDetection.confidence}).` : undefined,
@@ -6238,6 +6426,26 @@ function finalizePlanCore(
       pourControlNote ? `Pour control source: ${pourControlNote}` : undefined,
     ],
   );
+  const beanCoverageBase = {
+    input,
+    processEntry,
+    varietyEntry,
+    processLabel,
+    varietyLabel,
+    methodFamily,
+    deviceProfileMode: deviceSelection.mode,
+    grindVerification: grindDetails.verificationLevel,
+    grindSettingMode,
+    waterMode: input.waterMode,
+    waterBrand,
+    waterMinerals: waterProfile.minerals,
+    waterMineralDerivation: waterProfile.mineralDerivation,
+    processRisk,
+    beanProfile: beanProfileAdjustment.state,
+    guardrailErrors: baseGuardrails.errors,
+    switchValidation: switchStepValidation,
+  };
+  const beanCoverage = buildBeanCoverageState(beanCoverageBase);
   const provenanceAttentionNeeded =
     deviceSelection.mode !== 'exact'
     || grindSettingMode === 'derived_baseline'
@@ -6305,6 +6513,7 @@ function finalizePlanCore(
     variety: varietyLabel,
     roastLevel: input.roastLevel,
     beanProfile: beanProfileAdjustment.state,
+    beanCoverage,
     targetProfileId: targetProfile.id,
     targetProfileLabel: targetProfile.label,
     targetProfileAutoSuggested,
@@ -6353,10 +6562,12 @@ function finalizePlanCore(
     switchTeachingMode: switchSelection?.preset.teachingMode,
     switchDoseMatrixRowId: switchSelection?.doseRow?.id,
     switchCompatibility: switchSelection?.compatibility,
+    switchTasteProgramme: switchSelection?.tasteProgramme,
+    switchStepValidation,
     switchProvenance: switchSelection?.preset.provenance,
     switchExpectedCupShift: switchSelection?.preset.expectedCupShift,
-    switchWhy: switchSelection?.preset.why,
-    switchWatch: switchSelection?.preset.watch,
+    switchWhy: switchSelection?.tasteProgramme.sensoryReason || switchSelection?.preset.why,
+    switchWatch: switchSelection?.tasteProgramme.riskWarnings[0] || switchStepValidation?.message || switchSelection?.preset.watch,
     notes,
     warnings,
     guardrails: {
@@ -6400,6 +6611,11 @@ function finalizePlanCore(
       ? plan.warnings
       : normalizeNoteList(plan.warnings, workflowValidation.blockingErrors),
     confidenceNotes: normalizeNoteList(plan.confidenceNotes, workflowConfidenceNotes),
+    beanCoverage: buildBeanCoverageState({
+      ...beanCoverageBase,
+      guardrailErrors: normalizeNoteList(baseGuardrails.errors, workflowValidation.blockingErrors),
+      workflowStatus: workflowValidation.status,
+    }),
   } satisfies BrewPlan;
 
   return {

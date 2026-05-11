@@ -164,6 +164,9 @@ export type SwitchChamberState =
   | 'releasing'
   | 'drawdown'
   | 'served';
+export type BrewPourPath = 'center' | 'center_to_mid' | 'flat_center' | 'compact_spiral' | 'immersion_charge' | 'press' | 'heat_control' | 'machine_flow';
+export type BrewPourHeight = 'low' | 'medium';
+export type BrewAgitationLevel = 'minimal' | 'low' | 'controlled' | 'medium';
 export interface DevicePhysicalConstraints {
   finishedCapacityMl?: number;
   recommendedClosedPhaseMaxMl?: number;
@@ -289,6 +292,42 @@ export interface SwitchCompatibilityState {
   doseLabel: string;
   message: string;
   compatiblePresetIds: SwitchPublicPresetId[];
+}
+
+export interface SwitchChamberLoadCheckpoint {
+  stepId: string;
+  valveState: SwitchValveState;
+  chamberLoadMl: number;
+}
+
+export interface SwitchTasteProgrammePlan {
+  presetId: SwitchPublicPresetId;
+  bloomMl: number;
+  bloomRatio: number;
+  bloomSeconds: number;
+  closedPhaseMl: number;
+  closedPhaseSeconds: number;
+  openPhaseMl: number;
+  releaseSeconds: number;
+  pourStyle: string;
+  flowRateMlPerSec: [number, number];
+  pourPath: BrewPourPath;
+  pourHeight: BrewPourHeight;
+  agitationLevel: BrewAgitationLevel;
+  valvePath: SwitchValveState[];
+  chamberLoadPlan: SwitchChamberLoadCheckpoint[];
+  sensoryReason: string;
+  riskWarnings: string[];
+  suggestedPresetId?: SwitchPublicPresetId;
+}
+
+export interface SwitchStepValidation {
+  status: 'safe' | 'caution' | 'blocked';
+  maxClosedLoadMl: number;
+  peakClosedLoadMl: number;
+  unsafeStepIds: string[];
+  message: string;
+  suggestedPresetId?: SwitchPublicPresetId;
 }
 export type WaterEvidenceProvenance =
   | 'official_label_or_lab'
@@ -594,8 +633,13 @@ export interface BrewTemplateStep {
   share: number;
   startSeconds: number;
   note: string;
+  flowRateMlPerSec?: [number, number];
+  pourPath?: BrewPourPath;
+  pourHeight?: BrewPourHeight;
+  agitationLevel?: BrewAgitationLevel;
   valveState?: SwitchValveState;
   chamberState?: SwitchChamberState;
+  chamberLoadShare?: number;
   chamberLoadMl?: number;
   switchProgramme?: SwitchBrewProgramme;
 }
@@ -699,6 +743,22 @@ export interface BeanProfileState {
   notes: string[];
 }
 
+export type BeanCoverageCategory =
+  | 'known_high'
+  | 'partial_medium'
+  | 'unknown_fallback'
+  | 'risk_caution'
+  | 'unsupported_unsafe';
+
+export interface BeanCoverageState {
+  category: BeanCoverageCategory;
+  confidence: AiBrewScoreConfidence;
+  label: string;
+  reasons: string[];
+  warnings: string[];
+  nextAction: string;
+}
+
 export interface BrewPlanStep {
   id: string;
   label: string;
@@ -707,9 +767,9 @@ export interface BrewPlanStep {
   targetVolumeMl: number;
   pourVolumeMl: number;
   flowRateMlPerSec?: [number, number];
-  pourPath?: 'center' | 'center_to_mid' | 'flat_center' | 'compact_spiral' | 'immersion_charge' | 'press' | 'heat_control' | 'machine_flow';
-  pourHeight?: 'low' | 'medium';
-  agitationLevel?: 'minimal' | 'low' | 'controlled' | 'medium';
+  pourPath?: BrewPourPath;
+  pourHeight?: BrewPourHeight;
+  agitationLevel?: BrewAgitationLevel;
   valveState?: SwitchValveState;
   chamberState?: SwitchChamberState;
   chamberLoadMl?: number;
@@ -859,6 +919,7 @@ export interface BrewPlan {
   variety: string;
   roastLevel: RoastLevel;
   beanProfile: BeanProfileState;
+  beanCoverage?: BeanCoverageState;
   targetProfileId: string;
   targetProfileLabel: string;
   targetProfileAutoSuggested?: boolean;
@@ -909,6 +970,8 @@ export interface BrewPlan {
   switchTeachingMode?: SwitchTeachingMode;
   switchDoseMatrixRowId?: string;
   switchCompatibility?: SwitchCompatibilityState;
+  switchTasteProgramme?: SwitchTasteProgrammePlan;
+  switchStepValidation?: SwitchStepValidation;
   switchProvenance?: SwitchProgrammeProvenance;
   switchExpectedCupShift?: SwitchExpectedCupShift;
   switchWhy?: string;

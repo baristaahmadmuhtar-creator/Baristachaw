@@ -516,21 +516,29 @@ function switchActionType(step: BrewPlanStep): WorkflowGuideActionType {
 }
 
 function buildSwitchPrimaryText(plan: BrewPlan, step: BrewPlanStep) {
-  const valve = step.valveState ? `Valve ${step.valveState}. ` : '';
-  const targetLabel = plan.brewMode === 'iced' ? 'hot water target' : 'target';
+  const time = formatTime(step.startSeconds);
+  const valve = step.valveState === 'closed'
+    ? 'Katup tutup'
+    : step.valveState === 'open'
+      ? 'Katup buka'
+      : 'Katup sesuai mode';
+  const chamber = Number.isFinite(step.chamberLoadMl) && step.valveState === 'closed'
+    ? ` · muatan ruang ${formatMl(step.chamberLoadMl || 0)}`
+    : '';
+  const targetLabel = plan.brewMode === 'iced' ? 'target panas' : 'target';
   if (step.pourVolumeMl > 0) {
-    return `${valve}Pour ${formatMl(step.pourVolumeMl)} to ${formatMl(step.targetVolumeMl)} ${targetLabel}.`;
+    return `${time} · ${valve} · tuang ${formatMl(step.pourVolumeMl)} sampai ${formatMl(step.targetVolumeMl)} ${targetLabel}${chamber}.`;
   }
   if (step.kind === 'release') {
-    return `${valve || 'Valve open. '}Release at ${formatMl(step.targetVolumeMl || plan.hotWaterMl)} and let the bed drain cleanly.`;
+    return `${time} · ${valve} · buka/release di ${formatMl(step.targetVolumeMl || plan.hotWaterMl)}; biarkan turun bersih.`;
   }
   if (step.kind === 'drawdown') {
-    return `${valve || 'Valve open. '}Let drawdown finish without topping up.`;
+    return `${time} · ${valve} · drawdown sampai selesai tanpa top-up air.`;
   }
   if (step.kind === 'serve') {
-    return 'Serve after drawdown; do not add late bypass water unless it is already in the deterministic plan.';
+    return `${time} · sajikan setelah drawdown; jangan tambah bypass di luar plan.`;
   }
-  return `${valve}Hold contact until ${formatTime(step.startSeconds)}; keep the chamber load stable.`;
+  return `${time} · ${valve} · tahan kontak; jaga muatan ruang stabil.`;
 }
 
 function buildHarioSwitchGuide(plan: BrewPlan): WorkflowGuideStep[] {
@@ -557,12 +565,16 @@ function buildHarioSwitchGuide(plan: BrewPlan): WorkflowGuideStep[] {
       ...step,
       switchProgramme: step.switchProgramme || programme,
     });
+    const warnings = plan.switchStepValidation?.unsafeStepIds.includes(step.id)
+      ? [plan.switchStepValidation.message]
+      : [];
     guideSteps.push(sourceStep(switchActionType(step), step, {
       id: `guide_hario_switch_${step.id}`,
       label: step.label,
       primaryText: buildSwitchPrimaryText(plan, step),
       secondaryText: step.hybridInstruction || step.note,
       techniqueChips: switchChips,
+      warnings,
     }));
   }
 
@@ -989,6 +1001,12 @@ function validateHarioSwitchWorkflow(plan: BrewPlan, guideSteps: WorkflowGuideSt
 
   if (String(plan.methodProgramme || '').startsWith('full_immersion') && plan.hotWaterMl > closedLimit + 1) {
     blockingErrors.push(`Full-immersion Switch programme needs ${Math.round(plan.hotWaterMl)} ml closed capacity, above safe ${Math.round(closedLimit)} ml.`);
+  }
+
+  if (plan.switchStepValidation?.status === 'blocked') {
+    blockingErrors.push(plan.switchStepValidation.message);
+  } else if (plan.switchStepValidation?.status === 'caution') {
+    warnings.push(plan.switchStepValidation.message);
   }
 
   if (!constraints.finishedCapacityMl || !constraints.filterSize) {

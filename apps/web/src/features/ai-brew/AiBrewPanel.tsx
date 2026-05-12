@@ -8220,7 +8220,7 @@ export function AiBrewPanel({
         )}
 
         <div className="mt-2 min-w-0 max-w-full overflow-hidden" data-testid="ai-brew-switch-method-strip">
-          <div className="flex max-w-full gap-1.5 overflow-x-auto overscroll-x-contain pb-1 pr-1 [-webkit-overflow-scrolling:touch]" aria-label={isIndonesianAiBrewLanguage(language) ? 'Pilih metode Hario Switch' : 'Choose Hario Switch method'}>
+          <div className="ai-brew-contained-scroll flex w-full min-w-0 max-w-full gap-1.5 overflow-x-auto overscroll-x-contain pb-1 pr-1 [-webkit-overflow-scrolling:touch]" aria-label={isIndonesianAiBrewLanguage(language) ? 'Pilih metode Hario Switch' : 'Choose Hario Switch method'}>
             <button
               type="button"
               onClick={() => updateForm('switchPresetId', '')}
@@ -8266,7 +8266,7 @@ export function AiBrewPanel({
       </div>
     ) : null;
     const brewModeAndMethodPanel = selectedDripper ? (
-      <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3" data-testid="ai-brew-brew-mode-method-panel">
+      <div className="min-w-0 max-w-full overflow-hidden rounded-[1.1rem] border panel-divider-subtle panel-soft p-3" data-testid="ai-brew-brew-mode-method-panel">
         <div className="mb-2 flex min-w-0 flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-semibold uppercase tracking-widest text-secondary">
             {isIndonesianAiBrewLanguage(language) ? 'Mode seduh' : 'Brew mode'}
@@ -8453,39 +8453,39 @@ export function AiBrewPanel({
                           </div>
                         ) : null}
                       </div>
-                      <div>
+                      <div className="min-w-0 max-w-full">
                         <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.roast}</label>
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        <div className="ai-brew-choice-grid ai-brew-choice-grid--roast" data-testid="ai-brew-roast-grid">
                           {ROAST_OPTIONS.map((option) => (
                             <button
                               key={option.value}
                               type="button"
                               onClick={() => updateForm('roastLevel', option.value as AiBrewFormState['roastLevel'])}
-                              className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.roastLevel === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
+                              className={`min-w-0 rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.roastLevel === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
                             >
-                              {localizeAiBrewRoastLabel(option.value, language)}
+                              <span className="block truncate">{localizeAiBrewRoastLabel(option.value, language)}</span>
                             </button>
                           ))}
                         </div>
                       </div>
                     </div>
 
-                    <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3">
+                    <div className="min-w-0 max-w-full overflow-hidden rounded-[1.1rem] border panel-divider-subtle panel-soft p-3" data-testid="ai-brew-target-profile-panel">
                       <div className="mb-3 flex items-center gap-2">
                         <Target size={15} className="text-emerald-500" />
                         <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.profileTitle}</h4>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="ai-brew-choice-grid ai-brew-choice-grid--targets" data-testid="ai-brew-target-profile-grid">
                         {targetOptions.map((option) => (
                           <button
                             key={option.id}
                             type="button"
                             onClick={() => updateForm('targetProfileId', option.id)}
-                            className={`rounded-[0.9rem] border p-3 text-left transition-all ${formState.targetProfileId === option.id ? 'border-blue-500/25 bg-blue-500/10 shadow-[0_12px_26px_rgba(37,99,235,0.14)]' : 'border-[var(--panel-border-soft)] bg-surface-alpha hover:border-blue-500/20'}`}
+                            className={`min-w-0 rounded-[0.9rem] border p-3 text-left transition-all ${formState.targetProfileId === option.id ? 'border-blue-500/25 bg-blue-500/10 shadow-[0_12px_26px_rgba(37,99,235,0.14)]' : 'border-[var(--panel-border-soft)] bg-surface-alpha hover:border-blue-500/20'}`}
                             data-testid={`ai-brew-target-profile-${option.id}`}
                             aria-pressed={formState.targetProfileId === option.id}
                           >
-                            <p className="text-sm font-semibold leading-5">{option.translatedLabel}</p>
+                            <p className="min-w-0 break-words text-sm font-semibold leading-5">{option.translatedLabel}</p>
                           </button>
                         ))}
                       </div>

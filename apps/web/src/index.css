@@ -1854,10 +1854,44 @@ video {
   touch-action: manipulation;
 }
 
+.ai-brew-compact-shell .ai-brew-contained-scroll {
+  contain: inline-size;
+  scrollbar-width: none;
+}
+
+.ai-brew-compact-shell .ai-brew-contained-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.ai-brew-compact-shell .ai-brew-choice-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (min-width: 460px) {
+  .ai-brew-compact-shell .ai-brew-choice-grid--targets,
+  .ai-brew-compact-shell .ai-brew-choice-grid--roast {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 640px) {
+  .ai-brew-compact-shell .ai-brew-choice-grid--roast {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .ai-brew-compact-shell,
 .ai-brew-compact-shell [data-testid="ai-brew-panel"],
 .ai-brew-compact-shell [data-testid^="ai-brew-builder-"],
 .ai-brew-compact-shell [data-testid="ai-brew-result"],
+.ai-brew-compact-shell [data-testid="ai-brew-brew-mode-method-panel"],
+.ai-brew-compact-shell [data-testid="ai-brew-target-profile-panel"],
+.ai-brew-compact-shell [data-testid="ai-brew-target-profile-grid"],
+.ai-brew-compact-shell [data-testid="ai-brew-roast-grid"],
 .ai-brew-compact-shell [data-testid="ai-brew-switch-section"],
 .ai-brew-compact-shell [data-testid="ai-brew-switch-inline-methods"],
 .ai-brew-compact-shell [data-testid="ai-brew-switch-method-strip"],

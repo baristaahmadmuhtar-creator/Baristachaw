@@ -174,7 +174,13 @@ test('AI Brew Switch variants and inline method strip stay bounded on mobile', a
 
   await openProBuilder(page);
   await selectDripper(page, 'switch 02', 'hario-switch-02');
+  await page.getByTestId('ai-brew-builder-mode-hot').click();
   await setVisibleInputValue(page, 'ai-brew-dose', '20');
+  await expect(page.getByTestId('ai-brew-roast-grid')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-target-profile-grid')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-brew-mode-method-panel')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-switch-method-strip')).toBeVisible();
+  await expectNoHorizontalOverflow(page, 'switch 02 hot builder target and method controls');
   await expect(page.getByTestId('ai-brew-switch-safety-summary')).toContainText(/caution|hati|review|perlu|V60|hybrid/i);
   await expect(page.getByTestId('ai-brew-switch-size-hario-switch-02')).toHaveCount(0);
   await expectNoHorizontalOverflow(page, 'switch 02 caution');

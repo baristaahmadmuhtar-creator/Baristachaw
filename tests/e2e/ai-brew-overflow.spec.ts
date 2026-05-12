@@ -209,6 +209,52 @@ test('AI Brew Switch variants and inline method strip stay bounded on mobile', a
   browserErrors.expectNoFatalErrors('switch method strip');
 });
 
+test('AI Brew Hario Switch iced mode keeps builder, method strip, and result modal bounded', async ({ page }) => {
+  const browserErrors = collectFatalBrowserErrors(page);
+
+  for (const viewport of [
+    { label: 'iphone-se-375', width: 375, height: 812 },
+    { label: 'iphone-13-390', width: 390, height: 844 },
+    { label: 'iphone-pro-max-430', width: 430, height: 932 },
+  ] as const) {
+    await resetTools(page, viewport.width, viewport.height);
+    await openProBuilder(page);
+    await setVisibleInputValue(page, 'ai-brew-coffee-name', `Switch Iced ${viewport.label}`);
+    await selectDripper(page, 'switch 02', 'hario-switch-02');
+    await setVisibleInputValue(page, 'ai-brew-dose', '20');
+    await page.getByTestId('ai-brew-builder-mode-iced').click();
+    await expect(page.getByTestId('ai-brew-switch-method-strip')).toBeVisible();
+    await expect(page.getByTestId('ai-brew-switch-selected-size')).toContainText(/Switch 02/i);
+    await expect(page.getByTestId('ai-brew-switch-selected-size')).toContainText(/Max tutup|Closed max/i);
+    await expectNoHorizontalOverflow(page, `${viewport.label} switch 02 iced method strip`);
+    await selectWaterBrand(page);
+
+    await page.getByTestId('ai-brew-generate').click();
+    const result = page.getByTestId('ai-brew-result');
+    await expect(result).toBeVisible();
+    await expect(result.getByTestId('ai-brew-time-semantics')).toContainText(/Ekstraksi panas|Hot extraction/i);
+    await expect(result.getByTestId('ai-brew-time-helper')).toContainText(/Aduk es tidak menambah ekstraksi|Stirring ice does not add extraction/i);
+    await expect(result.getByTestId('ai-brew-result-primary-actions')).toBeVisible();
+    await expect(result.getByTestId('ai-brew-result-action-bar')).toBeVisible();
+    await expectNoHorizontalOverflow(page, `${viewport.label} switch iced summary`);
+
+    await result.getByTestId('ai-brew-result-tab-flow').click();
+    await expect(result.getByTestId('ai-brew-result-guide-panel')).toBeVisible();
+    await expectNoHorizontalOverflow(page, `${viewport.label} switch iced guide`);
+
+    await result.getByTestId('ai-brew-result-tab-coach').click();
+    await expect(result.getByTestId('ai-brew-result-coach-panel')).toBeVisible();
+    await expectNoHorizontalOverflow(page, `${viewport.label} switch iced ai`);
+
+    await result.getByTestId('ai-brew-result-tab-details').click();
+    await expect(result.getByTestId('ai-brew-result-detail-panel')).toBeVisible();
+    await expectNoHorizontalOverflow(page, `${viewport.label} switch iced detail`);
+    await page.getByRole('button', { name: /Tutup output plan|Close planned output/i }).click();
+  }
+
+  browserErrors.expectNoFatalErrors('switch iced mobile');
+});
+
 test('AI Brew long-text and non-Switch flows stay within viewport', async ({ page }) => {
   const browserErrors = collectFatalBrowserErrors(page);
   await resetTools(page, 375, 812);

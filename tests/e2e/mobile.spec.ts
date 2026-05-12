@@ -226,7 +226,7 @@ test('mobile ai brew result workspace keeps primary actions inside the viewport'
   await expect(result.getByTestId('ai-brew-sequence-section')).toBeVisible();
   await expect(result.getByTestId('ai-brew-quick-setup')).toBeVisible();
   await expect(result.getByTestId('ai-brew-quick-cues')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-use-timer')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-flow-toggle')).toBeVisible();
 
   const sequenceBox = await result.getByTestId('ai-brew-sequence-section').boundingBox();
   const flowBox = await page.getByTestId('ai-brew-flow-toggle').boundingBox();
@@ -234,7 +234,7 @@ test('mobile ai brew result workspace keeps primary actions inside the viewport'
   expect(flowBox).toBeTruthy();
   expect(sequenceBox!.y).toBeLessThan(flowBox!.y);
 
-  const actionBox = await page.getByTestId('ai-brew-use-timer').boundingBox();
+  const actionBox = await page.getByTestId('ai-brew-result-action-bar').boundingBox();
   const viewport = page.viewportSize();
   expect(actionBox).toBeTruthy();
   expect(viewport).toBeTruthy();
@@ -284,7 +284,7 @@ test('mobile ai brew result stays legible in light theme', async ({ page }) => {
   const visualState = await page.evaluate(() => {
     const root = document.documentElement;
     const resultTitle = document.querySelector<HTMLElement>('[data-testid="ai-brew-result"] h3');
-    const primaryAction = document.querySelector<HTMLElement>('[data-testid="ai-brew-use-timer"]');
+    const primaryAction = document.querySelector<HTMLElement>('[data-testid="ai-brew-flow-toggle"]');
     const stepCard = document.querySelector<HTMLElement>('[data-testid="ai-brew-step-card-1"]');
     const stepCardTwo = document.querySelector<HTMLElement>('[data-testid="ai-brew-step-card-2"]');
     const stepText = stepCard?.querySelector<HTMLElement>('p');

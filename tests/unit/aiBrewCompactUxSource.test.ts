@@ -25,10 +25,12 @@ test('AI Brew quick mode keeps optional bean detail and AI tools collapsed', () 
 test('AI Brew mobile result has a compact action bar', () => {
   assert.match(SOURCE, /data-testid="ai-brew-result-action-bar"/);
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-action-start"/);
+  assert.match(SOURCE, /data-testid="ai-brew-result-primary-actions"/);
+  assert.match(SOURCE, /data-testid="ai-brew-result-secondary-actions"/);
+  assert.match(SOURCE, /data-testid="ai-brew-result-check-taste-primary"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-action-save"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-action-edit"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-action-check-taste"/);
-  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-check-taste"/);
   assert.match(SOURCE, /openTasteFeedback/);
 });
 
@@ -84,6 +86,9 @@ test('AI Brew Indonesian release copy localizes critical trust and safety labels
     'buka katup',
     'Muatan ruang',
     'air turun',
+    'Ekstraksi',
+    'Panduan selesai',
+    'Aduk es tidak menambah ekstraksi',
   ]) {
     assert.match(SOURCE, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
@@ -94,4 +99,14 @@ test('AI Brew Indonesian release copy localizes critical trust and safety labels
   assert.match(SOURCE, /Perbaiki Rasa/);
   assert.match(SOURCE, /Buat Panduan Lebih Ramah/);
   assert.match(SOURCE, /Tool AI lainnya/);
+});
+
+test('AI Brew exposes explicit mobile time semantics instead of one misleading total', () => {
+  assert.match(SOURCE, /getPlanExtractionSeconds/);
+  assert.match(SOURCE, /getPlanGuideEndSeconds/);
+  assert.match(SOURCE, /getPlanPostExtractionSeconds/);
+  assert.match(SOURCE, /data-testid="ai-brew-time-semantics"/);
+  assert.match(SOURCE, /data-testid="ai-brew-time-helper"/);
+  assert.match(SOURCE, /extractionTimeLabel/);
+  assert.match(SOURCE, /guideEndLabel/);
 });

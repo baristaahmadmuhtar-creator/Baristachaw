@@ -858,6 +858,13 @@ export interface WorkflowGuideStep extends BrewPlanStep {
   isOperationalOnly: boolean;
 }
 
+export type BrewPlanTimeDisplayMode =
+  | 'extraction'
+  | 'guide'
+  | 'long_steep'
+  | 'cold_brew'
+  | 'pressure';
+
 export interface MethodWorkflowValidationResult {
   passed: boolean;
   status: 'ready' | 'needs_review' | 'blocked';
@@ -953,6 +960,12 @@ export interface BrewPlan {
   doseG: number;
   waterTempC: number;
   totalTimeSeconds: number;
+  extractionEndSeconds?: number;
+  guideEndSeconds?: number;
+  serveStartSeconds?: number;
+  postExtractionSeconds?: number;
+  tasteTimeRangeSeconds?: [number, number];
+  timeDisplayMode?: BrewPlanTimeDisplayMode;
   estimatedCupOutputMl: number;
   estimatedBrewOutputMl: number;
   estimatedBeverageOutputMl: number;

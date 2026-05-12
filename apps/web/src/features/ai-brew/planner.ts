@@ -105,6 +105,8 @@ import type {
   WaterMineralInput,
   SwitchBrewProgramme,
   SwitchStepValidation,
+  WorkflowGuideActionType,
+  WorkflowGuideStep,
 } from './types.ts';
 
 export type AiBrewGenerationStageId =
@@ -5764,6 +5766,110 @@ function buildServiceExecutionNote(params: {
   }
 }
 
+const POST_EXTRACTION_ACTIONS = new Set<WorkflowGuideActionType>([
+  'serve',
+  'mix',
+  'decant',
+  'filter',
+  'dilute',
+]);
+
+const EXTRACTION_ACTIONS = new Set<WorkflowGuideActionType>([
+  'bloom',
+  'pour',
+  'charge',
+  'stir',
+  'swirl',
+  'steep',
+  'release',
+  'drawdown',
+  'press',
+  'heat',
+  'monitor_flow',
+  'extract',
+  'stop',
+  'settle',
+  'wait',
+]);
+
+function resolveTimeDisplayMode(plan: BrewPlan) {
+  if (plan.methodFamily === 'cold_brew') return 'cold_brew' as const;
+  if (plan.methodFamily === 'espresso') return 'pressure' as const;
+  if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return 'long_steep' as const;
+  return 'extraction' as const;
+}
+
+function defaultPostExtractionSeconds(plan: BrewPlan, actionType?: WorkflowGuideActionType) {
+  if (plan.methodFamily === 'cold_brew') return actionType === 'filter' ? 300 : 30;
+  if (actionType === 'filter') return 30;
+  if (actionType === 'decant') return 12;
+  if (actionType === 'dilute') return 15;
+  if (plan.brewMode === 'iced' || actionType === 'mix') return 8;
+  if (actionType === 'serve') return 6;
+  return 0;
+}
+
+function guideStepMarkerSeconds(step: WorkflowGuideStep, fallbackEndSeconds: number) {
+  const end = typeof step.endSeconds === 'number' && Number.isFinite(step.endSeconds)
+    ? step.endSeconds
+    : undefined;
+  if (typeof end === 'number') return Math.max(step.startSeconds, end);
+  if (step.actionType === 'serve' || step.actionType === 'mix') return step.startSeconds;
+  if (step.actionType === 'decant' || step.actionType === 'filter' || step.actionType === 'dilute') return Math.max(step.startSeconds, fallbackEndSeconds);
+  return step.startSeconds;
+}
+
+function deriveBrewPlanTimeSemantics(plan: BrewPlan, guideSteps: WorkflowGuideStep[]) {
+  const sortedSteps = guideSteps
+    .map((step, index) => ({ step, index }))
+    .sort((a, b) => a.step.startSeconds - b.step.startSeconds || a.index - b.index)
+    .map(({ step }) => step);
+  const timeDisplayMode = resolveTimeDisplayMode(plan);
+  const firstPostStep = sortedSteps.find((step) => POST_EXTRACTION_ACTIONS.has(step.actionType));
+  const serveStartSeconds = firstPostStep?.startSeconds;
+  const extractionCandidates = sortedSteps
+    .filter((step) => {
+      if (firstPostStep && step.startSeconds > firstPostStep.startSeconds) return false;
+      if (POST_EXTRACTION_ACTIONS.has(step.actionType)) return false;
+      return EXTRACTION_ACTIONS.has(step.actionType) || step.pourVolumeMl > 0;
+    })
+    .map((step) => guideStepMarkerSeconds(step, plan.totalTimeSeconds));
+  let extractionEndSeconds = Math.max(0, ...extractionCandidates, firstPostStep ? firstPostStep.startSeconds : plan.totalTimeSeconds);
+  if (firstPostStep && firstPostStep.startSeconds >= 0) {
+    extractionEndSeconds = Math.min(extractionEndSeconds, firstPostStep.startSeconds);
+  }
+  if (timeDisplayMode === 'cold_brew' && firstPostStep?.actionType === 'filter') {
+    extractionEndSeconds = firstPostStep.startSeconds;
+  }
+  extractionEndSeconds = Math.max(0, Math.round(extractionEndSeconds));
+  const explicitGuideEndSeconds = Math.max(
+    plan.totalTimeSeconds,
+    ...sortedSteps.map((step) => guideStepMarkerSeconds(step, plan.totalTimeSeconds)),
+  );
+  const postExtractionSeconds = firstPostStep
+    ? Math.max(0, Math.round(explicitGuideEndSeconds - extractionEndSeconds) || defaultPostExtractionSeconds(plan, firstPostStep.actionType))
+    : 0;
+  const guideEndSeconds = Math.max(extractionEndSeconds, Math.round(explicitGuideEndSeconds), extractionEndSeconds + postExtractionSeconds);
+  const rangePad = timeDisplayMode === 'cold_brew'
+    ? 3600
+    : timeDisplayMode === 'pressure'
+      ? 5
+      : plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper'
+        ? 20
+        : 15;
+  const low = Math.max(0, Math.round(extractionEndSeconds - rangePad));
+  const high = Math.max(low, Math.round(extractionEndSeconds + (timeDisplayMode === 'cold_brew' ? rangePad : rangePad + 5)));
+
+  return {
+    extractionEndSeconds,
+    guideEndSeconds,
+    serveStartSeconds,
+    postExtractionSeconds: Math.max(0, guideEndSeconds - extractionEndSeconds),
+    tasteTimeRangeSeconds: [low, high] as [number, number],
+    timeDisplayMode,
+  };
+}
+
 function findFallbackDeviceProfile(catalog: AiBrewCatalog, methodFamily: AiBrewMethodFamily, brewMode: 'hot' | 'iced') {
   return catalog.deviceProfiles.find((item) => !item.exactMatch && item.methodFamily === methodFamily && item.brewMode === brewMode);
 }
@@ -6602,11 +6708,13 @@ function finalizePlanCore(
       ...workflowValidation.blockingErrors,
       ...workflowValidation.warnings,
     ];
+  const timeSemantics = deriveBrewPlanTimeSemantics(plan, workflowGuideSteps);
 
   const planWithWorkflow = {
     ...plan,
     workflowGuideSteps,
     workflowValidation,
+    ...timeSemantics,
     warnings: workflowValidation.passed
       ? plan.warnings
       : normalizeNoteList(plan.warnings, workflowValidation.blockingErrors),

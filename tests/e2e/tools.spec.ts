@@ -446,7 +446,7 @@ test('ai brew Hario Switch quick plan defaults to safe Hybrid Balanced with valv
   await expect(page.getByTestId('ai-brew-dose-chip-15')).toBeVisible();
   await expect(page.getByTestId('ai-brew-brew-mode-method-panel')).toBeVisible();
   await expect(page.getByTestId('ai-brew-switch-preset-auto-inline')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByTestId('ai-brew-switch-method-strip')).toContainText(/Auto by taste target|Auto ikut Profil Target/i);
+  await expect(page.getByTestId('ai-brew-switch-method-strip')).toContainText(/Auto follows the taste target|Auto mengikuti target rasa|Auto ikut Profil Target/i);
 
   await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
@@ -825,11 +825,12 @@ test('ai brew generates a hot brew plan and saves it to collection', async ({ pa
   await expect(quickSetup.getByTestId('ai-brew-quick-setup-grind')).toBeVisible();
   await expect(quickSetup.getByTestId('ai-brew-quick-setup-water')).toContainText(`${hotPlan.totalWaterMl} ml`);
   await expect(quickSetup.getByTestId('ai-brew-quick-setup-ratio')).toContainText(`1:${formatAiBrewDisplayRatio(hotPlan.finalBeverageRatio)}`);
-  await expect(quickSetup.getByTestId('ai-brew-quick-setup-time')).toContainText(formatAiBrewGuideValue(hotPlan.totalTimeSeconds));
+  await expect(quickSetup.getByTestId('ai-brew-quick-setup-time')).toContainText(formatAiBrewGuideValue(hotPlan.extractionEndSeconds ?? hotPlan.totalTimeSeconds));
   await expect(quickSetup.getByTestId('ai-brew-quick-setup-temp')).toContainText(/°C/);
   await expect(result.getByTestId('ai-brew-quick-cues')).toContainText(/Setup|Quick correction|Koreksi cepat/i);
 
-  await page.getByTestId('ai-brew-save').click();
+  await result.getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
+  await result.getByTestId('ai-brew-save').click();
   await expect(page.getByText(AI_BREW_SAVED_COLLECTION)).toBeVisible();
   await page.goto('/collection', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: /Collection|Koleksi/i })).toBeVisible();
@@ -992,6 +993,7 @@ test('ai brew can hand off an iced plan into timer and ratio tools', async ({ pa
   const timerPlan = await readStoredAiBrewPlan(page);
   const brewTimeText = formatAiBrewTimerValue(timerPlan.totalTimeSeconds);
 
+  await result.getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
   await page.getByTestId('ai-brew-use-timer').click();
   await expect(page.getByRole('tab', { name: /^(Timer|Pengatur Waktu)$/i })).toHaveClass(/bg-white/);
   await expect(page.locator('#tools-panel-timer span.text-sm.text-secondary.mt-1')).toHaveText(brewTimeText!);
@@ -1004,6 +1006,7 @@ test('ai brew can hand off an iced plan into timer and ratio tools', async ({ pa
   await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();
   const ratioPlan = await readStoredAiBrewPlan(page);
+  await page.getByTestId('ai-brew-result').getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
   await page.getByTestId('ai-brew-use-ratio').click();
 
   await expect(page.getByRole('tab', { name: /^(Ratio|Rasio)$/i })).toHaveClass(/bg-white/);

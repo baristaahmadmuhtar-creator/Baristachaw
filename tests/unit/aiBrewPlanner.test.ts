@@ -1096,6 +1096,10 @@ function assertBaristaRoundedPlan(plan: ReturnType<typeof buildAiBrewPlan>) {
 function assertPlanEnvelope(plan: ReturnType<typeof buildAiBrewPlan>) {
   const totalPoured = plan.steps.reduce((sum, step) => sum + step.pourVolumeMl, 0);
   const finalStep = plan.steps[plan.steps.length - 1];
+  const extractionEndSeconds = plan.extractionEndSeconds ?? -1;
+  const guideEndSeconds = plan.guideEndSeconds ?? -1;
+  const postExtractionSeconds = plan.postExtractionSeconds ?? -1;
+  const tasteTimeRangeSeconds = plan.tasteTimeRangeSeconds ?? [-1, -1];
   const finiteValues: Array<[string, number]> = [
     ['dose', plan.doseG],
     ['total water', plan.totalWaterMl],
@@ -1105,6 +1109,11 @@ function assertPlanEnvelope(plan: ReturnType<typeof buildAiBrewPlan>) {
     ['hot extraction ratio', plan.hotExtractionRatio],
     ['temperature', plan.waterTempC],
     ['total time', plan.totalTimeSeconds],
+    ['extraction end', extractionEndSeconds],
+    ['guide end', guideEndSeconds],
+    ['post extraction', postExtractionSeconds],
+    ['taste time low', tasteTimeRangeSeconds[0]],
+    ['taste time high', tasteTimeRangeSeconds[1]],
     ['estimated cup output', plan.estimatedCupOutputMl],
   ];
 
@@ -1126,6 +1135,10 @@ function assertPlanEnvelope(plan: ReturnType<typeof buildAiBrewPlan>) {
   }
   assert.equal(totalPoured, plan.hotWaterMl);
   assert.equal(finalStep?.targetVolumeMl, plan.hotWaterMl);
+  assert.ok(extractionEndSeconds <= guideEndSeconds, `${plan.dripper.name} extraction time should not exceed guide time`);
+  assert.equal(postExtractionSeconds, guideEndSeconds - extractionEndSeconds);
+  assert.ok(tasteTimeRangeSeconds[0] <= extractionEndSeconds && tasteTimeRangeSeconds[1] >= extractionEndSeconds);
+  assert.ok(plan.timeDisplayMode, `${plan.dripper.name} should expose time display mode`);
   assert.ok(plan.recommendedRatio > 0);
   assert.equal(plan.finalBeverageRatio, plan.recommendedRatio);
   assert.ok(plan.hotExtractionRatio > 0);
@@ -1271,6 +1284,55 @@ function getFinalWindowSeconds(plan: ReturnType<typeof buildAiBrewPlan>) {
   const finalStep = plan.steps[plan.steps.length - 1];
   return plan.totalTimeSeconds - (finalStep?.startSeconds || 0);
 }
+
+test('AI Brew time semantics separates extraction from finishing work', () => {
+  const timeCatalog = buildProductionAiBrewCatalogForTests();
+  const base = {
+    ...createDefaultAiBrewFormState(timeCatalog),
+    coffeeName: 'Time Semantics QA',
+    doseG: '15',
+    targetProfileId: 'balance_clean',
+    process: 'washed',
+    variety: 'ethiopian_heirloom',
+    roastLevel: 'medium_light' as const,
+    waterMode: 'manual' as const,
+    waterTdsPpm: '90',
+    waterHardnessPpm: '45',
+    waterAlkalinityPpm: '30',
+  };
+  const switchIced = buildAiBrewPlan({
+    ...base,
+    brewMode: 'iced',
+    dripperId: 'hario-switch-03',
+    switchPresetId: 'iced_hybrid',
+  }, timeCatalog);
+  assertPlanEnvelope(switchIced);
+  assert.equal(switchIced.timeDisplayMode, 'extraction');
+  assert.ok((switchIced.postExtractionSeconds || 0) >= 8);
+  assert.ok((switchIced.extractionEndSeconds || 0) < (switchIced.guideEndSeconds || switchIced.totalTimeSeconds));
+  assert.ok((switchIced.extractionEndSeconds || 0) < switchIced.totalTimeSeconds);
+  assert.match((switchIced.workflowGuideSteps || []).map((step) => step.primaryText).join(' '), /aduk|sajikan/i);
+
+  const frenchPress = buildAiBrewPlan({ ...base, dripperId: 'french-press' }, timeCatalog);
+  assertPlanEnvelope(frenchPress);
+  assert.equal(frenchPress.timeDisplayMode, 'long_steep');
+  assert.ok((frenchPress.guideEndSeconds || 0) >= (frenchPress.extractionEndSeconds || 0));
+
+  const aeropress = buildAiBrewPlan({ ...base, dripperId: 'aeropress' }, timeCatalog);
+  assertPlanEnvelope(aeropress);
+  assert.ok((aeropress.workflowGuideSteps || []).some((step) => step.actionType === 'serve'));
+  assert.ok((aeropress.guideEndSeconds || 0) >= (aeropress.extractionEndSeconds || 0));
+
+  const espresso = buildAiBrewPlan({
+    ...base,
+    dripperId: 'espresso-machine',
+    doseG: '18',
+    targetWaterMl: '40',
+  }, timeCatalog);
+  assertPlanEnvelope(espresso);
+  assert.equal(espresso.timeDisplayMode, 'pressure');
+  assert.equal(espresso.extractionEndSeconds, espresso.totalTimeSeconds);
+});
 
 function getPourShareMap(plan: ReturnType<typeof buildAiBrewPlan>) {
   return plan.steps.map((step) => step.pourVolumeMl / plan.hotWaterMl);

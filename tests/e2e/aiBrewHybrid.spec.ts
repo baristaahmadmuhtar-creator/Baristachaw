@@ -1224,7 +1224,8 @@ test('ai brew deterministic sequence changes checkpoint timeline across target c
   await expect(baselineTimes.length).toBeGreaterThan(2);
   await expect(baselinePours.length).toBeGreaterThan(2);
 
-  await page.getByRole('button', { name: /Edit input|Edit inputs|Ubah input/i }).click();
+  await page.getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
+  await page.getByTestId('ai-brew-edit-inputs').click();
   await clickTargetProfile(page, 'quick', 'More Body');
   await page.getByTestId('ai-brew-generate').click();
   await openResultGuide(page);
@@ -1256,7 +1257,8 @@ test('ai brew deterministic sequence changes pour-map structure across bean extr
   const baselineShares = baselinePourSteps.map((step) => step.pourVolumeMl / baselinePlan.hotWaterMl);
   await expect(baselinePours.length).toBeGreaterThan(2);
 
-  await page.getByRole('button', { name: /Edit input|Edit inputs|Ubah input/i }).click();
+  await page.getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
+  await page.getByTestId('ai-brew-edit-inputs').click();
   await page.getByTestId('ai-brew-bean-profile-toggle').click();
   await page.getByTestId('ai-brew-bean-roast-underdeveloped').click();
   await page.getByTestId('ai-brew-bean-solubility-low').click();

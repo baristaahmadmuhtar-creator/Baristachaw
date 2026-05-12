@@ -1336,6 +1336,51 @@ function formatGuideTime(totalSeconds: number) {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
+function getPlanExtractionSeconds(plan: BrewPlan) {
+  return Math.max(0, Math.round(plan.extractionEndSeconds ?? plan.totalTimeSeconds));
+}
+
+function getPlanGuideEndSeconds(plan: BrewPlan) {
+  return Math.max(getPlanExtractionSeconds(plan), Math.round(plan.guideEndSeconds ?? plan.totalTimeSeconds));
+}
+
+function getPlanPostExtractionSeconds(plan: BrewPlan) {
+  return Math.max(0, Math.round(plan.postExtractionSeconds ?? (getPlanGuideEndSeconds(plan) - getPlanExtractionSeconds(plan))));
+}
+
+function getPlanTasteTimeRange(plan: BrewPlan): [number, number] {
+  if (plan.tasteTimeRangeSeconds) return plan.tasteTimeRangeSeconds;
+  const extraction = getPlanExtractionSeconds(plan);
+  return [Math.max(0, extraction - 15), extraction + 20];
+}
+
+function getPlanExtractionLabel(plan: BrewPlan, language: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  if (plan.methodFamily === 'espresso') return id ? 'Shot' : 'Shot';
+  if (plan.methodFamily === 'cold_brew') return id ? 'Steep dingin' : 'Cold steep';
+  if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return id ? 'Steep' : 'Steep';
+  if (plan.brewMode === 'iced') return id ? 'Ekstraksi panas' : 'Hot extraction';
+  return id ? 'Ekstraksi' : 'Extraction';
+}
+
+function getPlanTimeHelperCopy(plan: BrewPlan, language: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  const post = getPlanPostExtractionSeconds(plan);
+  if (post <= 0) {
+    return id
+      ? 'Waktu rasa dihitung sampai ekstraksi utama selesai.'
+      : 'Taste time is counted until the main extraction is complete.';
+  }
+  if (plan.brewMode === 'iced') {
+    return id
+      ? 'Aduk es tidak menambah ekstraksi; ini hanya meratakan konsentrat panas dan lelehan es.'
+      : 'Stirring ice does not add extraction; it only evens out the hot concentrate and melt.';
+  }
+  return id
+    ? 'Ekstraksi adalah waktu yang paling memengaruhi rasa. Langkah aduk/sajikan hanya finishing.'
+    : 'Extraction is the time that most affects taste. Stir/serve steps are only finishing.';
+}
+
 function formatDisplayNumber(value: number, maxFractionDigits = 0) {
   if (!Number.isFinite(value)) return '--';
   return new Intl.NumberFormat(undefined, {
@@ -1383,7 +1428,12 @@ function buildPremiumResultSummary(plan: BrewPlan, language: string) {
   const target = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language).toLowerCase();
   const dose = formatRoundedGrams(plan.doseG);
   const temperature = formatRoundedTemperature(plan.waterTempC);
-  const time = formatTime(plan.totalTimeSeconds);
+  const extractionTime = formatTime(getPlanExtractionSeconds(plan));
+  const guideTime = formatTime(getPlanGuideEndSeconds(plan));
+  const postSeconds = getPlanPostExtractionSeconds(plan);
+  const postCopy = postSeconds > 0
+    ? (id ? ` Aduk/sajikan +${formatGuideTime(postSeconds)}.` : ` Finish +${formatGuideTime(postSeconds)}.`)
+    : '';
 
   if (plan.brewMode === 'iced') {
     const finalBeverage = formatRoundedMl(plan.totalWaterMl);
@@ -1393,13 +1443,13 @@ function buildPremiumResultSummary(plan: BrewPlan, language: string) {
     const hotRatio = `1:${formatBrewRatio(plan.hotExtractionRatio)}`;
     const estimatedCup = formatRoundedMl(plan.estimatedCupOutputMl);
     return id
-      ? `Dose ${dose}; final beverage/total input ${finalBeverage}; air panas ${hotWater}; es di server ${ice}; rasio final ${finalRatio}; rasio ekstraksi panas ${hotRatio}; estimasi hasil cangkir ${estimatedCup}. ${temperature}, selesai ${time}.`
-      : `Dose ${dose}; final beverage/total input ${finalBeverage}; hot water ${hotWater}; ice in server ${ice}; final ratio ${finalRatio}; hot extraction ratio ${hotRatio}; estimated cup output ${estimatedCup}. ${temperature}, finish ${time}.`;
+      ? `Dose ${dose}; final beverage/total input ${finalBeverage}; air panas ${hotWater}; es di server ${ice}; rasio final ${finalRatio}; rasio ekstraksi panas ${hotRatio}; estimasi hasil cangkir ${estimatedCup}. ${temperature}, ekstraksi panas ${extractionTime}; panduan selesai ${guideTime}.${postCopy}`
+      : `Dose ${dose}; final beverage/total input ${finalBeverage}; hot water ${hotWater}; ice in server ${ice}; final ratio ${finalRatio}; hot extraction ratio ${hotRatio}; estimated cup output ${estimatedCup}. ${temperature}, hot extraction ${extractionTime}; guide done ${guideTime}.${postCopy}`;
   }
 
   return id
-    ? `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} air; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; selesai ${time}. Target ${target}.`
-    : `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} water; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; finish ${time}. Target ${target}.`;
+    ? `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} air; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; ekstraksi ${extractionTime}; panduan selesai ${guideTime}.${postCopy} Target ${target}.`
+    : `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} water; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; extraction ${extractionTime}; guide done ${guideTime}.${postCopy} Target ${target}.`;
 }
 
 function planUsesOnlineAi(plan: BrewPlan) {
@@ -1995,7 +2045,7 @@ function buildRecipeFromPlan(plan: BrewPlan, locale?: string): Recipe {
     ingredients: buildPlanRecipeIngredients(plan, locale),
     steps: buildLocalizedPlanRecipeSteps(plan, locale),
     difficulty: 'Medium',
-    time: formatTime(plan.totalTimeSeconds),
+    time: formatTime(getPlanExtractionSeconds(plan)),
     dose: formatRoundedGrams(plan.doseG),
     water: formatRoundedMl(plan.totalWaterMl),
     temperature: formatRoundedTemperature(plan.waterTempC),
@@ -2231,13 +2281,13 @@ function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: s
     case 'agitation':
       return 'Agitasi';
     case 'charge':
-      return 'Charge';
+      return 'Isi air';
     case 'stir':
       return 'Aduk';
     case 'swirl':
       return 'Swirl';
     case 'steep':
-      return 'Steep';
+      return 'Rendam';
     case 'press':
       return 'Tekan';
     case 'stop':
@@ -2249,17 +2299,17 @@ function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: s
     case 'heat':
       return 'Panas';
     case 'flow_cue':
-      return 'Cue flow';
+      return 'Cue aliran';
     case 'yield':
       return 'Hasil';
     case 'shot_time':
       return 'Waktu shot';
     case 'puck_prep':
-      return 'Puck prep';
+      return 'Siapkan puck';
     case 'settle':
-      return 'Settle';
+      return 'Endapkan';
     case 'decant':
-      return 'Decant';
+      return 'Pindahkan';
     case 'release':
       return 'Buka katup';
     case 'valve':
@@ -2273,21 +2323,21 @@ function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: s
     case 'drawdown':
       return 'Air turun';
     case 'draw_up':
-      return 'Draw-up';
+      return 'Air naik';
     case 'contact':
       return 'Kontak';
     case 'dose_per_liter':
       return 'Dosis/L';
     case 'basket_prep':
-      return 'Prep';
+      return 'Siapkan';
     case 'spray':
-      return 'Spray';
+      return 'Semprotan';
     case 'mix_batch':
       return 'Aduk batch';
     case 'saturation':
       return 'Saturasi';
     case 'filter':
-      return 'Filter';
+      return 'Saring';
     case 'dilution':
       return 'Dilusi';
     default:
@@ -2388,13 +2438,13 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
         ? `Tuang ${pour}; target ${target} air panas.`
         : `Tuang ${pour}; berhenti di target ${target}.`;
     case 'charge':
-      return `Tuang/charge ${pour || target} dan basahi bed merata.`;
+      return `Tuang ${pour || target} dan basahi bed merata.`;
     case 'stir':
-      return 'Aduk 3-5x atau swirl ringan, lalu hentikan agitasi.';
+      return 'Aduk 3-5x atau putar ringan, lalu hentikan agitasi.';
     case 'swirl':
-      return 'Swirl ringan sekali saja untuk meratakan slurry.';
+      return 'Putar ringan sekali saja untuk meratakan slurry.';
     case 'steep':
-      return step.endSeconds ? `Tunggu/steep sampai ${formatGuideTime(step.endSeconds)}; jangan tambah air.` : 'Tunggu/steep stabil; jangan tambah air.';
+      return step.endSeconds ? `Rendam sampai ${formatGuideTime(step.endSeconds)}; jangan tambah air.` : 'Rendam stabil; jangan tambah air.';
     case 'release':
       return 'Buka katup dengan bersih dan jangan aduk saat air turun.';
     case 'drawdown':
@@ -2402,7 +2452,7 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
         ? `Biarkan air turun selesai di target ${formatRoundedMl(plan.hotWaterMl)} air panas; jangan tambah bypass.`
         : 'Biarkan air turun selesai natural tanpa tuangan tambahan.';
     case 'press':
-      return 'Tekan stabil 20-30 detik; stop sebelum hiss terasa kering.';
+      return 'Tekan stabil 20-30 detik; berhenti sebelum hiss terasa kering.';
     case 'heat':
       return 'Pakai panas stabil dan moderat sesuai metode.';
     case 'monitor_flow':
@@ -2413,18 +2463,18 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
         : `Ekstrak sampai target ${target}.`;
     case 'stop':
       if (plan?.methodFamily === 'moka_pot') return 'Angkat sebelum sputter kasar atau rasa rebus muncul.';
-      if (plan?.methodFamily === 'espresso') return `Stop di yield ${formatRoundedMl(plan.totalWaterMl)} sesuai window shot.`;
-      return 'Stop sesuai cue metode; jangan paksa fase akhir.';
+      if (plan?.methodFamily === 'espresso') return `Berhenti di yield ${formatRoundedMl(plan.totalWaterMl)} sesuai window shot.`;
+      return 'Berhenti sesuai cue metode; jangan paksa fase akhir.';
     case 'settle':
-      return 'Break crust atau skim pelan, lalu biarkan fines settle.';
+      return 'Pecah kerak atau skim pelan, lalu biarkan partikel halus mengendap.';
     case 'decant':
-      return 'Decant/pindahkan segera agar ekstraksi berhenti.';
+      return 'Pindahkan segera agar ekstraksi berhenti.';
     case 'filter':
-      return 'Filter atau decant bersih untuk memisahkan kopi dari ampas.';
+      return 'Saring atau pindahkan bersih untuk memisahkan kopi dari ampas.';
     case 'dilute':
-      return 'Dilusi hanya setelah filtrasi bila butuh strength serving.';
+      return 'Dilusi hanya setelah filtrasi bila butuh kekuatan sajian lebih ringan.';
     case 'mix':
-      return 'Aduk batch/carafe pelan sebelum evaluasi rasa atau service.';
+      return 'Aduk batch/carafe pelan sebelum evaluasi rasa atau sajikan.';
     case 'serve':
       return 'Sajikan setelah fase metode selesai bersih.';
     default:
@@ -2455,9 +2505,9 @@ function formatAiBrewStepBadge(step: AiBrewDisplayStep, language: string) {
       case 'stop':
         return 'Stop';
       case 'decant':
-        return id ? 'Decant' : 'Decant';
+        return id ? 'Pindah' : 'Decant';
       case 'filter':
-        return 'Filter';
+        return id ? 'Saring' : 'Filter';
       case 'dilute':
         return id ? 'Dilusi' : 'Dilute';
       case 'mix':
@@ -3925,9 +3975,10 @@ function buildTargetProfileEffectText(targetProfileId: string, language: string)
 
 function formatTargetProfileFinalComputed(plan: BrewPlan) {
   const ratio = plan.iceMl > 0
-    ? `1:${formatBrewRatio(plan.finalBeverageRatio)} / hot 1:${formatBrewRatio(plan.hotExtractionRatio)}`
+    ? `1:${formatBrewRatio(plan.finalBeverageRatio)} / panas 1:${formatBrewRatio(plan.hotExtractionRatio)}`
     : `1:${formatBrewRatio(plan.finalBeverageRatio)}`;
-  return `${ratio} / ${formatRoundedTemperature(plan.waterTempC)} / ${formatGuideTime(plan.totalTimeSeconds)}`;
+  const extractionLabel = plan.brewMode === 'iced' ? 'ekstraksi panas' : 'ekstraksi';
+  return `${ratio} / ${formatRoundedTemperature(plan.waterTempC)} / ${extractionLabel} ${formatGuideTime(getPlanExtractionSeconds(plan))}`;
 }
 
 function buildTargetProfileCompareReason(plan: BrewPlan, balancePlan: BrewPlan | undefined, language: string) {
@@ -4112,10 +4163,11 @@ function PlanResultDialog({
 
   if (!plan) return null;
 
+  const id = isIndonesianAiBrewLanguage(language);
   const resultTabs: Array<{ id: ResultTab; label: string }> = [
     { id: 'plan', label: copy.planTab },
-    { id: 'flow', label: copy.flowTab },
-    { id: 'coach', label: copy.coachTab },
+    { id: 'flow', label: id ? 'Seduh' : copy.flowTab },
+    { id: 'coach', label: id ? 'AI' : copy.coachTab },
     { id: 'details', label: copy.detailTab },
   ];
   const showLegacySourcesTab = false;
@@ -4140,7 +4192,6 @@ function PlanResultDialog({
 
   const activeTabPanelId = `ai-brew-result-panel-${activeTab}`;
   const activeTabId = `ai-brew-result-tab-${activeTab}`;
-  const id = isIndonesianAiBrewLanguage(language);
   const resultSwitchValveStates = Array.from(new Set(workflowGuideSteps
     .map((step) => step.valveState)
     .filter((state): state is NonNullable<WorkflowGuideStep['valveState']> => Boolean(state))));
@@ -4167,6 +4218,21 @@ function PlanResultDialog({
   const localizedGrindHeadline = formatGrindHeadlineForDisplay(plan.grindRecommendation || plan.grindSettingReference, language);
   const localizedGrindBandLabel = formatGrindTextForDisplay(plan.grindBandLabel, language);
   const localizedGrindSettingReference = formatGrindTextForDisplay(plan.grindSettingReference, language);
+  const extractionSeconds = getPlanExtractionSeconds(plan);
+  const guideEndSeconds = getPlanGuideEndSeconds(plan);
+  const postExtractionSeconds = getPlanPostExtractionSeconds(plan);
+  const tasteTimeRange = getPlanTasteTimeRange(plan);
+  const extractionTimeLabel = getPlanExtractionLabel(plan, language);
+  const guideEndLabel = id ? 'Panduan selesai' : 'Guide complete';
+  const postExtractionLabel = id ? 'Finishing' : 'Finishing';
+  const timeHelperText = getPlanTimeHelperCopy(plan, language);
+  const timeSummaryItems = [
+    { id: 'extraction', label: extractionTimeLabel, value: formatGuideTime(extractionSeconds) },
+    { id: 'guide', label: guideEndLabel, value: formatGuideTime(guideEndSeconds) },
+    ...(postExtractionSeconds > 0
+      ? [{ id: 'post', label: postExtractionLabel, value: `+${formatGuideTime(postExtractionSeconds)} ${id ? 'aduk/sajikan' : 'stir/serve'}` }]
+      : []),
+  ];
   const expectedCup = plan.expectedCupProfile;
   const localizedBeanCoverageLabel = plan.beanCoverage
     ? formatBeanCoverageLabel(plan.beanCoverage.category, plan.beanCoverage.label, language)
@@ -4214,7 +4280,7 @@ function PlanResultDialog({
       ? [{ id: 'ice', label: copy.ice, value: formatRoundedGrams(plan.iceMl) }]
       : []),
     { id: 'ratio', label: copy.finalRatio, value: `1:${formatBrewRatio(plan.finalBeverageRatio)}` },
-    { id: 'time', label: copy.time, value: formatGuideTime(plan.totalTimeSeconds) },
+    { id: 'time', label: extractionTimeLabel, value: formatGuideTime(extractionSeconds) },
     { id: 'temp', label: copy.temp, value: formatRoundedTemperature(plan.waterTempC) },
   ];
   const quickPrepCue = plan.brewMode === 'iced'
@@ -4232,8 +4298,8 @@ function PlanResultDialog({
   const localizedRoastLabel = localizeAiBrewRoastLabel(plan.roastLevel, language);
   const waterToleranceMl = Math.max(5, Math.round(plan.totalWaterMl * 0.02));
   const hotWaterToleranceMl = Math.max(4, Math.round(plan.hotWaterMl * 0.02));
-  const drawdownLowSeconds = Math.max(45, plan.totalTimeSeconds - 15);
-  const drawdownHighSeconds = plan.totalTimeSeconds + 20;
+  const drawdownLowSeconds = tasteTimeRange[0];
+  const drawdownHighSeconds = tasteTimeRange[1];
   const summaryWhyRecipeItems = [
     {
       label: id ? 'Target rasa' : 'Taste target',
@@ -4244,7 +4310,7 @@ function PlanResultDialog({
     },
     {
       label: id ? 'Keseimbangan ekstraksi' : 'Extraction balance',
-      value: `${plan.iceMl > 0 ? `1:${formatBrewRatio(plan.finalBeverageRatio)} / hot 1:${formatBrewRatio(plan.hotExtractionRatio)}` : `1:${formatBrewRatio(plan.finalBeverageRatio)}`} · ${formatRoundedTemperature(plan.waterTempC)} · ${formatGuideTime(plan.totalTimeSeconds)}`,
+      value: `${plan.iceMl > 0 ? `1:${formatBrewRatio(plan.finalBeverageRatio)} / panas 1:${formatBrewRatio(plan.hotExtractionRatio)}` : `1:${formatBrewRatio(plan.finalBeverageRatio)}`} - ${formatRoundedTemperature(plan.waterTempC)} - ${extractionTimeLabel} ${formatGuideTime(extractionSeconds)}`,
       detail: id
         ? `${localizedRoastLabel}, proses ${localizedProcessLabel}, dan ${localizedWaterStyle} dibaca bersama supaya sweetness naik tanpa menutup clarity atau mendorong pahit.`
         : `${localizedRoastLabel} roast, ${localizedProcessLabel} process, and ${localizedWaterStyle} water are read together so sweetness can rise without muting clarity or pushing bitterness.`,
@@ -4507,7 +4573,7 @@ function PlanResultDialog({
                 <p id={descriptionId} className="sr-only">
                   {isQuickResult
                     ? (id ? 'Hasil Quick AI Brew berisi urutan seduh ringkas dan kontrol barista inti.' : 'Quick AI Brew result with a compact brew sequence and core barista controls.')
-                    : `${formatRoundedGrams(plan.doseG)} - ${planHeaderWater} - ${formatGuideTime(plan.totalTimeSeconds)} - ${formatRoundedTemperature(plan.waterTempC)}`}
+                    : `${formatRoundedGrams(plan.doseG)} - ${planHeaderWater} - ${extractionTimeLabel} ${formatGuideTime(extractionSeconds)} - ${formatRoundedTemperature(plan.waterTempC)}`}
                 </p>
                 {(expectedCup || readinessItems.length > 0 || plan.beanCoverage) && (
                   <div
@@ -4573,36 +4639,52 @@ function PlanResultDialog({
                     )}
                   </div>
                 )}
-                <div className="mt-3 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 sm:flex sm:flex-wrap sm:items-center">
-                  <button type="button" onClick={onEditInputs} className={resultActionButtonClass}>
-                    {copy.editInputs}
+                <div className="mt-3 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2" data-testid="ai-brew-result-primary-actions">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('flow')}
+                    className="inline-flex min-h-[44px] min-w-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.2)]"
+                    data-testid="ai-brew-open-flow"
+                  >
+                    <Play size={15} />
+                    <span className="truncate">{copy.flowTab}</span>
                   </button>
-                  <button type="button" onClick={() => onUseInTimer(plan.totalTimeSeconds)} disabled={workflowBlocked} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-use-timer" aria-label={copy.ariaUseInTimer.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
-                    {copy.useInTimer}
+                  <button
+                    type="button"
+                    onClick={openTasteFeedback}
+                    className="inline-flex min-h-[44px] min-w-0 items-center justify-center gap-2 rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-sm font-semibold text-primary"
+                    data-testid="ai-brew-result-check-taste-primary"
+                  >
+                    <Sparkles size={15} />
+                    <span className="truncate">{copy.feedbackTitle}</span>
                   </button>
-                  <button type="button" onClick={() => onUseInRatio(plan)} className={resultActionButtonClass} data-testid="ai-brew-use-ratio" aria-label={copy.ariaUseInRatio.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
-                    {copy.useInRatio}
-                  </button>
-                  <button type="button" onClick={onSaveRecipe} disabled={saving || workflowBlocked} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-save" aria-label={copy.ariaSaveToCollection.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
-                    {saveButtonLabel}
-                  </button>
-                  <button type="button" onClick={onToggleFavorite} className={resultActionButtonClass} data-testid="ai-brew-favorite" aria-label={(currentPreset ? copy.ariaFavoriteRemove : copy.ariaFavoriteAdd).replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
-                    <span className="inline-flex items-center justify-center gap-2">
-                      {currentPreset ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
-                      {currentPreset ? copy.unfavorite : copy.favorite}
-                    </span>
-                  </button>
-                  {!isQuickResult && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('flow')}
-                      className={resultActionButtonClass}
-                      data-testid="ai-brew-open-flow"
-                    >
-                      {copy.flowTab}
-                    </button>
-                  )}
                 </div>
+                <details className="group mt-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2" data-testid="ai-brew-result-secondary-actions">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-primary">
+                    <span>{id ? 'Lainnya' : 'More actions'}</span>
+                    <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
+                  </summary>
+                  <div className="mt-2 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 sm:flex sm:flex-wrap sm:items-center">
+                    <button type="button" onClick={onEditInputs} className={resultActionButtonClass} data-testid="ai-brew-edit-inputs">
+                      {copy.editInputs}
+                    </button>
+                    <button type="button" onClick={() => onUseInTimer(plan.totalTimeSeconds)} disabled={workflowBlocked} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-use-timer" aria-label={copy.ariaUseInTimer.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
+                      {copy.useInTimer}
+                    </button>
+                    <button type="button" onClick={() => onUseInRatio(plan)} className={resultActionButtonClass} data-testid="ai-brew-use-ratio" aria-label={copy.ariaUseInRatio.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
+                      {copy.useInRatio}
+                    </button>
+                    <button type="button" onClick={onSaveRecipe} disabled={saving || workflowBlocked} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-save" aria-label={copy.ariaSaveToCollection.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
+                      {saveButtonLabel}
+                    </button>
+                    <button type="button" onClick={onToggleFavorite} className={resultActionButtonClass} data-testid="ai-brew-favorite" aria-label={(currentPreset ? copy.ariaFavoriteRemove : copy.ariaFavoriteAdd).replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
+                      <span className="inline-flex min-w-0 items-center justify-center gap-2">
+                        {currentPreset ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
+                        <span className="truncate">{currentPreset ? copy.unfavorite : copy.favorite}</span>
+                      </span>
+                    </button>
+                  </div>
+                </details>
               </div>
 
               {resultTabs.length > 1 && (
@@ -4692,7 +4774,7 @@ function PlanResultDialog({
                       { id: 'dose', label: copy.dose, value: formatRoundedGrams(plan.doseG) },
                       { id: 'water', label: plan.brewMode === 'iced' ? (id ? 'Input air' : 'Water input') : copy.totalWater, value: planHeaderWater },
                       { id: 'ratio', label: copy.finalRatio, value: `1:${formatBrewRatio(plan.finalBeverageRatio)}` },
-                      { id: 'time', label: copy.time, value: formatGuideTime(plan.totalTimeSeconds) },
+                      { id: 'time', label: extractionTimeLabel, value: formatGuideTime(extractionSeconds) },
                       { id: 'temp', label: copy.temp, value: formatRoundedTemperature(plan.waterTempC) },
                       { id: 'grind', label: copy.grind, value: localizedGrindHeadline },
                     ].map((item) => (
@@ -4702,6 +4784,17 @@ function PlanResultDialog({
                       </span>
                     ))}
                   </div>
+                  <div className="mt-2 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 text-xs sm:grid-cols-[repeat(3,minmax(0,1fr))]" data-testid="ai-brew-time-semantics">
+                    {timeSummaryItems.map((item) => (
+                      <span key={item.id} className="min-w-0 rounded-xl border border-blue-500/14 bg-[var(--bg-base)]/78 px-2.5 py-2 text-secondary">
+                        <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
+                        <span className="block break-words font-semibold text-primary">{item.value}</span>
+                      </span>
+                    ))}
+                  </div>
+                  <p className="mt-2 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-xs leading-5 text-blue-800 dark:text-blue-200" data-testid="ai-brew-time-helper">
+                    {timeHelperText}
+                  </p>
                   {plan.methodFamily === 'hario_switch' && (
                     <div className="mt-3 flex min-w-0 max-w-full flex-wrap gap-1.5 text-xs" data-testid="ai-brew-switch-result-summary">
                       <span className={resultChipClass}>{plan.switchPresetLabel || (id ? 'Metode Switch' : 'Switch method')}</span>
@@ -4779,18 +4872,6 @@ function PlanResultDialog({
                     </ol>
                   </div>
                 )}
-
-                <div className="grid gap-2" data-testid="ai-brew-result-summary-actions">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('flow')}
-                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.2)]"
-                    data-testid="ai-brew-result-open-guide"
-                  >
-                    <Play size={15} />
-                    {id ? 'Mulai panduan seduh' : 'Start brew guide'}
-                  </button>
-                </div>
               </div>
             )}
 
@@ -4817,9 +4898,12 @@ function PlanResultDialog({
                 <div className={resultMetricCardClass}>
                   <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
                     <Clock3 size={12} />
-                    <span>{copy.time}</span>
+                    <span>{extractionTimeLabel}</span>
                   </div>
-                  <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{formatGuideTime(plan.totalTimeSeconds)}</p>
+                  <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{formatGuideTime(extractionSeconds)}</p>
+                  {guideEndSeconds > extractionSeconds && (
+                    <p className="mt-1 text-xs text-secondary">{guideEndLabel}: {formatGuideTime(guideEndSeconds)}</p>
+                  )}
                 </div>
                 <div className={resultMetricCardClass}>
                   <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
@@ -4982,7 +5066,7 @@ function PlanResultDialog({
                       <p>{plan.doseG} g coffee</p>
                       <p>{formatRoundedMl(plan.totalWaterMl)} water at {formatRoundedTemperature(plan.waterTempC)}</p>
                       <p>{copy.grind}: {localizedGrindRecommendation}</p>
-                      <p>{copy.time}: {formatTime(plan.totalTimeSeconds)}</p>
+                      <p>{id ? 'Ekstraksi' : 'Extraction'}: {formatTime(extractionSeconds)}</p>
                       <p>{plan.waterBrandLabel || copy.waterSelectedManual} - TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm}</p>
                     </div>
                   </div>
@@ -5028,7 +5112,7 @@ function PlanResultDialog({
                             {formatRoundedMl(plan.totalWaterMl)}
                           </span>
                           <span className={resultChipClass}>
-                            {formatGuideTime(plan.totalTimeSeconds)}
+                            {extractionTimeLabel} {formatGuideTime(extractionSeconds)}
                           </span>
                           <span className={resultChipClass}>
                             {formatRoundedTemperature(plan.waterTempC)}
@@ -5427,8 +5511,8 @@ function PlanResultDialog({
                             <span className="font-semibold text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
                           </span>
                           <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowMetricTotal}</span>
-                            <span className="font-semibold text-primary">{formatGuideTime(plan.totalTimeSeconds)}</span>
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{extractionTimeLabel}</span>
+                            <span className="font-semibold text-primary">{formatGuideTime(extractionSeconds)}</span>
                           </span>
                         </div>
                       )}
@@ -8068,13 +8152,13 @@ export function AiBrewPanel({
         ? `${selectedSwitchSizeLabel} aman untuk dosis ini dengan Auto.`
         : `${selectedSwitchSizeLabel} is safe for this dose on Auto.`);
     const switchMethodLabel = (preset: SwitchPublicPreset) => {
-      if (preset.id === 'immersion_sweet') return isIndonesianAiBrewLanguage(language) ? 'Immersion manis' : 'Sweet immersion';
-      if (preset.id === 'immersion_heavy_body') return isIndonesianAiBrewLanguage(language) ? 'Body tebal' : 'Heavy body';
-      if (preset.id === 'hybrid_balanced') return isIndonesianAiBrewLanguage(language) ? 'Hybrid seimbang' : 'Balanced hybrid';
-      if (preset.id === 'hybrid_bright_clean') return isIndonesianAiBrewLanguage(language) ? 'Hybrid cerah' : 'Bright hybrid';
-      if (preset.id === 'v60_mode') return isIndonesianAiBrewLanguage(language) ? 'Mode V60' : 'V60 mode';
-      if (preset.id === 'iced_hybrid') return isIndonesianAiBrewLanguage(language) ? 'Hybrid es' : 'Iced hybrid';
-      if (preset.id === 'mugen_everyday_hybrid') return isIndonesianAiBrewLanguage(language) ? 'MUGEN hybrid' : 'MUGEN hybrid';
+      if (preset.id === 'immersion_sweet') return isIndonesianAiBrewLanguage(language) ? 'Manis' : 'Sweet';
+      if (preset.id === 'immersion_heavy_body') return isIndonesianAiBrewLanguage(language) ? 'Body' : 'Body';
+      if (preset.id === 'hybrid_balanced') return isIndonesianAiBrewLanguage(language) ? 'Seimbang' : 'Balanced';
+      if (preset.id === 'hybrid_bright_clean') return isIndonesianAiBrewLanguage(language) ? 'Cerah' : 'Bright';
+      if (preset.id === 'v60_mode') return isIndonesianAiBrewLanguage(language) ? 'V60' : 'V60';
+      if (preset.id === 'iced_hybrid') return isIndonesianAiBrewLanguage(language) ? 'Es' : 'Iced';
+      if (preset.id === 'mugen_everyday_hybrid') return isIndonesianAiBrewLanguage(language) ? 'MUGEN' : 'MUGEN';
       return isIndonesianAiBrewLanguage(language) ? preset.labelId || preset.label : preset.label;
     };
     const switchPanel = selectedDripper?.methodFamily === 'hario_switch' ? (
@@ -8082,11 +8166,17 @@ export function AiBrewPanel({
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.switchSectionTitle}</p>
-            <p className="mt-0.5 text-xs leading-5 text-secondary" data-testid="ai-brew-switch-selected-size">
-              {selectedSwitchSizeLabel}
-              {selectedSwitchCapacity ? ` - ${selectedSwitchCapacity} ml` : ''}
-              {selectedSwitchClosedMax ? ` - ${isIndonesianAiBrewLanguage(language) ? 'katup tertutup' : 'closed'} <= ${selectedSwitchClosedMax} ml` : ''}
-            </p>
+            <div className="mt-1 flex min-w-0 max-w-full flex-wrap gap-1.5 text-[11px] font-semibold text-secondary" data-testid="ai-brew-switch-selected-size">
+              <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">{selectedSwitchSizeLabel}</span>
+              {selectedSwitchCapacity ? (
+                <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">{selectedSwitchCapacity} ml</span>
+              ) : null}
+              {selectedSwitchClosedMax ? (
+                <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
+                  {isIndonesianAiBrewLanguage(language) ? 'Max tutup' : 'Closed max'} {selectedSwitchClosedMax} ml
+                </span>
+              ) : null}
+            </div>
           </div>
           <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
             switchSafetyTone === 'caution'
@@ -8130,17 +8220,17 @@ export function AiBrewPanel({
         )}
 
         <div className="mt-2 min-w-0 max-w-full overflow-hidden" data-testid="ai-brew-switch-method-strip">
-          <div className="flex max-w-full gap-1.5 overflow-x-auto pb-1" aria-label={isIndonesianAiBrewLanguage(language) ? 'Pilih metode Hario Switch' : 'Choose Hario Switch method'}>
+          <div className="flex max-w-full gap-1.5 overflow-x-auto overscroll-x-contain pb-1 pr-1 [-webkit-overflow-scrolling:touch]" aria-label={isIndonesianAiBrewLanguage(language) ? 'Pilih metode Hario Switch' : 'Choose Hario Switch method'}>
             <button
               type="button"
               onClick={() => updateForm('switchPresetId', '')}
-              className={`min-h-[40px] max-w-[12rem] shrink-0 truncate rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
+              className={`min-h-[40px] max-w-[7.5rem] shrink-0 truncate rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
                 !formState.switchPresetId ? 'bg-blue-600 text-white' : 'bg-[var(--bg-base)] text-primary hover:bg-surface-alpha-hover'
               }`}
               data-testid="ai-brew-switch-preset-auto-inline"
               aria-pressed={!formState.switchPresetId}
             >
-              {copy.switchAutoPreset}
+              {isIndonesianAiBrewLanguage(language) ? 'Auto' : 'Auto'}
             </button>
             {switchPresetOptions.map((preset) => {
               const active = formState.switchPresetId === preset.id;
@@ -8156,7 +8246,7 @@ export function AiBrewPanel({
                       brewMode: preset.iced ? 'iced' : prev.brewMode,
                     }));
                   }}
-                  className={`min-h-[40px] max-w-[12rem] shrink-0 truncate rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
+                  className={`min-h-[40px] max-w-[7.5rem] shrink-0 truncate rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
                     active ? 'bg-blue-600 text-white' : 'bg-[var(--bg-base)] text-primary hover:bg-surface-alpha-hover'
                   }`}
                   data-testid={`ai-brew-switch-preset-inline-${preset.id}`}
@@ -8167,9 +8257,9 @@ export function AiBrewPanel({
               );
             })}
           </div>
-          <p className="mt-1 text-[11px] leading-4 text-secondary">
+          <p className="mt-1 max-w-full break-words text-[11px] leading-4 text-secondary">
             {formState.switchPresetId
-              ? `${selectedSwitchPresetLabel} - ${switchValvePathLabel}`
+              ? `${selectedSwitchPresetLabel}: ${switchValvePathLabel}`
               : (isIndonesianAiBrewLanguage(language) ? 'Auto mengikuti Profil Target dan batas ukuran.' : 'Auto follows the taste target and size guardrails.')}
           </p>
         </div>

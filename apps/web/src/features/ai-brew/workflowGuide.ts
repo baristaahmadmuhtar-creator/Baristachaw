@@ -530,13 +530,13 @@ function buildSwitchPrimaryText(plan: BrewPlan, step: BrewPlanStep) {
     return `${time} · ${valve} · tuang ${formatMl(step.pourVolumeMl)} sampai ${formatMl(step.targetVolumeMl)} ${targetLabel}${chamber}.`;
   }
   if (step.kind === 'release') {
-    return `${time} · ${valve} · buka/release di ${formatMl(step.targetVolumeMl || plan.hotWaterMl)}; biarkan turun bersih.`;
+    return `${time} · ${valve} · buka katup di ${formatMl(step.targetVolumeMl || plan.hotWaterMl)}; biarkan air turun bersih.`;
   }
   if (step.kind === 'drawdown') {
-    return `${time} · ${valve} · drawdown sampai selesai tanpa top-up air.`;
+    return `${time} · ${valve} · air turun sampai selesai tanpa tambah air.`;
   }
   if (step.kind === 'serve') {
-    return `${time} · sajikan setelah drawdown; jangan tambah bypass di luar plan.`;
+    return `${time} · sajikan setelah air turun; jangan tambah bypass di luar plan.`;
   }
   return `${time} · ${valve} · tahan kontak; jaga muatan ruang stabil.`;
 }

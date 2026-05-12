@@ -11,7 +11,7 @@ import { collectFatalBrowserErrors, expectNoHorizontalOverflow } from '../helper
 const shouldRunReleaseProof = String(process.env.AI_BREW_RELEASE_PROOF || '').trim() === '1';
 const releaseSha = process.env.RELEASE_PROOF_SHA
   || execSync('git rev-parse --short=12 HEAD', { encoding: 'utf8' }).trim();
-const artifactDir = path.resolve('artifacts', 'ai-brew-audit', 'release-proof', releaseSha);
+const artifactDir = path.resolve('artifacts', 'ai-brew-audit', 'time-mobile-proof', releaseSha);
 
 test.skip(!shouldRunReleaseProof, 'Set AI_BREW_RELEASE_PROOF=1 to capture the AI Brew release proof screenshots.');
 test.setTimeout(240_000);
@@ -142,6 +142,23 @@ async function capture(page: Page, fileName: string, label: string) {
 test('captures AI Brew final release proof screenshots in Indonesian', async ({ page }) => {
   const browserErrors = collectFatalBrowserErrors(page);
 
+  await openTools(page, 390, 844);
+  await openProBuilder(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'Switch Iced Mobile QA');
+  await selectDripper(page, 'switch 02', 'hario-switch-02');
+  await setVisibleInputValue(page, 'ai-brew-dose', '20');
+  await page.getByTestId('ai-brew-builder-mode-iced').click();
+  await expect(page.getByTestId('ai-brew-switch-method-strip')).toBeVisible();
+  await capture(page, 'switch-iced-input.png', 'switch iced input');
+  await selectWaterBrand(page);
+  await generatePlan(page);
+  await expect(page.getByTestId('ai-brew-result')).toContainText(/Ekstraksi panas|Panduan selesai|Aduk es/i);
+  await capture(page, 'switch-iced-result.png', 'switch iced result');
+  await page.getByTestId('ai-brew-result-tab-flow').click();
+  await expect(page.getByTestId('ai-brew-result-guide-panel')).toBeVisible();
+  await capture(page, 'panduan-seduh-time-display.png', 'panduan seduh time display');
+  await closeResult(page);
+
   await openTools(page, 430, 932);
   await openProBuilder(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'Bean Belum Lengkap');
@@ -166,13 +183,14 @@ test('captures AI Brew final release proof screenshots in Indonesian', async ({ 
 
   await openTools(page, 430, 932);
   await openProBuilder(page);
-  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'Washed Ethiopia High Confidence');
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'Ethiopia Banko Gotiti');
   await selectCustomBean(page, 'Washed', 'Gesha');
   await selectDripper(page, 'v60', 'hario-v60');
   await selectWaterBrand(page);
   await generatePlan(page);
   await expect(page.getByTestId('ai-brew-result')).toContainText(/Data bean lengkap|Data bean sebagian|Keyakinan/i);
   await capture(page, 'known-bean-high-confidence.png', 'known bean confidence');
+  await capture(page, 'ethiopia-banko-result-mobile.png', 'ethiopia banko result mobile');
   await closeResult(page);
 
   await openTools(page, 430, 932);
@@ -214,6 +232,7 @@ test('captures AI Brew final release proof screenshots in Indonesian', async ({ 
   await generatePlan(page);
   await expect(page.getByTestId('ai-brew-result')).toContainText(/air panas|es|rasio final/i);
   await capture(page, 'v60-iced-split.png', 'v60 iced split');
+  await capture(page, 'v60-iced-result.png', 'v60 iced result');
   await page.getByTestId('ai-brew-result-tab-flow').click();
   await expect(page.getByTestId('ai-brew-result-guide-panel')).toBeVisible();
   await capture(page, 'panduan-ringkas.png', 'panduan ringkas');

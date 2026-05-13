@@ -259,6 +259,17 @@ function methodCorrection(
     },
   } satisfies Record<BrewTasteFeedbackRating, Pick<BrewTasteFeedbackCorrection, 'primaryCorrection' | 'backupCorrection'>>;
 
+  if (plan.brewMode === 'iced' && (rating === 'sour' || rating === 'thin' || rating === 'flat')) {
+    return {
+      primaryCorrection: id
+        ? `Jaga ${plan.hotWaterMl} ml air panas dan ${plan.iceMl} g es tetap sama; coba 0.5 step lebih halus dari ${grind}.`
+        : `Keep ${plan.hotWaterMl} ml hot water and ${plan.iceMl} g ice unchanged; try 0.5 step finer than ${grind}.`,
+      backupCorrection: id
+        ? `Jika masih tipis setelah satu brew, rapatkan rasio final sedikit dari 1:${plan.finalBeverageRatio} tanpa menambah air setelah seduh.`
+        : `If it is still thin after one brew, tighten final ratio slightly from 1:${plan.finalBeverageRatio} without adding water after brewing.`,
+    };
+  }
+
   if (plan.methodFamily === 'hario_switch') {
     if (rating === 'great') return {
       primaryCorrection: id ? 'Pertahankan gilingan, titik buka katup, dan jalur katup yang sama.' : 'Keep the same grind, release checkpoint, and valve path.',

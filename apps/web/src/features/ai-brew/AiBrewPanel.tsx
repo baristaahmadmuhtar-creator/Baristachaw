@@ -470,7 +470,7 @@ const COPY = {
     switchSizeTitle: 'Switch size',
     switchDoseTitle: 'Dose shortcuts',
     switchPresetTitle: 'Method',
-    switchAutoPreset: 'Auto by taste target',
+    switchAutoPreset: 'Auto chooses method',
     switchChangePreset: 'Change method',
     switchSelectedSize: 'Selected size',
     switchDoseSafety: 'Dose safety',
@@ -483,7 +483,12 @@ const COPY = {
     switchAutoIcedHybrid: 'Auto: Iced Hybrid',
     switchAutoMugenHybrid: 'Auto: MUGEN Everyday Hybrid',
     switchPresetSheetTitle: 'Choose Switch method',
-    switchPresetSheetSummary: 'Auto follows the taste target. Pick a method only when you want a specific Switch behaviour.',
+    switchPresetSheetSummary: 'Auto chooses a Switch method from Target Profile and brewer limits. Pick manual only when you want a specific Switch behaviour.',
+    switchAutoMethodStatus: 'Auto chooses',
+    switchManualMethodStatus: 'Manual',
+    switchTargetClarifier: 'Target Profile tunes taste; it does not replace the selected Switch method.',
+    switchAutoExplainer: 'Auto chooses a method from Target Profile, dose, brewer size, and safety limits.',
+    switchManualExplainer: 'Manual method stays selected when safe. Target Profile only tunes bloom, flow, valve timing, and agitation.',
     switchPresetDetailToggle: 'Detail',
     switchPresetBestFor: 'Best for',
     switchPresetCupShape: 'Cup shape',
@@ -971,7 +976,7 @@ const COPY = {
     switchSizeTitle: 'Ukuran Switch',
     switchDoseTitle: 'Shortcut dosis',
     switchPresetTitle: 'Metode',
-    switchAutoPreset: 'Auto ikut Profil Target',
+    switchAutoPreset: 'Auto pilih metode',
     switchChangePreset: 'Ubah metode',
     switchSelectedSize: 'Ukuran terpilih',
     switchDoseSafety: 'Keamanan dosis',
@@ -981,10 +986,15 @@ const COPY = {
     switchSafetyCaution: 'Hati-hati',
     switchSafetyBlocked: 'Diblokir',
     switchAutoHybridBalanced: 'Auto: Hybrid seimbang',
-    switchAutoIcedHybrid: 'Auto: Iced Hybrid',
-    switchAutoMugenHybrid: 'Auto: MUGEN Everyday Hybrid',
+    switchAutoIcedHybrid: 'Auto: Hybrid es',
+    switchAutoMugenHybrid: 'Auto: MUGEN hybrid',
     switchPresetSheetTitle: 'Pilih metode Switch',
-    switchPresetSheetSummary: 'Auto mengikuti Profil Target. Pilih metode hanya kalau kamu mau karakter Switch tertentu.',
+    switchPresetSheetSummary: 'Auto memilih metode Switch dari Profil Target dan batas alat. Pilih manual hanya kalau kamu ingin karakter Switch tertentu.',
+    switchAutoMethodStatus: 'Auto memilih',
+    switchManualMethodStatus: 'Manual',
+    switchTargetClarifier: 'Profil Target menyesuaikan rasa, bukan mengganti metode Switch.',
+    switchAutoExplainer: 'Auto memilih metode dari Profil Target, dosis, ukuran alat, dan batas aman.',
+    switchManualExplainer: 'Metode manual tetap dipakai kalau aman. Profil Target hanya menyesuaikan bloom, flow, timing katup, dan agitasi.',
     switchPresetDetailToggle: 'Detail',
     switchPresetBestFor: 'Cocok untuk',
     switchPresetCupShape: 'Bentuk rasa',
@@ -2412,6 +2422,58 @@ function formatBeanCoverageLabel(
     default:
       return fallbackLabel;
   }
+}
+
+function formatSwitchPresetLabelById(
+  presetId: BrewPlan['switchPresetId'] | SwitchPublicPresetId | undefined,
+  fallback: string,
+  language: string,
+) {
+  const id = isIndonesianAiBrewLanguage(language);
+  switch (presetId) {
+    case 'immersion_sweet':
+      return id ? 'Immersion manis' : 'Immersion Sweet';
+    case 'immersion_heavy_body':
+      return id ? 'Immersion body' : 'Immersion Body';
+    case 'hybrid_balanced':
+      return id ? 'Hybrid seimbang' : 'Hybrid Balanced';
+    case 'hybrid_bright_clean':
+      return id ? 'Hybrid cerah' : 'Hybrid Bright Clean';
+    case 'v60_mode':
+      return id ? 'Mode V60' : 'V60 Mode';
+    case 'iced_hybrid':
+      return id ? 'Hybrid es' : 'Iced Hybrid';
+    case 'mugen_everyday_hybrid':
+      return id ? 'MUGEN hybrid' : 'MUGEN Hybrid';
+    default:
+      return fallback;
+  }
+}
+
+function formatSwitchPresetLabel(
+  preset: SwitchPublicPreset | undefined,
+  language: string,
+  fallback: string,
+) {
+  if (!preset) return fallback;
+  if (isIndonesianAiBrewLanguage(language)) {
+    return preset.labelId || formatSwitchPresetLabelById(preset.id, fallback, language);
+  }
+  return preset.label || fallback;
+}
+
+function formatPlanSwitchPresetLabel(plan: BrewPlan, language: string) {
+  return formatSwitchPresetLabelById(
+    plan.switchPresetId,
+    plan.switchPresetLabel || (isIndonesianAiBrewLanguage(language) ? 'Metode Switch' : 'Switch method'),
+    language,
+  );
+}
+
+function formatSwitchPresetWhy(preset: SwitchPublicPreset | undefined, language: string, fallback: string) {
+  if (!preset) return fallback;
+  if (isIndonesianAiBrewLanguage(language)) return preset.whyId || localizeAiBrewDynamicText(preset.why || fallback, language);
+  return preset.why || fallback;
 }
 
 function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string, plan?: BrewPlan) {
@@ -4208,6 +4270,9 @@ function PlanResultDialog({
   const switchSafetyStatus = plan.switchStepValidation?.status || plan.switchCompatibility?.status;
   const switchSafetyMessage = plan.switchStepValidation?.message || plan.switchCompatibility?.message;
   const localizedTargetProfileLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language);
+  const localizedSwitchPresetLabel = plan.methodFamily === 'hario_switch'
+    ? formatPlanSwitchPresetLabel(plan, language)
+    : '';
   const displaySummary = compactResultSummaryForDisplay(buildPremiumResultSummary(plan, language), plan, language);
   const methodBrief = buildPlanMethodBrief(plan, language);
   const aiEngineOnline = planUsesOnlineAi(plan);
@@ -4325,11 +4390,11 @@ function PlanResultDialog({
     {
       label: id ? 'Alat & workflow' : 'Brewer workflow',
       value: plan.methodFamily === 'hario_switch'
-        ? (plan.switchPresetLabel || plan.dripper.name)
+        ? (localizedSwitchPresetLabel || plan.dripper.name)
         : plan.dripper.name,
       detail: plan.methodFamily === 'hario_switch'
         ? (id
-          ? `${plan.switchWhy || 'Metode Switch mengikuti target rasa, ukuran alat, dan dosis.'} ${plan.switchWatch || plan.switchCompatibility?.message || 'Jaga angka ml, target kumulatif, dan status katup saat seduh.'}`
+          ? `${localizeAiBrewDynamicText(plan.switchWhy || 'Metode Switch dipilih dari Profil Target, ukuran alat, dan dosis saat Auto aktif.', language)} ${localizeAiBrewDynamicText(plan.switchWatch || plan.switchCompatibility?.message || 'Jaga angka ml, target kumulatif, dan status katup saat seduh.', language)}`
           : `${plan.switchWhy || 'Switch method follows the taste target, brewer size, and dose.'} ${plan.switchWatch || plan.switchCompatibility?.message || 'Keep ml, cumulative targets, and valve state visible while brewing.'}`)
         : (id
           ? `${methodBrief.primaryLabel}: ${methodBrief.watch[0] || 'Ikuti urutan dari atas; ubah satu variabel saja setelah mencicipi.'}`
@@ -4797,7 +4862,7 @@ function PlanResultDialog({
                   </p>
                   {plan.methodFamily === 'hario_switch' && (
                     <div className="mt-3 flex min-w-0 max-w-full flex-wrap gap-1.5 text-xs" data-testid="ai-brew-switch-result-summary">
-                      <span className={resultChipClass}>{plan.switchPresetLabel || (id ? 'Metode Switch' : 'Switch method')}</span>
+                      <span className={resultChipClass}>{localizedSwitchPresetLabel || (id ? 'Metode Switch' : 'Switch method')}</span>
                       <span className={resultChipClass}>{resultSwitchValvePathLabel}</span>
                       {switchSafetyMessage && (
                         <span className={`rounded-full border px-2.5 py-1 font-semibold ${
@@ -8126,16 +8191,23 @@ export function AiBrewPanel({
     const selectedSwitchCapacity = selectedDripper?.physicalConstraints?.finishedCapacityMl;
     const selectedSwitchClosedMax = selectedDripper?.physicalConstraints?.recommendedClosedPhaseMaxMl;
     const selectedSwitchSizeLabel = selectedDripper ? getSwitchSizeLabel(selectedDripper) : copy.notSpecified;
-    const selectedSwitchPresetLabel = selectedSwitchPreset
-      ? (isIndonesianAiBrewLanguage(language) ? selectedSwitchPreset.labelId || selectedSwitchPreset.label : selectedSwitchPreset.label)
-      : selectedDripper?.id === 'mugen-x-switch'
-        ? copy.switchAutoMugenHybrid
-        : formState.brewMode === 'iced'
-          ? copy.switchAutoIcedHybrid
-          : copy.switchAutoHybridBalanced;
-    const switchValvePathLabel = formState.switchPresetId === 'v60_mode'
+    const autoSwitchPresetId: SwitchPublicPresetId = (() => {
+      if (selectedDripper?.id === 'mugen-x-switch') return 'mugen_everyday_hybrid';
+      if (formState.brewMode === 'iced') return 'iced_hybrid';
+      if (
+        selectedDripper?.id === 'hario-switch-02'
+        && parsedDoseG >= 20
+        && (formState.targetProfileId === 'more_body' || formState.targetProfileId === 'dense_comforting')
+      ) return 'v60_mode';
+      if (formState.targetProfileId === 'more_sweetness' || formState.targetProfileId === 'soft_round') return 'immersion_sweet';
+      if (formState.targetProfileId === 'more_body' || formState.targetProfileId === 'dense_comforting') return 'immersion_heavy_body';
+      if (formState.targetProfileId === 'more_acidity' || formState.targetProfileId === 'floral_transparent') return 'hybrid_bright_clean';
+      return 'hybrid_balanced';
+    })();
+    const displayedSwitchPresetId = (formState.switchPresetId || autoSwitchPresetId) as SwitchPublicPresetId;
+    const switchValvePathLabel = displayedSwitchPresetId === 'v60_mode'
       ? (isIndonesianAiBrewLanguage(language) ? 'Katup terbuka dari awal' : 'Valve open from start')
-      : formState.brewMode === 'iced' || formState.switchPresetId === 'iced_hybrid'
+      : formState.brewMode === 'iced' || displayedSwitchPresetId === 'iced_hybrid'
         ? (isIndonesianAiBrewLanguage(language) ? 'Katup tutup -> buka di atas es' : 'Closed -> release over ice')
         : (isIndonesianAiBrewLanguage(language) ? 'Katup tutup -> buka katup' : 'Closed -> open');
     const switchSafetyTone = selectedDripper?.id === 'hario-switch-02' && parsedDoseG >= 20
@@ -8161,6 +8233,42 @@ export function AiBrewPanel({
       if (preset.id === 'mugen_everyday_hybrid') return isIndonesianAiBrewLanguage(language) ? 'MUGEN' : 'MUGEN';
       return isIndonesianAiBrewLanguage(language) ? preset.labelId || preset.label : preset.label;
     };
+    const selectedSwitchPresetLabel = formState.switchPresetId
+      ? `${copy.switchManualMethodStatus}: ${formatSwitchPresetLabel(selectedSwitchPreset, language, formState.switchPresetId)}`
+      : `${copy.switchAutoMethodStatus}: ${formatSwitchPresetLabelById(autoSwitchPresetId, copy.switchAutoHybridBalanced, language)}`;
+    const switchMethodExplainer = formState.switchPresetId
+      ? copy.switchManualExplainer
+      : copy.switchAutoExplainer;
+    const targetProfilePanel = (
+      <div className="min-w-0 max-w-full overflow-hidden rounded-[1.1rem] border panel-divider-subtle panel-soft p-3" data-testid="ai-brew-target-profile-panel">
+        <div className="mb-3 flex min-w-0 items-start gap-2">
+          <Target size={15} className="mt-0.5 shrink-0 text-emerald-500" />
+          <div className="min-w-0">
+            <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.profileTitle}</h4>
+            {isSwitchDripper ? (
+              <p className="mt-1 text-xs leading-5 text-secondary" data-testid="ai-brew-switch-target-clarifier">
+                {copy.switchTargetClarifier}
+              </p>
+            ) : null}
+          </div>
+        </div>
+        <div className="ai-brew-choice-grid ai-brew-choice-grid--targets" data-testid="ai-brew-target-profile-grid">
+          {targetOptions.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => updateForm('targetProfileId', option.id)}
+              className={`min-w-0 rounded-[0.9rem] border p-3 text-left transition-all ${formState.targetProfileId === option.id ? 'border-blue-500/25 bg-blue-500/10 shadow-[0_12px_26px_rgba(37,99,235,0.14)]' : 'border-[var(--panel-border-soft)] bg-surface-alpha hover:border-blue-500/20'}`}
+              data-testid={`ai-brew-target-profile-${option.id}`}
+              aria-pressed={formState.targetProfileId === option.id}
+              aria-label={`${copy.profileTitle}: ${option.translatedLabel}${formState.targetProfileId === option.id ? `, ${isIndonesianAiBrewLanguage(language) ? 'terpilih' : 'selected'}` : ''}`}
+            >
+              <p className="min-w-0 break-words text-sm font-semibold leading-5">{option.translatedLabel}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
     const switchPanel = selectedDripper?.methodFamily === 'hario_switch' ? (
       <div className="min-w-0 max-w-full overflow-hidden rounded-[1rem] border panel-divider-subtle bg-surface-alpha px-3 py-3 [overflow-wrap:anywhere]" data-testid="ai-brew-switch-section">
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
@@ -8229,8 +8337,9 @@ export function AiBrewPanel({
               }`}
               data-testid="ai-brew-switch-preset-auto-inline"
               aria-pressed={!formState.switchPresetId}
+              aria-label={copy.switchAutoPreset}
             >
-              {isIndonesianAiBrewLanguage(language) ? 'Auto' : 'Auto'}
+              Auto
             </button>
             {switchPresetOptions.map((preset) => {
               const active = formState.switchPresetId === preset.id;
@@ -8257,10 +8366,11 @@ export function AiBrewPanel({
               );
             })}
           </div>
+          <p className="mt-1 max-w-full break-words text-[11px] leading-4 text-secondary" data-testid="ai-brew-switch-method-summary">
+            {selectedSwitchPresetLabel}: {switchValvePathLabel}. {switchMethodExplainer}
+          </p>
           <p className="mt-1 max-w-full break-words text-[11px] leading-4 text-secondary">
-            {formState.switchPresetId
-              ? `${selectedSwitchPresetLabel}: ${switchValvePathLabel}`
-              : (isIndonesianAiBrewLanguage(language) ? 'Auto mengikuti Profil Target dan batas ukuran.' : 'Auto follows the taste target and size guardrails.')}
+            {copy.switchTargetClarifier}
           </p>
         </div>
       </div>
@@ -8470,26 +8580,7 @@ export function AiBrewPanel({
                       </div>
                     </div>
 
-                    <div className="min-w-0 max-w-full overflow-hidden rounded-[1.1rem] border panel-divider-subtle panel-soft p-3" data-testid="ai-brew-target-profile-panel">
-                      <div className="mb-3 flex items-center gap-2">
-                        <Target size={15} className="text-emerald-500" />
-                        <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.profileTitle}</h4>
-                      </div>
-                      <div className="ai-brew-choice-grid ai-brew-choice-grid--targets" data-testid="ai-brew-target-profile-grid">
-                        {targetOptions.map((option) => (
-                          <button
-                            key={option.id}
-                            type="button"
-                            onClick={() => updateForm('targetProfileId', option.id)}
-                            className={`min-w-0 rounded-[0.9rem] border p-3 text-left transition-all ${formState.targetProfileId === option.id ? 'border-blue-500/25 bg-blue-500/10 shadow-[0_12px_26px_rgba(37,99,235,0.14)]' : 'border-[var(--panel-border-soft)] bg-surface-alpha hover:border-blue-500/20'}`}
-                            data-testid={`ai-brew-target-profile-${option.id}`}
-                            aria-pressed={formState.targetProfileId === option.id}
-                          >
-                            <p className="min-w-0 break-words text-sm font-semibold leading-5">{option.translatedLabel}</p>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    {!isSwitchDripper ? targetProfilePanel : null}
 
                     {isPro && (
                       <div
@@ -8727,6 +8818,7 @@ export function AiBrewPanel({
                       </div>
                     </div>
                     {brewModeAndMethodPanel}
+                    {isSwitchDripper ? targetProfilePanel : null}
 
                     <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3">
                       <div className="mb-3 flex items-center gap-2">
@@ -9160,7 +9252,7 @@ export function AiBrewPanel({
                       {isSwitchDripper ? (
                         <>
                           <p><span className="font-semibold text-primary">{copy.switchValvePath}:</span> {switchValvePathLabel}</p>
-                          <p className="mt-1"><span className="font-semibold text-primary">{copy.switchWhyPreset}:</span> {selectedSwitchPreset?.why || (isIndonesianAiBrewLanguage(language) ? 'Auto mengikuti Profil Target, ukuran alat, dan dosis.' : 'Auto follows the taste target, brewer size, and dose.')}</p>
+                          <p className="mt-1"><span className="font-semibold text-primary">{copy.switchWhyPreset}:</span> {formatSwitchPresetWhy(selectedSwitchPreset, language, switchMethodExplainer)}</p>
                           <p className="mt-1"><span className="font-semibold text-primary">{copy.switchWatch}:</span> {switchSafetyMessage}</p>
                         </>
                       ) : (

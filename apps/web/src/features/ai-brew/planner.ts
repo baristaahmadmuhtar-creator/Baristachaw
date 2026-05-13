@@ -3128,6 +3128,7 @@ function resolveIcedHotWaterShare(params: {
   let hotWaterShare = familyShareProfile.base;
   if (params.methodFamily === 'kono') hotWaterShare += 0.05;
   if (params.methodFamily === 'origami') hotWaterShare -= 0.01;
+  if (params.methodFamily === 'melitta') hotWaterShare += 0.04;
   const targetIntent = resolveTargetIntent(params.targetProfileLabel, params.targetProfileId);
   if (targetIntent === 'body') hotWaterShare += 0.02;
   else if (targetIntent === 'sweetness') hotWaterShare += 0.015;
@@ -3201,6 +3202,153 @@ type V60ServiceCalibration = {
   notes: string[];
   confidenceNotes: string[];
 };
+
+type IcedStrengthCalibration = CalibrationAdjustment & {
+  warnings: string[];
+  targetFinalRatioRange: [number, number];
+};
+
+function resolveIcedFinalRatioRange(params: {
+  methodFamily: AiBrewMethodFamily;
+  dripper: EquipmentCatalogEntry;
+  targetProfileId: string;
+  roastLevel: RoastLevel;
+  processEntry?: ProcessCatalogEntry;
+}) {
+  const name = `${params.dripper.name} ${params.dripper.typeLabel}`.toLowerCase();
+  const noBypassOrLowBypass = /\b(tricolate|pulsar|nextlevel|mugen x switch|no[-\s]?bypass|vietnam drip)\b/i.test(name);
+  const flatBottom = params.methodFamily === 'april'
+    || params.methodFamily === 'kalita_wave'
+    || /\b(orea|b75|stagg|flat bottom|blue bottle|gem|tornado)\b/i.test(name);
+  const targetIntent = resolveTargetIntent(params.targetProfileId, params.targetProfileId);
+
+  let min = 13.8;
+  let max = 14.5;
+  let label = 'seduhan es konikal';
+
+  if (params.methodFamily === 'chemex') {
+    min = 14.3;
+    max = 15.0;
+    label = 'seduhan es Chemex';
+  } else if (params.methodFamily === 'clever_dripper' || params.methodFamily === 'hario_switch' || noBypassOrLowBypass) {
+    min = 13.7;
+    max = 14.5;
+    label = noBypassOrLowBypass ? 'seduhan es low-bypass' : 'seduhan es immersion';
+  } else if (flatBottom || params.methodFamily === 'melitta') {
+    min = 14.2;
+    max = 15.0;
+    label = 'seduhan es flat-bottom';
+  } else if (params.methodFamily === 'origami' || params.methodFamily === 'kono') {
+    min = 13.8;
+    max = 14.6;
+    label = 'seduhan es cone';
+  }
+
+  if (targetIntent === 'sweetness') {
+    min -= 0.15;
+    max -= 0.35;
+  } else if (targetIntent === 'body') {
+    min -= 0.25;
+    max -= 0.55;
+  } else if (params.targetProfileId === 'fruit_forward') {
+    max -= 0.2;
+  } else if (targetIntent === 'acidity') {
+    min += 0.05;
+    max += params.targetProfileId === 'floral_transparent' ? 0.25 : 0.1;
+  }
+
+  if (params.roastLevel === 'dark' || params.roastLevel === 'medium_dark') {
+    max -= 0.25;
+  }
+
+  const processRisk = resolveProcessRiskFallback(params.processEntry);
+  if (processRisk?.variability === 'high') {
+    max = Math.min(max, targetIntent === 'acidity' ? 15.2 : 14.8);
+  }
+
+  return {
+    min: roundTo(Math.max(12.8, min), 2),
+    max: roundTo(Math.min(15.3, Math.max(min + 0.2, max)), 2),
+    label,
+  };
+}
+
+function deriveIcedStrengthCalibration(params: {
+  input: AiBrewFormState;
+  methodFamily: AiBrewMethodFamily;
+  dripper: EquipmentCatalogEntry;
+  baseRecommendedRatio: number;
+  ratioLowerBound: number;
+  ratioUpperBound: number;
+  processEntry?: ProcessCatalogEntry;
+  v60SweetnessServiceCalibration: V60ServiceCalibration | null;
+}): IcedStrengthCalibration {
+  const neutral = {
+    ...createNeutralCalibrationAdjustment(),
+    warnings: [],
+    targetFinalRatioRange: [0, 0] as [number, number],
+  };
+  if (params.input.brewMode !== 'iced') return neutral;
+  if (params.v60SweetnessServiceCalibration) return neutral;
+  if (params.input.targetRatio || params.input.targetWaterMl) return neutral;
+  if (!ICED_METHOD_FAMILIES.has(params.methodFamily)) return neutral;
+
+  const range = resolveIcedFinalRatioRange({
+    methodFamily: params.methodFamily,
+    dripper: params.dripper,
+    targetProfileId: params.input.targetProfileId || 'balance_clean',
+    roastLevel: params.input.roastLevel,
+    processEntry: params.processEntry,
+  });
+  const lower = Math.max(params.ratioLowerBound, range.min);
+  const upper = Math.min(params.ratioUpperBound, range.max);
+  const current = params.baseRecommendedRatio;
+  let targetRatio = current;
+  const warnings: string[] = [];
+  const notes: string[] = [];
+  const confidenceNotes: string[] = [];
+
+  if (current > upper) {
+    targetRatio = upper;
+    notes.push(
+      `Batas kekuatan es merapatkan rasio final ${range.label} dari 1:${formatBaristaRatio(current)} ke 1:${formatBaristaRatio(targetRatio)} agar cup tidak tipis setelah es terukur mencair.`,
+    );
+  } else if (current < lower) {
+    targetRatio = lower;
+    notes.push(
+      `Batas kekuatan es membuka rasio final ${range.label} dari 1:${formatBaristaRatio(current)} ke 1:${formatBaristaRatio(targetRatio)} agar konsentrat panas tidak terlalu berat.`,
+    );
+  } else if (
+    (params.input.targetProfileId === 'more_sweetness' || params.input.targetProfileId === 'more_body' || params.input.targetProfileId === 'dense_comforting')
+    && current > lower + 0.25
+  ) {
+    targetRatio = Math.max(lower, current - 0.2);
+    notes.push(
+      `Target rasa es merapatkan rasio final sedikit untuk ${params.input.targetProfileId.replace(/_/g, ' ')} tanpa mengubah batas aman air panas dan es.`,
+    );
+  }
+
+  if (targetRatio > 15.2) {
+    warnings.push('Cup es bisa terasa ringan; gunakan target Lebih Manis/Body atau rapatkan rasio final setelah satu brew evaluasi.');
+  }
+
+  if (notes.length > 0 || warnings.length > 0) {
+    confidenceNotes.push(
+      `Rentang kekuatan es aktif untuk ${range.label}: rasio final 1:${formatBaristaRatio(lower)}-1:${formatBaristaRatio(upper)}.`,
+    );
+  }
+
+  return {
+    ratioDelta: roundTo(targetRatio - current, 2),
+    tempDeltaC: 0,
+    brewTimeDeltaSec: 0,
+    grindBias: 'same',
+    notes,
+    confidenceNotes,
+    warnings,
+    targetFinalRatioRange: [lower, upper],
+  };
+}
 
 function deriveV60SweetnessServiceCalibration(params: {
   input: AiBrewFormState;
@@ -4798,6 +4946,20 @@ function buildAdaptiveStepShares(profile: DeviceBrewProfile, context: AdaptiveSh
 
 type AdaptiveStepPhase = 'bloom' | 'early_middle' | 'late_middle' | 'finish';
 
+function isImmersionLedAdaptiveFamily(methodFamily: AiBrewMethodFamily) {
+  return methodFamily === 'french_press'
+    || methodFamily === 'clever_dripper'
+    || methodFamily === 'aeropress'
+    || methodFamily === 'cold_brew';
+}
+
+function isNonManualFlowAdaptiveFamily(methodFamily: AiBrewMethodFamily) {
+  return methodFamily === 'espresso'
+    || methodFamily === 'moka_pot'
+    || methodFamily === 'batch_brew'
+    || methodFamily === 'siphon';
+}
+
 function resolveAdaptiveStepPhase(index: number, count: number): AdaptiveStepPhase {
   if (index <= 0) return 'bloom';
   if (index >= count - 1) return 'finish';
@@ -4809,25 +4971,57 @@ function resolveAdaptiveStepPhase(index: number, count: number): AdaptiveStepPha
 function buildAdaptivePhaseFocusCue(context: AdaptiveShareContext, phase: AdaptiveStepPhase) {
   const targetIntent = resolveContextTargetIntent(context);
   const focus = context.flavorDirection === 'balanced' ? targetIntent : context.flavorDirection;
+  const immersionLed = isImmersionLedAdaptiveFamily(context.methodFamily);
+  const nonManualFlow = isNonManualFlowAdaptiveFamily(context.methodFamily);
 
   switch (phase) {
     case 'bloom':
+      if (immersionLed) {
+        if (focus === 'acidity') return 'Keep the first wetting calm so clarity stays intact.';
+        if (focus === 'body') return 'Make sure all grounds are wet so the cup does not run thin later.';
+        if (focus === 'sweetness') return 'Keep the first wetting calm so the cup can build a sweeter middle.';
+        return 'Wet the grounds evenly before moving to the next checkpoint.';
+      }
+      if (nonManualFlow) {
+        if (context.methodFamily === 'espresso') return 'Start the shot evenly; watch first drops and keep the flow controlled.';
+        if (context.methodFamily === 'moka_pot') return 'Start heat gently so the basket wets evenly before coffee rises.';
+        if (context.methodFamily === 'batch_brew') return 'Start the machine cycle evenly and confirm the spray pattern is wetting the bed.';
+        return 'Start heating and confirm the upper chamber engages evenly.';
+      }
       if (focus === 'acidity') return 'Keep the opening gentle so clarity stays intact.';
       if (focus === 'body') return 'Make sure the bed is fully wet so the cup does not run thin later.';
       if (focus === 'sweetness') return 'Keep the bloom calm so the cup can build a sweeter middle.';
       return 'Open the bed evenly before moving to the next checkpoint.';
     case 'early_middle':
+      if (nonManualFlow) {
+        if (context.methodFamily === 'espresso') return 'Let the middle flow stabilize without chasing extra yield.';
+        if (context.methodFamily === 'moka_pot') return 'Keep heat steady while the stream stays honey-like.';
+        if (context.methodFamily === 'batch_brew') return 'Keep the spray cycle even so the basket drains uniformly.';
+        return 'Keep contact stable while vapor pressure keeps water in the upper chamber.';
+      }
       if (focus === 'acidity') return 'Keep the middle phase clean and avoid pushing the walls.';
       if (focus === 'body') return 'Hold slurry depth steady through the middle phase.';
       if (focus === 'sweetness') return 'Use this phase to build sweetness without spiking agitation.';
       return 'Keep the flow stable and repeatable through the middle phase.';
     case 'late_middle':
+      if (nonManualFlow) {
+        if (context.methodFamily === 'espresso') return 'Watch flow and color so the shot does not run past the sweet finish.';
+        if (context.methodFamily === 'moka_pot') return 'Reduce heat before the stream turns pale or sputtery.';
+        if (context.methodFamily === 'batch_brew') return 'Let the basket finish evenly without disturbing the bed.';
+        return 'Keep the draw-down calm so the lower chamber return stays clean.';
+      }
       if (focus === 'acidity') return 'Let the later middle phase stay light so the finish does not flatten.';
       if (focus === 'body') return 'Carry enough contact here to keep structure in the cup.';
       if (focus === 'sweetness') return 'Keep the later middle phase level so sweetness lands cleanly.';
       return 'Keep the later middle phase controlled and level.';
     case 'finish':
     default:
+      if (nonManualFlow) {
+        if (context.methodFamily === 'espresso') return 'Stop cleanly at target yield so the finish stays sweet.';
+        if (context.methodFamily === 'moka_pot') return 'Stop before sputter so the finish stays clean.';
+        if (context.methodFamily === 'batch_brew') return 'Mix the batch gently after the basket finishes draining.';
+        return 'Break heat and draw the brew down cleanly before serving.';
+      }
       if (focus === 'acidity') return 'Finish cleanly and avoid heavy late agitation.';
       if (focus === 'body') return 'Finish with enough control to keep the cup dense, not muddy.';
       if (focus === 'sweetness') return 'Finish calmly so the aftertaste stays sweet and round.';
@@ -4837,6 +5031,12 @@ function buildAdaptivePhaseFocusCue(context: AdaptiveShareContext, phase: Adapti
 
 function buildAdaptiveDoseCue(context: AdaptiveShareContext) {
   if (context.doseScale <= -0.35) {
+    if (isImmersionLedAdaptiveFamily(context.methodFamily)) {
+      return 'This lighter dose needs cleaner contact and shorter idle gaps between checkpoints.';
+    }
+    if (isNonManualFlowAdaptiveFamily(context.methodFamily)) {
+      return 'This lighter dose needs cleaner flow and shorter idle gaps between checkpoints.';
+    }
     return 'This lighter bed depth needs cleaner flow and shorter idle gaps between pours.';
   }
   if (context.doseScale >= 0.35) {
@@ -6149,11 +6349,26 @@ function finalizePlanCore(
     );
   const precisionOverrideNotes: string[] = [];
 
-  const calibratedRecommendedRatio = targetWaterOverrideMl === null
+  const ratioBeforeIcedStrengthCalibration = targetWaterOverrideMl === null
     && targetRatioOverride === null
     && typeof v60SweetnessServiceCalibration?.recommendedRatio === 'number'
     ? v60SweetnessServiceCalibration.recommendedRatio
     : baseRecommendedRatio;
+  const icedStrengthCalibration = deriveIcedStrengthCalibration({
+    input,
+    methodFamily,
+    dripper,
+    baseRecommendedRatio: ratioBeforeIcedStrengthCalibration,
+    ratioLowerBound,
+    ratioUpperBound,
+    processEntry,
+    v60SweetnessServiceCalibration,
+  });
+  const calibratedRecommendedRatio = roundTo(clamp(
+    ratioBeforeIcedStrengthCalibration + icedStrengthCalibration.ratioDelta,
+    ratioLowerBound,
+    ratioUpperBound,
+  ), 2);
   const totalWaterMl = targetWaterOverrideMl !== null
     ? roundBaristaVolumeMl(targetWaterOverrideMl, methodFamily)
     : roundBaristaVolumeMl(calcWaterFromDoseRatio(doseG, targetRatioOverride ?? calibratedRecommendedRatio), methodFamily);
@@ -6440,6 +6655,7 @@ function finalizePlanCore(
     [deviceSelection.fallbackUsed ? `Using ${effectiveDeviceProfile.label} family fallback profile.` : undefined],
     temperatureWarnings,
     waterProfile.warnings,
+    icedStrengthCalibration.warnings,
     switchSelection?.tasteProgramme.riskWarnings || [],
     switchStepValidation && switchStepValidation.status !== 'safe' ? [switchStepValidation.message] : [],
     baseGuardrails.warnings,
@@ -6462,6 +6678,7 @@ function finalizePlanCore(
     doseAdjustment.notes,
     serviceDoseTargetAdjustment.notes,
     flavorAlignment.notes,
+    icedStrengthCalibration.notes,
     baristaTemperatureCalibration.notes,
     v60SweetnessServiceCalibration?.notes || [],
     precisionOverrideNotes,
@@ -6508,6 +6725,7 @@ function finalizePlanCore(
     doseAdjustment.confidenceNotes,
     serviceDoseTargetAdjustment.confidenceNotes,
     flavorAlignment.confidenceNotes,
+    icedStrengthCalibration.confidenceNotes,
     baristaTemperatureCalibration.confidenceNotes,
     v60SweetnessServiceCalibration?.confidenceNotes || [],
     precisionOverrideNotes,

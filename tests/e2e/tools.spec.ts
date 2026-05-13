@@ -446,7 +446,8 @@ test('ai brew Hario Switch quick plan defaults to safe Hybrid Balanced with valv
   await expect(page.getByTestId('ai-brew-dose-chip-15')).toBeVisible();
   await expect(page.getByTestId('ai-brew-brew-mode-method-panel')).toBeVisible();
   await expect(page.getByTestId('ai-brew-switch-preset-auto-inline')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByTestId('ai-brew-switch-method-strip')).toContainText(/Auto follows the taste target|Auto mengikuti target rasa|Auto ikut Profil Target/i);
+  await expect(page.getByTestId('ai-brew-switch-method-strip')).toContainText(/Auto chooses a method from Target Profile|Auto memilih metode dari Profil Target/i);
+  await expect(page.getByTestId('ai-brew-switch-method-strip')).toContainText(/Target Profile tunes taste|Profil Target menyesuaikan rasa/i);
 
   await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
   await page.getByTestId('ai-brew-generate').click();

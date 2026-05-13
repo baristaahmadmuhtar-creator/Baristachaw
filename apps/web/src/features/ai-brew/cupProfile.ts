@@ -20,6 +20,127 @@ function addBias(base: number, bias?: number, weight = 0.45) {
   return base + (bias || 0) * weight;
 }
 
+type IcedCupAdjustment = {
+  acidityDelta: number;
+  sweetnessDelta: number;
+  bodyDelta: number;
+  clarityDelta: number;
+  aromaDelta: number;
+  bitterRiskDelta: number;
+  reasons: string[];
+  warnings: string[];
+  confidenceFloor?: ExpectedCupProfile['confidence'];
+};
+
+function resolveTargetIntent(plan: BrewPlan) {
+  const targetId = plan.targetProfileId || '';
+  if (targetId === 'more_acidity' || targetId === 'floral_transparent') return 'bright';
+  if (targetId === 'more_sweetness' || targetId === 'soft_round') return 'sweet';
+  if (targetId === 'more_body' || targetId === 'dense_comforting') return 'body';
+  if (targetId === 'fruit_forward') return 'fruit';
+  return 'balance';
+}
+
+function deriveIcedCupAdjustment(plan: BrewPlan): IcedCupAdjustment {
+  const neutral: IcedCupAdjustment = {
+    acidityDelta: 0,
+    sweetnessDelta: 0,
+    bodyDelta: 0,
+    clarityDelta: 0,
+    aromaDelta: 0,
+    bitterRiskDelta: 0,
+    reasons: [],
+    warnings: [],
+  };
+  if (plan.brewMode !== 'iced' || plan.iceMl <= 0) return neutral;
+
+  const intent = resolveTargetIntent(plan);
+  const adjustment: IcedCupAdjustment = {
+    ...neutral,
+    reasons: ['Prediksi iced memakai konsentrat panas + bypass es terukur; ini prediksi kurasi, bukan jaminan.'],
+  };
+
+  if (intent === 'bright') {
+    adjustment.acidityDelta += 0.6;
+    adjustment.clarityDelta += 0.7;
+    adjustment.bodyDelta -= 0.25;
+    adjustment.aromaDelta += 0.3;
+    adjustment.bitterRiskDelta -= 0.25;
+  } else if (intent === 'fruit') {
+    adjustment.acidityDelta += 0.35;
+    adjustment.sweetnessDelta += 0.4;
+    adjustment.clarityDelta += 0.45;
+    adjustment.aromaDelta += 0.5;
+    adjustment.bodyDelta -= 0.15;
+    adjustment.bitterRiskDelta -= 0.2;
+  } else if (intent === 'sweet') {
+    adjustment.sweetnessDelta += 0.5;
+    adjustment.clarityDelta += 0.3;
+    adjustment.bodyDelta -= 0.1;
+    adjustment.aromaDelta += 0.2;
+    adjustment.bitterRiskDelta -= 0.15;
+  } else if (intent === 'body') {
+    adjustment.sweetnessDelta += 0.25;
+    adjustment.bodyDelta += 0.1;
+    adjustment.clarityDelta += 0.15;
+    adjustment.bitterRiskDelta -= 0.1;
+  } else {
+    adjustment.sweetnessDelta += 0.25;
+    adjustment.clarityDelta += 0.4;
+    adjustment.bodyDelta -= 0.15;
+    adjustment.aromaDelta += 0.2;
+    adjustment.bitterRiskDelta -= 0.15;
+  }
+
+  if (plan.methodFamily === 'chemex' || plan.methodFamily === 'origami' || plan.methodFamily === 'v60' || plan.methodFamily === 'kono') {
+    adjustment.clarityDelta += 0.2;
+    adjustment.acidityDelta += 0.1;
+  } else if (plan.methodFamily === 'kalita_wave' || plan.methodFamily === 'april' || plan.methodFamily === 'melitta') {
+    adjustment.sweetnessDelta += 0.2;
+    adjustment.clarityDelta += 0.1;
+  } else if (plan.methodFamily === 'clever_dripper' || plan.methodFamily === 'hario_switch') {
+    adjustment.sweetnessDelta += 0.25;
+    adjustment.bodyDelta += 0.1;
+  }
+
+  if (plan.finalBeverageRatio > 15.2) {
+    adjustment.warnings.push('Cup es bisa terasa ringan; gunakan target Lebih Manis/Body atau rapatkan rasio final setelah satu brew evaluasi.');
+    adjustment.confidenceFloor = 'medium';
+  }
+  const dripperText = `${plan.dripper?.name || ''} ${plan.dripper?.typeLabel || ''}`.toLowerCase();
+  const lowBypassDevice = /\b(tricolate|pulsar|nextlevel|mugen x switch|no[-\s]?bypass|vietnam drip)\b/i.test(dripperText);
+  const flatOrChemexNearLightLimit = (
+    (plan.methodFamily === 'april' || plan.methodFamily === 'kalita_wave' || plan.methodFamily === 'melitta')
+    && plan.finalBeverageRatio >= 14.8
+  ) || (plan.methodFamily === 'chemex' && plan.finalBeverageRatio >= 14.45);
+  if (flatOrChemexNearLightLimit && plan.finalBeverageRatio <= 15.2) {
+    adjustment.warnings.push('Seduhan es ini sengaja jernih. Jika terasa ringan, haluskan gilingan 0.5 step dulu.');
+  }
+  if (lowBypassDevice && plan.finalBeverageRatio >= 14.4) {
+    adjustment.warnings.push('Low-bypass perlu konsentrat cukup kuat agar es tidak membuat cup tipis.');
+  }
+  if (plan.hotExtractionRatio > 10.6 && plan.methodFamily !== 'espresso' && plan.methodFamily !== 'moka_pot') {
+    adjustment.warnings.push('Rasio konsentrat panas terlalu longgar; risiko iced terasa tipis atau kurang ekstrak.');
+    adjustment.confidenceFloor = 'medium';
+  }
+  if (plan.hotExtractionRatio < 8.5 && plan.methodFamily !== 'espresso' && plan.methodFamily !== 'moka_pot') {
+    adjustment.warnings.push('Rasio konsentrat panas sangat rapat; jaga agitasi agar iced tidak berat atau pahit.');
+    adjustment.bitterRiskDelta += 0.25;
+    adjustment.confidenceFloor = 'medium';
+  }
+
+  if (plan.waterClassification === 'high_buffer' || plan.waterClassification === 'alkaline_caution') {
+    adjustment.clarityDelta -= 0.15;
+    adjustment.warnings.push('Air berbuffer tinggi bisa membuat iced bright/floral terasa lebih muted.');
+  }
+
+  if (plan.grindSettingVerification === 'fallback' || plan.grindSettingMode === 'derived_baseline') {
+    adjustment.confidenceFloor = 'medium';
+  }
+
+  return adjustment;
+}
+
 function sensoryReason(prefix: string, entry?: { label: string; sensoryBias?: { acidity: number; sweetness: number; body: number; clarity: number; fermentIntensity: number; bitternessRisk: number; aromaVolatility: number } }) {
   if (!entry?.sensoryBias) return '';
   const bias = entry.sensoryBias;
@@ -191,6 +312,25 @@ export function buildExpectedCupProfile(
     }
   }
 
+  const icedAdjustment = deriveIcedCupAdjustment(plan);
+  if (
+    icedAdjustment.acidityDelta
+    || icedAdjustment.sweetnessDelta
+    || icedAdjustment.bodyDelta
+    || icedAdjustment.clarityDelta
+    || icedAdjustment.aromaDelta
+    || icedAdjustment.bitterRiskDelta
+  ) {
+    acidity += icedAdjustment.acidityDelta;
+    sweetness += icedAdjustment.sweetnessDelta;
+    body += icedAdjustment.bodyDelta;
+    clarity += icedAdjustment.clarityDelta;
+    aromaIntensity += icedAdjustment.aromaDelta;
+    bitterRisk += icedAdjustment.bitterRiskDelta;
+    reasons.push(...icedAdjustment.reasons);
+    warnings.push(...icedAdjustment.warnings);
+  }
+
   let confidence: ExpectedCupProfile['confidence'] = 'high';
   if (plan.waterClassification === 'high_buffer' || plan.waterClassification === 'alkaline_caution') {
     acidity -= 0.7;
@@ -229,6 +369,9 @@ export function buildExpectedCupProfile(
   if (plan.methodFamily === 'hario_switch' && plan.switchProvenance?.sensoryModelConfidence === 'medium' && confidence === 'high') {
     confidence = 'medium';
     warnings.push('Switch preset cup profile is a curated prediction, not a guaranteed result.');
+  }
+  if (icedAdjustment.confidenceFloor === 'medium' && confidence === 'high') {
+    confidence = 'medium';
   }
 
   return {

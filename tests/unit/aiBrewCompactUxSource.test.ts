@@ -9,6 +9,8 @@ test('AI Brew quick mode keeps Switch setup compact and single-source-of-truth',
   assert.match(SOURCE, /data-testid="ai-brew-switch-method-strip"/);
   assert.match(SOURCE, /data-testid="ai-brew-switch-preset-auto-inline"/);
   assert.match(SOURCE, /data-testid="ai-brew-switch-selected-size"/);
+  assert.match(SOURCE, /data-testid="ai-brew-switch-method-summary"/);
+  assert.match(SOURCE, /data-testid="ai-brew-switch-target-clarifier"/);
   assert.match(SOURCE, /data-testid="ai-brew-dose-shortcuts"/);
   assert.doesNotMatch(SOURCE, /data-testid=\{`ai-brew-switch-dose-/);
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-switch-preset-toggle"/);
@@ -89,6 +91,12 @@ test('AI Brew Indonesian release copy localizes critical trust and safety labels
     'Ekstraksi',
     'Panduan selesai',
     'Aduk es tidak menambah ekstraksi',
+    'Profil Target menyesuaikan rasa, bukan mengganti metode Switch',
+    'Auto memilih metode dari Profil Target, dosis, ukuran alat, dan batas aman',
+    'Metode manual tetap dipakai kalau aman',
+    'Manual',
+    'Hybrid es',
+    'MUGEN hybrid',
   ]) {
     assert.match(SOURCE, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }

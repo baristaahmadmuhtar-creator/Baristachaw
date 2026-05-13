@@ -185,10 +185,10 @@ function buildPouroverGuide(plan: BrewPlan): WorkflowGuideStep[] {
   const isIced = plan.brewMode === 'iced';
   const methodLower = plan.methodFamily.replace(/_/g, ' ');
   const prepText = plan.methodFamily === 'chemex'
-    ? 'Rinse the thick paper hard, preheat the glass, keep the three-layer side toward the spout, and leave the vent open.'
+    ? 'Bilas kertas tebal dengan rata, panaskan kaca, arahkan sisi tiga lapis ke spout, dan biarkan jalur udara terbuka.'
     : plan.methodFamily === 'kalita_wave' || plan.methodFamily === 'april' || plan.methodFamily === 'melitta'
-      ? 'Rinse/preheat, level the flat bed, and keep the brewer ready for low, even pulses.'
-      : 'Rinse the filter, preheat brewer/server, discard rinse water, tare the scale, then dose coffee.';
+      ? 'Bilas dan panaskan alat, ratakan bed flat, lalu siapkan pulse rendah yang merata.'
+      : 'Bilas filter, panaskan brewer/server, buang air bilas, tare timbangan, lalu masukkan kopi.';
   const guide: WorkflowGuideStep[] = [
     operationalStep({
       id: `guide_${plan.methodFamily}_setup`,
@@ -196,7 +196,7 @@ function buildPouroverGuide(plan: BrewPlan): WorkflowGuideStep[] {
       actionType: 'rinse_preheat',
       startSeconds: 0,
       primaryText: isIced
-        ? `${prepText} Put ${formatGrams(plan.iceMl)} ice in the server before brewing.`
+        ? `${prepText} Masukkan ${formatGrams(plan.iceMl)} es ke server sebelum seduh. Seduh target air panas saja; es adalah bypass terukur.`
         : prepText,
       techniqueChips: [
         chip('basket_prep', 'Prep', plan.methodFamily === 'chemex' ? 'thick filter + open vent' : `${methodLower} ready`),
@@ -232,12 +232,12 @@ function buildPouroverGuide(plan: BrewPlan): WorkflowGuideStep[] {
     id: `guide_${plan.methodFamily}_drawdown`,
     label: 'Drawdown',
     actionType: 'drawdown',
-    startSeconds: Math.max(last?.startSeconds || 0, plan.totalTimeSeconds - 20),
-    endSeconds: plan.totalTimeSeconds,
-    targetVolumeMl: plan.hotWaterMl,
-    primaryText: isIced
-      ? `Let drawdown finish over ice at ${formatMl(plan.hotWaterMl)} hot water; do not add bypass water.`
-      : 'Let drawdown finish naturally; avoid late wall rinsing or heavy swirl.',
+      startSeconds: Math.max(last?.startSeconds || 0, plan.totalTimeSeconds - 20),
+      endSeconds: plan.totalTimeSeconds,
+      targetVolumeMl: plan.hotWaterMl,
+      primaryText: isIced
+      ? `Biarkan air turun di atas es sampai target ${formatMl(plan.hotWaterMl)} air panas. Seduh target air panas saja; jangan tambah bypass air.`
+      : 'Biarkan air turun alami; hindari bilas dinding atau swirl berat di akhir.',
     techniqueChips: [
       chip('drawdown', 'Drawdown', formatTime(plan.totalTimeSeconds)),
       ...(isIced ? [chip('stop', 'Stop', `${formatMl(plan.hotWaterMl)} hot water`)] : []),
@@ -252,8 +252,8 @@ function buildPouroverGuide(plan: BrewPlan): WorkflowGuideStep[] {
     startSeconds: plan.totalTimeSeconds,
     targetVolumeMl: plan.hotWaterMl,
     primaryText: isIced
-      ? 'Stir the server 5-8 seconds so hot concentrate and ice melt integrate evenly, then serve.'
-      : 'Serve once the bed has drained cleanly.',
+      ? 'Aduk es 5-8 detik agar konsentrat panas rata. Aduk es tidak menambah ekstraksi; ini hanya finishing.'
+      : 'Sajikan setelah bed turun bersih.',
     techniqueChips: isIced ? [chip('mix_batch', 'Mix', 'stir 5-8s')] : [],
   }));
 
@@ -549,7 +549,9 @@ function buildHarioSwitchGuide(plan: BrewPlan): WorkflowGuideStep[] {
       label: 'Rinse, preheat, and set valve',
       actionType: 'rinse_preheat',
       startSeconds: 0,
-      primaryText: 'Rinse the V60 paper, preheat brewer/server, tare the scale, and set the Switch valve for the programme.',
+      primaryText: plan.brewMode === 'iced'
+        ? `Bilas kertas V60, panaskan brewer/server, tare timbangan, lalu masukkan ${formatGrams(plan.iceMl)} es ke server. Seduh target air panas saja; es adalah bypass terukur.`
+        : 'Bilas kertas V60, panaskan brewer/server, tare timbangan, lalu set katup Switch sesuai program.',
       techniqueChips: [
         chip('programme', 'Programme', formatSwitchProgramme(programme)),
         chip('valve', 'Valve', 'set before brewing'),
@@ -585,7 +587,9 @@ function buildHarioSwitchGuide(plan: BrewPlan): WorkflowGuideStep[] {
       actionType: 'serve',
       startSeconds: plan.totalTimeSeconds,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Serve after drawdown and record chamber timing for the next dial-in.',
+      primaryText: plan.brewMode === 'iced'
+        ? 'Aduk es 5-8 detik setelah air turun. Aduk es tidak menambah ekstraksi; catat waktu buka katup untuk dial-in berikutnya.'
+        : 'Sajikan setelah air turun dan catat timing muatan ruang untuk dial-in berikutnya.',
       techniqueChips: [
         chip('programme', 'Programme', formatSwitchProgramme(programme)),
         chip('chamber', 'Chamber', 'served'),

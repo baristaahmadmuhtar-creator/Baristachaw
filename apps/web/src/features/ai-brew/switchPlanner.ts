@@ -296,6 +296,16 @@ function chooseAutoPresetId(params: {
     .sort((a, b) => b.score - a.score)[0]?.presetId || 'hybrid_balanced';
 }
 
+export function resolveSwitchAutoMethodRecommendation(params: {
+  input: AiBrewFormState;
+  dripperId: string;
+  doseRow?: SwitchDoseMatrixRow;
+  targetProfile?: TargetProfile;
+  processEntry?: ProcessCatalogEntry;
+}) {
+  return chooseAutoPresetId(params);
+}
+
 function resolvePreset(params: {
   input: AiBrewFormState;
   catalog: AiBrewCatalog;
@@ -305,7 +315,7 @@ function resolvePreset(params: {
   processEntry?: ProcessCatalogEntry;
 }) {
   const explicitId = isTruthyString(params.input.switchPresetId) ? params.input.switchPresetId : '';
-  const candidateId = explicitId || chooseAutoPresetId(params);
+  const candidateId = explicitId || resolveSwitchAutoMethodRecommendation(params);
   const candidate = getCompatiblePreset(params.catalog, candidateId as SwitchPublicPresetId, params.dripperId);
   if (candidate) return candidate;
   return getCompatiblePreset(params.catalog, params.dripperId === 'mugen-x-switch' ? 'mugen_everyday_hybrid' : 'hybrid_balanced', params.dripperId)
@@ -463,7 +473,7 @@ function suggestedSafeSwitchPreset(params: {
   return 'hybrid_balanced' satisfies SwitchPublicPresetId;
 }
 
-export function resolveSwitchTasteProgramme(params: {
+type SwitchTargetTuningParams = {
   input: AiBrewFormState;
   preset: SwitchPublicPreset;
   doseRow?: SwitchDoseMatrixRow;
@@ -473,7 +483,9 @@ export function resolveSwitchTasteProgramme(params: {
   doseG: number;
   waterClassification?: WaterClassification;
   grinderVerification?: VerificationLevel;
-}): SwitchTasteProgrammePlan {
+};
+
+export function deriveSwitchTargetTuning(params: SwitchTargetTuningParams): SwitchTasteProgrammePlan {
   const { input, preset, doseRow, dripperId, targetProfile, processEntry, doseG } = params;
   const intent = resolveSwitchTasteIntent(targetProfile);
   const hotReferenceMl = Math.max(60, referenceHotWaterMl({ input, doseG, row: doseRow }));
@@ -604,6 +616,12 @@ export function resolveSwitchTasteProgramme(params: {
     riskWarnings,
     suggestedPresetId,
   };
+}
+
+export function resolveSwitchTasteProgramme(params: SwitchTargetTuningParams): SwitchTasteProgrammePlan {
+  // Compatibility wrapper: the selected Switch method remains the method.
+  // Target rasa only tunes bloom, valve timing, flow, path, and agitation inside that method.
+  return deriveSwitchTargetTuning(params);
 }
 
 function step(params: BrewTemplateStep): BrewTemplateStep {
@@ -1034,7 +1052,7 @@ export function resolveSwitchPlanSelection(params: {
     processEntry,
   });
   if (!preset) return null;
-  let tasteProgramme = resolveSwitchTasteProgramme({
+  let tasteProgramme = deriveSwitchTargetTuning({
     input,
     preset,
     doseRow,
@@ -1050,7 +1068,7 @@ export function resolveSwitchPlanSelection(params: {
     const safePreset = getCompatiblePreset(catalog, tasteProgramme.suggestedPresetId, dripper.id);
     if (safePreset && !doseRow?.blockedPresetIds.includes(safePreset.id)) {
       preset = safePreset;
-      tasteProgramme = resolveSwitchTasteProgramme({
+      tasteProgramme = deriveSwitchTargetTuning({
         input,
         preset,
         doseRow,

@@ -208,10 +208,15 @@ export interface SwitchPublicPreset {
   proOnly: boolean;
   mugenOnly?: boolean;
   defaultUse: string;
+  defaultUseId?: string;
   cupShape: string;
+  cupShapeId?: string;
   bestFor: string[];
+  bestForId?: string[];
   easiestMistake: string;
+  easiestMistakeId?: string;
   whenNotToUse: string;
+  whenNotToUseId?: string;
   safeSizeCompatibility: string[];
   compatibleDripperIds: string[];
   preferredDripperIds?: string[];
@@ -221,7 +226,9 @@ export interface SwitchPublicPreset {
   internalProgrammes: SwitchBrewProgramme[];
   expectedCupShift: SwitchExpectedCupShift;
   why: string;
+  whyId?: string;
   watch: string;
+  watchId?: string;
   provenance: SwitchProgrammeProvenance;
 }
 

@@ -153,9 +153,9 @@ async function expectCanonicalSequencePrefixes(sequenceNote: Locator) {
     } else {
       const actionType = 'actionType' in step ? String(step.actionType) : '';
       const actionPattern = kind === 'release' || actionType === 'release'
-        ? /Lepas|Release/i
+        ? /Lepas|Buka katup|Release/i
         : kind === 'drawdown' || actionType === 'drawdown'
-          ? /Drawdown/i
+          ? /Air turun|Drawdown/i
           : actionType === 'setup' || actionType === 'rinse_preheat'
             ? /Setup|Prep|Bilas|Rinse/i
             : /Tahan|Wait|Aksi|Action|Serve|Sajikan/i;
@@ -199,8 +199,8 @@ async function clickTargetProfile(
   }
 
   const labelPattern = label === 'More Body'
-    ? /^(More Body|Body Lebih Tebal)\b/i
-    : /^(More Acidity|Lebih Cerah)\b/i;
+    ? /(?:More Body|Body Lebih Tebal)\b/i
+    : /(?:More Acidity|Lebih Cerah)\b/i;
 
   await page
     .getByTestId(`ai-brew-builder-${activeMode}`)

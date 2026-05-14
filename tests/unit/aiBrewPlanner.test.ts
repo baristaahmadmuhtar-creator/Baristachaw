@@ -57,7 +57,10 @@ import {
 import { resolveBrewerProfileTrustStatus } from '../../apps/web/src/features/ai-brew/catalogTrust.ts';
 import { sanitizeBrewNarrative, validateBrewPlanOutput } from '../../apps/web/src/features/ai-brew/antiHallucination.ts';
 import { sanitizeAiCoachMarkdown } from '../../apps/web/src/features/ai-brew/coachGuard.ts';
-import { localizeAiBrewDynamicText } from '../../apps/web/src/features/ai-brew/localization.ts';
+import {
+  localizeAiBrewDynamicText,
+  localizeAiBrewStepLabel,
+} from '../../apps/web/src/features/ai-brew/localization.ts';
 import {
   buildAiBrewTasteLoopMarkdown,
   buildTasteFeedbackCorrection,
@@ -4982,7 +4985,7 @@ test('AI Brew experience layer exposes bean-safe reasoning, confidence labels, a
   assert.doesNotMatch(sourLoop, /ubah rasio|ubah dosis/i);
 
   const priorities = resolveAiBrewActionPriorities(plan, 'id').join(' ');
-  assert.match(priorities, /output utama/i);
+  assert.match(priorities, /angka utama|output utama/i);
   assert.match(priorities, /flow time|air turun|drawdown/i);
   assert.match(priorities, /grind|giling|halus|kasar/i);
   assert.match(priorities, /satu variabel/i);
@@ -7555,7 +7558,7 @@ test('origin-target-method calibration makes origin cues react differently acros
 });
 
 test('Indonesian critical AI Brew trust copy stays localized and honest', () => {
-  const localizedLeakPattern = /\b(Known bean|Partial bean|Unknown bean|Risk bean|Blocked \/ unsafe|safe baseline|taste feedback|confidence|warning|caution|valve closed|valve open|chamber load|Closed chamber|not guarantee|curated prediction)\b/i;
+  const localizedLeakPattern = /\b(Known bean|Partial bean|Unknown bean|Risk bean|Blocked \/ unsafe|safe baseline|taste feedback|confidence|warning|caution|valve closed|valve open|chamber load|Closed chamber|not guarantee|curated prediction|Additional details|Brew Guide|Expected cup|Safety|Release|Drawdown|Blocked|Manual Required|High Buffer|Zero Mineral|Taste feedback required|Extraction complete|Next step|Finishing action|Serve step|Stir server|Target profile|Water source|Grinder source|Brewer profile|Fallback grinder|Risk caution|Ready|Official|Curated|Estimated|Not available|No data|Unknown)\b/i;
   const localizedCatalog = buildProductionAiBrewCatalogForTests();
   const base = {
     ...createDefaultAiBrewFormState(localizedCatalog),
@@ -7593,8 +7596,8 @@ test('Indonesian critical AI Brew trust copy stays localized and honest', () => 
   }, localizedCatalog);
   assert.ok(known.beanCoverage?.category === 'known_high' || known.beanCoverage?.category === 'partial_medium');
   const badgeText = resolveAiBrewConfidenceBadges(known, 'id').map((badge) => badge.label).join(' ');
-  assert.match(badgeText, /Siap|Grinder resmi|Grinder kurasi|Profil alat exact|Template turunan|Fallback family/i);
-  assert.doesNotMatch(badgeText, /\bReady|Device Exact|Grinder Official|Grinder Curated|Grinder Estimated|High Buffer|Manual Required\b/i);
+  assert.match(badgeText, /Siap|Grinder resmi|Grinder kurasi|Profil alat tepat|Template turunan|Profil keluarga alat/i);
+  assert.doesNotMatch(badgeText, /\bReady|Device Exact|Grinder Official|Grinder Curated|Grinder Estimated|High Buffer|Manual Required|Family Fallback\b/i);
 
   const switchUnsafe = buildAiBrewPlan({
     ...base,
@@ -7625,6 +7628,39 @@ test('Indonesian critical AI Brew trust copy stays localized and honest', () => 
   const correctionCopy = `${correction.primaryCorrection} ${correction.backupCorrection} ${correction.guardrail}`;
   assert.match(correctionCopy, /ubah satu variabel|jangan ubah rasio\/dosis|rasa/i);
   assert.doesNotMatch(correctionCopy, localizedLeakPattern);
+
+  const dynamicSamples = [
+    'Additional details',
+    'Brew Guide',
+    'Expected cup',
+    'Confidence',
+    'Safety',
+    'Release over ice',
+    'Drawdown',
+    'Manual Required',
+    'High Buffer',
+    'Zero Mineral',
+    'Taste feedback required',
+    'Extraction complete. Next step is finishing.',
+    'Fallback grinder lowers confidence; validate with drawdown and taste.',
+    'Water source: manual mineral entry.',
+    'Grinder source: curated baseline.',
+    'Brewer profile source: family fallback.',
+  ].map((item) => localizeAiBrewDynamicText(item, 'id')).join(' ');
+  assert.match(dynamicSamples, /Detail tambahan|Panduan Seduh|Prediksi rasa|Keyakinan|Keamanan|Buka katup di atas es|Air turun|Perlu manual|Buffer tinggi|Nol mineral|Perlu cek rasa/i);
+  assert.doesNotMatch(dynamicSamples, localizedLeakPattern);
+
+  const localizedStepLabels = [
+    'Release over ice',
+    'Drawdown',
+    'Stop before hiss',
+    'Press gently',
+    'Rinse and preheat',
+    'Stir or swirl',
+    'Decant',
+  ].map((item) => localizeAiBrewStepLabel(item, 'id')).join(' ');
+  assert.match(localizedStepLabels, /Buka katup di atas es|Air turun|Berhenti sebelum hiss|Tekan|Bilas|Aduk|Tuang pisah/i);
+  assert.doesNotMatch(localizedStepLabels, localizedLeakPattern);
 });
 
 test('water chemistry extremes push AI Brew in opposite extraction directions', () => {

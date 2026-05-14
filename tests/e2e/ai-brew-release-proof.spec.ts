@@ -122,7 +122,7 @@ async function generatePlan(page: Page) {
 }
 
 async function closeResult(page: Page) {
-  const close = page.getByRole('button', { name: /Tutup output plan|Close planned output/i });
+  const close = page.getByRole('button', { name: /Tutup hasil|Tutup output plan|Close planned output/i });
   if (await close.count()) {
     await close.click();
     await expect(page.getByTestId('ai-brew-result')).toHaveCount(0);

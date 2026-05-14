@@ -758,9 +758,9 @@ const COPY = {
     grindCommunityReference: 'Referensi komunitas',
     grindEstimatedBaseline: 'Baseline estimasi',
     grindCalibrationNote: 'Setting grinder bergantung pada titik nol burr, kalibrasi, sangrai, dan dosis. Mulai dari sini, lalu koreksi dari air turun dan rasa.',
-    grindFallback: 'Fallback grind',
-    profileExactStatus: 'Profil alat exact',
-    profileFallbackStatus: 'Profil fallback family',
+    grindFallback: 'Baseline gilingan',
+    profileExactStatus: 'Profil alat tepat',
+    profileFallbackStatus: 'Profil keluarga alat',
     processOptionalNote: 'Proses opsional. Tidak ada modifier proses otomatis yang dipakai.',
     varietyOptionalNote: 'Varietas opsional. Tidak ada modifier varietas otomatis yang dipakai.',
     profileTitle: 'Profil Target',
@@ -832,7 +832,7 @@ const COPY = {
     reset: 'Reset',
     recent: 'Seduhan Terbaru',
     favorites: 'Favorit',
-    latestPlan: 'Hasil Plan',
+    latestPlan: 'Hasil rencana',
     openPlan: 'Buka hasil',
     emptyRecent: 'Buat satu seduhan untuk mulai jurnal lokal.',
     emptyFavorites: 'Tandai favorit agar resep muncul di sini.',
@@ -870,9 +870,9 @@ const COPY = {
     standards: 'Standar',
     provenance: 'Sumber Data',
     confidence: 'Keyakinan',
-    exactProfile: 'Profil exact',
+    exactProfile: 'Profil tepat',
     derivedTemplateProfile: 'Profil turunan template',
-    fallbackProfile: 'Fallback family',
+    fallbackProfile: 'Profil keluarga alat',
     useInTimer: 'Pakai di Timer',
     useInRatio: 'Pakai di Ratio',
     save: 'Simpan',
@@ -891,19 +891,19 @@ const COPY = {
     aiGenerateBrief: 'Asisten AI',
     aiSequenceGuide: 'Catatan AI',
     aiGenerateLoading: 'Memperbarui catatan singkat...',
-    aiEngineReady: 'AI Assist belum dipakai',
+    aiEngineReady: 'Asisten AI belum dipakai',
     aiEngineStrictReady: 'AI + Tervalidasi Planner',
-    aiEngineStrictRequired: 'AI Assist belum tersedia',
+    aiEngineStrictRequired: 'Asisten AI belum tersedia',
     aiEngineProviderStack: '',
-    aiFallbackDisabledByAdmin: 'AI hanya dipakai saat kamu menekan tombol AI Assist.',
+    aiFallbackDisabledByAdmin: 'AI hanya dipakai saat kamu menekan tombol asisten.',
     aiEngineOnlineOptimized: 'AI + Tervalidasi Planner',
     aiEngineLocalValidated: 'Planner Lokal',
     aiEnginePrecisionPlanner: 'Planner Presisi',
-    aiEngineWorkingOnline: 'AI Assist bekerja...',
+    aiEngineWorkingOnline: 'Asisten AI bekerja...',
     aiEngineWorkingLocal: 'Planner Lokal',
-    aiPrecisionAssistNote: 'AI hanya dipakai saat kamu menekan tombol AI Assist.',
-    aiAssistNotUsed: 'AI Assist belum dipakai',
-    aiAssistActive: 'AI Assist aktif',
+    aiPrecisionAssistNote: 'AI hanya dipakai saat kamu menekan tombol asisten.',
+    aiAssistNotUsed: 'Asisten AI belum dipakai',
+    aiAssistActive: 'Asisten AI aktif',
     aiAssistUsedExplanation: 'AI dipakai untuk penjelasan',
     aiAssistUsedTasteFix: 'AI dipakai untuk perbaikan rasa',
     aiAssistUsedRewrite: 'Panduan dibuat lebih ramah oleh AI',
@@ -914,7 +914,7 @@ const COPY = {
     updateNotes: 'Perbarui Catatan',
     updatingNotes: 'Memperbarui Catatan',
     aiNotesManualHint: 'Pakai AI hanya saat perlu.',
-    aiNotesUpdated: 'AI Notes diperbarui.',
+    aiNotesUpdated: 'Catatan AI diperbarui.',
     finisherCard: 'Finalisasi Ekstraksi',
     finisherReasoning: 'Bacaan Akhir',
     finisherControlPoints: 'Perhatikan',
@@ -929,8 +929,8 @@ const COPY = {
     finisherTasteThin: 'Tipis',
     finisherRefresh: 'Muat ulang AI',
     aiBusy: 'Menulis catatan singkat...',
-    aiOffline: 'AI coach tidak tersedia saat offline.',
-    aiGuest: 'Masuk dulu untuk memakai AI coach pada brew plan ini.',
+    aiOffline: 'Panduan AI tidak tersedia saat offline.',
+    aiGuest: 'Masuk dulu untuk memakai Panduan AI pada plan ini.',
     load: 'Muat',
     pickerSearch: 'Cari katalog...',
     pickerSearchLabel: 'Cari katalog',
@@ -944,12 +944,12 @@ const COPY = {
     pickerCategorySpecial: 'Khusus',
     pickerCategorySpeciesVariety: 'Spesies / varietas',
     noPickerResults: 'Tidak ada entri katalog yang cocok.',
-    generated: 'Brew plan tersimpan ke history lokal.',
-    generatedAi: 'Brew plan tersimpan. Optimasi AI diterapkan.',
-    generatedLocal: 'Brew plan tersimpan dengan planner lokal.',
+    generated: 'Rencana seduh tersimpan ke riwayat lokal.',
+    generatedAi: 'Rencana seduh tersimpan. Optimasi AI diterapkan.',
+    generatedLocal: 'Rencana seduh tersimpan dengan planner lokal.',
     aiOptimizationNoChange: 'Saran AI tidak dipakai. Planner mempertahankan resep yang lebih aman.',
-    savedCollection: 'Recipe tersimpan ke Collection.',
-    saveCollectionFailed: 'Recipe ini belum bisa disimpan ke Collection sekarang.',
+    savedCollection: 'Resep tersimpan ke koleksi.',
+    saveCollectionFailed: 'Resep ini belum bisa disimpan ke koleksi sekarang.',
     savedFavorite: 'Masuk ke favorit.',
     removedFavorite: 'Dihapus dari favorit.',
     feedbackTitle: 'Cek rasa',
@@ -958,7 +958,7 @@ const COPY = {
     feedbackSour: 'Terlalu asam',
     feedbackBitter: 'Terlalu pahit',
     feedbackThin: 'Terlalu tipis',
-    feedbackFlat: 'Flat / muted',
+    feedbackFlat: 'Datar / tertahan',
     feedbackMuddy: 'Keruh / berat',
     feedbackAstringent: 'Sepat',
     feedbackNote: 'Catatan singkat',
@@ -1048,23 +1048,23 @@ const COPY = {
     fruitForward: 'Buah Lebih Menonjol',
     softRound: 'Lembut & Bulat',
     denseComforting: 'Tebal & Nyaman',
-    openResult: 'Buka workspace hasil',
+    openResult: 'Buka hasil',
     editInputs: 'Edit input',
-    closeResult: 'Tutup output plan',
+    closeResult: 'Tutup hasil',
     manualEntry: 'Lainnya / Manual',
     notSpecified: 'Belum ditentukan',
-    exactMatch: 'Cocok exact',
-    fallbackUsed: 'Fallback dipakai',
+    exactMatch: 'Cocok tepat',
+    fallbackUsed: 'Baseline pengganti dipakai',
     verifiedOfficial: 'Resmi',
     verifiedCommunity: 'Komunitas',
     verifiedCurated: 'Kurasi',
     verifiedDataset: 'Dataset',
-    verifiedFallback: 'Fallback',
+    verifiedFallback: 'Baseline',
     lowConfidence: 'Keyakinan rendah',
     reviewFresh: 'Data katalog',
     reviewNeedsReview: 'Butuh verifikasi',
     reviewConflicting: 'Data konflik',
-    reviewDeprecated: 'Deprecated',
+    reviewDeprecated: 'Tidak dipakai lagi',
     highVariability: 'Variabilitas tinggi',
     autoTargetSuggested: 'Target otomatis disarankan',
     species: 'Spesies',
@@ -1077,7 +1077,7 @@ const COPY = {
     processGroup: 'Keluarga proses',
     varietyGroup: 'Keluarga varietas',
     profileUsed: 'Profil yang dipakai',
-    grindSource: 'Sumber setting grind',
+    grindSource: 'Sumber setting gilingan',
     grindCatalogReference: 'Referensi katalog',
     grindDerivedBaseline: 'Baseline turunan',
     confidenceNotes: 'Catatan keyakinan',
@@ -1115,12 +1115,12 @@ const COPY = {
     flowNow: 'Sekarang',
     flowUpNext: 'Berikutnya',
     coachDescription: 'AI opsional. Pakai hanya untuk penjelasan atau koreksi rasa singkat.',
-    coachCostHint: 'AI Assist hanya berjalan saat kamu menekan salah satu aksi ini.',
-    coachEmpty: 'Pilih satu brief.',
+    coachCostHint: 'Asisten AI hanya berjalan saat kamu menekan salah satu aksi ini.',
+    coachEmpty: 'Pilih satu arahan.',
     coachExplainHint: 'Mengapa plan ini cocok dengan bean, air, dan target.',
     coachTroubleshootHint: 'Apa yang paling dulu diubah saat rasa mulai meleset.',
     coachAdjustHint: 'Cara mendorong cangkir jadi lebih cerah, manis, atau rapat.',
-    coachFallback: 'Layer AI tambahan dialihkan ke flow tervalidasi agar recipe tetap aman dan stabil.',
+    coachFallback: 'Lapisan AI tambahan dialihkan ke alur tervalidasi agar resep tetap aman dan stabil.',
     waterSourceUsed: 'Sumber air yang dipakai',
     waterSourceLinks: 'Tautan sumber',
     waterRecommended: 'Cocok untuk filter',
@@ -1128,9 +1128,9 @@ const COPY = {
     waterRegion: 'Wilayah air',
     waterSearch: 'Cari air',
     waterSearchPlaceholder: 'Ketik nama brand air...',
-    waterPublishedOnly: 'Published + siap brew',
+    waterPublishedOnly: 'Tersedia + siap seduh',
     waterManualOnly: 'Perlu mineral manual',
-    waterNoPublishedMatches: 'Belum ada hasil published brew-ready untuk region ini.',
+    waterNoPublishedMatches: 'Belum ada hasil siap seduh untuk wilayah ini.',
     waterNoReviewMatches: 'Belum ada brand yang cocok di region ini.',
     waterUseManual: 'Isi mineral manual',
     waterClassification: 'Klasifikasi air',
@@ -1719,7 +1719,27 @@ function localizeAiBrewMarkdownLanguage(markdown: string, language: string) {
         .replace(/\bService Pattern\b/gi, 'Pola seduh')
         .replace(/\bSequence\b/gi, 'Urutan seduh')
         .replace(/\bControl Points\b/gi, 'Titik kontrol')
-        .replace(/\bQuick Dial\b/gi, 'Setelan cepat');
+        .replace(/\bQuick Dial\b/gi, 'Setelan cepat')
+        .replace(/\bAdditional details\b/gi, 'Detail tambahan')
+        .replace(/\bBrew Guide\b/gi, 'Panduan Seduh')
+        .replace(/\bExpected cup\b/gi, 'Prediksi rasa')
+        .replace(/\bConfidence\b/gi, 'Keyakinan')
+        .replace(/\bSafety\b/gi, 'Keamanan')
+        .replace(/\bRelease over ice\b/gi, 'Buka katup di atas es')
+        .replace(/\bRelease\b/gi, 'Buka katup')
+        .replace(/\bDrawdown\b/gi, 'Air turun')
+        .replace(/\bBlocked\b/gi, 'Diblokir')
+        .replace(/\bUnknown fallback\b/gi, 'Fallback aman')
+        .replace(/\bKnown high\b/gi, 'Data lengkap')
+        .replace(/\bPartial medium\b/gi, 'Data sebagian')
+        .replace(/\bManual Required\b/gi, 'Perlu manual')
+        .replace(/\bHigh Buffer\b/gi, 'Buffer tinggi')
+        .replace(/\bZero Mineral\b/gi, 'Nol mineral')
+        .replace(/\bTaste feedback required\b/gi, 'Perlu cek rasa')
+        .replace(/\bTarget profile\b/gi, 'Profil target')
+        .replace(/\bWater source\b/gi, 'Sumber air')
+        .replace(/\bGrinder source\b/gi, 'Sumber grinder')
+        .replace(/\bBrewer profile\b/gi, 'Profil alat');
       return `${prefix}${localizedBody}`;
     })
     .join('\n');
@@ -1730,6 +1750,7 @@ function hasAiBrewLanguageLeak(markdown: string, language: string) {
   return [
     /^#{2,3}\s+(Service Pattern|Sequence|Watch|Quick Dial|Control Points|Why It Fits|Focus|Steps)\b/im,
     /\b(Starting grind|Correction range|If sour\/thin|If bitter\/dry\/stalled|Estimated cup output|Brew time|Hot water|Ice in server)\b/i,
+    /\b(Additional details|Brew Guide|Expected cup|Confidence|Safety|Release|Drawdown|Blocked|Unknown fallback|Known high|Partial medium|Manual Required|High Buffer|Zero Mineral|Taste feedback required)\b/i,
     /\b(Answer|Analysis|Recommendation|Trade-off|What to watch)\b/i,
   ].some((pattern) => pattern.test(markdown));
 }
@@ -2365,14 +2386,14 @@ function localizeWorkflowChipValue(value: string, language: string) {
     .replace(/center_to_mid/g, 'tengah-ke-mid')
     .replace(/flat_center/g, 'flat-center')
     .replace(/compact_spiral/g, 'spiral ringkas')
-    .replace(/immersion_charge/g, 'charge immersion')
+    .replace(/immersion_charge/g, 'isi air rendaman')
     .replace(/heat_control/g, 'kontrol panas')
-    .replace(/machine_flow/g, 'flow mesin')
+    .replace(/machine_flow/g, 'aliran mesin')
     .replace(/closed/g, 'tertutup')
     .replace(/open/g, 'terbuka')
-    .replace(/bloom then immersion/g, 'bloom lalu immersion')
-    .replace(/immersion then percolation/g, 'immersion lalu perkolasi')
-    .replace(/percolation then immersion/g, 'perkolasi lalu immersion')
+    .replace(/bloom then immersion/g, 'bloom lalu rendam')
+    .replace(/immersion then percolation/g, 'rendam lalu perkolasi')
+    .replace(/percolation then immersion/g, 'perkolasi lalu rendam')
     .replace(/temperature shift hybrid/g, 'hybrid suhu bertahap')
     .replace(/competition hybrid/g, 'hybrid kompetisi')
     .replace(/\blow\b/g, 'rendah')
@@ -2387,6 +2408,11 @@ function localizeWorkflowChipValue(value: string, language: string) {
     .replace(/after filtration/g, 'setelah filtrasi')
     .replace(/before service/g, 'sebelum sajikan')
     .replace(/open cleanly/g, 'buka bersih')
+    .replace(/hot water/g, 'air panas')
+    .replace(/stir/g, 'aduk')
+    .replace(/serve/g, 'sajikan')
+    .replace(/release/g, 'buka katup')
+    .replace(/drawdown/g, 'air turun')
     .replace(/all grounds/g, 'semua bubuk');
 }
 
@@ -2523,11 +2549,11 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
       return 'Pantau aliran; jaga tetap stabil dan berhenti sesuai cue.';
     case 'extract':
       return plan?.methodFamily === 'espresso'
-        ? `Mulai shot dan ekstrak sampai yield ${formatRoundedMl(plan.totalWaterMl)}.`
+        ? `Mulai shot dan ekstrak sampai hasil ${formatRoundedMl(plan.totalWaterMl)}.`
         : `Ekstrak sampai target ${target}.`;
     case 'stop':
       if (plan?.methodFamily === 'moka_pot') return 'Angkat sebelum sputter kasar atau rasa rebus muncul.';
-      if (plan?.methodFamily === 'espresso') return `Berhenti di yield ${formatRoundedMl(plan.totalWaterMl)} sesuai window shot.`;
+      if (plan?.methodFamily === 'espresso') return `Berhenti di hasil ${formatRoundedMl(plan.totalWaterMl)} sesuai window shot.`;
       return 'Berhenti sesuai cue metode; jangan paksa fase akhir.';
     case 'settle':
       return 'Pecah kerak atau skim pelan, lalu biarkan partikel halus mengendap.';
@@ -2565,9 +2591,9 @@ function formatAiBrewStepBadge(step: AiBrewDisplayStep, language: string) {
       case 'heat':
         return id ? 'Panas' : 'Heat';
       case 'monitor_flow':
-        return 'Flow';
+        return id ? 'Aliran' : 'Flow';
       case 'stop':
-        return 'Stop';
+        return id ? 'Berhenti' : 'Stop';
       case 'decant':
         return id ? 'Pindah' : 'Decant';
       case 'filter':
@@ -2616,7 +2642,7 @@ function buildAiBrewStepActionText(step: AiBrewDisplayStep, language: string, pl
   }
   if (kind === 'extract') {
     return isIndonesianAiBrewLanguage(language)
-      ? `Ekstrak hingga yield target ${formatRoundedMl(step.targetVolumeMl)}.`
+      ? `Ekstrak hingga hasil target ${formatRoundedMl(step.targetVolumeMl)}.`
       : `Extract to target yield ${formatRoundedMl(step.targetVolumeMl)}.`;
   }
   if (kind === 'serve') {
@@ -2663,7 +2689,7 @@ function buildAiBrewFlowStepSummary(step: AiBrewDisplayStep, language: string, p
   }
   if (kind === 'extract') {
     return id
-      ? `${formatGuideTime(step.startSeconds)} | ekstrak | yield ${formatRoundedMl(step.targetVolumeMl)}`
+      ? `${formatGuideTime(step.startSeconds)} | ekstrak | hasil ${formatRoundedMl(step.targetVolumeMl)}`
       : `${formatGuideTime(step.startSeconds)} | extract | yield ${formatRoundedMl(step.targetVolumeMl)}`;
   }
   if (kind === 'serve') {
@@ -2728,7 +2754,7 @@ function buildAiBrewStepTargetCue(step: AiBrewDisplayStep, language: string, pla
   }
   if (kind === 'extract') {
     return isIndonesianAiBrewLanguage(language)
-      ? `Yield target ${formatRoundedMl(step.targetVolumeMl)}`
+      ? `Target hasil ${formatRoundedMl(step.targetVolumeMl)}`
       : `Target yield ${formatRoundedMl(step.targetVolumeMl)}`;
   }
   if (kind === 'press' || kind === 'heat' || kind === 'serve') {
@@ -2790,33 +2816,33 @@ function buildAiBrewStepMethodFocusCue(
 
   switch (plan.methodFamily) {
     case 'espresso':
-      if (kind === 'extract') return id ? 'Fokus: mulai shot, baca flow, dan stop hanya saat yield target tercapai.' : 'Focus: start the shot, read flow, and stop only when target yield lands.';
-      return id ? 'Fokus: pisahkan espresso di target yield; jangan tambah volume setelah shot selesai.' : 'Focus: separate espresso at target yield; do not add volume after the shot.';
+      if (kind === 'extract') return id ? 'Fokus: mulai shot, baca aliran, dan berhenti hanya saat target hasil tercapai.' : 'Focus: start the shot, read flow, and stop only when target yield lands.';
+      return id ? 'Fokus: pisahkan espresso di target hasil; jangan tambah volume setelah shot selesai.' : 'Focus: separate espresso at target yield; do not add volume after the shot.';
     case 'moka_pot':
       if (kind === 'heat') return id ? 'Fokus: panas moderat. Angkat sebelum sputter kasar atau rasa rebus muncul.' : 'Focus: moderate heat. Remove before harsh sputtering or boiled flavor appears.';
-      return id ? 'Fokus: basket tetap loose, base di bawah safety valve, dan serve saat target tercapai.' : 'Focus: keep basket loose, base below safety valve, and serve when target lands.';
+      return id ? 'Fokus: basket tetap longgar, base di bawah katup aman, dan sajikan saat target tercapai.' : 'Focus: keep basket loose, base below safety valve, and serve when target lands.';
     case 'cold_brew':
       if (kind === 'wait') return id ? 'Fokus: steep stabil. Jangan tambah agitasi saat semua bed sudah basah.' : 'Focus: stable steep. Do not add agitation once the whole bed is wet.';
-      if (kind === 'serve') return id ? 'Fokus: filter/decant bersih agar ekstraksi berhenti.' : 'Focus: filter/decant cleanly so extraction stops.';
+      if (kind === 'serve') return id ? 'Fokus: saring/tuang pisah bersih agar ekstraksi berhenti.' : 'Focus: filter/decant cleanly so extraction stops.';
       return id ? 'Fokus: hilangkan dry pocket sebelum steep panjang dimulai.' : 'Focus: remove dry pockets before the long steep starts.';
     case 'batch_brew':
       if (kind === 'drawdown' || kind === 'serve') return id ? 'Fokus: tunggu air turun selesai, lalu aduk batch sebelum cicip.' : 'Focus: wait for drawdown, then mix the batch before tasting.';
       return id ? 'Fokus: bed basket rata dan siklus mesin tidak diganggu.' : 'Focus: level basket bed and keep the machine cycle undisturbed.';
     case 'french_press':
-      if (kind === 'press' || kind === 'serve') return id ? 'Fokus: press pelan lalu decant supaya fines berhenti mengekstrak.' : 'Focus: press slowly, then decant so fines stop extracting.';
-      return id ? 'Fokus: immersion tenang. Jangan aduk agresif menjelang akhir.' : 'Focus: calm immersion. Avoid aggressive stirring near the end.';
+      if (kind === 'press' || kind === 'serve') return id ? 'Fokus: tekan pelan lalu tuang pisah supaya fines berhenti mengekstrak.' : 'Focus: press slowly, then decant so fines stop extracting.';
+      return id ? 'Fokus: rendaman tenang. Jangan aduk agresif menjelang akhir.' : 'Focus: calm immersion. Avoid aggressive stirring near the end.';
     case 'aeropress':
-      if (kind === 'press') return id ? 'Fokus: press stabil; berhenti sebelum hiss terakhir terasa dipaksa.' : 'Focus: steady press; stop before the final hiss feels forced.';
+      if (kind === 'press') return id ? 'Fokus: tekan stabil; berhenti sebelum hiss terakhir terasa dipaksa.' : 'Focus: steady press; stop before the final hiss feels forced.';
       return id ? 'Fokus: chamber basah rata dan steep tetap pendek.' : 'Focus: evenly wet chamber and keep the steep compact.';
     case 'siphon':
-      if (kind === 'heat') return id ? 'Fokus: heat stabil sampai vacuum bekerja, bukan boiling agresif.' : 'Focus: stable heat until vacuum works, not aggressive boiling.';
+      if (kind === 'heat') return id ? 'Fokus: panas stabil sampai vacuum bekerja, bukan boiling agresif.' : 'Focus: stable heat until vacuum works, not aggressive boiling.';
       if (kind === 'drawdown' || kind === 'serve') return id ? 'Fokus: matikan panas dan biarkan air turun selesai tanpa agitasi tambahan.' : 'Focus: cut heat and let drawdown finish without extra agitation.';
       return id ? 'Fokus: agitasi singkat saat upper chamber aktif.' : 'Focus: brief agitation while the upper chamber is active.';
     case 'clever_dripper':
       if (kind === 'release' || kind === 'drawdown') return id ? 'Fokus: buka katup bersih dan jangan aduk saat air turun.' : 'Focus: clean release and no stirring during drawdown.';
-      return id ? 'Fokus: contact time stabil; immersion jangan terlalu gelisah.' : 'Focus: stable contact time; keep immersion calm.';
+      return id ? 'Fokus: waktu kontak stabil; rendaman jangan terlalu gelisah.' : 'Focus: stable contact time; keep immersion calm.';
     case 'chemex':
-      return id ? 'Fokus: flow stabil dan hindari bypass dinding filter tebal.' : 'Focus: stable flow and avoid thick-filter wall bypass.';
+      return id ? 'Fokus: aliran stabil dan hindari bypass dinding filter tebal.' : 'Focus: stable flow and avoid thick-filter wall bypass.';
     case 'kalita_wave':
     case 'april':
     case 'melitta':
@@ -4900,7 +4926,7 @@ function PlanResultDialog({
                               ? 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300'
                               : 'border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
                         }`}>
-                          {switchSafetyMessage}
+                          {localizeAiBrewDynamicText(switchSafetyMessage, language)}
                         </span>
                       )}
                     </div>

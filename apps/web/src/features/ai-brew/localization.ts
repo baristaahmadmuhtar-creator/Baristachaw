@@ -92,6 +92,18 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
   switch (label.trim().toLowerCase()) {
     case 'bloom':
       return 'Bloom';
+    case 'preheat':
+      return 'Panaskan alat';
+    case 'rinse and preheat':
+      return 'Bilas & panaskan';
+    case 'setup':
+      return 'Setup';
+    case 'charge water':
+      return 'Isi air';
+    case 'stir':
+      return 'Aduk';
+    case 'stir or swirl':
+      return 'Aduk / putar';
     case 'main pour':
       return 'Tuang Utama';
     case 'center pour':
@@ -126,7 +138,10 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
     case 'steep':
       return 'Steep';
     case 'press':
+    case 'press gently':
       return 'Tekan';
+    case 'stop before hiss':
+      return 'Berhenti sebelum hiss';
     case 'release':
     case 'release checkpoint':
       return 'Buka katup';
@@ -142,10 +157,16 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
       return 'Ekstraksi';
     case 'serve':
       return 'Sajikan';
+    case 'decant':
+      return 'Tuang pisah';
+    case 'dilute':
+      return 'Dilusi';
+    case 'settle':
+      return 'Endapkan';
     case 'filter':
-      return 'Filter';
+      return 'Saring';
     case 'stop':
-      return 'Stop';
+      return 'Berhenti';
     default:
       return label;
   }
@@ -202,6 +223,64 @@ function localizeBeanProfileSummary(text: string) {
     .replace(/\bmedium\b/gi, 'sedang')
     .replace(/\bhigh\b/gi, 'tinggi')
     .replace(/\s+(?:\u00c3\u0082\u00c2\u00b7|\u00c2\u00b7|\u00b7)\s+/g, ' \u00b7 ');
+}
+
+function localizeCriticalUiTerms(text: string) {
+  return text
+    .replace(/\bAdditional details\b/gi, 'Detail tambahan')
+    .replace(/\bBrew Guide\b/gi, 'Panduan Seduh')
+    .replace(/\bWorkflow\b/gi, 'Alur seduh')
+    .replace(/\bExpected cup\b/gi, 'Prediksi rasa')
+    .replace(/\bConfidence\b/gi, 'Keyakinan')
+    .replace(/\bSafety\b/gi, 'Keamanan')
+    .replace(/\bRelease over ice\b/gi, 'Buka katup di atas es')
+    .replace(/\bRelease checkpoint\b/gi, 'Titik buka katup')
+    .replace(/\bRelease\b/gi, 'Buka katup')
+    .replace(/\bDrawdown\b/gi, 'Air turun')
+    .replace(/\bBlocked\b/gi, 'Diblokir')
+    .replace(/\bUnknown fallback\b/gi, 'Fallback aman')
+    .replace(/\bKnown high\b/gi, 'Data lengkap')
+    .replace(/\bPartial medium\b/gi, 'Data sebagian')
+    .replace(/\bManual Required\b/gi, 'Perlu manual')
+    .replace(/\bHigh Buffer\b/gi, 'Buffer tinggi')
+    .replace(/\bZero Mineral\b/gi, 'Nol mineral')
+    .replace(/\bTaste feedback required\b/gi, 'Perlu cek rasa')
+    .replace(/\bExtraction complete\b/gi, 'Ekstraksi selesai')
+    .replace(/\bNext step\b/gi, 'Langkah berikutnya')
+    .replace(/\bFinishing action\b/gi, 'Aksi finishing')
+    .replace(/\bServe step\b/gi, 'Langkah sajikan')
+    .replace(/\bStir server\b/gi, 'Aduk server')
+    .replace(/\bTarget profile\b/gi, 'Profil target')
+    .replace(/\bWater source\b/gi, 'Sumber air')
+    .replace(/\bGrinder source\b/gi, 'Sumber grinder')
+    .replace(/\bBrewer profile\b/gi, 'Profil alat')
+    .replace(/\bFallback grinder\b/gi, 'Grinder baseline')
+    .replace(/\bFamily fallback profile\b/gi, 'Profil keluarga alat')
+    .replace(/\bFamily fallback\b/gi, 'Profil keluarga alat')
+    .replace(/\bFallback family\b/gi, 'Profil keluarga alat')
+    .replace(/\bExact device profile\b/gi, 'Profil alat tepat')
+    .replace(/\bRisk caution\b/gi, 'Perlu hati-hati')
+    .replace(/\bSafe baseline\b/gi, 'Baseline aman')
+    .replace(/\bBrew plan\b/gi, 'Rencana seduh')
+    .replace(/\bRecipe\b/gi, 'Resep')
+    .replace(/\bManual required\b/gi, 'Perlu manual')
+    .replace(/\bPublished\b/gi, 'Tersedia')
+    .replace(/\bbrew-ready\b/gi, 'siap seduh')
+    .replace(/\bNot available\b/gi, 'Belum tersedia')
+    .replace(/\bNo data\b/gi, 'Belum ada data')
+    .replace(/\bWarning\b/gi, 'Peringatan')
+    .replace(/\bReady\b/gi, 'Siap')
+    .replace(/\bOfficial\b/gi, 'Resmi')
+    .replace(/\bCurated\b/gi, 'Kurasi')
+    .replace(/\bEstimated\b/gi, 'Estimasi')
+    .replace(/\bUnknown\b/gi, 'Belum diketahui')
+    .replace(/\bGuide\b/gi, 'Panduan')
+    .replace(/\btaste feedback\b/gi, 'feedback rasa')
+    .replace(/\btaste\b/gi, 'rasa')
+    .replace(/\bvalidate with\b/gi, 'validasi dengan')
+    .replace(/\bStop\b/gi, 'Berhenti')
+    .replace(/\bServe\b/gi, 'Sajikan')
+    .replace(/\bStir\b/gi, 'Aduk');
 }
 
 export function localizeAiBrewDynamicText(text: string, language?: string) {
@@ -361,7 +440,7 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/^Keep the later immersion phase quiet so the release stays clean\.$/i, 'Jaga fase immersion akhir tetap tenang agar buka katup tetap bersih.')
     .replace(/^Open the release cleanly and let the bed drain without stirring the finish\.$/i, 'Buka katup dengan bersih lalu biarkan bed turun tanpa mengaduk fase akhir.');
 
-  return localizeBeanProfileSummary(localized);
+  return localizeCriticalUiTerms(localizeBeanProfileSummary(localized));
 }
 
 export function localizeAiBrewSummary(plan: Pick<

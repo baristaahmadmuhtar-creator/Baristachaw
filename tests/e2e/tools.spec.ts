@@ -9,7 +9,7 @@ import type { BrewPlan } from '../../apps/web/src/features/ai-brew/types';
 const LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
 const AI_BREW_SEQUENCE_HEADING = /Brew Guide|Brew Sequence|Panduan Seduh|Urutan Seduh/i;
 const AI_BREW_SAVED_COLLECTION = /Recipe saved to Collection\.|Recipe tersimpan ke Collection\./i;
-const AI_BREW_CLOSE_OUTPUT = /Close planned output|Tutup output plan/i;
+const AI_BREW_CLOSE_OUTPUT = /Close planned output|Tutup output plan|Tutup hasil/i;
 const AI_BREW_EXACT_PROFILE = /Exact profile|Profil exact/i;
 
 test.beforeEach(async ({ page }) => {
@@ -965,7 +965,7 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
   await page.getByTestId('ai-brew-generate').click();
   const quickPlan = await assertIcedResult('QA Quick Ice Split', 'quick');
 
-  await page.getByRole('button', { name: /Close planned output|Tutup output plan/i }).click();
+  await page.getByRole('button', { name: /Close planned output|Tutup output plan|Tutup hasil/i }).click();
   await openAiBrewProMode(page);
   await page.getByTestId('ai-brew-builder-mode-iced').click();
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Pro Ice Split');

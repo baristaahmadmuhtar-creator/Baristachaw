@@ -22,7 +22,7 @@ function hasOnlineAiOptimization(plan: BrewPlan) {
 function grinderStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
   if (plan.grindSettingMode === 'derived_baseline' || plan.grindSettingVerification === 'fallback') {
-    return id ? 'Grinder fallback' : 'Grinder Fallback';
+    return id ? 'Grinder baseline' : 'Grinder Fallback';
   }
   if (plan.grindSettingVerification === 'official') return id ? 'Grinder resmi' : 'Grinder Official';
   if (plan.grindSettingVerification === 'community_verified' || plan.grindSettingVerification === 'curated') {
@@ -46,7 +46,7 @@ function brewerStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
   if (plan.deviceProfileMode === 'exact') return id ? 'Profil alat exact' : 'Device Exact';
   if (plan.deviceProfileMode === 'derived_template') return id ? 'Template turunan' : 'Derived Template';
-  return id ? 'Fallback family' : 'Family Fallback';
+  return id ? 'Profil keluarga alat' : 'Family Fallback';
 }
 
 export function resolveAiBrewConfidenceBadges(plan: BrewPlan, language: string): AiBrewConfidenceBadge[] {
@@ -132,7 +132,7 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
   const beanCue = resolveAiBrewBeanCharacterInsights(plan, language)[0];
   const priorities = [
     id
-      ? `Ikuti output utama: ${mainWater}, ${Math.round(plan.waterTempC)}°C, selesai sekitar ${formatTimeLabel(plan.totalTimeSeconds)}.`
+      ? `Ikuti angka utama: ${mainWater}, ${Math.round(plan.waterTempC)}°C, selesai sekitar ${formatTimeLabel(plan.totalTimeSeconds)}.`
       : `Brew the main numbers first: ${mainWater}, ${Math.round(plan.waterTempC)}°C, finish around ${formatTimeLabel(plan.totalTimeSeconds)}.`,
     id
       ? 'Pakai setting grinder awal sebagai baseline; ubah satu variabel dulu setelah melihat air turun dan rasa.'
@@ -148,15 +148,15 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
       : 'Do not use zero-mineral/RO water without remineralization.');
   } else if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady) {
     priorities.push(id
-      ? 'Data air belum siap otomatis; isi mineral manual atau pakai air brew-ready sebelum menilai resep.'
+      ? 'Data air belum siap otomatis; isi mineral manual atau pakai air siap seduh sebelum menilai resep.'
       : 'Water data is not ready for autofill; enter manual minerals or use brew-ready water before judging the recipe.');
   } else if (plan.waterClassification === 'high_buffer') {
     priorities.push(id
-      ? 'Air berbuffer tinggi bisa membuat acidity/floral lebih muted.'
+      ? 'Air berbuffer tinggi bisa membuat acidity/floral lebih tertahan.'
       : 'High-buffer water can make acidity/floral taste more muted.');
   } else if (plan.waterMineralDerivation === 'estimated_from_classification') {
     priorities.push(id
-      ? 'Mineral air masih estimated; verifikasi manual sebelum menganggapnya brew-ready.'
+      ? 'Mineral air masih estimasi; verifikasi manual sebelum menganggapnya siap seduh.'
       : 'Water minerals are estimated; verify manually before treating it as brew-ready.');
   }
 
@@ -193,14 +193,14 @@ function feedbackLabel(rating: BrewTasteFeedbackRating, language: string) {
   if (rating === 'sour') return id ? 'terlalu asam' : 'too sour';
   if (rating === 'bitter') return id ? 'terlalu pahit' : 'too bitter';
   if (rating === 'thin') return id ? 'terlalu tipis' : 'too thin';
-  if (rating === 'flat') return id ? 'flat/muted' : 'flat/muted';
+  if (rating === 'flat') return id ? 'datar/tertahan' : 'flat/muted';
   if (rating === 'muddy') return id ? 'keruh/berat' : 'muddy/heavy';
   return id ? 'sepat/astringent' : 'astringent';
 }
 
 function protectedGuardrail(language: string) {
   return isIndonesian(language)
-    ? 'Ubah satu variabel dulu. Dosis, rasio, total air, air panas/es, mode seduh, alat, grinder, dan timing step tetap dikunci.'
+    ? 'Ubah satu variabel dulu. Dosis, rasio, total air, air panas/es, mode seduh, alat, grinder, dan waktu langkah tetap dikunci.'
     : 'Dose, ratio, total water, hot water/ice, brew mode, brewer, grinder, and step timing stay locked.';
 }
 
@@ -223,7 +223,7 @@ function methodCorrection(
   const id = isIndonesian(language);
   const grind = localizeGrindReference(plan.grindRecommendation || plan.grindSettingReference, language);
   const waterWarning = plan.waterClassification === 'high_buffer'
-    ? (id ? 'Cek air dulu: buffer tinggi bisa membuat acidity/floral muted.' : 'Check water first: high buffer can mute acidity/floral.')
+    ? (id ? 'Cek air dulu: buffer tinggi bisa membuat acidity/floral tertahan.' : 'Check water first: high buffer can mute acidity/floral.')
     : plan.waterClassification === 'zero_mineral_ro'
       ? (id ? 'Cek air dulu: RO/zero mineral perlu remineralisasi.' : 'Check water first: RO/zero-mineral water needs remineralization.')
       : '';
@@ -246,8 +246,8 @@ function methodCorrection(
       backupCorrection: id ? 'Perbaiki bloom/saturasi dan jaga kontak tengah lebih stabil.' : 'Improve bloom/saturation and keep middle contact steadier.',
     },
     flat: {
-      primaryCorrection: waterWarning || (id ? 'Kurangi contact sedikit atau pilih target lebih bright untuk seduhan berikutnya.' : 'Reduce contact slightly or choose a brighter target next brew.'),
-      backupCorrection: id ? 'Jaga pouring lebih tenang; jangan tambah agitasi besar.' : 'Keep pouring calmer; do not add heavy agitation.',
+      primaryCorrection: waterWarning || (id ? 'Kurangi kontak sedikit atau pilih target lebih cerah untuk seduhan berikutnya.' : 'Reduce contact slightly or choose a brighter target next brew.'),
+      backupCorrection: id ? 'Jaga tuangan lebih tenang; jangan tambah agitasi besar.' : 'Keep pouring calmer; do not add heavy agitation.',
     },
     muddy: {
       primaryCorrection: id ? 'Kurangi agitasi dan hindari mengejar dinding filter.' : 'Reduce agitation and avoid chasing the filter wall.',
@@ -316,7 +316,7 @@ function methodCorrection(
     };
     if (rating === 'bitter' || rating === 'astringent') return {
       primaryCorrection: id ? 'Kurangi steep 10 detik atau tekan lebih pelan.' : 'Reduce steep by 10 seconds or press more gently.',
-      backupCorrection: id ? 'Stop sebelum hiss; jangan tekan sampai kering.' : 'Stop before hiss; do not press the puck dry.',
+      backupCorrection: id ? 'Berhenti sebelum hiss; jangan tekan sampai kering.' : 'Stop before hiss; do not press the puck dry.',
     };
     if (rating === 'thin') return {
       primaryCorrection: id ? 'Gunakan no-bypass/press lebih stabil pada seduhan berikutnya.' : 'Use no-bypass or a steadier press next brew.',
@@ -324,7 +324,7 @@ function methodCorrection(
     };
     if (rating === 'muddy') return {
       primaryCorrection: id ? 'Kurangi stir count; cukup 3 adukan ringan.' : 'Reduce stir count; keep it to 3 gentle stirs.',
-      backupCorrection: id ? 'Tekan lebih pelan dan stop sebelum hiss.' : 'Press more gently and stop before hiss.',
+      backupCorrection: id ? 'Tekan lebih pelan dan berhenti sebelum hiss.' : 'Press more gently and stop before hiss.',
     };
   }
 
@@ -349,7 +349,7 @@ function methodCorrection(
       backupCorrection: id ? 'Stabilkan panas; jangan terlalu rendah sampai flow putus.' : 'Stabilize heat; do not run so low that flow breaks.',
     };
     if (rating === 'bitter' || rating === 'muddy' || rating === 'astringent') return {
-      primaryCorrection: id ? 'Turunkan panas dan stop sebelum sputter.' : 'Lower heat and stop before sputter.',
+      primaryCorrection: id ? 'Turunkan panas dan berhenti sebelum sputter.' : 'Lower heat and stop before sputter.',
       backupCorrection: id ? 'Jaga basket rata penuh tanpa tamp.' : 'Keep the basket level and full without tamping.',
     };
   }
@@ -361,7 +361,7 @@ function methodCorrection(
     };
     if (rating === 'bitter' || rating === 'astringent') return {
       primaryCorrection: id ? `Coba 0.5 step lebih kasar dari ${grind}.` : `Try 0.5 step coarser than ${grind}.`,
-      backupCorrection: id ? 'Stop tepat di yield; target minuman tetap dikunci.' : 'Stop at yield; keep the beverage target locked.',
+      backupCorrection: id ? 'Berhenti tepat di target hasil; target minuman tetap dikunci.' : 'Stop at yield; keep the beverage target locked.',
     };
     if (rating === 'thin') return {
       primaryCorrection: id ? 'Perbaiki puck prep dan stabilkan flow.' : 'Improve puck prep and stabilize flow.',
@@ -418,7 +418,7 @@ export function buildAiBrewTasteLoopMarkdown(
     '',
     `- ${id ? 'Langkah utama' : 'Primary move'}: ${correction.primaryCorrection}`,
     `- ${id ? 'Cadangan' : 'Backup'}: ${correction.backupCorrection}`,
-    `- ${id ? 'Guardrail' : 'Guardrail'}: ${correction.guardrail}`,
+    `- ${id ? 'Batas aman' : 'Guardrail'}: ${correction.guardrail}`,
     note ? `\n${id ? 'Catatan user' : 'User note'}: ${note}` : '',
   ].filter(Boolean).join('\n');
 }

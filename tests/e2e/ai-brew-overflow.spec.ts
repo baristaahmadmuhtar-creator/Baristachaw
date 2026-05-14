@@ -163,7 +163,7 @@ test('AI Brew Hario Switch Presisi builder and result never create page-level ho
     await result.getByTestId('ai-brew-result-tab-details').click();
     await expect(result.getByTestId('ai-brew-result-detail-panel')).toBeVisible();
     await expectNoHorizontalOverflow(page, `${viewport.label} detail tab`);
-    await page.getByRole('button', { name: /Tutup output plan|Close planned output/i }).click();
+    await page.getByRole('button', { name: /Tutup hasil|Tutup output plan|Close planned output/i }).click();
     browserErrors.expectNoFatalErrors(viewport.label);
   }
 });
@@ -255,7 +255,7 @@ test('AI Brew Hario Switch iced mode keeps builder, method strip, and result mod
     await result.getByTestId('ai-brew-result-tab-details').click();
     await expect(result.getByTestId('ai-brew-result-detail-panel')).toBeVisible();
     await expectNoHorizontalOverflow(page, `${viewport.label} switch iced detail`);
-    await page.getByRole('button', { name: /Tutup output plan|Close planned output/i }).click();
+    await page.getByRole('button', { name: /Tutup hasil|Tutup output plan|Close planned output/i }).click();
   }
 
   browserErrors.expectNoFatalErrors('switch iced mobile');
@@ -278,7 +278,7 @@ test('AI Brew long-text and non-Switch flows stay within viewport', async ({ pag
   await page.getByTestId('ai-brew-generate').click();
   await expect(page.getByTestId('ai-brew-result')).toBeVisible();
   await expectNoHorizontalOverflow(page, 'long text result');
-  await page.getByRole('button', { name: /Tutup output plan|Close planned output/i }).click();
+  await page.getByRole('button', { name: /Tutup hasil|Tutup output plan|Close planned output/i }).click();
   await closeBuilder(page);
 
   for (const [query, id] of [

@@ -278,7 +278,7 @@ test('ai brew taste feedback is saved in the local brew journal', async ({ page 
   await expect(page.getByTestId('ai-brew-save-success')).toContainText(/Catatan rasa tersimpan|Taste feedback saved/i);
   await expect(feedbackPanel.getByTestId('ai-brew-feedback-sour')).toHaveAttribute('aria-pressed', 'true');
 
-  await page.getByRole('button', { name: /Tutup output plan|Close planned output/i }).click();
+  await page.getByRole('button', { name: /Tutup hasil|Tutup output plan|Close planned output/i }).click();
   await page.getByTestId('ai-brew-history-tab-recent').click();
   await expect(page.getByTestId('ai-brew-history-item')).toContainText(/Terlalu asam|Too sour/i);
   await page.getByTestId('ai-brew-history-item').click();

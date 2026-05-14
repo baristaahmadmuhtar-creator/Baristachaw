@@ -67,6 +67,7 @@ function AiAccessGateDialog({
   t,
   checkoutBusy,
   checkoutError,
+  refreshBusy,
   onClose,
   onSignin,
   onUpgrade,
@@ -79,10 +80,11 @@ function AiAccessGateDialog({
   t: Record<string, string>;
   checkoutBusy: boolean;
   checkoutError: string;
+  refreshBusy: boolean;
   onClose: () => void;
   onSignin: () => void;
   onUpgrade: () => void;
-  onRefresh: () => void;
+  onRefresh: () => void | Promise<void>;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const isUpgrade = state.mode === 'upgrade';
@@ -198,9 +200,11 @@ function AiAccessGateDialog({
             <button
               type="button"
               onClick={onRefresh}
-              className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600"
+              disabled={refreshBusy}
+              aria-busy={refreshBusy}
+              className="motion-pressable inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)] transition-colors hover:bg-blue-600 disabled:opacity-70"
             >
-              <RefreshCcw size={16} />
+              <RefreshCcw size={16} className={refreshBusy ? 'animate-spin' : undefined} />
               {t.aiGateRetryPlan}
             </button>
           ) : (
@@ -240,6 +244,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const [state, setState] = useState<GateState | null>(null);
   const [checkoutBusy, setCheckoutBusy] = useState(false);
   const [checkoutError, setCheckoutError] = useState('');
+  const [refreshBusy, setRefreshBusy] = useState(false);
 
   const featureLabel = t[`aiGateFeature${feature.slice(0, 1).toUpperCase()}${feature.slice(1)}`] || feature;
   const minimumPaidPlan = useMemo(() => findMinimumPaidPlan(snapshot?.plans), [snapshot?.plans]);
@@ -250,6 +255,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
   const close = useCallback(() => {
     setState(null);
     setCheckoutError('');
+    setRefreshBusy(false);
   }, []);
 
   const openGate = useCallback((mode: GateMode, source: string) => {
@@ -300,8 +306,20 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     openAuthModal({ source: source as any });
   }, [close, feature, openAuthModal, state?.source]);
 
-  const handleRefresh = useCallback(() => {
-    void refreshAccountStatus();
+  useEffect(() => {
+    if (state?.mode === 'checking' && hasPaidAiAccess) {
+      close();
+    }
+  }, [close, hasPaidAiAccess, state?.mode]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshBusy(true);
+    setCheckoutError('');
+    try {
+      await refreshAccountStatus();
+    } finally {
+      setRefreshBusy(false);
+    }
   }, [refreshAccountStatus]);
 
   const handleUpgrade = useCallback(async () => {
@@ -344,6 +362,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
             t={t}
             checkoutBusy={checkoutBusy}
             checkoutError={checkoutError}
+            refreshBusy={refreshBusy}
             onClose={close}
             onSignin={handleSignin}
             onUpgrade={handleUpgrade}

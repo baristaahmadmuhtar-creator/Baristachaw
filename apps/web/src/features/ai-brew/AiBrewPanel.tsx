@@ -344,6 +344,7 @@ const COPY = {
     flowMetricTotal: 'Total',
     flowStepRemaining: 'Step left',
     flowTotalRemaining: 'Total left',
+    flowNextPour: 'Next pour',
     totalWater: 'Total Water',
     finalRatio: 'Final Ratio',
     hotConcentrate: 'Hot Concentrate',
@@ -509,7 +510,7 @@ const COPY = {
     beanDetailsHint: 'Natural, washed, variety, and origin improve accuracy, but Quick mode can generate without them.',
     beanDetailsAdd: 'Add bean detail',
     beanDetailsHide: 'Hide bean detail',
-    quickSummaryAuto: 'Let Auto keep this brew safe.',
+    quickSummaryAuto: 'Bean details stay optional; this is still a baseline.',
     moreAiTools: 'More AI tools',
     beanCoverageTitle: 'Bean coverage',
     beanCoverageFallback: 'Bean data is incomplete; AI Brew uses a safe baseline.',
@@ -854,6 +855,7 @@ const COPY = {
     flowMetricTotal: 'Total',
     flowStepRemaining: 'Sisa langkah',
     flowTotalRemaining: 'Sisa total',
+    flowNextPour: 'Tuangan berikutnya',
     totalWater: 'Total Air',
     finalRatio: 'Rasio Final',
     hotConcentrate: 'Konsentrat Panas',
@@ -1019,7 +1021,7 @@ const COPY = {
     beanDetailsHint: 'Natural, washed, varietas, dan origin membuat resep lebih akurat, tapi mode Cepat tetap bisa jalan tanpa itu.',
     beanDetailsAdd: 'Tambah detail bean',
     beanDetailsHide: 'Sembunyikan detail bean',
-    quickSummaryAuto: 'Biarkan Auto untuk hasil aman.',
+    quickSummaryAuto: 'Detail bean tetap opsional; hasil ini masih baseline.',
     moreAiTools: 'Tool AI lainnya',
     beanCoverageTitle: 'Cakupan bean',
     beanCoverageFallback: 'Data beans tidak lengkap; AI Brew memakai baseline aman.',
@@ -4528,6 +4530,13 @@ function PlanResultDialog({
   const flowStepRemainingSeconds = flowNextStep
     ? Math.max(0, flowNextStep.startSeconds - flowProgressSeconds)
     : flowRemainingSeconds;
+  const flowNextPourValue = flowNextStep
+    ? flowNextStep.pourVolumeMl > 0
+      ? formatRoundedMl(flowNextStep.pourVolumeMl)
+      : flowNextStep.targetVolumeMl > 0
+        ? `${id ? 'Target ' : 'Target '}${formatRoundedMl(flowNextStep.targetVolumeMl)}`
+        : localizeAiBrewStepLabel(flowNextStep.label, language)
+    : copy.flowFinished;
   const flowStatusLabel = flowRunning
     ? copy.flowRunning
     : flowProgressSeconds >= plan.totalTimeSeconds && plan.totalTimeSeconds > 0
@@ -4542,30 +4551,6 @@ function PlanResultDialog({
   const flowCurrentMetrics = flowCurrentStep
     ? splitAiBrewStepMetrics(buildAiBrewStepMetrics(flowCurrentStep, language, plan))
     : { core: [], detail: [] };
-  const quickSetupItems = [
-    { id: 'grind', label: copy.grind, value: localizedGrindHeadline },
-    {
-      id: 'water',
-      label: plan.brewMode === 'iced' ? methodBrief.primaryLabel : copy.totalWater,
-      value: plan.brewMode === 'iced' ? formatRoundedMl(plan.hotWaterMl) : formatRoundedMl(plan.totalWaterMl),
-    },
-    ...(plan.iceMl > 0
-      ? [{ id: 'ice', label: copy.ice, value: formatRoundedGrams(plan.iceMl) }]
-      : []),
-    { id: 'ratio', label: copy.finalRatio, value: `1:${formatBrewRatio(plan.finalBeverageRatio)}` },
-    { id: 'time', label: extractionTimeLabel, value: formatGuideTime(extractionSeconds) },
-    { id: 'temp', label: copy.temp, value: formatRoundedTemperature(plan.waterTempC) },
-  ];
-  const quickPrepCue = plan.brewMode === 'iced'
-    ? (id
-      ? `Siapkan ${formatRoundedGrams(plan.iceMl)} es di server, seduh dengan ${formatRoundedMl(plan.hotWaterMl)} air panas, lalu aduk sebelum minum.`
-      : `Set ${formatRoundedGrams(plan.iceMl)} ice in the server, brew with ${formatRoundedMl(plan.hotWaterMl)} hot water, then stir before drinking.`)
-    : (id
-      ? `Siapkan ${formatRoundedMl(plan.totalWaterMl)} air di ${formatRoundedTemperature(plan.waterTempC)}, mulai timer, lalu ikuti langkah dari atas.`
-      : `Set ${formatRoundedMl(plan.totalWaterMl)} water at ${formatRoundedTemperature(plan.waterTempC)}, start the timer, then follow the steps top to bottom.`);
-  const quickCorrectionCue = id
-    ? 'Jika aliran terlalu cepat atau rasa asam tajam, sedikit lebih halus. Jika terlalu lambat, berat, atau pahit, sedikit lebih kasar.'
-    : 'If flow runs too fast or tastes sharply sour, go slightly finer. If it stalls, feels heavy, or turns bitter, go slightly coarser.';
   const localizedProcessLabel = plan.process || copy.notSpecified;
   const localizedVarietyLabel = plan.variety || copy.notSpecified;
   const localizedRoastLabel = localizeAiBrewRoastLabel(plan.roastLevel, language);
@@ -5659,7 +5644,7 @@ function PlanResultDialog({
                 data-testid="ai-brew-result-guide-panel"
               >
                 <div className={isQuickResult ? 'order-2 space-y-5' : 'space-y-5'}>
-                  <div className="rounded-[1.4rem] border border-blue-500/18 bg-blue-500/[0.08] p-4">
+                  <div className="rounded-[1.4rem] border border-blue-500/18 bg-blue-500/[0.08] p-4" data-testid="ai-brew-flow-timer-panel">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -5684,14 +5669,14 @@ function PlanResultDialog({
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2 text-xs" data-testid="ai-brew-flow-remaining-status">
                       <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
-                        {copy.flowStepRemaining}: <span className="text-primary">{formatGuideTime(flowStepRemainingSeconds)}</span>
+                        {copy.flowNextPour}: <span className="text-primary">{flowNextPourValue}</span>
                       </span>
                       <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
                         {copy.flowTotalRemaining}: <span className="text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
                       </span>
                     </div>
 
-                    <div className="mt-4 rounded-2xl bg-[var(--bg-base)]/88 p-3.5 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
+                    <div className="mt-4 rounded-2xl bg-[var(--bg-base)]/88 p-3.5 shadow-[0_12px_28px_rgba(15,23,42,0.08)]" data-testid="ai-brew-flow-current-card">
                       <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowCurrentStep}</p>
                       <p className="mt-1 text-sm font-semibold text-primary">
                         {flowCurrentStep ? localizeAiBrewStepLabel(flowCurrentStep.label, language) : buildLocalizedPlanRecipeName(plan, language)}
@@ -5826,57 +5811,8 @@ function PlanResultDialog({
                   </div>
                 </div>
 
-                <div className={isQuickResult ? 'order-1 space-y-3' : 'space-y-3'} data-testid={isQuickResult ? 'ai-brew-sequence-section' : undefined}>
-                  {isQuickResult && (
-                    <div
-                      className="rounded-[1.2rem] border border-blue-500/18 bg-blue-500/[0.08] p-3.5 shadow-[0_16px_34px_rgba(37,99,235,0.1)]"
-                      data-testid="ai-brew-sequence-note"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <Waves size={16} className="text-blue-500" />
-                          <h4 className="text-sm font-semibold text-primary">{copy.recipe}</h4>
-                        </div>
-                        <span className="rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
-                          {workflowGuideSteps.length} {copy.stepCountSuffix}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm leading-5 text-secondary">
-                        {id
-                          ? 'Ikuti langkah dari atas ke bawah. Fokus ke tuangan stabil, bed rata, dan cue koreksi yang muncul di tiap tahap.'
-                          : 'Follow the steps from top to bottom. Focus on steady pouring, an even bed, and the correction cue inside each stage.'}
-                      </p>
-                      <div
-                        className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3 xl:grid-cols-6"
-                        data-testid="ai-brew-quick-setup"
-                      >
-                        {quickSetupItems.map((item) => (
-                          <span
-                            key={item.id}
-                            className="rounded-xl bg-[var(--bg-base)]/84 px-2.5 py-2 text-secondary"
-                            data-testid={`ai-brew-quick-setup-${item.id}`}
-                          >
-                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
-                            <span className="font-semibold text-primary">{item.value}</span>
-                          </span>
-                        ))}
-                      </div>
-                      <div className="mt-3 grid gap-2 text-sm leading-5 sm:grid-cols-2" data-testid="ai-brew-quick-cues">
-                        <div className="rounded-xl border border-blue-500/14 bg-[var(--bg-base)]/74 px-3 py-2.5">
-                          <span className="block text-[10px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
-                            {id ? 'Setup' : 'Setup'}
-                          </span>
-                          <p className="mt-1 text-primary">{quickPrepCue}</p>
-                        </div>
-                        <div className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-3 py-2.5">
-                          <span className="block text-[10px] font-semibold uppercase tracking-widest text-tertiary">
-                            {id ? 'Koreksi cepat' : 'Quick correction'}
-                          </span>
-                          <p className="mt-1 text-secondary">{quickCorrectionCue}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                {!isQuickResult && (
+                <div className="space-y-3" data-testid="ai-brew-sequence-section">
                   {workflowGuideSteps.map((step, index) => {
                     const state = index < flowActiveStepIndex
                       ? 'done'
@@ -5965,6 +5901,7 @@ function PlanResultDialog({
                     );
                   })}
                 </div>
+                )}
               </div>
             )}
 
@@ -9097,11 +9034,7 @@ export function AiBrewPanel({
                                     </div>
                                     {isPro ? (
                                       <p className="mt-1 text-xs text-secondary">{buildWaterChemistryLabel(selectedWaterBrand, language)}</p>
-                                    ) : (
-                                      <p className="mt-1 text-xs text-secondary">
-                                        {buildWaterChemistryLabel(selectedWaterBrand, language)}
-                                      </p>
-                                    )}
+                                    ) : null}
                                     {buildWaterPolicyWarning(copy, selectedWaterBrand) && (
                                       <p className="mt-2 rounded-xl bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
                                         {buildWaterPolicyWarning(copy, selectedWaterBrand)}

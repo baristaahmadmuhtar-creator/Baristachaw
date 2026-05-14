@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const SOURCE = readFileSync('apps/web/src/features/ai-brew/AiBrewPanel.tsx', 'utf8');
+const AI_ACCESS_GATE_SOURCE = readFileSync('apps/web/src/components/billing/AiAccessGate.tsx', 'utf8');
 
 test('AI Brew quick mode keeps Switch setup compact and single-source-of-truth', () => {
   assert.match(SOURCE, /data-testid="ai-brew-brew-mode-method-panel"/);
@@ -19,6 +20,8 @@ test('AI Brew quick mode keeps Switch setup compact and single-source-of-truth',
 test('AI Brew quick mode keeps optional bean detail and AI tools collapsed', () => {
   assert.match(SOURCE, /data-testid="ai-brew-bean-details-toggle"/);
   assert.match(SOURCE, /data-testid="ai-brew-bean-details-summary"/);
+  assert.match(SOURCE, /Detail bean tetap opsional; hasil ini masih baseline/);
+  assert.doesNotMatch(SOURCE, /Biarkan Auto untuk hasil aman/);
   assert.match(SOURCE, /primaryAiAssistActions/);
   assert.match(SOURCE, /advancedAiAssistActions/);
   assert.match(SOURCE, /copy\.moreAiTools/);
@@ -120,7 +123,10 @@ test('AI Brew exposes explicit mobile time semantics instead of one misleading t
   assert.match(SOURCE, /guideEndLabel/);
   assert.match(SOURCE, /flowStepRemaining/);
   assert.match(SOURCE, /flowTotalRemaining/);
+  assert.match(SOURCE, /flowNextPour/);
   assert.match(SOURCE, /data-testid="ai-brew-flow-remaining-status"/);
+  assert.match(SOURCE, /data-testid="ai-brew-flow-timer-panel"/);
+  assert.match(SOURCE, /data-testid="ai-brew-flow-current-card"/);
 });
 
 test('AI Brew guide details stay deduped and barista-actionable', () => {
@@ -132,4 +138,22 @@ test('AI Brew guide details stay deduped and barista-actionable', () => {
   assert.match(SOURCE, /Kontrol seduh: mulai dari tengah/);
   assert.match(SOURCE, /Koreksi kalau meleset/);
   assert.match(SOURCE, /summaryFocusHint/);
+});
+
+test('AI Brew quick Seduh tab stays timer-first without duplicate process list', () => {
+  assert.match(SOURCE, /!isQuickResult && \(/);
+  assert.match(SOURCE, /data-testid="ai-brew-sequence-section"/);
+  assert.match(SOURCE, /flowNextPourValue/);
+  assert.match(SOURCE, /copy\.flowNextPour/);
+});
+
+test('AI Brew quick water summary hides raw mineral chemistry', () => {
+  assert.match(SOURCE, /isPro \? \(\s*<p className="mt-1 text-xs text-secondary">\{buildWaterChemistryLabel\(selectedWaterBrand, language\)\}<\/p>\s*\) : null/);
+});
+
+test('AI access gate refresh has a visible sync state', () => {
+  assert.match(AI_ACCESS_GATE_SOURCE, /refreshBusy/);
+  assert.match(AI_ACCESS_GATE_SOURCE, /aria-busy=\{refreshBusy\}/);
+  assert.match(AI_ACCESS_GATE_SOURCE, /className=\{refreshBusy \? 'animate-spin' : undefined\}/);
+  assert.match(AI_ACCESS_GATE_SOURCE, /await refreshAccountStatus\(\)/);
 });

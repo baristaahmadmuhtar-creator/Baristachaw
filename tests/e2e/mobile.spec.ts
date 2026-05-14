@@ -223,16 +223,18 @@ test('mobile ai brew result workspace keeps primary actions inside the viewport'
   await expect(result.getByTestId('ai-brew-result-summary-metric-strip')).toBeVisible();
   await expect(page.getByTestId('ai-brew-result-action-bar')).toBeVisible();
   await page.getByTestId('ai-brew-result-tab-flow').click();
-  await expect(result.getByTestId('ai-brew-sequence-section')).toBeVisible();
-  await expect(result.getByTestId('ai-brew-quick-setup')).toBeVisible();
-  await expect(result.getByTestId('ai-brew-quick-cues')).toBeVisible();
+  await expect(result.getByTestId('ai-brew-sequence-section')).toHaveCount(0);
+  await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
+  await expect(result.getByTestId('ai-brew-flow-current-card')).toBeVisible();
+  await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/(Tuangan berikutnya|Next pour)/);
+  await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/(Sisa total|Total left)/);
   await expect(page.getByTestId('ai-brew-flow-toggle')).toBeVisible();
 
-  const sequenceBox = await result.getByTestId('ai-brew-sequence-section').boundingBox();
+  const timerBox = await result.getByTestId('ai-brew-flow-timer-panel').boundingBox();
   const flowBox = await page.getByTestId('ai-brew-flow-toggle').boundingBox();
-  expect(sequenceBox).toBeTruthy();
+  expect(timerBox).toBeTruthy();
   expect(flowBox).toBeTruthy();
-  expect(sequenceBox!.y).toBeLessThan(flowBox!.y);
+  expect(timerBox!.y).toBeLessThan(flowBox!.y);
 
   const actionBox = await page.getByTestId('ai-brew-result-action-bar').boundingBox();
   const viewport = page.viewportSize();
@@ -279,14 +281,13 @@ test('mobile ai brew result stays legible in light theme', async ({ page }) => {
   await expect(result).toBeVisible();
   await expect(result.locator('h3').filter({ hasText: 'Light Theme QA' })).toBeVisible();
   await page.getByTestId('ai-brew-result-tab-flow').click();
-  await expect(result.getByTestId('ai-brew-step-card-1')).toBeVisible();
+  await expect(result.getByTestId('ai-brew-flow-current-card')).toBeVisible();
 
   const visualState = await page.evaluate(() => {
     const root = document.documentElement;
     const resultTitle = document.querySelector<HTMLElement>('[data-testid="ai-brew-result"] h3');
     const primaryAction = document.querySelector<HTMLElement>('[data-testid="ai-brew-flow-toggle"]');
-    const stepCard = document.querySelector<HTMLElement>('[data-testid="ai-brew-step-card-1"]');
-    const stepCardTwo = document.querySelector<HTMLElement>('[data-testid="ai-brew-step-card-2"]');
+    const stepCard = document.querySelector<HTMLElement>('[data-testid="ai-brew-flow-current-card"]');
     const stepText = stepCard?.querySelector<HTMLElement>('p');
 
     return {
@@ -295,7 +296,6 @@ test('mobile ai brew result stays legible in light theme', async ({ page }) => {
       titleColor: resultTitle ? getComputedStyle(resultTitle).color : null,
       actionBackground: primaryAction ? getComputedStyle(primaryAction).backgroundColor : null,
       stepCardBackground: stepCard ? getComputedStyle(stepCard).backgroundColor : null,
-      stepCardTwoBackground: stepCardTwo ? getComputedStyle(stepCardTwo).backgroundColor : null,
       stepTextColor: stepText ? getComputedStyle(stepText).color : null,
     };
   });
@@ -306,7 +306,6 @@ test('mobile ai brew result stays legible in light theme', async ({ page }) => {
   expect(visualState.stepTextColor).not.toBe('rgb(255, 255, 255)');
   expect(visualState.actionBackground).not.toBe('rgba(0, 0, 0, 0)');
   expect(visualState.stepCardBackground).not.toBe('rgba(0, 0, 0, 0)');
-  expect(visualState.stepCardTwoBackground).not.toBe('rgba(0, 0, 0, 0)');
 });
 
 test('mobile ai brew loading stays centered and keeps bottom nav hidden through the result flow', async ({ page }) => {
@@ -359,7 +358,8 @@ test('mobile ai brew loading stays centered and keeps bottom nav hidden through 
   await expect(result).toBeVisible();
   await expect(page.getByTestId('mobile-bottom-nav')).toBeHidden();
   await page.getByTestId('ai-brew-result-tab-flow').click();
-  await expect(result.getByTestId('ai-brew-sequence-section')).toBeVisible();
+  await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
+  await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/(Tuangan berikutnya|Next pour)/);
 });
 
 test('mobile ai brew builder keeps the action footer docked to the modal bottom', async ({ page }) => {

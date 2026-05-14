@@ -1361,6 +1361,47 @@ function writeHotVsIcedAuditArtifact(records: Array<Record<string, unknown>>) {
   return dir;
 }
 
+function writeAiBrewGlobalStressAuditArtifact(summary: Record<string, unknown>, samples: Array<Record<string, unknown>>) {
+  const sha = getCurrentAuditSha();
+  const dir = `artifacts/ai-brew-audit/global-10k-stress/${sha}`;
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(`${dir}/global-10k-stress-summary.json`, `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
+  fs.writeFileSync(`${dir}/global-10k-stress-samples.json`, `${JSON.stringify(samples, null, 2)}\n`, 'utf8');
+
+  const scoreMin = summary.scoreMin as Record<string, number>;
+  const markdown = [
+    '# AI Brew Global 10k Stress Audit',
+    '',
+    `Commit: ${sha}`,
+    `Generated plans: ${summary.total}`,
+    `Valid plans: ${summary.passed}`,
+    `Unsupported iced fallback count: ${summary.unsupportedIcedFallbacks}`,
+    '',
+    '## Minimum Scores',
+    '| Category | Score |',
+    '|---|---:|',
+    ...Object.entries(scoreMin).map(([key, value]) => `| ${key} | ${value} |`),
+    '',
+    '## Bean Coverage',
+    '| Category | Count |',
+    '|---|---:|',
+    ...Object.entries(summary.beanCoverageCounts as Record<string, number>).map(([key, value]) => `| ${key} | ${value} |`),
+    '',
+    '## Brew Modes',
+    '| Mode | Count |',
+    '|---|---:|',
+    ...Object.entries(summary.brewModeCounts as Record<string, number>).map(([key, value]) => `| ${key} | ${value} |`),
+    '',
+    '## Representative Samples',
+    '| # | Dripper | Mode | Target | Bean | Coverage | Ratio | Temp | Time |',
+    '|---:|---|---|---|---|---|---:|---:|---:|',
+    ...samples.slice(0, 80).map((sample, index) => `| ${index + 1} | ${sample.dripperName} | ${sample.brewMode} | ${sample.targetProfileLabel} | ${sample.beanCase} | ${sample.beanCoverageCategory} | ${sample.ratio} | ${sample.tempC} | ${sample.timeSeconds} |`),
+    '',
+  ].join('\n');
+  fs.writeFileSync(`${dir}/global-10k-stress.md`, markdown, 'utf8');
+  return dir;
+}
+
 function summarizeSwitchPlan(plan: AiBrewPlanForTest) {
   const waterSteps = plan.steps.filter((step) => step.pourVolumeMl > 0);
   const closedLoads = plan.steps
@@ -4719,6 +4760,269 @@ test('real-world bean stress matrix always produces safe baseline or honest fall
       }
     }
   }
+});
+
+test('AI Brew 10000-combination global stress matrix keeps drippers, targets, beans, water, and grinder advice safe', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const visibleDrippers = productionCatalog.drippers.filter((dripper) => !dripper.hidden && !dripper.deprecated);
+  const targetProfileIds = [
+    'balance_clean',
+    'more_sweetness',
+    'more_acidity',
+    'more_body',
+    'floral_transparent',
+    'fruit_forward',
+    'soft_round',
+    'dense_comforting',
+  ];
+  for (const targetProfileId of targetProfileIds) {
+    assert.ok(productionCatalog.targetProfiles.some((target) => target.id === targetProfileId), `Missing target ${targetProfileId}`);
+  }
+
+  const grinderIds = [
+    '1zpresso-k-ultra',
+    'comandante-c40-mk4',
+    'timemore-c3',
+    'kingrinder-k6',
+    'df64-gen2',
+    'feima-600n',
+  ].filter((id) => productionCatalog.grinders.some((grinder) => grinder.id === id));
+  assert.ok(grinderIds.length >= 1, 'production grinder catalog should provide at least one trusted grinder');
+
+  const waterProfiles = [
+    { label: 'balanced brew water', waterTdsPpm: '95', waterHardnessPpm: '55', waterAlkalinityPpm: '40' },
+    { label: 'soft clarity water', waterTdsPpm: '65', waterHardnessPpm: '35', waterAlkalinityPpm: '25' },
+    { label: 'higher buffer water', waterTdsPpm: '180', waterHardnessPpm: '80', waterAlkalinityPpm: '115' },
+    { label: 'harder manual water', waterTdsPpm: '220', waterHardnessPpm: '115', waterAlkalinityPpm: '85' },
+  ];
+
+  const beanCases: Array<{
+    label: string;
+    expectation: 'classic' | 'risk' | 'unknown' | 'context';
+    input: Partial<AiBrewFormState>;
+  }> = [
+    { label: 'Washed Ethiopia landrace floral', expectation: 'classic', input: { coffeeName: 'Washed Ethiopia landrace floral', process: 'washed', variety: 'ethiopian_heirloom', roastLevel: 'light', altitudeMasl: '2050' } },
+    { label: 'Natural Ethiopia fruit', expectation: 'classic', input: { coffeeName: 'Natural Ethiopia Guji fruit', process: 'natural', variety: 'kurume', roastLevel: 'medium_light' } },
+    { label: 'Kenya washed SL28', expectation: 'classic', input: { coffeeName: 'Kenya washed SL28', process: 'washed', variety: 'sl28', roastLevel: 'light', altitudeMasl: '1850' } },
+    { label: 'Colombia washed Castillo', expectation: 'classic', input: { coffeeName: 'Colombia washed Castillo', process: 'washed', variety: 'castillo', roastLevel: 'medium_light' } },
+    { label: 'Brazil natural Bourbon', expectation: 'classic', input: { coffeeName: 'Brazil natural Bourbon', process: 'natural', variety: 'bourbon', roastLevel: 'medium' } },
+    { label: 'Costa Rica honey Catuai', expectation: 'classic', input: { coffeeName: 'Costa Rica honey Catuai', process: 'honey', variety: 'catuai', roastLevel: 'medium_light' } },
+    { label: 'Sumatra wet hulled Ateng', expectation: 'risk', input: { coffeeName: 'Sumatra wet hulled Ateng', process: 'wet_hulled', variety: 'ateng', roastLevel: 'medium' } },
+    { label: 'Anaerobic natural Gesha', expectation: 'risk', input: { coffeeName: 'Anaerobic natural Gesha', process: 'anaerobic_natural', customProcess: 'anaerobic natural', variety: 'gesha', roastLevel: 'medium_light' } },
+    { label: 'Co-ferment fruit maceration', expectation: 'risk', input: { coffeeName: 'Fruit co-ferment experimental lot', process: 'coferment', customProcess: 'fruit co-ferment', variety: 'sidra', roastLevel: 'medium_light' } },
+    { label: 'Koji washed lot', expectation: 'risk', input: { coffeeName: 'Koji washed Colombia', process: 'koji_washed', customProcess: 'koji washed', variety: 'pink_bourbon', roastLevel: 'medium_light' } },
+    { label: 'Wine yeast fermentation', expectation: 'risk', input: { coffeeName: 'Wine yeast fermentation', process: 'wine_yeast_fermentation', customProcess: 'wine yeast fermentation', variety: 'wush_wush', roastLevel: 'medium_light' } },
+    { label: 'Thermal shock anaerobic', expectation: 'risk', input: { coffeeName: 'Thermal shock anaerobic', process: 'anaerobic_thermal_shock', customProcess: 'thermal shock anaerobic', variety: 'sidra', roastLevel: 'medium_light' } },
+    { label: 'Sugarcane decaf', expectation: 'risk', input: { coffeeName: 'Colombia sugarcane decaf', process: 'sugarcane_decaf', variety: 'caturra', roastLevel: 'medium' } },
+    { label: 'Swiss water decaf', expectation: 'risk', input: { coffeeName: 'Swiss Water Decaf', process: 'swiss_water_decaf', customProcess: 'swiss water process', variety: 'bourbon', roastLevel: 'medium' } },
+    { label: 'CO2 decaf', expectation: 'risk', input: { coffeeName: 'CO2 decaf Colombia', process: 'co2_decaf', variety: 'castillo', roastLevel: 'medium' } },
+    { label: 'Natural Robusta', expectation: 'risk', input: { coffeeName: 'Natural Robusta Vietnam', process: 'robusta_natural', customVariety: 'robusta canephora', variety: 'robusta', roastLevel: 'medium_dark' } },
+    { label: 'Washed Robusta', expectation: 'risk', input: { coffeeName: 'Washed Robusta', process: 'robusta_washed', customVariety: 'canephora', variety: 'robusta', roastLevel: 'medium_dark' } },
+    { label: 'Natural Liberica', expectation: 'risk', input: { coffeeName: 'Natural Liberica Barako', process: 'liberica_natural', customVariety: 'liberica barako', variety: 'barako_liberica', roastLevel: 'medium' } },
+    { label: 'Natural Excelsa', expectation: 'risk', input: { coffeeName: 'Natural Excelsa', process: 'excelsa_natural', customVariety: 'excelsa', variety: 'excelsa', roastLevel: 'medium' } },
+    { label: 'Eugenioides rare species', expectation: 'risk', input: { coffeeName: 'Eugenioides rare species', process: 'washed', variety: 'eugenioides', roastLevel: 'light' } },
+    { label: 'Raised-bed natural', expectation: 'context', input: { coffeeName: 'Raised-bed natural Ethiopia', process: 'raised_bed_natural', customProcess: 'raised-bed natural', variety: 'dega', roastLevel: 'medium_light' } },
+    { label: 'Dry process classic', expectation: 'classic', input: { coffeeName: 'Dry process natural', process: 'dry_process', variety: 'bourbon', roastLevel: 'medium' } },
+    { label: 'Very dark smoky roast', expectation: 'risk', input: { coffeeName: 'Very dark smoky roast', process: 'washed', variety: 'catimor', roastLevel: 'dark' } },
+    { label: 'Old roast 45 days', expectation: 'risk', input: { coffeeName: 'Old roast 45 days', process: 'washed', variety: 'caturra', roastLevel: 'medium', solubility: 'high' } },
+    { label: 'Unknown bean no process', expectation: 'unknown', input: { coffeeName: '', process: '', variety: '', roastLevel: 'medium' } },
+  ];
+
+  const base = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    doseG: '15',
+    targetWaterMl: '',
+    grinderId: grinderIds[0],
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+    targetProfileId: 'balance_clean',
+  };
+  const doseOptions = ['12', '15', '18', '20'];
+  const scoreMin = {
+    tasteTargetAccuracy: 100,
+    methodSpecificGuideQuality: 100,
+    expectedCupPlausibility: 100,
+    beginnerClarity: 100,
+    proUsefulness: 100,
+    guardrailStrength: 100,
+    mobileUx: 100,
+    confidenceHonesty: 100,
+  };
+  const increment = (bucket: Record<string, number>, key: string) => {
+    bucket[key] = (bucket[key] || 0) + 1;
+  };
+  const beanCoverageCounts: Record<string, number> = {};
+  const methodCounts: Record<string, number> = {};
+  const targetCounts: Record<string, number> = {};
+  const brewModeCounts: Record<string, number> = {};
+  const expectationCounts: Record<string, number> = {};
+  const samples: Array<Record<string, unknown>> = [];
+  let unsupportedIcedFallbacks = 0;
+
+  for (let index = 0; index < 10000; index += 1) {
+    const dripper = visibleDrippers[index % visibleDrippers.length];
+    const targetProfileId = targetProfileIds[Math.floor(index / visibleDrippers.length) % targetProfileIds.length];
+    const bean = beanCases[Math.floor(index / (visibleDrippers.length * targetProfileIds.length)) % beanCases.length];
+    const requestedBrewMode = index % 2 === 0 ? 'hot' : 'iced';
+    const water = waterProfiles[index % waterProfiles.length];
+    const doseG = dripper.methodFamily === 'espresso'
+      ? '18'
+      : dripper.methodFamily === 'cold_brew'
+        ? '60'
+        : dripper.methodFamily === 'batch_brewer'
+          ? '55'
+          : doseOptions[Math.floor(index / 17) % doseOptions.length];
+    const targetWaterMl = dripper.methodFamily === 'espresso'
+      ? '40'
+      : dripper.methodFamily === 'cold_brew'
+        ? '600'
+        : dripper.methodFamily === 'batch_brewer'
+          ? '900'
+          : '';
+    const plan = buildAiBrewPlan({
+      ...base,
+      ...bean.input,
+      dripperId: dripper.id,
+      brewMode: requestedBrewMode as AiBrewFormState['brewMode'],
+      targetProfileId,
+      doseG,
+      targetWaterMl,
+      grinderId: grinderIds[index % grinderIds.length],
+      waterTdsPpm: water.waterTdsPpm,
+      waterHardnessPpm: water.waterHardnessPpm,
+      waterAlkalinityPpm: water.waterAlkalinityPpm,
+      waterNotes: water.label,
+      waterCustomized: true,
+    }, productionCatalog);
+
+    assertPlanEnvelope(plan);
+    const guardResult = validateBrewPlanOutput(plan);
+    assert.equal(guardResult.allowed, true, `${index} ${dripper.name} anti-hallucination guard: ${guardResult.reason || 'no reason'}`);
+    assert.notEqual(plan.beanCoverage?.category, 'unsupported_unsafe', `${index} ${dripper.name} should not use unsafe taxonomy fallback`);
+    assert.equal(plan.targetProfileId, targetProfileId, `${index} target profile should be preserved`);
+    assert.ok(plan.expectedCupProfile, `${index} expected cup`);
+    const cupScores = [
+      plan.expectedCupProfile?.acidity,
+      plan.expectedCupProfile?.sweetness,
+      plan.expectedCupProfile?.body,
+      plan.expectedCupProfile?.clarity,
+      plan.expectedCupProfile?.bitterRisk,
+      plan.expectedCupProfile?.aromaIntensity,
+    ];
+    for (const score of cupScores) {
+      assert.ok(typeof score === 'number' && Number.isFinite(score) && score >= 0 && score <= 5, `${index} expected cup score ${score}`);
+    }
+
+    const icedSupported = supportsAiBrewIcedMode(productionCatalog, dripper.id);
+    if (requestedBrewMode === 'iced' && icedSupported) {
+      assert.equal(plan.brewMode, 'iced', `${index} ${dripper.name} should keep supported iced mode`);
+      assert.equal(plan.hotWaterMl + plan.iceMl, plan.totalWaterMl, `${index} ${dripper.name} iced split`);
+      const pourSteps = plan.steps.filter((step) => step.pourVolumeMl > 0 || step.kind === 'extract');
+      assert.equal(pourSteps.at(-1)?.targetVolumeMl, plan.hotWaterMl, `${index} ${dripper.name} final hot-water target`);
+      assert.ok(plan.iceMl > 0, `${index} ${dripper.name} should use measured ice`);
+    }
+    if (requestedBrewMode === 'iced' && !icedSupported) {
+      unsupportedIcedFallbacks += 1;
+      assert.equal(plan.brewMode, 'hot', `${index} ${dripper.name} unsupported iced should not fake iced`);
+      assert.equal(plan.iceMl, 0, `${index} ${dripper.name} unsupported iced should not create hidden ice`);
+    }
+
+    const operationalText = [
+      plan.summary,
+      ...(plan.steps || []).map((step) => `${step.label} ${step.note} ${step.hybridInstruction || ''}`),
+      ...(plan.workflowGuideSteps || []).map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''} ${step.techniqueChips.map((chip) => `${chip.label} ${chip.value}`).join(' ')}`),
+    ].join('\n');
+    const narrative = [
+      operationalText,
+      ...(plan.warnings || []),
+      ...(plan.beanCoverage?.warnings || []),
+      ...(plan.confidenceNotes || []),
+    ].join('\n');
+    if (plan.methodFamily === 'hario_switch') {
+      assert.match(operationalText, /katup|Switch|muatan ruang|ruang/i, `${index} ${dripper.name} should keep Switch-specific guidance`);
+      assertSwitchWaterAccounting(plan);
+    } else {
+      assert.doesNotMatch(operationalText, /Katup|muatan ruang|Switch 02|Switch 03|MUGEN x SWITCH/i, `${index} ${dripper.name} should not leak Switch wording`);
+    }
+    if (plan.methodFamily === 'french_press') {
+      assert.doesNotMatch(operationalText, /final pour|tuang akhir|pulse/i, `${index} French Press should not leak pour-over steps`);
+    }
+    if (plan.methodFamily === 'espresso') {
+      assert.doesNotMatch(operationalText, /bloom|air turun|drawdown|final pour|tuang akhir/i, `${index} Espresso should not leak filter workflow`);
+    }
+    if (plan.methodFamily === 'moka_pot') {
+      assert.doesNotMatch(operationalText, /bloom|final pour|tuang akhir/i, `${index} Moka should not leak filter workflow`);
+    }
+
+    const coverageCategory = plan.beanCoverage?.category || 'missing';
+    if (bean.expectation === 'unknown') {
+      assert.ok(
+        coverageCategory === 'unknown_fallback' || coverageCategory === 'risk_caution',
+        `${index} ${bean.label} should stay honest unknown fallback or safer risk caution`,
+      );
+      assert.match(narrative, /Data beans tidak lengkap|Bean belum lengkap|baseline aman|fallback/i, `${index} unknown bean should explain safe fallback`);
+    } else if (bean.expectation === 'risk') {
+      assert.equal(coverageCategory, 'risk_caution', `${index} ${bean.label} should use risk caution`);
+      assert.match(narrative, /hati-hati|caution|feedback|cek rasa|baseline|sensitif|non-arabica|fermentasi|pahit|muddy|keruh|body|dense|earthy|woody|risk/i, `${index} risk bean should stay cautionary`);
+    } else {
+      assert.notEqual(coverageCategory, 'unknown_fallback', `${index} ${bean.label} should not become unknown when taxonomy is present`);
+    }
+
+    const scores = scoreAiBrewAuditPlan(plan);
+    for (const [scoreName, value] of Object.entries(scores)) {
+      scoreMin[scoreName as keyof typeof scoreMin] = Math.min(scoreMin[scoreName as keyof typeof scoreMin], value);
+    }
+    assert.ok(scores.guardrailStrength >= 90, `${index} guardrail score`);
+    assert.ok(scores.confidenceHonesty >= 90, `${index} confidence honesty score`);
+    assert.ok(scores.methodSpecificGuideQuality >= 90, `${index} method guide score`);
+
+    increment(beanCoverageCounts, coverageCategory);
+    increment(methodCounts, plan.methodFamily);
+    increment(targetCounts, targetProfileId);
+    increment(brewModeCounts, plan.brewMode);
+    increment(expectationCounts, bean.expectation);
+
+    if (index % 79 === 0 || bean.expectation !== 'classic') {
+      if (samples.length < 260) {
+        const summary = summarizeAiBrewPlan(plan);
+        samples.push({
+          index,
+          beanCase: bean.label,
+          expectation: bean.expectation,
+          requestedBrewMode,
+          unsupportedIcedFallback: requestedBrewMode === 'iced' && !icedSupported,
+          ...summary,
+          scores,
+        });
+      }
+    }
+  }
+
+  const summary = {
+    total: 10000,
+    passed: 10000,
+    visibleDrippers: visibleDrippers.length,
+    targets: targetProfileIds.length,
+    beanCases: beanCases.length,
+    waterProfiles: waterProfiles.length,
+    grinders: grinderIds.length,
+    unsupportedIcedFallbacks,
+    beanCoverageCounts,
+    methodCounts,
+    targetCounts,
+    brewModeCounts,
+    expectationCounts,
+    scoreMin,
+  };
+  assert.equal(Object.values(targetCounts).length, targetProfileIds.length, 'all target rasa profiles should be exercised');
+  assert.equal(Object.values(methodCounts).length >= 12, true, 'stress run should cover broad method families');
+  assert.ok((beanCoverageCounts.unknown_fallback || 0) > 0, 'unknown beans should exercise unknown fallback');
+  assert.ok((beanCoverageCounts.risk_caution || 0) >= expectationCounts.risk, 'risk beans should map to risk caution');
+  const artifactDir = writeAiBrewGlobalStressAuditArtifact(summary, samples);
+  assert.ok(fs.existsSync(`${artifactDir}/global-10k-stress-summary.json`));
+  assert.ok(fs.existsSync(`${artifactDir}/global-10k-stress.md`));
 });
 
 test('AI Brew water catalog blocks private sources, zero-mineral autofill, and estimated facts', () => {

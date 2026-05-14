@@ -84,7 +84,53 @@ export type CatalogReleaseStatus =
 
 export type CatalogConfidence = 'high' | 'medium' | 'low';
 export type CatalogReviewStatus = 'fresh' | 'needs_review' | 'deprecated' | 'conflicting';
-export type VarietyTaxonomySpecies = 'arabica' | 'canephora' | 'liberica' | 'excelsa' | 'hybrid' | 'unknown';
+export type CoffeeTaxonomyRiskTag =
+  | 'decaf-sensitive'
+  | 'aroma-preservation'
+  | 'low-bitterness'
+  | 'low-bitterness-margin'
+  | 'experimental'
+  | 'ferment-risk'
+  | 'high-ferment'
+  | 'drying-only'
+  | 'non-arabica'
+  | 'canephora'
+  | 'liberica'
+  | 'excelsa'
+  | 'unusual-species'
+  | 'bitter-risk'
+  | 'muddy-risk'
+  | 'woody-risk'
+  | 'earthy-risk'
+  | 'high-aroma'
+  | 'clarity-leaning'
+  | 'body-heavy'
+  | 'body-medium'
+  | 'low-acidity'
+  | 'high-acidity'
+  | 'low-solubility'
+  | 'high-solubility'
+  | 'conservative-extraction'
+  | 'conservative-temperature'
+  | 'taste-feedback-required'
+  | 'lot-dependent'
+  | 'floral-possible'
+  | 'structure'
+  | 'disease-resistant'
+  | 'hybrid-species'
+  | 'regional-variation'
+  | 'delicate'
+  | 'low-confidence-if-unverified';
+export type VarietyTaxonomySpecies =
+  | 'arabica'
+  | 'canephora'
+  | 'liberica'
+  | 'excelsa'
+  | 'eugenioides'
+  | 'stenophylla'
+  | 'racemosa'
+  | 'hybrid'
+  | 'unknown';
 export type VarietyLineageGroup =
   | 'bourbon_typica'
   | 'ethiopian_landrace'
@@ -493,6 +539,7 @@ export interface VarietyCatalogEntry extends CatalogProvenance {
     parentage?: string[];
   };
   sensoryBias?: CatalogSensoryBias;
+  riskTags?: CoffeeTaxonomyRiskTag[];
   numericModifiers?: {
     ratioDelta?: number;
     tempDeltaC?: number;
@@ -511,6 +558,7 @@ export interface ProcessCatalogEntry extends CatalogProvenance {
   origins?: string[];
   sensoryBias?: CatalogSensoryBias;
   processRisk?: ProcessRiskModel;
+  riskTags?: CoffeeTaxonomyRiskTag[];
   numericModifiers?: {
     ratioDelta?: number;
     tempDeltaC?: number;

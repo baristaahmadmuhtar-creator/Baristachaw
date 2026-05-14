@@ -403,6 +403,16 @@ function normalizeSearchEntry<T extends { id: string; label: string; aliases: st
   } as T;
 }
 
+function normalizeRiskTags(entry: { riskTags?: string[] }) {
+  return Array.from(
+    new Set(
+      (entry.riskTags || [])
+        .map((value) => String(value || '').trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
 type CatalogProvenanceLike = {
   source: string;
   sourceUrls: string[];
@@ -492,6 +502,9 @@ function inferVarietySpecies(entry: VarietyCatalogEntry, lineageGroup: VarietyLi
   if (/\b(canephora|robusta|conilon)\b/.test(haystack) || lineageGroup === 'canephora_clone') return 'canephora';
   if (/\bliberica\b/.test(haystack)) return 'liberica';
   if (/\bexcelsa\b/.test(haystack)) return 'excelsa';
+  if (/\beugenioides\b/.test(haystack)) return 'eugenioides';
+  if (/\bstenophylla\b/.test(haystack)) return 'stenophylla';
+  if (/\bracemosa\b/.test(haystack)) return 'racemosa';
   if (/\bhybrid\b/.test(haystack) && /\b(interspecific|canephora|robusta|timor)\b/.test(haystack)) return 'hybrid';
   if (lineageGroup === 'liberica_excelsa') return 'hybrid';
   return lineageGroup === 'unknown' ? 'unknown' : 'arabica';
@@ -539,6 +552,19 @@ function inferVarietySensoryBias(entry: VarietyCatalogEntry, lineageGroup: Varie
 function inferProcessSensoryBias(entry: ProcessCatalogEntry): CatalogSensoryBias {
   if (entry.sensoryBias) return safeSensoryBias(entry.sensoryBias);
   const haystack = catalogHaystack(entry);
+  const riskTags = new Set(normalizeRiskTags(entry));
+  if (riskTags.has('decaf-sensitive')) {
+    return safeSensoryBias({ acidity: -1, sweetness: -1, body: 0, clarity: -1, fermentIntensity: 0, bitternessRisk: 1, aromaVolatility: 0 });
+  }
+  if (riskTags.has('non-arabica') || riskTags.has('canephora') || riskTags.has('liberica') || riskTags.has('excelsa')) {
+    return safeSensoryBias({ acidity: riskTags.has('excelsa') ? 1 : -1, sweetness: 0, body: 2, clarity: -1, fermentIntensity: 0, bitternessRisk: 2, aromaVolatility: 1 });
+  }
+  if (riskTags.has('experimental') || riskTags.has('ferment-risk') || riskTags.has('high-ferment')) {
+    return safeSensoryBias({ acidity: 0, sweetness: 1, body: 1, clarity: -1, fermentIntensity: 2, bitternessRisk: 1, aromaVolatility: 3 });
+  }
+  if (riskTags.has('drying-only')) {
+    return safeSensoryBias({ acidity: 0, sweetness: 1, body: 0, clarity: 0, fermentIntensity: 0, bitternessRisk: 0, aromaVolatility: 1 });
+  }
   if (/\b(coferment|co_ferment|co-ferment|infused|fruit_maceration|koji|enzyme|thermal_shock)\b/.test(haystack)) {
     return safeSensoryBias({ acidity: 0, sweetness: 2, body: 1, clarity: -2, fermentIntensity: 3, bitternessRisk: 2, aromaVolatility: 3 });
   }
@@ -563,6 +589,16 @@ function inferProcessSensoryBias(entry: ProcessCatalogEntry): CatalogSensoryBias
 function inferProcessRisk(entry: ProcessCatalogEntry): ProcessRiskModel {
   if (entry.processRisk) return entry.processRisk;
   const haystack = catalogHaystack(entry);
+  const riskTags = new Set(normalizeRiskTags(entry));
+  if (riskTags.has('experimental') || riskTags.has('ferment-risk') || riskTags.has('high-ferment') || riskTags.has('taste-feedback-required')) {
+    return { variability: 'high', overFermentRisk: 'high', recommendationMode: 'taste_feedback_required' };
+  }
+  if (riskTags.has('decaf-sensitive') || riskTags.has('non-arabica') || riskTags.has('canephora') || riskTags.has('liberica') || riskTags.has('excelsa')) {
+    return { variability: 'medium', overFermentRisk: 'medium', recommendationMode: 'conservative' };
+  }
+  if (riskTags.has('drying-only')) {
+    return { variability: 'medium', overFermentRisk: 'low', recommendationMode: 'conservative' };
+  }
   if (/\b(coferment|co_ferment|co-ferment|infused|fruit_maceration|koji|enzyme|thermal_shock)\b/.test(haystack)) {
     return { variability: 'high', overFermentRisk: 'high', recommendationMode: 'taste_feedback_required' };
   }
@@ -590,6 +626,7 @@ function normalizeVarietyEntry(entry: VarietyCatalogEntry): VarietyCatalogEntry 
   };
   return {
     ...base,
+    riskTags: normalizeRiskTags(base) as VarietyCatalogEntry['riskTags'],
     taxonomy,
     sensoryBias: inferVarietySensoryBias(base, lineageGroup),
   };
@@ -599,6 +636,7 @@ function normalizeProcessEntry(entry: ProcessCatalogEntry): ProcessCatalogEntry 
   const base = normalizeSearchEntry(entry);
   return {
     ...base,
+    riskTags: normalizeRiskTags(base) as ProcessCatalogEntry['riskTags'],
     sensoryBias: inferProcessSensoryBias(base),
     processRisk: inferProcessRisk(base),
   };

@@ -1014,6 +1014,15 @@ function hasValue(value: unknown) {
   return String(value || '').trim().length > 0;
 }
 
+function entryRiskTags(entry?: ProcessCatalogEntry | VarietyCatalogEntry) {
+  return new Set((entry?.riskTags || []).map((tag) => String(tag).trim()).filter(Boolean));
+}
+
+function hasAnyRiskTag(entry: ProcessCatalogEntry | VarietyCatalogEntry | undefined, tags: string[]) {
+  const riskTags = entryRiskTags(entry);
+  return tags.some((tag) => riskTags.has(tag));
+}
+
 function buildBeanCoverageState(params: {
   input: AiBrewFormState;
   processEntry?: ProcessCatalogEntry;
@@ -1067,6 +1076,8 @@ function buildBeanCoverageState(params: {
 
   const riskyBean = params.processRisk?.variability === 'high'
     || params.processRisk?.recommendationMode === 'taste_feedback_required'
+    || hasAnyRiskTag(params.processEntry, ['decaf-sensitive', 'experimental', 'ferment-risk', 'high-ferment', 'non-arabica', 'canephora', 'liberica', 'excelsa', 'taste-feedback-required'])
+    || hasAnyRiskTag(params.varietyEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa', 'unusual-species', 'bitter-risk', 'low-confidence-if-unverified'])
     || params.input.roastLevel === 'dark'
     || /\b(anaerobic|carbonic|lactic|ferment|co[-\s]?ferment|thermal|infused|decaf|robusta|canephora|liberica|excelsa|wet[-\s_]?hulled|giling\s+basah|old roast|fresh roast|45\+?\s*days|2\s*days|smoky|very dark|low[-\s]?density|high[-\s]?density)\b/i.test(beanText)
     || (typeof params.beanProfile.beanDensityGml === 'number' && (params.beanProfile.beanDensityGml < 0.65 || params.beanProfile.beanDensityGml > 0.74))
@@ -1087,8 +1098,11 @@ function buildBeanCoverageState(params: {
 
   if (!hasBeanDetail) warnings.push('Data beans tidak lengkap; AI Brew memakai baseline aman.');
   if (params.processRisk?.variability === 'high') warnings.push('Process high-variability: validate with taste feedback before increasing extraction.');
+  if (hasAnyRiskTag(params.processEntry, ['decaf-sensitive'])) warnings.push('Decaf bisa lebih sensitif. Mulai dari baseline aman, lalu koreksi dari rasa.');
+  if (hasAnyRiskTag(params.processEntry, ['experimental', 'ferment-risk', 'high-ferment', 'taste-feedback-required'])) warnings.push('Proses ini sangat bergantung pada kontrol produser. AI Brew memakai baseline konservatif dan butuh feedback rasa.');
+  if (hasAnyRiskTag(params.processEntry, ['drying-only'])) reasons.push('Drying cue is treated as context, not a deterministic taste guarantee.');
   if (params.input.roastLevel === 'dark') warnings.push('Dark roast: protect bitterness with lower extraction pressure.');
-  if (/\b(robusta|canephora|liberica|excelsa)\b/i.test(beanText)) warnings.push('Non-arabica or robusta/canephora cue: keep bitterness protection active.');
+  if (/\b(robusta|canephora|liberica|excelsa)\b/i.test(beanText) || hasAnyRiskTag(params.processEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa']) || hasAnyRiskTag(params.varietyEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa', 'unusual-species'])) warnings.push('Robusta/canephora/non-arabica cenderung lebih body-heavy dan mudah pahit jika ekstraksi terlalu agresif.');
   if (riskyWater) warnings.push('Water needs caution or manual verification before treating the prediction as high confidence.');
   if (!grinderKnown) warnings.push('Grinder setting is estimated or fallback; calibrate by drawdown and taste.');
   if (params.switchValidation && params.switchValidation.status !== 'safe') warnings.push(params.switchValidation.message);
@@ -1626,9 +1640,17 @@ const BODY_PROCESS_IDS = new Set([
   'mountain_water_decaf',
   'sugarcane_decaf',
   'swiss_water_decaf',
+  'co2_decaf',
+  'robusta_natural',
+  'robusta_washed',
+  'liberica_natural',
+  'liberica_washed',
+  'excelsa_natural',
+  'excelsa_washed',
   'koji_fermentation',
   'co_fermented',
   'thermal_shock_natural',
+  'wet_hulled_honey',
 ]);
 
 const CLARITY_VARIETY_IDS = new Set([
@@ -1646,6 +1668,11 @@ const CLARITY_VARIETY_IDS = new Set([
   'n39',
   'caturra_chiroso',
   'bourbon_pointu',
+  'sidra',
+  'kudhume',
+  'eugenioides',
+  'stenophylla',
+  'racemosa',
 ]);
 
 const SWEETNESS_VARIETY_IDS = new Set([
@@ -1668,6 +1695,8 @@ const SWEETNESS_VARIETY_IDS = new Set([
   'orange_bourbon',
   'andina',
   'ombligon',
+  'pink_bourbon',
+  'sidra',
 ]);
 
 const BODY_VARIETY_IDS = new Set([
@@ -1695,6 +1724,10 @@ const BODY_VARIETY_IDS = new Set([
   'linie_s',
   'sln_9',
   'timor_hybrid',
+  'arabusta',
+  'eugenioides',
+  'stenophylla',
+  'racemosa',
 ]);
 
 type VarietyIntentSignal = {
@@ -1706,7 +1739,7 @@ type VarietyIntentSignal = {
 
 const VARIETY_CLARITY_PATTERN = /\b(geisha|gesha|sl\s?28|sl\s?34|ethiopian\s+heirloom|heirloom|landrace|wush\s?wush|rume\s+sudan|caturra\s+chiroso|bourbon\s+pointu|sidra|wush|yirgacheffe)\b/i;
 const VARIETY_SWEETNESS_PATTERN = /\b(bourbon|yellow\s+bourbon|orange\s+bourbon|pink\s+bourbon|red\s+bourbon|caturra|catuai|catua[iy]|typica|mundo\s+novo|mokka|sidra|ombligon|acaia|arara|blue\s+mountain|tekisic|kartika|andungsari|kartika)\b/i;
-const VARIETY_BODY_PATTERN = /\b(robusta|conilon|canephora|liberica|excelsa|pacamara|maracaturra|maragogipe|maracatu|catimor|timor|tim\s?tim|s795|ateng|sigarar|jember|linie\s+s|gayo\s*2|andungsari|bp\s?534|bp\s?936|bp\s?939)\b/i;
+const VARIETY_BODY_PATTERN = /\b(robusta|conilon|canephora|liberica|excelsa|arabusta|pacamara|maracaturra|maragogipe|maracatu|catimor|timor|tim\s?tim|s795|ateng|sigarar|jember|linie\s+s|gayo\s*2|andungsari|bp\s?534|bp\s?936|bp\s?939)\b/i;
 
 function inferVarietyIntentSignal(params: {
   varietyId?: string;
@@ -1770,7 +1803,14 @@ export function detectCustomProcess(
     return pick('triple_fermentation', 'low', 'Custom process cue mapped to triple fermentation; taste feedback is required.');
   }
   if (/\b(giling\s+basah|wet[-\s]?hulled|semi[-\s]?washed\s+indonesia)\b/.test(haystack)) {
+    if (/\bhoney\b/.test(haystack)) {
+      return pick('wet_hulled_honey', 'medium', 'Custom process cue mapped to wet-hulled honey; keep the baseline conservative and verify by taste.')
+        || pick('wet_hulled', 'high', 'Custom process cue mapped to wet-hulled Indonesian baseline.');
+    }
     return pick('wet_hulled', 'high', 'Custom process cue mapped to wet-hulled Indonesian baseline.');
+  }
+  if (/\b(co2|carbon\s+dioxide|supercritical\s+co2)\b/.test(haystack) && /\b(decaf|decaffeinated)\b/.test(haystack)) {
+    return pick('co2_decaf', 'medium', 'Custom process cue mapped to CO2 decaf baseline; decaf sensitivity stays active.');
   }
   if (/\b(sugarcane|ea\s+decaf|ethyl\s+acetate)\b/.test(haystack) && /\b(decaf|decaffeinated)\b/.test(haystack)) {
     return pick('sugarcane_decaf', 'high', 'Custom process cue mapped to sugarcane decaf baseline.');
@@ -1783,6 +1823,24 @@ export function detectCustomProcess(
   }
   if (/\b(decaf|decaffeinated)\b/.test(haystack)) {
     return pick('decaf', 'medium', 'Custom process cue mapped to decaf baseline.');
+  }
+  if (/\b(natural|dry\s+process)\b/.test(haystack) && /\b(robusta|canephora)\b/.test(haystack)) {
+    return pick('robusta_natural', 'medium', 'Custom process cue mapped to natural robusta; non-arabica bitterness guard stays active.');
+  }
+  if (/\b(washed|wet\s+process)\b/.test(haystack) && /\b(robusta|canephora)\b/.test(haystack)) {
+    return pick('robusta_washed', 'medium', 'Custom process cue mapped to washed robusta; non-arabica bitterness guard stays active.');
+  }
+  if (/\b(natural|dry\s+process)\b/.test(haystack) && /\bliberica\b/.test(haystack)) {
+    return pick('liberica_natural', 'medium', 'Custom process cue mapped to natural Liberica; non-arabica guard stays active.');
+  }
+  if (/\b(washed|wet\s+process)\b/.test(haystack) && /\bliberica\b/.test(haystack)) {
+    return pick('liberica_washed', 'medium', 'Custom process cue mapped to washed Liberica; non-arabica guard stays active.');
+  }
+  if (/\b(natural|dry\s+process)\b/.test(haystack) && /\bexcelsa\b/.test(haystack)) {
+    return pick('excelsa_natural', 'medium', 'Custom process cue mapped to natural Excelsa; non-arabica guard stays active.');
+  }
+  if (/\b(washed|wet\s+process)\b/.test(haystack) && /\bexcelsa\b/.test(haystack)) {
+    return pick('excelsa_washed', 'medium', 'Custom process cue mapped to washed Excelsa; non-arabica guard stays active.');
   }
   if (/\b(double\s+washed|fully\s+washed|washed|wet\s+process)\b/.test(haystack)) {
     if (/\b(kenya|kenyan|double\s+fermentation)\b/.test(haystack)) {
@@ -1870,17 +1928,23 @@ export function deriveBeanTaxonomySignal(params: {
     || varietyReview === 'needs_review';
   const risky = params.processRisk?.variability === 'high'
     || params.processRisk?.recommendationMode === 'taste_feedback_required'
+    || hasAnyRiskTag(params.processEntry, ['decaf-sensitive', 'experimental', 'ferment-risk', 'high-ferment', 'non-arabica', 'canephora', 'liberica', 'excelsa', 'taste-feedback-required'])
+    || hasAnyRiskTag(params.varietyEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa', 'unusual-species', 'bitter-risk', 'low-confidence-if-unverified'])
     || /\b(anaerobic|carbonic|lactic|co[-\s]?ferment|infused|thermal|koji|enzyme|experimental|decaf|robusta|canephora|liberica|excelsa|wet\s+hulled|giling\s+basah|barrel|nitrogen|triple)\b/i.test(`${processText} ${varietyText}`);
   const reasons = normalizeNoteList([
     hasCatalogProcess ? `Process catalog match: ${params.processLabel}.` : undefined,
     hasCatalogVariety ? `Variety catalog match: ${params.varietyLabel}.` : undefined,
     params.customProcessDetection ? `Custom process mapped to ${params.customProcessDetection.id}.` : undefined,
     processRegional || varietyRegional ? 'Regional alias or review-needed taxonomy is treated as curated, not official.' : undefined,
+    hasAnyRiskTag(params.processEntry, ['drying-only']) ? 'Drying-only cue is treated as context, not a primary recipe driver.' : undefined,
   ]);
   const warnings = normalizeNoteList([
     !hasProcess && !hasVariety ? 'Data beans belum lengkap; AI Brew memakai baseline aman.' : undefined,
     hasProcess && !hasCatalogProcess && !params.customProcessDetection ? 'Process manual belum cocok ke katalog; gunakan feedback rasa untuk koreksi.' : undefined,
     hasVariety && !hasCatalogVariety ? 'Varietas manual belum cocok ke katalog; keyakinan tetap konservatif.' : undefined,
+    hasAnyRiskTag(params.processEntry, ['decaf-sensitive']) ? 'Decaf bisa lebih sensitif; gunakan baseline aman dan koreksi dari rasa.' : undefined,
+    hasAnyRiskTag(params.processEntry, ['experimental', 'ferment-risk', 'high-ferment', 'taste-feedback-required']) ? 'Proses ini sangat bergantung pada kontrol produser; butuh feedback rasa.' : undefined,
+    hasAnyRiskTag(params.processEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa']) || hasAnyRiskTag(params.varietyEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa', 'unusual-species']) ? 'Robusta/canephora/non-arabica cenderung lebih body-heavy dan mudah pahit jika ekstraksi terlalu agresif.' : undefined,
     risky ? 'Bean atau proses berisiko tinggi; pakai baseline konservatif dan ubah satu variabel dulu.' : undefined,
   ]);
 
@@ -2733,6 +2797,15 @@ function deriveDoseAdjustment(
 function resolveProcessRiskFallback(entry?: ProcessCatalogEntry) {
   if (!entry) return undefined;
   if (entry.processRisk) return entry.processRisk;
+  if (hasAnyRiskTag(entry, ['experimental', 'ferment-risk', 'high-ferment', 'taste-feedback-required'])) {
+    return { variability: 'high' as const, overFermentRisk: 'high' as const, recommendationMode: 'taste_feedback_required' as const };
+  }
+  if (hasAnyRiskTag(entry, ['decaf-sensitive', 'non-arabica', 'canephora', 'liberica', 'excelsa'])) {
+    return { variability: 'medium' as const, overFermentRisk: 'medium' as const, recommendationMode: 'conservative' as const };
+  }
+  if (hasAnyRiskTag(entry, ['drying-only'])) {
+    return { variability: 'medium' as const, overFermentRisk: 'low' as const, recommendationMode: 'conservative' as const };
+  }
   const haystack = normalizeSearchHaystack([
     entry.id,
     entry.label,

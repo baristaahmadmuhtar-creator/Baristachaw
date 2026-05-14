@@ -90,7 +90,17 @@
       "id": "anaerobic_carbonic",
       "label": "Anaerobic Carbonic",
       "group": "fermented",
-      "searchText": "anaerobic_carbonic anaerobic carbonic fermented carbonic anaerobic low oxygen carbonic global colombia panama indonesia"
+      "searchText": "anaerobic_carbonic anaerobic carbonic fermented carbonic anaerobic low oxygen carbonic global colombia panama indonesia curated process expansion; sensory effect varies by producer control and green quality.",
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "taste-feedback-required"
+      ],
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      }
     },
     {
       "id": "anaerobic_honey",
@@ -179,7 +189,18 @@
         "Costa Rica",
         "Panama",
         "Indonesia"
-      ]
+      ],
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "taste-feedback-required"
+      ],
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      },
+      "searchText": "anaerobic_thermal_shock anaerobic thermal shock experimental thermal shock anaerobic colombia costa rica panama indonesia combination descriptor for sealed fermentation followed by temperature-shock finishing. prioritize cup feedback before major brew adjustments."
     },
     {
       "id": "anaerobic_washed",
@@ -297,7 +318,17 @@
       "id": "barrel_aged",
       "label": "Barrel Aged",
       "group": "experimental",
-      "searchText": "barrel_aged barrel aged experimental barrel rested barrel fermented global"
+      "searchText": "barrel_aged barrel aged experimental barrel rested barrel fermented global curated process expansion; sensory effect varies by producer control and green quality.",
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "taste-feedback-required"
+      ],
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      }
     },
     {
       "id": "black_honey",
@@ -355,7 +386,17 @@
       "id": "black_honey_anaerobic",
       "label": "Black Honey Anaerobic",
       "group": "fermented",
-      "searchText": "black_honey_anaerobic black honey anaerobic fermented anaerobic black honey costa rica colombia global"
+      "searchText": "black_honey_anaerobic black honey anaerobic fermented anaerobic black honey costa rica colombia global curated process expansion; sensory effect varies by producer control and green quality.",
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "taste-feedback-required"
+      ],
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      }
     },
     {
       "aliases": [
@@ -385,7 +426,17 @@
       "id": "carbonic_honey",
       "label": "Carbonic Honey",
       "group": "fermented",
-      "searchText": "carbonic_honey carbonic honey fermented honey carbonic maceration carbonic pulped natural global colombia panama"
+      "searchText": "carbonic_honey carbonic honey fermented honey carbonic maceration carbonic pulped natural global colombia panama curated process expansion; sensory effect varies by producer control and green quality.",
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "taste-feedback-required"
+      ],
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      }
     },
     {
       "id": "carbonic_maceration",
@@ -520,7 +571,7 @@
         "Costa Rica",
         "Global"
       ],
-      "searchText": "co-fermented cofermented co fermentation fruit co-ferment infused fermentation colombia costa rica panama indonesia global experimental co-ferment co-fermented co-fermented fruit coferment co_fermented cofermented co fermentation fruit co-ferment infused fermentation",
+      "searchText": "coferment co-ferment experimental co-fermented fruit coferment co_fermented co-fermented cofermented co fermentation fruit co-ferment infused fermentation colombia china indonesia panama costa rica global experimental co-fermentation descriptor with high sensory variability; do not auto-apply aggressive numeric shifts. high-variability descriptor. do not infer fruit ingredients unless the user/catalog explicitly provides them.",
       "reviewStatus": "needs_review",
       "lastReviewedAt": "2026-05-06",
       "reviewNotes": [
@@ -539,7 +590,13 @@
         "fermentIntensity": 3,
         "bitternessRisk": 2,
         "aromaVolatility": 3
-      }
+      },
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "high-aroma",
+        "taste-feedback-required"
+      ]
     },
     {
       "id": "cold_fermentation",
@@ -621,7 +678,7 @@
       "notes": [
         "Natural process dried away from direct light; usually marketed as aromatic but still needs producer verification."
       ],
-      "searchText": "dark room natural darkroom natural dark room dried natural ethiopia colombia panama china indonesia",
+      "searchText": "dark_room_natural dark room natural experimental darkroom natural dark room dried natural ethiopia colombia panama china indonesia natural process dried away from direct light; usually marketed as aromatic but still needs producer verification.",
       "catalogVersion": "2026.06.2-ai-brew-global-plus",
       "source": "process-curation",
       "verificationLevel": "curated",
@@ -632,6 +689,9 @@
       "confidence": "medium",
       "sourceUrls": [
         "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "riskTags": [
+        "drying-only"
       ]
     },
     {
@@ -659,7 +719,17 @@
         "Colombia",
         "Mexico",
         "Brazil"
-      ]
+      ],
+      "riskTags": [
+        "decaf-sensitive",
+        "conservative-extraction"
+      ],
+      "processRisk": {
+        "variability": "medium",
+        "overFermentRisk": "medium",
+        "recommendationMode": "conservative"
+      },
+      "searchText": "decaf decaf special decaffeinated global colombia mexico brazil processing method varies; use roast and cup result as the primary adjustment anchor."
     },
     {
       "id": "double_anaerobic",
@@ -691,7 +761,17 @@
       "releaseStatus": "new",
       "confidence": "medium",
       "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
-      "searchText": "double anaerobic double anaerobic fermentation two stage anaerobic global colombia ecuador panama indonesia thailand"
+      "searchText": "double_anaerobic double anaerobic experimental double anaerobic fermentation two stage anaerobic global colombia ecuador panama indonesia thailand two-stage anaerobic descriptor; favor conservative temperature and agitation until actual cup feedback is available.",
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "taste-feedback-required"
+      ],
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      }
     },
     {
       "aliases": [
@@ -720,7 +800,17 @@
       "id": "double_carbonic",
       "label": "Double Carbonic",
       "group": "experimental",
-      "searchText": "double_carbonic double carbonic experimental double carbonic maceration global panama colombia"
+      "searchText": "double_carbonic double carbonic experimental double carbonic maceration global panama colombia curated process expansion; sensory effect varies by producer control and green quality.",
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "taste-feedback-required"
+      ],
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      }
     },
     {
       "id": "double_fermentation",
@@ -789,7 +879,6 @@
       "group": "classic",
       "aliases": [
         "kenya washed",
-        "kenyan washed",
         "fully washed double fermentation"
       ],
       "origins": [
@@ -802,7 +891,7 @@
       "notes": [
         "Classic clarity-oriented washed workflow often used as a practical cue for East African lots."
       ],
-      "searchText": "double washed kenya washed kenyan washed fully washed double fermentation kenya rwanda burundi ethiopia central america",
+      "searchText": "double_washed double washed classic kenya washed fully washed double fermentation kenya rwanda burundi ethiopia central america classic clarity-oriented washed workflow often used as a practical cue for east african lots.",
       "catalogVersion": "2026.06.2-ai-brew-global-plus",
       "source": "process-curation",
       "verificationLevel": "curated",
@@ -845,7 +934,8 @@
       "id": "dry_process",
       "label": "Dry Process",
       "group": "classic",
-      "searchText": "dry_process dry process classic dry processed unwashed dried in fruit global ethiopia brazil yemen"
+      "searchText": "dry_process dry process classic dry processed unwashed dried in fruit global ethiopia brazil yemen curated process expansion; sensory effect varies by producer control and green quality.",
+      "riskTags": []
     },
     {
       "id": "eco_pulped",
@@ -935,7 +1025,17 @@
       "id": "experimental_lot",
       "label": "Experimental Lot",
       "group": "experimental",
-      "searchText": "experimental_lot experimental lot experimental experimental process producer experimental global"
+      "searchText": "experimental_lot experimental lot experimental experimental process producer experimental global generic experimental label; keep recipe conservative and require taste feedback.",
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "taste-feedback-required"
+      ],
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      }
     },
     {
       "id": "extended_fermentation",
@@ -978,8 +1078,7 @@
       "group": "experimental",
       "aliases": [
         "fruit fermentation",
-        "fruit macerated",
-        "infused fermentation"
+        "fruit macerated"
       ],
       "origins": [
         "Colombia",
@@ -993,7 +1092,7 @@
       "notes": [
         "High-variability process label; do not claim fruit additions unless the producer or roaster states them explicitly."
       ],
-      "searchText": "fruit maceration fruit fermentation fruit macerated infused fermentation colombia ecuador costa rica panama china indonesia global",
+      "searchText": "fruit_maceration fruit maceration experimental fruit fermentation fruit macerated colombia ecuador costa rica panama china indonesia global high-variability process label; do not claim fruit additions unless the producer or roaster states them explicitly.",
       "catalogVersion": "2026.06.2-ai-brew-global-plus",
       "source": "process-curation",
       "verificationLevel": "curated",
@@ -1004,6 +1103,12 @@
       "confidence": "medium",
       "sourceUrls": [
         "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "high-aroma",
+        "taste-feedback-required"
       ]
     },
     {
@@ -1156,7 +1261,18 @@
         "Indonesia",
         "Global"
       ],
-      "searchText": "koji fermentation koji process aspergillus oryzae fermentation japan colombia panama indonesia global experimental"
+      "searchText": "koji_fermentation koji fermentation experimental koji process aspergillus oryzae fermentation japan colombia panama indonesia global experimental fermentation descriptor; use conservative brew changes and rely on tasting feedback.",
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "high-aroma",
+        "taste-feedback-required"
+      ],
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      }
     },
     {
       "id": "lactic",
@@ -1434,7 +1550,9 @@
       "group": "special",
       "aliases": [
         "mexican mountain water decaf",
-        "water decaf"
+        "water decaf",
+        "mountain water process",
+        "mexico mountain water"
       ],
       "origins": [
         "Mexico",
@@ -1445,7 +1563,7 @@
       "notes": [
         "Water-process decaf cue; relax extraction slightly and keep bitterness control visible."
       ],
-      "searchText": "mountain water decaf mexican mountain water decaf water decaf mexico colombia latin america global",
+      "searchText": "mountain_water_decaf mountain water decaf special mexican mountain water decaf water decaf mountain water process mexico mountain water mexico colombia latin america global water-process decaf cue; relax extraction slightly and keep bitterness control visible.",
       "catalogVersion": "2026.06.2-ai-brew-global-plus",
       "source": "process-curation",
       "verificationLevel": "curated",
@@ -1456,7 +1574,25 @@
       "confidence": "medium",
       "sourceUrls": [
         "https://sca.coffee/research/coffee-processing-glossary"
-      ]
+      ],
+      "riskTags": [
+        "decaf-sensitive",
+        "conservative-extraction"
+      ],
+      "processRisk": {
+        "variability": "medium",
+        "overFermentRisk": "medium",
+        "recommendationMode": "conservative"
+      },
+      "sensoryBias": {
+        "acidity": -1,
+        "sweetness": -1,
+        "body": 0,
+        "clarity": -1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 1,
+        "aromaVolatility": 0
+      }
     },
     {
       "id": "natural",
@@ -1547,7 +1683,16 @@
       "id": "natural_decaf",
       "label": "Natural Decaf",
       "group": "special",
-      "searchText": "natural_decaf natural decaf special natural process decaf global"
+      "searchText": "natural_decaf natural decaf special natural process decaf global curated process expansion; sensory effect varies by producer control and green quality.",
+      "riskTags": [
+        "decaf-sensitive",
+        "conservative-extraction"
+      ],
+      "processRisk": {
+        "variability": "medium",
+        "overFermentRisk": "medium",
+        "recommendationMode": "conservative"
+      }
     },
     {
       "aliases": [
@@ -1606,7 +1751,17 @@
       "id": "nitrogen_maceration",
       "label": "Nitrogen Maceration",
       "group": "experimental",
-      "searchText": "nitrogen_maceration nitrogen maceration experimental nitrogen flush fermentation nitrogen anaerobic global"
+      "searchText": "nitrogen_maceration nitrogen maceration experimental nitrogen flush fermentation nitrogen anaerobic global curated process expansion; sensory effect varies by producer control and green quality.",
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "taste-feedback-required"
+      ],
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      }
     },
     {
       "aliases": [
@@ -1669,9 +1824,7 @@
       "id": "pulped_natural",
       "label": "Pulped Natural",
       "group": "classic",
-      "aliases": [
-        "semi-washed"
-      ],
+      "aliases": [],
       "source": "sca-coffee-processing",
       "sourceUrls": [
         "https://sca.coffee/research/coffee-processing-glossary"
@@ -1689,7 +1842,8 @@
         "Brazil",
         "India",
         "Indonesia"
-      ]
+      ],
+      "searchText": "pulped_natural pulped natural classic brazil india indonesia common in latin america and often overlaps with honey-style descriptions."
     },
     {
       "aliases": [
@@ -1720,7 +1874,10 @@
       "id": "raised_bed_natural",
       "label": "Raised-Bed Natural",
       "group": "drying",
-      "searchText": "raised_bed_natural raised-bed natural drying african bed natural drying bed natural ethiopia kenya rwanda global"
+      "searchText": "raised_bed_natural raised-bed natural drying african bed natural drying bed natural ethiopia kenya rwanda global curated process expansion; sensory effect varies by producer control and green quality.",
+      "riskTags": [
+        "drying-only"
+      ]
     },
     {
       "id": "raisin_natural",
@@ -1838,7 +1995,17 @@
       "id": "rum_barrel_aged",
       "label": "Rum Barrel Aged",
       "group": "experimental",
-      "searchText": "rum_barrel_aged rum barrel aged experimental rum barrel coffee rum barrel fermentation global central america caribbean"
+      "searchText": "rum_barrel_aged rum barrel aged experimental rum barrel coffee rum barrel fermentation global central america caribbean curated process expansion; sensory effect varies by producer control and green quality.",
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "taste-feedback-required"
+      ],
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      }
     },
     {
       "id": "semi_anaerobic",
@@ -1939,7 +2106,8 @@
       "aliases": [
         "semi-washed",
         "semi washed",
-        "semi-basah"
+        "semi-basah",
+        "wet processed semi washed"
       ],
       "source": "sca-coffee-processing",
       "sourceUrls": [
@@ -1961,7 +2129,12 @@
         "Brazil",
         "Vietnam",
         "Laos"
-      ]
+      ],
+      "riskTags": [
+        "body-medium",
+        "regional-variation"
+      ],
+      "searchText": "semi_washed semi washed regional semi-washed semi washed semi-basah wet processed semi washed indonesia india brazil vietnam laos regional descriptor often used across indonesia and southeast asia as a practical alias around wet-hulled and pulped transitions."
     },
     {
       "id": "semi_washed_extended_fermentation",
@@ -2030,7 +2203,6 @@
       "group": "classic",
       "aliases": [
         "shade dried",
-        "slow dried natural",
         "raised bed shade natural"
       ],
       "origins": [
@@ -2043,7 +2215,7 @@
       "notes": [
         "Natural drying descriptor; use as aroma/body cue, not as a guarantee of fermentation style."
       ],
-      "searchText": "shade-dried natural shade dried slow dried natural raised bed shade natural ethiopia brazil colombia indonesia global",
+      "searchText": "shade_dried_natural shade-dried natural classic shade dried raised bed shade natural ethiopia brazil colombia indonesia global natural drying descriptor; use as aroma/body cue, not as a guarantee of fermentation style.",
       "catalogVersion": "2026.06.2-ai-brew-global-plus",
       "source": "process-curation",
       "verificationLevel": "curated",
@@ -2054,7 +2226,19 @@
       "confidence": "medium",
       "sourceUrls": [
         "https://sca.coffee/research/coffee-processing-glossary"
-      ]
+      ],
+      "riskTags": [
+        "drying-only"
+      ],
+      "sensoryBias": {
+        "acidity": 0,
+        "sweetness": 1,
+        "body": 0,
+        "clarity": 0,
+        "fermentIntensity": 0,
+        "bitternessRisk": 0,
+        "aromaVolatility": 1
+      }
     },
     {
       "id": "slow_dry_natural",
@@ -2086,7 +2270,19 @@
       "releaseStatus": "new",
       "confidence": "medium",
       "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
-      "searchText": "slow dry natural slow dried natural extended drying natural ethiopia brazil panama colombia indonesia global"
+      "searchText": "slow_dry_natural slow dry natural drying slow dried natural extended drying natural ethiopia brazil panama colombia indonesia global natural process with slow drying emphasis; protect sweetness with stable flow and avoid heavy late agitation.",
+      "riskTags": [
+        "drying-only"
+      ],
+      "sensoryBias": {
+        "acidity": 0,
+        "sweetness": 1,
+        "body": 0,
+        "clarity": 0,
+        "fermentIntensity": 0,
+        "bitternessRisk": 0,
+        "aromaVolatility": 1
+      }
     },
     {
       "id": "submerged_fermentation",
@@ -2122,12 +2318,17 @@
     },
     {
       "id": "sugarcane_decaf",
-      "label": "Sugarcane Decaf",
+      "label": "Sugarcane / EA Decaf",
       "group": "special",
       "aliases": [
         "ethyl acetate decaf",
         "ea decaf",
-        "natural ea decaf"
+        "natural ea decaf",
+        "sugarcane decaf",
+        "sugarcane ea decaf",
+        "EA decaf",
+        "natural EA",
+        "cana sugarcane"
       ],
       "origins": [
         "Colombia",
@@ -2138,7 +2339,7 @@
       "notes": [
         "Ethyl-acetate/sugarcane decaf cue; keep sweetness but avoid over-extracting decaf roast fragility."
       ],
-      "searchText": "sugarcane decaf ethyl acetate decaf ea decaf natural ea decaf colombia brazil latin america global",
+      "searchText": "sugarcane_decaf sugarcane / ea decaf special ethyl acetate decaf ea decaf natural ea decaf sugarcane decaf sugarcane ea decaf ea decaf natural ea cana sugarcane colombia brazil latin america global ethyl-acetate/sugarcane decaf cue; keep sweetness but avoid over-extracting decaf roast fragility.",
       "catalogVersion": "2026.06.2-ai-brew-global-plus",
       "source": "process-curation",
       "verificationLevel": "curated",
@@ -2149,7 +2350,26 @@
       "confidence": "medium",
       "sourceUrls": [
         "https://sca.coffee/research/coffee-processing-glossary"
-      ]
+      ],
+      "riskTags": [
+        "decaf-sensitive",
+        "aroma-preservation",
+        "conservative-extraction"
+      ],
+      "processRisk": {
+        "variability": "medium",
+        "overFermentRisk": "medium",
+        "recommendationMode": "conservative"
+      },
+      "sensoryBias": {
+        "acidity": -1,
+        "sweetness": -1,
+        "body": 0,
+        "clarity": -1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 1,
+        "aromaVolatility": 0
+      }
     },
     {
       "id": "swiss_water_decaf",
@@ -2157,7 +2377,10 @@
       "group": "special",
       "aliases": [
         "swiss water process",
-        "swp decaf"
+        "swp decaf",
+        "swiss water",
+        "water processed decaf",
+        "swiss water processed"
       ],
       "origins": [
         "Global",
@@ -2168,7 +2391,7 @@
       "notes": [
         "Water-process decaf cue; use as decaf extraction sensitivity signal, not as origin claim."
       ],
-      "searchText": "swiss water decaf swiss water process swp decaf global latin america africa asia",
+      "searchText": "swiss_water_decaf swiss water decaf special swiss water process swp decaf swiss water water processed decaf swiss water processed global latin america africa asia water-process decaf cue; use as decaf extraction sensitivity signal, not as origin claim.",
       "catalogVersion": "2026.06.2-ai-brew-global-plus",
       "source": "process-curation",
       "verificationLevel": "curated",
@@ -2179,7 +2402,26 @@
       "confidence": "medium",
       "sourceUrls": [
         "https://sca.coffee/research/coffee-processing-glossary"
-      ]
+      ],
+      "riskTags": [
+        "decaf-sensitive",
+        "low-bitterness-margin",
+        "conservative-extraction"
+      ],
+      "processRisk": {
+        "variability": "medium",
+        "overFermentRisk": "medium",
+        "recommendationMode": "conservative"
+      },
+      "sensoryBias": {
+        "acidity": -1,
+        "sweetness": -1,
+        "body": 0,
+        "clarity": -1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 1,
+        "aromaVolatility": 0
+      }
     },
     {
       "aliases": [
@@ -2569,7 +2811,9 @@
       "group": "experimental",
       "aliases": [
         "wine yeast",
-        "inoculated wine yeast"
+        "inoculated wine yeast",
+        "wine yeast fermentation",
+        "saccharomyces cerevisiae fermentation"
       ],
       "source": "sca-coffee-processing",
       "sourceUrls": [
@@ -2590,7 +2834,19 @@
         "Costa Rica",
         "Panama",
         "China"
-      ]
+      ],
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "high-aroma",
+        "taste-feedback-required"
+      ],
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      },
+      "searchText": "wine_yeast_fermentation wine yeast fermentation experimental wine yeast inoculated wine yeast wine yeast fermentation saccharomyces cerevisiae fermentation colombia costa rica panama china yeast inoculation style often emphasizes intense aromatics and can over-index fruit notes in light roasts."
     },
     {
       "id": "yeast_fermentation",
@@ -2598,7 +2854,9 @@
       "group": "fermented",
       "aliases": [
         "yeast inoculated fermentation",
-        "inoculated yeast"
+        "inoculated yeast",
+        "yeast fermentation",
+        "saccharomyces fermentation"
       ],
       "origins": [
         "Global",
@@ -2622,7 +2880,12 @@
       "releaseStatus": "new",
       "confidence": "medium",
       "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
-      "searchText": "yeast fermentation yeast inoculated fermentation inoculated yeast global colombia brazil ecuador indonesia thailand"
+      "searchText": "yeast_fermentation yeast fermentation fermented yeast inoculated fermentation inoculated yeast yeast fermentation saccharomyces fermentation global colombia brazil ecuador indonesia thailand inoculated fermentation descriptor; ai brew uses mild sweetness/ferment calibration without claiming a specific yeast protocol.",
+      "riskTags": [
+        "ferment-risk",
+        "high-aroma",
+        "taste-feedback-required"
+      ]
     },
     {
       "id": "yeast_inoculated",
@@ -2681,6 +2944,471 @@
         "Nicaragua",
         "Brazil"
       ]
+    },
+    {
+      "aliases": [
+        "co2 process",
+        "carbon dioxide decaf",
+        "supercritical co2 decaf"
+      ],
+      "origins": [
+        "Global"
+      ],
+      "notes": [
+        "Decaf subtype. Use conservative extraction and do not treat as a separate origin or official recipe cue."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "co2_decaf",
+      "label": "CO2 Decaf",
+      "group": "special",
+      "riskTags": [
+        "decaf-sensitive",
+        "conservative-extraction"
+      ],
+      "processRisk": {
+        "variability": "medium",
+        "overFermentRisk": "medium",
+        "recommendationMode": "conservative"
+      },
+      "sensoryBias": {
+        "acidity": -1,
+        "sweetness": -1,
+        "body": 0,
+        "clarity": -1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 1,
+        "aromaVolatility": 0
+      },
+      "searchText": "co2_decaf co2 decaf special co2 process carbon dioxide decaf supercritical co2 decaf global decaf subtype. use conservative extraction and do not treat as a separate origin or official recipe cue."
+    },
+    {
+      "aliases": [
+        "koji washed",
+        "koji washed process",
+        "washed koji"
+      ],
+      "origins": [
+        "Global",
+        "Japan",
+        "Colombia"
+      ],
+      "notes": [
+        "Experimental koji + washed descriptor. Treat as producer-control dependent and verify by taste feedback."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "koji_washed",
+      "label": "Koji Washed",
+      "group": "experimental",
+      "riskTags": [
+        "experimental",
+        "ferment-risk",
+        "high-aroma",
+        "taste-feedback-required"
+      ],
+      "processRisk": {
+        "variability": "high",
+        "overFermentRisk": "high",
+        "recommendationMode": "taste_feedback_required"
+      },
+      "sensoryBias": {
+        "acidity": 0,
+        "sweetness": 1,
+        "body": 1,
+        "clarity": -1,
+        "fermentIntensity": 2,
+        "bitternessRisk": 1,
+        "aromaVolatility": 3
+      },
+      "searchText": "koji_washed koji washed experimental koji washed koji washed process washed koji global japan colombia experimental koji + washed descriptor. treat as producer-control dependent and verify by taste feedback."
+    },
+    {
+      "aliases": [
+        "honey wet hulled",
+        "giling basah honey",
+        "honey giling basah"
+      ],
+      "origins": [
+        "Indonesia"
+      ],
+      "notes": [
+        "Use only when the label states honey plus wet-hulled/giling basah. Expect body and regional variation, not a floral guarantee."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "wet_hulled_honey",
+      "label": "Wet-Hulled Honey",
+      "group": "regional",
+      "riskTags": [
+        "body-heavy",
+        "earthy-risk",
+        "ferment-risk"
+      ],
+      "processRisk": {
+        "variability": "medium",
+        "overFermentRisk": "medium",
+        "recommendationMode": "conservative"
+      },
+      "sensoryBias": {
+        "acidity": -1,
+        "sweetness": 1,
+        "body": 2,
+        "clarity": -1,
+        "fermentIntensity": 1,
+        "bitternessRisk": 1,
+        "aromaVolatility": 1
+      },
+      "searchText": "wet_hulled_honey wet-hulled honey regional honey wet hulled giling basah honey honey giling basah indonesia use only when the label states honey plus wet-hulled/giling basah. expect body and regional variation, not a floral guarantee."
+    },
+    {
+      "aliases": [
+        "natural robusta",
+        "natural canephora",
+        "dry robusta"
+      ],
+      "origins": [
+        "Global",
+        "Vietnam",
+        "Brazil",
+        "Uganda",
+        "India"
+      ],
+      "notes": [
+        "Process plus species cue. Keep non-arabica bitterness protection active and avoid overconfident flavor claims."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/",
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "robusta_natural",
+      "label": "Natural Robusta",
+      "group": "non-arabica-process",
+      "riskTags": [
+        "non-arabica",
+        "canephora",
+        "body-heavy",
+        "bitter-risk",
+        "conservative-temperature"
+      ],
+      "processRisk": {
+        "variability": "medium",
+        "overFermentRisk": "medium",
+        "recommendationMode": "conservative"
+      },
+      "sensoryBias": {
+        "acidity": -1,
+        "sweetness": 0,
+        "body": 2,
+        "clarity": -1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 2,
+        "aromaVolatility": 1
+      },
+      "searchText": "robusta_natural natural robusta non-arabica-process natural robusta natural canephora dry robusta global vietnam brazil uganda india process plus species cue. keep non-arabica bitterness protection active and avoid overconfident flavor claims."
+    },
+    {
+      "aliases": [
+        "washed robusta",
+        "washed canephora",
+        "wet processed robusta"
+      ],
+      "origins": [
+        "Global",
+        "Vietnam",
+        "India",
+        "Uganda"
+      ],
+      "notes": [
+        "Process plus species cue. Keep non-arabica bitterness protection active and avoid overconfident flavor claims."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/",
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "robusta_washed",
+      "label": "Washed Robusta",
+      "group": "non-arabica-process",
+      "riskTags": [
+        "non-arabica",
+        "canephora",
+        "body-heavy",
+        "bitter-risk",
+        "conservative-temperature"
+      ],
+      "processRisk": {
+        "variability": "medium",
+        "overFermentRisk": "medium",
+        "recommendationMode": "conservative"
+      },
+      "sensoryBias": {
+        "acidity": -1,
+        "sweetness": 0,
+        "body": 2,
+        "clarity": -1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 2,
+        "aromaVolatility": 1
+      },
+      "searchText": "robusta_washed washed robusta non-arabica-process washed robusta washed canephora wet processed robusta global vietnam india uganda process plus species cue. keep non-arabica bitterness protection active and avoid overconfident flavor claims."
+    },
+    {
+      "aliases": [
+        "natural liberica"
+      ],
+      "origins": [
+        "Philippines",
+        "Malaysia",
+        "Indonesia"
+      ],
+      "notes": [
+        "Process plus species cue. Keep non-arabica bitterness protection active and avoid overconfident flavor claims."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/",
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "liberica_natural",
+      "label": "Natural Liberica",
+      "group": "non-arabica-process",
+      "riskTags": [
+        "non-arabica",
+        "liberica",
+        "body-heavy",
+        "bitter-risk",
+        "conservative-temperature"
+      ],
+      "processRisk": {
+        "variability": "medium",
+        "overFermentRisk": "medium",
+        "recommendationMode": "conservative"
+      },
+      "sensoryBias": {
+        "acidity": -1,
+        "sweetness": 0,
+        "body": 2,
+        "clarity": -1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 2,
+        "aromaVolatility": 1
+      },
+      "searchText": "liberica_natural natural liberica non-arabica-process natural liberica philippines malaysia indonesia process plus species cue. keep non-arabica bitterness protection active and avoid overconfident flavor claims."
+    },
+    {
+      "aliases": [
+        "washed liberica"
+      ],
+      "origins": [
+        "Philippines",
+        "Malaysia",
+        "Indonesia"
+      ],
+      "notes": [
+        "Process plus species cue. Keep non-arabica bitterness protection active and avoid overconfident flavor claims."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/",
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "liberica_washed",
+      "label": "Washed Liberica",
+      "group": "non-arabica-process",
+      "riskTags": [
+        "non-arabica",
+        "liberica",
+        "body-heavy",
+        "bitter-risk",
+        "conservative-temperature"
+      ],
+      "processRisk": {
+        "variability": "medium",
+        "overFermentRisk": "medium",
+        "recommendationMode": "conservative"
+      },
+      "sensoryBias": {
+        "acidity": -1,
+        "sweetness": 0,
+        "body": 2,
+        "clarity": -1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 2,
+        "aromaVolatility": 1
+      },
+      "searchText": "liberica_washed washed liberica non-arabica-process washed liberica philippines malaysia indonesia process plus species cue. keep non-arabica bitterness protection active and avoid overconfident flavor claims."
+    },
+    {
+      "aliases": [
+        "natural excelsa"
+      ],
+      "origins": [
+        "Philippines",
+        "Vietnam",
+        "Indonesia"
+      ],
+      "notes": [
+        "Process plus species cue. Keep non-arabica bitterness protection active and avoid overconfident flavor claims."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/",
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "excelsa_natural",
+      "label": "Natural Excelsa",
+      "group": "non-arabica-process",
+      "riskTags": [
+        "non-arabica",
+        "excelsa",
+        "body-heavy",
+        "bitter-risk",
+        "conservative-temperature"
+      ],
+      "processRisk": {
+        "variability": "medium",
+        "overFermentRisk": "medium",
+        "recommendationMode": "conservative"
+      },
+      "sensoryBias": {
+        "acidity": 1,
+        "sweetness": 0,
+        "body": 2,
+        "clarity": -1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 2,
+        "aromaVolatility": 1
+      },
+      "searchText": "excelsa_natural natural excelsa non-arabica-process natural excelsa philippines vietnam indonesia process plus species cue. keep non-arabica bitterness protection active and avoid overconfident flavor claims."
+    },
+    {
+      "aliases": [
+        "washed excelsa"
+      ],
+      "origins": [
+        "Philippines",
+        "Vietnam",
+        "Indonesia"
+      ],
+      "notes": [
+        "Process plus species cue. Keep non-arabica bitterness protection active and avoid overconfident flavor claims."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/",
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "excelsa_washed",
+      "label": "Washed Excelsa",
+      "group": "non-arabica-process",
+      "riskTags": [
+        "non-arabica",
+        "excelsa",
+        "body-heavy",
+        "bitter-risk",
+        "conservative-temperature"
+      ],
+      "processRisk": {
+        "variability": "medium",
+        "overFermentRisk": "medium",
+        "recommendationMode": "conservative"
+      },
+      "sensoryBias": {
+        "acidity": 1,
+        "sweetness": 0,
+        "body": 2,
+        "clarity": -1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 2,
+        "aromaVolatility": 1
+      },
+      "searchText": "excelsa_washed washed excelsa non-arabica-process washed excelsa philippines vietnam indonesia process plus species cue. keep non-arabica bitterness protection active and avoid overconfident flavor claims."
     }
   ]
 }

@@ -20,6 +20,11 @@ function addBias(base: number, bias?: number, weight = 0.45) {
   return base + (bias || 0) * weight;
 }
 
+function hasRiskTag(entry: ProcessCatalogEntry | VarietyCatalogEntry | undefined, tags: string[]) {
+  const riskTags = new Set((entry?.riskTags || []).map((tag) => String(tag)));
+  return tags.some((tag) => riskTags.has(tag));
+}
+
 type IcedCupAdjustment = {
   acidityDelta: number;
   sweetnessDelta: number;
@@ -220,6 +225,27 @@ export function buildExpectedCupProfile(
     const reason = sensoryReason('Process', processEntry);
     if (reason) reasons.push(reason);
   }
+  if (hasRiskTag(processEntry, ['decaf-sensitive'])) {
+    acidity -= 0.25;
+    sweetness -= 0.2;
+    bitterRisk += 0.25;
+    warnings.push('Decaf bisa lebih sensitif. Mulai dari baseline aman, lalu koreksi dari rasa.');
+  }
+  if (hasRiskTag(processEntry, ['experimental', 'ferment-risk', 'high-ferment', 'taste-feedback-required'])) {
+    aromaIntensity += 0.35;
+    clarity -= 0.2;
+    bitterRisk += 0.2;
+    warnings.push('Proses ini sangat bergantung pada kontrol produser; prediksi rasa perlu feedback setelah seduh.');
+  }
+  if (hasRiskTag(processEntry, ['drying-only'])) {
+    reasons.push('Info pengeringan dipakai sebagai konteks ringan, bukan jaminan profil rasa.');
+  }
+  if (hasRiskTag(processEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa'])) {
+    body += 0.35;
+    clarity -= 0.2;
+    bitterRisk += 0.35;
+    warnings.push('Robusta/canephora/non-arabica cenderung lebih body-heavy dan mudah pahit jika ekstraksi terlalu agresif.');
+  }
 
   const varietyBias = varietyEntry?.sensoryBias;
   if (varietyBias) {
@@ -231,6 +257,15 @@ export function buildExpectedCupProfile(
     aromaIntensity += varietyBias.aromaVolatility * 0.3;
     const reason = sensoryReason('Variety', varietyEntry);
     if (reason) reasons.push(reason);
+  }
+  if (hasRiskTag(varietyEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa', 'unusual-species'])) {
+    body += 0.3;
+    clarity -= 0.2;
+    bitterRisk += 0.3;
+    warnings.push('Spesies/varietas robusta/canephora/non-arabica atau tidak umum menurunkan keyakinan prediksi rasa.');
+  }
+  if (hasRiskTag(varietyEntry, ['lot-dependent', 'floral-possible', 'clarity-leaning'])) {
+    reasons.push('Varietas memberi sinyal potensi, tetapi hasil tetap lot-dependent.');
   }
 
   if (plan.roastLevel === 'light' || plan.roastLevel === 'medium_light') {
@@ -353,6 +388,12 @@ export function buildExpectedCupProfile(
   if (plan.processRisk?.variability === 'high') {
     confidence = confidence === 'high' ? 'medium' : confidence;
     warnings.push('High-variability process needs taste feedback before stronger extraction changes.');
+  }
+  if (
+    hasRiskTag(processEntry, ['decaf-sensitive', 'experimental', 'ferment-risk', 'high-ferment', 'non-arabica', 'taste-feedback-required'])
+    || hasRiskTag(varietyEntry, ['non-arabica', 'unusual-species', 'low-confidence-if-unverified'])
+  ) {
+    confidence = confidence === 'high' ? 'medium' : confidence;
   }
 
   if (plan.workflowValidation && !plan.workflowValidation.passed) {

@@ -93,7 +93,8 @@
         "Colombia"
       ],
       "notes": [
-        "Specialty market name; use as aromatic caution cue only until verified."
+        "Specialty market name; use as aromatic caution cue only until verified.",
+        "Accent-safe search keeps Aji and Aji mapped to one curated entry."
       ],
       "source": "regional-curation",
       "sourceUrls": [
@@ -108,17 +109,17 @@
       "confidence": "low",
       "catalogVersion": "2026.06.6-global-taxonomy-plus",
       "id": "aji",
-      "label": "Aj?",
+      "label": "Aji",
       "group": "specialty-reference",
-      "searchText": "aji aj? specialty-reference aji bourbon aji colombia colombia"
+      "searchText": "aji aji specialty-reference aji bourbon aji colombia colombia specialty market name; use as aromatic caution cue only until verified. accent-safe search keeps aji and aji mapped to one curated entry."
     },
     {
       "id": "anacafe_14",
       "label": "Anacafe 14",
       "group": "disease-resistant",
       "aliases": [
-        "anacaf? 14",
-        "anacafe14"
+        "anacafe14",
+        "anacafe 14"
       ],
       "origins": [
         "Guatemala",
@@ -128,7 +129,7 @@
       "notes": [
         "Good search cue for Guatemala lots; do not infer cup profile without roast/process context."
       ],
-      "searchText": "anacafe 14 anacaf? 14 anacafe14 guatemala central america disease-resistant",
+      "searchText": "anacafe_14 anacafe 14 disease-resistant anacafe14 anacafe 14 guatemala central america good search cue for guatemala lots; do not infer cup profile without roast/process context.",
       "catalogVersion": "2026.06.2-ai-brew-global-plus",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -357,7 +358,15 @@
       "id": "barako_liberica",
       "label": "Barako Liberica",
       "group": "non-arabica",
-      "searchText": "barako_liberica barako liberica non-arabica kapeng barako barako liberica barako philippines"
+      "searchText": "barako_liberica barako liberica non-arabica kapeng barako barako liberica barako philippines curated taxonomy expansion; cup expression remains lot-dependent.",
+      "riskTags": [
+        "non-arabica",
+        "liberica",
+        "woody-risk",
+        "body-heavy",
+        "bitter-risk",
+        "conservative-temperature"
+      ]
     },
     {
       "id": "batian",
@@ -798,7 +807,7 @@
       "label": "Castillo",
       "group": "disease-resistant",
       "aliases": [],
-      "searchText": "castillo",
+      "searchText": "castillo castillo disease-resistant colombia china planner uses this as metadata, not as a hard extraction shortcut.",
       "originNotes": "Common Colombian disease-resistant variety.",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -816,12 +825,15 @@
       "origins": [
         "Colombia",
         "China"
+      ],
+      "riskTags": [
+        "disease-resistant",
+        "lot-dependent"
       ]
     },
     {
       "aliases": [
-        "catigua mg2",
-        "catigu?"
+        "catigua mg2"
       ],
       "origins": [
         "Brazil"
@@ -845,14 +857,14 @@
       "label": "Catigua",
       "group": "brazil-selection",
       "originNotes": "Brazilian selection; verify exact MG line from producer when possible.",
-      "searchText": "catigua catigua brazil-selection catigua mg2 catigu? brazil brazilian selection; verify exact mg line from producer when possible."
+      "searchText": "catigua catigua brazil-selection catigua mg2 brazil curated taxonomy expansion; cup expression remains lot-dependent."
     },
     {
       "id": "catimor",
       "label": "Catimor",
       "group": "disease-resistant",
       "aliases": [],
-      "searchText": "catimor",
+      "searchText": "catimor catimor disease-resistant timor-leste portugal indonesia vietnam china laos myanmar do not assume lower cup quality; rely on actual lot quality and roast execution.",
       "originNotes": "Caturra x Timor hybrid family.",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -875,6 +887,10 @@
         "China",
         "Laos",
         "Myanmar"
+      ],
+      "riskTags": [
+        "disease-resistant",
+        "lot-dependent"
       ]
     },
     {
@@ -970,7 +986,6 @@
       "label": "Catuai 144",
       "group": "catuai",
       "aliases": [
-        "catua? 144",
         "catuai amarelo 144"
       ],
       "origins": [
@@ -992,7 +1007,7 @@
       "verificationLevel": "curated",
       "verifiedAt": "2026-05-05",
       "confidence": "medium",
-      "searchText": "catuai 144 catua? 144 catuai amarelo 144 brazil latin america catuai",
+      "searchText": "catuai_144 catuai 144 catuai catuai amarelo 144 brazil latin america use as sweetness/body context with roast and process guardrails.",
       "catalogVersion": "2026.06.5-global-origin-plus"
     },
     {
@@ -1000,7 +1015,6 @@
       "label": "Catuai 99",
       "group": "catuai",
       "aliases": [
-        "catua? 99",
         "catuai vermelho 99"
       ],
       "origins": [
@@ -1022,13 +1036,11 @@
       "verificationLevel": "curated",
       "verifiedAt": "2026-05-05",
       "confidence": "medium",
-      "searchText": "catuai 99 catua? 99 catuai vermelho 99 brazil latin america catuai",
+      "searchText": "catuai_99 catuai 99 catuai catuai vermelho 99 brazil latin america use as sweetness/body context with roast and process guardrails.",
       "catalogVersion": "2026.06.5-global-origin-plus"
     },
     {
-      "aliases": [
-        "catuca?"
-      ],
+      "aliases": [],
       "origins": [
         "Brazil"
       ],
@@ -1051,7 +1063,7 @@
       "label": "Catucai",
       "group": "brazil-selection",
       "originNotes": "Brazilian cultivar family used as sweetness/body context.",
-      "searchText": "catucai catucai brazil-selection catuca? brazil brazilian cultivar family used as sweetness/body context."
+      "searchText": "catucai catucai brazil-selection brazil curated taxonomy expansion; cup expression remains lot-dependent."
     },
     {
       "id": "caturra",
@@ -1214,7 +1226,7 @@
       "notes": [
         "Colombia origin cue; recipe still follows roast/process input."
       ],
-      "searchText": "cenicaf? 1 cenicafe 1 colombia disease-resistant",
+      "searchText": "cenicafe_1 cenicafe 1 disease-resistant cenicafe 1 colombia colombia origin cue; recipe still follows roast/process input.",
       "catalogVersion": "2026.06.2-ai-brew-global-plus",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -1268,13 +1280,12 @@
     },
     {
       "id": "centroamericano_h1",
-      "label": "Centroamericano H1",
+      "label": "Centroamericano H1 Regional Alias",
       "group": "hybrid-f1",
       "aliases": [
-        "h1",
-        "centroamericano"
+        "centroamericano legacy alias"
       ],
-      "searchText": "centroamericano h1 h1 centroamericano hybrid-f1 costa rica nicaragua el salvador honduras",
+      "searchText": "centroamericano_h1 centroamericano h1 regional alias hybrid-f1 centroamericano legacy alias costa rica nicaragua el salvador honduras hybrid label improves lot context; no aggressive recipe shift without density or sensory data.",
       "originNotes": "F1 hybrid used in Central American production and specialty programs.",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -1295,6 +1306,10 @@
         "Nicaragua",
         "El Salvador",
         "Honduras"
+      ],
+      "reviewStatus": "deprecated",
+      "reviewNotes": [
+        "Backward-compatible alias record; prefer canonical centroamericano."
       ]
     },
     {
@@ -1352,10 +1367,12 @@
     },
     {
       "id": "colombia",
-      "label": "Colombia",
+      "label": "Colombia Origin Cue",
       "group": "disease-resistant",
-      "aliases": [],
-      "searchText": "colombia var colombia",
+      "aliases": [
+        "colombia origin cue"
+      ],
+      "searchText": "colombia colombia origin cue disease-resistant colombia origin cue colombia often listed at origin level in producer data.",
       "originNotes": "Colombian variety family developed for disease resistance.",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -1376,11 +1393,12 @@
     },
     {
       "id": "colombia_variety",
-      "label": "Colombia",
+      "label": "Variedad Colombia",
       "group": "disease-resistant",
       "aliases": [
         "variedad colombia",
-        "colombia cultivar"
+        "colombia cultivar",
+        "colombia variety"
       ],
       "origins": [
         "Colombia"
@@ -1400,7 +1418,7 @@
       "verificationLevel": "curated",
       "verifiedAt": "2026-05-05",
       "confidence": "medium",
-      "searchText": "colombia variedad colombia colombia cultivar disease-resistant",
+      "searchText": "colombia_variety variedad colombia disease-resistant variedad colombia colombia cultivar colombia variety colombia good search cue for colombian lots, but origin and cultivar must stay separate in ui copy.",
       "catalogVersion": "2026.06.5-global-origin-plus"
     },
     {
@@ -1411,7 +1429,7 @@
         "brazil robusta",
         "robusta conilon"
       ],
-      "searchText": "conilon brazil robusta robusta conilon canephora brazil",
+      "searchText": "conilon conilon canephora brazil robusta robusta conilon brazil canephora context only; expect different solubility and bitterness risk versus arabica lots.",
       "originNotes": "Brazilian Canephora/Robusta market label often used for espresso and blends.",
       "source": "regional-curation",
       "sourceUrls": [
@@ -1429,6 +1447,13 @@
       ],
       "origins": [
         "Brazil"
+      ],
+      "riskTags": [
+        "non-arabica",
+        "canephora",
+        "body-heavy",
+        "bitter-risk",
+        "conservative-temperature"
       ]
     },
     {
@@ -1515,7 +1540,12 @@
       "label": "Dega",
       "group": "ethiopian-landrace",
       "originNotes": "Ethiopian regional landrace name commonly used on specialty bags.",
-      "searchText": "dega dega ethiopian-landrace dega ethiopian landrace ethiopia ethiopian regional landrace name commonly used on specialty bags."
+      "searchText": "dega dega ethiopian-landrace dega ethiopian landrace ethiopia treat as ethiopian landrace cue; verify exact station and lot data when available.",
+      "riskTags": [
+        "lot-dependent",
+        "floral-possible",
+        "clarity-leaning"
+      ]
     },
     {
       "aliases": [
@@ -1575,7 +1605,9 @@
     {
       "aliases": [
         "74110",
-        "jrc 74110"
+        "jrc 74110",
+        "jarc 74110",
+        "ethiopian 74110"
       ],
       "origins": [
         "Ethiopia"
@@ -1599,12 +1631,19 @@
       "label": "Ethiopia 74110",
       "group": "ethiopian-landrace",
       "originNotes": "Ethiopian selection often listed by number; keep as curated landrace/selection cue.",
-      "searchText": "ethiopia_74110 ethiopia 74110 ethiopian-landrace 74110 jrc 74110 ethiopia ethiopian selection often listed by number; keep as curated landrace/selection cue."
+      "searchText": "ethiopia_74110 ethiopia 74110 ethiopian-landrace 74110 jrc 74110 jarc 74110 ethiopian 74110 ethiopia curated taxonomy expansion; cup expression remains lot-dependent.",
+      "riskTags": [
+        "clarity-leaning",
+        "floral-possible",
+        "lot-dependent"
+      ]
     },
     {
       "aliases": [
         "74112",
-        "jrc 74112"
+        "jrc 74112",
+        "jarc 74112",
+        "ethiopian 74112"
       ],
       "origins": [
         "Ethiopia"
@@ -1628,12 +1667,19 @@
       "label": "Ethiopia 74112",
       "group": "ethiopian-landrace",
       "originNotes": "Ethiopian selection often listed by number; lot data remains important.",
-      "searchText": "ethiopia_74112 ethiopia 74112 ethiopian-landrace 74112 jrc 74112 ethiopia ethiopian selection often listed by number; lot data remains important."
+      "searchText": "ethiopia_74112 ethiopia 74112 ethiopian-landrace 74112 jrc 74112 jarc 74112 ethiopian 74112 ethiopia curated taxonomy expansion; cup expression remains lot-dependent.",
+      "riskTags": [
+        "clarity-leaning",
+        "floral-possible",
+        "lot-dependent"
+      ]
     },
     {
       "aliases": [
         "74158",
-        "jrc 74158"
+        "jrc 74158",
+        "jarc 74158",
+        "ethiopian 74158"
       ],
       "origins": [
         "Ethiopia"
@@ -1657,7 +1703,12 @@
       "label": "Ethiopia 74158",
       "group": "ethiopian-landrace",
       "originNotes": "Ethiopian regional selection label; not treated as exact deterministic recipe source.",
-      "searchText": "ethiopia_74158 ethiopia 74158 ethiopian-landrace 74158 jrc 74158 ethiopia ethiopian regional selection label; not treated as exact deterministic recipe source."
+      "searchText": "ethiopia_74158 ethiopia 74158 ethiopian-landrace 74158 jrc 74158 jarc 74158 ethiopian 74158 ethiopia curated taxonomy expansion; cup expression remains lot-dependent.",
+      "riskTags": [
+        "clarity-leaning",
+        "floral-possible",
+        "lot-dependent"
+      ]
     },
     {
       "aliases": [
@@ -1826,7 +1877,7 @@
       "notes": [
         "Treat as non-arabica / liberica-adjacent context; AI Brew should avoid Arabica cultivar assumptions and lean on roast, process, and tasting feedback."
       ],
-      "searchText": "excelsa coffea excelsa liberica excelsa non-arabica philippines indonesia malaysia vietnam",
+      "searchText": "excelsa excelsa non-arabica coffea excelsa liberica excelsa philippines indonesia malaysia vietnam southeast asia treat as non-arabica / liberica-adjacent context; ai brew should avoid arabica cultivar assumptions and lean on roast, process, and tasting feedback.",
       "verifiedAt": "2026-05-04",
       "catalogVersion": "2026.06.2-ai-brew-variety-plus",
       "origins": [
@@ -1835,6 +1886,13 @@
         "Malaysia",
         "Vietnam",
         "Southeast Asia"
+      ],
+      "riskTags": [
+        "non-arabica",
+        "excelsa",
+        "body-heavy",
+        "bitter-risk",
+        "conservative-temperature"
       ]
     },
     {
@@ -1897,7 +1955,14 @@
       "id": "fine_robusta",
       "label": "Fine Robusta",
       "group": "canephora",
-      "searchText": "fine_robusta fine robusta canephora fine robusta lot specialty robusta global vietnam uganda india brazil"
+      "searchText": "fine_robusta fine robusta canephora fine robusta lot specialty robusta global vietnam uganda india brazil market/quality label, not a cultivar. keep robusta/canephora bitterness guard active.",
+      "riskTags": [
+        "non-arabica",
+        "canephora",
+        "body-heavy",
+        "bitter-risk",
+        "conservative-temperature"
+      ]
     },
     {
       "id": "gayo_1",
@@ -2308,10 +2373,7 @@
       "id": "kartika",
       "label": "Kartika",
       "group": "regional-selection",
-      "aliases": [
-        "kartika 1",
-        "kartika 2"
-      ],
+      "aliases": [],
       "origins": [
         "Indonesia"
       ],
@@ -2329,7 +2391,7 @@
       "verificationLevel": "curated",
       "verifiedAt": "2026-05-05",
       "confidence": "medium",
-      "searchText": "kartika kartika 1 kartika 2 indonesia regional-selection",
+      "searchText": "kartika kartika regional-selection indonesia treat as indonesia regional selection; exact cup depends heavily on island, altitude, and process.",
       "catalogVersion": "2026.06.5-global-origin-plus"
     },
     {
@@ -2563,7 +2625,12 @@
       "label": "Kurume",
       "group": "ethiopian-landrace",
       "originNotes": "Ethiopian regional landrace name often associated with floral highland lots.",
-      "searchText": "kurume kurume ethiopian-landrace kurumi kurume ethiopia ethiopia ethiopian regional landrace name often associated with floral highland lots."
+      "searchText": "kurume kurume ethiopian-landrace kurumi kurume ethiopia ethiopia curated taxonomy expansion; cup expression remains lot-dependent.",
+      "riskTags": [
+        "lot-dependent",
+        "floral-possible",
+        "clarity-leaning"
+      ]
     },
     {
       "id": "laurina",
@@ -2627,10 +2694,9 @@
       "label": "Liberica",
       "group": "species-level",
       "aliases": [
-        "coffea liberica",
-        "barako"
+        "coffea liberica"
       ],
-      "searchText": "liberica coffea liberica barako",
+      "searchText": "liberica liberica species-level coffea liberica philippines malaysia indonesia thailand species tag only; planner should rely on cup behavior and roast data for numeric changes.",
       "originNotes": "Species-level entry used in Southeast Asia menus, especially for Philippines and Malaysia contexts.",
       "source": "curated-reference",
       "sourceUrls": [
@@ -2651,15 +2717,22 @@
         "Indonesia",
         "Thailand"
       ],
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "riskTags": [
+        "non-arabica",
+        "liberica",
+        "woody-risk",
+        "body-heavy",
+        "bitter-risk",
+        "conservative-temperature"
+      ]
     },
     {
       "id": "lini_s",
-      "label": "Linie S",
+      "label": "Lini S",
       "group": "regional-selection",
       "aliases": [
-        "lini s",
-        "linie-s"
+        "lini s"
       ],
       "originNotes": "Indonesian breeding line used for quality and rust resistance programs.",
       "source": "regional-curation",
@@ -2674,7 +2747,7 @@
       "notes": [
         "Use as taxonomy context only unless lot-level data confirms behavior."
       ],
-      "searchText": "linie s lini s linie-s",
+      "searchText": "lini_s lini s regional-selection lini s indonesia use as taxonomy context only unless lot-level data confirms behavior.",
       "verifiedAt": "2026-03-11",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "origins": [
@@ -2683,11 +2756,10 @@
     },
     {
       "id": "linie_s",
-      "label": "Linie S",
+      "label": "Linie S Regional Alias",
       "group": "regional-selection",
       "aliases": [
-        "line s",
-        "linie-s"
+        "linie s regional alias"
       ],
       "origins": [
         "Indonesia"
@@ -2706,8 +2778,12 @@
       "verificationLevel": "curated",
       "verifiedAt": "2026-05-05",
       "confidence": "medium",
-      "searchText": "linie s line s linie-s indonesia regional-selection",
-      "catalogVersion": "2026.06.5-global-origin-plus"
+      "searchText": "linie_s linie s regional alias regional-selection linie s regional alias indonesia use as regional search synonym and keep brew adjustment conservative.",
+      "catalogVersion": "2026.06.5-global-origin-plus",
+      "reviewStatus": "deprecated",
+      "reviewNotes": [
+        "Backward-compatible alias record; prefer canonical lini_s."
+      ]
     },
     {
       "aliases": [
@@ -2799,7 +2875,7 @@
       "aliases": [
         "marsella"
       ],
-      "searchText": "marsellesa marsella disease-resistant nicaragua honduras el salvador mexico",
+      "searchText": "marsellesa marsellesa disease-resistant marsella nicaragua honduras el salvador mexico good fit for commercial-specialty lots; use sensory result before applying strong variety assumptions.",
       "originNotes": "Sarchimor-derived variety used in Central American production.",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -2820,6 +2896,10 @@
         "Honduras",
         "El Salvador",
         "Mexico"
+      ],
+      "riskTags": [
+        "disease-resistant",
+        "lot-dependent"
       ]
     },
     {
@@ -2921,8 +3001,7 @@
       "label": "Moka / Mokka",
       "group": "specialty-reference",
       "aliases": [
-        "mokka",
-        "mocha variety"
+        "moka variety"
       ],
       "origins": [
         "Yemen",
@@ -2946,17 +3025,16 @@
       "releaseStatus": "established",
       "confidence": "high",
       "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
-      "searchText": "moka / mokka mokka mocha variety specialty-reference yemen ethiopia reunion global"
+      "searchText": "moka moka / mokka specialty-reference moka variety yemen ethiopia reunion global niche variety cue; protect aromatics with conservative heat and agitation."
     },
     {
       "id": "mokka",
       "label": "Mokka / Moka",
       "group": "specialty-reference",
       "aliases": [
-        "moka",
-        "mocha variety"
+        "mokka variety"
       ],
-      "searchText": "mokka / moka moka mocha variety specialty-reference yemen hawaii central america",
+      "searchText": "mokka mokka / moka specialty-reference mokka variety yemen hawaii central america small-bean label can affect grind behavior; confirm with grinder feedback rather than variety name alone.",
       "originNotes": "Small-bean specialty reference used by some producers and roasters.",
       "source": "curated-reference",
       "sourceUrls": [
@@ -3391,8 +3469,7 @@
       "label": "Pache",
       "group": "classic-arabica",
       "aliases": [
-        "pache comun",
-        "pache com?n"
+        "pache comun"
       ],
       "origins": [
         "Guatemala",
@@ -3402,7 +3479,7 @@
       "notes": [
         "Use as Central American classic Arabica cue."
       ],
-      "searchText": "pache pache comun pache com?n guatemala central america classic-arabica",
+      "searchText": "pache pache classic-arabica pache comun guatemala central america use as central american classic arabica cue.",
       "catalogVersion": "2026.06.2-ai-brew-global-plus",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -3507,7 +3584,7 @@
         "bourbon rosado",
         "rosado"
       ],
-      "searchText": "pink bourbon bourbon rosado rosado specialty-reference colombia",
+      "searchText": "pink_bourbon pink bourbon specialty-reference bourbon rosado rosado colombia use as high-value specialty cue; do not infer genetics or brew changes without lot documentation.",
       "originNotes": "Specialty market label associated with Colombian and Latin American microlots.",
       "source": "regional-curation",
       "sourceUrls": [
@@ -3525,6 +3602,11 @@
       ],
       "origins": [
         "Colombia"
+      ],
+      "riskTags": [
+        "lot-dependent",
+        "floral-possible",
+        "clarity-leaning"
       ]
     },
     {
@@ -3648,8 +3730,7 @@
     },
     {
       "aliases": [
-        "catuai rojo",
-        "red catua?"
+        "catuai rojo"
       ],
       "origins": [
         "Brazil",
@@ -3673,7 +3754,7 @@
       "id": "red_catuai",
       "label": "Red Catuai",
       "group": "catuai",
-      "searchText": "red_catuai red catuai catuai catuai rojo red catua? brazil central america"
+      "searchText": "red_catuai red catuai catuai catuai rojo brazil central america curated taxonomy expansion; cup expression remains lot-dependent."
     },
     {
       "id": "robusta",
@@ -3744,7 +3825,7 @@
       "aliases": [
         "ruiru11"
       ],
-      "searchText": "ruiru 11 ruiru11 kenyan-selection kenya",
+      "searchText": "ruiru_11 ruiru 11 kenyan-selection ruiru11 kenya regional kenyan cue; process and roast development remain stronger predictors for brew behavior.",
       "originNotes": "Kenyan disease-resistant variety common in regional production.",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -3762,6 +3843,10 @@
       ],
       "origins": [
         "Kenya"
+      ],
+      "riskTags": [
+        "disease-resistant",
+        "lot-dependent"
       ]
     },
     {
@@ -3889,7 +3974,7 @@
       "aliases": [
         "villa sarchi x timor hybrid"
       ],
-      "searchText": "sarchimor villa sarchi x timor hybrid",
+      "searchText": "sarchimor sarchimor disease-resistant villa sarchi x timor hybrid costa rica honduras nicaragua indonesia vietnam china strongly relevant to southeast asia breeding history and modern rust-resistant planting programs.",
       "originNotes": "Important Timor-hybrid-derived line used across Latin America and Southeast Asia.",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -3912,6 +3997,10 @@
         "Indonesia",
         "Vietnam",
         "China"
+      ],
+      "riskTags": [
+        "disease-resistant",
+        "lot-dependent"
       ]
     },
     {
@@ -3948,7 +4037,7 @@
       "aliases": [
         "sydra"
       ],
-      "searchText": "sidra sydra specialty-reference ecuador colombia",
+      "searchText": "sidra sidra specialty-reference sydra ecuador colombia use as high-value specialty context; keep numeric changes conservative until roast, density, and sensory data confirm solubility.",
       "originNotes": "Specialty variety/selection commonly associated with Ecuadorian and Colombian high-value lots.",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -3967,7 +4056,12 @@
         "Ecuador",
         "Colombia"
       ],
-      "catalogVersion": "2026.06.1-ai-brew-variety-plus"
+      "catalogVersion": "2026.06.1-ai-brew-variety-plus",
+      "riskTags": [
+        "lot-dependent",
+        "floral-possible",
+        "clarity-leaning"
+      ]
     },
     {
       "id": "sigarar_utang",
@@ -4085,8 +4179,10 @@
       "id": "sl28",
       "label": "SL28",
       "group": "kenyan-selection",
-      "aliases": [],
-      "searchText": "sl28 sl 28",
+      "aliases": [
+        "sl 28"
+      ],
+      "searchText": "sl28 sl28 kenyan-selection sl 28 kenya china frequently associated with vivid acidity; still use sensory feedback over assumptions.",
       "originNotes": "Scott Agricultural Laboratories selection from Kenya.",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -4104,14 +4200,22 @@
       "origins": [
         "Kenya",
         "China"
+      ],
+      "riskTags": [
+        "high-acidity",
+        "clarity-leaning",
+        "structure",
+        "lot-dependent"
       ]
     },
     {
       "id": "sl34",
       "label": "SL34",
       "group": "kenyan-selection",
-      "aliases": [],
-      "searchText": "sl34 sl 34",
+      "aliases": [
+        "sl 34"
+      ],
+      "searchText": "sl34 sl34 kenyan-selection sl 34 kenya china use as descriptive context only.",
       "originNotes": "Scott Agricultural Laboratories selection from Kenya.",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -4129,6 +4233,11 @@
       "origins": [
         "Kenya",
         "China"
+      ],
+      "riskTags": [
+        "high-acidity",
+        "structure",
+        "lot-dependent"
       ]
     },
     {
@@ -4136,8 +4245,8 @@
       "label": "SLN 9",
       "group": "india-selection",
       "aliases": [
-        "selection 9",
-        "sln9"
+        "sln9",
+        "selection 9 regional alias"
       ],
       "origins": [
         "India"
@@ -4157,7 +4266,7 @@
       "verificationLevel": "curated",
       "verifiedAt": "2026-05-05",
       "confidence": "medium",
-      "searchText": "sln 9 selection 9 sln9 india india-selection",
+      "searchText": "sln_9 sln 9 india-selection sln9 selection 9 regional alias india use as south asia body/spice context only when paired with origin/process.",
       "catalogVersion": "2026.06.5-global-origin-plus"
     },
     {
@@ -4604,9 +4713,7 @@
       "id": "timtim",
       "label": "Timtim",
       "group": "regional-selection",
-      "aliases": [
-        "hibrido de timor"
-      ],
+      "aliases": [],
       "originNotes": "Timor Hybrid lineage widely referenced across Indonesia and Timor-Leste.",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -4620,7 +4727,7 @@
       "notes": [
         "Important parent line for many disease-resistant cultivars in Southeast Asia."
       ],
-      "searchText": "timtim hibrido de timor",
+      "searchText": "timtim timtim regional-selection timor-leste indonesia india vietnam important parent line for many disease-resistant cultivars in southeast asia.",
       "verifiedAt": "2026-03-11",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "origins": [
@@ -4644,7 +4751,7 @@
       "notes": [
         "Brazil sweetness cue; keep sensory claims conservative."
       ],
-      "searchText": "top?zio topazio brazil brazil-selection",
+      "searchText": "topazio topazio brazil-selection brazil brazil sweetness cue; keep sensory claims conservative.",
       "catalogVersion": "2026.06.2-ai-brew-global-plus",
       "source": "world-coffee-research",
       "sourceUrls": [
@@ -4967,7 +5074,12 @@
       "label": "Wolisho",
       "group": "ethiopian-landrace",
       "originNotes": "Ethiopian regional landrace label; use as aromatic landrace context.",
-      "searchText": "wolisho wolisho ethiopian-landrace woliso welisho ethiopia ethiopian regional landrace label; use as aromatic landrace context."
+      "searchText": "wolisho wolisho ethiopian-landrace woliso welisho ethiopia curated taxonomy expansion; cup expression remains lot-dependent.",
+      "riskTags": [
+        "lot-dependent",
+        "floral-possible",
+        "clarity-leaning"
+      ]
     },
     {
       "id": "wush_wush",
@@ -4976,7 +5088,7 @@
       "aliases": [
         "wushwush"
       ],
-      "searchText": "wush wush wushwush ethiopian-landrace ethiopia colombia",
+      "searchText": "wush_wush wush wush ethiopian-landrace wushwush ethiopia colombia treat as high-aroma specialty context; recipe should stay anchored to roast and target profile.",
       "originNotes": "Ethiopian-origin specialty reference now used in several producing countries.",
       "source": "regional-curation",
       "sourceUrls": [
@@ -4995,6 +5107,11 @@
       "origins": [
         "Ethiopia",
         "Colombia"
+      ],
+      "riskTags": [
+        "lot-dependent",
+        "floral-possible",
+        "clarity-leaning"
       ]
     },
     {
@@ -5084,6 +5201,250 @@
         "Myanmar",
         "Laos"
       ]
+    },
+    {
+      "aliases": [
+        "kudume"
+      ],
+      "origins": [
+        "Ethiopia"
+      ],
+      "notes": [
+        "Ethiopian landrace cue. Use as aroma/clarity potential only; process and roast still dominate."
+      ],
+      "source": "wcr-curated-reference",
+      "sourceUrls": [
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "kudhume",
+      "label": "Kudhume",
+      "group": "ethiopian-landrace",
+      "taxonomy": {
+        "species": "arabica",
+        "lineageGroup": "ethiopian_landrace",
+        "cultivarType": "landrace"
+      },
+      "sensoryBias": {
+        "acidity": 1,
+        "sweetness": 0,
+        "body": -1,
+        "clarity": 1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 0,
+        "aromaVolatility": 2
+      },
+      "riskTags": [
+        "floral-possible",
+        "clarity-leaning",
+        "lot-dependent"
+      ],
+      "searchText": "kudhume kudhume ethiopian-landrace kudume ethiopia ethiopian landrace cue. use as aroma/clarity potential only; process and roast still dominate."
+    },
+    {
+      "aliases": [
+        "coffea eugenioides"
+      ],
+      "origins": [
+        "East Africa",
+        "Global"
+      ],
+      "notes": [
+        "Unusual species context. Do not treat as normal Arabica; use conservative baseline and taste feedback."
+      ],
+      "source": "wcr-curated-reference",
+      "sourceUrls": [
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "eugenioides",
+      "label": "Eugenioides",
+      "group": "species",
+      "taxonomy": {
+        "species": "eugenioides",
+        "lineageGroup": "specialty_reference",
+        "cultivarType": "botanical_variety"
+      },
+      "sensoryBias": {
+        "acidity": 0,
+        "sweetness": 1,
+        "body": -1,
+        "clarity": 1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 0,
+        "aromaVolatility": 2
+      },
+      "riskTags": [
+        "unusual-species",
+        "delicate",
+        "low-bitterness",
+        "low-confidence-if-unverified",
+        "lot-dependent"
+      ],
+      "searchText": "eugenioides eugenioides species coffea eugenioides east africa global unusual species context. do not treat as normal arabica; use conservative baseline and taste feedback."
+    },
+    {
+      "aliases": [
+        "coffea stenophylla"
+      ],
+      "origins": [
+        "West Africa",
+        "Global"
+      ],
+      "notes": [
+        "Rare species cue. Keep confidence low unless the lot is verified by producer data."
+      ],
+      "source": "wcr-curated-reference",
+      "sourceUrls": [
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "stenophylla",
+      "label": "Stenophylla",
+      "group": "species",
+      "taxonomy": {
+        "species": "stenophylla",
+        "lineageGroup": "specialty_reference",
+        "cultivarType": "botanical_variety"
+      },
+      "sensoryBias": {
+        "acidity": 1,
+        "sweetness": 0,
+        "body": 0,
+        "clarity": 1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 0,
+        "aromaVolatility": 1
+      },
+      "riskTags": [
+        "unusual-species",
+        "low-confidence-if-unverified",
+        "conservative-extraction",
+        "lot-dependent"
+      ],
+      "searchText": "stenophylla stenophylla species coffea stenophylla west africa global rare species cue. keep confidence low unless the lot is verified by producer data."
+    },
+    {
+      "aliases": [
+        "coffea racemosa"
+      ],
+      "origins": [
+        "Southern Africa",
+        "Global"
+      ],
+      "notes": [
+        "Rare species cue. Use as low-confidence context and avoid deterministic taste claims."
+      ],
+      "source": "wcr-curated-reference",
+      "sourceUrls": [
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "racemosa",
+      "label": "Racemosa",
+      "group": "species",
+      "taxonomy": {
+        "species": "racemosa",
+        "lineageGroup": "specialty_reference",
+        "cultivarType": "botanical_variety"
+      },
+      "sensoryBias": {
+        "acidity": 0,
+        "sweetness": 0,
+        "body": -1,
+        "clarity": 1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 0,
+        "aromaVolatility": 1
+      },
+      "riskTags": [
+        "unusual-species",
+        "delicate",
+        "low-confidence-if-unverified",
+        "lot-dependent"
+      ],
+      "searchText": "racemosa racemosa species coffea racemosa southern africa global rare species cue. use as low-confidence context and avoid deterministic taste claims."
+    },
+    {
+      "aliases": [
+        "arabica robusta hybrid"
+      ],
+      "origins": [
+        "Global"
+      ],
+      "notes": [
+        "Interspecific Arabica/Canephora cue. Keep non-arabica bitterness protection active and rely on feedback."
+      ],
+      "source": "wcr-curated-reference",
+      "sourceUrls": [
+        "https://varieties.worldcoffeeresearch.org/search",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "arabusta",
+      "label": "Arabusta",
+      "group": "hybrid-species",
+      "taxonomy": {
+        "species": "hybrid",
+        "lineageGroup": "introgressed",
+        "cultivarType": "cultivar",
+        "parentage": [
+          "arabica",
+          "canephora"
+        ]
+      },
+      "sensoryBias": {
+        "acidity": -1,
+        "sweetness": 0,
+        "body": 2,
+        "clarity": -1,
+        "fermentIntensity": 0,
+        "bitternessRisk": 2,
+        "aromaVolatility": 1
+      },
+      "riskTags": [
+        "hybrid-species",
+        "non-arabica",
+        "body-heavy",
+        "bitter-risk",
+        "conservative-temperature",
+        "lot-dependent"
+      ],
+      "searchText": "arabusta arabusta hybrid-species arabica robusta hybrid global interspecific arabica/canephora cue. keep non-arabica bitterness protection active and rely on feedback."
     }
   ]
 }

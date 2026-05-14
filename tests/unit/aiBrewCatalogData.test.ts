@@ -16,6 +16,48 @@ function slugify(value: string) {
     .replace(/(^-|-$)/g, '');
 }
 
+function normalizeCatalogTerm(value: string) {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[_\-/|]+/g, ' ')
+    .replace(/co\s*fermented|co\s*ferment/g, 'coferment')
+    .replace(/ethyl\s+acetate|\bea\b|sugarcane/g, 'ea decaf')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function collectCatalogCollisions(entries: Array<{ id: string; label: string; aliases?: string[]; searchText?: string }>) {
+  const ids = new Map<string, string[]>();
+  const labels = new Map<string, string[]>();
+  const aliases = new Map<string, string[]>();
+  const suspicious: string[] = [];
+  for (const entry of entries) {
+    const idKey = normalizeCatalogTerm(entry.id);
+    const labelKey = normalizeCatalogTerm(entry.label);
+    if (idKey) ids.set(idKey, [...(ids.get(idKey) || []), entry.id]);
+    if (labelKey) labels.set(labelKey, [...(labels.get(labelKey) || []), entry.id]);
+    for (const alias of entry.aliases || []) {
+      const aliasKey = normalizeCatalogTerm(alias);
+      if (aliasKey) aliases.set(aliasKey, [...(aliases.get(aliasKey) || []), entry.id]);
+    }
+    const visibleText = JSON.stringify({
+      label: entry.label,
+      aliases: entry.aliases || [],
+      searchText: entry.searchText || '',
+    });
+    if (/[�]/.test(visibleText) || /[A-Za-z]\?/.test(visibleText)) suspicious.push(entry.id);
+  }
+  return {
+    duplicateIds: [...ids.entries()].filter(([, owners]) => new Set(owners).size > 1),
+    duplicateLabels: [...labels.entries()].filter(([, owners]) => new Set(owners).size > 1),
+    aliasConflicts: [...aliases.entries()].filter(([, owners]) => new Set(owners).size > 1),
+    suspicious,
+  };
+}
+
 test('ai brew catalog data maintains cross-file integrity and expanded coverage', () => {
   const drippers = readJson<{ items: Array<{ name: string }> }>('apps/web/public/data/ai-brew/drippers.v2026-03.json').items;
   const grinders = readJson<{ items: Array<{ name: string }> }>('apps/web/public/data/ai-brew/grinders.v2026-03.json').items;
@@ -395,5 +437,108 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
     assert.ok(entry, id + ' should exist in global market coverage');
     assert.equal(entry?.market_code, 'global');
     assert.equal(entry?.publish_state, 'published');
+  }
+});
+
+test('AI Brew coffee taxonomy catalog stays deduped, encoded cleanly, and risk-tagged', () => {
+  type TaxonomyEntry = {
+    id: string;
+    label: string;
+    group: string;
+    aliases: string[];
+    searchText: string;
+    origins?: string[];
+    notes: string[];
+    source: string;
+    sourceUrls: string[];
+    verificationLevel: string;
+    verifiedAt: string;
+    popularityTier: string;
+    marketSegment: string;
+    releaseStatus: string;
+    confidence: string;
+    catalogVersion: string;
+    riskTags?: string[];
+    processRisk?: { variability: string; recommendationMode: string };
+    taxonomy?: { species?: string; lineageGroup?: string };
+  };
+  const processes = readJson<{ items: TaxonomyEntry[] }>('apps/web/public/data/ai-brew/processes.v2026-06.json').items;
+  const varieties = readJson<{ items: TaxonomyEntry[] }>('apps/web/public/data/ai-brew/varieties.v2026-06.json').items;
+  const processAudit = collectCatalogCollisions(processes);
+  const varietyAudit = collectCatalogCollisions(varieties);
+
+  assert.deepEqual(processAudit.duplicateIds, [], 'Process catalog should not have duplicate normalized IDs');
+  assert.deepEqual(processAudit.duplicateLabels, [], 'Process catalog should not have duplicate normalized labels');
+  assert.deepEqual(processAudit.aliasConflicts, [], 'Process aliases should not point to multiple canonical IDs');
+  assert.deepEqual(processAudit.suspicious, [], 'Process catalog should not expose broken encoding in label/alias/searchText');
+  assert.deepEqual(varietyAudit.duplicateIds, [], 'Variety catalog should not have duplicate normalized IDs');
+  assert.deepEqual(varietyAudit.duplicateLabels, [], 'Variety catalog should not have duplicate normalized labels');
+  assert.deepEqual(varietyAudit.aliasConflicts, [], 'Variety aliases should not point to multiple canonical IDs');
+  assert.deepEqual(varietyAudit.suspicious, [], 'Variety catalog should not expose broken encoding in label/alias/searchText');
+
+  const requiredMetadata = (entry: TaxonomyEntry) => {
+    assert.ok(entry.id && entry.label && entry.group, `${entry.id} should have identity fields`);
+    assert.ok(Array.isArray(entry.aliases), `${entry.id} should expose aliases`);
+    assert.ok(entry.searchText, `${entry.id} should expose searchText`);
+    assert.ok(Array.isArray(entry.origins) && entry.origins.length > 0, `${entry.id} should expose origins`);
+    assert.ok(Array.isArray(entry.notes) && entry.notes.length > 0, `${entry.id} should expose notes`);
+    assert.ok(entry.source, `${entry.id} should expose source`);
+    assert.ok(Array.isArray(entry.sourceUrls) && entry.sourceUrls.some((url) => /^https?:\/\//.test(url)), `${entry.id} should expose public sourceUrls`);
+    assert.ok(['official', 'community_verified', 'curated', 'dataset_unverified', 'fallback'].includes(entry.verificationLevel), `${entry.id} verification level`);
+    assert.ok(entry.verifiedAt, `${entry.id} should expose verifiedAt`);
+    assert.ok(['widely_used', 'specialty_common', 'emerging', 'niche'].includes(entry.popularityTier), `${entry.id} popularity tier`);
+    assert.ok(['mass_market', 'specialty_mainstream', 'small_market'].includes(entry.marketSegment), `${entry.id} market segment`);
+    assert.ok(['established', 'new', 'legacy'].includes(entry.releaseStatus), `${entry.id} release status`);
+    assert.ok(['high', 'medium', 'low'].includes(entry.confidence), `${entry.id} confidence`);
+    assert.ok(entry.catalogVersion, `${entry.id} catalogVersion`);
+  };
+
+  for (const id of [
+    'co2_decaf',
+    'koji_washed',
+    'wet_hulled_honey',
+    'robusta_natural',
+    'robusta_washed',
+    'liberica_natural',
+    'liberica_washed',
+    'excelsa_natural',
+    'excelsa_washed',
+  ]) {
+    const entry = processes.find((item) => item.id === id);
+    assert.ok(entry, `${id} process should be present exactly once`);
+    requiredMetadata(entry);
+    assert.ok((entry.riskTags || []).length > 0, `${id} process should expose riskTags`);
+  }
+
+  for (const id of ['kudhume', 'eugenioides', 'stenophylla', 'racemosa', 'arabusta']) {
+    const entry = varieties.find((item) => item.id === id);
+    assert.ok(entry, `${id} variety/species should be present exactly once`);
+    requiredMetadata(entry);
+    assert.ok((entry.riskTags || []).length > 0, `${id} variety/species should expose riskTags`);
+  }
+
+  const sugarcane = processes.find((entry) => entry.id === 'sugarcane_decaf');
+  assert.ok(sugarcane?.aliases.some((alias) => /^ea decaf$/i.test(alias)), 'Sugarcane decaf should own EA decaf alias');
+  assert.ok(sugarcane?.riskTags?.includes('decaf-sensitive'), 'Sugarcane decaf should keep decaf-sensitive guardrail tag');
+  assert.equal(processes.some((entry) => entry.id === 'sugarcane_ea_decaf'), false, 'Sugarcane EA must not become duplicate canonical');
+  assert.equal(processes.some((entry) => entry.id === 'semi_washed_classic'), false, 'Semi-washed classic must stay alias-level, not canonical duplicate');
+  assert.equal(processes.some((entry) => entry.id === 'aged_coffee'), false, 'Aged coffee stays skipped because the term is ambiguous');
+  assert.equal(processes.find((entry) => entry.id === 'pulped_natural')?.aliases.some((alias) => /semi[-\s]?washed/i.test(alias)), false, 'Semi-washed aliases should belong to semi_washed canonical entry');
+
+  for (const [id, alias] of [
+    ['ethiopia_74110', 'jarc 74110'],
+    ['ethiopia_74112', 'jarc 74112'],
+    ['ethiopia_74158', 'jarc 74158'],
+    ['sl28', 'sl 28'],
+    ['sl34', 'sl 34'],
+  ] as const) {
+    const entry = varieties.find((item) => item.id === id);
+    assert.ok(entry?.aliases.map(normalizeCatalogTerm).includes(normalizeCatalogTerm(alias)), `${id} should own alias ${alias}`);
+  }
+
+  for (const id of ['aji', 'anacafe_14', 'catigua', 'catuai_144', 'catuai_99', 'catucai', 'pache', 'red_catuai', 'cenicafe_1', 'topazio']) {
+    const entry = varieties.find((item) => item.id === id);
+    assert.ok(entry, `${id} should exist`);
+    assert.doesNotMatch(JSON.stringify(entry), /[�]|[A-Za-z]\?/, `${id} should not retain broken encoding`);
   }
 });

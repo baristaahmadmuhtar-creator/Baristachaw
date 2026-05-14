@@ -3414,6 +3414,87 @@ test('AI Brew custom co-ferment plan stays high-risk and conservative', () => {
   assert.match([...plan.notes, ...plan.confidenceNotes].join(' '), /High variability|taste feedback|Custom process detection/i);
 });
 
+test('AI Brew taxonomy risk tags drive honest decaf, experimental, drying-only, and non-arabica guardrails', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const processes = productionCatalog.processes;
+  const varieties = productionCatalog.varieties;
+  const co2 = processes.find((entry) => entry.id === 'co2_decaf');
+  const kojiWashed = processes.find((entry) => entry.id === 'koji_washed');
+  const raisedBedNatural = processes.find((entry) => entry.id === 'raised_bed_natural');
+  const robustaNatural = processes.find((entry) => entry.id === 'robusta_natural');
+  const ethiopia74110 = varieties.find((entry) => entry.id === 'ethiopia_74110');
+  const fineRobusta = varieties.find((entry) => entry.id === 'fine_robusta');
+  assert.ok(co2?.riskTags?.includes('decaf-sensitive'));
+  assert.ok(kojiWashed?.riskTags?.includes('experimental'));
+  assert.ok(raisedBedNatural?.riskTags?.includes('drying-only'));
+  assert.ok(robustaNatural?.riskTags?.includes('non-arabica'));
+  assert.ok(ethiopia74110?.riskTags?.includes('lot-dependent'));
+  assert.ok(fineRobusta?.riskTags?.includes('non-arabica'));
+
+  const baseInput = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '90',
+    waterHardnessPpm: '50',
+    waterAlkalinityPpm: '35',
+    roastLevel: 'medium_light' as const,
+    targetProfileId: 'balance_clean',
+  };
+  const co2Plan = buildAiBrewPlan({
+    ...baseInput,
+    coffeeName: 'Colombia CO2 Decaf',
+    process: 'co2_decaf',
+    variety: 'bourbon',
+  }, productionCatalog);
+  assert.equal(co2Plan.beanTaxonomy?.category, 'risk_caution');
+  assert.equal(co2Plan.beanCoverage?.category, 'risk_caution');
+  assert.match([...(co2Plan.beanTaxonomy?.warnings || []), ...(co2Plan.beanCoverage?.warnings || []), ...(co2Plan.expectedCupProfile?.warnings || [])].join(' '), /Decaf|sensitif|baseline/i);
+  assert.equal(co2Plan.expectedCupProfile?.confidence, 'medium');
+
+  const kojiPlan = buildAiBrewPlan({
+    ...baseInput,
+    coffeeName: 'Experimental Koji Washed',
+    process: 'koji_washed',
+    variety: 'sidra',
+  }, productionCatalog);
+  assert.equal(kojiPlan.beanTaxonomy?.category, 'risk_caution');
+  assert.equal(kojiPlan.processRisk?.recommendationMode, 'taste_feedback_required');
+  assert.match([...(kojiPlan.beanTaxonomy?.warnings || []), ...(kojiPlan.beanCoverage?.warnings || [])].join(' '), /kontrol produser|feedback|konservatif/i);
+
+  const dryingPlan = buildAiBrewPlan({
+    ...baseInput,
+    coffeeName: 'Raised Bed Natural Bourbon',
+    process: 'raised_bed_natural',
+    variety: 'bourbon',
+  }, productionCatalog);
+  assert.notEqual(dryingPlan.beanTaxonomy?.category, 'risk_caution', 'drying-only cue should not become a high-risk recipe driver by itself');
+  assert.match([...(dryingPlan.beanTaxonomy?.reasons || []), ...(dryingPlan.expectedCupProfile?.reasons || [])].join(' '), /Drying|pengeringan|context/i);
+
+  const robustaPlan = buildAiBrewPlan({
+    ...baseInput,
+    coffeeName: 'Natural Fine Robusta',
+    process: 'robusta_natural',
+    variety: 'fine_robusta',
+    roastLevel: 'medium',
+  }, productionCatalog);
+  assert.equal(robustaPlan.beanTaxonomy?.category, 'risk_caution');
+  assert.equal(robustaPlan.beanCoverage?.category, 'risk_caution');
+  assert.match([...(robustaPlan.beanTaxonomy?.warnings || []), ...(robustaPlan.beanCoverage?.warnings || []), ...(robustaPlan.expectedCupProfile?.warnings || [])].join(' '), /Non-arabica|body-heavy|pahit/i);
+  assert.ok((robustaPlan.expectedCupProfile?.body || 0) >= 3);
+
+  const jarcPlan = buildAiBrewPlan({
+    ...baseInput,
+    coffeeName: 'Washed Ethiopia JARC 74110',
+    process: 'washed',
+    variety: 'ethiopia_74110',
+    roastLevel: 'light',
+  }, productionCatalog);
+  assert.match([...(jarcPlan.expectedCupProfile?.reasons || []), ...(jarcPlan.beanTaxonomy?.warnings || [])].join(' '), /lot-dependent|potensi|sinyal/i);
+  assert.notEqual(jarcPlan.expectedCupProfile?.confidence, undefined);
+});
+
 test('AI Brew shared core calibrates 10-20 g target profile, dose, process, and custom variety signals', () => {
   assert.equal(resolveDefaultTargetProfileIdForBean({
     coffeeName: 'Panama Gesha washed',
@@ -3799,6 +3880,15 @@ test('AI Brew process, variety, and origin knowledge catalog stays expanded and 
     'mossto_anaerobic',
     'nitrogen_maceration',
     'experimental_lot',
+    'co2_decaf',
+    'koji_washed',
+    'wet_hulled_honey',
+    'robusta_natural',
+    'robusta_washed',
+    'liberica_natural',
+    'liberica_washed',
+    'excelsa_natural',
+    'excelsa_washed',
   ];
   const globalTaxonomyVarietyIds = [
     'dega',
@@ -3816,10 +3906,15 @@ test('AI Brew process, variety, and origin knowledge catalog stays expanded and 
     'sln10',
     'fine_robusta',
     'barako_liberica',
+    'kudhume',
+    'eugenioides',
+    'stenophylla',
+    'racemosa',
+    'arabusta',
   ];
 
-  assert.ok(processes.length >= 88);
-  assert.ok(varieties.length >= 177);
+  assert.ok(processes.length >= 97);
+  assert.ok(varieties.length >= 182);
   assert.ok(calibration.originProfiles.length >= 14);
   for (const id of addedProcessIds) {
     assert.ok(processIds.has(id), `${id} process should exist`);

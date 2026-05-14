@@ -4227,7 +4227,6 @@ function PlanResultDialog({
   const [flowStartedAtMs, setFlowStartedAtMs] = useState<number | null>(null);
   const isQuickResult = resultMode === 'quick';
   const [guideDensity, setGuideDensity] = useState<AiBrewGuideDensity>('basic');
-  const pendingTasteFocusRef = useRef(false);
 
   useEffect(() => {
     if (!open) return;
@@ -4238,12 +4237,6 @@ function PlanResultDialog({
     setFlowRunning(false);
     setFlowStartedAtMs(null);
   }, [open, isQuickResult]);
-
-  useEffect(() => {
-    if (!open || activeTab !== 'details' || !pendingTasteFocusRef.current || typeof window === 'undefined') return;
-    pendingTasteFocusRef.current = false;
-    scrollTasteFeedbackIntoView();
-  }, [activeTab, open]);
 
   useEffect(() => {
     setFlowElapsedSeconds(0);
@@ -4606,27 +4599,6 @@ function PlanResultDialog({
     setFlowStartedAtMs(null);
   }
 
-  function scrollTasteFeedbackIntoView() {
-    if (typeof window === 'undefined') return;
-    window.requestAnimationFrame(() => {
-      const feedbackPanel = document.querySelector<HTMLElement>('[data-testid="ai-brew-taste-feedback"]');
-      if (!feedbackPanel) return;
-      feedbackPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      const focusTarget = feedbackPanel.querySelector<HTMLElement>('button, textarea, input, select, [tabindex]:not([tabindex="-1"])');
-      focusTarget?.focus({ preventScroll: true });
-    });
-  }
-
-  function openTasteFeedback() {
-    pendingTasteFocusRef.current = true;
-    if (activeTab === 'details') {
-      pendingTasteFocusRef.current = false;
-      scrollTasteFeedbackIntoView();
-      return;
-    }
-    setActiveTab('details');
-  }
-
   return (
     <FocusLockedDialog
       open={open}
@@ -4656,47 +4628,49 @@ function PlanResultDialog({
               >
                 <X size={18} />
               </button>
-              <div className="min-w-0 pr-12">
-                <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                  {plan.deviceProfileMode !== 'exact' && (
-                    <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300">
-                      {formatDeviceProfileMode(copy, plan.deviceProfileMode)}
+              <div className="min-w-0">
+                <div className="min-w-0 pr-12">
+                  <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                    {plan.deviceProfileMode !== 'exact' && (
+                      <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                        {formatDeviceProfileMode(copy, plan.deviceProfileMode)}
+                      </span>
+                    )}
+                    <span className={resultChipClass}>
+                      {plan.dripper.name}
                     </span>
-                  )}
-                  <span className={resultChipClass}>
-                    {plan.dripper.name}
-                  </span>
-                  <span className={resultChipClass}>
-                    {localizedTargetProfileLabel}
-                  </span>
-                  {plan.targetProfileAutoSuggested && (
-                    <span className={`${resultChipClass} border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300`}>
-                      {copy.autoTargetSuggested}
+                    <span className={resultChipClass}>
+                      {localizedTargetProfileLabel}
                     </span>
-                  )}
-                  {plan.processRisk?.variability === 'high' && (
-                    <span className={`${resultChipClass} border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300`}>
-                      {copy.highVariability}
+                    {plan.targetProfileAutoSuggested && (
+                      <span className={`${resultChipClass} border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300`}>
+                        {copy.autoTargetSuggested}
+                      </span>
+                    )}
+                    {plan.processRisk?.variability === 'high' && (
+                      <span className={`${resultChipClass} border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300`}>
+                        {copy.highVariability}
+                      </span>
+                    )}
+                    <span className={`${resultChipClass} inline-flex items-center gap-1.5 ${
+                      aiEngineOnline
+                        ? 'border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300'
+                        : 'border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                    }`}>
+                      {aiEngineOnline ? <Brain size={12} /> : <Sparkles size={12} />}
+                      {aiEngineOnline ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
                     </span>
-                  )}
-                  <span className={`${resultChipClass} inline-flex items-center gap-1.5 ${
-                    aiEngineOnline
-                      ? 'border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300'
-                      : 'border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-300'
-                  }`}>
-                    {aiEngineOnline ? <Brain size={12} /> : <Sparkles size={12} />}
-                    {aiEngineOnline ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
-                  </span>
+                  </div>
+                  <h3 className="break-words text-lg font-semibold tracking-tight text-primary sm:text-xl">{buildLocalizedPlanRecipeName(plan, language)}</h3>
+                  <p id={descriptionId} className="sr-only">
+                    {isQuickResult
+                      ? (id ? 'Hasil Quick AI Brew berisi urutan seduh ringkas dan kontrol barista inti.' : 'Quick AI Brew result with a compact brew sequence and core barista controls.')
+                      : `${formatRoundedGrams(plan.doseG)} - ${planHeaderWater} - ${extractionTimeLabel} ${formatGuideTime(extractionSeconds)} - ${formatRoundedTemperature(plan.waterTempC)}`}
+                  </p>
                 </div>
-                <h3 className="break-words text-lg font-semibold tracking-tight text-primary sm:text-xl">{buildLocalizedPlanRecipeName(plan, language)}</h3>
-                <p id={descriptionId} className="sr-only">
-                  {isQuickResult
-                    ? (id ? 'Hasil Quick AI Brew berisi urutan seduh ringkas dan kontrol barista inti.' : 'Quick AI Brew result with a compact brew sequence and core barista controls.')
-                    : `${formatRoundedGrams(plan.doseG)} - ${planHeaderWater} - ${extractionTimeLabel} ${formatGuideTime(extractionSeconds)} - ${formatRoundedTemperature(plan.waterTempC)}`}
-                </p>
                 {(expectedCup || readinessItems.length > 0 || plan.beanCoverage) && (
                   <div
-                    className="mt-3 min-w-0 max-w-full overflow-hidden rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-2.5 text-xs [overflow-wrap:anywhere]"
+                    className="mx-auto mt-3 min-w-0 max-w-full overflow-hidden rounded-[1rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-2.5 text-xs [overflow-wrap:anywhere]"
                     data-testid="ai-brew-expected-cup"
                   >
                     <div className="flex min-w-0 flex-wrap items-center gap-1.5">
@@ -4758,27 +4732,7 @@ function PlanResultDialog({
                     )}
                   </div>
                 )}
-                <div className="mt-3 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2" data-testid="ai-brew-result-primary-actions">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('flow')}
-                    className="inline-flex min-h-[44px] min-w-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.2)]"
-                    data-testid="ai-brew-open-flow"
-                  >
-                    <Play size={15} />
-                    <span className="truncate">{copy.flowTab}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={openTasteFeedback}
-                    className="inline-flex min-h-[44px] min-w-0 items-center justify-center gap-2 rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-sm font-semibold text-primary"
-                    data-testid="ai-brew-result-check-taste-primary"
-                  >
-                    <Sparkles size={15} />
-                    <span className="truncate">{copy.feedbackTitle}</span>
-                  </button>
-                </div>
-                <details className="group mt-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2" data-testid="ai-brew-result-secondary-actions">
+                <details className="group mt-3 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2" data-testid="ai-brew-result-secondary-actions">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-primary">
                     <span>{id ? 'Lainnya' : 'More actions'}</span>
                     <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
@@ -4893,9 +4847,9 @@ function PlanResultDialog({
                       { id: 'dose', label: copy.dose, value: formatRoundedGrams(plan.doseG) },
                       { id: 'water', label: plan.brewMode === 'iced' ? (id ? 'Input air' : 'Water input') : copy.totalWater, value: planHeaderWater },
                       { id: 'ratio', label: copy.finalRatio, value: `1:${formatBrewRatio(plan.finalBeverageRatio)}` },
-                      { id: 'time', label: extractionTimeLabel, value: formatGuideTime(extractionSeconds) },
                       { id: 'temp', label: copy.temp, value: formatRoundedTemperature(plan.waterTempC) },
                       { id: 'grind', label: copy.grind, value: localizedGrindHeadline },
+                      { id: 'output', label: copy.cupOutput, value: formatRoundedMl(plan.estimatedCupOutputMl) },
                     ].map((item) => (
                       <span key={item.id} className="min-w-0 max-w-full rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/82 px-2.5 py-2 text-secondary">
                         <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
@@ -5626,8 +5580,8 @@ function PlanResultDialog({
                             <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
                           </span>
                           <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowRemaining}</span>
-                            <span className="font-semibold text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
+                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.temp}</span>
+                            <span className="font-semibold text-primary">{formatRoundedTemperature(plan.waterTempC)}</span>
                           </span>
                           <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
                             <span className="block text-[10px] uppercase tracking-widest text-tertiary">{extractionTimeLabel}</span>
@@ -6088,19 +6042,19 @@ function PlanResultDialog({
             </button>
             <button
               type="button"
+              onClick={() => setActiveTab('flow')}
+              className="inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
+              data-testid="ai-brew-result-action-guide"
+            >
+              {id ? 'Seduh' : copy.flowTab}
+            </button>
+            <button
+              type="button"
               onClick={onEditInputs}
               className="inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
               data-testid="ai-brew-result-action-edit"
             >
               {copy.editInputs}
-            </button>
-            <button
-              type="button"
-              onClick={openTasteFeedback}
-              className="inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
-              data-testid="ai-brew-result-action-check-taste"
-            >
-              {copy.feedbackTitle}
             </button>
           </div>
         </div>

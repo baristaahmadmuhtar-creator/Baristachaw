@@ -27,13 +27,14 @@ test('AI Brew quick mode keeps optional bean detail and AI tools collapsed', () 
 test('AI Brew mobile result has a compact action bar', () => {
   assert.match(SOURCE, /data-testid="ai-brew-result-action-bar"/);
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-action-start"/);
-  assert.match(SOURCE, /data-testid="ai-brew-result-primary-actions"/);
+  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-primary-actions"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-secondary-actions"/);
-  assert.match(SOURCE, /data-testid="ai-brew-result-check-taste-primary"/);
+  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-check-taste-primary"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-action-save"/);
+  assert.match(SOURCE, /data-testid="ai-brew-result-action-guide"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-action-edit"/);
-  assert.match(SOURCE, /data-testid="ai-brew-result-action-check-taste"/);
-  assert.match(SOURCE, /openTasteFeedback/);
+  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-action-check-taste"/);
+  assert.match(SOURCE, /setActiveTab\('flow'\)/);
 });
 
 test('AI Brew Pro mode uses visible bean detail and controlled accordions', () => {

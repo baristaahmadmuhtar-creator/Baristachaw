@@ -259,6 +259,26 @@ test('ai brew precision builder applies barista target controls and keeps extra 
   await expect(sequenceNote.getByTestId('ai-brew-step-card-2')).toContainText(/Bloom/i);
 });
 
+test('ai brew Indonesian brew guide details do not leak raw English technique copy', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('BARISTA_LANGUAGE', 'id');
+    localStorage.setItem('BARISTA_LANGUAGE_ID_DEFAULT_MIGRATED', '1');
+  });
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await openProBuilder(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Bahasa Panduan');
+  await setVisibleInputValue(page, 'ai-brew-dose', '15');
+  await pickWater(page, 'aqua', 'aqua-id');
+  await page.getByTestId('ai-brew-generate').click();
+
+  const sequenceNote = await openResultGuide(page);
+  await expect(sequenceNote).toContainText(/Detail tambahan|Panduan Seduh|Bilas filter/i);
+  await expect(sequenceNote).toContainText(/jalur tuang bersih|Tuang dari tengah|Jaga bloom tetap tenang|Basahi semua bubuk/i);
+  await expect(sequenceNote).not.toContainText(/Use a clean center-to-mid path|avoid wall rinsing|Pour through the center|riding the wall|Rinse the paper filter|coffee weight|sweeter middle|Wet all grounds/i);
+});
+
 test('ai brew taste feedback is saved in the local brew journal', async ({ page }) => {
   await qaLogin(page.request);
   await mockAiApis(page);

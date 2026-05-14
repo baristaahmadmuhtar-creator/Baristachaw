@@ -7646,9 +7646,14 @@ test('Indonesian critical AI Brew trust copy stays localized and honest', () => 
     'Water source: manual mineral entry.',
     'Grinder source: curated baseline.',
     'Brewer profile source: family fallback.',
+    'Use a clean center-to-mid path and avoid wall rinsing. Pour through the center first, then widen only enough to wet the full bed; avoid riding the wall so the cone stays clean.',
+    'Rinse the paper filter, preheat the brewer/server, discard rinse water, and tare the scale before dosing coffee. Bloom with about 2x coffee weight and wait 45 seconds before the next pour.',
+    'Keep the bloom calm so the cup can build a sweeter middle. Wet all grounds evenly and let bloom open for 30 seconds.',
   ].map((item) => localizeAiBrewDynamicText(item, 'id')).join(' ');
   assert.match(dynamicSamples, /Detail tambahan|Panduan Seduh|Prediksi rasa|Keyakinan|Keamanan|Buka katup di atas es|Air turun|Perlu manual|Buffer tinggi|Nol mineral|Perlu cek rasa/i);
+  assert.match(dynamicSamples, /jalur tuang bersih|Tuang dari tengah|Bilas filter kertas|Jaga bloom tetap tenang|Basahi semua bubuk/i);
   assert.doesNotMatch(dynamicSamples, localizedLeakPattern);
+  assert.doesNotMatch(dynamicSamples, /\b(clean center-to-mid|wall rinsing|Pour through the center|riding the wall|Rinse the paper filter|coffee weight|sweeter middle|Wet all grounds)\b/i);
 
   const localizedStepLabels = [
     'Release over ice',

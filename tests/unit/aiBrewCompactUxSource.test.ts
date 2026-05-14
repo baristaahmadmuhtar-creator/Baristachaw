@@ -118,4 +118,18 @@ test('AI Brew exposes explicit mobile time semantics instead of one misleading t
   assert.match(SOURCE, /data-testid="ai-brew-time-helper"/);
   assert.match(SOURCE, /extractionTimeLabel/);
   assert.match(SOURCE, /guideEndLabel/);
+  assert.match(SOURCE, /flowStepRemaining/);
+  assert.match(SOURCE, /flowTotalRemaining/);
+  assert.match(SOURCE, /data-testid="ai-brew-flow-remaining-status"/);
+});
+
+test('AI Brew guide details stay deduped and barista-actionable', () => {
+  assert.match(SOURCE, /normalizeAiBrewDetailKey/);
+  assert.match(SOURCE, /isAiBrewDetailCovered/);
+  assert.match(SOURCE, /points\.slice\(0, 3\)/);
+  assert.match(SOURCE, /Tuang tenang dari tengah ke tengah-luar/);
+  assert.match(SOURCE, /Setup: bilas filter, panaskan brewer\/server/);
+  assert.match(SOURCE, /Kontrol seduh: mulai dari tengah/);
+  assert.match(SOURCE, /Koreksi kalau meleset/);
+  assert.match(SOURCE, /summaryFocusHint/);
 });

@@ -342,6 +342,8 @@ const COPY = {
     flowMetricDose: 'Dose',
     flowMetricNext: 'Next',
     flowMetricTotal: 'Total',
+    flowStepRemaining: 'Step left',
+    flowTotalRemaining: 'Total left',
     totalWater: 'Total Water',
     finalRatio: 'Final Ratio',
     hotConcentrate: 'Hot Concentrate',
@@ -574,6 +576,7 @@ const COPY = {
     grindCatalogReference: 'Catalog reference',
     grindDerivedBaseline: 'Derived baseline',
     confidenceNotes: 'Confidence notes',
+    summaryFocusHint: 'Main focus: taste time, grind, temperature, and one change at a time.',
     waterRequired: 'Manual mineral input is required before generating.',
     openProcessPicker: 'Choose process',
     openVarietyPicker: 'Choose variety',
@@ -849,6 +852,8 @@ const COPY = {
     flowMetricDose: 'Dosis',
     flowMetricNext: 'Berikutnya',
     flowMetricTotal: 'Total',
+    flowStepRemaining: 'Sisa langkah',
+    flowTotalRemaining: 'Sisa total',
     totalWater: 'Total Air',
     finalRatio: 'Rasio Final',
     hotConcentrate: 'Konsentrat Panas',
@@ -1081,6 +1086,7 @@ const COPY = {
     grindCatalogReference: 'Referensi katalog',
     grindDerivedBaseline: 'Baseline turunan',
     confidenceNotes: 'Catatan keyakinan',
+    summaryFocusHint: 'Fokus utama: waktu rasa, gilingan, suhu, dan koreksi satu variabel dulu.',
     waterRequired: 'Input mineral manual wajib diisi sebelum generate.',
     openProcessPicker: 'Pilih proses',
     openVarietyPicker: 'Pilih varietas',
@@ -2803,13 +2809,67 @@ function buildAiBrewStepQuickNote(step: AiBrewDisplayStep, language: string) {
   return normalizeAiBrewInstructionText(localizeAiBrewDynamicText(step.note, language));
 }
 
+function buildAiBrewWorkflowFocusCue(
+  plan: BrewPlan,
+  step: WorkflowGuideStep,
+  language: string,
+) {
+  if (!isIndonesianAiBrewLanguage(language)) {
+    return normalizeAiBrewInstructionText(step.secondaryText || step.primaryText);
+  }
+
+  if (plan.brewMode === 'iced' && step.pourVolumeMl > 0) {
+    return 'Seduh target air panas saja. Es sudah dihitung sebagai bypass terukur.';
+  }
+
+  switch (plan.methodFamily) {
+    case 'hario_switch':
+      if (step.actionType === 'release' || step.actionType === 'drawdown') {
+        return 'Buka katup bersih, lalu biarkan air turun tanpa adukan tambahan.';
+      }
+      return 'Jaga muatan ruang aman dan ikuti posisi katup sesuai tahap.';
+    case 'v60':
+    case 'origami':
+    case 'kono':
+      return 'Tuang tenang dari tengah ke tengah-luar. Jaga bed rata, jangan bilas dinding filter.';
+    case 'chemex':
+      return 'Jaga aliran stabil dan vent filter tetap terbuka; jangan kejar dinding kertas.';
+    case 'kalita_wave':
+    case 'april':
+    case 'melitta':
+      return 'Pakai pulse pendek di tengah bed. Jaga permukaan rata, jangan flooding.';
+    case 'clever_dripper':
+      return step.actionType === 'release' || step.actionType === 'drawdown'
+        ? 'Buka katup bersih dan biarkan air turun tanpa diaduk lagi.'
+        : 'Jaga rendaman tenang; kontak stabil lebih penting daripada agitasi besar.';
+    case 'french_press':
+      return step.actionType === 'decant' || step.actionType === 'serve'
+        ? 'Tuang pisah setelah press agar ekstraksi berhenti bersih.'
+        : 'Jaga rendaman tenang; hindari adukan agresif menjelang akhir.';
+    case 'aeropress':
+      return step.actionType === 'press'
+        ? 'Tekan stabil dan berhenti sebelum hiss terasa dipaksa.'
+        : 'Basahi chamber merata dan jaga steep tetap ringkas.';
+    case 'espresso':
+      return 'Baca aliran shot dan berhenti di target hasil, bukan menambah volume.';
+    case 'moka_pot':
+      return 'Pakai panas moderat dan angkat sebelum sputter kasar.';
+    case 'cold_brew':
+      return 'Pastikan semua bubuk basah, lalu steep stabil tanpa agitasi berulang.';
+    case 'batch_brew':
+      return 'Biarkan siklus mesin selesai, lalu aduk batch pelan sebelum cicip.';
+    default:
+      return 'Jaga aliran stabil, bed rapi, dan koreksi dari rasa setelah seduh.';
+  }
+}
+
 function buildAiBrewStepMethodFocusCue(
   plan: BrewPlan,
   step: AiBrewDisplayStep,
   language: string,
 ) {
   if (isWorkflowGuideStep(step)) {
-    return normalizeAiBrewInstructionText(localizeAiBrewDynamicText(step.secondaryText || step.primaryText, language));
+    return buildAiBrewWorkflowFocusCue(plan, step, language);
   }
   const id = isIndonesianAiBrewLanguage(language);
   const kind = getAiBrewStepKind(step);
@@ -2852,11 +2912,31 @@ function buildAiBrewStepMethodFocusCue(
   }
 }
 
-function addUniqueAiBrewDetailPoint(points: string[], value: string) {
+function normalizeAiBrewDetailKey(value: string) {
+  return normalizeAiBrewInstructionText(value)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isAiBrewDetailCovered(candidate: string, existing: string) {
+  const candidateKey = normalizeAiBrewDetailKey(candidate);
+  const existingKey = normalizeAiBrewDetailKey(existing);
+  if (!candidateKey || !existingKey) return false;
+  if (candidateKey === existingKey) return true;
+  return candidateKey.length > 28
+    && existingKey.length > 28
+    && (candidateKey.includes(existingKey) || existingKey.includes(candidateKey));
+}
+
+function addUniqueAiBrewDetailPoint(points: string[], value: string, hiddenReferences: string[] = []) {
   const normalized = normalizeAiBrewInstructionText(value);
   if (!normalized) return;
-  const key = normalized.toLowerCase();
-  if (points.some((point) => point.toLowerCase() === key)) return;
+  if (hiddenReferences.some((reference) => isAiBrewDetailCovered(normalized, reference))) return;
+  if (points.some((point) => isAiBrewDetailCovered(normalized, point))) return;
   points.push(normalized);
 }
 
@@ -2879,22 +2959,100 @@ function buildAiBrewDeterministicStepDetailPoints(
   step: AiBrewDisplayStep,
   index: number,
   language: string,
+  visibleReferences: string[] = [],
 ) {
   if (isWorkflowGuideStep(step)) {
     const points: string[] = [];
-    if (step.secondaryText) addUniqueAiBrewDetailPoint(points, localizeAiBrewDynamicText(step.secondaryText, language));
+    const id = isIndonesianAiBrewLanguage(language);
+    const hiddenReferences = [
+      buildWorkflowGuideActionText(step, language, plan),
+      buildAiBrewWorkflowFocusCue(plan, step, language),
+      ...visibleReferences,
+    ];
+    const addPoint = (value: string) => addUniqueAiBrewDetailPoint(points, value, hiddenReferences);
+
+    if (id) {
+      if (plan.brewMode === 'iced' && step.pourVolumeMl > 0) {
+        addPoint(`Setup: timbang ${formatRoundedGrams(plan.iceMl)} es di server dulu; bed kopi hanya menerima ${formatRoundedMl(plan.hotWaterMl)} air panas.`);
+        addPoint('Kontrol seduh: berhenti di target air panas, lalu biarkan air turun selesai di atas es.');
+        addPoint('Koreksi kalau tipis: haluskan grind 0.5 step dulu; jangan tambah air setelah seduh.');
+      } else {
+        switch (plan.methodFamily) {
+          case 'v60':
+          case 'origami':
+          case 'kono':
+            addPoint('Setup: bilas filter, panaskan brewer/server, buang air bilas, lalu tara timbangan.');
+            addPoint('Kontrol seduh: mulai dari tengah, lebarkan secukupnya sampai bed basah merata.');
+            addPoint('Koreksi kalau meleset: jika air turun cepat, haluskan grind 0.5 step; jika pahit/seret, kasarkan 0.5 step.');
+            break;
+          case 'chemex':
+            addPoint('Setup: bilas filter Chemex sampai hangat dan pastikan vent tidak tertutup.');
+            addPoint('Kontrol seduh: jaga aliran stabil; filter tebal lebih mudah stall jika tuangan mengejar dinding.');
+            addPoint('Koreksi kalau lambat: kasarkan grind 0.5 step dulu sebelum mengubah rasio.');
+            break;
+          case 'kalita_wave':
+          case 'april':
+          case 'melitta':
+            addPoint('Setup: ratakan bed dan jaga kertas/filter duduk rapi sebelum tuang.');
+            addPoint('Kontrol seduh: pakai pulse pendek di tengah agar flat bed tetap rata.');
+            addPoint('Koreksi kalau berat: kurangi agitasi dulu; jangan langsung ubah semua variabel.');
+            break;
+          case 'hario_switch':
+            addPoint('Setup: cek posisi katup dan pastikan muatan ruang masih di bawah batas aman.');
+            addPoint('Kontrol seduh: ikuti waktu katup tutup/buka; air turun jangan diaduk ulang.');
+            addPoint('Koreksi kalau berat/keruh: buka katup lebih awal atau pilih Auto pada seduhan berikutnya.');
+            break;
+          case 'clever_dripper':
+            addPoint('Setup: tutup katup, basahi bed merata, lalu mulai hitung steep.');
+            addPoint('Kontrol seduh: saat release, biarkan air turun tanpa adukan tambahan.');
+            addPoint('Koreksi kalau pahit/berat: kasarkan grind 0.5 step atau pendekkan steep sedikit.');
+            break;
+          case 'french_press':
+            addPoint('Setup: pakai grind kasar merata dan basahi semua bubuk tanpa aduk berlebihan.');
+            addPoint('Kontrol seduh: steep selesai saat press/tuang pisah; sajikan tidak dihitung sebagai ekstraksi utama.');
+            addPoint('Koreksi kalau keruh: tekan lebih pelan dan tuang pisah lebih bersih.');
+            break;
+          case 'aeropress':
+            addPoint('Setup: bilas cap/filter dan basahi chamber merata sebelum steep.');
+            addPoint('Kontrol seduh: tekan stabil, lalu berhenti sebelum hiss terakhir dipaksa.');
+            addPoint('Koreksi kalau tajam: tambah sedikit waktu steep atau haluskan grind 0.5 step.');
+            break;
+          case 'espresso':
+            addPoint('Setup: distribusi rata, tamp level, dan bersihkan rim basket.');
+            addPoint('Kontrol seduh: baca aliran shot; berhenti di target hasil sesuai window waktu.');
+            addPoint('Koreksi kalau asam: haluskan grind sedikit; kalau pahit/kering, kasarkan sedikit.');
+            break;
+          case 'moka_pot':
+            addPoint('Setup: isi boiler di bawah katup aman dan ratakan basket tanpa tamp.');
+            addPoint('Kontrol seduh: pakai panas moderat sampai aliran stabil.');
+            addPoint('Koreksi kalau kasar: angkat lebih cepat sebelum sputter dan turunkan panas.');
+            break;
+          case 'cold_brew':
+            addPoint('Setup: basahi semua bubuk sampai tidak ada dry pocket.');
+            addPoint('Kontrol seduh: steep panjang stabil; filtrasi/serve adalah tahap terpisah.');
+            addPoint('Koreksi kalau tipis: rapatkan rasio seduhan berikutnya atau tambah waktu steep.');
+            break;
+          default:
+            addPoint('Setup: siapkan alat, air, dan bed kopi sebelum timer berjalan.');
+            addPoint('Kontrol seduh: ikuti target air/waktu dan jaga gerakan tetap stabil.');
+            addPoint('Koreksi kalau meleset: ubah satu variabel dulu dari grind, suhu, atau teknik.');
+        }
+      }
+    } else if (step.secondaryText) {
+      addPoint(localizeAiBrewDynamicText(step.secondaryText, language));
+    }
+
     if (step.warnings.length > 0) {
-      step.warnings.forEach((warning) => addUniqueAiBrewDetailPoint(points, localizeAiBrewDynamicText(warning, language)));
+      step.warnings.forEach((warning) => addPoint(localizeAiBrewDynamicText(warning, language)));
     }
     if (plan.brewMode === 'iced' && step.pourVolumeMl > 0) {
-      addUniqueAiBrewDetailPoint(
-        points,
-        isIndonesianAiBrewLanguage(language)
+      addPoint(
+        id
           ? `Target volume ini adalah air panas (${formatRoundedMl(plan.hotWaterMl)}), bukan total minuman.`
           : `This volume target is hot water (${formatRoundedMl(plan.hotWaterMl)}), not total beverage.`,
       );
     }
-    return points.slice(0, 5);
+    return points.slice(0, 3);
   }
   const id = isIndonesianAiBrewLanguage(language);
   const kind = getAiBrewStepKind(step);
@@ -2987,9 +3145,9 @@ function buildAiBrewDeterministicStepDetailPoints(
   }
 
   const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
-  addUniqueAiBrewDetailPoint(points, methodFocusCue);
+  addUniqueAiBrewDetailPoint(points, methodFocusCue, visibleReferences);
 
-  return points;
+  return points.slice(0, 3);
 }
 
 function buildAiBrewStepDetailPoints(
@@ -2997,24 +3155,26 @@ function buildAiBrewStepDetailPoints(
   step: AiBrewDisplayStep,
   index: number,
   language: string,
+  visibleReferences: string[] = [],
 ) {
-  const fallbackNote = buildAiBrewStepQuickNote(step, language).toLowerCase();
+  const fallbackNote = normalizeAiBrewInstructionText(buildAiBrewStepQuickNote(step, language));
   const detailText = normalizeAiBrewInstructionText(
     localizeAiBrewDynamicText(step.hybridInstruction || '', language),
   );
+  const hiddenReferences = [fallbackNote, ...visibleReferences].filter(Boolean);
 
-  const points = buildAiBrewDeterministicStepDetailPoints(plan, step, index, language);
+  const points = buildAiBrewDeterministicStepDetailPoints(plan, step, index, language, hiddenReferences);
 
-  if (!detailText || detailText.toLowerCase() === fallbackNote) return points.slice(0, 5);
+  if (!detailText || isAiBrewDetailCovered(detailText, fallbackNote)) return points.slice(0, 3);
 
   detailText
     .split(/;\s+|(?<=[.!?])\s+/)
     .map((part) => normalizeAiBrewInstructionText(part))
     .filter(Boolean)
-    .filter((part) => part.toLowerCase() !== fallbackNote)
-    .forEach((part) => addUniqueAiBrewDetailPoint(points, part));
+    .filter((part) => !isAiBrewDetailCovered(part, fallbackNote))
+    .forEach((part) => addUniqueAiBrewDetailPoint(points, part, hiddenReferences));
 
-  return points.slice(0, 5);
+  return points.slice(0, 3);
 }
 
 function formatAiBrewStepFlowRate(step: AiBrewDisplayStep) {
@@ -3180,11 +3340,11 @@ function renderAiBrewSequenceStepCard(
   const localizedStepLabel = localizeAiBrewStepLabel(step.label, language);
   const stepActionText = buildAiBrewStepActionText(step, language, plan);
   const stepQuickNote = buildAiBrewStepQuickNote(step, language);
-  const stepDetailPoints = buildAiBrewStepDetailPoints(plan, step, index, language);
   const stepMetrics = filterAiBrewStepMetricsForDensity(buildAiBrewStepMetrics(step, language, plan), density);
   const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
   const normalizedActionText = normalizeAiBrewInstructionText(stepActionText).toLowerCase();
   const conciseCue = methodFocusCue || stepQuickNote;
+  const stepDetailPoints = buildAiBrewStepDetailPoints(plan, step, index, language, [stepActionText, conciseCue]);
   const showConciseCue = Boolean(conciseCue) && conciseCue.toLowerCase() !== normalizedActionText;
   const stepCardClass = 'rounded-[1rem] border panel-divider-subtle panel-soft p-3 sm:p-3.5';
 
@@ -3234,11 +3394,11 @@ function renderAiBrewSequenceStepCard(
                 </span>
                 <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
               </summary>
-              <ul className="mt-2.5 space-y-2 text-sm leading-5 text-secondary">
+              <ul className="mt-2.5 space-y-2.5 text-sm leading-6 text-secondary">
                 {stepDetailPoints.map((point) => (
                   <li key={`${step.id}-${point}`} className="flex items-start gap-2">
                     <span className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400" />
-                    <span>{point}</span>
+                    <span className="min-w-0 break-words">{point}</span>
                   </li>
                 ))}
               </ul>
@@ -4338,12 +4498,13 @@ function PlanResultDialog({
   const guideEndLabel = id ? 'Panduan selesai' : 'Guide complete';
   const postExtractionLabel = id ? 'Finishing' : 'Finishing';
   const timeHelperText = getPlanTimeHelperCopy(plan, language);
-  const timeSummaryItems = [
-    { id: 'extraction', label: extractionTimeLabel, value: formatGuideTime(extractionSeconds) },
+  const summaryHighlightItems = [
+    { id: 'extraction', label: extractionTimeLabel, value: formatGuideTime(extractionSeconds), emphasis: true },
     { id: 'guide', label: guideEndLabel, value: formatGuideTime(guideEndSeconds) },
-    ...(postExtractionSeconds > 0
-      ? [{ id: 'post', label: postExtractionLabel, value: `+${formatGuideTime(postExtractionSeconds)} ${id ? 'aduk/sajikan' : 'stir/serve'}` }]
-      : []),
+    { id: 'temp', label: copy.temp, value: formatRoundedTemperature(plan.waterTempC) },
+    { id: 'ratio', label: copy.finalRatio, value: `1:${formatBrewRatio(plan.finalBeverageRatio)}` },
+    { id: 'grind', label: copy.grind, value: localizedGrindHeadline },
+    { id: 'output', label: copy.cupOutput, value: formatRoundedMl(plan.estimatedCupOutputMl) },
   ];
   const expectedCup = plan.expectedCupProfile;
   const localizedBeanCoverageLabel = plan.beanCoverage
@@ -4842,32 +5003,33 @@ function PlanResultDialog({
                           : (id ? 'Perlu review' : 'Needs review')}
                     </span>
                   </div>
-                  <div className="mt-3 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 text-xs sm:grid-cols-[repeat(3,minmax(0,1fr))] lg:grid-cols-[repeat(6,minmax(0,1fr))]" data-testid="ai-brew-result-summary-metric-strip">
-                    {[
-                      { id: 'dose', label: copy.dose, value: formatRoundedGrams(plan.doseG) },
-                      { id: 'water', label: plan.brewMode === 'iced' ? (id ? 'Input air' : 'Water input') : copy.totalWater, value: planHeaderWater },
-                      { id: 'ratio', label: copy.finalRatio, value: `1:${formatBrewRatio(plan.finalBeverageRatio)}` },
-                      { id: 'temp', label: copy.temp, value: formatRoundedTemperature(plan.waterTempC) },
-                      { id: 'grind', label: copy.grind, value: localizedGrindHeadline },
-                      { id: 'output', label: copy.cupOutput, value: formatRoundedMl(plan.estimatedCupOutputMl) },
-                    ].map((item) => (
-                      <span key={item.id} className="min-w-0 max-w-full rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/82 px-2.5 py-2 text-secondary">
-                        <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
-                        <span className="block break-words font-semibold text-primary">{item.value}</span>
-                      </span>
-                    ))}
+                  <div className="mt-3" data-testid="ai-brew-result-summary-metric-strip">
+                    <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2.5 text-xs sm:grid-cols-[repeat(3,minmax(0,1fr))]" data-testid="ai-brew-time-semantics">
+                      {summaryHighlightItems.map((item) => (
+                        <span
+                          key={item.id}
+                          className={`min-w-0 max-w-full rounded-2xl border px-3 py-3 text-secondary ${
+                            item.emphasis
+                              ? 'border-blue-500/20 bg-blue-500/[0.09]'
+                              : 'panel-divider-subtle bg-[var(--bg-base)]/84'
+                          }`}
+                        >
+                          <span className="block text-[10px] font-semibold uppercase tracking-widest text-tertiary">{item.label}</span>
+                          <span className="mt-1 block break-words text-base font-semibold leading-tight text-primary sm:text-lg">{item.value}</span>
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <div className="mt-2 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 text-xs sm:grid-cols-[repeat(3,minmax(0,1fr))]" data-testid="ai-brew-time-semantics">
-                    {timeSummaryItems.map((item) => (
-                      <span key={item.id} className="min-w-0 rounded-xl border border-blue-500/14 bg-[var(--bg-base)]/78 px-2.5 py-2 text-secondary">
-                        <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
-                        <span className="block break-words font-semibold text-primary">{item.value}</span>
-                      </span>
-                    ))}
+                  <div className="mt-2 space-y-2">
+                    {postExtractionSeconds > 0 && (
+                      <p className="rounded-xl border border-blue-500/14 bg-[var(--bg-base)]/78 px-3 py-2 text-xs leading-5 text-secondary" data-testid="ai-brew-post-extraction-note">
+                        <span className="font-semibold text-primary">{postExtractionLabel}:</span> +{formatGuideTime(postExtractionSeconds)} {id ? 'aduk/sajikan' : 'stir/serve'}.
+                      </p>
+                    )}
+                    <p className="rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-xs leading-5 text-blue-800 dark:text-blue-200" data-testid="ai-brew-time-helper">
+                      {copy.summaryFocusHint} {timeHelperText}
+                    </p>
                   </div>
-                  <p className="mt-2 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-xs leading-5 text-blue-800 dark:text-blue-200" data-testid="ai-brew-time-helper">
-                    {timeHelperText}
-                  </p>
                   {plan.methodFamily === 'hario_switch' && (
                     <div className="mt-3 flex min-w-0 max-w-full flex-wrap gap-1.5 text-xs" data-testid="ai-brew-switch-result-summary">
                       <span className={resultChipClass}>{localizedSwitchPresetLabel || (id ? 'Metode Switch' : 'Switch method')}</span>
@@ -5516,9 +5678,17 @@ function PlanResultDialog({
                         <p className="mt-1 text-3xl font-semibold text-primary">{formatGuideTime(flowProgressSeconds)}</p>
                       </div>
                       <div className="rounded-2xl bg-[var(--bg-base)]/82 p-3">
-                        <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowMetricNext}</p>
+                        <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowStepRemaining}</p>
                         <p className="mt-1 text-3xl font-semibold text-primary">{formatGuideTime(flowStepRemainingSeconds)}</p>
                       </div>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs" data-testid="ai-brew-flow-remaining-status">
+                      <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
+                        {copy.flowStepRemaining}: <span className="text-primary">{formatGuideTime(flowStepRemainingSeconds)}</span>
+                      </span>
+                      <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
+                        {copy.flowTotalRemaining}: <span className="text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
+                      </span>
                     </div>
 
                     <div className="mt-4 rounded-2xl bg-[var(--bg-base)]/88 p-3.5 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
@@ -5718,7 +5888,8 @@ function PlanResultDialog({
                     const activeCue = methodFocusCue || quickNote;
                     const compactActiveCue = compactAiBrewInstruction(activeCue);
                     const showStepNote = state === 'current' && Boolean(compactActiveCue);
-                    const stepDetailPoints = buildAiBrewStepDetailPoints(plan, step, index, language);
+                    const stepSummary = buildAiBrewFlowStepSummary(step, language, plan);
+                    const stepDetailPoints = buildAiBrewStepDetailPoints(plan, step, index, language, [stepSummary, activeCue]);
                     const stepMetricGroups = splitAiBrewStepMetrics(buildAiBrewStepMetrics(step, language, plan));
 
                     return (
@@ -5747,7 +5918,7 @@ function PlanResultDialog({
                               </span>
                               <p className="text-sm font-semibold text-primary">{localizeAiBrewStepLabel(step.label, language)}</p>
                             </div>
-                            <p className="text-sm text-secondary">{buildAiBrewFlowStepSummary(step, language, plan)}</p>
+                            <p className="text-sm text-secondary">{stepSummary}</p>
                           </div>
                           <div className="space-y-1 text-right">
                             <span className="inline-flex rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-primary">
@@ -5772,7 +5943,7 @@ function PlanResultDialog({
                               <span>{id ? 'Detail tambahan' : 'Extra detail'}</span>
                               <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
                             </summary>
-                            <ul className="mt-2.5 space-y-2 text-sm leading-5 text-secondary">
+                            <ul className="mt-2.5 space-y-2.5 text-sm leading-6 text-secondary">
                               {stepMetricGroups.detail.length > 0 && (
                                 <li className="block">
                                   {renderAiBrewStepMetricChips(stepMetricGroups.detail, `${step.id}-flow-detail`, {
@@ -5784,7 +5955,7 @@ function PlanResultDialog({
                               {stepDetailPoints.map((point) => (
                                 <li key={`${step.id}-flow-${point}`} className="flex items-start gap-2">
                                   <span className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400" />
-                                  <span>{point}</span>
+                                  <span className="min-w-0 break-words">{point}</span>
                                 </li>
                               ))}
                             </ul>

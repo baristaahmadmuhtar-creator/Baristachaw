@@ -1,5 +1,5 @@
 {
-  "catalogVersion": "2026.06.5-global-origin-plus",
+  "catalogVersion": "2026.06.6-global-taxonomy-plus",
   "items": [
     {
       "id": "aerobic_fermentation",
@@ -60,6 +60,37 @@
         "Taiwan",
         "Indonesia"
       ]
+    },
+    {
+      "aliases": [
+        "carbonic anaerobic",
+        "low oxygen carbonic"
+      ],
+      "origins": [
+        "Global",
+        "Colombia",
+        "Panama",
+        "Indonesia"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "anaerobic_carbonic",
+      "label": "Anaerobic Carbonic",
+      "group": "fermented",
+      "searchText": "anaerobic_carbonic anaerobic carbonic fermented carbonic anaerobic low oxygen carbonic global colombia panama indonesia"
     },
     {
       "id": "anaerobic_honey",
@@ -213,6 +244,62 @@
       "searchText": "anaerobic wet hulled anaerobic giling basah anaerobic semi washed indonesia fermentasi anaerobik giling basah"
     },
     {
+      "aliases": [
+        "grainpro fermentation",
+        "sealed bag fermentation"
+      ],
+      "origins": [
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "bag_fermentation",
+      "label": "Bag Fermentation",
+      "group": "fermented",
+      "searchText": "bag_fermentation bag fermentation fermented grainpro fermentation sealed bag fermentation global"
+    },
+    {
+      "aliases": [
+        "barrel rested",
+        "barrel fermented"
+      ],
+      "origins": [
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "barrel_aged",
+      "label": "Barrel Aged",
+      "group": "experimental",
+      "searchText": "barrel_aged barrel aged experimental barrel rested barrel fermented global"
+    },
+    {
       "id": "black_honey",
       "label": "Black Honey",
       "group": "classic",
@@ -240,6 +327,65 @@
         "Nicaragua",
         "Panama"
       ]
+    },
+    {
+      "aliases": [
+        "anaerobic black honey"
+      ],
+      "origins": [
+        "Costa Rica",
+        "Colombia",
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "black_honey_anaerobic",
+      "label": "Black Honey Anaerobic",
+      "group": "fermented",
+      "searchText": "black_honey_anaerobic black honey anaerobic fermented anaerobic black honey costa rica colombia global"
+    },
+    {
+      "aliases": [
+        "honey carbonic maceration",
+        "carbonic pulped natural"
+      ],
+      "origins": [
+        "Global",
+        "Colombia",
+        "Panama"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "carbonic_honey",
+      "label": "Carbonic Honey",
+      "group": "fermented",
+      "searchText": "carbonic_honey carbonic honey fermented honey carbonic maceration carbonic pulped natural global colombia panama"
     },
     {
       "id": "carbonic_maceration",
@@ -548,6 +694,35 @@
       "searchText": "double anaerobic double anaerobic fermentation two stage anaerobic global colombia ecuador panama indonesia thailand"
     },
     {
+      "aliases": [
+        "double carbonic maceration"
+      ],
+      "origins": [
+        "Global",
+        "Panama",
+        "Colombia"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "double_carbonic",
+      "label": "Double Carbonic",
+      "group": "experimental",
+      "searchText": "double_carbonic double carbonic experimental double carbonic maceration global panama colombia"
+    },
+    {
       "id": "double_fermentation",
       "label": "Double Fermentation",
       "group": "fermented",
@@ -641,6 +816,38 @@
       ]
     },
     {
+      "aliases": [
+        "dry processed",
+        "unwashed",
+        "dried in fruit"
+      ],
+      "origins": [
+        "Global",
+        "Ethiopia",
+        "Brazil",
+        "Yemen"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "dry_process",
+      "label": "Dry Process",
+      "group": "classic",
+      "searchText": "dry_process dry process classic dry processed unwashed dried in fruit global ethiopia brazil yemen"
+    },
+    {
       "id": "eco_pulped",
       "label": "Eco Pulped",
       "group": "washed",
@@ -701,6 +908,34 @@
         "Indonesia"
       ],
       "searchText": "enzyme fermentation enzymatic fermentation enzyme assisted process global colombia ecuador china indonesia"
+    },
+    {
+      "aliases": [
+        "experimental process",
+        "producer experimental"
+      ],
+      "origins": [
+        "Global"
+      ],
+      "notes": [
+        "Generic experimental label; keep recipe conservative and require taste feedback."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "experimental_lot",
+      "label": "Experimental Lot",
+      "group": "experimental",
+      "searchText": "experimental_lot experimental lot experimental experimental process producer experimental global"
     },
     {
       "id": "extended_fermentation",
@@ -772,6 +1007,37 @@
       ]
     },
     {
+      "aliases": [
+        "full washed",
+        "traditional washed"
+      ],
+      "origins": [
+        "Global",
+        "Africa",
+        "Latin America",
+        "Asia"
+      ],
+      "notes": [
+        "Classic washed baseline: clarity-forward, lower process variability when producer control is strong."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "fully_washed",
+      "label": "Fully Washed",
+      "group": "washed",
+      "searchText": "fully_washed fully washed washed full washed traditional washed global africa latin america asia"
+    },
+    {
       "id": "honey",
       "label": "Honey",
       "group": "classic",
@@ -802,6 +1068,35 @@
         "Taiwan",
         "Malaysia"
       ]
+    },
+    {
+      "aliases": [
+        "extended honey fermentation"
+      ],
+      "origins": [
+        "Costa Rica",
+        "Colombia",
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "honey_extended_fermentation",
+      "label": "Honey Extended Fermentation",
+      "group": "fermented",
+      "searchText": "honey_extended_fermentation honey extended fermentation fermented extended honey fermentation costa rica colombia global"
     },
     {
       "id": "kenya_double_fermentation",
@@ -864,6 +1159,33 @@
       "searchText": "koji fermentation koji process aspergillus oryzae fermentation japan colombia panama indonesia global experimental"
     },
     {
+      "id": "lactic",
+      "label": "Lactic Fermentation",
+      "group": "fermented",
+      "aliases": [
+        "lactic"
+      ],
+      "source": "sca-coffee-processing",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "emerging",
+      "marketSegment": "small_market",
+      "releaseStatus": "new",
+      "confidence": "medium",
+      "notes": [
+        "High-aroma process; keep brew moves small until taste confirms direction."
+      ],
+      "origins": [
+        "Colombia",
+        "Costa Rica",
+        "Ethiopia",
+        "Kenya"
+      ]
+    },
+    {
       "id": "lactic_anaerobic",
       "label": "Lactic Anaerobic",
       "group": "fermented",
@@ -890,33 +1212,6 @@
         "Panama",
         "Indonesia",
         "China"
-      ]
-    },
-    {
-      "id": "lactic",
-      "label": "Lactic Fermentation",
-      "group": "fermented",
-      "aliases": [
-        "lactic"
-      ],
-      "source": "sca-coffee-processing",
-      "sourceUrls": [
-        "https://sca.coffee/research/coffee-processing-glossary"
-      ],
-      "verificationLevel": "curated",
-      "verifiedAt": "2026-03-09",
-      "popularityTier": "emerging",
-      "marketSegment": "small_market",
-      "releaseStatus": "new",
-      "confidence": "medium",
-      "notes": [
-        "High-aroma process; keep brew moves small until taste confirms direction."
-      ],
-      "origins": [
-        "Colombia",
-        "Costa Rica",
-        "Ethiopia",
-        "Kenya"
       ]
     },
     {
@@ -947,6 +1242,34 @@
         "Indonesia",
         "Yemen"
       ]
+    },
+    {
+      "aliases": [
+        "machine dried",
+        "guarded mechanical drying"
+      ],
+      "origins": [
+        "Global"
+      ],
+      "notes": [
+        "Drying method cue only; does not imply flavor by itself."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "mechanical_dried",
+      "label": "Mechanical Dried",
+      "group": "drying",
+      "searchText": "mechanical_dried mechanical dried drying machine dried guarded mechanical drying global"
     },
     {
       "id": "mechanically_demucilaged",
@@ -1009,6 +1332,35 @@
         "Indonesia",
         "Myanmar"
       ]
+    },
+    {
+      "aliases": [
+        "mosto anaerobic",
+        "mossto fermentation anaerobic"
+      ],
+      "origins": [
+        "Colombia",
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "mossto_anaerobic",
+      "label": "Mossto Anaerobic",
+      "group": "fermented",
+      "searchText": "mossto_anaerobic mossto anaerobic fermented mosto anaerobic mossto fermentation anaerobic colombia global"
     },
     {
       "id": "mossto_fermentation",
@@ -1171,6 +1523,149 @@
       "catalogVersion": "2026.06.4-ai-brew-origin-actionable"
     },
     {
+      "aliases": [
+        "natural process decaf"
+      ],
+      "origins": [
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "natural_decaf",
+      "label": "Natural Decaf",
+      "group": "special",
+      "searchText": "natural_decaf natural decaf special natural process decaf global"
+    },
+    {
+      "aliases": [
+        "extended natural fermentation",
+        "long fermentation natural"
+      ],
+      "origins": [
+        "Global",
+        "Colombia",
+        "Ethiopia",
+        "Panama"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "natural_extended_fermentation",
+      "label": "Natural Extended Fermentation",
+      "group": "fermented",
+      "searchText": "natural_extended_fermentation natural extended fermentation fermented extended natural fermentation long fermentation natural global colombia ethiopia panama"
+    },
+    {
+      "aliases": [
+        "nitrogen flush fermentation",
+        "nitrogen anaerobic"
+      ],
+      "origins": [
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "nitrogen_maceration",
+      "label": "Nitrogen Maceration",
+      "group": "experimental",
+      "searchText": "nitrogen_maceration nitrogen maceration experimental nitrogen flush fermentation nitrogen anaerobic global"
+    },
+    {
+      "aliases": [
+        "fermentation in parchment"
+      ],
+      "origins": [
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "parchment_fermentation",
+      "label": "Parchment Fermentation",
+      "group": "fermented",
+      "searchText": "parchment_fermentation parchment fermentation fermented fermentation in parchment global"
+    },
+    {
+      "aliases": [
+        "patio natural",
+        "sun patio natural"
+      ],
+      "origins": [
+        "Brazil",
+        "Latin America",
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "patio_dried_natural",
+      "label": "Patio-Dried Natural",
+      "group": "drying",
+      "searchText": "patio_dried_natural patio-dried natural drying patio natural sun patio natural brazil latin america global"
+    },
+    {
       "id": "pulped_natural",
       "label": "Pulped Natural",
       "group": "classic",
@@ -1195,6 +1690,37 @@
         "India",
         "Indonesia"
       ]
+    },
+    {
+      "aliases": [
+        "african bed natural",
+        "drying bed natural"
+      ],
+      "origins": [
+        "Ethiopia",
+        "Kenya",
+        "Rwanda",
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "raised_bed_natural",
+      "label": "Raised-Bed Natural",
+      "group": "drying",
+      "searchText": "raised_bed_natural raised-bed natural drying african bed natural drying bed natural ethiopia kenya rwanda global"
     },
     {
       "id": "raisin_natural",
@@ -1256,6 +1782,65 @@
       ]
     },
     {
+      "aliases": [
+        "anaerobic red honey"
+      ],
+      "origins": [
+        "Costa Rica",
+        "Colombia",
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "red_honey_anaerobic",
+      "label": "Red Honey Anaerobic",
+      "group": "fermented",
+      "searchText": "red_honey_anaerobic red honey anaerobic fermented anaerobic red honey costa rica colombia global"
+    },
+    {
+      "aliases": [
+        "rum barrel coffee",
+        "rum barrel fermentation"
+      ],
+      "origins": [
+        "Global",
+        "Central America",
+        "Caribbean"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "rum_barrel_aged",
+      "label": "Rum Barrel Aged",
+      "group": "experimental",
+      "searchText": "rum_barrel_aged rum barrel aged experimental rum barrel coffee rum barrel fermentation global central america caribbean"
+    },
+    {
       "id": "semi_anaerobic",
       "label": "Semi Anaerobic",
       "group": "fermented",
@@ -1286,6 +1871,66 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
       "searchText": "semi anaerobic semi-anaerobic partial anaerobic global colombia costa rica panama indonesia thailand"
+    },
+    {
+      "id": "semi_carbonic_maceration",
+      "label": "Semi-Carbonic Maceration",
+      "group": "fermented",
+      "aliases": [
+        "semi carbonic",
+        "semi-carbonic"
+      ],
+      "origins": [
+        "Global",
+        "Colombia",
+        "Panama",
+        "Costa Rica",
+        "China"
+      ],
+      "notes": [
+        "Carbonic-adjacent fermentation descriptor; keep recipe shifts bounded unless lot protocol is documented."
+      ],
+      "searchText": "semi-carbonic maceration semi carbonic semi-carbonic global colombia panama costa rica china",
+      "catalogVersion": "2026.06.2-ai-brew-global-plus",
+      "source": "process-curation",
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-05",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary"
+      ]
+    },
+    {
+      "aliases": [
+        "semi lavado",
+        "semi washed latin america"
+      ],
+      "origins": [
+        "Latin America",
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "semi_lavado",
+      "label": "Semi Lavado",
+      "group": "regional",
+      "searchText": "semi_lavado semi lavado regional semi lavado semi washed latin america latin america global"
     },
     {
       "id": "semi_washed",
@@ -1349,37 +1994,6 @@
       "confidence": "medium",
       "catalogVersion": "2026.06.3-ai-brew-global-origin-plus",
       "searchText": "semi washed extended fermentation extended semi washed fermented semi washed indonesia sumatra java sulawesi papua global"
-    },
-    {
-      "id": "semi_carbonic_maceration",
-      "label": "Semi-Carbonic Maceration",
-      "group": "fermented",
-      "aliases": [
-        "semi carbonic",
-        "semi-carbonic"
-      ],
-      "origins": [
-        "Global",
-        "Colombia",
-        "Panama",
-        "Costa Rica",
-        "China"
-      ],
-      "notes": [
-        "Carbonic-adjacent fermentation descriptor; keep recipe shifts bounded unless lot protocol is documented."
-      ],
-      "searchText": "semi-carbonic maceration semi carbonic semi-carbonic global colombia panama costa rica china",
-      "catalogVersion": "2026.06.2-ai-brew-global-plus",
-      "source": "process-curation",
-      "verificationLevel": "curated",
-      "verifiedAt": "2026-05-05",
-      "popularityTier": "specialty_common",
-      "marketSegment": "specialty_mainstream",
-      "releaseStatus": "established",
-      "confidence": "medium",
-      "sourceUrls": [
-        "https://sca.coffee/research/coffee-processing-glossary"
-      ]
     },
     {
       "id": "sequential_fermentation",
@@ -1568,6 +2182,34 @@
       ]
     },
     {
+      "aliases": [
+        "sealed tank fermentation",
+        "controlled tank fermentation"
+      ],
+      "origins": [
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "tank_fermentation",
+      "label": "Tank Fermentation",
+      "group": "fermented",
+      "searchText": "tank_fermentation tank fermentation fermented sealed tank fermentation controlled tank fermentation global"
+    },
+    {
       "id": "thermal_shock",
       "label": "Thermal Shock",
       "group": "experimental",
@@ -1655,6 +2297,36 @@
       "catalogVersion": "2026.06.5-global-origin-plus"
     },
     {
+      "aliases": [
+        "triple stage fermentation",
+        "three stage fermentation"
+      ],
+      "origins": [
+        "Global",
+        "Colombia",
+        "Panama"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "niche",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "new",
+      "confidence": "low",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "triple_fermentation",
+      "label": "Triple Fermentation",
+      "group": "experimental",
+      "searchText": "triple_fermentation triple fermentation experimental triple stage fermentation three stage fermentation global colombia panama"
+    },
+    {
       "id": "washed",
       "label": "Washed",
       "group": "classic",
@@ -1721,6 +2393,64 @@
       "searchText": "washed anaerobic anaerobic washed sealed tank washed global colombia panama costa rica ethiopia china indonesia"
     },
     {
+      "aliases": [
+        "washed process decaf"
+      ],
+      "origins": [
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "washed_decaf",
+      "label": "Washed Decaf",
+      "group": "special",
+      "searchText": "washed_decaf washed decaf special washed process decaf global"
+    },
+    {
+      "aliases": [
+        "extended washed fermentation",
+        "long fermentation washed"
+      ],
+      "origins": [
+        "Global",
+        "Colombia",
+        "Ethiopia",
+        "Kenya"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "emerging",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "washed_extended_fermentation",
+      "label": "Washed Extended Fermentation",
+      "group": "fermented",
+      "searchText": "washed_extended_fermentation washed extended fermentation fermented extended washed fermentation long fermentation washed global colombia ethiopia kenya"
+    },
+    {
       "id": "wet_hulled",
       "label": "Wet Hulled",
       "group": "regional",
@@ -1746,6 +2476,34 @@
         "Timor-Leste",
         "Malaysia"
       ]
+    },
+    {
+      "aliases": [
+        "wet processed",
+        "washed process"
+      ],
+      "origins": [
+        "Global"
+      ],
+      "notes": [
+        "Curated process expansion; sensory effect varies by producer control and green quality."
+      ],
+      "source": "process-curation",
+      "sourceUrls": [
+        "https://sca.coffee/research/coffee-processing-glossary",
+        "https://www.coffeeinstitute.org/certification/people/post-harvest-processing"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-14",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.6-global-taxonomy-plus",
+      "id": "wet_process",
+      "label": "Wet Process",
+      "group": "washed",
+      "searchText": "wet_process wet process washed wet processed washed process global"
     },
     {
       "id": "white_honey",

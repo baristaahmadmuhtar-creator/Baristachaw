@@ -78,6 +78,7 @@ import type {
   AeroPressRecipeStyle,
   BeanCoverageState,
   BeanProfileState,
+  BeanTaxonomySignal,
   BeanRoastDevelopment,
   BeanSolubility,
   BrewJournalEntry,
@@ -1759,6 +1760,15 @@ export function detectCustomProcess(
   if (/\b(co[-\s]?ferment|coferment|infused|fruit\s+maceration|fruit[-\s]?infused|koji|enzyme)\b/.test(haystack)) {
     return pick('coferment', 'medium', 'Experimental process cue mapped to co-ferment/infused; taste feedback is required before pushing extraction.');
   }
+  if (/\bnitrogen\b/.test(haystack)) {
+    return pick('nitrogen_maceration', 'low', 'Custom process cue mapped to nitrogen maceration; keep the baseline conservative and verify by taste.');
+  }
+  if (/\b(rum\s+barrel|barrel[-\s]?aged|barrel\s+rested)\b/.test(haystack)) {
+    return pick(/\brum\s+barrel\b/.test(haystack) ? 'rum_barrel_aged' : 'barrel_aged', 'low', 'Custom process cue mapped to barrel-aged experimental baseline.');
+  }
+  if (/\btriple\s+(stage\s+)?fermentation\b/.test(haystack)) {
+    return pick('triple_fermentation', 'low', 'Custom process cue mapped to triple fermentation; taste feedback is required.');
+  }
   if (/\b(giling\s+basah|wet[-\s]?hulled|semi[-\s]?washed\s+indonesia)\b/.test(haystack)) {
     return pick('wet_hulled', 'high', 'Custom process cue mapped to wet-hulled Indonesian baseline.');
   }
@@ -1779,18 +1789,161 @@ export function detectCustomProcess(
       return pick('kenya_double_fermentation', 'medium', 'Custom process cue mapped to Kenya double fermentation washed baseline.')
         || pick('double_washed', 'medium', 'Custom process cue mapped to double washed baseline.');
     }
+    if (/\b(extended|long)\s+fermentation\b/.test(haystack)) {
+      return pick('washed_extended_fermentation', 'medium', 'Custom process cue mapped to washed extended fermentation baseline.');
+    }
+    if (/\bfully\s+washed\b/.test(haystack)) {
+      return pick('fully_washed', 'high', 'Custom process cue mapped to fully washed baseline.')
+        || pick('washed', 'high', 'Custom process cue mapped to washed baseline.');
+    }
+    if (/\bwet\s+process\b/.test(haystack)) {
+      return pick('wet_process', 'high', 'Custom process cue mapped to wet process baseline.')
+        || pick('washed', 'high', 'Custom process cue mapped to washed baseline.');
+    }
     return pick(/\bdouble\s+washed\b/.test(haystack) ? 'double_washed' : 'washed', 'high', 'Custom process cue mapped to washed baseline.');
   }
   if (/\b(honey|pulped\s+natural)\b/.test(haystack)) {
+    if (/\b(extended|long)\s+fermentation\b/.test(haystack)) {
+      return pick('honey_extended_fermentation', 'medium', 'Custom process cue mapped to honey extended fermentation baseline.');
+    }
     return pick(/\bpulped\s+natural\b/.test(haystack) ? 'pulped_natural' : 'honey', 'high', 'Custom process cue mapped to honey/pulped-natural baseline.');
   }
   if (/\b(natural|dry\s+process)\b/.test(haystack)) {
+    if (/\b(extended|long)\s+fermentation\b/.test(haystack)) {
+      return pick('natural_extended_fermentation', 'medium', 'Custom process cue mapped to natural extended fermentation baseline.');
+    }
+    if (/\braised[-\s]?bed\b/.test(haystack)) {
+      return pick('raised_bed_natural', 'medium', 'Custom process cue mapped to raised-bed natural baseline.');
+    }
+    if (/\bdry\s+process\b/.test(haystack)) {
+      return pick('dry_process', 'high', 'Custom process cue mapped to dry process baseline.')
+        || pick('natural', 'high', 'Custom process cue mapped to natural baseline.');
+    }
     return pick('natural', 'high', 'Custom process cue mapped to natural baseline.');
   }
   if (/\banaerobic\b/.test(haystack)) {
     return pick('anaerobic', 'medium', 'Custom process cue mapped to anaerobic baseline; numeric changes stay conservative.');
   }
   return null;
+}
+
+export function deriveBeanTaxonomySignal(params: {
+  input: Partial<AiBrewFormState>;
+  processEntry?: ProcessCatalogEntry;
+  varietyEntry?: VarietyCatalogEntry;
+  processLabel: string;
+  varietyLabel: string;
+  customProcessDetection?: CustomProcessDetection | null;
+  processRisk?: ProcessRiskModel;
+}): BeanTaxonomySignal {
+  const processText = normalizeProcessInput([
+    params.input.process,
+    params.input.customProcess,
+    params.processEntry?.id,
+    params.processEntry?.label,
+    params.processEntry?.searchText,
+    ...(params.processEntry?.aliases || []),
+  ].filter(Boolean).join(' '));
+  const varietyText = normalizeVarietyInput([
+    params.input.variety,
+    params.input.customVariety,
+    params.varietyEntry?.id,
+    params.varietyEntry?.label,
+    params.varietyEntry?.searchText,
+    ...(params.varietyEntry?.aliases || []),
+    params.varietyEntry?.taxonomy?.species,
+    params.varietyEntry?.taxonomy?.lineageGroup,
+    params.varietyEntry?.taxonomy?.cultivarType,
+  ].filter(Boolean).join(' '));
+  const hasProcess = hasValue(params.input.process) || hasValue(params.input.customProcess);
+  const hasVariety = hasValue(params.input.variety) || hasValue(params.input.customVariety);
+  const hasCatalogProcess = Boolean(params.processEntry);
+  const hasCatalogVariety = Boolean(params.varietyEntry);
+  const processReview = params.processEntry?.reviewStatus;
+  const varietyReview = params.varietyEntry?.reviewStatus;
+  const processRegional = params.processEntry?.source === 'regional-curation'
+    || params.processEntry?.group === 'regional'
+    || processReview === 'needs_review';
+  const varietyRegional = params.varietyEntry?.source === 'regional-curation'
+    || params.varietyEntry?.taxonomy?.cultivarType === 'regional_alias'
+    || params.varietyEntry?.group.includes('regional')
+    || varietyReview === 'needs_review';
+  const risky = params.processRisk?.variability === 'high'
+    || params.processRisk?.recommendationMode === 'taste_feedback_required'
+    || /\b(anaerobic|carbonic|lactic|co[-\s]?ferment|infused|thermal|koji|enzyme|experimental|decaf|robusta|canephora|liberica|excelsa|wet\s+hulled|giling\s+basah|barrel|nitrogen|triple)\b/i.test(`${processText} ${varietyText}`);
+  const reasons = normalizeNoteList([
+    hasCatalogProcess ? `Process catalog match: ${params.processLabel}.` : undefined,
+    hasCatalogVariety ? `Variety catalog match: ${params.varietyLabel}.` : undefined,
+    params.customProcessDetection ? `Custom process mapped to ${params.customProcessDetection.id}.` : undefined,
+    processRegional || varietyRegional ? 'Regional alias or review-needed taxonomy is treated as curated, not official.' : undefined,
+  ]);
+  const warnings = normalizeNoteList([
+    !hasProcess && !hasVariety ? 'Data beans belum lengkap; AI Brew memakai baseline aman.' : undefined,
+    hasProcess && !hasCatalogProcess && !params.customProcessDetection ? 'Process manual belum cocok ke katalog; gunakan feedback rasa untuk koreksi.' : undefined,
+    hasVariety && !hasCatalogVariety ? 'Varietas manual belum cocok ke katalog; keyakinan tetap konservatif.' : undefined,
+    risky ? 'Bean atau proses berisiko tinggi; pakai baseline konservatif dan ubah satu variabel dulu.' : undefined,
+  ]);
+
+  if (!hasProcess && !hasVariety) {
+    return {
+      category: 'unknown_fallback',
+      confidence: 'low',
+      processLabel: params.processLabel,
+      varietyLabel: params.varietyLabel,
+      reasons,
+      warnings,
+    };
+  }
+
+  if (risky) {
+    return {
+      category: 'risk_caution',
+      confidence: 'medium',
+      processId: params.processEntry?.id || params.customProcessDetection?.id,
+      varietyId: params.varietyEntry?.id,
+      processLabel: params.processLabel,
+      varietyLabel: params.varietyLabel,
+      reasons,
+      warnings,
+    };
+  }
+
+  if (params.customProcessDetection || (hasProcess && !hasCatalogProcess) || (hasVariety && !hasCatalogVariety)) {
+    return {
+      category: 'custom_detected',
+      confidence: params.customProcessDetection?.confidence || 'low',
+      processId: params.processEntry?.id || params.customProcessDetection?.id,
+      varietyId: params.varietyEntry?.id,
+      processLabel: params.processLabel,
+      varietyLabel: params.varietyLabel,
+      reasons,
+      warnings,
+    };
+  }
+
+  if (processRegional || varietyRegional) {
+    return {
+      category: 'regional_alias',
+      confidence: 'medium',
+      processId: params.processEntry?.id,
+      varietyId: params.varietyEntry?.id,
+      processLabel: params.processLabel,
+      varietyLabel: params.varietyLabel,
+      reasons,
+      warnings,
+    };
+  }
+
+  return {
+    category: 'known_catalog',
+    confidence: hasCatalogProcess && hasCatalogVariety ? 'high' : 'medium',
+    processId: params.processEntry?.id,
+    varietyId: params.varietyEntry?.id,
+    processLabel: params.processLabel,
+    varietyLabel: params.varietyLabel,
+    reasons,
+    warnings,
+  };
 }
 
 export function resolveDefaultTargetProfileForBean(
@@ -1993,6 +2146,22 @@ function normalizeSearchHaystack(parts: Array<string | undefined>) {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function normalizeProcessInput(value: string) {
+  return normalizeSearchHaystack([value])
+    .replace(/[_/|]+/g, ' ')
+    .replace(/[^\w\s+-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function normalizeVarietyInput(value: string) {
+  return normalizeSearchHaystack([value])
+    .replace(/[_/|]+/g, ' ')
+    .replace(/[^\w\s+-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -6770,6 +6939,15 @@ function finalizePlanCore(
     switchValidation: switchStepValidation,
   };
   const beanCoverage = buildBeanCoverageState(beanCoverageBase);
+  const beanTaxonomy = deriveBeanTaxonomySignal({
+    input,
+    processEntry,
+    varietyEntry,
+    processLabel,
+    varietyLabel,
+    customProcessDetection,
+    processRisk,
+  });
   const provenanceAttentionNeeded =
     deviceSelection.mode !== 'exact'
     || grindSettingMode === 'derived_baseline'
@@ -6838,6 +7016,7 @@ function finalizePlanCore(
     roastLevel: input.roastLevel,
     beanProfile: beanProfileAdjustment.state,
     beanCoverage,
+    beanTaxonomy,
     targetProfileId: targetProfile.id,
     targetProfileLabel: targetProfile.label,
     targetProfileAutoSuggested,

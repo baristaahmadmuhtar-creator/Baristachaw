@@ -435,6 +435,7 @@ const COPY = {
     pickerCategoryRegional: 'Regional',
     pickerCategoryExperimental: 'Experimental',
     pickerCategorySpecial: 'Special',
+    pickerCategorySpeciesVariety: 'Species / varieties',
     noPickerResults: 'No matching catalog entries.',
     generated: 'Brew plan saved to local history.',
     generatedAi: 'Brew plan saved. AI optimization applied.',
@@ -936,11 +937,12 @@ const COPY = {
     pickerHelp: '',
     pickerClose: 'Tutup picker',
     pickerCategoryAll: 'Semua',
-    pickerCategoryCommon: 'Common',
+    pickerCategoryCommon: 'Umum',
     pickerCategoryFermented: 'Fermentasi',
     pickerCategoryRegional: 'Regional',
     pickerCategoryExperimental: 'Eksperimental',
     pickerCategorySpecial: 'Khusus',
+    pickerCategorySpeciesVariety: 'Spesies / varietas',
     noPickerResults: 'Tidak ada entri katalog yang cocok.',
     generated: 'Brew plan tersimpan ke history lokal.',
     generatedAi: 'Brew plan tersimpan. Optimasi AI diterapkan.',
@@ -1059,9 +1061,9 @@ const COPY = {
     verifiedDataset: 'Dataset',
     verifiedFallback: 'Fallback',
     lowConfidence: 'Keyakinan rendah',
-    reviewFresh: 'Terkini',
-    reviewNeedsReview: 'Perlu ditinjau',
-    reviewConflicting: 'Perlu dirapikan',
+    reviewFresh: 'Data katalog',
+    reviewNeedsReview: 'Butuh verifikasi',
+    reviewConflicting: 'Data konflik',
     reviewDeprecated: 'Deprecated',
     highVariability: 'Variabilitas tinggi',
     autoTargetSuggested: 'Target otomatis disarankan',
@@ -3539,6 +3541,20 @@ function getProcessPickerCategory(entry: ProcessCatalogEntry): ProcessPickerCate
   return 'special';
 }
 
+function getVarietyPickerSection(copy: CopySet, entry: VarietyCatalogEntry) {
+  const text = normalizeSearchText(`${entry.id} ${entry.label} ${entry.group} ${entry.taxonomy?.species || ''} ${entry.taxonomy?.cultivarType || ''}`);
+  if (/\b(canephora|robusta|conilon|liberica|excelsa|species level|non arabica)\b/.test(text)) {
+    return copy.pickerCategorySpeciesVariety;
+  }
+  if (/\b(regional|alias|indonesia|south asia|brazil|east africa|kenyan)\b/.test(text)) {
+    return copy.pickerCategoryRegional;
+  }
+  if (/\b(ethiopian|landrace|heirloom|specialty reference|gesha|geisha|sidra|wush)\b/.test(text)) {
+    return copy.pickerCategorySpeciesVariety;
+  }
+  return entry.group;
+}
+
 function sortProcessEntriesForPicker(entries: ProcessCatalogEntry[]) {
   const categoryRank = new Map<ProcessPickerCategory, number>(
     PROCESS_PICKER_CATEGORIES.map((category, index) => [category, index]),
@@ -3600,6 +3616,15 @@ function rankPickerOptionsForSearch(items: PickerOption[], normalizedQuery: stri
     })
     .slice(0, limit)
     .map((entry) => entry.item);
+}
+
+function keepEssentialPickerOptionsVisible(items: PickerOption[], visibleItems: PickerOption[]) {
+  const essentialItems = items.filter((item) => item.id === OMITTED_ENTRY_ID || item.id === CUSTOM_ENTRY_ID);
+  if (essentialItems.length === 0) return visibleItems;
+
+  const essentialIds = new Set(essentialItems.map((item) => item.id));
+  const remainingVisibleItems = visibleItems.filter((item) => !essentialIds.has(item.id));
+  return [...essentialItems, ...remainingVisibleItems];
 }
 
 function MasterPickerDialog({
@@ -3675,7 +3700,10 @@ function MasterPickerDialog({
       ? items.filter((item) => item.processCategory === activeProcessCategory)
       : items;
     if (!normalized) {
-      return isLargeCatalog ? categoryFilteredItems.slice(0, LARGE_CATALOG_INITIAL_LIMIT) : categoryFilteredItems;
+      const visibleItems = isLargeCatalog
+        ? categoryFilteredItems.slice(0, LARGE_CATALOG_INITIAL_LIMIT)
+        : categoryFilteredItems;
+      return keepEssentialPickerOptionsVisible(items, visibleItems);
     }
     const limit = isLargeCatalog ? LARGE_CATALOG_SEARCH_LIMIT : Number.POSITIVE_INFINITY;
     return rankPickerOptionsForSearch(items, normalized, limit);
@@ -6112,7 +6140,7 @@ function buildVarietyPickerOptions(catalog: AiBrewCatalog, copy: CopySet) {
     searchText: normalizeSearchText(`${entry.searchText} ${entry.group} ${entry.aliases.join(' ')}`),
     aliases: entry.aliases,
     canonicalTerms: [entry.id, entry.label, ...entry.aliases],
-    section: entry.group,
+    section: getVarietyPickerSection(copy, entry),
     badges: buildVarietyBadges(copy, entry),
     ariaLabel: copy.pickerSelectVariety.replace('{label}', entry.label),
   })));

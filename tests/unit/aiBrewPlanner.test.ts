@@ -13,6 +13,9 @@ import {
   createDefaultAiBrewFormState,
   createQuickAiBrewFormState,
   detectCustomProcess,
+  deriveBeanTaxonomySignal,
+  normalizeProcessInput,
+  normalizeVarietyInput,
   resolveDefaultTargetProfileIdForBean,
   resolveDeviceProfileSelection,
   resolveGrinderSettingReference,
@@ -3250,6 +3253,10 @@ test('AI Brew custom process parser maps modern process language without overrid
     ['giling basah Sumatra', 'wet_hulled'],
     ['sugarcane decaf Colombia', 'sugarcane_decaf'],
     ['double washed Kenya', 'kenya_double_fermentation'],
+    ['nitrogen anaerobic lot', 'nitrogen_maceration'],
+    ['rum barrel aged natural', 'rum_barrel_aged'],
+    ['fully washed Colombia', 'fully_washed'],
+    ['raised-bed natural Ethiopia', 'raised_bed_natural'],
   ];
 
   for (const [text, expectedId] of cases) {
@@ -3265,6 +3272,92 @@ test('AI Brew custom process parser maps modern process language without overrid
     roastLevel: 'medium',
   }, catalog);
   assert.equal(explicitWashed, 'balance_clean');
+});
+
+test('AI Brew global bean taxonomy signal separates catalog, regional, custom, unknown, and risk beans', () => {
+  assert.equal(normalizeProcessInput('Giling Basah / Wet-Hulled'), 'giling basah wet-hulled');
+  assert.equal(normalizeVarietyInput('Ethiopia 74158 / Local Landrace'), 'ethiopia 74158 local landrace');
+
+  const washed = catalog.processes.find((entry) => entry.id === 'washed');
+  const bourbon = catalog.varieties.find((entry) => entry.id === 'bourbon');
+  assert.ok(washed);
+  assert.ok(bourbon);
+  const known = deriveBeanTaxonomySignal({
+    input: { process: 'washed', variety: 'bourbon' },
+    processEntry: washed,
+    varietyEntry: bourbon,
+    processLabel: washed.label,
+    varietyLabel: bourbon.label,
+    processRisk: washed.processRisk,
+  });
+  assert.equal(known.category, 'known_catalog');
+  assert.equal(known.confidence, 'high');
+
+  const productionVarieties = readJsonItems<VarietyCatalogEntry>('apps/web/public/data/ai-brew/varieties.v2026-06.json');
+  const regionalVariety = productionVarieties.find((entry) => entry.id === 'ethiopia_74158' || entry.id === 'dega');
+  assert.ok(regionalVariety);
+  const regional = deriveBeanTaxonomySignal({
+    input: { process: 'washed', variety: regionalVariety.id },
+    processEntry: washed,
+    varietyEntry: regionalVariety,
+    processLabel: washed.label,
+    varietyLabel: regionalVariety.label,
+    processRisk: washed.processRisk,
+  });
+  assert.ok(['regional_alias', 'risk_caution'].includes(regional.category), `regional taxonomy should stay honest: ${regional.category}`);
+  assert.ok(regional.warnings.join(' ').match(/curated|verifikasi|baseline|konservatif|risiko/i) || regional.reasons.join(' ').match(/Regional alias|review-needed/i));
+
+  const customDetection = detectCustomProcess({ process: 'custom', customProcess: 'nitrogen anaerobic natural' }, catalog);
+  const custom = deriveBeanTaxonomySignal({
+    input: { process: 'custom', customProcess: 'nitrogen anaerobic natural', variety: 'custom', customVariety: 'rare farm selection' },
+    processEntry: undefined,
+    varietyEntry: undefined,
+    processLabel: 'nitrogen anaerobic natural',
+    varietyLabel: 'rare farm selection',
+    customProcessDetection: customDetection,
+  });
+  assert.ok(['custom_detected', 'risk_caution'].includes(custom.category));
+  assert.ok(custom.warnings.join(' ').match(/baseline|konservatif|feedback|manual/i));
+
+  const unknown = deriveBeanTaxonomySignal({
+    input: {},
+    processLabel: 'Not specified',
+    varietyLabel: 'Not specified',
+  });
+  assert.equal(unknown.category, 'unknown_fallback');
+  assert.equal(unknown.confidence, 'low');
+  assert.match(unknown.warnings.join(' '), /Data beans belum lengkap|baseline aman/i);
+
+  const robusta = productionVarieties.find((entry) => entry.id === 'fine_robusta' || entry.id === 'robusta');
+  assert.ok(robusta);
+  const risk = deriveBeanTaxonomySignal({
+    input: { process: 'washed', variety: robusta.id },
+    processEntry: washed,
+    varietyEntry: robusta,
+    processLabel: washed.label,
+    varietyLabel: robusta.label,
+    processRisk: washed.processRisk,
+  });
+  assert.equal(risk.category, 'risk_caution');
+  assert.match(risk.warnings.join(' '), /berisiko|konservatif|variabel/i);
+
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    coffeeName: 'Bourbon fully washed',
+    process: 'washed',
+    variety: 'bourbon',
+    roastLevel: 'light',
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual',
+    waterTdsPpm: '90',
+    waterHardnessPpm: '50',
+    waterAlkalinityPpm: '35',
+  }, catalog);
+  assert.ok(plan.beanTaxonomy, 'plan should expose taxonomy signal');
+  assert.ok(['known_catalog', 'regional_alias'].includes(plan.beanTaxonomy?.category || ''), `unexpected plan taxonomy ${plan.beanTaxonomy?.category}`);
+  assert.ok(plan.expectedCupProfile?.confidence);
+  assert.ok(plan.recommendedRatio > 0 && plan.hotWaterMl > 0);
 });
 
 test('AI Brew process and variety modifier coverage never falls through silently', () => {
@@ -3695,9 +3788,38 @@ test('AI Brew process, variety, and origin knowledge catalog stays expanded and 
     'orange_bourbon',
     'andina',
   ];
+  const globalTaxonomyProcessIds = [
+    'fully_washed',
+    'dry_process',
+    'raised_bed_natural',
+    'washed_extended_fermentation',
+    'natural_extended_fermentation',
+    'carbonic_honey',
+    'anaerobic_carbonic',
+    'mossto_anaerobic',
+    'nitrogen_maceration',
+    'experimental_lot',
+  ];
+  const globalTaxonomyVarietyIds = [
+    'dega',
+    'kurume',
+    'wolisho',
+    'ethiopia_74110',
+    'ethiopia_74112',
+    'ethiopia_74158',
+    'red_bourbon',
+    'caturra_rojo',
+    'caturra_amarillo',
+    'red_catuai',
+    'catucai',
+    'catigua',
+    'sln10',
+    'fine_robusta',
+    'barako_liberica',
+  ];
 
-  assert.ok(processes.length >= 62);
-  assert.ok(varieties.length >= 136);
+  assert.ok(processes.length >= 88);
+  assert.ok(varieties.length >= 177);
   assert.ok(calibration.originProfiles.length >= 14);
   for (const id of addedProcessIds) {
     assert.ok(processIds.has(id), `${id} process should exist`);
@@ -3715,12 +3837,20 @@ test('AI Brew process, variety, and origin knowledge catalog stays expanded and 
     assert.ok(varietyIds.has(id), `${id} latest variety should exist`);
     assert.ok(calibration.varietyModifiers[id], `${id} latest variety should have deterministic calibration`);
   }
+  for (const id of globalTaxonomyProcessIds) {
+    assert.ok(processIds.has(id), `${id} global taxonomy process should exist`);
+  }
+  for (const id of globalTaxonomyVarietyIds) {
+    assert.ok(varietyIds.has(id), `${id} global taxonomy variety should exist`);
+  }
 
   for (const entry of [
     ...processes.filter((item) => addedProcessIds.includes(item.id)),
     ...processes.filter((item) => latestProcessIds.includes(item.id)),
+    ...processes.filter((item) => globalTaxonomyProcessIds.includes(item.id)),
     ...varieties.filter((item) => addedVarietyIds.includes(item.id)),
     ...varieties.filter((item) => latestVarietyIds.includes(item.id)),
+    ...varieties.filter((item) => globalTaxonomyVarietyIds.includes(item.id)),
   ]) {
     assert.ok(entry.sourceUrls?.length, `${entry.id} must keep sourceUrls`);
     if (entry.verificationLevel !== 'official') {

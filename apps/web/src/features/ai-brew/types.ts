@@ -757,6 +757,24 @@ export type BeanCoverageCategory =
   | 'risk_caution'
   | 'unsupported_unsafe';
 
+export type BeanTaxonomyCategory =
+  | 'known_catalog'
+  | 'regional_alias'
+  | 'custom_detected'
+  | 'unknown_fallback'
+  | 'risk_caution';
+
+export interface BeanTaxonomySignal {
+  category: BeanTaxonomyCategory;
+  confidence: AiBrewScoreConfidence;
+  processId?: string;
+  varietyId?: string;
+  processLabel: string;
+  varietyLabel: string;
+  reasons: string[];
+  warnings: string[];
+}
+
 export interface BeanCoverageState {
   category: BeanCoverageCategory;
   confidence: AiBrewScoreConfidence;
@@ -934,6 +952,7 @@ export interface BrewPlan {
   roastLevel: RoastLevel;
   beanProfile: BeanProfileState;
   beanCoverage?: BeanCoverageState;
+  beanTaxonomy?: BeanTaxonomySignal;
   targetProfileId: string;
   targetProfileLabel: string;
   targetProfileAutoSuggested?: boolean;

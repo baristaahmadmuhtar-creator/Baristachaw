@@ -273,7 +273,7 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   const processIds = new Set(processes.map((entry) => entry.id));
   assert.equal(processIds.size, processes.length, 'Process catalog should not contain duplicate IDs');
   assert.equal(processIds.has('co_fermented'), false, 'co_fermented should resolve through coferment alias, not stay a duplicate canonical process');
-  for (const required of ['wet_hulled', 'black_honey', 'white_honey', 'anaerobic_washed', 'monsooned', 'red_honey', 'yellow_honey', 'anaerobic_natural', 'anaerobic_honey', 'double_fermentation', 'wine_process', 'wine_yeast_fermentation', 'aerobic_fermentation', 'coferment', 'sequential_fermentation', 'anaerobic_thermal_shock', 'semi_washed', 'lactic_anaerobic', 'enzyme_fermentation', 'extended_fermentation', 'koji_fermentation', 'mossto_fermentation', 'anaerobic_wet_hulled']) {
+  for (const required of ['wet_hulled', 'black_honey', 'white_honey', 'anaerobic_washed', 'monsooned', 'red_honey', 'yellow_honey', 'anaerobic_natural', 'anaerobic_honey', 'double_fermentation', 'wine_process', 'wine_yeast_fermentation', 'aerobic_fermentation', 'coferment', 'sequential_fermentation', 'anaerobic_thermal_shock', 'semi_washed', 'lactic_anaerobic', 'enzyme_fermentation', 'extended_fermentation', 'koji_fermentation', 'mossto_fermentation', 'anaerobic_wet_hulled', 'fully_washed', 'dry_process', 'raised_bed_natural', 'washed_extended_fermentation', 'natural_extended_fermentation', 'carbonic_honey', 'anaerobic_carbonic', 'mossto_anaerobic', 'nitrogen_maceration', 'experimental_lot']) {
     assert.ok(processIds.has(required), `Expected process missing: ${required}`);
   }
 
@@ -295,7 +295,7 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
 
   const varietyIds = new Set(varieties.map((entry) => entry.id));
   assert.equal(varietyIds.size, varieties.length, 'Variety catalog should not contain duplicate IDs');
-  for (const required of ['sigararutang', 'andungsari', 'lini_s', 'timtim', 'yunnan_catimor', 'java', 'ateng_super', 'borbor', 'usda_762', 'kartika_1', 'kartika_2', 'gayo_1', 'sln9', 'sarchimor', 'pacas', 'kent', 'sln6', 'sln5b', 's288', 'cauvery', 'chandragiri', 'komasti', 'rasuna', 'blp_4', 'excelsa', 'ethiopian_landrace_mix']) {
+  for (const required of ['sigararutang', 'andungsari', 'lini_s', 'timtim', 'yunnan_catimor', 'java', 'ateng_super', 'borbor', 'usda_762', 'kartika_1', 'kartika_2', 'gayo_1', 'sln9', 'sarchimor', 'pacas', 'kent', 'sln6', 'sln5b', 's288', 'cauvery', 'chandragiri', 'komasti', 'rasuna', 'blp_4', 'excelsa', 'ethiopian_landrace_mix', 'dega', 'kurume', 'wolisho', 'ethiopia_74110', 'ethiopia_74112', 'ethiopia_74158', 'red_bourbon', 'caturra_rojo', 'caturra_amarillo', 'red_catuai', 'catucai', 'catigua', 'sln10', 'barako_liberica', 'fine_robusta']) {
     assert.ok(varietyIds.has(required), `Expected variety missing: ${required}`);
   }
 

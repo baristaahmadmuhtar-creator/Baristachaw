@@ -1,6 +1,6 @@
 # Mobile Web Parity Gate
 
-Latest baseline for this gate: `9702a2d27e94eac507e709622acd86a302ff2311`.
+Latest baseline for this gate: `15041df2e8a9607382c77000deb6caf85b3b1266`.
 
 Production mobile policy: the store candidate uses the Expo WebView web-parity shell as the primary surface. The web app remains the source of truth for AI Brew, recipe math, language, saved data, and core UX. Native screens are fallback/debug surfaces only and must not be exposed as incomplete production features.
 

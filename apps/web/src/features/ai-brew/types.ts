@@ -520,7 +520,9 @@ export interface EquipmentCatalogEntry extends CatalogProvenance {
     coarse: string;
     medium: string;
     fine: string;
+    parsedCoarse?: ParsedNumericRange | null;
     parsedMedium?: ParsedNumericRange | null;
+    parsedFine?: ParsedNumericRange | null;
   };
 }
 
@@ -1082,6 +1084,7 @@ export interface BrewPlan {
   grindSettingReference: string;
   grindSettingMode: GrindSettingMode;
   grindSettingVerification: VerificationLevel;
+  grindCalibrationRequired?: boolean;
   fallbackUsed: boolean;
   provenanceAttentionNeeded: boolean;
   confidenceNotes: string[];

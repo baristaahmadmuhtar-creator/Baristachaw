@@ -182,7 +182,7 @@ function formatAiBrewGuideValue(totalSeconds: number) {
 test('tools tabs expose accessible tab semantics and keyboard navigation', async ({ page }) => {
   const aiTab = page.getByRole('tab', { name: 'AI Brew' });
   const timerTab = page.getByRole('tab', { name: 'Timer' });
-  const ratioTab = page.getByRole('tab', { name: 'Ratio' });
+  const ratioTab = page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ });
   const tasksTab = page.getByRole('tab', { name: 'Tasks' });
 
   await expect(aiTab).toHaveAttribute('aria-selected', 'true');
@@ -204,7 +204,7 @@ test('timer controls work', async ({ page }) => {
 });
 
 test('ratio tab recalculates values', async ({ page }) => {
-  await page.getByRole('tab', { name: 'Ratio' }).click();
+  await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
   const doseInput = page.getByTestId('dose-input');
   const waterInput = page.getByTestId('water-input');
   await doseInput.fill('20');
@@ -213,8 +213,35 @@ test('ratio tab recalculates values', async ({ page }) => {
   await expect(waterInput).toHaveValue('300');
 });
 
+test('grind size calculator uses method and grinder while preserving ratio math', async ({ page }) => {
+  await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
+  await page.getByTestId('dose-input').fill('20');
+  await expect(page.getByTestId('water-input')).toHaveValue('320');
+
+  await page.getByRole('button', { name: /^(Grind Size|Ukuran Giling)$/ }).click();
+  await expect(page.getByTestId('grind-size-panel')).toBeVisible();
+  await expect(page.getByTestId('grind-size-recommendation')).toContainText(/Recommended grind|Rekomendasi gilingan/i);
+  await page.getByTestId('grinder-options').locator('button').first().click();
+
+  await page.getByRole('button', { name: /^(Ratio|Rasio)$/ }).click();
+  await expect(page.getByTestId('dose-input')).toHaveValue('20');
+  await expect(page.getByTestId('water-input')).toHaveValue('320');
+
+  await page.getByRole('button', { name: /^(Grind Size|Ukuran Giling)$/ }).click();
+  await page.getByTestId('grind-method-espresso').click();
+  await expect(page.getByTestId('grind-size-recommendation')).toContainText(/Espresso|fine|halus|baseline/i);
+  await expect(page.getByTestId('espresso-dial-in-context')).toContainText(/Espresso dial-in context|Konteks dial-in espresso/i);
+  await page.getByTestId('grind-shot-time').fill('19');
+  await page.getByTestId('grind-pressure').fill('11');
+  await page.getByTestId('grind-bean-age').fill('3');
+  await expect(page.getByTestId('espresso-dial-in-context')).toContainText(/Go slightly finer|Sedikit lebih halus/i);
+  await expect(page.getByTestId('espresso-dial-in-context')).toContainText(/pressure|tekanan/i);
+  await page.getByTestId('grind-roast-dark').click();
+  await expect(page.getByTestId('grind-size-recommendation')).toContainText(/Starting point|Titik awal|Baseline|Estimasi/i);
+});
+
 test('method switch changes yield output and advanced mode computes extraction', async ({ page }) => {
-  await page.getByRole('tab', { name: 'Ratio' }).click();
+  await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
 
   await page.getByTestId('dose-input').fill('20');
   await page.getByTestId('ratio-input').fill('16');
@@ -226,13 +253,13 @@ test('method switch changes yield output and advanced mode computes extraction',
   const chemexText = (await page.getByTestId('beverage-output-value').textContent()) || '';
   expect(chemexText).not.toEqual(v60Text);
 
-  await page.getByRole('button', { name: 'Advanced', exact: true }).click();
+  await page.getByTestId('ratio-analysis-toggle').click();
   await page.getByTestId('tds-input').fill('1.35');
   await expect(page.getByTestId('extraction-yield-value')).toBeVisible();
 });
 
 test('espresso shot presets update ratio and avoid filter baseline warning copy', async ({ page }) => {
-  await page.getByRole('tab', { name: 'Ratio' }).click();
+  await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
   await page.getByTestId('brew-method-espresso').click();
 
   await expect(page.getByTestId('espresso-shot-presets')).toBeVisible();
@@ -245,9 +272,9 @@ test('espresso shot presets update ratio and avoid filter baseline warning copy'
 });
 
 test('roast profile updates guidance and adaptive toggle does not force ratio when off', async ({ page }) => {
-  await page.getByRole('tab', { name: 'Ratio' }).click();
+  await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
   await page.getByTestId('brew-method-v60').click();
-  await page.getByRole('button', { name: 'Advanced', exact: true }).click();
+  await page.getByTestId('ratio-analysis-toggle').click();
 
   const ratioInput = page.getByTestId('ratio-input');
   await ratioInput.fill('16');
@@ -265,22 +292,21 @@ test('roast profile updates guidance and adaptive toggle does not force ratio wh
 });
 
 test('method switch uses medium defaults in basic and roast-aware defaults in advanced', async ({ page }) => {
-  await page.getByRole('tab', { name: 'Ratio' }).click();
-  await page.getByRole('button', { name: 'Advanced', exact: true }).click();
+  await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
+  await page.getByTestId('ratio-analysis-toggle').click();
 
   await page.getByTestId('roast-level-dark').click();
   await page.getByTestId('brew-method-espresso').click();
   await expect(page.getByTestId('ratio-input')).toHaveValue('1.9');
 
-  await page.getByRole('button', { name: 'Basic', exact: true }).click();
+  await page.getByTestId('ratio-analysis-toggle').click();
   await page.getByTestId('brew-method-v60').click();
   await page.getByTestId('brew-method-espresso').click();
   await expect(page.getByTestId('ratio-input')).toHaveValue('2');
 });
 
 test('basic mode hides advanced controls and diagnostics while keeping core inputs visible', async ({ page }) => {
-  await page.getByRole('tab', { name: 'Ratio' }).click();
-  await page.getByRole('button', { name: 'Basic', exact: true }).click();
+  await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
 
   await expect(page.getByText('Roast Profile')).toHaveCount(0);
   await expect(page.getByTestId('tds-input')).toHaveCount(0);
@@ -292,24 +318,24 @@ test('basic mode hides advanced controls and diagnostics while keeping core inpu
 });
 
 test('standards provenance stays hidden from both modes', async ({ page }) => {
-  await page.getByRole('tab', { name: 'Ratio' }).click();
+  await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
   await expect(page.getByTestId('standards-provenance')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Advanced', exact: true }).click();
+  await page.getByTestId('ratio-analysis-toggle').click();
   await expect(page.getByTestId('standards-provenance')).toHaveCount(0);
 });
 
 test('ratio settings persist after reload', async ({ page }) => {
-  await page.getByRole('tab', { name: 'Ratio' }).click();
+  await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
   await page.getByTestId('brew-method-kalita_wave').click();
-  await page.getByRole('button', { name: 'Advanced', exact: true }).click();
+  await page.getByTestId('ratio-analysis-toggle').click();
   await page.getByTestId('dose-input').fill('18');
   await page.getByTestId('ratio-input').fill('15.5');
   await page.getByTestId('tds-input').fill('1.40');
   await page.goto('/tools?tab=ratio', { waitUntil: 'domcontentloaded' });
-  await page.getByRole('tab', { name: 'Ratio' }).click();
+  await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
 
   await expect(page.getByTestId('brew-method-kalita_wave')).toHaveClass(/bg-blue-600/);
-  await expect(page.getByRole('button', { name: 'Advanced', exact: true })).toHaveClass(/bg-blue-600/);
+  await expect(page.getByTestId('tds-input')).toBeVisible();
   await expect(page.getByTestId('ratio-input')).toHaveValue('15.5');
 });
 
@@ -591,19 +617,19 @@ test('ai brew guide renders workflow-specific phases for non-pour-over methods',
       query: 'aeropress',
       optionId: 'aeropress',
       coffeeName: 'QA AeroPress Workflow',
-      expected: /Charge water|Stir|Steep|Press|Stop before hiss/i,
+      expected: /Charge water|Isi air|Stir|Aduk|Steep|Rendam|Press|Tekan|Stop before hiss|Berhenti sebelum hiss/i,
     },
     {
       query: 'french press',
       optionId: 'french-press',
       coffeeName: 'QA French Press Workflow',
-      expected: /Charge water|Steep|Settle|Press gently|Decant/i,
+      expected: /Charge water|Isi air|Steep|Rendam|Settle|Endapkan|Press gently|Tekan pelan|Decant|Tuang pisah/i,
     },
     {
       query: 'moka',
       optionId: 'bialetti-moka-pot',
       coffeeName: 'QA Moka Workflow',
-      expected: /Fill boiler|Level basket|Moderate heat|Monitor flow|Stop before sputter/i,
+      expected: /Fill boiler|Isi boiler|Level basket|Ratakan basket|Moderate heat|Panas sedang|Monitor flow|Pantau aliran|Stop before sputter|Berhenti sebelum sputter/i,
     },
   ] as const;
 
@@ -928,11 +954,11 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
     expect(plan.steps[2]?.label).toMatch(/Pulse|Pour/i);
     expect(plan.steps[plan.steps.length - 1]?.label).toMatch(/Final Pour|Finish/i);
     const firstHotTargetText = new RegExp(`${Math.round(plan.steps[0]?.targetVolumeMl || plan.hotWaterMl)}\\s*ml\\s*(hot water|air panas)`, 'i');
-    const assertTechniqueChips = async (container: Locator) => {
-      await expect(container).toContainText(/Flow/i);
-      await expect(container).toContainText(/Path|Jalur/i);
-      await expect(container).toContainText(/Height|Tinggi/i);
-      await expect(container).toContainText(/Agitation|Agitasi/i);
+    const assertTechniqueChips = async (card: Locator, detail: Locator) => {
+      await expect(card).toContainText(/Flow|Aliran/i);
+      await expect(detail).toContainText(/Path|Jalur/i);
+      await expect(detail).toContainText(/Height|Tinggi/i);
+      await expect(detail).toContainText(/Agitation|Agitasi/i);
     };
 
     if (mode === 'quick') {
@@ -958,8 +984,8 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
       await expect(result.getByTestId('ai-brew-guide-density-pro')).toHaveAttribute('aria-pressed', 'true');
       await result.getByTestId('ai-brew-flow-step-detail-2').locator('summary').click();
       await result.locator('details:has([data-testid="ai-brew-flow-current-step-technique-detail"]) summary').click();
-      await assertTechniqueChips(result.getByTestId('ai-brew-flow-step-technique-detail-2'));
-      await assertTechniqueChips(result.getByTestId('ai-brew-flow-current-step-technique-detail'));
+      await assertTechniqueChips(result.getByTestId('ai-brew-flow-step-2'), result.getByTestId('ai-brew-flow-step-technique-detail-2'));
+      await assertTechniqueChips(result.getByTestId('ai-brew-flow-current-card'), result.getByTestId('ai-brew-flow-current-step-technique-detail'));
       await expect(result.getByTestId('ai-brew-flow-step-2')).toContainText(firstHotTargetText);
     }
 
@@ -1019,7 +1045,7 @@ test('ai brew can hand off an iced plan into timer and ratio tools', async ({ pa
   await page.getByTestId('ai-brew-result').getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
   await page.getByTestId('ai-brew-use-ratio').click();
 
-  await expect(page.getByRole('tab', { name: /^(Ratio|Rasio)$/i })).toHaveClass(/bg-white/);
+  await expect(page.getByRole('tab', { name: /^(Calculator|Kalkulator|Ratio|Rasio)$/i })).toHaveClass(/bg-white/);
   await expect(page.getByRole('button', { name: /^V60 (Ice Brew|Seduh Es)$/i })).toHaveClass(/bg-blue-600/);
   await expect(page.getByTestId('dose-input')).toHaveValue('20');
   await expect(page.getByTestId('water-input')).toHaveValue(String(ratioPlan.totalWaterMl));

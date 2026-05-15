@@ -377,7 +377,9 @@ function normalizeGrinder(raw: RawGrinderCatalogEntry, override?: MarketSignalRe
       coarse: coarseLabel,
       medium: mediumLabel,
       fine: fineLabel,
+      parsedCoarse: parseNumericRange(coarseLabel),
       parsedMedium: parseNumericRange(mediumLabel),
+      parsedFine: parseNumericRange(fineLabel),
     },
     ...applyEquipmentProvenance(raw, override),
   };
@@ -1019,6 +1021,24 @@ const WATER_CLASSIFICATION_BASELINES: Record<WaterClassification, {
   manual_required: { tdsPpm: 110, hardnessPpm: 55, alkalinityPpm: 40 },
 };
 
+function validatePlannerWaterAutofillBounds(
+  tdsPpm: number | null,
+  hardnessPpm: number | null,
+  alkalinityPpm: number | null,
+) {
+  const errors: string[] = [];
+  if (tdsPpm !== null && (tdsPpm < 0 || tdsPpm > 600)) {
+    errors.push('Water TDS is outside planner autofill bounds; verify or enter minerals manually.');
+  }
+  if (hardnessPpm !== null && (hardnessPpm < 0 || hardnessPpm > 500)) {
+    errors.push('Water hardness is outside planner autofill bounds; verify or enter minerals manually.');
+  }
+  if (alkalinityPpm !== null && (alkalinityPpm < 0 || alkalinityPpm > 400)) {
+    errors.push('Water alkalinity is outside planner autofill bounds; verify or enter minerals manually.');
+  }
+  return errors;
+}
+
 function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
   const tdsPpm = Number.isFinite(entry.tds_ppm) ? Number(entry.tds_ppm) : null;
   const directHardness = Number.isFinite(entry.coffee_parameters.hardness_ppm_as_caco3)
@@ -1037,6 +1057,7 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
   const hardnessPpm = directHardness ?? ionHardness;
   const alkalinityPpm = directAlkalinity ?? ionAlkalinity;
   const consistencyErrors = validateWaterChemistryConsistency(tdsPpm, hardnessPpm, alkalinityPpm);
+  const plannerBoundsErrors = validatePlannerWaterAutofillBounds(tdsPpm, hardnessPpm, alkalinityPpm);
   const classification = classifyWaterBrand(entry, tdsPpm, hardnessPpm, alkalinityPpm);
   const classificationIsZeroMineral = classification.classification === 'zero_mineral_ro';
   const classificationIsAlkaline = classification.classification === 'alkaline_caution';
@@ -1050,6 +1071,7 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
     ...(estimatedData
       ? ['Estimated water values must be verified manually before ready-brew use.']
       : []),
+    ...plannerBoundsErrors,
   ];
   const mergedBrewBlockReason = Array.from(new Set([
     ...entry.brew_block_reason,

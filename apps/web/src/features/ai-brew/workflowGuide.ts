@@ -42,27 +42,84 @@ function formatTime(seconds: number) {
   return `${minutes}:${String(remainder).padStart(2, '0')}`;
 }
 
+function compactGuideText(value?: string, maxLength = 240) {
+  const text = (value || '').replace(/\s+/g, ' ').trim();
+  if (!text || text.length <= maxLength) return text || undefined;
+  const sentence = text.split(/(?<=[.!?])\s+/).find((part) => part.length >= 24 && part.length <= maxLength);
+  if (sentence) return sentence.trim();
+  const clipped = text.slice(0, maxLength);
+  const lastSpace = clipped.lastIndexOf(' ');
+  return `${clipped.slice(0, lastSpace > 120 ? lastSpace : maxLength).trim()}...`;
+}
+
 function chip(key: WorkflowGuideChipKey, label: string, value: string): WorkflowGuideTechniqueChip {
   return { key, label, value };
+}
+
+function formatPourPath(value?: string) {
+  if (!value) return '';
+  return value
+    .replace(/center_to_mid/g, 'tengah-ke-tengah-luar')
+    .replace(/center/g, 'tengah')
+    .replace(/spiral/g, 'spiral')
+    .replace(/wall/g, 'dinding')
+    .replace(/_/g, ' ');
+}
+
+function formatPourHeight(value?: string) {
+  if (!value) return '';
+  return value
+    .replace(/low/g, 'rendah')
+    .replace(/medium/g, 'sedang')
+    .replace(/high/g, 'tinggi')
+    .replace(/_/g, ' ');
+}
+
+function formatAgitation(value?: string) {
+  if (!value) return '';
+  return value
+    .replace(/minimal/g, 'minimal')
+    .replace(/low/g, 'rendah')
+    .replace(/medium/g, 'sedang')
+    .replace(/high/g, 'tinggi')
+    .replace(/_/g, ' ');
+}
+
+function formatValve(value?: string) {
+  if (!value) return '';
+  return value
+    .replace(/closed/g, 'tutup')
+    .replace(/open/g, 'buka')
+    .replace(/_/g, ' ');
+}
+
+function formatChamber(value?: string) {
+  if (!value) return '';
+  return value
+    .replace(/empty/g, 'kosong')
+    .replace(/served/g, 'selesai')
+    .replace(/immersion/g, 'immersion')
+    .replace(/percolation/g, 'perkolasi')
+    .replace(/_/g, ' ');
 }
 
 function flowChip(step: BrewPlanStep) {
   const [min, max] = step.flowRateMlPerSec || [];
   return Number.isFinite(min) && Number.isFinite(max)
-    ? chip('flow', 'Flow', `${min}-${max} ml/s`)
+    ? chip('flow', 'Aliran', `${min}-${max} ml/s`)
     : null;
 }
 
 function pathChip(step: BrewPlanStep) {
-  return step.pourPath ? chip('path', 'Path', step.pourPath) : null;
+  return step.pourPath ? chip('path', 'Jalur', formatPourPath(step.pourPath)) : null;
 }
 
 function heightChip(step: BrewPlanStep) {
-  return step.pourHeight ? chip('height', 'Height', step.pourHeight) : null;
+  return step.pourHeight ? chip('height', 'Tinggi', formatPourHeight(step.pourHeight)) : null;
 }
 
 function agitationChip(step: BrewPlanStep) {
-  return step.agitationLevel ? chip('agitation', 'Agitation', step.agitationLevel) : null;
+  return step.agitationLevel ? chip('agitation', 'Agitasi', formatAgitation(step.agitationLevel)) : null;
 }
 
 function formatSwitchProgramme(programme: SwitchBrewProgramme | string) {
@@ -75,10 +132,10 @@ function techniqueChipsFromStep(step: BrewPlanStep): WorkflowGuideTechniqueChip[
     pathChip(step),
     heightChip(step),
     agitationChip(step),
-    step.valveState ? chip('valve', 'Valve', step.valveState) : null,
-    step.chamberState ? chip('chamber', 'Chamber', step.chamberState) : null,
-    Number.isFinite(step.chamberLoadMl) ? chip('chamber_load', 'Chamber load', formatMl(step.chamberLoadMl || 0)) : null,
-    step.switchProgramme ? chip('programme', 'Programme', formatSwitchProgramme(step.switchProgramme)) : null,
+    step.valveState ? chip('valve', 'Katup', formatValve(step.valveState)) : null,
+    step.chamberState ? chip('chamber', 'Ruang', formatChamber(step.chamberState)) : null,
+    Number.isFinite(step.chamberLoadMl) ? chip('chamber_load', 'Muatan ruang', formatMl(step.chamberLoadMl || 0)) : null,
+    step.switchProgramme ? chip('programme', 'Program', formatSwitchProgramme(step.switchProgramme)) : null,
   ].filter(Boolean) as WorkflowGuideTechniqueChip[];
 }
 
@@ -106,14 +163,14 @@ function sourceStep(
     label: params.label || step.label,
     actionType,
     primaryText: params.primaryText,
-    secondaryText: params.secondaryText,
+    secondaryText: compactGuideText(params.secondaryText),
     endSeconds: params.endSeconds,
     techniqueChips: params.techniqueChips || techniqueChipsFromStep(step),
     warnings: params.warnings || [],
     sourceStepIds: [step.id],
     isOperationalOnly: Boolean(params.isOperationalOnly),
     note: params.primaryText,
-    hybridInstruction: params.secondaryText || step.hybridInstruction,
+    hybridInstruction: compactGuideText(params.secondaryText) || step.hybridInstruction,
   };
 }
 
@@ -150,13 +207,13 @@ function operationalStep(params: {
     switchProgramme: params.switchProgramme,
     actionType: params.actionType,
     primaryText: params.primaryText,
-    secondaryText: params.secondaryText,
+    secondaryText: compactGuideText(params.secondaryText),
     techniqueChips: params.techniqueChips || [],
     warnings: params.warnings || [],
     sourceStepIds: params.sourceStepIds || [],
     isOperationalOnly: true,
     note: params.primaryText,
-    hybridInstruction: params.secondaryText,
+    hybridInstruction: compactGuideText(params.secondaryText),
   };
 }
 
@@ -185,10 +242,10 @@ function buildPouroverGuide(plan: BrewPlan): WorkflowGuideStep[] {
   const isIced = plan.brewMode === 'iced';
   const methodLower = plan.methodFamily.replace(/_/g, ' ');
   const prepText = plan.methodFamily === 'chemex'
-    ? 'Bilas kertas tebal dengan rata, panaskan kaca, arahkan sisi tiga lapis ke spout, dan biarkan jalur udara terbuka.'
+    ? 'Bilas filter tebal, panaskan kaca, dan pastikan jalur udara terbuka.'
     : plan.methodFamily === 'kalita_wave' || plan.methodFamily === 'april' || plan.methodFamily === 'melitta'
-      ? 'Bilas dan panaskan alat, ratakan bed flat, lalu siapkan pulse rendah yang merata.'
-      : 'Bilas filter, panaskan brewer/server, buang air bilas, tare timbangan, lalu masukkan kopi.';
+      ? 'Bilas dan panaskan alat, ratakan bed, lalu siapkan pulse rendah.'
+      : 'Bilas filter, panaskan brewer/server, buang air bilas, lalu tara timbangan.';
   const guide: WorkflowGuideStep[] = [
     operationalStep({
       id: `guide_${plan.methodFamily}_setup`,
@@ -196,10 +253,10 @@ function buildPouroverGuide(plan: BrewPlan): WorkflowGuideStep[] {
       actionType: 'rinse_preheat',
       startSeconds: 0,
       primaryText: isIced
-        ? `${prepText} Masukkan ${formatGrams(plan.iceMl)} es ke server sebelum seduh. Seduh target air panas saja; es adalah bypass terukur.`
+        ? `${prepText} Masukkan ${formatGrams(plan.iceMl)} es ke server. Seduh air panas saja; es bypass terukur.`
         : prepText,
       techniqueChips: [
-        chip('basket_prep', 'Prep', plan.methodFamily === 'chemex' ? 'thick filter + open vent' : `${methodLower} ready`),
+        chip('basket_prep', 'Persiapan', plan.methodFamily === 'chemex' ? 'filter tebal + vent terbuka' : `${methodLower} siap`),
       ],
     }),
   ];
@@ -208,29 +265,29 @@ function buildPouroverGuide(plan: BrewPlan): WorkflowGuideStep[] {
     const isFirstPour = step.pourVolumeMl > 0 && step.id === first?.id;
     const isLastPour = step.pourVolumeMl > 0 && step.id === last?.id;
     const actionType: WorkflowGuideActionType = isFirstPour ? 'bloom' : (step.kind || 'pour') === 'drawdown' ? 'drawdown' : 'pour';
-    const label = isFirstPour ? 'Bloom' : isLastPour ? 'Final pour' : index <= 1 ? 'Middle pour' : step.label;
+    const label = isFirstPour ? 'Bloom' : isLastPour ? 'Tuang akhir' : index <= 1 ? 'Tuang tengah' : step.label;
     const targetText = isIced && step.pourVolumeMl > 0
-      ? `Target ${formatMl(step.targetVolumeMl)} hot water.`
+      ? `Target ${formatMl(step.targetVolumeMl)} air panas.`
       : `Target ${formatMl(step.targetVolumeMl)}.`;
     const familyCue = plan.methodFamily === 'chemex'
-      ? 'Keep the stream stable and do not chase the filter wall.'
+      ? 'Jaga aliran stabil dan biarkan vent filter tetap terbuka.'
       : plan.methodFamily === 'kalita_wave' || plan.methodFamily === 'april' || plan.methodFamily === 'melitta'
-        ? 'Keep the bed level with a low, flat-center pour.'
+        ? 'Jaga bed rata dengan pulse rendah dari tengah.'
         : plan.methodFamily === 'kono'
-          ? 'Keep the pour center-focused and controlled.'
-          : 'Use a clean center-to-mid path and avoid wall rinsing.';
+          ? 'Tuang fokus di tengah dengan ritme tenang.'
+          : 'Tuang tenang dari tengah ke tengah-luar.';
     guide.push(sourceStep(actionType, step, {
       label,
       primaryText: step.pourVolumeMl > 0
-        ? `Pour ${formatMl(step.pourVolumeMl)}. ${targetText}`
+        ? `Tuang ${formatMl(step.pourVolumeMl)}. ${targetText}`
         : targetText,
-      secondaryText: `${familyCue} ${step.hybridInstruction || step.note || ''}`.trim(),
+      secondaryText: familyCue,
     }));
   });
 
   guide.push(operationalStep({
     id: `guide_${plan.methodFamily}_drawdown`,
-    label: 'Drawdown',
+    label: 'Air turun',
     actionType: 'drawdown',
       startSeconds: Math.max(last?.startSeconds || 0, plan.totalTimeSeconds - 20),
       endSeconds: plan.totalTimeSeconds,
@@ -239,22 +296,22 @@ function buildPouroverGuide(plan: BrewPlan): WorkflowGuideStep[] {
       ? `Biarkan air turun di atas es sampai target ${formatMl(plan.hotWaterMl)} air panas. Seduh target air panas saja; jangan tambah bypass air.`
       : 'Biarkan air turun alami; hindari bilas dinding atau swirl berat di akhir.',
     techniqueChips: [
-      chip('drawdown', 'Drawdown', formatTime(plan.totalTimeSeconds)),
-      ...(isIced ? [chip('stop', 'Stop', `${formatMl(plan.hotWaterMl)} hot water`)] : []),
+      chip('drawdown', 'Air turun', formatTime(plan.totalTimeSeconds)),
+      ...(isIced ? [chip('stop', 'Berhenti', `${formatMl(plan.hotWaterMl)} air panas`)] : []),
     ],
     sourceStepIds: last ? [last.id] : [],
   }));
 
   guide.push(operationalStep({
     id: `guide_${plan.methodFamily}_serve`,
-    label: 'Serve',
+    label: 'Sajikan',
     actionType: 'serve',
     startSeconds: plan.totalTimeSeconds,
     targetVolumeMl: plan.hotWaterMl,
     primaryText: isIced
       ? 'Aduk es 5-8 detik agar konsentrat panas rata. Aduk es tidak menambah ekstraksi; ini hanya finishing.'
       : 'Sajikan setelah bed turun bersih.',
-    techniqueChips: isIced ? [chip('mix_batch', 'Mix', 'stir 5-8s')] : [],
+    techniqueChips: isIced ? [chip('mix_batch', 'Aduk', '5-8 detik')] : [],
   }));
 
   return stepsSorted(guide);
@@ -271,84 +328,84 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       label: 'Setup',
       actionType: 'rinse_preheat',
       startSeconds: 0,
-      primaryText: 'Preheat the chamber, rinse the cap/filter, assemble safely, and tare the scale.',
-      techniqueChips: [chip('basket_prep', 'Prep', 'cap/filter rinsed')],
+      primaryText: 'Panaskan chamber, bilas filter/cap, rakit aman, lalu tara timbangan.',
+      techniqueChips: [chip('basket_prep', 'Persiapan', 'filter/cap dibilas')],
     }),
     charge ? sourceStep('charge', charge, {
-      label: 'Charge water',
-      primaryText: `Charge ${formatMl(charge.pourVolumeMl || chargeTarget)} into the chamber and wet the compact bed evenly.`,
-      secondaryText: charge.hybridInstruction || charge.note,
+      label: 'Isi air',
+      primaryText: `Masukkan ${formatMl(charge.pourVolumeMl || chargeTarget)} ke chamber dan basahi bed merata.`,
+      secondaryText: 'Basahi bed merata; jangan tambah agitasi berat.',
       techniqueChips: [
-        chip('charge', 'Charge', formatMl(charge.pourVolumeMl || chargeTarget)),
+        chip('charge', 'Isi', formatMl(charge.pourVolumeMl || chargeTarget)),
         ...techniqueChipsFromStep(charge),
       ],
     }) : operationalStep({
       id: 'guide_aeropress_charge',
-      label: 'Charge water',
+      label: 'Isi air',
       actionType: 'charge',
       startSeconds: 0,
       pourVolumeMl: plan.hotWaterMl,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: `Charge ${formatMl(plan.hotWaterMl)} into the chamber and wet the compact bed evenly.`,
-      techniqueChips: [chip('charge', 'Charge', formatMl(plan.hotWaterMl))],
+      primaryText: `Masukkan ${formatMl(plan.hotWaterMl)} ke chamber dan basahi bed merata.`,
+      techniqueChips: [chip('charge', 'Isi', formatMl(plan.hotWaterMl))],
     }),
     operationalStep({
       id: 'guide_aeropress_stir',
-      label: 'Stir or swirl',
+      label: 'Aduk ringan',
       actionType: 'stir',
       startSeconds: Math.min(Math.max(10, charge?.startSeconds || 0), Math.max(10, pressStart - 45)),
       targetVolumeMl: chargeTarget,
-      primaryText: 'Stir 3-5 times or use one gentle swirl, then stop agitation.',
-      techniqueChips: [chip('stir', 'Stir', '3-5x')],
+      primaryText: 'Aduk 3-5 kali atau swirl ringan sekali, lalu hentikan agitasi.',
+      techniqueChips: [chip('stir', 'Aduk', '3-5x')],
       sourceStepIds: charge ? [charge.id] : [],
     }),
     operationalStep({
       id: 'guide_aeropress_steep',
-      label: 'Steep',
+      label: 'Rendam',
       actionType: 'steep',
       startSeconds: Math.max(15, Math.min(pressStart - 35, Math.round(pressStart * 0.45))),
       endSeconds: pressStart,
       targetVolumeMl: chargeTarget,
-      primaryText: `Steep until ${formatTime(pressStart)}; keep the chamber stable and covered.`,
-      techniqueChips: [chip('steep', 'Steep', formatTime(Math.max(10, pressStart)))],
+      primaryText: `Rendam sampai ${formatTime(pressStart)}; jaga chamber stabil dan tertutup.`,
+      techniqueChips: [chip('steep', 'Rendam', formatTime(Math.max(10, pressStart)))],
     }),
     press ? sourceStep('press', press, {
-      label: 'Press',
-      primaryText: 'Press with steady pressure for 20-30 seconds.',
-      secondaryText: press.hybridInstruction || press.note,
-      techniqueChips: [chip('press', 'Press', '20-30s'), chip('stop', 'Stop', 'before hiss')],
+      label: 'Tekan',
+      primaryText: 'Tekan stabil selama 20-30 detik.',
+      secondaryText: 'Jaga tekanan stabil dan berhenti sebelum hiss kering.',
+      techniqueChips: [chip('press', 'Tekan', '20-30 detik'), chip('stop', 'Berhenti', 'sebelum hiss')],
     }) : operationalStep({
       id: 'guide_aeropress_press',
-      label: 'Press',
+      label: 'Tekan',
       actionType: 'press',
       kind: 'press',
       startSeconds: pressStart,
       endSeconds: Math.min(plan.totalTimeSeconds, pressStart + 30),
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Press with steady pressure for 20-30 seconds.',
-      techniqueChips: [chip('press', 'Press', '20-30s'), chip('stop', 'Stop', 'before hiss')],
+      primaryText: 'Tekan stabil selama 20-30 detik.',
+      techniqueChips: [chip('press', 'Tekan', '20-30 detik'), chip('stop', 'Berhenti', 'sebelum hiss')],
     }),
     operationalStep({
       id: 'guide_aeropress_stop',
-      label: 'Stop before hiss',
+      label: 'Berhenti sebelum hiss',
       actionType: 'stop',
       startSeconds: Math.min(plan.totalTimeSeconds, pressStart + 25),
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Stop before the dry hiss turns harsh, then separate the brewer from the cup.',
-      techniqueChips: [chip('stop', 'Stop', 'before hiss')],
+      primaryText: 'Berhenti sebelum suara hiss kering terasa kasar, lalu pisahkan brewer dari cup.',
+      techniqueChips: [chip('stop', 'Berhenti', 'sebelum hiss')],
       sourceStepIds: press ? [press.id] : [],
     }),
     operationalStep({
       id: 'guide_aeropress_serve',
-      label: 'Serve',
+      label: 'Sajikan',
       actionType: 'serve',
       startSeconds: plan.totalTimeSeconds,
       targetVolumeMl: plan.hotWaterMl,
       primaryText: plan.notes.join(' ').toLowerCase().includes('bypass')
-        ? 'Dilute only after pressing if the recipe style calls for bypass, then serve.'
-        : 'Swirl the cup gently and serve.',
+        ? 'Tambahkan bypass hanya setelah tekan jika style resep memerlukannya, lalu sajikan.'
+        : 'Swirl cup pelan, lalu sajikan.',
       techniqueChips: plan.notes.join(' ').toLowerCase().includes('bypass')
-        ? [chip('dilution', 'Dilution', 'after press only')]
+        ? [chip('dilution', 'Bypass', 'setelah tekan saja')]
         : [],
     }),
   ]);
@@ -363,66 +420,66 @@ function buildFrenchPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
   return stepsSorted([
     operationalStep({
       id: 'guide_french_press_setup',
-      label: 'Preheat',
+      label: 'Panaskan alat',
       actionType: 'rinse_preheat',
       startSeconds: 0,
-      primaryText: 'Preheat the press, tare the scale, and use a coarse even grind.',
-      techniqueChips: [chip('basket_prep', 'Prep', 'coarse even grind')],
+      primaryText: 'Panaskan press, tara timbangan, dan gunakan gilingan kasar yang merata.',
+      techniqueChips: [chip('basket_prep', 'Persiapan', 'gilingan kasar rata')],
     }),
     charge ? sourceStep('charge', charge, {
-      label: 'Charge water',
-      primaryText: `Charge ${formatMl(charge.pourVolumeMl || plan.hotWaterMl)} and saturate all grounds.`,
-      secondaryText: charge.hybridInstruction || charge.note,
-      techniqueChips: [chip('charge', 'Charge', formatMl(charge.pourVolumeMl || plan.hotWaterMl))],
+      label: 'Isi air',
+      primaryText: `Masukkan ${formatMl(charge.pourVolumeMl || plan.hotWaterMl)} dan basahi semua bubuk.`,
+      secondaryText: 'Pastikan semua bubuk basah sebelum fase rendam.',
+      techniqueChips: [chip('charge', 'Isi', formatMl(charge.pourVolumeMl || plan.hotWaterMl))],
     }) : operationalStep({
       id: 'guide_french_press_charge',
-      label: 'Charge water',
+      label: 'Isi air',
       actionType: 'charge',
       startSeconds: 0,
       pourVolumeMl: plan.hotWaterMl,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: `Charge ${formatMl(plan.hotWaterMl)} and saturate all grounds.`,
-      techniqueChips: [chip('charge', 'Charge', formatMl(plan.hotWaterMl))],
+      primaryText: `Masukkan ${formatMl(plan.hotWaterMl)} dan basahi semua bubuk.`,
+      techniqueChips: [chip('charge', 'Isi', formatMl(plan.hotWaterMl))],
     }),
     operationalStep({
       id: 'guide_french_press_steep',
-      label: 'Steep',
+      label: 'Rendam',
       actionType: 'steep',
       startSeconds: steepStart,
       endSeconds: settleStart,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Steep quietly; do not keep stirring once all grounds are wet.',
-      techniqueChips: [chip('steep', 'Steep', formatTime(Math.max(0, settleStart - steepStart)))],
+      primaryText: 'Rendam tenang; jangan terus diaduk setelah semua bubuk basah.',
+      techniqueChips: [chip('steep', 'Rendam', formatTime(Math.max(0, settleStart - steepStart)))],
     }),
     operationalStep({
       id: 'guide_french_press_settle',
-      label: 'Settle',
+      label: 'Endapkan',
       actionType: 'settle',
       startSeconds: settleStart,
       endSeconds: pressStart,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Break the crust gently or skim foam, then let fines settle.',
-      techniqueChips: [chip('settle', 'Settle', 'gentle')],
+      primaryText: 'Pecah crust pelan atau buang foam, lalu biarkan fines turun.',
+      techniqueChips: [chip('settle', 'Endapkan', 'pelan')],
     }),
     operationalStep({
       id: 'guide_french_press_press',
-      label: 'Press gently',
+      label: 'Tekan pelan',
       actionType: 'press',
       kind: 'press',
       startSeconds: pressStart,
       endSeconds: serve?.startSeconds || plan.totalTimeSeconds,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Press slowly; do not squeeze the bed.',
-      techniqueChips: [chip('press', 'Press', 'slow')],
+      primaryText: 'Tekan pelan; jangan memeras bed.',
+      techniqueChips: [chip('press', 'Tekan', 'pelan')],
     }),
     operationalStep({
       id: 'guide_french_press_decant',
-      label: 'Decant',
+      label: 'Tuang pisah',
       actionType: 'decant',
       startSeconds: serve?.startSeconds || plan.totalTimeSeconds,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Decant immediately to stop extraction, then serve.',
-      techniqueChips: [chip('decant', 'Decant', 'stop extraction')],
+      primaryText: 'Tuang pisah segera untuk menghentikan ekstraksi, lalu sajikan.',
+      techniqueChips: [chip('decant', 'Tuang pisah', 'hentikan ekstraksi')],
       sourceStepIds: serve ? [serve.id] : [],
     }),
   ]);
@@ -436,73 +493,73 @@ function buildCleverGuide(plan: BrewPlan): WorkflowGuideStep[] {
   return stepsSorted([
     operationalStep({
       id: 'guide_clever_setup',
-      label: 'Rinse and preheat',
+      label: 'Bilas dan panaskan',
       actionType: 'rinse_preheat',
       startSeconds: 0,
-      primaryText: 'Rinse the filter, preheat the brewer/server, close the valve if needed, and tare the scale.',
-      techniqueChips: [chip('basket_prep', 'Prep', 'valve ready')],
+      primaryText: 'Bilas filter, panaskan brewer/server, pastikan jalur bawah siap, lalu tara timbangan.',
+      techniqueChips: [chip('basket_prep', 'Persiapan', 'release siap')],
     }),
     charge ? sourceStep('charge', charge, {
-      label: 'Charge water',
-      primaryText: `Charge ${formatMl(charge.pourVolumeMl || plan.hotWaterMl)} and saturate the bed.`,
-      secondaryText: charge.hybridInstruction || charge.note,
-      techniqueChips: [chip('charge', 'Charge', formatMl(charge.pourVolumeMl || plan.hotWaterMl))],
+      label: 'Isi air',
+      primaryText: `Masukkan ${formatMl(charge.pourVolumeMl || plan.hotWaterMl)} dan basahi bed merata.`,
+      secondaryText: 'Basahi bed merata; biarkan immersion mulai bekerja.',
+      techniqueChips: [chip('charge', 'Isi', formatMl(charge.pourVolumeMl || plan.hotWaterMl))],
     }) : operationalStep({
       id: 'guide_clever_charge',
-      label: 'Charge water',
+      label: 'Isi air',
       actionType: 'charge',
       startSeconds: 0,
       pourVolumeMl: plan.hotWaterMl,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: `Charge ${formatMl(plan.hotWaterMl)} and saturate the bed.`,
-      techniqueChips: [chip('charge', 'Charge', formatMl(plan.hotWaterMl))],
+      primaryText: `Masukkan ${formatMl(plan.hotWaterMl)} dan basahi bed merata.`,
+      techniqueChips: [chip('charge', 'Isi', formatMl(plan.hotWaterMl))],
     }),
     operationalStep({
       id: 'guide_clever_steep',
-      label: 'Steep',
+      label: 'Rendam',
       actionType: 'steep',
       startSeconds: Math.min(45, releaseStart),
       endSeconds: releaseStart,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Steep calmly; contact time is the main extraction control.',
-      techniqueChips: [chip('steep', 'Steep', formatTime(releaseStart))],
+      primaryText: 'Rendam tenang; waktu kontak adalah kontrol ekstraksi utama.',
+      techniqueChips: [chip('steep', 'Rendam', formatTime(releaseStart))],
     }),
     release ? sourceStep('release', release, {
-      label: 'Release',
-      primaryText: 'Open the release cleanly and avoid stirring during drain.',
-      secondaryText: release.hybridInstruction || release.note,
-      techniqueChips: [chip('release', 'Release', 'open cleanly')],
+      label: 'Alirkan keluar',
+      primaryText: 'Mulai alirkan kopi keluar dan jangan aduk saat air turun.',
+      secondaryText: 'Biarkan aliran keluar bersih tanpa topping up.',
+      techniqueChips: [chip('release', 'Alirkan', 'bersih')],
     }) : operationalStep({
       id: 'guide_clever_release',
-      label: 'Release',
+      label: 'Alirkan keluar',
       actionType: 'release',
       kind: 'release',
       startSeconds: releaseStart,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Open the release cleanly and avoid stirring during drain.',
-      techniqueChips: [chip('release', 'Release', 'open cleanly')],
+      primaryText: 'Mulai alirkan kopi keluar dan jangan aduk saat air turun.',
+      techniqueChips: [chip('release', 'Alirkan', 'bersih')],
     }),
     drawdown ? sourceStep('drawdown', drawdown, {
-      label: 'Drawdown',
-      primaryText: 'Let drawdown finish without adding water.',
-      techniqueChips: [chip('drawdown', 'Drawdown', formatTime(plan.totalTimeSeconds))],
+      label: 'Air turun',
+      primaryText: 'Biarkan air turun selesai tanpa tambah air.',
+      techniqueChips: [chip('drawdown', 'Air turun', formatTime(plan.totalTimeSeconds))],
     }) : operationalStep({
       id: 'guide_clever_drawdown',
-      label: 'Drawdown',
+      label: 'Air turun',
       actionType: 'drawdown',
       kind: 'drawdown',
       startSeconds: Math.min(plan.totalTimeSeconds, releaseStart + 20),
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Let drawdown finish without adding water.',
-      techniqueChips: [chip('drawdown', 'Drawdown', formatTime(plan.totalTimeSeconds))],
+      primaryText: 'Biarkan air turun selesai tanpa tambah air.',
+      techniqueChips: [chip('drawdown', 'Air turun', formatTime(plan.totalTimeSeconds))],
     }),
     operationalStep({
       id: 'guide_clever_serve',
-      label: 'Serve',
+      label: 'Sajikan',
       actionType: 'serve',
       startSeconds: plan.totalTimeSeconds,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Serve after the bed drains cleanly.',
+      primaryText: 'Sajikan setelah bed turun bersih.',
     }),
   ]);
 }
@@ -546,15 +603,15 @@ function buildHarioSwitchGuide(plan: BrewPlan): WorkflowGuideStep[] {
   const guideSteps: WorkflowGuideStep[] = [
     operationalStep({
       id: 'guide_hario_switch_setup',
-      label: 'Rinse, preheat, and set valve',
+      label: 'Bilas, panaskan, set katup',
       actionType: 'rinse_preheat',
       startSeconds: 0,
       primaryText: plan.brewMode === 'iced'
         ? `Bilas kertas V60, panaskan brewer/server, tare timbangan, lalu masukkan ${formatGrams(plan.iceMl)} es ke server. Seduh target air panas saja; es adalah bypass terukur.`
         : 'Bilas kertas V60, panaskan brewer/server, tare timbangan, lalu set katup Switch sesuai program.',
       techniqueChips: [
-        chip('programme', 'Programme', formatSwitchProgramme(programme)),
-        chip('valve', 'Valve', 'set before brewing'),
+        chip('programme', 'Program', formatSwitchProgramme(programme)),
+        chip('valve', 'Katup', 'set sebelum seduh'),
       ],
       switchProgramme: programme,
       valveState: 'closed',
@@ -583,7 +640,7 @@ function buildHarioSwitchGuide(plan: BrewPlan): WorkflowGuideStep[] {
   if (!guideSteps.some((step) => step.actionType === 'serve')) {
     guideSteps.push(operationalStep({
       id: 'guide_hario_switch_serve',
-      label: 'Serve',
+      label: 'Sajikan',
       actionType: 'serve',
       startSeconds: plan.totalTimeSeconds,
       targetVolumeMl: plan.hotWaterMl,
@@ -591,8 +648,8 @@ function buildHarioSwitchGuide(plan: BrewPlan): WorkflowGuideStep[] {
         ? 'Aduk es 5-8 detik setelah air turun. Aduk es tidak menambah ekstraksi; catat waktu buka katup untuk dial-in berikutnya.'
         : 'Sajikan setelah air turun dan catat timing muatan ruang untuk dial-in berikutnya.',
       techniqueChips: [
-        chip('programme', 'Programme', formatSwitchProgramme(programme)),
-        chip('chamber', 'Chamber', 'served'),
+        chip('programme', 'Program', formatSwitchProgramme(programme)),
+        chip('chamber', 'Ruang', 'selesai'),
       ],
       switchProgramme: programme,
       valveState: 'open',
@@ -610,51 +667,51 @@ function buildMokaGuide(plan: BrewPlan): WorkflowGuideStep[] {
   return stepsSorted([
     operationalStep({
       id: 'guide_moka_boiler',
-      label: 'Fill boiler',
+      label: 'Isi boiler',
       actionType: 'setup',
       startSeconds: 0,
-      primaryText: 'Fill the boiler below the safety valve.',
-      techniqueChips: [chip('boiler', 'Boiler', 'below valve')],
+      primaryText: 'Isi boiler di bawah safety valve.',
+      techniqueChips: [chip('boiler', 'Boiler', 'di bawah valve')],
     }),
     operationalStep({
       id: 'guide_moka_basket',
-      label: 'Level basket',
+      label: 'Ratakan basket',
       actionType: 'dose',
       startSeconds: 0,
-      primaryText: 'Fill and level the basket; do not tamp.',
-      techniqueChips: [chip('basket', 'Basket', 'level, no tamp')],
+      primaryText: 'Isi dan ratakan basket; jangan tamp.',
+      techniqueChips: [chip('basket', 'Basket', 'rata, tanpa tamp')],
     }),
     heat ? sourceStep('heat', heat, {
-      label: 'Moderate heat',
-      primaryText: 'Use moderate heat and keep the flow calm.',
-      secondaryText: heat.hybridInstruction || heat.note,
-      techniqueChips: [chip('heat', 'Heat', 'moderate')],
+      label: 'Panas sedang',
+      primaryText: 'Gunakan panas sedang dan jaga aliran tetap tenang.',
+      secondaryText: 'Turunkan panas jika aliran mulai agresif.',
+      techniqueChips: [chip('heat', 'Panas', 'sedang')],
     }) : operationalStep({
       id: 'guide_moka_heat',
-      label: 'Moderate heat',
+      label: 'Panas sedang',
       actionType: 'heat',
       kind: 'heat',
       startSeconds: heatStart,
-      primaryText: 'Use moderate heat and keep the flow calm.',
-      techniqueChips: [chip('heat', 'Heat', 'moderate')],
+      primaryText: 'Gunakan panas sedang dan jaga aliran tetap tenang.',
+      techniqueChips: [chip('heat', 'Panas', 'sedang')],
     }),
     operationalStep({
       id: 'guide_moka_monitor',
-      label: 'Monitor flow',
+      label: 'Pantau aliran',
       actionType: 'monitor_flow',
       startSeconds: Math.min(plan.totalTimeSeconds, heatStart + 30),
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Watch for a steady stream; avoid harsh sputtering.',
-      techniqueChips: [chip('flow_cue', 'Flow cue', 'steady stream')],
+      primaryText: 'Cari aliran stabil; hindari sputter kasar.',
+      techniqueChips: [chip('flow_cue', 'Tanda aliran', 'stabil')],
     }),
     operationalStep({
       id: 'guide_moka_stop',
-      label: 'Stop before sputter',
+      label: 'Berhenti sebelum sputter',
       actionType: 'stop',
       startSeconds: serve?.startSeconds || plan.totalTimeSeconds,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Remove from heat before coarse sputter or cooked flavor appears.',
-      techniqueChips: [chip('stop', 'Stop', 'before sputter')],
+      primaryText: 'Angkat dari panas sebelum sputter kasar atau rasa matang muncul.',
+      techniqueChips: [chip('stop', 'Berhenti', 'sebelum sputter')],
       sourceStepIds: serve ? [serve.id] : [],
     }),
   ]);
@@ -670,54 +727,54 @@ function buildEspressoGuide(plan: BrewPlan): WorkflowGuideStep[] {
       actionType: 'dose',
       startSeconds: 0,
       targetVolumeMl: plan.totalWaterMl,
-      primaryText: `Dose ${formatGrams(plan.doseG)} and prepare the basket.`,
+      primaryText: `Dose ${formatGrams(plan.doseG)} dan siapkan basket.`,
       techniqueChips: [chip('dose', 'Dose', formatGrams(plan.doseG))],
     }),
     operationalStep({
       id: 'guide_espresso_puck_prep',
-      label: 'Distribute and tamp',
+      label: 'Distribusi dan tamp',
       actionType: 'puck_prep',
       startSeconds: 0,
-      primaryText: 'Distribute evenly, tamp level, and clear the basket rim.',
-      techniqueChips: [chip('puck_prep', 'Puck prep', 'level tamp')],
+      primaryText: 'Distribusi rata, tamp level, dan bersihkan bibir basket.',
+      techniqueChips: [chip('puck_prep', 'Prep puck', 'tamp rata')],
     }),
     extract ? sourceStep('extract', extract, {
-      label: 'Start shot',
-      primaryText: `Start the shot and extract to ${formatMl(plan.totalWaterMl)} yield.`,
-      secondaryText: extract.hybridInstruction || extract.note,
+      label: 'Mulai shot',
+      primaryText: `Mulai shot dan ekstrak sampai yield ${formatMl(plan.totalWaterMl)}.`,
+      secondaryText: 'Jaga aliran stabil; hentikan jika channeling berat.',
       techniqueChips: [
-        chip('yield', 'Yield', formatMl(plan.totalWaterMl)),
-        chip('shot_time', 'Shot time', formatTime(plan.totalTimeSeconds)),
+        chip('yield', 'Output', formatMl(plan.totalWaterMl)),
+        chip('shot_time', 'Waktu shot', formatTime(plan.totalTimeSeconds)),
         ...techniqueChipsFromStep(extract),
       ],
     }) : operationalStep({
       id: 'guide_espresso_extract',
-      label: 'Start shot',
+      label: 'Mulai shot',
       actionType: 'extract',
       kind: 'extract',
       startSeconds: 0,
       pourVolumeMl: plan.totalWaterMl,
       targetVolumeMl: plan.totalWaterMl,
-      primaryText: `Start the shot and extract to ${formatMl(plan.totalWaterMl)} yield.`,
-      techniqueChips: [chip('yield', 'Yield', formatMl(plan.totalWaterMl)), chip('shot_time', 'Shot time', formatTime(plan.totalTimeSeconds))],
+      primaryText: `Mulai shot dan ekstrak sampai yield ${formatMl(plan.totalWaterMl)}.`,
+      techniqueChips: [chip('yield', 'Output', formatMl(plan.totalWaterMl)), chip('shot_time', 'Waktu shot', formatTime(plan.totalTimeSeconds))],
     }),
     operationalStep({
       id: 'guide_espresso_monitor',
-      label: 'Monitor flow',
+      label: 'Pantau aliran',
       actionType: 'monitor_flow',
       startSeconds: Math.max(1, Math.round(plan.totalTimeSeconds * 0.35)),
       targetVolumeMl: plan.totalWaterMl,
-      primaryText: 'Read flow and channeling; stop at yield instead of extending a bad shot.',
-      techniqueChips: [chip('flow_cue', 'Flow', 'stable')],
+      primaryText: 'Baca aliran dan channeling; berhenti di yield, jangan memanjangkan shot yang buruk.',
+      techniqueChips: [chip('flow_cue', 'Aliran', 'stabil')],
     }),
     operationalStep({
       id: 'guide_espresso_stop',
-      label: 'Stop at yield',
+      label: 'Berhenti di yield',
       actionType: 'stop',
       startSeconds: serve?.startSeconds || plan.totalTimeSeconds,
       targetVolumeMl: plan.totalWaterMl,
-      primaryText: `Stop at ${formatMl(plan.totalWaterMl)} yield inside the shot time window.`,
-      techniqueChips: [chip('stop', 'Stop', 'at yield')],
+      primaryText: `Berhenti di yield ${formatMl(plan.totalWaterMl)} dalam jendela waktu shot.`,
+      techniqueChips: [chip('stop', 'Berhenti', 'di yield')],
       sourceStepIds: serve ? [serve.id] : [],
     }),
   ]);
@@ -731,68 +788,68 @@ function buildSiphonGuide(plan: BrewPlan): WorkflowGuideStep[] {
   const drawdownStart = drawdown?.startSeconds || Math.max(heatStart + 60, plan.totalTimeSeconds - 45);
   return stepsSorted([
     charge ? sourceStep('charge', charge, {
-      label: 'Heat water',
-      primaryText: `Load ${formatMl(charge.pourVolumeMl || plan.hotWaterMl)} water and begin heating.`,
-      techniqueChips: [chip('heat', 'Heat', 'stable')],
+      label: 'Panaskan air',
+      primaryText: `Masukkan ${formatMl(charge.pourVolumeMl || plan.hotWaterMl)} air dan mulai panaskan.`,
+      techniqueChips: [chip('heat', 'Panas', 'stabil')],
     }) : operationalStep({
       id: 'guide_siphon_heat_water',
-      label: 'Heat water',
+      label: 'Panaskan air',
       actionType: 'heat',
       startSeconds: 0,
-      primaryText: `Load ${formatMl(plan.hotWaterMl)} water and begin heating.`,
-      techniqueChips: [chip('heat', 'Heat', 'stable')],
+      primaryText: `Masukkan ${formatMl(plan.hotWaterMl)} air dan mulai panaskan.`,
+      techniqueChips: [chip('heat', 'Panas', 'stabil')],
     }),
     operationalStep({
       id: 'guide_siphon_draw_up',
-      label: 'Draw-up',
+      label: 'Air naik',
       actionType: 'heat',
       kind: 'heat',
       startSeconds: heatStart,
-      primaryText: 'Let water draw up fully before adding coffee.',
-      techniqueChips: [chip('draw_up', 'Draw-up', 'complete')],
+      primaryText: 'Biarkan air naik penuh sebelum menambahkan kopi.',
+      techniqueChips: [chip('draw_up', 'Air naik', 'penuh')],
       sourceStepIds: heat ? [heat.id] : [],
     }),
     operationalStep({
       id: 'guide_siphon_add_stir',
-      label: 'Add coffee and stir',
+      label: 'Masukkan kopi dan aduk',
       actionType: 'stir',
       startSeconds: Math.min(drawdownStart - 45, heatStart + 20),
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Add coffee and stir briefly to wet the upper chamber bed.',
-      techniqueChips: [chip('stir', 'Stir', 'brief')],
+      primaryText: 'Masukkan kopi dan aduk singkat agar bed chamber atas basah.',
+      techniqueChips: [chip('stir', 'Aduk', 'singkat')],
     }),
     operationalStep({
       id: 'guide_siphon_contact',
-      label: 'Upper contact',
+      label: 'Kontak atas',
       actionType: 'steep',
       startSeconds: Math.min(drawdownStart - 25, heatStart + 45),
       endSeconds: drawdownStart,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Hold upper-chamber contact without over-stirring.',
-      techniqueChips: [chip('contact', 'Contact', formatTime(Math.max(20, drawdownStart - heatStart)))],
+      primaryText: 'Jaga kontak di chamber atas tanpa aduk berlebihan.',
+      techniqueChips: [chip('contact', 'Kontak', formatTime(Math.max(20, drawdownStart - heatStart)))],
     }),
     drawdown ? sourceStep('drawdown', drawdown, {
-      label: 'Remove heat and drawdown',
-      primaryText: 'Remove heat and let drawdown finish naturally.',
-      secondaryText: drawdown.hybridInstruction || drawdown.note,
-      techniqueChips: [chip('drawdown', 'Drawdown', 'natural')],
+      label: 'Matikan panas dan air turun',
+      primaryText: 'Matikan panas dan biarkan air turun alami.',
+      secondaryText: 'Biarkan vakum menarik kopi turun tanpa aduk tambahan.',
+      techniqueChips: [chip('drawdown', 'Air turun', 'alami')],
     }) : operationalStep({
       id: 'guide_siphon_drawdown',
-      label: 'Remove heat and drawdown',
+      label: 'Matikan panas dan air turun',
       actionType: 'drawdown',
       kind: 'drawdown',
       startSeconds: drawdownStart,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Remove heat and let drawdown finish naturally.',
-      techniqueChips: [chip('drawdown', 'Drawdown', 'natural')],
+      primaryText: 'Matikan panas dan biarkan air turun alami.',
+      techniqueChips: [chip('drawdown', 'Air turun', 'alami')],
     }),
     operationalStep({
       id: 'guide_siphon_serve',
-      label: 'Serve',
+      label: 'Sajikan',
       actionType: 'serve',
       startSeconds: plan.totalTimeSeconds,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Serve promptly after drawdown clears.',
+      primaryText: 'Sajikan segera setelah air turun bersih.',
     }),
   ]);
 }
@@ -806,54 +863,54 @@ function buildBatchGuide(plan: BrewPlan): WorkflowGuideStep[] {
       label: 'Dose per liter',
       actionType: 'dose',
       startSeconds: 0,
-      primaryText: `Set dose per liter and target ${formatMl(plan.totalWaterMl)} machine cycle water.`,
+      primaryText: `Set dose per liter dan target air siklus mesin ${formatMl(plan.totalWaterMl)}.`,
       techniqueChips: [chip('dose_per_liter', 'Dose/L', `${formatGrams(plan.doseG)} / ${formatMl(plan.totalWaterMl)}`)],
     }),
     operationalStep({
       id: 'guide_batch_basket',
-      label: 'Basket prep',
+      label: 'Prep basket',
       actionType: 'setup',
       startSeconds: 0,
-      primaryText: 'Seat the filter, level the basket bed, and start the machine cycle.',
-      techniqueChips: [chip('basket_prep', 'Basket', 'level bed')],
+      primaryText: 'Pasang filter, ratakan bed basket, lalu mulai siklus mesin.',
+      techniqueChips: [chip('basket_prep', 'Basket', 'bed rata')],
     }),
     start ? sourceStep('charge', start, {
-      label: 'Machine cycle',
-      primaryText: 'Let the brewer run the programmed spray cycle; do not disturb the basket.',
-      secondaryText: start.hybridInstruction || start.note,
-      techniqueChips: [chip('spray', 'Spray', 'machine flow')],
+      label: 'Siklus mesin',
+      primaryText: 'Biarkan brewer menjalankan siklus spray; jangan ganggu basket.',
+      secondaryText: 'Jaga basket stabil sampai siklus mesin selesai.',
+      techniqueChips: [chip('spray', 'Spray', 'aliran mesin')],
     }) : operationalStep({
       id: 'guide_batch_cycle',
-      label: 'Machine cycle',
+      label: 'Siklus mesin',
       actionType: 'charge',
       startSeconds: 0,
       targetVolumeMl: plan.totalWaterMl,
-      primaryText: 'Let the brewer run the programmed spray cycle; do not disturb the basket.',
-      techniqueChips: [chip('spray', 'Spray', 'machine flow')],
+      primaryText: 'Biarkan brewer menjalankan siklus spray; jangan ganggu basket.',
+      techniqueChips: [chip('spray', 'Spray', 'aliran mesin')],
     }),
     drawdown ? sourceStep('drawdown', drawdown, {
-      label: 'Drawdown',
-      primaryText: 'Let basket drawdown finish before service.',
-      secondaryText: drawdown.hybridInstruction || drawdown.note,
-      techniqueChips: [chip('drawdown', 'Drawdown', formatTime(plan.totalTimeSeconds))],
+      label: 'Air turun',
+      primaryText: 'Biarkan air turun di basket selesai sebelum servis.',
+      secondaryText: 'Jangan aduk basket saat fase akhir.',
+      techniqueChips: [chip('drawdown', 'Air turun', formatTime(plan.totalTimeSeconds))],
     }) : operationalStep({
       id: 'guide_batch_drawdown',
-      label: 'Drawdown',
+      label: 'Air turun',
       actionType: 'drawdown',
       kind: 'drawdown',
       startSeconds: Math.max(0, plan.totalTimeSeconds - 45),
       targetVolumeMl: plan.totalWaterMl,
-      primaryText: 'Let basket drawdown finish before service.',
-      techniqueChips: [chip('drawdown', 'Drawdown', formatTime(plan.totalTimeSeconds))],
+      primaryText: 'Biarkan air turun di basket selesai sebelum servis.',
+      techniqueChips: [chip('drawdown', 'Air turun', formatTime(plan.totalTimeSeconds))],
     }),
     operationalStep({
       id: 'guide_batch_mix',
-      label: 'Mix batch',
+      label: 'Aduk batch',
       actionType: 'mix',
       startSeconds: plan.totalTimeSeconds,
       targetVolumeMl: plan.totalWaterMl,
-      primaryText: 'Gently mix the batch before tasting or serving.',
-      techniqueChips: [chip('mix_batch', 'Mix batch', 'before service')],
+      primaryText: 'Aduk batch pelan sebelum tasting atau servis.',
+      techniqueChips: [chip('mix_batch', 'Aduk batch', 'sebelum servis')],
     }),
   ]);
 }
@@ -867,51 +924,51 @@ function buildColdBrewGuide(plan: BrewPlan): WorkflowGuideStep[] {
       label: 'Dose',
       actionType: 'dose',
       startSeconds: 0,
-      primaryText: `Dose ${formatGrams(plan.doseG)} coarse coffee and prepare cool water.`,
+      primaryText: `Dose ${formatGrams(plan.doseG)} kopi kasar dan siapkan air dingin.`,
       techniqueChips: [chip('dose', 'Dose', formatGrams(plan.doseG))],
     }),
     charge ? sourceStep('charge', charge, {
-      label: 'Saturate',
-      primaryText: `Saturate all grounds with ${formatMl(charge.pourVolumeMl || plan.hotWaterMl)} cool water; remove dry pockets.`,
-      secondaryText: charge.hybridInstruction || charge.note,
-      techniqueChips: [chip('saturation', 'Saturate', 'all grounds')],
+      label: 'Basahi merata',
+      primaryText: `Basahi semua bubuk dengan ${formatMl(charge.pourVolumeMl || plan.hotWaterMl)} air dingin; hilangkan bagian kering.`,
+      secondaryText: 'Pastikan tidak ada dry pocket sebelum steep panjang.',
+      techniqueChips: [chip('saturation', 'Basahi', 'semua bubuk')],
     }) : operationalStep({
       id: 'guide_cold_brew_saturate',
-      label: 'Saturate',
+      label: 'Basahi merata',
       actionType: 'charge',
       startSeconds: 0,
       pourVolumeMl: plan.hotWaterMl,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: `Saturate all grounds with ${formatMl(plan.hotWaterMl)} cool water; remove dry pockets.`,
-      techniqueChips: [chip('saturation', 'Saturate', 'all grounds')],
+      primaryText: `Basahi semua bubuk dengan ${formatMl(plan.hotWaterMl)} air dingin; hilangkan bagian kering.`,
+      techniqueChips: [chip('saturation', 'Basahi', 'semua bubuk')],
     }),
     operationalStep({
       id: 'guide_cold_brew_steep',
-      label: 'Steep',
+      label: 'Rendam dingin',
       actionType: 'steep',
       startSeconds: 300,
       endSeconds: filterStart,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: `Steep cold for ${formatTime(plan.totalTimeSeconds)} without heat or repeated agitation.`,
-      techniqueChips: [chip('steep', 'Steep', formatTime(plan.totalTimeSeconds))],
+      primaryText: `Rendam dingin selama ${formatTime(plan.totalTimeSeconds)} tanpa panas atau agitasi berulang.`,
+      techniqueChips: [chip('steep', 'Rendam', formatTime(plan.totalTimeSeconds))],
     }),
     operationalStep({
       id: 'guide_cold_brew_filter',
-      label: 'Filter or decant',
+      label: 'Filter atau tuang pisah',
       actionType: 'filter',
       startSeconds: filterStart,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Filter or decant cleanly to separate coffee from grounds.',
-      techniqueChips: [chip('filter', 'Filter', 'clean')],
+      primaryText: 'Filter atau tuang pisah dengan bersih untuk memisahkan kopi dari bubuk.',
+      techniqueChips: [chip('filter', 'Filter', 'bersih')],
     }),
     operationalStep({
       id: 'guide_cold_brew_dilute',
-      label: 'Dilute after filtration',
+      label: 'Dilusi setelah filter',
       actionType: 'dilute',
       startSeconds: plan.totalTimeSeconds,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Dilute only after filtration if serving strength needs it.',
-      techniqueChips: [chip('dilution', 'Dilute', 'after filtration')],
+      primaryText: 'Dilusi hanya setelah filtrasi jika kekuatan saji perlu disesuaikan.',
+      techniqueChips: [chip('dilution', 'Dilusi', 'setelah filtrasi')],
     }),
   ]);
 }
@@ -950,7 +1007,7 @@ function requirePhase(
 ) {
   if (!phases.has(matcher)) {
     result.missingPhases.push(label);
-    result.blockingErrors.push(`Missing workflow phase: ${label}.`);
+    result.blockingErrors.push(`Fase panduan seduh belum lengkap: ${label}.`);
   }
 }
 
@@ -958,25 +1015,25 @@ function validateIcedEnvelope(plan: BrewPlan, blockingErrors: string[]) {
   if (plan.brewMode !== 'iced') return;
   const hotIceTotal = Math.round(plan.hotWaterMl + plan.iceMl);
   if (hotIceTotal !== Math.round(plan.totalWaterMl)) {
-    blockingErrors.push(`Iced split mismatch: hot water ${plan.hotWaterMl} ml + ice ${plan.iceMl} g must equal total ${plan.totalWaterMl} ml.`);
+    blockingErrors.push(`Split seduh es tidak cocok: air panas ${plan.hotWaterMl} ml + es ${plan.iceMl} g harus sama dengan total ${plan.totalWaterMl} ml.`);
   }
   if (!(plan.estimatedCupOutputMl < plan.totalWaterMl)) {
-    blockingErrors.push('Iced cup output must be lower than total input after retention.');
+    blockingErrors.push('Output cangkir seduh es harus lebih rendah dari total input setelah retensi.');
   }
   const volumeSteps = plan.steps.filter((step) => step.pourVolumeMl > 0 || step.kind === 'extract');
   const lastVolumeStep = volumeSteps.at(-1);
   if (lastVolumeStep && Math.round(lastVolumeStep.targetVolumeMl) !== Math.round(plan.hotWaterMl)) {
-    blockingErrors.push(`Last hot-water target ${lastVolumeStep.targetVolumeMl} ml must equal hot water ${plan.hotWaterMl} ml.`);
+    blockingErrors.push(`Target air panas terakhir ${lastVolumeStep.targetVolumeMl} ml harus sama dengan air panas ${plan.hotWaterMl} ml.`);
   }
   const poured = Math.round(volumeSteps.reduce((sum, step) => sum + Math.max(0, step.pourVolumeMl), 0));
   if (Math.abs(poured - Math.round(plan.hotWaterMl)) > 1) {
-    blockingErrors.push(`Iced pour sum ${poured} ml must equal hot water ${plan.hotWaterMl} ml within 1 ml.`);
+    blockingErrors.push(`Total tuangan seduh es ${poured} ml harus sama dengan air panas ${plan.hotWaterMl} ml dalam toleransi 1 ml.`);
   }
 }
 
 function validateHarioSwitchWorkflow(plan: BrewPlan, guideSteps: WorkflowGuideStep[], blockingErrors: string[], warnings: string[]) {
   if (plan.dripper.id === 'hario-switch') {
-    blockingErrors.push('Legacy Hario Switch profile is size-ambiguous. Choose Switch 02, Switch 03, or MUGEN x SWITCH before brewing.');
+    blockingErrors.push('Profil Hario Switch lama masih ambigu ukuran. Pilih Switch 02, Switch 03, atau MUGEN x SWITCH sebelum seduh.');
   }
 
   const preservedStepIds = new Set(guideSteps.flatMap((step) => step.sourceStepIds));
@@ -984,13 +1041,13 @@ function validateHarioSwitchWorkflow(plan: BrewPlan, guideSteps: WorkflowGuideSt
     .filter((step) => step.pourVolumeMl > 0)
     .filter((step) => !preservedStepIds.has(step.id));
   if (missingVolumeSteps.length > 0) {
-    blockingErrors.push(`Hario Switch guide dropped volume checkpoint(s): ${missingVolumeSteps.map((step) => step.id).join(', ')}.`);
+    blockingErrors.push(`Panduan Hario Switch melewatkan checkpoint volume: ${missingVolumeSteps.map((step) => step.id).join(', ')}.`);
   }
 
   const constraints = plan.devicePhysicalConstraints;
   const closedLimit = constraints?.recommendedClosedPhaseMaxMl || constraints?.finishedCapacityMl;
   if (!closedLimit) {
-    blockingErrors.push('Hario Switch exact profile is missing chamber capacity constraints.');
+    blockingErrors.push('Profil Hario Switch belum punya batas muatan ruang.');
     return;
   }
 
@@ -1000,11 +1057,11 @@ function validateHarioSwitchWorkflow(plan: BrewPlan, guideSteps: WorkflowGuideSt
     .filter((value) => Number.isFinite(value) && value > 0);
   const maxClosedLoad = Math.max(0, ...closedLoads);
   if (maxClosedLoad > closedLimit + 1) {
-    blockingErrors.push(`Hario Switch closed chamber load ${Math.round(maxClosedLoad)} ml exceeds safe ${Math.round(closedLimit)} ml. Choose Switch 03 or a hybrid programme.`);
+    blockingErrors.push(`Muatan ruang Hario Switch saat katup tertutup ${Math.round(maxClosedLoad)} ml melewati batas aman ${Math.round(closedLimit)} ml. Pilih Switch 03 atau program hybrid.`);
   }
 
   if (String(plan.methodProgramme || '').startsWith('full_immersion') && plan.hotWaterMl > closedLimit + 1) {
-    blockingErrors.push(`Full-immersion Switch programme needs ${Math.round(plan.hotWaterMl)} ml closed capacity, above safe ${Math.round(closedLimit)} ml.`);
+    blockingErrors.push(`Program full immersion Switch butuh kapasitas tertutup ${Math.round(plan.hotWaterMl)} ml, di atas batas aman ${Math.round(closedLimit)} ml.`);
   }
 
   if (plan.switchStepValidation?.status === 'blocked') {
@@ -1014,7 +1071,7 @@ function validateHarioSwitchWorkflow(plan: BrewPlan, guideSteps: WorkflowGuideSt
   }
 
   if (!constraints.finishedCapacityMl || !constraints.filterSize) {
-    warnings.push('Hario Switch profile needs complete capacity and filter-size evidence before public-ready confidence.');
+    warnings.push('Profil Hario Switch butuh bukti kapasitas dan ukuran filter lengkap sebelum keyakinan publik dianggap kuat.');
   }
 }
 
@@ -1026,7 +1083,7 @@ export function validateMethodWorkflowGuide(plan: BrewPlan, guideSteps: Workflow
   const accumulator = { missingPhases, blockingErrors };
 
   if (guideSteps.length === 0) {
-    blockingErrors.push('Workflow guide is empty.');
+    blockingErrors.push('Panduan seduh kosong.');
   }
 
   validateIcedEnvelope(plan, blockingErrors);
@@ -1034,96 +1091,96 @@ export function validateMethodWorkflowGuide(plan: BrewPlan, guideSteps: Workflow
   if (POUROVER_FAMILIES.has(plan.methodFamily)) {
     requirePhase(accumulator, phases, 'rinse/preheat', /rinse|preheat|filter|bilas|panas/);
     requirePhase(accumulator, phases, 'bloom', 'bloom');
-    requirePhase(accumulator, phases, 'pour', 'pour');
-    requirePhase(accumulator, phases, 'drawdown', 'drawdown');
-    requirePhase(accumulator, phases, 'serve', 'serve');
+    requirePhase(accumulator, phases, 'pour', /pour|tuang/);
+    requirePhase(accumulator, phases, 'drawdown', /drawdown|air turun/);
+    requirePhase(accumulator, phases, 'serve', /serve|sajikan/);
     if (plan.brewMode === 'iced') requirePhase(accumulator, phases, 'hot-water target', /hot water|air panas/);
   }
 
   switch (plan.methodFamily) {
     case 'hario_switch':
-      requirePhase(accumulator, phases, 'valve state', /valve|closed|open/);
-      requirePhase(accumulator, phases, 'chamber state', /chamber|immersion|percolation/);
+      requirePhase(accumulator, phases, 'valve state', /valve|katup|closed|open|tutup|buka/);
+      requirePhase(accumulator, phases, 'chamber state', /chamber|ruang|immersion|percolation|perkolasi/);
       if (plan.methodProgramme === 'full_percolation_v60_mode' || plan.switchPresetId === 'v60_mode') {
-        requirePhase(accumulator, phases, 'open percolation', /open|percolation/);
+        requirePhase(accumulator, phases, 'open percolation', /open|buka|percolation|perkolasi/);
       } else {
-        requirePhase(accumulator, phases, 'release/open', /release|open/);
+        requirePhase(accumulator, phases, 'release/open', /release|open|buka katup|katup buka/);
       }
-      requirePhase(accumulator, phases, 'serve', 'serve');
+      requirePhase(accumulator, phases, 'serve', /serve|sajikan/);
       validateHarioSwitchWorkflow(plan, guideSteps, blockingErrors, warnings);
-      if (phases.has(/generic clever only|single charge only/)) blockingErrors.push('Hario Switch workflow must not collapse to a generic single-charge Clever guide.');
+      if (phases.has(/generic clever only|single charge only/)) blockingErrors.push('Panduan Hario Switch tidak boleh berubah menjadi panduan Clever satu kali isi yang generik.');
       break;
     case 'aeropress':
-      requirePhase(accumulator, phases, 'charge', /charge|water/);
-      requirePhase(accumulator, phases, 'stir/swirl', /stir|swirl/);
-      requirePhase(accumulator, phases, 'steep', 'steep');
-      requirePhase(accumulator, phases, 'press', 'press');
-      requirePhase(accumulator, phases, 'stop before hiss', /before hiss|hiss/);
+      requirePhase(accumulator, phases, 'charge', /charge|isi|air|masukkan/);
+      requirePhase(accumulator, phases, 'stir/swirl', /stir|swirl|aduk/);
+      requirePhase(accumulator, phases, 'steep', /steep|rendam/);
+      requirePhase(accumulator, phases, 'press', /press|tekan/);
+      requirePhase(accumulator, phases, 'stop before hiss', /before hiss|sebelum hiss|hiss/);
       if (guideSteps.filter((step) => !step.isOperationalOnly || step.actionType !== 'setup').length < 5) {
-        blockingErrors.push('AeroPress workflow must not render as a single operational step.');
+        blockingErrors.push('Panduan AeroPress tidak boleh tampil sebagai satu langkah operasional saja.');
       }
       if (phases.has(/final pour|drawdown bed|center-to-mid stream/)) {
-        blockingErrors.push('AeroPress workflow contains pour-over wording.');
+        blockingErrors.push('Panduan AeroPress mengandung bahasa pour-over.');
       }
       break;
     case 'french_press':
-      requirePhase(accumulator, phases, 'charge', 'charge');
-      requirePhase(accumulator, phases, 'steep', 'steep');
-      requirePhase(accumulator, phases, 'settle/decant', /settle|decant|crust/);
-      requirePhase(accumulator, phases, 'press', 'press');
-      if (phases.has(/final pour|bloom|drawdown bed/)) blockingErrors.push('French Press workflow contains pour-over wording.');
+      requirePhase(accumulator, phases, 'charge', /charge|isi|masukkan/);
+      requirePhase(accumulator, phases, 'steep', /steep|rendam/);
+      requirePhase(accumulator, phases, 'settle/decant', /settle|endapkan|decant|tuang pisah|crust/);
+      requirePhase(accumulator, phases, 'press', /press|tekan/);
+      if (phases.has(/final pour|bloom|drawdown bed/)) blockingErrors.push('Panduan French Press mengandung bahasa pour-over.');
       break;
     case 'clever_dripper':
-      requirePhase(accumulator, phases, 'charge', 'charge');
-      requirePhase(accumulator, phases, 'steep', 'steep');
-      requirePhase(accumulator, phases, 'release', 'release');
-      requirePhase(accumulator, phases, 'drawdown', 'drawdown');
+      requirePhase(accumulator, phases, 'charge', /charge|isi|masukkan/);
+      requirePhase(accumulator, phases, 'steep', /steep|rendam/);
+      requirePhase(accumulator, phases, 'release', /release|buka katup/);
+      requirePhase(accumulator, phases, 'drawdown', /drawdown|air turun/);
       break;
     case 'moka_pot':
-      requirePhase(accumulator, phases, 'boiler below valve', /below valve|boiler/);
-      requirePhase(accumulator, phases, 'level basket', /basket|no tamp/);
-      requirePhase(accumulator, phases, 'heat', 'heat');
-      requirePhase(accumulator, phases, 'stop before sputter', /sputter|stop/);
-      if (phases.has(/bloom|final pour|center-to-mid/)) blockingErrors.push('Moka Pot workflow contains pour-over wording.');
+      requirePhase(accumulator, phases, 'boiler below valve', /below valve|di bawah valve|boiler/);
+      requirePhase(accumulator, phases, 'level basket', /basket|no tamp|tanpa tamp|jangan tamp/);
+      requirePhase(accumulator, phases, 'heat', /heat|panas/);
+      requirePhase(accumulator, phases, 'stop before sputter', /sputter|stop|berhenti/);
+      if (phases.has(/bloom|final pour|center-to-mid/)) blockingErrors.push('Panduan Moka Pot mengandung bahasa pour-over.');
       break;
     case 'espresso':
       requirePhase(accumulator, phases, 'dose', 'dose');
-      requirePhase(accumulator, phases, 'puck prep', /puck|tamp|distribute/);
-      requirePhase(accumulator, phases, 'shot/yield', /shot|yield|extract/);
-      requirePhase(accumulator, phases, 'flow', 'flow');
-      requirePhase(accumulator, phases, 'stop', 'stop');
-      if (phases.has(/bloom|kettle|filter wall|final pour/)) blockingErrors.push('Espresso workflow contains filter-brew wording.');
+      requirePhase(accumulator, phases, 'puck prep', /puck|tamp|distribute|distribusi/);
+      requirePhase(accumulator, phases, 'shot/yield', /shot|yield|extract|ekstrak/);
+      requirePhase(accumulator, phases, 'flow', /flow|aliran/);
+      requirePhase(accumulator, phases, 'stop', /stop|berhenti/);
+      if (phases.has(/bloom|kettle|filter wall|final pour/)) blockingErrors.push('Panduan Espresso mengandung bahasa seduh filter.');
       break;
     case 'siphon':
-      requirePhase(accumulator, phases, 'heat/draw-up', /heat|draw-up|draw up/);
-      requirePhase(accumulator, phases, 'stir', 'stir');
-      requirePhase(accumulator, phases, 'contact', 'contact');
-      requirePhase(accumulator, phases, 'drawdown', 'drawdown');
+      requirePhase(accumulator, phases, 'heat/draw-up', /heat|panas|draw-up|draw up|air naik/);
+      requirePhase(accumulator, phases, 'stir', /stir|aduk/);
+      requirePhase(accumulator, phases, 'contact', /contact|kontak/);
+      requirePhase(accumulator, phases, 'drawdown', /drawdown|air turun/);
       break;
     case 'batch_brew':
       requirePhase(accumulator, phases, 'dose per liter', /dose\/l|dose per liter/);
       requirePhase(accumulator, phases, 'machine/spray', /machine|spray/);
-      requirePhase(accumulator, phases, 'drawdown', 'drawdown');
-      requirePhase(accumulator, phases, 'mix batch', /mix batch|carafe/);
-      if (phases.has(/manual pour|bloom pour|center-to-mid/)) blockingErrors.push('Batch brewer workflow contains manual pour-over wording.');
+      requirePhase(accumulator, phases, 'drawdown', /drawdown|air turun/);
+      requirePhase(accumulator, phases, 'mix batch', /mix batch|aduk batch|carafe/);
+      if (phases.has(/manual pour|bloom pour|center-to-mid/)) blockingErrors.push('Panduan Batch Brewer mengandung bahasa pour-over manual.');
       break;
     case 'cold_brew':
-      requirePhase(accumulator, phases, 'saturate', /saturate|dry pocket/);
-      requirePhase(accumulator, phases, 'steep hours', /steep|h/);
-      requirePhase(accumulator, phases, 'filter/decant', /filter|decant/);
-      requirePhase(accumulator, phases, 'dilute after filtration', /after filtration|dilute/);
-      if (phases.has(/hot pour|kettle|bloom/)) blockingErrors.push('Cold Brew workflow contains hot pour-over wording.');
+      requirePhase(accumulator, phases, 'saturate', /saturate|basahi|dry pocket|bagian kering/);
+      requirePhase(accumulator, phases, 'steep hours', /steep|rendam|h/);
+      requirePhase(accumulator, phases, 'filter/decant', /filter|decant|tuang pisah/);
+      requirePhase(accumulator, phases, 'dilute after filtration', /after filtration|setelah filtrasi|dilute|dilusi/);
+      if (phases.has(/hot pour|kettle|bloom/)) blockingErrors.push('Panduan Cold Brew mengandung bahasa pour-over panas.');
       break;
     default:
       break;
   }
 
-  if (!phases.has(/rinse|preheat|setup|prep|dose|boiler|basket/)) {
-    warnings.push('Workflow guide is missing a setup/prep cue.');
+  if (!phases.has(/rinse|preheat|setup|prep|dose|boiler|basket|bilas|panaskan|persiapan/)) {
+    warnings.push('Panduan seduh belum punya cue persiapan.');
   }
-  if (plan.fallbackUsed) warnings.push('Fallback equipment/grinder reference needs taste validation.');
+  if (plan.fallbackUsed) warnings.push('Referensi fallback alat/grinder perlu validasi rasa.');
   if (plan.waterPresetStatus === 'manual_required' || plan.waterMineralDerivation === 'estimated_from_classification') {
-    warnings.push('Water minerals require manual verification before public-ready confidence.');
+    warnings.push('Mineral air perlu verifikasi manual sebelum keyakinan publik dianggap kuat.');
   }
 
   const uniqueBlockingErrors = Array.from(new Set(blockingErrors));

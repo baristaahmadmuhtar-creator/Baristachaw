@@ -136,7 +136,7 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
     case 'charge':
       return 'Isi Air';
     case 'steep':
-      return 'Steep';
+      return 'Rendam';
     case 'press':
     case 'press gently':
       return 'Tekan';
@@ -416,7 +416,7 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/Press with steady pressure and stop before the final dry hiss so bitterness does not enter the cup\./i, 'Tekan dengan tekanan stabil dan berhenti sebelum hiss kering terakhir agar pahit tidak masuk ke cangkir.')
     .replace(/Use a coarse, even grind and saturate all grounds; leave the slurry quiet after the first wetting\./i, 'Gunakan grind kasar yang merata dan basahi semua bubuk; biarkan slurry tenang setelah basahan pertama.')
     .replace(/Around the late steep window, break the crust gently and skim foam or floating grounds without aggressive stirring\./i, 'Di fase steep akhir, pecah crust pelan dan skim foam atau bubuk mengambang tanpa mengaduk agresif.')
-    .replace(/Press slowly, do not squeeze the bed, then decant immediately so extraction stops cleanly\./i, 'Tekan perlahan, jangan memeras bed, lalu decant segera agar ekstraksi berhenti bersih.')
+    .replace(/Press slowly, do not squeeze the bed, then decant immediately so extraction stops cleanly\./i, 'Tekan perlahan, jangan memeras bed, lalu tuang pisah segera agar ekstraksi berhenti bersih.')
     .replace(/Rinse the paper and preheat the brewer first, then close the valve before adding coffee and brew water\./i, 'Bilas kertas dan panaskan brewer dulu, lalu tutup katup sebelum menambahkan kopi dan air seduh.')
     .replace(/^Open the bloom evenly and let the cone drain cleanly before the next pour\.$/i, 'Buka bloom secara merata lalu biarkan cone turun bersih sebelum tuangan berikutnya.')
     .replace(/^Push a clean center-to-mid pour and keep the cone walls quiet\.$/i, 'Dorong tuangan bersih dari tengah ke area tengah-luar dan jaga dinding cone tetap tenang.')

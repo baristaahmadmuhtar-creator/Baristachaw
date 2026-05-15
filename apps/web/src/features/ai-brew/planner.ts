@@ -1033,6 +1033,7 @@ function buildBeanCoverageState(params: {
   deviceProfileMode: DeviceProfileMode;
   grindVerification: VerificationLevel;
   grindSettingMode: GrindSettingMode;
+  grindCalibrationRequired?: boolean;
   waterMode: WaterMode;
   waterBrand?: WaterBrandProfile;
   waterMinerals: WaterMineralInput;
@@ -1061,7 +1062,8 @@ function buildBeanCoverageState(params: {
   const hasBeanDetail = hasProcess || hasVariety || hasCoffeeName || params.beanProfile.active;
   const waterKnown = params.waterMode === 'manual'
     || Boolean(params.waterBrand?.isBrewReady && params.waterBrand?.presetStatus === 'autofill');
-  const grinderKnown = ['official', 'community_verified', 'curated'].includes(params.grindVerification);
+  const grinderKnown = ['official', 'community_verified', 'curated'].includes(params.grindVerification)
+    && !params.grindCalibrationRequired;
   const exactBrewer = params.deviceProfileMode === 'exact';
   const unsafe = params.guardrailErrors.length > 0
     || params.workflowStatus === 'blocked'
@@ -1093,6 +1095,7 @@ function buildBeanCoverageState(params: {
   const riskyReference = !exactBrewer
     || !grinderKnown
     || params.grindSettingMode === 'derived_baseline'
+    || params.grindCalibrationRequired
     || !waterKnown
     || params.switchValidation?.status === 'caution';
 
@@ -1104,7 +1107,8 @@ function buildBeanCoverageState(params: {
   if (params.input.roastLevel === 'dark') warnings.push('Dark roast: protect bitterness with lower extraction pressure.');
   if (/\b(robusta|canephora|liberica|excelsa)\b/i.test(beanText) || hasAnyRiskTag(params.processEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa']) || hasAnyRiskTag(params.varietyEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa', 'unusual-species'])) warnings.push('Robusta/canephora/non-arabica cenderung lebih body-heavy dan mudah pahit jika ekstraksi terlalu agresif.');
   if (riskyWater) warnings.push('Water needs caution or manual verification before treating the prediction as high confidence.');
-  if (!grinderKnown) warnings.push('Grinder setting is estimated or fallback; calibrate by drawdown and taste.');
+  if (!grinderKnown) warnings.push('Setting grinder masih estimasi/fallback; kalibrasi dari waktu ekstraksi dan rasa.');
+  if (params.grindCalibrationRequired) warnings.push('Setting grinder memakai baseline metode; kalibrasi titik nol dan rasa sebelum dianggap presisi.');
   if (params.switchValidation && params.switchValidation.status !== 'safe') warnings.push(params.switchValidation.message);
 
   if (unsafe) {
@@ -2956,7 +2960,7 @@ function resolveTargetAwareProcessAdjustment(params: {
 
   if (isHoney && (targetId === 'soft_round' || isSweetnessTarget)) {
     adjustment.tempDeltaC += 0.1;
-    adjustment.notes.push('Target-aware process cue: honey/pulped-natural keeps a balanced-to-full middle and gentle finish instead of rushing drawdown.');
+    adjustment.notes.push('Target-aware process cue: honey/pulped-natural keeps a balanced-to-full middle and gentle finish instead of rushing the close.');
   }
 
   if (isWetHulled && isBodyTarget) {
@@ -2980,7 +2984,7 @@ function resolveTargetAwareProcessAdjustment(params: {
     adjustment.tempDeltaC -= 0.2;
     adjustment.brewTimeDeltaSec -= 3;
     adjustment.grindBias = 'coarser';
-    adjustment.notes.push('Target-aware process cue: washed high-clarity bean protects florals with lower agitation, lower heat, and faster drawdown.');
+    adjustment.notes.push('Target-aware process cue: washed high-clarity bean protects florals with lower agitation, lower heat, and quicker finish pacing.');
   }
 
   if (isNonArabica && targetId === 'dense_comforting') {
@@ -6890,6 +6894,7 @@ function finalizePlanCore(
   });
 
   const grindSettingMode: GrindSettingMode = grinderSetting?.id.startsWith('derived_') ? 'derived_baseline' : 'catalog_reference';
+  const grindCalibrationRequired = Boolean(grinderSetting?.calibrationRequired);
   const temperatureWarnings = waterTempC >= 97 && methodFamily !== 'moka_pot' && methodFamily !== 'espresso'
     ? ['Suhu 97C+ adalah mode ekstraksi tinggi. Aman untuk kopi padat/light roast atau konsentrat es, tetapi turunkan 1-2C jika roast medium-dark/dark, air low-buffer, atau rasa mulai pahit/seret.']
     : [];
@@ -7002,6 +7007,7 @@ function finalizePlanCore(
     deviceProfileMode: deviceSelection.mode,
     grindVerification: grindDetails.verificationLevel,
     grindSettingMode,
+    grindCalibrationRequired,
     waterMode: input.waterMode,
     waterBrand,
     waterMinerals: waterProfile.minerals,
@@ -7024,6 +7030,7 @@ function finalizePlanCore(
   const provenanceAttentionNeeded =
     deviceSelection.mode !== 'exact'
     || grindSettingMode === 'derived_baseline'
+    || grindCalibrationRequired
     || input.waterCustomized
     || input.waterMode === 'manual'
     || waterBrand?.presetStatus === 'manual_required';
@@ -7164,6 +7171,7 @@ function finalizePlanCore(
     grindSettingReference: grinderSetting?.rangeLabel || 'No verified setting yet',
     grindSettingMode,
     grindSettingVerification: grindDetails.verificationLevel,
+    grindCalibrationRequired,
     fallbackUsed: deviceSelection.fallbackUsed || !grinderSetting,
     provenanceAttentionNeeded,
     confidenceNotes,
@@ -8268,6 +8276,7 @@ export function buildPlanRecipeMetadata(plan: BrewPlan) {
     deviceProfileMode: plan.deviceProfileMode,
     grindSettingReference: plan.grindSettingReference,
     grindSettingMode: plan.grindSettingMode,
+    grindCalibrationRequired: plan.grindCalibrationRequired,
     provenanceAttentionNeeded: plan.provenanceAttentionNeeded,
     catalogVersion: plan.catalogVersion,
     totalTimeSeconds: plan.totalTimeSeconds,

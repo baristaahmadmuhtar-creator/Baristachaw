@@ -69,6 +69,7 @@ import {
   resolveAiBrewConfidenceBadges,
 } from '../../apps/web/src/features/ai-brew/experience.ts';
 import { resolveWaterMineralCompletion } from '../../apps/web/src/features/ai-brew/waterMineralCompletion.ts';
+import { canUseWaterBrandAutofill } from '../../apps/web/src/features/ai-brew/waterPlanner.ts';
 import type {
   AiBrewCatalog,
   AiBrewFormState,
@@ -85,6 +86,7 @@ import type {
   RawGrinderCatalogEntry,
   TargetProfile,
   VarietyCatalogEntry,
+  WaterBrandProfile,
   VerificationLevel,
   WaterGuidance,
 } from '../../apps/web/src/features/ai-brew/types.ts';
@@ -262,7 +264,9 @@ const catalog: AiBrewCatalog = {
         coarse: '9.5 - 10.5 numbers',
         medium: '8.0 - 9.0 numbers',
         fine: '7.0 - 8.0 numbers',
+        parsedCoarse: parseNumericRange('9.5 - 10.5 numbers'),
         parsedMedium: parseNumericRange('8.0 - 9.0 numbers'),
+        parsedFine: parseNumericRange('7.0 - 8.0 numbers'),
       },
     },
     {
@@ -286,7 +290,9 @@ const catalog: AiBrewCatalog = {
         coarse: '11 - 14 clicks',
         medium: '8 - 10 clicks',
         fine: '5 - 7 clicks',
+        parsedCoarse: parseNumericRange('11 - 14 clicks'),
         parsedMedium: parseNumericRange('8 - 10 clicks'),
+        parsedFine: parseNumericRange('5 - 7 clicks'),
       },
     },
     {
@@ -310,7 +316,9 @@ const catalog: AiBrewCatalog = {
         coarse: 'setting 5-0',
         medium: 'setting 4-5',
         fine: 'setting 4-4',
+        parsedCoarse: parseNumericRange('5 - 0 setting'),
         parsedMedium: parseNumericRange('4 - 5 setting'),
+        parsedFine: parseNumericRange('4 - 4 setting'),
       },
     },
   ],
@@ -1402,6 +1410,100 @@ function writeAiBrewGlobalStressAuditArtifact(summary: Record<string, unknown>, 
   return dir;
 }
 
+function writeAiBrewIced100kGuideStressAuditArtifact(summary: Record<string, unknown>, samples: Array<Record<string, unknown>>) {
+  const sha = getCurrentAuditSha();
+  const dir = `artifacts/ai-brew-audit/iced-100k-guide-stress/${sha}`;
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(`${dir}/iced-100k-guide-stress-summary.json`, `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
+  fs.writeFileSync(`${dir}/iced-100k-guide-stress-samples.json`, `${JSON.stringify(samples, null, 2)}\n`, 'utf8');
+
+  const scoreMin = summary.scoreMin as Record<string, number>;
+  const splitStats = summary.icedSplitStats as Record<string, number>;
+  const guideStats = summary.guideStats as Record<string, number>;
+  const markdown = [
+    '# AI Brew Iced 100k Guide Stress Audit',
+    '',
+    `Commit: ${sha}`,
+    `Requested iced plans: ${summary.total}`,
+    `Valid plans: ${summary.passed}`,
+    `Visible drippers: ${summary.visibleDrippers}`,
+    `Iced-supported drippers: ${summary.icedSupportedDrippers}`,
+    `Actual iced plans: ${summary.actualIcedPlans}`,
+    `Unsupported iced requests guarded: ${summary.unsupportedIcedFallbacks}`,
+    '',
+    '## Iced Split Stats',
+    '| Metric | Value |',
+    '|---|---:|',
+    ...Object.entries(splitStats).map(([key, value]) => `| ${key} | ${value} |`),
+    '',
+    '## Bloom, Pour, and Guide Stats',
+    '| Metric | Value |',
+    '|---|---:|',
+    ...Object.entries(guideStats).map(([key, value]) => `| ${key} | ${value} |`),
+    '',
+    '## Minimum Scores',
+    '| Category | Score |',
+    '|---|---:|',
+    ...Object.entries(scoreMin).map(([key, value]) => `| ${key} | ${value} |`),
+    '',
+    '## Target Coverage',
+    '| Target | Count |',
+    '|---|---:|',
+    ...Object.entries(summary.targetCounts as Record<string, number>).map(([key, value]) => `| ${key} | ${value} |`),
+    '',
+    '## Bean Coverage',
+    '| Category | Count |',
+    '|---|---:|',
+    ...Object.entries(summary.beanCoverageCounts as Record<string, number>).map(([key, value]) => `| ${key} | ${value} |`),
+    '',
+    '## Water Coverage',
+    '| Water | Count |',
+    '|---|---:|',
+    ...Object.entries(summary.waterCounts as Record<string, number>).map(([key, value]) => `| ${key} | ${value} |`),
+    '',
+    '## Representative Iced Samples',
+    '| # | Dripper | Target | Bean/process | Roast | Water | Coverage | Final ratio | Hot ratio | Temp | Extraction | Guide |',
+    '|---:|---|---|---|---|---|---|---:|---:|---:|---:|---:|',
+    ...samples.slice(0, 120).map((sample, index) => `| ${index + 1} | ${sample.dripperName} | ${sample.targetProfileLabel} | ${sample.beanCase} | ${sample.roastLevel} | ${sample.waterCase} | ${sample.beanCoverageCategory} | ${sample.ratio} | ${sample.hotExtractionRatio} | ${sample.tempC} | ${sample.extractionEndSeconds} | ${sample.guideEndSeconds} |`),
+    '',
+  ].join('\n');
+  fs.writeFileSync(`${dir}/iced-100k-guide-stress.md`, markdown, 'utf8');
+  return dir;
+}
+
+function writeAiBrewGrindSizeMatrixAuditArtifact(summary: Record<string, unknown>, samples: Array<Record<string, unknown>>) {
+  const sha = getCurrentAuditSha();
+  const dir = `artifacts/ai-brew-audit/grind-size-matrix/${sha}`;
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(`${dir}/grind-size-matrix-summary.json`, `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
+  fs.writeFileSync(`${dir}/grind-size-matrix-samples.json`, `${JSON.stringify(samples, null, 2)}\n`, 'utf8');
+  const rows = samples
+    .slice(0, 80)
+    .map((sample, index) => `| ${index + 1} | ${sample.dripperName} | ${sample.methodFamily} | ${sample.brewMode} | ${sample.grinderName} | ${sample.roastLevel} | ${sample.grindBandLabel} | ${sample.grindSettingMode} | ${sample.verification} |`);
+  const markdown = [
+    '# AI Brew Grinder Size Matrix Audit',
+    '',
+    `Commit: ${sha}`,
+    `Plans checked: ${summary.total}`,
+    `Passed: ${summary.passed}`,
+    `Visible drippers: ${summary.visibleDrippers}`,
+    `Grinders: ${summary.grinders}`,
+    '',
+    '## Method-Aware Fallbacks',
+    '| Family | Count |',
+    '|---|---:|',
+    ...Object.entries(summary.methodAwareFallbackCounts as Record<string, number>).map(([key, value]) => `| ${key} | ${value} |`),
+    '',
+    '## Representative Samples',
+    '| # | Dripper | Family | Mode | Grinder | Roast | Band | Mode | Verification |',
+    '|---:|---|---|---|---|---|---|---|---|',
+    ...rows,
+    '',
+  ].join('\n');
+  fs.writeFileSync(`${dir}/grind-size-matrix.md`, markdown, 'utf8');
+  return dir;
+}
+
 function summarizeSwitchPlan(plan: AiBrewPlanForTest) {
   const waterSteps = plan.steps.filter((step) => step.pourVolumeMl > 0);
   const closedLoads = plan.steps
@@ -2212,7 +2314,7 @@ test('Hario Switch exact variants preserve every volume checkpoint without chang
   assert.ok(switchPourGuideLines.every((step) => /Katup (tutup|buka)/.test(step.primaryText)), 'Switch Ringkas guide keeps valve state');
   assert.ok(hot.steps.some((step) => step.kind === 'wait' && step.pourVolumeMl === 0));
   assert.ok(hot.steps.some((step) => step.kind === 'release' && step.pourVolumeMl === 0));
-  assert.ok((hot.workflowGuideSteps || []).some((step) => step.techniqueChips.some((chip) => chip.key === 'valve' && chip.value === 'closed')));
+  assert.ok((hot.workflowGuideSteps || []).some((step) => step.techniqueChips.some((chip) => chip.key === 'valve' && /closed|tutup/i.test(chip.value))));
   assert.ok((hot.workflowGuideSteps || []).some((step) => step.techniqueChips.some((chip) => chip.key === 'chamber_load')));
   assert.match(
     hot.steps.map((step) => `${step.label} ${step.note}`).join(' '),
@@ -2283,7 +2385,7 @@ test('Hario Switch 02 guards chamber capacity and legacy Switch requires exact s
   }, catalog);
   assert.equal(legacy.methodFamily, 'hario_switch');
   assert.equal(legacy.workflowValidation?.status, 'blocked');
-  assert.match((legacy.workflowValidation?.blockingErrors || []).join(' '), /Choose Switch 02, Switch 03, or MUGEN x SWITCH/i);
+  assert.match((legacy.workflowValidation?.blockingErrors || []).join(' '), /Choose Switch 02, Switch 03, or MUGEN x SWITCH|Pilih Switch 02, Switch 03, atau MUGEN x SWITCH/i);
 
   const unsafeGuide = buildWorkflowAwareGuideSteps({
     ...switch02,
@@ -2316,7 +2418,7 @@ test('Hario Switch 02 guards chamber capacity and legacy Switch requires exact s
     }],
   }, unsafeGuide);
   assert.equal(unsafeValidation.status, 'blocked');
-  assert.match(unsafeValidation.blockingErrors.join(' '), /exceeds safe|Full-immersion/i);
+  assert.match(unsafeValidation.blockingErrors.join(' '), /exceeds safe|Full-immersion|melewati batas aman|full immersion/i);
 });
 
 test('production Hario Switch presets choose safe defaults and preserve programme provenance', () => {
@@ -2960,7 +3062,13 @@ test('AI Brew full-method audit artifact scores every catalog dripper and real-w
         })}`,
       );
       assert.equal(validateBrewPlanOutput(plan).allowed, true, `${bean.label} ${brewer.label} anti-hallucination guard`);
-      assert.equal(plan.beanCoverage?.category, bean.expectedCategory, `${bean.label} ${brewer.label} coverage`);
+      const acceptedCoverageCategories = plan.grindCalibrationRequired && (bean.expectedCategory === 'known_high' || bean.expectedCategory === 'unknown_fallback')
+        ? [bean.expectedCategory, 'partial_medium', 'risk_caution']
+        : [bean.expectedCategory];
+      assert.ok(
+        acceptedCoverageCategories.includes(plan.beanCoverage?.category || ''),
+        `${bean.label} ${brewer.label} coverage: expected ${acceptedCoverageCategories.join('/')} got ${plan.beanCoverage?.category}`,
+      );
       const correction = buildTasteFeedbackCorrection(plan, 'sour', 'id');
       assert.equal(correction.protectedNumbersLocked, true, `${bean.label} ${brewer.label} taste correction locks protected numbers`);
       const correctionText = `${correction.primaryCorrection} ${correction.backupCorrection}`;
@@ -3797,7 +3905,9 @@ function buildProductionAiBrewCatalogForTests(): AiBrewCatalog {
         coarse: entry.coarse,
         medium: entry.medium,
         fine: entry.fine,
+        parsedCoarse: parseNumericRange(entry.coarse),
         parsedMedium: parseNumericRange(entry.medium),
+        parsedFine: parseNumericRange(entry.fine),
       },
       ...provenance(entry),
     }));
@@ -4413,14 +4523,14 @@ test('workflow-aware guide expands all-method operational phases and validates r
     ...overrides,
   }, productionCatalog);
   const cases: Array<{ label: string; plan: ReturnType<typeof buildAiBrewPlan>; pattern: RegExp }> = [
-    { label: 'AeroPress', plan: planFor({ dripperId: 'aeropress', aeropressStyle: 'standard' }), pattern: /charge[\s\S]*stir[\s\S]*steep[\s\S]*press[\s\S]*hiss/i },
-    { label: 'French Press', plan: planFor({ dripperId: 'french-press' }), pattern: /charge[\s\S]*steep[\s\S]*(settle|crust)[\s\S]*(press|decant)/i },
-    { label: 'Clever', plan: planFor({ dripperId: 'clever-dripper' }), pattern: /charge[\s\S]*steep[\s\S]*release[\s\S]*drawdown/i },
-    { label: 'Moka', plan: planFor({ dripperId: 'bialetti-moka-pot' }), pattern: /below valve[\s\S]*basket[\s\S]*heat[\s\S]*sputter/i },
-    { label: 'Espresso', plan: planFor({ dripperId: 'espresso-machine' }), pattern: /dose[\s\S]*(puck|tamp)[\s\S]*(shot|yield)[\s\S]*flow[\s\S]*stop/i },
-    { label: 'Siphon', plan: planFor({ dripperId: 'hario-siphon' }), pattern: /draw-up[\s\S]*stir[\s\S]*contact[\s\S]*drawdown/i },
-    { label: 'Batch', plan: planFor({ dripperId: 'batch-brewer' }), pattern: /(dose\/l|dose per liter)[\s\S]*spray[\s\S]*drawdown[\s\S]*mix batch/i },
-    { label: 'Cold Brew', plan: planFor({ dripperId: 'toddy-cold-brew' }), pattern: /saturate[\s\S]*steep[\s\S]*filter[\s\S]*(after filtration|dilute)/i },
+    { label: 'AeroPress', plan: planFor({ dripperId: 'aeropress', aeropressStyle: 'standard' }), pattern: /(charge|isi)[\s\S]*(stir|aduk)[\s\S]*(steep|rendam)[\s\S]*(press|tekan)[\s\S]*hiss/i },
+    { label: 'French Press', plan: planFor({ dripperId: 'french-press' }), pattern: /(charge|isi)[\s\S]*(steep|rendam)[\s\S]*(settle|endapkan|crust)[\s\S]*(press|tekan|decant|tuang pisah)/i },
+    { label: 'Clever', plan: planFor({ dripperId: 'clever-dripper' }), pattern: /(charge|isi)[\s\S]*(steep|rendam)[\s\S]*(release|alirkan)[\s\S]*(drawdown|air turun)/i },
+    { label: 'Moka', plan: planFor({ dripperId: 'bialetti-moka-pot' }), pattern: /(below valve|di bawah valve)[\s\S]*basket[\s\S]*(heat|panas)[\s\S]*sputter/i },
+    { label: 'Espresso', plan: planFor({ dripperId: 'espresso-machine' }), pattern: /dose[\s\S]*(puck|tamp|distribusi)[\s\S]*(shot|yield|output)[\s\S]*(flow|aliran)[\s\S]*(stop|berhenti)/i },
+    { label: 'Siphon', plan: planFor({ dripperId: 'hario-siphon' }), pattern: /(draw-up|air naik)[\s\S]*(stir|aduk)[\s\S]*(contact|kontak)[\s\S]*(drawdown|air turun)/i },
+    { label: 'Batch', plan: planFor({ dripperId: 'batch-brewer' }), pattern: /(dose\/l|dose per liter)[\s\S]*spray[\s\S]*(drawdown|air turun)[\s\S]*(mix batch|aduk batch)/i },
+    { label: 'Cold Brew', plan: planFor({ dripperId: 'toddy-cold-brew' }), pattern: /(saturate|basahi)[\s\S]*(steep|rendam)[\s\S]*filter[\s\S]*(after filtration|setelah filtrasi|dilute|dilusi)/i },
   ];
 
   for (const entry of cases) {
@@ -4469,7 +4579,7 @@ test('workflow validator blocks too-simple or method-wrong guide output', () => 
   }));
   const mokaValidation = validateMethodWorkflowGuide(moka, mokaBadGuide);
   assert.equal(mokaValidation.passed, false);
-  assert.match(mokaValidation.blockingErrors.join(' '), /Moka Pot workflow contains pour-over wording/i);
+  assert.match(mokaValidation.blockingErrors.join(' '), /Moka Pot.*(pour-over|mengandung bahasa pour-over)/i);
 });
 
 test('workflow-aware V60 iced guide keeps hot-water target explicit', () => {
@@ -4491,8 +4601,8 @@ test('workflow-aware V60 iced guide keeps hot-water target explicit', () => {
   assert.equal(validation.passed, true, validation.blockingErrors.join('; '));
   assert.equal(plan.hotWaterMl + plan.iceMl, plan.totalWaterMl);
   assert.equal(lastPour?.targetVolumeMl, plan.hotWaterMl);
-  assert.match(text, new RegExp(`Target ${plan.hotWaterMl} ml hot water`, 'i'));
-  assert.match(text, /Flow|center_to_mid|low|minimal|agitation/i);
+  assert.match(text, new RegExp(`Target ${plan.hotWaterMl} ml (air panas|hot water)`, 'i'));
+  assert.match(text, /Flow|Aliran|center_to_mid|tengah-ke-tengah-luar|low|rendah|minimal|agitation|agitasi/i);
 });
 
 test('expected cup profile and readiness scores reflect target, bean, water, and grinder trust', () => {
@@ -4648,14 +4758,14 @@ test('all-method public snapshot matrix includes workflow, expected cup, feedbac
     { label: 'April hot', input: { dripperId: findDripperId(/^April Brewer$/i) }, required: /flat|bed|drawdown/i, minGuide: 4 },
     { label: 'Melitta hot', input: { dripperId: findDripperId(/^Melitta$/i) }, required: /trapezoid|drawdown|pour/i, minGuide: 4 },
     { label: 'Kono hot', input: { dripperId: findDripperId(/^Kono Meimon$/i) }, required: /center|drawdown|pour/i, minGuide: 4 },
-    { label: 'Clever hot', input: { dripperId: findDripperId(/^Clever Dripper$/i) }, required: /charge[\s\S]*steep[\s\S]*release[\s\S]*drawdown/i, forbidden: /Final Pour/i, minGuide: 5 },
-    { label: 'AeroPress hot', input: { dripperId: findDripperId(/^AeroPress$/i), aeropressStyle: 'standard' }, required: /charge[\s\S]*stir[\s\S]*steep[\s\S]*press[\s\S]*hiss/i, forbidden: /final pour|drawdown bed/i, minGuide: 6 },
-    { label: 'French Press hot', input: { dripperId: findDripperId(/^French Press$/i) }, required: /charge[\s\S]*steep[\s\S]*settle[\s\S]*decant/i, forbidden: /final pour|bloom/i, minGuide: 5 },
-    { label: 'Moka Pot hot', input: { dripperId: findDripperId(/^Bialetti Moka Pot$/i) }, required: /boiler[\s\S]*basket[\s\S]*heat[\s\S]*sputter/i, forbidden: /bloom|final pour/i, minGuide: 4 },
-    { label: 'Siphon hot', input: { dripperId: findDripperId(/^Hario Siphon$/i) }, required: /draw-up[\s\S]*stir[\s\S]*contact[\s\S]*drawdown/i, forbidden: /final pour/i, minGuide: 5 },
-    { label: 'Batch Brewer hot', input: { dripperId: findDripperId(/^Batch Brewer$/i), doseG: '55' }, required: /dose\/l|spray|drawdown|mix batch/i, forbidden: /manual pour|bloom pour/i, minGuide: 5 },
-    { label: 'Espresso hot', input: { dripperId: findDripperId(/^Espresso Machine$/i) }, required: /dose[\s\S]*puck[\s\S]*(shot|yield)[\s\S]*flow[\s\S]*stop/i, forbidden: /bloom|kettle|final pour/i, minGuide: 5 },
-    { label: 'Cold Brew', input: { dripperId: findDripperId(/^Toddy Cold Brew$/i), doseG: '60' }, required: /saturate[\s\S]*steep[\s\S]*filter[\s\S]*dilute/i, forbidden: /bloom|kettle/i, minGuide: 4 },
+    { label: 'Clever hot', input: { dripperId: findDripperId(/^Clever Dripper$/i) }, required: /(charge|isi)[\s\S]*(steep|rendam)[\s\S]*(release|alirkan)[\s\S]*(drawdown|air turun)/i, forbidden: /Final Pour/i, minGuide: 5 },
+    { label: 'AeroPress hot', input: { dripperId: findDripperId(/^AeroPress$/i), aeropressStyle: 'standard' }, required: /(charge|isi)[\s\S]*(stir|aduk)[\s\S]*(steep|rendam)[\s\S]*(press|tekan)[\s\S]*hiss/i, forbidden: /final pour|drawdown bed/i, minGuide: 6 },
+    { label: 'French Press hot', input: { dripperId: findDripperId(/^French Press$/i) }, required: /(charge|isi)[\s\S]*(steep|rendam)[\s\S]*(settle|endapkan)[\s\S]*(decant|tuang pisah)/i, forbidden: /final pour|bloom/i, minGuide: 5 },
+    { label: 'Moka Pot hot', input: { dripperId: findDripperId(/^Bialetti Moka Pot$/i) }, required: /boiler[\s\S]*basket[\s\S]*(heat|panas)[\s\S]*sputter/i, forbidden: /bloom|final pour/i, minGuide: 4 },
+    { label: 'Siphon hot', input: { dripperId: findDripperId(/^Hario Siphon$/i) }, required: /(draw-up|air naik)[\s\S]*(stir|aduk)[\s\S]*(contact|kontak)[\s\S]*(drawdown|air turun)/i, forbidden: /final pour/i, minGuide: 5 },
+    { label: 'Batch Brewer hot', input: { dripperId: findDripperId(/^Batch Brewer$/i), doseG: '55' }, required: /dose\/l|spray|drawdown|air turun|mix batch|aduk batch/i, forbidden: /manual pour|bloom pour/i, minGuide: 5 },
+    { label: 'Espresso hot', input: { dripperId: findDripperId(/^Espresso Machine$/i) }, required: /dose[\s\S]*puck[\s\S]*(shot|yield|output)[\s\S]*(flow|aliran)[\s\S]*(stop|berhenti)/i, forbidden: /bloom|kettle|final pour/i, minGuide: 5 },
+    { label: 'Cold Brew', input: { dripperId: findDripperId(/^Toddy Cold Brew$/i), doseG: '60' }, required: /(saturate|basahi)[\s\S]*(steep|rendam)[\s\S]*filter[\s\S]*(dilute|dilusi)/i, forbidden: /bloom|kettle/i, minGuide: 4 },
   ];
 
   for (const entry of cases) {
@@ -4741,7 +4851,13 @@ test('real-world bean stress matrix always produces safe baseline or honest fall
       const summary = summarizeAiBrewPlan(plan);
       assert.ok(plan.expectedCupProfile, `${bean.label} ${plan.dripper.name} expected cup`);
       assert.ok(plan.beanCoverage, `${bean.label} ${plan.dripper.name} bean coverage`);
-      assert.equal(plan.beanCoverage?.category, bean.expectedCategory, `${bean.label} ${plan.dripper.name} coverage: ${JSON.stringify(summary)}`);
+      const acceptedCoverageCategories = plan.grindCalibrationRequired && (bean.expectedCategory === 'known_high' || bean.expectedCategory === 'unknown_fallback')
+        ? [bean.expectedCategory, 'partial_medium', 'risk_caution']
+        : [bean.expectedCategory];
+      assert.ok(
+        acceptedCoverageCategories.includes(plan.beanCoverage?.category || ''),
+        `${bean.label} ${plan.dripper.name} coverage: expected ${acceptedCoverageCategories.join('/')} got ${plan.beanCoverage?.category}: ${JSON.stringify(summary)}`,
+      );
       assert.notEqual(plan.workflowValidation?.status, 'blocked', `${bean.label} ${plan.dripper.name} should produce usable baseline`);
       assert.equal(validateBrewPlanOutput(plan).allowed, true, `${bean.label} ${plan.dripper.name} anti-hallucination guard`);
       const correction = buildTasteFeedbackCorrection(plan, 'sour', 'en');
@@ -4947,7 +5063,7 @@ test('AI Brew 10000-combination global stress matrix keeps drippers, targets, be
       assert.doesNotMatch(operationalText, /Katup|muatan ruang|Switch 02|Switch 03|MUGEN x SWITCH/i, `${index} ${dripper.name} should not leak Switch wording`);
     }
     if (plan.methodFamily === 'french_press') {
-      assert.doesNotMatch(operationalText, /final pour|tuang akhir|pulse/i, `${index} French Press should not leak pour-over steps`);
+      assert.doesNotMatch(operationalText, /final pour|tuang akhir|tuang tengah|bloom \d/i, `${index} French Press should not leak pour-over steps`);
     }
     if (plan.methodFamily === 'espresso') {
       assert.doesNotMatch(operationalText, /bloom|air turun|drawdown|final pour|tuang akhir/i, `${index} Espresso should not leak filter workflow`);
@@ -5023,6 +5139,597 @@ test('AI Brew 10000-combination global stress matrix keeps drippers, targets, be
   const artifactDir = writeAiBrewGlobalStressAuditArtifact(summary, samples);
   assert.ok(fs.existsSync(`${artifactDir}/global-10k-stress-summary.json`));
   assert.ok(fs.existsSync(`${artifactDir}/global-10k-stress.md`));
+});
+
+test('AI Brew 100000-combination iced guide stress matrix keeps bloom, pours, timer, and taste guardrails safe', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  type RawStressWater = {
+    id?: string;
+    brand_group_id?: string;
+    market_code?: string;
+    sku_label?: string;
+    brand?: string;
+    country_origin?: string;
+    available_in?: string[];
+    is_sparkling?: boolean;
+    is_brew_ready?: boolean;
+    brew_block_reason?: string[];
+    tds_ppm?: number | null;
+    coffee_parameters?: {
+      hardness_ppm_as_caco3?: number | null;
+      alkalinity_ppm_as_caco3?: number | null;
+      brew_recommendation?: string;
+    };
+    publish_state?: string;
+    search_text?: string;
+    data_quality?: { is_estimated?: boolean };
+    primary_source?: { source_url?: string };
+    sources?: Array<{ source_url?: string }>;
+  };
+  const stressWaterBrands = readJsonItems<RawStressWater>('apps/web/public/data/catalog/phase1/waters.catalog.json')
+    .filter((entry) => entry.is_brew_ready === true
+      && entry.publish_state === 'published'
+      && typeof entry.tds_ppm === 'number'
+      && typeof entry.coffee_parameters?.hardness_ppm_as_caco3 === 'number'
+      && typeof entry.coffee_parameters?.alkalinity_ppm_as_caco3 === 'number')
+    .slice(0, 12)
+    .map((entry): AiBrewCatalog['waterBrands'][number] => {
+      const sourceUrls = [
+        entry.primary_source?.source_url,
+        ...(entry.sources || []).map((source) => source.source_url),
+      ].filter((url): url is string => Boolean(url));
+      const hardnessPpm = Number(entry.coffee_parameters?.hardness_ppm_as_caco3 || 0);
+      const alkalinityPpm = Number(entry.coffee_parameters?.alkalinity_ppm_as_caco3 || 0);
+      return {
+        id: String(entry.id),
+        brandGroupId: String(entry.brand_group_id || entry.id),
+        marketCode: (entry.market_code || 'global') as AiBrewCatalog['waterBrands'][number]['marketCode'],
+        skuLabel: String(entry.sku_label || entry.brand || entry.id),
+        label: String(entry.brand || entry.sku_label || entry.id),
+        shortLabel: String(entry.brand || entry.sku_label || entry.id),
+        subtitle: String(entry.country_origin || ''),
+        country: String(entry.country_origin || ''),
+        markets: [(entry.market_code || 'global') as AiBrewCatalog['waterBrands'][number]['marketCode']],
+        searchText: String(entry.search_text || `${entry.brand || ''} ${entry.sku_label || ''}`).toLowerCase(),
+        notes: [],
+        presetStatus: 'autofill',
+        publishState: 'published',
+        isBrewReady: true,
+        brewBlockReason: entry.brew_block_reason || [],
+        still: entry.is_sparkling !== true,
+        recommendedForFilter: true,
+        classification: alkalinityPpm >= 95 ? 'high_buffer' : hardnessPpm <= 40 ? 'soft_balanced' : 'balanced',
+        classificationLabel: alkalinityPpm >= 95 ? 'Buffer tinggi' : hardnessPpm <= 40 ? 'Lunak seimbang' : 'Seimbang',
+        classificationNote: 'Data brand digunakan untuk stress audit iced.',
+        chemistry: {
+          tdsPpm: Number(entry.tds_ppm),
+          hardnessPpm,
+          alkalinityPpm,
+        },
+        resolvedMinerals: {
+          tdsPpm: Number(entry.tds_ppm),
+          hardnessPpm,
+          alkalinityPpm,
+          derivation: 'direct',
+        },
+        source: 'water-catalog-phase1',
+        sourceUrls,
+        verificationLevel: entry.data_quality?.is_estimated ? 'estimated' : 'curated',
+        verifiedAt: '2026-06-01',
+        popularityTier: 'regional_common',
+        marketSegment: 'commercial_specialty_bridge',
+        releaseStatus: 'established',
+        confidence: entry.data_quality?.is_estimated ? 'low' : 'medium',
+        catalogVersion: productionCatalog.catalogVersion,
+      };
+    });
+  const stressCatalog: AiBrewCatalog = {
+    ...productionCatalog,
+    waterBrands: stressWaterBrands,
+  };
+  const visibleDrippers = stressCatalog.drippers.filter((dripper) => !dripper.hidden && !dripper.deprecated);
+  const icedSupportedDrippers = visibleDrippers.filter((dripper) => supportsAiBrewIcedMode(stressCatalog, dripper.id));
+  const targetProfileIds = [
+    'balance_clean',
+    'more_sweetness',
+    'more_acidity',
+    'more_body',
+    'floral_transparent',
+    'fruit_forward',
+    'soft_round',
+    'dense_comforting',
+  ];
+  const roastLevels = ['light', 'medium_light', 'medium', 'medium_dark', 'dark'] as const;
+  const processEntries = stressCatalog.processes.filter((entry) => entry.id);
+  const varietyEntries = stressCatalog.varieties.filter((entry) => entry.id);
+  const brewReadyWaterBrands = stressCatalog.waterBrands
+    .filter((water) => water.isBrewReady)
+    .slice(0, 12);
+  const grinderIds = [
+    '1zpresso-k-ultra',
+    'comandante-c40-mk4',
+    'timemore-c3',
+    'kingrinder-k6',
+    'df64-gen2',
+    'feima-600n',
+  ].filter((id) => stressCatalog.grinders.some((grinder) => grinder.id === id));
+  assert.ok(visibleDrippers.length >= 40, 'stress audit should cover every visible production dripper');
+  assert.ok(icedSupportedDrippers.length >= 30, 'stress audit should cover broad iced-supported drippers');
+  assert.ok(processEntries.length >= 60, 'stress audit should cover global process catalog breadth');
+  assert.ok(varietyEntries.length >= 120, 'stress audit should cover global variety catalog breadth');
+  assert.ok(brewReadyWaterBrands.length >= 2, 'stress audit should include published brew-ready water brands');
+  assert.ok(grinderIds.length >= 1, 'stress audit should include trusted grinder references');
+
+  const manualWaterCases: Array<{
+    id: string;
+    label: string;
+    input: Partial<AiBrewFormState>;
+  }> = [
+    { id: 'manual-balanced', label: 'manual balanced 95/55/40', input: { waterMode: 'manual', waterBrandId: '', waterTdsPpm: '95', waterHardnessPpm: '55', waterAlkalinityPpm: '40', waterCustomized: true, waterNotes: 'balanced iced stress water' } },
+    { id: 'manual-soft', label: 'manual soft 65/35/25', input: { waterMode: 'manual', waterBrandId: '', waterTdsPpm: '65', waterHardnessPpm: '35', waterAlkalinityPpm: '25', waterCustomized: true, waterNotes: 'soft clarity iced stress water' } },
+    { id: 'manual-buffered', label: 'manual buffered 170/80/110', input: { waterMode: 'manual', waterBrandId: '', waterTdsPpm: '170', waterHardnessPpm: '80', waterAlkalinityPpm: '110', waterCustomized: true, waterNotes: 'buffered iced stress water' } },
+    { id: 'manual-hard', label: 'manual hard 220/115/85', input: { waterMode: 'manual', waterBrandId: '', waterTdsPpm: '220', waterHardnessPpm: '115', waterAlkalinityPpm: '85', waterCustomized: true, waterNotes: 'harder iced stress water' } },
+  ];
+  const waterCases = [
+    ...brewReadyWaterBrands.map((water) => ({
+      id: water.id,
+      label: `${water.shortLabel || water.label} brand`,
+      input: {
+        waterMode: 'brand' as const,
+        waterBrandId: water.id,
+        waterCustomized: false,
+        waterTdsPpm: '',
+        waterHardnessPpm: '',
+        waterAlkalinityPpm: '',
+        waterNotes: water.classificationLabel,
+      } satisfies Partial<AiBrewFormState>,
+    })),
+    ...manualWaterCases,
+  ];
+
+  const base = {
+    ...createDefaultAiBrewFormState(stressCatalog),
+    brewMode: 'iced' as const,
+    doseG: '15',
+    targetWaterMl: '',
+    grinderId: grinderIds[0],
+    targetProfileId: 'balance_clean',
+  };
+  const doseOptions = ['12', '15', '18', '20'];
+  const scoreMin = {
+    tasteTargetAccuracy: 100,
+    methodSpecificGuideQuality: 100,
+    expectedCupPlausibility: 100,
+    beginnerClarity: 100,
+    proUsefulness: 100,
+    guardrailStrength: 100,
+    mobileUx: 100,
+    confidenceHonesty: 100,
+  };
+  const increment = (bucket: Record<string, number>, key: string) => {
+    bucket[key] = (bucket[key] || 0) + 1;
+  };
+  const dripperCounts: Record<string, number> = {};
+  const icedDripperCounts: Record<string, number> = {};
+  const unsupportedDripperCounts: Record<string, number> = {};
+  const methodCounts: Record<string, number> = {};
+  const targetCounts: Record<string, number> = {};
+  const roastCounts: Record<string, number> = {};
+  const processCounts: Record<string, number> = {};
+  const varietyCounts: Record<string, number> = {};
+  const waterCounts: Record<string, number> = {};
+  const beanCoverageCounts: Record<string, number> = {};
+  const riskTagCounts: Record<string, number> = {};
+  const samples: Array<Record<string, unknown>> = [];
+  const seenDrippers = new Set<string>();
+  const seenIcedDrippers = new Set<string>();
+  const seenTargets = new Set<string>();
+  const seenRoasts = new Set<string>();
+  const seenProcesses = new Set<string>();
+  const seenVarieties = new Set<string>();
+  const seenWaterCases = new Set<string>();
+  let actualIcedPlans = 0;
+  let unsupportedIcedFallbacks = 0;
+  let exactSplitCount = 0;
+  let pourSumMatchesHotWaterCount = 0;
+  let finalTargetMatchesHotWaterCount = 0;
+  let hotConcentrateWarningCount = 0;
+  let lightFinalRatioWarningCount = 0;
+  let riskCautionCount = 0;
+  let unknownFallbackCount = 0;
+
+  const unsupportedIcedAllowedFamilies = new Set<AiBrewMethodFamily>([
+    'french_press',
+    'aeropress',
+    'siphon',
+    'moka_pot',
+    'cold_brew',
+    'batch_brew',
+    'espresso',
+  ]);
+  const icedFilterFamilies = new Set<AiBrewMethodFamily>([
+    'v60',
+    'origami',
+    'kono',
+    'kalita_wave',
+    'melitta',
+    'april',
+    'chemex',
+    'clever_dripper',
+    'hario_switch',
+  ]);
+  const riskTagPattern = /decaf|experimental|ferment|non-arabica|canephora|robusta|liberica|excelsa|wet-hulled|giling|bitter|earthy|woody|drying-only|taste-feedback|required|sensitif|hati-hati|baseline|feedback|cek rasa|pahit|keruh/i;
+  const processRiskTagKeys = [
+    'decaf-sensitive',
+    'experimental',
+    'ferment-risk',
+    'high-ferment',
+    'non-arabica',
+    'bitter-risk',
+    'muddy-risk',
+    'woody-risk',
+    'earthy-risk',
+    'taste-feedback-required',
+  ];
+  const varietyRiskTagKeys = [
+    'non-arabica',
+    'unusual-species',
+    'bitter-risk',
+    'woody-risk',
+    'low-confidence-if-unverified',
+  ];
+  const stressTotal = 100000;
+  const bloomExpectedFamilies = new Set<AiBrewMethodFamily>([
+    'v60',
+    'origami',
+    'kono',
+    'kalita_wave',
+    'melitta',
+    'april',
+    'chemex',
+  ]);
+  const positivePourFamilies = new Set<AiBrewMethodFamily>([
+    'v60',
+    'origami',
+    'kono',
+    'kalita_wave',
+    'melitta',
+    'april',
+    'chemex',
+    'clever_dripper',
+    'hario_switch',
+  ]);
+  let bloomCheckedCount = 0;
+  let bloomPassCount = 0;
+  let pourMapCheckedCount = 0;
+  let pourMapPassCount = 0;
+  let guideTextCheckedCount = 0;
+  let guideTextPassCount = 0;
+  let guideTechniqueRichCount = 0;
+  let targetDirectionCheckedCount = 0;
+  let targetDirectionPassCount = 0;
+
+  for (let index = 0; index < stressTotal; index += 1) {
+    const dripper = visibleDrippers[index % visibleDrippers.length];
+    const targetProfileId = targetProfileIds[Math.floor(index / visibleDrippers.length) % targetProfileIds.length];
+    const processEntry = processEntries[index % processEntries.length];
+    const varietyEntry = varietyEntries[Math.floor(index / processEntries.length) % varietyEntries.length];
+    const roastLevel = roastLevels[Math.floor(index / (visibleDrippers.length * targetProfileIds.length)) % roastLevels.length];
+    const water = waterCases[Math.floor(index / (visibleDrippers.length * targetProfileIds.length * roastLevels.length)) % waterCases.length];
+    const useUnknownBean = index % 997 === 0;
+    const processRiskTags = new Set((processEntry.riskTags || []).map(String));
+    const varietyRiskTags = new Set((varietyEntry.riskTags || []).map(String));
+    const hasRiskSignal = [...processRiskTags].some((tag) => processRiskTagKeys.includes(tag))
+      || [...varietyRiskTags].some((tag) => varietyRiskTagKeys.includes(tag))
+      || roastLevel === 'dark';
+    const doseG = dripper.methodFamily === 'espresso'
+      ? '18'
+      : dripper.methodFamily === 'cold_brew'
+        ? '60'
+        : dripper.methodFamily === 'batch_brew'
+          ? '55'
+          : doseOptions[Math.floor(index / 23) % doseOptions.length];
+    const targetWaterMl = dripper.methodFamily === 'espresso'
+      ? '40'
+      : dripper.methodFamily === 'cold_brew'
+        ? '600'
+        : dripper.methodFamily === 'batch_brew'
+          ? '700'
+          : '';
+    const coffeeName = useUnknownBean
+      ? ''
+      : `${processEntry.label} ${varietyEntry.label} ${roastLevel} iced stress`;
+    const plan = buildAiBrewPlan({
+      ...base,
+      ...water.input,
+      dripperId: dripper.id,
+      brewMode: 'iced',
+      targetProfileId,
+      doseG,
+      targetWaterMl,
+      grinderId: grinderIds[index % grinderIds.length],
+      coffeeName,
+      process: useUnknownBean ? '' : processEntry.id,
+      variety: useUnknownBean ? '' : varietyEntry.id,
+      roastLevel,
+    }, stressCatalog);
+
+    assertPlanEnvelope(plan);
+    const guardResult = validateBrewPlanOutput(plan);
+    assert.equal(guardResult.allowed, true, `${index} ${dripper.name} anti-hallucination guard: ${guardResult.reason || 'no reason'}`);
+    assert.equal(plan.targetProfileId, targetProfileId, `${index} target profile should be preserved`);
+    assert.ok(plan.expectedCupProfile, `${index} expected cup should exist`);
+    assert.ok(plan.workflowGuideSteps?.length, `${index} workflow guide should exist`);
+    assert.ok(plan.extractionEndSeconds <= plan.guideEndSeconds, `${index} timer extraction should not exceed guide end`);
+    assert.equal(plan.postExtractionSeconds, plan.guideEndSeconds - plan.extractionEndSeconds, `${index} post extraction semantics`);
+    assert.ok(plan.timeDisplayMode, `${index} time display mode`);
+    assert.notEqual(plan.beanCoverage?.category, 'unsupported_unsafe', `${index} taxonomy should not mark method unsafe`);
+
+    const cupScores = [
+      plan.expectedCupProfile?.acidity,
+      plan.expectedCupProfile?.sweetness,
+      plan.expectedCupProfile?.body,
+      plan.expectedCupProfile?.clarity,
+      plan.expectedCupProfile?.bitterRisk,
+      plan.expectedCupProfile?.aromaIntensity,
+    ];
+    for (const score of cupScores) {
+      assert.ok(typeof score === 'number' && Number.isFinite(score) && score >= 0 && score <= 5, `${index} expected cup score ${score}`);
+    }
+
+    const icedSupported = supportsAiBrewIcedMode(stressCatalog, dripper.id);
+    const pourVolumeSum = plan.steps.reduce((sum, step) => sum + Math.max(0, step.pourVolumeMl || 0), 0);
+    const finalWaterStep = [...plan.steps].reverse().find((step) => (step.pourVolumeMl || 0) > 0 || step.kind === 'extract');
+    const summary = summarizeAiBrewPlan(plan);
+    const warnings = normalizeTestStrings(
+      plan.warnings,
+      plan.expectedCupProfile?.warnings || [],
+      plan.beanCoverage?.warnings || [],
+      plan.workflowValidation?.warnings || [],
+      plan.workflowValidation?.blockingErrors || [],
+      plan.confidenceNotes,
+    );
+    const operationalText = [
+      plan.summary,
+      plan.notes.join(' '),
+      ...(plan.steps || []).map((step) => `${step.label} ${step.note} ${step.hybridInstruction || ''}`),
+      ...(plan.workflowGuideSteps || []).map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''} ${step.techniqueChips.map((chip) => `${chip.label} ${chip.value}`).join(' ')}`),
+    ].join('\n');
+    const narrative = [operationalText, ...warnings].join('\n');
+    const guideSteps = plan.workflowGuideSteps || [];
+    const positivePourSteps = plan.steps.filter((step) => step.pourVolumeMl > 0);
+    const positiveGuideSteps = guideSteps.filter((step) => step.pourVolumeMl > 0);
+    const guideTexts = guideSteps.map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''}`.trim());
+    const normalizedGuideTexts = guideTexts
+      .map((text) => text.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
+    guideTextCheckedCount += 1;
+    assert.ok(guideSteps.length > 0, `${index} ${dripper.name} guide should have steps`);
+    assert.ok(guideSteps.every((step) => step.primaryText.length >= 8 && step.primaryText.length <= 220), `${index} ${dripper.name} guide primary text should stay useful and compact`);
+    assert.ok(guideSteps.every((step) => !step.secondaryText || step.secondaryText.length <= 260), `${index} ${dripper.name} guide secondary text should stay compact`);
+    assert.ok(new Set(normalizedGuideTexts).size === normalizedGuideTexts.length, `${index} ${dripper.name} guide should not repeat identical operational lines`);
+    guideTextPassCount += 1;
+
+    const targetDirectionOk = (() => {
+      const cup = plan.expectedCupProfile;
+      if (!cup) return false;
+      if (!supportsAiBrewIcedMode(stressCatalog, dripper.id)) return true;
+      if (targetProfileId === 'more_sweetness') return cup.sweetness >= 2.8 && cup.bitterRisk <= 4.2;
+      if (targetProfileId === 'more_acidity') return cup.acidity >= 2.5 || cup.clarity >= 2.9;
+      if (targetProfileId === 'more_body') return cup.body >= 2.8;
+      if (targetProfileId === 'floral_transparent') return cup.clarity >= 2.9 || cup.aromaIntensity >= 2.8;
+      if (targetProfileId === 'fruit_forward') return cup.sweetness >= 2.8 || cup.aromaIntensity >= 2.8;
+      if (targetProfileId === 'soft_round') return cup.bitterRisk <= 4;
+      if (targetProfileId === 'dense_comforting') return cup.body >= 2.8 || cup.sweetness >= 2.9;
+      return cup.clarity >= 2.5 || cup.sweetness >= 2.5 || cup.body >= 2.5;
+    })();
+    targetDirectionCheckedCount += 1;
+    assert.ok(targetDirectionOk, `${index} ${dripper.name} expected cup should move in a plausible direction for ${targetProfileId}`);
+    targetDirectionPassCount += 1;
+
+    if (icedSupported) {
+      actualIcedPlans += 1;
+      exactSplitCount += plan.hotWaterMl + plan.iceMl === plan.totalWaterMl ? 1 : 0;
+      pourSumMatchesHotWaterCount += pourVolumeSum === plan.hotWaterMl ? 1 : 0;
+      finalTargetMatchesHotWaterCount += finalWaterStep?.targetVolumeMl === plan.hotWaterMl ? 1 : 0;
+      assert.equal(plan.brewMode, 'iced', `${index} ${dripper.name} should keep supported iced mode`);
+      assert.equal(plan.hotWaterMl + plan.iceMl, plan.totalWaterMl, `${index} ${dripper.name} iced split`);
+      assert.equal(pourVolumeSum, plan.hotWaterMl, `${index} ${dripper.name} pour sum should equal hot water only`);
+      assert.equal(finalWaterStep?.targetVolumeMl, plan.hotWaterMl, `${index} ${dripper.name} final hot-water target`);
+      assert.ok(plan.iceMl > 0, `${index} ${dripper.name} should use measured ice`);
+      assert.ok(plan.hotExtractionRatio >= 8 && plan.hotExtractionRatio <= 11.2, `${index} ${dripper.name} hot concentrate ratio ${plan.hotExtractionRatio}`);
+      assert.ok(plan.finalBeverageRatio >= 12.5 && plan.finalBeverageRatio <= 16.2, `${index} ${dripper.name} final iced ratio ${plan.finalBeverageRatio}`);
+      assert.match(narrative, /air panas|hot water|es|ice|konsentrat|bypass/i, `${index} ${dripper.name} iced plan should explain hot water and measured ice`);
+      if (positivePourFamilies.has(plan.methodFamily)) {
+        pourMapCheckedCount += 1;
+        assert.ok(positivePourSteps.length >= 1, `${index} ${dripper.name} should expose positive pour checkpoints`);
+        assert.ok(positivePourSteps[0].startSeconds === 0, `${index} ${dripper.name} first pour should start at 0:00`);
+        assert.ok(positivePourSteps.every((step, stepIndex) => stepIndex === 0 || step.targetVolumeMl > positivePourSteps[stepIndex - 1].targetVolumeMl), `${index} ${dripper.name} cumulative pour targets should increase`);
+        assert.ok(positivePourSteps[positivePourSteps.length - 1].targetVolumeMl === plan.hotWaterMl, `${index} ${dripper.name} final pour target should be hot water only`);
+        assert.ok(positiveGuideSteps.some((step) => /\d+\s*ml/i.test(`${step.primaryText} ${step.secondaryText || ''} ${step.techniqueChips.map((chip) => chip.value).join(' ')}`)), `${index} ${dripper.name} pour guide should show ml targets`);
+        assert.ok(positiveGuideSteps.some((step) => step.techniqueChips.some((chip) => ['flow', 'path', 'height', 'agitation', 'valve', 'chamber_load', 'charge', 'steep', 'release'].includes(chip.key))), `${index} ${dripper.name} pour guide should include technique chips`);
+        pourMapPassCount += 1;
+      }
+      if (bloomExpectedFamilies.has(plan.methodFamily)) {
+        bloomCheckedCount += 1;
+        const firstPour = positivePourSteps[0];
+        const bloomGuide = guideSteps.find((step) => step.actionType === 'bloom' || /bloom|saturasi|preinfus/i.test(`${step.label} ${step.primaryText} ${step.secondaryText || ''}`));
+        assert.ok(bloomGuide, `${index} ${dripper.name} should expose bloom/saturation guidance`);
+        assert.ok(firstPour.pourVolumeMl >= Math.max(20, Math.round(plan.doseG * 1.5)), `${index} ${dripper.name} bloom pour should wet the bed enough`);
+        assert.ok(firstPour.pourVolumeMl <= Math.max(80, Math.round(plan.doseG * 4)), `${index} ${dripper.name} bloom pour should not overload the first phase`);
+        assert.match(`${bloomGuide.primaryText} ${bloomGuide.secondaryText || ''} ${bloomGuide.techniqueChips.map((chip) => `${chip.label} ${chip.value}`).join(' ')}`, /\d+\s*ml|bloom|saturasi|target/i, `${index} ${dripper.name} bloom guide should carry actionable volume or target`);
+        bloomPassCount += 1;
+      }
+      if (guideSteps.some((step) => step.techniqueChips.length >= 2)) guideTechniqueRichCount += 1;
+      if (icedFilterFamilies.has(plan.methodFamily)) {
+        if (plan.finalBeverageRatio > 15.2) {
+          lightFinalRatioWarningCount += 1;
+          assert.match(narrative, /ringan|tipis|rapat|manis|body|thin/i, `${index} light iced filter ratio should be warned`);
+        }
+        if (plan.hotExtractionRatio > 10.6) {
+          hotConcentrateWarningCount += 1;
+          assert.match(narrative, /ringan|tipis|under|ekstraksi|thin/i, `${index} long hot concentrate should be warned`);
+        }
+        if (plan.hotExtractionRatio < 8.5) {
+          hotConcentrateWarningCount += 1;
+          assert.match(narrative, /berat|pahit|bitter|heavy|seret/i, `${index} heavy hot concentrate should be warned`);
+        }
+      }
+      increment(icedDripperCounts, dripper.id);
+      seenIcedDrippers.add(dripper.id);
+    } else {
+      unsupportedIcedFallbacks += 1;
+      assert.equal(plan.brewMode, 'hot', `${index} ${dripper.name} unsupported iced should be guarded as non-iced`);
+      assert.equal(plan.iceMl, 0, `${index} ${dripper.name} unsupported iced should not create hidden ice`);
+      assert.ok(unsupportedIcedAllowedFamilies.has(dripper.methodFamily), `${index} ${dripper.name} unsupported iced family should be intentional`);
+      increment(unsupportedDripperCounts, dripper.id);
+    }
+
+    if (plan.methodFamily === 'hario_switch') {
+      assert.match(operationalText, /katup|Switch|muatan ruang|ruang/i, `${index} ${dripper.name} should keep Switch-specific guidance`);
+      assertSwitchWaterAccounting(plan);
+    } else {
+      assert.doesNotMatch(operationalText, /Katup|muatan ruang|Switch 02|Switch 03|MUGEN x SWITCH/i, `${index} ${dripper.name} should not leak Switch wording`);
+    }
+    if (plan.methodFamily === 'espresso') {
+      assert.doesNotMatch(operationalText, /bloom|air turun|drawdown|final pour|tuang akhir/i, `${index} Espresso should not leak filter workflow`);
+    }
+    if (plan.methodFamily === 'french_press') {
+      assert.doesNotMatch(operationalText, /final pour|tuang akhir|tuang tengah|bloom \d/i, `${index} French Press should not leak pour-over steps`);
+    }
+    if (plan.methodFamily === 'moka_pot') {
+      assert.doesNotMatch(operationalText, /bloom|final pour|tuang akhir/i, `${index} Moka should not leak filter or espresso workflow`);
+    }
+
+    const coverageCategory = plan.beanCoverage?.category || 'missing';
+    if (useUnknownBean) {
+      unknownFallbackCount += coverageCategory === 'unknown_fallback' || coverageCategory === 'risk_caution' ? 1 : 0;
+      assert.ok(
+        coverageCategory === 'unknown_fallback' || coverageCategory === 'risk_caution',
+        `${index} unknown bean should stay honest unknown fallback or safer risk caution`,
+      );
+      assert.match(narrative, /Data beans tidak lengkap|Bean belum lengkap|baseline aman|fallback/i, `${index} unknown bean should explain safe fallback`);
+    } else if (hasRiskSignal) {
+      riskCautionCount += coverageCategory === 'risk_caution' ? 1 : 0;
+      assert.match(narrative, riskTagPattern, `${index} risky taxonomy should stay cautionary`);
+      assert.ok(
+        coverageCategory === 'risk_caution' || coverageCategory === 'partial_medium',
+        `${index} risky taxonomy should not become overconfident high coverage`,
+      );
+    }
+
+    const scores = scoreAiBrewAuditPlan(plan);
+    for (const [scoreName, value] of Object.entries(scores)) {
+      scoreMin[scoreName as keyof typeof scoreMin] = Math.min(scoreMin[scoreName as keyof typeof scoreMin], value);
+    }
+    assert.ok(scores.guardrailStrength >= 90, `${index} guardrail score`);
+    assert.ok(scores.confidenceHonesty >= 90, `${index} confidence honesty score`);
+    assert.ok(scores.methodSpecificGuideQuality >= 90, `${index} method guide score`);
+
+    seenDrippers.add(dripper.id);
+    seenTargets.add(targetProfileId);
+    seenRoasts.add(roastLevel);
+    if (!useUnknownBean) {
+      seenProcesses.add(processEntry.id);
+      seenVarieties.add(varietyEntry.id);
+    }
+    seenWaterCases.add(water.id);
+    increment(dripperCounts, dripper.id);
+    increment(methodCounts, plan.methodFamily);
+    increment(targetCounts, targetProfileId);
+    increment(roastCounts, roastLevel);
+    if (!useUnknownBean) {
+      increment(processCounts, processEntry.id);
+      increment(varietyCounts, varietyEntry.id);
+    }
+    increment(waterCounts, water.id);
+    increment(beanCoverageCounts, coverageCategory);
+    for (const tag of [...processRiskTags, ...varietyRiskTags]) increment(riskTagCounts, tag);
+
+    if (samples.length < 420 && (index % 113 === 0 || useUnknownBean || hasRiskSignal || (icedSupported && plan.finalBeverageRatio > 15))) {
+      samples.push({
+        index,
+        beanCase: useUnknownBean ? 'Unknown bean no process/variety' : `${processEntry.label} + ${varietyEntry.label}`,
+        processId: useUnknownBean ? '' : processEntry.id,
+        varietyId: useUnknownBean ? '' : varietyEntry.id,
+        roastLevel,
+        waterCase: water.label,
+        requestedBrewMode: 'iced',
+        actualIced: plan.brewMode === 'iced',
+        unsupportedIcedFallback: !icedSupported,
+        beanCoverageCategory: coverageCategory,
+        ...summary,
+        scores,
+      });
+    }
+  }
+
+  assert.equal(seenDrippers.size, visibleDrippers.length, 'every visible dripper should be exercised by iced request');
+  assert.equal(seenIcedDrippers.size, icedSupportedDrippers.length, 'every iced-supported dripper should generate real iced output');
+  assert.equal(seenTargets.size, targetProfileIds.length, 'every target rasa should be exercised');
+  assert.equal(seenRoasts.size, roastLevels.length, 'every roast level should be exercised');
+  assert.equal(seenProcesses.size, processEntries.length, 'every process catalog entry should be exercised');
+  assert.equal(seenVarieties.size, varietyEntries.length, 'every variety catalog entry should be exercised');
+  assert.equal(seenWaterCases.size, waterCases.length, 'every water case should be exercised');
+  assert.ok(actualIcedPlans > unsupportedIcedFallbacks, 'actual iced plans should dominate unsupported guard fallbacks');
+  assert.equal(exactSplitCount, actualIcedPlans, 'every actual iced plan should keep hot water + ice exact');
+  assert.equal(pourSumMatchesHotWaterCount, actualIcedPlans, 'every actual iced plan should keep pours through bed equal to hot water only');
+  assert.equal(finalTargetMatchesHotWaterCount, actualIcedPlans, 'every actual iced plan should end at hot-water target before ice');
+  assert.ok(unknownFallbackCount > 0, 'unknown bean cases should be covered');
+  assert.ok(riskCautionCount > 0, 'risk taxonomy cases should be covered');
+
+  const summary = {
+    total: stressTotal,
+    passed: stressTotal,
+    visibleDrippers: visibleDrippers.length,
+    icedSupportedDrippers: icedSupportedDrippers.length,
+    actualIcedPlans,
+    unsupportedIcedFallbacks,
+    targets: targetProfileIds.length,
+    roastLevels: roastLevels.length,
+    processes: processEntries.length,
+    varieties: varietyEntries.length,
+    waterCases: waterCases.length,
+    grinders: grinderIds.length,
+    dripperCounts,
+    icedDripperCounts,
+    unsupportedDripperCounts,
+    methodCounts,
+    targetCounts,
+    roastCounts,
+    processCounts,
+    varietyCounts,
+    waterCounts,
+    beanCoverageCounts,
+    riskTagCounts,
+    scoreMin,
+    icedSplitStats: {
+      exactSplitCount,
+      pourSumMatchesHotWaterCount,
+      finalTargetMatchesHotWaterCount,
+      hotConcentrateWarningCount,
+      lightFinalRatioWarningCount,
+    },
+    guideStats: {
+      bloomCheckedCount,
+      bloomPassCount,
+      pourMapCheckedCount,
+      pourMapPassCount,
+      guideTextCheckedCount,
+      guideTextPassCount,
+      guideTechniqueRichCount,
+      targetDirectionCheckedCount,
+      targetDirectionPassCount,
+    },
+  };
+  assert.equal(bloomPassCount, bloomCheckedCount, 'every pour-over iced plan should pass bloom guidance checks');
+  assert.equal(pourMapPassCount, pourMapCheckedCount, 'every pour-mapped iced plan should pass cumulative pour checks');
+  assert.equal(guideTextPassCount, guideTextCheckedCount, 'every generated guide should pass compact non-duplicate text checks');
+  assert.equal(targetDirectionPassCount, targetDirectionCheckedCount, 'every generated plan should keep expected cup direction plausible');
+  const artifactDir = writeAiBrewIced100kGuideStressAuditArtifact(summary, samples);
+  assert.ok(fs.existsSync(`${artifactDir}/iced-100k-guide-stress-summary.json`));
+  assert.ok(fs.existsSync(`${artifactDir}/iced-100k-guide-stress-samples.json`));
+  assert.ok(fs.existsSync(`${artifactDir}/iced-100k-guide-stress.md`));
 });
 
 test('AI Brew water catalog blocks private sources, zero-mineral autofill, and estimated facts', () => {
@@ -5618,10 +6325,10 @@ test('non-dripper method profiles generate action-safe AI Brew plans without fak
     const narrative = collectPlanNarrative(plan);
     if (entry.family === 'aeropress') {
       assert.ok(plan.waterTempC >= 88);
-      assert.match(narrative, /Preheat the chamber|stop before the final dry hiss/i);
+      assert.match(narrative, /Preheat the chamber|Panaskan chamber|berhenti sebelum hiss|stop before the final dry hiss/i);
     }
     if (entry.family === 'french_press') {
-      assert.match(narrative, /coarse, even grind|decant immediately/i);
+      assert.match(narrative, /coarse, even grind|grind kasar|tuang pisah|decant immediately/i);
     }
 
     if (entry.family === 'cold_brew') {
@@ -5680,6 +6387,7 @@ test('resolveGrinderSettingReference derives a grinder baseline when no catalog 
   const grinderSetting = resolveGrinderSettingReference(catalog, catalog.grinders[1], deviceSelection.profile, 'hot');
   assert.equal(grinderSetting?.id, 'derived_hario-mini-slim_hot');
   assert.equal(grinderSetting?.verificationLevel, 'fallback');
+  assert.equal(grinderSetting?.calibrationRequired, true);
 });
 
 test('resolveGrinderSettingReference promotes curated grinder bands when provenance exists', () => {
@@ -5693,7 +6401,161 @@ test('resolveGrinderSettingReference promotes curated grinder bands when provena
   const grinderSetting = resolveGrinderSettingReference(catalog, curatedGrinder, deviceSelection.profile, 'hot');
   assert.equal(grinderSetting?.id, 'catalog_hario-mini-slim_hot');
   assert.equal(grinderSetting?.verificationLevel, 'curated');
+  assert.equal(grinderSetting?.calibrationRequired, true);
   assert.match(grinderSetting?.note || '', /published pour-over band/i);
+});
+
+test('resolveGrinderSettingReference uses method-aware grinder bands when profile-specific chart is missing', () => {
+  const fallbackCatalog = {
+    ...catalog,
+    grinderSettings: [],
+  };
+  const baseProfile = catalog.deviceProfiles[0];
+  const profileFor = (methodFamily: AiBrewMethodFamily): DeviceBrewProfile => ({
+    ...baseProfile,
+    id: `profile_${methodFamily}_hot`,
+    label: `${methodFamily} hot`,
+    methodFamily,
+    brewMode: 'hot',
+    dripperIds: [],
+    exactMatch: true,
+  });
+  const grinder = catalog.grinders[1];
+
+  const espresso = resolveGrinderSettingReference(fallbackCatalog, grinder, profileFor('espresso'), 'hot');
+  const moka = resolveGrinderSettingReference(fallbackCatalog, grinder, profileFor('moka_pot'), 'hot');
+  const coldBrew = resolveGrinderSettingReference(fallbackCatalog, grinder, profileFor('cold_brew'), 'hot');
+  const frenchPress = resolveGrinderSettingReference(fallbackCatalog, grinder, profileFor('french_press'), 'hot');
+  const chemex = resolveGrinderSettingReference(fallbackCatalog, grinder, profileFor('chemex'), 'hot');
+  const batch = resolveGrinderSettingReference(fallbackCatalog, grinder, profileFor('batch_brew'), 'hot');
+  const aeropress = resolveGrinderSettingReference(fallbackCatalog, grinder, profileFor('aeropress'), 'hot');
+
+  assert.equal(espresso?.id, 'derived_hario-mini-slim_espresso_hot');
+  assert.equal(espresso?.rangeLabel, '5 - 7 clicks');
+  assert.equal(moka?.rangeLabel, '5 - 7 clicks');
+  assert.equal(coldBrew?.rangeLabel, '11 - 14 clicks');
+  assert.equal(frenchPress?.rangeLabel, '11 - 14 clicks');
+  assert.equal(chemex?.rangeLabel, '11 - 14 clicks');
+  assert.equal(batch?.rangeLabel, '8 - 10 clicks');
+  assert.equal(aeropress?.rangeLabel, '8 - 10 clicks');
+  assert.equal(espresso?.calibrationRequired, true);
+  assert.match(coldBrew?.note || '', /method-aware cold brew baseline/i);
+});
+
+test('AI Brew grinder size matrix keeps every visible dripper and roast profile on sane method-aware bands', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const visibleDrippers = productionCatalog.drippers.filter((dripper) => !dripper.hidden && !dripper.deprecated);
+  const roastLevels: AiBrewFormState['roastLevel'][] = ['light', 'medium_light', 'medium', 'medium_dark', 'dark'];
+  const baseForm = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Grinder Matrix QA',
+    process: 'washed',
+    variety: 'bourbon',
+    doseG: '15',
+    targetWaterMl: '240',
+    waterMode: 'manual',
+    waterBrandId: '',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+    targetProfileId: 'balance_clean',
+  } satisfies AiBrewFormState;
+  const expectedFallbackBand = (methodFamily: AiBrewMethodFamily) => {
+    if (methodFamily === 'espresso' || methodFamily === 'moka_pot') return 'fine';
+    if (methodFamily === 'cold_brew' || methodFamily === 'french_press' || methodFamily === 'chemex') return 'coarse';
+    return 'medium';
+  };
+  const methodInput = (methodFamily?: AiBrewMethodFamily): Partial<AiBrewFormState> => {
+    if (methodFamily === 'espresso') return { doseG: '18', targetWaterMl: '40' };
+    if (methodFamily === 'moka_pot') return { doseG: '18', targetWaterMl: '180' };
+    if (methodFamily === 'cold_brew') return { doseG: '60', targetWaterMl: '600' };
+    if (methodFamily === 'batch_brew') return { doseG: '30', targetWaterMl: '500' };
+    return { doseG: '15', targetWaterMl: '240' };
+  };
+  const methodAwareFallbackCounts: Record<string, number> = {};
+  const verificationCounts: Record<string, number> = {};
+  const samples: Array<Record<string, unknown>> = [];
+  let total = 0;
+
+  for (const dripper of visibleDrippers) {
+    const brewModes: Array<'hot' | 'iced'> = supportsAiBrewIcedMode(productionCatalog, dripper.id)
+      ? ['hot', 'iced']
+      : ['hot'];
+    for (const grinder of productionCatalog.grinders) {
+      for (const roastLevel of roastLevels) {
+        for (const brewMode of brewModes) {
+          const plan = buildAiBrewPlan({
+            ...baseForm,
+            ...methodInput(dripper.methodFamily),
+            brewMode,
+            dripperId: dripper.id,
+            grinderId: grinder.id,
+            roastLevel,
+          }, productionCatalog);
+          total += 1;
+          assert.equal(Number.isFinite(plan.doseG), true, `${dripper.name}/${grinder.name}/${roastLevel}/${brewMode} dose must be finite`);
+          assert.equal(Number.isFinite(plan.totalWaterMl), true, `${dripper.name}/${grinder.name}/${roastLevel}/${brewMode} water must be finite`);
+          assert.ok(plan.totalWaterMl > 0, `${dripper.name}/${grinder.name}/${roastLevel}/${brewMode} water must be positive`);
+          assert.ok(plan.grindBandLabel.trim().length > 0, `${dripper.name}/${grinder.name}/${roastLevel}/${brewMode} needs grind band`);
+          assert.ok(plan.grindRecommendation.trim().length > 0, `${dripper.name}/${grinder.name}/${roastLevel}/${brewMode} needs grind recommendation`);
+          assert.doesNotMatch(plan.grindRecommendation, /No verified setting yet/i, `${dripper.name}/${grinder.name}/${roastLevel}/${brewMode} should not expose empty grinder fallback`);
+          assert.ok(['catalog_reference', 'derived_baseline'].includes(plan.grindSettingMode), 'grind setting mode must be valid');
+          verificationCounts[plan.grindSettingVerification] = (verificationCounts[plan.grindSettingVerification] || 0) + 1;
+
+          if (plan.grindCalibrationRequired) {
+            const expectedBand = expectedFallbackBand(plan.methodFamily);
+            const expectedLabel = grinder.grindBands?.[expectedBand]?.trim() || grinder.grindBands?.medium?.trim() || '';
+            assert.equal(
+              plan.grindBandLabel,
+              expectedLabel,
+              `${dripper.name}/${grinder.name}/${roastLevel}/${brewMode} should use ${expectedBand} fallback band for ${plan.methodFamily}`,
+            );
+            assert.equal(plan.provenanceAttentionNeeded, true, 'method-aware grinder fallback must keep provenance attention active');
+            assert.ok(
+              plan.beanCoverage.category === 'risk_caution' || plan.beanCoverage.category === 'partial_medium',
+              'method-aware grinder fallback must avoid high-confidence bean coverage',
+            );
+            methodAwareFallbackCounts[plan.methodFamily] = (methodAwareFallbackCounts[plan.methodFamily] || 0) + 1;
+          }
+
+          if (samples.length < 160 && (plan.grindCalibrationRequired || ['espresso', 'moka_pot', 'cold_brew', 'french_press', 'chemex'].includes(plan.methodFamily))) {
+            samples.push({
+              dripperName: plan.dripper.name,
+              methodFamily: plan.methodFamily,
+              brewMode: plan.brewMode,
+              grinderName: plan.grinder.name,
+              roastLevel: plan.roastLevel,
+              grindBandLabel: plan.grindBandLabel,
+              grindRecommendation: plan.grindRecommendation,
+              grindSettingMode: plan.grindSettingMode,
+              verification: plan.grindSettingVerification,
+              calibrationRequired: plan.grindCalibrationRequired,
+              beanCoverage: plan.beanCoverage.category,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  assert.ok(total >= 20000, 'grinder matrix should cover visible drippers, all grinders, roast levels, and iced-supported modes');
+  assert.ok(methodAwareFallbackCounts.espresso > 0, 'espresso should use method-aware fallback when no exact chart exists');
+  assert.ok(methodAwareFallbackCounts.moka_pot > 0, 'moka pot should use method-aware fallback when no exact chart exists');
+  assert.ok(methodAwareFallbackCounts.cold_brew > 0, 'cold brew should use method-aware fallback when no exact chart exists');
+  assert.ok(methodAwareFallbackCounts.french_press > 0, 'French Press should use method-aware fallback when no exact chart exists');
+  assert.ok(methodAwareFallbackCounts.chemex > 0, 'Chemex should use method-aware fallback when no exact chart exists');
+
+  const artifactDir = writeAiBrewGrindSizeMatrixAuditArtifact({
+    total,
+    passed: total,
+    visibleDrippers: visibleDrippers.length,
+    grinders: productionCatalog.grinders.length,
+    roastLevels: roastLevels.length,
+    methodAwareFallbackCounts,
+    verificationCounts,
+  }, samples);
+  assert.ok(fs.existsSync(`${artifactDir}/grind-size-matrix-summary.json`));
+  assert.ok(fs.existsSync(`${artifactDir}/grind-size-matrix.md`));
 });
 
 test('buildAiBrewPlan creates a hot brew plan with deterministic outputs and provenance', () => {
@@ -6586,6 +7448,30 @@ test('buildAiBrewPlan uses autofill brand chemistry and tracks customization pro
   assert.equal(customized.waterCustomized, true);
   assert.equal(customized.waterMinerals.tdsPpm, 120);
   assert.ok(customized.notes.some((note) => /adjusted manually/i.test(note)));
+});
+
+test('water brand autofill refuses mineral panels outside planner bounds', () => {
+  const evian = catalog.waterBrands.find((entry) => entry.id === 'evian-sg');
+  assert.ok(evian);
+  assert.equal(canUseWaterBrandAutofill(evian), true);
+
+  const outOfBounds: WaterBrandProfile = {
+    ...evian,
+    chemistry: {
+      ...evian.chemistry,
+      tdsPpm: 750,
+    },
+    resolvedMinerals: {
+      ...(evian.resolvedMinerals || {
+        hardnessPpm: 95,
+        alkalinityPpm: 80,
+        derivation: 'direct' as const,
+      }),
+      tdsPpm: 750,
+    },
+  };
+
+  assert.equal(canUseWaterBrandAutofill(outOfBounds), false);
 });
 
 test('manual-required water brands preserve provenance but still require minerals', () => {

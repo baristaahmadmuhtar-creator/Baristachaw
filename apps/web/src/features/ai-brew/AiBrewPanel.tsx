@@ -1377,8 +1377,8 @@ function getPlanTasteTimeRange(plan: BrewPlan): [number, number] {
 function getPlanExtractionLabel(plan: BrewPlan, language: string) {
   const id = isIndonesianAiBrewLanguage(language);
   if (plan.methodFamily === 'espresso') return id ? 'Shot' : 'Shot';
-  if (plan.methodFamily === 'cold_brew') return id ? 'Steep dingin' : 'Cold steep';
-  if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return id ? 'Steep' : 'Steep';
+  if (plan.methodFamily === 'cold_brew') return id ? 'Rendam dingin' : 'Cold steep';
+  if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return id ? 'Rendam' : 'Steep';
   if (plan.brewMode === 'iced') return id ? 'Ekstraksi panas' : 'Hot extraction';
   return id ? 'Ekstraksi' : 'Extraction';
 }
@@ -2593,7 +2593,7 @@ function formatAiBrewStepBadge(step: AiBrewDisplayStep, language: string) {
       case 'stir':
         return id ? 'Aduk' : 'Stir';
       case 'steep':
-        return id ? 'Steep' : 'Steep';
+        return id ? 'Rendam' : 'Steep';
       case 'press':
         return id ? 'Tekan' : 'Press';
       case 'heat':
@@ -2621,7 +2621,7 @@ function formatAiBrewStepBadge(step: AiBrewDisplayStep, language: string) {
   if (kind === 'press') return id ? 'Tekan' : 'Press';
   if (kind === 'heat') return id ? 'Panas' : 'Heat';
   if (kind === 'extract') return id ? 'Ekstrak' : 'Extract';
-  if (kind === 'serve') return id ? 'Saji' : 'Serve';
+  if (kind === 'serve') return id ? 'Sajikan' : 'Serve';
   return `+${formatRoundedMl(step.pourVolumeMl)}`;
 }
 
@@ -3270,7 +3270,7 @@ function buildAiBrewStepMetrics(step: AiBrewDisplayStep, language: string, plan?
   const path = formatAiBrewPourPath(step.pourPath, language);
   const height = formatAiBrewPourHeight(step.pourHeight, language);
   const agitation = formatAiBrewAgitation(step.agitationLevel, language);
-  if (flow) metrics.push({ label: 'Flow', value: flow });
+  if (flow) metrics.push({ label: id ? 'Aliran' : 'Flow', value: flow });
   if (path) metrics.push({ label: id ? 'Jalur' : 'Path', value: path });
   if (height) metrics.push({ label: id ? 'Tinggi' : 'Height', value: height });
   if (agitation) metrics.push({ label: id ? 'Agitasi' : 'Agitation', value: agitation });
@@ -3282,7 +3282,7 @@ function filterAiBrewStepMetricsForDensity(
   density: AiBrewGuideDensity,
 ) {
   if (density === 'pro') return metrics;
-  const keep = new Set(['Start', 'Mulai', 'Target', 'Pour', 'Tuang', 'Yield', 'Action', 'Aksi', 'Charge', 'Steep', 'Press', 'Stop', 'Tekan', 'Valve', 'Katup', 'Chamber', 'Ruang', 'Chamber load', 'Muatan', 'Muatan ruang', 'Programme', 'Program']);
+  const keep = new Set(['Start', 'Mulai', 'Target', 'Pour', 'Tuang', 'Yield', 'Output', 'Action', 'Aksi', 'Charge', 'Isi air', 'Steep', 'Rendam', 'Press', 'Tekan', 'Stop', 'Berhenti', 'Serve', 'Sajikan', 'Flow', 'Aliran', 'Valve', 'Katup', 'Chamber', 'Ruang', 'Chamber load', 'Muatan', 'Muatan ruang', 'Programme', 'Program']);
   const filtered = metrics.filter((item) => keep.has(item.label));
   return filtered.length > 0 ? filtered.slice(0, 4) : metrics.slice(0, 2);
 }
@@ -4577,8 +4577,8 @@ function PlanResultDialog({
       label: id ? 'Air + grinder' : 'Water + grinder',
       value: `${plan.waterBrandLabel || copy.waterSelectedManual} · ${localizedGrindHeadline}`,
       detail: id
-        ? `Air memakai TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder ditampilkan sebagai ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)} agar tidak overclaim.`
-        : `Water uses TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder is labelled ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)} so the plan does not overclaim precision.`,
+        ? `Air memakai TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder ditampilkan sebagai ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} agar tidak overclaim.`
+        : `Water uses TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder is labelled ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} so the plan does not overclaim precision.`,
     },
     {
       label: id ? 'Alat & workflow' : 'Brewer workflow',
@@ -4644,7 +4644,7 @@ function PlanResultDialog({
     {
       label: copy.grinder,
       value: plan.grinder.name,
-      detail: `${localizedGrindSettingReference} - ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}`,
+      detail: `${localizedGrindSettingReference} - ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)}`,
     },
   ];
   const resultHeaderClass = 'relative min-w-0 max-w-full overflow-hidden rounded-[1.5rem] border panel-divider-subtle panel-soft px-4 pb-4 pt-5 lg:px-5';
@@ -5519,7 +5519,7 @@ function PlanResultDialog({
                   {(showProvenance || plan.deviceProfileMode === 'exact' || plan.confidenceNotes.length > 0) && (
                     <ResultDisclosureSection
                       title={copy.provenance}
-                      summary={`${formatDeviceProfileMode(copy, plan.deviceProfileMode)} - ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}`}
+                      summary={`${formatDeviceProfileMode(copy, plan.deviceProfileMode)} - ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)}`}
                       icon={<Info size={15} />}
                       defaultOpen={showProvenance}
                     >
@@ -5532,7 +5532,7 @@ function PlanResultDialog({
                         <div className="rounded-xl bg-surface-alpha px-3 py-3">
                           <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grindSource}</p>
                           <p className="mt-1 font-medium text-primary">{localizedGrindSettingReference}</p>
-                          <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} - {formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}</p>
+                          <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} - {formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)}</p>
                           <p className="mt-2 text-xs">{copy.grindCalibrationNote}</p>
                         </div>
                         <div className="rounded-xl bg-surface-alpha px-3 py-3">
@@ -5605,7 +5605,7 @@ function PlanResultDialog({
               >
                 <ResultDisclosureSection
                   title={copy.provenance}
-                  summary={`${formatDeviceProfileMode(copy, plan.deviceProfileMode)} - ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}`}
+                  summary={`${formatDeviceProfileMode(copy, plan.deviceProfileMode)} - ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)}`}
                   icon={<Info size={15} />}
                   defaultOpen={false}
                 >
@@ -5618,7 +5618,7 @@ function PlanResultDialog({
                     <div className="rounded-xl bg-surface-alpha px-3 py-3">
                       <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grindSource}</p>
                       <p className="mt-1 font-medium text-primary">{localizedGrindSettingReference}</p>
-                      <p className="mt-1 text-xs">{formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}</p>
+                      <p className="mt-1 text-xs">{formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)}</p>
                     </div>
                   </div>
                 </ResultDisclosureSection>
@@ -6044,7 +6044,7 @@ function PlanResultDialog({
                     <div className="rounded-xl bg-surface-alpha px-3 py-3">
                       <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grindSource}</p>
                       <p className="mt-1 font-medium text-primary">{localizedGrindSettingReference}</p>
-                      <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} - {formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode)}</p>
+                      <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} - {formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)}</p>
                       <p className="mt-2 text-xs">{copy.grindCalibrationNote}</p>
                     </div>
                     <div className="rounded-xl bg-surface-alpha px-3 py-3">
@@ -6526,7 +6526,13 @@ function formatWaterDerivationLabel(copy: CopySet, derivation: BrewPlan['waterMi
   }
 }
 
-function formatGrinderReferenceLabel(copy: CopySet, verification: VerificationLevel, mode?: BrewPlan['grindSettingMode']) {
+function formatGrinderReferenceLabel(
+  copy: CopySet,
+  verification: VerificationLevel,
+  mode?: BrewPlan['grindSettingMode'],
+  calibrationRequired?: boolean,
+) {
+  if (calibrationRequired) return copy.grindEstimatedBaseline;
   if (mode === 'derived_baseline' || verification === 'fallback' || verification === 'dataset_unverified') {
     return copy.grindEstimatedBaseline;
   }
@@ -7142,7 +7148,7 @@ export function AiBrewPanel({
         profileLabel: deviceSelection.profile.label,
         grindTone: grinderSetting ? 'blue' : 'amber',
         grindStatus: grinderSetting
-          ? formatGrinderReferenceLabel(copy, grinderSetting.verificationLevel, 'catalog_reference')
+          ? formatGrinderReferenceLabel(copy, grinderSetting.verificationLevel, grinderSetting.id.startsWith('derived_') ? 'derived_baseline' : 'catalog_reference', grinderSetting.calibrationRequired)
           : copy.grindFallback,
         grindLabel: grinderSetting?.rangeLabel || copy.noVerifiedGrinderSettingShort,
         grindVerification: grinderSetting ? formatVerification(copy, grinderSetting.verificationLevel) : formatVerification(copy, 'fallback'),

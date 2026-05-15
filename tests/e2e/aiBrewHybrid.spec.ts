@@ -158,7 +158,7 @@ async function expectCanonicalSequencePrefixes(sequenceNote: Locator) {
           ? /Air turun|Drawdown/i
           : actionType === 'setup' || actionType === 'rinse_preheat'
             ? /Setup|Prep|Bilas|Rinse/i
-            : /Tahan|Wait|Aksi|Action|Serve|Sajikan/i;
+            : /Tahan|Wait|Aksi|Action|Serve|Sajikan|Rendam|Steep|Tekan|Press|Berhenti|Stop|Panas|Heat|Aliran|Flow|Tuang pisah|Decant/i;
       await expect(stepCard).toContainText(actionPattern);
     }
     await expect(stepCard).toContainText(formatPlanTime(step.startSeconds));

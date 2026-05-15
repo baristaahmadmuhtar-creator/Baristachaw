@@ -43,7 +43,7 @@ test('mobile swipe gesture ignores interactive button targets', async ({ page },
 
   await page.goto('/tools');
   await expect(page).toHaveURL(/\/tools$/);
-  const ratioButton = page.getByRole('tab', { name: /Ratio|Rasio/ });
+  const ratioButton = page.getByRole('tab', { name: /Calculator|Kalkulator|Ratio|Rasio/ });
   await expect(ratioButton).toBeVisible();
 
   const buttonBox = await ratioButton.boundingBox();

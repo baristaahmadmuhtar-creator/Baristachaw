@@ -18,6 +18,7 @@ import {
 import { useSearchParams } from 'react-router-dom';
 import { Sparkles as AppSparklesIcon } from '../components/icons';
 import { BREW_METHOD_MAP, BREW_METHOD_PROFILES } from '../features/barista-tools/brewProfiles';
+import { GrindSizeCalculator } from '../features/barista-tools/GrindSizeCalculator';
 import {
   buildBrewOutputs,
   buildRoastAdjustedTargets,
@@ -29,7 +30,6 @@ import {
 import { evaluateConformance, validateBrewInputs } from '../features/barista-tools/standards';
 import type {
   BrewCategory,
-  BrewCalcMode,
   BrewMethodId,
   RoastLevel,
   ShotPresetId,
@@ -49,6 +49,7 @@ import { useRuntimeDisplayMode } from '../hooks/useRuntimeDisplayMode';
 
 type ToolsTab = 'ai_brew' | 'timer' | 'ratio' | 'todo';
 type LastEditedField = 'dose' | 'water' | 'ratio';
+type CalculatorPanel = 'ratio' | 'grind_size';
 
 type TodoItem = TodoItemState;
 type ImportedAiBrewIcedSplit = {
@@ -127,6 +128,7 @@ export function BaristaTools() {
 
   // Ratio calculator
   const [ratioState, setRatioState] = useState<RatioSettingsState>(loadRatioSettingsFromStorage);
+  const [calculatorPanel, setCalculatorPanel] = useState<CalculatorPanel>('ratio');
   const [lastEditedField, setLastEditedField] = useState<LastEditedField>('dose');
   const [importedAiBrewIcedSplit, setImportedAiBrewIcedSplit] = useState<ImportedAiBrewIcedSplit | null>(null);
 
@@ -567,8 +569,8 @@ export function BaristaTools() {
     updateRatioState(patch);
   };
 
-  const modePillClass = (mode: BrewCalcMode) =>
-    `px-3 py-2 rounded-xl text-sm font-medium transition-all ${ratioState.mode === mode
+  const calculatorPillClass = (panel: CalculatorPanel) =>
+    `px-3 py-2 rounded-xl text-sm font-medium transition-all ${calculatorPanel === panel
       ? 'bg-blue-600 text-white shadow-[0_4px_14px_rgba(37,99,235,0.32)]'
       : 'bg-surface-alpha text-secondary hover:text-primary'
     }`;
@@ -628,6 +630,7 @@ export function BaristaTools() {
       hotWaterSharePercent: plan.hotWaterSharePercent,
       iceSharePercent: plan.iceSharePercent,
     } : null);
+    setCalculatorPanel('ratio');
     selectTab('ratio');
   };
 
@@ -846,7 +849,7 @@ export function BaristaTools() {
             </div>
           </div>
 
-          {selectedMethod.id === 'espresso' && selectedMethod.shotPresets && selectedMethod.shotPresets.length > 0 && (
+          {calculatorPanel === 'ratio' && selectedMethod.id === 'espresso' && selectedMethod.shotPresets && selectedMethod.shotPresets.length > 0 && (
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{t.toolsEspressoShotStyle}</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" data-testid="espresso-shot-presets">
@@ -879,11 +882,41 @@ export function BaristaTools() {
           )}
 
           <div className="grid grid-cols-2 gap-2 w-full">
-            <button type="button" onClick={() => updateRatioState({ mode: 'basic' })} className={modePillClass('basic')}>
+            <button type="button" onClick={() => setCalculatorPanel('ratio')} className={calculatorPillClass('ratio')}>
               {t.toolsModeBasic}
             </button>
-            <button type="button" onClick={() => updateRatioState({ mode: 'advanced' })} className={modePillClass('advanced')}>
+            <button type="button" onClick={() => setCalculatorPanel('grind_size')} className={calculatorPillClass('grind_size')}>
               {t.toolsModeAdvanced}
+            </button>
+          </div>
+
+          {calculatorPanel === 'grind_size' ? (
+            <GrindSizeCalculator
+              methodId={ratioState.methodId}
+              roastLevel={effectiveRoastLevel}
+              doseG={parsedDose}
+              yieldG={parsedWater}
+              onMethodChange={applyMethodPreset}
+              onRoastLevelChange={(nextRoastLevel) => {
+                updateRatioState({
+                  mode: 'advanced',
+                  roastLevel: nextRoastLevel,
+                  roastInputMode: 'level',
+                });
+              }}
+              getMethodLabel={getMethodLabel}
+              getRoastLevelLabel={getRoastLevelLabel}
+            />
+          ) : (
+            <>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              data-testid="ratio-analysis-toggle"
+              onClick={() => updateRatioState({ mode: ratioState.mode === 'advanced' ? 'basic' : 'advanced' })}
+              className="rounded-xl bg-surface-alpha px-3 py-2 text-xs font-semibold text-secondary hover:text-primary"
+            >
+              {ratioState.mode === 'advanced' ? t.toolsHideOptionalAnalysis : t.toolsShowOptionalAnalysis}
             </button>
           </div>
 
@@ -1172,6 +1205,8 @@ export function BaristaTools() {
                 </p>
               )}
             </div>
+          )}
+            </>
           )}
         </motion.section>
       )}

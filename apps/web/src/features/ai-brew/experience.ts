@@ -21,8 +21,8 @@ function hasOnlineAiOptimization(plan: BrewPlan) {
 
 function grinderStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
-  if (plan.grindSettingMode === 'derived_baseline' || plan.grindSettingVerification === 'fallback') {
-    return id ? 'Grinder baseline' : 'Grinder Fallback';
+  if (plan.grindCalibrationRequired || plan.grindSettingMode === 'derived_baseline' || plan.grindSettingVerification === 'fallback') {
+    return id ? 'Baseline grinder' : 'Grinder Baseline';
   }
   if (plan.grindSettingVerification === 'official') return id ? 'Grinder resmi' : 'Grinder Official';
   if (plan.grindSettingVerification === 'community_verified' || plan.grindSettingVerification === 'curated') {
@@ -64,9 +64,9 @@ export function resolveAiBrewConfidenceBadges(plan: BrewPlan, language: string):
     },
     {
       label: grinderStatusLabel(plan, language),
-      tone: plan.grindSettingVerification === 'official' && plan.grindSettingMode !== 'derived_baseline'
+      tone: plan.grindSettingVerification === 'official' && plan.grindSettingMode !== 'derived_baseline' && !plan.grindCalibrationRequired
         ? 'emerald'
-        : plan.grindSettingVerification === 'curated' || plan.grindSettingVerification === 'community_verified'
+        : (plan.grindSettingVerification === 'curated' || plan.grindSettingVerification === 'community_verified') && !plan.grindCalibrationRequired
           ? 'blue'
           : 'amber',
     },
@@ -166,10 +166,10 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
       : 'Brewer profile is not exact; use this as a baseline and calibrate with actual taste.');
   }
 
-  if (plan.grindSettingMode === 'derived_baseline' || plan.grindSettingVerification === 'fallback') {
+  if (plan.grindCalibrationRequired || plan.grindSettingMode === 'derived_baseline' || plan.grindSettingVerification === 'fallback') {
     priorities.push(id
-      ? 'Estimasi awal, bukan setting resmi. Validasi dengan air turun dan rasa.'
-      : 'Estimated starting point, not an official setting. Validate with drawdown and taste.');
+      ? 'Baseline awal, bukan setting presisi. Validasi dengan waktu ekstraksi dan rasa.'
+      : 'Estimated starting point, not an exact setting. Validate with extraction time and taste.');
   } else if (plan.grindSettingVerification === 'dataset_unverified') {
     priorities.push(id
       ? 'Setting grinder masih estimasi. Validasi dengan air turun dan rasa.'

@@ -10,6 +10,7 @@ import {
   mapAgtronToRoastLevel,
 } from '../../apps/web/src/features/barista-tools/calculations.ts';
 import { validateBrewInputs } from '../../apps/web/src/features/barista-tools/standards.ts';
+import { buildGrindSizeAdvice } from '../../apps/web/src/features/barista-tools/grindSizeAdvisor.ts';
 
 test('reciprocal ratio math is consistent', () => {
   const water = calcWaterFromDoseRatio(20, 16);
@@ -97,6 +98,101 @@ test('espresso ratio uses espresso policy and avoids filter baseline warning', (
   });
   assert.equal(guard.errors.length, 0);
   assert.equal(guard.warnings.some((w) => /SCA-style filter baseline|12-22/i.test(w)), false);
+});
+
+function buildGrindSizeCatalog() {
+  const provenance = {
+    source: 'unit-test',
+    sourceUrls: ['https://example.test/grinder'],
+    verificationLevel: 'curated',
+    verifiedAt: '2026-05-15',
+    popularityTier: 'specialty_common',
+    marketSegment: 'specialty_mainstream',
+    releaseStatus: 'established',
+    confidence: 'medium',
+    catalogVersion: 'test',
+  };
+  const parsed = (min: number, max: number) => ({
+    min,
+    max,
+    unitLabel: 'clicks',
+    precision: 0,
+  });
+
+  return {
+    catalogVersion: 'test',
+    drippers: [
+      { id: 'v60', name: 'Hario V60', kind: 'dripper', typeLabel: 'cone', searchText: 'hario v60', methodFamily: 'v60', ...provenance },
+      { id: 'espresso-machine', name: 'Espresso Machine', kind: 'dripper', typeLabel: 'pressure', searchText: 'espresso machine', methodFamily: 'espresso', ...provenance },
+      { id: 'toddy-cold-brew', name: 'Toddy Cold Brew', kind: 'dripper', typeLabel: 'cold', searchText: 'cold brew toddy', methodFamily: 'cold_brew', ...provenance },
+    ],
+    grinders: [
+      {
+        id: 'test-allrounder',
+        name: 'Test Allrounder',
+        kind: 'grinder',
+        typeLabel: 'Manual stepped',
+        searchText: 'test allrounder espresso filter cold brew',
+        brand: 'Test',
+        grindBands: {
+          fine: '2 - 4 clicks',
+          medium: '8 - 10 clicks',
+          coarse: '18 - 22 clicks',
+          parsedFine: parsed(2, 4),
+          parsedMedium: parsed(8, 10),
+          parsedCoarse: parsed(18, 22),
+        },
+        ...provenance,
+      },
+    ],
+    deviceProfiles: [
+      { id: 'profile_v60_hot', methodFamily: 'v60', brewMode: 'hot', exactMatch: false, dripperIds: [], ...provenance },
+      { id: 'profile_espresso_hot', methodFamily: 'espresso', brewMode: 'hot', exactMatch: false, dripperIds: [], ...provenance },
+      { id: 'profile_cold_brew_hot', methodFamily: 'cold_brew', brewMode: 'hot', exactMatch: false, dripperIds: [], ...provenance },
+    ],
+    grinderSettings: [],
+  } as any;
+}
+
+test('grind size advisor uses method-aware grinder bands', () => {
+  const catalog = buildGrindSizeCatalog();
+
+  const v60 = buildGrindSizeAdvice({
+    catalog,
+    methodId: 'v60',
+    grinderId: 'test-allrounder',
+    roastLevel: 'medium',
+  });
+  const espresso = buildGrindSizeAdvice({
+    catalog,
+    methodId: 'espresso',
+    grinderId: 'test-allrounder',
+    roastLevel: 'medium',
+    espressoContext: {
+      doseG: 18,
+      yieldG: 36,
+      shotTimeSec: 19,
+      pressureBar: 11,
+      beanAgeDays: 3,
+      zeroPointKnown: false,
+    },
+  });
+  const coldBrew = buildGrindSizeAdvice({
+    catalog,
+    methodId: 'cold_brew',
+    grinderId: 'test-allrounder',
+    roastLevel: 'medium',
+  });
+
+  assert.match(v60.grindBandLabel, /8 - 10 clicks/);
+  assert.match(espresso.grindBandLabel, /2 - 4 clicks/);
+  assert.match(coldBrew.grindBandLabel, /18 - 22 clicks/);
+  assert.match(espresso.warning || '', /Espresso sangat sensitif/);
+  assert.equal(espresso.espressoInsight?.brewRatio, 2);
+  assert.ok(espresso.espressoInsight?.actions.includes('calibrate_zero'));
+  assert.ok(espresso.espressoInsight?.actions.includes('grind_finer'));
+  assert.ok(espresso.espressoInsight?.actions.includes('check_pressure'));
+  assert.ok(espresso.espressoInsight?.actions.includes('wait_degas'));
 });
 
 test('contextual concentrate methods do not reuse the typical filter TDS warning', () => {

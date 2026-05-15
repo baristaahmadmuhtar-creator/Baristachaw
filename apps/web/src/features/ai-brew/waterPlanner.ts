@@ -38,12 +38,19 @@ export function resolveWaterAdjustmentAdvice(water: {
 }
 
 export function canUseWaterBrandAutofill(waterBrand?: WaterBrandProfile) {
+  const minerals = waterBrand?.resolvedMinerals;
   return Boolean(
     waterBrand
     && waterBrand.presetStatus === 'autofill'
     && waterBrand.isBrewReady
-    && waterBrand.resolvedMinerals
-    && waterBrand.resolvedMinerals.derivation !== 'estimated_from_classification',
+    && minerals
+    && minerals.derivation !== 'estimated_from_classification'
+    && minerals.tdsPpm >= 0
+    && minerals.tdsPpm <= 600
+    && minerals.hardnessPpm >= 0
+    && minerals.hardnessPpm <= 500
+    && minerals.alkalinityPpm >= 0
+    && minerals.alkalinityPpm <= 400,
   );
 }
 

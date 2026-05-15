@@ -139,7 +139,7 @@ function deriveIcedCupAdjustment(plan: BrewPlan): IcedCupAdjustment {
     adjustment.warnings.push('Air berbuffer tinggi bisa membuat iced bright/floral terasa lebih muted.');
   }
 
-  if (plan.grindSettingVerification === 'fallback' || plan.grindSettingMode === 'derived_baseline') {
+  if (plan.grindSettingVerification === 'fallback' || plan.grindSettingMode === 'derived_baseline' || plan.grindCalibrationRequired) {
     adjustment.confidenceFloor = 'medium';
   }
 
@@ -380,9 +380,9 @@ export function buildExpectedCupProfile(
     warnings.push('Water minerals need manual verification before treating this profile as locked.');
   }
 
-  if (plan.grindSettingVerification === 'fallback' || plan.grindSettingMode === 'derived_baseline') {
+  if (plan.grindSettingVerification === 'fallback' || plan.grindSettingMode === 'derived_baseline' || plan.grindCalibrationRequired) {
     confidence = confidence === 'low' ? 'low' : 'medium';
-    warnings.push('Fallback grinder setting lowers confidence; validate with drawdown and taste.');
+    warnings.push('Baseline grinder menurunkan keyakinan; validasi dari waktu ekstraksi dan rasa.');
   }
 
   if (plan.processRisk?.variability === 'high') {
@@ -445,6 +445,7 @@ export function buildAiBrewReadinessScores(plan: BrewPlan): AiBrewReadinessScore
     return 94;
   })();
   const grinder = (() => {
+    if (plan.grindCalibrationRequired) return plan.grindSettingVerification === 'fallback' ? 62 : 82;
     if (plan.grindSettingVerification === 'official' && plan.grindSettingMode !== 'derived_baseline') return 97;
     if (plan.grindSettingVerification === 'community_verified') return 93;
     if (plan.grindSettingVerification === 'curated') return 86;

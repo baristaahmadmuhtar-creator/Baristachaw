@@ -5,8 +5,11 @@ import type {
   DeviceBrewProfile,
   EquipmentCatalogEntry,
   GrinderSettingReference,
+  AiBrewMethodFamily,
   ParsedNumericRange,
 } from './types.ts';
+
+type GrinderBandKey = 'coarse' | 'medium' | 'fine';
 
 function normalizeSearchHaystack(parts: Array<string | undefined>) {
   return parts
@@ -54,6 +57,68 @@ function formatParsedSetting(value: number, parsed: ParsedNumericRange) {
   return `${text} ${parsed.unitLabel}`.trim();
 }
 
+function preferredFallbackBands(methodFamily: AiBrewMethodFamily): GrinderBandKey[] {
+  switch (methodFamily) {
+    case 'espresso':
+    case 'moka_pot':
+      return ['fine', 'medium', 'coarse'];
+    case 'cold_brew':
+    case 'french_press':
+    case 'chemex':
+      return ['coarse', 'medium', 'fine'];
+    case 'aeropress':
+    case 'batch_brew':
+    case 'siphon':
+    case 'clever_dripper':
+      return ['medium', 'coarse', 'fine'];
+    default:
+      return ['medium', 'fine', 'coarse'];
+  }
+}
+
+function fallbackBandLabel(grinder: EquipmentCatalogEntry, band: GrinderBandKey) {
+  return grinder.grindBands?.[band]?.trim() || '';
+}
+
+function fallbackBandParsedRange(grinder: EquipmentCatalogEntry, band: GrinderBandKey) {
+  if (band === 'coarse') return grinder.grindBands?.parsedCoarse || null;
+  if (band === 'fine') return grinder.grindBands?.parsedFine || null;
+  return grinder.grindBands?.parsedMedium || null;
+}
+
+function selectFallbackGrinderBand(grinder: EquipmentCatalogEntry, methodFamily: AiBrewMethodFamily) {
+  const bands = preferredFallbackBands(methodFamily);
+  for (const band of bands) {
+    const label = fallbackBandLabel(grinder, band);
+    if (label) {
+      return {
+        band,
+        label,
+        parsedRange: fallbackBandParsedRange(grinder, band),
+      };
+    }
+  }
+  return undefined;
+}
+
+function formatFallbackBandNote(params: {
+  hasCatalogBandProvenance: boolean;
+  band: GrinderBandKey;
+  methodFamily: AiBrewMethodFamily;
+}) {
+  const bandLabel = params.band === 'coarse'
+    ? 'coarse'
+    : params.band === 'fine'
+      ? 'fine'
+      : 'medium';
+  const methodLabel = params.methodFamily.replace(/_/g, ' ');
+  if (params.hasCatalogBandProvenance) {
+    const pourOverPhrase = params.band === 'medium' ? ' published pour-over band' : ` published ${bandLabel} band`;
+    return `No profile-specific grinder chart is stored yet; using this grinder${pourOverPhrase} as a method-aware ${methodLabel} baseline. Calibrate zero point and taste before treating it as exact.`;
+  }
+  return `No profile-specific grinder chart found; using this grinder ${bandLabel} band as a method-aware ${methodLabel} baseline. Calibrate zero point and taste before treating it as exact.`;
+}
+
 export function formatGrindRecommendation(params: {
   primary: string;
   lowerCorrection?: string;
@@ -92,24 +157,32 @@ export function resolveGrinderSettingReference(
   );
   if (familySetting) return familySetting;
 
-  const baseline = grinder.grindBands?.medium?.trim();
-  if (!baseline) return undefined;
+  const fallbackBand = selectFallbackGrinderBand(grinder, deviceProfile.methodFamily);
+  if (!fallbackBand) return undefined;
 
   const hasCatalogBandProvenance = grinder.sourceUrls.length > 0
     && grinder.verificationLevel !== 'dataset_unverified'
     && grinder.verificationLevel !== 'fallback';
 
+  const idSuffix = deviceProfile.methodFamily === 'v60'
+    ? brewMode
+    : `${deviceProfile.methodFamily}_${brewMode}`;
+
   return {
-    id: `${hasCatalogBandProvenance ? 'catalog' : 'derived'}_${grinder.id}_${brewMode}`,
+    id: `${hasCatalogBandProvenance ? 'catalog' : 'derived'}_${grinder.id}_${idSuffix}`,
     grinderId: grinder.id,
     brewMode,
     profileIds: [],
-    rangeLabel: baseline,
-    parsedRange: grinder.grindBands?.parsedMedium || null,
-    note: hasCatalogBandProvenance
-      ? 'No profile-specific grinder chart is stored yet; using this grinder published pour-over band as the deterministic baseline.'
-      : 'No profile-specific grinder chart found; using this grinder medium filter band as deterministic baseline.',
-    source: hasCatalogBandProvenance ? 'catalog_pour_over_band' : 'derived_from_grinder_band',
+    rangeLabel: fallbackBand.label,
+    parsedRange: fallbackBand.parsedRange,
+    note: formatFallbackBandNote({
+      hasCatalogBandProvenance,
+      band: fallbackBand.band,
+      methodFamily: deviceProfile.methodFamily,
+    }),
+    referenceType: 'derived_from_grinder_band',
+    calibrationRequired: true,
+    source: hasCatalogBandProvenance ? `catalog_${fallbackBand.band}_band` : 'derived_from_grinder_band',
     sourceUrls: grinder.sourceUrls,
     verificationLevel: hasCatalogBandProvenance ? grinder.verificationLevel : 'fallback',
     verifiedAt: hasCatalogBandProvenance ? grinder.verifiedAt : catalog.catalogVersion,

@@ -61,7 +61,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   return {
     ...config,
     name: 'Baristachaw',
-    slug: 'baristachaw-mobile',
+    slug: 'baristaclaw-mobile',
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/icon.png',

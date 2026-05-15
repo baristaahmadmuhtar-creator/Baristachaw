@@ -1554,6 +1554,12 @@ html[data-keyboard-open="true"] .bottom-nav-fill * {
   pointer-events: none !important;
 }
 
+html[data-keyboard-open="true"] .bottom-nav-fill {
+  transform: translateY(calc(100% + 8px)) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
 input::placeholder,
 textarea::placeholder {
   color: var(--placeholder);

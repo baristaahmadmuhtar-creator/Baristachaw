@@ -254,11 +254,13 @@ export function BaristaTools() {
   const agtronMappedRoastLevel = Number.isFinite(agtronNumber)
     ? mapAgtronToRoastLevel(agtronNumber, effectiveAgtronRange)
     : undefined;
-  const effectiveRoastLevel = ratioState.mode === 'basic'
-    ? 'medium'
-    : ratioState.roastInputMode === 'agtron'
+  const optionalAnalysisActive = ratioState.analysisExpanded && ratioState.mode === 'advanced';
+  const selectedRoastLevel = ratioState.roastInputMode === 'agtron'
     ? (agtronMappedRoastLevel ?? ratioState.roastLevel)
     : ratioState.roastLevel;
+  const effectiveRoastLevel = optionalAnalysisActive || calculatorPanel === 'grind_size'
+    ? selectedRoastLevel
+    : 'medium';
   const roastAdjustedTargets = buildRoastAdjustedTargets(selectedMethod, effectiveRoastLevel);
   const selectedEspressoShotPreset = selectedMethod.id === 'espresso'
     ? selectedMethod.shotPresets?.find((preset) => preset.id === ratioState.espressoShotPresetId)
@@ -297,7 +299,7 @@ export function BaristaTools() {
     && Math.abs(parsedRatio - importedAiBrewIcedSplit.finalBeverageRatio) <= 0.05
       ? importedAiBrewIcedSplit
       : null;
-  const outputRenderKey = `${ratioState.methodId}-${ratioState.mode}-${ratioState.unitMode}-${ratioState.dose}-${ratioState.water}-${ratioState.ratio}-${ratioState.measuredOutput}`;
+  const outputRenderKey = `${ratioState.methodId}-${ratioState.mode}-${ratioState.analysisExpanded}-${ratioState.unitMode}-${ratioState.dose}-${ratioState.water}-${ratioState.ratio}-${ratioState.measuredOutput}`;
 
   // Timer logic
   useEffect(() => {
@@ -388,10 +390,10 @@ export function BaristaTools() {
       doseG: parsedDose,
       waterMl: parsedWater,
       ratio: parsedRatio,
-      tdsPercent: ratioState.mode === 'advanced' ? tdsValue : undefined,
-      measuredOutputMl: ratioState.mode === 'advanced' ? measuredOutputValue : undefined,
+      tdsPercent: optionalAnalysisActive ? tdsValue : undefined,
+      measuredOutputMl: optionalAnalysisActive ? measuredOutputValue : undefined,
     });
-  }, [parsedDose, parsedWater, parsedRatio, selectedMethod, ratioState.mode, tdsValue, measuredOutputValue]);
+  }, [parsedDose, parsedWater, parsedRatio, selectedMethod, optionalAnalysisActive, tdsValue, measuredOutputValue]);
 
   const guardrails = useMemo(() => {
     if (parsedDose <= 0 || parsedWater <= 0 || parsedRatio <= 0) {
@@ -402,8 +404,8 @@ export function BaristaTools() {
       doseG: parsedDose,
       waterMl: parsedWater,
       ratio: parsedRatio,
-      tdsPercent: ratioState.mode === 'advanced' ? tdsValue : undefined,
-      measuredOutputMl: ratioState.mode === 'advanced' ? measuredOutputValue : undefined,
+      tdsPercent: optionalAnalysisActive ? tdsValue : undefined,
+      measuredOutputMl: optionalAnalysisActive ? measuredOutputValue : undefined,
     }, {
       roastLevel: effectiveRoastLevel,
       agtronValue: ratioState.roastInputMode === 'agtron' && Number.isFinite(agtronNumber) ? agtronNumber : undefined,
@@ -416,7 +418,7 @@ export function BaristaTools() {
     parsedWater,
     parsedRatio,
     selectedMethod,
-    ratioState.mode,
+    optionalAnalysisActive,
     ratioState.roastInputMode,
     effectiveRoastLevel,
     agtronNumber,
@@ -424,7 +426,7 @@ export function BaristaTools() {
     measuredOutputValue,
     t,
   ]);
-  const compactWarnings = ratioState.mode === 'advanced' ? guardrails.warnings : guardrails.warnings.slice(0, 2);
+  const compactWarnings = optionalAnalysisActive ? guardrails.warnings : guardrails.warnings.slice(0, 2);
   const conformance = useMemo(() => {
     if (parsedDose <= 0 || parsedWater <= 0 || parsedRatio <= 0) {
       return { warnings: [] as string[], standardsHits: [] as string[], standardsMisses: [] as string[] };
@@ -434,8 +436,8 @@ export function BaristaTools() {
       doseG: parsedDose,
       waterMl: parsedWater,
       ratio: parsedRatio,
-      tdsPercent: ratioState.mode === 'advanced' ? tdsValue : undefined,
-      measuredOutputMl: ratioState.mode === 'advanced' ? measuredOutputValue : undefined,
+      tdsPercent: optionalAnalysisActive ? tdsValue : undefined,
+      measuredOutputMl: optionalAnalysisActive ? measuredOutputValue : undefined,
     }, {
       roastLevel: effectiveRoastLevel,
       agtronValue: ratioState.roastInputMode === 'agtron' && Number.isFinite(agtronNumber) ? agtronNumber : undefined,
@@ -443,7 +445,7 @@ export function BaristaTools() {
       resolvePolicyLabel: (_policy, method) => getPolicyLabel(method.category),
       resolveRoastLevelLabel: getRoastLevelLabel,
     });
-  }, [parsedDose, parsedWater, parsedRatio, selectedMethod, ratioState.mode, ratioState.roastInputMode, effectiveRoastLevel, agtronNumber, tdsValue, measuredOutputValue, t]);
+  }, [parsedDose, parsedWater, parsedRatio, selectedMethod, optionalAnalysisActive, ratioState.roastInputMode, effectiveRoastLevel, agtronNumber, tdsValue, measuredOutputValue, t]);
 
   const updateRatioState = (patch: Partial<RatioSettingsState>) => {
     if ('methodId' in patch || 'dose' in patch || 'water' in patch || 'ratio' in patch) {
@@ -492,11 +494,11 @@ export function BaristaTools() {
 
   const applyMethodPreset = (methodId: BrewMethodId) => {
     const method = BREW_METHOD_MAP[methodId];
-    const methodRoastLevel = ratioState.mode === 'basic'
-      ? 'medium'
-      : ratioState.roastInputMode === 'agtron' && Number.isFinite(agtronNumber)
-      ? mapAgtronToRoastLevel(agtronNumber, getMethodEvidenceProfile(method.id)?.roastSupport.agtronRange ?? method.roastSupport?.agtronRange)
-      : ratioState.roastLevel;
+    const methodRoastLevel = optionalAnalysisActive || calculatorPanel === 'grind_size'
+      ? (ratioState.roastInputMode === 'agtron' && Number.isFinite(agtronNumber)
+        ? mapAgtronToRoastLevel(agtronNumber, getMethodEvidenceProfile(method.id)?.roastSupport.agtronRange ?? method.roastSupport?.agtronRange)
+        : ratioState.roastLevel)
+      : 'medium';
     const methodTargets = buildRoastAdjustedTargets(method, methodRoastLevel);
     const defaultShotPreset = method.id === 'espresso'
       ? (method.shotPresets?.find((preset) => preset.id === DEFAULT_ESPRESSO_SHOT_PRESET) ?? method.shotPresets?.[0])
@@ -609,6 +611,7 @@ export function BaristaTools() {
       ...prev,
       methodId: plan.ratioToolMethodId,
       mode: 'advanced',
+      analysisExpanded: true,
       roastInputMode: 'level',
       roastLevel: plan.roastLevel,
       agtronValue: '',
@@ -899,7 +902,6 @@ export function BaristaTools() {
               onMethodChange={applyMethodPreset}
               onRoastLevelChange={(nextRoastLevel) => {
                 updateRatioState({
-                  mode: 'advanced',
                   roastLevel: nextRoastLevel,
                   roastInputMode: 'level',
                 });
@@ -913,14 +915,17 @@ export function BaristaTools() {
             <button
               type="button"
               data-testid="ratio-analysis-toggle"
-              onClick={() => updateRatioState({ mode: ratioState.mode === 'advanced' ? 'basic' : 'advanced' })}
+              onClick={() => updateRatioState(optionalAnalysisActive
+                ? { analysisExpanded: false }
+                : { mode: 'advanced', analysisExpanded: true }
+              )}
               className="rounded-xl bg-surface-alpha px-3 py-2 text-xs font-semibold text-secondary hover:text-primary"
             >
-              {ratioState.mode === 'advanced' ? t.toolsHideOptionalAnalysis : t.toolsShowOptionalAnalysis}
+              {optionalAnalysisActive ? t.toolsHideOptionalAnalysis : t.toolsShowOptionalAnalysis}
             </button>
           </div>
 
-          {ratioState.mode === 'advanced' && (
+          {optionalAnalysisActive && (
             <div className="space-y-3 panel-soft rounded-2xl p-3 border panel-divider-subtle">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{t.toolsRoastProfile}</p>
@@ -1039,7 +1044,7 @@ export function BaristaTools() {
             ))}
           </div>
 
-          {ratioState.mode === 'advanced' && (
+          {optionalAnalysisActive && (
             <div className="grid gap-4 lg:grid-cols-2">
               <div>
                 <label className="text-sm font-semibold text-secondary uppercase tracking-widest mb-2 block">{t.toolsTdsLabel}</label>
@@ -1111,7 +1116,7 @@ export function BaristaTools() {
             )}
 
             <div className="text-xs text-secondary space-y-1">
-              {selectedEspressoShotPreset && ratioState.mode === 'advanced' && (
+              {selectedEspressoShotPreset && optionalAnalysisActive && (
                 <p>
                   {t.toolsShotStyleSummary
                     .replace('{label}', getShotLabel(selectedEspressoShotPreset.id))
@@ -1122,21 +1127,21 @@ export function BaristaTools() {
               <p className="flex items-center gap-1.5"><Thermometer size={12} /> {t.toolsTempGuidance.replace('{min}', String(tempGuidanceRange[0])).replace('{max}', String(tempGuidanceRange[1]))}</p>
               <p className="flex items-center gap-1.5"><Clock3 size={12} /> {t.toolsBrewTimeGuidance.replace('{value}', brewTimeGuidanceLabel)}</p>
               <p>{t.toolsGrindGuidance.replace('{value}', getGrindGuidanceLabel(selectedMethod.category))}</p>
-              {ratioState.mode === 'advanced' && (
+              {optionalAnalysisActive && (
                 <p>{t.toolsRoastAdjustedRatioTarget.replace('{min}', String(roastRatioRange[0])).replace('{max}', String(roastRatioRange[1])).replace('{roastLevel}', getRoastLevelLabel(effectiveRoastLevel))}</p>
               )}
-              {ratioState.mode === 'advanced' && (
+              {optionalAnalysisActive && (
                 <p>{t.toolsGrindBiasSuggestion.replace('{value}', roastAdjustedTargets.suggestedGrindBias === 'same' ? t.toolsGrindBiasKeepSame : t.toolsGrindBiasGoOneClick.replace('{direction}', getGrindDirectionLabel(roastAdjustedTargets.suggestedGrindBias)))}</p>
               )}
               <p>{t.toolsScaReference}</p>
-              {activeImportedAiBrewIcedSplit && ratioState.mode === 'advanced' && (
+              {activeImportedAiBrewIcedSplit && optionalAnalysisActive && (
                 <p data-testid="ai-brew-iced-ratio-split">
                   {t.toolsIceBrewSplitGuide
                     .replace('{hotWater}', String(Math.round(activeImportedAiBrewIcedSplit.hotWaterSharePercent)))
                     .replace('{ice}', String(Math.round(activeImportedAiBrewIcedSplit.iceSharePercent)))} AI Brew: {Math.round(activeImportedAiBrewIcedSplit.hotWaterMl)} ml air panas / {Math.round(activeImportedAiBrewIcedSplit.iceMl)} ml es, konsentrat 1:{roundTo(activeImportedAiBrewIcedSplit.hotExtractionRatio, 1)}.
                 </p>
               )}
-              {!activeImportedAiBrewIcedSplit && selectedMethod.japaneseSplit && ratioState.mode === 'advanced' && (
+              {!activeImportedAiBrewIcedSplit && selectedMethod.japaneseSplit && optionalAnalysisActive && (
                 <p>
                   {t.toolsIceBrewSplitGuide.replace('{hotWater}', String(Math.round(selectedMethod.japaneseSplit.hotWaterShare * 100))).replace('{ice}', String(Math.round(selectedMethod.japaneseSplit.iceShare * 100)))}
                 </p>
@@ -1144,7 +1149,7 @@ export function BaristaTools() {
             </div>
           </div>
 
-          {ratioState.mode === 'advanced' && (conformance.standardsHits.length > 0 || conformance.standardsMisses.length > 0) && (
+          {optionalAnalysisActive && (conformance.standardsHits.length > 0 || conformance.standardsMisses.length > 0) && (
             <div className="panel-soft rounded-2xl p-4 border panel-divider-subtle space-y-2" data-testid="conformance-panel">
               <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{t.toolsStandardsConformance}</p>
               {conformance.standardsHits.slice(0, 4).map((hit) => (
@@ -1156,7 +1161,7 @@ export function BaristaTools() {
             </div>
           )}
 
-          {ratioState.mode === 'advanced' && brewOutputs?.extractionYieldPct !== undefined && (
+          {optionalAnalysisActive && brewOutputs?.extractionYieldPct !== undefined && (
             <div className="panel-soft rounded-2xl p-4 border panel-divider-subtle" data-testid="advanced-results">
               <p className="text-sm font-semibold text-secondary uppercase tracking-widest mb-2">{t.toolsAdvancedExtraction}</p>
               <div className="grid grid-cols-2 gap-3">
@@ -1199,7 +1204,7 @@ export function BaristaTools() {
                   <span>{warning}</span>
                 </div>
               ))}
-              {ratioState.mode === 'basic' && guardrails.warnings.length > compactWarnings.length && (
+              {!optionalAnalysisActive && guardrails.warnings.length > compactWarnings.length && (
                 <p className="text-xs text-secondary px-1">
                   {t.toolsOpenAdvancedDiagnostics.replace('{count}', String(guardrails.warnings.length - compactWarnings.length))}
                 </p>

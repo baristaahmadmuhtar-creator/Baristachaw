@@ -50,7 +50,7 @@
     /* Layout */
     --bottom-nav-height: 4.25rem;
     --mobile-home-indicator-gap: 10px;
-    --mobile-nav-floating-gap: var(--mobile-home-indicator-gap);
+    --mobile-nav-floating-gap: max(var(--mobile-home-indicator-gap), min(var(--safe-bottom), 32px));
     --mobile-nav-dock-offset: var(--mobile-nav-floating-gap);
     --mobile-nav-surface-radius: 9999px;
     --safe-top: env(safe-area-inset-top, 0px);
@@ -145,7 +145,7 @@
 
     --bottom-nav-height: 4.25rem;
     --mobile-home-indicator-gap: 10px;
-    --mobile-nav-floating-gap: var(--mobile-home-indicator-gap);
+    --mobile-nav-floating-gap: max(var(--mobile-home-indicator-gap), min(var(--safe-bottom), 32px));
     --mobile-nav-dock-offset: var(--mobile-nav-floating-gap);
     --mobile-nav-surface-radius: 9999px;
     --safe-top: env(safe-area-inset-top, 0px);
@@ -1499,7 +1499,7 @@ html[data-ios-standalone] {
   --safe-bottom: var(--device-safe-bottom);
   --safe-ui-bottom: var(--edge-safe-bottom);
   --bottom-safe-capped: min(var(--safe-bottom), 18px);
-  --mobile-nav-floating-gap: min(var(--safe-bottom), 18px);
+  --mobile-nav-floating-gap: min(var(--safe-bottom), 32px);
   --mobile-nav-dock-offset: var(--mobile-nav-floating-gap);
   --bottom-nav-total-height: calc(var(--bottom-nav-height) + var(--mobile-nav-dock-offset));
   --page-padding-bottom: var(--bottom-nav-total-height);
@@ -1547,7 +1547,6 @@ html[data-ios-standalone] .bottom-nav-fill {
 
 .bottom-nav-fill {
   background: transparent !important;
-  padding-bottom: 0 !important;
 }
 
 html[data-keyboard-open="true"] .bottom-nav-fill,

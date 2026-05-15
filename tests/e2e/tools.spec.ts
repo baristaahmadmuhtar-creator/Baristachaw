@@ -317,6 +317,35 @@ test('basic mode hides advanced controls and diagnostics while keeping core inpu
   await expect(page.getByTestId('ratio-input')).toBeVisible();
 });
 
+test('legacy advanced ratio data stays saved but optional analysis defaults hidden', async ({ page }) => {
+  await page.evaluate(() => {
+    localStorage.setItem('BARISTA_TOOLS_RATIO_V5', JSON.stringify({
+      v: 5,
+      methodId: 'v60',
+      mode: 'advanced',
+      ratio: '15.5',
+      dose: '20',
+      water: '310',
+      roastLevel: 'medium_light',
+      roastInputMode: 'level',
+      applyRoastAdaptiveDefaults: true,
+      tdsPercent: '1.4',
+      measuredOutput: '270',
+    }));
+  });
+  await page.goto('/tools?tab=ratio', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
+
+  await expect(page.getByTestId('ratio-analysis-toggle')).toContainText(/Show optional extraction analysis|Tampilkan analisis ekstraksi opsional/i);
+  await expect(page.getByTestId('tds-input')).toHaveCount(0);
+  await expect(page.getByTestId('measured-output-input')).toHaveCount(0);
+
+  await page.getByTestId('ratio-analysis-toggle').click();
+  await expect(page.getByTestId('ratio-analysis-toggle')).toContainText(/Hide optional extraction analysis|Sembunyikan analisis ekstraksi opsional/i);
+  await expect(page.getByTestId('tds-input')).toHaveValue('1.4');
+  await expect(page.getByTestId('measured-output-input')).toHaveValue('270');
+});
+
 test('standards provenance stays hidden from both modes', async ({ page }) => {
   await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
   await expect(page.getByTestId('standards-provenance')).toHaveCount(0);

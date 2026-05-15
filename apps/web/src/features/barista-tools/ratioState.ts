@@ -14,6 +14,7 @@ export interface RatioSettingsState {
   v: 5;
   methodId: BrewMethodId;
   mode: BrewCalcMode;
+  analysisExpanded: boolean;
   unitMode: BrewUnitMode;
   espressoShotPresetId: ShotPresetId;
   roastInputMode: RoastInputMode;
@@ -31,6 +32,7 @@ interface LegacyRatioState {
   v?: number;
   methodId?: string;
   mode?: string;
+  analysisExpanded?: boolean;
   unitMode?: string;
   espressoShotPresetId?: string;
   roastInputMode?: string;
@@ -149,6 +151,7 @@ export function migrateRatioSettings(raw: unknown): RatioSettingsState {
     v: 5,
     methodId,
     mode,
+    analysisExpanded: candidate.analysisExpanded === true,
     unitMode,
     espressoShotPresetId,
     roastInputMode,
@@ -179,6 +182,7 @@ export function loadRatioSettingsFromStorage(storage: Pick<Storage, 'getItem'> =
     v: 5,
     methodId: 'v60',
     mode: 'basic',
+    analysisExpanded: false,
     unitMode: 'metric',
     espressoShotPresetId: 'espresso',
     roastInputMode: 'level',

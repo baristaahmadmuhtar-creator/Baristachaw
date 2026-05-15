@@ -57,10 +57,11 @@ test('keyboard-open contracts reduce page bottom padding and keeps bottom filler
 });
 
 test('collection create-folder close button keeps iOS-friendly touch target', async ({ page }) => {
+  await page.setViewportSize({ width: 371, height: 566 });
   await page.goto('/collection');
   await page.getByRole('button', { name: createFolderButton }).click();
 
-  const closeButton = page.locator('.icon-touch-button').filter({ has: page.locator('svg') }).first();
+  const closeButton = page.getByTestId('collection-close-create-folder');
   await expect(closeButton).toBeVisible();
 
   const metrics = await closeButton.evaluate((el) => {
@@ -69,6 +70,11 @@ test('collection create-folder close button keeps iOS-friendly touch target', as
     return {
       width: rect.width,
       height: rect.height,
+      left: rect.left,
+      right: rect.right,
+      viewportWidth: window.innerWidth,
+      documentClientWidth: document.documentElement.clientWidth,
+      documentScrollWidth: document.documentElement.scrollWidth,
       display: style.display,
       alignItems: style.alignItems,
       justifyContent: style.justifyContent,
@@ -78,9 +84,16 @@ test('collection create-folder close button keeps iOS-friendly touch target', as
 
   expect(metrics.width).toBeGreaterThanOrEqual(40);
   expect(metrics.height).toBeGreaterThanOrEqual(40);
+  expect(metrics.left).toBeGreaterThanOrEqual(0);
+  expect(metrics.right).toBeLessThanOrEqual(metrics.viewportWidth);
+  expect(metrics.documentScrollWidth).toBeLessThanOrEqual(metrics.documentClientWidth + 1);
   expect(metrics.display).toContain('flex');
   expect(metrics.alignItems).toBe('center');
   expect(metrics.justifyContent).toBe('center');
+
+  await page.getByRole('textbox', { name: /Folder name|Nama Folder/i }).fill('qa_mobile_folder');
+  await page.getByRole('button', { name: /^Save$|^Simpan$/i }).click();
+  await expect(page.locator('h3', { hasText: /^qa_mobile_folder$/ }).first()).toBeVisible();
 });
 
 test('mobile ai brew picker keeps dialog semantics and returns focus on close', async ({ page }) => {

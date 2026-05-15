@@ -612,7 +612,7 @@ export function Collection() {
         >
           <div className="panel-soft-strong rounded-3xl p-5 border panel-divider-subtle">
             <p className="text-xs uppercase tracking-wide text-secondary mb-3">{t.createFolder}</p>
-            <div className="flex gap-3 items-center">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
               <input
                 ref={newFolderInputRef}
                 type="text"
@@ -627,18 +627,18 @@ export function Collection() {
                 placeholder={t.folderName}
                 aria-label={t.folderName}
                 enterKeyHint="done"
-                className="flex-1 glass-input h-11 px-4 text-base"
+                className="col-span-2 min-w-0 glass-input h-11 px-4 text-base sm:col-span-1"
                 autoFocus
               />
               <button
                 type="button"
                 onClick={() => { void handleCreateFolder(); }}
                 disabled={!newFolderName.trim() || isCreatingFolder}
-                className="h-11 px-5 rounded-xl bg-emerald-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed min-w-[88px] flex items-center justify-center"
+                className="h-11 min-w-0 rounded-xl bg-emerald-500 px-5 text-white font-medium disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center sm:min-w-[88px]"
               >
                 {isCreatingFolder ? <Loader2 size={16} className="animate-spin" /> : (t.save)}
               </button>
-              <button type="button" onClick={closeCreateFolder} className="icon-touch-button glass-button" aria-label={t.closeCreateFolder}>
+              <button type="button" onClick={closeCreateFolder} className="icon-touch-button glass-button" aria-label={t.closeCreateFolder} data-testid="collection-close-create-folder">
                 <X size={18} />
               </button>
             </div>

@@ -181,11 +181,11 @@ export function BottomNav({ hidden = false, showAdmin = false }: BottomNavProps)
       data-testid="mobile-bottom-nav"
       className="fixed bottom-0 left-0 right-0 z-50 flex items-end justify-center pointer-events-none bottom-nav-fill lg:hidden"
       style={{
-        bottom: 'var(--mobile-nav-dock-offset, var(--mobile-nav-floating-gap, 0px))',
-        paddingBottom: 0,
+        bottom: 0,
+        paddingBottom: 'var(--mobile-nav-dock-offset, var(--mobile-nav-floating-gap, 0px))',
         paddingLeft: 'max(8px, env(safe-area-inset-left, 0px))',
         paddingRight: 'max(8px, env(safe-area-inset-right, 0px))',
-        transform: effectiveHidden ? 'translateY(calc(100% + var(--mobile-nav-dock-offset, 0px) + 8px))' : 'translateY(0)',
+        transform: effectiveHidden ? 'translateY(calc(100% + 8px))' : 'translateY(0)',
         opacity: effectiveHidden ? 0 : 1,
         visibility: effectiveHidden ? 'hidden' : 'visible',
         transition: navTransition,

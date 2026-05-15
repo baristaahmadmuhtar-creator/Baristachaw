@@ -1,6 +1,16 @@
 import { test, expect } from '@playwright/test';
+import { qaLogin, qaLogout } from '../fixtures/auth';
+import { buildQaUser } from '../fixtures/test-data';
 
 const MOBILE_ROUTES_WITH_NAV = ['/', '/scanner', '/tools', '/collection'];
+
+test.beforeEach(async ({ page }) => {
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+});
+
+test.afterEach(async ({ page }) => {
+  await qaLogout(page.request);
+});
 
 test('mobile bottom nav floats slightly above the home indicator across core routes', async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.includes('Mobile'), 'mobile-only layout contract');
@@ -40,11 +50,11 @@ test('bottom nav is icon-only visually while keeping accessible link names', asy
   const nav = page.getByTestId('mobile-bottom-nav-surface');
   await expect(nav).toBeVisible();
 
-  await expect(nav.getByRole('link', { name: 'Home' })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Scan' })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Tools' })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Collection' })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Chat' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /Home|Beranda/i })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /Scan|Pindai|Pemindai/i })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /Tools|Alat/i })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /Collection|Koleksi/i })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /Chat|Obrolan/i })).toBeVisible();
 
   const visualLabelCount = await nav.evaluate((el) => {
     const spans = Array.from(el.querySelectorAll('span'));
@@ -150,6 +160,52 @@ test('pwa fullscreen docks bottom nav flush to the viewport without safe-area fi
   expect(metrics?.surfaceShadow).toBe('none');
   expect(metrics?.wrapperBackground).toBe('rgba(0, 0, 0, 0)');
   expect(metrics?.bodyAfterContent).toBe('none');
+});
+
+test('pwa simulated iOS safe-area keeps nav surface above home indicator without horizontal overflow', async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.includes('Mobile'), 'mobile-only pwa safe-area contract');
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/tools?runtime=web_parity&ui_profile=pwa');
+  await expect(page.getByTestId('mobile-bottom-nav')).toBeVisible();
+
+  await page.evaluate(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--safe-bottom', '34px');
+    root.style.setProperty('--device-safe-bottom', '34px');
+  });
+  await page.waitForTimeout(120);
+
+  const metrics = await page.evaluate(() => {
+    const wrapperEl = document.querySelector<HTMLElement>('[data-testid="mobile-bottom-nav"]');
+    const surfaceEl = document.querySelector<HTMLElement>('[data-testid="mobile-bottom-nav-surface"]');
+    const pageEl = document.querySelector<HTMLElement>('.page-container');
+    if (!wrapperEl || !surfaceEl) return null;
+    const rootStyle = getComputedStyle(document.documentElement);
+    const wrapperStyle = getComputedStyle(wrapperEl);
+    const pageStyle = pageEl ? getComputedStyle(pageEl) : null;
+    const surfaceRect = surfaceEl.getBoundingClientRect();
+    return {
+      safeBottom: Number.parseFloat(rootStyle.getPropertyValue('--safe-bottom') || '0'),
+      wrapperBottom: Number.parseFloat(wrapperStyle.bottom || '0'),
+      wrapperPaddingBottom: Number.parseFloat(wrapperStyle.paddingBottom || '0'),
+      surfaceGapToBottom: Math.max(0, window.innerHeight - surfaceRect.bottom),
+      pagePaddingBottom: pageStyle ? Number.parseFloat(pageStyle.paddingBottom || '0') : null,
+      documentClientWidth: document.documentElement.clientWidth,
+      documentScrollWidth: document.documentElement.scrollWidth,
+    };
+  });
+
+  expect(metrics).not.toBeNull();
+  expect(metrics?.safeBottom).toBe(34);
+  expect(metrics?.wrapperBottom ?? 99).toBeLessThanOrEqual(0.5);
+  expect(metrics?.wrapperPaddingBottom ?? 0).toBeGreaterThanOrEqual(30);
+  expect(metrics?.wrapperPaddingBottom ?? 99).toBeLessThanOrEqual(34);
+  expect(metrics?.surfaceGapToBottom ?? 0).toBeGreaterThanOrEqual(30);
+  if (metrics?.pagePaddingBottom !== null) {
+    expect(metrics?.pagePaddingBottom ?? 0).toBeGreaterThanOrEqual(92);
+  }
+  expect(metrics?.documentScrollWidth ?? 999).toBeLessThanOrEqual((metrics?.documentClientWidth ?? 0) + 1);
 });
 
 test('pwa bottom nav stays visible instead of leaving an empty safe-area spacer', async ({ page }, testInfo) => {

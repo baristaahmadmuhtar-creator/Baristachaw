@@ -404,6 +404,7 @@ test('mobile ai brew builder keeps the action footer docked to the modal bottom'
   await expect(builder).toBeVisible();
   await expect(footer).toBeVisible();
   await expect(generateButton).toBeVisible();
+  await expect(page.getByTestId('mobile-bottom-nav')).toBeHidden();
 
   const builderBox = await builder.boundingBox();
   const footerBox = await footer.boundingBox();

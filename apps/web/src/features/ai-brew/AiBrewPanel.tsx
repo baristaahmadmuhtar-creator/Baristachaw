@@ -23,7 +23,6 @@ import {
   Snowflake,
   Sparkles,
   Target,
-  Thermometer,
   RotateCcw,
   Waves,
   X,
@@ -49,7 +48,6 @@ import { syncAiBrewLibraryToCloud } from './cloudSync';
 import {
   buildAiBrewTasteLoopMarkdown,
   buildTasteFeedbackCorrection,
-  resolveAiBrewActionPriorities,
 } from './experience';
 import {
   getSwitchDoseRows,
@@ -330,7 +328,7 @@ const COPY = {
     emptyRecent: 'Generate once to start your local journal.',
     emptyFavorites: 'Favorite a plan to pin it here.',
     emptyPlan: 'Pick Quick or Precision to build a brew.',
-    actionPrioritiesTitle: 'Start here',
+    actionPrioritiesTitle: 'Brew priorities',
     actionPrioritiesDescription: 'Practical moves for the next brew. Change one variable at a time.',
     warningsDescription: 'Review before brewing. These notes follow the selected language and the current water, grinder, and brewer status.',
     summaryTitle: 'Result',
@@ -841,7 +839,7 @@ const COPY = {
     emptyRecent: 'Buat satu seduhan untuk mulai jurnal lokal.',
     emptyFavorites: 'Tandai favorit agar resep muncul di sini.',
     emptyPlan: 'Pilih Cepat atau Presisi untuk menyusun seduhan.',
-    actionPrioritiesTitle: 'Mulai dari sini',
+    actionPrioritiesTitle: 'Prioritas seduh',
     actionPrioritiesDescription: 'Aksi praktis untuk seduhan ini. Ubah satu variabel saja.',
     warningsDescription: 'Baca sebelum seduh. Catatan ini mengikuti bahasa aplikasi dan status air, grinder, serta alat yang dipakai.',
     summaryTitle: 'Hasil',
@@ -1565,6 +1563,53 @@ function formatGrindHeadlineForDisplay(value: string, language?: string) {
   return formatGrindTextForDisplay(firstSentence, language)
     .replace(/\bStarting grind:/gi, id ? 'Gilingan awal:' : 'Starting grind:')
     .replace(/\bReference official grinder chart\b/gi, id ? 'Lihat chart resmi grinder' : 'Reference official grinder chart');
+}
+
+function buildAiBrewCoreMetricItems(
+  plan: BrewPlan,
+  copy: CopySet,
+  language: string,
+  localizedGrindHeadline: string,
+  extractionTimeLabel: string,
+  extractionSeconds: number,
+) {
+  const id = isIndonesianAiBrewLanguage(language);
+  return [
+    {
+      id: 'dose',
+      label: id ? 'Dosis' : 'Dose',
+      value: formatRoundedGrams(plan.doseG),
+    },
+    {
+      id: 'water',
+      label: id ? 'Total air' : 'Total water',
+      value: formatRoundedMl(plan.totalWaterMl),
+      detail: plan.iceMl > 0
+        ? `${id ? 'Panas' : 'Hot'} ${formatRoundedMl(plan.hotWaterMl)} + ${id ? 'es' : 'ice'} ${formatRoundedGrams(plan.iceMl)}`
+        : '',
+    },
+    {
+      id: 'ratio',
+      label: copy.finalRatio,
+      value: `1:${formatBrewRatio(plan.finalBeverageRatio)}`,
+      detail: plan.iceMl > 0 ? `${id ? 'Konsentrat' : 'Hot concentrate'} 1:${formatBrewRatio(plan.hotExtractionRatio)}` : '',
+    },
+    {
+      id: 'temp',
+      label: copy.temp,
+      value: formatRoundedTemperature(plan.waterTempC),
+    },
+    {
+      id: 'grind',
+      label: copy.grind,
+      value: localizedGrindHeadline,
+    },
+    {
+      id: 'extraction',
+      label: extractionTimeLabel,
+      value: formatGuideTime(extractionSeconds),
+    },
+  ];
 }
 
 function getAiCoachTitle(copy: CopySet, mode: AiCoachMode) {
@@ -2997,28 +3042,9 @@ function buildAiBrewBeanContextDetail(plan: BrewPlan, step: AiBrewDisplayStep, l
       : 'Kopi: pertahankan suhu dan jalur tuang bersih supaya floral/asam manis tetap jernih.';
   }
   if (/wet.?hulled|giling basah|robusta|canephora|liberica|excelsa/i.test(beanText) || plan.roastLevel === 'medium_dark' || plan.roastLevel === 'dark') {
-    return 'Kopi: profil berat atau sangrai gelap mudah pahit; jaga agitasi rendah dan koreksi dari grind dulu.';
+    return 'Kopi: profil berat atau sangrai gelap lebih aman dengan gerakan tenang dan bed tidak terlalu diaduk.';
   }
-  return 'Kopi: pakai resep ini sebagai baseline; nilai rasa setelah suhu, grind, dan waktu ekstraksi tercatat.';
-}
-
-function buildAiBrewTargetCorrectionDetail(plan: BrewPlan, step: AiBrewDisplayStep, language: string) {
-  if (!isIndonesianAiBrewLanguage(language)) return '';
-  const target = plan.targetProfileId;
-  const actionType = isWorkflowGuideStep(step) ? step.actionType : getAiBrewStepKind(step);
-
-  if (target === 'more_sweetness' || target === 'soft_round') {
-    return actionType === 'bloom'
-      ? 'Target manis: bloom harus tenang dan lengkap; kalau masih asam, haluskan grind 0.5 step sebelum menaikkan suhu.'
-      : 'Koreksi manis: jika tipis/asam, haluskan grind 0.5 step; jika mulai seret, kasarkan 0.5 step.';
-  }
-  if (target === 'more_acidity' || target === 'floral_transparent' || target === 'fruit_forward') {
-    return 'Koreksi jernih: jika aroma tertutup, kasarkan 0.5 step atau lembutkan tuangan akhir; jangan tambah agitasi dulu.';
-  }
-  if (target === 'more_body' || target === 'dense_comforting') {
-    return 'Koreksi body: jika terlalu tipis, haluskan 0.5 step; jika berat/keruh, kurangi agitasi atau kasarkan sedikit.';
-  }
-  return 'Koreksi: ubah satu variabel dulu, paling aman dari grind; suhu hanya digeser setelah flow dan rasa terbaca.';
+  return 'Kopi: data proses/varietas belum lengkap; seduh bersih dulu agar rasa pertama mudah dibaca.';
 }
 
 function buildAiBrewWorkflowControlDetail(plan: BrewPlan, step: AiBrewDisplayStep, language: string) {
@@ -3074,7 +3100,7 @@ function buildAiBrewWorkflowControlDetail(plan: BrewPlan, step: AiBrewDisplaySte
     case 'moka_pot':
       return 'Kontrol Moka: panas sedang dan hentikan sebelum sputter supaya rasa tidak kasar.';
     case 'cold_brew':
-      return 'Kontrol cold brew: pastikan semua bubuk basah; filtrasi dan penyajian bukan tambahan ekstraksi panas.';
+      return 'Kontrol cold brew: pastikan semua bubuk basah; filtrasi dan penyajian bukan tambahan seduhan panas.';
     default:
       return 'Kontrol tahap: ikuti target air/waktu dan catat satu koreksi untuk seduhan berikutnya.';
   }
@@ -3098,11 +3124,10 @@ function buildAiBrewDeterministicStepDetailPoints(
     const addPoint = (value: string) => addUniqueAiBrewDetailPoint(points, value, hiddenReferences);
 
     if (id) {
-      addPoint([
-        buildAiBrewWorkflowControlDetail(plan, step, language),
-        buildAiBrewBeanContextDetail(plan, step, language),
-        buildAiBrewTargetCorrectionDetail(plan, step, language),
-      ].filter(Boolean).join(' '));
+      const workflowControl = buildAiBrewWorkflowControlDetail(plan, step, language);
+      const beanContext = buildAiBrewBeanContextDetail(plan, step, language);
+      const actionType = isWorkflowGuideStep(step) ? step.actionType : getAiBrewStepKind(step);
+      addPoint(actionType === 'setup' || actionType === 'bloom' ? beanContext || workflowControl : workflowControl || beanContext);
     } else if (step.secondaryText) {
       addPoint(localizeAiBrewDynamicText(step.secondaryText, language));
     }
@@ -3222,8 +3247,7 @@ function buildAiBrewDeterministicStepDetailPoints(
   const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
   addUniqueAiBrewDetailPoint(points, methodFocusCue, visibleReferences);
 
-  if (points.length <= 1) return points.slice(0, 1);
-  return [points.join(' ')];
+  return points.slice(0, 1);
 }
 
 function buildAiBrewStepDetailPoints(
@@ -4467,7 +4491,7 @@ function PlanResultDialog({
   useEffect(() => {
     if (!open) return;
     setActiveTab('plan');
-    setGuideDensity(isQuickResult ? 'basic' : 'pro');
+    setGuideDensity('basic');
     setFlowElapsedSeconds(0);
     setFlowAccumulatedSeconds(0);
     setFlowRunning(false);
@@ -4559,7 +4583,6 @@ function PlanResultDialog({
   const displaySummary = compactResultSummaryForDisplay(buildPremiumResultSummary(plan, language), plan, language);
   const methodBrief = buildPlanMethodBrief(plan, language);
   const aiEngineOnline = planUsesOnlineAi(plan);
-  const actionPriorities = resolveAiBrewActionPriorities(plan, language);
   const planHeaderWater = formatPlanHeaderWater(plan, language);
   const localizedWaterStyle = localizeAiBrewWaterStyle(plan.waterMinerals.styleLabel, language);
   const localizedGrindRecommendation = formatGrindTextForDisplay(plan.grindRecommendation, language);
@@ -4574,13 +4597,24 @@ function PlanResultDialog({
   const guideEndLabel = id ? 'Panduan selesai' : 'Guide complete';
   const postExtractionLabel = id ? 'Aduk/sajikan' : 'Finishing';
   const timeHelperText = getPlanTimeHelperCopy(plan, language);
-  const summaryHighlightItems = [
-    { id: 'temp', label: copy.temp, value: formatRoundedTemperature(plan.waterTempC), emphasis: true },
-    { id: 'grind', label: copy.grind, value: localizedGrindHeadline, emphasis: true },
-    { id: 'extraction', label: extractionTimeLabel, value: formatGuideTime(extractionSeconds), emphasis: true },
-    { id: 'ratio', label: copy.finalRatio, value: `1:${formatBrewRatio(plan.finalBeverageRatio)}` },
-    { id: 'guide', label: guideEndLabel, value: formatGuideTime(guideEndSeconds) },
-    { id: 'output', label: copy.cupOutput, value: formatRoundedMl(plan.estimatedCupOutputMl) },
+  const summaryHighlightItems = buildAiBrewCoreMetricItems(
+    plan,
+    copy,
+    language,
+    localizedGrindHeadline,
+    extractionTimeLabel,
+    extractionSeconds,
+  );
+  const bloomStepCount = workflowGuideSteps.filter((step) => (
+    step.actionType === 'bloom' || /bloom/i.test(step.label)
+  )).length;
+  const pourStepCount = workflowGuideSteps.filter((step) => (step.pourVolumeMl || 0) > 0).length;
+  const mainPourCount = Math.max(0, pourStepCount - bloomStepCount);
+  const compactFlowSnapshotItems = [
+    { label: 'Bloom', value: bloomStepCount > 0 ? `${bloomStepCount}x` : '-' },
+    { label: id ? 'Tuang' : 'Pours', value: mainPourCount > 0 ? `${mainPourCount}x` : '-' },
+    { label: id ? 'Langkah' : 'Steps', value: String(workflowGuideSteps.length) },
+    { label: guideEndLabel, value: formatGuideTime(guideEndSeconds) },
   ];
   const expectedCup = plan.expectedCupProfile;
   const localizedBeanCoverageLabel = plan.beanCoverage
@@ -4628,6 +4662,15 @@ function PlanResultDialog({
   const localizedProcessLabel = plan.process || copy.notSpecified;
   const localizedVarietyLabel = plan.variety || copy.notSpecified;
   const localizedRoastLabel = localizeAiBrewRoastLabel(plan.roastLevel, language);
+  const hasSpecificProcess = Boolean(plan.process?.trim());
+  const hasSpecificVariety = Boolean(plan.variety?.trim());
+  const beanPredictionContextDetail = id
+    ? hasSpecificProcess && hasSpecificVariety
+      ? `${localizedRoastLabel}, proses ${localizedProcessLabel}, varietas ${localizedVarietyLabel}, dan ${localizedWaterStyle} dibaca bersama supaya prediksi rasa tetap berbasis data input.`
+      : `${localizedRoastLabel} dibaca bersama air, grinder, dan alat. Proses/varietas belum lengkap, jadi prediksi rasa dijaga sebagai baseline dan perlu cek rasa pertama.`
+    : hasSpecificProcess && hasSpecificVariety
+      ? `${localizedRoastLabel} roast, ${localizedProcessLabel} process, ${localizedVarietyLabel} variety, and ${localizedWaterStyle} water are read together so the cup prediction stays grounded in input data.`
+      : `${localizedRoastLabel} roast is read with water, grinder, and brewer data. Process/variety are incomplete, so the cup prediction stays baseline and needs first-brew feedback.`;
   const waterToleranceMl = Math.max(5, Math.round(plan.totalWaterMl * 0.02));
   const hotWaterToleranceMl = Math.max(4, Math.round(plan.hotWaterMl * 0.02));
   const drawdownLowSeconds = tasteTimeRange[0];
@@ -4643,9 +4686,7 @@ function PlanResultDialog({
     {
       label: id ? 'Keseimbangan ekstraksi' : 'Extraction balance',
       value: `${plan.iceMl > 0 ? `1:${formatBrewRatio(plan.finalBeverageRatio)} / panas 1:${formatBrewRatio(plan.hotExtractionRatio)}` : `1:${formatBrewRatio(plan.finalBeverageRatio)}`} - ${formatRoundedTemperature(plan.waterTempC)} - ${extractionTimeLabel} ${formatGuideTime(extractionSeconds)}`,
-      detail: id
-        ? `${localizedRoastLabel}, proses ${localizedProcessLabel}, dan ${localizedWaterStyle} dibaca bersama supaya sweetness naik tanpa menutup clarity atau mendorong pahit.`
-        : `${localizedRoastLabel} roast, ${localizedProcessLabel} process, and ${localizedWaterStyle} water are read together so sweetness can rise without muting clarity or pushing bitterness.`,
+      detail: beanPredictionContextDetail,
     },
     {
       label: id ? 'Air + grinder' : 'Water + grinder',
@@ -4922,6 +4963,32 @@ function PlanResultDialog({
                           <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
                         </summary>
                         <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                          {expectedCup && expectedCupItems.length > 0 && (
+                            <div
+                              className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-[12px] leading-5 text-secondary sm:col-span-2"
+                              data-testid="ai-brew-expected-cup-detail-scores"
+                            >
+                              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                                <p className="font-semibold text-primary">{id ? 'Prediksi rasa inti' : 'Core cup prediction'}</p>
+                                <span className="rounded-full border panel-divider-subtle bg-surface-alpha px-2 py-0.5 text-[11px] font-semibold text-primary">
+                                  {id ? 'Keyakinan' : 'Confidence'}: {localizedExpectedCupConfidence}
+                                </span>
+                              </div>
+                              <div className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                                {expectedCupItems.slice(0, 4).map((item) => (
+                                  <span key={`cup-detail-${item.label}`} className="rounded-lg border panel-divider-subtle bg-surface-alpha px-2 py-1">
+                                    <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
+                                    <span className="font-semibold text-primary">{item.value}/5</span>
+                                  </span>
+                                ))}
+                              </div>
+                              <p className="mt-2 text-[11px] leading-5 text-secondary">
+                                {id
+                                  ? 'Angka ini membaca target, alat, air, grinder, roast, dan data bean yang tersedia. Kalau proses/varietas kosong, hasil tetap baseline dan wajib dikunci lewat cek rasa.'
+                                  : 'These scores use the target, brewer, water, grinder, roast, and available bean data. If process/variety are missing, this stays a baseline and needs taste feedback.'}
+                              </p>
+                            </div>
+                          )}
                           {plan.beanCoverage && (
                             <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-[12px] leading-5 text-secondary" data-testid="ai-brew-bean-coverage-detail">
                               <p className="font-semibold text-primary">{copy.beanCoverageTitle}: {localizedBeanCoverageConfidence}</p>
@@ -5071,6 +5138,16 @@ function PlanResultDialog({
                         >
                           <span className="block text-[10px] font-semibold uppercase tracking-widest text-tertiary">{item.label}</span>
                           <span className="mt-1 block break-words text-xl font-semibold leading-tight text-primary sm:text-2xl">{item.value}</span>
+                          {item.detail && (
+                            <span className="mt-1 block break-words text-[11px] leading-4 text-secondary">{item.detail}</span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2 text-[11px]" data-testid="ai-brew-compact-flow-snapshot">
+                      {compactFlowSnapshotItems.map((item) => (
+                        <span key={`flow-snapshot-${item.label}`} className="rounded-full border border-blue-500/14 bg-[var(--bg-base)]/82 px-2.5 py-1 font-semibold text-secondary">
+                          <span className="text-tertiary">{item.label}</span> <span className="text-primary">{item.value}</span>
                         </span>
                       ))}
                     </div>
@@ -5134,34 +5211,6 @@ function PlanResultDialog({
                   </div>
                 </section>
 
-                {actionPriorities.length > 0 && (
-                  <div
-                    className="min-w-0 max-w-full overflow-hidden rounded-[1.1rem] border border-blue-500/18 bg-[var(--bg-base)]/78 p-3"
-                    data-testid="ai-brew-action-priorities"
-                  >
-                    <div className="mb-2 flex min-w-0 items-start gap-2">
-                      <Target size={15} className="mt-0.5 shrink-0 text-blue-500" />
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
-                          {copy.actionPrioritiesTitle}
-                        </p>
-                        <p className="mt-0.5 text-xs leading-5 text-secondary">
-                          {copy.actionPrioritiesDescription}
-                        </p>
-                      </div>
-                    </div>
-                    <ol className="grid grid-cols-[minmax(0,1fr)] gap-2 text-[13px] leading-5 text-secondary sm:grid-cols-[repeat(3,minmax(0,1fr))]">
-                      {actionPriorities.slice(0, 3).map((item, index) => (
-                        <li key={`${index}-${item}`} className="flex items-start gap-2 rounded-xl bg-surface-alpha px-3 py-2">
-                          <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-semibold text-white">
-                            {index + 1}
-                          </span>
-                          <span className="min-w-0">{compactAiBrewInstruction(item, 96)}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
               </div>
             )}
 
@@ -5174,55 +5223,21 @@ function PlanResultDialog({
                 data-testid="ai-brew-result-detail-panel"
               >
               <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2.5 sm:grid-cols-[repeat(2,minmax(0,1fr))] xl:grid-cols-[repeat(3,minmax(0,1fr))]">
-                <div className={resultMetricCardClass}>
-                  <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.cupOutput}</p>
-                  <p className="mt-1 text-xl font-semibold text-primary sm:text-2xl">{formatRoundedMl(plan.estimatedCupOutputMl)}</p>
-                </div>
-                <div className={resultMetricCardClass}>
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
-                    <Target size={12} />
-                    <span>{copy.finalRatio}</span>
+                {summaryHighlightItems.map((item) => (
+                  <div key={`details-${item.id}`} className={resultMetricCardClass}>
+                    <p className="text-[11px] uppercase tracking-widest text-secondary">{item.label}</p>
+                    <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{item.value}</p>
+                    {item.detail && (
+                      <p className="mt-1 text-xs text-secondary">{item.detail}</p>
+                    )}
+                    {item.id === 'extraction' && guideEndSeconds > extractionSeconds && (
+                      <p className="mt-1 text-xs text-secondary">{guideEndLabel}: {formatGuideTime(guideEndSeconds)}</p>
+                    )}
+                    {item.id === 'grind' && localizedGrindBandLabel !== localizedGrindHeadline && (
+                      <p className="mt-1 text-xs text-secondary">{localizedGrindBandLabel}</p>
+                    )}
                   </div>
-                  <p className="mt-1 text-base font-semibold text-primary sm:text-lg">1:{formatBrewRatio(plan.finalBeverageRatio)}</p>
-                  {plan.iceMl > 0 && (
-                    <p className="mt-1 text-xs text-secondary">{id ? 'Rasio ekstraksi' : 'Hot extraction ratio'} 1:{formatBrewRatio(plan.hotExtractionRatio)}</p>
-                  )}
-                </div>
-                <div className={resultMetricCardClass}>
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
-                    <Thermometer size={12} />
-                    <span>{copy.temp}</span>
-                  </div>
-                  <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{formatRoundedTemperature(plan.waterTempC)}</p>
-                </div>
-                <div className={resultMetricCardClass}>
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
-                    <Clock3 size={12} />
-                    <span>{extractionTimeLabel}</span>
-                  </div>
-                  <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{formatGuideTime(extractionSeconds)}</p>
-                  {guideEndSeconds > extractionSeconds && (
-                    <p className="mt-1 text-xs text-secondary">{guideEndLabel}: {formatGuideTime(guideEndSeconds)}</p>
-                  )}
-                </div>
-                <div className={resultMetricCardClass}>
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
-                    <Gauge size={12} />
-                    <span>{copy.grind}</span>
-                  </div>
-                  <p className="mt-1 text-sm font-semibold text-primary">{localizedGrindHeadline}</p>
-                  <p className="mt-1 text-xs text-secondary">{localizedGrindBandLabel}</p>
-                </div>
-                <div className={resultMetricCardClass}>
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
-                    <Droplets size={12} />
-                    <span>{plan.brewMode === 'iced' ? copy.hotConcentrate : copy.totalWater}</span>
-                  </div>
-                  <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{formatRoundedMl(plan.hotWaterMl)}</p>
-                  {plan.iceMl > 0 && (
-                    <p className="mt-1 text-xs text-secondary">1:{formatBrewRatio(plan.hotExtractionRatio)}{' - '}{copy.ice}: {formatRoundedGrams(plan.iceMl)}</p>
-                  )}
-                </div>
+                ))}
               </div>
 
               <div className="grid gap-4">
@@ -5405,18 +5420,11 @@ function PlanResultDialog({
                             : 'Follow the timer. Core numbers stay visible; technique detail is for Pro.'}
                         </p>
                         <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-secondary">
-                          <span className={resultChipClass}>
-                            {formatRoundedGrams(plan.doseG)}
-                          </span>
-                          <span className={resultChipClass}>
-                            {formatRoundedMl(plan.totalWaterMl)}
-                          </span>
-                          <span className={resultChipClass}>
-                            {extractionTimeLabel} {formatGuideTime(extractionSeconds)}
-                          </span>
-                          <span className={resultChipClass}>
-                            {formatRoundedTemperature(plan.waterTempC)}
-                          </span>
+                          {summaryHighlightItems.map((item) => (
+                            <span key={`guide-${item.id}`} className={resultChipClass}>
+                              <span className="text-tertiary">{item.label}</span> <span className="text-primary">{item.value}</span>
+                            </span>
+                          ))}
                         </div>
                       </div>
                       <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -5796,32 +5804,12 @@ function PlanResultDialog({
                         </div>
                       ) : (
                         <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 xl:grid-cols-2">
-                          <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.flowMetricDose}</span>
-                            <span className="font-semibold text-primary">{formatRoundedGrams(plan.doseG)}</span>
-                          </span>
-                          <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{methodBrief.primaryLabel}</span>
-                            <span className="font-semibold text-primary">{methodBrief.primaryValue}</span>
-                          </span>
-                          {plan.iceMl > 0 && (
-                            <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                              <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.ice}</span>
-                              <span className="font-semibold text-primary">{formatRoundedGrams(plan.iceMl)}</span>
+                          {summaryHighlightItems.map((item) => (
+                            <span key={`flow-current-${item.id}`} className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
+                              <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
+                              <span className="font-semibold text-primary">{item.value}</span>
                             </span>
-                          )}
-                          <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
-                            <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
-                          </span>
-                          <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.temp}</span>
-                            <span className="font-semibold text-primary">{formatRoundedTemperature(plan.waterTempC)}</span>
-                          </span>
-                          <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
-                            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{extractionTimeLabel}</span>
-                            <span className="font-semibold text-primary">{formatGuideTime(extractionSeconds)}</span>
-                          </span>
+                          ))}
                         </div>
                       )}
                       <p className="mt-3 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">
@@ -6931,7 +6919,17 @@ export function AiBrewPanel({
   useEffect(() => {
     if (shouldHideAppNav) hideNav();
     else showNav();
-    return () => showNav();
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-ai-brew-modal-open', shouldHideAppNav ? 'true' : 'false');
+      window.dispatchEvent(new Event('app:bottom-nav-visibility'));
+    }
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.documentElement.setAttribute('data-ai-brew-modal-open', 'false');
+        window.dispatchEvent(new Event('app:bottom-nav-visibility'));
+      }
+      showNav();
+    };
   }, [hideNav, showNav, shouldHideAppNav]);
 
   function restorePlanIntoView(nextCatalog: AiBrewCatalog, storedPlan: BrewPlan, shouldOpen = false) {

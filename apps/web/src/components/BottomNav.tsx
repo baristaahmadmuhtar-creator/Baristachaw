@@ -38,10 +38,19 @@ function readPwaFromRoot() {
   return root.hasAttribute('data-pwa') || root.hasAttribute('data-ios-standalone') || root.hasAttribute('data-native-shell-profile');
 }
 
+function readBottomNavSuppressedFromRoot() {
+  if (typeof window === 'undefined') return false;
+  const root = document.documentElement;
+  return root.getAttribute('data-ai-brew-modal-open') === 'true'
+    || root.dataset.bottomNavSuppressed === 'true'
+    || root.dataset.navHidden === 'true';
+}
+
 export function BottomNav({ hidden = false, showAdmin = false }: BottomNavProps) {
   const { t } = useGlobalState();
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [autoHidden, setAutoHidden] = useState(false);
+  const [bottomNavSuppressed, setBottomNavSuppressed] = useState(() => readBottomNavSuppressedFromRoot());
   const [isPwaViewport, setIsPwaViewport] = useState(() => readPwaFromRoot());
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
     typeof window !== 'undefined' ? window.matchMedia('(max-width: 1023px)').matches : true
@@ -79,21 +88,34 @@ export function BottomNav({ hidden = false, showAdmin = false }: BottomNavProps)
     if (typeof window === 'undefined') return;
     setKeyboardOpen(readKeyboardOpenFromRoot());
     setIsPwaViewport(readPwaFromRoot());
+    setBottomNavSuppressed(readBottomNavSuppressedFromRoot());
 
     const onMetrics = (event: Event) => {
       const custom = event as CustomEvent<ViewportMetricsDetail>;
       const nextOpen = !!custom.detail?.keyboardOpen || (custom.detail?.keyboardOffset ?? 0) > 0;
       setKeyboardOpen(nextOpen);
       setIsPwaViewport(readPwaFromRoot());
+      setBottomNavSuppressed(readBottomNavSuppressedFromRoot());
     };
 
-    const onPageShow = () => setIsPwaViewport(readPwaFromRoot());
+    const syncSuppression = () => {
+      setIsPwaViewport(readPwaFromRoot());
+      setBottomNavSuppressed(readBottomNavSuppressedFromRoot());
+    };
+    const observer = new MutationObserver(syncSuppression);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-ai-brew-modal-open', 'data-bottom-nav-suppressed', 'data-nav-hidden', 'data-pwa', 'data-ios-standalone', 'data-native-shell-profile'],
+    });
 
     window.addEventListener('app:viewport-metrics', onMetrics as EventListener);
-    window.addEventListener('pageshow', onPageShow, { passive: true });
+    window.addEventListener('app:bottom-nav-visibility', syncSuppression);
+    window.addEventListener('pageshow', syncSuppression, { passive: true });
     return () => {
+      observer.disconnect();
       window.removeEventListener('app:viewport-metrics', onMetrics as EventListener);
-      window.removeEventListener('pageshow', onPageShow);
+      window.removeEventListener('app:bottom-nav-visibility', syncSuppression);
+      window.removeEventListener('pageshow', syncSuppression);
     };
   }, []);
 
@@ -163,7 +185,7 @@ export function BottomNav({ hidden = false, showAdmin = false }: BottomNavProps)
     };
   }, [isMobileViewport, isPwaViewport, revealNav, scheduleIdleHide]);
 
-  const effectiveHidden = hidden || keyboardOpen || (isMobileViewport && !isPwaViewport && autoHidden);
+  const effectiveHidden = hidden || bottomNavSuppressed || keyboardOpen || (isMobileViewport && !isPwaViewport && autoHidden);
   const navTransition = keyboardOpen
     ? 'none'
     : 'transform var(--motion-duration-standard) var(--motion-ease-emphasized), opacity var(--motion-duration-fast) ease-out, visibility 0s linear';

@@ -3647,6 +3647,40 @@ test('AI Brew taxonomy risk tags drive honest decaf, experimental, drying-only, 
   assert.notEqual(jarcPlan.expectedCupProfile?.confidence, undefined);
 });
 
+test('AI Brew expected cup does not overclaim when process and variety are missing', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'QA Unknown Bean',
+    dripperId: 'hario-v60',
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual',
+    waterTdsPpm: '90',
+    waterHardnessPpm: '50',
+    waterAlkalinityPpm: '35',
+    brewMode: 'hot',
+    targetProfileId: 'floral_transparent',
+    process: '',
+    variety: '',
+    origin: '',
+  }, productionCatalog);
+
+  const expectedCup = plan.expectedCupProfile;
+  assert.ok(expectedCup, 'expected cup profile should exist');
+  assert.notEqual(expectedCup?.confidence, 'high', 'missing process and variety must not produce high confidence');
+  assert.ok((expectedCup?.acidity || 0) <= 4, 'unknown bean acidity should not be pushed to a max-style prediction');
+  assert.ok((expectedCup?.clarity || 0) <= 4, 'unknown bean clarity should remain guarded');
+  assert.match(
+    [
+      ...(expectedCup?.warnings || []),
+      ...(expectedCup?.reasons || []),
+      ...(plan.beanCoverage?.warnings || []),
+      ...(plan.beanCoverage?.reasons || []),
+    ].join(' '),
+    /proses|varietas|belum lengkap|baseline|feedback/i,
+  );
+});
+
 test('AI Brew shared core calibrates 10-20 g target profile, dose, process, and custom variety signals', () => {
   assert.equal(resolveDefaultTargetProfileIdForBean({
     coffeeName: 'Panama Gesha washed',

@@ -161,6 +161,21 @@ function sensoryReason(prefix: string, entry?: { label: string; sensoryBias?: { 
   return `${prefix} ${entry.label} cue: ${strongest[0]} tendency ${strongest[1]}.`;
 }
 
+function hasSpecifiedBeanValue(value?: string | null) {
+  const normalized = String(value || '').trim().toLowerCase();
+  return Boolean(normalized)
+    && normalized !== 'auto'
+    && normalized !== 'unknown'
+    && normalized !== 'not specified'
+    && normalized !== 'tidak disebutkan'
+    && normalized !== 'belum disebutkan';
+}
+
+function softenUngroundedBeanPrediction(value: number) {
+  if (value <= 3) return value;
+  return Math.min(4, 3 + ((value - 3) * 0.72));
+}
+
 export function buildExpectedCupProfile(
   plan: BrewPlan,
   processEntry?: ProcessCatalogEntry,
@@ -347,6 +362,27 @@ export function buildExpectedCupProfile(
     }
   }
 
+  const processSpecified = hasSpecifiedBeanValue(plan.process);
+  const varietySpecified = hasSpecifiedBeanValue(plan.variety);
+  const missingProcessData = !processSpecified || !processEntry?.sensoryBias;
+  const missingVarietyData = !varietySpecified || !varietyEntry?.sensoryBias;
+  const missingBeanSensoryData = missingProcessData || missingVarietyData;
+  if (missingBeanSensoryData) {
+    acidity = softenUngroundedBeanPrediction(acidity);
+    sweetness = softenUngroundedBeanPrediction(sweetness);
+    body = softenUngroundedBeanPrediction(body);
+    clarity = softenUngroundedBeanPrediction(clarity);
+    aromaIntensity = softenUngroundedBeanPrediction(aromaIntensity);
+    reasons.push(
+      missingProcessData && missingVarietyData
+        ? 'Proses dan varietas belum lengkap; prediksi rasa memakai baseline target, roast, air, grinder, dan alat.'
+        : missingProcessData
+          ? 'Proses belum lengkap; prediksi rasa belum membaca karakter proses bean secara spesifik.'
+          : 'Varietas belum lengkap; prediksi rasa belum membaca karakter varietas secara spesifik.',
+    );
+    warnings.push('Prediksi rasa ini baseline terjaga, bukan profil bean final. Gunakan feedback seduh pertama untuk mengunci arah rasa.');
+  }
+
   const icedAdjustment = deriveIcedCupAdjustment(plan);
   if (
     icedAdjustment.acidityDelta
@@ -367,6 +403,9 @@ export function buildExpectedCupProfile(
   }
 
   let confidence: ExpectedCupProfile['confidence'] = 'high';
+  if (missingBeanSensoryData) {
+    confidence = 'medium';
+  }
   const highBufferWater = plan.waterClassification === 'high_buffer'
     || plan.waterClassification === 'alkaline_caution'
     || (plan.waterMinerals?.alkalinityPpm ?? 0) > 85;

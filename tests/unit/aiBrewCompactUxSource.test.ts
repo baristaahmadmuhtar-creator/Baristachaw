@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const SOURCE = readFileSync('apps/web/src/features/ai-brew/AiBrewPanel.tsx', 'utf8');
 const AI_ACCESS_GATE_SOURCE = readFileSync('apps/web/src/components/billing/AiAccessGate.tsx', 'utf8');
+const BOTTOM_NAV_SOURCE = readFileSync('apps/web/src/components/BottomNav.tsx', 'utf8');
 
 test('AI Brew quick mode keeps Switch setup compact and single-source-of-truth', () => {
   assert.match(SOURCE, /data-testid="ai-brew-brew-mode-method-panel"/);
@@ -67,7 +68,7 @@ test('AI Brew generated result uses compact tabs before dense detail', () => {
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-guide-preview"/);
   assert.doesNotMatch(SOURCE, /expectedCupItems\.map\(\(item\) =>/);
   assert.match(SOURCE, /setActiveTab\('plan'\)/);
-  assert.match(SOURCE, /setGuideDensity\(isQuickResult \? 'basic' : 'pro'\)/);
+  assert.match(SOURCE, /setGuideDensity\('basic'\)/);
   assert.match(SOURCE, /\{ id: 'details', label: copy\.detailTab \}/);
 });
 
@@ -136,8 +137,8 @@ test('AI Brew guide details stay deduped and barista-actionable', () => {
   assert.match(SOURCE, /Tuang tenang dari tengah ke tengah-luar/);
   assert.match(SOURCE, /buildAiBrewWorkflowControlDetail/);
   assert.match(SOURCE, /buildAiBrewBeanContextDetail/);
-  assert.match(SOURCE, /buildAiBrewTargetCorrectionDetail/);
-  assert.match(SOURCE, /Target manis:/);
+  assert.doesNotMatch(SOURCE, /buildAiBrewTargetCorrectionDetail/);
+  assert.doesNotMatch(SOURCE, /Koreksi manis:/);
   assert.match(SOURCE, /summaryFocusHint/);
 });
 
@@ -146,6 +147,24 @@ test('AI Brew quick Seduh tab stays timer-first without duplicate process list',
   assert.match(SOURCE, /data-testid="ai-brew-sequence-section"/);
   assert.match(SOURCE, /flowNextPourValue/);
   assert.match(SOURCE, /copy\.flowNextPour/);
+});
+
+test('AI Brew result metrics use one consistent production order', () => {
+  assert.match(SOURCE, /buildAiBrewCoreMetricItems/);
+  assert.match(SOURCE, /id: 'dose'/);
+  assert.match(SOURCE, /id: 'water'/);
+  assert.match(SOURCE, /id: 'ratio'/);
+  assert.match(SOURCE, /id: 'temp'/);
+  assert.match(SOURCE, /id: 'grind'/);
+  assert.match(SOURCE, /id: 'extraction'/);
+  assert.doesNotMatch(SOURCE, /actionPrioritiesTitle: 'Mulai dari sini'/);
+});
+
+test('AI Brew fullscreen builders can suppress the mobile bottom nav in iOS PWA', () => {
+  assert.match(SOURCE, /data-ai-brew-modal-open/);
+  assert.match(BOTTOM_NAV_SOURCE, /readBottomNavSuppressedFromRoot/);
+  assert.match(BOTTOM_NAV_SOURCE, /MutationObserver/);
+  assert.match(BOTTOM_NAV_SOURCE, /bottomNavSuppressed/);
 });
 
 test('AI Brew quick water summary hides raw mineral chemistry', () => {

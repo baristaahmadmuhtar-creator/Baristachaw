@@ -8106,7 +8106,7 @@ export function AiBrewPanel({
   }
 
   function renderGenerationOverlay() {
-    if (!generationBusy) return null;
+    if (!generationBusy || resultOpen) return null;
 
     const id = isIndonesianAiBrewLanguage(language);
     const totalStages = AI_BREW_GENERATION_STAGES.length;

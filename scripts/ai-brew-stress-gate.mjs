@@ -20,6 +20,12 @@ const patterns = {
   deep: 'AI Brew 10000-combination global stress matrix|AI Brew 100000-combination iced guide stress matrix|AI Brew grinder size matrix',
 };
 
+const largeStressPatterns = {
+  hot500k: 'AI Brew 500000 hot stress matrix',
+  iced500k: 'AI Brew 500000 iced stress matrix',
+  '1m': 'AI Brew 500000|AI Brew 1000000',
+};
+
 function runNodeTest(pattern) {
   const result = spawnSync(process.execPath, [
     ...nodeArgsBase,
@@ -29,6 +35,24 @@ function runNodeTest(pattern) {
   ], {
     cwd: process.cwd(),
     env: process.env,
+    stdio: 'inherit',
+    shell: false,
+  });
+  process.exitCode = result.status ?? 1;
+}
+
+function runLargeStressTest(pattern) {
+  const result = spawnSync(process.execPath, [
+    ...nodeArgsBase,
+    '--test-name-pattern',
+    pattern,
+    'tests/unit/aiBrewHotIced500kStress.test.ts',
+  ], {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      AI_BREW_500K_STRESS: '1',
+    },
     stdio: 'inherit',
     shell: false,
   });
@@ -55,6 +79,9 @@ function reportArtifacts() {
     'artifacts/ai-brew-audit/full-method-audit',
     'artifacts/ai-brew-audit/global-10k-stress',
     'artifacts/ai-brew-audit/iced-100k-guide-stress',
+    'artifacts/ai-brew-audit/hot-500k-stress',
+    'artifacts/ai-brew-audit/iced-500k-stress',
+    'artifacts/ai-brew-audit/hot-iced-1m-stress',
     'artifacts/ai-brew-audit/grind-size-matrix',
   ];
   const found = roots.flatMap((root) => latestMarkdown(root) || []);
@@ -69,9 +96,11 @@ function reportArtifacts() {
 
 if (mode === 'report') {
   reportArtifacts();
+} else if (largeStressPatterns[mode]) {
+  runLargeStressTest(largeStressPatterns[mode]);
 } else if (patterns[mode]) {
   runNodeTest(patterns[mode]);
 } else {
-  console.error(`Unknown AI Brew stress mode "${mode}". Use quick, standard, deep, or report.`);
+  console.error(`Unknown AI Brew stress mode "${mode}". Use quick, standard, deep, hot500k, iced500k, 1m, or report.`);
   process.exitCode = 1;
 }

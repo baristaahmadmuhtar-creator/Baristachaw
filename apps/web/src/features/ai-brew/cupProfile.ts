@@ -367,12 +367,22 @@ export function buildExpectedCupProfile(
   }
 
   let confidence: ExpectedCupProfile['confidence'] = 'high';
-  if (plan.waterClassification === 'high_buffer' || plan.waterClassification === 'alkaline_caution') {
+  const highBufferWater = plan.waterClassification === 'high_buffer'
+    || plan.waterClassification === 'alkaline_caution'
+    || (plan.waterMinerals?.alkalinityPpm ?? 0) > 85;
+  if (highBufferWater) {
     acidity -= 0.7;
     clarity -= 0.6;
+    confidence = confidence === 'high' ? 'medium' : confidence;
     warnings.push('High-buffer water can mute acidity and floral clarity.');
   }
-  if (plan.waterClassification === 'zero_mineral_ro') {
+  const zeroMineralWater = plan.waterClassification === 'zero_mineral_ro'
+    || (
+      (plan.waterMinerals?.tdsPpm ?? 999) < 30
+      && (plan.waterMinerals?.hardnessPpm ?? 999) < 20
+      && (plan.waterMinerals?.alkalinityPpm ?? 999) < 20
+    );
+  if (zeroMineralWater) {
     confidence = 'low';
     warnings.push('Zero-mineral/RO water should not be used without remineralization.');
   } else if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady || plan.waterMineralDerivation === 'estimated_from_classification') {

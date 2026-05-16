@@ -21,8 +21,15 @@ import { ConfirmActionDialog } from '../components/ConfirmActionDialog';
 import Markdown from 'react-markdown';
 import type { CollectionItem } from '../types';
 import { parseNoteDraftFromStorage, sanitizeNoteDraftForStorage, type NoteDraftState } from '../features/collection/noteDraftState';
+import {
+  filterCollectionFolders,
+  getCollectionFolderItemCount,
+  getCollectionHomeFolderPreview,
+  validateCollectionFolderName,
+} from '../features/collection/collectionViewModel';
 
 type FilterType = 'all' | 'recipe' | 'ai_canvas' | 'note';
+type CollectionViewMode = 'home' | 'folders' | 'folder';
 type PendingDeleteTarget =
   | { kind: 'item'; id: string; label: string }
   | { kind: 'recipe'; id: string; label: string }
@@ -49,6 +56,7 @@ export function Collection() {
   const [savedRecipes, setSavedRecipes] = useState<any[]>([]);
   const [filter, setFilter] = useState<FilterType>('all');
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [collectionViewMode, setCollectionViewMode] = useState<CollectionViewMode>('home');
   const [selectedItem, setSelectedItem] = useState<CollectionItem | null>(null);
   const [showNoteEditor, setShowNoteEditor] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
@@ -66,6 +74,7 @@ export function Collection() {
   const [newFolderName, setNewFolderName] = useState('');
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [folderFormError, setFolderFormError] = useState('');
 
   // Folder management
   const [folderMenuId, setFolderMenuId] = useState<string | null>(null);
@@ -172,10 +181,17 @@ export function Collection() {
     setPendingDelete({ kind: 'recipe', id: recipe.id, label: recipe.name || t.untitledRecipe });
   };
 
+  const getFolderNameErrorCopy = useCallback((reason: 'empty' | 'too_long' | 'duplicate') => {
+    if (reason === 'duplicate') return t.folderNameDuplicate || 'Folder name already exists.';
+    if (reason === 'too_long') return t.folderNameTooLong || 'Folder name is too long.';
+    return t.folderNameRequired || 'Folder name cannot be empty.';
+  }, [t]);
+
   const closeCreateFolder = useCallback(() => {
     setShowNewFolder(false);
     setNewFolderName('');
     setIsCreatingFolder(false);
+    setFolderFormError('');
   }, []);
 
   const focusCreateFolderInput = useCallback(() => {
@@ -187,12 +203,15 @@ export function Collection() {
 
   const handleCreateFolder = async () => {
     if (isCreatingFolder) return;
-    const nextName = newFolderName.trim();
-    if (!nextName) return;
+    const validation = validateCollectionFolderName(newFolderName, folders);
+    if (validation.ok === false) {
+      setFolderFormError(getFolderNameErrorCopy(validation.reason));
+      return;
+    }
 
     setIsCreatingFolder(true);
     try {
-      await addFolder(nextName);
+      await addFolder(validation.value);
       setNewFolderName('');
       closeCreateFolder();
     } finally {
@@ -201,10 +220,15 @@ export function Collection() {
   };
 
   const handleRenameFolder = async (id: string) => {
-    if (!renameFolderValue.trim()) return;
-    await editFolder(id, renameFolderValue.trim());
+    const validation = validateCollectionFolderName(renameFolderValue, folders, id);
+    if (validation.ok === false) {
+      setFolderFormError(getFolderNameErrorCopy(validation.reason));
+      return;
+    }
+    await editFolder(id, validation.value);
     setRenamingFolderId(null);
     setRenameFolderValue('');
+    setFolderFormError('');
   };
 
   const openCreateFolder = useCallback(() => {
@@ -216,6 +240,7 @@ export function Collection() {
     setFolderMenuId(null);
     setRenamingFolderId(null);
     setRenameFolderValue('');
+    setFolderFormError('');
     setShowNewFolder(true);
     requestAnimationFrame(() => {
       pageTopAnchorRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
@@ -257,7 +282,10 @@ export function Collection() {
         setSavedRecipes((currentRecipes) => currentRecipes.filter((recipe: any) => recipe.id !== target.id));
       } else {
         setOptimisticDeletedFolderIds((currentIds) => new Set(currentIds).add(target.id));
-        if (selectedFolderId === target.id) setSelectedFolderId(null);
+        if (selectedFolderId === target.id) {
+          setSelectedFolderId(null);
+          setCollectionViewMode('home');
+        }
         setPendingDelete(null);
         setDeleteBusy(false);
         void softDeleteCollectionFolder(target.id)
@@ -314,12 +342,12 @@ export function Collection() {
 
     setNoteTitle(loadedDraft.title);
     setNoteMarkdown(loadedDraft.markdown);
-    setNoteFolderId(loadedDraft.folderId);
+    setNoteFolderId(selectedFolderId || loadedDraft.folderId);
     setShowNoteEditor(true);
     requestAnimationFrame(() => {
       pageTopAnchorRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
     });
-  }, []);
+  }, [selectedFolderId]);
 
   const openEditNote = useCallback((item: CollectionItem) => {
     if (!isNoteItem(item)) return;
@@ -353,12 +381,13 @@ export function Collection() {
     if (!selectedItem || !isNoteItem(selectedItem) || !isNoteEditingInModal || savingModalNote) return;
     const nextTitle = modalNoteTitleDraft.trim();
     const nextMarkdown = modalNoteBodyDraft.trim();
-    if (!nextTitle || !nextMarkdown) return;
+    if ((!nextTitle && !nextMarkdown) || savingModalNote) return;
+    const finalTitle = nextTitle || (t.untitledNote || t.notes);
 
     setSavingModalNote(true);
     try {
       const updated = await updateCollectionItem(selectedItem.id, {
-        title: nextTitle,
+        title: finalTitle,
         folderId: modalNoteFolderDraft || undefined,
         content: {
           markdown: nextMarkdown,
@@ -382,18 +411,20 @@ export function Collection() {
     modalNoteFolderDraft,
     refresh,
     cancelModalNoteEdit,
+    t,
   ]);
 
   const handleSaveNote = useCallback(async () => {
     const nextTitle = noteTitle.trim();
     const nextMarkdown = noteMarkdown.trim();
-    if (!nextTitle || !nextMarkdown || savingNote) return;
+    if ((!nextTitle && !nextMarkdown) || savingNote) return;
+    const finalTitle = nextTitle || (t.untitledNote || t.notes);
 
     setSavingNote(true);
     try {
       if (editingNoteId) {
         await updateCollectionItem(editingNoteId, {
-          title: nextTitle,
+          title: finalTitle,
           folderId: noteFolderId || undefined,
           content: {
             markdown: nextMarkdown,
@@ -402,7 +433,7 @@ export function Collection() {
         });
       } else {
         const noteItem = createNoteCollectionItem({
-          title: nextTitle,
+          title: finalTitle,
           markdown: nextMarkdown,
           folderId: noteFolderId || undefined,
         });
@@ -414,7 +445,7 @@ export function Collection() {
     } finally {
       setSavingNote(false);
     }
-  }, [noteTitle, noteMarkdown, savingNote, editingNoteId, noteFolderId, closeNoteEditor, refresh]);
+  }, [noteTitle, noteMarkdown, savingNote, editingNoteId, noteFolderId, closeNoteEditor, refresh, t]);
 
   const filteredItems = useMemo(() => items.filter((item) => {
     if (filter === 'note' && !isNoteItem(item)) return false;
@@ -452,9 +483,59 @@ export function Collection() {
     () => folders.filter((folder) => !optimisticDeletedFolderIds.has(folder.id)),
     [folders, optimisticDeletedFolderIds]
   );
+  const activeFolder = useMemo(
+    () => selectedFolderId ? visibleFolders.find((folder) => folder.id === selectedFolderId) || null : null,
+    [selectedFolderId, visibleFolders]
+  );
+  const currentMode: CollectionViewMode = activeFolder ? 'folder' : collectionViewMode;
+  const isInFolder = currentMode === 'folder';
+  const searchPlaceholder = isInFolder
+    ? (t.collectionSearchInsideFolder || 'Search this folder...')
+    : currentMode === 'folders'
+      ? (t.collectionSearchFolders || 'Search folders...')
+      : (t.collectionSearchAll || t.searchNotes);
+  const folderPreview = useMemo(
+    () => getCollectionHomeFolderPreview(visibleFolders, items),
+    [visibleFolders, items]
+  );
+  const foldersForBrowser = useMemo(
+    () => filterCollectionFolders(folderPreview.sorted, debouncedSearchQuery),
+    [folderPreview.sorted, debouncedSearchQuery]
+  );
+  const enterHome = useCallback(() => {
+    setSelectedFolderId(null);
+    setCollectionViewMode('home');
+    setSelectedItem(null);
+    setFolderMenuId(null);
+    setRenamingFolderId(null);
+    setFolderFormError('');
+  }, []);
+  const enterFolder = useCallback((folderId: string) => {
+    setSelectedFolderId(folderId);
+    setCollectionViewMode('folder');
+    setSelectedItem(null);
+    setShowNewFolder(false);
+    setFolderMenuId(null);
+    setRenamingFolderId(null);
+    setFolderFormError('');
+  }, []);
+  const enterFolderBrowser = useCallback(() => {
+    setSelectedFolderId(null);
+    setCollectionViewMode('folders');
+    setSelectedItem(null);
+    setFolderMenuId(null);
+    setRenamingFolderId(null);
+    setFolderFormError('');
+  }, []);
   const hasContent = items.length > 0 || savedRecipes.length > 0 || visibleFolders.length > 0;
   const noteCount = items.filter((item) => isNoteItem(item)).length;
-  const isInFolder = selectedFolderId !== null;
+
+  useEffect(() => {
+    if (!selectedFolderId) return;
+    if (activeFolder) return;
+    setSelectedFolderId(null);
+    setCollectionViewMode('home');
+  }, [activeFolder, selectedFolderId]);
 
   return (
     <motion.div
@@ -467,12 +548,12 @@ export function Collection() {
       {/* Header */}
       <header className="mb-6 flex justify-between items-start shrink-0 panel-soft rounded-3xl px-4 py-4">
         <div className="flex items-center gap-3">
-          {isInFolder && (
+          {(isInFolder || currentMode === 'folders') && (
             <button
               type="button"
-              onClick={() => { setSelectedFolderId(null); setSelectedItem(null); }}
+              onClick={enterHome}
               className="p-2 rounded-xl glass-button"
-              aria-label={t.folderBack || t.close}
+              aria-label={t.folderBack || t.collectionBackToCollection || t.close}
             >
               <ArrowLeft size={20} />
             </button>
@@ -481,41 +562,53 @@ export function Collection() {
             <div className="w-12 h-12 rounded-[1.25rem] bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-2 shadow-inner">
               <BookOpen size={24} />
             </div>
-            <h1 className="text-2xl font-semibold tracking-tight mb-1">{t.collection}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight mb-1">
+              {isInFolder ? activeFolder?.name : currentMode === 'folders' ? (t.collectionAllFolders || 'All folders') : t.collection}
+            </h1>
             <p className="text-secondary text-base">
-              {isInFolder ? visibleFolders.find((f) => f.id === selectedFolderId)?.name || t.folderLabel : t.collectionSubtitle}
+              {isInFolder
+                ? `${t.collectionInsideFolder || 'Inside folder'} · ${t.itemCount.replace('{count}', String(activeFolder ? getCollectionFolderItemCount(items, activeFolder.id) : 0))}`
+                : currentMode === 'folders'
+                  ? (t.collectionFoldersSubtitle || 'Manage folders and keep notes organized.')
+                  : t.collectionSubtitle}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={openCreateNote}
-            className="h-11 px-4 rounded-xl glass-button hover:scale-105 transition-transform inline-flex items-center gap-2 text-sm font-medium"
-            title={t.newNote}
-          >
-            <NotebookPen size={16} />
-            <span>{t.newNote}</span>
-          </button>
-          <button
-            type="button"
-            onClick={openCreateFolder}
-            className="icon-touch-button glass-button hover:scale-105 transition-transform"
-            title={t.createFolder}
-            aria-label={t.createFolder}
-          >
-            <FolderPlus size={20} />
-          </button>
+          {currentMode === 'home' && (
+            <button
+              type="button"
+              onClick={openCreateNote}
+              className="h-11 px-4 rounded-xl glass-button hover:scale-105 transition-transform inline-flex items-center gap-2 text-sm font-medium"
+              title={t.newNote}
+            >
+              <NotebookPen size={16} />
+              <span>{t.newNote}</span>
+            </button>
+          )}
+          {!isInFolder && (
+            <button
+              type="button"
+              onClick={openCreateFolder}
+              className="icon-touch-button glass-button hover:scale-105 transition-transform"
+              title={t.createFolder}
+              aria-label={t.createFolder}
+            >
+              <FolderPlus size={20} />
+            </button>
+          )}
         </div>
       </header>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 mb-4 overflow-x-auto hide-scrollbar pb-2 shrink-0 panel-soft rounded-2xl px-2 py-2">
-        <button type="button" onClick={() => setFilter('all')} className={`${filterBtnClass('all')} whitespace-nowrap`}>{t.allItems}</button>
-        <button type="button" onClick={() => setFilter('recipe')} className={`${filterBtnClass('recipe')} whitespace-nowrap`}>{t.recipes}</button>
-        <button type="button" onClick={() => setFilter('ai_canvas')} className={`${filterBtnClass('ai_canvas')} whitespace-nowrap`}>{t.aiCanvas}</button>
-        <button type="button" onClick={() => setFilter('note')} className={`${filterBtnClass('note')} whitespace-nowrap`}>{t.notes} ({noteCount})</button>
-      </div>
+      {currentMode !== 'folders' && (
+        <div className="flex gap-2 mb-4 overflow-x-auto hide-scrollbar pb-2 shrink-0 panel-soft rounded-2xl px-2 py-2">
+          <button type="button" onClick={() => setFilter('all')} className={`${filterBtnClass('all')} whitespace-nowrap`}>{t.allItems}</button>
+          <button type="button" onClick={() => setFilter('recipe')} className={`${filterBtnClass('recipe')} whitespace-nowrap`}>{t.recipes}</button>
+          <button type="button" onClick={() => setFilter('ai_canvas')} className={`${filterBtnClass('ai_canvas')} whitespace-nowrap`}>{t.aiCanvas}</button>
+          <button type="button" onClick={() => setFilter('note')} className={`${filterBtnClass('note')} whitespace-nowrap`}>{t.notes} ({noteCount})</button>
+        </div>
+      )}
 
       <div className="mb-4 panel-soft rounded-2xl px-3 py-2">
         <label className="relative flex items-center">
@@ -525,8 +618,8 @@ export function Collection() {
               name="collection-search"
               value={noteSearchQuery}
               onChange={(e) => setNoteSearchQuery(e.target.value)}
-              placeholder={t.searchNotes}
-              aria-label={t.searchNotes}
+              placeholder={searchPlaceholder}
+              aria-label={searchPlaceholder}
               enterKeyHint="search"
               className="w-full glass-input h-11 pl-10 pr-12 text-sm"
             />
@@ -573,21 +666,27 @@ export function Collection() {
                 className="w-full glass-input px-4 py-3 text-base min-h-[160px] resize-y"
               />
             <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
-              <select
-                value={noteFolderId}
-                onChange={(e) => setNoteFolderId(e.target.value)}
-                aria-label={t.moveToFolder}
-                className="glass-input h-11 px-3 text-sm"
-              >
-                <option value="">{t.noFolder}</option>
-                {visibleFolders.map((folder) => (
-                  <option key={folder.id} value={folder.id}>{folder.name}</option>
-                ))}
-              </select>
+              {isInFolder && activeFolder ? (
+                <div className="min-h-11 rounded-xl bg-surface-alpha px-3 py-2 text-sm text-secondary inline-flex items-center">
+                  {t.collectionSavedInFolder || 'Saved in'}: <span className="ml-1 font-medium text-primary">{activeFolder.name}</span>
+                </div>
+              ) : (
+                <select
+                  value={noteFolderId}
+                  onChange={(e) => setNoteFolderId(e.target.value)}
+                  aria-label={t.moveToFolder}
+                  className="glass-input h-11 px-3 text-sm"
+                >
+                  <option value="">{t.noFolder}</option>
+                  {visibleFolders.map((folder) => (
+                    <option key={folder.id} value={folder.id}>{folder.name}</option>
+                  ))}
+                </select>
+              )}
               <button
                 type="button"
                 onClick={() => { void handleSaveNote(); }}
-                disabled={savingNote || !noteTitle.trim() || !noteMarkdown.trim()}
+                disabled={savingNote || (!noteTitle.trim() && !noteMarkdown.trim())}
                 className="h-11 px-5 rounded-xl bg-emerald-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center min-w-[120px]"
               >
                 {savingNote ? <Loader2 size={16} className="animate-spin" /> : (editingNoteId ? t.updateNote : t.saveNote)}
@@ -618,7 +717,10 @@ export function Collection() {
                 type="text"
                 name="collection-folder-name"
                 value={newFolderName}
-                onChange={(e) => setNewFolderName(e.target.value)}
+                onChange={(e) => {
+                  setNewFolderName(e.target.value);
+                  if (folderFormError) setFolderFormError('');
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !isCreatingFolder) {
                     void handleCreateFolder();
@@ -642,23 +744,41 @@ export function Collection() {
                 <X size={18} />
               </button>
             </div>
+            {folderFormError && (
+              <p className="mt-3 text-sm text-red-500" role="alert">{folderFormError}</p>
+            )}
           </div>
         </div>
       )}
 
       {/* ─── Main Folder View ─── */}
-      {!isInFolder && (
+      {currentMode === 'home' && (
         <motion.div initial={disableEntranceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }}>
           {/* Folder Grid */}
           {visibleFolders.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-              {visibleFolders.map((folder) => (
+            <div className="mb-8 panel-soft rounded-3xl p-4">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h2 className="text-sm font-semibold text-secondary uppercase tracking-widest">{t.folderLabel}</h2>
+                  <p className="text-sm text-secondary mt-1">{t.collectionFoldersSubtitle || 'Keep recipes and notes organized.'}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={enterFolderBrowser}
+                  className="h-11 rounded-xl glass-button px-4 text-sm font-medium self-start"
+                >
+                  {t.collectionSeeAllFolders || 'See all folders'}
+                  {folderPreview.remainingCount > 0 ? ` · +${folderPreview.remainingCount}` : ''}
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {folderPreview.preview.map((folder) => (
                 <div
                   key={folder.id}
                   className={`relative group ${renamingFolderId === folder.id ? 'z-20' : ''}`}
                 >
                   <button
-                    onClick={() => setSelectedFolderId(folder.id)}
+                    onClick={() => enterFolder(folder.id)}
                     className="w-full glass-card p-5 text-left"
                     type="button"
                   >
@@ -708,34 +828,27 @@ export function Collection() {
 
                   {/* Folder rename inline */}
                   {renamingFolderId === folder.id && (
-                    <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] panel-soft rounded-2xl p-3 flex gap-2 border panel-divider-subtle shadow-2xl">
-                      <input
-                        value={renameFolderValue}
-                        onChange={(e) => setRenameFolderValue(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleRenameFolder(folder.id)}
-                        className="flex-1 glass-input px-3 py-2 text-sm"
-                        autoFocus
-                      />
-                      <button type="button" onClick={() => handleRenameFolder(folder.id)} className="px-3 py-2 rounded-xl bg-emerald-500 text-white text-sm font-medium">{t.confirm}</button>
-                      <button type="button" onClick={() => { setRenamingFolderId(null); setRenameFolderValue(''); }} className="icon-touch-button icon-touch-button-sm glass-button" aria-label={t.cancel}><X size={14} /></button>
+                    <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] panel-soft rounded-2xl p-3 border panel-divider-subtle shadow-2xl">
+                      <div className="flex gap-2">
+                        <input
+                          value={renameFolderValue}
+                          onChange={(e) => {
+                            setRenameFolderValue(e.target.value);
+                            if (folderFormError) setFolderFormError('');
+                          }}
+                          onKeyDown={(e) => e.key === 'Enter' && handleRenameFolder(folder.id)}
+                          className="flex-1 glass-input px-3 py-2 text-sm"
+                          autoFocus
+                        />
+                        <button type="button" onClick={() => handleRenameFolder(folder.id)} className="px-3 py-2 rounded-xl bg-emerald-500 text-white text-sm font-medium">{t.confirm}</button>
+                        <button type="button" onClick={() => { setRenamingFolderId(null); setRenameFolderValue(''); setFolderFormError(''); }} className="icon-touch-button icon-touch-button-sm glass-button" aria-label={t.cancel}><X size={14} /></button>
+                      </div>
+                      {folderFormError && <p className="mt-2 text-xs text-red-500" role="alert">{folderFormError}</p>}
                     </div>
                   )}
                 </div>
               ))}
-
-              {/* Uncategorized card */}
-              <button
-                type="button"
-                onClick={() => setSelectedFolderId('')}
-                className="glass-card p-5 text-left group border-dashed border-2"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <FileText size={24} className="text-secondary" />
-                  <ChevronRight size={16} className="text-tertiary group-hover:text-primary transition-colors" />
-                </div>
-                <h3 className="font-semibold text-sm">{t.collectionUncategorized}</h3>
-                <p className="text-xs text-secondary mt-1">{t.itemCount.replace('{count}', String(getItemCount('uncategorized')))}</p>
-              </button>
+              </div>
             </div>
           )}
 
@@ -809,13 +922,140 @@ export function Collection() {
         </motion.div>
       )}
 
-      {/* ─── Folder Contents (Inside a folder) ─── */}
+      {/* All folders */}
+      {currentMode === 'folders' && (
+        <motion.div initial={disableEntranceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 mb-8">
+          {foldersForBrowser.length === 0 ? (
+            <div className="panel-soft rounded-2xl p-5 text-sm text-secondary">
+              {debouncedSearchQuery ? (t.collectionNoFolderSearchResults || 'No matching folder.') : (t.collectionNoFolders || 'No folders yet.')}
+            </div>
+          ) : (
+            foldersForBrowser.map((folder) => (
+              <div key={folder.id} className={`relative glass-card p-4 group ${renamingFolderId === folder.id ? 'z-20' : ''}`}>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => enterFolder(folder.id)}
+                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                      <Folder size={20} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-sm truncate">{folder.name}</h3>
+                      <p className="text-xs text-secondary mt-0.5">{t.itemCount.replace('{count}', String(getItemCount(folder.id)))}</p>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNewFolder(false);
+                      setRenamingFolderId(folder.id);
+                      setRenameFolderValue(folder.name);
+                      setFolderFormError('');
+                    }}
+                    className="icon-touch-button glass-button"
+                    aria-label={`${t.collectionRename} ${folder.name}`}
+                  >
+                    <Edit3 size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => requestDeleteFolder(folder.id, folder.name)}
+                    className="icon-touch-button glass-button text-red-500"
+                    aria-label={`${t.deleteFolder} ${folder.name}`}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+                {renamingFolderId === folder.id && (
+                  <div className="mt-3 rounded-2xl bg-surface-alpha p-3">
+                    <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+                      <input
+                        value={renameFolderValue}
+                        onChange={(e) => {
+                          setRenameFolderValue(e.target.value);
+                          if (folderFormError) setFolderFormError('');
+                        }}
+                        onKeyDown={(e) => e.key === 'Enter' && handleRenameFolder(folder.id)}
+                        aria-label={t.folderName}
+                        className="glass-input h-11 px-3 text-sm"
+                        autoFocus
+                      />
+                      <button type="button" onClick={() => handleRenameFolder(folder.id)} className="h-11 px-4 rounded-xl bg-emerald-500 text-white text-sm font-medium">{t.save}</button>
+                      <button type="button" onClick={() => { setRenamingFolderId(null); setRenameFolderValue(''); setFolderFormError(''); }} className="icon-touch-button glass-button" aria-label={t.cancel}><X size={16} /></button>
+                    </div>
+                    {folderFormError && <p className="mt-2 text-sm text-red-500" role="alert">{folderFormError}</p>}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </motion.div>
+      )}
+
+      {/* Folder Contents (Inside a folder) */}
       {isInFolder && (
         <motion.div initial={disableEntranceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }}>
+          {activeFolder && (
+            <section className="mb-4 panel-soft rounded-3xl p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-xs uppercase tracking-widest text-secondary">{t.collectionInsideFolder || 'Inside folder'}</p>
+                  <h2 className="text-xl font-semibold truncate">{activeFolder.name}</h2>
+                  <p className="text-sm text-secondary">{t.itemCount.replace('{count}', String(getItemCount(activeFolder.id)))}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" onClick={openCreateNote} className="h-11 px-4 rounded-xl bg-emerald-500 text-white text-sm font-medium inline-flex items-center gap-2">
+                    <NotebookPen size={16} />
+                    {t.collectionAddNoteToFolder || t.newNote}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNewFolder(false);
+                      setRenamingFolderId(activeFolder.id);
+                      setRenameFolderValue(activeFolder.name);
+                      setFolderFormError('');
+                    }}
+                    className="h-11 px-4 rounded-xl glass-button text-sm inline-flex items-center gap-2"
+                  >
+                    <Edit3 size={16} />
+                    {t.collectionRename}
+                  </button>
+                  <button type="button" onClick={() => requestDeleteFolder(activeFolder.id, activeFolder.name)} className="h-11 px-4 rounded-xl glass-button text-sm text-red-500 inline-flex items-center gap-2">
+                    <Trash2 size={16} />
+                    {t.deleteFolder}
+                  </button>
+                </div>
+              </div>
+              {renamingFolderId === activeFolder.id && (
+                <div className="mt-4 rounded-2xl bg-surface-alpha p-3">
+                  <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+                    <input
+                      value={renameFolderValue}
+                      onChange={(e) => {
+                        setRenameFolderValue(e.target.value);
+                        if (folderFormError) setFolderFormError('');
+                      }}
+                      onKeyDown={(e) => e.key === 'Enter' && handleRenameFolder(activeFolder.id)}
+                      aria-label={t.folderName}
+                      className="glass-input h-11 px-3 text-sm"
+                      autoFocus
+                    />
+                    <button type="button" onClick={() => handleRenameFolder(activeFolder.id)} className="h-11 px-4 rounded-xl bg-emerald-500 text-white text-sm font-medium">{t.save}</button>
+                    <button type="button" onClick={() => { setRenamingFolderId(null); setRenameFolderValue(''); setFolderFormError(''); }} className="icon-touch-button glass-button" aria-label={t.cancel}><X size={16} /></button>
+                  </div>
+                  {folderFormError && <p className="mt-2 text-sm text-red-500" role="alert">{folderFormError}</p>}
+                </div>
+              )}
+            </section>
+          )}
           <div className="space-y-3">
             {filteredItems.length === 0 ? (
-              <div className="text-center py-16 text-secondary">
-                <p className="text-lg">{t.noItems}</p>
+              <div className="text-center py-16 text-secondary panel-soft rounded-3xl">
+                <p className="text-lg font-semibold text-primary">{debouncedSearchQuery ? (t.collectionNoSearchInFolder || t.collectionNoSearchResults) : (t.collectionFolderEmpty || t.noItems)}</p>
+                <p className="text-sm mt-2">{debouncedSearchQuery ? (t.collectionTryDifferentSearch || '') : (t.collectionFolderEmptyBody || 'Add the first note to this folder.')}</p>
               </div>
             ) : (
               filteredItems.map((item) => (
@@ -972,7 +1212,7 @@ export function Collection() {
                         <button
                           type="button"
                           onClick={() => { void handleSaveModalNote(); }}
-                          disabled={savingModalNote || !modalNoteTitleDraft.trim() || !modalNoteBodyDraft.trim()}
+                          disabled={savingModalNote || (!modalNoteTitleDraft.trim() && !modalNoteBodyDraft.trim())}
                           className="h-11 px-4 rounded-xl bg-emerald-500 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center min-w-[120px]"
                         >
                           {savingModalNote ? <Loader2 size={16} className="animate-spin" /> : (t.updateNote)}
@@ -1056,7 +1296,13 @@ export function Collection() {
         }
         description={
           pendingDelete
-            ? `${pendingDelete.label}. ${t.deleteActionCannotUndo || 'This cannot be undone.'}`
+            ? pendingDelete.kind === 'folder'
+              ? `${pendingDelete.label}. ${
+                  getItemCount(pendingDelete.id) > 0
+                    ? (t.deleteFolderMovesItems || 'This folder contains {count} items. They will move to Uncategorized.').replace('{count}', String(getItemCount(pendingDelete.id)))
+                    : (t.deleteActionCannotUndo || 'This cannot be undone.')
+                }`
+              : `${pendingDelete.label}. ${t.deleteActionCannotUndo || 'This cannot be undone.'}`
             : ''
         }
         confirmLabel={t.confirmDelete || t.delete}

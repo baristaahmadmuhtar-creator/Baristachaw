@@ -511,6 +511,17 @@ export async function renameCollectionFolder(id: string, name: string): Promise<
 export async function softDeleteCollectionFolder(id: string): Promise<void> {
     const folder = await idbGet<CollectionFolder>(DB_STORES.COLLECTION_FOLDERS, id);
     if (folder) {
+        const items = await idbGetAll<CollectionItem>(DB_STORES.COLLECTION_ITEMS);
+        const timestamp = now();
+        await Promise.all(
+            items
+                .filter((item) => item.folderId === id && !item.deletedAt)
+                .map((item) => idbPut(DB_STORES.COLLECTION_ITEMS, {
+                    ...item,
+                    folderId: undefined,
+                    updatedAt: timestamp,
+                }))
+        );
         folder.deletedAt = now();
         folder.updatedAt = now();
         await idbPut(DB_STORES.COLLECTION_FOLDERS, folder);
@@ -705,7 +716,6 @@ export async function clearAllAppData(): Promise<void> {
         }
     }
 }
-
 
 
 

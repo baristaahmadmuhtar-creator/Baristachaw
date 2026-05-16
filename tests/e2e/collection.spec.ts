@@ -23,6 +23,7 @@ const notesTab = /^Notes(?:\s*\(\d+\))?$|^Catatan(?:\s*\(\d+\))?$/i;
 const closeItemDetailsButton = /Close item details|Tutup detail item/i;
 const newNoteButton = /New Note|Catatan Baru/i;
 const editNoteButton = /^Edit Note$|^Ubah Catatan$/i;
+const seeAllFoldersButton = /See all folders|Lihat semua folder/i;
 
 async function submitCreateFolder(page: import('@playwright/test').Page, name: string) {
   const createInput = page.getByRole('textbox', { name: folderNameInput });
@@ -52,12 +53,11 @@ test('supports folder create, rename, delete flow', async ({ page }) => {
   await expect(page.getByText('qa_e2e renamed folder')).toBeVisible();
 });
 
-test('keeps create-folder panel visible with many folders and renames the correct target', async ({ page }) => {
+test('keeps collection home compact with many folders and renames the correct target in all-folders mode', async ({ page }) => {
   test.setTimeout(120_000);
-  for (let i = 0; i < 12; i += 1) {
+  for (let i = 0; i < 5; i += 1) {
     await page.getByRole('button', { name: createFolderButton }).click();
     await submitCreateFolder(page, `qa_many_${i}`);
-    await expect(page.locator('h3', { hasText: new RegExp(`^qa_many_${i}$`) }).first()).toBeVisible();
   }
 
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -65,16 +65,18 @@ test('keeps create-folder panel visible with many folders and renames the correc
   await submitCreateFolder(page, 'qa_many_final');
   await expect(page.locator('h3', { hasText: /^qa_many_final$/ }).first()).toBeVisible();
 
-  const firstCard = page.locator('h3', { hasText: /^qa_many_0$/ }).first().locator('xpath=ancestor::div[contains(@class,"group")]').first();
-  const secondCard = page.locator('h3', { hasText: /^qa_many_1$/ }).first().locator('xpath=ancestor::div[contains(@class,"group")]').first();
+  await expect(page.getByRole('button', { name: seeAllFoldersButton })).toBeVisible();
+  await page.getByRole('button', { name: seeAllFoldersButton }).click();
+  await expect(page.getByRole('heading', { name: /All folders|Semua folder/i })).toBeVisible();
+  await expect(page.locator('h3', { hasText: /^qa_many_0$/ }).first()).toBeVisible();
+  await expect(page.locator('h3', { hasText: /^qa_many_1$/ }).first()).toBeVisible();
 
-  await secondCard.locator('button').nth(1).click();
-  await page.getByRole('button', { name: renameButton }).click();
-  await secondCard.locator('input').first().fill('qa_many_1_renamed');
-  await secondCard.getByRole('button', { name: confirmButton }).click();
+  await page.getByRole('button', { name: /Rename qa_many_1|Ubah nama qa_many_1/i }).click();
+  await page.getByRole('textbox', { name: folderNameInput }).fill('qa_many_1_renamed');
+  await page.getByRole('button', { name: saveButton }).click();
 
   await expect(page.locator('h3', { hasText: /^qa_many_1_renamed$/ }).first()).toBeVisible();
-  await expect(firstCard.locator('h3', { hasText: /^qa_many_0$/ })).toBeVisible();
+  await expect(page.locator('h3', { hasText: /^qa_many_0$/ }).first()).toBeVisible();
 });
 
 test('supports notes CRUD, filter, search, and move folder flow', async ({ page }) => {

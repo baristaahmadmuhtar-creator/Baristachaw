@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
-import { genId, normalizeSearchValue } from '@baristachaw/shared';
-import { Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { genId } from '@baristachaw/shared';
+import { Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import {
   ActionButton,
   AppShell,
@@ -13,8 +13,7 @@ import {
   SectionCard,
   SegmentedControl,
 } from '../design-system';
-import { trackEvent } from '../services/telemetry';
-import { uiTokens } from '../theme/tokens';
+import { usePreferredMobileLanguage } from '../hooks/usePreferredMobileLanguage';
 import {
   createCollectionFolder,
   listCollectionFolders,
@@ -25,28 +24,283 @@ import {
   softDeleteCollectionFolder,
   softDeleteCollectionItem,
 } from '../services/mobileStore';
-import { usePreferredMobileLanguage } from '../hooks/usePreferredMobileLanguage';
+import { trackEvent } from '../services/telemetry';
+import { uiTokens } from '../theme/tokens';
 import type { AuthSession, CollectionFolderRecord, CollectionItemRecord } from '../types';
 import { getMobileLocalization } from '../utils/localization';
-
-type FilterType = 'all' | 'recipe' | 'ai_canvas' | 'note';
+import {
+  buildCollectionPreview,
+  buildFolderCounts,
+  filterCollectionFolders,
+  filterCollectionItems,
+  getFolderPreview,
+  isCollectionNote,
+  isSelectedFolderStale,
+  resolveActiveFolder,
+  resolveCollectionMode,
+  validateCollectionFolderName,
+  type CollectionFilterType,
+  type CollectionMode,
+} from './collectionScreenModel';
 
 type CollectionScreenProps = {
   session?: AuthSession | null;
   guestModeEnabled?: boolean;
 };
 
-function isNote(item: CollectionItemRecord): item is CollectionItemRecord & { type: 'ai_canvas'; content: { markdown: string; kind?: string } } {
-  return item.type === 'ai_canvas' && item.content?.kind === 'note';
+type FolderFormState =
+  | { mode: 'create' }
+  | { mode: 'rename'; folder: CollectionFolderRecord };
+
+type ConfirmState =
+  | { kind: 'deleteFolder'; folder: CollectionFolderRecord }
+  | { kind: 'deleteItem'; item: CollectionItemRecord };
+
+type CollectionCopy = {
+  add: string;
+  addNoteToFolder: string;
+  allFolders: string;
+  allFoldersSubtitle: string;
+  backToCollection: string;
+  browseOnly: string;
+  cancel: string;
+  canvas: string;
+  close: string;
+  collectionHomeSubtitle: string;
+  confirmDelete: string;
+  createFolder: string;
+  delete: string;
+  deleteFolder: string;
+  deleteFolderBody: (count: number) => string;
+  deleteItem: string;
+  deleteItemBody: string;
+  duplicateFolderName: string;
+  emptyDefault: string;
+  emptyFolder: string;
+  emptyFolderSearch: string;
+  emptyFolderSearchTitle: string;
+  emptyFolders: string;
+  emptyFolderTitle: string;
+  emptyPreview: string;
+  emptySearch: string;
+  emptySearchTitle: string;
+  folderAlreadyExists: string;
+  folderCreated: string;
+  folderDeleted: string;
+  folderFallback: string;
+  folderName: string;
+  folderNameEmpty: string;
+  folderNameTooLong: string;
+  folderRenamed: string;
+  foldersTitle: string;
+  folderSubtitle: string;
+  folderUpdated: string;
+  insideFolder: string;
+  itemDeleted: string;
+  items: string;
+  moveToFolder: string;
+  movedToFolder: string;
+  newFolder: string;
+  noFolder: string;
+  noFolderMatches: string;
+  note: string;
+  noteBodyPlaceholder: string;
+  noteContentRequired: string;
+  noteSaved: string;
+  noteSubtitle: string;
+  noteUpdated: string;
+  open: string;
+  otherFolders: (count: number) => string;
+  quickNote: string;
+  readOnlyBody: string;
+  readOnlyTitle: string;
+  recipe: string;
+  recipeItem: string;
+  rename: string;
+  renameFolder: string;
+  save: string;
+  savedToFolder: (folder: string) => string;
+  searchAll: string;
+  searchFolder: string;
+  searchFolders: string;
+  searchTitle: string;
+  seeAllFolders: string;
+  share: string;
+  tidyFolders: string;
+  uncategorized: string;
+  updateError: string;
+  updated: string;
+};
+
+const EN_COPY: CollectionCopy = {
+  add: 'Add',
+  addNoteToFolder: 'Add note to this folder',
+  allFolders: 'All folders',
+  allFoldersSubtitle: 'Find, open, rename, or clean up folders.',
+  backToCollection: 'Back to Collection',
+  browseOnly: 'Browse only.',
+  cancel: 'Cancel',
+  canvas: 'Canvas',
+  close: 'Close',
+  collectionHomeSubtitle: 'Saved recipes, notes, and AI work in one tidy place.',
+  confirmDelete: 'Confirm delete',
+  createFolder: 'Create folder',
+  delete: 'Delete',
+  deleteFolder: 'Delete folder',
+  deleteFolderBody: (count) => count > 0
+    ? `This folder contains ${count} item${count === 1 ? '' : 's'}. Items will move to Uncategorized.`
+    : 'This empty folder will be removed.',
+  deleteItem: 'Delete item',
+  deleteItemBody: 'This item will be removed from Collection.',
+  duplicateFolderName: 'A folder with this name already exists.',
+  emptyDefault: 'No saved items yet. Save recipes, notes, or AI insights to find them here.',
+  emptyFolder: 'Add the first note or move an item into this folder.',
+  emptyFolderSearch: 'No result in this folder.',
+  emptyFolderSearchTitle: 'No folder result',
+  emptyFolders: 'Create a folder when you want to group recipes or notes.',
+  emptyFolderTitle: 'This folder is still empty',
+  emptyPreview: 'No preview yet.',
+  emptySearch: 'No saved item matches this search.',
+  emptySearchTitle: 'No result',
+  folderAlreadyExists: 'Folder already exists.',
+  folderCreated: 'Folder created.',
+  folderDeleted: 'Folder deleted.',
+  folderFallback: 'Folder',
+  folderName: 'Folder name',
+  folderNameEmpty: 'Folder name cannot be empty.',
+  folderNameTooLong: 'Use 40 characters or fewer.',
+  folderRenamed: 'Folder renamed.',
+  foldersTitle: 'Folders',
+  folderSubtitle: 'Keep recipes and notes easy to find.',
+  folderUpdated: 'Updated',
+  insideFolder: 'Inside folder',
+  itemDeleted: 'Item deleted.',
+  items: 'items',
+  moveToFolder: 'Move to folder',
+  movedToFolder: 'Moved to folder.',
+  newFolder: 'New folder',
+  noFolder: 'Uncategorized',
+  noFolderMatches: 'No folder matches this search.',
+  note: 'Note',
+  noteBodyPlaceholder: 'Write a useful note...',
+  noteContentRequired: 'Add a title or note before saving.',
+  noteSaved: 'Note saved.',
+  noteSubtitle: 'Keep it short, useful, and easy to revisit.',
+  noteUpdated: 'Note updated.',
+  open: 'Open',
+  otherFolders: (count) => `+${count} other folder${count === 1 ? '' : 's'}`,
+  quickNote: 'Quick Note',
+  readOnlyBody: 'Saved items stay visible here. Sign in to create or edit Collection.',
+  readOnlyTitle: 'Sign in to edit Collection',
+  recipe: 'Recipe',
+  recipeItem: 'Recipe item',
+  rename: 'Rename',
+  renameFolder: 'Rename folder',
+  save: 'Save',
+  savedToFolder: (folder) => `Saved to: ${folder}`,
+  searchAll: 'Search notes, recipes, or folders...',
+  searchFolder: 'Search this folder...',
+  searchFolders: 'Search folders...',
+  searchTitle: 'Search',
+  seeAllFolders: 'See all folders',
+  share: 'Share',
+  tidyFolders: 'Keep recipes and notes tidy without crowding the page.',
+  uncategorized: 'Uncategorized',
+  updateError: 'Unable to update Collection right now.',
+  updated: 'Updated',
+};
+
+const ID_COPY: CollectionCopy = {
+  ...EN_COPY,
+  add: 'Tambah',
+  addNoteToFolder: 'Tambah catatan di folder ini',
+  allFolders: 'Semua folder',
+  allFoldersSubtitle: 'Cari, buka, ubah nama, atau rapikan folder.',
+  backToCollection: 'Kembali ke Koleksi',
+  browseOnly: 'Hanya lihat.',
+  cancel: 'Batal',
+  canvas: 'Kanvas',
+  close: 'Tutup',
+  collectionHomeSubtitle: 'Resep, catatan, dan kerja AI tersimpan dalam satu tempat rapi.',
+  confirmDelete: 'Konfirmasi hapus',
+  createFolder: 'Tambah folder',
+  delete: 'Hapus',
+  deleteFolder: 'Hapus folder',
+  deleteFolderBody: (count) => count > 0
+    ? `Folder berisi ${count} item. Item akan dipindahkan ke Belum dikategorikan.`
+    : 'Folder kosong ini akan dihapus.',
+  deleteItem: 'Hapus item',
+  deleteItemBody: 'Item ini akan dihapus dari Koleksi.',
+  duplicateFolderName: 'Nama folder sudah ada.',
+  emptyDefault: 'Belum ada item tersimpan. Simpan resep, catatan, atau insight AI agar muncul di sini.',
+  emptyFolder: 'Tambah catatan pertama atau pindahkan item ke folder ini.',
+  emptyFolderSearch: 'Tidak ada hasil di folder ini.',
+  emptyFolderSearchTitle: 'Tidak ada hasil',
+  emptyFolders: 'Buat folder saat ingin mengelompokkan resep atau catatan.',
+  emptyFolderTitle: 'Folder ini masih kosong',
+  emptyPreview: 'Belum ada pratinjau.',
+  emptySearch: 'Tidak ada item tersimpan yang cocok.',
+  emptySearchTitle: 'Tidak ada hasil',
+  folderAlreadyExists: 'Nama folder sudah ada.',
+  folderCreated: 'Folder dibuat.',
+  folderDeleted: 'Folder dihapus.',
+  folderFallback: 'Folder',
+  folderName: 'Nama folder',
+  folderNameEmpty: 'Nama folder tidak boleh kosong.',
+  folderNameTooLong: 'Maksimal 40 karakter.',
+  folderRenamed: 'Nama folder diperbarui.',
+  foldersTitle: 'Folder',
+  folderSubtitle: 'Kelola resep dan catatan agar tetap rapi.',
+  folderUpdated: 'Diperbarui',
+  insideFolder: 'Di dalam folder',
+  itemDeleted: 'Item dihapus.',
+  items: 'item',
+  moveToFolder: 'Pindahkan ke folder',
+  movedToFolder: 'Dipindahkan ke folder.',
+  newFolder: 'Folder baru',
+  noFolder: 'Belum dikategorikan',
+  noFolderMatches: 'Tidak ada folder yang cocok.',
+  note: 'Catatan',
+  noteBodyPlaceholder: 'Tulis catatan yang berguna...',
+  noteContentRequired: 'Isi judul atau catatan sebelum menyimpan.',
+  noteSaved: 'Catatan disimpan.',
+  noteSubtitle: 'Buat singkat, berguna, dan mudah dibaca ulang.',
+  noteUpdated: 'Catatan diperbarui.',
+  open: 'Buka',
+  otherFolders: (count) => `+${count} folder lainnya`,
+  quickNote: 'Catatan Cepat',
+  readOnlyBody: 'Item tersimpan tetap terlihat di sini. Masuk untuk membuat atau mengedit Koleksi.',
+  readOnlyTitle: 'Masuk untuk mengedit Koleksi',
+  recipe: 'Resep',
+  recipeItem: 'Item resep',
+  rename: 'Ubah nama',
+  renameFolder: 'Ubah nama folder',
+  save: 'Simpan',
+  savedToFolder: (folder) => `Disimpan di: ${folder}`,
+  searchAll: 'Cari catatan, resep, atau folder...',
+  searchFolder: 'Cari di folder ini...',
+  searchFolders: 'Cari folder...',
+  searchTitle: 'Cari',
+  seeAllFolders: 'Lihat semua folder',
+  share: 'Bagikan',
+  tidyFolders: 'Rapikan resep dan catatan tanpa membuat halaman penuh.',
+  uncategorized: 'Belum dikategorikan',
+  updateError: 'Koleksi belum bisa diperbarui sekarang.',
+  updated: 'Diperbarui',
+};
+
+export function getCollectionCopy(language: string): CollectionCopy {
+  return language === 'id' ? ID_COPY : EN_COPY;
 }
 
-function buildCollectionPreview(item: CollectionItemRecord, emptyLabel: string): string {
-  const raw = item.type === 'recipe'
-    ? `${item.content.description || ''} ${(item.content.steps || []).join(' ')}`
-    : item.content.markdown || '';
-  const compact = raw.replace(/\s+/g, ' ').trim();
-  if (!compact) return emptyLabel;
-  return compact.length > 150 ? `${compact.slice(0, 147).trim()}...` : compact;
+function formatItemCount(count: number, copy: CollectionCopy): string {
+  return `${count} ${copy.items}`;
+}
+
+function getSearchPlaceholder(mode: CollectionMode, copy: CollectionCopy): string {
+  if (mode === 'folders') return copy.searchFolders;
+  if (mode === 'folder') return copy.searchFolder;
+  return copy.searchAll;
 }
 
 export function CollectionScreen({ session = null, guestModeEnabled = false }: CollectionScreenProps) {
@@ -54,404 +308,56 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
   const { direction, language, locale, web: webT } = useMemo(() => getMobileLocalization(preferredLanguage), [preferredLanguage]);
   const isRtl = direction === 'rtl';
   const isFocused = useIsFocused();
+  const copy = useMemo(() => getCollectionCopy(language), [language]);
+
   const [items, setItems] = useState<CollectionItemRecord[]>([]);
   const [folders, setFolders] = useState<CollectionFolderRecord[]>([]);
-  const [filter, setFilter] = useState<FilterType>('all');
+  const [filter, setFilter] = useState<CollectionFilterType>('all');
   const [query, setQuery] = useState('');
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [allFoldersOpen, setAllFoldersOpen] = useState(false);
   const [listError, setListError] = useState('');
 
   const [detailItem, setDetailItem] = useState<CollectionItemRecord | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
-  const [folderManagerOpen, setFolderManagerOpen] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState('');
   const [noteTitle, setNoteTitle] = useState('');
   const [noteMarkdown, setNoteMarkdown] = useState('');
   const [noteFolderId, setNoteFolderId] = useState('');
-  const [newFolderName, setNewFolderName] = useState('');
-  const [renameFolderId, setRenameFolderId] = useState('');
-  const [renameFolderValue, setRenameFolderValue] = useState('');
+  const [noteError, setNoteError] = useState('');
+
+  const [folderForm, setFolderForm] = useState<FolderFormState | null>(null);
+  const [folderNameInput, setFolderNameInput] = useState('');
+  const [folderNameError, setFolderNameError] = useState('');
+  const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
+
+  const guestReadOnly = guestModeEnabled && !session;
+  const activeFolder = resolveActiveFolder(selectedFolderId, folders);
+  const mode = resolveCollectionMode({ allFoldersOpen, selectedFolderId, folders });
+  const folderCounts = useMemo(() => buildFolderCounts(items), [items]);
+  const folderPreview = useMemo(() => getFolderPreview(folders, items), [folders, items]);
+  const filteredFolders = useMemo(
+    () => filterCollectionFolders({ folders, items, query }),
+    [folders, items, query],
+  );
+  const scopedFolderId = mode === 'folder' && activeFolder ? activeFolder.id : null;
+  const filteredItems = useMemo(
+    () => filterCollectionItems({
+      items,
+      filter,
+      query,
+      selectedFolderId: scopedFolderId,
+    }),
+    [filter, items, query, scopedFolderId],
+  );
+  const allItemsCount = items.length;
+
   const filterItems = useMemo(() => ([
     { value: 'all' as const, label: webT.allItems },
     { value: 'recipe' as const, label: webT.recipes },
     { value: 'ai_canvas' as const, label: webT.aiCanvas },
     { value: 'note' as const, label: webT.notes },
   ]), [webT.aiCanvas, webT.allItems, webT.notes, webT.recipes]);
-  const copy = useMemo(() => {
-    if (language === 'zh') {
-      return {
-        filterTitle: '筛选',
-        filterSubtitle: '搜索并缩小列表范围。',
-        foldersTitle: '文件夹',
-        browseOnly: '仅浏览。',
-        tidyFolders: '使用文件夹保持条目整洁。',
-        uncategorized: '未分类',
-        folderFallback: '文件夹',
-        recipe: '配方',
-        note: '笔记',
-        canvas: '画布',
-        updated: '已更新',
-        emptyTitle: '这里还没有内容',
-        emptyPreview: '还没有预览。',
-        share: '分享',
-        moveToFolder: '移动到文件夹',
-        noteSubtitle: '保持简短并有用。',
-        noteBodyPlaceholder: '编写 markdown 笔记...',
-        folderLabel: '文件夹',
-        organizeLibrary: '保持资料库整洁。',
-        newFolder: '新建文件夹',
-        add: '添加',
-        items: '项',
-        rename: '重命名',
-        delete: '删除',
-        renameFolder: '重命名文件夹',
-        selectFolderHint: '在页面中选择一个文件夹标签，以便在这里重命名或删除。',
-        tip: '提示',
-        selectFolderTip: '在页面中选择一个文件夹标签来管理它。',
-        createFolderHint: '你仍然可以在这个面板中创建新文件夹。',
-        emptySearch: '没有匹配当前搜索的已保存内容。',
-        emptyUncategorized: '还没有未分类内容。',
-        emptyFolder: '这个文件夹里还没有已保存内容。',
-        readOnlyBody: '已保存内容仍会显示在这里。登录后可编辑。',
-        emptyDefault: '还没有已保存内容。可从首页、聊天或扫描中保存。',
-        quickNote: '快速笔记',
-        recipeItem: '配方条目',
-        loadError: '目前无法加载 Collection。',
-        updateError: '目前无法更新 Collection。',
-      };
-    }
-    if (language === 'ja') {
-      return {
-        filterTitle: 'フィルター',
-        filterSubtitle: '検索して一覧を絞り込みます。',
-        foldersTitle: 'フォルダー',
-        browseOnly: '閲覧のみ。',
-        tidyFolders: 'フォルダーで項目を整理します。',
-        uncategorized: '未分類',
-        folderFallback: 'フォルダー',
-        recipe: 'レシピ',
-        note: 'ノート',
-        canvas: 'キャンバス',
-        updated: '更新済み',
-        emptyTitle: 'まだ何もありません',
-        emptyPreview: 'まだプレビューはありません。',
-        share: '共有',
-        moveToFolder: 'フォルダーへ移動',
-        noteSubtitle: '短く、役立つ内容にしてください。',
-        noteBodyPlaceholder: 'Markdown ノートを書く...',
-        folderLabel: 'フォルダー',
-        organizeLibrary: 'ライブラリを整理します。',
-        newFolder: '新しいフォルダー',
-        add: '追加',
-        items: '件',
-        rename: '名前を変更',
-        delete: '削除',
-        renameFolder: 'フォルダー名を変更',
-        selectFolderHint: 'ページ上のフォルダーチップを選ぶと、ここで名前変更または削除できます。',
-        tip: 'ヒント',
-        selectFolderTip: 'ページ上のフォルダーチップを選んで管理してください。',
-        createFolderHint: 'このシートから新しいフォルダーを作成できます。',
-        emptySearch: 'この検索に一致する保存済みアイテムはありません。',
-        emptyUncategorized: '未分類のアイテムはまだありません。',
-        emptyFolder: 'このフォルダーに保存済みアイテムはありません。',
-        readOnlyBody: '保存済みアイテムはここに表示されます。編集にはサインインが必要です。',
-        emptyDefault: '保存済みアイテムはまだありません。ホーム、チャット、またはスキャンから保存してください。',
-        quickNote: 'クイックノート',
-        recipeItem: 'レシピ項目',
-        loadError: '現在 Collection を読み込めません。',
-        updateError: '現在 Collection を更新できません。',
-      };
-    }
-    if (language === 'ko') {
-      return {
-        filterTitle: '필터',
-        filterSubtitle: '검색하고 목록 범위를 좁히세요.',
-        foldersTitle: '폴더',
-        browseOnly: '보기 전용.',
-        tidyFolders: '폴더로 항목을 정리하세요.',
-        uncategorized: '미분류',
-        folderFallback: '폴더',
-        recipe: '레시피',
-        note: '노트',
-        canvas: '캔버스',
-        updated: '업데이트됨',
-        emptyTitle: '아직 아무것도 없습니다',
-        emptyPreview: '아직 미리보기가 없습니다.',
-        share: '공유',
-        moveToFolder: '폴더로 이동',
-        noteSubtitle: '짧고 유용하게 유지하세요.',
-        noteBodyPlaceholder: '마크다운 노트 작성...',
-        folderLabel: '폴더',
-        organizeLibrary: '라이브러리를 정리하세요.',
-        newFolder: '새 폴더',
-        add: '추가',
-        items: '개',
-        rename: '이름 변경',
-        delete: '삭제',
-        renameFolder: '폴더 이름 변경',
-        selectFolderHint: '페이지에서 폴더 칩을 선택하면 여기서 이름을 바꾸거나 삭제할 수 있습니다.',
-        tip: '팁',
-        selectFolderTip: '페이지에서 폴더 칩을 선택해 관리하세요.',
-        createFolderHint: '이 시트에서도 새 폴더를 만들 수 있습니다.',
-        emptySearch: '검색과 일치하는 저장 항목이 없습니다.',
-        emptyUncategorized: '아직 미분류 항목이 없습니다.',
-        emptyFolder: '이 폴더에는 저장된 항목이 없습니다.',
-        readOnlyBody: '저장된 항목은 여기서 계속 볼 수 있습니다. 편집하려면 로그인하세요.',
-        emptyDefault: '아직 저장된 항목이 없습니다. 홈, 채팅 또는 스캔에서 저장하세요.',
-        quickNote: '빠른 노트',
-        recipeItem: '레시피 항목',
-        loadError: '지금은 Collection을 불러올 수 없습니다.',
-        updateError: '지금은 Collection을 업데이트할 수 없습니다.',
-      };
-    }
-    if (language === 'th') {
-      return {
-        filterTitle: 'ตัวกรอง',
-        filterSubtitle: 'ค้นหาและจำกัดรายการให้แคบลง',
-        foldersTitle: 'โฟลเดอร์',
-        browseOnly: 'ดูอย่างเดียว',
-        tidyFolders: 'ใช้โฟลเดอร์เพื่อจัดระเบียบรายการ',
-        uncategorized: 'ยังไม่จัดหมวด',
-        folderFallback: 'โฟลเดอร์',
-        recipe: 'สูตร',
-        note: 'โน้ต',
-        canvas: 'แคนวาส',
-        updated: 'อัปเดตแล้ว',
-        emptyTitle: 'ยังไม่มีอะไรที่นี่',
-        emptyPreview: 'ยังไม่มีตัวอย่าง',
-        share: 'แชร์',
-        moveToFolder: 'ย้ายไปยังโฟลเดอร์',
-        noteSubtitle: 'ให้สั้นและใช้งานได้จริง',
-        noteBodyPlaceholder: 'เขียนโน้ต markdown...',
-        folderLabel: 'โฟลเดอร์',
-        organizeLibrary: 'จัดคลังให้เป็นระเบียบ',
-        newFolder: 'โฟลเดอร์ใหม่',
-        add: 'เพิ่ม',
-        items: 'รายการ',
-        rename: 'เปลี่ยนชื่อ',
-        delete: 'ลบ',
-        renameFolder: 'เปลี่ยนชื่อโฟลเดอร์',
-        selectFolderHint: 'เลือกชิปโฟลเดอร์บนหน้าเพื่อเปลี่ยนชื่อหรือลบได้จากที่นี่',
-        tip: 'เคล็ดลับ',
-        selectFolderTip: 'เลือกชิปโฟลเดอร์บนหน้าเพื่อจัดการ',
-        createFolderHint: 'คุณยังสร้างโฟลเดอร์ใหม่จากชีตนี้ได้',
-        emptySearch: 'ไม่มีรายการที่บันทึกไว้ตรงกับการค้นหานี้',
-        emptyUncategorized: 'ยังไม่มีรายการที่ไม่ได้จัดหมวด',
-        emptyFolder: 'ยังไม่มีรายการที่บันทึกไว้ในโฟลเดอร์นี้',
-        readOnlyBody: 'รายการที่บันทึกไว้ยังคงแสดงที่นี่ เข้าสู่ระบบเพื่อแก้ไข',
-        emptyDefault: 'ยังไม่มีรายการที่บันทึกไว้ บันทึกจากหน้าแรก แชต หรือสแกน',
-        quickNote: 'โน้ตด่วน',
-        recipeItem: 'รายการสูตร',
-        loadError: 'ยังไม่สามารถโหลด Collection ได้ตอนนี้',
-        updateError: 'ยังไม่สามารถอัปเดต Collection ได้ตอนนี้',
-      };
-    }
-    if (language === 'vi') {
-      return {
-        filterTitle: 'Bộ lọc',
-        filterSubtitle: 'Tìm kiếm và thu hẹp danh sách.',
-        foldersTitle: 'Thư mục',
-        browseOnly: 'Chỉ xem.',
-        tidyFolders: 'Dùng thư mục để giữ mọi thứ gọn gàng.',
-        uncategorized: 'Chưa phân loại',
-        folderFallback: 'Thư mục',
-        recipe: 'Công thức',
-        note: 'Ghi chú',
-        canvas: 'Canvas',
-        updated: 'Đã cập nhật',
-        emptyTitle: 'Chưa có gì ở đây',
-        emptyPreview: 'Chưa có bản xem trước.',
-        share: 'Chia sẻ',
-        moveToFolder: 'Chuyển vào thư mục',
-        noteSubtitle: 'Giữ ngắn gọn và hữu ích.',
-        noteBodyPlaceholder: 'Viết ghi chú markdown...',
-        folderLabel: 'Thư mục',
-        organizeLibrary: 'Giữ thư viện ngăn nắp.',
-        newFolder: 'Thư mục mới',
-        add: 'Thêm',
-        items: 'mục',
-        rename: 'Đổi tên',
-        delete: 'Xóa',
-        renameFolder: 'Đổi tên thư mục',
-        selectFolderHint: 'Chọn một chip thư mục trên trang để đổi tên hoặc xóa tại đây.',
-        tip: 'Mẹo',
-        selectFolderTip: 'Chọn một chip thư mục trên trang để quản lý.',
-        createFolderHint: 'Bạn vẫn có thể tạo thư mục mới từ bảng này.',
-        emptySearch: 'Không có mục đã lưu nào khớp với tìm kiếm này.',
-        emptyUncategorized: 'Chưa có mục nào chưa phân loại.',
-        emptyFolder: 'Không có mục đã lưu trong thư mục này.',
-        readOnlyBody: 'Các mục đã lưu vẫn hiển thị ở đây. Hãy đăng nhập để chỉnh sửa.',
-        emptyDefault: 'Chưa có mục nào được lưu. Hãy lưu từ Trang chủ, Chat hoặc Quét.',
-        quickNote: 'Ghi chú nhanh',
-        recipeItem: 'Mục công thức',
-        loadError: 'Hiện không thể tải Collection.',
-        updateError: 'Hiện không thể cập nhật Collection.',
-      };
-    }
-    if (language === 'ms') {
-      return {
-        filterTitle: 'Penapis',
-        filterSubtitle: 'Cari dan sempitkan senarai.',
-        foldersTitle: 'Folder',
-        browseOnly: 'Lihat sahaja.',
-        tidyFolders: 'Gunakan folder untuk memastikan item kemas.',
-        uncategorized: 'Belum dikategorikan',
-        folderFallback: 'Folder',
-        recipe: 'Resipi',
-        note: 'Nota',
-        canvas: 'Kanvas',
-        updated: 'Dikemas kini',
-        emptyTitle: 'Belum ada apa-apa di sini',
-        emptyPreview: 'Belum ada pratonton.',
-        share: 'Kongsi',
-        moveToFolder: 'Pindahkan ke folder',
-        noteSubtitle: 'Pastikan ringkas dan berguna.',
-        noteBodyPlaceholder: 'Tulis nota markdown...',
-        folderLabel: 'Folder',
-        organizeLibrary: 'Pastikan pustaka tersusun.',
-        newFolder: 'Folder baharu',
-        add: 'Tambah',
-        items: 'item',
-        rename: 'Namakan semula',
-        delete: 'Padam',
-        renameFolder: 'Namakan semula folder',
-        selectFolderHint: 'Pilih cip folder pada halaman untuk menamakan semula atau memadamkannya di sini.',
-        tip: 'Petua',
-        selectFolderTip: 'Pilih cip folder pada halaman untuk menguruskannya.',
-        createFolderHint: 'Anda masih boleh membuat folder baharu dari helaian ini.',
-        emptySearch: 'Tiada item tersimpan yang sepadan dengan carian ini.',
-        emptyUncategorized: 'Belum ada item tanpa kategori.',
-        emptyFolder: 'Tiada item tersimpan dalam folder ini.',
-        readOnlyBody: 'Item tersimpan kekal kelihatan di sini. Log masuk untuk mengedit.',
-        emptyDefault: 'Belum ada item tersimpan. Simpan dari Laman Utama, Sembang atau Imbas.',
-        quickNote: 'Nota Pantas',
-        recipeItem: 'Item resipi',
-        loadError: 'Collection tidak dapat dimuatkan sekarang.',
-        updateError: 'Collection tidak dapat dikemas kini sekarang.',
-      };
-    }
-    if (language === 'id') {
-      return {
-        filterTitle: 'Penyaring',
-        filterSubtitle: 'Cari dan sempitkan daftar.',
-        foldersTitle: 'Folder',
-        browseOnly: 'Hanya lihat.',
-        tidyFolders: 'Gunakan folder agar item tetap rapi.',
-        uncategorized: 'Belum dikategorikan',
-        folderFallback: 'Folder',
-        recipe: 'Resep',
-        note: 'Catatan',
-        canvas: 'Kanvas',
-        updated: 'Diperbarui',
-        emptyTitle: 'Belum ada apa-apa',
-        emptyPreview: 'Belum ada pratinjau.',
-        share: 'Bagikan',
-        moveToFolder: 'Pindahkan ke folder',
-        noteSubtitle: 'Buat singkat dan berguna.',
-        noteBodyPlaceholder: 'Tulis catatan markdown...',
-        folderLabel: 'Folder',
-        organizeLibrary: 'Rapikan pustaka.',
-        newFolder: 'Folder baru',
-        add: 'Tambah',
-        items: 'item',
-        rename: 'Ubah nama',
-        delete: 'Hapus',
-        renameFolder: 'Ubah nama folder',
-        selectFolderHint: 'Pilih label folder di halaman untuk mengubah nama atau menghapusnya di sini.',
-        tip: 'Tip',
-        selectFolderTip: 'Pilih label folder di halaman untuk mengelolanya.',
-        createFolderHint: 'Anda tetap bisa membuat folder baru dari panel ini.',
-        emptySearch: 'Tidak ada item tersimpan yang cocok dengan pencarian ini.',
-        emptyUncategorized: 'Belum ada item tanpa kategori.',
-        emptyFolder: 'Belum ada item tersimpan di folder ini.',
-        readOnlyBody: 'Item tersimpan tetap terlihat di sini. Masuk untuk mengedit.',
-        emptyDefault: 'Belum ada item tersimpan. Simpan dari Beranda, Obrolan, atau Pindai.',
-        quickNote: 'Catatan Cepat',
-        recipeItem: 'Item resep',
-        loadError: 'Koleksi belum bisa dimuat sekarang.',
-        updateError: 'Koleksi belum bisa diperbarui sekarang.',
-      };
-    }
-    if (language === 'ar') {
-      return {
-        filterTitle: 'تصفية',
-        filterSubtitle: 'ابحث وضيّق القائمة.',
-        foldersTitle: 'المجلدات',
-        browseOnly: 'تصفح فقط.',
-        tidyFolders: 'استخدم المجلدات للحفاظ على ترتيب العناصر.',
-        uncategorized: 'غير مصنف',
-        folderFallback: 'مجلد',
-        recipe: 'وصفة',
-        note: 'ملاحظة',
-        canvas: 'لوحة',
-        updated: 'تم التحديث',
-        emptyTitle: 'لا يوجد شيء هنا بعد',
-        share: 'مشاركة',
-        moveToFolder: 'نقل إلى مجلد',
-        noteSubtitle: 'اجعلها قصيرة ومفيدة.',
-        noteBodyPlaceholder: 'اكتب ملاحظة markdown...',
-        folderLabel: 'مجلد',
-        organizeLibrary: 'حافظ على تنظيم المكتبة.',
-        newFolder: 'مجلد جديد',
-        add: 'إضافة',
-        items: 'عناصر',
-        rename: 'إعادة تسمية',
-        delete: 'حذف',
-        renameFolder: 'إعادة تسمية المجلد',
-        selectFolderHint: 'حدد شريحة مجلد في الصفحة لإعادة التسمية أو الحذف من هنا.',
-        tip: 'معلومة',
-        selectFolderTip: 'حدد شريحة مجلد في الصفحة لإدارته.',
-        createFolderHint: 'لا يزال بإمكانك إنشاء مجلد جديد من هذه اللوحة.',
-        emptySearch: 'لا توجد عناصر محفوظة تطابق هذا البحث.',
-        emptyUncategorized: 'لا توجد عناصر غير مصنفة بعد.',
-        emptyFolder: 'لا توجد عناصر محفوظة في هذا المجلد.',
-        readOnlyBody: 'تبقى العناصر المحفوظة مرئية هنا. سجّل الدخول للتعديل.',
-        emptyDefault: 'لا توجد عناصر محفوظة بعد. احفظ من الصفحة الرئيسية أو الدردشة أو المسح.',
-      };
-    }
-    return {
-      filterTitle: 'Filter',
-      filterSubtitle: 'Search and narrow the list.',
-      foldersTitle: 'Folders',
-      browseOnly: 'Browse only.',
-      tidyFolders: 'Use folders to keep items tidy.',
-      uncategorized: 'Uncategorized',
-      folderFallback: 'Folder',
-      recipe: 'Recipe',
-      note: 'Note',
-      canvas: 'Canvas',
-      updated: 'Updated',
-      emptyTitle: 'Nothing here yet',
-      emptyPreview: 'No preview yet.',
-      share: 'Share',
-      moveToFolder: 'Move to folder',
-      noteSubtitle: 'Keep it short and useful.',
-      noteBodyPlaceholder: 'Write markdown note...',
-      folderLabel: 'Folder',
-      organizeLibrary: 'Keep the library organized.',
-      newFolder: 'New folder',
-      add: 'Add',
-      items: 'items',
-      rename: 'Rename',
-      delete: 'Delete',
-      renameFolder: 'Rename folder',
-      selectFolderHint: 'Select a folder chip on the page to rename or delete it here.',
-      tip: 'Tip',
-      selectFolderTip: 'Select a folder chip on the page to manage it.',
-      createFolderHint: 'You can still create a new folder from this sheet.',
-      emptySearch: 'No saved items match this search.',
-      emptyUncategorized: 'No uncategorized items yet.',
-      emptyFolder: 'No saved items in this folder.',
-      readOnlyBody: 'Saved items stay visible here. Sign in to edit.',
-      emptyDefault: 'No saved items yet. Save from Home, Chat, or Scan.',
-      quickNote: 'Quick Note',
-      recipeItem: 'Recipe item',
-      loadError: 'Unable to load Collection right now.',
-      updateError: 'Unable to update Collection right now.',
-    };
-  }, [language]);
-
-  const guestReadOnly = guestModeEnabled && !session;
 
   const reload = async () => {
     try {
@@ -464,7 +370,7 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
       setFolders(nextFolders);
       setListError('');
     } catch (error) {
-      setListError(copy.loadError || 'Unable to load Collection right now.');
+      setListError(copy.updateError);
       trackEvent('screen_error', {
         screen: 'collection',
         reason: 'reload_failed',
@@ -477,13 +383,20 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
     if (!isFocused) return;
     trackEvent('screen_ready', { screen: 'collection', guestReadOnly });
     void reload();
-  }, [copy.loadError, guestReadOnly, isFocused]);
+  }, [guestReadOnly, isFocused]);
 
   useEffect(() => {
     if (guestReadOnly) {
       trackEvent('auth_gate_seen', { surface: 'collection', guestModeEnabled });
     }
   }, [guestModeEnabled, guestReadOnly]);
+
+  useEffect(() => {
+    if (isSelectedFolderStale(selectedFolderId, folders)) {
+      setSelectedFolderId(null);
+      setAllFoldersOpen(false);
+    }
+  }, [folders, selectedFolderId]);
 
   const runCollectionMutation = async (action: string, mutation: () => Promise<void>, onSuccess?: () => void) => {
     try {
@@ -493,7 +406,7 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
       if (onSuccess) onSuccess();
       await reload();
     } catch (error) {
-      setListError(copy.updateError || 'Unable to update Collection right now.');
+      setListError(copy.updateError);
       trackEvent('action_failed', {
         action,
         message: error instanceof Error ? error.message : 'unknown',
@@ -501,58 +414,94 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
     }
   };
 
-  const filteredItems = useMemo(() => {
-    const normalizedQuery = normalizeSearchValue(query);
+  const goHome = () => {
+    setAllFoldersOpen(false);
+    setSelectedFolderId(null);
+    setQuery('');
+  };
 
-    return items.filter((item) => {
-      if (selectedFolderId === 'uncategorized' && item.folderId) return false;
-      if (selectedFolderId && selectedFolderId !== 'uncategorized' && item.folderId !== selectedFolderId) return false;
+  const openFolder = (folderId: string) => {
+    setSelectedFolderId(folderId);
+    setAllFoldersOpen(false);
+    setQuery('');
+  };
 
-      if (filter === 'recipe' && item.type !== 'recipe') return false;
-      if (filter === 'ai_canvas' && item.type !== 'ai_canvas') return false;
-      if (filter === 'note' && !isNote(item)) return false;
+  const openCreateFolder = () => {
+    if (guestReadOnly) {
+      setListError(copy.readOnlyBody);
+      return;
+    }
+    setFolderNameInput('');
+    setFolderNameError('');
+    setFolderForm({ mode: 'create' });
+  };
 
-      if (!normalizedQuery) return true;
-      const inTitle = normalizeSearchValue(item.title || '').includes(normalizedQuery);
-      if (inTitle) return true;
+  const openRenameFolder = (folder: CollectionFolderRecord) => {
+    if (guestReadOnly) {
+      setListError(copy.readOnlyBody);
+      return;
+    }
+    setFolderNameInput(folder.name);
+    setFolderNameError('');
+    setFolderForm({ mode: 'rename', folder });
+  };
 
-      if (item.type === 'recipe') {
-        const haystack = normalizeSearchValue(`${item.content?.name || ''} ${item.content?.description || ''}`);
-        return haystack.includes(normalizedQuery);
-      }
-
-      return normalizeSearchValue(item.content?.markdown || '').includes(normalizedQuery);
+  const saveFolderForm = async () => {
+    if (!folderForm || guestReadOnly) return;
+    const validation = validateCollectionFolderName({
+      name: folderNameInput,
+      folders,
+      editingFolderId: folderForm.mode === 'rename' ? folderForm.folder.id : undefined,
     });
-  }, [filter, items, query, selectedFolderId]);
 
-  const folderCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    items.forEach((item) => {
-      const key = item.folderId || 'uncategorized';
-      counts.set(key, (counts.get(key) || 0) + 1);
-    });
-    return counts;
-  }, [items]);
+    if (!validation.ok) {
+      setFolderNameError(
+        validation.reason === 'empty'
+          ? copy.folderNameEmpty
+          : validation.reason === 'too_long'
+            ? copy.folderNameTooLong
+            : copy.duplicateFolderName,
+      );
+      return;
+    }
 
-  const activeFolder = selectedFolderId && selectedFolderId !== 'uncategorized'
-    ? folders.find((folder) => folder.id === selectedFolderId) || null
-    : null;
+    await runCollectionMutation(
+      folderForm.mode === 'rename' ? 'collection_rename_folder' : 'collection_create_folder',
+      async () => {
+        if (folderForm.mode === 'rename') {
+          await renameCollectionFolder(folderForm.folder.id, validation.value);
+        } else {
+          await createCollectionFolder(validation.value);
+        }
+      },
+      () => {
+        setFolderForm(null);
+        setFolderNameInput('');
+        setFolderNameError(folderForm.mode === 'rename' ? copy.folderRenamed : copy.folderCreated);
+      },
+    );
+  };
 
   const openCreateNote = () => {
-    if (guestReadOnly) return;
+    if (guestReadOnly) {
+      setListError(copy.readOnlyBody);
+      return;
+    }
     setEditingNoteId('');
     setNoteTitle('');
     setNoteMarkdown('');
-    setNoteFolderId(selectedFolderId && selectedFolderId !== 'uncategorized' ? selectedFolderId : '');
+    setNoteError('');
+    setNoteFolderId(activeFolder ? activeFolder.id : '');
     setEditorOpen(true);
   };
 
   const openEditNote = (item: CollectionItemRecord) => {
-    if (guestReadOnly || !isNote(item)) return;
+    if (guestReadOnly || !isCollectionNote(item)) return;
     setEditingNoteId(item.id);
     setNoteTitle(item.title || '');
     setNoteMarkdown(item.content.markdown || '');
     setNoteFolderId(item.folderId || '');
+    setNoteError('');
     setDetailItem(null);
     setEditorOpen(true);
   };
@@ -563,14 +512,19 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
     setNoteTitle('');
     setNoteMarkdown('');
     setNoteFolderId('');
+    setNoteError('');
   };
 
   const saveNote = async () => {
     if (guestReadOnly) return;
     const markdown = noteMarkdown.trim();
-    if (!markdown) return;
+    const trimmedTitle = noteTitle.trim();
+    if (!markdown && !trimmedTitle) {
+      setNoteError(copy.noteContentRequired);
+      return;
+    }
 
-    const title = noteTitle.trim() || copy.quickNote || 'Quick Note';
+    const title = trimmedTitle || copy.quickNote;
     const id = editingNoteId || genId('col');
 
     await runCollectionMutation(editingNoteId ? 'collection_update_note' : 'collection_save_note', async () => {
@@ -591,7 +545,7 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
 
   const shareItem = async (item: CollectionItemRecord) => {
     const message = item.type === 'recipe'
-      ? `${item.title}\n\n${item.content.description || copy.recipeItem || 'Recipe item'}`
+      ? `${item.title}\n\n${item.content.description || copy.recipeItem}`
       : `${item.title}\n\n${item.content.markdown || ''}`;
 
     await Share.share({
@@ -601,126 +555,265 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
     trackEvent('action_succeeded', { action: 'collection_share_item', itemType: item.type });
   };
 
-  const emptyMessage = useMemo(() => {
-    if (listError) return listError;
-    if (query.trim()) return copy.emptySearch;
-    if (selectedFolderId === 'uncategorized') return copy.emptyUncategorized;
-    if (selectedFolderId) return copy.emptyFolder;
-    if (guestReadOnly) return copy.readOnlyBody;
-    return copy.emptyDefault;
-  }, [copy, guestReadOnly, listError, query, selectedFolderId]);
+  const confirmDelete = async () => {
+    if (!confirmState || guestReadOnly) return;
+    if (confirmState.kind === 'deleteFolder') {
+      const folderId = confirmState.folder.id;
+      await runCollectionMutation('collection_delete_folder', async () => {
+        await softDeleteCollectionFolder(folderId);
+      }, () => {
+        if (selectedFolderId === folderId) {
+          setSelectedFolderId(null);
+          setAllFoldersOpen(false);
+        }
+        setConfirmState(null);
+      });
+      return;
+    }
 
-  const dockHidden = editorOpen || folderManagerOpen || Boolean(detailItem);
+    await runCollectionMutation('collection_delete_item', async () => {
+      await softDeleteCollectionItem(confirmState.item.id);
+    }, () => {
+      setDetailItem(null);
+      setConfirmState(null);
+    });
+  };
+
+  const moveDetailItem = async (folderId?: string) => {
+    if (!detailItem) return;
+    await runCollectionMutation('collection_move_item', async () => {
+      await moveCollectionItem(detailItem.id, folderId);
+    }, () => {
+      setDetailItem((current) => current ? { ...current, folderId } : current);
+    });
+  };
+
+  const statusLabel = mode === 'folders'
+    ? formatItemCount(folders.length, copy)
+    : mode === 'folder' && activeFolder
+      ? formatItemCount(folderCounts.get(activeFolder.id) || 0, copy)
+      : formatItemCount(filteredItems.length || allItemsCount, copy);
+
+  const dockHidden = editorOpen || folderForm !== null || confirmState !== null || Boolean(detailItem);
+  const showFolderPicker = editingNoteId || !activeFolder;
+  const currentNoteFolder = folders.find((folder) => folder.id === noteFolderId) || null;
+  const searchPlaceholder = getSearchPlaceholder(mode, copy);
+
+  const renderSearch = () => (
+    <SectionCard title={copy.searchTitle} compact>
+      <View style={styles.searchField}>
+        <Ionicons name="search" size={uiTokens.icon.sm} color={uiTokens.text.secondary} />
+        <TextInput
+          accessibilityLabel={searchPlaceholder}
+          value={query}
+          onChangeText={setQuery}
+          placeholder={searchPlaceholder}
+          placeholderTextColor={uiTokens.text.muted}
+          style={[styles.searchInput, isRtl ? styles.textRtl : null]}
+        />
+        {query ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={copy.close}
+            style={styles.clearButton}
+            onPress={() => setQuery('')}
+          >
+            <Ionicons name="close" size={uiTokens.icon.sm} color={uiTokens.text.secondary} />
+          </Pressable>
+        ) : null}
+      </View>
+      {mode !== 'folders' ? (
+        <SegmentedControl items={filterItems} value={filter} onChange={setFilter} direction={direction} />
+      ) : null}
+    </SectionCard>
+  );
+
+  const renderFolderCard = (folder: CollectionFolderRecord, compactActions = false) => {
+    const count = folderCounts.get(folder.id) || 0;
+    return (
+      <Pressable
+        key={folder.id}
+        accessibilityRole="button"
+        accessibilityLabel={`${copy.open} ${folder.name}`}
+        onPress={() => openFolder(folder.id)}
+      >
+        <SectionCard
+          title={folder.name}
+          subtitle={`${formatItemCount(count, copy)} · ${copy.folderUpdated} ${new Date(folder.updatedAt).toLocaleDateString(locale)}`}
+          compact
+          footer={compactActions ? (
+            <View style={[styles.actionRow, isRtl ? styles.rowRtl : null]}>
+              <ActionButton label={copy.open} compact tone="primary" onPress={() => openFolder(folder.id)} />
+              {!guestReadOnly ? (
+                <>
+                  <ActionButton label={copy.rename} compact onPress={() => openRenameFolder(folder)} />
+                  <ActionButton label={copy.delete} compact tone="danger" onPress={() => setConfirmState({ kind: 'deleteFolder', folder })} />
+                </>
+              ) : null}
+            </View>
+          ) : (
+            <View style={styles.itemFooter}>
+              <InfoPill label={formatItemCount(count, copy)} tone={count > 0 ? 'success' : 'warning'} />
+            </View>
+          )}
+        />
+      </Pressable>
+    );
+  };
+
+  const renderItemCard = (item: CollectionItemRecord, showFolderBadge: boolean) => (
+    <Pressable
+      key={item.id}
+      accessibilityRole="button"
+      accessibilityLabel={`${copy.open} ${item.title}`}
+      onPress={() => setDetailItem(item)}
+    >
+      <SectionCard
+        title={item.title}
+        subtitle={buildCollectionPreview(item, copy.emptyPreview)}
+        compact
+        footer={(
+          <View style={styles.itemFooter}>
+            <InfoPill label={item.type === 'recipe' ? copy.recipe : isCollectionNote(item) ? copy.note : copy.canvas} tone="accent" />
+            {showFolderBadge ? (
+              item.folderId ? (
+                <InfoPill
+                  label={folders.find((folder) => folder.id === item.folderId)?.name || copy.folderFallback}
+                  tone="success"
+                />
+              ) : (
+                <InfoPill label={copy.noFolder} />
+              )
+            ) : null}
+            <Text style={styles.updatedAt}>{copy.updated} {new Date(item.updatedAt).toLocaleDateString(locale)}</Text>
+          </View>
+        )}
+      />
+    </Pressable>
+  );
+
+  const renderHome = () => (
+    <>
+      {renderSearch()}
+      <SectionCard
+        title={copy.foldersTitle}
+        subtitle={copy.folderSubtitle}
+        compact
+        footer={folders.length > 0 ? (
+          <View style={[styles.actionRow, isRtl ? styles.rowRtl : null]}>
+            <ActionButton label={copy.seeAllFolders} compact tone="ghost" onPress={() => { setAllFoldersOpen(true); setQuery(''); }} />
+            {folderPreview.remainingCount > 0 ? <InfoPill label={copy.otherFolders(folderPreview.remainingCount)} /> : null}
+          </View>
+        ) : undefined}
+      >
+        {folderPreview.folders.length > 0 ? (
+          <View style={styles.listSection}>{folderPreview.folders.map((folder) => renderFolderCard(folder))}</View>
+        ) : (
+          <Text style={[styles.bodyText, isRtl ? styles.textRtl : null]}>{copy.emptyFolders}</Text>
+        )}
+      </SectionCard>
+      <View style={styles.listSection}>
+        {filteredItems.length > 0 ? filteredItems.map((item) => renderItemCard(item, true)) : (
+          <SectionCard
+            tone="subtle"
+            title={query.trim() ? copy.emptySearchTitle : copy.emptySearchTitle}
+            subtitle={query.trim() ? copy.emptySearch : guestReadOnly ? copy.readOnlyBody : copy.emptyDefault}
+            compact
+          />
+        )}
+      </View>
+    </>
+  );
+
+  const renderAllFolders = () => (
+    <>
+      {renderSearch()}
+      <SectionCard
+        title={copy.allFolders}
+        subtitle={copy.allFoldersSubtitle}
+        compact
+        footer={!guestReadOnly ? <ActionButton label={copy.createFolder} compact tone="primary" onPress={openCreateFolder} /> : undefined}
+      >
+        <View style={styles.listSection}>
+          {filteredFolders.length > 0 ? filteredFolders.map((folder) => renderFolderCard(folder, true)) : (
+            <SectionCard tone="subtle" title={copy.emptySearchTitle} subtitle={query.trim() ? copy.noFolderMatches : copy.emptyFolders} compact />
+          )}
+        </View>
+      </SectionCard>
+    </>
+  );
+
+  const renderFolder = () => {
+    if (!activeFolder) return null;
+    const count = folderCounts.get(activeFolder.id) || 0;
+    return (
+      <>
+        <SectionCard
+          title={activeFolder.name}
+          subtitle={`${copy.insideFolder} · ${formatItemCount(count, copy)}`}
+          tone="accent"
+          compact
+        >
+          <Text style={[styles.bodyText, isRtl ? styles.textRtl : null]}>{webT.collection} &gt; {activeFolder.name}</Text>
+          <View style={[styles.actionRow, isRtl ? styles.rowRtl : null]}>
+            <ActionButton label={copy.backToCollection} compact tone="secondary" onPress={goHome} />
+            {!guestReadOnly ? (
+              <>
+                <ActionButton label={copy.renameFolder} compact onPress={() => openRenameFolder(activeFolder)} />
+                <ActionButton label={copy.deleteFolder} compact tone="danger" onPress={() => setConfirmState({ kind: 'deleteFolder', folder: activeFolder })} />
+              </>
+            ) : null}
+          </View>
+        </SectionCard>
+        {renderSearch()}
+        <View style={styles.listSection}>
+          {filteredItems.length > 0 ? filteredItems.map((item) => renderItemCard(item, false)) : (
+            <SectionCard
+              tone="subtle"
+              title={query.trim() ? copy.emptyFolderSearchTitle : copy.emptyFolderTitle}
+              subtitle={query.trim() ? copy.emptyFolderSearch : copy.emptyFolder}
+              compact
+            />
+          )}
+        </View>
+      </>
+    );
+  };
 
   return (
     <>
       <AppShell
         header={(
           <HeroHeader
-            eyebrow={webT.collection}
-            title={webT.collection}
-            subtitle={webT.homeCollectionSubtitle}
+            eyebrow={mode === 'folder' ? copy.insideFolder : webT.collection}
+            title={mode === 'folders' ? copy.allFolders : mode === 'folder' && activeFolder ? activeFolder.name : webT.collection}
+            subtitle={mode === 'folders' ? copy.allFoldersSubtitle : mode === 'folder' ? copy.folderSubtitle : copy.collectionHomeSubtitle}
             direction={direction}
-            status={(
-              <InfoPill label={guestReadOnly ? copy.browseOnly : `${filteredItems.length} ${copy.items}`} tone={guestReadOnly ? 'warning' : 'accent'} />
-            )}
+            status={<InfoPill label={guestReadOnly ? copy.browseOnly : statusLabel} tone={guestReadOnly ? 'warning' : 'accent'} />}
           />
         )}
         bottomDock={!guestReadOnly && !dockHidden ? (
           <BottomActionDock
-            primaryAction={{ label: webT.newNote, onPress: openCreateNote }}
-            secondaryActions={[
-              { label: webT.createFolder, onPress: () => setFolderManagerOpen(true) },
+            primaryAction={{
+              label: mode === 'folders' ? copy.createFolder : mode === 'folder' ? copy.addNoteToFolder : webT.newNote,
+              onPress: mode === 'folders' ? openCreateFolder : openCreateNote,
+            }}
+            secondaryActions={mode === 'home' ? [
+              { label: copy.createFolder, onPress: openCreateFolder },
+            ] : [
+              { label: copy.backToCollection, onPress: goHome },
             ]}
           />
         ) : undefined}
       >
-        <SectionCard title={copy.filterTitle} subtitle={copy.filterSubtitle} compact>
-          <View style={styles.searchField}>
-            <Ionicons name="search" size={uiTokens.icon.sm} color={uiTokens.text.secondary} />
-            <TextInput
-              value={query}
-              onChangeText={setQuery}
-              placeholder={webT.searchNotes}
-              placeholderTextColor={uiTokens.text.muted}
-              style={styles.searchInput}
-            />
-          </View>
-          <SegmentedControl items={filterItems} value={filter} onChange={setFilter} direction={direction} />
-        </SectionCard>
-
-        <SectionCard
-          title={copy.foldersTitle}
-          subtitle={guestReadOnly ? copy.browseOnly : copy.tidyFolders}
-          compact
-          footer={!guestReadOnly ? <ActionButton label={webT.createFolder} tone="ghost" compact direction={direction} onPress={() => setFolderManagerOpen(true)} /> : undefined}
-        >
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.folderRow, isRtl ? styles.rowRtl : null]}>
-            <Pressable
-              style={[styles.folderChip, selectedFolderId === null ? styles.folderChipActive : null]}
-              onPress={() => setSelectedFolderId(null)}
-            >
-              <Text style={[styles.folderChipText, selectedFolderId === null ? styles.folderChipTextActive : null]}>
-                {webT.allItems}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={[styles.folderChip, selectedFolderId === 'uncategorized' ? styles.folderChipActive : null]}
-              onPress={() => setSelectedFolderId('uncategorized')}
-            >
-              <Text style={[styles.folderChipText, selectedFolderId === 'uncategorized' ? styles.folderChipTextActive : null]}>
-                {copy.uncategorized}
-              </Text>
-            </Pressable>
-            {folders.map((folder) => (
-              <Pressable
-                key={folder.id}
-                style={[styles.folderChip, selectedFolderId === folder.id ? styles.folderChipActive : null]}
-                onPress={() => setSelectedFolderId(folder.id)}
-              >
-                <Text style={[styles.folderChipText, selectedFolderId === folder.id ? styles.folderChipTextActive : null]}>
-                  {folder.name}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-        </SectionCard>
-
-        <View style={styles.listSection}>
-          {filteredItems.length > 0 ? (
-            filteredItems.map((item) => (
-              <Pressable key={item.id} onPress={() => setDetailItem(item)}>
-                <SectionCard
-                  title={item.title}
-                  subtitle={buildCollectionPreview(item, copy.emptyPreview || 'No preview yet.')}
-                  compact
-                  footer={(
-                    <View style={styles.itemFooter}>
-                      <InfoPill label={item.type === 'recipe' ? copy.recipe : isNote(item) ? copy.note : copy.canvas} tone="accent" />
-                      {item.folderId ? (
-                        <InfoPill
-                          label={folders.find((folder) => folder.id === item.folderId)?.name || copy.folderFallback}
-                          tone="success"
-                        />
-                      ) : (
-                        <InfoPill label={webT.noFolder} />
-                      )}
-                    </View>
-                  )}
-                >
-                  <Text style={styles.updatedAt}>{copy.updated} {new Date(item.updatedAt).toLocaleDateString(locale)}</Text>
-                </SectionCard>
-              </Pressable>
-            ))
-          ) : (
-            <SectionCard tone="subtle" title={copy.emptyTitle} subtitle={emptyMessage} compact />
-          )}
-        </View>
+        {listError ? <SectionCard tone="warning" title={copy.readOnlyTitle} subtitle={listError} compact /> : null}
+        {mode === 'folders' ? renderAllFolders() : mode === 'folder' ? renderFolder() : renderHome()}
       </AppShell>
 
       <ResultSheet
         visible={Boolean(detailItem)}
         direction={direction}
+        closeAccessibilityLabel={copy.close}
         onClose={() => setDetailItem(null)}
         title={detailItem?.title || webT.collection}
         subtitle={detailItem ? new Date(detailItem.updatedAt).toLocaleString(locale) : undefined}
@@ -730,32 +823,28 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
             tone: 'secondary',
             onPress: () => void shareItem(detailItem),
           },
-          ...(!guestReadOnly ? [{
-            label: webT.delete,
-            tone: 'danger' as const,
-            onPress: () => void runCollectionMutation('collection_delete_item', async () => {
-              await softDeleteCollectionItem(detailItem.id);
-            }, () => setDetailItem(null)),
-          }] : []),
-          ...(detailItem && isNote(detailItem) && !guestReadOnly ? [{
+          ...(detailItem && isCollectionNote(detailItem) && !guestReadOnly ? [{
             label: `${webT.edit} ${copy.note}`,
             tone: 'primary' as const,
             onPress: () => openEditNote(detailItem),
           }] : []),
+          ...(!guestReadOnly ? [{
+            label: copy.deleteItem,
+            tone: 'danger' as const,
+            onPress: () => setConfirmState({ kind: 'deleteItem', item: detailItem }),
+          }] : []),
         ] : []}
         content={detailItem ? (
           <View style={styles.sheetContent}>
-            <Text style={[styles.detailBody, isRtl ? styles.textRtl : null]}>{buildCollectionPreview(detailItem, copy.emptyPreview || 'No preview yet.')}</Text>
+            <Text style={[styles.detailBody, isRtl ? styles.textRtl : null]}>{buildCollectionPreview(detailItem, copy.emptyPreview)}</Text>
             {!guestReadOnly ? (
               <SectionCard title={copy.moveToFolder} compact>
                 <View style={[styles.folderMoveRow, isRtl ? styles.rowRtl : null]}>
                   <ActionButton
-                    label={webT.noFolder}
+                    label={copy.noFolder}
                     compact
                     tone={!detailItem.folderId ? 'primary' : 'secondary'}
-                    onPress={() => void runCollectionMutation('collection_move_item', async () => {
-                      await moveCollectionItem(detailItem.id, undefined);
-                    }, () => setDetailItem((current) => current ? { ...current, folderId: undefined } : current))}
+                    onPress={() => void moveDetailItem(undefined)}
                   />
                   {folders.map((folder) => (
                     <ActionButton
@@ -763,9 +852,7 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
                       label={folder.name}
                       compact
                       tone={detailItem.folderId === folder.id ? 'primary' : 'secondary'}
-                      onPress={() => void runCollectionMutation('collection_move_item', async () => {
-                        await moveCollectionItem(detailItem.id, folder.id);
-                      }, () => setDetailItem((current) => current ? { ...current, folderId: folder.id } : current))}
+                      onPress={() => void moveDetailItem(folder.id)}
                     />
                   ))}
                 </View>
@@ -778,6 +865,7 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
       <ResultSheet
         visible={editorOpen}
         direction={direction}
+        closeAccessibilityLabel={copy.close}
         onClose={closeEditor}
         title={editingNoteId ? webT.editNote : webT.newNote}
         subtitle={copy.noteSubtitle}
@@ -786,144 +874,141 @@ export function CollectionScreen({ session = null, guestModeEnabled = false }: C
             label: editingNoteId ? webT.updateNote : webT.saveNote,
             tone: 'primary',
             onPress: () => void saveNote(),
-            disabled: !noteMarkdown.trim(),
+            disabled: !noteTitle.trim() && !noteMarkdown.trim(),
+          },
+          {
+            label: copy.cancel,
+            tone: 'secondary',
+            onPress: closeEditor,
           },
         ]}
         content={(
           <View style={styles.sheetContent}>
+            {noteError ? <Text style={styles.errorText}>{noteError}</Text> : null}
             <TextInput
+              accessibilityLabel={webT.noteTitle}
               value={noteTitle}
-              onChangeText={setNoteTitle}
+              onChangeText={(value) => {
+                setNoteTitle(value);
+                setNoteError('');
+              }}
               placeholder={webT.noteTitle}
               placeholderTextColor={uiTokens.text.muted}
-              style={styles.fieldInput}
+              style={[styles.fieldInput, isRtl ? styles.textRtl : null]}
             />
             <TextInput
+              accessibilityLabel={copy.noteBodyPlaceholder}
               value={noteMarkdown}
-              onChangeText={setNoteMarkdown}
+              onChangeText={(value) => {
+                setNoteMarkdown(value);
+                setNoteError('');
+              }}
               placeholder={copy.noteBodyPlaceholder}
               placeholderTextColor={uiTokens.text.muted}
-              style={styles.fieldTextArea}
+              style={[styles.fieldTextArea, isRtl ? styles.textRtl : null]}
               multiline
               textAlignVertical="top"
             />
-            <SectionCard title={copy.folderLabel} compact>
-              <View style={[styles.folderMoveRow, isRtl ? styles.rowRtl : null]}>
-                <ActionButton
-                  label={webT.noFolder}
-                  compact
-                  tone={!noteFolderId ? 'primary' : 'secondary'}
-                  onPress={() => setNoteFolderId('')}
-                />
-                {folders.map((folder) => (
+            {showFolderPicker ? (
+              <SectionCard title={copy.moveToFolder} compact>
+                <View style={[styles.folderMoveRow, isRtl ? styles.rowRtl : null]}>
                   <ActionButton
-                    key={folder.id}
-                    label={folder.name}
+                    label={copy.noFolder}
                     compact
-                    tone={noteFolderId === folder.id ? 'primary' : 'secondary'}
-                    onPress={() => setNoteFolderId(folder.id)}
+                    tone={!noteFolderId ? 'primary' : 'secondary'}
+                    onPress={() => setNoteFolderId('')}
                   />
-                ))}
-              </View>
-            </SectionCard>
+                  {folders.map((folder) => (
+                    <ActionButton
+                      key={folder.id}
+                      label={folder.name}
+                      compact
+                      tone={noteFolderId === folder.id ? 'primary' : 'secondary'}
+                      onPress={() => setNoteFolderId(folder.id)}
+                    />
+                  ))}
+                </View>
+              </SectionCard>
+            ) : currentNoteFolder ? (
+              <SectionCard title={copy.folderFallback} subtitle={copy.savedToFolder(currentNoteFolder.name)} compact />
+            ) : null}
           </View>
         )}
       />
 
       <ResultSheet
-        visible={folderManagerOpen}
+        visible={Boolean(folderForm)}
         direction={direction}
+        closeAccessibilityLabel={copy.close}
         onClose={() => {
-          setFolderManagerOpen(false);
-          setNewFolderName('');
-          setRenameFolderId('');
-          setRenameFolderValue('');
+          setFolderForm(null);
+          setFolderNameInput('');
+          setFolderNameError('');
         }}
-        title={webT.createFolder}
-        subtitle={copy.organizeLibrary}
+        title={folderForm?.mode === 'rename' ? copy.renameFolder : copy.newFolder}
+        subtitle={copy.folderSubtitle}
+        actions={[
+          {
+            label: folderForm?.mode === 'rename' ? copy.save : copy.createFolder,
+            tone: 'primary',
+            onPress: () => void saveFolderForm(),
+            disabled: !folderNameInput.trim(),
+          },
+          {
+            label: copy.cancel,
+            tone: 'secondary',
+            onPress: () => {
+              setFolderForm(null);
+              setFolderNameInput('');
+              setFolderNameError('');
+            },
+          },
+        ]}
         content={(
           <View style={styles.sheetContent}>
-            <SectionCard title={copy.newFolder} compact footer={(
-              <ActionButton
-                label={copy.add}
-                tone="primary"
-                onPress={() => void runCollectionMutation('collection_create_folder', async () => {
-                  await createCollectionFolder(newFolderName);
-                }, () => setNewFolderName(''))}
-                disabled={!newFolderName.trim()}
-              />
-            )}>
-              <TextInput
-                value={newFolderName}
-                onChangeText={setNewFolderName}
-                placeholder={webT.folderName}
-                placeholderTextColor={uiTokens.text.muted}
-                style={styles.fieldInput}
-              />
-            </SectionCard>
+            {folderNameError ? <Text style={styles.errorText}>{folderNameError}</Text> : null}
+            <TextInput
+              accessibilityLabel={copy.folderName}
+              value={folderNameInput}
+              onChangeText={(value) => {
+                setFolderNameInput(value);
+                setFolderNameError('');
+              }}
+              placeholder={copy.folderName}
+              placeholderTextColor={uiTokens.text.muted}
+              style={[styles.fieldInput, isRtl ? styles.textRtl : null]}
+              maxLength={48}
+            />
+          </View>
+        )}
+      />
 
-            {activeFolder ? (
-              <SectionCard
-                title={activeFolder.name}
-                subtitle={`${folderCounts.get(activeFolder.id) || 0} ${copy.items}`}
-                compact
-                footer={(
-                <View style={[styles.managerActions, isRtl ? styles.rowRtl : null]}>
-                    <ActionButton
-                      label={copy.rename}
-                      tone="secondary"
-                      compact
-                      onPress={() => {
-                        setRenameFolderId(activeFolder.id);
-                        setRenameFolderValue(renameFolderValue || activeFolder.name);
-                      }}
-                    />
-                    <ActionButton
-                      label={copy.delete}
-                      tone="danger"
-                      compact
-                      onPress={() => void runCollectionMutation('collection_delete_folder', async () => {
-                        await softDeleteCollectionFolder(activeFolder.id);
-                      }, () => {
-                        setSelectedFolderId(null);
-                        setRenameFolderId('');
-                        setRenameFolderValue('');
-                      })}
-                    />
-                  </View>
-                )}
-              >
-                {renameFolderId === activeFolder.id ? (
-                  <View style={styles.renameRow}>
-                    <TextInput
-                      value={renameFolderValue}
-                      onChangeText={setRenameFolderValue}
-                      placeholder={copy.renameFolder}
-                      placeholderTextColor={uiTokens.text.muted}
-                      style={styles.fieldInput}
-                    />
-                    <ActionButton
-                      label={webT.save}
-                      tone="primary"
-                      compact
-                      onPress={() => void runCollectionMutation('collection_rename_folder', async () => {
-                        await renameCollectionFolder(activeFolder.id, renameFolderValue);
-                      }, () => {
-                        setRenameFolderId('');
-                        setRenameFolderValue('');
-                      })}
-                      disabled={!renameFolderValue.trim()}
-                    />
-                  </View>
-                ) : (
-                  <Text style={styles.managerHint}>{copy.selectFolderHint}</Text>
-                )}
-              </SectionCard>
-            ) : (
-              <SectionCard title={copy.tip} subtitle={copy.selectFolderTip} compact>
-                <Text style={styles.managerHint}>{copy.createFolderHint}</Text>
-              </SectionCard>
-            )}
+      <ResultSheet
+        visible={Boolean(confirmState)}
+        direction={direction}
+        closeAccessibilityLabel={copy.close}
+        onClose={() => setConfirmState(null)}
+        title={confirmState?.kind === 'deleteFolder' ? copy.deleteFolder : copy.deleteItem}
+        subtitle={copy.confirmDelete}
+        actions={[
+          {
+            label: copy.delete,
+            tone: 'danger',
+            onPress: () => void confirmDelete(),
+          },
+          {
+            label: copy.cancel,
+            tone: 'secondary',
+            onPress: () => setConfirmState(null),
+          },
+        ]}
+        content={(
+          <View style={styles.sheetContent}>
+            <Text style={[styles.detailBody, isRtl ? styles.textRtl : null]}>
+              {confirmState?.kind === 'deleteFolder'
+                ? copy.deleteFolderBody(folderCounts.get(confirmState.folder.id) || 0)
+                : copy.deleteItemBody}
+            </Text>
           </View>
         )}
       />
@@ -941,7 +1026,7 @@ const styles = StyleSheet.create({
     borderColor: uiTokens.border.soft,
     backgroundColor: uiTokens.surface.strong,
     paddingHorizontal: 14,
-    minHeight: 52,
+    minHeight: uiTokens.size.touchTarget,
   },
   searchInput: {
     flex: 1,
@@ -951,31 +1036,13 @@ const styles = StyleSheet.create({
     lineHeight: uiTokens.typography.body.lineHeight,
     paddingVertical: 12,
   },
-  folderRow: {
-    gap: 8,
-    paddingRight: 8,
-  },
-  folderChip: {
+  clearButton: {
+    width: 36,
+    height: 36,
     borderRadius: uiTokens.radius.pill,
-    borderWidth: 1,
-    borderColor: uiTokens.border.soft,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: uiTokens.surface.soft,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  folderChipActive: {
-    backgroundColor: uiTokens.surface.accent,
-    borderColor: uiTokens.colors.accent,
-  },
-  folderChipText: {
-    color: uiTokens.text.secondary,
-    fontFamily: uiTokens.fontFamily.medium,
-    fontSize: uiTokens.typography.caption.fontSize,
-    lineHeight: uiTokens.typography.caption.lineHeight,
-  },
-  folderChipTextActive: {
-    color: uiTokens.colors.accent,
-    fontFamily: uiTokens.fontFamily.semibold,
   },
   listSection: {
     gap: 12,
@@ -983,6 +1050,13 @@ const styles = StyleSheet.create({
   itemFooter: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: 8,
   },
   updatedAt: {
@@ -991,7 +1065,7 @@ const styles = StyleSheet.create({
     fontSize: uiTokens.typography.caption.fontSize,
     lineHeight: uiTokens.typography.caption.lineHeight,
   },
-  emptyText: {
+  bodyText: {
     color: uiTokens.text.secondary,
     fontFamily: uiTokens.fontFamily.regular,
     fontSize: uiTokens.typography.body.fontSize,
@@ -1006,6 +1080,12 @@ const styles = StyleSheet.create({
     fontSize: uiTokens.typography.body.fontSize,
     lineHeight: 22,
   },
+  errorText: {
+    color: uiTokens.colors.warning,
+    fontFamily: uiTokens.fontFamily.semibold,
+    fontSize: uiTokens.typography.caption.fontSize,
+    lineHeight: uiTokens.typography.caption.lineHeight,
+  },
   textRtl: {
     textAlign: 'right',
   },
@@ -1018,7 +1098,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   fieldInput: {
-    minHeight: 48,
+    minHeight: uiTokens.size.touchTarget,
     borderRadius: uiTokens.radius.input,
     borderWidth: 1,
     borderColor: uiTokens.border.soft,
@@ -1041,19 +1121,5 @@ const styles = StyleSheet.create({
     fontFamily: uiTokens.fontFamily.regular,
     fontSize: uiTokens.typography.body.fontSize,
     lineHeight: 22,
-  },
-  managerActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  renameRow: {
-    gap: 10,
-  },
-  managerHint: {
-    color: uiTokens.text.secondary,
-    fontFamily: uiTokens.fontFamily.regular,
-    fontSize: uiTokens.typography.body.fontSize,
-    lineHeight: uiTokens.typography.body.lineHeight,
   },
 });

@@ -28,6 +28,7 @@ export interface ResultSheetProps {
   actions?: SheetAction[];
   onClose?: () => void;
   direction?: 'ltr' | 'rtl';
+  closeAccessibilityLabel?: string;
 }
 
 export function resolveSheetBottomPadding(insetsBottom: number): number {
@@ -46,6 +47,7 @@ export function ResultSheet({
   actions = [],
   onClose,
   direction,
+  closeAccessibilityLabel = 'Close',
 }: ResultSheetProps) {
   const insets = useSafeAreaInsets();
   const isRtl = direction ? direction === 'rtl' : I18nManager.isRTL;
@@ -74,7 +76,12 @@ export function ResultSheet({
               {subtitle ? <Text style={[styles.subtitle, isRtl ? styles.textRtl : null]}>{subtitle}</Text> : null}
             </View>
             {onClose ? (
-              <Pressable style={styles.closeButton} onPress={onClose}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={closeAccessibilityLabel}
+                style={styles.closeButton}
+                onPress={onClose}
+              >
                 <Ionicons name="close" size={uiTokens.icon.md} color={uiTokens.text.primary} />
               </Pressable>
             ) : null}
@@ -168,8 +175,8 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   closeButton: {
-    width: 36,
-    height: 36,
+    width: uiTokens.size.touchTarget,
+    height: uiTokens.size.touchTarget,
     borderRadius: uiTokens.radius.pill,
     alignItems: 'center',
     justifyContent: 'center',

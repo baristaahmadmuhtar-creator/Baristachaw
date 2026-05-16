@@ -698,6 +698,7 @@ test('ai brew grinder picker shows Feima 600N platform aliases without losing th
   await expect(feima).toContainText(/Feima 600N/i);
   await expect(feima).toContainText(/Murane B600BN|Latina 600N|Flying Eagle 600N|Yang-Chia|Fomac|Kova/i);
   await expect(feima).toContainText(/Curated reference|Community reference|Referensi kurasi|Referensi komunitas/i);
+  await expect(page.locator('button').filter({ hasText: 'Feima 600N / Murane B600BN' })).toHaveCount(1);
 });
 
 test('ai brew locks ice mode for methods that should stay hot or dedicated cold', async ({ page }) => {

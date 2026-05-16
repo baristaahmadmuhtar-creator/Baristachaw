@@ -132,7 +132,7 @@ test('AI Brew exposes explicit mobile time semantics instead of one misleading t
 test('AI Brew guide details stay deduped and barista-actionable', () => {
   assert.match(SOURCE, /normalizeAiBrewDetailKey/);
   assert.match(SOURCE, /isAiBrewDetailCovered/);
-  assert.match(SOURCE, /points\.slice\(0, 3\)/);
+  assert.match(SOURCE, /points\.slice\(0, 1\)/);
   assert.match(SOURCE, /Tuang tenang dari tengah ke tengah-luar/);
   assert.match(SOURCE, /buildAiBrewWorkflowControlDetail/);
   assert.match(SOURCE, /buildAiBrewBeanContextDetail/);

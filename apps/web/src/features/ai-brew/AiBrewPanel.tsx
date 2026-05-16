@@ -1435,8 +1435,10 @@ function formatRoundedTemperature(value: number) {
 
 function isFeima600nPlatformGrinder(item?: Pick<EquipmentCatalogEntry, 'id' | 'name' | 'brand' | 'searchText'> | null) {
   if (!item) return false;
-  const haystack = [item.id, item.name, item.brand, item.searchText].filter(Boolean).join(' ').toLowerCase();
-  return /\b(feima|yang-chia|yang chia|latina|murane|flying eagle|fomac|kova|600n)\b/i.test(haystack);
+  const itemId = String(item.id || '').toLowerCase();
+  if (itemId === 'feima-600n') return true;
+  const haystack = [item.name, item.brand, item.searchText].filter(Boolean).join(' ').toLowerCase();
+  return /\bfeima\s*600n\b|\bmurane\s*b?600bn\b|\blatina\s*600n\b|\bflying eagle\s*600n\b|\byang[-\s]?chia\s*600n\b|\bpegasus\s*600n\b|\bfomac\s*cog[-\s]?cg600b\b|\bkova\s*600n\b/i.test(haystack);
 }
 
 function formatGrinderDisplayName(item: EquipmentCatalogEntry | null | undefined, language: string, surface: 'selected' | 'picker' | 'result' = 'result') {
@@ -2986,18 +2988,18 @@ function buildAiBrewBeanContextDetail(plan: BrewPlan, step: AiBrewDisplayStep, l
 
   if (/natural|anaerobic|carbonic|ferment|wine|co.?ferment|experimental/i.test(beanText)) {
     return actionType === 'bloom'
-      ? 'Bean: proses aromatik lebih mudah liar; bloom rata, agitasi tetap rendah agar buah tidak berubah keruh.'
-      : 'Bean: jaga gerakan tetap halus; proses aromatik biasanya lebih enak saat clarity dijaga daripada dipaksa ekstraksi berat.';
+      ? 'Kopi: proses aromatik lebih mudah liar; bloom rata, agitasi tetap rendah agar buah tidak berubah keruh.'
+      : 'Kopi: jaga gerakan tetap halus; proses aromatik biasanya lebih enak saat kejernihan dijaga daripada dipaksa ekstraksi berat.';
   }
   if (/washed|ethiop|gesha|geisha|heirloom|sl|bourbon|caturra/i.test(beanText) || plan.roastLevel === 'light' || plan.roastLevel === 'medium_light') {
     return actionType === 'bloom'
-      ? 'Bean: light/washed butuh pembasahan rapi; cek tidak ada dry pocket sebelum tuangan berikutnya.'
-      : 'Bean: pertahankan suhu dan jalur tuang bersih supaya floral/asam manis tetap jernih.';
+      ? 'Kopi: sangrai terang atau washed butuh pembasahan rapi; cek tidak ada bagian kering sebelum tuangan berikutnya.'
+      : 'Kopi: pertahankan suhu dan jalur tuang bersih supaya floral/asam manis tetap jernih.';
   }
   if (/wet.?hulled|giling basah|robusta|canephora|liberica|excelsa/i.test(beanText) || plan.roastLevel === 'medium_dark' || plan.roastLevel === 'dark') {
-    return 'Bean: profil berat atau sangrai gelap mudah pahit; jaga agitasi rendah dan koreksi dari grind dulu.';
+    return 'Kopi: profil berat atau sangrai gelap mudah pahit; jaga agitasi rendah dan koreksi dari grind dulu.';
   }
-  return 'Bean: pakai resep ini sebagai baseline; nilai rasa setelah suhu, grind, dan waktu ekstraksi tercatat.';
+  return 'Kopi: pakai resep ini sebagai baseline; nilai rasa setelah suhu, grind, dan waktu ekstraksi tercatat.';
 }
 
 function buildAiBrewTargetCorrectionDetail(plan: BrewPlan, step: AiBrewDisplayStep, language: string) {
@@ -3011,7 +3013,7 @@ function buildAiBrewTargetCorrectionDetail(plan: BrewPlan, step: AiBrewDisplaySt
       : 'Koreksi manis: jika tipis/asam, haluskan grind 0.5 step; jika mulai seret, kasarkan 0.5 step.';
   }
   if (target === 'more_acidity' || target === 'floral_transparent' || target === 'fruit_forward') {
-    return 'Koreksi clarity: jika aroma tertutup, kasarkan 0.5 step atau lembutkan tuangan akhir; jangan tambah agitasi dulu.';
+    return 'Koreksi jernih: jika aroma tertutup, kasarkan 0.5 step atau lembutkan tuangan akhir; jangan tambah agitasi dulu.';
   }
   if (target === 'more_body' || target === 'dense_comforting') {
     return 'Koreksi body: jika terlalu tipis, haluskan 0.5 step; jika berat/keruh, kurangi agitasi atau kasarkan sedikit.';
@@ -3096,24 +3098,36 @@ function buildAiBrewDeterministicStepDetailPoints(
     const addPoint = (value: string) => addUniqueAiBrewDetailPoint(points, value, hiddenReferences);
 
     if (id) {
-      addPoint(buildAiBrewWorkflowControlDetail(plan, step, language));
-      addPoint(buildAiBrewBeanContextDetail(plan, step, language));
-      addPoint(buildAiBrewTargetCorrectionDetail(plan, step, language));
+      addPoint([
+        buildAiBrewWorkflowControlDetail(plan, step, language),
+        buildAiBrewBeanContextDetail(plan, step, language),
+        buildAiBrewTargetCorrectionDetail(plan, step, language),
+      ].filter(Boolean).join(' '));
     } else if (step.secondaryText) {
       addPoint(localizeAiBrewDynamicText(step.secondaryText, language));
     }
 
     if (step.warnings.length > 0) {
-      step.warnings.forEach((warning) => addPoint(localizeAiBrewDynamicText(warning, language)));
+      step.warnings.slice(0, 1).forEach((warning) => {
+        const localizedWarning = localizeAiBrewDynamicText(warning, language);
+        if (points.length > 0) {
+          points[0] = `${points[0]} ${id ? 'Catatan aman:' : 'Safety note:'} ${localizedWarning}`;
+        } else {
+          addPoint(localizedWarning);
+        }
+      });
     }
     if (plan.brewMode === 'iced' && step.pourVolumeMl > 0) {
-      addPoint(
-        id
-          ? `Target volume ini adalah air panas (${formatRoundedMl(plan.hotWaterMl)}), bukan total minuman.`
-          : `This volume target is hot water (${formatRoundedMl(plan.hotWaterMl)}), not total beverage.`,
-      );
+      const splitNote = id
+        ? `Target volume ini adalah air panas (${formatRoundedMl(plan.hotWaterMl)}), bukan total minuman.`
+        : `This volume target is hot water (${formatRoundedMl(plan.hotWaterMl)}), not total beverage.`;
+      if (points.length > 0) {
+        points[0] = `${points[0]} ${splitNote}`;
+      } else {
+        addPoint(splitNote);
+      }
     }
-    return points.slice(0, 3);
+    return points.slice(0, 1);
   }
   const id = isIndonesianAiBrewLanguage(language);
   const kind = getAiBrewStepKind(step);
@@ -3208,7 +3222,8 @@ function buildAiBrewDeterministicStepDetailPoints(
   const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
   addUniqueAiBrewDetailPoint(points, methodFocusCue, visibleReferences);
 
-  return points.slice(0, 3);
+  if (points.length <= 1) return points.slice(0, 1);
+  return [points.join(' ')];
 }
 
 function buildAiBrewStepDetailPoints(
@@ -3226,7 +3241,7 @@ function buildAiBrewStepDetailPoints(
 
   const points = buildAiBrewDeterministicStepDetailPoints(plan, step, index, language, hiddenReferences);
 
-  if (!detailText || isAiBrewDetailCovered(detailText, fallbackNote)) return points.slice(0, 3);
+  if (points.length > 0 || !detailText || isAiBrewDetailCovered(detailText, fallbackNote)) return points.slice(0, 1);
 
   detailText
     .split(/;\s+|(?<=[.!?])\s+/)
@@ -3235,7 +3250,7 @@ function buildAiBrewStepDetailPoints(
     .filter((part) => !isAiBrewDetailCovered(part, fallbackNote))
     .forEach((part) => addUniqueAiBrewDetailPoint(points, part, hiddenReferences));
 
-  return points.slice(0, 3);
+  return points.slice(0, 1);
 }
 
 function formatAiBrewStepFlowRate(step: AiBrewDisplayStep) {
@@ -5052,14 +5067,10 @@ function PlanResultDialog({
                       {summaryHighlightItems.map((item) => (
                         <span
                           key={item.id}
-                          className={`min-w-0 max-w-full rounded-2xl border px-3 py-3 text-secondary ${
-                            item.emphasis
-                              ? 'border-blue-500/20 bg-blue-500/[0.09]'
-                              : 'panel-divider-subtle bg-[var(--bg-base)]/84'
-                          }`}
+                          className="min-w-0 max-w-full rounded-2xl border border-blue-500/20 bg-blue-500/[0.09] px-4 py-4 text-secondary"
                         >
                           <span className="block text-[10px] font-semibold uppercase tracking-widest text-tertiary">{item.label}</span>
-                          <span className="mt-1 block break-words text-base font-semibold leading-tight text-primary sm:text-lg">{item.value}</span>
+                          <span className="mt-1 block break-words text-xl font-semibold leading-tight text-primary sm:text-2xl">{item.value}</span>
                         </span>
                       ))}
                     </div>

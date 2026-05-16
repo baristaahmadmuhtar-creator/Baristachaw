@@ -172,7 +172,7 @@ export interface AiBrewGenerationProgress {
 const CUSTOM_ENTRY_ID = 'custom';
 const FORCE_FAMILY_FALLBACK_DRIPPER_IDS = new Set<string>();
 const DEFAULT_DRIPPER_PRIORITY = ['hario-v60'];
-const DEFAULT_GRINDER_PRIORITY = ['1zpresso-k-ultra'];
+const DEFAULT_GRINDER_PRIORITY = ['feima-600n', '1zpresso-k-ultra'];
 const DEFAULT_TARGET_PROFILE_PRIORITY = ['balance_clean'];
 const AI_BREW_CORE_INPUT_TOTAL = 7;
 const AI_BREW_OPTIONAL_SIGNAL_TOTAL = 7;

@@ -430,7 +430,7 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   assert.ok(grinders.some((entry) => slugify(entry.name) === 'feima-600n'), 'Feima 600N should exist as a canonical grinder entry');
   const feimaSearch = grinderSearch.find((entry) => entry.id === 'feima-600n');
   assert.ok(feimaSearch, 'Feima 600N should exist in grinder search export');
-  assert.match(feimaSearch?.search_text || '', /latina 600n|flying eagle 600n/i, 'Feima 600N search export should include regional rebrand aliases');
+  assert.match(feimaSearch?.search_text || '', /latina 600n|flying eagle 600n|murane b600bn|fomac|kova/i, 'Feima 600N search export should include regional rebrand aliases');
 
   for (const id of ['evian-global', 'volvic-global', 'acqua-panna-global', 'fiji-global']) {
     const entry = waters.find((item) => item.id === id);

@@ -48,13 +48,28 @@ function isFeimaStyleGrinder(grinder: EquipmentCatalogEntry) {
     grinder.typeLabel,
     grinder.searchText,
   ]);
-  return haystackHasAny(haystack, [/\b600n\b/i, /\bfeima\b/i, /\blatina\b/i, /\bflying eagle\b/i]);
+  return haystackHasAny(haystack, [/\b600n\b/i, /\bfeima\b/i, /\blatina\b/i, /\bflying eagle\b/i, /\bmurane\b/i, /\bfomac\b/i, /\bkova\b/i]);
 }
 
 function formatParsedSetting(value: number, parsed: ParsedNumericRange) {
   const rounded = roundTo(value, parsed.precision);
   const text = parsed.precision > 0 ? rounded.toFixed(parsed.precision) : String(Math.round(rounded));
   return `${text} ${parsed.unitLabel}`.trim();
+}
+
+function formatFeimaSetting(value: number) {
+  const rounded = roundTo(value, 1);
+  const text = Number.isInteger(rounded) ? String(Math.round(rounded)) : rounded.toFixed(1);
+  return `setting ${text}`;
+}
+
+function isFeimaCuratedConeSetting(setting: GrinderSettingReference) {
+  const haystack = normalizeSearchHaystack([setting.id, setting.rangeLabel, setting.note, setting.source]);
+  return haystackHasAny(haystack, [
+    /\bfeima[_-]600n[_-]cone\b/i,
+    /\bcurated cone baseline\b/i,
+    /\b3\.5\s*-\s*4\.5\b/i,
+  ]);
 }
 
 function preferredFallbackBands(methodFamily: AiBrewMethodFamily): GrinderBandKey[] {
@@ -204,6 +219,22 @@ export function buildGrindRecommendation(
   if (setting?.parsedRange) {
     const adjusted = adjustRange(setting.parsedRange, grindBias, roastLevel, brewMode);
     if (isFeimaStyleGrinder(grinder)) {
+      if (!isFeimaCuratedConeSetting(setting)) {
+        const primary = formatFeimaSetting((adjusted.min + adjusted.max) / 2);
+        const lower = formatFeimaSetting(adjusted.min);
+        const upper = formatFeimaSetting(adjusted.max);
+        const recommendation = formatGrindRecommendation({
+          primary,
+          lowerCorrection: lower,
+          upperCorrection: upper,
+        });
+        return {
+          grindBandLabel: setting.rangeLabel,
+          grindRecommendation: `${recommendation.headline}. Correction range: ${lower} to ${upper}. ${recommendation.correction}`,
+          confidenceNotes: [setting.note],
+          verificationLevel: setting.verificationLevel,
+        };
+      }
       const recommendation = formatGrindRecommendation({
         primary: 'setting 4-5',
         lowerCorrection: 'setting 4-4',

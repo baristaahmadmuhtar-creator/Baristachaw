@@ -134,9 +134,10 @@ test('AI Brew guide details stay deduped and barista-actionable', () => {
   assert.match(SOURCE, /isAiBrewDetailCovered/);
   assert.match(SOURCE, /points\.slice\(0, 3\)/);
   assert.match(SOURCE, /Tuang tenang dari tengah ke tengah-luar/);
-  assert.match(SOURCE, /Setup: bilas filter, panaskan brewer\/server/);
-  assert.match(SOURCE, /Kontrol seduh: mulai dari tengah/);
-  assert.match(SOURCE, /Koreksi kalau meleset/);
+  assert.match(SOURCE, /buildAiBrewWorkflowControlDetail/);
+  assert.match(SOURCE, /buildAiBrewBeanContextDetail/);
+  assert.match(SOURCE, /buildAiBrewTargetCorrectionDetail/);
+  assert.match(SOURCE, /Target manis:/);
   assert.match(SOURCE, /summaryFocusHint/);
 });
 

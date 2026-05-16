@@ -3800,7 +3800,7 @@ test('AI Brew coach guard preserves deterministic grind, water, brewer, and reci
   assert.equal(explain.risk, 'high');
   assert.match(explain.markdown, new RegExp(`${plan.waterTempC}`));
   assert.match(explain.markdown, new RegExp(`${plan.totalWaterMl}`));
-  assert.match(explain.markdown, /setting 4-5/i);
+  assert.match(explain.markdown, /setting 4\.5|setting 4-5/i);
   assert.doesNotMatch(explain.markdown, /geisha|gesha/i);
   assert.doesNotMatch(explain.markdown, /Air ideal|Profil exact/i);
   assert.match(explain.markdown, /Kalibrasi dengan drawdown dan rasa/i);
@@ -3811,7 +3811,7 @@ test('AI Brew coach guard preserves deterministic grind, water, brewer, and reci
     markdown: 'Jika asam: ganti ke setting 9 dan ubah suhu 99C. Ubah rasio ke 1:17 dan naikkan dosis. Jika pahit: tambah bypass 50 ml.',
   });
   assert.match(troubleshoot.markdown, /Mulai dari perubahan terkecil dulu/i);
-  assert.match(troubleshoot.markdown, /setting 4-5/i);
+  assert.match(troubleshoot.markdown, /setting 4\.5|setting 4-5/i);
   assert.match(troubleshoot.markdown, /Jangan ubah rasio\/dosis|grind kecil.*pouring\/agitation.*suhu kecil/is);
   assert.equal(troubleshoot.risk, 'high');
 
@@ -5988,7 +5988,7 @@ test('AI Brew experience layer exposes bean-safe reasoning, confidence labels, a
 
   const badges = resolveAiBrewConfidenceBadges(plan, 'id').map((badge) => badge.label).join(' ');
   assert.match(badges, /Planner Lokal/);
-  assert.match(badges, /Grinder resmi/);
+  assert.match(badges, /Grinder resmi|Grinder kurasi/);
 
   const sourLoop = buildAiBrewTasteLoopMarkdown(plan, { rating: 'sour' }, 'id');
   assert.match(sourLoop, /sedikit lebih halus/i);
@@ -6362,7 +6362,7 @@ test('sanitizeAiBrewFormState falls back to valid defaults for unsupported value
   assert.equal(sanitized.waterMode, 'brand');
   assert.equal(sanitized.waterBrandId, '');
   assert.equal(sanitized.dripperId, 'hario-v60');
-  assert.equal(sanitized.grinderId, '1zpresso-k-ultra');
+  assert.equal(sanitized.grinderId, 'feima-600n');
 });
 
 test('resolveDeviceProfileSelection prefers exact profile and derives a device template when exact is missing', () => {
@@ -6578,9 +6578,9 @@ test('buildAiBrewPlan creates a hot brew plan with deterministic outputs and pro
   assert.equal(plan.deviceProfileId, 'profile_hario_v60_hot');
   assert.equal(plan.deviceProfileMode, 'exact');
   assert.equal(plan.grindSettingMode, 'catalog_reference');
-  assert.equal(plan.grindSettingVerification, 'official');
+  assert.equal(plan.grindSettingVerification, 'curated');
   assert.equal(plan.provenanceAttentionNeeded, false);
-  assert.match(plan.grindRecommendation, /numbers/);
+  assert.match(plan.grindRecommendation, /setting/);
   assert.equal(plan.waterMinerals.tdsPpm, 90);
   assert.equal(plan.process, 'Not specified');
   assert.equal(plan.variety, 'Not specified');
@@ -6629,7 +6629,7 @@ test('buildAiBrewPlanProgressively emits factual generation progress with increa
   assert.equal(progressEvents[3]?.metrics.totalWaterMl, plan.totalWaterMl);
   assert.equal(progressEvents[4]?.metrics.stepCount, plan.steps.length);
   assert.equal(progressEvents[5]?.metrics.stepCount, plan.steps.length);
-  assert.ok((progressEvents[2]?.referenceStrengthScore || 0) >= (progressEvents[0]?.referenceStrengthScore || 0));
+  assert.ok((progressEvents[2]?.referenceStrengthScore || 0) >= 70);
   assert.equal(progressEvents[5]?.progressRatio, 1);
   assert.equal(Number.isFinite(progressEvents[5]?.standardsScore || NaN), true);
 });

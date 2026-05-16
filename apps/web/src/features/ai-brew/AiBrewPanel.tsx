@@ -577,7 +577,7 @@ const COPY = {
     grindCatalogReference: 'Catalog reference',
     grindDerivedBaseline: 'Derived baseline',
     confidenceNotes: 'Confidence notes',
-    summaryFocusHint: 'Main focus: taste time, grind, temperature, and one change at a time.',
+    summaryFocusHint: 'Main focus: temperature, grind, extraction time, then one change at a time.',
     waterRequired: 'Manual mineral input is required before generating.',
     openProcessPicker: 'Choose process',
     openVarietyPicker: 'Choose variety',
@@ -1088,7 +1088,7 @@ const COPY = {
     grindCatalogReference: 'Referensi katalog',
     grindDerivedBaseline: 'Baseline turunan',
     confidenceNotes: 'Catatan keyakinan',
-    summaryFocusHint: 'Fokus utama: waktu rasa, gilingan, suhu, dan koreksi satu variabel dulu.',
+    summaryFocusHint: 'Fokus utama: suhu, gilingan, waktu ekstraksi, lalu koreksi satu variabel dulu.',
     waterRequired: 'Input mineral manual wajib diisi sebelum generate.',
     openProcessPicker: 'Pilih proses',
     openVarietyPicker: 'Pilih varietas',
@@ -1379,7 +1379,7 @@ function getPlanExtractionLabel(plan: BrewPlan, language: string) {
   if (plan.methodFamily === 'espresso') return id ? 'Shot' : 'Shot';
   if (plan.methodFamily === 'cold_brew') return id ? 'Rendam dingin' : 'Cold steep';
   if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return id ? 'Rendam' : 'Steep';
-  if (plan.brewMode === 'iced') return id ? 'Ekstraksi panas' : 'Hot extraction';
+  if (plan.brewMode === 'iced') return id ? 'Ekstraksi' : 'Hot extraction';
   return id ? 'Ekstraksi' : 'Extraction';
 }
 
@@ -1433,6 +1433,29 @@ function formatRoundedTemperature(value: number) {
   return `${formatDisplayNumber(Math.round(value))}\u00b0C`;
 }
 
+function isFeima600nPlatformGrinder(item?: Pick<EquipmentCatalogEntry, 'id' | 'name' | 'brand' | 'searchText'> | null) {
+  if (!item) return false;
+  const haystack = [item.id, item.name, item.brand, item.searchText].filter(Boolean).join(' ').toLowerCase();
+  return /\b(feima|yang-chia|yang chia|latina|murane|flying eagle|fomac|kova|600n)\b/i.test(haystack);
+}
+
+function formatGrinderDisplayName(item: EquipmentCatalogEntry | null | undefined, language: string, surface: 'selected' | 'picker' | 'result' = 'result') {
+  void language;
+  if (!item) return '';
+  if (!isFeima600nPlatformGrinder(item)) return item.name;
+  if (surface === 'selected') return 'Murane B600BN';
+  return surface === 'picker'
+    ? 'Feima 600N / Murane B600BN'
+    : 'Feima 600N platform';
+}
+
+function formatFeima600nAliasLine(language?: string) {
+  const aliases = 'Murane B600BN, Latina 600N, Flying Eagle 600N, Yang-Chia/Pegasus 600N, Fomac COG-CG600B, Kova 600N';
+  return isIndonesianAiBrewLanguage(language || '')
+    ? `Dikenal juga sebagai ${aliases}.`
+    : `Also sold as ${aliases}.`;
+}
+
 function formatPlanHeaderWater(plan: BrewPlan, language: string) {
   if (plan.iceMl > 0) {
     const id = isIndonesianAiBrewLanguage(language);
@@ -1463,7 +1486,7 @@ function buildPremiumResultSummary(plan: BrewPlan, language: string) {
     const hotRatio = `1:${formatBrewRatio(plan.hotExtractionRatio)}`;
     const estimatedCup = formatRoundedMl(plan.estimatedCupOutputMl);
     return id
-      ? `Dose ${dose}; final beverage/total input ${finalBeverage}; air panas ${hotWater}; es di server ${ice}; rasio final ${finalRatio}; rasio ekstraksi panas ${hotRatio}; estimasi hasil cangkir ${estimatedCup}. ${temperature}, ekstraksi panas ${extractionTime}; panduan selesai ${guideTime}.${postCopy}`
+      ? `Dosis ${dose}; total minuman ${finalBeverage}; air panas ${hotWater}; es di server ${ice}; rasio final ${finalRatio}; rasio ekstraksi ${hotRatio}; estimasi hasil cangkir ${estimatedCup}. ${temperature}, ekstraksi ${extractionTime}; panduan selesai ${guideTime}.${postCopy}`
       : `Dose ${dose}; final beverage/total input ${finalBeverage}; hot water ${hotWater}; ice in server ${ice}; final ratio ${finalRatio}; hot extraction ratio ${hotRatio}; estimated cup output ${estimatedCup}. ${temperature}, hot extraction ${extractionTime}; guide done ${guideTime}.${postCopy}`;
   }
 
@@ -2956,6 +2979,105 @@ function aiBrewUsesPaperFilter(plan: BrewPlan) {
   ].includes(plan.methodFamily);
 }
 
+function buildAiBrewBeanContextDetail(plan: BrewPlan, step: AiBrewDisplayStep, language: string) {
+  if (!isIndonesianAiBrewLanguage(language)) return '';
+  const beanText = [plan.coffeeName, plan.process, plan.variety, plan.roastLevel].filter(Boolean).join(' ').toLowerCase();
+  const actionType = isWorkflowGuideStep(step) ? step.actionType : getAiBrewStepKind(step);
+
+  if (/natural|anaerobic|carbonic|ferment|wine|co.?ferment|experimental/i.test(beanText)) {
+    return actionType === 'bloom'
+      ? 'Bean: proses aromatik lebih mudah liar; bloom rata, agitasi tetap rendah agar buah tidak berubah keruh.'
+      : 'Bean: jaga gerakan tetap halus; proses aromatik biasanya lebih enak saat clarity dijaga daripada dipaksa ekstraksi berat.';
+  }
+  if (/washed|ethiop|gesha|geisha|heirloom|sl|bourbon|caturra/i.test(beanText) || plan.roastLevel === 'light' || plan.roastLevel === 'medium_light') {
+    return actionType === 'bloom'
+      ? 'Bean: light/washed butuh pembasahan rapi; cek tidak ada dry pocket sebelum tuangan berikutnya.'
+      : 'Bean: pertahankan suhu dan jalur tuang bersih supaya floral/asam manis tetap jernih.';
+  }
+  if (/wet.?hulled|giling basah|robusta|canephora|liberica|excelsa/i.test(beanText) || plan.roastLevel === 'medium_dark' || plan.roastLevel === 'dark') {
+    return 'Bean: profil berat atau sangrai gelap mudah pahit; jaga agitasi rendah dan koreksi dari grind dulu.';
+  }
+  return 'Bean: pakai resep ini sebagai baseline; nilai rasa setelah suhu, grind, dan waktu ekstraksi tercatat.';
+}
+
+function buildAiBrewTargetCorrectionDetail(plan: BrewPlan, step: AiBrewDisplayStep, language: string) {
+  if (!isIndonesianAiBrewLanguage(language)) return '';
+  const target = plan.targetProfileId;
+  const actionType = isWorkflowGuideStep(step) ? step.actionType : getAiBrewStepKind(step);
+
+  if (target === 'more_sweetness' || target === 'soft_round') {
+    return actionType === 'bloom'
+      ? 'Target manis: bloom harus tenang dan lengkap; kalau masih asam, haluskan grind 0.5 step sebelum menaikkan suhu.'
+      : 'Koreksi manis: jika tipis/asam, haluskan grind 0.5 step; jika mulai seret, kasarkan 0.5 step.';
+  }
+  if (target === 'more_acidity' || target === 'floral_transparent' || target === 'fruit_forward') {
+    return 'Koreksi clarity: jika aroma tertutup, kasarkan 0.5 step atau lembutkan tuangan akhir; jangan tambah agitasi dulu.';
+  }
+  if (target === 'more_body' || target === 'dense_comforting') {
+    return 'Koreksi body: jika terlalu tipis, haluskan 0.5 step; jika berat/keruh, kurangi agitasi atau kasarkan sedikit.';
+  }
+  return 'Koreksi: ubah satu variabel dulu, paling aman dari grind; suhu hanya digeser setelah flow dan rasa terbaca.';
+}
+
+function buildAiBrewWorkflowControlDetail(plan: BrewPlan, step: AiBrewDisplayStep, language: string) {
+  if (!isIndonesianAiBrewLanguage(language)) return '';
+  const actionType = isWorkflowGuideStep(step) ? step.actionType : getAiBrewStepKind(step);
+
+  if (plan.brewMode === 'iced') {
+    switch (actionType) {
+      case 'setup':
+      case 'rinse_preheat':
+        return `Setup es: timbang ${formatRoundedGrams(plan.iceMl)} es di server dulu; bed kopi hanya menerima ${formatRoundedMl(plan.hotWaterMl)} air panas.`;
+      case 'bloom':
+        return 'Bloom es: basahi semua bubuk dengan air panas saja; jangan biarkan es dihitung sebagai air tuang.';
+      case 'drawdown':
+      case 'release':
+        return 'Air turun: biarkan tetes terakhir selesai di atas es; jangan tambah bypass air setelah target panas tercapai.';
+      case 'serve':
+      case 'mix':
+        return 'Aduk/sajikan: aduk server 5-8 detik agar konsentrat panas dan lelehan es menyatu rata.';
+      default:
+        return `Kontrol es: berhenti di target air panas ${formatRoundedMl(plan.hotWaterMl)}; es hanya bypass terukur di server.`;
+    }
+  }
+
+  switch (plan.methodFamily) {
+    case 'v60':
+    case 'origami':
+    case 'kono':
+      if (actionType === 'bloom') return 'Bloom: tuang cukup untuk membasahi semua bubuk; bed rata lebih penting daripada spiral besar.';
+      if (actionType === 'drawdown') return 'Air turun: biarkan cone bersih alami; hindari bilas dinding filter di akhir.';
+      if (actionType === 'serve') return 'Sajikan: swirl server ringan sebelum tuang supaya layer rasa merata.';
+      return 'Tuang: mulai dari tengah, buka ke tengah-luar seperlunya, lalu kembali ke tengah saat bed mulai naik.';
+    case 'chemex':
+      return actionType === 'drawdown'
+        ? 'Air turun Chemex: filter tebal mudah stall; jaga vent terbuka dan jangan kejar dinding.'
+        : 'Kontrol Chemex: aliran stabil lebih penting daripada pulse besar; hindari menutup jalur udara filter.';
+    case 'kalita_wave':
+    case 'april':
+    case 'melitta':
+      return 'Kontrol flat-bottom: pulse pendek dari tengah, bed tetap rata, jangan flooding di fase akhir.';
+    case 'hario_switch':
+      return actionType === 'release' || actionType === 'drawdown'
+        ? 'Kontrol Switch: buka katup sesuai waktu; air turun jangan diaduk ulang agar cup tidak keruh.'
+        : 'Kontrol Switch: cek katup dan muatan ruang; steep stabil lebih penting daripada agitasi besar.';
+    case 'clever_dripper':
+      return 'Kontrol Clever: steep selesai dulu, baru release; air turun adalah fase pisah, bukan kesempatan aduk ulang.';
+    case 'french_press':
+      return 'Kontrol French Press: steep tenang, press pelan, lalu decant bersih supaya ampas tidak lanjut ekstraksi.';
+    case 'aeropress':
+      return 'Kontrol AeroPress: steep merata, press stabil, berhenti sebelum hiss dipaksa.';
+    case 'espresso':
+      return 'Kontrol espresso: baca aliran shot dan yield; koreksi utama dari grind, bukan menambah waktu sembarang.';
+    case 'moka_pot':
+      return 'Kontrol Moka: panas sedang dan hentikan sebelum sputter supaya rasa tidak kasar.';
+    case 'cold_brew':
+      return 'Kontrol cold brew: pastikan semua bubuk basah; filtrasi dan penyajian bukan tambahan ekstraksi panas.';
+    default:
+      return 'Kontrol tahap: ikuti target air/waktu dan catat satu koreksi untuk seduhan berikutnya.';
+  }
+}
+
 function buildAiBrewDeterministicStepDetailPoints(
   plan: BrewPlan,
   step: AiBrewDisplayStep,
@@ -2974,72 +3096,9 @@ function buildAiBrewDeterministicStepDetailPoints(
     const addPoint = (value: string) => addUniqueAiBrewDetailPoint(points, value, hiddenReferences);
 
     if (id) {
-      if (plan.brewMode === 'iced' && step.pourVolumeMl > 0) {
-        addPoint(`Setup: timbang ${formatRoundedGrams(plan.iceMl)} es di server dulu; bed kopi hanya menerima ${formatRoundedMl(plan.hotWaterMl)} air panas.`);
-        addPoint('Kontrol seduh: berhenti di target air panas, lalu biarkan air turun selesai di atas es.');
-        addPoint('Koreksi kalau tipis: haluskan grind 0.5 step dulu; jangan tambah air setelah seduh.');
-      } else {
-        switch (plan.methodFamily) {
-          case 'v60':
-          case 'origami':
-          case 'kono':
-            addPoint('Setup: bilas filter, panaskan brewer/server, buang air bilas, lalu tara timbangan.');
-            addPoint('Kontrol seduh: mulai dari tengah, lebarkan secukupnya sampai bed basah merata.');
-            addPoint('Koreksi kalau meleset: jika air turun cepat, haluskan grind 0.5 step; jika pahit/seret, kasarkan 0.5 step.');
-            break;
-          case 'chemex':
-            addPoint('Setup: bilas filter Chemex sampai hangat dan pastikan vent tidak tertutup.');
-            addPoint('Kontrol seduh: jaga aliran stabil; filter tebal lebih mudah stall jika tuangan mengejar dinding.');
-            addPoint('Koreksi kalau lambat: kasarkan grind 0.5 step dulu sebelum mengubah rasio.');
-            break;
-          case 'kalita_wave':
-          case 'april':
-          case 'melitta':
-            addPoint('Setup: ratakan bed dan jaga kertas/filter duduk rapi sebelum tuang.');
-            addPoint('Kontrol seduh: pakai pulse pendek di tengah agar flat bed tetap rata.');
-            addPoint('Koreksi kalau berat: kurangi agitasi dulu; jangan langsung ubah semua variabel.');
-            break;
-          case 'hario_switch':
-            addPoint('Setup: cek posisi katup dan pastikan muatan ruang masih di bawah batas aman.');
-            addPoint('Kontrol seduh: ikuti waktu katup tutup/buka; air turun jangan diaduk ulang.');
-            addPoint('Koreksi kalau berat/keruh: buka katup lebih awal atau pilih Auto pada seduhan berikutnya.');
-            break;
-          case 'clever_dripper':
-            addPoint('Setup: tutup katup, basahi bed merata, lalu mulai hitung steep.');
-            addPoint('Kontrol seduh: saat release, biarkan air turun tanpa adukan tambahan.');
-            addPoint('Koreksi kalau pahit/berat: kasarkan grind 0.5 step atau pendekkan steep sedikit.');
-            break;
-          case 'french_press':
-            addPoint('Setup: pakai grind kasar merata dan basahi semua bubuk tanpa aduk berlebihan.');
-            addPoint('Kontrol seduh: steep selesai saat press/tuang pisah; sajikan tidak dihitung sebagai ekstraksi utama.');
-            addPoint('Koreksi kalau keruh: tekan lebih pelan dan tuang pisah lebih bersih.');
-            break;
-          case 'aeropress':
-            addPoint('Setup: bilas cap/filter dan basahi chamber merata sebelum steep.');
-            addPoint('Kontrol seduh: tekan stabil, lalu berhenti sebelum hiss terakhir dipaksa.');
-            addPoint('Koreksi kalau tajam: tambah sedikit waktu steep atau haluskan grind 0.5 step.');
-            break;
-          case 'espresso':
-            addPoint('Setup: distribusi rata, tamp level, dan bersihkan rim basket.');
-            addPoint('Kontrol seduh: baca aliran shot; berhenti di target hasil sesuai window waktu.');
-            addPoint('Koreksi kalau asam: haluskan grind sedikit; kalau pahit/kering, kasarkan sedikit.');
-            break;
-          case 'moka_pot':
-            addPoint('Setup: isi boiler di bawah katup aman dan ratakan basket tanpa tamp.');
-            addPoint('Kontrol seduh: pakai panas moderat sampai aliran stabil.');
-            addPoint('Koreksi kalau kasar: angkat lebih cepat sebelum sputter dan turunkan panas.');
-            break;
-          case 'cold_brew':
-            addPoint('Setup: basahi semua bubuk sampai tidak ada dry pocket.');
-            addPoint('Kontrol seduh: steep panjang stabil; filtrasi/serve adalah tahap terpisah.');
-            addPoint('Koreksi kalau tipis: rapatkan rasio seduhan berikutnya atau tambah waktu steep.');
-            break;
-          default:
-            addPoint('Setup: siapkan alat, air, dan bed kopi sebelum timer berjalan.');
-            addPoint('Kontrol seduh: ikuti target air/waktu dan jaga gerakan tetap stabil.');
-            addPoint('Koreksi kalau meleset: ubah satu variabel dulu dari grind, suhu, atau teknik.');
-        }
-      }
+      addPoint(buildAiBrewWorkflowControlDetail(plan, step, language));
+      addPoint(buildAiBrewBeanContextDetail(plan, step, language));
+      addPoint(buildAiBrewTargetCorrectionDetail(plan, step, language));
     } else if (step.secondaryText) {
       addPoint(localizeAiBrewDynamicText(step.secondaryText, language));
     }
@@ -4255,7 +4314,7 @@ function formatTargetProfileFinalComputed(plan: BrewPlan) {
   const ratio = plan.iceMl > 0
     ? `1:${formatBrewRatio(plan.finalBeverageRatio)} / panas 1:${formatBrewRatio(plan.hotExtractionRatio)}`
     : `1:${formatBrewRatio(plan.finalBeverageRatio)}`;
-  const extractionLabel = plan.brewMode === 'iced' ? 'ekstraksi panas' : 'ekstraksi';
+  const extractionLabel = 'ekstraksi';
   return `${ratio} / ${formatRoundedTemperature(plan.waterTempC)} / ${extractionLabel} ${formatGuideTime(getPlanExtractionSeconds(plan))}`;
 }
 
@@ -4498,14 +4557,14 @@ function PlanResultDialog({
   const tasteTimeRange = getPlanTasteTimeRange(plan);
   const extractionTimeLabel = getPlanExtractionLabel(plan, language);
   const guideEndLabel = id ? 'Panduan selesai' : 'Guide complete';
-  const postExtractionLabel = id ? 'Finishing' : 'Finishing';
+  const postExtractionLabel = id ? 'Aduk/sajikan' : 'Finishing';
   const timeHelperText = getPlanTimeHelperCopy(plan, language);
   const summaryHighlightItems = [
+    { id: 'temp', label: copy.temp, value: formatRoundedTemperature(plan.waterTempC), emphasis: true },
+    { id: 'grind', label: copy.grind, value: localizedGrindHeadline, emphasis: true },
     { id: 'extraction', label: extractionTimeLabel, value: formatGuideTime(extractionSeconds), emphasis: true },
-    { id: 'guide', label: guideEndLabel, value: formatGuideTime(guideEndSeconds) },
-    { id: 'temp', label: copy.temp, value: formatRoundedTemperature(plan.waterTempC) },
     { id: 'ratio', label: copy.finalRatio, value: `1:${formatBrewRatio(plan.finalBeverageRatio)}` },
-    { id: 'grind', label: copy.grind, value: localizedGrindHeadline },
+    { id: 'guide', label: guideEndLabel, value: formatGuideTime(guideEndSeconds) },
     { id: 'output', label: copy.cupOutput, value: formatRoundedMl(plan.estimatedCupOutputMl) },
   ];
   const expectedCup = plan.expectedCupProfile;
@@ -4643,8 +4702,8 @@ function PlanResultDialog({
     },
     {
       label: copy.grinder,
-      value: plan.grinder.name,
-      detail: `${localizedGrindSettingReference} - ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)}`,
+      value: formatGrinderDisplayName(plan.grinder, language, 'result'),
+      detail: `${localizedGrindSettingReference} - ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)}${isFeima600nPlatformGrinder(plan.grinder) ? ` ${formatFeima600nAliasLine(language)}` : ''}`,
     },
   ];
   const resultHeaderClass = 'relative min-w-0 max-w-full overflow-hidden rounded-[1.5rem] border panel-divider-subtle panel-soft px-4 pb-4 pt-5 lg:px-5';
@@ -5103,10 +5162,20 @@ function PlanResultDialog({
                 className="flex min-w-0 max-w-full flex-col gap-5 overflow-x-clip"
                 data-testid="ai-brew-result-detail-panel"
               >
-              <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2.5 sm:grid-cols-[repeat(2,minmax(0,1fr))] xl:grid-cols-[repeat(5,minmax(0,1fr))]">
+              <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2.5 sm:grid-cols-[repeat(2,minmax(0,1fr))] xl:grid-cols-[repeat(3,minmax(0,1fr))]">
                 <div className={resultMetricCardClass}>
                   <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.cupOutput}</p>
                   <p className="mt-1 text-xl font-semibold text-primary sm:text-2xl">{formatRoundedMl(plan.estimatedCupOutputMl)}</p>
+                </div>
+                <div className={resultMetricCardClass}>
+                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
+                    <Target size={12} />
+                    <span>{copy.finalRatio}</span>
+                  </div>
+                  <p className="mt-1 text-base font-semibold text-primary sm:text-lg">1:{formatBrewRatio(plan.finalBeverageRatio)}</p>
+                  {plan.iceMl > 0 && (
+                    <p className="mt-1 text-xs text-secondary">{id ? 'Rasio ekstraksi' : 'Hot extraction ratio'} 1:{formatBrewRatio(plan.hotExtractionRatio)}</p>
+                  )}
                 </div>
                 <div className={resultMetricCardClass}>
                   <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-secondary">
@@ -5153,7 +5222,7 @@ function PlanResultDialog({
                   <div className="mb-3 flex items-center gap-2">
                     <Target size={15} className="text-emerald-500" />
                     <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
-                      {id ? 'Compare Target Profile' : 'Target Profile Compare'}
+                      {id ? 'Bandingkan Profil Target' : 'Target Profile Compare'}
                     </h4>
                   </div>
                   <div className="grid gap-2">
@@ -5202,7 +5271,7 @@ function PlanResultDialog({
                   <div className="mb-3 flex items-center gap-2">
                     <Gauge size={15} className="text-amber-500" />
                     <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
-                      {id ? 'Precision Tolerance' : 'Precision Tolerance'}
+                      {id ? 'Toleransi Presisi' : 'Precision Tolerance'}
                     </h4>
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2">
@@ -6284,16 +6353,21 @@ function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopyS
     const grinderReference = kind === 'grinder'
       ? formatGrinderReferenceLabel(copy, item.verificationLevel)
       : '';
+    const grinderIsFeimaPlatform = kind === 'grinder' && isFeima600nPlatformGrinder(item);
     const subtitle = kind === 'grinder'
-      ? [item.brand, item.typeLabel].filter(Boolean).join(' - ')
+      ? grinderIsFeimaPlatform
+        ? 'Murane / Feima / Latina / Yang-Chia - 600N platform'
+        : [item.brand, item.typeLabel].filter(Boolean).join(' - ')
       : item.brand ? `${item.brand} - ${item.typeLabel}` : item.typeLabel;
     const description = kind === 'dripper'
       ? [trustDetail, item.description].filter(Boolean).join(' - ')
-      : '';
+      : grinderIsFeimaPlatform
+        ? formatFeima600nAliasLine(language)
+        : '';
 
     return {
       id: item.id,
-      label: item.name,
+      label: kind === 'grinder' ? formatGrinderDisplayName(item, language, 'picker') : item.name,
       subtitle,
       description,
       searchText: `${item.searchText} ${methodAliases} ${item.methodFamily || ''}`.toLowerCase(),
@@ -8934,7 +9008,7 @@ export function AiBrewPanel({
                           aria-expanded={pickerKind === 'grinder'}
                           aria-label={copy.openGrinderPicker}
                         >
-                          <span className="truncate">{selectedGrinder?.name || copy.openPicker}</span>
+                          <span className="truncate">{selectedGrinder ? formatGrinderDisplayName(selectedGrinder, language, 'selected') : copy.openPicker}</span>
                           <ArrowRight size={16} className="shrink-0 text-secondary" />
                         </button>
                       </div>

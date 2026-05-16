@@ -688,7 +688,7 @@ test('ai brew guide renders workflow-specific phases for non-pour-over methods',
   }
 });
 
-test('ai brew grinder picker keeps Feima 600N searchable without exposing alias noise', async ({ page }) => {
+test('ai brew grinder picker shows Feima 600N platform aliases without losing the canonical entry', async ({ page }) => {
   await openAiBrewQuickMode(page);
   await page.getByTestId('ai-brew-grinder-picker').click();
   await page.getByTestId('ai-brew-picker-search-grinder').fill('Feima 600N');
@@ -696,8 +696,8 @@ test('ai brew grinder picker keeps Feima 600N searchable without exposing alias 
   const feima = page.getByTestId('ai-brew-picker-option-grinder-feima-600n');
   await expect(feima).toBeVisible();
   await expect(feima).toContainText(/Feima 600N/i);
+  await expect(feima).toContainText(/Murane B600BN|Latina 600N|Flying Eagle 600N|Yang-Chia|Fomac|Kova/i);
   await expect(feima).toContainText(/Curated reference|Community reference|Referensi kurasi|Referensi komunitas/i);
-  await expect(feima).not.toContainText(/Latina 600N|Flying Eagle 600N|Murane B600BN/i);
 });
 
 test('ai brew locks ice mode for methods that should stay hot or dedicated cold', async ({ page }) => {

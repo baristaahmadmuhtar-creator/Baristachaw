@@ -35,6 +35,7 @@ type PendingDeleteTarget =
   | { kind: 'recipe'; id: string; label: string }
   | { kind: 'folder'; id: string; label: string };
 const NOTE_DRAFT_STORAGE_KEY = 'BARISTA_COLLECTION_NOTE_DRAFT_V1';
+const COLLECTION_FOLDERS_COLLAPSED_KEY = 'BARISTA_COLLECTION_FOLDERS_COLLAPSED_V1';
 
 const normalizeSearchValue = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ');
 
@@ -75,6 +76,7 @@ export function Collection() {
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [folderFormError, setFolderFormError] = useState('');
+  const [foldersCollapsed, setFoldersCollapsed] = useState(false);
 
   // Folder management
   const [folderMenuId, setFolderMenuId] = useState<string | null>(null);
@@ -119,15 +121,24 @@ export function Collection() {
   }, [refresh]);
 
   useEffect(() => {
+    try {
+      setFoldersCollapsed(localStorage.getItem(COLLECTION_FOLDERS_COLLAPSED_KEY) === '1');
+    } catch {
+      setFoldersCollapsed(false);
+    }
+  }, []);
+
+  useEffect(() => {
     const shouldHideForInputs = (showNewFolder || showNoteEditor) && (
       collectionKeyboardFix.isKeyboardOpen || collectionKeyboardFix.focusWithin
     );
 
-    if (selectedItem || shouldHideForInputs) hideNav();
+    if (selectedItem || pendingDelete || shouldHideForInputs) hideNav();
     else showNav();
     return () => showNav();
   }, [
     selectedItem,
+    pendingDelete,
     showNewFolder,
     showNoteEditor,
     collectionKeyboardFix.isKeyboardOpen,
@@ -348,6 +359,18 @@ export function Collection() {
       pageTopAnchorRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
     });
   }, [selectedFolderId]);
+
+  const toggleFoldersCollapsed = useCallback(() => {
+    setFoldersCollapsed((current) => {
+      const next = !current;
+      try {
+        localStorage.setItem(COLLECTION_FOLDERS_COLLAPSED_KEY, next ? '1' : '0');
+      } catch {
+        // Persist only when storage is available; the current session still updates.
+      }
+      return next;
+    });
+  }, []);
 
   const openEditNote = useCallback((item: CollectionItem) => {
     if (!isNoteItem(item)) return;
@@ -762,15 +785,35 @@ export function Collection() {
                   <h2 className="text-sm font-semibold text-secondary uppercase tracking-widest">{t.folderLabel}</h2>
                   <p className="text-sm text-secondary mt-1">{t.collectionFoldersSubtitle || 'Keep recipes and notes organized.'}</p>
                 </div>
+                <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={toggleFoldersCollapsed}
+                  className="h-11 rounded-xl glass-button px-4 text-sm font-medium"
+                  aria-expanded={!foldersCollapsed}
+                >
+                  {foldersCollapsed ? (t.collectionShowFolders || 'Show folders') : (t.collectionHideFolders || 'Hide folders')}
+                </button>
                 <button
                   type="button"
                   onClick={enterFolderBrowser}
-                  className="h-11 rounded-xl glass-button px-4 text-sm font-medium self-start"
+                  className="h-11 rounded-xl glass-button px-4 text-sm font-medium"
                 >
                   {t.collectionSeeAllFolders || 'See all folders'}
                   {folderPreview.remainingCount > 0 ? ` · +${folderPreview.remainingCount}` : ''}
                 </button>
+                </div>
               </div>
+              {foldersCollapsed ? (
+                <button
+                  type="button"
+                  onClick={toggleFoldersCollapsed}
+                  className="w-full rounded-2xl border border-dashed border-glass bg-surface-alpha px-4 py-4 text-left text-sm text-secondary hover:text-primary"
+                >
+                  <span className="font-medium text-primary">{t.collectionFoldersHiddenTitle || 'Folders hidden'}</span>
+                  <span className="ml-2">{(t.collectionFoldersHiddenBody || '{count} folders are hidden.').replace('{count}', String(visibleFolders.length))}</span>
+                </button>
+              ) : (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {folderPreview.preview.map((folder) => (
                 <div
@@ -849,6 +892,7 @@ export function Collection() {
                 </div>
               ))}
               </div>
+              )}
             </div>
           )}
 
@@ -1242,7 +1286,7 @@ export function Collection() {
                 </div>
               )}
               <div
-                className="prose prose-sm max-w-none text-primary px-6 pb-6 flex-1 overflow-y-auto"
+                className="prose prose-sm max-w-none px-6 pb-6 flex-1 overflow-y-auto text-primary prose-headings:text-primary prose-p:text-primary prose-li:text-primary prose-strong:text-primary prose-em:text-primary prose-code:text-primary prose-blockquote:text-secondary prose-a:text-blue-600 dark:prose-a:text-blue-300"
                 style={{
                   WebkitOverflowScrolling: 'touch',
                   overscrollBehavior: 'contain',

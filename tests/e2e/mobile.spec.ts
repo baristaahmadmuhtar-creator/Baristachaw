@@ -94,6 +94,19 @@ test('collection create-folder close button keeps iOS-friendly touch target', as
   await page.getByRole('textbox', { name: /Folder name|Nama Folder/i }).fill('qa_mobile_folder');
   await page.getByRole('button', { name: /^Save$|^Simpan$/i }).click();
   await expect(page.locator('h3', { hasText: /^qa_mobile_folder$/ }).first()).toBeVisible();
+
+  const folderCard = page.locator('h3', { hasText: /^qa_mobile_folder$/ }).first().locator('xpath=ancestor::div[contains(@class,"group")]').first();
+  await folderCard.getByRole('button', { name: /Open folder options|Buka opsi folder/i }).click();
+  await folderCard.getByRole('button', { name: /^Delete$|^Hapus$/i }).click();
+
+  const deleteDialog = page.getByRole('dialog', { name: /Delete folder|Hapus folder/i });
+  await expect(deleteDialog).toBeVisible();
+  await expect(page.getByTestId('mobile-bottom-nav')).toBeHidden();
+  const dialogBox = await deleteDialog.boundingBox();
+  expect(dialogBox?.top ?? 0).toBeGreaterThanOrEqual(0);
+  expect((dialogBox?.y ?? 0) + (dialogBox?.height ?? 0)).toBeLessThanOrEqual(566);
+  await deleteDialog.locator('button', { hasText: /^Cancel$|^Batal$/i }).click();
+  await expect(deleteDialog).toHaveCount(0);
 });
 
 test('mobile ai brew picker keeps dialog semantics and returns focus on close', async ({ page }) => {

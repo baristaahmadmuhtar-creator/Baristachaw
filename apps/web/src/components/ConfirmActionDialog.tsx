@@ -59,13 +59,13 @@ export function ConfirmActionDialog({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={overlayFadeTransition}
-            className="fixed inset-0 z-[140] bg-black/42 backdrop-blur-sm"
+            className="fixed inset-0 z-[1000] bg-black/50 backdrop-blur-md"
             onClick={() => {
               if (!busy) onCancel();
             }}
           />
           <div
-            className="fixed inset-0 z-[141] flex items-end justify-center pointer-events-none sm:items-center"
+            className="fixed inset-0 z-[1001] flex items-center justify-center pointer-events-none"
             style={{
               paddingTop: 'max(16px, var(--safe-top, 0px))',
               paddingBottom: 'max(16px, var(--bottom-safe-capped, 0px))',

@@ -66,6 +66,10 @@ test('keeps collection home compact with many folders and renames the correct ta
   await expect(page.locator('h3', { hasText: /^qa_many_final$/ }).first()).toBeVisible();
 
   await expect(page.getByRole('button', { name: seeAllFoldersButton })).toBeVisible();
+  await page.getByRole('button', { name: /Hide folders|Sembunyikan folder/i }).click();
+  await expect(page.getByRole('button', { name: /Folders hidden|Folder disembunyikan/i })).toBeVisible();
+  await page.getByRole('button', { name: /Show folders|Tampilkan folder/i }).click();
+  await expect(page.getByRole('button', { name: /Folders hidden|Folder disembunyikan/i })).toHaveCount(0);
   await page.getByRole('button', { name: seeAllFoldersButton }).click();
   await expect(page.getByRole('heading', { name: /All folders|Semua folder/i })).toBeVisible();
   await expect(page.locator('h3', { hasText: /^qa_many_0$/ }).first()).toBeVisible();
@@ -101,6 +105,14 @@ test('supports notes CRUD, filter, search, and move folder flow', async ({ page 
   await page.getByPlaceholder(/Note content|Isi catatan/i).fill('qa note body edited');
   await page.getByRole('button', { name: /Update Note|Perbarui Catatan/i }).click();
   await expect(page.getByText('qa note body edited')).toBeVisible();
+  await page.evaluate(() => {
+    localStorage.setItem('BARISTA_THEME', 'dark');
+    document.documentElement.classList.add('dark');
+    document.documentElement.style.colorScheme = 'dark';
+    document.body.style.colorScheme = 'dark';
+  });
+  const noteBodyColor = await page.getByText('qa note body edited').first().evaluate((element) => getComputedStyle(element).color);
+  expect(noteBodyColor).not.toBe('rgb(0, 0, 0)');
   await page.locator('select').first().selectOption('');
   await page.getByLabel(closeItemDetailsButton).click();
 

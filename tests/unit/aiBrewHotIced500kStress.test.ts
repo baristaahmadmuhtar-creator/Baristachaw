@@ -3,14 +3,18 @@ import assert from 'node:assert/strict';
 import {
   runAiBrewStressMatrix,
   writeAiBrewAggregateStressArtifacts,
+  writeAiBrewBalancedStressArtifacts,
   type AiBrewStressRunResult,
 } from '../helpers/aiBrewStressMatrix.ts';
 
 const ENABLED = process.env.AI_BREW_500K_STRESS === '1';
 const STRESS_TOTAL = 500000;
+const BALANCED_HALF_TOTAL = 250000;
 
 let hotResult: AiBrewStressRunResult | null = null;
 let icedResult: AiBrewStressRunResult | null = null;
+let balancedHotResult: AiBrewStressRunResult | null = null;
+let balancedIcedResult: AiBrewStressRunResult | null = null;
 
 function getHotResult() {
   hotResult ??= runAiBrewStressMatrix({ mode: 'hot', total: STRESS_TOTAL });
@@ -20,6 +24,16 @@ function getHotResult() {
 function getIcedResult() {
   icedResult ??= runAiBrewStressMatrix({ mode: 'iced', total: STRESS_TOTAL });
   return icedResult;
+}
+
+function getBalancedHotResult() {
+  balancedHotResult ??= runAiBrewStressMatrix({ mode: 'hot', total: BALANCED_HALF_TOTAL });
+  return balancedHotResult;
+}
+
+function getBalancedIcedResult() {
+  balancedIcedResult ??= runAiBrewStressMatrix({ mode: 'iced', total: BALANCED_HALF_TOTAL });
+  return balancedIcedResult;
 }
 
 function assertStressResult(result: AiBrewStressRunResult, mode: 'hot' | 'iced') {
@@ -62,5 +76,33 @@ test('AI Brew 1000000 hot+iced aggregate report writes scores and improvement pr
   assert.equal(aggregate.failures, 0);
   assert.ok(aggregate.artifactDir.includes('hot-iced-1m-stress'));
   assert.ok(aggregate.files.some((file) => file.endsWith('recommendations.md')));
+  assert.ok(aggregate.files.some((file) => file.endsWith('improvement-prompt.md')));
+});
+
+test('AI Brew 500000 balanced software brew stress covers 250000 hot and 250000 iced/cold cases', { skip: !ENABLED }, () => {
+  const hot = getBalancedHotResult();
+  const iced = getBalancedIcedResult();
+  assert.equal(hot.summary.requestedMode, 'hot');
+  assert.equal(iced.summary.requestedMode, 'iced');
+  assert.equal(hot.summary.total, BALANCED_HALF_TOTAL);
+  assert.equal(iced.summary.total, BALANCED_HALF_TOTAL);
+  assert.equal(hot.summary.passed, BALANCED_HALF_TOTAL);
+  assert.equal(iced.summary.passed, BALANCED_HALF_TOTAL);
+  assert.equal(hot.failures.length + iced.failures.length, 0);
+  assert.ok(hot.summary.visibleDrippers >= 40);
+  assert.ok(iced.summary.actualIcedPlans > 200000);
+  assert.ok(iced.summary.unsupportedIcedFallbacks > 0);
+  assert.equal(iced.summary.icedSplitStats.exactSplitCount, iced.summary.actualIcedPlans);
+  assert.equal(iced.summary.icedSplitStats.pourSumMatchesHotWaterCount, iced.summary.actualIcedPlans);
+  const aggregate = writeAiBrewBalancedStressArtifacts(hot, iced);
+  assert.equal(aggregate.total, STRESS_TOTAL);
+  assert.equal(aggregate.passed, STRESS_TOTAL);
+  assert.equal(aggregate.failures, 0);
+  assert.ok(aggregate.artifactDir.includes('hot-iced-500k-balanced-stress'));
+  assert.ok(aggregate.scoreMin.recipeEnvelopeSafety >= 95);
+  assert.ok(aggregate.scoreMin.methodGuideQuality >= 92);
+  assert.ok(aggregate.scoreMin.waterHonesty >= 92);
+  assert.ok(aggregate.scoreMin.grinderConfidenceHonesty >= 92);
+  assert.ok(aggregate.files.some((file) => file.endsWith('method-scores.csv')));
   assert.ok(aggregate.files.some((file) => file.endsWith('improvement-prompt.md')));
 });

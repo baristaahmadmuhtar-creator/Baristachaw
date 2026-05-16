@@ -943,9 +943,18 @@ export function runAiBrewStressMatrix(options: AiBrewStressRunOptions): AiBrewSt
   };
 }
 
-export function writeAiBrewAggregateStressArtifacts(hot: AiBrewStressRunResult, iced: AiBrewStressRunResult) {
+function writeAiBrewCombinedStressArtifacts(
+  hot: AiBrewStressRunResult,
+  iced: AiBrewStressRunResult,
+  options: {
+    slug: string;
+    title: string;
+    recommendationLabel: string;
+    improvementLabel: string;
+  },
+) {
   const sha = getCurrentAuditSha();
-  const dir = `artifacts/ai-brew-audit/hot-iced-1m-stress/${sha}`;
+  const dir = `artifacts/ai-brew-audit/${options.slug}/${sha}`;
   fs.mkdirSync(dir, { recursive: true });
   const failures = [...hot.failures, ...iced.failures];
   const total = hot.summary.total + iced.summary.total;
@@ -980,19 +989,19 @@ export function writeAiBrewAggregateStressArtifacts(hot: AiBrewStressRunResult, 
   fs.writeFileSync(files[5], toCsv(aggregateCountsToRows(mergeCounts(hot.summary.waterCounts, iced.summary.waterCounts), scoreMin, 'water')), 'utf8');
   fs.writeFileSync(files[6], toCsv(aggregateCountsToRows(mergeCounts(hot.summary.riskExpectationCounts, iced.summary.riskExpectationCounts), scoreMin, 'beanRisk')), 'utf8');
   fs.writeFileSync(files[7], [
-    '# AI Brew 1M Hot + Iced Recommendations',
+    `# ${options.title} Recommendations`,
     '',
     `Total cases: ${total}`,
     `Passed cases: ${passed}`,
     `Failures: ${failures.length}`,
     '',
     failures.length === 0
-      ? 'No software blocker found in the 500K hot + 500K iced stress gate. Continue with physical brew validation before sensory certainty claims.'
+      ? `No software blocker found in the ${options.recommendationLabel} stress gate. Continue with physical brew validation before sensory certainty claims.`
       : 'Patch the listed failures before release.',
     '',
   ].join('\n'), 'utf8');
   fs.writeFileSync(files[8], [
-    'Use this prompt to improve AI Brew after the 1M software stress gate.',
+    `Use this prompt to improve AI Brew after the ${options.improvementLabel} software stress gate.`,
     `Total cases: ${total}; passed: ${passed}; failures: ${failures.length}.`,
     'Do not change recipe math unless a recorded failure proves a numeric envelope bug.',
     'If no failures remain, prioritize physical brew validation, field feedback, and documentation.',
@@ -1006,4 +1015,22 @@ export function writeAiBrewAggregateStressArtifacts(hot: AiBrewStressRunResult, 
     failures: failures.length,
     scoreMin,
   };
+}
+
+export function writeAiBrewAggregateStressArtifacts(hot: AiBrewStressRunResult, iced: AiBrewStressRunResult) {
+  return writeAiBrewCombinedStressArtifacts(hot, iced, {
+    slug: 'hot-iced-1m-stress',
+    title: 'AI Brew 1M Hot + Iced',
+    recommendationLabel: '500K hot + 500K iced',
+    improvementLabel: '1M',
+  });
+}
+
+export function writeAiBrewBalancedStressArtifacts(hot: AiBrewStressRunResult, iced: AiBrewStressRunResult) {
+  return writeAiBrewCombinedStressArtifacts(hot, iced, {
+    slug: 'hot-iced-500k-balanced-stress',
+    title: 'AI Brew 500K Balanced Hot + Iced/Cold',
+    recommendationLabel: '250K hot + 250K iced/cold/ice-supported',
+    improvementLabel: '500K balanced',
+  });
 }

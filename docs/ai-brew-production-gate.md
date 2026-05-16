@@ -38,6 +38,7 @@ npm run test:ai-brew:stress -- --mode=standard
 npm run test:ai-brew:deep
 npm run test:ai-brew:hot500k
 npm run test:ai-brew:iced500k
+npm run test:ai-brew:balanced500k
 npm run test:ai-brew:1m
 npm run test:ai-brew:report
 npm run build

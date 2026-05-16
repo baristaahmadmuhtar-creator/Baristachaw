@@ -23,6 +23,7 @@ const patterns = {
 const largeStressPatterns = {
   hot500k: 'AI Brew 500000 hot stress matrix',
   iced500k: 'AI Brew 500000 iced stress matrix',
+  balanced500k: 'AI Brew 500000 balanced software brew stress',
   '1m': 'AI Brew 500000|AI Brew 1000000',
 };
 
@@ -82,6 +83,7 @@ function reportArtifacts() {
     'artifacts/ai-brew-audit/hot-500k-stress',
     'artifacts/ai-brew-audit/iced-500k-stress',
     'artifacts/ai-brew-audit/hot-iced-1m-stress',
+    'artifacts/ai-brew-audit/hot-iced-500k-balanced-stress',
     'artifacts/ai-brew-audit/grind-size-matrix',
   ];
   const found = roots.flatMap((root) => latestMarkdown(root) || []);
@@ -101,6 +103,6 @@ if (mode === 'report') {
 } else if (patterns[mode]) {
   runNodeTest(patterns[mode]);
 } else {
-  console.error(`Unknown AI Brew stress mode "${mode}". Use quick, standard, deep, hot500k, iced500k, 1m, or report.`);
+  console.error(`Unknown AI Brew stress mode "${mode}". Use quick, standard, deep, hot500k, iced500k, balanced500k, 1m, or report.`);
   process.exitCode = 1;
 }

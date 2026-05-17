@@ -21,7 +21,7 @@ test('AI Brew quick mode keeps Switch setup compact and single-source-of-truth',
 test('AI Brew quick mode keeps optional bean detail and AI tools collapsed', () => {
   assert.match(SOURCE, /data-testid="ai-brew-bean-details-toggle"/);
   assert.match(SOURCE, /data-testid="ai-brew-bean-details-summary"/);
-  assert.match(SOURCE, /Detail bean tetap opsional; hasil ini masih baseline/);
+  assert.match(SOURCE, /Detail kopi tetap opsional; hasil ini masih baseline/);
   assert.doesNotMatch(SOURCE, /Biarkan Auto untuk hasil aman/);
   assert.match(SOURCE, /primaryAiAssistActions/);
   assert.match(SOURCE, /advancedAiAssistActions/);
@@ -81,9 +81,9 @@ test('AI Brew Pro keeps advanced AI tools collapsed and no AI auto-run', () => {
 
 test('AI Brew Indonesian release copy localizes critical trust and safety labels', () => {
   for (const copy of [
-    'Data bean lengkap',
-    'Data bean sebagian',
-    'Bean belum lengkap',
+    'Data kopi lengkap',
+    'Data kopi sebagian',
+    'Data kopi belum lengkap',
     'Perlu hati-hati',
     'Kombinasi tidak aman',
     'Prediksi rasa, bukan jaminan',
@@ -111,7 +111,7 @@ test('AI Brew Indonesian release copy localizes critical trust and safety labels
   assert.match(SOURCE, /Jelaskan dengan AI/);
   assert.match(SOURCE, /Perbaiki Rasa/);
   assert.match(SOURCE, /Buat Panduan Lebih Ramah/);
-  assert.match(SOURCE, /Tool AI lainnya/);
+  assert.match(SOURCE, /Alat AI lainnya/);
 });
 
 test('AI Brew exposes explicit mobile time semantics instead of one misleading total', () => {

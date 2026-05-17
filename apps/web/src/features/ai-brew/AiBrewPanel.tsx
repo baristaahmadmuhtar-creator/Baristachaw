@@ -391,10 +391,10 @@ const COPY = {
     aiEngineProviderStack: '',
     aiFallbackDisabledByAdmin: 'AI is only used when you tap an AI Assist action.',
     aiEngineOnlineOptimized: 'AI + Planner Validated',
-    aiEngineLocalValidated: 'Local Planner',
-    aiEnginePrecisionPlanner: 'Precision Planner',
+    aiEngineLocalValidated: 'Local planner',
+    aiEnginePrecisionPlanner: 'Precision planner',
     aiEngineWorkingOnline: 'AI Assist working...',
-    aiEngineWorkingLocal: 'Local Planner',
+    aiEngineWorkingLocal: 'Local planner',
     aiPrecisionAssistNote: 'AI is only used when you tap an AI Assist action.',
     aiAssistNotUsed: 'AI Assist not used yet',
     aiAssistActive: 'AI Assist active',
@@ -665,7 +665,7 @@ const COPY = {
   },
   id: {
     title: 'AI Brew',
-    subtitle: 'Planner seduh yang bersih.',
+    subtitle: 'Perencana seduh yang rapi.',
     coffeeTitle: 'Konteks Kopi',
     equipmentTitle: 'Peralatan',
     brewerCoreSection: 'Metode seduh inti',
@@ -680,9 +680,9 @@ const COPY = {
     waterQuickPicksDescription: '',
     quickMode: 'Cepat',
     proMode: 'Presisi',
-    quickModeDescription: 'Builder recipe default yang cepat untuk cangkir pertama yang stabil.',
+    quickModeDescription: 'Penyusun resep awal yang cepat untuk cangkir pertama yang stabil.',
     proModeDescription: '',
-    quickModeTrustHint: 'Paling cocok untuk cepat dan konsisten. Kalau profil bean dan air masih netral, hasil Quick dan Pro bisa sama.',
+    quickModeTrustHint: 'Paling cocok untuk cepat dan konsisten. Kalau profil kopi dan air masih netral, hasil Cepat dan Presisi bisa sama.',
     proModeTrustHint: '',
     pourControlTitle: 'Kontrol tuang',
     pourStyleTitle: 'Gaya interval',
@@ -720,17 +720,17 @@ const COPY = {
     targetTempCPlaceholder: 'Auto',
     quickBuilderTitle: 'Builder Cepat',
     proBuilderTitle: 'Builder Presisi',
-    closeBuilder: 'Tutup builder',
-    historyStripDescription: 'Pakai lagi brew yang tersimpan.',
-    proDetails: 'Detail brew presisi',
-    beanProfileTitle: 'Profil bean',
+    closeBuilder: 'Tutup panel',
+    historyStripDescription: 'Pakai lagi seduhan yang tersimpan.',
+    proDetails: 'Detail seduh presisi',
+    beanProfileTitle: 'Profil kopi',
     beanProfileDescription: 'Opsional.',
-    beanProfileShow: 'Tampilkan profil bean',
-    beanProfileHide: 'Sembunyikan profil bean',
-    beanProfileNeutral: 'Belum ada modifier profil bean yang aktif.',
-    beanProfileActive: 'Profil bean aktif',
+    beanProfileShow: 'Tampilkan profil kopi',
+    beanProfileHide: 'Sembunyikan profil kopi',
+    beanProfileNeutral: 'Belum ada penyesuaian profil kopi yang aktif.',
+    beanProfileActive: 'Profil kopi aktif',
     altitudeMasl: 'Altitude (mdpl)',
-    beanDensity: 'Densitas bean (g/ml)',
+    beanDensity: 'Densitas biji (g/ml)',
     roastDevelopmentTitle: 'Perkembangan sangrai',
     roastDevelopmentUnderdeveloped: 'Kurang develop',
     roastDevelopmentBalanced: 'Seimbang',
@@ -743,8 +743,8 @@ const COPY = {
     sourceDetailsDescription: '',
     sourceDetailsShow: 'Tampilkan detail sumber',
     sourceDetailsHide: 'Sembunyikan detail sumber',
-    beanInfluenceTitle: 'Pengaruh bean',
-    beanInfluenceInactive: 'Profil bean netral',
+    beanInfluenceTitle: 'Pengaruh kopi',
+    beanInfluenceInactive: 'Profil kopi netral',
     inputAnalysis: 'Analisis input',
     inputAnalysisDescription: '',
     waterReadyNow: 'Air siap',
@@ -763,8 +763,8 @@ const COPY = {
     grindFallback: 'Baseline gilingan',
     profileExactStatus: 'Profil alat tepat',
     profileFallbackStatus: 'Profil keluarga alat',
-    processOptionalNote: 'Proses opsional. Tidak ada modifier proses otomatis yang dipakai.',
-    varietyOptionalNote: 'Varietas opsional. Tidak ada modifier varietas otomatis yang dipakai.',
+    processOptionalNote: 'Proses opsional. Tidak ada penyesuaian proses otomatis yang dipakai.',
+    varietyOptionalNote: 'Varietas opsional. Tidak ada penyesuaian varietas otomatis yang dipakai.',
     profileTitle: 'Profil Target',
     modeHot: 'Seduh Panas',
     modeIced: 'Seduh Es',
@@ -780,7 +780,7 @@ const COPY = {
     dripper: 'Alat seduh',
     grinder: 'Grinder',
     tds: 'TDS (ppm)',
-    hardness: 'Hardness (ppm sebagai CaCO3)',
+    hardness: 'Kesadahan (ppm sebagai CaCO3)',
     alkalinity: 'Alkalinitas (ppm sebagai CaCO3)',
     waterNotes: 'Catatan air',
     waterNotesPlaceholder: 'Catatan sumber air / remineralisasi opsional',
@@ -798,22 +798,22 @@ const COPY = {
     waterBrandEstimated: 'Estimasi - verifikasi manual',
     waterBrandEstimatedNote: 'Nilai estimasi hanya placeholder. Verifikasi manual sebelum seduh.',
     waterBrandAutofilled: 'Mineral dimuat dari profil brand terpilih.',
-    waterBrandCustomized: 'Mineral brand sudah disesuaikan manual untuk brew ini.',
+    waterBrandCustomized: 'Mineral brand sudah disesuaikan manual untuk seduhan ini.',
     waterDerivationDirect: 'Data label/lab langsung',
     waterDerivationDerived: 'Turunan dari Ca/Mg/HCO3',
     waterDerivationEstimated: 'Estimasi dari klasifikasi',
     waterDerivationManual: 'Input mineral manual',
     waterUseAsRoBase: 'Pakai sebagai base RO; tambahkan mineral manual.',
-    waterHighBufferWarning: 'Alkalinitas/buffer tinggi bisa meredam acidity dan membuat kopi floral terasa datar. Pakai kontak lebih pendek atau mineral manual untuk bean delicate.',
-    waterAlkalineWarning: 'Air alkaline bisa meredam acidity. Verifikasi manual sebelum dianggap ramah filter.',
+    waterHighBufferWarning: 'Alkalinitas/buffer tinggi bisa meredam keasaman dan membuat kopi floral terasa datar. Pakai kontak lebih pendek atau mineral manual untuk kopi yang sensitif.',
+    waterAlkalineWarning: 'Air alkalin bisa meredam keasaman. Verifikasi manual sebelum dianggap ramah filter.',
     waterCompleteMinerals: 'Lengkapi mineral',
-    waterCompleteMineralsHint: 'Mengisi field kosong dari data katalog, chemistry brand yang tersedia, atau baseline klasifikasi konservatif. Statusnya tetap manual sampai terverifikasi.',
+    waterCompleteMineralsHint: 'Mengisi kolom kosong dari data katalog, kimia brand yang tersedia, atau baseline klasifikasi konservatif. Statusnya tetap manual sampai terverifikasi.',
     waterCompleteMineralsApplied: 'Mineral sudah dilengkapi. Cek catatan, lalu buat seduhan.',
     waterCompleteMineralsUnavailable: 'Pilih brand air dulu.',
     waterCompleteMineralsRoNote: 'Untuk air RO/low-mineral, ini target remineralisasi, bukan profil mineral asli label.',
     waterCompleteMineralsEstimatedNote: 'Baseline klasifikasi - verifikasi manual sebelum dipublikasikan sebagai profil brand.',
     waterWhyManualTitle: 'Kenapa manual?',
-    waterWhyManualBody: 'Manual wajib ketika panel mineral belum lengkap, masih estimasi, terlalu rendah mineral, alkaline/high-buffer, atau belum didukung sumber publik tepercaya. Ini mencegah klaim "siap seduh" yang salah dan resep yang buruk.',
+    waterWhyManualBody: 'Manual wajib ketika panel mineral belum lengkap, masih estimasi, terlalu rendah mineral, alkalin/buffer tinggi, atau belum didukung sumber publik tepercaya. Ini mencegah klaim "siap seduh" yang salah dan resep yang buruk.',
     waterEditMinerals: 'Edit mineral',
     waterHideMinerals: 'Sembunyikan mineral',
     waterPresetIdealFilter: 'Ideal filter',
@@ -830,7 +830,7 @@ const COPY = {
     otherVariety: 'Varietas custom',
     openPicker: 'Pilih',
     generate: 'Buat',
-    generating: 'Menyusun seduh',
+    generating: 'Menyusun seduhan',
     reset: 'Reset',
     recent: 'Seduhan Terbaru',
     favorites: 'Favorit',
@@ -840,7 +840,7 @@ const COPY = {
     emptyFavorites: 'Tandai favorit agar resep muncul di sini.',
     emptyPlan: 'Pilih Cepat atau Presisi untuk menyusun seduhan.',
     actionPrioritiesTitle: 'Prioritas seduh',
-    actionPrioritiesDescription: 'Aksi praktis untuk seduhan ini. Ubah satu variabel saja.',
+    actionPrioritiesDescription: 'Aksi praktis untuk seduhan berikutnya. Ubah satu variabel saja.',
     warningsDescription: 'Baca sebelum seduh. Catatan ini mengikuti bahasa aplikasi dan status air, grinder, serta alat yang dipakai.',
     summaryTitle: 'Hasil',
     methodBriefTitle: 'Kunci Metode',
@@ -879,9 +879,9 @@ const COPY = {
     derivedTemplateProfile: 'Profil turunan template',
     fallbackProfile: 'Profil keluarga alat',
     useInTimer: 'Pakai di Timer',
-    useInRatio: 'Pakai di Ratio',
+    useInRatio: 'Pakai di Rasio',
     save: 'Simpan',
-    saveToCollection: 'Simpan Koleksi',
+    saveToCollection: 'Simpan ke Koleksi',
     saved: 'Tersimpan',
     favorite: 'Favorit',
     unfavorite: 'Hapus Favorit',
@@ -897,15 +897,15 @@ const COPY = {
     aiSequenceGuide: 'Catatan AI',
     aiGenerateLoading: 'Memperbarui catatan singkat...',
     aiEngineReady: 'Asisten AI belum dipakai',
-    aiEngineStrictReady: 'AI + Tervalidasi Planner',
+    aiEngineStrictReady: 'AI + rencana tervalidasi',
     aiEngineStrictRequired: 'Asisten AI belum tersedia',
     aiEngineProviderStack: '',
     aiFallbackDisabledByAdmin: 'AI hanya dipakai saat kamu menekan tombol asisten.',
-    aiEngineOnlineOptimized: 'AI + Tervalidasi Planner',
-    aiEngineLocalValidated: 'Planner Lokal',
-    aiEnginePrecisionPlanner: 'Planner Presisi',
+    aiEngineOnlineOptimized: 'AI + rencana tervalidasi',
+    aiEngineLocalValidated: 'Rencana lokal',
+    aiEnginePrecisionPlanner: 'Rencana presisi',
     aiEngineWorkingOnline: 'Asisten AI bekerja...',
-    aiEngineWorkingLocal: 'Planner Lokal',
+    aiEngineWorkingLocal: 'Rencana lokal',
     aiPrecisionAssistNote: 'AI hanya dipakai saat kamu menekan tombol asisten.',
     aiAssistNotUsed: 'Asisten AI belum dipakai',
     aiAssistActive: 'Asisten AI aktif',
@@ -914,8 +914,8 @@ const COPY = {
     aiAssistUsedRewrite: 'Panduan dibuat lebih ramah oleh AI',
     aiAssistUsedDeepAnalysis: 'AI dipakai untuk analisis dalam',
     aiAssistCacheReused: 'Jawaban AI sebelumnya digunakan ulang.',
-    aiOptimizationAccepted: 'AI memberi penyesuaian kecil dan planner sudah memvalidasi hasilnya.',
-    aiOptimizationRejectedProtected: 'Saran AI tidak dipakai karena mencoba mengubah angka penting. Resep planner tetap dipertahankan. Gunakan hasil ini sebagai baseline, lalu koreksi satu variabel saja.',
+    aiOptimizationAccepted: 'AI memberi penyesuaian kecil dan sistem sudah memvalidasi hasilnya.',
+    aiOptimizationRejectedProtected: 'Saran AI tidak dipakai karena mencoba mengubah angka penting. Resep tervalidasi tetap dipertahankan. Gunakan hasil ini sebagai baseline, lalu koreksi satu variabel saja.',
     updateNotes: 'Perbarui Catatan',
     updatingNotes: 'Memperbarui Catatan',
     aiNotesManualHint: 'Pakai AI hanya saat perlu.',
@@ -951,14 +951,14 @@ const COPY = {
     noPickerResults: 'Tidak ada entri katalog yang cocok.',
     generated: 'Rencana seduh tersimpan ke riwayat lokal.',
     generatedAi: 'Rencana seduh tersimpan. Optimasi AI diterapkan.',
-    generatedLocal: 'Rencana seduh tersimpan dengan planner lokal.',
-    aiOptimizationNoChange: 'Saran AI tidak dipakai. Planner mempertahankan resep yang lebih aman.',
+    generatedLocal: 'Rencana seduh tersimpan dengan sistem lokal.',
+    aiOptimizationNoChange: 'Saran AI tidak dipakai. Sistem mempertahankan resep yang lebih aman.',
     savedCollection: 'Resep tersimpan ke koleksi.',
     saveCollectionFailed: 'Resep ini belum bisa disimpan ke koleksi sekarang.',
     savedFavorite: 'Masuk ke favorit.',
     removedFavorite: 'Dihapus dari favorit.',
     feedbackTitle: 'Cek rasa',
-    feedbackDescription: 'Setelah seduh, tandai hasil cangkir. Jurnal lokal jadi lebih berguna untuk penyesuaian berikutnya.',
+    feedbackDescription: 'Setelah menyeduh, tandai hasil cangkir. Jurnal lokal jadi lebih berguna untuk penyesuaian berikutnya.',
     feedbackGreat: 'Sudah enak',
     feedbackSour: 'Terlalu asam',
     feedbackBitter: 'Terlalu pahit',
@@ -976,12 +976,12 @@ const COPY = {
     guideDensitySimple: 'Ringkas',
     guideDensityPro: 'Pro',
     guideDensitySimpleHint: 'Langkah inti untuk cepat dipakai.',
-    guideDensityProHint: 'Detail flow, jalur, tinggi tuang, dan agitasi.',
+    guideDensityProHint: 'Detail alur, jalur, tinggi tuang, dan agitasi.',
     switchSectionTitle: 'Metode Switch',
     switchSectionSummary: 'Pilih Panas/Es dulu, lalu biarkan Auto atau pilih metode Switch yang kamu mau.',
     switchTeachingTitle: 'Cara Switch bekerja',
     switchSizeTitle: 'Ukuran Switch',
-    switchDoseTitle: 'Shortcut dosis',
+    switchDoseTitle: 'Pintasan dosis',
     switchPresetTitle: 'Metode',
     switchAutoPreset: 'Auto pilih metode',
     switchChangePreset: 'Ubah metode',
@@ -1001,7 +1001,7 @@ const COPY = {
     switchManualMethodStatus: 'Manual',
     switchTargetClarifier: 'Profil Target menyesuaikan rasa, bukan mengganti metode Switch.',
     switchAutoExplainer: 'Auto memilih metode dari Profil Target, dosis, ukuran alat, dan batas aman.',
-    switchManualExplainer: 'Metode manual tetap dipakai kalau aman. Profil Target hanya menyesuaikan bloom, flow, timing katup, dan agitasi.',
+    switchManualExplainer: 'Metode manual tetap dipakai kalau aman. Profil Target hanya menyesuaikan bloom, alur, waktu katup, dan agitasi.',
     switchPresetDetailToggle: 'Detail',
     switchPresetBestFor: 'Cocok untuk',
     switchPresetCupShape: 'Bentuk rasa',
@@ -1014,15 +1014,15 @@ const COPY = {
     switchWorkflowCurated: 'Metode racikan BaristaChaw.',
     switchExpectedModel: 'Prediksi rasa, bukan jaminan.',
     switchStudioTitle: 'Detail metode',
-    switchStudioSummary: 'Jalur katup, muatan ruang, program, dan titik buka katup disusun di sini.',
-    beanDetailsOptional: 'Detail bean opsional',
-    beanDetailsHint: 'Natural, washed, varietas, dan origin membuat resep lebih akurat, tapi mode Cepat tetap bisa jalan tanpa itu.',
-    beanDetailsAdd: 'Tambah detail bean',
-    beanDetailsHide: 'Sembunyikan detail bean',
-    quickSummaryAuto: 'Detail bean tetap opsional; hasil ini masih baseline.',
-    moreAiTools: 'Tool AI lainnya',
-    beanCoverageTitle: 'Cakupan bean',
-    beanCoverageFallback: 'Data beans tidak lengkap; AI Brew memakai baseline aman.',
+    switchStudioSummary: 'Jalur katup, muatan ruang, alur seduh, dan titik buka katup disusun di sini.',
+    beanDetailsOptional: 'Detail kopi opsional',
+    beanDetailsHint: 'Proses natural/washed, varietas, dan asal membuat resep lebih akurat, tapi mode Cepat tetap bisa berjalan tanpa itu.',
+    beanDetailsAdd: 'Tambah detail kopi',
+    beanDetailsHide: 'Sembunyikan detail kopi',
+    quickSummaryAuto: 'Detail kopi tetap opsional; hasil ini masih baseline.',
+    moreAiTools: 'Alat AI lainnya',
+    beanCoverageTitle: 'Cakupan data kopi',
+    beanCoverageFallback: 'Data kopi belum lengkap; AI Brew memakai baseline aman.',
     beanCoverageTasteLoop: 'Gunakan feedback rasa setelah seduh untuk koreksi berikutnya.',
     expectedCupTitle: 'Prediksi Rasa',
     cupAcidity: 'Asam',
@@ -1038,11 +1038,11 @@ const COPY = {
     confidenceCatalog: 'Keyakinan Data',
     unavailable: 'Katalog AI Brew belum bisa dimuat sekarang.',
     loadingCatalog: 'Memuat katalog...',
-    restoredPlan: 'Plan terakhir dipulihkan.',
+    restoredPlan: 'Rencana terakhir dipulihkan.',
     offlineCatalog: 'Katalog offline siap.',
-    loadFavorite: 'Muat brew favorit',
-    loadRecent: 'Muat brew terbaru',
-    aiSignIn: 'Masuk untuk AI',
+    loadFavorite: 'Muat seduhan favorit',
+    loadRecent: 'Muat seduhan terbaru',
+    aiSignIn: 'Masuk untuk memakai AI',
     aiDisabledGuest: 'Masuk untuk memakai AI.',
     aiDisabledOffline: 'AI offline.',
     balance: 'Seimbang & Bersih',
@@ -1087,7 +1087,7 @@ const COPY = {
     grindDerivedBaseline: 'Baseline turunan',
     confidenceNotes: 'Catatan keyakinan',
     summaryFocusHint: 'Fokus utama: suhu, gilingan, waktu ekstraksi, lalu koreksi satu variabel dulu.',
-    waterRequired: 'Input mineral manual wajib diisi sebelum generate.',
+    waterRequired: 'Input mineral manual wajib diisi sebelum membuat seduhan.',
     openProcessPicker: 'Pilih proses',
     openVarietyPicker: 'Pilih varietas',
     openDripperPicker: 'Pilih alat seduh',
@@ -1123,7 +1123,7 @@ const COPY = {
     coachDescription: 'AI opsional. Pakai hanya untuk penjelasan atau koreksi rasa singkat.',
     coachCostHint: 'Asisten AI hanya berjalan saat kamu menekan salah satu aksi ini.',
     coachEmpty: 'Pilih satu arahan.',
-    coachExplainHint: 'Mengapa plan ini cocok dengan bean, air, dan target.',
+    coachExplainHint: 'Mengapa rencana ini cocok dengan kopi, air, dan target.',
     coachTroubleshootHint: 'Apa yang paling dulu diubah saat rasa mulai meleset.',
     coachAdjustHint: 'Cara mendorong cangkir jadi lebih cerah, manis, atau rapat.',
     coachFallback: 'Lapisan AI tambahan dialihkan ke alur tervalidasi agar resep tetap aman dan stabil.',
@@ -1166,7 +1166,7 @@ const COPY = {
     waterBadgeManualMinerals: 'Mineral manual',
     noVerifiedGrinderSettingDetail: 'Belum ada setting grinder terverifikasi untuk grinder dan profil ini.',
     noVerifiedGrinderSettingShort: 'Belum ada setting terverifikasi',
-    aiGenerateFailed: 'AI belum bisa dipakai untuk brew ini sekarang.',
+    aiGenerateFailed: 'AI belum bisa dipakai untuk seduhan ini sekarang.',
     aiCoachFailed: 'AI Coach belum bisa dipakai sekarang.',
     ariaUseInTimer: 'Gunakan {name} di timer',
     ariaUseInRatio: 'Gunakan {name} di kalkulator rasio',
@@ -2516,11 +2516,11 @@ function formatBeanCoverageLabel(
   if (!isIndonesianAiBrewLanguage(language)) return fallbackLabel;
   switch (category) {
     case 'known_high':
-      return 'Data bean lengkap';
+      return 'Data kopi lengkap';
     case 'partial_medium':
-      return 'Data bean sebagian';
+      return 'Data kopi sebagian';
     case 'unknown_fallback':
-      return 'Bean belum lengkap';
+      return 'Data kopi belum lengkap';
     case 'risk_caution':
       return 'Perlu hati-hati';
     case 'unsupported_unsafe':
@@ -3289,7 +3289,7 @@ function formatAiBrewPourPath(path: AiBrewDisplayStep['pourPath'], language: str
     case 'center':
       return id ? 'tengah' : 'center';
     case 'center_to_mid':
-      return id ? 'tengah-ke-mid' : 'center-to-mid';
+      return id ? 'tengah-ke-luar' : 'center-to-mid';
     case 'flat_center':
       return 'flat-center';
     case 'compact_spiral':
@@ -3301,7 +3301,7 @@ function formatAiBrewPourPath(path: AiBrewDisplayStep['pourPath'], language: str
     case 'heat_control':
       return id ? 'kontrol panas' : 'heat control';
     case 'machine_flow':
-      return id ? 'flow mesin' : 'machine flow';
+      return id ? 'aliran mesin' : 'machine flow';
     default:
       return '';
   }
@@ -3344,7 +3344,7 @@ function buildAiBrewStepMetrics(step: AiBrewDisplayStep, language: string, plan?
   if (showNumericTarget) {
     metrics.push(
       {
-        label: kind === 'pour' ? (id ? 'Tuang' : 'Pour') : kind === 'extract' ? (id ? 'Yield' : 'Yield') : (id ? 'Aksi' : 'Action'),
+        label: kind === 'pour' ? (id ? 'Tuang' : 'Pour') : kind === 'extract' ? (id ? 'Hasil' : 'Yield') : (id ? 'Aksi' : 'Action'),
         value: kind === 'pour' || kind === 'extract' ? formatRoundedMl(step.pourVolumeMl) : formatAiBrewStepBadge(step, language),
       },
       {
@@ -3536,7 +3536,7 @@ function getAiBrewFriendlyErrorMessage(
   }
   if (normalized.includes('401') || normalized.includes('403') || normalized.includes('unauthorized') || normalized.includes('auth')) {
     return id
-      ? 'Masuk dulu untuk memakai fitur AI pada brew ini.'
+      ? 'Masuk dulu untuk memakai fitur AI pada seduhan ini.'
       : 'Sign in first to use AI on this brew.';
   }
   if (normalized.includes('402') || normalized.includes('paid') || normalized.includes('plan') || normalized.includes('billing')) {
@@ -3582,7 +3582,7 @@ function logAiBrewSequenceFallback(language: string, details: unknown) {
 
 function getAiBrewOptimizationFallbackMessage(language: string) {
   return isIndonesianAiBrewLanguage(language)
-    ? 'Optimasi AI belum dipakai. Planner lokal tetap menjaga angka seduh tervalidasi.'
+    ? 'Optimasi AI belum dipakai. Sistem lokal tetap menjaga angka seduh tervalidasi.'
     : 'AI optimization was skipped. The local planner kept the validated brew numbers.';
 }
 
@@ -4361,7 +4361,7 @@ function buildTargetProfileCompareReason(plan: BrewPlan, balancePlan: BrewPlan |
   const id = isIndonesianAiBrewLanguage(language);
   const targetId = plan.targetProfileId;
   const base = id
-    ? 'Hasil final menggabungkan efek target dengan modifier bean, air, grinder, dan device.'
+    ? 'Hasil final menggabungkan efek target dengan penyesuaian kopi, air, grinder, dan alat.'
     : 'Final computed combines the target effect with bean, water, grinder, and device modifiers.';
   if (!balancePlan || targetId === 'balance_clean') return base;
   if (
@@ -4369,7 +4369,7 @@ function buildTargetProfileCompareReason(plan: BrewPlan, balancePlan: BrewPlan |
     && plan.waterTempC > balancePlan.waterTempC
   ) {
     return id
-      ? 'Hasil final lebih panas karena modifier bean/device/air meminta tekanan ekstraksi lebih besar.'
+      ? 'Hasil final lebih panas karena penyesuaian kopi, alat, dan air meminta tekanan ekstraksi lebih besar.'
       : 'Computed final is hotter because bean/device/water modifiers required more extraction pressure.';
   }
   if (
@@ -4377,7 +4377,7 @@ function buildTargetProfileCompareReason(plan: BrewPlan, balancePlan: BrewPlan |
     && plan.totalTimeSeconds < balancePlan.totalTimeSeconds
   ) {
     return id
-      ? 'Peringatan: target body biasanya tidak boleh lebih cepat dari balance; cek modifier device atau override manual.'
+      ? 'Peringatan: target body biasanya tidak boleh lebih cepat dari balance; cek penyesuaian alat atau override manual.'
       : 'Warning: body targets should not be faster than balance; check device modifiers or manual overrides.';
   }
   if (
@@ -4385,7 +4385,7 @@ function buildTargetProfileCompareReason(plan: BrewPlan, balancePlan: BrewPlan |
     && plan.grindBias === 'coarser'
   ) {
     return id
-      ? 'Hasil final memakai grind lebih kasar karena risiko proses/flow lebih tinggi; sweetness dijaga lewat tuangan tengah dan kontrol agitasi.'
+      ? 'Hasil final memakai gilingan lebih kasar karena risiko proses/aliran lebih tinggi; rasa manis dijaga lewat tuangan tengah dan kontrol agitasi.'
       : 'Computed final uses a coarser grind because process/flow risk is higher; sweetness is protected through middle pour and agitation control.';
   }
   return base;
@@ -4690,13 +4690,13 @@ function PlanResultDialog({
     },
     {
       label: id ? 'Air + grinder' : 'Water + grinder',
-      value: `${plan.waterBrandLabel || copy.waterSelectedManual} · ${localizedGrindHeadline}`,
+      value: `${plan.waterBrandLabel || copy.waterSelectedManual} - ${localizedGrindHeadline}`,
       detail: id
         ? `Air memakai TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder ditampilkan sebagai ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} agar tidak overclaim.`
         : `Water uses TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder is labelled ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} so the plan does not overclaim precision.`,
     },
     {
-      label: id ? 'Alat & workflow' : 'Brewer workflow',
+      label: id ? 'Alat & alur' : 'Brewer workflow',
       value: plan.methodFamily === 'hario_switch'
         ? (localizedSwitchPresetLabel || plan.dripper.name)
         : plan.dripper.name,
@@ -4714,7 +4714,7 @@ function PlanResultDialog({
     {
       label: id ? 'Suhu' : 'Temperature',
       value: `${formatRoundedTemperature(plan.waterTempC)} \u00b11C`,
-      detail: id ? 'Lewat dari range ini mulai ubah clarity dan bitterness.' : 'Outside this range, clarity and bitterness start to move.',
+      detail: id ? 'Di luar rentang ini, kejernihan dan risiko pahit mulai bergeser.' : 'Outside this range, clarity and bitterness start to move.',
     },
     {
       label: id ? 'Air turun ideal' : 'Ideal drawdown',
@@ -4722,7 +4722,7 @@ function PlanResultDialog({
       detail: id ? 'Finis lebih cepat: haluskan. Finis lebih lama: kasarkan.' : 'Faster finish: grind finer. Slower finish: grind coarser.',
     },
     {
-      label: id ? 'Adjustment grind' : 'Grind adjustment',
+      label: id ? 'Koreksi gilingan' : 'Grind adjustment',
       value: id ? '1-2 klik/angka' : '1-2 clicks/numbers',
       detail: id ? 'Ubah kecil dulu, lalu seduh ulang dengan air dan suhu yang sama.' : 'Move small first, then rebrew with the same water and temperature.',
     },
@@ -4743,7 +4743,7 @@ function PlanResultDialog({
       detail: `TDS ${plan.waterMinerals.tdsPpm} - GH ${plan.waterMinerals.hardnessPpm} - KH ${plan.waterMinerals.alkalinityPpm} - ${localizedWaterStyle}`,
     },
     {
-      label: id ? 'Bean' : 'Bean',
+      label: id ? 'Kopi' : 'Bean',
       value: `${localizedProcessLabel} / ${localizedVarietyLabel}`,
       detail: id
         ? `${localizedRoastLabel}; altitude ${plan.beanProfile.altitudeMasl ? `${plan.beanProfile.altitudeMasl} mdpl` : copy.notSpecified}; densitas ${plan.beanProfile.beanDensityGml ? `${plan.beanProfile.beanDensityGml} g/ml` : copy.notSpecified}.`
@@ -4753,7 +4753,7 @@ function PlanResultDialog({
       label: copy.dripper,
       value: plan.dripper.name,
       detail: id
-        ? `Profil alat ${formatDeviceProfileMode(copy, plan.deviceProfileMode)}; flow disesuaikan dengan keluarga metode ${plan.methodFamily}.`
+        ? `Profil alat ${formatDeviceProfileMode(copy, plan.deviceProfileMode)}; aliran disesuaikan dengan keluarga metode ${plan.methodFamily}.`
         : `Device profile is ${formatDeviceProfileMode(copy, plan.deviceProfileMode)}; flow is matched to ${plan.methodFamily}.`,
     },
     {
@@ -5193,7 +5193,7 @@ function PlanResultDialog({
                       </h4>
                       <p className="mt-1 text-xs leading-5 text-secondary">
                         {id
-                          ? 'Inti keputusan planner: target rasa, ekstraksi, air, grinder, dan workflow alat diringkas tanpa klaim 100% pasti.'
+                          ? 'Inti keputusan sistem: target rasa, ekstraksi, air, grinder, dan alur alat diringkas tanpa klaim 100% pasti.'
                           : 'Planner decision summary: taste target, extraction, water, grinder, and brewer workflow without claiming certainty.'}
                       </p>
                     </div>
@@ -5318,7 +5318,7 @@ function PlanResultDialog({
                   <div className="mb-3 flex items-center gap-2">
                     <FlaskConical size={15} className="text-sky-500" />
                     <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
-                      {id ? 'Water + Bean Intelligence' : 'Water + Bean Intelligence'}
+                      {id ? 'Analisis air & kopi' : 'Water + Bean Intelligence'}
                     </h4>
                   </div>
                   <div className="grid gap-2">
@@ -5799,7 +5799,7 @@ function PlanResultDialog({
                           </span>
                           <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary sm:col-span-1">
                             <span className="block text-[10px] uppercase tracking-widest text-tertiary">{id ? 'Kontrol' : 'Control'}</span>
-                            <span className="font-semibold text-primary">{id ? 'Flow stabil + bed rata' : 'Stable flow + even bed'}</span>
+                            <span className="font-semibold text-primary">{id ? 'Aliran stabil + bed rata' : 'Stable flow + even bed'}</span>
                           </span>
                         </div>
                       ) : (
@@ -5988,10 +5988,10 @@ function PlanResultDialog({
                 </div>
                 <p className="text-sm text-secondary">{copy.coachDescription}</p>
                 <div className="mt-3 space-y-1 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2 text-xs leading-5 text-secondary">
-                  <p>{id ? 'Coach mengikuti planner deterministic. Angka resep tidak diubah oleh AI.' : 'Coach follows the deterministic planner. AI does not change recipe numbers.'}</p>
+                  <p>{id ? 'Coach mengikuti rencana deterministik. Angka resep tidak diubah oleh AI.' : 'Coach follows the deterministic planner. AI does not change recipe numbers.'}</p>
                   <p>{copy.coachCostHint}</p>
                   {hasLowConfidenceCoachData && (
-                    <p>{id ? 'Sebagian data bersifat curated/estimated; gunakan sebagai baseline, bukan klaim final.' : 'Some data is curated/estimated; use it as a baseline, not a final factual claim.'}</p>
+                    <p>{id ? 'Sebagian data bersifat kurasi/estimasi; gunakan sebagai baseline, bukan klaim final.' : 'Some data is curated/estimated; use it as a baseline, not a final factual claim.'}</p>
                   )}
                 </div>
                 <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
@@ -6656,7 +6656,7 @@ function buildWaterTargetFitHint(
     return {
       tone: 'caution' as const,
       text: isIndonesianAiBrewLanguage(language)
-        ? 'Air ini cenderung meredam acidity. Untuk hasil yang lebih terang dan hidup, pakai air dengan alkalinity lebih rendah atau manual minerals.'
+        ? 'Air ini cenderung meredam keasaman. Untuk hasil yang lebih terang dan hidup, pakai air dengan alkalinitas lebih rendah atau mineral manual.'
         : 'This water will soften acidity. For a brighter cup, use lower-alkalinity water or switch to manual minerals.',
     };
   }
@@ -6683,7 +6683,7 @@ function buildWaterTargetFitHint(
     return {
       tone: 'ok' as const,
       text: isIndonesianAiBrewLanguage(language)
-        ? 'Baseline air ini cukup aman untuk mulai. Tuning berikutnya sebaiknya fokus ke grind, flow, dan target rasa sebelum mengubah mineral.'
+        ? 'Baseline air ini cukup aman untuk mulai. Setelan berikutnya sebaiknya fokus ke gilingan, aliran, dan target rasa sebelum mengubah mineral.'
         : 'This is a reliable starting water. Tune grind, flow, and taste target before changing minerals.',
     };
   }
@@ -6781,12 +6781,27 @@ function inferPreferredBuilderMode(formState: AiBrewFormState): FormMode {
     : 'quick';
 }
 
-function buildBeanProfileSummary(formState: AiBrewFormState) {
+function buildBeanProfileSummary(formState: AiBrewFormState, language?: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  const roastDevelopment = formState.roastDevelopment
+    ? ({
+        underdeveloped: id ? 'kurang develop' : 'underdeveloped',
+        balanced: id ? 'seimbang' : 'balanced',
+        developed: id ? 'lebih develop' : 'developed',
+      } as Record<string, string>)[formState.roastDevelopment] || formState.roastDevelopment.replace(/_/g, ' ')
+    : null;
+  const solubility = formState.solubility
+    ? ({
+        low: id ? 'kelarutan rendah' : 'low solubility',
+        medium: id ? 'kelarutan sedang' : 'medium solubility',
+        high: id ? 'kelarutan tinggi' : 'high solubility',
+      } as Record<string, string>)[formState.solubility] || formState.solubility
+    : null;
   return [
-    formState.altitudeMasl ? `${formState.altitudeMasl} masl` : null,
+    formState.altitudeMasl ? `${formState.altitudeMasl} ${id ? 'mdpl' : 'masl'}` : null,
     formState.beanDensityGml ? `${formState.beanDensityGml} g/ml` : null,
-    formState.roastDevelopment ? formState.roastDevelopment.replace(/_/g, ' ') : null,
-    formState.solubility || null,
+    roastDevelopment,
+    solubility,
   ].filter(Boolean).join(' - ');
 }
 
@@ -7207,7 +7222,7 @@ export function AiBrewPanel({
         : nextMineralsReady
           ? `TDS ${formState.waterTdsPpm} - GH ${formState.waterHardnessPpm} - KH ${formState.waterAlkalinityPpm}`
           : copy.waterRequired;
-      const beanProfileSummary = buildBeanProfileSummary(formState);
+      const beanProfileSummary = buildBeanProfileSummary(formState, language);
       const beanProfileActive = Boolean(beanProfileSummary);
       const profileTrustStatus = resolveBrewerProfileTrustStatus({
         deviceProfileMode: deviceSelection.mode,
@@ -8797,7 +8812,7 @@ export function AiBrewPanel({
                             <div className="flex items-center gap-2">
                               <Coffee size={15} className="text-blue-500" />
                               <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
-                                {isIndonesianAiBrewLanguage(language) ? 'Bean Detail' : 'Bean Detail'}
+                                {isIndonesianAiBrewLanguage(language) ? 'Detail kopi' : 'Bean Detail'}
                               </h4>
                             </div>
                             <p className="mt-1 text-xs leading-5 text-secondary">
@@ -8969,12 +8984,12 @@ export function AiBrewPanel({
                                 </div>
                               </div>
                               <div className="rounded-xl bg-[var(--bg-base)] px-3 py-3 text-sm text-secondary" data-testid="ai-brew-bean-profile-summary">
-                                {(buildBeanProfileSummary(formState).replace(' masl', ' m').replace(' g/ml', ' density')) || copy.beanProfileNeutral}
+                                {buildBeanProfileSummary(formState, language) || copy.beanProfileNeutral}
                               </div>
                             </div>
                           ) : (
                             <div className="mt-4 rounded-xl bg-[var(--bg-base)] px-3 py-3 text-sm text-secondary" data-testid="ai-brew-bean-profile-summary">
-                              {buildBeanProfileSummary(formState) || copy.beanProfileNeutral}
+                              {buildBeanProfileSummary(formState, language) || copy.beanProfileNeutral}
                             </div>
                           )}
                         </div>
@@ -9753,15 +9768,12 @@ export function AiBrewPanel({
                                 </div>
 
                                 <div className="rounded-xl bg-[var(--bg-base)] px-3 py-3 text-sm text-secondary" data-testid="ai-brew-bean-profile-summary">
-                                  {(buildBeanProfileSummary(formState)
-                                    .replace(' masl', ' m')
-                                    .replace(' g/ml', ' density')
-                                  ) || copy.beanProfileNeutral}
+                                  {buildBeanProfileSummary(formState, language) || copy.beanProfileNeutral}
                                 </div>
                               </div>
                             ) : (
                               <div className="mt-4 rounded-xl bg-[var(--bg-base)] px-3 py-3 text-sm text-secondary" data-testid="ai-brew-bean-profile-summary">
-                                {buildBeanProfileSummary(formState) || copy.beanProfileNeutral}
+                                {buildBeanProfileSummary(formState, language) || copy.beanProfileNeutral}
                               </div>
                             )}
                           </div>

@@ -5,7 +5,7 @@ import { mockAiApis } from '../helpers/network';
 import { clearClientState } from '../helpers/cleanup';
 
 const ENGLISH_FORBIDDEN_INDONESIAN_COPY =
-  /Alat Barista|Kalkulator|Tugas|Preset Metode Seduh|Ukuran Giling|Dosis \(g\)|Air \(ml\)|Ringkasan|Panduan Seduh|Detail tambahan|Prediksi rasa|Keyakinan|Keamanan|Simpan|Hapus|Buka katup|Air turun|air panas|Cek rasa|Seduhan Terbaru|Pakai di Timer|Pakai di Rasio|Simpan ke Koleksi|Asisten AI|Profil kopi|Detail kopi|Menyusun seduhan|\b(Tuang|Bilas|Sajikan|Rendam|Tekan|Aduk|Panaskan|Pindahkan|Saring|Dilusi|Katup|Gilingan|Suhu|Ekstraksi)\b/i;
+  /Alat Barista|Kalkulator|Tugas|Preset Metode Seduh|Ukuran Giling|Dosis \(g\)|Air \(ml\)|Ringkasan|Panduan Seduh|Detail tambahan|Prediksi rasa|Keyakinan|Keamanan|Simpan|Hapus|Buka katup|Air turun|air panas|Cek rasa|Seduhan Terbaru|Pakai di Timer|Pakai di Rasio|Simpan ke Koleksi|Asisten AI|Profil kopi|Detail kopi|Menyusun seduhan|\b(Tuang|Bilas|Sajikan|Rendam|Tekan|Aduk|Panaskan|Pindahkan|Saring|Dilusi|Katup|Gilingan|Suhu|Ekstraksi|Basahi|Endapkan)\b/i;
 
 const INDONESIAN_FORBIDDEN_ENGLISH_AI_COPY =
   /\b(Brew Guide|Expected Cup|Safety|Release(?: over ice)?|Drawdown|Additional details|Prediction & confidence detail|Core cup prediction|Quick AI Brew result|Technique detail|Pro brew details|Bean profile|Bean details optional|Add bean detail|Hide bean detail|Source details|Water source used|More actions|Use in Timer|Use in Ratio|Save to Collection|Edit inputs|Close planned output|Building your brew|Taste Check|Next Brew Adjustment|Primary move|Coffee \/ origin|Target Profile|Guided brew|Ready to brew|Current step|Next step|Open timer)\b/i;

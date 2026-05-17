@@ -2532,16 +2532,21 @@ function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: s
 function localizeWorkflowChipValue(value: string, language: string) {
   if (!isIndonesianAiBrewLanguage(language)) {
     return value
+      .replace(/air panas/g, 'hot water')
+      .replace(/air dingin/g, 'cold water')
       .replace(/buka katup/g, 'release')
       .replace(/air turun/g, 'drawdown')
       .replace(/muatan ruang/g, 'chamber load')
       .replace(/semua bubuk/g, 'all grounds')
+      .replace(/basahi merata/g, 'even saturation')
+      .replace(/rendam dingin/g, 'cold steep')
       .replace(/tengah-ke-tengah-luar/g, 'center-to-mid')
       .replace(/tengah-ke-luar/g, 'center-to-mid')
       .replace(/tengah/g, 'center')
       .replace(/rendah/g, 'low')
       .replace(/sedang/g, 'medium')
       .replace(/tinggi/g, 'high')
+      .replace(/panas/g, 'hot')
       .replace(/tutup/g, 'closed')
       .replace(/buka/g, 'open')
       .replace(/kosong/g, 'empty')
@@ -2549,6 +2554,9 @@ function localizeWorkflowChipValue(value: string, language: string) {
       .replace(/perkolasi/g, 'percolation')
       .replace(/aduk/g, 'stir')
       .replace(/sajikan/g, 'serve')
+      .replace(/tuang pisah/g, 'decant')
+      .replace(/saring/g, 'filter')
+      .replace(/dilusi/g, 'dilution')
       .replace(/_/g, '-');
   }
   return value
@@ -2701,16 +2709,27 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\bsiapkan metode sebelum seduh\b/gi, 'set up the method before brewing')
     .replace(/\bratakan bed\b/gi, 'level the bed')
     .replace(/\bsiapkan pulse rendah\b/gi, 'prepare gentle pulses')
+    .replace(/\bset katup\b/gi, 'set the valve')
+    .replace(/\btarget panas\b/gi, 'hot-water target')
+    .replace(/\bmuatan ruang\b/gi, 'chamber load')
+    .replace(/\bsemua bubuk\b/gi, 'all grounds')
+    .replace(/\bair dingin\b/gi, 'cold water')
     .replace(/\bair panas\b/gi, 'hot water')
     .replace(/\bair turun\b/gi, 'drawdown')
     .replace(/\bBuka katup\b/gi, 'Open the valve')
     .replace(/\bbuka katup\b/gi, 'open the valve')
+    .replace(/\bTutup katup\b/gi, 'Close the valve')
+    .replace(/\btutup katup\b/gi, 'close the valve')
     .replace(/\bBiarkan\b/gi, 'Let')
     .replace(/\bbiarkan\b/gi, 'let')
+    .replace(/\bMasukkan\b/gi, 'Add')
+    .replace(/\bmasukkan\b/gi, 'add')
     .replace(/\bTuang\b/gi, 'Pour')
     .replace(/\btuang\b/gi, 'pour')
     .replace(/\bTarget\b/gi, 'Target')
     .replace(/\btarget\b/gi, 'target')
+    .replace(/\bBasahi\b/gi, 'Wet')
+    .replace(/\bbasahi\b/gi, 'wet')
     .replace(/\bRendam\b/gi, 'Steep')
     .replace(/\brendam\b/gi, 'steep')
     .replace(/\bTekan\b/gi, 'Press')
@@ -2721,6 +2740,8 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\bpanaskan\b/gi, 'heat')
     .replace(/\bPindahkan\b/gi, 'Decant')
     .replace(/\bpindahkan\b/gi, 'decant')
+    .replace(/\bEndapkan\b/gi, 'Settle')
+    .replace(/\bendapkan\b/gi, 'settle')
     .replace(/\bSaring\b/gi, 'Filter')
     .replace(/\bsaring\b/gi, 'filter')
     .replace(/\bDilusi\b/gi, 'Dilute')
@@ -2731,10 +2752,19 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\bbersih\b/gi, 'cleanly')
     .replace(/\bjangan\b/gi, 'do not')
     .replace(/\btambah\b/gi, 'add')
+    .replace(/\bbubuk\b/gi, 'grounds')
+    .replace(/\bkopi\b/gi, 'coffee')
+    .replace(/\bes\b/gi, 'ice')
+    .replace(/\bke server\b/gi, 'to the server')
     .replace(/\bdi server\b/gi, 'in the server')
     .replace(/\bdi atas es\b/gi, 'over ice')
     .replace(/\bsebelum hiss\b/gi, 'before the hiss')
     .replace(/\bsebelum sputter\b/gi, 'before sputtering')
+    .replace(/\blalu\b/gi, 'then')
+    .replace(/\bdan\b/gi, 'and')
+    .replace(/\bdengan\b/gi, 'with')
+    .replace(/\bsampai\b/gi, 'until')
+    .replace(/\bsegera\b/gi, 'promptly')
     .replace(/\s+([.,;:])/g, '$1')
     .replace(/\s+/g, ' ')
     .trim();
@@ -4937,7 +4967,7 @@ function PlanResultDialog({
     },
     {
       label: id ? 'Keseimbangan ekstraksi' : 'Extraction balance',
-      value: `${plan.iceMl > 0 ? `1:${formatBrewRatio(plan.finalBeverageRatio)} / panas 1:${formatBrewRatio(plan.hotExtractionRatio)}` : `1:${formatBrewRatio(plan.finalBeverageRatio)}`} - ${formatRoundedTemperature(plan.waterTempC)} - ${extractionTimeLabel} ${formatGuideTime(extractionSeconds)}`,
+      value: `${plan.iceMl > 0 ? `1:${formatBrewRatio(plan.finalBeverageRatio)} / ${id ? 'panas' : 'hot'} 1:${formatBrewRatio(plan.hotExtractionRatio)}` : `1:${formatBrewRatio(plan.finalBeverageRatio)}`} - ${formatRoundedTemperature(plan.waterTempC)} - ${extractionTimeLabel} ${formatGuideTime(extractionSeconds)}`,
       detail: beanPredictionContextDetail,
     },
     {
@@ -4955,7 +4985,7 @@ function PlanResultDialog({
       detail: plan.methodFamily === 'hario_switch'
         ? (id
           ? `${localizeAiBrewDynamicText(plan.switchWhy || 'Metode Switch dipilih dari Profil Target, ukuran alat, dan dosis saat Auto aktif.', language)} ${localizeAiBrewDynamicText(plan.switchWatch || plan.switchCompatibility?.message || 'Jaga angka ml, target kumulatif, dan status katup saat seduh.', language)}`
-          : `${plan.switchWhy || 'Switch method follows the taste target, brewer size, and dose.'} ${plan.switchWatch || plan.switchCompatibility?.message || 'Keep ml, cumulative targets, and valve state visible while brewing.'}`)
+          : `${formatPlanSwitchPresetLabel(plan, language)} keeps the closed/open phases, cumulative ml targets, and valve state visible while brewing.`)
         : (id
           ? `${methodBrief.primaryLabel}: ${methodBrief.watch[0] || 'Ikuti urutan dari atas; ubah satu variabel saja setelah mencicipi.'}`
           : `${methodBrief.primaryLabel}: ${methodBrief.watch[0] || 'Follow the guide top to bottom; change one variable only after tasting.'}`),

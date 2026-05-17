@@ -103,6 +103,16 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
         return 'Final Pour';
       case 'tuang akhir target panas':
         return 'Finish to Hot-Water Target';
+      case 'bilas, panaskan, set katup':
+        return 'Rinse, Preheat, Set Valve';
+      case 'panaskan alat':
+        return 'Preheat Brewer';
+      case 'basahi merata':
+        return 'Even Saturation';
+      case 'rendam dingin':
+        return 'Cold Steep';
+      case 'filter atau tuang pisah':
+        return 'Filter or Decant';
       case 'isi air':
         return 'Charge Water';
       case 'aduk':

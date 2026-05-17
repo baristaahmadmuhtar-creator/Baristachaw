@@ -45,14 +45,14 @@ describe('agentProfileStore', () => {
     expect(user.preferredLanguage).toBe('en');
   });
 
-  test('defaults fresh local profiles to Indonesian', async () => {
+  test('defaults fresh local profiles to English', async () => {
     const profile = await readAgentProfileMemory();
 
-    expect(profile.preferredLanguage).toBe('id');
+    expect(profile.preferredLanguage).toBe('en');
     expect(profile.languageSource).toBe('global');
   });
 
-  test('migrates legacy implicit English guest profiles to Indonesian', async () => {
+  test('keeps legacy implicit English guest profiles on the current English default', async () => {
     await AsyncStorage.setItem(
       `${AGENT_PROFILE_MEMORY_KEY_PREFIX}${resolveAgentProfileNamespace(null)}`,
       JSON.stringify({
@@ -64,8 +64,8 @@ describe('agentProfileStore', () => {
 
     const profile = await readAgentProfileMemory(null, { preferredLanguage: 'id' });
 
-    expect(profile.preferredLanguage).toBe('id');
-    expect(profile.languageSource).toBe('global');
+    expect(profile.preferredLanguage).toBe('en');
+    expect(profile.languageSource).toBeUndefined();
   });
 
   test('preserves explicit manual English preference', async () => {

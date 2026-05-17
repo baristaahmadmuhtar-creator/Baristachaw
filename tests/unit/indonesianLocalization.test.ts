@@ -41,7 +41,21 @@ test('indonesian merged translations do not silently fall back to English except
   const en = getTranslations('en');
   const id = getTranslations('id');
 
-  const allowedSame = new Set(['chatBrandName', 'chatAssistantNamePlaceholder', 'chatMemoryDetailBalanced']);
+  const allowedSame = new Set([
+    'chatBrandName',
+    'chatAssistantNamePlaceholder',
+    'chatMemoryDetailBalanced',
+    'toolsMethodEspresso',
+    'toolsMethodChemex',
+    'toolsMethodKalitaWave',
+    'toolsMethodMelitta',
+    'toolsMethodAeropress',
+    'toolsMethodCleverDripper',
+    'toolsMethodOrigami',
+    'toolsMethodApril',
+    'toolsMethodKono',
+    'toolsMethodMokaPot',
+  ]);
   const sameAsEnglish = Object.keys(en).filter((key) => id[key] === en[key] && !allowedSame.has(key));
 
   assert.deepEqual(

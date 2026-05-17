@@ -44,7 +44,7 @@ test('mobile auth gate exposes localized first-screen labels for every supported
   }
 });
 
-test('mobile auth copy defaults unsupported locale tags to Indonesian', () => {
-  assert.equal(resolveMobileAuthCopy('signIn', 'fr-FR').submit, 'Masuk dengan email');
-  assert.equal(resolveMobileAuthBundle('fr-FR').guestContinue, 'Lanjutkan sebagai tamu');
+test('mobile auth copy defaults unsupported locale tags to English', () => {
+  assert.equal(resolveMobileAuthCopy('signIn', 'fr-FR').submit, 'Sign in with email');
+  assert.equal(resolveMobileAuthBundle('fr-FR').guestContinue, 'Continue as guest');
 });

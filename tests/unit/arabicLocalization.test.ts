@@ -45,7 +45,20 @@ test('arabic merged translations do not silently fall back to English except bra
   const en = getTranslations('en');
   const ar = getTranslations('ar');
 
-  const allowedSame = new Set(['chatBrandName', 'chatAssistantNamePlaceholder']);
+  const allowedSame = new Set([
+    'chatBrandName',
+    'chatAssistantNamePlaceholder',
+    'toolsMethodEspresso',
+    'toolsMethodChemex',
+    'toolsMethodKalitaWave',
+    'toolsMethodMelitta',
+    'toolsMethodAeropress',
+    'toolsMethodCleverDripper',
+    'toolsMethodOrigami',
+    'toolsMethodApril',
+    'toolsMethodKono',
+    'toolsMethodMokaPot',
+  ]);
   const sameAsEnglish = Object.keys(en).filter((key) => ar[key] === en[key] && !allowedSame.has(key));
 
   assert.deepEqual(

@@ -12,7 +12,7 @@ export function mobileParityPath(
   } = {},
 ) {
   const platform = options.platform || 'ios';
-  const language = options.language || 'id';
+  const language = options.language || 'en';
   const hostSafeBottom = String(options.hostSafeBottom ?? (platform === 'ios' ? 34 : 28));
   const [path, query = ''] = route.split('?');
   const params = new URLSearchParams(query);

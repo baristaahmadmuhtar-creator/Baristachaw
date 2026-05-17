@@ -6,7 +6,7 @@ import { getMobileLocalization, resolveMobileLanguage } from '../../apps/mobile/
 test('mobile localization resolves supported language tags', () => {
   assert.equal(resolveMobileLanguage('ar-SA'), 'ar');
   assert.equal(resolveMobileLanguage('id_ID'), 'id');
-  assert.equal(resolveMobileLanguage('fr-FR'), 'id');
+  assert.equal(resolveMobileLanguage('fr-FR'), 'en');
 });
 
 test('mobile localization keeps arabic rtl, locale, and localized home copy', () => {

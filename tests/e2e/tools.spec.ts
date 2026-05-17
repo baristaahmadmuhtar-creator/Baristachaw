@@ -240,6 +240,37 @@ test('grind size calculator uses method and grinder while preserving ratio math'
   await expect(page.getByTestId('grind-size-recommendation')).toContainText(/Starting point|Titik awal|Baseline|Estimasi/i);
 });
 
+test('grind size calculator reacts to roast, target profile, and espresso compatibility', async ({ page }) => {
+  await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
+  await page.getByRole('button', { name: /^(Grind Size|Ukuran Giling)$/ }).click();
+  await expect(page.getByTestId('grind-size-panel')).toBeVisible();
+
+  await page.getByTestId('grinder-search').fill('Feima');
+  await page.getByTestId('grinder-option-feima-600n').click();
+  await page.getByTestId('grind-roast-light').click();
+  const lightSetting = ((await page.getByTestId('grind-primary-setting').textContent()) || '').trim();
+  await page.getByTestId('grind-roast-dark').click();
+  const darkSetting = ((await page.getByTestId('grind-primary-setting').textContent()) || '').trim();
+  expect(lightSetting).not.toEqual(darkSetting);
+
+  await page.getByTestId('grind-roast-medium').click();
+  await page.getByTestId('grind-target-more_sweetness').click();
+  const sweetSetting = ((await page.getByTestId('grind-primary-setting').textContent()) || '').trim();
+  await page.getByTestId('grind-target-floral_transparent').click();
+  const floralSetting = ((await page.getByTestId('grind-primary-setting').textContent()) || '').trim();
+  expect(sweetSetting).not.toEqual(floralSetting);
+
+  await page.getByTestId('grind-method-espresso').click();
+  await page.getByTestId('grinder-search').fill('Timemore C2');
+  await expect(page.getByTestId('grinder-option-timemore-c2')).toBeDisabled();
+  await expect(page.getByTestId('grinder-option-timemore-c2')).toContainText(/not recommended|tidak disarankan/i);
+
+  await page.getByTestId('grinder-search').fill('Encore ESP');
+  await expect(page.getByTestId('grinder-option-baratza-encore-esp')).toBeEnabled();
+  await page.getByTestId('grinder-option-baratza-encore-esp').click();
+  await expect(page.getByTestId('grind-size-recommendation')).toContainText(/Espresso|shot|dial-in|fine|halus/i);
+});
+
 test('method switch changes yield output and advanced mode computes extraction', async ({ page }) => {
   await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
 

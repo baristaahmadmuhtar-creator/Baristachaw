@@ -29,12 +29,21 @@ function haystackHasAny(haystack: string, patterns: RegExp[]) {
 function adjustRange(parsed: ParsedNumericRange, bias: GrindBias, roastLevel: RoastLevel, brewMode: 'hot' | 'iced') {
   const center = (parsed.min + parsed.max) / 2;
   const span = Math.max(0.25, parsed.max - parsed.min);
-  const roastShift = roastLevel === 'light' ? -0.08 : roastLevel === 'dark' ? 0.08 : 0;
+  const roastShift = roastLevel === 'light'
+    ? -0.14
+    : roastLevel === 'medium_light'
+      ? -0.07
+      : roastLevel === 'medium_dark'
+        ? 0.07
+        : roastLevel === 'dark'
+          ? 0.14
+          : 0;
   const brewShift = brewMode === 'iced' ? -0.05 : 0;
-  const biasShift = bias === 'finer' ? -0.12 : bias === 'coarser' ? 0.12 : 0;
+  const biasShift = bias === 'finer' ? -0.18 : bias === 'coarser' ? 0.18 : 0;
   const nextCenter = center + span * (roastShift + brewShift + biasShift);
   const halfSpan = Math.max(parsed.precision > 0 ? 0.12 : 1.5, span * 0.2);
   return {
+    center: roundTo(nextCenter, parsed.precision),
     min: roundTo(nextCenter - halfSpan, parsed.precision),
     max: roundTo(nextCenter + halfSpan, parsed.precision),
   };
@@ -219,35 +228,26 @@ export function buildGrindRecommendation(
   if (setting?.parsedRange) {
     const adjusted = adjustRange(setting.parsedRange, grindBias, roastLevel, brewMode);
     if (isFeimaStyleGrinder(grinder)) {
-      if (!isFeimaCuratedConeSetting(setting)) {
-        const primary = formatFeimaSetting((adjusted.min + adjusted.max) / 2);
-        const lower = formatFeimaSetting(adjusted.min);
-        const upper = formatFeimaSetting(adjusted.max);
-        const recommendation = formatGrindRecommendation({
-          primary,
-          lowerCorrection: lower,
-          upperCorrection: upper,
-        });
-        return {
-          grindBandLabel: setting.rangeLabel,
-          grindRecommendation: `${recommendation.headline}. Correction range: ${lower} to ${upper}. ${recommendation.correction}`,
-          confidenceNotes: [setting.note],
-          verificationLevel: setting.verificationLevel,
-        };
-      }
+      const primary = formatFeimaSetting(adjusted.center);
+      const lower = formatFeimaSetting(adjusted.min);
+      const upper = formatFeimaSetting(adjusted.max);
       const recommendation = formatGrindRecommendation({
-        primary: 'setting 4-5',
-        lowerCorrection: 'setting 4-4',
-        upperCorrection: 'setting 5-0',
+        primary,
+        lowerCorrection: lower,
+        upperCorrection: upper,
       });
       return {
         grindBandLabel: setting.rangeLabel,
-        grindRecommendation: `${recommendation.headline}. Correction range: setting 4-4 to setting 5-0. ${recommendation.correction}`,
-        confidenceNotes: [setting.note],
+        grindRecommendation: `${recommendation.headline}. Correction range: ${lower} to ${upper}. ${recommendation.correction}`,
+        confidenceNotes: [
+          isFeimaCuratedConeSetting(setting)
+            ? `${setting.note} Roast and target profile shift the starting point inside the curated 600N platform window.`
+            : setting.note,
+        ],
         verificationLevel: setting.verificationLevel,
       };
     }
-    const primary = formatParsedSetting((adjusted.min + adjusted.max) / 2, setting.parsedRange);
+    const primary = formatParsedSetting(adjusted.center, setting.parsedRange);
     const recommendation = formatGrindRecommendation({
       primary,
       lowerCorrection: formatParsedSetting(adjusted.min, setting.parsedRange),

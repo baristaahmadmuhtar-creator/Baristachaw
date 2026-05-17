@@ -1,33 +1,31 @@
 # AI Brew Grinder Matrix
 
-AI Brew grinder guidance is a calibration aid, not a replacement for burr alignment, zero point, dose, roast age, and real dial-in.
+AI Brew and Kalkulator Grind Size share the grinder catalog and recommendation path:
 
-## Confidence Policy
+- Catalog source: `apps/web/public/data/ai-brew/grinders.v2026-03.json`
+- Method settings: `apps/web/public/data/ai-brew/grinder-settings.v2026-06.json`
+- Runtime loader: `apps/web/src/features/ai-brew/catalog.ts`
+- Recommendation engine: `apps/web/src/features/ai-brew/grindPlanner.ts`
+- Calculator adapter: `apps/web/src/features/barista-tools/grindSizeAdvisor.ts`
 
-| Grinder source | Confidence behavior | User-facing behavior |
-|---|---|---|
-| Exact chart with strong source | High or official where catalog evidence supports it | Show setting/range and keep normal confidence if water and bean data are also strong. |
-| Curated chart | Medium/high depending evidence | Show setting/range plus calibration note. |
-| Method-aware fallback | Medium or lower | Show method band and calibration required. |
-| Unknown grinder | Lower confidence | Avoid exact setting claims; guide user to adjust one variable after tasting. |
-| Espresso grinder without zero point | Lower confidence | Treat as starting point only; ask for real shot time/yield feedback. |
+## Current Software Coverage
 
-## Covered Examples
+The grinder catalog coverage gate checks:
 
-| Grinder group | Current handling |
-|---|---|
-| 1Zpresso K-Ultra | Catalog reference when chart exists; broad method matrix covered. |
-| Comandante C40 | Catalog reference/fallback guarded by method. |
-| Timemore C2/C3 | Curated/family ambiguity stays auditable in catalog audit. |
-| Kingrinder K6 | Method-aware references and fallback bands tested. |
-| DF64 / espresso-capable electric | Espresso guidance remains guarded by dial-in reality. |
-| Feima 600N / Murane B600BN / Latina 600N / Flying Eagle 600N / Yang-Chia / Fomac / Kova | One platform alias row in picker, exact platform display, and no duplicate unrelated Latina grinder rows. |
-| Unknown manual/electric | Fallback only; confidence stays honest. |
+- visible grinders
+- coarse/medium/fine bands
+- parsed numeric ranges
+- method-specific settings
+- all exposed methods
+- five roast levels
+- all target profiles
+- espresso compatibility
+- fallback confidence honesty
 
-## Gate Evidence
+Artifacts are written to:
 
-- `npm run catalog:audit` checks duplicate/ambiguous grinder families.
-- `npm run test:ai-brew:deep` runs the grinder size matrix across visible drippers, all catalog grinders, roast levels, and supported brew modes.
-- Latest local artifact path pattern: `artifacts/ai-brew-audit/grind-size-matrix/<sha>/grind-size-matrix.md`.
+```text
+artifacts/grinder-catalog-audit/<sha>/
+```
 
-Known limit: every grinder still needs real calibration because burr wear, zero point, alignment, RPM, and retention change cup result.
+Software validation is not physical brew validation. Physical grinder logs are still required before claiming real-world exactness.

@@ -3831,10 +3831,12 @@ test('AI Brew coach guard preserves deterministic grind, water, brewer, and reci
     plan,
     markdown: '### Kenapa cocok\nSuhu 99C, total water 300 ml, grind setting 9 untuk Geisha. Air ideal. Profil exact.',
   });
+  const expectedGrind = plan.grindRecommendation.match(/Starting grind:\s*([^.]*)\./i)?.[1]?.trim() || 'setting 4';
+  const expectedGrindPattern = new RegExp(expectedGrind.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+'), 'i');
   assert.equal(explain.risk, 'high');
   assert.match(explain.markdown, new RegExp(`${plan.waterTempC}`));
   assert.match(explain.markdown, new RegExp(`${plan.totalWaterMl}`));
-  assert.match(explain.markdown, /setting 4\.5|setting 4-5/i);
+  assert.match(explain.markdown, expectedGrindPattern);
   assert.doesNotMatch(explain.markdown, /geisha|gesha/i);
   assert.doesNotMatch(explain.markdown, /Air ideal|Profil exact/i);
   assert.match(explain.markdown, /Kalibrasi dengan drawdown dan rasa/i);
@@ -3845,7 +3847,7 @@ test('AI Brew coach guard preserves deterministic grind, water, brewer, and reci
     markdown: 'Jika asam: ganti ke setting 9 dan ubah suhu 99C. Ubah rasio ke 1:17 dan naikkan dosis. Jika pahit: tambah bypass 50 ml.',
   });
   assert.match(troubleshoot.markdown, /Mulai dari perubahan terkecil dulu/i);
-  assert.match(troubleshoot.markdown, /setting 4\.5|setting 4-5/i);
+  assert.match(troubleshoot.markdown, expectedGrindPattern);
   assert.match(troubleshoot.markdown, /Jangan ubah rasio\/dosis|grind kecil.*pouring\/agitation.*suhu kecil/is);
   assert.equal(troubleshoot.risk, 'high');
 

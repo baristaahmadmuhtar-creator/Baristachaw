@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Gauge, Search, SlidersHorizontal } from 'lucide-react';
 import { loadAiBrewCatalog } from '../ai-brew/catalog.ts';
+import { localizeAiBrewTargetProfile } from '../ai-brew/localization.ts';
 import type { AiBrewCatalog } from '../ai-brew/types.ts';
 import { useGlobalState } from '../../context/GlobalState';
 import { BREW_METHOD_PROFILES } from './brewProfiles.ts';
@@ -9,6 +10,7 @@ import {
   buildGrindSizeAdvice,
   compactRangeLabel,
   formatMethodGrindBand,
+  getGrindSizeCompatibility,
   getRatioMethodFamily,
   sortGrindersForMethod,
 } from './grindSizeAdvisor.ts';
@@ -34,6 +36,7 @@ interface GrindSizeContextState {
   pressureBar: string;
   beanAgeDays: string;
   zeroPointKnown: boolean;
+  targetProfileId: string;
 }
 
 function normalizeSearch(value: string) {
@@ -62,9 +65,10 @@ function readStoredContext(): GrindSizeContextState {
       pressureBar: String(parsed.pressureBar || '9'),
       beanAgeDays: String(parsed.beanAgeDays || '10'),
       zeroPointKnown: Boolean(parsed.zeroPointKnown),
+      targetProfileId: String(parsed.targetProfileId || 'balance_clean'),
     };
   } catch {
-    return { shotTimeSec: '28', pressureBar: '9', beanAgeDays: '10', zeroPointKnown: false };
+    return { shotTimeSec: '28', pressureBar: '9', beanAgeDays: '10', zeroPointKnown: false, targetProfileId: 'balance_clean' };
   }
 }
 
@@ -145,6 +149,20 @@ function getCorrectionTip(advice: GrindSizeAdvice, t: ReturnType<typeof useGloba
   }
 }
 
+function getCompatibilityLabel(advice: GrindSizeAdvice, t: ReturnType<typeof useGlobalState>['t']) {
+  switch (advice.compatibilityState) {
+    case 'compatible':
+      return t.toolsGrindSizeCompatibilityCompatible;
+    case 'caution':
+      return t.toolsGrindSizeCompatibilityCaution;
+    case 'not_recommended':
+      return t.toolsGrindSizeCompatibilityNotRecommended;
+    case 'unsupported':
+    default:
+      return t.toolsGrindSizeCompatibilityUnsupported;
+  }
+}
+
 function getEspressoActionLabel(action: EspressoDialInAction, t: ReturnType<typeof useGlobalState>['t']) {
   switch (action) {
     case 'calibrate_zero':
@@ -206,12 +224,20 @@ export function GrindSizeCalculator({
   }, [catalog, methodId]);
 
   useEffect(() => {
+    if (!catalog) return;
     if (sortedGrinders.length === 0) return;
     setSelectedGrinderId((current) => {
-      if (current && sortedGrinders.some((grinder) => grinder.id === current)) return current;
-      return sortedGrinders[0].id;
+      if (
+        current
+        && sortedGrinders.some((grinder) =>
+          grinder.id === current
+          && getGrindSizeCompatibility(catalog, methodId, grinder).selectable
+        )
+      ) return current;
+      return sortedGrinders.find((grinder) => getGrindSizeCompatibility(catalog, methodId, grinder).selectable)?.id
+        || sortedGrinders[0].id;
     });
-  }, [sortedGrinders]);
+  }, [catalog, methodId, sortedGrinders]);
 
   useEffect(() => {
     if (!selectedGrinderId) return;
@@ -237,6 +263,7 @@ export function GrindSizeCalculator({
       methodId,
       grinderId: selectedGrinderId,
       roastLevel,
+      targetProfileId: context.targetProfileId,
       espressoContext: {
         doseG,
         yieldG,
@@ -246,18 +273,29 @@ export function GrindSizeCalculator({
         zeroPointKnown: context.zeroPointKnown,
       },
     });
-  }, [catalog, context.beanAgeDays, context.pressureBar, context.shotTimeSec, context.zeroPointKnown, doseG, methodId, roastLevel, selectedGrinderId, yieldG]);
+  }, [catalog, context.beanAgeDays, context.pressureBar, context.shotTimeSec, context.targetProfileId, context.zeroPointKnown, doseG, methodId, roastLevel, selectedGrinderId, yieldG]);
 
   const filteredGrinders = useMemo(() => {
     const needle = normalizeSearch(query);
-    if (!needle) return sortedGrinders.slice(0, 12);
+    if (!needle) return sortedGrinders;
     return sortedGrinders
       .filter((grinder) => normalizeSearch(`${grinder.name} ${grinder.brand || ''} ${grinder.typeLabel} ${grinder.searchText}`).includes(needle))
-      .slice(0, 16);
+      .slice(0, 32);
   }, [query, sortedGrinders]);
+
+  const grinderOptions = useMemo(() => {
+    if (!catalog) return [];
+    return filteredGrinders.map((grinder) => ({
+      grinder,
+      compatibility: getGrindSizeCompatibility(catalog, methodId, grinder),
+    }));
+  }, [catalog, filteredGrinders, methodId]);
+
+  const targetProfileOptions = useMemo(() => catalog?.targetProfiles || [], [catalog]);
 
   const family = getRatioMethodFamily(methodId);
   const confidenceLabel = advice ? getConfidenceLabel(advice, t) : '';
+  const compatibilityLabel = advice ? getCompatibilityLabel(advice, t) : '';
   const capabilityLabel = advice ? getCapabilityLabel(advice, t) : '';
   const sourceLabel = advice ? getSourceLabel(advice, t) : '';
   const warningText = advice ? getWarningText(advice, t) : '';
@@ -310,6 +348,32 @@ export function GrindSizeCalculator({
             </button>
           ))}
         </div>
+
+        {targetProfileOptions.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{t.toolsGrindSizeTargetProfile}</p>
+            <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1" aria-label={t.toolsGrindSizeTargetProfile}>
+              {targetProfileOptions.map((profile) => {
+                const label = localizeAiBrewTargetProfile(profile.id, profile.label, language);
+                return (
+                  <button
+                    key={profile.id}
+                    type="button"
+                    onClick={() => setContext((current) => ({ ...current, targetProfileId: profile.id }))}
+                    data-testid={`grind-target-${profile.id}`}
+                    className={`whitespace-nowrap px-3 py-2 rounded-xl text-xs font-medium transition-all ${context.targetProfileId === profile.id
+                      ? 'bg-blue-600 text-white shadow-[0_4px_14px_rgba(37,99,235,0.3)]'
+                      : 'bg-surface-alpha text-secondary hover:text-primary'
+                    }`}
+                    aria-pressed={context.targetProfileId === profile.id}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
@@ -336,19 +400,44 @@ export function GrindSizeCalculator({
             </div>
           ) : (
             <div className="grid gap-2 max-h-72 overflow-y-auto pr-1" data-testid="grinder-options">
-              {filteredGrinders.map((grinder) => (
+              {grinderOptions.map(({ grinder, compatibility }) => (
                 <button
                   key={grinder.id}
                   type="button"
-                  onClick={() => setSelectedGrinderId(grinder.id)}
+                  onClick={() => {
+                    if (compatibility.selectable) setSelectedGrinderId(grinder.id);
+                  }}
+                  disabled={!compatibility.selectable}
                   data-testid={`grinder-option-${grinder.id}`}
-                  className={`min-w-0 rounded-xl border px-3 py-2 text-left transition-all ${selectedGrinderId === grinder.id
+                  className={`min-w-0 rounded-xl border px-3 py-2 text-left transition-all disabled:cursor-not-allowed disabled:opacity-60 ${selectedGrinderId === grinder.id
                     ? 'border-blue-500 bg-blue-500/10 text-primary'
-                    : 'border-transparent bg-surface-alpha text-secondary hover:text-primary'
+                    : compatibility.selectable
+                      ? 'border-transparent bg-surface-alpha text-secondary hover:text-primary'
+                      : 'border-rose-500/20 bg-rose-500/8 text-tertiary'
                   }`}
+                  aria-describedby={!compatibility.selectable ? `grinder-compat-${grinder.id}` : undefined}
                 >
-                  <span className="block truncate text-sm font-semibold">{grinder.name}</span>
+                  <span className="flex min-w-0 items-center justify-between gap-2">
+                    <span className="truncate text-sm font-semibold">{grinder.name}</span>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${compatibility.state === 'compatible'
+                      ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                      : compatibility.state === 'caution'
+                        ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                        : 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                    }`}>
+                      {compatibility.state === 'compatible'
+                        ? t.toolsGrindSizeCompatibilityCompatible
+                        : compatibility.state === 'caution'
+                          ? t.toolsGrindSizeCompatibilityCaution
+                          : t.toolsGrindSizeCompatibilityNotRecommended}
+                    </span>
+                  </span>
                   <span className="block truncate text-[11px] text-tertiary">{grinder.typeLabel}</span>
+                  {!compatibility.selectable && (
+                    <span id={`grinder-compat-${grinder.id}`} className="mt-1 block text-[11px] text-rose-600 dark:text-rose-300">
+                      {compatibility.reason}
+                    </span>
+                  )}
                 </button>
               ))}
               {catalog && filteredGrinders.length === 0 && (
@@ -369,7 +458,9 @@ export function GrindSizeCalculator({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{t.toolsGrindSizeRecommendation}</p>
-                  <p className="mt-1 break-words text-3xl font-bold tracking-tight">{compactRangeLabel(advice.primarySetting)}</p>
+                  <p className="mt-1 break-words text-3xl font-bold tracking-tight" data-testid="grind-primary-setting">
+                    {compactRangeLabel(advice.primarySetting)}
+                  </p>
                   <p className="mt-1 text-sm text-secondary">{advice.grinder?.name || t.toolsGrindSizeGrinder}</p>
                 </div>
                 <span className="rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
@@ -389,16 +480,25 @@ export function GrindSizeCalculator({
                 <div className="rounded-xl bg-surface-alpha p-3">
                   <p className="text-[11px] font-semibold uppercase tracking-widest text-tertiary">{t.toolsGrindSizeCapability}</p>
                   <p className="mt-1 text-sm font-semibold">{capabilityLabel}</p>
+                  <p className="mt-1 text-xs text-secondary">{compatibilityLabel}</p>
                 </div>
               </div>
 
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid gap-2 sm:grid-cols-3">
                 <div className="rounded-xl border border-blue-500/20 bg-blue-500/8 p-3 text-sm">
                   <div className="mb-1 flex items-center gap-2 font-semibold text-blue-700 dark:text-blue-300">
                     <SlidersHorizontal size={15} />
                     {t.toolsGrindSizeDialIn}
                   </div>
                   <p className="text-secondary">{correctionTip}</p>
+                </div>
+                <div className="rounded-xl border border-blue-500/20 bg-blue-500/8 p-3 text-sm">
+                  <div className="mb-1 flex items-center gap-2 font-semibold text-blue-700 dark:text-blue-300">
+                    <Gauge size={15} />
+                    {t.toolsGrindSizeTargetProfile}
+                  </div>
+                  <p className="font-semibold">{advice.targetProfileLabel ? localizeAiBrewTargetProfile(context.targetProfileId, advice.targetProfileLabel, language) : '-'}</p>
+                  <p className="mt-1 text-xs text-secondary">{advice.targetProfileDescription}</p>
                 </div>
                 <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/8 p-3 text-sm">
                   <div className="mb-1 flex items-center gap-2 font-semibold text-emerald-700 dark:text-emerald-300">
@@ -408,6 +508,16 @@ export function GrindSizeCalculator({
                   <p className="text-secondary">{sourceLabel}</p>
                 </div>
               </div>
+
+              {advice.compatibilityState !== 'compatible' && (
+                <div className={`flex items-start gap-2 rounded-xl border px-3 py-2 text-sm ${advice.compatibilitySelectable
+                  ? 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                  : 'border-rose-500/25 bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                }`}>
+                  <AlertTriangle size={15} className="mt-0.5 shrink-0" />
+                  <span>{advice.compatibilityReason}</span>
+                </div>
+              )}
 
               {warningText && (
                 <div className="flex items-start gap-2 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">

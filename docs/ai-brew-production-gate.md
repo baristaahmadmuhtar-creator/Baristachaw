@@ -8,7 +8,7 @@ AI Brew is the guarded recipe intelligence layer for BaristaClaw. It produces a 
 |---|---|---|
 | Planner and recipe envelope | `apps/web/src/features/ai-brew/planner.ts` | `npm run test:ai-brew` |
 | Workflow guide | `apps/web/src/features/ai-brew/workflowGuide.ts` | `npm run test:ai-brew:matrix` |
-| Grinder logic | `apps/web/src/features/ai-brew/grindPlanner.ts` | `npm run test:ai-brew:deep` |
+| Grinder logic | `apps/web/src/features/ai-brew/grindPlanner.ts` | `npm run test:grinder-catalog:coverage`, `npm run test:grind-size:matrix`, `npm run test:ai-brew:deep` |
 | Water logic | `apps/web/src/features/ai-brew/waterPlanner.ts` | `npm run catalog:audit` |
 | Bean/process/variety risk | `apps/web/src/features/ai-brew/beanPlanner.ts` | `npm run test:ai-brew` |
 | Expected cup and confidence | `apps/web/src/features/ai-brew/cupProfile.ts` | `npm run test:ai-brew` |
@@ -31,6 +31,8 @@ AI Brew is the guarded recipe intelligence layer for BaristaClaw. It produces a 
 
 ```bash
 npm run catalog:audit
+npm run test:grinder-catalog:coverage
+npm run test:grind-size:matrix
 npm run test:ai-brew
 npm run test:ai-brew:switch
 npm run test:ai-brew:matrix

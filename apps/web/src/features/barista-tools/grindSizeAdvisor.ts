@@ -1,5 +1,5 @@
 import { buildRoastAdjustedTargets } from './calculations.ts';
-import type { BrewMethodId, RoastLevel } from './types.ts';
+import type { BrewMethodId, GrindBias, RoastLevel } from './types.ts';
 import { BREW_METHOD_MAP } from './brewProfiles.ts';
 import { buildGrindRecommendation, resolveGrinderSettingReference } from '../ai-brew/grindPlanner.ts';
 import type {
@@ -16,6 +16,7 @@ export interface GrindSizeAdviceInput {
   methodId: BrewMethodId;
   grinderId: string;
   roastLevel: RoastLevel;
+  targetProfileId?: string;
   espressoContext?: EspressoDialInContext;
 }
 
@@ -44,6 +45,7 @@ export type GrindSizeWarningKind =
   | 'iced_adjustment';
 
 export type GrindSizeCorrectionKind = 'finer' | 'coarser' | 'neutral';
+export type GrindSizeCompatibilityState = 'compatible' | 'caution' | 'not_recommended' | 'unsupported';
 export type EspressoDialInAction =
   | 'calibrate_zero'
   | 'grind_finer'
@@ -70,6 +72,12 @@ export interface EspressoDialInInsight {
   severity: 'ok' | 'caution';
 }
 
+export interface GrindSizeCompatibility {
+  state: GrindSizeCompatibilityState;
+  selectable: boolean;
+  reason: string;
+}
+
 export interface GrindSizeAdvice {
   methodFamily: AiBrewMethodFamily;
   brewMode: 'hot' | 'iced';
@@ -90,6 +98,13 @@ export interface GrindSizeAdvice {
   capabilityKind: GrindSizeCapabilityKind;
   warningKind?: GrindSizeWarningKind;
   correctionKind: GrindSizeCorrectionKind;
+  roastBiasKind: GrindSizeCorrectionKind;
+  targetBiasKind: GrindSizeCorrectionKind;
+  targetProfileLabel?: string;
+  targetProfileDescription?: string;
+  compatibilityState: GrindSizeCompatibilityState;
+  compatibilitySelectable: boolean;
+  compatibilityReason: string;
   espressoInsight?: EspressoDialInInsight;
 }
 
@@ -136,6 +151,42 @@ const PREFERRED_DRIPPER_HINTS: Partial<Record<AiBrewMethodFamily, RegExp[]>> = {
   batch_brew: [/batch/i],
   espresso: [/espresso/i],
 };
+
+const ESPRESSO_READY_HINTS = [
+  /\bencore\s*esp\b/i,
+  /\bj[-\s]?ultra\b/i,
+  /\bj[-\s]?max\b/i,
+  /\bjx[-\s]?pro\b/i,
+  /\bkingrinder\s*k4\b/i,
+  /\bkinu\b/i,
+  /\bm47\b/i,
+  /\bbreville\s*smart\s*grinder\s*pro\b/i,
+  /\bvaria\s*vs3\b/i,
+  /\bfellow\s*opus\b/i,
+  /\bmazzer\b/i,
+  /\bomega\b/i,
+  /\btimemore\s*c3\s*esp\b/i,
+  /\btimemore\s*c5\s*esp\b/i,
+];
+
+const ESPRESSO_NOT_RECOMMENDED_HINTS = [
+  /\btimemore\s*c2\b/i,
+  /\btimemore\s*c3\b(?!\s*esp)/i,
+  /\bfellow\s*ode\b/i,
+  /\bfeima\b/i,
+  /\b600n\b/i,
+  /\blatina\b/i,
+  /\bflying\s*eagle\b/i,
+  /\bmurane\b/i,
+  /\bfomac\b/i,
+  /\bkova\b/i,
+  /\bhario\b/i,
+  /\bporlex\b/i,
+  /\bq\s*air\b/i,
+  /\bq2\b/i,
+  /\bzp6\b/i,
+  /\bbrew[-\s]?focused\b/i,
+];
 
 export function getRatioMethodFamily(methodId: BrewMethodId): AiBrewMethodFamily {
   return METHOD_FAMILY_BY_RATIO_METHOD[methodId] || 'v60';
@@ -189,6 +240,121 @@ function resolveDeviceProfile(
     profile.methodFamily === methodFamily
     && profile.brewMode === brewMode
   );
+}
+
+function grinderHaystack(grinder: EquipmentCatalogEntry) {
+  return [
+    grinder.id,
+    grinder.name,
+    grinder.brand,
+    grinder.typeLabel,
+    grinder.description,
+    grinder.searchText,
+    grinder.grindBands?.fine,
+    grinder.grindBands?.medium,
+    grinder.grindBands?.coarse,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, ' ');
+}
+
+function hasAnyPattern(value: string, patterns: RegExp[]) {
+  return patterns.some((pattern) => pattern.test(value));
+}
+
+function toCorrectionKind(value?: GrindBias): GrindSizeCorrectionKind {
+  if (value === 'finer') return 'finer';
+  if (value === 'coarser') return 'coarser';
+  return 'neutral';
+}
+
+function combineGrindBias(roastBias: GrindBias, targetBias: GrindBias | undefined, methodFamily: AiBrewMethodFamily): GrindBias {
+  if (methodFamily === 'cold_brew') {
+    return roastBias === 'coarser' || targetBias === 'coarser' ? 'coarser' : roastBias;
+  }
+  if (!targetBias || targetBias === 'same') return roastBias;
+  if (roastBias === 'same') return targetBias;
+  if (roastBias === targetBias) return roastBias;
+  return 'same';
+}
+
+export function getGrindSizeCompatibility(
+  catalog: AiBrewCatalog,
+  methodId: BrewMethodId,
+  grinder?: EquipmentCatalogEntry,
+): GrindSizeCompatibility {
+  const methodFamily = getRatioMethodFamily(methodId);
+  if (!grinder) {
+    return {
+      state: 'unsupported',
+      selectable: false,
+      reason: 'Pilih grinder terlebih dahulu.',
+    };
+  }
+
+  const haystack = grinderHaystack(grinder);
+  const hasFine = Boolean(grinder.grindBands?.fine?.trim());
+  const hasMedium = Boolean(grinder.grindBands?.medium?.trim());
+  const hasCoarse = Boolean(grinder.grindBands?.coarse?.trim());
+  const grinderSettings = Array.isArray(catalog.grinderSettings) ? catalog.grinderSettings : [];
+  const deviceProfiles = Array.isArray(catalog.deviceProfiles) ? catalog.deviceProfiles : [];
+  const exactSettingExists = grinderSettings.some((setting) =>
+    setting.grinderId === grinder.id
+    && !setting.calibrationRequired
+    && setting.profileIds.some((profileId) => {
+      const profile = deviceProfiles.find((entry) => entry.id === profileId);
+      return profile?.methodFamily === methodFamily;
+    })
+  );
+
+  if (methodFamily === 'espresso') {
+    if (!hasFine || hasAnyPattern(haystack, ESPRESSO_NOT_RECOMMENDED_HINTS)) {
+      return {
+        state: 'not_recommended',
+        selectable: false,
+        reason: 'Tidak disarankan untuk espresso: rentang fine/espresso grinder ini belum terverifikasi aman.',
+      };
+    }
+    if (hasAnyPattern(haystack, ESPRESSO_READY_HINTS) || exactSettingExists) {
+      return {
+        state: 'compatible',
+        selectable: true,
+        reason: 'Cocok sebagai starting point espresso, tetap wajib dial-in shot nyata.',
+      };
+    }
+    return {
+      state: 'caution',
+      selectable: true,
+      reason: 'Hati-hati untuk espresso: fine range ada, tetapi titik nol dan performa shot wajib dikalibrasi.',
+    };
+  }
+
+  if ((methodFamily === 'cold_brew' || methodFamily === 'french_press') && !hasCoarse) {
+    return {
+      state: 'caution',
+      selectable: true,
+      reason: 'Metode kasar butuh kalibrasi karena katalog grinder ini belum punya rentang coarse yang jelas.',
+    };
+  }
+
+  if ((methodFamily === 'v60' || methodFamily === 'chemex' || methodFamily === 'kalita_wave') && !hasMedium && !hasFine) {
+    return {
+      state: 'caution',
+      selectable: true,
+      reason: 'Metode filter butuh kalibrasi karena rentang medium/fine belum lengkap.',
+    };
+  }
+
+  return {
+    state: exactSettingExists ? 'compatible' : 'caution',
+    selectable: true,
+    reason: exactSettingExists
+      ? 'Cocok dengan referensi metode di katalog.'
+      : 'Bisa dipakai sebagai baseline, tetapi tetap butuh koreksi dari rasa.',
+  };
 }
 
 function parsePrimarySetting(value: string) {
@@ -336,10 +502,16 @@ export function buildGrindSizeAdvice(input: GrindSizeAdviceInput): GrindSizeAdvi
   const grinder = input.catalog.grinders.find((entry) => entry.id === input.grinderId)
     || input.catalog.grinders.find((entry) => !entry.hidden && !entry.deprecated);
   const method = BREW_METHOD_MAP[input.methodId];
-  const grindBias = buildRoastAdjustedTargets(method, input.roastLevel).suggestedGrindBias;
+  const roastBias = buildRoastAdjustedTargets(method, input.roastLevel).suggestedGrindBias;
+  const targetProfiles = Array.isArray(input.catalog.targetProfiles) ? input.catalog.targetProfiles : [];
+  const targetProfile = targetProfiles.find((entry) => entry.id === input.targetProfileId)
+    || targetProfiles.find((entry) => entry.id === 'balance_clean')
+    || targetProfiles[0];
+  const grindBias = combineGrindBias(roastBias, targetProfile?.grindBias, methodFamily);
   const setting = grinder && deviceProfile
     ? resolveGrinderSettingReference(input.catalog, grinder, deviceProfile, brewMode)
     : undefined;
+  const compatibility = getGrindSizeCompatibility(input.catalog, input.methodId, grinder);
   const recommendation = grinder
     ? buildGrindRecommendation(grinder, setting, grindBias, input.roastLevel, brewMode)
     : undefined;
@@ -349,11 +521,7 @@ export function buildGrindSizeAdvice(input: GrindSizeAdviceInput): GrindSizeAdvi
   const sourceKind: GrindSizeConfidenceKind | 'baseline_method' = setting?.calibrationRequired
     ? 'baseline_method'
     : verificationKind(setting?.verificationLevel);
-  const correctionKind: GrindSizeCorrectionKind = grindBias === 'finer'
-    ? 'finer'
-    : grindBias === 'coarser'
-      ? 'coarser'
-      : 'neutral';
+  const correctionKind = toCorrectionKind(grindBias);
 
   return {
     methodFamily,
@@ -383,6 +551,13 @@ export function buildGrindSizeAdvice(input: GrindSizeAdviceInput): GrindSizeAdvi
     capabilityKind: capabilityKind({ methodFamily, setting, grinder }),
     warningKind: warningKind({ methodFamily, setting, deviceProfile }),
     correctionKind,
+    roastBiasKind: toCorrectionKind(roastBias),
+    targetBiasKind: toCorrectionKind(targetProfile?.grindBias),
+    targetProfileLabel: targetProfile?.label,
+    targetProfileDescription: targetProfile?.description,
+    compatibilityState: compatibility.state,
+    compatibilitySelectable: compatibility.selectable,
+    compatibilityReason: compatibility.reason,
     espressoInsight: methodFamily === 'espresso'
       ? deriveEspressoDialInInsight(input.espressoContext)
       : undefined,
@@ -397,6 +572,10 @@ export function sortGrindersForMethod(catalog: AiBrewCatalog, methodId: BrewMeth
     .sort((a, b) => {
       const score = (grinder: EquipmentCatalogEntry) => {
         let value = 0;
+        const compatibility = getGrindSizeCompatibility(catalog, methodId, grinder);
+        if (compatibility.selectable) value += 100;
+        if (compatibility.state === 'compatible') value += 30;
+        if (compatibility.state === 'caution') value += 10;
         if (grinder.grindBands?.fine) value += family === 'espresso' || family === 'moka_pot' ? 4 : 1;
         if (grinder.grindBands?.medium) value += family === 'espresso' ? 1 : 3;
         if (grinder.grindBands?.coarse) value += family === 'cold_brew' || family === 'french_press' || family === 'chemex' ? 4 : 1;

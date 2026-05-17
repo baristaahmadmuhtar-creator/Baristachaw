@@ -113,6 +113,10 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
         return 'Cold Steep';
       case 'filter atau tuang pisah':
         return 'Filter or Decant';
+      case 'tekan pelan':
+        return 'Gentle Press';
+      case 'dilusi setelah filter':
+        return 'Dilute After Filtering';
       case 'isi air':
         return 'Charge Water';
       case 'aduk':

@@ -2381,7 +2381,80 @@ function getAiBrewStepKind(step: AiBrewDisplayStep) {
 
 function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: string) {
   const id = isIndonesianAiBrewLanguage(language);
-  if (!id) return chip.label;
+  if (!id) {
+    switch (chip.key) {
+      case 'flow':
+        return 'Flow';
+      case 'path':
+        return 'Path';
+      case 'height':
+        return 'Height';
+      case 'agitation':
+        return 'Agitation';
+      case 'charge':
+        return 'Charge';
+      case 'stir':
+        return 'Stir';
+      case 'swirl':
+        return 'Swirl';
+      case 'steep':
+        return 'Steep';
+      case 'press':
+        return 'Press';
+      case 'stop':
+        return 'Stop';
+      case 'boiler':
+        return 'Boiler';
+      case 'basket':
+        return 'Basket';
+      case 'heat':
+        return 'Heat';
+      case 'flow_cue':
+        return 'Flow cue';
+      case 'yield':
+        return 'Yield';
+      case 'shot_time':
+        return 'Shot time';
+      case 'puck_prep':
+        return 'Puck prep';
+      case 'settle':
+        return 'Settle';
+      case 'decant':
+        return 'Decant';
+      case 'release':
+        return 'Release';
+      case 'valve':
+        return 'Valve';
+      case 'chamber':
+        return 'Chamber';
+      case 'chamber_load':
+        return 'Chamber load';
+      case 'programme':
+        return 'Program';
+      case 'drawdown':
+        return 'Drawdown';
+      case 'draw_up':
+        return 'Draw-up';
+      case 'contact':
+        return 'Contact';
+      case 'dose_per_liter':
+        return 'Dose/L';
+      case 'basket_prep':
+        return 'Prep';
+      case 'spray':
+        return 'Spray';
+      case 'mix_batch':
+        return 'Mix batch';
+      case 'saturation':
+        return 'Saturation';
+      case 'filter':
+        return 'Filter';
+      case 'dilution':
+        return 'Dilution';
+      default:
+        return chip.label;
+    }
+  }
   switch (chip.key) {
     case 'flow':
       return 'Aliran';
@@ -2458,7 +2531,25 @@ function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: s
 
 function localizeWorkflowChipValue(value: string, language: string) {
   if (!isIndonesianAiBrewLanguage(language)) {
-    return value.replace(/_/g, '-');
+    return value
+      .replace(/buka katup/g, 'release')
+      .replace(/air turun/g, 'drawdown')
+      .replace(/muatan ruang/g, 'chamber load')
+      .replace(/semua bubuk/g, 'all grounds')
+      .replace(/tengah-ke-tengah-luar/g, 'center-to-mid')
+      .replace(/tengah-ke-luar/g, 'center-to-mid')
+      .replace(/tengah/g, 'center')
+      .replace(/rendah/g, 'low')
+      .replace(/sedang/g, 'medium')
+      .replace(/tinggi/g, 'high')
+      .replace(/tutup/g, 'closed')
+      .replace(/buka/g, 'open')
+      .replace(/kosong/g, 'empty')
+      .replace(/selesai/g, 'finished')
+      .replace(/perkolasi/g, 'percolation')
+      .replace(/aduk/g, 'stir')
+      .replace(/sajikan/g, 'serve')
+      .replace(/_/g, '-');
   }
   return value
     .replace(/center_to_mid/g, 'tengah-ke-mid')
@@ -2582,71 +2673,177 @@ function formatSwitchPresetWhy(preset: SwitchPublicPreset | undefined, language:
   return preset.why || fallback;
 }
 
+function translateWorkflowGuideTextToEnglish(value: string) {
+  let text = normalizeAiBrewInstructionText(value);
+  if (!text) return text;
+
+  const exactMap: Array<[RegExp, string]> = [
+    [/^Bilas filter tebal, panaskan kaca, dan pastikan jalur udara terbuka\.$/i, 'Rinse the thick paper filter, preheat the glass, and keep the air path open.'],
+    [/^Bilas dan panaskan alat, ratakan bed, lalu siapkan pulse rendah\.$/i, 'Rinse and preheat the brewer, level the bed, then prepare gentle pulses.'],
+    [/^Bilas filter, panaskan brewer\/server, buang air bilas, lalu tara timbangan\.$/i, 'Rinse the filter, preheat the brewer/server, discard rinse water, then tare the scale.'],
+    [/^Bilas\/panaskan alat, tara timbangan, lalu siapkan metode sebelum seduh\.$/i, 'Rinse and preheat the brewer, tare the scale, then set up the method before brewing.'],
+    [/^Setup \| Bilas\/panaskan alat, tara timbangan, lalu siapkan metode sebelum seduh\.$/i, 'Setup | Rinse and preheat the brewer, tare the scale, then set up the method before brewing.'],
+  ];
+  for (const [pattern, replacement] of exactMap) {
+    if (pattern.test(text)) return replacement;
+  }
+
+  text = text
+    .replace(/\bBilas\/panaskan alat\b/gi, 'Rinse and preheat the brewer')
+    .replace(/\bBilas filter tebal\b/gi, 'Rinse the thick paper filter')
+    .replace(/\bBilas filter\b/gi, 'Rinse the filter')
+    .replace(/\bpanaskan kaca\b/gi, 'preheat the glass')
+    .replace(/\bpanaskan brewer\/server\b/gi, 'preheat the brewer/server')
+    .replace(/\bpanaskan alat\b/gi, 'preheat the brewer')
+    .replace(/\bjalur udara terbuka\b/gi, 'air path open')
+    .replace(/\bbuang air bilas\b/gi, 'discard rinse water')
+    .replace(/\btara timbangan\b/gi, 'tare the scale')
+    .replace(/\bsiapkan metode sebelum seduh\b/gi, 'set up the method before brewing')
+    .replace(/\bratakan bed\b/gi, 'level the bed')
+    .replace(/\bsiapkan pulse rendah\b/gi, 'prepare gentle pulses')
+    .replace(/\bair panas\b/gi, 'hot water')
+    .replace(/\bair turun\b/gi, 'drawdown')
+    .replace(/\bBuka katup\b/gi, 'Open the valve')
+    .replace(/\bbuka katup\b/gi, 'open the valve')
+    .replace(/\bBiarkan\b/gi, 'Let')
+    .replace(/\bbiarkan\b/gi, 'let')
+    .replace(/\bTuang\b/gi, 'Pour')
+    .replace(/\btuang\b/gi, 'pour')
+    .replace(/\bTarget\b/gi, 'Target')
+    .replace(/\btarget\b/gi, 'target')
+    .replace(/\bRendam\b/gi, 'Steep')
+    .replace(/\brendam\b/gi, 'steep')
+    .replace(/\bTekan\b/gi, 'Press')
+    .replace(/\btekan\b/gi, 'press')
+    .replace(/\bAduk\b/gi, 'Stir')
+    .replace(/\baduk\b/gi, 'stir')
+    .replace(/\bPanaskan\b/gi, 'Heat')
+    .replace(/\bpanaskan\b/gi, 'heat')
+    .replace(/\bPindahkan\b/gi, 'Decant')
+    .replace(/\bpindahkan\b/gi, 'decant')
+    .replace(/\bSaring\b/gi, 'Filter')
+    .replace(/\bsaring\b/gi, 'filter')
+    .replace(/\bDilusi\b/gi, 'Dilute')
+    .replace(/\bdilusi\b/gi, 'dilute')
+    .replace(/\bSajikan\b/gi, 'Serve')
+    .replace(/\bsajikan\b/gi, 'serve')
+    .replace(/\bselesai\b/gi, 'finish')
+    .replace(/\bbersih\b/gi, 'cleanly')
+    .replace(/\bjangan\b/gi, 'do not')
+    .replace(/\btambah\b/gi, 'add')
+    .replace(/\bdi server\b/gi, 'in the server')
+    .replace(/\bdi atas es\b/gi, 'over ice')
+    .replace(/\bsebelum hiss\b/gi, 'before the hiss')
+    .replace(/\bsebelum sputter\b/gi, 'before sputtering')
+    .replace(/\s+([.,;:])/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return text;
+}
+
 function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string, plan?: BrewPlan) {
-  if (!isIndonesianAiBrewLanguage(language)) return step.primaryText;
+  const id = isIndonesianAiBrewLanguage(language);
   const target = formatRoundedMl(step.targetVolumeMl);
   const pour = formatRoundedMl(step.pourVolumeMl);
   switch (step.actionType) {
     case 'rinse_preheat':
     case 'setup':
-      return plan?.brewMode === 'iced'
-        ? `Bilas/panaskan alat, tara timbangan, lalu siapkan es ${formatRoundedGrams(plan.iceMl)} di server.`
-        : 'Bilas/panaskan alat, tara timbangan, lalu siapkan metode sebelum seduh.';
+      if (id) {
+        return plan?.brewMode === 'iced'
+          ? `Bilas/panaskan alat, tara timbangan, lalu siapkan es ${formatRoundedGrams(plan.iceMl)} di server.`
+          : 'Bilas/panaskan alat, tara timbangan, lalu siapkan metode sebelum seduh.';
+      }
+      {
+        const setupAction = plan && aiBrewUsesPaperFilter(plan)
+          ? 'Rinse the filter and preheat the brewer/server'
+          : 'Rinse and preheat the brewer';
+        return plan?.brewMode === 'iced'
+          ? `${setupAction}, tare the scale, then place ${formatRoundedGrams(plan.iceMl)} ice in the server.`
+          : `${setupAction}, tare the scale, then set up the method before brewing.`;
+      }
     case 'dose':
-      if (plan?.methodFamily === 'espresso') return `Dosis ${formatRoundedGrams(plan.doseG)}, distribusi rata, lalu tamp level.`;
-      return `Dosis ${plan ? formatRoundedGrams(plan.doseG) : ''} dan siapkan bed sesuai metode.`;
+      if (id) {
+        if (plan?.methodFamily === 'espresso') return `Dosis ${formatRoundedGrams(plan.doseG)}, distribusi rata, lalu tamp level.`;
+        return `Dosis ${plan ? formatRoundedGrams(plan.doseG) : ''} dan siapkan bed sesuai metode.`;
+      }
+      if (plan?.methodFamily === 'espresso') return `Dose ${formatRoundedGrams(plan.doseG)}, distribute evenly, then tamp level.`;
+      return `Dose ${plan ? formatRoundedGrams(plan.doseG) : ''} and prepare the bed for this method.`;
     case 'puck_prep':
-      return 'Distribusi rata, tamp level, dan bersihkan rim basket sebelum shot.';
+      return id ? 'Distribusi rata, tamp level, dan bersihkan rim basket sebelum shot.' : 'Distribute evenly, tamp level, and clean the basket rim before the shot.';
     case 'bloom':
-      return plan?.brewMode === 'iced'
-        ? `Bloom ${pour}; target ${target} air panas.`
-        : `Bloom ${pour}; berhenti di target ${target}.`;
+      return id
+        ? (plan?.brewMode === 'iced'
+          ? `Bloom ${pour}; target ${target} air panas.`
+          : `Bloom ${pour}; berhenti di target ${target}.`)
+        : (plan?.brewMode === 'iced'
+          ? `Bloom with ${pour}; target ${target} hot water.`
+          : `Bloom with ${pour}; stop at ${target}.`);
     case 'pour':
-      return plan?.brewMode === 'iced'
-        ? `Tuang ${pour}; target ${target} air panas.`
-        : `Tuang ${pour}; berhenti di target ${target}.`;
+      return id
+        ? (plan?.brewMode === 'iced'
+          ? `Tuang ${pour}; target ${target} air panas.`
+          : `Tuang ${pour}; berhenti di target ${target}.`)
+        : (plan?.brewMode === 'iced'
+          ? `Pour ${pour}; target ${target} hot water.`
+          : `Pour ${pour}; stop at ${target}.`);
     case 'charge':
-      return `Tuang ${pour || target} dan basahi bed merata.`;
+      return id ? `Tuang ${pour || target} dan basahi bed merata.` : `Add ${pour || target} and wet the bed evenly.`;
     case 'stir':
-      return 'Aduk 3-5x atau putar ringan, lalu hentikan agitasi.';
+      return id ? 'Aduk 3-5x atau putar ringan, lalu hentikan agitasi.' : 'Stir 3-5 times or swirl lightly, then stop agitation.';
     case 'swirl':
-      return 'Putar ringan sekali saja untuk meratakan slurry.';
+      return id ? 'Putar ringan sekali saja untuk meratakan slurry.' : 'Use one light swirl only to even out the slurry.';
     case 'steep':
-      return step.endSeconds ? `Rendam sampai ${formatGuideTime(step.endSeconds)}; jangan tambah air.` : 'Rendam stabil; jangan tambah air.';
+      return id
+        ? (step.endSeconds ? `Rendam sampai ${formatGuideTime(step.endSeconds)}; jangan tambah air.` : 'Rendam stabil; jangan tambah air.')
+        : (step.endSeconds ? `Steep until ${formatGuideTime(step.endSeconds)}; do not add water.` : 'Steep steadily; do not add water.');
     case 'release':
-      return 'Buka katup dengan bersih dan jangan aduk saat air turun.';
+      return id ? 'Buka katup dengan bersih dan jangan aduk saat air turun.' : 'Open the release cleanly and do not stir during drawdown.';
     case 'drawdown':
-      return plan?.brewMode === 'iced'
-        ? `Biarkan air turun selesai di target ${formatRoundedMl(plan.hotWaterMl)} air panas; jangan tambah bypass.`
-        : 'Biarkan air turun selesai natural tanpa tuangan tambahan.';
+      return id
+        ? (plan?.brewMode === 'iced'
+          ? `Biarkan air turun selesai di target ${formatRoundedMl(plan.hotWaterMl)} air panas; jangan tambah bypass.`
+          : 'Biarkan air turun selesai natural tanpa tuangan tambahan.')
+        : (plan?.brewMode === 'iced'
+          ? `Let drawdown finish at ${formatRoundedMl(plan.hotWaterMl)} hot water; do not add bypass.`
+          : 'Let drawdown finish naturally without another pour.');
     case 'press':
-      return 'Tekan stabil 20-30 detik; berhenti sebelum hiss terasa kering.';
+      return id ? 'Tekan stabil 20-30 detik; berhenti sebelum hiss terasa kering.' : 'Press steadily for 20-30 seconds; stop before the hiss feels dry.';
     case 'heat':
-      return 'Pakai panas stabil dan moderat sesuai metode.';
+      return id ? 'Pakai panas stabil dan moderat sesuai metode.' : 'Use steady, moderate heat for this method.';
     case 'monitor_flow':
-      return 'Pantau aliran; jaga tetap stabil dan berhenti sesuai cue.';
+      return id ? 'Pantau aliran; jaga tetap stabil dan berhenti sesuai cue.' : 'Monitor flow, keep it stable, and stop on the cue.';
     case 'extract':
-      return plan?.methodFamily === 'espresso'
-        ? `Mulai shot dan ekstrak sampai hasil ${formatRoundedMl(plan.totalWaterMl)}.`
-        : `Ekstrak sampai target ${target}.`;
+      return id
+        ? (plan?.methodFamily === 'espresso'
+          ? `Mulai shot dan ekstrak sampai hasil ${formatRoundedMl(plan.totalWaterMl)}.`
+          : `Ekstrak sampai target ${target}.`)
+        : (plan?.methodFamily === 'espresso'
+          ? `Start the shot and extract to ${formatRoundedMl(plan.totalWaterMl)} yield.`
+          : `Extract to target ${target}.`);
     case 'stop':
-      if (plan?.methodFamily === 'moka_pot') return 'Angkat sebelum sputter kasar atau rasa rebus muncul.';
-      if (plan?.methodFamily === 'espresso') return `Berhenti di hasil ${formatRoundedMl(plan.totalWaterMl)} sesuai window shot.`;
-      return 'Berhenti sesuai cue metode; jangan paksa fase akhir.';
+      if (id) {
+        if (plan?.methodFamily === 'moka_pot') return 'Angkat sebelum sputter kasar atau rasa rebus muncul.';
+        if (plan?.methodFamily === 'espresso') return `Berhenti di hasil ${formatRoundedMl(plan.totalWaterMl)} sesuai window shot.`;
+        return 'Berhenti sesuai cue metode; jangan paksa fase akhir.';
+      }
+      if (plan?.methodFamily === 'moka_pot') return 'Remove from heat before harsh sputtering or boiled flavor appears.';
+      if (plan?.methodFamily === 'espresso') return `Stop at ${formatRoundedMl(plan.totalWaterMl)} yield inside the shot window.`;
+      return 'Stop on the method cue; do not force the final phase.';
     case 'settle':
-      return 'Pecah kerak atau skim pelan, lalu biarkan partikel halus mengendap.';
+      return id ? 'Pecah kerak atau skim pelan, lalu biarkan partikel halus mengendap.' : 'Break the crust or skim gently, then let fines settle.';
     case 'decant':
-      return 'Pindahkan segera agar ekstraksi berhenti.';
+      return id ? 'Pindahkan segera agar ekstraksi berhenti.' : 'Decant promptly so extraction stops.';
     case 'filter':
-      return 'Saring atau pindahkan bersih untuk memisahkan kopi dari ampas.';
+      return id ? 'Saring atau pindahkan bersih untuk memisahkan kopi dari ampas.' : 'Filter or decant cleanly to separate coffee from grounds.';
     case 'dilute':
-      return 'Dilusi hanya setelah filtrasi bila butuh kekuatan sajian lebih ringan.';
+      return id ? 'Dilusi hanya setelah filtrasi bila butuh kekuatan sajian lebih ringan.' : 'Dilute only after filtration if the serving strength needs to be lighter.';
     case 'mix':
-      return 'Aduk batch/carafe pelan sebelum evaluasi rasa atau sajikan.';
+      return id ? 'Aduk batch/carafe pelan sebelum evaluasi rasa atau sajikan.' : 'Gently mix the batch or carafe before tasting or serving.';
     case 'serve':
-      return 'Sajikan setelah fase metode selesai bersih.';
+      return id ? 'Sajikan setelah fase metode selesai bersih.' : 'Serve after the method finishes cleanly.';
     default:
-      return localizeAiBrewDynamicText(step.primaryText, language);
+      return id ? localizeAiBrewDynamicText(step.primaryText, language) : translateWorkflowGuideTextToEnglish(step.primaryText);
   }
 }
 
@@ -2887,7 +3084,61 @@ function buildAiBrewWorkflowFocusCue(
   language: string,
 ) {
   if (!isIndonesianAiBrewLanguage(language)) {
-    return normalizeAiBrewInstructionText(step.secondaryText || step.primaryText);
+    if (step.actionType === 'setup' || step.actionType === 'rinse_preheat') {
+      return plan && aiBrewUsesPaperFilter(plan)
+        ? 'Set the filter, brewer, server, and scale first; a clean setup makes the first taste easier to judge.'
+        : 'Set the brewer and scale first; a clean setup makes the first taste easier to judge.';
+    }
+
+    if (plan.brewMode === 'iced' && step.pourVolumeMl > 0) {
+      return 'Brew only the hot-water target here. Ice is already counted as measured bypass in the server.';
+    }
+
+    switch (plan.methodFamily) {
+      case 'hario_switch':
+        if (step.actionType === 'release' || step.actionType === 'drawdown') {
+          return 'Open the valve cleanly, then let drawdown finish without extra stirring.';
+        }
+        return 'Keep the chamber load safe and follow the valve position for this stage.';
+      case 'v60':
+      case 'origami':
+      case 'kono':
+        return 'Pour calmly from center to mid-bed. Keep the bed level and avoid rinsing the filter wall.';
+      case 'chemex':
+        return 'Keep flow stable and the thick-paper vent open; do not chase the paper wall.';
+      case 'kalita_wave':
+      case 'april':
+      case 'melitta':
+        return 'Use short center pulses. Keep the surface level and avoid flooding the bed.';
+      case 'clever_dripper':
+        return step.actionType === 'release' || step.actionType === 'drawdown'
+          ? 'Open the release cleanly and let drawdown happen without stirring again.'
+          : 'Keep immersion calm; stable contact is more useful than heavy agitation.';
+      case 'french_press':
+        return step.actionType === 'decant' || step.actionType === 'serve'
+          ? 'Decant after pressing so extraction stops cleanly.'
+          : 'Keep immersion calm and avoid aggressive stirring near the finish.';
+      case 'aeropress':
+        return step.actionType === 'press'
+          ? 'Press steadily and stop before the hiss feels forced.'
+          : 'Wet the chamber evenly and keep the steep compact.';
+      case 'espresso':
+        return 'Read shot flow and stop at target yield, not by adding volume.';
+      case 'moka_pot':
+        return 'Use moderate heat and remove the pot before harsh sputtering.';
+      case 'cold_brew':
+        return 'Wet all grounds evenly, then steep without repeated agitation.';
+      case 'batch_brew':
+        return 'Let the machine cycle finish, then gently mix the batch before tasting.';
+      default:
+        return 'Keep flow stable, the bed tidy, and make the next correction from taste.';
+    }
+  }
+
+  if (step.actionType === 'setup' || step.actionType === 'rinse_preheat') {
+    return plan && aiBrewUsesPaperFilter(plan)
+      ? 'Siapkan filter, alat, server, dan timbangan dulu; setup yang bersih membuat rasa pertama lebih mudah dibaca.'
+      : 'Siapkan alat dan timbangan dulu; setup yang bersih membuat rasa pertama lebih mudah dibaca.';
   }
 
   if (plan.brewMode === 'iced' && step.pourVolumeMl > 0) {
@@ -3128,8 +3379,8 @@ function buildAiBrewDeterministicStepDetailPoints(
       const beanContext = buildAiBrewBeanContextDetail(plan, step, language);
       const actionType = isWorkflowGuideStep(step) ? step.actionType : getAiBrewStepKind(step);
       addPoint(actionType === 'setup' || actionType === 'bloom' ? beanContext || workflowControl : workflowControl || beanContext);
-    } else if (step.secondaryText) {
-      addPoint(localizeAiBrewDynamicText(step.secondaryText, language));
+    } else {
+      addPoint(buildAiBrewWorkflowFocusCue(plan, step, language));
     }
 
     if (step.warnings.length > 0) {

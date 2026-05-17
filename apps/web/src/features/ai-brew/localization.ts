@@ -87,9 +87,64 @@ export function localizeAiBrewRoastLabel(roastLevel: string, language?: string) 
 }
 
 export function localizeAiBrewStepLabel(label: string, language?: string) {
-  if (!isIndonesianAiBrewLanguage(language)) return label;
+  const normalized = label.trim().toLowerCase();
 
-  switch (label.trim().toLowerCase()) {
+  if (!isIndonesianAiBrewLanguage(language)) {
+    switch (normalized) {
+      case 'tuang utama':
+        return 'Main Pour';
+      case 'tuang tengah':
+        return 'Center Pour';
+      case 'tuang kedua':
+        return 'Second Pour';
+      case 'tuang ketiga':
+        return 'Third Pour';
+      case 'tuang akhir':
+        return 'Final Pour';
+      case 'tuang akhir target panas':
+        return 'Finish to Hot-Water Target';
+      case 'isi air':
+        return 'Charge Water';
+      case 'aduk':
+        return 'Stir';
+      case 'aduk / putar':
+        return 'Stir or Swirl';
+      case 'rendam':
+        return 'Steep';
+      case 'tekan':
+        return 'Press';
+      case 'berhenti sebelum hiss':
+        return 'Stop Before Hiss';
+      case 'buka katup':
+        return 'Release';
+      case 'buka katup di atas es':
+        return 'Release Over Ice';
+      case 'air turun':
+        return 'Drawdown';
+      case 'panaskan':
+        return 'Heat';
+      case 'mulai seduh':
+        return 'Start Brew';
+      case 'ekstraksi':
+        return 'Extract';
+      case 'sajikan':
+        return 'Serve';
+      case 'tuang pisah':
+        return 'Decant';
+      case 'dilusi':
+        return 'Dilute';
+      case 'endapkan':
+        return 'Settle';
+      case 'saring':
+        return 'Filter';
+      case 'berhenti':
+        return 'Stop';
+      default:
+        return label;
+    }
+  }
+
+  switch (normalized) {
     case 'bloom':
       return 'Bloom';
     case 'preheat':

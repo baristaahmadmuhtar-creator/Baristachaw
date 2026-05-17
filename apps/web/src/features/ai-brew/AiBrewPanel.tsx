@@ -4600,11 +4600,12 @@ function buildTargetProfileEffectText(targetProfileId: string, language: string)
   }
 }
 
-function formatTargetProfileFinalComputed(plan: BrewPlan) {
+function formatTargetProfileFinalComputed(plan: BrewPlan, language: string) {
+  const id = isIndonesianAiBrewLanguage(language);
   const ratio = plan.iceMl > 0
-    ? `1:${formatBrewRatio(plan.finalBeverageRatio)} / panas 1:${formatBrewRatio(plan.hotExtractionRatio)}`
+    ? `1:${formatBrewRatio(plan.finalBeverageRatio)} / ${id ? 'panas' : 'hot'} 1:${formatBrewRatio(plan.hotExtractionRatio)}`
     : `1:${formatBrewRatio(plan.finalBeverageRatio)}`;
-  const extractionLabel = 'ekstraksi';
+  const extractionLabel = id ? 'ekstraksi' : 'extraction';
   return `${ratio} / ${formatRoundedTemperature(plan.waterTempC)} / ${extractionLabel} ${formatGuideTime(getPlanExtractionSeconds(plan))}`;
 }
 
@@ -4659,7 +4660,7 @@ function buildTargetProfileCompareRows(targetComparePlans: BrewPlan[] | undefine
       id: group.map((item) => item.targetProfileId).join('__'),
       label: uniqueLabels.join(' / '),
       effect: buildTargetProfileEffectText(representative.targetProfileId, language),
-      finalComputed: formatTargetProfileFinalComputed(representative),
+      finalComputed: formatTargetProfileFinalComputed(representative, language),
       why: buildTargetProfileCompareReason(representative, balancePlan, language),
       active: group.some((item) => item.targetProfileId === currentPlan.targetProfileId),
       sameRecipe: group.length > 1,

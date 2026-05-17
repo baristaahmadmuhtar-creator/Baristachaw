@@ -107,6 +107,8 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
         return 'Charge Water';
       case 'aduk':
         return 'Stir';
+      case 'aduk ringan':
+        return 'Light Stir';
       case 'aduk / putar':
         return 'Stir or Swirl';
       case 'rendam':

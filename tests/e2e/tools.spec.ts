@@ -240,10 +240,11 @@ test('grind size calculator uses method and grinder while preserving ratio math'
   await expect(page.getByTestId('grind-size-recommendation')).toContainText(/Starting point|Titik awal|Baseline|Estimasi/i);
 });
 
-test('grind size calculator reacts to roast, target profile, and espresso compatibility', async ({ page }) => {
+test('grind size calculator reacts to roast and espresso compatibility without taste-target controls', async ({ page }) => {
   await page.getByRole('tab', { name: /^(Calculator|Kalkulator)$/ }).click();
   await page.getByRole('button', { name: /^(Grind Size|Ukuran Giling)$/ }).click();
   await expect(page.getByTestId('grind-size-panel')).toBeVisible();
+  await expect(page.locator('[data-testid^="grind-target-"]')).toHaveCount(0);
 
   await page.getByTestId('grinder-search').fill('Feima');
   await page.getByTestId('grinder-option-feima-600n').click();
@@ -253,12 +254,12 @@ test('grind size calculator reacts to roast, target profile, and espresso compat
   const darkSetting = ((await page.getByTestId('grind-primary-setting').textContent()) || '').trim();
   expect(lightSetting).not.toEqual(darkSetting);
 
-  await page.getByTestId('grind-roast-medium').click();
-  await page.getByTestId('grind-target-more_sweetness').click();
-  const sweetSetting = ((await page.getByTestId('grind-primary-setting').textContent()) || '').trim();
-  await page.getByTestId('grind-target-floral_transparent').click();
-  const floralSetting = ((await page.getByTestId('grind-primary-setting').textContent()) || '').trim();
-  expect(sweetSetting).not.toEqual(floralSetting);
+  await page.getByTestId('grind-roast-medium_light').click();
+  const mediumLightSetting = ((await page.getByTestId('grind-primary-setting').textContent()) || '').trim();
+  await page.getByTestId('grind-roast-medium_dark').click();
+  const mediumDarkSetting = ((await page.getByTestId('grind-primary-setting').textContent()) || '').trim();
+  expect(mediumLightSetting).not.toEqual(mediumDarkSetting);
+  await expect(page.getByTestId('grind-size-recommendation')).toContainText(/Light roast|Medium-light|Medium-dark|Dark roast|Roast level/i);
 
   await page.getByTestId('grind-method-espresso').click();
   await page.getByTestId('grinder-search').fill('Timemore C2');

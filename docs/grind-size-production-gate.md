@@ -8,7 +8,8 @@ The Grind Size calculator must use the same AI Brew catalog and grinder recommen
 - Method compatibility is checked before showing a confident recommendation.
 - Espresso-incompatible grinders are blocked or clearly marked as not recommended.
 - Roast level affects the recommendation when a numeric range exists.
-- Target rasa affects direction and explanation without unsafe jumps.
+- The calculator UI does not expose `Target rasa`; it uses the neutral grinder baseline so the tool stays focused on method, grinder, and roast-level grind sizing.
+- AI Brew may still use target-profile bias through the shared engine, but that is recipe guidance, not a standalone Grind Size calculator control.
 - Fallback grinders show calibration warnings and cannot produce high confidence.
 - Ratio calculator behavior must remain unchanged when switching between `Rasio` and `Ukuran Giling`.
 

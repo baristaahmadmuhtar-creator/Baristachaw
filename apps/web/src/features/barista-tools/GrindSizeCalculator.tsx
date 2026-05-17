@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Gauge, Search, SlidersHorizontal } from 'lucide-react';
 import { loadAiBrewCatalog } from '../ai-brew/catalog.ts';
-import { localizeAiBrewTargetProfile } from '../ai-brew/localization.ts';
 import type { AiBrewCatalog } from '../ai-brew/types.ts';
 import { useGlobalState } from '../../context/GlobalState';
 import { BREW_METHOD_PROFILES } from './brewProfiles.ts';
@@ -36,7 +35,6 @@ interface GrindSizeContextState {
   pressureBar: string;
   beanAgeDays: string;
   zeroPointKnown: boolean;
-  targetProfileId: string;
 }
 
 function normalizeSearch(value: string) {
@@ -65,10 +63,9 @@ function readStoredContext(): GrindSizeContextState {
       pressureBar: String(parsed.pressureBar || '9'),
       beanAgeDays: String(parsed.beanAgeDays || '10'),
       zeroPointKnown: Boolean(parsed.zeroPointKnown),
-      targetProfileId: String(parsed.targetProfileId || 'balance_clean'),
     };
   } catch {
-    return { shotTimeSec: '28', pressureBar: '9', beanAgeDays: '10', zeroPointKnown: false, targetProfileId: 'balance_clean' };
+    return { shotTimeSec: '28', pressureBar: '9', beanAgeDays: '10', zeroPointKnown: false };
   }
 }
 
@@ -263,7 +260,6 @@ export function GrindSizeCalculator({
       methodId,
       grinderId: selectedGrinderId,
       roastLevel,
-      targetProfileId: context.targetProfileId,
       espressoContext: {
         doseG,
         yieldG,
@@ -273,7 +269,7 @@ export function GrindSizeCalculator({
         zeroPointKnown: context.zeroPointKnown,
       },
     });
-  }, [catalog, context.beanAgeDays, context.pressureBar, context.shotTimeSec, context.targetProfileId, context.zeroPointKnown, doseG, methodId, roastLevel, selectedGrinderId, yieldG]);
+  }, [catalog, context.beanAgeDays, context.pressureBar, context.shotTimeSec, context.zeroPointKnown, doseG, methodId, roastLevel, selectedGrinderId, yieldG]);
 
   const filteredGrinders = useMemo(() => {
     const needle = normalizeSearch(query);
@@ -290,8 +286,6 @@ export function GrindSizeCalculator({
       compatibility: getGrindSizeCompatibility(catalog, methodId, grinder),
     }));
   }, [catalog, filteredGrinders, methodId]);
-
-  const targetProfileOptions = useMemo(() => catalog?.targetProfiles || [], [catalog]);
 
   const family = getRatioMethodFamily(methodId);
   const confidenceLabel = advice ? getConfidenceLabel(advice, t) : '';
@@ -349,31 +343,6 @@ export function GrindSizeCalculator({
           ))}
         </div>
 
-        {targetProfileOptions.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{t.toolsGrindSizeTargetProfile}</p>
-            <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1" aria-label={t.toolsGrindSizeTargetProfile}>
-              {targetProfileOptions.map((profile) => {
-                const label = localizeAiBrewTargetProfile(profile.id, profile.label, language);
-                return (
-                  <button
-                    key={profile.id}
-                    type="button"
-                    onClick={() => setContext((current) => ({ ...current, targetProfileId: profile.id }))}
-                    data-testid={`grind-target-${profile.id}`}
-                    className={`whitespace-nowrap px-3 py-2 rounded-xl text-xs font-medium transition-all ${context.targetProfileId === profile.id
-                      ? 'bg-blue-600 text-white shadow-[0_4px_14px_rgba(37,99,235,0.3)]'
-                      : 'bg-surface-alpha text-secondary hover:text-primary'
-                    }`}
-                    aria-pressed={context.targetProfileId === profile.id}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
@@ -495,10 +464,16 @@ export function GrindSizeCalculator({
                 <div className="rounded-xl border border-blue-500/20 bg-blue-500/8 p-3 text-sm">
                   <div className="mb-1 flex items-center gap-2 font-semibold text-blue-700 dark:text-blue-300">
                     <Gauge size={15} />
-                    {t.toolsGrindSizeTargetProfile}
+                    {t.toolsRoastProfile}
                   </div>
-                  <p className="font-semibold">{advice.targetProfileLabel ? localizeAiBrewTargetProfile(context.targetProfileId, advice.targetProfileLabel, language) : '-'}</p>
-                  <p className="mt-1 text-xs text-secondary">{advice.targetProfileDescription}</p>
+                  <p className="font-semibold">{getRoastLevelLabel(roastLevel)}</p>
+                  <p className="mt-1 text-xs text-secondary">
+                    {advice.roastBiasKind === 'finer'
+                      ? t.toolsGrindSizeCorrectionFiner
+                      : advice.roastBiasKind === 'coarser'
+                        ? t.toolsGrindSizeCorrectionCoarser
+                        : t.toolsGrindSizeCorrectionNeutral}
+                  </p>
                 </div>
                 <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/8 p-3 text-sm">
                   <div className="mb-1 flex items-center gap-2 font-semibold text-emerald-700 dark:text-emerald-300">

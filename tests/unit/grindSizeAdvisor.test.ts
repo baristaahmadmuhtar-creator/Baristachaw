@@ -65,7 +65,7 @@ test('Grind Size keeps 600N platform roast-aware instead of hardcoding one setti
   assert.match(dark.primarySetting, /setting/i);
 });
 
-test('Grind Size target profile changes grind bias and visible recommendation', async () => {
+test('shared grind engine keeps target profile bias available for AI Brew without exposing it in calculator UI', async () => {
   const catalog = await loadCatalogForTest();
   const grinder = catalog.grinders.find((entry) => /K-Ultra/i.test(entry.name));
   assert.ok(grinder, 'K-Ultra grinder must exist');

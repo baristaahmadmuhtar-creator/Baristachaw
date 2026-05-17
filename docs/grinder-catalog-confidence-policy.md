@@ -16,6 +16,9 @@ BaristaChaw treats grinder data as a starting-point catalog, not a physical cali
 - Do not claim exact espresso compatibility without fine/espresso evidence.
 - Do not show high confidence for fallback or dataset-unverified grinder output.
 - Numeric settings are always starting points. Real dial-in depends on burr zero, burr alignment, burr seasoning, coffee age, dose, water, and technique.
+- "Official" means a manufacturer/public brand source exists for the grinder direction, range, capability, or method chart. Retail/community data can improve `curated` confidence but cannot be labeled official.
+- Roast-level shifts are model-side calibration offsets applied inside the verified or curated range. They are not a replacement for real burr-zero calibration or taste feedback.
+- The Grind Size calculator intentionally does not expose taste-target controls. It answers one job: grinder + brew method + roast level -> a safe starting grind number/range.
 
 ## Release Gate
 

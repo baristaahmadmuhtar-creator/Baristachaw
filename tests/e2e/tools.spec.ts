@@ -807,6 +807,7 @@ test('ai brew quick water picker stays simple while pro keeps full water coverag
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-pure-life-global')).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-aqua-id')).toBeVisible();
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-aqua-id')).not.toContainText(/TDS|GH|KH/i);
+  await expect(page.getByTestId('ai-brew-picker-option-water_brand-aqua-id')).toContainText(/Ready|Siap seduh|Balanced|Seimbang|ID/i);
   await expect(page.getByTestId('ai-brew-picker-option-water_brand-le-minerale-id')).toBeVisible();
 
   await page.getByTestId('ai-brew-picker-search-water_brand').fill('volvic');

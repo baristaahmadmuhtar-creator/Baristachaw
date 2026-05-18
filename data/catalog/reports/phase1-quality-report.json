@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-05-03T08:10:21.667Z",
+  "generated_at": "2026-05-18T05:53:46.877Z",
   "version": "2026.03.10-asean-first-phase1",
   "waters": {
-    "total": 106,
+    "total": 107,
     "published": 76,
     "brew_ready": 65,
     "complete": 78,
-    "incomplete": 28,
+    "incomplete": 29,
     "estimated": [
       "heysong-water-global",
       "heysong-water-sg",
@@ -34,7 +34,7 @@
       "Global": 2,
       "Hong Kong": 2,
       "Iceland": 3,
-      "Indonesia": 56,
+      "Indonesia": 57,
       "Italy": 4,
       "Japan": 2,
       "Malaysia": 3,
@@ -50,13 +50,13 @@
     "by_market": {
       "bn": 5,
       "global": 22,
-      "id": 55,
+      "id": 56,
       "my": 6,
       "sg": 18
     },
     "by_publish_state": {
       "published": 76,
-      "review_only": 30,
+      "review_only": 31,
       "rejected": 0
     },
     "top_recommended_by_region": {
@@ -215,7 +215,9 @@
         "id": "amidis-id",
         "brand": "Amidis",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#amidis-id"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#amidis-id",
+          "https://amidiswater.com/",
+          "https://www.astronauts.id/p/amidis-distilled-demineral-water-botol-600ml"
         ]
       },
       {
@@ -223,7 +225,9 @@
         "brand": "Aqua",
         "sources": [
           "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#aqua-id",
-          "https://www.aqua.co.id/en"
+          "https://www.aqua.co.id/en",
+          "https://www.sehataqua.co.id/",
+          "https://www.sehataqua.co.id/aqua-galon/"
         ]
       },
       {
@@ -278,10 +282,20 @@
         ]
       },
       {
+        "id": "galon-isi-ulang-id",
+        "brand": "Galon isi ulang",
+        "sources": [
+          "https://peraturan.bpk.go.id/Details/119084/permenkes-no-43-tahun-2014",
+          "https://ejournal.unsrat.ac.id/v3/index.php/tekno/article/view/51265",
+          "https://jurnal.fp.unila.ac.id/index.php/JAB/article/view/5641/0"
+        ]
+      },
+      {
         "id": "club-id",
         "brand": "Club",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#club-id"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#club-id",
+          "https://www.indofoodcbp.com/brand/beverages"
         ]
       },
       {
@@ -333,7 +347,8 @@
         "brand": "Equil",
         "sources": [
           "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#equil-id",
-          "https://www.blibli.com/brand/equil"
+          "https://www.blibli.com/brand/equil",
+          "https://www.sufotritama.co.id/products/equil-natural-mineral-water/"
         ]
       },
       {
@@ -536,7 +551,9 @@
         "brand": "Le Minerale",
         "sources": [
           "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#le-minerale-id",
-          "https://www.leminerale.com/en/news/Bikin-Airnya-Sehat-dan-Berkualitas-Ini-Rahasia-Produksi-Le-Minerale-"
+          "https://www.leminerale.com/en/news/Bikin-Airnya-Sehat-dan-Berkualitas-Ini-Rahasia-Produksi-Le-Minerale-",
+          "https://www.leminerale.com/product",
+          "https://www.leminerale.com/product/galon"
         ]
       },
       {
@@ -698,7 +715,7 @@
         "brand": "Prima",
         "sources": [
           "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#prima-id",
-          "https://www.primawater.com/"
+          "https://sinarsosro.id/en/posts/air-mineral-prim-a"
         ]
       },
       {
@@ -849,7 +866,8 @@
         "id": "super-o2-id",
         "brand": "Super O2",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#super-o2-id"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#super-o2-id",
+          "https://supero2.co.id/"
         ]
       },
       {
@@ -877,7 +895,8 @@
         "id": "vit-id",
         "brand": "Vit",
         "sources": [
-          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#vit-id"
+          "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#vit-id",
+          "https://www.minumvit.co.id/"
         ]
       },
       {
@@ -954,6 +973,18 @@
           "official_calcium",
           "official_magnesium",
           "official_bicarbonate"
+        ]
+      },
+      {
+        "id": "galon-isi-ulang-id",
+        "brand": "Galon isi ulang",
+        "missing_fields": [
+          "tds_ppm",
+          "hardness_ppm_as_caco3",
+          "alkalinity_ppm_as_caco3",
+          "calcium",
+          "magnesium",
+          "bicarbonate"
         ]
       },
       {
@@ -1207,6 +1238,7 @@
       "airku-id",
       "amidis-id",
       "cleo-id",
+      "galon-isi-ulang-id",
       "dasani-global",
       "evian-bn",
       "heysong-water-global",

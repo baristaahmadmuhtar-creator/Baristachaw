@@ -358,10 +358,12 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "ades indonesia id ades natural mineral water ades",
+      "search_text": "ades indonesia id ades natural mineral water ades coca cola kemasan ramah lingkungan",
       "aliases": [
         "Ades",
-        "ADES"
+        "ADES",
+        "Ades Mineral Water",
+        "Ades Coca-Cola"
       ],
       "verification_status": "curated",
       "data_quality": {
@@ -369,7 +371,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "aetra-id",
@@ -694,20 +696,20 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Public product source identifies Amidis as distilled/demineral water; treat it as a remineralization base, not ready brew.",
-        "Water is too low-mineral for ready-brew use; add minerals manually."
+        "Distilled/demineral water is too low in minerals for direct brewing.",
+        "Use as RO-style base only after adding brew minerals, or enter measured TDS, GH, and KH manually."
       ],
       "minerals_mg_l": {
-        "calcium": 0.4,
-        "magnesium": 0.1,
+        "calcium": 0,
+        "magnesium": 0,
         "sodium": null,
         "potassium": null,
-        "bicarbonate": 1,
+        "bicarbonate": 0,
         "sulfate": null,
         "chloride": null,
         "silica": null
       },
-      "ph": 7,
+      "ph": null,
       "tds_ppm": 2,
       "coffee_parameters": {
         "hardness_ppm_as_caco3": 1.4,
@@ -717,36 +719,39 @@
       },
       "sources": [
         {
-          "source_type": "brand_site",
-          "source_url": "https://amidiswater.com/",
-          "collected_at": "2026-05-18T00:00:00.000Z",
-          "confidence_score": 0.82
-        },
-        {
-          "source_type": "retailer_label",
-          "source_url": "https://www.astronauts.id/p/amidis-distilled-demineral-water-botol-600ml",
-          "collected_at": "2026-05-18T00:00:00.000Z",
-          "confidence_score": 0.78
-        },
-        {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#amidis-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://amidiswater.com/",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.78
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://www.astronauts.id/p/amidis-distilled-demineral-water-botol-600ml",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.82
         }
       ],
       "primary_source": {
-        "source_type": "community_reference",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#amidis-id",
-        "collected_at": "2026-04-07T07:30:53.893Z",
-        "confidence_score": 0.7
+        "source_type": "distributor",
+        "source_url": "https://www.astronauts.id/p/amidis-distilled-demineral-water-botol-600ml",
+        "collected_at": "2026-05-18T00:00:00.000Z",
+        "confidence_score": 0.82
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "amidis indonesia id amidis distilled demineral water low mineral ro purified amidis",
+      "search_text": "amidis indonesia id amidis distilled demineral water air demineral low mineral ro base purified amidis",
       "aliases": [
         "Amidis",
-        "AMIDIS"
+        "AMIDIS",
+        "Amidis Distilled",
+        "Amidis Demineral",
+        "Amidis Air Demineral"
       ],
       "verification_status": "curated",
       "data_quality": {
@@ -754,7 +759,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-05-03T00:00:00.000Z"
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "aqua-id",
@@ -800,6 +805,18 @@
           "source_url": "https://www.aqua.co.id/en",
           "collected_at": "2026-03-10T00:00:00.000Z",
           "confidence_score": 0.9
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.sehataqua.co.id/",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.86
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.sehataqua.co.id/aqua-galon/",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.86
         }
       ],
       "primary_source": {
@@ -810,10 +827,14 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "aqua indonesia id aqua natural mineral water aqua",
+      "search_text": "aqua indonesia id aqua natural mineral water aqua galon 19l 19 liter sumber air pegunungan sehataqua",
       "aliases": [
         "Aqua",
-        "AQUA"
+        "AQUA",
+        "AQUA Galon",
+        "Aqua Galon",
+        "Aqua 19L",
+        "Aqua 19 liter"
       ],
       "verification_status": "curated",
       "data_quality": {
@@ -821,7 +842,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "arjuna-id",
@@ -1202,8 +1223,8 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Official source confirms TDS under 10 ppm; use as a low-mineral base and add minerals manually.",
-        "Water is too low-mineral for ready-brew use; add minerals manually."
+        "Cleo is positioned as pure low-mineral water; direct brewing can taste thin and under-buffered.",
+        "Use as base water only after adding minerals, or enter measured TDS, GH, and KH manually."
       ],
       "minerals_mg_l": {
         "calcium": 1.8,
@@ -1246,7 +1267,7 @@
       "primary_source": {
         "source_type": "brand_site",
         "source_url": "https://cleopurewater.com/brand-cleo/",
-        "collected_at": "2026-05-03T00:00:00.000Z",
+        "collected_at": "2026-05-18T00:00:00.000Z",
         "confidence_score": 0.92
       },
       "published": true,
@@ -1268,13 +1289,13 @@
         ],
         "completeness_score": 70
       },
-      "updated_at": "2026-05-03T00:00:00.000Z"
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "galon-isi-ulang-id",
       "brand_group_id": "galon-isi-ulang",
       "market_code": "id",
-      "sku_label": "Galon isi ulang / depot water",
+      "sku_label": "Galon isi ulang / depot water manual profile",
       "brand": "Galon isi ulang",
       "country_origin": "Indonesia",
       "available_in": [
@@ -1284,7 +1305,8 @@
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Depot/refill gallon water varies by source and filter condition; enter TDS, GH, and KH manually before brewing."
+        "Depot and refill-gallon water varies by source, filter condition, and maintenance.",
+        "Enter measured TDS, GH, and KH manually before using it as brew water."
       ],
       "minerals_mg_l": {
         "calcium": null,
@@ -1306,25 +1328,42 @@
       },
       "sources": [
         {
-          "source_type": "catalog_policy",
-          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#galon-isi-ulang-id",
+          "source_type": "regulator",
+          "source_url": "https://peraturan.bpk.go.id/Details/119084/permenkes-no-43-tahun-2014",
           "collected_at": "2026-05-18T00:00:00.000Z",
-          "confidence_score": 0.55
+          "confidence_score": 0.78
+        },
+        {
+          "source_type": "community_reference",
+          "source_url": "https://ejournal.unsrat.ac.id/v3/index.php/tekno/article/view/51265",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.65
+        },
+        {
+          "source_type": "community_reference",
+          "source_url": "https://jurnal.fp.unila.ac.id/index.php/JAB/article/view/5641/0",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.65
         }
       ],
       "primary_source": {
-        "source_type": "catalog_policy",
-        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#galon-isi-ulang-id",
+        "source_type": "regulator",
+        "source_url": "https://peraturan.bpk.go.id/Details/119084/permenkes-no-43-tahun-2014",
         "collected_at": "2026-05-18T00:00:00.000Z",
-        "confidence_score": 0.55
+        "confidence_score": 0.78
       },
       "published": false,
       "publish_state": "review_only",
-      "search_text": "galon isi ulang depot refill water indonesia air galon ro filter manual mineral",
+      "search_text": "galon isi ulang depot air minum air galon air isi ulang ro depot filter depot manual mineral tds gh kh",
       "aliases": [
         "Air galon",
         "Galon isi ulang",
+        "Air galon isi ulang",
         "Depot air minum",
+        "Depot isi ulang",
+        "Air isi ulang",
+        "RO depot",
+        "Air RO galon",
         "Refill gallon water"
       ],
       "verification_status": "curated",
@@ -1332,13 +1371,13 @@
         "is_estimated": false,
         "missing_fields": [
           "tds_ppm",
-          "official_calcium",
-          "official_magnesium",
-          "official_bicarbonate",
           "hardness_ppm_as_caco3",
-          "alkalinity_ppm_as_caco3"
+          "alkalinity_ppm_as_caco3",
+          "calcium",
+          "magnesium",
+          "bicarbonate"
         ],
-        "completeness_score": 0
+        "completeness_score": 35
       },
       "updated_at": "2026-05-18T00:00:00.000Z"
     },
@@ -1380,6 +1419,12 @@
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#club-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.indofoodcbp.com/brand/beverages",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.82
         }
       ],
       "primary_source": {
@@ -1390,10 +1435,13 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "club indonesia id club natural mineral water club",
+      "search_text": "club indonesia id club natural mineral water club galon air mineral club 19l indofood tirta sukses perkasa",
       "aliases": [
         "Club",
-        "CLUB"
+        "CLUB",
+        "Club Air Mineral",
+        "Club Galon",
+        "Air Mineral Club"
       ],
       "verification_status": "curated",
       "data_quality": {
@@ -1401,7 +1449,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "crystal-geyser-global",
@@ -1831,6 +1879,12 @@
           "source_url": "https://www.blibli.com/brand/equil",
           "collected_at": "2026-03-10T00:00:00.000Z",
           "confidence_score": 0.72
+        },
+        {
+          "source_type": "distributor",
+          "source_url": "https://www.sufotritama.co.id/products/equil-natural-mineral-water/",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.76
         }
       ],
       "primary_source": {
@@ -1841,10 +1895,12 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "equil indonesia id equil natural mineral water equil",
+      "search_text": "equil indonesia id equil natural mineral water still premium sukabumi glass bottle equil",
       "aliases": [
         "Equil",
-        "EQUIL"
+        "EQUIL",
+        "Equil Natural Mineral Water",
+        "Equil Still"
       ],
       "verification_status": "curated",
       "data_quality": {
@@ -1852,7 +1908,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "eternal-plus-id",
@@ -3575,6 +3631,18 @@
           "source_url": "https://www.leminerale.com/en/news/Bikin-Airnya-Sehat-dan-Berkualitas-Ini-Rahasia-Produksi-Le-Minerale-",
           "collected_at": "2026-03-10T00:00:00.000Z",
           "confidence_score": 0.88
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.leminerale.com/product",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.84
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.leminerale.com/product/galon",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.84
         }
       ],
       "primary_source": {
@@ -3585,10 +3653,12 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "le minerale indonesia id le minerale natural mineral water le-minerale",
+      "search_text": "le minerale indonesia id le minerale natural mineral water le-minerale galon mineral terlindungi kemasan galon mayora",
       "aliases": [
         "Le Minerale",
-        "LE MINERALE"
+        "LE MINERALE",
+        "Le Minerale Galon",
+        "Galon Le Minerale"
       ],
       "verification_status": "curated",
       "data_quality": {
@@ -3596,7 +3666,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "le-minerale-my",
@@ -4559,10 +4629,12 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "oasis indonesia id oasis natural mineral water oasis",
+      "search_text": "oasis indonesia id oasis natural mineral water oasis galon air mineral oasis",
       "aliases": [
         "Oasis",
-        "OASIS"
+        "OASIS",
+        "Oasis Galon",
+        "Air Mineral Oasis"
       ],
       "verification_status": "curated",
       "data_quality": {
@@ -4570,7 +4642,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "oasis-plus-id",
@@ -5005,8 +5077,8 @@
         },
         {
           "source_type": "brand_site",
-          "source_url": "https://www.primawater.com/",
-          "collected_at": "2026-03-10T00:00:00.000Z",
+          "source_url": "https://sinarsosro.id/en/posts/air-mineral-prim-a",
+          "collected_at": "2026-05-18T00:00:00.000Z",
           "confidence_score": 0.82
         }
       ],
@@ -5018,10 +5090,13 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "prima indonesia id prima natural mineral water prima",
+      "search_text": "prima indonesia id prim-a air mineral sosro natural mineral water galon 19l prima",
       "aliases": [
         "Prima",
-        "PRIMA"
+        "PRIMA",
+        "Prim-A",
+        "Air Mineral Prim-A",
+        "Prima Sosro"
       ],
       "verification_status": "curated",
       "data_quality": {
@@ -5029,7 +5104,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "pristine-8-6-plus-id",
@@ -5087,10 +5162,12 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "pristine 8.6+ indonesia id pristine 8.6+ natural mineral water pristine-8-6-plus",
+      "search_text": "pristine 8.6+ indonesia id pristine 8.6+ natural mineral water pristine-8-6-plus alkaline ph 8.6 air alkali pristine",
       "aliases": [
         "Pristine 8.6+",
-        "PRISTINE 8.6+"
+        "PRISTINE 8.6+",
+        "Pristine 8.6 Plus",
+        "Pristine pH 8.6"
       ],
       "verification_status": "curated",
       "data_quality": {
@@ -5098,7 +5175,7 @@
         "missing_fields": [],
         "completeness_score": 75
       },
-      "updated_at": "2026-05-03T00:00:00.000Z"
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "pristine-8-plus-id",
@@ -5162,10 +5239,12 @@
       },
       "published": false,
       "publish_state": "review_only",
-      "search_text": "pristine 8+ indonesia id pristine 8+ alkaline water indonesia pristine 8+ pristine",
+      "search_text": "pristine 8+ indonesia id pristine 8+ alkaline water indonesia pristine 8+ pristine alkaline ph 8 air alkali pristine",
       "aliases": [
         "Pristine 8+",
-        "Pristine"
+        "Pristine",
+        "Pristine 8 Plus",
+        "Pristine pH 8+"
       ],
       "verification_status": "verified",
       "data_quality": {
@@ -5178,7 +5257,7 @@
         ],
         "completeness_score": 25
       },
-      "updated_at": "2026-05-03T00:00:00.000Z"
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "pure-life-global",
@@ -6307,17 +6386,18 @@
       "id": "super-o2-id",
       "brand_group_id": "super-o2",
       "market_code": "id",
-      "sku_label": "Super O2 natural mineral water",
+      "sku_label": "Super O2 oxygenated demineral water",
       "brand": "Super O2",
       "country_origin": "Indonesia",
       "available_in": [
         "Indonesia"
       ],
-      "water_type": "natural_mineral",
+      "water_type": "purified",
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
-        "Water is too low-mineral for ready-brew use; add minerals manually."
+        "Super O2 is treated as low-mineral/oxygenated water in this catalog.",
+        "Use as base water only after adding brew minerals, or enter measured TDS, GH, and KH manually."
       ],
       "minerals_mg_l": {
         "calcium": 1,
@@ -6343,6 +6423,12 @@
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#super-o2-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://supero2.co.id/",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.82
         }
       ],
       "primary_source": {
@@ -6353,10 +6439,12 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "super o2 indonesia id super o2 natural mineral water super-o2",
+      "search_text": "super o2 indonesia id super o2 oxygenated demineral water air oksigen low mineral ro base supero2",
       "aliases": [
         "Super O2",
-        "SUPER O2"
+        "SUPER O2",
+        "SuperO2",
+        "Super O2 Oxygen Water"
       ],
       "verification_status": "curated",
       "data_quality": {
@@ -6364,7 +6452,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-05-03T00:00:00.000Z"
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "tirta-fresh-id",
@@ -6587,6 +6675,12 @@
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#vit-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
+        },
+        {
+          "source_type": "brand_site",
+          "source_url": "https://www.minumvit.co.id/",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.82
         }
       ],
       "primary_source": {
@@ -6597,10 +6691,13 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "vit indonesia id vit natural mineral water vit",
+      "search_text": "vit indonesia id vit natural mineral water vit galon danone air mineral vit",
       "aliases": [
         "Vit",
-        "VIT"
+        "VIT",
+        "VIT Galon",
+        "Vit Galon",
+        "VIT 19L"
       ],
       "verification_status": "curated",
       "data_quality": {
@@ -6608,7 +6705,7 @@
         "missing_fields": [],
         "completeness_score": 100
       },
-      "updated_at": "2026-04-07T07:30:53.893Z"
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "vittel-global",

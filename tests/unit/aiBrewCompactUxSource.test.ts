@@ -152,6 +152,7 @@ test('AI Brew pickers keep catalog metadata out of user-facing choice rows', () 
   assert.doesNotMatch(SOURCE, /description: entry\.originNotes/);
   assert.doesNotMatch(SOURCE, /description: entry\.notes\[0\]/);
   assert.match(SOURCE, /badges: \[\]/);
+  assert.match(SOURCE, /badges: buildWaterFactBadges\(item, copy\)/);
   assert.doesNotMatch(SOURCE, /grinderReference \?/);
   assert.doesNotMatch(SOURCE, /return `\$\{status\} - \$\{minerals\}`/);
 });

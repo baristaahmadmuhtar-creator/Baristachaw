@@ -483,6 +483,21 @@ test('Indonesia water catalog keeps low-mineral and refill water honest', () => 
   assert.equal(refill.coffee_parameters.brew_recommendation, 'manual_required');
   assert.match(refill.brew_block_reason.join(' '), /TDS, GH, and KH manually/i);
   assert.ok(refill.aliases.some((alias) => /galon/i.test(alias)));
+  assert.ok(refill.sources.some((source) => /permenkes-no-43-tahun-2014/i.test(source.source_url)));
+
+  const aqua = waters.find((entry) => entry.id === 'aqua-id');
+  assert.ok(aqua, 'Aqua should stay in Indonesia water catalog');
+  assert.ok(aqua.aliases.some((alias) => /galon/i.test(alias)));
+  assert.ok(aqua.sources.some((source) => /^https:\/\/www\.sehataqua\.co\.id\/product\/aqua-galon/i.test(source.source_url) || /^https:\/\/www\.sehataqua\.co\.id\/aqua-galon/i.test(source.source_url)));
+
+  const leMinerale = waters.find((entry) => entry.id === 'le-minerale-id');
+  assert.ok(leMinerale, 'Le Minerale should stay in Indonesia water catalog');
+  assert.ok(leMinerale.aliases.some((alias) => /galon/i.test(alias)));
+  assert.ok(leMinerale.sources.some((source) => /^https:\/\/www\.leminerale\.com\/product/i.test(source.source_url)));
+
+  const vit = waters.find((entry) => entry.id === 'vit-id');
+  assert.ok(vit, 'VIT should stay in Indonesia water catalog');
+  assert.ok(vit.sources.some((source) => /^https:\/\/www\.minumvit\.co\.id\//i.test(source.source_url)));
 });
 
 test('AI Brew coffee taxonomy catalog stays deduped, encoded cleanly, and risk-tagged', () => {

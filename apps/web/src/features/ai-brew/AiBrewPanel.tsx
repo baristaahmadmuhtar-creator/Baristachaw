@@ -6679,14 +6679,20 @@ function buildWaterChemistryLabel(item: WaterBrandProfile, language?: string) {
   return localizeAiBrewWaterClassificationLabel(item.classificationLabel, language);
 }
 
-function buildWaterPickerSubtitle(item: WaterBrandProfile, copy: CopySet, _language?: string) {
-  return formatWaterReadinessStatus(copy, {
+function buildWaterPickerSubtitle(item: WaterBrandProfile, copy: CopySet, language?: string) {
+  const status = formatWaterReadinessStatus(copy, {
     classification: item.classification,
     presetStatus: item.presetStatus,
     isBrewReady: item.isBrewReady,
     mineralsReady: item.presetStatus === 'autofill',
     mineralDerivation: item.resolvedMinerals?.derivation,
   });
+  const classification = localizeAiBrewWaterClassificationLabel(item.classificationLabel, language);
+  return [
+    status,
+    classification,
+    item.marketCode.toUpperCase(),
+  ].filter(Boolean).join(' - ');
 }
 
 function rangePenalty(value: number, min: number, max: number) {
@@ -6989,7 +6995,7 @@ function buildWaterPickerOptions(items: WaterBrandProfile[], copy: CopySet, lang
     searchText: item.searchText,
     description: undefined,
     section: '',
-    badges: [],
+    badges: buildWaterFactBadges(item, copy),
     ariaLabel: `${copy.pickerSelectWaterBrand.replace('{label}', item.shortLabel)}${item.isBrewReady ? '' : copy.pickerManualMineralsSuffix}`,
     tone: item.presetStatus === 'autofill' ? 'highlight' : 'default',
   }));

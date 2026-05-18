@@ -119,7 +119,7 @@ test('AI Brew exposes explicit mobile time semantics instead of one misleading t
   assert.match(SOURCE, /getPlanGuideEndSeconds/);
   assert.match(SOURCE, /getPlanPostExtractionSeconds/);
   assert.match(SOURCE, /data-testid="ai-brew-time-semantics"/);
-  assert.match(SOURCE, /data-testid="ai-brew-time-helper"/);
+  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-time-helper"/);
   assert.match(SOURCE, /extractionTimeLabel/);
   assert.match(SOURCE, /guideEndLabel/);
   assert.match(SOURCE, /flowStepRemaining/);
@@ -134,12 +134,26 @@ test('AI Brew guide details stay deduped and barista-actionable', () => {
   assert.match(SOURCE, /normalizeAiBrewDetailKey/);
   assert.match(SOURCE, /isAiBrewDetailCovered/);
   assert.match(SOURCE, /points\.slice\(0, 1\)/);
-  assert.match(SOURCE, /Tuang tenang dari tengah ke tengah-luar/);
+  assert.match(SOURCE, /Tuang rendah dan stabil dari tengah ke tengah-luar/);
+  assert.match(SOURCE, /Siapkan filter rata/);
   assert.match(SOURCE, /buildAiBrewWorkflowControlDetail/);
   assert.match(SOURCE, /buildAiBrewBeanContextDetail/);
   assert.doesNotMatch(SOURCE, /buildAiBrewTargetCorrectionDetail/);
   assert.doesNotMatch(SOURCE, /Koreksi manis:/);
-  assert.match(SOURCE, /summaryFocusHint/);
+  assert.doesNotMatch(SOURCE, /copy\.summaryFocusHint/);
+});
+
+test('AI Brew pickers keep catalog metadata out of user-facing choice rows', () => {
+  assert.match(SOURCE, /function buildProcessPickerOptions/);
+  assert.match(SOURCE, /function buildVarietyPickerOptions/);
+  assert.match(SOURCE, /function buildWaterPickerSubtitle/);
+  assert.doesNotMatch(SOURCE, /subtitle: `\$\{copy\.processGroup\}/);
+  assert.doesNotMatch(SOURCE, /subtitle: `\$\{copy\.varietyGroup\}/);
+  assert.doesNotMatch(SOURCE, /description: entry\.originNotes/);
+  assert.doesNotMatch(SOURCE, /description: entry\.notes\[0\]/);
+  assert.match(SOURCE, /badges: \[\]/);
+  assert.doesNotMatch(SOURCE, /grinderReference \?/);
+  assert.doesNotMatch(SOURCE, /return `\$\{status\} - \$\{minerals\}`/);
 });
 
 test('AI Brew quick Seduh tab stays timer-first without duplicate process list', () => {

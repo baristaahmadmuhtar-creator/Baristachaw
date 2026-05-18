@@ -643,6 +643,11 @@ test('ai brew process and variety picker search prioritizes exact canonical matc
 
   await page.getByTestId('ai-brew-process-picker').click();
   await expect(page.getByTestId('ai-brew-process-category-chips')).toBeVisible();
+  await setVisibleInputValue(page, 'ai-brew-picker-search-process', 'Decaf');
+  const decafOption = page.locator('[data-testid^="ai-brew-picker-option-process-"]').first();
+  await expect(decafOption).toContainText(/Decaf/i);
+  await expect(decafOption).not.toContainText(/Keluarga proses|Process family|Decaf subtype|Data katalog|Kurasi/i);
+
   await setVisibleInputValue(page, 'ai-brew-picker-search-process', 'Natural');
   await expect(page.locator('[data-testid^="ai-brew-picker-option-process-"]').first()).toHaveAttribute('data-testid', 'ai-brew-picker-option-process-natural');
   await page.getByTestId('ai-brew-picker-option-process-natural').click();
@@ -668,6 +673,7 @@ test('ai brew process and variety picker search prioritizes exact canonical matc
     const firstVariety = page.locator('[data-testid^="ai-brew-picker-option-variety-"]').first();
     await expect(firstVariety).toBeVisible();
     await expect(firstVariety).toContainText(expectedText);
+    await expect(firstVariety).not.toContainText(/Keluarga varietas|Variety family|Data katalog|Kurasi/i);
     await page.getByRole('button', { name: /Close picker|Tutup picker|Tutup/i }).click();
   }
 });
@@ -729,7 +735,7 @@ test('ai brew grinder picker shows Feima 600N platform aliases without losing th
   await expect(feima).toBeVisible();
   await expect(feima).toContainText(/Feima 600N/i);
   await expect(feima).toContainText(/Murane B600BN|Latina 600N|Flying Eagle 600N|Yang-Chia|Fomac|Kova/i);
-  await expect(feima).toContainText(/Curated reference|Community reference|Referensi kurasi|Referensi komunitas/i);
+  await expect(feima).not.toContainText(/Curated reference|Community reference|Referensi kurasi|Referensi komunitas/i);
   await expect(page.locator('button').filter({ hasText: 'Feima 600N / Murane B600BN' })).toHaveCount(1);
 });
 

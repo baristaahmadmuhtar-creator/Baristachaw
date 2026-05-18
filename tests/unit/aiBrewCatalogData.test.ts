@@ -440,6 +440,51 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   }
 });
 
+test('Indonesia water catalog keeps low-mineral and refill water honest', () => {
+  const waters = readJson<{
+    items: Array<{
+      id: string;
+      brand_group_id: string;
+      sku_label: string;
+      water_type: string;
+      is_brew_ready: boolean;
+      brew_block_reason: string[];
+      tds_ppm: number | null;
+      coffee_parameters: { brew_recommendation: string };
+      search_text: string;
+      aliases: string[];
+      sources: Array<{ source_url: string }>;
+      publish_state: string;
+    }>;
+  }>('apps/web/public/data/catalog/phase1/waters.catalog.json').items;
+
+  const amidis = waters.find((entry) => entry.id === 'amidis-id');
+  assert.ok(amidis, 'Amidis should stay in Indonesia water catalog');
+  assert.equal(amidis.sku_label, 'Amidis distilled demineral water');
+  assert.equal(amidis.water_type, 'purified');
+  assert.equal(amidis.is_brew_ready, false);
+  assert.equal(amidis.coffee_parameters.brew_recommendation, 'poor');
+  assert.match(amidis.brew_block_reason.join(' '), /distilled|demineral|add minerals/i);
+  assert.ok(amidis.sources.some((source) => /^https:\/\/amidiswater\.com/i.test(source.source_url)));
+
+  const cleo = waters.find((entry) => entry.id === 'cleo-id');
+  assert.ok(cleo, 'Cleo should stay in Indonesia water catalog');
+  assert.equal(cleo.sku_label, 'Cleo pure low-mineral water');
+  assert.equal(cleo.water_type, 'purified');
+  assert.ok((cleo.tds_ppm ?? 999) < 10);
+  assert.equal(cleo.is_brew_ready, false);
+  assert.match(cleo.brew_block_reason.join(' '), /low-mineral|add minerals/i);
+  assert.match(cleo.search_text, /air murni|tds under 10/i);
+
+  const refill = waters.find((entry) => entry.id === 'galon-isi-ulang-id');
+  assert.ok(refill, 'Refill gallon water should be searchable as manual-only');
+  assert.equal(refill.publish_state, 'review_only');
+  assert.equal(refill.is_brew_ready, false);
+  assert.equal(refill.coffee_parameters.brew_recommendation, 'manual_required');
+  assert.match(refill.brew_block_reason.join(' '), /TDS, GH, and KH manually/i);
+  assert.ok(refill.aliases.some((alias) => /galon/i.test(alias)));
+});
+
 test('AI Brew coffee taxonomy catalog stays deduped, encoded cleanly, and risk-tagged', () => {
   type TaxonomyEntry = {
     id: string;

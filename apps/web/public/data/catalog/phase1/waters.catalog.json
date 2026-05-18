@@ -684,16 +684,17 @@
       "id": "amidis-id",
       "brand_group_id": "amidis",
       "market_code": "id",
-      "sku_label": "Amidis natural mineral water",
+      "sku_label": "Amidis distilled demineral water",
       "brand": "Amidis",
       "country_origin": "Indonesia",
       "available_in": [
         "Indonesia"
       ],
-      "water_type": "natural_mineral",
+      "water_type": "purified",
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
+        "Public product source identifies Amidis as distilled/demineral water; treat it as a remineralization base, not ready brew.",
         "Water is too low-mineral for ready-brew use; add minerals manually."
       ],
       "minerals_mg_l": {
@@ -716,6 +717,18 @@
       },
       "sources": [
         {
+          "source_type": "brand_site",
+          "source_url": "https://amidiswater.com/",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.82
+        },
+        {
+          "source_type": "retailer_label",
+          "source_url": "https://www.astronauts.id/p/amidis-distilled-demineral-water-botol-600ml",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.78
+        },
+        {
           "source_type": "community_reference",
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#amidis-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
@@ -730,7 +743,7 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "amidis indonesia id amidis natural mineral water amidis",
+      "search_text": "amidis indonesia id amidis distilled demineral water low mineral ro purified amidis",
       "aliases": [
         "Amidis",
         "AMIDIS"
@@ -1179,13 +1192,13 @@
       "id": "cleo-id",
       "brand_group_id": "cleo",
       "market_code": "id",
-      "sku_label": "Cleo natural mineral water",
+      "sku_label": "Cleo pure low-mineral water",
       "brand": "Cleo",
       "country_origin": "Indonesia",
       "available_in": [
         "Indonesia"
       ],
-      "water_type": "natural_mineral",
+      "water_type": "purified",
       "is_sparkling": false,
       "is_brew_ready": false,
       "brew_block_reason": [
@@ -1238,10 +1251,12 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "cleo indonesia id cleo natural mineral water cleo",
+      "search_text": "cleo indonesia id cleo air murni pure low mineral water tds under 10 ppm cleo celo",
       "aliases": [
         "Cleo",
-        "CLEO"
+        "CLEO",
+        "Air Murni Cleo",
+        "Celo"
       ],
       "verification_status": "verified",
       "data_quality": {
@@ -1254,6 +1269,78 @@
         "completeness_score": 70
       },
       "updated_at": "2026-05-03T00:00:00.000Z"
+    },
+    {
+      "id": "galon-isi-ulang-id",
+      "brand_group_id": "galon-isi-ulang",
+      "market_code": "id",
+      "sku_label": "Galon isi ulang / depot water",
+      "brand": "Galon isi ulang",
+      "country_origin": "Indonesia",
+      "available_in": [
+        "Indonesia"
+      ],
+      "water_type": "purified",
+      "is_sparkling": false,
+      "is_brew_ready": false,
+      "brew_block_reason": [
+        "Depot/refill gallon water varies by source and filter condition; enter TDS, GH, and KH manually before brewing."
+      ],
+      "minerals_mg_l": {
+        "calcium": null,
+        "magnesium": null,
+        "sodium": null,
+        "potassium": null,
+        "bicarbonate": null,
+        "sulfate": null,
+        "chloride": null,
+        "silica": null
+      },
+      "ph": null,
+      "tds_ppm": null,
+      "coffee_parameters": {
+        "hardness_ppm_as_caco3": null,
+        "alkalinity_ppm_as_caco3": null,
+        "sca_match_score": null,
+        "brew_recommendation": "manual_required"
+      },
+      "sources": [
+        {
+          "source_type": "catalog_policy",
+          "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#galon-isi-ulang-id",
+          "collected_at": "2026-05-18T00:00:00.000Z",
+          "confidence_score": 0.55
+        }
+      ],
+      "primary_source": {
+        "source_type": "catalog_policy",
+        "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#galon-isi-ulang-id",
+        "collected_at": "2026-05-18T00:00:00.000Z",
+        "confidence_score": 0.55
+      },
+      "published": false,
+      "publish_state": "review_only",
+      "search_text": "galon isi ulang depot refill water indonesia air galon ro filter manual mineral",
+      "aliases": [
+        "Air galon",
+        "Galon isi ulang",
+        "Depot air minum",
+        "Refill gallon water"
+      ],
+      "verification_status": "curated",
+      "data_quality": {
+        "is_estimated": false,
+        "missing_fields": [
+          "tds_ppm",
+          "official_calcium",
+          "official_magnesium",
+          "official_bicarbonate",
+          "hardness_ppm_as_caco3",
+          "alkalinity_ppm_as_caco3"
+        ],
+        "completeness_score": 0
+      },
+      "updated_at": "2026-05-18T00:00:00.000Z"
     },
     {
       "id": "club-id",

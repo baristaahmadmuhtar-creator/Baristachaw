@@ -3140,7 +3140,7 @@ function buildAiBrewWorkflowFocusCue(
       case 'v60':
       case 'origami':
       case 'kono':
-        return 'Pour calmly from center to mid-bed. Keep the bed level and avoid rinsing the filter wall.';
+        return 'Pour low and steady from center to mid-bed; keep the bed even instead of chasing the paper wall.';
       case 'chemex':
         return 'Keep flow stable and the thick-paper vent open; do not chase the paper wall.';
       case 'kalita_wave':
@@ -3168,7 +3168,7 @@ function buildAiBrewWorkflowFocusCue(
       case 'batch_brew':
         return 'Let the machine cycle finish, then gently mix the batch before tasting.';
       default:
-        return 'Keep flow stable, the bed tidy, and make the next correction from taste.';
+        return 'Keep flow steady, keep the bed tidy, and judge the next change from the cup.';
     }
   }
 
@@ -3191,7 +3191,7 @@ function buildAiBrewWorkflowFocusCue(
     case 'v60':
     case 'origami':
     case 'kono':
-      return 'Tuang tenang dari tengah ke tengah-luar. Jaga bed rata, jangan bilas dinding filter.';
+      return 'Tuang rendah dan stabil dari tengah ke tengah-luar; jaga bed rata, bukan mengejar dinding filter.';
     case 'chemex':
       return 'Jaga aliran stabil dan vent filter tetap terbuka; jangan kejar dinding kertas.';
     case 'kalita_wave':
@@ -3219,7 +3219,7 @@ function buildAiBrewWorkflowFocusCue(
     case 'batch_brew':
       return 'Biarkan siklus mesin selesai, lalu aduk batch pelan sebelum cicip.';
     default:
-      return 'Jaga aliran stabil, bed rapi, dan koreksi dari rasa setelah seduh.';
+      return 'Jaga aliran stabil, bed rapi, lalu baca koreksi dari hasil cangkir.';
   }
 }
 
@@ -3361,28 +3361,30 @@ function buildAiBrewWorkflowControlDetail(plan: BrewPlan, step: AiBrewDisplaySte
     case 'v60':
     case 'origami':
     case 'kono':
+      if (actionType === 'setup' || actionType === 'rinse_preheat') return 'Siapkan filter rata, server hangat, dan timbangan nol; dari sini aliran seduh lebih mudah dikontrol.';
       if (actionType === 'bloom') return 'Bloom: tuang cukup untuk membasahi semua bubuk; bed rata lebih penting daripada spiral besar.';
       if (actionType === 'drawdown') return 'Air turun: biarkan cone bersih alami; hindari bilas dinding filter di akhir.';
       if (actionType === 'serve') return 'Sajikan: swirl server ringan sebelum tuang supaya layer rasa merata.';
-      return 'Tuang: mulai dari tengah, buka ke tengah-luar seperlunya, lalu kembali ke tengah saat bed mulai naik.';
+      return 'Tuang: jaga kettle rendah, buka ke tengah-luar seperlunya, lalu kembali ke tengah sebelum bed terlalu tinggi.';
     case 'chemex':
+      if (actionType === 'setup' || actionType === 'rinse_preheat') return 'Siapkan lipatan filter di sisi spout dan bilas sampai kertas benar-benar hangat; vent harus tetap terbuka.';
       return actionType === 'drawdown'
-        ? 'Air turun Chemex: filter tebal mudah stall; jaga vent terbuka dan jangan kejar dinding.'
-        : 'Kontrol Chemex: aliran stabil lebih penting daripada pulse besar; hindari menutup jalur udara filter.';
+        ? 'Air turun Chemex: biarkan vent terbuka dan jangan bilas dinding; filter tebal butuh aliran sabar.'
+        : 'Kontrol Chemex: tuang stabil di tengah bed; pulse besar biasanya membuat kertas tebal lebih mudah melambat.';
     case 'kalita_wave':
     case 'april':
     case 'melitta':
-      return 'Kontrol flat-bottom: pulse pendek dari tengah, bed tetap rata, jangan flooding di fase akhir.';
+      return 'Kontrol flat-bottom: pulse pendek dari tengah, bed tetap rata, dan jangan banjiri satu sisi filter.';
     case 'hario_switch':
       return actionType === 'release' || actionType === 'drawdown'
-        ? 'Kontrol Switch: buka katup sesuai waktu; air turun jangan diaduk ulang agar cup tidak keruh.'
-        : 'Kontrol Switch: cek katup dan muatan ruang; steep stabil lebih penting daripada agitasi besar.';
+        ? 'Kontrol Switch: buka katup sekali dengan bersih; biarkan air turun tanpa aduk ulang.'
+        : 'Kontrol Switch: pastikan katup sesuai fase dan muatan ruang aman sebelum mulai.';
     case 'clever_dripper':
-      return 'Kontrol Clever: steep selesai dulu, baru release; air turun adalah fase pisah, bukan kesempatan aduk ulang.';
+      return 'Kontrol Clever: selesaikan steep dulu, baru release; fase turun hanya memisahkan kopi dari bubuk.';
     case 'french_press':
-      return 'Kontrol French Press: steep tenang, press pelan, lalu decant bersih supaya ampas tidak lanjut ekstraksi.';
+      return 'Kontrol French Press: steep tenang, press pelan, lalu pindahkan ke server agar ampas berhenti mengekstrak.';
     case 'aeropress':
-      return 'Kontrol AeroPress: steep merata, press stabil, berhenti sebelum hiss dipaksa.';
+      return 'Kontrol AeroPress: basahi chamber merata, press stabil, dan berhenti sebelum hiss terakhir dipaksa.';
     case 'espresso':
       return 'Kontrol espresso: baca aliran shot dan yield; koreksi utama dari grind, bukan menambah waktu sembarang.';
     case 'moka_pot':
@@ -3414,8 +3416,7 @@ function buildAiBrewDeterministicStepDetailPoints(
     if (id) {
       const workflowControl = buildAiBrewWorkflowControlDetail(plan, step, language);
       const beanContext = buildAiBrewBeanContextDetail(plan, step, language);
-      const actionType = isWorkflowGuideStep(step) ? step.actionType : getAiBrewStepKind(step);
-      addPoint(actionType === 'setup' || actionType === 'bloom' ? beanContext || workflowControl : workflowControl || beanContext);
+      addPoint(workflowControl || beanContext);
     } else {
       addPoint(buildAiBrewWorkflowFocusCue(plan, step, language));
     }
@@ -4885,7 +4886,6 @@ function PlanResultDialog({
   const extractionTimeLabel = getPlanExtractionLabel(plan, language);
   const guideEndLabel = id ? 'Panduan selesai' : 'Guide complete';
   const postExtractionLabel = id ? 'Aduk/sajikan' : 'Finishing';
-  const timeHelperText = getPlanTimeHelperCopy(plan, language);
   const summaryHighlightItems = buildAiBrewCoreMetricItems(
     plan,
     copy,
@@ -5085,7 +5085,6 @@ function PlanResultDialog({
     { label: copy.confidenceWorkflow, value: plan.readinessScores.workflow },
     { label: copy.confidenceCatalog, value: plan.readinessScores.catalog },
   ] : [];
-  const compactExpectedCupItems = expectedCupItems.slice(0, 4);
   const beanCoverageTone = plan.beanCoverage?.category === 'known_high'
     ? 'border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
     : plan.beanCoverage?.category === 'unsupported_unsafe'
@@ -5238,12 +5237,6 @@ function PlanResultDialog({
                           {copy.expectedCupTitle}: {localizedExpectedCupConfidence}
                         </span>
                       )}
-                      {compactExpectedCupItems.map((item) => (
-                        <span key={item.label} className="rounded-full border panel-divider-subtle bg-surface-alpha px-2 py-1 text-secondary">
-                          <span className="mr-1 text-tertiary">{item.label}</span>
-                          <span className="font-semibold text-primary">{item.value}/5</span>
-                        </span>
-                      ))}
                     </div>
                     {(readinessItems.length > 0 || expectedCup?.warnings[0] || expectedCup?.reasons[0] || plan.beanCoverage) && (
                       <details className="group mt-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
@@ -5447,9 +5440,6 @@ function PlanResultDialog({
                         <span className="font-semibold text-primary">{postExtractionLabel}:</span> +{formatGuideTime(postExtractionSeconds)} {id ? 'aduk/sajikan' : 'stir/serve'}.
                       </p>
                     )}
-                    <p className="rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-xs leading-5 text-blue-800 dark:text-blue-200" data-testid="ai-brew-time-helper">
-                      {copy.summaryFocusHint} {timeHelperText}
-                    </p>
                   </div>
                   {plan.methodFamily === 'hario_switch' && (
                     <div className="mt-3 flex min-w-0 max-w-full flex-wrap gap-1.5 text-xs" data-testid="ai-brew-switch-result-summary">
@@ -6543,14 +6533,14 @@ function buildProcessPickerOptions(catalog: AiBrewCatalog, copy: CopySet) {
     return {
       id: entry.id,
       label: entry.label,
-      subtitle: `${copy.processGroup}: ${entry.group}`,
-      description: entry.notes[0],
+      subtitle: undefined,
+      description: undefined,
       searchText: normalizeSearchText(`${entry.searchText} ${entry.group} ${entry.aliases.join(' ')}`),
       aliases: entry.aliases,
       canonicalTerms: [entry.id, entry.label, ...entry.aliases],
       processCategory: category,
       section: getProcessPickerCategoryLabel(copy, category),
-      badges: buildProcessBadges(copy, entry),
+      badges: [],
       ariaLabel: copy.pickerSelectProcess.replace('{label}', entry.label),
     };
   }));
@@ -6580,13 +6570,13 @@ function buildVarietyPickerOptions(catalog: AiBrewCatalog, copy: CopySet) {
   options.push(...catalog.varieties.map((entry): PickerOption => ({
     id: entry.id,
     label: entry.label,
-    subtitle: `${copy.varietyGroup}: ${entry.group}`,
-    description: entry.originNotes,
+    subtitle: undefined,
+    description: undefined,
     searchText: normalizeSearchText(`${entry.searchText} ${entry.group} ${entry.aliases.join(' ')}`),
     aliases: entry.aliases,
     canonicalTerms: [entry.id, entry.label, ...entry.aliases],
     section: getVarietyPickerSection(copy, entry),
-    badges: buildVarietyBadges(copy, entry),
+    badges: [],
     ariaLabel: copy.pickerSelectVariety.replace('{label}', entry.label),
   })));
   options.push({
@@ -6638,9 +6628,6 @@ function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopyS
       ? METHOD_FAMILY_SEARCH_ALIASES[item.methodFamily]
       : '';
     const kindLabel = kind === 'dripper' ? copy.dripper.toLowerCase() : kind;
-    const grinderReference = kind === 'grinder'
-      ? formatGrinderReferenceLabel(copy, item.verificationLevel)
-      : '';
     const grinderIsFeimaPlatform = kind === 'grinder' && isFeima600nPlatformGrinder(item);
     const subtitle = kind === 'grinder'
       ? grinderIsFeimaPlatform
@@ -6649,9 +6636,7 @@ function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopyS
       : item.brand ? `${item.brand} - ${item.typeLabel}` : item.typeLabel;
     const description = kind === 'dripper'
       ? [trustDetail, item.description].filter(Boolean).join(' - ')
-      : grinderIsFeimaPlatform
-        ? formatFeima600nAliasLine(language)
-        : '';
+      : '';
 
     return {
       id: item.id,
@@ -6664,7 +6649,7 @@ function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopyS
           ? copy.brewerCoreSection
           : copy.brewerSpecialtySection
         : '',
-      badges: trustStatus ? [formatBrewerProfileTrustLabel(trustStatus, language)] : grinderReference ? [grinderReference] : [],
+      badges: trustStatus ? [formatBrewerProfileTrustLabel(trustStatus, language)] : [],
       ariaLabel: copy.pickerSelectEquipment.replace('{kind}', kindLabel).replace('{label}', item.name),
       tone: trustStatus === 'exact' ? 'highlight' : trustStatus === 'calibration_required' ? 'muted' : 'default',
       trustStatus,
@@ -6694,20 +6679,14 @@ function buildWaterChemistryLabel(item: WaterBrandProfile, language?: string) {
   return localizeAiBrewWaterClassificationLabel(item.classificationLabel, language);
 }
 
-function buildWaterPickerSubtitle(item: WaterBrandProfile, copy: CopySet, language?: string) {
-  const status = formatWaterReadinessStatus(copy, {
+function buildWaterPickerSubtitle(item: WaterBrandProfile, copy: CopySet, _language?: string) {
+  return formatWaterReadinessStatus(copy, {
     classification: item.classification,
     presetStatus: item.presetStatus,
     isBrewReady: item.isBrewReady,
     mineralsReady: item.presetStatus === 'autofill',
     mineralDerivation: item.resolvedMinerals?.derivation,
   });
-  const classification = localizeAiBrewWaterClassificationLabel(item.classificationLabel, language);
-  return [
-    status,
-    classification,
-    item.marketCode.toUpperCase(),
-  ].filter(Boolean).join(' - ');
 }
 
 function rangePenalty(value: number, min: number, max: number) {
@@ -7010,7 +6989,7 @@ function buildWaterPickerOptions(items: WaterBrandProfile[], copy: CopySet, lang
     searchText: item.searchText,
     description: undefined,
     section: '',
-    badges: buildWaterFactBadges(item, copy),
+    badges: [],
     ariaLabel: `${copy.pickerSelectWaterBrand.replace('{label}', item.shortLabel)}${item.isBrewReady ? '' : copy.pickerManualMineralsSuffix}`,
     tone: item.presetStatus === 'autofill' ? 'highlight' : 'default',
   }));

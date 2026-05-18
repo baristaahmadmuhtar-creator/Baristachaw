@@ -133,7 +133,6 @@ test('pwa fullscreen docks bottom nav flush to the viewport without safe-area fi
     const surfaceRect = surfaceEl.getBoundingClientRect();
     return {
       isPwa: document.documentElement.hasAttribute('data-pwa'),
-      isIosStandalone: document.documentElement.hasAttribute('data-ios-standalone'),
       safeBottom: Number.parseFloat(rootStyle.getPropertyValue('--safe-bottom') || '0'),
       edgeSafeBottom: Number.parseFloat(rootStyle.getPropertyValue('--edge-safe-bottom') || '0'),
       pwaBottomBleed: Number.parseFloat(rootStyle.getPropertyValue('--pwa-bottom-bleed') || '0'),
@@ -159,11 +158,7 @@ test('pwa fullscreen docks bottom nav flush to the viewport without safe-area fi
   expect(metrics?.pagePaddingBottom ?? 0).toBeGreaterThanOrEqual((metrics?.surfaceHeight ?? 0) - 1);
   expect(metrics?.pagePaddingBottom ?? 99).toBeLessThanOrEqual((metrics?.surfaceHeight ?? 0) + 8);
   expect(metrics?.surfaceShadow).toBe('none');
-  if (metrics?.isIosStandalone) {
-    expect(metrics.wrapperBackground).not.toBe('rgba(0, 0, 0, 0)');
-  } else {
-    expect(metrics?.wrapperBackground).toBe('rgba(0, 0, 0, 0)');
-  }
+  expect(metrics?.wrapperBackground).toBe('rgba(0, 0, 0, 0)');
   expect(metrics?.bodyAfterContent).toBe('none');
 });
 
@@ -189,15 +184,11 @@ test('pwa simulated iOS safe-area keeps nav surface above home indicator without
     const rootStyle = getComputedStyle(document.documentElement);
     const wrapperStyle = getComputedStyle(wrapperEl);
     const pageStyle = pageEl ? getComputedStyle(pageEl) : null;
-    const surfaceStyle = getComputedStyle(surfaceEl);
     const surfaceRect = surfaceEl.getBoundingClientRect();
     return {
-      isIosStandalone: document.documentElement.hasAttribute('data-ios-standalone'),
       safeBottom: Number.parseFloat(rootStyle.getPropertyValue('--safe-bottom') || '0'),
       wrapperBottom: Number.parseFloat(wrapperStyle.bottom || '0'),
       wrapperPaddingBottom: Number.parseFloat(wrapperStyle.paddingBottom || '0'),
-      wrapperBackground: wrapperStyle.backgroundColor,
-      surfacePaddingBottom: Number.parseFloat(surfaceStyle.paddingBottom || '0'),
       surfaceGapToBottom: Math.max(0, window.innerHeight - surfaceRect.bottom),
       pagePaddingBottom: pageStyle ? Number.parseFloat(pageStyle.paddingBottom || '0') : null,
       documentClientWidth: document.documentElement.clientWidth,
@@ -208,16 +199,9 @@ test('pwa simulated iOS safe-area keeps nav surface above home indicator without
   expect(metrics).not.toBeNull();
   expect(metrics?.safeBottom).toBe(34);
   expect(metrics?.wrapperBottom ?? 99).toBeLessThanOrEqual(0.5);
-  if (metrics?.isIosStandalone) {
-    expect(metrics?.wrapperPaddingBottom ?? 99).toBeLessThanOrEqual(0.5);
-    expect(metrics?.surfacePaddingBottom ?? 0).toBeGreaterThanOrEqual(30);
-    expect(metrics?.surfaceGapToBottom ?? 99).toBeLessThanOrEqual(2);
-    expect(metrics?.wrapperBackground).not.toBe('rgba(0, 0, 0, 0)');
-  } else {
-    expect(metrics?.wrapperPaddingBottom ?? 0).toBeGreaterThanOrEqual(30);
-    expect(metrics?.wrapperPaddingBottom ?? 99).toBeLessThanOrEqual(34);
-    expect(metrics?.surfaceGapToBottom ?? 0).toBeGreaterThanOrEqual(30);
-  }
+  expect(metrics?.wrapperPaddingBottom ?? 0).toBeGreaterThanOrEqual(30);
+  expect(metrics?.wrapperPaddingBottom ?? 99).toBeLessThanOrEqual(34);
+  expect(metrics?.surfaceGapToBottom ?? 0).toBeGreaterThanOrEqual(30);
   if (metrics?.pagePaddingBottom !== null) {
     expect(metrics?.pagePaddingBottom ?? 0).toBeGreaterThanOrEqual(92);
   }

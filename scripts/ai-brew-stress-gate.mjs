@@ -84,6 +84,7 @@ function reportArtifacts() {
     'artifacts/ai-brew-audit/iced-500k-stress',
     'artifacts/ai-brew-audit/hot-iced-1m-stress',
     'artifacts/ai-brew-audit/hot-iced-500k-balanced-stress',
+    'artifacts/ai-brew-audit/real-world-1000',
     'artifacts/ai-brew-audit/grind-size-matrix',
   ];
   const found = roots.flatMap((root) => latestMarkdown(root) || []);

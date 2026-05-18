@@ -5268,6 +5268,13 @@ function buildAdaptivePhaseFocusCue(context: AdaptiveShareContext, phase: Adapti
         if (context.methodFamily === 'batch_brew') return 'Mix the batch gently after the basket finishes draining.';
         return 'Break heat and draw the brew down cleanly before serving.';
       }
+      if (immersionLed) {
+        if (context.methodFamily === 'cold_brew') return 'Filter cleanly first, then dilute or serve only after the grounds are separated.';
+        if (context.methodFamily === 'french_press') return 'Press gently, decant cleanly, and leave the fines behind.';
+        if (context.methodFamily === 'aeropress') return 'Press steadily, stop before the hiss, and serve without squeezing the bed.';
+        if (context.methodFamily === 'clever_dripper') return 'Release cleanly and avoid stirring again once the brewer is draining.';
+        return 'Finish the immersion phase cleanly and separate the brew from the grounds.';
+      }
       if (focus === 'acidity') return 'Finish cleanly and avoid heavy late agitation.';
       if (focus === 'body') return 'Finish with enough control to keep the cup dense, not muddy.';
       if (focus === 'sweetness') return 'Finish calmly so the aftertaste stays sweet and round.';
@@ -7034,6 +7041,15 @@ function finalizePlanCore(
     || input.waterCustomized
     || input.waterMode === 'manual'
     || waterBrand?.presetStatus === 'manual_required';
+  const waterIsBrewReadyForPlan = Boolean(waterBrand?.isBrewReady ?? input.waterMode === 'manual')
+    && !(
+      waterBrand?.classification === 'zero_mineral_ro'
+      || (
+        waterProfile.minerals.tdsPpm < 30
+        && waterProfile.minerals.hardnessPpm < 20
+        && waterProfile.minerals.alkalinityPpm < 20
+      )
+    );
 
   const summary = buildSummary({
     brewMode: input.brewMode,
@@ -7109,7 +7125,7 @@ function finalizePlanCore(
     waterBrandLabel: waterBrand?.shortLabel,
     waterPresetStatus: waterBrand?.presetStatus,
     waterPublishState: waterBrand?.publishState,
-    waterIsBrewReady: waterBrand?.isBrewReady ?? input.waterMode === 'manual',
+    waterIsBrewReady: waterIsBrewReadyForPlan,
     waterClassification: waterBrand?.classification,
     waterBrewBlockReason: waterBrand?.brewBlockReason || [],
     waterBrandMarkets: waterBrand?.markets || [],

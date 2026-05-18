@@ -60,6 +60,39 @@ function isFeimaStyleGrinder(grinder: EquipmentCatalogEntry) {
   return haystackHasAny(haystack, [/\b600n\b/i, /\bfeima\b/i, /\blatina\b/i, /\bflying eagle\b/i, /\bmurane\b/i, /\bfomac\b/i, /\bkova\b/i]);
 }
 
+function isEspressoNotRecommendedGrinder(grinder: EquipmentCatalogEntry) {
+  const haystack = normalizeSearchHaystack([
+    grinder.id,
+    grinder.name,
+    grinder.brand,
+    grinder.typeLabel,
+    grinder.description,
+    grinder.searchText,
+    grinder.grindBands?.fine,
+    grinder.grindBands?.medium,
+    grinder.grindBands?.coarse,
+  ]);
+  return haystackHasAny(haystack, [
+    /\btimemore\s*c2\b/i,
+    /\btimemore\s*c3\b(?!\s*esp)/i,
+    /\bfellow\s*ode\b/i,
+    /\bbaratza\s*encore\b(?!\s*esp)/i,
+    /\bfeima\b/i,
+    /\b600n\b/i,
+    /\blatina\b/i,
+    /\bflying\s*eagle\b/i,
+    /\bmurane\b/i,
+    /\bfomac\b/i,
+    /\bkova\b/i,
+    /\bhario\b/i,
+    /\bporlex\b/i,
+    /\bq\s*air\b/i,
+    /\bq2\b/i,
+    /\bzp6\b/i,
+    /\bbrew[-\s]?focused\b/i,
+  ]);
+}
+
 function formatParsedSetting(value: number, parsed: ParsedNumericRange) {
   const rounded = roundTo(value, parsed.precision);
   const text = parsed.precision > 0 ? rounded.toFixed(parsed.precision) : String(Math.round(rounded));
@@ -187,10 +220,19 @@ export function resolveGrinderSettingReference(
   const hasCatalogBandProvenance = grinder.sourceUrls.length > 0
     && grinder.verificationLevel !== 'dataset_unverified'
     && grinder.verificationLevel !== 'fallback';
+  const espressoNotRecommended = deviceProfile.methodFamily === 'espresso'
+    && isEspressoNotRecommendedGrinder(grinder);
 
   const idSuffix = deviceProfile.methodFamily === 'v60'
     ? brewMode
     : `${deviceProfile.methodFamily}_${brewMode}`;
+  const note = formatFallbackBandNote({
+    hasCatalogBandProvenance,
+    band: fallbackBand.band,
+    methodFamily: deviceProfile.methodFamily,
+  }) + (espressoNotRecommended
+    ? ' Hard warning: this grinder is not recommended for espresso because a safe espresso/fine range is not verified; choose an espresso-capable grinder for real shots.'
+    : '');
 
   return {
     id: `${hasCatalogBandProvenance ? 'catalog' : 'derived'}_${grinder.id}_${idSuffix}`,
@@ -199,21 +241,17 @@ export function resolveGrinderSettingReference(
     profileIds: [],
     rangeLabel: fallbackBand.label,
     parsedRange: fallbackBand.parsedRange,
-    note: formatFallbackBandNote({
-      hasCatalogBandProvenance,
-      band: fallbackBand.band,
-      methodFamily: deviceProfile.methodFamily,
-    }),
+    note,
     referenceType: 'derived_from_grinder_band',
     calibrationRequired: true,
     source: hasCatalogBandProvenance ? `catalog_${fallbackBand.band}_band` : 'derived_from_grinder_band',
     sourceUrls: grinder.sourceUrls,
-    verificationLevel: hasCatalogBandProvenance ? grinder.verificationLevel : 'fallback',
+    verificationLevel: hasCatalogBandProvenance && !espressoNotRecommended ? grinder.verificationLevel : 'fallback',
     verifiedAt: hasCatalogBandProvenance ? grinder.verifiedAt : catalog.catalogVersion,
     popularityTier: grinder.popularityTier,
     marketSegment: grinder.marketSegment,
     releaseStatus: grinder.releaseStatus,
-    confidence: hasCatalogBandProvenance ? grinder.confidence : 'low',
+    confidence: hasCatalogBandProvenance && !espressoNotRecommended ? grinder.confidence : 'low',
     catalogVersion: catalog.catalogVersion,
   } satisfies GrinderSettingReference;
 }

@@ -433,6 +433,10 @@ export function buildExpectedCupProfile(
     confidence = confidence === 'low' ? 'low' : 'medium';
     warnings.push('Baseline grinder menurunkan keyakinan; validasi dari waktu ekstraksi dan rasa.');
   }
+  if (plan.methodFamily === 'espresso' && (plan.grindSettingVerification === 'fallback' || plan.grindCalibrationRequired)) {
+    confidence = 'low';
+    warnings.push('Espresso dengan grinder fallback atau belum terverifikasi hanya boleh dipakai sebagai starting point kalibrasi, bukan prediksi shot yang pasti.');
+  }
 
   if (plan.processRisk?.variability === 'high') {
     confidence = confidence === 'high' ? 'medium' : confidence;

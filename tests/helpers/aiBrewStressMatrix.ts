@@ -178,7 +178,7 @@ function getCurrentAuditSha() {
   }
 }
 
-function buildProductionAiBrewCatalogForStress(): AiBrewCatalog {
+export function buildProductionAiBrewCatalogForStress(): AiBrewCatalog {
   const catalogVersion = 'production-stress-fixture';
   const provenance = (entry: {
     source?: string;
@@ -355,10 +355,10 @@ function buildStressWaterBrands(): WaterBrandProfile[] {
         },
         source: 'water-catalog-phase1',
         sourceUrls,
-        verificationLevel: entry.data_quality?.is_estimated ? 'estimated' : 'curated',
+        verificationLevel: entry.data_quality?.is_estimated ? 'dataset_unverified' : 'curated',
         verifiedAt: '2026-06-01',
-        popularityTier: 'regional_common',
-        marketSegment: 'commercial_specialty_bridge',
+        popularityTier: 'widely_used',
+        marketSegment: 'mass_market',
         releaseStatus: 'established',
         confidence: entry.data_quality?.is_estimated ? 'low' : 'medium',
         catalogVersion: 'production-stress-fixture',
@@ -595,7 +595,7 @@ function validateGuardrails(plan: AiBrewPlan, reasons: string[]) {
   const correctionText = `${correction.primaryCorrection} ${correction.backupCorrection}`;
   if (plan.methodFamily === 'espresso' && /add water|bloom|kettle/i.test(correctionText)) reasons.push('espresso correction leaks filter advice');
   if (plan.methodFamily === 'moka_pot' && /bloom|final pour/i.test(correctionText)) reasons.push('moka correction leaks filter advice');
-  const grinderFallback = /fallback|derived|calibration|required|manual/i.test(`${plan.grindSettingMode} ${plan.grindSettingVerification} ${plan.grindCalibrationRequired} ${plan.grindSettingReference?.note || ''}`);
+  const grinderFallback = /fallback|derived|calibration|required|manual/i.test(`${plan.grindSettingMode} ${plan.grindSettingVerification} ${plan.grindCalibrationRequired} ${plan.grindSettingReference || ''}`);
   if (grinderFallback && plan.expectedCupProfile?.confidence === 'high') reasons.push('fallback grinder produced high confidence');
 }
 

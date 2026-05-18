@@ -90,6 +90,11 @@ function isEspressoNotRecommendedGrinder(grinder: EquipmentCatalogEntry) {
     /\bq2\b/i,
     /\bzp6\b/i,
     /\bbrew[-\s]?focused\b/i,
+    /\bunknown\s+manual\b/i,
+    /\bunknown\s+electric\b/i,
+    /\bfallback\s+manual\b/i,
+    /\bfallback\s+electric\b/i,
+    /\bmanual\s+calibration\b/i,
   ]);
 }
 

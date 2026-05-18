@@ -10,7 +10,8 @@ test('AI Brew real-world 1000 scenario gate is wired with curated coverage and h
   );
 
   const script = fs.readFileSync('scripts/ai-brew-real-world-1000.mjs', 'utf8');
-  assert.match(script, /SCENARIO_TOTAL\s*=\s*1000/);
+  assert.match(script, /parseScenarioTotal/);
+  assert.match(script, /SCENARIO_TOTAL\s*=\s*parseScenarioTotal/);
   assert.match(script, /Panama Hacienda La Esmeralda Geisha Washed style/);
   assert.match(script, /Ethiopia Yirgacheffe Washed Landrace style/);
   assert.match(script, /Kenya AA SL28\/SL34 Washed style/);

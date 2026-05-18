@@ -11,7 +11,15 @@ import { buildTasteFeedbackCorrection } from '../apps/web/src/features/ai-brew/e
 import { localizeAiBrewDynamicText } from '../apps/web/src/features/ai-brew/localization.ts';
 import { buildProductionAiBrewCatalogForStress } from '../tests/helpers/aiBrewStressMatrix.ts';
 
-const SCENARIO_TOTAL = 1000;
+function parseScenarioTotal() {
+  const argValue = process.argv.find((arg) => arg.startsWith('--scenarios='))?.split('=')[1]
+    || process.env.AI_BREW_REAL_WORLD_SCENARIOS;
+  const parsed = Number.parseInt(String(argValue || '1000'), 10);
+  if (!Number.isFinite(parsed) || parsed < 1000 || parsed > 100000) return 1000;
+  return parsed;
+}
+
+const SCENARIO_TOTAL = parseScenarioTotal();
 const STRONG_VERDICT = 'AI BREW REAL-WORLD SCENARIO STRONG / REAL BREW VALIDATION REQUIRED';
 const NEEDS_REFINEMENT_VERDICT = 'AI BREW NEEDS REFINEMENT BEFORE PRODUCTION';
 const NOT_READY_VERDICT = 'AI BREW NOT READY';
@@ -289,6 +297,174 @@ const BEAN_ARCHETYPES = [
     mismatchTargets: ['floral_transparent', 'more_acidity'],
     expectation: 'wet_hulled_body',
     expected: 'spice, cocoa, body, lower clarity',
+  },
+  {
+    id: 'indonesia-kerinci-honey',
+    label: 'Indonesia Kerinci Honey Sigararutang style',
+    origin: 'Indonesia',
+    process: 'honey',
+    customProcess: '',
+    variety: 'custom',
+    customVariety: 'Sigararutang / Andungsari regional lot',
+    defaultRoasts: ['medium_light', 'medium'],
+    fitTargets: ['more_sweetness', 'fruit_forward', 'balance_clean'],
+    mismatchTargets: ['dense_comforting'],
+    expectation: 'indonesia_fruit_sweet',
+    expected: 'red fruit, brown sugar, citrus lift, medium body',
+  },
+  {
+    id: 'indonesia-papua-washed',
+    label: 'Indonesia Papua Wamena Washed Typica style',
+    origin: 'Indonesia',
+    process: 'washed',
+    customProcess: '',
+    variety: 'custom',
+    customVariety: 'Typica / S795 highland lot',
+    defaultRoasts: ['medium_light', 'medium'],
+    fitTargets: ['balance_clean', 'more_sweetness', 'more_acidity'],
+    mismatchTargets: ['dense_comforting'],
+    expectation: 'indonesia_clean_sweet',
+    expected: 'sweet spice, orange-like acidity, clean medium body',
+  },
+  {
+    id: 'indonesia-bajawa-natural',
+    label: 'Indonesia Bajawa Flores Natural Catimor style',
+    origin: 'Indonesia',
+    process: 'natural',
+    customProcess: '',
+    variety: 'catimor',
+    customVariety: 'Bajawa Catimor / S795 regional lot',
+    defaultRoasts: ['medium_light', 'medium'],
+    fitTargets: ['fruit_forward', 'more_sweetness', 'soft_round'],
+    mismatchTargets: ['floral_transparent'],
+    expectation: 'indonesia_fruit_variable',
+    expected: 'cocoa, tropical fruit, spice, natural-process variability',
+  },
+  {
+    id: 'indonesia-java-preanger',
+    label: 'Indonesia Java Preanger Washed S795 style',
+    origin: 'Indonesia',
+    process: 'washed',
+    customProcess: '',
+    variety: 's795',
+    customVariety: '',
+    defaultRoasts: ['medium_light', 'medium'],
+    fitTargets: ['balance_clean', 'more_sweetness', 'soft_round'],
+    mismatchTargets: ['floral_transparent'],
+    expectation: 'indonesia_balanced',
+    expected: 'cocoa, spice, soft citrus, balanced sweetness',
+  },
+  {
+    id: 'mexico-chiapas-washed',
+    label: 'Mexico Chiapas Washed Bourbon style',
+    origin: 'Mexico',
+    process: 'washed',
+    customProcess: '',
+    variety: 'bourbon',
+    customVariety: 'Bourbon / Typica',
+    defaultRoasts: ['medium_light', 'medium'],
+    fitTargets: ['balance_clean', 'more_sweetness', 'soft_round'],
+    mismatchTargets: ['dense_comforting'],
+    expectation: 'balanced_sweet',
+    expected: 'milk chocolate, citrus, approachable sweetness',
+  },
+  {
+    id: 'peru-cajamarca-washed',
+    label: 'Peru Cajamarca Washed Typica style',
+    origin: 'Peru',
+    process: 'washed',
+    customProcess: '',
+    variety: 'typica',
+    customVariety: 'Typica / Caturra',
+    defaultRoasts: ['medium_light', 'medium'],
+    fitTargets: ['balance_clean', 'more_sweetness', 'more_acidity'],
+    mismatchTargets: ['dense_comforting'],
+    expectation: 'washed_acid_sweet',
+    expected: 'citrus, caramel, clean sweetness',
+  },
+  {
+    id: 'bolivia-caranavi-washed',
+    label: 'Bolivia Caranavi Washed Caturra style',
+    origin: 'Bolivia',
+    process: 'washed',
+    customProcess: '',
+    variety: 'caturra',
+    customVariety: '',
+    defaultRoasts: ['medium_light', 'medium'],
+    fitTargets: ['more_sweetness', 'balance_clean', 'floral_transparent'],
+    mismatchTargets: ['dense_comforting'],
+    expectation: 'sweet_floral',
+    expected: 'stone fruit, florals, clean caramel sweetness',
+  },
+  {
+    id: 'uganda-natural-sl',
+    label: 'Uganda Natural SL14/SL28 style',
+    origin: 'Uganda',
+    process: 'natural',
+    customProcess: '',
+    variety: 'custom',
+    customVariety: 'SL14 / SL28',
+    defaultRoasts: ['medium_light', 'medium'],
+    fitTargets: ['fruit_forward', 'more_sweetness', 'more_body'],
+    mismatchTargets: ['floral_transparent'],
+    expectation: 'natural_ferment',
+    expected: 'red fruit, cocoa, natural-process ferment risk',
+  },
+  {
+    id: 'nicaragua-maracaturra-washed',
+    label: 'Nicaragua Maracaturra Washed style',
+    origin: 'Nicaragua',
+    process: 'washed',
+    customProcess: '',
+    variety: 'custom',
+    customVariety: 'Maracaturra',
+    defaultRoasts: ['medium_light', 'medium'],
+    fitTargets: ['balance_clean', 'more_sweetness', 'more_acidity'],
+    mismatchTargets: ['dense_comforting'],
+    expectation: 'balanced_sweet',
+    expected: 'citrus, cocoa, rounded sweetness',
+  },
+  {
+    id: 'honduras-parainema-honey',
+    label: 'Honduras Parainema Honey style',
+    origin: 'Honduras',
+    process: 'honey',
+    customProcess: '',
+    variety: 'custom',
+    customVariety: 'Parainema',
+    defaultRoasts: ['medium_light', 'medium'],
+    fitTargets: ['more_sweetness', 'fruit_forward', 'balance_clean'],
+    mismatchTargets: ['floral_transparent'],
+    expectation: 'sweet_honey',
+    expected: 'honey sweetness, tropical fruit, medium body',
+  },
+  {
+    id: 'thailand-doi-chang-washed',
+    label: 'Thailand Doi Chang Washed Catimor style',
+    origin: 'Thailand',
+    process: 'washed',
+    customProcess: '',
+    variety: 'catimor',
+    customVariety: 'Catimor / Typica regional lot',
+    defaultRoasts: ['medium_light', 'medium'],
+    fitTargets: ['balance_clean', 'more_sweetness', 'soft_round'],
+    mismatchTargets: ['floral_transparent'],
+    expectation: 'balanced_sweet',
+    expected: 'citrus, nutty sweetness, clean medium body',
+  },
+  {
+    id: 'laos-bolaven-washed',
+    label: 'Laos Bolaven Washed Catimor style',
+    origin: 'Laos',
+    process: 'washed',
+    customProcess: '',
+    variety: 'catimor',
+    customVariety: '',
+    defaultRoasts: ['medium_light', 'medium'],
+    fitTargets: ['balance_clean', 'more_sweetness', 'soft_round'],
+    mismatchTargets: ['floral_transparent'],
+    expectation: 'balanced_sweet',
+    expected: 'cocoa, citrus, soft herbal sweetness',
   },
   {
     id: 'rwanda-burundi-washed',
@@ -765,6 +941,16 @@ function exactBean(beanId) {
   return BEAN_ARCHETYPES.find((bean) => bean.id === beanId) || BEAN_ARCHETYPES[0];
 }
 
+function caseVarietySignature(index, bean, roastLevel, targetProfileId, methodCase, waterCase, grinderCase) {
+  const regionTag = String(bean.label)
+    .replace(/\s+style$/i, '')
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase();
+  const targetTag = String(targetProfileId).replace(/_/g, '-');
+  return `${regionTag}-${roastLevel}-${targetTag}-${methodCase.id}-${waterCase.id}-${grinderCase.id}-${String(index + 1).padStart(5, '0')}`;
+}
+
 function exactMethod(methodId) {
   return METHOD_CASES.find((method) => method.id === methodId) || METHOD_CASES[0];
 }
@@ -880,7 +1066,7 @@ function buildGeneratedScenario(catalog, index) {
       brewMode: mode,
       dripperId: dripper.id,
       grinderId: grinder.id,
-      coffeeName: `${bean.label} ${roastLevel} ${TARGET_PROFILE_IDS.indexOf(targetProfileId) + 1}`,
+      coffeeName: `${bean.label} | ${caseVarietySignature(index, bean, roastLevel, targetProfileId, methodCase, waterCase, grinderCase)}`,
       process,
       customProcess: process === 'custom' ? bean.customProcess || bean.label : bean.customProcess || '',
       variety,
@@ -1329,6 +1515,7 @@ function runScenario(catalog, scenario) {
     curated: scenario.curated,
     input: {
       bean: scenario.bean.label,
+      coffeeName: scenario.inputPatch.coffeeName,
       expectedBeanCharacter: scenario.bean.expected,
       method: scenario.methodCase.label,
       dripper: scenario.dripper.name,
@@ -1425,6 +1612,29 @@ function summarize(results, sha) {
     increment(coverage.targets, result.input.targetProfileId);
     increment(coverage.roasts, result.input.roastLevel);
   }
+  const uniqueCoffeeInputs = new Set(results.map((result) => [
+    result.input.coffeeName,
+    result.input.bean,
+    result.input.method,
+    result.input.requestedMode,
+    result.input.grinder,
+    result.input.water,
+    result.input.targetProfileId,
+    result.input.roastLevel,
+    result.input.process,
+    result.input.variety,
+    result.input.doseG,
+    result.input.targetWaterMl || 'auto',
+  ].join(' | '))).size;
+  const coverageDensity = {
+    uniqueCoffeeInputs,
+    beanArchetypes: Object.keys(coverage.beans).length,
+    methods: Object.keys(coverage.methods).length,
+    grinders: Object.keys(coverage.grinders).length,
+    waters: Object.keys(coverage.waters).length,
+    targets: Object.keys(coverage.targets).length,
+    roasts: Object.keys(coverage.roasts).length,
+  };
   const averages = Object.fromEntries(SCORE_KEYS.map((key) => [key, Math.round((scoreTotals[key] / results.length) * 10) / 10]));
   const overallAverage = Math.round((results.reduce((sum, result) => sum + result.scores.average, 0) / results.length) * 10) / 10;
   const lowest = [...results].sort((a, b) => a.scores.average - b.scores.average).slice(0, 20);
@@ -1455,6 +1665,7 @@ function summarize(results, sha) {
     scoreAverages: averages,
     scoreMinimums,
     coverage,
+    coverageDensity,
     lowestScoringCases: lowest.map((result) => ({
       index: result.index,
       exampleId: result.exampleId,
@@ -1491,7 +1702,7 @@ function warningsMarkdown(summary, results) {
     .filter((reason) => reason.severity === 'warn')
     .map((reason) => ({ result, reason })));
   return [
-    '# AI Brew Real-World 1000 Warnings',
+    `# AI Brew Real-World ${summary.scenarioCount} Warnings`,
     '',
     `SHA: ${summary.sha}`,
     `Scenario count: ${summary.scenarioCount}`,
@@ -1505,7 +1716,7 @@ function warningsMarkdown(summary, results) {
 
 function lowestScoresMarkdown(summary) {
   return [
-    '# AI Brew Real-World 1000 Lowest Scores',
+    `# AI Brew Real-World ${summary.scenarioCount} Lowest Scores`,
     '',
     `SHA: ${summary.sha}`,
     `Average score: ${summary.averageScore}`,
@@ -1565,7 +1776,7 @@ function improvementPrompt(summary) {
     ...summary.buckets.targets.filter((bucket) => bucket.averageScore < 94 || bucket.failures > 0).map((bucket) => ({ type: 'target', ...bucket })),
   ];
   return [
-    '# AI Brew Real-World 1000 Improvement Prompt',
+    `# AI Brew Real-World ${summary.scenarioCount} Improvement Prompt`,
     '',
     `Total cases: ${summary.scenarioCount}; passed: ${summary.passed}; failures: ${summary.failed}; warnings: ${summary.warnings}.`,
     `Average score: ${summary.averageScore}.`,
@@ -1625,7 +1836,7 @@ function reportMarkdown(summary, results) {
     .slice(0, 12)
     .map((result) => `- ${result.exampleId}: ${result.input.bean} with ${result.input.method} scored ${result.scores.average}; review warnings/copy before physical validation.`);
   return [
-    '# AI Brew Real-World 1000 Report',
+    `# AI Brew Real-World ${summary.scenarioCount} Report`,
     '',
     `Latest SHA: ${summary.sha}`,
     `Local branch: ${summary.git.branch}`,
@@ -1636,6 +1847,9 @@ function reportMarkdown(summary, results) {
     '',
     '## Honesty Boundary',
     'This is a curated real-world software/barista reasoning gate. It did not physically brew coffee and it must not be used as sensory certainty. AI Brew creates strong starting recipes and dial-in guidance; physical real brew validation is still required.',
+    summary.scenarioCount >= 10000
+      ? 'This is a 10,000-case software/barista scenario gate, not 10,000 physical brews or verified current-lot sensory data.'
+      : 'This is not physical brew proof or verified current-lot sensory data.',
     '',
     '## Bean Coverage',
     ...Object.entries(summary.coverage.beans).map(([key, value]) => `- ${key}: ${value}`),
@@ -1658,6 +1872,8 @@ function reportMarkdown(summary, results) {
     `Warnings: ${summary.warnings}`,
     `Average score: ${summary.averageScore}`,
     `Score distribution: min ${summary.scoreDistribution.min}; p10 ${summary.scoreDistribution.p10}; p50 ${summary.scoreDistribution.p50}; p90 ${summary.scoreDistribution.p90}; max ${summary.scoreDistribution.max}`,
+    `Unique coffee input combinations: ${summary.coverageDensity.uniqueCoffeeInputs}`,
+    `Coverage density: ${summary.coverageDensity.beanArchetypes} bean archetypes, ${summary.coverageDensity.methods} methods, ${summary.coverageDensity.grinders} grinders, ${summary.coverageDensity.waters} waters, ${summary.coverageDensity.targets} targets, ${summary.coverageDensity.roasts} roast levels.`,
     '',
     '| Category | Average | Minimum |',
     '|---|---:|---:|',
@@ -1739,7 +1955,7 @@ function writeArtifacts(summary, results, dir) {
     lowestScores: `${dir}/lowest-scores.md`,
     methodLanguageSafety: `${dir}/method-language-safety.md`,
     improvementPrompt: `${dir}/improvement-prompt.md`,
-    report: 'docs/ai-brew-real-world-1000-report.md',
+    report: `docs/ai-brew-real-world-${summary.scenarioCount}-report.md`,
   };
   writeJson(files.summary, summary);
   writeJson(files.cases, results);
@@ -1759,7 +1975,7 @@ function main() {
   const scenarios = buildScenarios(globalCatalog);
   const results = scenarios.map((scenario) => runScenario(globalCatalog, scenario));
   const summary = summarize(results, sha);
-  const dir = `artifacts/ai-brew-audit/real-world-1000/${gitSha(true)}`;
+  const dir = `artifacts/ai-brew-audit/real-world-${summary.scenarioCount}/${gitSha(true)}`;
   const files = writeArtifacts(summary, results, dir);
   console.log(JSON.stringify({
     sha,

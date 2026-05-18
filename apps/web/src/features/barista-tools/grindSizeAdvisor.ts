@@ -358,12 +358,12 @@ export function getGrindSizeCompatibility(
 }
 
 function parsePrimarySetting(value: string) {
-  const primary = value.match(/Starting grind:\s*([^.]*)\./i)?.[1]?.trim();
+  const primary = value.match(/Starting grind:\s*(.*?)(?:\.\s+Correction range:|$)/i)?.[1]?.trim();
   return primary || value;
 }
 
 function parseCorrectionRange(value: string) {
-  const range = value.match(/Correction range:\s*([^.]*)\./i)?.[1]?.trim();
+  const range = value.match(/Correction range:\s*(.*?)(?:\.\s+If sour\/thin:|$)/i)?.[1]?.trim();
   return range?.replace(/\s+to\s+/i, ' sampai ') || '';
 }
 

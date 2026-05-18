@@ -3681,6 +3681,179 @@ test('AI Brew expected cup does not overclaim when process and variety are missi
   );
 });
 
+test('Soft & Round target produces a visible expected-cup direction without changing protected recipe math', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const v60 = productionCatalog.drippers.find((item) => /^Hario V60$/i.test(item.name));
+  const grinder = productionCatalog.grinders.find((item) => /k-ultra/i.test(item.name))
+    || productionCatalog.grinders[0];
+  assert.ok(v60, 'Hario V60 fixture must exist');
+
+  const baseInput = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Soft target unknown process QA',
+    dripperId: v60.id,
+    grinderId: grinder.id,
+    doseG: '15',
+    brewMode: 'hot' as const,
+    roastLevel: 'medium' as const,
+    process: '',
+    variety: '',
+    waterMode: 'manual' as const,
+    waterBrandId: '',
+    waterTdsPpm: '90',
+    waterHardnessPpm: '45',
+    waterAlkalinityPpm: '35',
+  };
+
+  const balance = buildAiBrewPlan({ ...baseInput, targetProfileId: 'balance_clean' }, productionCatalog);
+  const soft = buildAiBrewPlan({ ...baseInput, targetProfileId: 'soft_round' }, productionCatalog);
+
+  assert.ok(soft.finalBeverageRatio < balance.finalBeverageRatio, 'Soft & Round should keep the recipe direction rounder/tighter than Balance');
+  assert.ok((soft.expectedCupProfile?.sweetness || 0) > (balance.expectedCupProfile?.sweetness || 0), 'Soft & Round should visibly lift sweetness in expected cup');
+  assert.ok((soft.expectedCupProfile?.body || 0) >= (balance.expectedCupProfile?.body || 0), 'Soft & Round should not lose body versus Balance');
+  assert.ok((soft.expectedCupProfile?.acidity || 0) < (balance.expectedCupProfile?.acidity || 0), 'Soft & Round should visibly soften acidity in expected cup');
+  assert.notEqual(
+    JSON.stringify({
+      acidity: soft.expectedCupProfile?.acidity,
+      sweetness: soft.expectedCupProfile?.sweetness,
+      body: soft.expectedCupProfile?.body,
+      clarity: soft.expectedCupProfile?.clarity,
+    }),
+    JSON.stringify({
+      acidity: balance.expectedCupProfile?.acidity,
+      sweetness: balance.expectedCupProfile?.sweetness,
+      body: balance.expectedCupProfile?.body,
+      clarity: balance.expectedCupProfile?.clarity,
+    }),
+    'Soft & Round expected-cup card should not look identical to Balance',
+  );
+});
+
+test('process detail alone visibly changes expected-cup prediction when variety is missing', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const v60 = productionCatalog.drippers.find((item) => /^Hario V60$/i.test(item.name));
+  const grinder = productionCatalog.grinders.find((item) => /k-ultra/i.test(item.name))
+    || productionCatalog.grinders[0];
+  assert.ok(v60, 'Hario V60 fixture must exist');
+
+  const baseInput = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Process-only prediction QA',
+    origin: 'Colombia',
+    dripperId: v60.id,
+    grinderId: grinder.id,
+    targetProfileId: 'balance_clean',
+    doseG: '15',
+    brewMode: 'hot' as const,
+    roastLevel: 'medium' as const,
+    variety: '',
+    customVariety: '',
+    waterMode: 'manual' as const,
+    waterBrandId: '',
+    waterTdsPpm: '90',
+    waterHardnessPpm: '45',
+    waterAlkalinityPpm: '35',
+  };
+
+  const noProcess = buildAiBrewPlan({ ...baseInput, process: '' }, productionCatalog);
+  const washed = buildAiBrewPlan({ ...baseInput, process: 'washed' }, productionCatalog);
+  const natural = buildAiBrewPlan({ ...baseInput, process: 'natural' }, productionCatalog);
+  const wetHulled = buildAiBrewPlan({ ...baseInput, process: 'wet_hulled' }, productionCatalog);
+
+  assert.ok(washed.expectedCupProfile);
+  assert.ok(natural.expectedCupProfile);
+  assert.ok(wetHulled.expectedCupProfile);
+  assert.notEqual(
+    JSON.stringify({
+      acidity: washed.expectedCupProfile.acidity,
+      sweetness: washed.expectedCupProfile.sweetness,
+      body: washed.expectedCupProfile.body,
+      clarity: washed.expectedCupProfile.clarity,
+    }),
+    JSON.stringify({
+      acidity: noProcess.expectedCupProfile?.acidity,
+      sweetness: noProcess.expectedCupProfile?.sweetness,
+      body: noProcess.expectedCupProfile?.body,
+      clarity: noProcess.expectedCupProfile?.clarity,
+    }),
+    'Washed process should not render like an unknown process when variety is missing',
+  );
+  assert.ok(washed.expectedCupProfile.clarity > natural.expectedCupProfile.clarity, 'Washed should read cleaner than natural when process is known');
+  assert.ok(natural.expectedCupProfile.sweetness > washed.expectedCupProfile.sweetness, 'Natural should show more sweetness/fruit weight than washed');
+  assert.ok(wetHulled.expectedCupProfile.body > washed.expectedCupProfile.body, 'Wet-hulled should visibly push body versus washed');
+  assert.ok(wetHulled.expectedCupProfile.clarity < washed.expectedCupProfile.clarity, 'Wet-hulled should not overclaim washed-style clarity');
+  assert.match(
+    [...(natural.expectedCupProfile.reasons || []), ...(wetHulled.expectedCupProfile.reasons || [])].join(' '),
+    /Process .*cue/i,
+    'Expected-cup reasons should say which process cue shaped the prediction',
+  );
+});
+
+test('variety detail alone visibly changes expected-cup prediction when process is missing', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const v60 = productionCatalog.drippers.find((item) => /^Hario V60$/i.test(item.name));
+  const grinder = productionCatalog.grinders.find((item) => /k-ultra/i.test(item.name))
+    || productionCatalog.grinders[0];
+  assert.ok(v60, 'Hario V60 fixture must exist');
+
+  const baseInput = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Variety-only prediction QA',
+    origin: 'Panama',
+    dripperId: v60.id,
+    grinderId: grinder.id,
+    targetProfileId: 'balance_clean',
+    doseG: '15',
+    brewMode: 'hot' as const,
+    roastLevel: 'medium' as const,
+    process: '',
+    customProcess: '',
+    waterMode: 'manual' as const,
+    waterBrandId: '',
+    waterTdsPpm: '90',
+    waterHardnessPpm: '45',
+    waterAlkalinityPpm: '35',
+  };
+
+  const noVariety = buildAiBrewPlan({ ...baseInput, variety: '' }, productionCatalog);
+  const geisha = buildAiBrewPlan({ ...baseInput, variety: 'geisha' }, productionCatalog);
+  const sl28 = buildAiBrewPlan({ ...baseInput, variety: 'sl28' }, productionCatalog);
+  const bourbon = buildAiBrewPlan({ ...baseInput, variety: 'bourbon' }, productionCatalog);
+  const ateng = buildAiBrewPlan({ ...baseInput, variety: 'ateng_super', origin: 'Indonesia' }, productionCatalog);
+  const robusta = buildAiBrewPlan({ ...baseInput, variety: 'robusta', customVariety: 'canephora robusta', origin: 'Vietnam' }, productionCatalog);
+
+  assert.ok(geisha.expectedCupProfile);
+  assert.ok(sl28.expectedCupProfile);
+  assert.ok(bourbon.expectedCupProfile);
+  assert.ok(ateng.expectedCupProfile);
+  assert.ok(robusta.expectedCupProfile);
+  assert.notEqual(
+    JSON.stringify({
+      acidity: geisha.expectedCupProfile.acidity,
+      sweetness: geisha.expectedCupProfile.sweetness,
+      body: geisha.expectedCupProfile.body,
+      clarity: geisha.expectedCupProfile.clarity,
+    }),
+    JSON.stringify({
+      acidity: noVariety.expectedCupProfile?.acidity,
+      sweetness: noVariety.expectedCupProfile?.sweetness,
+      body: noVariety.expectedCupProfile?.body,
+      clarity: noVariety.expectedCupProfile?.clarity,
+    }),
+    'Geisha/Gesha variety should not render like an unknown variety when process is missing',
+  );
+  assert.ok(geisha.expectedCupProfile.clarity >= bourbon.expectedCupProfile.clarity, 'Geisha should preserve at least as much clarity as classic Bourbon');
+  assert.ok(sl28.expectedCupProfile.acidity > bourbon.expectedCupProfile.acidity, 'SL28 should visibly lift acidity versus Bourbon');
+  assert.ok(ateng.expectedCupProfile.body >= bourbon.expectedCupProfile.body, 'Ateng/Indonesia selection should not lose body versus Bourbon');
+  assert.ok(robusta.expectedCupProfile.body > bourbon.expectedCupProfile.body, 'Robusta/canephora should visibly push body versus Bourbon');
+  assert.ok(robusta.expectedCupProfile.bitterRisk > bourbon.expectedCupProfile.bitterRisk, 'Robusta/canephora should keep bitterness risk honest');
+  assert.match(
+    [...(geisha.expectedCupProfile.reasons || []), ...(sl28.expectedCupProfile.reasons || []), ...(robusta.expectedCupProfile.warnings || [])].join(' '),
+    /Variety|varietas|robusta|canephora/i,
+    'Expected-cup notes should say which variety cue shaped the prediction',
+  );
+});
+
 test('AI Brew shared core calibrates 10-20 g target profile, dose, process, and custom variety signals', () => {
   assert.equal(resolveDefaultTargetProfileIdForBean({
     coffeeName: 'Panama Gesha washed',

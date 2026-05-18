@@ -891,19 +891,19 @@
         "profile_family_kalita_iced",
         "profile_family_clever_hot"
       ],
-      "rangeLabel": "7 - 9 Klik",
-      "note": "Curated filter baseline imported from catalog medium band for Porlex Mini II; verify zero point and adjust by taste.",
-      "source": "catalog-curated-range",
+      "rangeLabel": "9 - 11 Klik",
+      "note": "Official Porlex Mini II pour-over starting window; ceramic burrs still need taste calibration and are not a reliable espresso shortcut.",
+      "source": "porlex-official",
       "sourceUrls": [
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        "https://www.porlexgrinders.com/products/porlex-mini-grinder-ii"
       ],
-      "verificationLevel": "curated",
-      "verifiedAt": "2026-03-11",
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-19",
       "popularityTier": "specialty_common",
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": "gs_catalog_starseeker-edge-edge_filter",
@@ -1192,18 +1192,19 @@
         "profile_family_kono_hot"
       ],
       "rangeLabel": "22 - 28 clicks",
-      "note": "Community-verified filter baseline; absolute click depends on zero point.",
-      "source": "comandante-community",
+      "note": "Official Comandante filter range sits wide; this cone baseline starts near the middle, then moves by cup feedback.",
+      "source": "comandante-official",
       "sourceUrls": [
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        "https://comandantegrinder.com/pages/faq",
+        "https://www.comandantegrinder.com/downloads/C40-Manual-E-Q3-21-web.pdf"
       ],
-      "verificationLevel": "community_verified",
-      "verifiedAt": "2026-03-09",
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-19",
       "popularityTier": "widely_used",
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "high",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": "gs_comandante_c40_flat",
@@ -1219,18 +1220,19 @@
         "profile_family_clever_iced"
       ],
       "rangeLabel": "24 - 30 clicks",
-      "note": "Go slightly coarser than cone recipes for flatter beds or immersion release brewers.",
-      "source": "comandante-community",
+      "note": "Official Comandante filter/French-press ranges support a coarser baseline for flat beds and release brewers.",
+      "source": "comandante-official",
       "sourceUrls": [
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        "https://comandantegrinder.com/pages/faq",
+        "https://www.comandantegrinder.com/downloads/C40-Manual-E-Q3-21-web.pdf"
       ],
-      "verificationLevel": "community_verified",
-      "verifiedAt": "2026-03-09",
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-19",
       "popularityTier": "widely_used",
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "high",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": "gs_comandante_c40_redclix_filter",
@@ -1606,19 +1608,20 @@
         "profile_family_origami_iced",
         "profile_family_kono_hot"
       ],
-      "rangeLabel": "70 - 90 clicks",
-      "note": "Community-verified pour-over baseline; confirm zero point first.",
-      "source": "kingrinder-community",
+      "rangeLabel": "90 - 110 clicks",
+      "note": "Official K6 exterior-adjustment reference centers pour-over near 100 clicks; confirm burr lock and adjust by drawdown.",
+      "source": "kingrinder-official",
       "sourceUrls": [
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        "https://www.kingrinder.com/exterior-adjustment",
+        "https://uploads.strikinglycdn.com/files/353ff58b-a58b-441e-b9d1-dd16ccb9a69d/Kingrinder%20Manual%20-%20Exterior%20Adjustment%20-%20V3.pdf?id=3880364"
       ],
-      "verificationLevel": "community_verified",
-      "verifiedAt": "2026-03-09",
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-19",
       "popularityTier": "widely_used",
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": "gs_kingrinder_k6_flat",
@@ -1633,19 +1636,20 @@
         "profile_family_clever_hot",
         "profile_family_clever_iced"
       ],
-      "rangeLabel": "78 - 98 clicks",
-      "note": "Flat-bottom brewers tend to prefer the K6 slightly coarser than cone baselines.",
-      "source": "kingrinder-community",
+      "rangeLabel": "95 - 115 clicks",
+      "note": "K6 flat-bottom baseline stays a touch coarser than cone while remaining close to the official pour-over anchor.",
+      "source": "kingrinder-official",
       "sourceUrls": [
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        "https://www.kingrinder.com/exterior-adjustment",
+        "https://uploads.strikinglycdn.com/files/353ff58b-a58b-441e-b9d1-dd16ccb9a69d/Kingrinder%20Manual%20-%20Exterior%20Adjustment%20-%20V3.pdf?id=3880364"
       ],
-      "verificationLevel": "community_verified",
-      "verifiedAt": "2026-03-09",
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-19",
       "popularityTier": "widely_used",
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
       "confidence": "medium",
-      "catalogVersion": "2026.06.0-ai-brew-v2"
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": "gs_kinu_m47_cone",
@@ -2121,21 +2125,21 @@
         "profile_family_kono_hot",
         "profile_family_kono_iced"
       ],
-      "rangeLabel": "15 - 25 settings",
-      "note": "Cone baseline for Encore ESP filter work; zero point and calibration vary, so adjust by drawdown before changing ratio.",
-      "source": "baratza-community-curated",
+      "rangeLabel": "23 - 26 settings",
+      "note": "Official Encore ESP manual starts Hario V60 near 25; stay in the 21-40 filter section and correct from drawdown.",
+      "source": "baratza-official",
       "sourceUrls": [
+        "https://www.baratza.com/en-us/product/encoretm-esp-zcg495",
         "https://www.baratza.com/en-gb/product/encoretm-esp-zcg495",
-        "https://assets.breville.com/ZCG495/manual-encoreesp-v1-0-en-010923.pdf",
-        "https://honestcoffeeguide.com/baratza-encore-esp-grind-settings/"
+        "https://assets.breville.com/ZCG495/manual-encoreesp-v1-0-en-010923.pdf"
       ],
-      "verificationLevel": "community_verified",
-      "verifiedAt": "2026-05-04",
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-19",
       "popularityTier": "widely_used",
       "marketSegment": "mass_market",
       "releaseStatus": "established",
-      "confidence": "medium",
-      "catalogVersion": "2026.06.2-ai-brew-grinder-plus"
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": "gs_baratza_encore_esp_flat",
@@ -2151,20 +2155,21 @@
         "profile_family_clever_hot",
         "profile_family_clever_iced"
       ],
-      "rangeLabel": "20 - 30 settings",
-      "note": "Flat-bottom and immersion baseline for Encore ESP; start here, then move finer only if the cup is sour and drawdown is fast.",
-      "source": "baratza-community-curated",
+      "rangeLabel": "25 - 32 settings",
+      "note": "Official Encore ESP manual places V60/Chemex/French press around 25/30/32; use this wider filter section as a starting range.",
+      "source": "baratza-official",
       "sourceUrls": [
+        "https://www.baratza.com/en-us/product/encoretm-esp-zcg495",
         "https://www.baratza.com/en-gb/product/encoretm-esp-zcg495",
-        "https://honestcoffeeguide.com/baratza-encore-esp-grind-settings/"
+        "https://assets.breville.com/ZCG495/manual-encoreesp-v1-0-en-010923.pdf"
       ],
-      "verificationLevel": "community_verified",
-      "verifiedAt": "2026-05-04",
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-19",
       "popularityTier": "widely_used",
       "marketSegment": "mass_market",
       "releaseStatus": "established",
-      "confidence": "medium",
-      "catalogVersion": "2026.06.2-ai-brew-grinder-plus"
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": "gs_fellow_opus_cone",
@@ -2235,19 +2240,20 @@
         "profile_family_kono_iced"
       ],
       "rangeLabel": "4 - 7 numbers",
-      "note": "Ode Gen 2 brew-burr cone baseline; this grinder is brew-focused, so espresso-style assumptions should not be copied into AI Brew.",
-      "source": "fellow-community-curated",
+      "note": "Official Fellow Aiden guidance starts Ode Gen 2 single brews around 5 + 1/3; keep espresso assumptions out of this brew-only grinder.",
+      "source": "fellow-official",
       "sourceUrls": [
         "https://help.fellowproducts.com/hc/en-us/articles/9962302561819-What-are-the-recommended-grind-settings-for-Ode-Gen-2-Brew-Burrs",
-        "https://honestcoffeeguide.com/fellow-ode-brew-grinder-gen-2-grind-settings/"
+        "https://help.fellowproducts.com/hc/en-us/articles/10034632333339-Is-Ode-Gen-2-suitable-for-grinding-espresso",
+        "https://help.fellowproducts.com/hc/en-us/articles/29101533994267-How-should-I-dial-in-my-grinder-when-brewing-with-Aiden-Getting-Started-With-Aiden-Pt-3"
       ],
-      "verificationLevel": "community_verified",
-      "verifiedAt": "2026-05-04",
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-19",
       "popularityTier": "specialty_common",
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
-      "confidence": "medium",
-      "catalogVersion": "2026.06.2-ai-brew-grinder-plus"
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": "gs_fellow_ode_gen_2_flat",
@@ -2264,19 +2270,20 @@
         "profile_family_clever_iced"
       ],
       "rangeLabel": "5 - 8 numbers",
-      "note": "Flat-bottom and immersion baseline for Ode Gen 2; start coarser for long-contact brewers and tighten only after tasting.",
-      "source": "fellow-community-curated",
+      "note": "Official Fellow guidance puts small batch/cold brew near 8 and larger batch near 10; start coarser for long-contact brewers.",
+      "source": "fellow-official",
       "sourceUrls": [
         "https://help.fellowproducts.com/hc/en-us/articles/9962302561819-What-are-the-recommended-grind-settings-for-Ode-Gen-2-Brew-Burrs",
-        "https://honestcoffeeguide.com/fellow-ode-brew-grinder-gen-2-grind-settings/"
+        "https://help.fellowproducts.com/hc/en-us/articles/10034632333339-Is-Ode-Gen-2-suitable-for-grinding-espresso",
+        "https://help.fellowproducts.com/hc/en-us/articles/29101533994267-How-should-I-dial-in-my-grinder-when-brewing-with-Aiden-Getting-Started-With-Aiden-Pt-3"
       ],
-      "verificationLevel": "community_verified",
-      "verifiedAt": "2026-05-04",
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-19",
       "popularityTier": "specialty_common",
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established",
-      "confidence": "medium",
-      "catalogVersion": "2026.06.2-ai-brew-grinder-plus"
+      "confidence": "high",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": "gs_varia_vs3_gen_2_cone",

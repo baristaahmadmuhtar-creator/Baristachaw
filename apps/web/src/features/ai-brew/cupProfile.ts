@@ -161,6 +161,106 @@ function sensoryReason(prefix: string, entry?: { label: string; sensoryBias?: { 
   return `${prefix} ${entry.label} cue: ${strongest[0]} tendency ${strongest[1]}.`;
 }
 
+type ExpectedCupSensoryBias = NonNullable<ProcessCatalogEntry['sensoryBias']>;
+
+function inferExpectedCupProcessBias(entry?: ProcessCatalogEntry): ExpectedCupSensoryBias | undefined {
+  if (!entry) return undefined;
+  if (entry.sensoryBias) return entry.sensoryBias;
+
+  const haystack = [
+    entry.id,
+    entry.label,
+    entry.group,
+    entry.searchText,
+    ...(entry.aliases || []),
+    ...(entry.riskTags || []),
+  ].join(' ').toLowerCase().replace(/[_/-]+/g, ' ');
+
+  if (/\b(decaf|sugarcane|swiss water|mountain water|co2)\b/.test(haystack) || hasRiskTag(entry, ['decaf-sensitive'])) {
+    return { acidity: -1, sweetness: -1, body: 0, clarity: -1, fermentIntensity: 0, bitternessRisk: 1, aromaVolatility: 0 };
+  }
+  if (/\b(co ferment|coferment|infused|fruit maceration|koji|enzyme|thermal shock)\b/.test(haystack)
+    || hasRiskTag(entry, ['experimental', 'taste-feedback-required'])) {
+    return { acidity: 0, sweetness: 2, body: 1, clarity: -2, fermentIntensity: 3, bitternessRisk: 2, aromaVolatility: 3 };
+  }
+  if (/\b(anaerobic|carbonic|lactic|yeast|extended fermentation|mosto|submerged)\b/.test(haystack)
+    || hasRiskTag(entry, ['ferment-risk', 'high-ferment'])) {
+    return { acidity: 0, sweetness: 1, body: 1, clarity: -1, fermentIntensity: 2, bitternessRisk: 1, aromaVolatility: 3 };
+  }
+  if (/\b(wet hulled|giling basah|semi washed indonesia)\b/.test(haystack)) {
+    return { acidity: -1, sweetness: 1, body: 2, clarity: -1, fermentIntensity: 1, bitternessRisk: 1, aromaVolatility: 1 };
+  }
+  if (/\b(natural|dry process|honey|pulped natural|raisin)\b/.test(haystack)) {
+    return { acidity: 0, sweetness: 2, body: 1, clarity: -1, fermentIntensity: 1, bitternessRisk: 1, aromaVolatility: 2 };
+  }
+  if (/\b(washed|fully washed|double washed|mechanically demucilaged|wet process)\b/.test(haystack)) {
+    return { acidity: 1, sweetness: 0, body: -1, clarity: 2, fermentIntensity: 0, bitternessRisk: 0, aromaVolatility: 1 };
+  }
+  return undefined;
+}
+
+function inferExpectedCupVarietyBias(entry?: VarietyCatalogEntry): ExpectedCupSensoryBias | undefined {
+  if (!entry) return undefined;
+  if (entry.sensoryBias) return entry.sensoryBias;
+
+  const haystack = [
+    entry.id,
+    entry.label,
+    entry.group,
+    entry.searchText,
+    entry.originNotes,
+    entry.taxonomy?.species,
+    entry.taxonomy?.lineageGroup,
+    entry.taxonomy?.cultivarType,
+    ...(entry.aliases || []),
+    ...(entry.riskTags || []),
+  ].join(' ').toLowerCase().replace(/[_/-]+/g, ' ');
+
+  if (/\b(robusta|canephora|conilon)\b/.test(haystack)) {
+    return { acidity: -1, sweetness: 0, body: 2, clarity: -1, fermentIntensity: 0, bitternessRisk: 2, aromaVolatility: 1 };
+  }
+  if (/\b(liberica|excelsa|barako)\b/.test(haystack)) {
+    return { acidity: 0, sweetness: 0, body: 2, clarity: -1, fermentIntensity: 0, bitternessRisk: 2, aromaVolatility: 1 };
+  }
+  if (/\b(geisha|gesha|wush wush|sidra|pink bourbon|specialty reference)\b/.test(haystack)
+    || hasRiskTag(entry, ['floral-possible', 'clarity-leaning'])) {
+    return { acidity: 2, sweetness: 1, body: -1, clarity: 2, fermentIntensity: 0, bitternessRisk: 0, aromaVolatility: 2 };
+  }
+  if (/\b(ethiopian heirloom|ethiopian landrace|landrace|heirloom|kurume|dega|wolisho)\b/.test(haystack)) {
+    return { acidity: 2, sweetness: 1, body: -1, clarity: 2, fermentIntensity: 0, bitternessRisk: 0, aromaVolatility: 2 };
+  }
+  if (/\b(sl28|sl 28|sl34|sl 34|kenyan selection|batian|ruiru)\b/.test(haystack)) {
+    return { acidity: 2, sweetness: 1, body: 0, clarity: 2, fermentIntensity: 0, bitternessRisk: 0, aromaVolatility: 2 };
+  }
+  if (/\b(ateng|s795|s 795|timtim|sigarar|linie s|andungsari|indonesia selection)\b/.test(haystack)) {
+    return { acidity: -1, sweetness: 1, body: 1, clarity: -1, fermentIntensity: 0, bitternessRisk: 1, aromaVolatility: 1 };
+  }
+  if (/\b(bourbon|typica|caturra|catuai|mundo novo|yellow bourbon|classic arabica|bourbon lineage)\b/.test(haystack)) {
+    return { acidity: 0, sweetness: 1, body: 1, clarity: 0, fermentIntensity: 0, bitternessRisk: 0, aromaVolatility: 1 };
+  }
+  if (/\b(catimor|timor|castillo|disease resistant|introgressed)\b/.test(haystack)) {
+    return { acidity: 0, sweetness: 0, body: 1, clarity: -1, fermentIntensity: 0, bitternessRisk: 1, aromaVolatility: 0 };
+  }
+  return undefined;
+}
+
+function hasExpectedCupVarietyCue(entry: VarietyCatalogEntry | undefined, patterns: RegExp[]) {
+  if (!entry) return false;
+  const haystack = [
+    entry.id,
+    entry.label,
+    entry.group,
+    entry.searchText,
+    entry.originNotes,
+    entry.taxonomy?.species,
+    entry.taxonomy?.lineageGroup,
+    entry.taxonomy?.cultivarType,
+    ...(entry.aliases || []),
+    ...(entry.riskTags || []),
+  ].join(' ').toLowerCase().replace(/[_/-]+/g, ' ');
+  return patterns.some((pattern) => pattern.test(haystack));
+}
+
 function hasSpecifiedBeanValue(value?: string | null) {
   const normalized = String(value || '').trim().toLowerCase();
   return Boolean(normalized)
@@ -190,6 +290,7 @@ export function buildExpectedCupProfile(
   let aromaIntensity = 3;
   const reasons: string[] = [];
   const warnings: string[] = [];
+  const targetIntent = resolveTargetIntent(plan);
 
   switch (plan.targetProfileId) {
     case 'more_acidity':
@@ -220,24 +321,26 @@ export function buildExpectedCupProfile(
       reasons.push(`${targetProfile?.label || plan.targetProfileLabel} target protects high-aroma fruit expression.`);
       break;
     case 'soft_round':
-      sweetness += 0.6;
-      body += 0.6;
-      acidity -= 0.3;
-      reasons.push(`${targetProfile?.label || plan.targetProfileLabel} target rounds acidity and keeps sweetness soft.`);
+      sweetness += 0.8;
+      body += 0.75;
+      acidity -= 0.6;
+      bitterRisk -= 0.25;
+      reasons.push(`${targetProfile?.label || plan.targetProfileLabel} target softens acidity, lifts gentle sweetness, and keeps body round without pushing bitterness.`);
       break;
     default:
       reasons.push('Balance target keeps acidity, sweetness, body, and clarity near baseline.');
   }
 
-  const processBias = processEntry?.sensoryBias;
+  const processBias = inferExpectedCupProcessBias(processEntry);
   if (processBias) {
-    acidity = addBias(acidity, processBias.acidity);
-    sweetness = addBias(sweetness, processBias.sweetness);
-    body = addBias(body, processBias.body);
-    clarity = addBias(clarity, processBias.clarity);
+    const brightTargetWeight = targetIntent === 'bright' ? 0 : 0.62;
+    acidity = addBias(acidity, processBias.acidity, processBias.acidity > 0 ? brightTargetWeight : 0.62);
+    sweetness = addBias(sweetness, processBias.sweetness, 0.62);
+    body = addBias(body, processBias.body, 0.62);
+    clarity = addBias(clarity, processBias.clarity, processBias.clarity > 0 ? brightTargetWeight : 0.62);
     bitterRisk += processBias.bitternessRisk * 0.35;
     aromaIntensity += processBias.aromaVolatility * 0.35 + processBias.fermentIntensity * 0.25;
-    const reason = sensoryReason('Process', processEntry);
+    const reason = sensoryReason('Process', processEntry?.sensoryBias ? processEntry : { label: processEntry?.label || 'process', sensoryBias: processBias });
     if (reason) reasons.push(reason);
   }
   if (hasRiskTag(processEntry, ['decaf-sensitive'])) {
@@ -262,21 +365,26 @@ export function buildExpectedCupProfile(
     warnings.push('Robusta/canephora/non-arabica cenderung lebih body-heavy dan mudah pahit jika ekstraksi terlalu agresif.');
   }
 
-  const varietyBias = varietyEntry?.sensoryBias;
+  const varietyBias = inferExpectedCupVarietyBias(varietyEntry);
+  const processNonArabicaCue = hasRiskTag(processEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa']);
+  const varietyNonArabicaCue = hasRiskTag(varietyEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa', 'unusual-species'])
+    || hasExpectedCupVarietyCue(varietyEntry, [/\b(robusta|canephora|conilon|liberica|excelsa|barako)\b/]);
+  const duplicateNonArabicaCue = processNonArabicaCue && varietyNonArabicaCue;
   if (varietyBias) {
-    acidity = addBias(acidity, varietyBias.acidity, 0.35);
+    const brightTargetWeight = targetIntent === 'bright' ? 0 : 0.35;
+    acidity = addBias(acidity, varietyBias.acidity, varietyBias.acidity > 0 ? brightTargetWeight : 0.35);
     sweetness = addBias(sweetness, varietyBias.sweetness, 0.35);
     body = addBias(body, varietyBias.body, 0.35);
-    clarity = addBias(clarity, varietyBias.clarity, 0.35);
-    bitterRisk += varietyBias.bitternessRisk * 0.25;
+    clarity = addBias(clarity, varietyBias.clarity, varietyBias.clarity > 0 ? brightTargetWeight : 0.35);
+    bitterRisk += varietyBias.bitternessRisk * (duplicateNonArabicaCue ? 0.05 : 0.25);
     aromaIntensity += varietyBias.aromaVolatility * 0.3;
-    const reason = sensoryReason('Variety', varietyEntry);
+    const reason = sensoryReason('Variety', varietyEntry?.sensoryBias ? varietyEntry : { label: varietyEntry?.label || 'variety', sensoryBias: varietyBias });
     if (reason) reasons.push(reason);
   }
-  if (hasRiskTag(varietyEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa', 'unusual-species'])) {
+  if (varietyNonArabicaCue) {
     body += 0.3;
     clarity -= 0.2;
-    bitterRisk += 0.3;
+    bitterRisk += duplicateNonArabicaCue ? 0.1 : 0.3;
     warnings.push('Spesies/varietas robusta/canephora/non-arabica atau tidak umum menurunkan keyakinan prediksi rasa.');
   }
   if (hasRiskTag(varietyEntry, ['lot-dependent', 'floral-possible', 'clarity-leaning'])) {
@@ -364,8 +472,8 @@ export function buildExpectedCupProfile(
 
   const processSpecified = hasSpecifiedBeanValue(plan.process);
   const varietySpecified = hasSpecifiedBeanValue(plan.variety);
-  const missingProcessData = !processSpecified || !processEntry?.sensoryBias;
-  const missingVarietyData = !varietySpecified || !varietyEntry?.sensoryBias;
+  const missingProcessData = !processSpecified || !processBias;
+  const missingVarietyData = !varietySpecified || !varietyBias;
   const missingBeanSensoryData = missingProcessData || missingVarietyData;
   if (missingBeanSensoryData) {
     acidity = softenUngroundedBeanPrediction(acidity);

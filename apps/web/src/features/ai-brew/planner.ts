@@ -3460,6 +3460,29 @@ function deriveFlavorAlignmentAdjustment(params: {
   };
 }
 
+function resolveServiceTimeBounds(params: {
+  methodFamily: AiBrewMethodFamily;
+  brewMode: 'hot' | 'iced';
+  doseG: number;
+  targetProfileId?: string;
+  base: { min: number; max: number };
+}) {
+  const targetId = String(params.targetProfileId || '').toLowerCase();
+  if (
+    params.methodFamily === 'v60'
+    && params.brewMode === 'hot'
+    && params.doseG >= 14
+    && params.doseG <= 16
+    && (targetId === 'more_sweetness' || targetId === 'more_body' || targetId === 'dense_comforting')
+  ) {
+    return {
+      min: params.base.min,
+      max: Math.min(params.base.max, targetId === 'more_sweetness' ? 235 : 240),
+    };
+  }
+  return params.base;
+}
+
 function resolveIcedHotWaterShare(params: {
   methodFamily: AiBrewMethodFamily;
   finalRatio: number;
@@ -6849,12 +6872,19 @@ function finalizePlanCore(
     : methodFamily === 'espresso'
       ? { min: 20, max: 45 }
       : { min: 75, max: 420 };
-  const serviceTimeBounds = v60SweetnessServiceCalibration
+  const calibratedServiceTimeBounds = v60SweetnessServiceCalibration
     ? {
       min: Math.max(methodTimeBounds.min, v60SweetnessServiceCalibration.timeMinSec),
       max: Math.min(methodTimeBounds.max, v60SweetnessServiceCalibration.timeMaxSec),
     }
     : methodTimeBounds;
+  const serviceTimeBounds = resolveServiceTimeBounds({
+    methodFamily,
+    brewMode: input.brewMode,
+    doseG,
+    targetProfileId: targetProfile.id,
+    base: calibratedServiceTimeBounds,
+  });
   const controlledDeviceProfile = applyPourControlsToProfile(effectiveDeviceProfile, input, methodFamily);
   const pourControlNote = buildPourControlNote(input, methodFamily);
   const baseTotalTimeSeconds = roundBaristaTimeSeconds(clamp(

@@ -122,10 +122,12 @@ interface RawPlatformWaterEntry {
   sources: Array<{
     source_type: string;
     source_url: string;
+    confidence_score?: number;
   }>;
   primary_source: {
     source_type: string;
     source_url: string;
+    confidence_score?: number;
   };
   verification_status: 'verified' | 'curated' | 'review_required';
   publish_state: WaterPublishState;
@@ -206,6 +208,11 @@ function decimalPlaces(value: number) {
   return decimals.length;
 }
 
+function decimalPlacesFromText(value: string) {
+  const [, decimals = ''] = value.split('.');
+  return decimals.length;
+}
+
 function normalizeRangeUnitLabel(value: string) {
   const compact = value.toLowerCase().replace(/\s+/g, ' ').trim();
   if (!compact) return 'steps';
@@ -242,7 +249,7 @@ export function parseNumericRange(rangeLabel: string): ParsedNumericRange | null
     min,
     max,
     unitLabel,
-    precision: Math.max(decimalPlaces(min), decimalPlaces(max)),
+    precision: Math.max(decimalPlacesFromText(match[1]), decimalPlacesFromText(match[2])),
   };
 }
 
@@ -902,27 +909,118 @@ const WATER_CLASSIFICATION_OVERRIDES: Partial<Record<string, {
 };
 
 const WATER_SOURCE_URL_OVERRIDES: Partial<Record<string, string[]>> = {
+  '2tang': [
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  aqua: [
+    'https://www.sehataqua.co.id/blog/air-mineral-terbaik-untuk-mesin-kopi/',
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  'le-minerale': [
+    'https://www.leminerale.com/product',
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  vit: [
+    'https://www.minumvit.co.id/',
+    'https://repository.urecol.org/index.php/proceeding/article/download/1773/1739',
+  ],
+  ades: [
+    'https://www.coca-cola.com/id/id/brands/ades',
+    'https://repository.urecol.org/index.php/proceeding/article/download/1773/1739',
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  club: [
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  crystalline: [
+    'https://crystalinwater.com/product',
+    'https://repository.urecol.org/index.php/proceeding/article/download/1773/1739',
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  'crystaline-plus': [
+    'https://crystalinwater.com/product',
+    'https://repository.urecol.org/index.php/proceeding/article/download/1773/1739',
+  ],
+  frozen: [
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  'nestle-pure-life': [
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  oasis: [
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  'oasis-plus': [
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  perfect: [
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  prima: [
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  'ron-88': [
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  'total-8-plus': [
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
   amidis: [
     'https://amidiswater.com/',
     'https://ottencoffee.co.id/majalah/rekomendasi-air-mineral-yang-bagus-untuk-kopi',
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
   ],
   'air-alfamart': [
     'https://alfamart.co.id/',
     'https://ottencoffee.co.id/majalah/rekomendasi-air-mineral-yang-bagus-untuk-kopi',
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
   ],
   'air-indomaret': [
     'https://www.indomaret.co.id/news/detail/press-release--air-minum-indomaret',
     'https://ottencoffee.co.id/majalah/rekomendasi-air-mineral-yang-bagus-untuk-kopi',
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
   ],
   cleo: [
     'https://cleopurewater.com/',
     'https://ottencoffee.co.id/majalah/rekomendasi-air-mineral-yang-bagus-untuk-kopi',
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
   ],
   suci: [
     'https://www.tlt-ent.com/suci/',
     'https://www.tlt-ent.com/product/suci-drinking-water-1-5l/',
   ],
 };
+
+const TRUSTED_WATER_COMMUNITY_SOURCE_PATTERNS = [
+  /ottencoffee\.co\.id/i,
+  /repository\.urecol\.org/i,
+  /labskylibrary\.labschool-unj\.sch\.id/i,
+  /ottencoffee/i,
+];
+
+function getWaterSourceUrls(entry: RawPlatformWaterEntry) {
+  return Array.from(new Set([
+    ...entry.sources.map((source) => source.source_url),
+    entry.primary_source.source_url,
+    ...(WATER_SOURCE_URL_OVERRIDES[entry.brand_group_id] || []),
+  ].filter(Boolean)));
+}
+
+function hasTrustedPublicWaterSource(entry: RawPlatformWaterEntry) {
+  return getWaterSourceUrls(entry).some((sourceUrl) =>
+    /^https?:\/\//i.test(sourceUrl)
+    && TRUSTED_WATER_COMMUNITY_SOURCE_PATTERNS.some((pattern) => pattern.test(sourceUrl)),
+  );
+}
+
+function hasRepoLocalCuratedWaterEvidence(entry: RawPlatformWaterEntry) {
+  return [...entry.sources, entry.primary_source].some((source) =>
+    source.source_type === 'community_reference'
+    && /^local:\/data\/catalog\/raw-evidence\//i.test(source.source_url)
+    && typeof source.confidence_score === 'number'
+    && source.confidence_score >= 0.65,
+  );
+}
 
 function classifyWaterBrand(
   entry: RawPlatformWaterEntry,
@@ -1072,12 +1170,25 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
   const classificationIsHighBuffer = classification.classification === 'high_buffer';
   const estimatedData = entry.data_quality?.is_estimated === true;
   const directPublicSource = hasDirectPublicWaterSource(entry);
+  const completeMineralPanel = tdsPpm !== null && hardnessPpm !== null && alkalinityPpm !== null;
+  const trustedCuratedSource = hasTrustedPublicWaterSource(entry);
+  const localCuratedEvidence = hasRepoLocalCuratedWaterEvidence(entry);
+  const officialSourceBacked = directPublicSource && entry.verification_status === 'verified';
+  const trustedCommunitySourceBacked = entry.verification_status === 'curated'
+    && trustedCuratedSource
+    && localCuratedEvidence
+    && completeMineralPanel;
+  const sourceBackedForAutofill = officialSourceBacked || trustedCommunitySourceBacked;
+  const missingTrustedSource = !sourceBackedForAutofill;
   const policyBlockReasons = [
     ...(classificationIsZeroMineral
       ? ['Water is too low-mineral for ready-brew use; add minerals manually.']
       : []),
     ...(estimatedData
       ? ['Estimated water values must be verified manually before ready-brew use.']
+      : []),
+    ...(missingTrustedSource
+      ? ['Water chemistry is not backed by official or trusted public community evidence; enter TDS, GH, and KH manually.']
       : []),
     ...plannerBoundsErrors,
   ];
@@ -1088,6 +1199,7 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
   ]));
   const isBrewReady = entry.is_brew_ready
     && mergedBrewBlockReason.length === 0
+    && sourceBackedForAutofill
     && !classificationIsZeroMineral
     && !estimatedData;
   const baseline = WATER_CLASSIFICATION_BASELINES[classification.classification];
@@ -1112,6 +1224,7 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
   const requiresManualPreset = !isBrewReady
     || classificationIsZeroMineral
     || estimatedData
+    || missingTrustedSource
     || resolvedMineralsAreEstimated
     || (classificationIsAlkaline && (!directPublicSource || entry.coffee_parameters.brew_recommendation === 'poor'));
   const canAutofillBrand = !entry.is_sparkling
@@ -1138,11 +1251,17 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
     markets: mapWaterMarkets(entry.available_in, entry.market_code),
     searchText: entry.search_text || buildSearchText(entry.brand, entry.country_origin, entry.market_code, ...entry.aliases),
     description: canAutofillBrand
-      ? `${entry.brand} is source-backed and ready as a starting brew-water preset for ${entry.available_in.join(', ')}.`
+      ? officialSourceBacked
+        ? `${entry.brand} is source-backed and ready as a starting brew-water preset for ${entry.available_in.join(', ')}.`
+        : `${entry.brand} uses trusted curated/community water evidence as a starting point for ${entry.available_in.join(', ')}; verify with a meter for cafe-standard precision.`
       : `${entry.brand} is tracked for ${entry.available_in.join(', ')}, but needs manual mineral review before generation.`,
     notes: mergedBrewBlockReason.length > 0
       ? [...mergedBrewBlockReason, classification.note, ...(classification.caution ? [classification.caution] : [])]
-      : [classification.note, ...(classification.caution ? [classification.caution] : [])],
+      : [
+          ...(trustedCommunitySourceBacked ? ['Curated/community water values are used as a starting point; verify TDS, GH, and KH when precision matters.'] : []),
+          classification.note,
+          ...(classification.caution ? [classification.caution] : []),
+        ],
     presetStatus,
     publishState: entry.publish_state,
     isBrewReady: isBrewReady,
@@ -1167,12 +1286,7 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
     },
     resolvedMinerals,
     source: entry.sources[0]?.source_type || 'catalog_platform',
-    sourceUrls: Array.from(new Set([
-      ...entry.sources
-        .map((source) => source.source_url)
-        .filter((sourceUrl) => /^https?:\/\//i.test(sourceUrl)),
-      ...(WATER_SOURCE_URL_OVERRIDES[entry.brand_group_id] || []),
-    ])),
+    sourceUrls: getWaterSourceUrls(entry).filter((sourceUrl) => /^https?:\/\//i.test(sourceUrl)),
     verificationLevel,
     verifiedAt: CATALOG_VERSION,
     popularityTier: entry.publish_state === 'published' ? 'widely_used' : 'specialty_common',

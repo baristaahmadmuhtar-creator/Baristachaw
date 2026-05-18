@@ -1,129 +1,129 @@
-# AI Brew Real-World 1000 Report
+# AI Brew Real-World 10000 Report
 
 Latest SHA: f3ea2cdeb12ac378fc3272ac11973462dfe15d7f
 Local branch: ai-brew-real-world-production-hardening
 Origin main: 64c86eaf08dbbc3757530658be5619ef216b6454
 Local status: dirty (local validation changes present)
-Date: 2026-05-18T19:52:08.722Z
-Scenario count: 1000
+Date: 2026-05-18T19:55:00.278Z
+Scenario count: 10000
 
 ## Honesty Boundary
 This is a curated real-world software/barista reasoning gate. It did not physically brew coffee and it must not be used as sensory certainty. AI Brew creates strong starting recipes and dial-in guidance; physical real brew validation is still required.
-This is not physical brew proof or verified current-lot sensory data.
+This is a 10,000-case software/barista scenario gate, not 10,000 physical brews or verified current-lot sensory data.
 
 ## Bean Coverage
-- Panama Hacienda La Esmeralda Geisha Washed style: 32
-- Panama Elida Estate Natural Geisha style: 28
-- Ethiopia Yirgacheffe Washed Landrace style: 30
-- Ethiopia Guji Natural Landrace style: 28
-- Kenya AA SL28/SL34 Washed style: 29
-- Colombia Pink Bourbon Washed style: 27
-- Colombia Thermal Shock Caturra style: 27
-- Brazil Natural Yellow Bourbon/Catuai style: 28
-- Sumatra Wet-Hulled style: 26
-- Costa Rica Honey/Natural style: 27
-- Guatemala Washed Bourbon/Caturra style: 28
-- Rwanda/Burundi Washed Bourbon style: 27
-- Yemen Natural Traditional style: 27
-- Colombia Sugarcane Decaf style: 27
-- Specialty Robusta/Canephora style: 27
-- Espresso roast blend style: 36
-- Unknown origin/process/variety: 27
-- Indonesia Gayo Washed Ateng/Typica style: 26
-- Indonesia Toraja Washed Typica style: 26
-- Indonesia Bali Natural/Kintamani style: 26
-- India Monsooned Malabar style: 27
-- Liberica / Excelsa specialty style: 27
-- Indonesia Java Washed Typica style: 26
-- Indonesia Papua Wamena Washed Typica style: 26
-- Indonesia Bajawa Flores Natural Catimor style: 26
-- Indonesia Java Preanger Washed S795 style: 26
-- Mexico Chiapas Washed Bourbon style: 26
-- Peru Cajamarca Washed Typica style: 26
-- Bolivia Caranavi Washed Caturra style: 26
-- Uganda Natural SL14/SL28 style: 26
-- Nicaragua Maracaturra Washed style: 26
-- Honduras Parainema Honey style: 26
-- Thailand Doi Chang Washed Catimor style: 26
-- Laos Bolaven Washed Catimor style: 26
-- Colombia Caturra/Castillo Washed style: 25
-- Indonesia Flores Wet-Hulled style: 25
-- Indonesia Kerinci Honey Sigararutang style: 25
+- Panama Hacienda La Esmeralda Geisha Washed style: 275
+- Panama Elida Estate Natural Geisha style: 272
+- Ethiopia Yirgacheffe Washed Landrace style: 274
+- Ethiopia Guji Natural Landrace style: 272
+- Kenya AA SL28/SL34 Washed style: 273
+- Colombia Pink Bourbon Washed style: 271
+- Colombia Thermal Shock Caturra style: 271
+- Brazil Natural Yellow Bourbon/Catuai style: 272
+- Sumatra Wet-Hulled style: 269
+- Costa Rica Honey/Natural style: 271
+- Guatemala Washed Bourbon/Caturra style: 271
+- Rwanda/Burundi Washed Bourbon style: 270
+- Yemen Natural Traditional style: 270
+- Colombia Sugarcane Decaf style: 270
+- Specialty Robusta/Canephora style: 270
+- Espresso roast blend style: 279
+- Unknown origin/process/variety: 270
+- Indonesia Gayo Washed Ateng/Typica style: 269
+- Indonesia Toraja Washed Typica style: 269
+- Indonesia Bali Natural/Kintamani style: 269
+- India Monsooned Malabar style: 270
+- Liberica / Excelsa specialty style: 270
+- Indonesia Java Washed Typica style: 269
+- Indonesia Papua Wamena Washed Typica style: 269
+- Indonesia Bajawa Flores Natural Catimor style: 269
+- Indonesia Java Preanger Washed S795 style: 269
+- Mexico Chiapas Washed Bourbon style: 269
+- Peru Cajamarca Washed Typica style: 269
+- Bolivia Caranavi Washed Caturra style: 269
+- Uganda Natural SL14/SL28 style: 269
+- Nicaragua Maracaturra Washed style: 269
+- Honduras Parainema Honey style: 269
+- Thailand Doi Chang Washed Catimor style: 269
+- Laos Bolaven Washed Catimor style: 269
+- Colombia Caturra/Castillo Washed style: 269
+- Indonesia Flores Wet-Hulled style: 268
+- Indonesia Kerinci Honey Sigararutang style: 268
 
 ## Method Coverage
-- v60: 292
-- hario_switch: 68
-- chemex: 25
-- kalita_wave: 22
-- french_press: 25
-- clever_dripper: 65
-- aeropress: 24
-- origami: 44
-- espresso: 29
-- cold_brew: 23
-- moka_pot: 23
-- batch_brew: 23
-- siphon: 22
-- april: 231
-- melitta: 63
-- kono: 21
+- v60: 2892
+- hario_switch: 668
+- chemex: 225
+- kalita_wave: 222
+- french_press: 225
+- clever_dripper: 665
+- aeropress: 224
+- origami: 444
+- espresso: 229
+- cold_brew: 223
+- moka_pot: 223
+- batch_brew: 223
+- siphon: 222
+- april: 2431
+- melitta: 663
+- kono: 221
 
 ## Grinder Coverage
-- 1Zpresso K-Ultra: 91
-- Comandante C40 MK4: 85
-- Kingrinder K6: 79
-- Unknown electric grinder: 154
-- Latina Sumba / Sumbawa: 74
-- Timemore C3: 72
-- Timemore C2: 72
-- Baratza Encore ESP: 80
-- Fellow Ode Gen 2: 71
-- Unknown manual grinder: 71
-- DF64 espresso/filter hybrid: 76
-- Espresso grinder zero-point unknown: 75
+- 1Zpresso K-Ultra: 781
+- Comandante C40 MK4: 775
+- Kingrinder K6: 769
+- Unknown electric grinder: 1539
+- Latina Sumba / Sumbawa: 769
+- Timemore C3: 767
+- Timemore C2: 767
+- Baratza Encore ESP: 770
+- Fellow Ode Gen 2: 766
+- Unknown manual grinder: 766
+- DF64 espresso/filter hybrid: 766
+- Espresso grinder zero-point unknown: 765
 
 ## Water Coverage
-- Low buffer clarity water: 60
-- Third Wave Water / remineralized balanced: 61
-- Volvic style bottled water: 64
-- Unknown estimated bottled water: 56
-- Hard water: 54
-- Espresso-safe water: 60
-- High buffer alkaline water: 53
-- zero-mineral RO / distilled water: 62
-- Galon isi ulang / depot water Indonesia style: 53
-- Pristine 8.6+ alkaline water Indonesia style: 53
-- Aqua bottled water Indonesia style: 54
-- Le Minerale bottled water Indonesia style: 53
-- Club bottled water Indonesia style: 53
-- Ades bottled water Indonesia style: 53
-- Amidis demineralized water Indonesia style: 53
-- Super O2 low-mineral water Indonesia style: 53
-- Equil mineral water Indonesia style: 53
-- Cleo low-mineral water Indonesia style: 52
+- Low buffer clarity water: 554
+- Third Wave Water / remineralized balanced: 555
+- Volvic style bottled water: 558
+- Unknown estimated bottled water: 563
+- Hard water: 561
+- Espresso-safe water: 567
+- High buffer alkaline water: 547
+- zero-mineral RO / distilled water: 557
+- Galon isi ulang / depot water Indonesia style: 547
+- Pristine 8.6+ alkaline water Indonesia style: 547
+- Aqua bottled water Indonesia style: 561
+- Le Minerale bottled water Indonesia style: 560
+- Club bottled water Indonesia style: 560
+- Ades bottled water Indonesia style: 560
+- Amidis demineralized water Indonesia style: 547
+- Super O2 low-mineral water Indonesia style: 547
+- Equil mineral water Indonesia style: 560
+- Cleo low-mineral water Indonesia style: 549
 
 ## Target Coverage
-- floral_transparent: 131
-- fruit_forward: 125
-- more_body: 123
-- more_acidity: 124
-- more_sweetness: 122
-- dense_comforting: 125
-- balance_clean: 124
-- soft_round: 126
+- floral_transparent: 1256
+- fruit_forward: 1250
+- more_body: 1248
+- more_acidity: 1249
+- more_sweetness: 1247
+- dense_comforting: 1250
+- balance_clean: 1249
+- soft_round: 1251
 
 ## Score Summary
-Passed: 1000/1000
+Passed: 10000/10000
 Failures: 0
-Warnings: 1187
+Warnings: 11960
 Average score: 98.4
-Score distribution: min 93.7; p10 96.6; p50 98.3; p90 100; max 100
-Unique coffee input combinations: 999
+Score distribution: min 91.6; p10 96.6; p50 98.3; p90 100; max 100
+Unique coffee input combinations: 10000
 Coverage density: 37 bean archetypes, 16 methods, 12 grinders, 18 waters, 8 targets, 5 roast levels.
 
 | Category | Average | Minimum |
 |---|---:|---:|
-| recipeSafety | 96.2 | 84 |
+| recipeSafety | 96 | 84 |
 | methodFit | 99.4 | 92 |
 | targetFit | 99.1 | 84 |
 | beanFit | 99.4 | 84 |
@@ -137,25 +137,25 @@ Coverage density: 37 bean archetypes, 16 methods, 12 grinders, 18 waters, 8 targ
 | extractionTimeLogic | 100 | 100 |
 | workflowLanguageSafety | 99.4 | 92 |
 | pourFlowLogic | 99.4 | 92 |
-| bloomLogic | 99.7 | 92 |
+| bloomLogic | 99.8 | 92 |
 | expectedCupHonesty | 98.9 | 84 |
-| warningQuality | 96.5 | 84 |
+| warningQuality | 96.4 | 84 |
 | mobileCopyQuality | 100 | 100 |
-| overclaimRisk | 94.6 | 76 |
+| overclaimRisk | 94.5 | 76 |
 
 ## Lowest Scoring Cases
-- generated-0225: Ethiopia Yirgacheffe Washed Landrace style / Espresso / Timemore C2 / Galon isi ulang / depot water Indonesia style; score 93.7; espresso_not_recommended_grinder_risk: Timemore C2 is not a reliable espresso grinder choice; keep confidence low and use a real espresso-capable grinder.; water_manual_verification_risk: Galon isi ulang / depot water Indonesia style needs manual TDS/GH/KH verification before high confidence.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.
-- generated-0765: Uganda Natural SL14/SL28 style / Espresso / Latina Sumba / Sumbawa / zero-mineral RO / distilled water; score 94.1; fallback_grinder_calibration_risk: Feima 600N / Murane B600BN / Latina 600N / Flying Eagle 600N / Fomac / Kova 600N needs calibration; settings are starting points, not exact burr-zero truth.; espresso_not_recommended_grinder_risk: Feima 600N / Murane B600BN / Latina 600N / Flying Eagle 600N / Fomac / Kova 600N is not a reliable espresso grinder choice; keep confidence low and use a real espresso-capable grinder.; zero_mineral_remineralize_risk: zero-mineral RO / distilled water is not brew-ready without minerals.; experimental_process_feedback_risk: Uganda Natural SL14/SL28 style can become winey/heavy if extraction is pushed too far; real taste feedback matters.
-- generated-0993: Yemen Natural Traditional style / V60 hot / DF64 espresso/filter hybrid / zero-mineral RO / distilled water; score 94.1; fallback_grinder_calibration_risk: DF64 espresso/filter hybrid needs calibration; settings are starting points, not exact burr-zero truth.; zero_mineral_remineralize_risk: zero-mineral RO / distilled water is not brew-ready without minerals.; experimental_process_feedback_risk: Yemen Natural Traditional style can become winey/heavy if extraction is pushed too far; real taste feedback matters.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.
-- generated-0180: Colombia Sugarcane Decaf style / Espresso / Latina Sumba / Sumbawa / Cleo low-mineral water Indonesia style; score 94.5; fallback_grinder_calibration_risk: Feima 600N / Murane B600BN / Latina 600N / Flying Eagle 600N / Fomac / Kova 600N needs calibration; settings are starting points, not exact burr-zero truth.; espresso_not_recommended_grinder_risk: Feima 600N / Murane B600BN / Latina 600N / Flying Eagle 600N / Fomac / Kova 600N is not a reliable espresso grinder choice; keep confidence low and use a real espresso-capable grinder.; zero_mineral_remineralize_risk: Cleo low-mineral water Indonesia style is not brew-ready without minerals.
-- generated-0186: Panama Hacienda La Esmeralda Geisha Washed style / Clever Dripper / Unknown electric grinder / Amidis demineralized water Indonesia style; score 94.5; fallback_grinder_calibration_risk: Unknown electric grinder needs calibration; settings are starting points, not exact burr-zero truth.; zero_mineral_remineralize_risk: Amidis demineralized water Indonesia style is not brew-ready without minerals.; geisha_body_target_risk: Body/dense target can reduce Geisha floral clarity; use Floral & Transparent or Fruit-Forward for a more classic Geisha cup.
-- generated-0315: Indonesia Papua Wamena Washed Typica style / Espresso / Unknown manual grinder / Unknown estimated bottled water; score 94.5; fallback_grinder_calibration_risk: Unknown manual grinder needs calibration; settings are starting points, not exact burr-zero truth.; espresso_not_recommended_grinder_risk: Unknown manual grinder is not a reliable espresso grinder choice; keep confidence low and use a real espresso-capable grinder.; water_manual_verification_risk: Unknown estimated bottled water needs manual TDS/GH/KH verification before high confidence.
-- generated-0408: Panama Hacienda La Esmeralda Geisha Washed style / V60 hot / DF64 espresso/filter hybrid / Cleo low-mineral water Indonesia style; score 94.5; fallback_grinder_calibration_risk: DF64 espresso/filter hybrid needs calibration; settings are starting points, not exact burr-zero truth.; zero_mineral_remineralize_risk: Cleo low-mineral water Indonesia style is not brew-ready without minerals.; geisha_body_target_risk: Body/dense target can reduce Geisha floral clarity; use Floral & Transparent or Fruit-Forward for a more classic Geisha cup.
-- generated-0900: Sumatra Wet-Hulled style / Espresso / Unknown manual grinder / Super O2 low-mineral water Indonesia style; score 94.5; fallback_grinder_calibration_risk: Unknown manual grinder needs calibration; settings are starting points, not exact burr-zero truth.; espresso_not_recommended_grinder_risk: Unknown manual grinder is not a reliable espresso grinder choice; keep confidence low and use a real espresso-capable grinder.; zero_mineral_remineralize_risk: Super O2 low-mineral water Indonesia style is not brew-ready without minerals.
-- generated-0920: Colombia Sugarcane Decaf style / Cold Brew / Comandante C40 MK4 / Pristine 8.6+ alkaline water Indonesia style; score 94.5; high_buffer_target_risk: Pristine 8.6+ alkaline water Indonesia style can mute acidity, florals, and clarity for this target.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.; cold_brew_floral_expectation_risk: Cold brew can be sweet and clean, but sparkling hot-brew florals/acidity should be a lower expectation.
-- generated-0991: Laos Bolaven Washed Catimor style / April / Orea / B75 style flat-bottom / DF64 espresso/filter hybrid / zero-mineral RO / distilled water; score 94.5; fallback_grinder_calibration_risk: DF64 espresso/filter hybrid needs calibration; settings are starting points, not exact burr-zero truth.; zero_mineral_remineralize_risk: zero-mineral RO / distilled water is not brew-ready without minerals.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.
-- generated-0992: Rwanda/Burundi Washed Bourbon style / Clever Dripper / DF64 espresso/filter hybrid / zero-mineral RO / distilled water; score 94.5; fallback_grinder_calibration_risk: DF64 espresso/filter hybrid needs calibration; settings are starting points, not exact burr-zero truth.; zero_mineral_remineralize_risk: zero-mineral RO / distilled water is not brew-ready without minerals.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.
-- generated-0443: Unknown origin/process/variety / Hario Pegasus / Unknown manual grinder / Pristine 8.6+ alkaline water Indonesia style; score 94.9; fallback_grinder_calibration_risk: Unknown manual grinder needs calibration; settings are starting points, not exact burr-zero truth.; high_buffer_target_risk: Pristine 8.6+ alkaline water Indonesia style can mute acidity, florals, and clarity for this target.; unknown_bean_conservative_risk: Bean data is incomplete, so this recipe should stay conservative and avoid specific flavor certainty.
+- generated-7920: Panama Elida Estate Natural Geisha style / Espresso / Unknown manual grinder / Super O2 low-mineral water Indonesia style; score 91.6; fallback_grinder_calibration_risk: Unknown manual grinder needs calibration; settings are starting points, not exact burr-zero truth.; espresso_not_recommended_grinder_risk: Unknown manual grinder is not a reliable espresso grinder choice; keep confidence low and use a real espresso-capable grinder.; zero_mineral_remineralize_risk: Super O2 low-mineral water Indonesia style is not brew-ready without minerals.; experimental_process_feedback_risk: Panama Elida Estate Natural Geisha style can become winey/heavy if extraction is pushed too far; real taste feedback matters.; geisha_body_target_risk: Body/dense target can reduce Geisha floral clarity; use Floral & Transparent or Fruit-Forward for a more classic Geisha cup.
+- generated-3105: India Monsooned Malabar style / Espresso / Latina Sumba / Sumbawa / zero-mineral RO / distilled water; score 92; fallback_grinder_calibration_risk: Feima 600N / Murane B600BN / Latina 600N / Flying Eagle 600N / Fomac / Kova 600N needs calibration; settings are starting points, not exact burr-zero truth.; espresso_not_recommended_grinder_risk: Feima 600N / Murane B600BN / Latina 600N / Flying Eagle 600N / Fomac / Kova 600N is not a reliable espresso grinder choice; keep confidence low and use a real espresso-capable grinder.; zero_mineral_remineralize_risk: zero-mineral RO / distilled water is not brew-ready without minerals.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.
+- generated-6615: Laos Bolaven Washed Catimor style / Espresso / Latina Sumba / Sumbawa / zero-mineral RO / distilled water; score 92; fallback_grinder_calibration_risk: Feima 600N / Murane B600BN / Latina 600N / Flying Eagle 600N / Fomac / Kova 600N needs calibration; settings are starting points, not exact burr-zero truth.; espresso_not_recommended_grinder_risk: Feima 600N / Murane B600BN / Latina 600N / Flying Eagle 600N / Fomac / Kova 600N is not a reliable espresso grinder choice; keep confidence low and use a real espresso-capable grinder.; zero_mineral_remineralize_risk: zero-mineral RO / distilled water is not brew-ready without minerals.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.
+- generated-2385: Indonesia Flores Wet-Hulled style / Espresso / Unknown electric grinder / High buffer alkaline water; score 92.4; grinder_fixture_not_found: Baratza Encore is not present in the current AI Brew grinder catalog; the stress gate used Unknown electric grinder as a low-confidence fallback.; espresso_not_recommended_grinder_risk: Baratza Encore is not a reliable espresso grinder choice; keep confidence low and use a real espresso-capable grinder.; high_buffer_target_risk: High buffer alkaline water can mute acidity, florals, and clarity for this target.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.
+- generated-5773: Panama Hacienda La Esmeralda Geisha Washed style / French Press / Unknown manual grinder / Equil mineral water Indonesia style; score 92.4; fallback_grinder_calibration_risk: Unknown manual grinder needs calibration; settings are starting points, not exact burr-zero truth.; high_buffer_target_risk: Equil mineral water Indonesia style can mute acidity, florals, and clarity for this target.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.; french_press_clarity_softening_risk: French Press can soften clarity; decant cleanly and avoid stirring up fines.
+- generated-1383: Indonesia Toraja Washed Typica style / Batch Brewer / DF64 espresso/filter hybrid / Pristine 8.6+ alkaline water Indonesia style; score 92.8; fallback_grinder_calibration_risk: DF64 espresso/filter hybrid needs calibration; settings are starting points, not exact burr-zero truth.; high_buffer_target_risk: Pristine 8.6+ alkaline water Indonesia style can mute acidity, florals, and clarity for this target.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.; batch_model_validation_risk: Batch brewer flow, basket depth, and spray pattern need model-specific validation.
+- generated-2533: Indonesia Flores Wet-Hulled style / French Press / Espresso grinder zero-point unknown / Amidis demineralized water Indonesia style; score 92.8; fallback_grinder_calibration_risk: Espresso grinder zero-point unknown needs calibration; settings are starting points, not exact burr-zero truth.; zero_mineral_remineralize_risk: Amidis demineralized water Indonesia style is not brew-ready without minerals.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.; french_press_clarity_softening_risk: French Press can soften clarity; decant cleanly and avoid stirring up fines.
+- generated-2553: Espresso roast blend style / Batch Brewer / DF64 espresso/filter hybrid / Pristine 8.6+ alkaline water Indonesia style; score 92.8; fallback_grinder_calibration_risk: DF64 espresso/filter hybrid needs calibration; settings are starting points, not exact burr-zero truth.; high_buffer_target_risk: Pristine 8.6+ alkaline water Indonesia style can mute acidity, florals, and clarity for this target.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.; batch_model_validation_risk: Batch brewer flow, basket depth, and spray pattern need model-specific validation.
+- generated-6030: Unknown origin/process/variety / Espresso / Latina Sumba / Sumbawa / Cleo low-mineral water Indonesia style; score 92.8; fallback_grinder_calibration_risk: Feima 600N / Murane B600BN / Latina 600N / Flying Eagle 600N / Fomac / Kova 600N needs calibration; settings are starting points, not exact burr-zero truth.; espresso_not_recommended_grinder_risk: Feima 600N / Murane B600BN / Latina 600N / Flying Eagle 600N / Fomac / Kova 600N is not a reliable espresso grinder choice; keep confidence low and use a real espresso-capable grinder.; zero_mineral_remineralize_risk: Cleo low-mineral water Indonesia style is not brew-ready without minerals.; unknown_bean_conservative_risk: Bean data is incomplete, so this recipe should stay conservative and avoid specific flavor certainty.
+- generated-7233: Indonesia Kerinci Honey Sigararutang style / Batch Brewer / DF64 espresso/filter hybrid / Pristine 8.6+ alkaline water Indonesia style; score 92.8; fallback_grinder_calibration_risk: DF64 espresso/filter hybrid needs calibration; settings are starting points, not exact burr-zero truth.; high_buffer_target_risk: Pristine 8.6+ alkaline water Indonesia style can mute acidity, florals, and clarity for this target.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.; batch_model_validation_risk: Batch brewer flow, basket depth, and spray pattern need model-specific validation.
+- generated-8383: Indonesia Java Preanger Washed S795 style / French Press / Espresso grinder zero-point unknown / Amidis demineralized water Indonesia style; score 92.8; fallback_grinder_calibration_risk: Espresso grinder zero-point unknown needs calibration; settings are starting points, not exact burr-zero truth.; zero_mineral_remineralize_risk: Amidis demineralized water Indonesia style is not brew-ready without minerals.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.; french_press_clarity_softening_risk: French Press can soften clarity; decant cleanly and avoid stirring up fines.
+- generated-8509: Unknown origin/process/variety / Melitta / Unknown electric grinder / Unknown estimated bottled water; score 92.8; fallback_grinder_calibration_risk: Unknown electric grinder needs calibration; settings are starting points, not exact burr-zero truth.; water_manual_verification_risk: Unknown estimated bottled water needs manual TDS/GH/KH verification before high confidence.; unknown_bean_conservative_risk: Bean data is incomplete, so this recipe should stay conservative and avoid specific flavor certainty.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.
 
 ## Top Failures
 No blocking software failure found.
@@ -183,32 +183,32 @@ No blocking software failure found.
 - 32-switch-03-chamber-safety: Ethiopia Guji Natural Landrace style can become winey/heavy if extraction is pushed too far; real taste feedback matters.
 
 ## Top Warning Causes
-- fallback_grinder_calibration_risk: 372 cases; examples 10-indonesia-wet-hulled-clever-body, 20-unknown-grinder-espresso-low-confidence, 21-unknown-bean-v60-baseline, 33-mugen-x-switch-profile, 41-feima-600n-espresso-hard-warning
-- zero_mineral_remineralize_risk: 220 cases; examples 24-zero-mineral-water-block, 52-amidis-v60-remineralize-required, 53-super-o2-chemex-low-mineral-warning, generated-0056, generated-0057
-- experimental_process_feedback_risk: 188 cases; examples 02-panama-natural-geisha-v60-iced-fruit, 03-panama-natural-geisha-more-body-mismatch, 05-ethiopia-natural-switch-fruit, 08-colombia-anaerobic-v60-fruit, 14-yemen-natural-v60-dense
-- water_manual_verification_risk: 109 cases; examples 10-indonesia-wet-hulled-clever-body, 14-yemen-natural-v60-dense, 21-unknown-bean-v60-baseline, 33-mugen-x-switch-profile, 42-galon-depot-v60-manual-water
-- grinder_fixture_not_found: 78 cases; examples 09-brazil-natural-french-press-dense, 16-robusta-french-press-body, 26-cold-brew-brazil-natural, 27-cold-brew-floral-target-warning, 29-batch-brewer-medium-roast-blend
-- high_buffer_target_risk: 61 cases; examples 23-high-buffer-water-floral-warning, 43-pristine-alkaline-geisha-floral-warning, 54-equil-floral-muted-warning, generated-0157, generated-0158
-- dark_floral_target_risk: 37 cases; examples 44-dark-roast-floral-target-mismatch, generated-0080, generated-0151, generated-0153, generated-0223
-- unknown_bean_conservative_risk: 27 cases; examples 21-unknown-bean-v60-baseline, generated-0073, generated-0110, generated-0147, generated-0184
-- batch_model_validation_risk: 23 cases; examples 29-batch-brewer-medium-roast-blend, 55-batch-brewer-java-balanced, generated-0078, generated-0123, generated-0168
-- moka_stall_bitterness_risk: 23 cases; examples 28-moka-dark-roast, 50-liberica-excelsa-moka-body, generated-0097, generated-0142, generated-0187
-- espresso_not_recommended_grinder_risk: 22 cases; examples 18-timemore-c2-espresso-blocked, 19-fellow-ode-espresso-blocked, 20-unknown-grinder-espresso-low-confidence, 41-feima-600n-espresso-hard-warning, generated-0090
-- geisha_body_target_risk: 15 cases; examples 03-panama-natural-geisha-more-body-mismatch, 45-geisha-dense-target-clarity-tradeoff, generated-0112, generated-0113, generated-0186
+- fallback_grinder_calibration_risk: 3832 cases; examples 10-indonesia-wet-hulled-clever-body, 20-unknown-grinder-espresso-low-confidence, 21-unknown-bean-v60-baseline, 33-mugen-x-switch-profile, 41-feima-600n-espresso-hard-warning
+- zero_mineral_remineralize_risk: 2200 cases; examples 24-zero-mineral-water-block, 52-amidis-v60-remineralize-required, 53-super-o2-chemex-low-mineral-warning, generated-0056, generated-0057
+- experimental_process_feedback_risk: 1892 cases; examples 02-panama-natural-geisha-v60-iced-fruit, 03-panama-natural-geisha-more-body-mismatch, 05-ethiopia-natural-switch-fruit, 08-colombia-anaerobic-v60-fruit, 14-yemen-natural-v60-dense
+- water_manual_verification_risk: 1110 cases; examples 10-indonesia-wet-hulled-clever-body, 14-yemen-natural-v60-dense, 21-unknown-bean-v60-baseline, 33-mugen-x-switch-profile, 42-galon-depot-v60-manual-water
+- grinder_fixture_not_found: 773 cases; examples 09-brazil-natural-french-press-dense, 16-robusta-french-press-body, 26-cold-brew-brazil-natural, 27-cold-brew-floral-target-warning, 29-batch-brewer-medium-roast-blend
+- high_buffer_target_risk: 622 cases; examples 23-high-buffer-water-floral-warning, 43-pristine-alkaline-geisha-floral-warning, 54-equil-floral-muted-warning, generated-0157, generated-0158
+- dark_floral_target_risk: 375 cases; examples 44-dark-roast-floral-target-mismatch, generated-0080, generated-0151, generated-0153, generated-0223
+- unknown_bean_conservative_risk: 270 cases; examples 21-unknown-bean-v60-baseline, generated-0073, generated-0110, generated-0147, generated-0184
+- batch_model_validation_risk: 223 cases; examples 29-batch-brewer-medium-roast-blend, 55-batch-brewer-java-balanced, generated-0078, generated-0123, generated-0168
+- moka_stall_bitterness_risk: 223 cases; examples 28-moka-dark-roast, 50-liberica-excelsa-moka-body, generated-0097, generated-0142, generated-0187
+- espresso_not_recommended_grinder_risk: 191 cases; examples 18-timemore-c2-espresso-blocked, 19-fellow-ode-espresso-blocked, 20-unknown-grinder-espresso-low-confidence, 41-feima-600n-espresso-hard-warning, generated-0090
+- geisha_body_target_risk: 137 cases; examples 03-panama-natural-geisha-more-body-mismatch, 45-geisha-dense-target-clarity-tradeoff, generated-0112, generated-0113, generated-0186
 
 ## Top Method-Risk Categories
-- espresso: avg 96.9; min 93.7; warnings 47; failures 0
-- moka_pot: avg 97.2; min 94.9; warnings 49; failures 0
-- batch_brew: avg 97.3; min 95.4; warnings 50; failures 0
-- cold_brew: avg 97.9; min 94.5; warnings 36; failures 0
-- hario_switch: avg 98.4; min 94.9; warnings 84; failures 0
-- clever_dripper: avg 98.4; min 94.5; warnings 75; failures 0
-- origami: avg 98.4; min 95.4; warnings 52; failures 0
-- v60: avg 98.5; min 94.1; warnings 331; failures 0
-- french_press: avg 98.5; min 96.6; warnings 29; failures 0
-- april: avg 98.5; min 94.5; warnings 257; failures 0
-- melitta: avg 98.5; min 94.9; warnings 74; failures 0
-- kalita_wave: avg 98.7; min 96.6; warnings 21; failures 0
+- espresso: avg 96.4; min 91.6; warnings 455; failures 0
+- moka_pot: avg 97.2; min 92.8; warnings 479; failures 0
+- batch_brew: avg 97.3; min 92.8; warnings 470; failures 0
+- french_press: avg 98.1; min 92.4; warnings 300; failures 0
+- cold_brew: avg 98.2; min 93.7; warnings 301; failures 0
+- aeropress: avg 98.4; min 94.1; warnings 265; failures 0
+- v60: avg 98.5; min 93.7; warnings 3289; failures 0
+- hario_switch: avg 98.5; min 93.7; warnings 747; failures 0
+- chemex: avg 98.5; min 94.5; warnings 253; failures 0
+- kalita_wave: avg 98.5; min 94.1; warnings 241; failures 0
+- clever_dripper: avg 98.5; min 94.1; warnings 758; failures 0
+- origami: avg 98.5; min 94.1; warnings 509; failures 0
 
 ## Barista Interpretation
 - Premium washed/floral coffees are evaluated for higher temperature, clarity, water-buffer honesty, and target mismatch warnings.

@@ -4,39 +4,58 @@
     {
       "id": 1,
       "name": "Vesper VS-3 FOLD",
+      "brand": "Vesper",
       "type": "Klik (External)",
       "coarse": "25 - 30 Klik",
       "medium": "15 - 24 Klik",
       "fine": "2 - 12 Klik",
       "source": "user_dataset",
+      "sourceUrls": [
+        "https://shopee.co.id/Vesper-manual-coffee-grinder-VS-3-external-adjustable-setting-seven-stars-conical-burr-espresso-pour-over-grinder-kopi-manual-i.132485012.29440047723"
+      ],
       "verificationLevel": "dataset_unverified",
       "confidence": "low"
     },
     {
       "id": "1zpresso-je-plus-grinder",
       "name": "1Zpresso JE-Plus Grinder",
+      "brand": "1Zpresso",
       "type": "Official catalog listing",
       "coarse": "Reference official grinder chart",
       "medium": "Reference official grinder chart",
       "fine": "Reference official grinder chart",
       "source": "official_2026",
-      "sourceUrl": "https://1zpresso.coffee/grinder/",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grinder/",
+        "https://1zpresso.coffee/jp/manual/"
+      ],
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.09-ai-brew-v1"
     },
     {
       "id": "1zpresso-jx-pro-s",
       "name": "1Zpresso JX-Pro S",
+      "brand": "1Zpresso",
       "type": "Numbers + Clicks (External)",
       "coarse": "3.0 - 3.6 rotations",
       "medium": "2.2 - 2.8 rotations",
       "fine": "1.0 - 1.6 rotations",
       "source": "official_2026",
-      "sourceUrl": "https://1zpresso.coffee/grinder/",
+      "sourceUrls": [
+        "https://1zpresso.coffee/grinder/",
+        "https://1zpresso.coffee/jp/manual/"
+      ],
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.11-ai-brew-v1.1"
     },
     {
       "id": "1zpresso-k-max",
       "name": "1Zpresso K-Max",
+      "brand": "1Zpresso",
       "type": "Numbers + Clicks (External)",
       "coarse": "7.0 - 8.5 numbers",
       "medium": "5.8 - 7.0 numbers",
@@ -46,39 +65,59 @@
         "https://1zpresso.coffee/grinder/",
         "https://honestcoffeeguide.com/coffee-grind-size-chart/"
       ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.11-ai-brew-v1.2"
     },
     {
       "id": 2,
       "name": "Timemore C5 ESP PRO",
+      "brand": "Timemore",
       "type": "Klik (Internal)",
       "coarse": "110 - 120 Klik",
       "medium": "75 - 100 Klik",
       "fine": "25 - 60 Klik",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://www.timemore.com/products/timemore-manual-coffee-grinder-chestnut-c5-series?variant=47768620302578"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 32,
       "name": "1Zpresso J-Ultra",
+      "brand": "1Zpresso",
       "type": "Putaran (External)",
       "coarse": "3.5 - 4.5 Putaran",
       "medium": "2.5 - 3.5 Putaran",
       "fine": "1.0 - 1.6 Putaran",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://1zpresso.coffee/jp/manual-jultra-en/",
+        "https://1zpresso.coffee/wp-content/uploads/2023/11/J-Ultra-%E5%88%BB%E5%BA%A6%E5%BB%BA%E8%AD%B0-20231103-%E7%B9%81%E9%AB%94.jpg"
+      ],
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 33,
       "name": "1Zpresso K-Ultra",
+      "brand": "1Zpresso",
       "type": "Nomor (External)",
       "coarse": "9.5 - 10.5 numbers",
       "medium": "8.0 - 9.0 numbers",
       "fine": "5.0 - 6.5 numbers",
       "source": "official_2026",
-      "sourceUrl": "https://1zpresso.coffee/grind-setting-reference/",
+      "sourceUrls": [
+        "https://1zpresso.coffee/jp/manual/",
+        "https://1zpresso.coffee/grind-setting-reference/"
+      ],
       "verificationLevel": "official",
       "confidence": "high",
       "verifiedAt": "2026-06-01"
@@ -86,45 +125,70 @@
     {
       "id": 34,
       "name": "1Zpresso Q Air / Q2",
+      "brand": "1Zpresso",
       "type": "Klik (Internal)",
       "coarse": "22 - 26 Klik",
       "medium": "15 - 20 Klik",
       "fine": "10 - 14 Klik",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://1zpresso.coffee/jp/manual/",
+        "https://1zpresso.coffee/grind-setting-reference/"
+      ],
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 35,
       "name": "1Zpresso X-Pro / X-Ultra",
+      "brand": "1Zpresso",
       "type": "Putaran (External)",
       "coarse": "2.0 - 2.4 Putaran",
       "medium": "1.2 - 1.5 Putaran",
       "fine": "0.3 - 0.5 Putaran",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://1zpresso.coffee/jp/manual/",
+        "https://1zpresso.coffee/wp-content/uploads/2023/08/X-Ultra-%E7%A0%94%E7%A3%A8%E5%BB%BA%E8%AD%B0%E5%8D%A1%E7%B9%81%E9%AB%94-20230802.jpg"
+      ],
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 36,
       "name": "1Zpresso ZP6 Special",
+      "brand": "1Zpresso",
       "type": "Nomor (External)",
       "coarse": "Nomor 6.0 - 7.5",
       "medium": "Nomor 3.5 - 5.5",
       "fine": "0 (Tidak Disarankan)",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://1zpresso.coffee/jp/manual/",
+        "https://1zpresso.coffee/wp-content/uploads/2022/10/ZP6-%E7%A0%94%E7%A3%A8%E5%BB%BA%E8%AD%B0%E5%8D%A1%E7%B9%81%E9%AB%94-20221018.jpg"
+      ],
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 37,
       "name": "Breville Smart Grinder Pro",
+      "brand": "Breville",
       "type": "Setting (Electric)",
       "coarse": "Setting 50 - 60",
       "medium": "Setting 40 - 50",
       "fine": "Setting 1 - 25",
       "source": "curated_2026",
-      "sourceUrl": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+      "sourceUrls": [
+        "https://www.breville.com/en-us/product/bcg820",
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+      ],
       "verificationLevel": "community_verified",
       "confidence": "medium",
       "verifiedAt": "2026-06-01"
@@ -132,325 +196,502 @@
     {
       "id": 38,
       "name": "Comandante C40 MK4",
+      "brand": "Comandante",
       "type": "Klik (Internal)",
-      "coarse": "25 - 32 Klik",
-      "medium": "18 - 24 Klik",
-      "fine": "10 - 15 Klik",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "coarse": "25 - 35 Klik",
+      "medium": "18 - 35 Klik",
+      "fine": "7 - 13 Klik",
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://comandantegrinder.com/pages/faq",
+        "https://www.comandantegrinder.com/downloads/C40-Manual-E-Q3-21-web.pdf"
+      ],
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 39,
       "name": "Comandante C60 Baracuda",
+      "brand": "Comandante",
       "type": "Klik (Internal)",
       "coarse": "35 - 45 Klik",
       "medium": "20 - 30 Klik",
       "fine": "10 - 18 Klik",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://comandantegrinder.com/products/baracuda-c60-nautilus-blue",
+        "https://comandantegrinder.com/downloads/c60-baracuda.pdf"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 40,
       "name": "Etzinger etz-I",
+      "brand": "Etzinger",
       "type": "Angka (External)",
       "coarse": "Angka 18 - 22",
       "medium": "Angka 12 - 16",
       "fine": "Angka 4 - 8",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://etzinger-ag.com/coffee-grinders/etz-i-hand-grinders",
+        "https://etzinger-ag.com/XooWebKit/bin/download.php/49a7b_4729b9d583/Instructions%20etz-I.pdf"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 41,
       "name": "Hario Canister (C-20)",
+      "brand": "Hario",
       "type": "Notch (Internal)",
       "coarse": "4 - 5 Notch",
       "medium": "2 - 3 Notch",
       "fine": "1 Notch",
       "source": "user_dataset",
+      "sourceUrls": [
+        "https://global.hario.com/grinder/"
+      ],
       "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "confidence": "low",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 42,
       "name": "Hario Mini Slim+",
+      "brand": "Hario",
       "type": "Klik (Internal)",
       "coarse": "10 - 13 Klik",
       "medium": "7 - 10 Klik",
       "fine": "3 - 5 Klik",
       "source": "user_dataset",
+      "sourceUrls": [
+        "https://global.hario.com/grinder/"
+      ],
       "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "confidence": "low",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 43,
       "name": "Hario Skerton Pro",
+      "brand": "Hario",
       "type": "Notch (Internal)",
       "coarse": "8 - 10 Notch",
       "medium": "5 - 7 Notch",
       "fine": "1 - 4 Notch",
       "source": "user_dataset",
+      "sourceUrls": [
+        "https://global.hario.com/grinder/"
+      ],
       "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "confidence": "low",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 44,
       "name": "Kingrinder K6",
+      "brand": "KINGrinder",
       "type": "Klik (External)",
       "coarse": "90 - 120 Klik",
-      "medium": "60 - 90 Klik",
+      "medium": "60 - 115 Klik",
       "fine": "30 - 50 Klik",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://www.kingrinder.com/exterior-adjustment",
+        "https://uploads.strikinglycdn.com/files/353ff58b-a58b-441e-b9d1-dd16ccb9a69d/Kingrinder%20Manual%20-%20Exterior%20Adjustment%20-%20V3.pdf?id=3880364"
+      ],
+      "verificationLevel": "official",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 45,
       "name": "Kingrinder P0/P1/P2",
+      "brand": "KINGrinder",
       "type": "Klik (Internal)",
       "coarse": "35 - 45 Klik",
       "medium": "20 - 30 Klik",
       "fine": "15 - 20 Klik",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://www.kingrinder.com/jp-interior-adjustment"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 46,
       "name": "Kinu M47",
+      "brand": "Kinu",
       "type": "Putaran (External)",
       "coarse": "4.0 - 5.0 Putaran",
       "medium": "2.5 - 3.5 Putaran",
       "fine": "0.8 - 1.2 Putaran",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://kinugrinders.de/pages/m47-classic",
+        "https://kinugrinders.de/wp-content/uploads/2021/01/Kinu%20-%20M47%20Classic%20User%20Manual.pdf"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 47,
       "name": "Latina Sumba / Sumbawa",
+      "brand": "Latina",
       "type": "Klik (Internal)",
       "coarse": "10 - 14 Klik",
       "medium": "7 - 10 Klik",
       "fine": "3 - 5 Klik",
       "source": "user_dataset",
+      "sourceUrls": [
+        "https://maharaja.coffee/merchandise/latina/",
+        "https://www.cikopi.com/2016/03/sumba-penggiling-kopi-manual/"
+      ],
       "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "confidence": "low",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 48,
       "name": "Latina Sumo",
+      "brand": "Latina",
       "type": "Klik (Internal)",
       "coarse": "20 - 25 Klik",
       "medium": "15 - 20 Klik",
       "fine": "8 - 12 Klik",
       "source": "user_dataset",
+      "sourceUrls": [
+        "https://maharaja.coffee/merchandise/latina/"
+      ],
       "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "confidence": "low",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 49,
       "name": "Mazzer Omega",
+      "brand": "Mazzer",
       "type": "Angka (External)",
       "coarse": "Angka 9 - 11",
       "medium": "Angka 6 - 8",
       "fine": "Angka 1 - 3",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://www.mazzer.com/wp-content/uploads/2023/03/Omega-Istruzioni-2023-4.pdf"
+      ],
+      "verificationLevel": "official",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 50,
       "name": "OE Lido 3 / OG",
+      "brand": "Orphan Espresso",
       "type": "Mark (External)",
       "coarse": "12 - 15 Mark",
       "medium": "6 - 10 Mark",
       "fine": "2 - 4 Mark",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://www.oehandgrinders.com/assets/images/OE%20Website/LIDO%20ET%20Operation%20Manual%20Website%20PDF.pdf"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 51,
       "name": "Pietro (Flat Burr)",
+      "brand": "Pietro",
       "type": "Angka (Vertical)",
       "coarse": "Angka 7 - 9",
       "medium": "Angka 5 - 7",
       "fine": "Angka 1 - 2.5",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://pietrogrinders.com/shop/en/products/pietro-manual-coffee-grinder.html"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 52,
       "name": "Porlex Mini II",
+      "brand": "Porlex",
       "type": "Klik (Internal)",
       "coarse": "10 - 13 Klik",
       "medium": "7 - 9 Klik",
       "fine": "3 - 5 Klik",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://www.porlexgrinders.com/products/porlex-mini-grinder-ii"
+      ],
+      "verificationLevel": "official",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 53,
       "name": "Starseeker Edge / Edge+",
+      "brand": "Starseeker",
       "type": "Klik (External)",
       "coarse": "80 - 100 Klik",
       "medium": "50 - 70 Klik",
       "fine": "20 - 40 Klik",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://www.starseekercoffee.com/products/starseeker-edge-titanium-burr-coffee-grinder-48mm-espresso-burrs-stepless-fineness-adjustment-electric-coffee-grinders-black"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 55,
       "name": "Timemore C3 ESP",
+      "brand": "Timemore",
       "type": "Klik (Multipoint)",
       "coarse": "21 - 25 Klik",
       "medium": "14 - 18 Klik",
       "fine": "0.8 - 1.1 Putaran",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://www.timemore.com/es/products/timemore-manual-coffee-grinder-stainless-steel-conical-burr-coffee-grinder-manual-hand-coffee-grinder-with-adjustable-setting-pour-over-coffee-hand-grinder-esp"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 56,
       "name": "Timemore Chestnut X",
+      "brand": "Timemore",
       "type": "Mayor (Internal)",
       "coarse": "20 - 24 Mayor",
       "medium": "14 - 18 Mayor",
       "fine": "6 - 10 Mayor",
       "source": "user_dataset",
+      "sourceUrls": [
+        "https://www.timemore.com/es/pages/download-center"
+      ],
       "verificationLevel": "dataset_unverified",
       "confidence": "low"
     },
     {
       "id": 57,
       "name": "Timemore Nano / Plus",
+      "brand": "Timemore",
       "type": "Klik (Internal)",
       "coarse": "20 - 24 Klik",
       "medium": "14 - 18 Klik",
       "fine": "10 - 12 Klik",
       "source": "user_dataset",
+      "sourceUrls": [
+        "https://www.timemore.com/products/timemore-manual-coffee-grinder-chestnut-nano-3-black",
+        "https://www.timemore.com/es/pages/download-center"
+      ],
       "verificationLevel": "dataset_unverified",
       "confidence": "low"
     },
     {
       "id": 58,
       "name": "Timemore S3",
+      "brand": "Timemore",
       "type": "Angka (External)",
       "coarse": "Angka 7.5 - 9.0",
       "medium": "Angka 4.5 - 6.5",
       "fine": "Angka 1.5 - 3.0",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://www.timemore.com/products/timemore-manual-coffee-grinder-chestnut-s3"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 59,
       "name": "Timemore Slim Plus",
+      "brand": "Timemore",
       "type": "Klik (Internal)",
       "coarse": "22 - 26 Klik",
       "medium": "15 - 20 Klik",
       "fine": "10 - 14 Klik",
       "source": "user_dataset",
+      "sourceUrls": [
+        "https://www.timemore.com/es/pages/download-center"
+      ],
       "verificationLevel": "dataset_unverified",
       "confidence": "low"
     },
     {
       "id": 60,
       "name": "Varia Hand Grinder",
+      "brand": "Varia",
       "type": "Klik (External)",
       "coarse": "90 - 110 Klik",
       "medium": "60 - 85 Klik",
       "fine": "20 - 40 Klik",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://www.variabrewing.com/products/varia-vs3-grinder"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 61,
       "name": "Wacaco Exagrind",
+      "brand": "Wacaco",
       "type": "Putaran/Klik",
       "coarse": "1.5 - 2.0 Putaran",
       "medium": "1.0 - 1.3 Putaran",
       "fine": "0 - 20 Klik",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://www.wacaco.com/fr/products/exagrind",
+        "https://wacaco.com/products/exagrind?country=US&currency=USD&variant=54405959909449"
+      ],
+      "verificationLevel": "official",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 69,
       "name": "Timemore C5",
+      "brand": "Timemore",
       "type": "Klik (Internal)",
       "coarse": "15 - 16 Klik",
       "medium": "9 - 14 Klik",
       "fine": "2 - 8 Klik",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://www.timemore.com/products/timemore-manual-coffee-grinder-chestnut-c5-series?variant=47768620302578"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 70,
       "name": "MHW-3BOMBER Blade R3",
+      "brand": "MHW-3BOMBER",
       "type": "Klik (External)",
       "coarse": "110 - 165 klik",
       "medium": "90 - 130 klik",
       "fine": "20 - 70 klik",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://mhw3bomber.com/ja/products/mhw-3bomber-precision-r3-manual-coffee-grinder-1",
+        "https://honestcoffeeguide.com/mhw-3bomber-blade-r3-grind-settings/"
+      ],
+      "verificationLevel": "community_verified",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 71,
       "name": "Timemore x Millab M01",
-      "type": "Klik (External)",
-      "coarse": "9 - 10 Klik",
-      "medium": "5 - 8 Klik",
-      "fine": "1 - 4 Klik",
-      "source": "user_dataset",
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "brand": "Timemore x Millab",
+      "type": "Setting (External)",
+      "coarse": "8.0 - 10.0 settings",
+      "medium": "5.0 - 9.0 settings",
+      "fine": "0.0 - 1.5 settings",
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://www.timemore.com/collections/em5/products/timemore-x-millab-m01-coffee-grinder?variant=48044560646386"
+      ],
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 72,
       "name": "Timemore C3",
+      "brand": "Timemore",
       "type": "Klik (Internal)",
       "coarse": "21 - 24 Klik",
       "medium": "11 - 20 Klik",
       "fine": "2 - 10 Klik",
       "source": "user_dataset",
+      "sourceUrls": [
+        "https://www.timemore.com/products/c3-series"
+      ],
       "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "confidence": "low",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 73,
       "name": "Timemore C2",
+      "brand": "Timemore",
       "type": "Klik (Internal)",
       "coarse": "25 - 30 Klik",
       "medium": "13 - 24 Klik",
       "fine": "2 - 12 klik",
       "source": "user_dataset",
+      "sourceUrls": [
+        "https://www.timemore.com/products/timemore-chestnut-c2s-manual-coffee-grinder"
+      ],
       "verificationLevel": "dataset_unverified",
-      "confidence": "low"
+      "confidence": "low",
+      "verifiedAt": "2026-05-19",
+      "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
       "id": 74,
       "name": "Mavo Phantox Pro",
+      "brand": "Mavo",
       "type": "Nomor (External)",
       "coarse": "Nomor 10 - 12",
       "medium": "Nomor 6 - 10",
       "fine": "Nomor 1 - 4",
       "source": "user_dataset",
+      "sourceUrls": [
+        "https://mavocoffee.com/products/phantox-pro-coffee-grinder",
+        "https://coffeegeek.com/blog/new-products/mavos-phantox-pro-wants-to-shake-up-the-mid-range-manual-grinder-market/"
+      ],
       "verificationLevel": "dataset_unverified",
       "confidence": "low"
     },
     {
       "id": "comandante-x25-trailmaster",
       "name": "Comandante X25 Trailmaster",
+      "brand": "Comandante",
       "type": "Clicks (Internal)",
       "coarse": "24 - 30 clicks",
       "medium": "18 - 24 clicks",
@@ -460,11 +701,15 @@
         "https://www.comandantegrinder.com/",
         "https://honestcoffeeguide.com/coffee-grind-size-chart/"
       ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.11-ai-brew-v1.2"
     },
     {
       "id": "hario-smart-g",
       "name": "HARIO Smart G",
+      "brand": "Hario",
       "type": "Clicks (Internal)",
       "coarse": "24 - 30 clicks",
       "medium": "18 - 24 clicks",
@@ -473,11 +718,15 @@
       "sourceUrls": [
         "https://www.hario-europe.com/products/smart-g-coffee-grinder"
       ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.11-ai-brew-v1.1"
     },
     {
       "id": "kingrinder-k2",
       "name": "KINGrinder K2",
+      "brand": "KINGrinder",
       "type": "Clicks (External)",
       "coarse": "85 - 115 clicks",
       "medium": "60 - 85 clicks",
@@ -487,11 +736,15 @@
         "https://www.kingrinder.com/",
         "https://honestcoffeeguide.com/coffee-grind-size-chart/"
       ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.11-ai-brew-v1.2"
     },
     {
       "id": "kingrinder-k4",
       "name": "KINGrinder K4",
+      "brand": "KINGrinder",
       "type": "Clicks (External)",
       "coarse": "95 - 120 clicks",
       "medium": "75 - 95 clicks",
@@ -500,11 +753,15 @@
       "sourceUrls": [
         "https://honestcoffeeguide.com/coffee-grind-size-chart/"
       ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.11-ai-brew-v1.1"
     },
     {
       "id": "timemore-c3-max",
       "name": "TIMEMORE C3 Max",
+      "brand": "Timemore",
       "type": "Clicks (Internal)",
       "coarse": "22 - 28 clicks",
       "medium": "15 - 21 clicks",
@@ -513,22 +770,32 @@
       "sourceUrls": [
         "https://honestcoffeeguide.com/coffee-grind-size-chart/"
       ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.11-ai-brew-v1.1"
     },
     {
       "id": "timemore-chestnut-c5-pro",
       "name": "TIMEMORE Chestnut C5 Pro",
+      "brand": "Timemore",
       "type": "Stepped Manual Grinder",
       "coarse": "Official stepped settings",
       "medium": "Official stepped settings",
       "fine": "Official stepped settings",
       "source": "official_2026",
-      "sourceUrl": "https://www.timemore.com/es/products/timemore-manual-coffee-grinder-chestnut-c5-series",
+      "sourceUrls": [
+        "https://www.timemore.com/products/timemore-manual-coffee-grinder-chestnut-c5-series?variant=47768620302578"
+      ],
+      "verificationLevel": "official",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.09-ai-brew-v1"
     },
     {
       "id": "kingrinder-k0-k1",
       "name": "KINGrinder K0 / K1",
+      "brand": "KINGrinder",
       "type": "Clicks (External)",
       "coarse": "95 - 125 clicks",
       "medium": "70 - 95 clicks",
@@ -538,11 +805,15 @@
         "https://www.kingrinder.com/",
         "https://honestcoffeeguide.com/coffee-grind-size-chart/"
       ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.12-ai-brew-v1.3"
     },
     {
       "id": "kingrinder-k3",
       "name": "KINGrinder K3",
+      "brand": "KINGrinder",
       "type": "Clicks (External)",
       "coarse": "90 - 118 clicks",
       "medium": "64 - 90 clicks",
@@ -552,11 +823,15 @@
         "https://www.kingrinder.com/",
         "https://honestcoffeeguide.com/coffee-grind-size-chart/"
       ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.12-ai-brew-v1.3"
     },
     {
       "id": "1zpresso-k-plus",
       "name": "1Zpresso K-Plus",
+      "brand": "1Zpresso",
       "type": "Numbers + Clicks (External)",
       "coarse": "7.2 - 8.8 numbers",
       "medium": "5.8 - 7.2 numbers",
@@ -566,11 +841,15 @@
         "https://1zpresso.coffee/grinder/",
         "https://honestcoffeeguide.com/coffee-grind-size-chart/"
       ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.12-ai-brew-v1.3"
     },
     {
       "id": "1zpresso-j-max-s",
       "name": "1Zpresso J-Max S",
+      "brand": "1Zpresso",
       "type": "Turns (External)",
       "coarse": "2.4 - 3.2 turns",
       "medium": "1.8 - 2.4 turns",
@@ -580,11 +859,15 @@
         "https://1zpresso.coffee/grinder/",
         "https://honestcoffeeguide.com/coffee-grind-size-chart/"
       ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.12-ai-brew-v1.3"
     },
     {
       "id": "kinu-m47-phoenix",
       "name": "Kinu M47 Phoenix",
+      "brand": "Kinu",
       "type": "Turns (Stepless)",
       "coarse": "2.5 - 3.3 turns",
       "medium": "1.9 - 2.5 turns",
@@ -594,11 +877,15 @@
         "https://www.kinugrinders.com/",
         "https://honestcoffeeguide.com/coffee-grind-size-chart/"
       ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.12-ai-brew-v1.3"
     },
     {
       "id": "timemore-sculptor-078s",
       "name": "TIMEMORE Sculptor 078S",
+      "brand": "Timemore",
       "type": "Numbers (Stepless Electric)",
       "coarse": "9 - 12 numbers",
       "medium": "6 - 9 numbers",
@@ -608,6 +895,9 @@
         "https://www.timemore.com/",
         "https://honestcoffeeguide.com/coffee-grind-size-chart/"
       ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-19",
       "catalogVersion": "2026.03.12-ai-brew-v1.3"
     },
     {
@@ -618,16 +908,16 @@
       "coarse": "25 - 40 settings",
       "medium": "15 - 30 settings",
       "fine": "1 - 13 settings",
-      "source": "curated_2026",
+      "source": "official_2026",
       "sourceUrls": [
+        "https://www.baratza.com/en-us/product/encoretm-esp-zcg495",
         "https://www.baratza.com/en-gb/product/encoretm-esp-zcg495",
-        "https://assets.breville.com/ZCG495/manual-encoreesp-v1-0-en-010923.pdf",
-        "https://honestcoffeeguide.com/baratza-encore-esp-grind-settings/"
+        "https://assets.breville.com/ZCG495/manual-encoreesp-v1-0-en-010923.pdf"
       ],
-      "catalogVersion": "2026.06.2-ai-brew-grinder-plus",
-      "verificationLevel": "community_verified",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.3-grinder-provenance",
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
       "popularityTier": "widely_used",
       "marketSegment": "mass_market",
       "releaseStatus": "established"
@@ -640,16 +930,15 @@
       "coarse": "8 - 11 numbers",
       "medium": "4.5 - 7.5 numbers",
       "fine": "1 - 3 numbers",
-      "source": "curated_2026",
+      "source": "official_2026",
       "sourceUrls": [
         "https://fellowproducts.com/pages/gear-guide-opus",
-        "https://help.fellowproducts.com/hc/en-us/articles/12697790417947-What-does-the-in-41-adjustable-settings-mean",
-        "https://honestcoffeeguide.com/fellow-opus-grind-settings/"
+        "https://help.fellowproducts.com/hc/en-us/articles/12697790417947-What-does-the-in-41-adjustable-settings-mean"
       ],
-      "catalogVersion": "2026.06.2-ai-brew-grinder-plus",
-      "verificationLevel": "community_verified",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.3-grinder-provenance",
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
       "popularityTier": "specialty_common",
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established"
@@ -662,15 +951,16 @@
       "coarse": "8 - 11 numbers",
       "medium": "4 - 8 numbers",
       "fine": "2 - 4 numbers",
-      "source": "curated_2026",
+      "source": "official_2026",
       "sourceUrls": [
         "https://help.fellowproducts.com/hc/en-us/articles/9962302561819-What-are-the-recommended-grind-settings-for-Ode-Gen-2-Brew-Burrs",
-        "https://honestcoffeeguide.com/fellow-ode-brew-grinder-gen-2-grind-settings/"
+        "https://help.fellowproducts.com/hc/en-us/articles/10034632333339-Is-Ode-Gen-2-suitable-for-grinding-espresso",
+        "https://help.fellowproducts.com/hc/en-us/articles/29101533994267-How-should-I-dial-in-my-grinder-when-brewing-with-Aiden-Getting-Started-With-Aiden-Pt-3"
       ],
-      "catalogVersion": "2026.06.2-ai-brew-grinder-plus",
-      "verificationLevel": "community_verified",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-04",
+      "catalogVersion": "2026.06.3-grinder-provenance",
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
       "popularityTier": "specialty_common",
       "marketSegment": "specialty_mainstream",
       "releaseStatus": "established"

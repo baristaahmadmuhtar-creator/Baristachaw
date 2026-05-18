@@ -90,6 +90,28 @@ test('shared grind engine keeps target profile bias available for AI Brew withou
   assert.equal(floral.targetBiasKind, 'coarser');
 });
 
+test('numbered dial grinders preserve decimal roast shifts in Grind Size output', async () => {
+  const catalog = await loadCatalogForTest();
+  const grinder = catalog.grinders.find((entry) => /K-Ultra/i.test(entry.name));
+  assert.ok(grinder, 'K-Ultra grinder must exist');
+
+  const outputs = (['light', 'medium_light', 'medium', 'medium_dark', 'dark'] as RoastLevel[]).map((roastLevel) =>
+    buildGrindSizeAdvice({
+      catalog,
+      methodId: 'v60',
+      grinderId: grinder.id,
+      roastLevel,
+      targetProfileId: 'balance_clean',
+    }).primarySetting
+  );
+
+  assert.ok(
+    outputs.every((value) => /\d+\.\d\s+numbers/i.test(value)),
+    `expected decimal numbered-dial settings, got ${outputs.join(', ')}`,
+  );
+  assert.ok(new Set(outputs).size >= 4, `expected visible roast movement, got ${outputs.join(', ')}`);
+});
+
 test('Grind Size blocks espresso for filter-only grinders and prioritizes selectable espresso grinders', async () => {
   const catalog = await loadCatalogForTest();
   const timemoreC2 = catalog.grinders.find((entry) => entry.id === 'timemore-c2');

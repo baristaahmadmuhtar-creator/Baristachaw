@@ -415,7 +415,7 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/^(.+?) minerals were estimated from the water classification baseline\.$/i, 'Mineral $1 diestimasi dari baseline klasifikasi air.')
     .replace(/^Device profile was generated from the (.+) family template for (.+)\.$/i, 'Profil alat dibuat dari template family $1 untuk $2.')
     .replace(/^Exact device profile matched: (.+)\.$/i, 'Profil alat exact ditemukan: $1.')
-    .replace(/^Operator knowledge active: (\d+) matched note\(s\) from knowledge_v1\.xlsx\.$/i, 'Knowledge operator aktif: $1 catatan cocok dari knowledge_v1.xlsx.')
+    .replace(/^Operator knowledge active: (\d+) matched note\(s\) from the operator knowledge layer\.$/i, 'Knowledge operator aktif: $1 catatan cocok dari layer knowledge operator.')
     .replace(/^AeroPress service floor protects medium and lighter roasts from under-extraction; preheat, then press steadily instead of using a very low kettle temperature\.$/i, 'AeroPress dinaikkan ke suhu aman agar roast medium atau lebih ringan tidak kurang ekstraksi; panaskan ruang seduh, lalu tekan stabil.')
     .replace(/^French Press temperature kept in a calm immersion band so body builds without extracting harsh fines\.$/i, 'Suhu French Press dijaga di rentang immersion yang tenang agar body terbentuk tanpa menarik fines pahit.')
     .replace(/^Delicate Geisha\/Gesha iced profile capped at 92-94.*C to protect floral aroma while keeping Japanese-style concentration\.$/i, 'Profil Geisha/Gesha es dibatasi 92-94\u00b0C agar aroma floral tetap aman sambil menjaga konsentrat Japanese style.')

@@ -6984,7 +6984,7 @@ function finalizePlanCore(
     v60SweetnessServiceCalibration?.confidenceNotes || [],
     precisionOverrideNotes,
     operatorKnowledgeNotes.length > 0
-      ? [`Operator knowledge active: ${operatorKnowledgeNotes.length} matched note(s) from knowledge_v1.xlsx.`]
+      ? [`Operator knowledge active: ${operatorKnowledgeNotes.length} matched note(s) from the operator knowledge layer.`]
       : [],
     [
       waterBrand

@@ -6624,7 +6624,7 @@ test('buildAiBrewPlan creates a hot brew plan with deterministic outputs and pro
   assert.match(plan.summary, /QA Ethiopia/);
 });
 
-test('buildAiBrewPlan applies operator knowledge seed notes from knowledge_v1 workbook', () => {
+test('buildAiBrewPlan applies operator knowledge seed notes from the knowledge layer', () => {
   const plan = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),
     coffeeName: 'Gayo Washed QA',
@@ -6635,9 +6635,9 @@ test('buildAiBrewPlan applies operator knowledge seed notes from knowledge_v1 wo
     waterAlkalinityPpm: '40',
   }, catalog);
 
-  assert.ok(plan.notes.some((note) => /Knowledge v1 - Gayo/i.test(note)));
-  assert.ok(plan.notes.some((note) => /Knowledge v1 - V60/i.test(note)));
-  assert.ok(plan.confidenceNotes.some((note) => /knowledge_v1\.xlsx/i.test(note)));
+  assert.ok(plan.notes.some((note) => /Knowledge v\d+ - Gayo/i.test(note)));
+  assert.ok(plan.notes.some((note) => /Knowledge v\d+ - V60/i.test(note)));
+  assert.ok(plan.confidenceNotes.some((note) => /operator knowledge layer/i.test(note)));
 });
 
 test('buildAiBrewPlanProgressively emits factual generation progress with increasing system signals', async () => {

@@ -545,7 +545,7 @@ function buildUniversalMethodSafetyNote(methodFamily?: AiBrewMethodFamily) {
     case 'french_press':
       return 'Knowledge v2 - Universal method safety: untuk French Press, kontrol steep, crust break, settle, slow press, dan decant; jangan mengejar clarity dengan logika pour-over.';
     case 'cold_brew':
-      return 'Knowledge v2 - Universal method safety: untuk Cold Brew, saturation, grind, steep time, filtration, dan dilution setelah filter lebih penting daripada bloom atau suhu panas.';
+      return 'Knowledge v2 - Universal method safety: untuk Cold Brew, saturation, grind, steep time, filtration, dan dilution setelah filter lebih penting daripada logika seduh panas.';
     case 'batch_brew':
       return 'Knowledge v2 - Universal method safety: untuk Batch Brew, validasi bed depth, spray pattern, basket, filter fit, drawdown, dan batch mixing sebelum mengubah recipe besar.';
     case 'siphon':
@@ -563,6 +563,26 @@ function buildUniversalMethodSafetyNote(methodFamily?: AiBrewMethodFamily) {
       return 'Knowledge v2 - Universal method safety: untuk paper filter, prioritasnya full saturation, bed rata, flow repeatable, dan late agitation rendah sebelum mengubah ratio besar.';
     default:
       return 'Knowledge v2 - Universal method safety: hormati workflow alat seduh yang dipilih; jangan memakai bahasa V60 untuk espresso, moka, cold brew, batch, atau immersion penuh.';
+  }
+}
+
+function isKnowledgeSeedSafeForMethod(seed: AiBrewKnowledgeSeed, methodFamily?: AiBrewMethodFamily) {
+  const content = seed.content;
+  switch (methodFamily) {
+    case 'espresso':
+      return !/\b(bloom|drawdown|tuang|pour|spiral|paper filter|dinding filter|slurry|bed|bypass|server|valve|katup|v60)\b/i.test(content);
+    case 'moka_pot':
+      return !/\b(bloom|drawdown|final pour|tuang akhir|spiral|paper filter|dinding filter|slurry|bed|v60)\b/i.test(content);
+    case 'cold_brew':
+      return !/\b(bloom|kettle|drawdown|spiral|v60)\b|hot extraction|ekstraksi panas/i.test(content);
+    case 'french_press':
+      return !/\b(bloom|drawdown|pour spiral|compact spiral|wall-chasing|dinding filter|paper filter|v60)\b/i.test(content);
+    case 'aeropress':
+      return !/\b(drawdown|wall-chasing|dinding filter|paper filter|v60 spiral)\b/i.test(content);
+    case 'batch_brew':
+      return !/\b(center-to-mid|compact spiral|manual pour|tuang tengah|v60)\b/i.test(content);
+    default:
+      return true;
   }
 }
 
@@ -584,6 +604,7 @@ export function resolveAiBrewKnowledgeNotes(input: AiBrewKnowledgeInput) {
 
   const specificNotes = AI_BREW_KNOWLEDGE_SEEDS
     .filter((seed) => seed.aliases.some((alias) => haystack.includes(normalizeKnowledgeText(alias))))
+    .filter((seed) => isKnowledgeSeedSafeForMethod(seed, input.methodFamily))
     .sort((left, right) => right.priority - left.priority)
     .map((seed) => seed.content);
 

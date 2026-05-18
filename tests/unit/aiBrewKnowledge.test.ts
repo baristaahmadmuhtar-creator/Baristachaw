@@ -68,10 +68,74 @@ test('AI Brew knowledge gives safe fallback for unknown beans and custom user in
 
 test('AI Brew knowledge keeps espresso fallback method-specific and not V60-like', () => {
   const notes = resolveAiBrewKnowledgeNotes({
-    coffeeName: 'Unknown espresso blend',
+    coffeeName: 'Unknown espresso blend washed floral',
     methodFamily: 'espresso',
+    process: 'washed',
   });
 
   assert.ok(notes.some((note) => /dose\/yield\/time\/puck prep/i.test(note)));
-  assert.ok(notes.every((note) => !/center-to-mid|dinding filter|paper filter/i.test(note)), 'Espresso fallback must not use pour-over guidance');
+  assert.ok(notes.every((note) => !/center-to-mid|dinding filter|paper filter|bloom|drawdown|\bbed\b/i.test(note)), 'Espresso fallback must not use pour-over guidance');
+});
+
+test('AI Brew knowledge keeps cold brew and moka free from hot pour-over language', () => {
+  const cold = resolveAiBrewKnowledgeNotes({
+    coffeeName: 'Brazil natural cold brew floral',
+    methodFamily: 'cold_brew',
+    process: 'natural',
+  });
+  assert.ok(cold.some((note) => /Cold Brew/i.test(note)));
+  assert.ok(cold.every((note) => !/bloom|drawdown|kettle|spiral|hot extraction|ekstraksi panas/i.test(note)), 'Cold Brew knowledge must not use hot pour-over language');
+
+  const moka = resolveAiBrewKnowledgeNotes({
+    coffeeName: 'Liberica washed moka',
+    methodFamily: 'moka_pot',
+    process: 'washed',
+    variety: 'liberica',
+  });
+  assert.ok(moka.some((note) => /Moka Pot/i.test(note)));
+  assert.ok(moka.every((note) => !/bloom|drawdown|spiral|paper filter|dinding filter|\bbed\b/i.test(note)), 'Moka knowledge must not use paper-filter workflow language');
+});
+
+test('AI Brew knowledge filters method-language leakage across non-pour-over methods', () => {
+  const checks = [
+    {
+      methodFamily: 'french_press' as const,
+      coffeeName: 'Ethiopia washed floral V60 bloom drawdown',
+      process: 'washed',
+      forbidden: /bloom|drawdown|pour spiral|paper filter|dinding filter|\bv60\b/i,
+    },
+    {
+      methodFamily: 'aeropress' as const,
+      coffeeName: 'Brazil natural AeroPress V60 drawdown wall-chasing',
+      process: 'natural',
+      forbidden: /drawdown|wall-chasing|dinding filter|paper filter|v60 spiral/i,
+    },
+    {
+      methodFamily: 'batch_brew' as const,
+      coffeeName: 'Colombia washed batch manual pour compact spiral',
+      process: 'washed',
+      forbidden: /manual pour|center-to-mid|compact spiral|tuang tengah|\bv60\b/i,
+    },
+  ];
+
+  for (const check of checks) {
+    const notes = resolveAiBrewKnowledgeNotes(check);
+    assert.ok(notes.length > 0, `${check.methodFamily} should still get safe knowledge notes`);
+    assert.ok(
+      notes.every((note) => !check.forbidden.test(note)),
+      `${check.methodFamily} knowledge must not leak incompatible workflow language`,
+    );
+  }
+});
+
+test('AI Brew knowledge keeps paper-filter language available for paper-filter methods', () => {
+  const notes = resolveAiBrewKnowledgeNotes({
+    coffeeName: 'Ethiopia washed V60 bloom clarity',
+    dripperName: 'Hario V60',
+    methodFamily: 'v60',
+    process: 'washed',
+  });
+
+  assert.ok(notes.some((note) => /V60/i.test(note)), 'V60 method knowledge should resolve');
+  assert.ok(notes.some((note) => /bloom|paper filter|bed|flow/i.test(note)), 'Paper-filter cues should remain available for V60');
 });

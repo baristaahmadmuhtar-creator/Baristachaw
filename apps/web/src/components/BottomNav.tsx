@@ -94,6 +94,7 @@ export function BottomNav({ hidden = false, showAdmin = false }: BottomNavProps)
       const custom = event as CustomEvent<ViewportMetricsDetail>;
       const nextOpen = !!custom.detail?.keyboardOpen || (custom.detail?.keyboardOffset ?? 0) > 0;
       setKeyboardOpen(nextOpen);
+      if (!nextOpen) setAutoHidden(false);
       setIsPwaViewport(readPwaFromRoot());
       setBottomNavSuppressed(readBottomNavSuppressedFromRoot());
     };
@@ -220,7 +221,7 @@ export function BottomNav({ hidden = false, showAdmin = false }: BottomNavProps)
         style={{
           width: showAdmin ? 'clamp(326px, 94vw, 420px)' : 'clamp(286px, 90vw, 360px)',
           paddingTop: '0.36rem',
-          paddingBottom: '0.36rem',
+          paddingBottom: 'calc(0.36rem + var(--mobile-nav-inner-safe-bottom, 0px))',
         }}
       >
         {navItems.map(({ path, icon: Icon, label }) => (

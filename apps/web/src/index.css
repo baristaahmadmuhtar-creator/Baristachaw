@@ -52,6 +52,7 @@
     --mobile-home-indicator-gap: 10px;
     --mobile-nav-floating-gap: max(var(--mobile-home-indicator-gap), min(var(--safe-bottom), 32px));
     --mobile-nav-dock-offset: var(--mobile-nav-floating-gap);
+    --mobile-nav-inner-safe-bottom: 0px;
     --mobile-nav-surface-radius: 9999px;
     --safe-top: env(safe-area-inset-top, 0px);
     --device-safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -147,6 +148,7 @@
     --mobile-home-indicator-gap: 10px;
     --mobile-nav-floating-gap: max(var(--mobile-home-indicator-gap), min(var(--safe-bottom), 32px));
     --mobile-nav-dock-offset: var(--mobile-nav-floating-gap);
+    --mobile-nav-inner-safe-bottom: 0px;
     --mobile-nav-surface-radius: 9999px;
     --safe-top: env(safe-area-inset-top, 0px);
     --device-safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -226,6 +228,7 @@
       --mobile-home-indicator-gap: 10px;
       --mobile-nav-floating-gap: var(--mobile-home-indicator-gap);
       --mobile-nav-dock-offset: var(--mobile-nav-floating-gap);
+      --mobile-nav-inner-safe-bottom: 0px;
       --mobile-nav-surface-radius: 9999px;
       --safe-top: env(safe-area-inset-top, 0px);
       --device-safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -1461,6 +1464,10 @@ html[data-ios-standalone] .auth-field-shell {
 
 html[data-ios-standalone] .mobile-bottom-nav-surface {
   box-shadow: none !important;
+  background: var(--bg-elevated) !important;
+  border-color: color-mix(in srgb, var(--panel-border-soft) 82%, transparent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 html[data-ios-standalone] .mobile-bottom-nav-active-pill {
@@ -1509,6 +1516,16 @@ html[data-ios-standalone] {
   --composer-bottom-bg: transparent;
 }
 
+html[data-ios-standalone] {
+  --mobile-nav-floating-gap: 0px;
+  --mobile-nav-dock-offset: 0px;
+  --mobile-nav-inner-safe-bottom: var(--safe-ui-bottom);
+  --bottom-nav-total-height: calc(var(--bottom-nav-height) + var(--mobile-nav-inner-safe-bottom));
+  --page-padding-bottom: var(--bottom-nav-total-height);
+  --composer-bottom-offset: var(--safe-ui-bottom);
+  --composer-message-gap: var(--safe-ui-bottom);
+}
+
 html[data-pwa],
 html[data-ios-standalone],
 html[data-pwa] body,
@@ -1526,6 +1543,10 @@ html[data-ios-standalone] .page-container {
 html[data-pwa] .bottom-nav-fill,
 html[data-ios-standalone] .bottom-nav-fill {
   background: transparent !important;
+}
+
+html[data-ios-standalone] .bottom-nav-fill {
+  background: var(--bg-base) !important;
 }
 
 @media (min-width: 1024px) {

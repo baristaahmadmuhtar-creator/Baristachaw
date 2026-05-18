@@ -52,6 +52,22 @@ const AI_BREW_KNOWLEDGE_SEEDS: AiBrewKnowledgeSeed[] = [
   },
   {
     category: 'origin',
+    keyword: 'Java / Bali / Flores',
+    aliases: ['java', 'west java', 'east java', 'ijen', 'bali', 'kintamani', 'flores', 'bajawa'],
+    content:
+      'Knowledge v2 - Java/Bali/Flores: profil Indonesia bisa bergerak dari cocoa-spice sampai citrus-herbal; mulai balance/soft, jaga flow rapi, lalu arahkan target dari cup feedback.',
+    priority: 72,
+  },
+  {
+    category: 'origin',
+    keyword: 'Papua / PNG',
+    aliases: ['papua', 'papua new guinea', 'png', 'wahgi', 'eastern highlands'],
+    content:
+      'Knowledge v2 - Papua/PNG: sweetness, herbal fruit, dan body medium sering butuh ekstraksi bersih; jangan terlalu agresif di akhir karena finish bisa cepat dry.',
+    priority: 72,
+  },
+  {
+    category: 'origin',
     keyword: 'Ethiopia highland',
     aliases: ['ethiopia', 'ethiopian', 'yirgacheffe', 'guji', 'sidamo', 'harrar'],
     content:
@@ -68,10 +84,34 @@ const AI_BREW_KNOWLEDGE_SEEDS: AiBrewKnowledgeSeed[] = [
   },
   {
     category: 'origin',
+    keyword: 'Rwanda / Burundi',
+    aliases: ['rwanda', 'burundi', 'huye', 'kayanza', 'ngozi'],
+    content:
+      'Knowledge v2 - Rwanda/Burundi: acidity, tea-like clarity, dan sweetness bisa elegan tetapi mudah dry jika flow tidak rata; prioritaskan bed even dan finishing gentle.',
+    priority: 74,
+  },
+  {
+    category: 'origin',
     keyword: 'Colombia',
     aliases: ['colombia', 'huila', 'cauca', 'narino', 'nariño', 'tolima'],
     content:
       'Knowledge v2 - Colombia: baseline biasanya fleksibel antara clean sweetness dan fruit; mulai balance-clean lalu arahkan ke floral/fruit/body sesuai process dan roast, bukan asal menaikkan ekstraksi.',
+    priority: 68,
+  },
+  {
+    category: 'origin',
+    keyword: 'Costa Rica / Panama / Guatemala',
+    aliases: ['costa rica', 'tarrazu', 'panama', 'boquete', 'volcan', 'guatemala', 'antigua', 'huehuetenango'],
+    content:
+      'Knowledge v2 - Central America highland: clean sweetness, florals, citrus, dan cocoa bisa sangat target-dependent; gunakan target profile sebagai arah utama dan jaga repeatability pour.',
+    priority: 74,
+  },
+  {
+    category: 'origin',
+    keyword: 'Mexico / Peru / Bolivia',
+    aliases: ['mexico', 'chiapas', 'oaxaca', 'peru', 'cajamarca', 'cusco', 'bolivia'],
+    content:
+      'Knowledge v2 - Mexico/Peru/Bolivia: sweetness lembut, nutty/cocoa, atau highland citrus butuh baseline stabil; jangan push body sampai clarity hilang kecuali target memang dense.',
     priority: 68,
   },
   {
@@ -84,10 +124,26 @@ const AI_BREW_KNOWLEDGE_SEEDS: AiBrewKnowledgeSeed[] = [
   },
   {
     category: 'origin',
-    keyword: 'Yunnan',
-    aliases: ['yunnan', 'china yunnan', 'menghai', 'pu er', 'puer'],
+    keyword: 'Yemen',
+    aliases: ['yemen', 'yemeni', 'haraz', 'mocca', 'mocha mattari'],
     content:
-      'Knowledge v2 - Yunnan: fruit, tea-like sweetness, dan processing variance bisa besar; gunakan baseline konservatif dan validasi dari cup sebelum mendorong suhu atau kontak.',
+      'Knowledge v2 - Yemen: dried fruit, spice, winey tone, dan variability tinggi perlu baseline konservatif; jaga contact rapi dan hindari suhu/agitation ekstrem sebelum cupping feedback.',
+    priority: 72,
+  },
+  {
+    category: 'origin',
+    keyword: 'India',
+    aliases: ['india', 'indian', 'chikmagalur', 'chikkamagaluru', 'nilgiri', 'bababudan', 'monsooned malabar'],
+    content:
+      'Knowledge v2 - India: spice, cocoa, nuttiness, monsooned softness, atau robusta blend perlu kontrol bitterness; target body boleh, tetapi heat/contact harus rapi.',
+    priority: 70,
+  },
+  {
+    category: 'origin',
+    keyword: 'Yunnan / Southeast Asia',
+    aliases: ['yunnan', 'china yunnan', 'menghai', 'pu er', 'puer', 'thailand', 'doi chang', 'doi tung', 'myanmar', 'vietnam', 'da lat', 'dalat'],
+    content:
+      'Knowledge v2 - Yunnan/SEA: fruit, tea-like sweetness, spice, dan processing variance bisa besar; gunakan baseline konservatif dan validasi dari cup sebelum mendorong suhu atau kontak.',
     priority: 66,
   },
   {
@@ -97,6 +153,14 @@ const AI_BREW_KNOWLEDGE_SEEDS: AiBrewKnowledgeSeed[] = [
     content:
       'Knowledge v2 - Washed: prioritaskan clarity, acidity bersih, dan sweetness linear; dry pocket/channeling lebih merusak daripada kekurangan body, jadi bloom harus merata dan flow stabil.',
     priority: 78,
+  },
+  {
+    category: 'process',
+    keyword: 'Semi-washed / wet-process hybrid',
+    aliases: ['semi washed', 'semi-washed', 'wet process hybrid', 'eco pulped', 'mucilage removed'],
+    content:
+      'Knowledge v2 - Semi-washed/hybrid process: body dan clarity bisa berada di tengah; jangan treat otomatis seperti washed penuh atau natural penuh, validasi lewat flow dan cup feedback.',
+    priority: 72,
   },
   {
     category: 'process',
@@ -137,6 +201,14 @@ const AI_BREW_KNOWLEDGE_SEEDS: AiBrewKnowledgeSeed[] = [
     content:
       'Knowledge v2 - Wet-hulled: body, spice, herbal, dan earthy sweetness bisa kuat; gunakan dense/soft target dengan suhu dan agitation terkendali agar body tidak berubah jadi bitter/muddy.',
     priority: 87,
+  },
+  {
+    category: 'process',
+    keyword: 'Monsooned',
+    aliases: ['monsooned', 'monsooned malabar', 'malabar'],
+    content:
+      'Knowledge v2 - Monsooned: acidity rendah, body lembut, spice/woody risk lebih tinggi; cari sweetness dan texture bersih dengan suhu/contact konservatif.',
+    priority: 78,
   },
   {
     category: 'process',
@@ -188,6 +260,14 @@ const AI_BREW_KNOWLEDGE_SEEDS: AiBrewKnowledgeSeed[] = [
   },
   {
     category: 'variety',
+    keyword: 'Caturra / Catuai / Mundo Novo',
+    aliases: ['caturra', 'catuai', 'catuaí', 'mundo novo', 'pacas', 'villa sarchi'],
+    content:
+      'Knowledge v2 - Caturra/Catuai/Mundo Novo/Pacas: sweetness dan balance sering mudah dibangun; jaga clarity dengan flow rapi dan hindari ekstraksi terlalu panjang pada roast medium-dark.',
+    priority: 64,
+  },
+  {
+    category: 'variety',
     keyword: 'Catimor / Timor / S795',
     aliases: ['catimor', 'timor hybrid', 'timtim', 'tim tim', 's795', 'sln9', 'ateng', 'sigararutang', 'sigarar utang'],
     content:
@@ -225,6 +305,30 @@ const AI_BREW_KNOWLEDGE_SEEDS: AiBrewKnowledgeSeed[] = [
     content:
       'Knowledge v2 - April/low-agitation flat bottom: jaga pulse pendek, spout rendah, dan bed rata; sweetness datang dari repeatability, bukan agitation besar.',
     priority: 82,
+  },
+  {
+    category: 'hardware',
+    keyword: 'Orea / fast flat bottom',
+    aliases: ['orea', 'b75', 'timemore b75', 'fast flat bottom'],
+    content:
+      'Knowledge v2 - Orea/B75/fast flat-bottom: flow cepat dan clarity bisa tinggi; gunakan grind/flow yang menjaga contact cukup tanpa memaksa agitation besar.',
+    priority: 82,
+  },
+  {
+    category: 'hardware',
+    keyword: 'No-bypass brewer',
+    aliases: ['tricolate', 'pulsar', 'nextlevel', 'next level', 'no bypass', 'no-bypass'],
+    content:
+      'Knowledge v2 - No-bypass brewer: semua air melewati bed sehingga ekstraksi bisa tinggi; full saturation dan grind yang tidak terlalu halus lebih penting daripada swirl agresif.',
+    priority: 86,
+  },
+  {
+    category: 'hardware',
+    keyword: 'Melitta / Kono',
+    aliases: ['melitta', 'kono'],
+    content:
+      'Knowledge v2 - Melitta/Kono: flow lebih anchored dan forgiving; jaga pour path lebih terukur, bed level, dan jangan treat persis seperti V60 cepat.',
+    priority: 78,
   },
   {
     category: 'hardware',
@@ -340,6 +444,14 @@ const AI_BREW_KNOWLEDGE_SEEDS: AiBrewKnowledgeSeed[] = [
   },
   {
     category: 'sensory',
+    keyword: 'Thin / hollow',
+    aliases: ['thin', 'hollow', 'watery', 'tipis', 'kosong'],
+    content:
+      'Knowledge v2 - Thin/hollow: cek ratio terlalu long, low mineral water, grind terlalu kasar, bypass, atau under-extraction; perbaiki contact dan air sebelum menaikkan dose secara acak.',
+    priority: 72,
+  },
+  {
+    category: 'sensory',
     keyword: 'Flat / muted',
     aliases: ['flat', 'muted', 'datar', 'tertahan'],
     content:
@@ -389,6 +501,7 @@ const AI_BREW_KNOWLEDGE_SEEDS: AiBrewKnowledgeSeed[] = [
 ];
 
 const MAX_KNOWLEDGE_NOTES = 8;
+const MAX_SPECIFIC_KNOWLEDGE_NOTES = 6;
 
 function normalizeKnowledgeText(value?: string) {
   return (value || '')
@@ -413,16 +526,71 @@ function buildKnowledgeHaystack(input: AiBrewKnowledgeInput) {
     .trim();
 }
 
+function hasBeanSpecificInput(input: AiBrewKnowledgeInput) {
+  return Boolean(
+    normalizeKnowledgeText(input.coffeeName)
+      || normalizeKnowledgeText(input.process)
+      || normalizeKnowledgeText(input.variety),
+  );
+}
+
+function buildUniversalMethodSafetyNote(methodFamily?: AiBrewMethodFamily) {
+  switch (methodFamily) {
+    case 'espresso':
+      return 'Knowledge v2 - Universal method safety: untuk espresso, kunci dose/yield/time/puck prep dulu; koreksi rasa dari flow dan grind, bukan menambah air seperti filter.';
+    case 'moka_pot':
+      return 'Knowledge v2 - Universal method safety: untuk Moka Pot, jaga heat dan stop-before-sputter; rasa pahit sering dari fase akhir yang dipaksa, bukan selalu dari grind.';
+    case 'aeropress':
+      return 'Knowledge v2 - Universal method safety: untuk AeroPress, steep, stir count, press duration, dan bypass/no-bypass adalah variabel utama; ubah satu saja tiap ronde.';
+    case 'french_press':
+      return 'Knowledge v2 - Universal method safety: untuk French Press, kontrol steep, crust break, settle, slow press, dan decant; jangan mengejar clarity dengan logika pour-over.';
+    case 'cold_brew':
+      return 'Knowledge v2 - Universal method safety: untuk Cold Brew, saturation, grind, steep time, filtration, dan dilution setelah filter lebih penting daripada bloom atau suhu panas.';
+    case 'batch_brew':
+      return 'Knowledge v2 - Universal method safety: untuk Batch Brew, validasi bed depth, spray pattern, basket, filter fit, drawdown, dan batch mixing sebelum mengubah recipe besar.';
+    case 'siphon':
+      return 'Knowledge v2 - Universal method safety: untuk Siphon, heat stability, short stir, upper chamber contact, dan clean drawdown harus konsisten sebelum koreksi rasa besar.';
+    case 'hario_switch':
+    case 'clever_dripper':
+      return 'Knowledge v2 - Universal method safety: untuk immersion-release brewer, bed harus fully wet, steep/release harus bersih, dan jangan aduk agresif saat finishing drain.';
+    case 'v60':
+    case 'origami':
+    case 'kono':
+    case 'kalita_wave':
+    case 'melitta':
+    case 'april':
+    case 'chemex':
+      return 'Knowledge v2 - Universal method safety: untuk paper filter, prioritasnya full saturation, bed rata, flow repeatable, dan late agitation rendah sebelum mengubah ratio besar.';
+    default:
+      return 'Knowledge v2 - Universal method safety: hormati workflow alat seduh yang dipilih; jangan memakai bahasa V60 untuk espresso, moka, cold brew, batch, atau immersion penuh.';
+  }
+}
+
+function buildUniversalKnowledgeNotes(input: AiBrewKnowledgeInput) {
+  const beanSafety = hasBeanSpecificInput(input)
+    ? 'Knowledge v2 - Universal bean safety: semua bean berbeda karena roast, umur, density, solubility, process, storage, dan grinder calibration; mulai dari baseline aman lalu validasi dengan taste feedback.'
+    : 'Knowledge v2 - Universal bean safety: jika identitas bean belum lengkap, AI Brew harus memakai baseline konservatif dan tidak mengklaim hasil rasa pasti.';
+
+  return [
+    beanSafety,
+    'Knowledge v2 - Universal dial-in: kunci dose, ratio, water, method, dan timing dulu; ubah satu variabel per ronde agar user dan barista tahu penyebab perubahan rasa.',
+    buildUniversalMethodSafetyNote(input.methodFamily),
+  ];
+}
+
 export function resolveAiBrewKnowledgeNotes(input: AiBrewKnowledgeInput) {
   const haystack = buildKnowledgeHaystack(input);
   if (!haystack.trim()) return [] as string[];
 
-  const notes = AI_BREW_KNOWLEDGE_SEEDS
+  const specificNotes = AI_BREW_KNOWLEDGE_SEEDS
     .filter((seed) => seed.aliases.some((alias) => haystack.includes(normalizeKnowledgeText(alias))))
     .sort((left, right) => right.priority - left.priority)
     .map((seed) => seed.content);
 
-  return Array.from(new Set(notes)).slice(0, MAX_KNOWLEDGE_NOTES);
+  return Array.from(new Set([
+    ...specificNotes.slice(0, MAX_SPECIFIC_KNOWLEDGE_NOTES),
+    ...buildUniversalKnowledgeNotes(input),
+  ])).slice(0, MAX_KNOWLEDGE_NOTES);
 }
 
 export function formatAiBrewKnowledgeContext(input: AiBrewKnowledgeInput) {

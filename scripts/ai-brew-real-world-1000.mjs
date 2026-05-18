@@ -730,16 +730,31 @@ function textMatch(item, patterns) {
   return patterns.some((pattern) => pattern.test(text));
 }
 
-function findDripper(catalog, methodCase) {
-  return catalog.drippers.find((dripper) => !dripper.hidden && !dripper.deprecated && textMatch(dripper, methodCase.dripperPatterns))
-    || catalog.drippers.find((dripper) => !dripper.hidden && !dripper.deprecated && dripper.methodFamily === methodCase.family)
-    || catalog.drippers.find((dripper) => !dripper.hidden && !dripper.deprecated);
+function methodFamilyMatches(dripper, methodCase) {
+  return String(dripper.methodFamily || '') === String(methodCase.family || '');
 }
 
-function findGrinder(catalog, grinderCase) {
-  if (grinderCase.syntheticId) return byId(catalog.grinders, grinderCase.syntheticId);
-  return catalog.grinders.find((grinder) => textMatch(grinder, grinderCase.patterns || []))
-    || catalog.grinders[0];
+function findDripper(catalog, methodCase) {
+  const visible = catalog.drippers.filter((dripper) => !dripper.hidden && !dripper.deprecated);
+  return visible.find((dripper) => methodFamilyMatches(dripper, methodCase) && textMatch(dripper, methodCase.dripperPatterns))
+    || visible.find((dripper) => methodFamilyMatches(dripper, methodCase))
+    || visible.find((dripper) => textMatch(dripper, methodCase.dripperPatterns))
+    || visible[0];
+}
+
+function resolveGrinderSelection(catalog, grinderCase) {
+  if (grinderCase.syntheticId) {
+    const grinder = byId(catalog.grinders, grinderCase.syntheticId);
+    return {
+      grinder: grinder || byId(catalog.grinders, 'unknown-electric-grinder') || catalog.grinders[0],
+      matched: Boolean(grinder),
+    };
+  }
+  const grinder = catalog.grinders.find((item) => textMatch(item, grinderCase.patterns || []));
+  return {
+    grinder: grinder || byId(catalog.grinders, 'unknown-electric-grinder') || catalog.grinders[0],
+    matched: Boolean(grinder),
+  };
 }
 
 function exactWater(waterId) {
@@ -774,7 +789,8 @@ function buildScenarioFromSpec(catalog, spec, index) {
   const grinderCase = exactGrinder(spec.grinderId);
   const waterCase = exactWater(spec.waterId);
   const dripper = findDripper(catalog, methodCase);
-  const grinder = findGrinder(catalog, grinderCase);
+  const grinderSelection = resolveGrinderSelection(catalog, grinderCase);
+  const grinder = grinderSelection.grinder;
   const process = sanitizeProcess(catalog, bean.process);
   const variety = sanitizeVariety(catalog, bean.variety);
   const doseG = spec.doseG || defaultDoseForMethod(methodCase.family, index);
@@ -786,6 +802,7 @@ function buildScenarioFromSpec(catalog, spec, index) {
     bean,
     methodCase,
     grinderCase,
+    grinderMatched: grinderSelection.matched,
     waterCase,
     dripper,
     grinder,
@@ -840,7 +857,8 @@ function buildGeneratedScenario(catalog, index) {
   const roastPool = [...bean.defaultRoasts, ...ROAST_LEVELS];
   const roastLevel = roastPool[Math.floor(index / 11) % roastPool.length];
   const grinderCase = GRINDER_CASES[Math.floor(index / 5) % GRINDER_CASES.length];
-  const grinder = findGrinder(catalog, grinderCase);
+  const grinderSelection = resolveGrinderSelection(catalog, grinderCase);
+  const grinder = grinderSelection.grinder;
   const waterCase = WATER_CASES[Math.floor(index / 13) % WATER_CASES.length];
   const process = bean.process === 'custom' ? 'custom' : sanitizeProcess(catalog, bean.process);
   const variety = bean.variety === 'custom' ? 'custom' : sanitizeVariety(catalog, bean.variety);
@@ -853,6 +871,7 @@ function buildGeneratedScenario(catalog, index) {
     bean,
     methodCase: { ...methodCase, mode, family },
     grinderCase,
+    grinderMatched: grinderSelection.matched,
     waterCase,
     dripper,
     grinder,
@@ -1080,12 +1099,15 @@ function validateBaristaFit(plan, scenario, reasons) {
     addReason(reasons, 'geisha_body_warning', 'warn', 'Geisha + body/dense target should warn clarity/floral may reduce');
   }
   if (plan.methodFamily !== 'cold_brew' && (beanText.includes('washed') || beanText.includes('floral') || beanText.includes('geisha')) && roast === 'light' && ['floral_transparent', 'more_acidity'].includes(target)) {
-    if (plan.waterTempC < 92 && !hasAny(text, [/ferment|dark|pahit|harsh|soft|gentle/i])) {
+    const methodAllowsLowerClarityFloor = ['aeropress', 'hario_switch', 'siphon'].includes(plan.methodFamily);
+    const clarityTempFloor = methodAllowsLowerClarityFloor ? 91 : 92;
+    const hardFailFloor = methodAllowsLowerClarityFloor ? 89.5 : 90.5;
+    if (plan.waterTempC < clarityTempFloor && !hasAny(text, [/ferment|dark|pahit/i])) {
       addReason(
         reasons,
         'washed_light_temp_too_low',
-        plan.waterTempC < 90.5 ? 'fail' : 'warn',
-        `washed/light/floral case defaulted below the usual 92-96C window: ${plan.waterTempC}C`,
+        plan.waterTempC < hardFailFloor ? 'fail' : 'warn',
+        `washed/light/floral case defaulted below the usual ${clarityTempFloor}-96C window: ${plan.waterTempC}C`,
       );
     }
   }
@@ -1285,6 +1307,14 @@ function runScenario(catalog, scenario) {
     validateExpectedCup(plan, scenario, reasons);
     validateMethodCopy(plan, scenario, reasons);
     validateBaristaFit(plan, scenario, reasons);
+    if (!scenario.grinderMatched) {
+      addReason(
+        reasons,
+        'grinder_fixture_not_found',
+        'warn',
+        `${scenario.grinderCase.label} is not present in the current AI Brew grinder catalog; the stress gate used ${scenario.grinder.name} as a low-confidence fallback.`,
+      );
+    }
     addRealWorldRiskWarnings(plan, scenario, reasons);
     validateGuardrails(plan, scenario, reasons);
   } catch (error) {
@@ -1301,10 +1331,13 @@ function runScenario(catalog, scenario) {
       bean: scenario.bean.label,
       expectedBeanCharacter: scenario.bean.expected,
       method: scenario.methodCase.label,
+      dripper: scenario.dripper.name,
       requestedMode: scenario.inputPatch.brewMode,
       targetProfileId: scenario.inputPatch.targetProfileId,
       roastLevel: scenario.inputPatch.roastLevel,
-      grinder: scenario.grinderCase.label,
+      requestedGrinder: scenario.grinderCase.label,
+      grinder: scenario.grinder.name,
+      grinderMatched: scenario.grinderMatched,
       grinderClass: scenario.grinderCase.class,
       water: scenario.waterCase.label,
       waterRisk: scenario.waterCase.risk,

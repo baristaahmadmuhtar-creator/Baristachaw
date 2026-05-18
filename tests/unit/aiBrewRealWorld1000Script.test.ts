@@ -33,6 +33,10 @@ test('AI Brew real-world 1000 scenario gate is wired with curated coverage and h
   assert.match(script, /lowest-scores\.md/);
   assert.match(script, /method-language-safety\.md/);
   assert.match(script, /addRealWorldRiskWarnings/);
+  assert.match(script, /methodFamilyMatches/);
+  assert.match(script, /grinder_fixture_not_found/);
+  assert.match(script, /methodAllowsLowerClarityFloor/);
+  assert.match(script, /aeropress', 'hario_switch', 'siphon/);
 
   const requiredExamples = (script.match(/exampleId:\s*'/g) || []).length;
   assert.ok(requiredExamples >= 55, 'script should define at least 55 required example cases');

@@ -6151,13 +6151,189 @@ test('inferDripperMethodFamily maps common dripper names to brew families', () =
   assert.equal(inferDripperMethodFamily('Chemex', 'Glass Brewer'), 'chemex');
   assert.equal(inferDripperMethodFamily('ORIGAMI Dripper Air S', 'Cone Dripper'), 'origami');
   assert.equal(inferDripperMethodFamily('Clever Dripper', 'Immersion Dripper'), 'clever_dripper');
+  assert.equal(inferDripperMethodFamily('NextLevel Pulsar', 'No-Bypass Hybrid Brewer'), 'clever_dripper');
+  assert.equal(inferDripperMethodFamily('Vietnam Drip', 'Gravity Insert Dripper'), 'clever_dripper');
   assert.equal(inferDripperMethodFamily('Melitta 1x2', 'Trapezoid Dripper'), 'melitta');
+  assert.equal(inferDripperMethodFamily('Suji Wave Dripper', 'Wave Dripper'), 'april');
   assert.equal(inferDripperMethodFamily('French Press', 'Full Immersion Press Brewer'), 'french_press');
   assert.equal(inferDripperMethodFamily('AeroPress', 'Pressure-Assisted Immersion Brewer'), 'aeropress');
   assert.equal(inferDripperMethodFamily('Hario Siphon', 'Vacuum Brewer'), 'siphon');
   assert.equal(inferDripperMethodFamily('Bialetti Moka Pot', 'Stovetop Brewer'), 'moka_pot');
   assert.equal(inferDripperMethodFamily('Toddy Cold Brew', 'Cold Brew Immersion Brewer'), 'cold_brew');
   assert.equal(inferDripperMethodFamily('Batch Brewer', 'Automatic Brewer'), 'batch_brew');
+});
+
+test('no-bypass and steep-release light washed floral plans keep a warmer service floor', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const pulsar = productionCatalog.drippers.find((item) => item.id === 'nextlevel-pulsar');
+  const grinder = productionCatalog.grinders.find((item) => /encore esp/i.test(item.name))
+    || productionCatalog.grinders[0];
+  assert.ok(pulsar, 'NextLevel Pulsar fixture must exist');
+
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Panama Hacienda La Esmeralda Geisha Washed style',
+    process: 'washed',
+    variety: 'gesha',
+    roastLevel: 'light',
+    dripperId: pulsar.id,
+    grinderId: grinder.id,
+    doseG: '18',
+    targetProfileId: 'floral_transparent',
+    waterMode: 'manual',
+    waterBrandId: '',
+    waterTdsPpm: '90',
+    waterHardnessPpm: '40',
+    waterAlkalinityPpm: '35',
+  }, productionCatalog);
+
+  assert.equal(plan.methodFamily, 'clever_dripper');
+  assert.ok(plan.waterTempC >= 92 && plan.waterTempC <= 94, `Pulsar washed light floral temp ${plan.waterTempC} should stay in a 92-94C service band`);
+});
+
+test('washed light Geisha hot pour-over keeps roast-aware floral temperature even with high-buffer water', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const mugen = productionCatalog.drippers.find((item) => item.id === 'hario-mugen');
+  const grinder = productionCatalog.grinders.find((item) => /k-ultra/i.test(item.name))
+    || productionCatalog.grinders[0];
+  assert.ok(mugen, 'Hario Mugen V60 fixture must exist');
+
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Panama Hacienda La Esmeralda Geisha Washed style',
+    process: 'washed',
+    variety: 'gesha',
+    roastLevel: 'light',
+    dripperId: mugen.id,
+    grinderId: grinder.id,
+    doseG: '18',
+    targetProfileId: 'floral_transparent',
+    waterMode: 'manual',
+    waterBrandId: '',
+    waterTdsPpm: '170',
+    waterHardnessPpm: '40',
+    waterAlkalinityPpm: '120',
+    waterCustomized: true,
+    waterNotes: 'high-buffer alkaline-style water; high buffer can mute acidity and florals',
+  }, productionCatalog);
+
+  assert.equal(plan.methodFamily, 'v60');
+  assert.ok(plan.waterTempC >= 92 && plan.waterTempC <= 95, `washed light Geisha hot pour-over temp ${plan.waterTempC} should stay in a 92-95C floral service band`);
+  assert.match([...plan.warnings, ...plan.confidenceNotes].join(' '), /buffer|alkalinity|alkaline|muted|floral|Geisha|Gesha/i);
+});
+
+test('washed light iced flat-bottom and AeroPress clarity plans keep roast-aware temperature floors', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const stagg = productionCatalog.drippers.find((item) => /Stagg \[X\]/i.test(item.name));
+  const aeropress = productionCatalog.drippers.find((item) => /^AeroPress$/i.test(item.name));
+  const grinder = productionCatalog.grinders.find((item) => /ode gen 2/i.test(item.name))
+    || productionCatalog.grinders[0];
+  assert.ok(stagg, 'Fellow Stagg X fixture must exist');
+  assert.ok(aeropress, 'AeroPress fixture must exist');
+
+  const base = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Kenya AA SL28/SL34 Washed style',
+    process: 'washed',
+    variety: 'sl28',
+    roastLevel: 'light' as const,
+    grinderId: grinder.id,
+    doseG: '12',
+    targetProfileId: 'more_acidity',
+    waterMode: 'manual' as const,
+    waterBrandId: '',
+    waterTdsPpm: '90',
+    waterHardnessPpm: '40',
+    waterAlkalinityPpm: '35',
+  };
+
+  const icedFlat = buildAiBrewPlan({
+    ...base,
+    dripperId: stagg.id,
+    brewMode: 'iced',
+  }, productionCatalog);
+  const aero = buildAiBrewPlan({
+    ...base,
+    dripperId: aeropress.id,
+    brewMode: 'hot',
+  }, productionCatalog);
+
+  assert.equal(icedFlat.methodFamily, 'april');
+  assert.ok(icedFlat.waterTempC >= 92 && icedFlat.waterTempC <= 94, `iced flat-bottom washed light temp ${icedFlat.waterTempC} should stay in a 92-94C concentrate band`);
+  assert.equal(aero.methodFamily, 'aeropress');
+  assert.ok(aero.waterTempC >= 91 && aero.waterTempC <= 94, `AeroPress washed light temp ${aero.waterTempC} should stay in a 91-94C service band`);
+});
+
+test('washed light and medium-light clarity plans keep method-aware roast temperature floors', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const origami = productionCatalog.drippers.find((item) => /Origami Dripper/i.test(item.name));
+  const switch02 = productionCatalog.drippers.find((item) => /Switch 02/i.test(item.name));
+  const grinder = productionCatalog.grinders.find((item) => /k-ultra/i.test(item.name))
+    || productionCatalog.grinders[0];
+  assert.ok(origami, 'Origami fixture must exist');
+  assert.ok(switch02, 'Hario Switch 02 fixture must exist');
+
+  const colombiaOrigami = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Colombia Pink Bourbon Washed style',
+    process: 'washed',
+    variety: 'pink bourbon',
+    roastLevel: 'medium_light',
+    dripperId: origami.id,
+    grinderId: grinder.id,
+    doseG: '18',
+    targetProfileId: 'floral_transparent',
+    waterMode: 'manual',
+    waterBrandId: '',
+    waterTdsPpm: '170',
+    waterHardnessPpm: '40',
+    waterAlkalinityPpm: '120',
+    waterCustomized: true,
+    waterNotes: 'high-buffer alkaline-style water; high buffer can mute acidity and florals',
+  }, productionCatalog);
+
+  const switchHot = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Ethiopia Yirgacheffe Washed Landrace style',
+    process: 'washed',
+    variety: 'ethiopian-landrace',
+    roastLevel: 'light',
+    dripperId: switch02.id,
+    grinderId: grinder.id,
+    doseG: '18',
+    targetProfileId: 'floral_transparent',
+    brewMode: 'hot',
+    waterMode: 'manual',
+    waterBrandId: '',
+    waterTdsPpm: '90',
+    waterHardnessPpm: '40',
+    waterAlkalinityPpm: '35',
+  }, productionCatalog);
+
+  const switchIced = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Ethiopia Yirgacheffe Washed Landrace style',
+    process: 'washed',
+    variety: 'ethiopian-landrace',
+    roastLevel: 'medium_light',
+    dripperId: switch02.id,
+    grinderId: grinder.id,
+    doseG: '18',
+    targetProfileId: 'floral_transparent',
+    brewMode: 'iced',
+    waterMode: 'manual',
+    waterBrandId: '',
+    waterTdsPpm: '90',
+    waterHardnessPpm: '40',
+    waterAlkalinityPpm: '35',
+  }, productionCatalog);
+
+  assert.equal(colombiaOrigami.methodFamily, 'origami');
+  assert.ok(colombiaOrigami.waterTempC >= 92 && colombiaOrigami.waterTempC <= 95, `washed medium-light Colombia Origami temp ${colombiaOrigami.waterTempC} should stay in a 92-95C clarity band`);
+  assert.equal(switchHot.methodFamily, 'hario_switch');
+  assert.ok(switchHot.waterTempC >= 91 && switchHot.waterTempC <= 94, `Switch washed light hot temp ${switchHot.waterTempC} should stay in a 91-94C hybrid band`);
+  assert.equal(switchIced.methodFamily, 'hario_switch');
+  assert.ok(switchIced.waterTempC >= 91 && switchIced.waterTempC <= 94, `Switch washed medium-light iced temp ${switchIced.waterTempC} should stay in a 91-94C hybrid concentrate band`);
 });
 
 test('non-dripper method profiles generate action-safe AI Brew plans without fake iced mode', () => {

@@ -2240,6 +2240,7 @@ function haystackHasAny(haystack: string, patterns: RegExp[]) {
 
 function hasExplicitGeishaVariety(input: AiBrewFormState, varietyEntry?: VarietyCatalogEntry) {
   const varietyText = normalizeSearchHaystack([
+    input.coffeeName,
     input.variety,
     input.customVariety,
     varietyEntry?.id,
@@ -2382,6 +2383,23 @@ function deriveBaristaTemperatureCalibration(params: {
     calibration.minTempC = isMediumOrDarkerRoast(params.input.roastLevel) ? 88 : 90;
     calibration.maxTempC = params.input.roastLevel === 'dark' ? 91 : 94;
     calibration.tempDeltaC += params.input.roastLevel === 'medium_dark' || params.input.roastLevel === 'dark' ? 0.5 : 1.4;
+    if (
+      isWashed
+      && isLightOrMediumLightRoast(params.input.roastLevel)
+      && (
+        params.input.targetProfileId === 'floral_transparent'
+        || params.input.targetProfileId === 'more_acidity'
+        || isGeisha
+        || isEastAfrica
+        || isColombia
+      )
+    ) {
+      calibration.minTempC = 91;
+      calibration.maxTempC = 94;
+      calibration.tempDeltaC += 0.6;
+      calibration.notes.push('AeroPress washed light clarity profile uses a warmer 91-94C service band; press control, not extra heat, keeps the finish clean.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: AeroPress washed-light clarity floor.');
+    }
     calibration.notes.push('AeroPress service floor protects medium and lighter roasts from under-extraction; preheat, then press steadily instead of using a very low kettle temperature.');
     calibration.confidenceNotes.push('Barista temperature calibration active: AeroPress immersion floor.');
     return calibration;
@@ -2393,6 +2411,48 @@ function deriveBaristaTemperatureCalibration(params: {
     calibration.tempDeltaC += params.input.roastLevel === 'medium_dark' || params.input.roastLevel === 'dark' ? -0.2 : 0.2;
     calibration.notes.push('French Press temperature kept in a calm immersion band so body builds without extracting harsh fines.');
     calibration.confidenceNotes.push('Barista temperature calibration active: French Press immersion band.');
+    return calibration;
+  }
+
+  if (
+    params.methodFamily === 'hario_switch'
+    && isWashed
+    && isLightOrMediumLightRoast(params.input.roastLevel)
+    && (
+      params.input.targetProfileId === 'floral_transparent'
+      || params.input.targetProfileId === 'more_acidity'
+      || params.input.targetProfileId === 'fruit_forward'
+      || params.input.targetProfileId === 'balance_clean'
+      || isGeisha
+      || isEastAfrica
+      || isColombia
+    )
+  ) {
+    calibration.minTempC = params.brewMode === 'iced' ? 91 : 91;
+    calibration.maxTempC = 94;
+    calibration.tempDeltaC += params.brewMode === 'iced' ? 0.6 : 0.8;
+    calibration.notes.push('Hario Switch washed light clarity profile keeps a warmer 91-94C hybrid band; valve timing controls texture while temperature keeps florals from tasting thin.');
+    calibration.confidenceNotes.push('Barista temperature calibration active: Switch washed-light clarity floor.');
+    return calibration;
+  }
+
+  if (
+    params.methodFamily === 'clever_dripper'
+    && params.brewMode === 'hot'
+    && isWashed
+    && isLightOrMediumLightRoast(params.input.roastLevel)
+    && (
+      params.input.targetProfileId === 'floral_transparent'
+      || params.input.targetProfileId === 'more_acidity'
+      || isGeisha
+      || isEastAfrica
+    )
+  ) {
+    calibration.minTempC = 92;
+    calibration.maxTempC = 94;
+    calibration.tempDeltaC += 0.8;
+    calibration.notes.push('No-bypass/steep-release washed light profile stays around 92-94C so florals open without pushing the long-contact phase harsh.');
+    calibration.confidenceNotes.push('Barista temperature calibration active: no-bypass washed-light clarity floor.');
     return calibration;
   }
 
@@ -2415,6 +2475,22 @@ function deriveBaristaTemperatureCalibration(params: {
       calibration.tempDeltaC -= 0.4;
       calibration.notes.push('V60 Japanese-iced More Sweetness medium roast is held around 93C for compact extraction without pushing aromatics harsh.');
       calibration.confidenceNotes.push('Barista temperature calibration active: V60 Japanese-iced sweetness envelope.');
+    } else if (
+      isWashed
+      && isLightOrMediumLightRoast(params.input.roastLevel)
+      && (
+        params.input.targetProfileId === 'floral_transparent'
+        || params.input.targetProfileId === 'more_acidity'
+        || isGeisha
+        || isEastAfrica
+        || isColombia
+      )
+    ) {
+      calibration.minTempC = 92;
+      calibration.maxTempC = 94;
+      calibration.tempDeltaC += 0.7;
+      calibration.notes.push('Japanese-iced washed light clarity profile keeps hot-water concentrate around 92-94C so bright acids extract before chilling.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: washed-light Japanese-iced clarity floor.');
     } else if (isGeisha) {
       calibration.minTempC = 92;
       calibration.maxTempC = 94;
@@ -2450,6 +2526,22 @@ function deriveBaristaTemperatureCalibration(params: {
       calibration.tempDeltaC += 0.1;
       calibration.notes.push('V60 hot More Sweetness medium roast stays in a 92-94C service band so sweetness thickens without over-driving acidity.');
       calibration.confidenceNotes.push('Barista temperature calibration active: V60 hot sweetness envelope.');
+    } else if (
+      isGeisha
+      && isWashed
+      && isLightOrMediumLightRoast(params.input.roastLevel)
+      && [
+        'floral_transparent',
+        'more_acidity',
+        'fruit_forward',
+        'balance_clean',
+      ].includes(params.input.targetProfileId)
+    ) {
+      calibration.minTempC = 92;
+      calibration.maxTempC = 95;
+      calibration.tempDeltaC += 1.2;
+      calibration.notes.push('Washed Geisha/Gesha light hot pour-over keeps a 92-95C service band so floral clarity opens without chasing harsh extraction.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: washed Geisha hot pour-over clarity floor.');
     } else if (isKenya && isWashed && isLightOrMediumLightRoast(params.input.roastLevel)) {
       calibration.minTempC = 94;
       calibration.maxTempC = 96;
@@ -2474,6 +2566,21 @@ function deriveBaristaTemperatureCalibration(params: {
       calibration.tempDeltaC += 0.9;
       calibration.notes.push('Bright washed highland profile uses a slightly warmer filter envelope so clarity does not turn thin.');
       calibration.confidenceNotes.push('Barista temperature calibration active: washed highland filter lift.');
+    } else if (
+      isWashed
+      && isLightOrMediumLightRoast(params.input.roastLevel)
+      && [
+        'floral_transparent',
+        'more_acidity',
+        'fruit_forward',
+        'balance_clean',
+      ].includes(params.input.targetProfileId)
+    ) {
+      calibration.minTempC = 92;
+      calibration.maxTempC = 95;
+      calibration.tempDeltaC += isColombia ? 0.9 : 0.6;
+      calibration.notes.push('Washed light/medium-light clarity filter profile keeps a 92-95C service band so roast solubility is respected before water or grinder cautions are applied.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: washed light clarity filter floor.');
     }
   }
 

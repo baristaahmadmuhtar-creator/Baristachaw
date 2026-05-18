@@ -257,7 +257,14 @@ export function inferDripperMethodFamily(name: string, typeLabel: string): AiBre
   if (haystack.includes('batch brewer') || haystack.includes('batch brew') || haystack.includes('automatic brewer')) return 'batch_brew';
   if (haystack.includes('chemex')) return 'chemex';
   if (haystack.includes('switch')) return 'hario_switch';
-  if (haystack.includes('clever') || haystack.includes('immersion')) {
+  if (
+    haystack.includes('clever')
+    || haystack.includes('immersion')
+    || haystack.includes('no-bypass')
+    || haystack.includes('no bypass')
+    || haystack.includes('gravity insert')
+    || haystack.includes('vietnam drip')
+  ) {
     return 'clever_dripper';
   }
   if (haystack.includes('melitta') || haystack.includes('trapezoid') || haystack.includes('kalita 102')) {
@@ -266,6 +273,7 @@ export function inferDripperMethodFamily(name: string, typeLabel: string): AiBre
   if (haystack.includes('kono')) return 'kono';
   if (haystack.includes('kalita')) return 'kalita_wave';
   if (haystack.includes('april')) return 'april';
+  if (haystack.includes('wave dripper') && !haystack.includes('kalita')) return 'april';
   if (haystack.includes('origami')) return 'origami';
   if (
     haystack.includes('orea')

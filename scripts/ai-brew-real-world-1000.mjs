@@ -19,7 +19,16 @@ function parseScenarioTotal() {
   return parsed;
 }
 
+function parseScenarioProfile() {
+  const argValue = process.argv.find((arg) => arg.startsWith('--profile='))?.split('=')[1]
+    || process.env.AI_BREW_REAL_WORLD_PROFILE
+    || 'default';
+  return argValue === 'filter-source-backed' ? 'filter-source-backed' : 'default';
+}
+
 const SCENARIO_TOTAL = parseScenarioTotal();
+const SCENARIO_PROFILE = parseScenarioProfile();
+const SOURCE_BACKED_FILTER_BEAN_FIXTURE = 'tests/fixtures/ai-brew-source-backed-filter-beans.json';
 const STRONG_VERDICT = 'AI BREW REAL-WORLD SCENARIO STRONG / REAL BREW VALIDATION REQUIRED';
 const NEEDS_REFINEMENT_VERDICT = 'AI BREW NEEDS REFINEMENT BEFORE PRODUCTION';
 const NOT_READY_VERDICT = 'AI BREW NOT READY';
@@ -58,6 +67,23 @@ const SCORE_KEYS = [
   'mobileCopyQuality',
   'overclaimRisk',
 ];
+
+const GUARDRAIL_SEVERITY_POLICY = {
+  numeric_nan: 'fail',
+  numeric_negative: 'fail',
+  impossible_ratio: 'fail',
+  iced_split_wrong: 'fail',
+  method_leak_espresso: 'fail',
+  water_risk_high_confidence: 'fail',
+  fallback_grinder_high_confidence: 'fail',
+  zero_mineral_brew_ready: 'fail',
+  'target mismatch': 'warn',
+  fallback_grinder_calibration_risk: 'warn',
+  water_manual_verification_risk: 'warn',
+  low_mineral_filter_clarity_risk: 'warn',
+  dark_floral_target_risk: 'warn',
+  real_brew_validation_pending: 'warn',
+};
 
 const BEAN_ARCHETYPES = [
   {
@@ -736,6 +762,7 @@ const METHOD_CASES = [
   { id: 'chemex', label: 'Chemex', mode: 'hot', family: 'chemex', dripperPatterns: [/chemex/i] },
   { id: 'origami', label: 'Origami', mode: 'hot', family: 'origami', dripperPatterns: [/origami/i] },
   { id: 'kono', label: 'Kono', mode: 'hot', family: 'kono', dripperPatterns: [/kono/i] },
+  { id: 'melitta', label: 'Melitta', mode: 'hot', family: 'melitta', dripperPatterns: [/melitta/i] },
   { id: 'kalita-flat', label: 'Kalita / flat-bottom', mode: 'hot', family: 'kalita_wave', dripperPatterns: [/kalita|wave/i] },
   { id: 'april-orea-b75', label: 'April / Orea / B75 style flat-bottom', mode: 'hot', family: 'april', dripperPatterns: [/april|orea|b75/i] },
   { id: 'clever', label: 'Clever Dripper', mode: 'hot', family: 'clever_dripper', dripperPatterns: [/clever/i] },
@@ -959,6 +986,120 @@ function exactGrinder(grinderId) {
   return GRINDER_CASES.find((grinder) => grinder.id === grinderId) || GRINDER_CASES[0];
 }
 
+const FILTER_SOURCE_METHOD_IDS = new Set([
+  'v60-hot',
+  'v60-iced',
+  'switch-02-hot',
+  'switch-02-iced',
+  'switch-03-hot',
+  'switch-03-iced',
+  'mugen-switch',
+  'chemex',
+  'origami',
+  'kono',
+  'melitta',
+  'kalita-flat',
+  'april-orea-b75',
+  'clever',
+  'aeropress',
+  'french-press',
+  'cold-brew',
+]);
+
+const FILTER_SOURCE_GRINDER_IDS = new Set([
+  'k-ultra',
+  'c40',
+  'kingrinder-k6',
+  'timemore-c2',
+  'timemore-c3',
+  'fellow-ode',
+  'baratza-encore',
+  'feima-600n',
+  'df64',
+  'unknown-manual-grinder',
+  'unknown-electric-grinder',
+]);
+
+function sourceBackedFilterBeans() {
+  const parsed = JSON.parse(fs.readFileSync(SOURCE_BACKED_FILTER_BEAN_FIXTURE, 'utf8'));
+  return Array.isArray(parsed.items) ? parsed.items : [];
+}
+
+function fixtureExpectation(item) {
+  const text = `${item.process || ''} ${item.variety || ''} ${item.expectedCharacter || ''}`.toLowerCase();
+  if (/unknown/.test(text)) return 'unknown';
+  if (/decaf|robusta|canephora|liberica|excelsa|wet[_\s-]?hulled|monsooned|ferment|anaerobic|natural_extended|extended|wine|rustic/.test(text)) {
+    return 'source_backed_risk';
+  }
+  if (/geisha|gesha|heirloom|floral|washed|sl28|sl34|pink_bourbon/.test(text)) return 'source_backed_clarity';
+  return 'source_backed_balanced';
+}
+
+function fixtureTargets(item) {
+  const expectation = fixtureExpectation(item);
+  if (expectation === 'source_backed_clarity') {
+    return {
+      fitTargets: ['floral_transparent', 'fruit_forward', 'more_acidity', 'balance_clean'],
+      mismatchTargets: ['dense_comforting'],
+    };
+  }
+  if (expectation === 'source_backed_risk') {
+    return {
+      fitTargets: ['more_body', 'dense_comforting', 'soft_round', 'more_sweetness'],
+      mismatchTargets: ['floral_transparent', 'more_acidity'],
+    };
+  }
+  return {
+    fitTargets: ['balance_clean', 'more_sweetness', 'soft_round'],
+    mismatchTargets: ['dense_comforting'],
+  };
+}
+
+function roastPoolForSourceBean(item) {
+  if (item.roastLevel && ROAST_LEVELS.includes(item.roastLevel)) return [item.roastLevel, ...ROAST_LEVELS.filter((roast) => roast !== item.roastLevel)];
+  return ['medium_light', 'medium', 'light', 'medium_dark', 'dark'];
+}
+
+function normalizeCatalogValue(catalogItems, value) {
+  const raw = String(value || '').trim();
+  if (!raw) return { id: '', custom: '' };
+  const slug = raw.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  const aliases = {
+    geisha: 'geisha',
+    gesha: 'geisha',
+    heirloom: 'ethiopian_heirloom',
+    landrace: 'ethiopian_landrace',
+    extended_natural: 'natural_extended_fermentation',
+    extended_fermentation_natural: 'natural_extended_fermentation',
+    fully_washed: 'washed',
+    wet_hulled: 'wet_hulled',
+    black_honey: 'black_honey',
+  };
+  const candidate = aliases[slug] || slug;
+  if (catalogItems.some((item) => item.id === candidate)) return { id: candidate, custom: '' };
+  return { id: 'custom', custom: raw };
+}
+
+function beanFromSourceFixture(item) {
+  const targetInfo = fixtureTargets(item);
+  return {
+    id: item.id,
+    label: `${item.roaster} ${item.lotName}`,
+    origin: item.origin,
+    process: item.process || '',
+    customProcess: item.process || '',
+    variety: item.variety || '',
+    customVariety: item.variety || '',
+    defaultRoasts: roastPoolForSourceBean(item),
+    fitTargets: targetInfo.fitTargets,
+    mismatchTargets: targetInfo.mismatchTargets,
+    expectation: fixtureExpectation(item),
+    expected: item.expectedCharacter || 'source-backed bean data; missing fields must stay conservative',
+    sourceBacked: true,
+    sourceMeta: item,
+  };
+}
+
 function sanitizeProcess(catalog, processId) {
   if (!processId || processId === 'custom') return processId || '';
   return catalog.processes.some((process) => process.id === processId) ? processId : 'custom';
@@ -1081,7 +1222,69 @@ function buildGeneratedScenario(catalog, index) {
   };
 }
 
+function buildFilterSourceBackedScenario(catalog, index) {
+  const fixtureItems = sourceBackedFilterBeans();
+  const sourceItem = fixtureItems[index % fixtureItems.length];
+  const bean = beanFromSourceFixture(sourceItem);
+  const filterMethods = METHOD_CASES.filter((method) => FILTER_SOURCE_METHOD_IDS.has(method.id));
+  const methodCase = filterMethods[Math.floor(index / 2) % filterMethods.length];
+  const visibleDrippers = catalog.drippers.filter((dripper) => !dripper.hidden && !dripper.deprecated);
+  const dripper = findDripper({ ...catalog, drippers: visibleDrippers }, methodCase);
+  const mode = supportsAiBrewIcedMode(catalog, dripper.id) && index % 5 === 0 ? 'iced' : methodCase.mode;
+  const filterGrinders = GRINDER_CASES.filter((grinder) => FILTER_SOURCE_GRINDER_IDS.has(grinder.id));
+  const grinderCase = filterGrinders[Math.floor(index / 7) % filterGrinders.length];
+  const grinderSelection = resolveGrinderSelection(catalog, grinderCase);
+  const grinder = grinderSelection.grinder;
+  const waterCase = WATER_CASES[Math.floor(index / 11) % WATER_CASES.length];
+  const targetProfileId = TARGET_PROFILE_IDS[Math.floor(index / 13) % TARGET_PROFILE_IDS.length];
+  const roastPool = bean.defaultRoasts.length ? bean.defaultRoasts : ROAST_LEVELS;
+  const roastLevel = roastPool[Math.floor(index / 17) % roastPool.length];
+  const processValue = normalizeCatalogValue(catalog.processes, bean.process);
+  const varietyValue = normalizeCatalogValue(catalog.varieties, bean.variety);
+  const family = dripper.methodFamily || methodCase.family || 'v60';
+  const doseG = defaultDoseForMethod(family, index);
+  const sourceTag = `${sourceItem.id}-${String(index + 1).padStart(5, '0')}`;
+  return {
+    index,
+    exampleId: `source-backed-${String(index + 1).padStart(5, '0')}`,
+    curated: index < 120,
+    sourceBacked: true,
+    sourceBean: sourceItem,
+    bean,
+    methodCase: { ...methodCase, mode, family },
+    grinderCase,
+    grinderMatched: grinderSelection.matched,
+    waterCase,
+    dripper,
+    grinder,
+    inputPatch: {
+      ...waterCase.input,
+      brewMode: mode,
+      dripperId: dripper.id,
+      grinderId: grinder.id,
+      coffeeName: `${bean.label} | source-backed ${sourceTag}`,
+      process: processValue.id,
+      customProcess: processValue.custom,
+      variety: varietyValue.id,
+      customVariety: varietyValue.custom,
+      roastLevel,
+      targetProfileId,
+      doseG,
+      targetWaterMl: defaultWaterForMethod(family, doseG),
+      aeropressStyle: family === 'aeropress' && index % 9 === 0 ? 'bypass' : 'auto',
+    },
+    tasteFeedback: index % 2 === 0 ? 'sour' : 'bitter',
+  };
+}
+
 function buildScenarios(catalog) {
+  if (SCENARIO_PROFILE === 'filter-source-backed') {
+    const scenarios = [];
+    for (let index = 0; index < SCENARIO_TOTAL; index += 1) {
+      scenarios.push(buildFilterSourceBackedScenario(catalog, index));
+    }
+    return scenarios;
+  }
   const scenarios = REQUIRED_EXAMPLE_CASES.map((spec, index) => buildScenarioFromSpec(catalog, spec, index));
   for (let index = scenarios.length; index < SCENARIO_TOTAL; index += 1) {
     scenarios.push(buildGeneratedScenario(catalog, index));
@@ -1440,6 +1643,13 @@ function addRealWorldRiskWarnings(plan, scenario, reasons) {
       'French Press can soften clarity; decant cleanly and avoid stirring up fines.',
     );
   }
+  if (SCENARIO_PROFILE === 'filter-source-backed') {
+    addRiskWarning(
+      reasons,
+      'real_brew_validation_pending',
+      'Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.',
+    );
+  }
 }
 
 function validateGuardrails(plan, scenario, reasons) {
@@ -1559,6 +1769,12 @@ function runScenario(catalog, scenario) {
       targetWaterMl: scenario.inputPatch.targetWaterMl || null,
       process: scenario.inputPatch.process || 'unknown',
       variety: scenario.inputPatch.variety || 'unknown',
+      sourceBacked: Boolean(scenario.sourceBacked),
+      sourceRoaster: scenario.sourceBean?.roaster || null,
+      sourceLotName: scenario.sourceBean?.lotName || null,
+      sourceUrl: scenario.sourceBean?.sourceUrl || null,
+      sourceEvidenceLevel: scenario.sourceBean?.evidenceLevel || null,
+      sourceMissingFields: scenario.sourceBean?.missingFields || [],
     },
     output: plan ? outputSummary(plan) : null,
     reasons,
@@ -1626,6 +1842,7 @@ function summarize(results, sha) {
     waters: {},
     targets: {},
     roasts: {},
+    sources: {},
   };
   for (const result of results) {
     for (const key of SCORE_KEYS) {
@@ -1638,6 +1855,7 @@ function summarize(results, sha) {
     increment(coverage.waters, result.input.water);
     increment(coverage.targets, result.input.targetProfileId);
     increment(coverage.roasts, result.input.roastLevel);
+    if (result.input.sourceRoaster) increment(coverage.sources, `${result.input.sourceRoaster} | ${result.input.sourceLotName}`);
   }
   const uniqueCoffeeInputs = new Set(results.map((result) => [
     result.input.coffeeName,
@@ -1661,6 +1879,7 @@ function summarize(results, sha) {
     waters: Object.keys(coverage.waters).length,
     targets: Object.keys(coverage.targets).length,
     roasts: Object.keys(coverage.roasts).length,
+    sourceBackedLots: Object.keys(coverage.sources).length,
   };
   const averages = Object.fromEntries(SCORE_KEYS.map((key) => [key, Math.round((scoreTotals[key] / results.length) * 10) / 10]));
   const overallAverage = Math.round((results.reduce((sum, result) => sum + result.scores.average, 0) / results.length) * 10) / 10;
@@ -1677,6 +1896,7 @@ function summarize(results, sha) {
     sha,
     git: gitContext(),
     date: new Date().toISOString(),
+    profile: SCENARIO_PROFILE,
     scenarioCount: results.length,
     passed: passCount,
     failed: failures.length,
@@ -1838,6 +2058,91 @@ function waterRealityAuditMarkdown(summary, results) {
   ].join('\n');
 }
 
+function guardrailBreakdownMarkdown(summary, results) {
+  const failRows = summary.topFailureCategories.map((item) => `| ${item.code} | ${item.count} | ${item.examples.join(', ')} |`);
+  const warnRows = summary.topWarningCategories.map((item) => `| ${item.code} | ${item.count} | ${item.examples.join(', ')} |`);
+  return [
+    `# AI Brew Guardrail Breakdown (${summary.scenarioCount})`,
+    '',
+    `SHA: ${summary.sha}`,
+    `Profile: ${summary.profile}`,
+    '',
+    '## Severity Policy',
+    '- Hard failures block readiness: impossible numbers, broken iced split, method-language leakage, high-confidence unsafe water/grinder, and zero-mineral brew-ready claims.',
+    '- Warnings are honest risk communication: target mismatch, water/grinder/bean uncertainty, source gaps, and real brew validation pending.',
+    '',
+    '## Hard Failures',
+    '| Code | Count | Examples |',
+    '|---|---:|---|',
+    ...(failRows.length ? failRows : ['| none | 0 | - |']),
+    '',
+    '## Warnings',
+    '| Code | Count | Examples |',
+    '|---|---:|---|',
+    ...(warnRows.length ? warnRows.slice(0, 40) : ['| none | 0 | - |']),
+    '',
+  ].join('\n');
+}
+
+function csvEscape(value) {
+  return `"${String(value ?? '').replace(/"/g, '""')}"`;
+}
+
+function beanSourceCoverageCsv(results) {
+  const rows = [];
+  const seen = new Set();
+  for (const result of results) {
+    if (!result.input.sourceBacked || !result.input.sourceUrl) continue;
+    const key = `${result.input.sourceRoaster}|${result.input.sourceLotName}|${result.input.sourceUrl}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    rows.push({
+      roaster: result.input.sourceRoaster,
+      lotName: result.input.sourceLotName,
+      bean: result.input.bean,
+      sourceUrl: result.input.sourceUrl,
+      evidenceLevel: result.input.sourceEvidenceLevel,
+      missingFields: (result.input.sourceMissingFields || []).join(';'),
+    });
+  }
+  const headers = ['roaster', 'lotName', 'bean', 'sourceUrl', 'evidenceLevel', 'missingFields'];
+  return [
+    headers.join(','),
+    ...rows.map((row) => headers.map((header) => csvEscape(row[header])).join(',')),
+  ].join('\n') + '\n';
+}
+
+function hotIcedBloomPourWaterRegressionMarkdown(summary, results) {
+  const modeCounts = {};
+  const bloomWarnings = [];
+  const waterWarnings = {};
+  for (const result of results) {
+    increment(modeCounts, `${result.input.requestedMode}->${result.output?.brewMode || 'no-output'}`);
+    for (const reason of result.reasons) {
+      if (/bloom|pour|split|hot|iced/.test(reason.code)) bloomWarnings.push(`${result.exampleId}: ${reason.code}`);
+      if (/water|buffer|mineral|demineral|low_mineral/.test(reason.code)) increment(waterWarnings, reason.code);
+    }
+  }
+  return [
+    `# Hot/Iced/Bloom/Pour/Water Regression (${summary.scenarioCount})`,
+    '',
+    `SHA: ${summary.sha}`,
+    `Profile: ${summary.profile}`,
+    '',
+    '## Mode Counts',
+    ...Object.entries(modeCounts).map(([key, value]) => `- ${key}: ${value}`),
+    '',
+    '## Bloom/Pour/Iced Findings',
+    ...(bloomWarnings.length ? bloomWarnings.slice(0, 80).map((item) => `- ${item}`) : ['- No hard bloom/pour/iced split failure recorded.']),
+    '',
+    '## Water Findings',
+    ...(Object.keys(waterWarnings).length
+      ? Object.entries(waterWarnings).map(([key, value]) => `- ${key}: ${value}`)
+      : ['- No water warning/failure bucket recorded.']),
+    '',
+  ].join('\n');
+}
+
 function improvementPrompt(summary) {
   const weakBuckets = [
     ...summary.buckets.methods.filter((bucket) => bucket.averageScore < 94 || bucket.failures > 0).map((bucket) => ({ type: 'method', ...bucket })),
@@ -1917,8 +2222,11 @@ function reportMarkdown(summary, results) {
     '',
     '## Honesty Boundary',
     'This is a curated real-world software/barista reasoning gate. It did not physically brew coffee and it must not be used as sensory certainty. AI Brew creates strong starting recipes and dial-in guidance; physical real brew validation is still required.',
+    summary.profile === 'filter-source-backed'
+      ? 'This is a source-backed software scenario gate built from real roastery/community coffee seeds and deterministic combinations. It is not 20,000 unique physical coffee lots and not 20,000 physical brews.'
+      : '',
     summary.scenarioCount >= 10000
-      ? 'This is a 10,000-case software/barista scenario gate, not 10,000 physical brews or verified current-lot sensory data.'
+      ? `This is a ${summary.scenarioCount.toLocaleString('en-US')}-case software/barista scenario gate, not ${summary.scenarioCount.toLocaleString('en-US')} physical brews or verified current-lot sensory data.`
       : 'This is not physical brew proof or verified current-lot sensory data.',
     '',
     '## Bean Coverage',
@@ -1944,6 +2252,7 @@ function reportMarkdown(summary, results) {
     `Score distribution: min ${summary.scoreDistribution.min}; p10 ${summary.scoreDistribution.p10}; p50 ${summary.scoreDistribution.p50}; p90 ${summary.scoreDistribution.p90}; max ${summary.scoreDistribution.max}`,
     `Unique coffee input combinations: ${summary.coverageDensity.uniqueCoffeeInputs}`,
     `Coverage density: ${summary.coverageDensity.beanArchetypes} bean archetypes, ${summary.coverageDensity.methods} methods, ${summary.coverageDensity.grinders} grinders, ${summary.coverageDensity.waters} waters, ${summary.coverageDensity.targets} targets, ${summary.coverageDensity.roasts} roast levels.`,
+    summary.profile === 'filter-source-backed' ? `Source-backed seed lots: ${summary.coverageDensity.sourceBackedLots}` : '',
     '',
     '| Category | Average | Minimum |',
     '|---|---:|---:|',
@@ -2025,6 +2334,9 @@ function writeArtifacts(summary, results, dir) {
     lowestScores: `${dir}/lowest-scores.md`,
     methodLanguageSafety: `${dir}/method-language-safety.md`,
     waterRealityAudit: `${dir}/water-reality-audit.md`,
+    guardrailBreakdown: `${dir}/guardrail-breakdown.md`,
+    beanSourceCoverage: `${dir}/bean-source-coverage.csv`,
+    hotIcedBloomPourWaterRegression: `${dir}/hot-iced-bloom-pour-water-regression.md`,
     improvementPrompt: `${dir}/improvement-prompt.md`,
     report: `docs/ai-brew-real-world-${summary.scenarioCount}-report.md`,
   };
@@ -2035,6 +2347,9 @@ function writeArtifacts(summary, results, dir) {
   fs.writeFileSync(files.lowestScores, lowestScoresMarkdown(summary), 'utf8');
   fs.writeFileSync(files.methodLanguageSafety, methodLanguageSafetyMarkdown(summary, results), 'utf8');
   fs.writeFileSync(files.waterRealityAudit, waterRealityAuditMarkdown(summary, results), 'utf8');
+  fs.writeFileSync(files.guardrailBreakdown, guardrailBreakdownMarkdown(summary, results), 'utf8');
+  fs.writeFileSync(files.beanSourceCoverage, beanSourceCoverageCsv(results), 'utf8');
+  fs.writeFileSync(files.hotIcedBloomPourWaterRegression, hotIcedBloomPourWaterRegressionMarkdown(summary, results), 'utf8');
   fs.writeFileSync(files.improvementPrompt, improvementPrompt(summary), 'utf8');
   fs.mkdirSync('docs', { recursive: true });
   fs.writeFileSync(files.report, reportMarkdown(summary, results), 'utf8');
@@ -2047,7 +2362,10 @@ function main() {
   const scenarios = buildScenarios(globalCatalog);
   const results = scenarios.map((scenario) => runScenario(globalCatalog, scenario));
   const summary = summarize(results, sha);
-  const dir = `artifacts/ai-brew-audit/real-world-${summary.scenarioCount}/${gitSha(true)}`;
+  const artifactSlug = SCENARIO_PROFILE === 'filter-source-backed'
+    ? `filter-real-world-${summary.scenarioCount}`
+    : `real-world-${summary.scenarioCount}`;
+  const dir = `artifacts/ai-brew-audit/${artifactSlug}/${gitSha(true)}`;
   const files = writeArtifacts(summary, results, dir);
   console.log(JSON.stringify({
     sha,

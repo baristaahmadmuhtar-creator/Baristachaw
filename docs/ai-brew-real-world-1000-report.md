@@ -1,14 +1,15 @@
 # AI Brew Real-World 1000 Report
 
-Latest SHA: d6680fe0322310ea9930fc0d73e859d156ff410f
+Latest SHA: e87145d1900ea14f1c8cdab84a597866bd76d73a
 Local branch: ai-brew-real-world-production-hardening
 Origin main: 64c86eaf08dbbc3757530658be5619ef216b6454
 Local status: dirty (local validation changes present)
-Date: 2026-05-19T09:57:26.874Z
+Date: 2026-05-19T13:46:16.266Z
 Scenario count: 1000
 
 ## Honesty Boundary
 This is a curated real-world software/barista reasoning gate. It did not physically brew coffee and it must not be used as sensory certainty. AI Brew creates strong starting recipes and dial-in guidance; physical real brew validation is still required.
+
 This is not physical brew proof or verified current-lot sensory data.
 
 ## Bean Coverage
@@ -121,6 +122,7 @@ Score distribution: min 93.7; p10 97.1; p50 98.3; p90 100; max 100
 Unique coffee input combinations: 1000
 Coverage density: 37 bean archetypes, 16 methods, 12 grinders, 18 waters, 8 targets, 5 roast levels.
 
+
 | Category | Average | Minimum |
 |---|---:|---:|
 | recipeSafety | 96.2 | 84 |
@@ -152,7 +154,7 @@ Coverage density: 37 bean archetypes, 16 methods, 12 grinders, 18 waters, 8 targ
 - generated-0920: Colombia Sugarcane Decaf style / Cold Brew / Comandante C40 MK4 / Pristine 8.6+ alkaline water Indonesia style; score 94.5; high_buffer_target_risk: Pristine 8.6+ alkaline water Indonesia style can mute acidity, florals, and clarity for this target.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.; cold_brew_floral_expectation_risk: Cold brew can be sweet and clean, but sparkling hot-brew florals/acidity should be a lower expectation.
 - generated-0991: Laos Bolaven Washed Catimor style / April / Orea / B75 style flat-bottom / DF64 espresso/filter hybrid / zero-mineral RO / distilled water; score 94.5; fallback_grinder_calibration_risk: DF64 espresso/filter hybrid needs calibration; settings are starting points, not exact burr-zero truth.; zero_mineral_remineralize_risk: zero-mineral RO / distilled water is not brew-ready without minerals.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.
 - generated-0992: Rwanda/Burundi Washed Bourbon style / Clever Dripper / DF64 espresso/filter hybrid / zero-mineral RO / distilled water; score 94.5; fallback_grinder_calibration_risk: DF64 espresso/filter hybrid needs calibration; settings are starting points, not exact burr-zero truth.; zero_mineral_remineralize_risk: zero-mineral RO / distilled water is not brew-ready without minerals.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.
-- generated-0443: Unknown origin/process/variety / Hario Pegasus / Unknown manual grinder / Pristine 8.6+ alkaline water Indonesia style; score 94.9; fallback_grinder_calibration_risk: Unknown manual grinder needs calibration; settings are starting points, not exact burr-zero truth.; high_buffer_target_risk: Pristine 8.6+ alkaline water Indonesia style can mute acidity, florals, and clarity for this target.; unknown_bean_conservative_risk: Bean data is incomplete, so this recipe should stay conservative and avoid specific flavor certainty.
+- generated-0443: Unknown origin/process/variety / Melitta / Unknown manual grinder / Pristine 8.6+ alkaline water Indonesia style; score 94.9; fallback_grinder_calibration_risk: Unknown manual grinder needs calibration; settings are starting points, not exact burr-zero truth.; high_buffer_target_risk: Pristine 8.6+ alkaline water Indonesia style can mute acidity, florals, and clarity for this target.; unknown_bean_conservative_risk: Bean data is incomplete, so this recipe should stay conservative and avoid specific flavor certainty.
 - generated-0517: Unknown origin/process/variety / Hario Switch 02 hot / Espresso grinder zero-point unknown / High buffer alkaline water; score 94.9; fallback_grinder_calibration_risk: Espresso grinder zero-point unknown needs calibration; settings are starting points, not exact burr-zero truth.; high_buffer_target_risk: High buffer alkaline water can mute acidity, florals, and clarity for this target.; unknown_bean_conservative_risk: Bean data is incomplete, so this recipe should stay conservative and avoid specific flavor certainty.
 - generated-0637: Colombia Thermal Shock Caturra style / Moka Pot / Unknown manual grinder / Equil mineral water Indonesia style; score 94.9; fallback_grinder_calibration_risk: Unknown manual grinder needs calibration; settings are starting points, not exact burr-zero truth.; high_buffer_target_risk: Equil mineral water Indonesia style can mute acidity, florals, and clarity for this target.; experimental_process_feedback_risk: Colombia Thermal Shock Caturra style can become winey/heavy if extraction is pushed too far; real taste feedback matters.; moka_stall_bitterness_risk: Moka grind must avoid espresso-powder fineness; stop before sputter to control bitterness.
 - generated-0997: Liberica / Excelsa specialty style / Moka Pot / Kingrinder K6 / zero-mineral RO / distilled water; score 94.9; zero_mineral_remineralize_risk: zero-mineral RO / distilled water is not brew-ready without minerals.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.; moka_stall_bitterness_risk: Moka grind must avoid espresso-powder fineness; stop before sputter to control bitterness.

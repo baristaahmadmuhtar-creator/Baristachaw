@@ -29,6 +29,6 @@ test('AI Brew real-world 10000 scenario gate expands curated coffee coverage hon
   assert.match(script, /caseVarietySignature/);
   assert.match(script, /uniqueCoffeeInputs/);
   assert.match(script, /coverageDensity/);
-  assert.match(script, /This is a 10,000-case software\/barista scenario gate/);
-  assert.match(script, /not 10,000 physical brews/);
+  assert.match(script, /\$\{summary\.scenarioCount\.toLocaleString\('en-US'\)\}-case software\/barista scenario gate/);
+  assert.match(script, /not \$\{summary\.scenarioCount\.toLocaleString\('en-US'\)\} physical brews/);
 });

@@ -9971,6 +9971,260 @@ test('AI Brew matrix stays deterministic across roast, target, water, process, a
   assert.ok(iced.grindBias === 'finer');
 });
 
+test('AI Brew manual pour-over bloom cadence stays barista-sensible across visible drippers', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const base = createDefaultAiBrewFormState(productionCatalog);
+  const grinder = productionCatalog.grinders.find((item) => /k-ultra/i.test(item.name)) || productionCatalog.grinders[0];
+  const process = productionCatalog.processes.find((item) => item.id === 'washed') || productionCatalog.processes[0];
+  const variety = productionCatalog.varieties.find((item) => item.id === 'geisha') || productionCatalog.varieties[0];
+  const manualPourFamilies = new Set<AiBrewMethodFamily>([
+    'v60',
+    'origami',
+    'kono',
+    'kalita_wave',
+    'melitta',
+    'april',
+    'chemex',
+  ]);
+  const visibleManualDrippers = productionCatalog.drippers
+    .filter((dripper) => !dripper.hidden && !dripper.deprecated)
+    .filter((dripper) => manualPourFamilies.has(dripper.methodFamily || 'v60'));
+
+  for (const dripper of visibleManualDrippers) {
+    const brewModes: Array<'hot' | 'iced'> = supportsAiBrewIcedMode(productionCatalog, dripper.id) ? ['hot', 'iced'] : ['hot'];
+    for (const brewMode of brewModes) {
+      for (const roastLevel of ['light', 'medium', 'dark'] as const) {
+        for (const targetProfile of productionCatalog.targetProfiles) {
+          const plan = buildAiBrewPlan({
+            ...base,
+            dripperId: dripper.id,
+            grinderId: grinder.id,
+            waterMode: 'manual',
+            waterTdsPpm: '90',
+            waterHardnessPpm: '55',
+            waterAlkalinityPpm: '35',
+            process: process.id,
+            variety: variety.id,
+            coffeeName: `${dripper.name} bloom audit`,
+            brewMode,
+            roastLevel,
+            targetProfileId: targetProfile.id,
+            doseG: '15',
+            pourStyle: 'auto',
+            pourCount: 'auto',
+          }, productionCatalog);
+          const positivePours = plan.steps.filter((step) => step.pourVolumeMl > 0);
+          assert.ok(
+            positivePours.length >= 3 && positivePours.length <= 5,
+            `${dripper.name} ${brewMode} ${targetProfile.id} should use 3-5 positive pour checkpoints, got ${positivePours.length}`,
+          );
+          const firstRatio = positivePours[0].pourVolumeMl / plan.doseG;
+          assert.ok(
+            firstRatio >= 1.8 && firstRatio <= 3.8,
+            `${dripper.name} ${brewMode} ${targetProfile.id} bloom ${positivePours[0].pourVolumeMl} ml for ${plan.doseG} g should stay in a practical 1.8-3.8x band`,
+          );
+          const nextPourGap = positivePours[1].startSeconds - positivePours[0].startSeconds;
+          assert.ok(
+            nextPourGap >= 30 && nextPourGap <= 65,
+            `${dripper.name} ${brewMode} ${targetProfile.id} next pour gap ${nextPourGap}s should stay within practical bloom timing`,
+          );
+        }
+      }
+    }
+  }
+});
+
+test('AI Brew bloom wait copy matches the next manual pour checkpoint', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const base = createDefaultAiBrewFormState(productionCatalog);
+  const grinder = productionCatalog.grinders.find((item) => /k-ultra/i.test(item.name)) || productionCatalog.grinders[0];
+  const auditDrippers = productionCatalog.drippers.filter((dripper) =>
+    ['cafec-flower-dripper', 'kono-meimon', 'kalita-wave-155-185', 'chemex'].includes(dripper.id));
+
+  for (const dripper of auditDrippers) {
+    for (const targetProfileId of ['balance_clean', 'more_body', 'dense_comforting']) {
+      const plan = buildAiBrewPlan({
+        ...base,
+        dripperId: dripper.id,
+        grinderId: grinder.id,
+        waterMode: 'manual',
+        waterTdsPpm: '90',
+        waterHardnessPpm: '55',
+        waterAlkalinityPpm: '35',
+        process: 'washed',
+        variety: 'geisha',
+        coffeeName: `${dripper.name} bloom copy audit`,
+        brewMode: 'hot',
+        roastLevel: 'medium',
+        targetProfileId,
+        doseG: '15',
+        pourStyle: 'auto',
+        pourCount: 'auto',
+      }, productionCatalog);
+      const positivePours = plan.steps.filter((step) => step.pourVolumeMl > 0);
+      const bloomCopy = `${positivePours[0].note} ${positivePours[0].hybridInstruction || ''}`;
+      const waitMatch = bloomCopy.match(/wait\s+(\d+)\s+seconds/i);
+      assert.ok(waitMatch, `${dripper.name} ${targetProfileId} should expose bloom wait copy`);
+      const statedWait = Number(waitMatch[1]);
+      const actualGap = positivePours[1].startSeconds - positivePours[0].startSeconds;
+      assert.ok(
+        Math.abs(actualGap - statedWait) <= 10,
+        `${dripper.name} ${targetProfileId} bloom copy says ${statedWait}s but next pour starts after ${actualGap}s`,
+      );
+    }
+  }
+});
+
+test('AI Brew iced manual pour-over bloom checkpoint and service time stay barista-sensible', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const base = createDefaultAiBrewFormState(productionCatalog);
+  const grinder = productionCatalog.grinders.find((item) => /k-ultra/i.test(item.name)) || productionCatalog.grinders[0];
+  const cases = [
+    {
+      dripperId: 'kalita-wave-155-185',
+      targetProfileId: 'dense_comforting',
+      roastLevel: 'light',
+      doseG: '24',
+      targetWaterMl: '385',
+    },
+    {
+      dripperId: 'kono-meimon',
+      targetProfileId: 'more_body',
+      roastLevel: 'medium_light',
+      doseG: '20',
+      targetWaterMl: '310',
+    },
+    {
+      dripperId: 'fellow-stagg-x',
+      targetProfileId: 'more_acidity',
+      roastLevel: 'medium',
+      doseG: '20',
+      targetWaterMl: '310',
+    },
+  ] as const;
+
+  for (const scenario of cases) {
+    const plan = buildAiBrewPlan({
+      ...base,
+      ...scenario,
+      grinderId: grinder.id,
+      waterMode: 'manual',
+      waterTdsPpm: '90',
+      waterHardnessPpm: '55',
+      waterAlkalinityPpm: '35',
+      process: 'natural',
+      variety: 'yellow_bourbon',
+      coffeeName: `${scenario.dripperId} iced bloom audit`,
+      brewMode: 'iced',
+      pourStyle: 'auto',
+      pourCount: 'auto',
+    }, productionCatalog);
+
+    const positivePours = plan.steps.filter((step) => step.pourVolumeMl > 0);
+    const bloomCopy = `${positivePours[0].note} ${positivePours[0].hybridInstruction || ''}`;
+    const waitMatch = bloomCopy.match(/wait\s+(\d+)\s+seconds/i);
+    assert.ok(waitMatch, `${plan.dripper.name} should expose iced bloom wait copy`);
+    const statedWait = Number(waitMatch[1]);
+    const actualGap = positivePours[1].startSeconds - positivePours[0].startSeconds;
+
+    assert.ok(
+      actualGap >= 30 && actualGap <= 65,
+      `${plan.dripper.name} iced bloom gap should stay 30-65s, got ${actualGap}s`,
+    );
+    assert.ok(
+      Math.abs(actualGap - statedWait) <= 10,
+      `${plan.dripper.name} iced bloom copy says ${statedWait}s but next pour starts after ${actualGap}s`,
+    );
+    assert.ok(
+      plan.totalTimeSeconds >= 135,
+      `${plan.dripper.name} iced manual brew should not be rushed below 135s, got ${plan.totalTimeSeconds}s`,
+    );
+  }
+});
+
+test('AI Brew hot manual brew temperature stays sensible for light natural and dark roast edge cases', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const base = createDefaultAiBrewFormState(productionCatalog);
+  const grinder = productionCatalog.grinders.find((item) => /k-ultra/i.test(item.name)) || productionCatalog.grinders[0];
+  const auditDripperIds = [
+    'hario-v60',
+    'april-brewer',
+    'blue-bottle-dripper',
+    'fellow-stagg-x',
+    'kalita-wave-155-185',
+    'cafec-flower-dripper',
+    'chemex',
+  ];
+
+  for (const dripperId of auditDripperIds) {
+    const lightNatural = buildAiBrewPlan({
+      ...base,
+      dripperId,
+      grinderId: grinder.id,
+      waterMode: 'manual',
+      waterTdsPpm: '180',
+      waterHardnessPpm: '80',
+      waterAlkalinityPpm: '115',
+      waterCustomized: true,
+      coffeeName: 'Ethiopia Guji natural hot brew audit',
+      process: 'natural',
+      variety: 'ethiopian_heirloom',
+      roastLevel: 'light',
+      targetProfileId: 'more_acidity',
+      brewMode: 'hot',
+      doseG: '15',
+    }, productionCatalog);
+    assert.ok(
+      lightNatural.waterTempC >= 90 && lightNatural.waterTempC <= 93,
+      `${lightNatural.dripper.name} light natural hot filter should stay in a controlled 90-93C band, got ${lightNatural.waterTempC}C`,
+    );
+
+    const darkBody = buildAiBrewPlan({
+      ...base,
+      dripperId,
+      grinderId: grinder.id,
+      waterMode: 'manual',
+      waterTdsPpm: '35',
+      waterHardnessPpm: '18',
+      waterAlkalinityPpm: '12',
+      waterCustomized: true,
+      coffeeName: 'Dark roast house blend hot brew audit',
+      process: 'washed',
+      variety: '',
+      roastLevel: 'dark',
+      targetProfileId: 'more_body',
+      brewMode: 'hot',
+      doseG: '15',
+    }, productionCatalog);
+    assert.ok(
+      darkBody.waterTempC >= 86 && darkBody.waterTempC <= 92.5,
+      `${darkBody.dripper.name} dark roast hot filter should protect bitterness around 86-92.5C, got ${darkBody.waterTempC}C`,
+    );
+  }
+
+  const aprilHybrid = buildAiBrewPlan({
+    ...base,
+    dripperId: 'april-hybrid-brewer',
+    grinderId: grinder.id,
+    waterMode: 'manual',
+    waterTdsPpm: '180',
+    waterHardnessPpm: '80',
+    waterAlkalinityPpm: '115',
+    waterCustomized: true,
+    coffeeName: 'Sumatra wet-hulled light hot brew audit',
+    process: 'wet_hulled',
+    variety: 'ateng_super',
+    roastLevel: 'light',
+    targetProfileId: 'more_acidity',
+    brewMode: 'hot',
+    doseG: '15',
+  }, productionCatalog);
+  assert.ok(
+    aprilHybrid.waterTempC >= 89,
+    `${aprilHybrid.dripper.name} light roast hot filter should not fall below 89C even when process and high-buffer water are conservative, got ${aprilHybrid.waterTempC}C`,
+  );
+});
+
 test('ai brew draft storage persists and merges with fallback defaults', () => {
   installLocalStorageMock();
   saveAiBrewFormDraft<Partial<AiBrewFormState>>({

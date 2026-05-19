@@ -532,6 +532,13 @@ function resolveMinimumIcedManualPourOverTimeSeconds(profile: DeviceBrewProfile,
 function resolveMinimumMethodServiceTimeSeconds(methodFamily: AiBrewMethodFamily, brewMode: 'hot' | 'iced') {
   if (methodFamily === 'chemex') return brewMode === 'iced' ? 190 : 235;
   if (methodFamily === 'kalita_wave') return brewMode === 'iced' ? 165 : 175;
+  if (brewMode === 'iced') {
+    if (methodFamily === 'v60') return 145;
+    if (methodFamily === 'april') return 145;
+    if (methodFamily === 'origami') return 145;
+    if (methodFamily === 'melitta') return 145;
+    if (methodFamily === 'kono') return 145;
+  }
   return 0;
 }
 
@@ -1314,7 +1321,55 @@ function buildAdaptiveStepStartSeconds(
     adapted.push(adapted[index] + finalGaps[index]);
   }
   adapted[adapted.length - 1] = clamp(adapted[adapted.length - 1], minLastStepSeconds, maxLastStepSeconds);
+  if (context.brewMode === 'iced' && isIcedManualPourOverFamily(context.methodFamily) && adapted.length >= 3) {
+    const behavior = context.pourBehavior || resolveTargetPourBehavior(context.targetProfileId);
+    const increment = resolveBaristaTimeIncrementSeconds(context.methodFamily);
+    const targetBloomGap = roundBaristaTimeSeconds(clamp(behavior?.bloomTimeSec || 42, 30, 60), context.methodFamily);
+    const lastIndex = adapted.length - 1;
+    const lastStart = adapted[lastIndex];
+    const minimumGapSeconds = Math.max(30, increment);
+    const maxFirstGap = Math.min(65, Math.max(minimumGapSeconds, lastStart - (minimumGapSeconds * (adapted.length - 2))));
+    const firstGap = clampRoundedToIncrement(targetBloomGap, minimumGapSeconds, maxFirstGap, increment);
+    const normalized = [...adapted];
+    normalized[1] = firstGap;
+    const remainingGapCount = lastIndex - 1;
+    for (let index = 2; index < lastIndex; index += 1) {
+      const position = (index - 1) / Math.max(1, remainingGapCount);
+      const rawStart = firstGap + ((lastStart - firstGap) * position);
+      const minStart = normalized[index - 1] + minimumGapSeconds;
+      const maxStart = lastStart - (minimumGapSeconds * (lastIndex - index));
+      normalized[index] = clampRoundedToIncrement(rawStart, minStart, maxStart, increment);
+    }
+    return normalized;
+  }
+  if (context.brewMode === 'hot' && supportsAiBrewPourControls(context.methodFamily) && adapted.length >= 3) {
+    const behavior = context.pourBehavior || resolveTargetPourBehavior(context.targetProfileId);
+    const increment = resolveBaristaTimeIncrementSeconds(context.methodFamily);
+    const targetBloomGap = roundBaristaTimeSeconds(clamp(behavior?.bloomTimeSec || 42, 30, 60), context.methodFamily);
+    const lastIndex = adapted.length - 1;
+    const lastStart = adapted[lastIndex];
+    const minimumGapSeconds = Math.max(30, increment);
+    const maxFirstGap = Math.min(65, Math.max(minimumGapSeconds, lastStart - (minimumGapSeconds * (adapted.length - 2))));
+    const firstGap = clampRoundedToIncrement(targetBloomGap, minimumGapSeconds, maxFirstGap, increment);
+    const normalized = [...adapted];
+    normalized[1] = firstGap;
+    const remainingGapCount = lastIndex - 1;
+    for (let index = 2; index < lastIndex; index += 1) {
+      const position = (index - 1) / Math.max(1, remainingGapCount);
+      const rawStart = firstGap + ((lastStart - firstGap) * position);
+      const minStart = normalized[index - 1] + minimumGapSeconds;
+      const maxStart = lastStart - (minimumGapSeconds * (lastIndex - index));
+      normalized[index] = clampRoundedToIncrement(rawStart, minStart, maxStart, increment);
+    }
+    return normalized;
+  }
   return adapted;
+}
+
+function resolveManualPourBloomCeilingMl(context: AdaptiveShareContext) {
+  if (!supportsAiBrewPourControls(context.methodFamily)) return null;
+  const practicalMultiplier = context.brewMode === 'iced' ? 3.2 : 3.7;
+  return roundBaristaVolumeMl(context.doseG * practicalMultiplier, context.methodFamily);
 }
 
 function normalizeBaristaStepStartSeconds(
@@ -2584,6 +2639,25 @@ function deriveBaristaTemperatureCalibration(params: {
       calibration.tempDeltaC += isColombia ? 0.9 : 0.6;
       calibration.notes.push('Washed light/medium-light clarity filter profile keeps a 92-95C service band so roast solubility is respected before water or grinder cautions are applied.');
       calibration.confidenceNotes.push('Barista temperature calibration active: washed light clarity filter floor.');
+    }
+
+    const naturalOrFermentRisk = isNaturalLikeProcess(params.processEntry, params.input.process, params.input.customProcess)
+      || hasAnyRiskTag(params.processEntry, ['experimental', 'ferment-risk', 'high-ferment', 'taste-feedback-required']);
+    if (naturalOrFermentRisk && isLightOrMediumLightRoast(params.input.roastLevel)) {
+      calibration.minTempC = Math.max(calibration.minTempC ?? 90, 90);
+      calibration.maxTempC = Math.min(calibration.maxTempC ?? 93, 93);
+      calibration.notes.push('Hot filter natural/ferment profile stays in a controlled 90-93C band: enough extraction for light roast, without pushing winey or sharp notes.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: hot natural/ferment light-roast band.');
+    } else if (isLightOrMediumLightRoast(params.input.roastLevel)) {
+      calibration.minTempC = Math.max(calibration.minTempC ?? 89, 89);
+      calibration.notes.push('Hot filter light/medium-light roast keeps at least 89C so the cup does not become hollow from under-extraction.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: hot light-roast filter floor.');
+    }
+    if (params.input.roastLevel === 'dark') {
+      calibration.minTempC = Math.max(calibration.minTempC ?? 86, 86);
+      calibration.maxTempC = Math.min(calibration.maxTempC ?? 92.5, 92.5);
+      calibration.notes.push('Dark roast hot filter profile caps kettle energy around 92.5C to protect sweetness and reduce bitter, dry finish risk.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: dark roast hot filter ceiling.');
     }
   }
 
@@ -6213,8 +6287,8 @@ function buildSteps(
     const unconstrainedMaxPourVolumeMl = isLastPourStep
       ? remainingWater
       : Math.max(0, remainingWater - minimumReserveMl);
-    const bloomCeilingMl = isFirstPourStep && supportsAiBrewPourControls(adaptiveShareContext.methodFamily)
-      ? Math.max(80, roundBaristaVolumeMl(adaptiveShareContext.doseG * 4, adaptiveShareContext.methodFamily))
+    const bloomCeilingMl = isFirstPourStep
+      ? resolveManualPourBloomCeilingMl(adaptiveShareContext)
       : null;
     const maxPourVolumeMl = bloomCeilingMl !== null && !isLastPourStep
       ? Math.min(unconstrainedMaxPourVolumeMl, bloomCeilingMl)

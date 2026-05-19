@@ -28,6 +28,8 @@ const CLASSIFICATION_BASELINES: Record<WaterClassification, {
   body_builder: { tdsPpm: 120, hardnessPpm: 70, alkalinityPpm: 48 },
   high_buffer: { tdsPpm: 145, hardnessPpm: 58, alkalinityPpm: 82 },
   alkaline_caution: { tdsPpm: 90, hardnessPpm: 45, alkalinityPpm: 28 },
+  low_mineral_clarity: { tdsPpm: 20, hardnessPpm: 12, alkalinityPpm: 10 },
+  demineral_direct_experiment: { tdsPpm: 95, hardnessPpm: 55, alkalinityPpm: 38 },
   zero_mineral_ro: { tdsPpm: 95, hardnessPpm: 55, alkalinityPpm: 38 },
   manual_required: { tdsPpm: 105, hardnessPpm: 55, alkalinityPpm: 40 },
 };
@@ -96,7 +98,7 @@ function buildClassificationTarget(
   guidance: WaterGuidance,
   targetProfileId?: string,
 ) {
-  const baseline = waterBrand.classification === 'zero_mineral_ro'
+  const baseline = waterBrand.classification === 'zero_mineral_ro' || waterBrand.classification === 'demineral_direct_experiment'
     ? buildGuidanceTarget(guidance)
     : CLASSIFICATION_BASELINES[waterBrand.classification] || CLASSIFICATION_BASELINES.manual_required;
   const tuned = tuneForTarget(baseline, targetProfileId);
@@ -113,8 +115,11 @@ function hasVeryLowMinerals(waterBrand: WaterBrandProfile) {
   const hardness = minerals?.hardnessPpm ?? waterBrand.chemistry.hardnessPpm;
   const alkalinity = minerals?.alkalinityPpm ?? waterBrand.chemistry.alkalinityPpm;
 
+  if (waterBrand.classification === 'low_mineral_clarity') return false;
+
   return (
     waterBrand.classification === 'zero_mineral_ro'
+    || waterBrand.classification === 'demineral_direct_experiment'
     || (Number.isFinite(tds) && Number(tds) <= 20)
     || (Number.isFinite(hardness) && Number(hardness) <= 15)
     || (Number.isFinite(alkalinity) && Number(alkalinity) <= 10)
@@ -139,6 +144,16 @@ function buildCompletionWarnings(waterBrand: WaterBrandProfile, language?: strin
     warnings.add(id
       ? 'Air alkaline bisa meredam acidity; gunakan sebagai baseline hati-hati.'
       : 'Alkaline water can mute acidity; use this as a cautious baseline.');
+  }
+  if (waterBrand.classification === 'low_mineral_clarity') {
+    warnings.add(id
+      ? 'Air sangat rendah mineral bisa terasa clean, tetapi body dapat tipis dan acidity lebih tajam.'
+      : 'Very low-mineral water can taste clean, but body may be thin and acidity sharper.');
+  }
+  if (waterBrand.classification === 'demineral_direct_experiment') {
+    warnings.add(id
+      ? 'Direct brew dengan air demineral adalah eksperimen; remineralisasi memberi body dan sweetness lebih stabil.'
+      : 'Direct brewing with demineral water is experimental; remineralization gives more stable body and sweetness.');
   }
   if (!waterBrand.sourceUrls.length) {
     warnings.add(id

@@ -523,8 +523,13 @@ export function buildExpectedCupProfile(
     confidence = confidence === 'high' ? 'medium' : confidence;
     warnings.push('High-buffer water can mute acidity and floral clarity.');
   }
+  const lowMineralClarityWater = plan.waterClassification === 'low_mineral_clarity';
+  const demineralDirectExperimentWater = plan.waterClassification === 'demineral_direct_experiment';
   const zeroMineralWater = plan.waterClassification === 'zero_mineral_ro'
     || (
+      !lowMineralClarityWater
+      && !demineralDirectExperimentWater
+      &&
       (plan.waterMinerals?.tdsPpm ?? 999) < 30
       && (plan.waterMinerals?.hardnessPpm ?? 999) < 20
       && (plan.waterMinerals?.alkalinityPpm ?? 999) < 20
@@ -532,6 +537,17 @@ export function buildExpectedCupProfile(
   if (zeroMineralWater) {
     confidence = 'low';
     warnings.push('Zero-mineral/RO water should not be used without remineralization.');
+  } else if (lowMineralClarityWater) {
+    body -= 0.4;
+    clarity += 0.3;
+    confidence = confidence === 'high' ? 'medium' : confidence;
+    warnings.push('Very low-mineral water can taste clean, but body may be thin and acidity sharper.');
+  } else if (demineralDirectExperimentWater) {
+    body -= 0.7;
+    sweetness -= 0.25;
+    clarity += 0.35;
+    confidence = 'low';
+    warnings.push('Demineral direct brew is experimental: clean/light cup possible, but hollow body risk is high.');
   } else if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady || plan.waterMineralDerivation === 'estimated_from_classification') {
     confidence = 'medium';
     warnings.push('Water minerals need manual verification before treating this profile as locked.');
@@ -599,7 +615,10 @@ export function buildAiBrewReadinessScores(plan: BrewPlan): AiBrewReadinessScore
   const workflow = clampReadiness(plan.workflowValidation?.readinessScore ?? 82);
   const water = (() => {
     if (plan.waterClassification === 'zero_mineral_ro') return 35;
+    if (plan.waterClassification === 'demineral_direct_experiment') return 48;
     if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady) return 58;
+    if (plan.waterClassification === 'low_mineral_clarity') return 72;
+    if (plan.waterMineralDerivation === 'estimated_from_community_profile') return 78;
     if (plan.waterMineralDerivation === 'estimated_from_classification') return 64;
     if (plan.waterClassification === 'high_buffer' || plan.waterClassification === 'alkaline_caution') return 76;
     if (plan.waterMineralDerivation === 'manual') return 88;

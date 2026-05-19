@@ -426,6 +426,8 @@ export type GrindSettingMode = 'catalog_reference' | 'derived_baseline';
 export type WaterClassification =
   | 'balanced'
   | 'zero_mineral_ro'
+  | 'low_mineral_clarity'
+  | 'demineral_direct_experiment'
   | 'soft_balanced'
   | 'body_builder'
   | 'high_buffer'
@@ -602,7 +604,7 @@ export interface WaterBrandResolvedMinerals {
   tdsPpm: number;
   hardnessPpm: number;
   alkalinityPpm: number;
-  derivation: 'direct' | 'derived_from_ions' | 'estimated_from_classification';
+  derivation: 'direct' | 'derived_from_ions' | 'estimated_from_community_profile' | 'estimated_from_classification';
 }
 
 export interface WaterBrandProfile extends CatalogProvenance {
@@ -1021,7 +1023,7 @@ export interface BrewPlan {
   waterBrandMarkets: WaterMarket[];
   waterBrandVerification?: VerificationLevel;
   waterBrandSourceUrls: string[];
-  waterMineralDerivation?: 'direct' | 'derived_from_ions' | 'estimated_from_classification' | 'manual';
+  waterMineralDerivation?: 'direct' | 'derived_from_ions' | 'estimated_from_community_profile' | 'estimated_from_classification' | 'manual';
   waterCustomized: boolean;
   waterMinerals: WaterMineralInput;
   waterGuidance: WaterGuidance;

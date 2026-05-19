@@ -268,6 +268,10 @@ export function localizeAiBrewWaterClassificationLabel(label: string, language?:
   switch (label.trim().toLowerCase()) {
     case 'zero mineral / ro':
       return 'Nol mineral / RO';
+    case 'low-mineral clarity':
+      return 'Mineral rendah / clean';
+    case 'demineral direct experiment':
+      return 'Eksperimen demineral';
     case 'alkaline caution':
       return 'Waspada alkalin';
     case 'high buffer':

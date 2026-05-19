@@ -21,6 +21,9 @@ test('AI Brew real-world 1000 scenario gate is wired with curated coverage and h
   assert.match(script, /Liberica \/ Excelsa specialty style/);
   assert.match(script, /Unknown origin\/process\/variety/);
   assert.match(script, /Aqua bottled water Indonesia style/);
+  assert.match(script, /community_barista_autofill/);
+  assert.match(script, /low_mineral_filter_clarity/);
+  assert.match(script, /demineral_direct_filter_experimental/);
   assert.match(script, /Pristine 8\.6\+ alkaline water Indonesia style/);
   assert.match(script, /Galon isi ulang \/ depot water Indonesia style/);
   assert.match(script, /REQUIRED_EXAMPLE_CASES/);
@@ -33,6 +36,7 @@ test('AI Brew real-world 1000 scenario gate is wired with curated coverage and h
   assert.match(script, /scoreDistribution/);
   assert.match(script, /lowest-scores\.md/);
   assert.match(script, /method-language-safety\.md/);
+  assert.match(script, /water-reality-audit\.md/);
   assert.match(script, /addRealWorldRiskWarnings/);
   assert.match(script, /methodFamilyMatches/);
   assert.match(script, /grinder_fixture_not_found/);

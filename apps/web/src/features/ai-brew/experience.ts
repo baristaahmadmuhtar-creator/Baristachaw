@@ -34,6 +34,8 @@ function grinderStatusLabel(plan: BrewPlan, language: string) {
 function waterStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
   if (plan.waterClassification === 'zero_mineral_ro') return id ? 'Mineral nol / RO' : 'Zero Mineral / RO';
+  if (plan.waterClassification === 'low_mineral_clarity') return id ? 'Mineral rendah / clean' : 'Low-Mineral Clarity';
+  if (plan.waterClassification === 'demineral_direct_experiment') return id ? 'Eksperimen demineral' : 'Demineral Experiment';
   if (plan.waterClassification === 'high_buffer') return id ? 'Buffer tinggi' : 'High Buffer';
   if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady) {
     return id ? 'Perlu input manual' : 'Manual Required';
@@ -58,7 +60,10 @@ export function resolveAiBrewConfidenceBadges(plan: BrewPlan, language: string):
       label: waterStatusLabel(plan, language),
       tone: plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady
         ? 'amber'
-        : plan.waterClassification === 'high_buffer' || plan.waterMineralDerivation === 'estimated_from_classification'
+        : plan.waterClassification === 'high_buffer'
+          || plan.waterClassification === 'demineral_direct_experiment'
+          || plan.waterMineralDerivation === 'estimated_from_community_profile'
+          || plan.waterMineralDerivation === 'estimated_from_classification'
           ? 'amber'
           : 'emerald',
     },
@@ -144,8 +149,16 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
 
   if (plan.waterClassification === 'zero_mineral_ro') {
     priorities.push(id
-      ? 'Jangan dipakai tanpa remineralisasi.'
-      : 'Do not use zero-mineral/RO water without remineralization.');
+      ? 'Bagus sebagai base custom water; jangan dipakai direct tanpa remineralisasi.'
+      : 'Useful as a custom-water base; do not brew directly without remineralization.');
+  } else if (plan.waterClassification === 'low_mineral_clarity') {
+    priorities.push(id
+      ? 'Air rendah mineral bisa clean, tapi body dapat tipis; validasi rasa sebelum menjadikannya default.'
+      : 'Low-mineral water can taste clean, but body may be thin; taste-check before making it the default.');
+  } else if (plan.waterClassification === 'demineral_direct_experiment') {
+    priorities.push(id
+      ? 'Air demineral direct hanya eksperimen filter; kalau cup kosong, remineralisasi atau blend.'
+      : 'Direct demineral brewing is only a filter experiment; if the cup tastes hollow, remineralize or blend.');
   } else if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady) {
     priorities.push(id
       ? 'Data air belum siap otomatis; isi mineral manual atau pakai air siap seduh sebelum menilai resep.'
@@ -158,6 +171,10 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
     priorities.push(id
       ? 'Mineral air masih estimasi; verifikasi manual sebelum menganggapnya siap seduh.'
       : 'Water minerals are estimated; verify manually before treating it as brew-ready.');
+  } else if (plan.waterMineralDerivation === 'estimated_from_community_profile') {
+    priorities.push(id
+      ? 'Profil air memakai bukti komunitas/kopi; cukup untuk starting point, tetap validasi rasa.'
+      : 'Water profile uses coffee-community evidence; good for a starting point, still taste-check.');
   }
 
   if (plan.deviceProfileMode !== 'exact') {
@@ -226,7 +243,11 @@ function methodCorrection(
     ? (id ? 'Cek air dulu: buffer tinggi bisa membuat acidity/floral tertahan.' : 'Check water first: high buffer can mute acidity/floral.')
     : plan.waterClassification === 'zero_mineral_ro'
       ? (id ? 'Cek air dulu: RO/zero mineral perlu remineralisasi.' : 'Check water first: RO/zero-mineral water needs remineralization.')
-      : '';
+      : plan.waterClassification === 'low_mineral_clarity'
+        ? (id ? 'Cek air dulu: air rendah mineral bisa membuat body tipis dan acidity lebih tajam.' : 'Check water first: low-mineral water can make body thin and acidity sharper.')
+        : plan.waterClassification === 'demineral_direct_experiment'
+          ? (id ? 'Cek air dulu: direct demineral bisa clean tapi hollow; remineralisasi jika perlu.' : 'Check water first: direct demineral can taste clean but hollow; remineralize if needed.')
+        : '';
 
   const generic = {
     great: {

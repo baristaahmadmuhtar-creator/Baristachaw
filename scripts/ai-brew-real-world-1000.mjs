@@ -640,16 +640,16 @@ const WATER_CASES = [
   {
     id: 'aqua-indonesia',
     label: 'Aqua bottled water Indonesia style',
-    input: { waterMode: 'manual', waterBrandId: '', waterTdsPpm: '115', waterHardnessPpm: '55', waterAlkalinityPpm: '45', waterCustomized: true, waterNotes: 'Aqua-style Indonesian bottled water; verify current label and local batch' },
-    risk: 'indonesia_bottled_balanced',
-    expected: 'usable estimated bottled water; label/batch verification required',
+    input: { waterMode: 'brand', waterBrandId: 'aqua-id', waterTdsPpm: '', waterHardnessPpm: '', waterAlkalinityPpm: '', waterCustomized: false, waterNotes: 'community_barista_autofill: Aqua bottled baseline; verify current label and local batch' },
+    risk: 'balanced_bottled_baseline',
+    expected: 'community barista autofill; accessible bottled-water baseline, not a perfect official claim',
   },
   {
     id: 'le-minerale-indonesia',
     label: 'Le Minerale bottled water Indonesia style',
-    input: { waterMode: 'manual', waterBrandId: '', waterTdsPpm: '150', waterHardnessPpm: '70', waterAlkalinityPpm: '65', waterCustomized: true, waterNotes: 'Le Minerale-style Indonesian bottled water; verify label and batch' },
-    risk: 'indonesia_bottled_body',
-    expected: 'body-friendly estimate; can mute high floral clarity if minerals are higher',
+    input: { waterMode: 'brand', waterBrandId: 'le-minerale-id', waterTdsPpm: '', waterHardnessPpm: '', waterAlkalinityPpm: '', waterCustomized: false, waterNotes: 'community_barista_autofill: Le Minerale bottled mineral baseline; verify label and batch' },
+    risk: 'mineral_bottled_body',
+    expected: 'community barista autofill; can support body/sweetness but may mute delicate acidity',
   },
   {
     id: 'ades-indonesia',
@@ -675,16 +675,16 @@ const WATER_CASES = [
   {
     id: 'cleo-indonesia',
     label: 'Cleo low-mineral water Indonesia style',
-    input: { waterMode: 'manual', waterBrandId: '', waterTdsPpm: '15', waterHardnessPpm: '5', waterAlkalinityPpm: '3', waterCustomized: true, waterNotes: 'Cleo-style low-mineral water; remineralize before brew if near-zero minerals' },
-    risk: 'zero_mineral',
-    expected: 'not brew-ready without minerals if current batch is near-zero mineral',
+    input: { waterMode: 'brand', waterBrandId: 'cleo-id', waterTdsPpm: '', waterHardnessPpm: '', waterAlkalinityPpm: '', waterCustomized: false, waterNotes: 'community_barista_autofill: Cleo low-mineral clarity water for filter; verify taste and body' },
+    risk: 'low_mineral_filter_clarity',
+    expected: 'filter autofill allowed with thin/sharp body warning and capped confidence',
   },
   {
     id: 'amidis-indonesia',
     label: 'Amidis demineralized water Indonesia style',
-    input: { waterMode: 'manual', waterBrandId: '', waterTdsPpm: '8', waterHardnessPpm: '2', waterAlkalinityPpm: '1', waterCustomized: true, waterNotes: 'Amidis-style demineralized water; remineralization required for brew' },
-    risk: 'zero_mineral',
-    expected: 'not brew-ready without remineralization',
+    input: { waterMode: 'brand', waterBrandId: 'amidis-id', waterTdsPpm: '', waterHardnessPpm: '', waterAlkalinityPpm: '', waterCustomized: false, waterNotes: 'community_barista_autofill: Amidis direct low-mineral filter experiment; remineralize for repeatability' },
+    risk: 'demineral_direct_filter_experimental',
+    expected: 'filter autofill allowed as low-confidence experiment; espresso still unsafe without minerals',
   },
   {
     id: 'super-o2-indonesia',
@@ -696,8 +696,8 @@ const WATER_CASES = [
   {
     id: 'pristine-alkaline-indonesia',
     label: 'Pristine 8.6+ alkaline water Indonesia style',
-    input: { waterMode: 'manual', waterBrandId: '', waterTdsPpm: '170', waterHardnessPpm: '40', waterAlkalinityPpm: '120', waterCustomized: true, waterNotes: 'Pristine 8.6+ alkaline-style water; high buffer can mute acidity/florals' },
-    risk: 'high_buffer',
+    input: { waterMode: 'brand', waterBrandId: 'pristine-8-6-plus-id', waterTdsPpm: '', waterHardnessPpm: '', waterAlkalinityPpm: '', waterCustomized: false, waterNotes: 'community_barista_autofill: Pristine alkaline/high-buffer caution; high buffer can mute acidity/florals' },
+    risk: 'alkaline_high_buffer_floral_mismatch',
     expected: 'high-buffer warning for acidity/floral targets',
   },
   {
@@ -1221,7 +1221,14 @@ function validateExpectedCup(plan, scenario, reasons) {
   if (plan.methodFamily === 'espresso' && scenario.grinderCase.espresso !== 'compatible' && cup.confidence !== 'low') {
     addReason(reasons, 'espresso_risky_grinder_confidence', 'fail', `${scenario.grinderCase.label} espresso must stay low confidence`);
   }
-  if ((scenario.waterCase.risk === 'zero_mineral' || scenario.waterCase.risk === 'high_buffer') && cup.confidence === 'high') {
+  const highRiskWaterBuckets = new Set([
+    'zero_mineral',
+    'high_buffer',
+    'alkaline_high_buffer_floral_mismatch',
+    'low_mineral_filter_clarity',
+    'demineral_direct_filter_experimental',
+  ]);
+  if (highRiskWaterBuckets.has(scenario.waterCase.risk) && cup.confidence === 'high') {
     addReason(reasons, 'water_risk_high_confidence', 'fail', `${scenario.waterCase.risk} water produced high confidence`);
   }
   if (scenario.waterCase.risk === 'zero_mineral' && plan.waterIsBrewReady) {
@@ -1300,11 +1307,17 @@ function validateBaristaFit(plan, scenario, reasons) {
   if (roast === 'dark' && ['floral_transparent', 'more_acidity'].includes(target) && !hasAny(text, [/dark|gelap|roast|floral|acidity|asam|harsh|pahit|expectation|ekspektasi/i])) {
     addReason(reasons, 'dark_floral_overclaim', 'fail', 'dark roast floral/acidity target lacks warning');
   }
-  if (scenario.waterCase.risk === 'high_buffer' && ['floral_transparent', 'more_acidity'].includes(target) && !hasAny(text, [/buffer|alkalin|alkalinity|muted|tertahan|asam|floral|clarity|jernih/i])) {
+  if (['high_buffer', 'alkaline_high_buffer_floral_mismatch'].includes(scenario.waterCase.risk) && ['floral_transparent', 'more_acidity'].includes(target) && !hasAny(text, [/buffer|alkalin|alkalinity|muted|tertahan|asam|floral|clarity|jernih/i])) {
     addReason(reasons, 'high_buffer_target_warning', 'fail', 'high-buffer water lacks muted-acidity/floral warning');
   }
   if (scenario.waterCase.risk === 'zero_mineral' && !hasAny(text, [/zero|mineral|RO|remineral|manual|nol|distilled/i])) {
     addReason(reasons, 'zero-mineral', 'fail', 'zero-mineral water lacks remineralization warning');
+  }
+  if (scenario.waterCase.risk === 'low_mineral_filter_clarity' && !hasAny(text, [/low[-\s]?mineral|rendah mineral|thin|tipis|sharp|tajam|body|acidity|clean/i])) {
+    addReason(reasons, 'low_mineral_filter_warning', 'fail', 'low-mineral filter water lacks thin/sharp/body warning');
+  }
+  if (scenario.waterCase.risk === 'demineral_direct_filter_experimental' && !hasAny(text, [/demineral|experimental|eksperimen|hollow|thin|tipis|remineral|blend|body/i])) {
+    addReason(reasons, 'demineral_direct_warning', 'fail', 'demineral direct filter experiment lacks low-confidence/remineralization warning');
   }
   if (plan.methodFamily === 'v60' && Number(plan.doseG) <= 15 && ['more_sweetness', 'more_body'].includes(target) && plan.extractionEndSeconds > 240) {
     const overBy = plan.extractionEndSeconds - 240;
@@ -1350,7 +1363,21 @@ function addRealWorldRiskWarnings(plan, scenario, reasons) {
       `${scenario.waterCase.label} is not brew-ready without minerals.`,
     );
   }
-  if (scenario.waterCase.risk === 'high_buffer' && ['floral_transparent', 'more_acidity', 'fruit_forward'].includes(target)) {
+  if (scenario.waterCase.risk === 'low_mineral_filter_clarity') {
+    addRiskWarning(
+      reasons,
+      'low_mineral_filter_clarity_risk',
+      `${scenario.waterCase.label} can work for clean filter cups, but body can be thin and acidity sharper.`,
+    );
+  }
+  if (scenario.waterCase.risk === 'demineral_direct_filter_experimental') {
+    addRiskWarning(
+      reasons,
+      'demineral_direct_filter_experiment_risk',
+      `${scenario.waterCase.label} is a low-confidence direct filter experiment; remineralize or blend for repeatability.`,
+    );
+  }
+  if (['high_buffer', 'alkaline_high_buffer_floral_mismatch'].includes(scenario.waterCase.risk) && ['floral_transparent', 'more_acidity', 'fruit_forward'].includes(target)) {
     addRiskWarning(
       reasons,
       'high_buffer_target_risk',
@@ -1768,6 +1795,49 @@ function methodLanguageSafetyMarkdown(summary, results) {
   ].join('\n');
 }
 
+function waterRealityAuditMarkdown(summary, results) {
+  const byRisk = new Map();
+  for (const result of results) {
+    const key = result.input.waterRisk || 'unknown';
+    const bucket = byRisk.get(key) || { count: 0, warnings: 0, failures: 0, examples: [] };
+    bucket.count += 1;
+    bucket.warnings += result.reasons.filter((reason) => reason.severity === 'warn').length;
+    bucket.failures += result.reasons.filter((reason) => reason.severity === 'fail').length;
+    if (bucket.examples.length < 5) bucket.examples.push(result.exampleId);
+    byRisk.set(key, bucket);
+  }
+  const rows = Array.from(byRisk.entries())
+    .sort((left, right) => right[1].count - left[1].count || left[0].localeCompare(right[0]))
+    .map(([risk, bucket]) => `| ${risk} | ${bucket.count} | ${bucket.warnings} | ${bucket.failures} | ${bucket.examples.join(', ')} |`);
+  return [
+    '# AI Brew Water Reality Audit',
+    '',
+    `SHA: ${summary.sha}`,
+    `Scenario count: ${summary.scenarioCount}`,
+    '',
+    '## Policy',
+    '- `community_barista_autofill` may unlock filter/pour-over starting profiles for coffee-community-backed bottled waters.',
+    '- Autofill is not an official perfect mineral claim; confidence remains capped and warnings remain visible.',
+    '- Cleo-style low-mineral water is allowed for filter clarity with thin/sharp/body risk.',
+    '- Amidis-style demineral water is allowed only as a low-confidence direct filter experiment or remineralization base.',
+    '- Aqua/Le Minerale/Nestle/Volvic style bottled waters are starting points, not universal best-water claims.',
+    '- Pristine/alkaline/high-buffer water can mute acidity and florals.',
+    '- Galon/depot/refill water remains manual-required unless measured TDS/GH/KH are provided.',
+    '- Espresso safety is stricter: low/de-mineral water is not espresso-safe unless remineralized and machine-safe.',
+    '',
+    '## Risk Buckets',
+    '| Bucket | Cases | Warnings | Failures | Examples |',
+    '|---|---:|---:|---:|---|',
+    ...rows,
+    '',
+    '## Result',
+    summary.failed === 0
+      ? 'No water hard-block failure remained. Water warnings are treated as honest risk communication, not hidden failures.'
+      : 'Water-related failures remain; inspect failures.json before release.',
+    '',
+  ].join('\n');
+}
+
 function improvementPrompt(summary) {
   const weakBuckets = [
     ...summary.buckets.methods.filter((bucket) => bucket.averageScore < 94 || bucket.failures > 0).map((bucket) => ({ type: 'method', ...bucket })),
@@ -1954,6 +2024,7 @@ function writeArtifacts(summary, results, dir) {
     warnings: `${dir}/warnings.md`,
     lowestScores: `${dir}/lowest-scores.md`,
     methodLanguageSafety: `${dir}/method-language-safety.md`,
+    waterRealityAudit: `${dir}/water-reality-audit.md`,
     improvementPrompt: `${dir}/improvement-prompt.md`,
     report: `docs/ai-brew-real-world-${summary.scenarioCount}-report.md`,
   };
@@ -1963,6 +2034,7 @@ function writeArtifacts(summary, results, dir) {
   fs.writeFileSync(files.warnings, warningsMarkdown(summary, results), 'utf8');
   fs.writeFileSync(files.lowestScores, lowestScoresMarkdown(summary), 'utf8');
   fs.writeFileSync(files.methodLanguageSafety, methodLanguageSafetyMarkdown(summary, results), 'utf8');
+  fs.writeFileSync(files.waterRealityAudit, waterRealityAuditMarkdown(summary, results), 'utf8');
   fs.writeFileSync(files.improvementPrompt, improvementPrompt(summary), 'utf8');
   fs.mkdirSync('docs', { recursive: true });
   fs.writeFileSync(files.report, reportMarkdown(summary, results), 'utf8');

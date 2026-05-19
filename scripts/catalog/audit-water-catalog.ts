@@ -8,6 +8,8 @@ type AuditStatus =
   | 'NEEDS_PUBLIC_SOURCE'
   | 'SHOULD_BE_MANUAL_REQUIRED'
   | 'ZERO_MINERAL_NOT_READY'
+  | 'LOW_MINERAL_CLARITY_REVIEW'
+  | 'DEMINERAL_DIRECT_EXPERIMENT_REVIEW'
   | 'ALKALINE_CAUTION'
   | 'HIGH_BUFFER_REVIEW'
   | 'DATA_CONFLICT';
@@ -139,6 +141,36 @@ function hasPublicSource(entry: WaterEntry) {
 function hasPublicDirectSource(entry: WaterEntry) {
   return [...(entry.sources || []), ...(entry.primary_source ? [entry.primary_source] : [])]
     .some((source) => isPublicUrl(source.source_url) && ['official_report', 'lab_report', 'brand_site'].includes(String(source.source_type || '')));
+}
+
+function isLowMineralClarityException(entry: WaterEntry) {
+  return entry.brand_group_id === 'cleo'
+    && entry.is_brew_ready === true
+    && entry.publish_state === 'published'
+    && entry.verification_status === 'curated'
+    && entry.coffee_parameters?.brew_recommendation === 'acceptable'
+    && hasPublicSource(entry);
+}
+
+function isDemineralDirectExperimentException(entry: WaterEntry) {
+  return entry.brand_group_id === 'amidis'
+    && entry.is_brew_ready === true
+    && entry.publish_state === 'published'
+    && entry.verification_status === 'curated'
+    && entry.coffee_parameters?.brew_recommendation === 'acceptable'
+    && hasPublicSource(entry);
+}
+
+function isCommunityBackedAlkalineException(entry: WaterEntry) {
+  const hasCompletePanel = num(entry.tds_ppm) !== null
+    && num(entry.coffee_parameters?.hardness_ppm_as_caco3) !== null
+    && num(entry.coffee_parameters?.alkalinity_ppm_as_caco3) !== null;
+  return entry.is_brew_ready === true
+    && entry.publish_state === 'published'
+    && entry.verification_status === 'curated'
+    && entry.coffee_parameters?.brew_recommendation !== 'poor'
+    && hasCompletePanel
+    && hasPublicSource(entry);
 }
 
 function allSources(entry: WaterEntry) {
@@ -276,7 +308,20 @@ for (const entry of waters) {
   if (!publicDirectSource) evidenceGap.push(publicSource ? 'direct official/lab source missing' : 'public source missing');
   if (missingGhKhTds) evidenceGap.push('GH/KH/TDS incomplete');
   if (missingCoreIons) evidenceGap.push('core ion data incomplete');
-  if (lowMineral) {
+  const lowMineralClarity = lowMineral && isLowMineralClarityException(entry);
+  const demineralDirectExperiment = lowMineral && isDemineralDirectExperimentException(entry);
+
+  if (lowMineralClarity) {
+    currentStatus = 'low_mineral_clarity_caution';
+    riskReason = 'very low mineral water can taste clean but thin/sharp';
+    recommendedAction = 'allow as cautious filter starting point with taste verification';
+    liveUiActionLabel = 'Ready with caution';
+  } else if (demineralDirectExperiment) {
+    currentStatus = 'demineral_direct_experiment';
+    riskReason = 'demineral water can be used as a low-confidence filter experiment, not a universal ready-brew claim';
+    recommendedAction = 'allow as capped-confidence filter autofill; keep espresso/reminalization warnings';
+    liveUiActionLabel = 'Experiment';
+  } else if (lowMineral) {
     currentStatus = 'base_water_remineralize';
     riskReason = 'very low mineral / RO-style water';
     recommendedAction = 'require manual remineralization before brewing';
@@ -313,7 +358,11 @@ for (const entry of waters) {
     rows.push(report('DATA_CONFLICT', subject, `KH exceeds TDS without high-buffer context: KH ${kh}, TDS ${tds}.`, false));
   }
 
-  if (lowMineral) {
+  if (lowMineralClarity) {
+    rows.push(report('LOW_MINERAL_CLARITY_REVIEW', subject, 'Low-mineral clarity water may be brew-ready for filter as a cautious starting point, but must not be idealized.', false));
+  } else if (demineralDirectExperiment) {
+    rows.push(report('DEMINERAL_DIRECT_EXPERIMENT_REVIEW', subject, 'Demineral water may autofill only as a low-confidence filter experiment backed by coffee-community evidence; espresso remains unsafe without minerals.', false));
+  } else if (lowMineral) {
     const manualReady = entry.is_brew_ready === false && entry.coffee_parameters?.brew_recommendation === 'poor';
     rows.push(report('ZERO_MINERAL_NOT_READY', subject, 'Low-mineral/RO water must be used as a base with manual minerals.', !manualReady));
   }
@@ -322,7 +371,7 @@ for (const entry of waters) {
     rows.push(report('SHOULD_BE_MANUAL_REQUIRED', subject, 'Estimated values must be verify-manually, not ready brew.', !safeEstimated));
   }
   if (alkaline) {
-    const safeAlkaline = entry.is_brew_ready === false || hasPublicDirectSource(entry);
+    const safeAlkaline = entry.is_brew_ready === false || hasPublicDirectSource(entry) || isCommunityBackedAlkalineException(entry);
     rows.push(report('ALKALINE_CAUTION', subject, 'Alkaline water can mute acidity and should not be idealized.', !safeAlkaline));
   }
   if (highBuffer) {

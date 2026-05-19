@@ -1089,8 +1089,11 @@ function buildBeanCoverageState(params: {
   const riskyWater = params.waterMinerals.tdsPpm < 30
     || params.waterMinerals.alkalinityPpm > 85
     || params.waterBrand?.classification === 'zero_mineral_ro'
+    || params.waterBrand?.classification === 'low_mineral_clarity'
+    || params.waterBrand?.classification === 'demineral_direct_experiment'
     || params.waterBrand?.classification === 'high_buffer'
     || params.waterBrand?.classification === 'alkaline_caution'
+    || params.waterMineralDerivation === 'estimated_from_community_profile'
     || params.waterMineralDerivation === 'estimated_from_classification';
   const riskyReference = !exactBrewer
     || !grinderKnown
@@ -6206,10 +6209,17 @@ function buildSteps(
     const rawShare = Math.max(0, adaptedShares[index] ?? step.share);
     const normalizedPourShare = pourShareTotal > 0 ? rawShare / pourShareTotal : 1 / Math.max(1, pourIndexes.length);
     const rawPour = isLastPourStep ? remainingWater : hotWaterMl * normalizedPourShare;
-    const maxPourVolumeMl = isLastPourStep
+    const isFirstPourStep = index === pourIndexes[0];
+    const unconstrainedMaxPourVolumeMl = isLastPourStep
       ? remainingWater
       : Math.max(0, remainingWater - minimumReserveMl);
-    const bloomFloorMl = index === pourIndexes[0] && supportsAiBrewPourControls(adaptiveShareContext.methodFamily)
+    const bloomCeilingMl = isFirstPourStep && supportsAiBrewPourControls(adaptiveShareContext.methodFamily)
+      ? Math.max(80, roundBaristaVolumeMl(adaptiveShareContext.doseG * 4, adaptiveShareContext.methodFamily))
+      : null;
+    const maxPourVolumeMl = bloomCeilingMl !== null && !isLastPourStep
+      ? Math.min(unconstrainedMaxPourVolumeMl, bloomCeilingMl)
+      : unconstrainedMaxPourVolumeMl;
+    const bloomFloorMl = isFirstPourStep && supportsAiBrewPourControls(adaptiveShareContext.methodFamily)
       ? roundBaristaVolumeMl(
         adaptiveShareContext.doseG * (adaptiveShareContext.pourBehavior?.bloomMultiplier || 2),
         adaptiveShareContext.methodFamily,
@@ -7177,11 +7187,15 @@ function finalizePlanCore(
     || grindCalibrationRequired
     || input.waterCustomized
     || input.waterMode === 'manual'
+    || waterProfile.mineralDerivation === 'estimated_from_community_profile'
     || waterBrand?.presetStatus === 'manual_required';
   const waterIsBrewReadyForPlan = Boolean(waterBrand?.isBrewReady ?? input.waterMode === 'manual')
     && !(
       waterBrand?.classification === 'zero_mineral_ro'
       || (
+        waterBrand?.classification !== 'low_mineral_clarity'
+        && waterBrand?.classification !== 'demineral_direct_experiment'
+        &&
         waterProfile.minerals.tdsPpm < 30
         && waterProfile.minerals.hardnessPpm < 20
         && waterProfile.minerals.alkalinityPpm < 20

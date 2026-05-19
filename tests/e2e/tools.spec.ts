@@ -860,27 +860,23 @@ test('ai brew preloads known GH and KH values for partially mapped waters', asyn
   await expect(page.getByTestId('ai-brew-generate')).toBeEnabled();
 });
 
-test('ai brew blocks low-mineral waters until manual minerals are entered', async ({ page }) => {
+test('ai brew allows community-backed low-mineral filter water with capped confidence', async ({ page }) => {
   await openAiBrewProMode(page);
   await selectAiBrewWaterBrand(page, 'amidis', 'amidis-id');
 
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/Amidis/i);
-  await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/Needs minerals|Manual required|Use as RO base/i);
+  await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/Ready with caution|Community coffee profile|Demineral direct experiment/i);
+  await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/low-confidence filter starting point|remineralize|Low-mineral experiment/i);
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/TDS 2/i);
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/GH 1\.4/i);
   await expect(page.getByTestId('ai-brew-water-summary')).toContainText(/KH 1\.2/i);
-  await expect(page.getByTestId('ai-brew-generate')).toBeDisabled();
-  await expect(page.getByTestId('ai-brew-water-tds')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-water-tds')).toHaveValue('');
-  await expect(page.getByTestId('ai-brew-water-hardness')).toHaveValue('');
-  await expect(page.getByTestId('ai-brew-water-alkalinity')).toHaveValue('');
+  await expect(page.getByTestId('ai-brew-generate')).toBeEnabled();
+  await expect(page.getByTestId('ai-brew-water-tds')).toHaveCount(0);
 
-  await expect(page.getByTestId('ai-brew-water-complete-minerals')).toBeVisible();
-  await expect(page.getByTestId('ai-brew-water-complete-minerals-hint')).toContainText(/RO|low-mineral|remineralization/i);
-  await page.getByTestId('ai-brew-water-complete-minerals').click();
-  await expect(page.getByTestId('ai-brew-water-tds')).toHaveValue(/\d+/);
-  await expect(page.getByTestId('ai-brew-water-hardness')).toHaveValue(/\d+/);
-  await expect(page.getByTestId('ai-brew-water-alkalinity')).toHaveValue(/\d+/);
+  await page.getByTestId('ai-brew-water-toggle-minerals').click();
+  await expect(page.getByTestId('ai-brew-water-tds')).toHaveValue('2');
+  await expect(page.getByTestId('ai-brew-water-hardness')).toHaveValue('1.4');
+  await expect(page.getByTestId('ai-brew-water-alkalinity')).toHaveValue('1.2');
   await expect(page.getByTestId('ai-brew-generate')).toBeEnabled();
 
   await page.getByTestId('ai-brew-generate').click();

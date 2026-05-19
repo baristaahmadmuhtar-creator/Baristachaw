@@ -17,6 +17,7 @@ export function resolveWaterAdjustmentAdvice(water: {
   tdsPpm: number;
   hardnessPpm: number;
   alkalinityPpm: number;
+  classification?: WaterBrandProfile['classification'];
 }) {
   const warnings: string[] = [];
   const adjustments: string[] = [];
@@ -30,8 +31,16 @@ export function resolveWaterAdjustmentAdvice(water: {
     adjustments.push('Jaga agitasi tetap rapi sebelum tightening grind.');
   }
   if (water.tdsPpm < 30) {
-    warnings.push('TDS sangat rendah; air ini lebih cocok sebagai base remineralisasi daripada brew-ready water.');
-    adjustments.push('Pertimbangkan blend dengan air mineral lebih tinggi TDS/GH/KH.');
+    if (water.classification === 'low_mineral_clarity') {
+      warnings.push('TDS sangat rendah; cup bisa clean, tetapi body dapat tipis dan acidity lebih tajam.');
+      adjustments.push('Pakai sebagai starting point filter; blend/remineralize jika ingin body lebih penuh atau hasil lebih konsisten.');
+    } else if (water.classification === 'demineral_direct_experiment') {
+      warnings.push('Air demineral bisa dipakai sebagai eksperimen filter, tetapi body sering sangat ringan dan cup bisa hollow.');
+      adjustments.push('Gunakan sebagai starting point low-confidence; kalau cup kosong, remineralize, blend, atau sedikit lebih halus.');
+    } else {
+      warnings.push('TDS sangat rendah; air ini lebih cocok sebagai base remineralisasi daripada brew-ready water.');
+      adjustments.push('Pertimbangkan blend dengan air mineral lebih tinggi TDS/GH/KH.');
+    }
   }
 
   return { warnings, adjustments };
@@ -92,12 +101,24 @@ export function deriveWaterMineralProfile(input: AiBrewFormState, guidance: Wate
       confidenceNotes.push(`${waterBrand.shortLabel} minerals were estimated from the water classification baseline.`);
       warnings.push(`${waterBrand.shortLabel}: Estimated, verify manually.`);
     }
+    if (waterBrand.resolvedMinerals?.derivation === 'estimated_from_community_profile') {
+      confidenceNotes.push(`${waterBrand.shortLabel} uses curated coffee-community water evidence; treat it as a capped-confidence starting point.`);
+      warnings.push(`${waterBrand.shortLabel}: community/profile autofill. Verify by taste or meter for cafe repeatability.`);
+    }
     if (!waterBrand.isBrewReady) {
       confidenceNotes.push(...(waterBrand.brewBlockReason || []));
       warnings.push(...(waterBrand.brewBlockReason || []));
     }
     if (waterBrand.classification === 'zero_mineral_ro') {
-      warnings.push('Water is too low-mineral for ready-brew use; add minerals manually.');
+      warnings.push(`${waterBrand.shortLabel}: useful as a custom-water base, but not direct brew-ready; add brew minerals manually.`);
+    }
+    if (waterBrand.classification === 'low_mineral_clarity') {
+      warnings.push(`${waterBrand.shortLabel}: low-mineral clarity water. Expect a clean cup, but verify body and acidity from taste.`);
+      confidenceNotes.push(`${waterBrand.shortLabel} is a low-mineral starting point, not a universal best water.`);
+    }
+    if (waterBrand.classification === 'demineral_direct_experiment') {
+      warnings.push(`${waterBrand.shortLabel}: direct filter use is experimental and low confidence; expect clean/light body and hollow risk.`);
+      confidenceNotes.push(`${waterBrand.shortLabel} works best as a remineralization base or deliberate low-mineral filter experiment.`);
     }
     if (waterBrand.classification === 'alkaline_caution') {
       warnings.push('Alkaline water can mute acidity; verify manually before treating it as filter friendly.');
@@ -140,7 +161,12 @@ export function deriveWaterMineralProfile(input: AiBrewFormState, guidance: Wate
     confidenceNotes.push('Water alkalinity is above the recommended band.');
   }
 
-  const waterAdvice = resolveWaterAdjustmentAdvice({ tdsPpm, hardnessPpm, alkalinityPpm });
+  const waterAdvice = resolveWaterAdjustmentAdvice({
+    tdsPpm,
+    hardnessPpm,
+    alkalinityPpm,
+    classification: waterBrand?.classification,
+  });
   warnings.push(...waterAdvice.warnings);
   notes.push(...waterAdvice.adjustments);
 

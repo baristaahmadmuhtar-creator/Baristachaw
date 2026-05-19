@@ -1179,7 +1179,11 @@ export function validateMethodWorkflowGuide(plan: BrewPlan, guideSteps: Workflow
     warnings.push('Panduan seduh belum punya cue persiapan.');
   }
   if (plan.fallbackUsed) warnings.push('Referensi fallback alat/grinder perlu validasi rasa.');
-  if (plan.waterPresetStatus === 'manual_required' || plan.waterMineralDerivation === 'estimated_from_classification') {
+  if (
+    plan.waterPresetStatus === 'manual_required'
+    || plan.waterMineralDerivation === 'estimated_from_classification'
+    || plan.waterMineralDerivation === 'estimated_from_community_profile'
+  ) {
     warnings.push('Mineral air perlu verifikasi manual sebelum keyakinan publik dianggap kuat.');
   }
 

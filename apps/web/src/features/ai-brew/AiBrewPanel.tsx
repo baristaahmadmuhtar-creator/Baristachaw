@@ -243,6 +243,7 @@ const COPY = {
     waterStatusHighBuffer: 'High Buffer',
     waterStatusZeroMineral: 'Zero Mineral',
     waterStatusEstimated: 'Estimated',
+    waterStatusCaution: 'Ready with caution',
     grindVerified: 'Verified grind reference',
     grindOfficialReference: 'Official reference',
     grindCuratedReference: 'Curated reference',
@@ -290,8 +291,10 @@ const COPY = {
     waterBrandCustomized: 'Brand minerals were adjusted manually for this brew.',
     waterDerivationDirect: 'Direct label/lab data',
     waterDerivationDerived: 'Derived from Ca/Mg/HCO3',
+    waterDerivationCommunity: 'Community coffee profile',
     waterDerivationEstimated: 'Estimated from classification',
     waterDerivationManual: 'Manual mineral input',
+    waterBadgeLowMineralExperiment: 'Low-mineral experiment',
     waterUseAsRoBase: 'Use as RO base; add minerals manually.',
     waterHighBufferWarning: 'High alkalinity/buffer can mute acidity and flatten floral coffees. Use lower contact time or choose manual minerals for delicate beans.',
     waterAlkalineWarning: 'Alkaline water can mute acidity. Verify manually before treating it as filter friendly.',
@@ -754,6 +757,7 @@ const COPY = {
     waterStatusHighBuffer: 'Buffer tinggi',
     waterStatusZeroMineral: 'Mineral nol / RO',
     waterStatusEstimated: 'Estimasi',
+    waterStatusCaution: 'Siap dengan catatan',
     grindVerified: 'Referensi grind terverifikasi',
     grindOfficialReference: 'Referensi resmi',
     grindCuratedReference: 'Referensi kurasi',
@@ -801,8 +805,10 @@ const COPY = {
     waterBrandCustomized: 'Mineral brand sudah disesuaikan manual untuk seduhan ini.',
     waterDerivationDirect: 'Data label/lab langsung',
     waterDerivationDerived: 'Turunan dari Ca/Mg/HCO3',
+    waterDerivationCommunity: 'Profil komunitas kopi',
     waterDerivationEstimated: 'Estimasi dari klasifikasi',
     waterDerivationManual: 'Input mineral manual',
+    waterBadgeLowMineralExperiment: 'Eksperimen low-mineral',
     waterUseAsRoBase: 'Pakai sebagai base RO; tambahkan mineral manual.',
     waterHighBufferWarning: 'Alkalinitas/buffer tinggi bisa meredam keasaman dan membuat kopi floral terasa datar. Pakai kontak lebih pendek atau mineral manual untuk kopi yang sensitif.',
     waterAlkalineWarning: 'Air alkalin bisa meredam keasaman. Verifikasi manual sebelum dianggap ramah filter.',
@@ -4964,6 +4970,23 @@ function PlanResultDialog({
   const hotWaterToleranceMl = Math.max(4, Math.round(plan.hotWaterMl * 0.02));
   const drawdownLowSeconds = tasteTimeRange[0];
   const drawdownHighSeconds = tasteTimeRange[1];
+  const waterRealityNote = plan.waterClassification === 'demineral_direct_experiment'
+    ? id
+      ? 'Pemakaian langsung air demineral adalah eksperimen filter ber-confidence rendah; cup bisa clean tetapi body ringan/hollow jika belum diremineralisasi.'
+      : 'Direct demineral use is a low-confidence filter experiment; expect a clean cup with light body or hollow risk unless remineralized.'
+    : plan.waterClassification === 'low_mineral_clarity'
+      ? id
+        ? 'Air low-mineral bisa clean untuk filter, tetapi body bisa tipis dan acidity terasa lebih tajam.'
+        : 'Low-mineral water can work for clean filter cups, but body may be thin and acidity can feel sharper.'
+      : plan.waterClassification === 'alkaline_caution' || plan.waterClassification === 'high_buffer'
+        ? id
+          ? 'Air alkalin/buffer tinggi bisa meredam acidity dan floral; pakai sebagai starting point dengan cek rasa.'
+          : 'Alkaline or high-buffer water can mute acidity and florals; use it as a starting point and verify by taste.'
+        : plan.waterMineralDerivation === 'estimated_from_community_profile'
+          ? id
+            ? 'Autofill ini berasal dari profil komunitas kopi, jadi confidence dibatasi dan tetap perlu cek rasa.'
+            : 'This autofill uses coffee-community profile evidence, so confidence is capped and taste verification still matters.'
+          : '';
   const summaryWhyRecipeItems = [
     {
       label: id ? 'Target rasa' : 'Taste target',
@@ -4981,8 +5004,8 @@ function PlanResultDialog({
       label: id ? 'Air + grinder' : 'Water + grinder',
       value: `${plan.waterBrandLabel || copy.waterSelectedManual} - ${localizedGrindHeadline}`,
       detail: id
-        ? `Air memakai TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder ditampilkan sebagai ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} agar tidak overclaim.`
-        : `Water uses TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder is labelled ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} so the plan does not overclaim precision.`,
+        ? `Air memakai TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder ditampilkan sebagai ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} agar tidak overclaim.${waterRealityNote ? ` ${waterRealityNote}` : ''}`
+        : `Water uses TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder is labelled ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} so the plan does not overclaim precision.${waterRealityNote ? ` ${waterRealityNote}` : ''}`,
     },
     {
       label: id ? 'Alat & alur' : 'Brewer workflow',
@@ -6770,8 +6793,14 @@ function buildWaterFactBadges(item: WaterBrandProfile, copy: CopySet) {
   if (item.resolvedMinerals?.derivation === 'estimated_from_classification') {
     badges.push(copy.waterBrandEstimated);
   }
+  if (item.resolvedMinerals?.derivation === 'estimated_from_community_profile') {
+    badges.push(copy.waterDerivationCommunity);
+  }
   if (item.classification === 'zero_mineral_ro') {
     badges.push(copy.waterUseAsRoBase);
+  }
+  if (item.classification === 'demineral_direct_experiment') {
+    badges.push(copy.waterBadgeLowMineralExperiment);
   }
   if (profile.tdsPpm === null || profile.hardnessPpm === null || profile.alkalinityPpm === null) {
     badges.push(copy.waterBadgeNeedsFullMinerals);
@@ -6865,6 +6894,8 @@ function formatWaterDerivationLabel(copy: CopySet, derivation: BrewPlan['waterMi
       return copy.waterDerivationDirect;
     case 'derived_from_ions':
       return copy.waterDerivationDerived;
+    case 'estimated_from_community_profile':
+      return copy.waterDerivationCommunity;
     case 'estimated_from_classification':
       return copy.waterDerivationEstimated;
     case 'manual':
@@ -6896,8 +6927,10 @@ function formatWaterReadinessStatus(copy: CopySet, params: {
   mineralDerivation?: BrewPlan['waterMineralDerivation'];
 }) {
   if (params.classification === 'zero_mineral_ro') return copy.waterStatusZeroMineral;
+  if (params.classification === 'demineral_direct_experiment') return copy.waterStatusCaution;
   if (params.classification === 'high_buffer') return copy.waterStatusHighBuffer;
   if (params.mineralDerivation === 'manual') return copy.waterDerivationManual;
+  if (params.mineralDerivation === 'estimated_from_community_profile') return copy.waterStatusCaution;
   if (params.mineralDerivation === 'estimated_from_classification') return copy.waterStatusEstimated;
   if (params.presetStatus === 'manual_required' || params.isBrewReady === false || params.mineralsReady === false) {
     return copy.waterStatusManualRequired;
@@ -6907,6 +6940,7 @@ function formatWaterReadinessStatus(copy: CopySet, params: {
 
 function buildWaterPolicyWarning(copy: CopySet, item: WaterBrandProfile) {
   if (item.classification === 'zero_mineral_ro') return copy.waterUseAsRoBase;
+  if (item.classification === 'demineral_direct_experiment') return item.classificationCaution || copy.waterCompleteMineralsRoNote;
   if (item.classification === 'high_buffer') return copy.waterHighBufferWarning;
   if (item.classification === 'alkaline_caution') return copy.waterAlkalineWarning;
   if (isEstimatedWaterBaseline(item)) return copy.waterBrandEstimatedNote;

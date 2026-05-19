@@ -462,9 +462,10 @@ test('Indonesia water catalog keeps low-mineral and refill water honest', () => 
   assert.ok(amidis, 'Amidis should stay in Indonesia water catalog');
   assert.equal(amidis.sku_label, 'Amidis distilled demineral water');
   assert.equal(amidis.water_type, 'purified');
-  assert.equal(amidis.is_brew_ready, false);
-  assert.equal(amidis.coffee_parameters.brew_recommendation, 'poor');
-  assert.match(amidis.brew_block_reason.join(' '), /distilled|demineral|add minerals/i);
+  assert.equal(amidis.is_brew_ready, true);
+  assert.equal(amidis.coffee_parameters.brew_recommendation, 'acceptable');
+  assert.deepEqual(amidis.brew_block_reason, []);
+  assert.match(amidis.search_text, /direct low mineral|experimental filter/i);
   assert.ok(amidis.sources.some((source) => /^https:\/\/amidiswater\.com/i.test(source.source_url)));
 
   const cleo = waters.find((entry) => entry.id === 'cleo-id');
@@ -472,8 +473,9 @@ test('Indonesia water catalog keeps low-mineral and refill water honest', () => 
   assert.equal(cleo.sku_label, 'Cleo pure low-mineral water');
   assert.equal(cleo.water_type, 'purified');
   assert.ok((cleo.tds_ppm ?? 999) < 10);
-  assert.equal(cleo.is_brew_ready, false);
-  assert.match(cleo.brew_block_reason.join(' '), /low-mineral|add minerals/i);
+  assert.equal(cleo.is_brew_ready, true);
+  assert.equal(cleo.coffee_parameters.brew_recommendation, 'acceptable');
+  assert.deepEqual(cleo.brew_block_reason, []);
   assert.match(cleo.search_text, /air murni|tds under 10/i);
 
   const refill = waters.find((entry) => entry.id === 'galon-isi-ulang-id');

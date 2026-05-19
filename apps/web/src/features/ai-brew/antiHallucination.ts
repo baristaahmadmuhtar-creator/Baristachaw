@@ -35,6 +35,7 @@ function isLowTrustWater(plan: BrewPlan) {
   const blockText = `${plan.waterBrewBlockReason.join(' ')} ${plan.waterMinerals.styleLabel || ''}`.toLowerCase();
   return plan.waterPresetStatus === 'manual_required'
     || plan.waterMineralDerivation === 'estimated_from_classification'
+    || plan.waterMineralDerivation === 'estimated_from_community_profile'
     || !plan.waterIsBrewReady
     || blockText.includes('zero')
     || blockText.includes('ro')

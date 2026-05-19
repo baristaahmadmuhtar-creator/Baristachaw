@@ -774,10 +774,10 @@ const WATER_CLASSIFICATION_OVERRIDES: Partial<Record<string, {
   caution?: string;
 }>> = {
   amidis: {
-    classification: 'zero_mineral_ro',
-    label: 'Zero mineral / RO',
-    note: 'Observed around 0 ppm TDS, so it is best treated as a blank remineralization base.',
-    caution: 'Do not trust zero-mineral water as-is for stable filter extraction.',
+    classification: 'demineral_direct_experiment',
+    label: 'Demineral direct experiment',
+    note: 'Baristas may use Amidis as a clean low-mineral filter experiment or custom-water base, but it has almost no minerals for extraction structure.',
+    caution: 'Use only as a low-confidence filter starting point; remineralize or blend for better sweetness, body, and repeatability.',
   },
   rivero: {
     classification: 'zero_mineral_ro',
@@ -798,10 +798,10 @@ const WATER_CLASSIFICATION_OVERRIDES: Partial<Record<string, {
     caution: 'GH and KH are still incomplete, so treat autofilled hardness and alkalinity as estimates.',
   },
   cleo: {
-    classification: 'zero_mineral_ro',
-    label: 'Zero mineral / RO',
-    note: 'Observed around pH 7.3 with TDS under 10 ppm, so it is better treated as a low-mineral blank canvas.',
-    caution: 'Use manual minerals or remineralization before trusting this for filter brew.',
+    classification: 'low_mineral_clarity',
+    label: 'Low-mineral clarity',
+    note: 'Very low-TDS water can make filter coffee read clean and bright, but it has little mineral buffer.',
+    caution: 'Use as a cautious filter starting point; verify with taste, blend, or remineralize when body and cafe consistency matter.',
   },
   suci: {
     classification: 'zero_mineral_ro',
@@ -888,6 +888,12 @@ const WATER_CLASSIFICATION_OVERRIDES: Partial<Record<string, {
     note: 'Higher-pH alkaline water can make cups feel flatter and less articulate.',
     caution: 'Treat alkaline bottled waters as cautionary references, not ready-brew defaults.',
   },
+  'pristine-8-6-plus': {
+    classification: 'alkaline_caution',
+    label: 'Alkaline caution',
+    note: 'Pristine 8.6+ has a usable published mineral panel, but its alkaline profile can soften acidity and mute florals.',
+    caution: 'Use as a capped-confidence filter starting point; choose lower-buffer water if floral clarity feels muted.',
+  },
   'pristine-8-plus': {
     classification: 'alkaline_caution',
     label: 'Alkaline caution',
@@ -923,6 +929,7 @@ const WATER_SOURCE_URL_OVERRIDES: Partial<Record<string, string[]>> = {
   vit: [
     'https://www.minumvit.co.id/',
     'https://repository.urecol.org/index.php/proceeding/article/download/1773/1739',
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
   ],
   ades: [
     'https://www.coca-cola.com/id/id/brands/ades',
@@ -940,6 +947,7 @@ const WATER_SOURCE_URL_OVERRIDES: Partial<Record<string, string[]>> = {
   'crystaline-plus': [
     'https://crystalinwater.com/product',
     'https://repository.urecol.org/index.php/proceeding/article/download/1773/1739',
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
   ],
   frozen: [
     'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
@@ -963,6 +971,15 @@ const WATER_SOURCE_URL_OVERRIDES: Partial<Record<string, string[]>> = {
     'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
   ],
   'total-8-plus': [
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  'pristine-8-6-plus': [
+    'https://pristineofficial.com/tentang-ph86',
+    'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+  ],
+  'pristine-8-plus': [
+    'https://pristineofficial.com/tentang-ph86',
+    'https://www.pristine8plus.com/',
     'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
   ],
   amidis: [
@@ -1123,6 +1140,8 @@ const WATER_CLASSIFICATION_BASELINES: Record<WaterClassification, {
   body_builder: { tdsPpm: 120, hardnessPpm: 72, alkalinityPpm: 48 },
   high_buffer: { tdsPpm: 145, hardnessPpm: 58, alkalinityPpm: 92 },
   zero_mineral_ro: { tdsPpm: 12, hardnessPpm: 10, alkalinityPpm: 8 },
+  low_mineral_clarity: { tdsPpm: 20, hardnessPpm: 12, alkalinityPpm: 10 },
+  demineral_direct_experiment: { tdsPpm: 2, hardnessPpm: 1.4, alkalinityPpm: 1.2 },
   alkaline_caution: { tdsPpm: 80, hardnessPpm: 40, alkalinityPpm: 24 },
   manual_required: { tdsPpm: 110, hardnessPpm: 55, alkalinityPpm: 40 },
 };
@@ -1166,6 +1185,8 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
   const plannerBoundsErrors = validatePlannerWaterAutofillBounds(tdsPpm, hardnessPpm, alkalinityPpm);
   const classification = classifyWaterBrand(entry, tdsPpm, hardnessPpm, alkalinityPpm);
   const classificationIsZeroMineral = classification.classification === 'zero_mineral_ro';
+  const classificationIsLowMineralClarity = classification.classification === 'low_mineral_clarity';
+  const classificationIsDemineralDirectExperiment = classification.classification === 'demineral_direct_experiment';
   const classificationIsAlkaline = classification.classification === 'alkaline_caution';
   const classificationIsHighBuffer = classification.classification === 'high_buffer';
   const estimatedData = entry.data_quality?.is_estimated === true;
@@ -1180,6 +1201,10 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
     && completeMineralPanel;
   const sourceBackedForAutofill = officialSourceBacked || trustedCommunitySourceBacked;
   const missingTrustedSource = !sourceBackedForAutofill;
+  const sourceBackedAlkalinePanel = classificationIsAlkaline
+    && sourceBackedForAutofill
+    && completeMineralPanel
+    && entry.coffee_parameters.brew_recommendation !== 'poor';
   const policyBlockReasons = [
     ...(classificationIsZeroMineral
       ? ['Water is too low-mineral for ready-brew use; add minerals manually.']
@@ -1211,7 +1236,9 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
         tdsPpm,
         hardnessPpm,
         alkalinityPpm,
-        derivation: directHardness !== null && directAlkalinity !== null ? 'direct' as const : 'derived_from_ions' as const,
+        derivation: trustedCommunitySourceBacked && !officialSourceBacked
+          ? 'estimated_from_community_profile' as const
+          : directHardness !== null && directAlkalinity !== null ? 'direct' as const : 'derived_from_ions' as const,
       }
     : {
         tdsPpm: filledTdsPpm,
@@ -1226,7 +1253,7 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
     || estimatedData
     || missingTrustedSource
     || resolvedMineralsAreEstimated
-    || (classificationIsAlkaline && (!directPublicSource || entry.coffee_parameters.brew_recommendation === 'poor'));
+    || (classificationIsAlkaline && !sourceBackedAlkalinePanel);
   const canAutofillBrand = !entry.is_sparkling
     && !requiresManualPreset
     && tdsPpm !== null
@@ -1270,7 +1297,9 @@ function normalizeWaterBrand(entry: RawPlatformWaterEntry): WaterBrandProfile {
     recommendedForFilter: canAutofillBrand
       && entry.coffee_parameters.brew_recommendation !== 'poor'
       && !classificationIsHighBuffer
-      && !classificationIsAlkaline,
+      && !classificationIsAlkaline
+      && (!classificationIsLowMineralClarity || entry.coffee_parameters.brew_recommendation === 'acceptable')
+      && (!classificationIsDemineralDirectExperiment || entry.coffee_parameters.brew_recommendation === 'acceptable'),
     classification: classification.classification,
     classificationLabel: classification.label,
     classificationNote: classification.note,

@@ -533,19 +533,19 @@ const catalog: AiBrewCatalog = {
       subtitle: 'Indonesia - low-mineral water',
       country: 'Indonesia',
       markets: ['id'],
-      searchText: 'amidis indonesia ro low mineral water',
-      description: 'Low-mineral water must be remineralized before brewing.',
-      notes: ['Water is too low-mineral for ready-brew use; add minerals manually.'],
-      presetStatus: 'manual_required',
-      publishState: 'review_only',
-      isBrewReady: false,
-      brewBlockReason: ['Water is too low-mineral for ready-brew use; add minerals manually.'],
+      searchText: 'amidis indonesia demineral direct low mineral experimental filter water',
+      description: 'Amidis is treated as a low-confidence direct low-mineral filter experiment and remineralization base.',
+      notes: ['Amidis can be used by baristas as an experimental direct filter starting point, but best repeatability needs minerals.'],
+      presetStatus: 'autofill',
+      publishState: 'published',
+      isBrewReady: true,
+      brewBlockReason: [],
       still: true,
-      recommendedForFilter: false,
-      classification: 'zero_mineral_ro',
-      classificationLabel: 'Zero mineral / RO',
-      classificationNote: 'Use as a remineralization base.',
-      classificationCaution: 'Add minerals manually before generating a plan.',
+      recommendedForFilter: true,
+      classification: 'demineral_direct_experiment',
+      classificationLabel: 'Demineral direct experiment',
+      classificationNote: 'Direct filter use is experimental and low-confidence; remineralize for cafe consistency.',
+      classificationCaution: 'Use only as a light-body filter starting point unless minerals are added.',
       chemistry: {
         tdsPpm: 2,
         hardnessPpm: 1.4,
@@ -555,11 +555,14 @@ const catalog: AiBrewCatalog = {
         tdsPpm: 2,
         hardnessPpm: 1.4,
         alkalinityPpm: 1.2,
-        derivation: 'direct',
+        derivation: 'estimated_from_community_profile',
       },
       source: 'test',
-      sourceUrls: ['local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#amidis-id'],
-      verificationLevel: 'dataset_unverified',
+      sourceUrls: [
+        'https://amidiswater.com/',
+        'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+      ],
+      verificationLevel: 'curated',
       verifiedAt: '2026-03-09',
       popularityTier: 'widely_used',
       marketSegment: 'mass_market',
@@ -4887,7 +4890,7 @@ test('expected cup profile and readiness scores reflect target, bean, water, and
   }, catalog);
   assert.equal(zeroMineral.expectedCupProfile?.confidence, 'low');
   assert.ok((zeroMineral.readinessScores?.water || 100) < 60);
-  assert.match(zeroMineral.expectedCupProfile?.warnings.join(' ') || '', /Zero-mineral|RO/i);
+  assert.match(zeroMineral.expectedCupProfile?.warnings.join(' ') || '', /Demineral|hollow|low-mineral/i);
 });
 
 test('taste feedback correction is one-knob, method-correct, and keeps protected numbers locked', () => {
@@ -5389,9 +5392,20 @@ test('AI Brew 100000-combination iced guide stress matrix keeps bloom, pours, ti
       ].filter((url): url is string => Boolean(url));
       const hardnessPpm = Number(entry.coffee_parameters?.hardness_ppm_as_caco3 || 0);
       const alkalinityPpm = Number(entry.coffee_parameters?.alkalinity_ppm_as_caco3 || 0);
+      const brandGroupId = String(entry.brand_group_id || entry.id);
+      const classification = brandGroupId === 'amidis'
+        ? 'demineral_direct_experiment'
+        : brandGroupId === 'cleo'
+          ? 'low_mineral_clarity'
+          : alkalinityPpm >= 95 ? 'high_buffer' : hardnessPpm <= 40 ? 'soft_balanced' : 'balanced';
+      const classificationLabel = brandGroupId === 'amidis'
+        ? 'Demineral direct experiment'
+        : brandGroupId === 'cleo'
+          ? 'Low-mineral clarity'
+          : alkalinityPpm >= 95 ? 'Buffer tinggi' : hardnessPpm <= 40 ? 'Lunak seimbang' : 'Seimbang';
       return {
         id: String(entry.id),
-        brandGroupId: String(entry.brand_group_id || entry.id),
+        brandGroupId,
         marketCode: (entry.market_code || 'global') as AiBrewCatalog['waterBrands'][number]['marketCode'],
         skuLabel: String(entry.sku_label || entry.brand || entry.id),
         label: String(entry.brand || entry.sku_label || entry.id),
@@ -5407,8 +5421,8 @@ test('AI Brew 100000-combination iced guide stress matrix keeps bloom, pours, ti
         brewBlockReason: entry.brew_block_reason || [],
         still: entry.is_sparkling !== true,
         recommendedForFilter: true,
-        classification: alkalinityPpm >= 95 ? 'high_buffer' : hardnessPpm <= 40 ? 'soft_balanced' : 'balanced',
-        classificationLabel: alkalinityPpm >= 95 ? 'Buffer tinggi' : hardnessPpm <= 40 ? 'Lunak seimbang' : 'Seimbang',
+        classification,
+        classificationLabel,
         classificationNote: 'Data brand digunakan untuk stress audit iced.',
         chemistry: {
           tdsPpm: Number(entry.tds_ppm),
@@ -5725,7 +5739,11 @@ test('AI Brew 100000-combination iced guide stress matrix keeps bloom, pours, ti
       if (!supportsAiBrewIcedMode(stressCatalog, dripper.id)) return true;
       if (targetProfileId === 'more_sweetness') return cup.sweetness >= 2.8 && cup.bitterRisk <= 4.2;
       if (targetProfileId === 'more_acidity') return cup.acidity >= 2.5 || cup.clarity >= 2.9;
-      if (targetProfileId === 'more_body') return cup.body >= 2.8;
+      if (targetProfileId === 'more_body') {
+        const waterMismatchExplained = ['low_mineral_clarity', 'demineral_direct_experiment'].includes(String(plan.waterClassification || ''))
+          && /body|thin|tipis|hollow|remineral/i.test(narrative);
+        return cup.body >= 2.8 || waterMismatchExplained;
+      }
       if (targetProfileId === 'floral_transparent') return cup.clarity >= 2.9 || cup.aromaIntensity >= 2.8;
       if (targetProfileId === 'fruit_forward') return cup.sweetness >= 2.8 || cup.aromaIntensity >= 2.8;
       if (targetProfileId === 'soft_round') return cup.bitterRisk <= 4;
@@ -5973,8 +5991,14 @@ test('AI Brew water catalog blocks private sources, zero-mineral autofill, and e
     const kh = typeof entry.coffee_parameters?.alkalinity_ppm_as_caco3 === 'number'
       ? entry.coffee_parameters.alkalinity_ppm_as_caco3
       : null;
-    const isLowMineral = (tds !== null && tds <= 20) || (gh !== null && gh <= 15) || (kh !== null && kh <= 10);
-    if (isLowMineral || ['amidis', 'air-alfamart', 'cleo', 'suci', 'rivero'].includes(String(entry.brand_group_id))) {
+    const isCleoClarityException = entry.brand_group_id === 'cleo'
+      && entry.coffee_parameters?.brew_recommendation === 'acceptable';
+    const isAmidisDirectFilterException = entry.brand_group_id === 'amidis'
+      && entry.coffee_parameters?.brew_recommendation === 'acceptable';
+    const isLowMineral = !isCleoClarityException
+      && !isAmidisDirectFilterException
+      && ((tds !== null && tds <= 20) || (gh !== null && gh <= 15) || (kh !== null && kh <= 10));
+    if (isLowMineral || ['air-alfamart', 'suci', 'rivero'].includes(String(entry.brand_group_id))) {
       assert.equal(entry.is_brew_ready, false, `${entry.id} low-mineral water must not be ready`);
       assert.equal(entry.coffee_parameters?.brew_recommendation, 'poor', `${entry.id} low-mineral water must be poor/manual`);
     }
@@ -5985,15 +6009,22 @@ test('AI Brew water catalog blocks private sources, zero-mineral autofill, and e
   }
 });
 
-test('AI Brew planner requires manual minerals for blocked or estimated water brands', () => {
-  assert.throws(() => buildAiBrewPlan({
+test('AI Brew planner allows Amidis as low-confidence filter autofill but keeps estimated brands manual', () => {
+  const directAmidis = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),
+    coffeeName: 'Direct Amidis filter experiment',
     waterMode: 'brand',
     waterBrandId: 'amidis-id',
     waterTdsPpm: '',
     waterHardnessPpm: '',
     waterAlkalinityPpm: '',
-  }, catalog), /Water TDS/);
+  }, catalog);
+  assert.equal(directAmidis.waterClassification, 'demineral_direct_experiment');
+  assert.equal(directAmidis.waterPresetStatus, 'autofill');
+  assert.equal(directAmidis.waterMineralDerivation, 'estimated_from_community_profile');
+  assert.equal(directAmidis.waterIsBrewReady, true);
+  assert.match(directAmidis.warnings.join(' '), /experimental|low-mineral|thin|remineral/i);
+  assert.doesNotMatch(directAmidis.warnings.join(' '), /Water TDS|add minerals manually before generating/i);
 
   const remineralizedAmidis = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),
@@ -6006,8 +6037,8 @@ test('AI Brew planner requires manual minerals for blocked or estimated water br
     waterCustomized: true,
   }, catalog);
   assert.equal(remineralizedAmidis.waterMineralDerivation, 'manual');
-  assert.equal(remineralizedAmidis.waterIsBrewReady, false);
-  assert.match(remineralizedAmidis.warnings.join(' '), /too low-mineral|add minerals/i);
+  assert.equal(remineralizedAmidis.waterIsBrewReady, true);
+  assert.match(remineralizedAmidis.warnings.join(' '), /experimental|remineral|low-mineral/i);
   assert.ok(remineralizedAmidis.waterBrandSourceUrls.every((url) => !/^local:\/Users\/Alpha\//i.test(url)));
 
   assert.throws(() => buildAiBrewPlan({
@@ -6042,7 +6073,78 @@ test('AI Brew planner requires manual minerals for blocked or estimated water br
   assert.match(evian.warnings.join(' '), /High alkalinity|buffer/i);
 });
 
-test('water mineral completion fills safe manual baselines without reclassifying blocked brands', () => {
+test('AI Brew planner treats Cleo as low-mineral clarity water, not blocked RO', () => {
+  const cleo: AiBrewCatalog['waterBrands'][number] = {
+    id: 'cleo-id',
+    brandGroupId: 'cleo',
+    marketCode: 'id',
+    skuLabel: 'Cleo pure low-mineral water',
+    label: 'Cleo ID',
+    shortLabel: 'Cleo',
+    subtitle: 'Indonesia',
+    country: 'Indonesia',
+    markets: ['id'],
+    searchText: 'cleo air murni pure low mineral water',
+    description: 'Cleo uses trusted curated/community water evidence as a cautious low-mineral starting point.',
+    notes: ['Very low-TDS water can make filter coffee read clean and bright, but it has little mineral buffer.'],
+    presetStatus: 'autofill',
+    publishState: 'published',
+    isBrewReady: true,
+    brewBlockReason: [],
+    still: true,
+    recommendedForFilter: true,
+    classification: 'low_mineral_clarity',
+    classificationLabel: 'Low-mineral clarity',
+    classificationNote: 'Very low-TDS water can make filter coffee read clean and bright, but it has little mineral buffer.',
+    classificationCaution: 'Use as a cautious filter starting point; verify with taste, blend, or remineralize when body and cafe consistency matter.',
+    chemistry: {
+      tdsPpm: 9,
+      hardnessPpm: 6.6,
+      alkalinityPpm: 5.5,
+    },
+    resolvedMinerals: {
+      tdsPpm: 9,
+      hardnessPpm: 6.6,
+      alkalinityPpm: 5.5,
+      derivation: 'estimated_from_community_profile',
+    },
+    source: 'water-catalog-phase1',
+    sourceUrls: [
+      'https://cleopurewater.com/brand-cleo/',
+      'https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi',
+    ],
+    verificationLevel: 'curated',
+    verifiedAt: '2026-05-19',
+    popularityTier: 'widely_used',
+    marketSegment: 'mass_market',
+    releaseStatus: 'established',
+    confidence: 'medium',
+    catalogVersion: catalog.catalogVersion,
+  };
+  const cleoCatalog: AiBrewCatalog = {
+    ...catalog,
+    waterBrands: [cleo],
+  };
+
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(cleoCatalog),
+    coffeeName: 'Cleo low mineral filter test',
+    waterMode: 'brand',
+    waterBrandId: 'cleo-id',
+    waterTdsPpm: '',
+    waterHardnessPpm: '',
+    waterAlkalinityPpm: '',
+  }, cleoCatalog);
+
+  assert.equal(plan.waterClassification, 'low_mineral_clarity');
+  assert.equal(plan.waterPresetStatus, 'autofill');
+  assert.equal(plan.waterMineralDerivation, 'estimated_from_community_profile');
+  assert.equal(plan.waterIsBrewReady, true);
+  assert.match(plan.warnings.join(' '), /low-mineral|TDS sangat rendah|body/i);
+  assert.doesNotMatch(plan.warnings.join(' '), /add minerals manually|too low-mineral for ready-brew use/i);
+});
+
+test('water mineral completion still offers remineralization targets for direct low-mineral experiment brands', () => {
   const amidis = catalog.waterBrands.find((water) => water.id === 'amidis-id');
   assert.ok(amidis);
 
@@ -6074,9 +6176,9 @@ test('water mineral completion fills safe manual baselines without reclassifying
   }, catalog);
 
   assert.equal(plan.waterMineralDerivation, 'manual');
-  assert.equal(plan.waterIsBrewReady, false);
-  assert.equal(plan.waterPresetStatus, 'manual_required');
-  assert.match(plan.warnings.join(' '), /too low-mineral|add minerals/i);
+  assert.equal(plan.waterIsBrewReady, true);
+  assert.equal(plan.waterPresetStatus, 'autofill');
+  assert.match(plan.warnings.join(' '), /experimental|low-mineral|remineral/i);
 
   const estimatedWater = catalog.waterBrands.find((water) => water.id === 'estimated-water');
   assert.ok(estimatedWater);

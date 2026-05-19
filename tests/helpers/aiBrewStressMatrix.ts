@@ -307,16 +307,50 @@ function buildStressWaterBrands(): WaterBrandProfile[] {
     sources?: Array<{ source_url?: string }>;
   };
 
-  return readJsonItems<RawStressWater>('apps/web/public/data/catalog/phase1/waters.catalog.json')
+  const requiredWaterIds = new Set([
+    'amidis-id',
+    'aqua-id',
+    'cleo-id',
+    'le-minerale-id',
+    'pristine-8-6-plus-id',
+    'pristine-8-plus-id',
+    'perfect-id',
+    'total-8-plus-id',
+    'pure-life-global',
+    'nestle-pure-life-id',
+    'volvic-global',
+    'volvic-bn',
+  ]);
+  const readyEntries = readJsonItems<RawStressWater>('apps/web/public/data/catalog/phase1/waters.catalog.json')
     .filter((entry) => entry.is_brew_ready === true
       && entry.publish_state === 'published'
       && typeof entry.tds_ppm === 'number'
       && typeof entry.coffee_parameters?.hardness_ppm_as_caco3 === 'number'
-      && typeof entry.coffee_parameters?.alkalinity_ppm_as_caco3 === 'number')
-    .slice(0, 12)
+      && typeof entry.coffee_parameters?.alkalinity_ppm_as_caco3 === 'number');
+  const selectedEntries = [
+    ...readyEntries.filter((entry) => requiredWaterIds.has(String(entry.id || ''))),
+    ...readyEntries.filter((entry) => !requiredWaterIds.has(String(entry.id || ''))),
+  ].filter((entry, index, entries) => entries.findIndex((item) => item.id === entry.id) === index)
+    .slice(0, 24);
+  return selectedEntries
     .map((entry): WaterBrandProfile => {
       const hardnessPpm = Number(entry.coffee_parameters?.hardness_ppm_as_caco3 || 0);
       const alkalinityPpm = Number(entry.coffee_parameters?.alkalinity_ppm_as_caco3 || 0);
+      const brandGroupId = String(entry.brand_group_id || entry.id);
+      const classification = brandGroupId === 'amidis'
+        ? 'demineral_direct_experiment'
+        : brandGroupId === 'cleo'
+          ? 'low_mineral_clarity'
+          : brandGroupId.includes('pristine') || alkalinityPpm >= 95
+            ? 'high_buffer'
+            : hardnessPpm <= 40 ? 'soft_balanced' : 'balanced';
+      const classificationLabel = brandGroupId === 'amidis'
+        ? 'Demineral direct experiment'
+        : brandGroupId === 'cleo'
+          ? 'Low-mineral clarity'
+          : brandGroupId.includes('pristine') || alkalinityPpm >= 95
+            ? 'Buffer tinggi'
+            : hardnessPpm <= 40 ? 'Lunak seimbang' : 'Seimbang';
       const sourceUrls = [
         entry.primary_source?.source_url,
         ...(entry.sources || []).map((source) => source.source_url),
@@ -339,8 +373,8 @@ function buildStressWaterBrands(): WaterBrandProfile[] {
         brewBlockReason: entry.brew_block_reason || [],
         still: entry.is_sparkling !== true,
         recommendedForFilter: true,
-        classification: alkalinityPpm >= 95 ? 'high_buffer' : hardnessPpm <= 40 ? 'soft_balanced' : 'balanced',
-        classificationLabel: alkalinityPpm >= 95 ? 'Buffer tinggi' : hardnessPpm <= 40 ? 'Lunak seimbang' : 'Seimbang',
+        classification,
+        classificationLabel,
         classificationNote: 'Data brand digunakan untuk stress audit 1M.',
         chemistry: {
           tdsPpm: Number(entry.tds_ppm),
@@ -351,7 +385,7 @@ function buildStressWaterBrands(): WaterBrandProfile[] {
           tdsPpm: Number(entry.tds_ppm),
           hardnessPpm,
           alkalinityPpm,
-          derivation: 'direct',
+          derivation: entry.data_quality?.is_estimated ? 'estimated_from_classification' : 'estimated_from_community_profile',
         },
         source: 'water-catalog-phase1',
         sourceUrls,

@@ -694,11 +694,8 @@
       ],
       "water_type": "purified",
       "is_sparkling": false,
-      "is_brew_ready": false,
-      "brew_block_reason": [
-        "Distilled/demineral water is too low in minerals for direct brewing.",
-        "Use as RO-style base only after adding brew minerals, or enter measured TDS, GH, and KH manually."
-      ],
+      "is_brew_ready": true,
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 0,
         "magnesium": 0,
@@ -715,7 +712,7 @@
         "hardness_ppm_as_caco3": 1.4,
         "alkalinity_ppm_as_caco3": 1.2,
         "sca_match_score": null,
-        "brew_recommendation": "poor"
+        "brew_recommendation": "acceptable"
       },
       "sources": [
         {
@@ -745,7 +742,7 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "amidis indonesia id amidis distilled demineral water air demineral low mineral ro base purified amidis",
+      "search_text": "amidis indonesia id amidis distilled demineral water direct low mineral experimental filter v60 pour over ro base purified amidis",
       "aliases": [
         "Amidis",
         "AMIDIS",
@@ -1221,11 +1218,8 @@
       ],
       "water_type": "purified",
       "is_sparkling": false,
-      "is_brew_ready": false,
-      "brew_block_reason": [
-        "Cleo is positioned as pure low-mineral water; direct brewing can taste thin and under-buffered.",
-        "Use as base water only after adding minerals, or enter measured TDS, GH, and KH manually."
-      ],
+      "is_brew_ready": true,
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 1.8,
         "magnesium": 0.5,
@@ -1242,7 +1236,7 @@
         "hardness_ppm_as_caco3": 6.6,
         "alkalinity_ppm_as_caco3": 5.5,
         "sca_match_score": null,
-        "brew_recommendation": "poor"
+        "brew_recommendation": "acceptable"
       },
       "sources": [
         {
@@ -1256,6 +1250,12 @@
           "source_url": "local:/data/catalog/raw-evidence/phase1/water-curated-dataset-snapshot.json#cleo-id",
           "collected_at": "2026-04-07T07:30:53.893Z",
           "confidence_score": 0.7
+        },
+        {
+          "source_type": "community_reference",
+          "source_url": "https://ottencoffee.co.id/majalah/merek-air-untuk-kopi-pilih-sesuai-selera-seduh-kopi",
+          "collected_at": "2026-05-19T00:00:00.000Z",
+          "confidence_score": 0.72
         },
         {
           "source_type": "brand_site",
@@ -1279,7 +1279,7 @@
         "Air Murni Cleo",
         "Celo"
       ],
-      "verification_status": "verified",
+      "verification_status": "curated",
       "data_quality": {
         "is_estimated": false,
         "missing_fields": [
@@ -5118,10 +5118,8 @@
       ],
       "water_type": "natural_mineral",
       "is_sparkling": false,
-      "is_brew_ready": false,
-      "brew_block_reason": [
-        "Alkaline pH is source-backed, but mineral quantities are curated; use manual minerals for coffee-ready precision."
-      ],
+      "is_brew_ready": true,
+      "brew_block_reason": [],
       "minerals_mg_l": {
         "calcium": 5.8,
         "magnesium": 1.5,
@@ -5162,7 +5160,7 @@
       },
       "published": true,
       "publish_state": "published",
-      "search_text": "pristine 8.6+ indonesia id pristine 8.6+ natural mineral water pristine-8-6-plus alkaline ph 8.6 air alkali pristine",
+      "search_text": "pristine 8.6+ indonesia id pristine 8.6+ natural mineral water pristine-8-6-plus alkaline ph 8.6 air alkali pristine high buffer floral acidity muted filter starting point",
       "aliases": [
         "Pristine 8.6+",
         "PRISTINE 8.6+",

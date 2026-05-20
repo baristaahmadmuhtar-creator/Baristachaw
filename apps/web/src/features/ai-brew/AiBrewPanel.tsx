@@ -66,6 +66,7 @@ import {
   localizeAiBrewWaterClassificationLabel,
   localizeAiBrewWaterStyle,
 } from './localization.ts';
+import { resolveWorkflowTutorialDetail } from './workflowTutorials.ts';
 import {
   AI_BREW_GENERATION_STAGES,
   buildAiBrewPlan,
@@ -130,6 +131,7 @@ import type {
   WaterMode,
   WaterPresetStatus,
   AiBrewEngineMode,
+  WorkflowGuideActionType,
   WorkflowGuideStep,
   WorkflowGuideTechniqueChip,
   SwitchPublicPreset,
@@ -465,10 +467,10 @@ const COPY = {
     feedbackSaveFailed: 'Unable to save taste feedback right now.',
     feedbackCoachTitle: 'Next Brew Adjustment',
     feedbackCoachHint: 'Smallest safe correction for the next brew.',
-    guideDensitySimple: 'Simple',
-    guideDensityPro: 'Pro',
-    guideDensitySimpleHint: 'Core steps for a quick brew.',
-    guideDensityProHint: 'Full flow, path, pour height, and agitation detail.',
+    guideDensitySimple: 'Summary',
+    guideDensityPro: 'Detail',
+    guideDensitySimpleHint: 'Core steps only.',
+    guideDensityProHint: 'Step-by-step barista tutorial.',
     switchSectionTitle: 'Switch method',
     switchSectionSummary: 'Choose Hot/Iced first, then leave Auto or pick the Switch method you want.',
     switchTeachingTitle: 'How Switch can brew',
@@ -980,9 +982,9 @@ const COPY = {
     feedbackCoachTitle: 'Koreksi Seduhan Berikutnya',
     feedbackCoachHint: 'Koreksi aman paling kecil untuk seduhan berikutnya.',
     guideDensitySimple: 'Ringkas',
-    guideDensityPro: 'Pro',
-    guideDensitySimpleHint: 'Langkah inti untuk cepat dipakai.',
-    guideDensityProHint: 'Detail alur, jalur, tinggi tuang, dan agitasi.',
+    guideDensityPro: 'Detail',
+    guideDensitySimpleHint: 'Langkah inti saja.',
+    guideDensityProHint: 'Tutorial barista di setiap tahap.',
     switchSectionTitle: 'Metode Switch',
     switchSectionSummary: 'Pilih Panas/Es dulu, lalu biarkan Auto atau pilih metode Switch yang kamu mau.',
     switchTeachingTitle: 'Cara Switch bekerja',
@@ -3402,6 +3404,53 @@ function buildAiBrewWorkflowControlDetail(plan: BrewPlan, step: AiBrewDisplaySte
   }
 }
 
+function resolveAiBrewTutorialActionType(plan: BrewPlan, step: AiBrewDisplayStep, index: number): WorkflowGuideActionType {
+  if (isWorkflowGuideStep(step)) return step.actionType;
+
+  const kind = getAiBrewStepKind(step);
+  switch (kind) {
+    case 'drawdown':
+      return 'drawdown';
+    case 'serve':
+      return 'serve';
+    case 'wait':
+      return 'wait';
+    case 'extract':
+      if (plan.methodFamily === 'espresso') return 'extract';
+      if (plan.methodFamily === 'moka_pot') return 'monitor_flow';
+      if (plan.methodFamily === 'cold_brew' || plan.methodFamily === 'french_press') return 'steep';
+      if (plan.methodFamily === 'aeropress') return 'press';
+      return 'pour';
+    default:
+      break;
+  }
+
+  if (index === 0 && aiBrewUsesPaperFilter(plan)) return 'bloom';
+  if (step.pourVolumeMl > 0) return 'pour';
+
+  switch (plan.methodFamily) {
+    case 'espresso':
+      return index === 0 ? 'puck_prep' : 'extract';
+    case 'moka_pot':
+      return index === 0 ? 'heat' : 'stop';
+    case 'cold_brew':
+      return index === 0 ? 'charge' : 'filter';
+    case 'french_press':
+      return index === 0 ? 'charge' : 'decant';
+    case 'aeropress':
+      return index === 0 ? 'charge' : 'press';
+    case 'hario_switch':
+    case 'clever_dripper':
+      return index === 0 ? 'charge' : 'release';
+    case 'siphon':
+      return index === 0 ? 'heat' : 'drawdown';
+    case 'batch_brew':
+      return index === 0 ? 'dose' : 'mix';
+    default:
+      return 'pour';
+  }
+}
+
 function buildAiBrewDeterministicStepDetailPoints(
   plan: BrewPlan,
   step: AiBrewDisplayStep,
@@ -3409,138 +3458,49 @@ function buildAiBrewDeterministicStepDetailPoints(
   language: string,
   visibleReferences: string[] = [],
 ) {
-  if (isWorkflowGuideStep(step)) {
-    const points: string[] = [];
-    const id = isIndonesianAiBrewLanguage(language);
-    const hiddenReferences = [
-      buildWorkflowGuideActionText(step, language, plan),
-      buildAiBrewWorkflowFocusCue(plan, step, language),
-      ...visibleReferences,
-    ];
-    const addPoint = (value: string) => addUniqueAiBrewDetailPoint(points, value, hiddenReferences);
-
-    if (id) {
-      const workflowControl = buildAiBrewWorkflowControlDetail(plan, step, language);
-      const beanContext = buildAiBrewBeanContextDetail(plan, step, language);
-      addPoint(workflowControl || beanContext);
-    } else {
-      addPoint(buildAiBrewWorkflowFocusCue(plan, step, language));
-    }
-
-    if (step.warnings.length > 0) {
-      step.warnings.slice(0, 1).forEach((warning) => {
-        const localizedWarning = localizeAiBrewDynamicText(warning, language);
-        if (points.length > 0) {
-          points[0] = `${points[0]} ${id ? 'Catatan aman:' : 'Safety note:'} ${localizedWarning}`;
-        } else {
-          addPoint(localizedWarning);
-        }
-      });
-    }
-    if (plan.brewMode === 'iced' && step.pourVolumeMl > 0) {
-      const splitNote = id
-        ? `Target volume ini adalah air panas (${formatRoundedMl(plan.hotWaterMl)}), bukan total minuman.`
-        : `This volume target is hot water (${formatRoundedMl(plan.hotWaterMl)}), not total beverage.`;
-      if (points.length > 0) {
-        points[0] = `${points[0]} ${splitNote}`;
-      } else {
-        addPoint(splitNote);
-      }
-    }
-    return points.slice(0, 1);
-  }
   const id = isIndonesianAiBrewLanguage(language);
-  const kind = getAiBrewStepKind(step);
   const points: string[] = [];
-  const isPourStep = kind === 'pour' || kind === 'extract';
-  const isLastStep = index === plan.steps.length - 1;
-  const isLastPour = step.pourVolumeMl > 0
-    && !plan.steps.slice(index + 1).some((nextStep) => nextStep.pourVolumeMl > 0);
-  const nextStep = plan.steps[index + 1];
-  const isFirstPour = index === 0 && isPourStep;
+  const workflowWarnings = isWorkflowGuideStep(step) ? step.warnings : [];
+  const visibleStepText = isWorkflowGuideStep(step)
+    ? buildWorkflowGuideActionText(step, language, plan)
+    : buildAiBrewStepQuickNote(step, language);
+  const workflowFocusCue = isWorkflowGuideStep(step)
+    ? buildAiBrewWorkflowFocusCue(plan, step, language)
+    : '';
+  const hiddenReferences = [
+    visibleStepText,
+    workflowFocusCue,
+    ...visibleReferences,
+  ];
+  const addPoint = (value: string) => addUniqueAiBrewDetailPoint(points, value, hiddenReferences);
 
-  if (isFirstPour && aiBrewUsesPaperFilter(plan)) {
-    addUniqueAiBrewDetailPoint(
-      points,
-      plan.methodFamily === 'chemex'
-        ? (id
-          ? 'Bilas filter Chemex sampai hangat, buang air bilasan, lalu tara timbangan sebelum kopi masuk.'
-          : 'Rinse the Chemex filter until warm, discard rinse water, then tare the scale before adding coffee.')
-        : (id
-          ? 'Bilas filter dan panaskan alat/server dulu; buang air bilasan lalu tara timbangan sebelum mulai.'
-          : 'Rinse the filter and preheat the brewer/server first; discard rinse water, then tare the scale before brewing.'),
-    );
-  }
+  addPoint(resolveWorkflowTutorialDetail({
+    methodFamily: plan.methodFamily,
+    actionType: resolveAiBrewTutorialActionType(plan, step, index),
+    brewMode: plan.brewMode,
+    language,
+    hasWarning: workflowWarnings.length > 0,
+  }));
 
-  if (plan.brewMode === 'iced' && plan.iceMl > 0) {
-    if (index === 0) {
-      addUniqueAiBrewDetailPoint(
-        points,
-        id
-          ? `Tara timbangan, lalu timbang ${formatRoundedGrams(plan.iceMl)} es di server sebelum mulai; bed kopi hanya menerima ${formatRoundedMl(plan.hotWaterMl)} air panas.`
-          : `Tare the scale, then weigh ${formatRoundedGrams(plan.iceMl)} ice in the server before brewing; the bed only receives ${formatRoundedMl(plan.hotWaterMl)} hot water.`,
-      );
-    }
-
-    if (isPourStep) {
-      addUniqueAiBrewDetailPoint(
-        points,
-        id
-          ? `Tuang ke target kumulatif ${formatRoundedMl(step.targetVolumeMl)}; jangan tambah bypass setelah target panas tercapai.`
-          : `Pour to cumulative target ${formatRoundedMl(step.targetVolumeMl)}; do not add bypass after the hot target lands.`,
-      );
+  if (workflowWarnings.length > 0) {
+    const localizedWarning = localizeAiBrewDynamicText(workflowWarnings[0], language);
+    if (points.length > 0) {
+      points[0] = `${points[0]} ${id ? 'Catatan aman:' : 'Safety note:'} ${localizedWarning}`;
     } else {
-      addUniqueAiBrewDetailPoint(
-        points,
-        id
-          ? `Target tetap ${formatRoundedMl(step.targetVolumeMl)}; fase ini untuk kontrol aliran, bukan menambah air.`
-          : `Target stays ${formatRoundedMl(step.targetVolumeMl)}; this phase controls flow, not extra water.`,
-      );
+      addPoint(localizedWarning);
     }
-
-    if (isLastPour || isLastStep || kind === 'drawdown' || kind === 'serve') {
-      addUniqueAiBrewDetailPoint(
-        points,
-        id
-          ? `Setelah tetesan akhir, aduk server 5-8 detik agar es dan konsentrat menyatu rata.`
-          : `After the final drips, stir the server for 5-8 seconds so ice melt and concentrate integrate evenly.`,
-      );
-    } else if (index > 0) {
-      addUniqueAiBrewDetailPoint(
-        points,
-        id
-          ? `Jaga slurry stabil dan hindari dinding filter agar Japanese-style tetap bersih.`
-          : `Keep slurry depth stable and avoid the filter wall so the Japanese-style cup stays clean.`,
-      );
-    }
-  } else if (isPourStep) {
-    addUniqueAiBrewDetailPoint(
-      points,
-      id
-        ? `Tuangan ini harus berhenti di target kumulatif ${formatRoundedMl(step.targetVolumeMl)}.`
-        : `This pour should stop at cumulative target ${formatRoundedMl(step.targetVolumeMl)}.`,
-    );
-  } else {
-    addUniqueAiBrewDetailPoint(
-      points,
-      id
-        ? `Jangan tambah air pada fase ini; ikuti waktu dan target yang sudah dihitung.`
-        : `Do not add water in this phase; follow the calculated time and target.`,
-    );
   }
 
-  if (isFirstPour && nextStep) {
-    const waitSeconds = Math.max(0, nextStep.startSeconds - step.startSeconds);
-    addUniqueAiBrewDetailPoint(
-      points,
-      id
-        ? `Bloom sampai ${formatGuideTime(nextStep.startSeconds)} sekitar ${formatGuideTime(waitSeconds)}; pastikan semua bubuk basah sebelum tuang berikutnya.`
-        : `Bloom until ${formatGuideTime(nextStep.startSeconds)} for about ${formatGuideTime(waitSeconds)}; make sure all grounds are wet before the next pour.`,
-    );
+  if (plan.brewMode === 'iced' && step.pourVolumeMl > 0) {
+    const splitNote = id
+      ? `Target ini air panas (${formatRoundedMl(plan.hotWaterMl)}), bukan total minuman.`
+      : `This target is hot water (${formatRoundedMl(plan.hotWaterMl)}), not total beverage.`;
+    if (points.length > 0) {
+      points[0] = `${points[0]} ${splitNote}`;
+    } else {
+      addPoint(splitNote);
+    }
   }
-
-  const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
-  addUniqueAiBrewDetailPoint(points, methodFocusCue, visibleReferences);
 
   return points.slice(0, 1);
 }

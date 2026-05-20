@@ -79,7 +79,14 @@ test('AI Brew Brew Guide has Lite and Pro modes with Lite as the safe default', 
   assert.match(SOURCE, /guideDensityProHint: 'Full brew guide with barista detail\.'/);
   assert.match(SOURCE, /data-testid="ai-brew-lite-guide-panel"/);
   assert.match(SOURCE, /ai-brew-lite-progress-ring/);
+  assert.match(SOURCE, /liteStepProgressPercent/);
+  assert.match(SOURCE, /flowCurrentStepElapsedSeconds/);
+  assert.doesNotMatch(SOURCE, /flowProgressSeconds \/ timerTargetSeconds/);
   assert.match(SOURCE, /data-testid="ai-brew-lite-next-step"/);
+  assert.match(SOURCE, /data-testid="ai-brew-lite-water-status"/);
+  assert.match(SOURCE, /data-testid="ai-brew-flow-remaining-status"/);
+  assert.match(SOURCE, /id \? 'Tuang \/ target' : 'Pour \/ target'/);
+  assert.doesNotMatch(SOURCE, /Time brew utama/);
   assert.match(SOURCE, /Pakai timbangan asli/);
   assert.match(SOURCE, /Use your real scale/);
   assert.match(SOURCE, /setGuideDensity\('basic'\)/);

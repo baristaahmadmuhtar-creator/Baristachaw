@@ -4966,11 +4966,27 @@ function PlanResultDialog({
   const flowCurrentMetrics = flowCurrentStep
     ? splitAiBrewStepMetrics(buildAiBrewStepMetrics(flowCurrentStep, language, plan))
     : { core: [], detail: [] };
-  const liteProgressPercent = timerTargetSeconds > 0
-    ? Math.min(100, Math.max(0, Math.round((flowProgressSeconds / timerTargetSeconds) * 100)))
-    : 0;
+  const flowCurrentStepStartSeconds = flowCurrentStep
+    ? Math.max(0, Math.min(timerTargetSeconds, flowCurrentStep.startSeconds))
+    : timerTargetSeconds;
+  const flowCurrentStepEndSeconds = flowCurrentStep
+    ? Math.max(
+      flowCurrentStepStartSeconds + 1,
+      Math.min(timerTargetSeconds, flowNextStep?.startSeconds ?? timerTargetSeconds),
+    )
+    : timerTargetSeconds;
+  const flowCurrentStepDurationSeconds = Math.max(1, flowCurrentStepEndSeconds - flowCurrentStepStartSeconds);
+  const flowCurrentStepElapsedSeconds = flowCurrentStep
+    ? Math.min(
+      flowCurrentStepDurationSeconds,
+      Math.max(0, flowProgressSeconds - flowCurrentStepStartSeconds),
+    )
+    : flowCurrentStepDurationSeconds;
+  const liteStepProgressPercent = flowCurrentStep
+    ? Math.min(100, Math.max(0, Math.round((flowCurrentStepElapsedSeconds / flowCurrentStepDurationSeconds) * 100)))
+    : (flowProgressSeconds >= timerTargetSeconds && timerTargetSeconds > 0 ? 100 : 0);
   const liteProgressRingStyle = {
-    background: `conic-gradient(#2563eb ${liteProgressPercent}%, rgba(148, 163, 184, 0.2) 0)`,
+    background: `conic-gradient(#2563eb ${liteStepProgressPercent}%, rgba(148, 163, 184, 0.2) 0)`,
   } as CSSProperties;
   const liteWaterTargetMl = Math.max(
     0,
@@ -5247,28 +5263,29 @@ function PlanResultDialog({
               {formatGuideTime(flowProgressSeconds)}
             </p>
             <span className="mt-3 rounded-full bg-amber-500/12 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
-              {id ? 'Time brew utama' : 'Main brew time'}: {formatGuideTime(timerTargetSeconds)}
+              {id ? 'Durasi tahap' : 'Step window'}: {formatGuideTime(flowCurrentStepDurationSeconds)}
             </span>
             <p className="mt-4 text-2xl font-semibold text-blue-700 dark:text-blue-300">
               {liteWaterTargetLabel}
             </p>
             <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-secondary">
-              {id ? 'Target air' : 'Water target'}
+              {id ? 'Tuang / target' : 'Pour / target'}
             </p>
+            <div className="mt-3 w-full max-w-[12rem]" data-testid="ai-brew-flow-remaining-status">
+              <div className="grid gap-1.5 text-xs" data-testid="ai-brew-lite-water-status">
+                <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
+                  {copy.flowNextPour}: <span className="text-primary">{flowNextPourValue}</span>
+                </span>
+                <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
+                  {copy.flowTotalRemaining}: <span className="text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap justify-center gap-2 text-xs" data-testid="ai-brew-flow-remaining-status">
-        <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
-          {copy.flowNextPour}: <span className="text-primary">{flowNextPourValue}</span>
-        </span>
-        <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
-          {copy.flowTotalRemaining}: <span className="text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
-        </span>
-      </div>
-
-      <div className="mx-auto mt-5 max-w-xl space-y-3 text-center" data-testid="ai-brew-flow-current-card">
+      <div className="mx-auto mt-5 max-w-xl space-y-3 rounded-[1.4rem] border panel-divider-subtle bg-[var(--bg-base)]/84 p-3 text-center" data-testid="ai-brew-flow-current-card">
         <p className="text-lg font-semibold leading-7 text-primary">
           {liteStepAction}
         </p>

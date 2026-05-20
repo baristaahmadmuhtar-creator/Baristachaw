@@ -240,7 +240,7 @@ test('AI Brew Hario Switch iced mode keeps builder, method strip, and result mod
     await expect(result).toBeVisible();
     await expect(result.getByTestId('ai-brew-time-semantics')).toContainText(/Ekstraksi|Hot extraction/i);
     await expect(result.getByTestId('ai-brew-time-semantics')).not.toContainText(/Ekstraksi panas/i);
-    await expect(result.getByTestId('ai-brew-time-helper')).toContainText(/Aduk es tidak menambah ekstraksi|Stirring ice does not add extraction/i);
+    await expect(result.getByTestId('ai-brew-post-extraction-note')).toContainText(/tidak menambah waktu rasa utama|do not add to the main taste time/i);
     await expect(result.getByTestId('ai-brew-result-action-bar')).toBeVisible();
     await expect(result.getByTestId('ai-brew-result-action-guide')).toBeVisible();
     await expect(result.getByTestId('ai-brew-result-action-edit')).toBeVisible();

@@ -94,7 +94,7 @@ test('AI Brew Indonesian release copy localizes critical trust and safety labels
     'Muatan ruang',
     'air turun',
     'Ekstraksi',
-    'Panduan selesai',
+    'Setelah ekstraksi',
     'Aduk es tidak menambah ekstraksi',
     'Profil Target menyesuaikan rasa, bukan mengganti metode Switch',
     'Auto memilih metode dari Profil Target, dosis, ukuran alat, dan batas aman',
@@ -118,16 +118,42 @@ test('AI Brew exposes explicit mobile time semantics instead of one misleading t
   assert.match(SOURCE, /getPlanExtractionSeconds/);
   assert.match(SOURCE, /getPlanGuideEndSeconds/);
   assert.match(SOURCE, /getPlanPostExtractionSeconds/);
+  assert.match(SOURCE, /getPlanTimerSeconds/);
   assert.match(SOURCE, /data-testid="ai-brew-time-semantics"/);
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-time-helper"/);
   assert.match(SOURCE, /extractionTimeLabel/);
-  assert.match(SOURCE, /guideEndLabel/);
+  assert.doesNotMatch(SOURCE, /guideEndLabel/);
   assert.match(SOURCE, /flowStepRemaining/);
   assert.match(SOURCE, /flowTotalRemaining/);
   assert.match(SOURCE, /flowNextPour/);
   assert.match(SOURCE, /data-testid="ai-brew-flow-remaining-status"/);
   assert.match(SOURCE, /data-testid="ai-brew-flow-timer-panel"/);
   assert.match(SOURCE, /data-testid="ai-brew-flow-current-card"/);
+});
+
+test('AI Brew public timing copy and timer handoff use extraction time, not guide finish time', () => {
+  assert.match(SOURCE, /getPlanTimerSeconds/);
+  assert.doesNotMatch(SOURCE, /panduan selesai \$\{guideTime\}/i);
+  assert.doesNotMatch(SOURCE, /guide done \$\{guideTime\}/i);
+  assert.doesNotMatch(SOURCE, /onUseInTimer\(plan\.totalTimeSeconds\)/);
+  assert.doesNotMatch(SOURCE, /flowProgressSeconds = Math\.min\(plan\.totalTimeSeconds/);
+  assert.match(SOURCE, /flowProgressSeconds = Math\.min\(timerTargetSeconds/);
+});
+
+test('AI Brew shows main recipe time and completion time as separate public metrics', () => {
+  assert.match(SOURCE, /getPlanGuideEndSeconds/);
+  assert.match(SOURCE, /completionTimeLabel/);
+  assert.match(SOURCE, /completionTimeItem/);
+  assert.match(SOURCE, /Selesai/);
+  assert.match(SOURCE, /Complete/);
+  assert.match(SOURCE, /summaryHighlightItemsWithCompletion/);
+});
+
+test('AI Brew pour-over timing labels drawdown finish instead of generic extraction', () => {
+  assert.match(SOURCE, /AI_BREW_POUR_CONTROL_FAMILIES\.has\(plan\.methodFamily\)/);
+  assert.match(SOURCE, /Air turun selesai/);
+  assert.match(SOURCE, /Drawdown finish/);
+  assert.match(SOURCE, /bukan waktu sajikan/);
 });
 
 test('AI Brew guide details stay deduped and barista-actionable', () => {

@@ -212,7 +212,7 @@ test('validator rejects sop with insufficient control points', () => {
     '- total water: 272 ml',
     '- temperature: 93 C',
     '- grind: 8.3 clicks',
-    '- total time: 02:50',
+    '- drawdown finish: 02:50',
     '## Service Pattern',
     '- Balanced Cone Clarity Arc for Hario V60.',
     '- Hot mode active with Volvic constraints.',
@@ -395,7 +395,7 @@ test('hybrid composer repairs sop quick dial drift with deterministic envelope w
     '- total water: 300 ml',
     '- temperature: 95 C',
     '- grind: 10 clicks',
-    '- total time: 03:20',
+    '- drawdown finish: 03:20',
     '## Service Pattern',
     '- Balanced Cone Clarity Arc for Hario V60.',
     '- Hot mode active with Volvic constraints.',
@@ -885,7 +885,7 @@ test('hybrid composer falls back when hold distribution conflicts with determini
     '3. Finish at 01:35: pour 122 ml to 272 ml for Hario V60 acidity target with Volvic water context and wait for 5 seconds before serving.',
     '## Watch',
     '- Keep Hario V60 flow stable for acidity target with hard water context.',
-    '- Keep ratio 1:15.1 and total time 02:50 aligned with deterministic envelope.',
+    '- Keep ratio 1:15.1 and drawdown finish 02:50 aligned with deterministic envelope.',
   ].join('\n');
 
   const result = composeHybridNarrative(plan, 'sequence', invalid);
@@ -1038,7 +1038,7 @@ test('hybrid sop repairs missing bitter corrective control point with determinis
     '- total water: 272 ml',
     '- temperature: 93 C',
     '- grind: 8.3 clicks',
-    '- total time: 02:50',
+    '- drawdown finish: 02:50',
     '## Service Pattern',
     '- Balanced Cone Clarity Arc for Hario V60.',
     '- Hot mode active with Volvic constraints.',

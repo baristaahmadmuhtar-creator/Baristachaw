@@ -580,7 +580,7 @@ const COPY = {
     grindCatalogReference: 'Catalog reference',
     grindDerivedBaseline: 'Derived baseline',
     confidenceNotes: 'Confidence notes',
-    summaryFocusHint: 'Main focus: temperature, grind, extraction time, then one change at a time.',
+    summaryFocusHint: 'Main focus: temperature, grind, drawdown or taste time, then one change at a time.',
     waterRequired: 'Manual mineral input is required before generating.',
     openProcessPicker: 'Choose process',
     openVarietyPicker: 'Choose variety',
@@ -1094,7 +1094,7 @@ const COPY = {
     grindCatalogReference: 'Referensi katalog',
     grindDerivedBaseline: 'Baseline turunan',
     confidenceNotes: 'Catatan keyakinan',
-    summaryFocusHint: 'Fokus utama: suhu, gilingan, waktu ekstraksi, lalu koreksi satu variabel dulu.',
+    summaryFocusHint: 'Fokus utama: suhu, gilingan, air turun atau waktu rasa, lalu koreksi satu variabel dulu.',
     waterRequired: 'Input mineral manual wajib diisi sebelum membuat seduhan.',
     openProcessPicker: 'Pilih proses',
     openVarietyPicker: 'Pilih varietas',
@@ -1366,6 +1366,10 @@ function getPlanExtractionSeconds(plan: BrewPlan) {
   return Math.max(0, Math.round(plan.extractionEndSeconds ?? plan.totalTimeSeconds));
 }
 
+function getPlanTimerSeconds(plan: BrewPlan) {
+  return getPlanExtractionSeconds(plan);
+}
+
 function getPlanGuideEndSeconds(plan: BrewPlan) {
   return Math.max(getPlanExtractionSeconds(plan), Math.round(plan.guideEndSeconds ?? plan.totalTimeSeconds));
 }
@@ -1385,17 +1389,36 @@ function getPlanExtractionLabel(plan: BrewPlan, language: string) {
   if (plan.methodFamily === 'espresso') return id ? 'Shot' : 'Shot';
   if (plan.methodFamily === 'cold_brew') return id ? 'Rendam dingin' : 'Cold steep';
   if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return id ? 'Rendam' : 'Steep';
+  if (AI_BREW_POUR_CONTROL_FAMILIES.has(plan.methodFamily)) return id ? 'Air turun selesai' : 'Drawdown finish';
   if (plan.brewMode === 'iced') return id ? 'Ekstraksi' : 'Hot extraction';
   return id ? 'Ekstraksi' : 'Extraction';
+}
+
+function isAiBrewPostExtractionDisplayStep(step: Pick<WorkflowGuideStep, 'actionType'>) {
+  return step.actionType === 'serve'
+    || step.actionType === 'mix'
+    || step.actionType === 'dilute'
+    || step.actionType === 'filter'
+    || step.actionType === 'decant';
 }
 
 function getPlanTimeHelperCopy(plan: BrewPlan, language: string) {
   const id = isIndonesianAiBrewLanguage(language);
   const post = getPlanPostExtractionSeconds(plan);
   if (post <= 0) {
+    if (AI_BREW_POUR_CONTROL_FAMILIES.has(plan.methodFamily)) {
+      return id
+        ? 'Waktu ini adalah target air turun selesai, bukan waktu sajikan.'
+        : 'This is the drawdown-finish target, not the serve time.';
+    }
     return id
       ? 'Waktu rasa dihitung sampai ekstraksi utama selesai.'
       : 'Taste time is counted until the main extraction is complete.';
+  }
+  if (AI_BREW_POUR_CONTROL_FAMILIES.has(plan.methodFamily)) {
+    return id
+      ? 'Angka ini adalah target air turun selesai, bukan waktu sajikan. Sajikan setelah drawdown selesai.'
+      : 'This is the drawdown-finish target, not the serve time. Serve after drawdown completes.';
   }
   if (plan.brewMode === 'iced') {
     return id
@@ -1479,12 +1502,13 @@ function buildPremiumResultSummary(plan: BrewPlan, language: string) {
   const target = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language).toLowerCase();
   const dose = formatRoundedGrams(plan.doseG);
   const temperature = formatRoundedTemperature(plan.waterTempC);
-  const extractionTime = formatTime(getPlanExtractionSeconds(plan));
-  const guideTime = formatTime(getPlanGuideEndSeconds(plan));
-  const postSeconds = getPlanPostExtractionSeconds(plan);
-  const postCopy = postSeconds > 0
-    ? (id ? ` Aduk/sajikan +${formatGuideTime(postSeconds)}.` : ` Finish +${formatGuideTime(postSeconds)}.`)
+  const extractionSeconds = getPlanExtractionSeconds(plan);
+  const extractionTime = formatTime(extractionSeconds);
+  const guideEndSeconds = getPlanGuideEndSeconds(plan);
+  const completionCopy = guideEndSeconds > extractionSeconds
+    ? (id ? ` Selesai ${formatTime(guideEndSeconds)}.` : ` Complete ${formatTime(guideEndSeconds)}.`)
     : '';
+  const extractionLabel = getPlanExtractionLabel(plan, language).toLowerCase();
 
   if (plan.brewMode === 'iced') {
     const finalBeverage = formatRoundedMl(plan.totalWaterMl);
@@ -1494,13 +1518,13 @@ function buildPremiumResultSummary(plan: BrewPlan, language: string) {
     const hotRatio = `1:${formatBrewRatio(plan.hotExtractionRatio)}`;
     const estimatedCup = formatRoundedMl(plan.estimatedCupOutputMl);
     return id
-      ? `Dosis ${dose}; total minuman ${finalBeverage}; air panas ${hotWater}; es di server ${ice}; rasio final ${finalRatio}; rasio ekstraksi ${hotRatio}; estimasi hasil cangkir ${estimatedCup}. ${temperature}, ekstraksi ${extractionTime}; panduan selesai ${guideTime}.${postCopy}`
-      : `Dose ${dose}; final beverage/total input ${finalBeverage}; hot water ${hotWater}; ice in server ${ice}; final ratio ${finalRatio}; hot extraction ratio ${hotRatio}; estimated cup output ${estimatedCup}. ${temperature}, hot extraction ${extractionTime}; guide done ${guideTime}.${postCopy}`;
+      ? `Dosis ${dose}; total minuman ${finalBeverage}; air panas ${hotWater}; es di server ${ice}; rasio final ${finalRatio}; rasio ekstraksi ${hotRatio}; estimasi hasil cangkir ${estimatedCup}. ${temperature}, ${extractionLabel} ${extractionTime}.${completionCopy}`
+      : `Dose ${dose}; final beverage/total input ${finalBeverage}; hot water ${hotWater}; ice in server ${ice}; final ratio ${finalRatio}; hot extraction ratio ${hotRatio}; estimated cup output ${estimatedCup}. ${temperature}, ${extractionLabel} ${extractionTime}.${completionCopy}`;
   }
 
   return id
-    ? `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} air; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; ekstraksi ${extractionTime}; panduan selesai ${guideTime}.${postCopy} Target ${target}.`
-    : `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} water; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; extraction ${extractionTime}; guide done ${guideTime}.${postCopy} Target ${target}.`;
+    ? `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} air; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; ${extractionLabel} ${extractionTime}.${completionCopy} Target ${target}.`
+    : `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} water; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; ${extractionLabel} ${extractionTime}.${completionCopy} Target ${target}.`;
 }
 
 function planUsesOnlineAi(plan: BrewPlan) {
@@ -4763,15 +4787,16 @@ function PlanResultDialog({
 
   useEffect(() => {
     if (!plan || !flowRunning || !flowStartedAtMs) return undefined;
+    const timerTargetSeconds = getPlanTimerSeconds(plan);
 
     const updateElapsed = () => {
       const nextElapsed = Math.min(
-        plan.totalTimeSeconds,
+        timerTargetSeconds,
         flowAccumulatedSeconds + Math.floor((Date.now() - flowStartedAtMs) / 1000),
       );
       setFlowElapsedSeconds(nextElapsed);
-      if (nextElapsed >= plan.totalTimeSeconds) {
-        setFlowAccumulatedSeconds(plan.totalTimeSeconds);
+      if (nextElapsed >= timerTargetSeconds) {
+        setFlowAccumulatedSeconds(timerTargetSeconds);
         setFlowRunning(false);
         setFlowStartedAtMs(null);
       }
@@ -4848,10 +4873,11 @@ function PlanResultDialog({
   const extractionSeconds = getPlanExtractionSeconds(plan);
   const guideEndSeconds = getPlanGuideEndSeconds(plan);
   const postExtractionSeconds = getPlanPostExtractionSeconds(plan);
+  const timerTargetSeconds = getPlanTimerSeconds(plan);
   const tasteTimeRange = getPlanTasteTimeRange(plan);
   const extractionTimeLabel = getPlanExtractionLabel(plan, language);
-  const guideEndLabel = id ? 'Panduan selesai' : 'Guide complete';
-  const postExtractionLabel = id ? 'Aduk/sajikan' : 'Finishing';
+  const completionTimeLabel = id ? 'Selesai' : 'Complete';
+  const postExtractionLabel = id ? 'Setelah ekstraksi' : 'After extraction';
   const summaryHighlightItems = buildAiBrewCoreMetricItems(
     plan,
     copy,
@@ -4860,6 +4886,18 @@ function PlanResultDialog({
     extractionTimeLabel,
     extractionSeconds,
   );
+  const completionTimeItem = {
+    id: 'complete',
+    label: completionTimeLabel,
+    value: formatGuideTime(guideEndSeconds),
+    detail: guideEndSeconds > extractionSeconds
+      ? (id ? 'Finishing setelah waktu utama.' : 'Finishing after the main brew time.')
+      : (id ? 'Sama dengan waktu utama.' : 'Same as the main brew time.'),
+  };
+  const summaryHighlightItemsWithCompletion = [
+    ...summaryHighlightItems,
+    completionTimeItem,
+  ];
   const bloomStepCount = workflowGuideSteps.filter((step) => (
     step.actionType === 'bloom' || /bloom/i.test(step.label)
   )).length;
@@ -4869,7 +4907,8 @@ function PlanResultDialog({
     { label: 'Bloom', value: bloomStepCount > 0 ? `${bloomStepCount}x` : '-' },
     { label: id ? 'Tuang' : 'Pours', value: mainPourCount > 0 ? `${mainPourCount}x` : '-' },
     { label: id ? 'Langkah' : 'Steps', value: String(workflowGuideSteps.length) },
-    { label: guideEndLabel, value: formatGuideTime(guideEndSeconds) },
+    { label: extractionTimeLabel, value: formatGuideTime(extractionSeconds) },
+    { label: completionTimeLabel, value: formatGuideTime(guideEndSeconds) },
   ];
   const expectedCup = plan.expectedCupProfile;
   const localizedBeanCoverageLabel = plan.beanCoverage
@@ -4885,11 +4924,18 @@ function PlanResultDialog({
     ...plan.guardrails.errors.map((item) => localizeAiBrewDynamicText(item, language)),
     ...plan.warnings.map((item) => localizeAiBrewDynamicText(item, language)),
   ];
-  const flowProgressSeconds = Math.min(plan.totalTimeSeconds, flowElapsedSeconds);
-  const flowActiveStepIndex = getFlowActiveStepIndex(workflowGuideSteps, flowProgressSeconds);
-  const flowCurrentStep = workflowGuideSteps[flowActiveStepIndex] || null;
-  const flowNextStep = flowActiveStepIndex >= 0 ? workflowGuideSteps[flowActiveStepIndex + 1] || null : workflowGuideSteps[0] || null;
-  const flowRemainingSeconds = Math.max(0, plan.totalTimeSeconds - flowProgressSeconds);
+  const timedWorkflowGuideSteps = workflowGuideSteps.filter((step) => (
+    step.startSeconds < timerTargetSeconds || !isAiBrewPostExtractionDisplayStep(step)
+  ));
+  const flowProgressSeconds = Math.min(timerTargetSeconds, flowElapsedSeconds);
+  const flowActiveStepIndex = getFlowActiveStepIndex(timedWorkflowGuideSteps, flowProgressSeconds);
+  const flowCurrentStep = flowProgressSeconds >= timerTargetSeconds ? null : timedWorkflowGuideSteps[flowActiveStepIndex] || null;
+  const flowNextStep = flowProgressSeconds >= timerTargetSeconds
+    ? null
+    : flowActiveStepIndex >= 0
+      ? timedWorkflowGuideSteps[flowActiveStepIndex + 1] || null
+      : timedWorkflowGuideSteps[0] || null;
+  const flowRemainingSeconds = Math.max(0, timerTargetSeconds - flowProgressSeconds);
   const flowStepRemainingSeconds = flowNextStep
     ? Math.max(0, flowNextStep.startSeconds - flowProgressSeconds)
     : flowRemainingSeconds;
@@ -4902,7 +4948,7 @@ function PlanResultDialog({
     : copy.flowFinished;
   const flowStatusLabel = flowRunning
     ? copy.flowRunning
-    : flowProgressSeconds >= plan.totalTimeSeconds && plan.totalTimeSeconds > 0
+    : flowProgressSeconds >= timerTargetSeconds && timerTargetSeconds > 0
       ? copy.flowFinished
       : flowProgressSeconds > 0
         ? copy.flowPaused
@@ -5109,7 +5155,7 @@ function PlanResultDialog({
   );
 
   function startFlowTimer() {
-    if (flowProgressSeconds >= plan.totalTimeSeconds) {
+    if (flowProgressSeconds >= timerTargetSeconds) {
       setFlowElapsedSeconds(0);
       setFlowAccumulatedSeconds(0);
     }
@@ -5293,7 +5339,7 @@ function PlanResultDialog({
                     <button type="button" onClick={onEditInputs} className={resultActionButtonClass} data-testid="ai-brew-edit-inputs">
                       {copy.editInputs}
                     </button>
-                    <button type="button" onClick={() => onUseInTimer(plan.totalTimeSeconds)} disabled={workflowBlocked} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-use-timer" aria-label={copy.ariaUseInTimer.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
+                    <button type="button" onClick={() => onUseInTimer(timerTargetSeconds)} disabled={workflowBlocked} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-use-timer" aria-label={copy.ariaUseInTimer.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
                       {copy.useInTimer}
                     </button>
                     <button type="button" onClick={() => onUseInRatio(plan)} className={resultActionButtonClass} data-testid="ai-brew-use-ratio" aria-label={copy.ariaUseInRatio.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
@@ -5396,7 +5442,7 @@ function PlanResultDialog({
                   </div>
                   <div className="mt-3" data-testid="ai-brew-result-summary-metric-strip">
                     <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2.5 text-xs sm:grid-cols-[repeat(3,minmax(0,1fr))]" data-testid="ai-brew-time-semantics">
-                      {summaryHighlightItems.map((item) => (
+                      {summaryHighlightItemsWithCompletion.map((item) => (
                         <span
                           key={item.id}
                           className="min-w-0 max-w-full rounded-2xl border border-blue-500/20 bg-blue-500/[0.09] px-4 py-4 text-secondary"
@@ -5420,7 +5466,7 @@ function PlanResultDialog({
                   <div className="mt-2 space-y-2">
                     {postExtractionSeconds > 0 && (
                       <p className="rounded-xl border border-blue-500/14 bg-[var(--bg-base)]/78 px-3 py-2 text-xs leading-5 text-secondary" data-testid="ai-brew-post-extraction-note">
-                        <span className="font-semibold text-primary">{postExtractionLabel}:</span> +{formatGuideTime(postExtractionSeconds)} {id ? 'aduk/sajikan' : 'stir/serve'}.
+                        <span className="font-semibold text-primary">{postExtractionLabel}:</span> {id ? 'aduk, tuang, atau sajikan tidak menambah waktu rasa utama.' : 'stir, pour, or serve steps do not add to the main taste time.'}
                       </p>
                     )}
                   </div>
@@ -5485,15 +5531,15 @@ function PlanResultDialog({
                 data-testid="ai-brew-result-detail-panel"
               >
               <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2.5 sm:grid-cols-[repeat(2,minmax(0,1fr))] xl:grid-cols-[repeat(3,minmax(0,1fr))]">
-                {summaryHighlightItems.map((item) => (
+                {summaryHighlightItemsWithCompletion.map((item) => (
                   <div key={`details-${item.id}`} className={resultMetricCardClass}>
                     <p className="text-[11px] uppercase tracking-widest text-secondary">{item.label}</p>
                     <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{item.value}</p>
                     {item.detail && (
                       <p className="mt-1 text-xs text-secondary">{item.detail}</p>
                     )}
-                    {item.id === 'extraction' && guideEndSeconds > extractionSeconds && (
-                      <p className="mt-1 text-xs text-secondary">{guideEndLabel}: {formatGuideTime(guideEndSeconds)}</p>
+                    {item.id === 'extraction' && postExtractionSeconds > 0 && (
+                      <p className="mt-1 text-xs text-secondary">{id ? 'Finishing setelah waktu rasa utama.' : 'Finishing happens after the main taste time.'}</p>
                     )}
                     {item.id === 'grind' && localizedGrindBandLabel !== localizedGrindHeadline && (
                       <p className="mt-1 text-xs text-secondary">{localizedGrindBandLabel}</p>
@@ -5682,7 +5728,7 @@ function PlanResultDialog({
                             : 'Follow the timer. Core numbers stay visible; technique detail is for Pro.'}
                         </p>
                         <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-secondary">
-                          {summaryHighlightItems.map((item) => (
+                          {summaryHighlightItemsWithCompletion.map((item) => (
                             <span key={`guide-${item.id}`} className={resultChipClass}>
                               <span className="text-tertiary">{item.label}</span> <span className="text-primary">{item.value}</span>
                             </span>
@@ -6066,7 +6112,7 @@ function PlanResultDialog({
                         </div>
                       ) : (
                         <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 xl:grid-cols-2">
-                          {summaryHighlightItems.map((item) => (
+                          {summaryHighlightItemsWithCompletion.map((item) => (
                             <span key={`flow-current-${item.id}`} className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
                               <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
                               <span className="font-semibold text-primary">{item.value}</span>
@@ -6114,7 +6160,7 @@ function PlanResultDialog({
                       </button>
                       <button
                         type="button"
-                        onClick={() => onUseInTimer(plan.totalTimeSeconds)}
+                        onClick={() => onUseInTimer(timerTargetSeconds)}
                         disabled={workflowBlocked}
                         className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-4 py-2 text-sm font-medium text-primary disabled:cursor-not-allowed disabled:opacity-55"
                         data-testid="ai-brew-flow-open-timer"

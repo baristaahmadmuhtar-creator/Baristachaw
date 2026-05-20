@@ -467,10 +467,10 @@ const COPY = {
     feedbackSaveFailed: 'Unable to save taste feedback right now.',
     feedbackCoachTitle: 'Next Brew Adjustment',
     feedbackCoachHint: 'Smallest safe correction for the next brew.',
-    guideDensitySimple: 'Summary',
-    guideDensityPro: 'Detail',
-    guideDensitySimpleHint: 'Core steps only.',
-    guideDensityProHint: 'Step-by-step barista tutorial.',
+    guideDensitySimple: 'Lite',
+    guideDensityPro: 'Pro',
+    guideDensitySimpleHint: 'Focused timer and current step.',
+    guideDensityProHint: 'Full brew guide with barista detail.',
     switchSectionTitle: 'Switch method',
     switchSectionSummary: 'Choose Hot/Iced first, then leave Auto or pick the Switch method you want.',
     switchTeachingTitle: 'How Switch can brew',
@@ -609,6 +609,9 @@ const COPY = {
     flowPause: 'Pause',
     flowReset: 'Reset',
     flowOpenTimer: 'Open timer',
+    flowNextAction: 'Next',
+    flowLiteScaleTitle: 'Manual scale',
+    flowLiteScaleBody: 'Use your real scale; this screen guides timing and target water.',
     flowElapsed: 'Elapsed',
     flowRemaining: 'Remaining',
     flowDone: 'Done',
@@ -981,10 +984,10 @@ const COPY = {
     feedbackSaveFailed: 'Catatan rasa belum bisa disimpan sekarang.',
     feedbackCoachTitle: 'Koreksi Seduhan Berikutnya',
     feedbackCoachHint: 'Koreksi aman paling kecil untuk seduhan berikutnya.',
-    guideDensitySimple: 'Ringkas',
-    guideDensityPro: 'Detail',
-    guideDensitySimpleHint: 'Langkah inti saja.',
-    guideDensityProHint: 'Tutorial barista di setiap tahap.',
+    guideDensitySimple: 'Lite',
+    guideDensityPro: 'Pro',
+    guideDensitySimpleHint: 'Timer fokus dan langkah sekarang.',
+    guideDensityProHint: 'Panduan lengkap dengan detail barista.',
     switchSectionTitle: 'Metode Switch',
     switchSectionSummary: 'Pilih Panas/Es dulu, lalu biarkan Auto atau pilih metode Switch yang kamu mau.',
     switchTeachingTitle: 'Cara Switch bekerja',
@@ -1123,6 +1126,9 @@ const COPY = {
     flowPause: 'Jeda',
     flowReset: 'Ulang',
     flowOpenTimer: 'Buka timer',
+    flowNextAction: 'Lanjut',
+    flowLiteScaleTitle: 'Timbangan manual',
+    flowLiteScaleBody: 'Pakai timbangan asli; layar ini memandu waktu dan target air.',
     flowElapsed: 'Berjalan',
     flowRemaining: 'Sisa',
     flowDone: 'Selesai',
@@ -4960,6 +4966,31 @@ function PlanResultDialog({
   const flowCurrentMetrics = flowCurrentStep
     ? splitAiBrewStepMetrics(buildAiBrewStepMetrics(flowCurrentStep, language, plan))
     : { core: [], detail: [] };
+  const liteProgressPercent = timerTargetSeconds > 0
+    ? Math.min(100, Math.max(0, Math.round((flowProgressSeconds / timerTargetSeconds) * 100)))
+    : 0;
+  const liteProgressRingStyle = {
+    background: `conic-gradient(#2563eb ${liteProgressPercent}%, rgba(148, 163, 184, 0.2) 0)`,
+  } as CSSProperties;
+  const liteWaterTargetMl = Math.max(
+    0,
+    Math.round(flowCurrentStep?.targetVolumeMl || (plan.brewMode === 'iced' ? plan.hotWaterMl : plan.totalWaterMl)),
+  );
+  const liteWaterTotalMl = Math.max(1, Math.round(plan.brewMode === 'iced' ? plan.hotWaterMl : plan.totalWaterMl));
+  const liteWaterTargetLabel = `${formatRoundedMl(liteWaterTargetMl)} / ${formatRoundedMl(liteWaterTotalMl)}`;
+  const liteStepTitle = flowCurrentStep
+    ? localizeAiBrewStepLabel(flowCurrentStep.label, language)
+    : copy.flowFinished;
+  const liteStepAction = flowCurrentStep
+    ? buildAiBrewStepPrimaryCue(flowCurrentStep, language, plan)
+    : (id
+      ? 'Ekstraksi utama selesai. Lanjutkan finishing tanpa menghitungnya sebagai brew time.'
+      : 'Main extraction is complete. Finish the brew without counting it as brew time.');
+  const liteStepCue = flowCurrentStep
+    ? flowCurrentCompactCue
+    : (id
+      ? 'Cicipi hasilnya, lalu catat koreksi untuk seduhan berikutnya.'
+      : 'Taste the cup, then note one correction for the next brew.');
   const localizedProcessLabel = plan.process || copy.notSpecified;
   const localizedVarietyLabel = plan.variety || copy.notSpecified;
   const localizedRoastLabel = localizeAiBrewRoastLabel(plan.roastLevel, language);
@@ -5176,6 +5207,159 @@ function PlanResultDialog({
     setFlowRunning(false);
     setFlowStartedAtMs(null);
   }
+
+  function jumpToNextFlowStep() {
+    const nextSeconds = flowNextStep
+      ? Math.min(timerTargetSeconds, flowNextStep.startSeconds)
+      : timerTargetSeconds;
+    setFlowElapsedSeconds(nextSeconds);
+    setFlowAccumulatedSeconds(nextSeconds);
+    setFlowStartedAtMs(flowRunning && nextSeconds < timerTargetSeconds ? Date.now() : null);
+    if (nextSeconds >= timerTargetSeconds) {
+      setFlowRunning(false);
+    }
+  }
+
+  const liteGuidePanel = (
+    <div
+      className="rounded-[1.8rem] border border-blue-500/18 bg-[linear-gradient(180deg,rgba(37,99,235,0.10),rgba(245,158,11,0.06))] p-4 shadow-[0_18px_48px_rgba(15,23,42,0.10)]"
+      data-testid="ai-brew-flow-timer-panel"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {guideDensityToggle}
+        <span className="rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300">
+          {flowStatusLabel}
+        </span>
+      </div>
+
+      <div className="mt-5 flex justify-center" data-testid="ai-brew-lite-guide-panel">
+        <div
+          className="ai-brew-lite-progress-ring relative flex aspect-square w-full max-w-[18rem] items-center justify-center rounded-full p-2 shadow-[0_24px_52px_rgba(15,23,42,0.14)]"
+          style={liteProgressRingStyle}
+          aria-label={`${copy.flowElapsed} ${formatGuideTime(flowProgressSeconds)}`}
+        >
+          <div className="absolute inset-3 rounded-full bg-[var(--bg-base)]/96 shadow-inner" />
+          <div className="relative z-10 flex max-w-[13rem] flex-col items-center text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">
+              {liteStepTitle}
+            </p>
+            <p className="mt-2 text-5xl font-semibold leading-none tracking-normal text-primary sm:text-6xl">
+              {formatGuideTime(flowProgressSeconds)}
+            </p>
+            <span className="mt-3 rounded-full bg-amber-500/12 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+              {id ? 'Time brew utama' : 'Main brew time'}: {formatGuideTime(timerTargetSeconds)}
+            </span>
+            <p className="mt-4 text-2xl font-semibold text-blue-700 dark:text-blue-300">
+              {liteWaterTargetLabel}
+            </p>
+            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-secondary">
+              {id ? 'Target air' : 'Water target'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap justify-center gap-2 text-xs" data-testid="ai-brew-flow-remaining-status">
+        <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
+          {copy.flowNextPour}: <span className="text-primary">{flowNextPourValue}</span>
+        </span>
+        <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
+          {copy.flowTotalRemaining}: <span className="text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
+        </span>
+      </div>
+
+      <div className="mx-auto mt-5 max-w-xl space-y-3 text-center" data-testid="ai-brew-flow-current-card">
+        <p className="text-lg font-semibold leading-7 text-primary">
+          {liteStepAction}
+        </p>
+        <div className="grid gap-2 text-xs sm:grid-cols-3">
+          <span className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-2.5 py-2 text-secondary">
+            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
+            <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
+          </span>
+          <span className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-2.5 py-2 text-secondary">
+            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{extractionTimeLabel}</span>
+            <span className="font-semibold text-primary">{formatGuideTime(extractionSeconds)}</span>
+          </span>
+          <span className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-2.5 py-2 text-secondary">
+            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.grind}</span>
+            <span className="font-semibold text-primary">{localizedGrindHeadline}</span>
+          </span>
+        </div>
+        <p className="rounded-2xl border border-blue-500/14 bg-[var(--bg-base)]/74 px-4 py-3 text-sm leading-6 text-secondary">
+          {liteStepCue}
+        </p>
+      </div>
+
+      <div className="mt-5 flex items-center justify-center gap-3">
+        <button
+          type="button"
+          onClick={flowRunning ? pauseFlowTimer : startFlowTimer}
+          disabled={workflowBlocked}
+          className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-[0_14px_28px_rgba(37,99,235,0.30)] disabled:cursor-not-allowed disabled:opacity-55"
+          data-testid="ai-brew-flow-toggle"
+          aria-label={flowRunning ? copy.flowPause : copy.flowStart}
+        >
+          {flowRunning ? <Pause size={21} /> : <Play size={21} />}
+        </button>
+        <button
+          type="button"
+          onClick={jumpToNextFlowStep}
+          disabled={workflowBlocked || flowProgressSeconds >= timerTargetSeconds}
+          className="inline-flex h-12 w-12 items-center justify-center rounded-full border panel-divider-subtle bg-[var(--bg-base)] text-primary shadow-[0_10px_24px_rgba(15,23,42,0.10)] disabled:cursor-not-allowed disabled:opacity-50"
+          data-testid="ai-brew-lite-next-step"
+          aria-label={copy.flowNextAction}
+        >
+          <ArrowRight size={19} />
+        </button>
+        <button
+          type="button"
+          onClick={resetFlowTimer}
+          className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-rose-500/18 bg-rose-500/[0.08] text-rose-600 shadow-[0_10px_24px_rgba(225,29,72,0.10)] dark:text-rose-300"
+          data-testid="ai-brew-flow-reset"
+          aria-label={copy.flowReset}
+        >
+          <RotateCcw size={18} />
+        </button>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <div className="rounded-2xl border border-amber-500/18 bg-amber-500/[0.07] px-4 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
+            {copy.flowLiteScaleTitle}
+          </p>
+          <p className="mt-1 text-sm leading-6 text-secondary">
+            {copy.flowLiteScaleBody}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onUseInTimer(timerTargetSeconds)}
+          disabled={workflowBlocked}
+          className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-4 py-2 text-sm font-medium text-primary disabled:cursor-not-allowed disabled:opacity-55"
+          data-testid="ai-brew-flow-open-timer"
+        >
+          {copy.flowOpenTimer}
+        </button>
+      </div>
+
+      <div className="mt-4 rounded-2xl bg-[var(--bg-base)]/82 p-3.5">
+        <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowNextStep}</p>
+        <p className="mt-1 text-sm font-semibold text-primary">
+          {flowNextStep
+            ? `${formatGuideTime(flowNextStep.startSeconds)} | ${localizeAiBrewStepLabel(flowNextStep.label, language)}`
+            : copy.flowFinished}
+        </p>
+        <p className="mt-1 text-sm text-secondary">
+          {flowNextStep
+            ? buildAiBrewNextStepCue(flowNextStep, flowStepRemainingSeconds, language)
+            : (id
+              ? 'Seduh selesai. Finishing tetap boleh dilakukan, tapi bukan brew time utama.'
+              : 'The brew is complete. Finishing can continue, but it is not the main brew time.')}
+        </p>
+      </div>
+    </div>
+  );
 
   return (
     <FocusLockedDialog
@@ -6040,6 +6224,9 @@ function PlanResultDialog({
                 data-testid="ai-brew-result-guide-panel"
               >
                 <div className={isQuickResult ? 'order-2 space-y-5' : 'space-y-5'}>
+                  {guideDensity === 'basic' ? (
+                    liteGuidePanel
+                  ) : (
                   <div className="rounded-[1.4rem] border border-blue-500/18 bg-blue-500/[0.08] p-4" data-testid="ai-brew-flow-timer-panel">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
@@ -6185,9 +6372,10 @@ function PlanResultDialog({
                       </p>
                     </div>
                   </div>
+                  )}
                 </div>
 
-                {!isQuickResult && (
+                {!isQuickResult && guideDensity === 'pro' && (
                 <div className="space-y-3" data-testid="ai-brew-sequence-section">
                   {workflowGuideSteps.map((step, index) => {
                     const state = index < flowActiveStepIndex

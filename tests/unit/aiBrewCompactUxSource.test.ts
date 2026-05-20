@@ -72,6 +72,19 @@ test('AI Brew generated result uses compact tabs before dense detail', () => {
   assert.match(SOURCE, /\{ id: 'details', label: copy\.detailTab \}/);
 });
 
+test('AI Brew Brew Guide has Lite and Pro modes with Lite as the safe default', () => {
+  assert.match(SOURCE, /guideDensitySimple: 'Lite'/);
+  assert.match(SOURCE, /guideDensityPro: 'Pro'/);
+  assert.match(SOURCE, /guideDensitySimpleHint: 'Focused timer and current step\.'/);
+  assert.match(SOURCE, /guideDensityProHint: 'Full brew guide with barista detail\.'/);
+  assert.match(SOURCE, /data-testid="ai-brew-lite-guide-panel"/);
+  assert.match(SOURCE, /ai-brew-lite-progress-ring/);
+  assert.match(SOURCE, /data-testid="ai-brew-lite-next-step"/);
+  assert.match(SOURCE, /Pakai timbangan asli/);
+  assert.match(SOURCE, /Use your real scale/);
+  assert.match(SOURCE, /setGuideDensity\('basic'\)/);
+});
+
 test('AI Brew Pro keeps advanced AI tools collapsed and no AI auto-run', () => {
   assert.match(SOURCE, /primaryAiAssistActions/);
   assert.match(SOURCE, /advancedAiAssistActions/);

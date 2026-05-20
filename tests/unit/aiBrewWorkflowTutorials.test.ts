@@ -116,7 +116,7 @@ test('workflow tutorials keep method-language safety strict', () => {
   assert.match(paperFilter, /\b(bloom|bed|pour)\b/i);
 });
 
-test('AI Brew result guide labels use Summary/Detail without renaming Quick/Precision entry cards', () => {
+test('AI Brew result guide labels use Lite/Pro without renaming Quick/Precision entry cards', () => {
   const source = readFileSync(resolve(process.cwd(), 'apps/web/src/features/ai-brew/AiBrewPanel.tsx'), 'utf8');
 
   assert.match(source, /quickMode:\s*'Quick'/);
@@ -124,14 +124,15 @@ test('AI Brew result guide labels use Summary/Detail without renaming Quick/Prec
   assert.match(source, /quickMode:\s*'Cepat'/);
   assert.match(source, /proMode:\s*'Presisi'/);
 
-  assert.match(source, /guideDensitySimple:\s*'Summary'/);
-  assert.match(source, /guideDensityPro:\s*'Detail'/);
-  assert.match(source, /guideDensitySimpleHint:\s*'Core steps only\.'/);
-  assert.match(source, /guideDensityProHint:\s*'Step-by-step barista tutorial\.'/);
+  assert.match(source, /guideDensitySimple:\s*'Lite'/);
+  assert.match(source, /guideDensityPro:\s*'Pro'/);
+  assert.match(source, /guideDensitySimpleHint:\s*'Focused timer and current step\.'/);
+  assert.match(source, /guideDensityProHint:\s*'Full brew guide with barista detail\.'/);
 
-  assert.match(source, /guideDensitySimple:\s*'Ringkas'/);
-  assert.match(source, /guideDensitySimpleHint:\s*'Langkah inti saja\.'/);
-  assert.match(source, /guideDensityProHint:\s*'Tutorial barista di setiap tahap\.'/);
+  assert.match(source, /guideDensitySimple:\s*'Lite'/);
+  assert.match(source, /guideDensityPro:\s*'Pro'/);
+  assert.match(source, /guideDensitySimpleHint:\s*'Timer fokus dan langkah sekarang\.'/);
+  assert.match(source, /guideDensityProHint:\s*'Panduan lengkap dengan detail barista\.'/);
 });
 
 test('every visible AI Brew dripper resolves tutorial detail for each generated workflow step', () => {

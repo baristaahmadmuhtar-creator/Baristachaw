@@ -5250,33 +5250,34 @@ function PlanResultDialog({
 
       <div className="mt-5 flex justify-center" data-testid="ai-brew-lite-guide-panel">
         <div
-          className="ai-brew-lite-progress-ring relative flex aspect-square w-full max-w-[18rem] items-center justify-center rounded-full p-2 shadow-[0_24px_52px_rgba(15,23,42,0.14)]"
+          className="ai-brew-lite-progress-ring relative flex aspect-square w-full max-w-[20rem] items-center justify-center rounded-full p-2 shadow-[0_24px_52px_rgba(15,23,42,0.14)]"
           style={liteProgressRingStyle}
+          data-testid="ai-brew-lite-progress-ring"
           aria-label={`${copy.flowElapsed} ${formatGuideTime(flowProgressSeconds)}`}
         >
           <div className="absolute inset-3 rounded-full bg-[var(--bg-base)]/96 shadow-inner" />
-          <div className="relative z-10 flex max-w-[13rem] flex-col items-center text-center">
+          <div className="relative z-10 flex max-w-[12.75rem] flex-col items-center text-center">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">
               {liteStepTitle}
             </p>
-            <p className="mt-2 text-5xl font-semibold leading-none tracking-normal text-primary sm:text-6xl">
+            <p className="mt-1.5 text-[3.1rem] font-semibold leading-none tracking-normal text-primary sm:text-6xl">
               {formatGuideTime(flowProgressSeconds)}
             </p>
-            <span className="mt-3 rounded-full bg-amber-500/12 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+            <span className="mt-2 rounded-full bg-amber-500/12 px-2.5 py-0.5 text-[11px] font-semibold leading-5 text-amber-700 dark:text-amber-300">
               {id ? 'Durasi tahap' : 'Step window'}: {formatGuideTime(flowCurrentStepDurationSeconds)}
             </span>
-            <p className="mt-4 text-2xl font-semibold text-blue-700 dark:text-blue-300">
+            <p className="mt-3 text-[1.65rem] font-semibold leading-none text-blue-700 dark:text-blue-300">
               {liteWaterTargetLabel}
             </p>
-            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-secondary">
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary">
               {id ? 'Tuang / target' : 'Pour / target'}
             </p>
-            <div className="mt-3 w-full max-w-[12rem]" data-testid="ai-brew-flow-remaining-status">
-              <div className="grid gap-1.5 text-xs" data-testid="ai-brew-lite-water-status">
-                <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
+            <div className="mt-2 w-full max-w-[11.75rem]" data-testid="ai-brew-flow-remaining-status">
+              <div className="grid gap-1 text-[10px] leading-4" data-testid="ai-brew-lite-water-status">
+                <span className="min-w-0 rounded-xl border border-blue-500/14 bg-[var(--bg-base)] px-2 py-0.5 font-semibold text-secondary [overflow-wrap:anywhere]">
                   {copy.flowNextPour}: <span className="text-primary">{flowNextPourValue}</span>
                 </span>
-                <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
+                <span className="min-w-0 rounded-xl border border-blue-500/14 bg-[var(--bg-base)] px-2 py-0.5 font-semibold text-secondary [overflow-wrap:anywhere]">
                   {copy.flowTotalRemaining}: <span className="text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
                 </span>
               </div>

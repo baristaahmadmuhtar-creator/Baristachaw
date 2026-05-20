@@ -78,7 +78,9 @@ test('AI Brew Brew Guide has Lite and Pro modes with Lite as the safe default', 
   assert.match(SOURCE, /guideDensitySimpleHint: 'Focused timer and current step\.'/);
   assert.match(SOURCE, /guideDensityProHint: 'Full brew guide with barista detail\.'/);
   assert.match(SOURCE, /data-testid="ai-brew-lite-guide-panel"/);
+  assert.match(SOURCE, /data-testid="ai-brew-lite-progress-ring"/);
   assert.match(SOURCE, /ai-brew-lite-progress-ring/);
+  assert.match(SOURCE, /max-w-\[20rem\]/);
   assert.match(SOURCE, /liteStepProgressPercent/);
   assert.match(SOURCE, /flowCurrentStepElapsedSeconds/);
   assert.doesNotMatch(SOURCE, /flowProgressSeconds \/ timerTargetSeconds/);

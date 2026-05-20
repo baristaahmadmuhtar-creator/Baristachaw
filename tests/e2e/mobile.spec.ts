@@ -254,6 +254,13 @@ test('mobile ai brew result workspace keeps primary actions inside the viewport'
   await expect(result.getByTestId('ai-brew-flow-current-card')).toBeVisible();
   await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/(Tuangan berikutnya|Next pour)/);
   await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/(Sisa total|Total left)/);
+  const liteRingBox = await result.getByTestId('ai-brew-lite-progress-ring').boundingBox();
+  const liteStatusBox = await result.getByTestId('ai-brew-flow-remaining-status').boundingBox();
+  expect(liteRingBox).toBeTruthy();
+  expect(liteStatusBox).toBeTruthy();
+  expect((liteStatusBox?.y || 0) + (liteStatusBox?.height || 0)).toBeLessThanOrEqual(
+    (liteRingBox?.y || 0) + (liteRingBox?.height || 0) - 8,
+  );
   await expect(page.getByTestId('ai-brew-flow-toggle')).toBeVisible();
 
   const timerBox = await result.getByTestId('ai-brew-flow-timer-panel').boundingBox();

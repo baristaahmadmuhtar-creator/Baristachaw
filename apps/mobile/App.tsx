@@ -202,14 +202,8 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
   }, []);
 
   useEffect(() => {
-    setTelemetryUser(session?.user
-      ? {
-          id: session.user.id,
-          email: session.user.email,
-          username: session.user.name,
-        }
-      : null);
-  }, [session?.user]);
+    setTelemetryUser(session?.user ? { id: session.user.id } : null);
+  }, [session?.user?.id]);
 
   const persistSession = useCallback(async (nextSession: AuthSession, provider: 'google' | 'facebook' | 'apple' | 'email') => {
     await saveAuthSession(nextSession);
@@ -727,14 +721,8 @@ function NativeApp({ onBootReady }: NativeAppProps) {
   }, []);
 
   useEffect(() => {
-    setTelemetryUser(session?.user
-      ? {
-          id: session.user.id,
-          email: session.user.email,
-          username: session.user.name,
-        }
-      : null);
-  }, [session?.user]);
+    setTelemetryUser(session?.user ? { id: session.user.id } : null);
+  }, [session?.user?.id]);
 
   const invalidateSession = useCallback(async (reason: string, nextError?: string | null) => {
     await clearAuthSession().catch(() => undefined);

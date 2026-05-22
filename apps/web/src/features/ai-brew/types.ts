@@ -988,6 +988,20 @@ export interface BrewPlanAiNotes {
   sop?: string;
 }
 
+export interface BrewExtractionRationale {
+  ratio: string;
+  temperature: string;
+  time: string;
+  grind: string;
+  pour: string;
+  iceSplit?: string;
+  beanPrecision: {
+    summary: string;
+    signals: string[];
+  };
+  warnings: string[];
+}
+
 export interface BrewPlan {
   id: string;
   fingerprint: string;
@@ -1071,6 +1085,7 @@ export interface BrewPlan {
   readinessScores?: AiBrewReadinessScores;
   notes: string[];
   warnings: string[];
+  extractionRationale: BrewExtractionRationale;
   guardrails: BrewGuardrailState;
   conformance: {
     warnings: string[];

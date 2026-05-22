@@ -81,6 +81,7 @@ import type {
   BeanTaxonomySignal,
   BeanRoastDevelopment,
   BeanSolubility,
+  BrewExtractionRationale,
   BrewJournalEntry,
   BrewPlan,
   BrewPlanStep,
@@ -2345,6 +2346,58 @@ function isNaturalLikeProcess(processEntry?: ProcessCatalogEntry, explicitProces
   ]);
 }
 
+function resolveHardToExtractHotFilterFloor(params: {
+  input: AiBrewFormState;
+  methodFamily: AiBrewMethodFamily;
+  processEntry?: ProcessCatalogEntry;
+}) {
+  if (params.input.brewMode !== 'hot') return null;
+  if (!POUR_CONTROL_METHOD_FAMILIES.has(params.methodFamily)) return null;
+  if (!isLightOrMediumLightRoast(params.input.roastLevel)) return null;
+
+  const processId = String(params.processEntry?.id || params.input.process || '').toLowerCase();
+  const processText = normalizeSearchHaystack([
+    params.input.process,
+    params.input.customProcess,
+    params.processEntry?.id,
+    params.processEntry?.label,
+    params.processEntry?.searchText,
+    ...(params.processEntry?.aliases || []),
+  ]);
+  const isWashedHighClarity = CLARITY_PROCESS_IDS.has(processId)
+    || haystackHasAny(processText, [/\bwashed\b/i, /\bfully washed\b/i, /\bwet process\b/i]);
+  if (!isWashedHighClarity) return null;
+  if (isNaturalLikeProcess(params.processEntry, params.input.process, params.input.customProcess)) return null;
+
+  const density = Number.parseFloat(String(params.input.beanDensityGml || ''));
+  const altitude = Number.parseFloat(String(params.input.altitudeMasl || ''));
+  const isUnderdeveloped = params.input.roastDevelopment === 'underdeveloped';
+  const isLowSolubility = params.input.solubility === 'low';
+  const isDenseHighAltitude = Number.isFinite(density)
+    && density >= 0.75
+    && Number.isFinite(altitude)
+    && altitude >= 1850;
+  if (!isUnderdeveloped && !isLowSolubility && !isDenseHighAltitude) return null;
+
+  const strongExtractionNeed = isUnderdeveloped || isLowSolubility;
+  const cueLabels = normalizeNoteList([
+    isUnderdeveloped ? 'underdeveloped roast' : undefined,
+    isLowSolubility ? 'low-solubility bean' : undefined,
+    isDenseHighAltitude ? 'high-density high-altitude bean' : undefined,
+  ]);
+
+  return {
+    minTempC: strongExtractionNeed ? 94 : 93.5,
+    minTimeSeconds: strongExtractionNeed ? 150 : 145,
+    notes: [
+      `Hard-to-extract light washed filter floor active: ${cueLabels.join(', ')} keeps extraction pressure coherent before acidity/floral target shortening.`,
+    ],
+    confidenceNotes: [
+      'Barista extraction floor active: hard-to-extract washed hot filter plan cannot be shortened below the minimum service window.',
+    ],
+  };
+}
+
 function hasHighAromaNaturalCue(
   input: AiBrewFormState,
   processEntry?: ProcessCatalogEntry,
@@ -3982,6 +4035,91 @@ function deriveV60SweetnessServiceCalibration(params: {
     confidenceNotes: [
       'V60 hot sweetness baseline active: medium roast target ratio 1:15.0-15.3 and 2:50-3:05 service window.',
     ],
+  };
+}
+
+function buildExtractionRationale(params: {
+  input: AiBrewFormState;
+  methodFamily: AiBrewMethodFamily;
+  processLabel: string;
+  varietyLabel: string;
+  targetProfileLabel: string;
+  waterTempC: number;
+  totalTimeSeconds: number;
+  recommendedRatio: number;
+  finalBeverageRatio: number;
+  hotExtractionRatio: number;
+  totalWaterMl: number;
+  hotWaterMl: number;
+  iceMl: number;
+  hotWaterSharePercent: number;
+  iceSharePercent: number;
+  grindBias: GrindBias;
+  grindRecommendation: string;
+  steps: BrewPlanStep[];
+  waterProfile: ReturnType<typeof deriveWaterMineralProfile>;
+  beanProfile: BeanProfileState;
+  beanCoverage?: BeanCoverageState;
+  processRisk?: ProcessRiskModel;
+  warnings: string[];
+  confidenceNotes: string[];
+}): BrewExtractionRationale {
+  const positivePours = params.steps.filter((step) => step.pourVolumeMl > 0);
+  const firstPour = positivePours[0];
+  const lastPour = positivePours[positivePours.length - 1];
+  const techniqueSignals = Array.from(new Set(positivePours.flatMap((step) => [
+    step.pourPath,
+    step.pourHeight,
+    step.agitationLevel,
+  ].filter(Boolean) as string[]))).slice(0, 5);
+  const beanSignals = normalizeNoteList([
+    `process: ${params.processLabel || 'not specified'}`,
+    `variety: ${params.varietyLabel || 'not specified'}`,
+    `roast: ${params.input.roastLevel}`,
+    params.beanProfile.roastDevelopment ? `development: ${params.beanProfile.roastDevelopment}` : undefined,
+    params.beanProfile.solubility ? `solubility: ${params.beanProfile.solubility}` : undefined,
+    params.beanProfile.altitudeMasl ? `altitude: ${params.beanProfile.altitudeMasl} masl` : undefined,
+    params.beanProfile.beanDensityGml ? `density: ${params.beanProfile.beanDensityGml} g/ml` : undefined,
+    `water: TDS ${params.waterProfile.minerals.tdsPpm}, GH ${params.waterProfile.minerals.hardnessPpm}, KH ${params.waterProfile.minerals.alkalinityPpm}`,
+    `grind source: ${params.grindRecommendation}`,
+  ]);
+  const processRiskWarning = params.processRisk?.variability === 'high'
+    || params.processRisk?.recommendationMode === 'taste_feedback_required'
+    ? 'High-variability process: use first-cup taste feedback before increasing extraction pressure.'
+    : undefined;
+  const naturalFermentWarning = isNaturalLikeProcess(undefined, params.input.process, params.input.customProcess)
+    ? 'Natural, honey, or ferment-like process: keep agitation gentle and change one variable after tasting.'
+    : undefined;
+  const genericTasteWarning = 'Treat this as a production starting recipe: validate aroma, sweetness, bitterness, and drawdown before changing numbers.';
+  const rationaleWarnings = normalizeNoteList(
+    params.warnings,
+    params.beanCoverage?.warnings || [],
+    [processRiskWarning, naturalFermentWarning, genericTasteWarning],
+  ).slice(0, 6);
+  const hotOrTotalWater = params.iceMl > 0
+    ? `${params.hotWaterMl} ml hot water into ${params.iceMl} g ice`
+    : `${params.totalWaterMl} ml water`;
+
+  return {
+    ratio: params.iceMl > 0
+      ? `Final ratio 1:${formatBaristaRatio(params.finalBeverageRatio)} keeps iced strength after dilution; hot concentrate 1:${formatBaristaRatio(params.hotExtractionRatio)} extracts with ${hotOrTotalWater}.`
+      : `Brew ratio 1:${formatBaristaRatio(params.recommendedRatio)} balances ${params.targetProfileLabel} with ${params.processLabel} process and ${params.input.roastLevel} roast solubility.`,
+    temperature: `${formatBaristaTemperature(params.waterTempC)}C is selected from roast, process, water minerals, and target-profile extraction pressure.`,
+    time: `${formatTime(params.totalTimeSeconds)} service window keeps contact time aligned with ${params.methodFamily.replace(/_/g, ' ')} flow and ${params.targetProfileLabel}.`,
+    grind: `${params.grindBias === 'finer' ? 'Finer' : params.grindBias === 'coarser' ? 'Coarser' : 'Neutral'} grind bias: ${params.grindRecommendation}`,
+    pour: positivePours.length > 0
+      ? `Pour map uses ${positivePours.length} checkpoints from ${firstPour?.pourVolumeMl || 0} ml to final target ${lastPour?.targetVolumeMl || params.hotWaterMl} ml with ${techniqueSignals.join(', ') || 'controlled flow'} technique.`
+      : `Workflow map uses ${params.steps.length} checkpoints with controlled contact and no extra water outside the deterministic plan.`,
+    iceSplit: params.iceMl > 0
+      ? `Iced split uses ${params.hotWaterSharePercent}% hot water and ${params.iceSharePercent}% ice: ${params.hotWaterMl} ml hot concentrate over ${params.iceMl} g measured ice.`
+      : undefined,
+    beanPrecision: {
+      summary: params.beanCoverage
+        ? `${params.beanCoverage.label} (${params.beanCoverage.confidence})`
+        : 'Bean precision uses available process, variety, roast, water, and grinder data.',
+      signals: beanSignals,
+    },
+    warnings: rationaleWarnings,
   };
 }
 
@@ -6774,6 +6912,11 @@ function finalizePlanCore(
     processEntry,
     varietyEntry,
   });
+  const hardToExtractHotFilterFloor = resolveHardToExtractHotFilterFloor({
+    input,
+    methodFamily,
+    processEntry,
+  });
 
   const ratioLowerBound = method.ratioRange[0] - 0.75;
   const ratioUpperBound = method.ratioRange[1] + 0.75;
@@ -6932,6 +7075,7 @@ function finalizePlanCore(
     methodTempBounds.min,
     v60SweetnessServiceCalibration?.minTempC ?? baristaTemperatureCalibration.minTempC ?? methodTempBounds.min,
     targetAwareProcessAdjustment.minTempC ?? methodTempBounds.min,
+    hardToExtractHotFilterFloor?.minTempC ?? methodTempBounds.min,
   );
   const calibratedTempMax = Math.min(
     methodTempBounds.max,
@@ -6997,7 +7141,12 @@ function finalizePlanCore(
   const minimumMethodServiceTimeSeconds = resolveMinimumMethodServiceTimeSeconds(methodFamily, input.brewMode);
   const totalTimeSeconds = roundBaristaTimeSeconds(
     clamp(
-      Math.max(baseTotalTimeSeconds, minimumServiceTimeSeconds, minimumMethodServiceTimeSeconds),
+      Math.max(
+        baseTotalTimeSeconds,
+        minimumServiceTimeSeconds,
+        minimumMethodServiceTimeSeconds,
+        hardToExtractHotFilterFloor?.minTimeSeconds || 0,
+      ),
       serviceTimeBounds.min,
       serviceTimeBounds.max,
     ),
@@ -7155,6 +7304,7 @@ function finalizePlanCore(
     flavorAlignment.notes,
     icedStrengthCalibration.notes,
     baristaTemperatureCalibration.notes,
+    hardToExtractHotFilterFloor?.notes || [],
     v60SweetnessServiceCalibration?.notes || [],
     precisionOverrideNotes,
     operatorKnowledgeNotes,
@@ -7202,6 +7352,7 @@ function finalizePlanCore(
     flavorAlignment.confidenceNotes,
     icedStrengthCalibration.confidenceNotes,
     baristaTemperatureCalibration.confidenceNotes,
+    hardToExtractHotFilterFloor?.confidenceNotes || [],
     v60SweetnessServiceCalibration?.confidenceNotes || [],
     precisionOverrideNotes,
     operatorKnowledgeNotes.length > 0
@@ -7275,6 +7426,32 @@ function finalizePlanCore(
         && waterProfile.minerals.alkalinityPpm < 20
       )
     );
+  const extractionRationale = buildExtractionRationale({
+    input,
+    methodFamily,
+    processLabel,
+    varietyLabel,
+    targetProfileLabel: targetProfile.label,
+    waterTempC,
+    totalTimeSeconds,
+    recommendedRatio,
+    finalBeverageRatio,
+    hotExtractionRatio,
+    totalWaterMl,
+    hotWaterMl,
+    iceMl,
+    hotWaterSharePercent,
+    iceSharePercent,
+    grindBias,
+    grindRecommendation: grindDetails.grindRecommendation,
+    steps,
+    waterProfile,
+    beanProfile: beanProfileAdjustment.state,
+    beanCoverage,
+    processRisk,
+    warnings,
+    confidenceNotes,
+  });
 
   const summary = buildSummary({
     brewMode: input.brewMode,
@@ -7394,6 +7571,7 @@ function finalizePlanCore(
     switchWatch: switchSelection?.tasteProgramme.riskWarnings[0] || switchStepValidation?.message || switchSelection?.preset.watch,
     notes,
     warnings,
+    extractionRationale,
     guardrails: {
       errors: baseGuardrails.errors,
       warnings,
@@ -7845,6 +8023,34 @@ export function applyAiBrewOptimizationPatch(
   const optimizationReason = patch.reason?.trim().slice(0, 220);
   const grindGuidance = sanitizeOptimizationGrindGuidance(patch.grindGuidance, plan);
   const warnings = normalizeNoteList(plan.warnings, baseGuardrails.warnings);
+  const positivePourSteps = steps.filter((step) => step.pourVolumeMl > 0);
+  const firstPourStep = positivePourSteps[0];
+  const lastPourStep = positivePourSteps[positivePourSteps.length - 1];
+  const notes = normalizeNoteList(
+    plan.notes,
+    optimizationReason ? [`AI optimizer: ${optimizationReason}`] : ['AI optimizer adjusted the deterministic brew envelope within guardrails.'],
+    grindGuidance ? [`AI grind guidance: ${grindGuidance}`] : [],
+  );
+  const confidenceNotes = normalizeNoteList(
+    plan.confidenceNotes,
+    [`AI numeric optimizer accepted inside guardrails${typeof patch.confidence === 'number' ? ` (confidence ${roundPercent(clamp(patch.confidence <= 1 ? patch.confidence * 100 : patch.confidence, 0, 100))}%).` : '.'}`],
+    diagnostics,
+  );
+  const extractionRationale = {
+    ...plan.extractionRationale,
+    ratio: plan.brewMode === 'iced'
+      ? `Final ratio 1:${formatBaristaRatio(nextRatio)} keeps iced strength after dilution; hot concentrate 1:${formatBaristaRatio(hotExtractionRatio)} extracts with ${hotWaterMl} ml hot water into ${iceMl} g ice.`
+      : `Brew ratio 1:${formatBaristaRatio(nextRatio)} remains inside optimizer guardrails for ${plan.targetProfileLabel} and ${plan.roastLevel} roast solubility.`,
+    temperature: `${formatBaristaTemperature(waterTempC)}C remains inside optimizer guardrails and must be validated by taste before further pressure changes.`,
+    time: `${formatTime(totalTimeSeconds)} service window remains inside optimizer guardrails for ${plan.methodFamily.replace(/_/g, ' ')} flow.`,
+    pour: positivePourSteps.length > 0
+      ? `Optimized pour map uses ${positivePourSteps.length} checkpoints from ${firstPourStep?.pourVolumeMl || 0} ml to final target ${lastPourStep?.targetVolumeMl || hotWaterMl} ml without adding water outside the deterministic envelope.`
+      : plan.extractionRationale.pour,
+    iceSplit: plan.brewMode === 'iced'
+      ? `Iced split uses ${hotWaterSharePercent}% hot water and ${iceSharePercent}% ice: ${hotWaterMl} ml hot concentrate over ${iceMl} g measured ice.`
+      : undefined,
+    warnings: normalizeNoteList(plan.extractionRationale.warnings, warnings, diagnostics).slice(0, 6),
+  } satisfies BrewExtractionRationale;
   const nextPlan = {
     ...plan,
     fingerprint: createFingerprint(JSON.stringify({
@@ -7884,12 +8090,9 @@ export function applyAiBrewOptimizationPatch(
       totalTimeSeconds,
     }),
     steps,
-    notes: normalizeNoteList(
-      plan.notes,
-      optimizationReason ? [`AI optimizer: ${optimizationReason}`] : ['AI optimizer adjusted the deterministic brew envelope within guardrails.'],
-      grindGuidance ? [`AI grind guidance: ${grindGuidance}`] : [],
-    ),
+    notes,
     warnings,
+    extractionRationale,
     guardrails: {
       errors: baseGuardrails.errors,
       warnings,
@@ -7899,11 +8102,7 @@ export function applyAiBrewOptimizationPatch(
       standardsHits: baseConformance.standardsHits,
       standardsMisses: normalizeNoteList(baseConformance.standardsMisses),
     },
-    confidenceNotes: normalizeNoteList(
-      plan.confidenceNotes,
-      [`AI numeric optimizer accepted inside guardrails${typeof patch.confidence === 'number' ? ` (confidence ${roundPercent(clamp(patch.confidence <= 1 ? patch.confidence * 100 : patch.confidence, 0, 100))}%).` : '.'}`],
-      diagnostics,
-    ),
+    confidenceNotes,
   } satisfies BrewPlan;
 
   rejected.push(...validateOptimizedPlanEnvelope(nextPlan));
@@ -8484,6 +8683,14 @@ export function buildPlanRecipeMetadata(plan: BrewPlan) {
     planId: plan.id,
     fingerprint: plan.fingerprint,
     brewMode: plan.brewMode,
+    process: plan.process,
+    variety: plan.variety,
+    roastLevel: plan.roastLevel,
+    beanAltitudeMasl: plan.beanProfile.altitudeMasl,
+    beanDensityGml: plan.beanProfile.beanDensityGml,
+    beanRoastDevelopment: plan.beanProfile.roastDevelopment,
+    beanSolubility: plan.beanProfile.solubility,
+    beanProfileSummary: plan.beanProfile.summary,
     targetProfileId: plan.targetProfileId,
     targetProfileLabel: plan.targetProfileLabel,
     dripperId: plan.dripper.id,
@@ -8507,11 +8714,6 @@ export function buildPlanRecipeMetadata(plan: BrewPlan) {
     waterTdsPpm: plan.waterMinerals.tdsPpm,
     waterHardnessPpm: plan.waterMinerals.hardnessPpm,
     waterAlkalinityPpm: plan.waterMinerals.alkalinityPpm,
-    beanAltitudeMasl: plan.beanProfile.altitudeMasl,
-    beanDensityGml: plan.beanProfile.beanDensityGml,
-    beanRoastDevelopment: plan.beanProfile.roastDevelopment,
-    beanSolubility: plan.beanProfile.solubility,
-    beanProfileSummary: plan.beanProfile.summary,
     deviceProfileId: plan.deviceProfileId,
     deviceProfileLabel: plan.deviceProfileLabel,
     deviceProfileMode: plan.deviceProfileMode,
@@ -8530,6 +8732,9 @@ export function buildPlanRecipeMetadata(plan: BrewPlan) {
     hotExtractionRatio: plan.hotExtractionRatio,
     hotWaterSharePercent: plan.hotWaterSharePercent,
     iceSharePercent: plan.iceSharePercent,
+    warnings: plan.warnings,
+    confidenceNotes: plan.confidenceNotes,
+    extractionRationale: plan.extractionRationale,
     steps: plan.steps.map((step) => ({
       id: step.id,
       label: step.label,
@@ -8537,6 +8742,10 @@ export function buildPlanRecipeMetadata(plan: BrewPlan) {
       startSeconds: step.startSeconds,
       targetVolumeMl: step.targetVolumeMl,
       pourVolumeMl: step.pourVolumeMl,
+      flowRateMlPerSec: step.flowRateMlPerSec || [0, 0],
+      pourPath: step.pourPath || (step.kind === 'press' ? 'press' : step.kind === 'heat' ? 'heat_control' : 'center'),
+      pourHeight: step.pourHeight || 'low',
+      agitationLevel: step.agitationLevel || 'low',
       hybridInstruction: step.hybridInstruction,
     })),
   };

@@ -216,15 +216,29 @@ export type RecipeBrewStyle = 'espresso' | 'manual_brew' | 'milk_based' | 'cold_
 export interface AiBrewRecipeStepMeta {
     id: string;
     label: string;
+    kind?: string;
     startSeconds: number;
     targetVolumeMl: number;
     pourVolumeMl: number;
+    flowRateMlPerSec?: [number, number];
+    pourPath?: string;
+    pourHeight?: string;
+    agitationLevel?: string;
+    hybridInstruction?: string;
 }
 
 export interface AiBrewRecipeMeta {
     planId: string;
     fingerprint: string;
     brewMode: 'hot' | 'iced';
+    process: string;
+    variety: string;
+    roastLevel: string;
+    beanAltitudeMasl?: number | null;
+    beanDensityGml?: number | null;
+    beanRoastDevelopment?: string;
+    beanSolubility?: string;
+    beanProfileSummary?: string;
     targetProfileId: string;
     targetProfileLabel: string;
     dripperId: string;
@@ -258,6 +272,25 @@ export interface AiBrewRecipeMeta {
     iceMl: number;
     waterTempC: number;
     ratio: number;
+    finalBeverageRatio?: number;
+    hotExtractionRatio?: number;
+    hotWaterSharePercent?: number;
+    iceSharePercent?: number;
+    warnings?: string[];
+    confidenceNotes?: string[];
+    extractionRationale?: {
+        ratio: string;
+        temperature: string;
+        time: string;
+        grind: string;
+        pour: string;
+        iceSplit?: string;
+        beanPrecision: {
+            summary: string;
+            signals: string[];
+        };
+        warnings: string[];
+    };
     steps: AiBrewRecipeStepMeta[];
 }
 

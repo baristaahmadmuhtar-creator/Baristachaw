@@ -25,17 +25,33 @@ const closeSidebarLabel = /Close sidebar|Tutup sidebar/i;
 
 async function clickVisibleLibraryControl(page: Page) {
   const libraryTab = page.getByRole('tab', { name: libraryButtonName }).first();
-  try {
-    await expect(libraryTab).toBeVisible({ timeout: 10_000 });
-    await libraryTab.click();
+  await expect(libraryTab).toBeVisible({ timeout: 10_000 });
+  await libraryTab.click();
+  await expect(libraryTab).toHaveAttribute('aria-selected', 'true');
+}
+
+async function openChatWorkspace(page: Page) {
+  const isMobileLayout = await page.evaluate(() => window.innerWidth < 768);
+  const mobileToggle = page.getByRole('button', { name: toggleSidebarLabel }).first();
+  const visibleSearch = page.locator(chatSearchSelector).first();
+  if (isMobileLayout) {
+    await expect(mobileToggle).toBeVisible({ timeout: 10_000 });
+    const toggleBox = await mobileToggle.boundingBox();
+    expect(toggleBox?.width ?? 0).toBeGreaterThanOrEqual(40);
+    expect(toggleBox?.height ?? 0).toBeGreaterThanOrEqual(40);
+    await mobileToggle.click();
+    await expect(page.getByRole('dialog', { name: /Chat workspace|Ruang kerja chat/i })).toBeVisible();
     return;
-  } catch {
-    // Mobile renders this control as a button instead of a workspace tab.
   }
 
-  const libraryButton = page.getByRole('button', { name: libraryButtonName }).first();
-  await expect(libraryButton).toBeVisible({ timeout: 10_000 });
-  await libraryButton.click();
+  const desktopChatNavLink = page.getByRole('navigation').first().getByRole('link', { name: chatNavName });
+  if (!(await visibleSearch.isVisible())) {
+    await desktopChatNavLink.click();
+  }
+  if (!(await visibleSearch.isVisible())) {
+    await desktopChatNavLink.click();
+  }
+  await expect(visibleSearch).toBeVisible();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -283,21 +299,14 @@ test('supports sidebar folder flow', async ({ page }) => {
   await qaLogin(page.request);
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
-  const mobileToggle = page.getByLabel(toggleSidebarLabel);
-  const desktopChatNavLink = page.getByRole('navigation').first().getByRole('link', { name: chatNavName });
   const visibleSearch = page.locator(chatSearchSelector).first();
-  if (await mobileToggle.isVisible()) {
-    await mobileToggle.click();
-  } else {
-    if (!(await visibleSearch.isVisible())) {
-      await desktopChatNavLink.click();
-    }
-    if (!(await visibleSearch.isVisible())) {
-      await desktopChatNavLink.click();
-    }
-  }
+  await openChatWorkspace(page);
   await expect(visibleSearch).toBeVisible();
-  await page.getByTitle(createFolderTitle).first().click();
+  const workspace = page.getByRole('dialog', { name: /Chat workspace|Ruang kerja chat/i });
+  const createFolderButton = await workspace.isVisible()
+    ? workspace.getByRole('button', { name: createFolderTitle }).first()
+    : page.getByTitle(createFolderTitle).first();
+  await createFolderButton.click();
   await page.getByPlaceholder(folderNamePlaceholder).fill('qa_e2e folder', { timeout: 30_000 });
   await page.getByRole('button', { name: saveButtonName }).click();
   await expect(page.locator('span:text-is("qa_e2e folder"):visible').first()).toBeVisible();
@@ -332,13 +341,22 @@ test('mobile sidebar hide fully closes history and library panel', async ({ page
   await qaLogin(page.request);
   await page.goto('/chat', { waitUntil: 'domcontentloaded' });
 
-  await page.getByLabel(toggleSidebarLabel).click();
-  await expect(page.getByRole('button', { name: libraryButtonName })).toBeVisible();
+  await openChatWorkspace(page);
+  const workspace = page.getByRole('dialog', { name: /Chat workspace|Ruang kerja chat/i });
+  await expect(workspace.getByRole('tab', { name: historyButtonName })).toHaveAttribute('aria-selected', 'true');
   await clickVisibleLibraryControl(page);
   await expect(page.getByPlaceholder(describeImagePlaceholder)).toBeVisible();
 
+  await page.keyboard.press('Escape');
+  await expect(workspace).toHaveCount(0);
+  await expect(page.getByPlaceholder(describeImagePlaceholder)).not.toBeVisible();
+
+  await openChatWorkspace(page);
+  await clickVisibleLibraryControl(page);
+  await expect(page.getByPlaceholder(describeImagePlaceholder)).toBeVisible();
   await page.getByLabel(closeSidebarLabel).click();
-  await expect(page.getByRole('button', { name: libraryButtonName })).not.toBeVisible();
+  await expect(workspace).toHaveCount(0);
+  await expect(page.getByRole('tab', { name: libraryButtonName })).not.toBeVisible();
   await expect(page.getByPlaceholder(describeImagePlaceholder)).not.toBeVisible();
 });
 

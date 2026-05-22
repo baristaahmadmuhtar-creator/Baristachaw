@@ -169,10 +169,13 @@ const COPY = {
     waterBrandPicker: 'Water',
     waterQuickPicks: 'Suggested',
     waterQuickPicksDescription: '',
+    liteMode: 'Lite',
     quickMode: 'Quick',
     proMode: 'Precision',
+    liteModeDescription: 'Minimal inputs, local planner, fastest safe brew start.',
     quickModeDescription: 'Fast default recipe builder for a reliable first cup.',
     proModeDescription: '',
+    liteModeTrustHint: 'Best when you only need a safe recipe now. Uses the same deterministic local planner as Quick with fewer visible controls.',
     quickModeTrustHint: 'Best for speed and consistency. If bean profile and water stay neutral, Quick and Pro can land on the same plan.',
     proModeTrustHint: '',
     pourControlTitle: 'Pour control',
@@ -209,6 +212,7 @@ const COPY = {
     targetWaterMlPlaceholder: 'Auto',
     targetTempC: 'Temperature (C)',
     targetTempCPlaceholder: 'Auto',
+    liteBuilderTitle: 'Lite Builder',
     quickBuilderTitle: 'Quick Builder',
     proBuilderTitle: 'Precision Builder',
     closeBuilder: 'Close builder',
@@ -332,7 +336,7 @@ const COPY = {
     openPlan: 'Open result',
     emptyRecent: 'Generate once to start your local journal.',
     emptyFavorites: 'Favorite a plan to pin it here.',
-    emptyPlan: 'Pick Quick or Precision to build a brew.',
+    emptyPlan: 'Pick Lite, Quick, or Precision to build a brew.',
     actionPrioritiesTitle: 'Brew priorities',
     actionPrioritiesDescription: 'Practical moves for the next brew. Change one variable at a time.',
     warningsDescription: 'Review before brewing. These notes follow the selected language and the current water, grinder, and brewer status.',
@@ -683,10 +687,13 @@ const COPY = {
     waterBrandPicker: 'Air',
     waterQuickPicks: 'Saran',
     waterQuickPicksDescription: '',
+    liteMode: 'Lite',
     quickMode: 'Cepat',
     proMode: 'Presisi',
+    liteModeDescription: 'Input minimal, planner lokal, mulai seduh paling cepat dan aman.',
     quickModeDescription: 'Penyusun resep awal yang cepat untuk cangkir pertama yang stabil.',
     proModeDescription: '',
+    liteModeTrustHint: 'Paling cocok saat butuh resep aman sekarang. Memakai planner lokal deterministik seperti Cepat dengan kontrol yang lebih ringkas.',
     quickModeTrustHint: 'Paling cocok untuk cepat dan konsisten. Kalau profil kopi dan air masih netral, hasil Cepat dan Presisi bisa sama.',
     proModeTrustHint: '',
     pourControlTitle: 'Kontrol tuang',
@@ -723,6 +730,7 @@ const COPY = {
     targetWaterMlPlaceholder: 'Auto',
     targetTempC: 'Suhu (C)',
     targetTempCPlaceholder: 'Auto',
+    liteBuilderTitle: 'Builder Lite',
     quickBuilderTitle: 'Builder Cepat',
     proBuilderTitle: 'Builder Presisi',
     closeBuilder: 'Tutup panel',
@@ -1206,7 +1214,7 @@ const SOLUBILITY_OPTIONS = [
 
 type PickerKind = 'process' | 'variety' | 'dripper' | 'grinder' | 'water_brand' | null;
 type AiCoachMode = 'explain' | 'troubleshoot' | 'rewrite' | 'deep_analysis' | 'adjust';
-type FormMode = 'quick' | 'pro';
+type FormMode = 'lite' | 'quick' | 'pro';
 type HistoryStripTab = 'latest' | 'favorites' | 'recent';
 type ResultTab = 'plan' | 'flow' | 'coach' | 'details';
 type AiBrewGuideDensity = 'basic' | 'pro';
@@ -5034,6 +5042,43 @@ function PlanResultDialog({
       detail: `${localizedGrindSettingReference} - ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)}${isFeima600nPlatformGrinder(plan.grinder) ? ` ${formatFeima600nAliasLine(language)}` : ''}`,
     },
   ];
+  const extractionRationale = plan.extractionRationale || {
+    ratio: id
+      ? `Rasio 1:${formatBrewRatio(plan.finalBeverageRatio)} mengikuti target profil dan input beans.`
+      : `Ratio 1:${formatBrewRatio(plan.finalBeverageRatio)} follows target profile and bean inputs.`,
+    temperature: id
+      ? `Suhu ${formatRoundedTemperature(plan.waterTempC)} dijaga sebagai baseline aman.`
+      : `${formatRoundedTemperature(plan.waterTempC)} is kept as the safe baseline.`,
+    time: id
+      ? `Waktu ${formatGuideTime(extractionSeconds)} dipakai sebagai target service.`
+      : `${formatGuideTime(extractionSeconds)} is used as the service target.`,
+    grind: localizedGrindRecommendation,
+    pour: id ? 'Ikuti urutan tuang deterministik.' : 'Follow the deterministic pour sequence.',
+    iceSplit: plan.iceMl > 0
+      ? `${formatRoundedMl(plan.hotWaterMl)} ${id ? 'air panas' : 'hot water'} / ${formatRoundedGrams(plan.iceMl)} ${id ? 'es' : 'ice'}`
+      : undefined,
+    beanPrecision: {
+      summary: localizedBeanCoverageLabel || (id ? 'Baseline beans' : 'Bean baseline'),
+      signals: [
+        localizedProcessLabel,
+        localizedVarietyLabel,
+        localizedRoastLabel,
+        `TDS ${plan.waterMinerals.tdsPpm}`,
+      ],
+    },
+    warnings: localizedWarnings,
+  };
+  const beanDataPrecisionSignals = extractionRationale.beanPrecision.signals
+    .filter(Boolean)
+    .slice(0, 6);
+  const extractionRationaleItems = [
+    { label: id ? 'Rasio' : 'Ratio', value: extractionRationale.ratio },
+    { label: id ? 'Suhu' : 'Temperature', value: extractionRationale.temperature },
+    { label: id ? 'Waktu ekstraksi' : 'Extraction time', value: extractionRationale.time },
+    { label: id ? 'Gilingan' : 'Grind', value: extractionRationale.grind },
+    { label: id ? 'Peta tuang' : 'Pour map', value: extractionRationale.pour },
+    ...(extractionRationale.iceSplit ? [{ label: id ? 'Split es' : 'Ice split', value: extractionRationale.iceSplit }] : []),
+  ];
   const resultHeaderClass = 'relative min-w-0 max-w-full overflow-hidden rounded-[1.5rem] border panel-divider-subtle panel-soft px-4 pb-4 pt-5 lg:px-5';
   const resultMetricCardClass = 'min-w-0 max-w-full rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/84 p-3 [overflow-wrap:anywhere]';
   const resultChipClass = 'max-w-full rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-medium text-secondary [overflow-wrap:anywhere]';
@@ -5215,6 +5260,12 @@ function PlanResultDialog({
                           {localizedBeanCoverageLabel}
                         </span>
                       )}
+                      <span
+                        className="rounded-full border border-blue-500/18 bg-blue-500/10 px-2 py-1 font-semibold text-blue-700 dark:text-blue-300"
+                        data-testid="ai-brew-bean-data-precision"
+                      >
+                        {id ? 'Presisi Data Bean' : 'Bean Data Precision'}: {extractionRationale.beanPrecision.summary}
+                      </span>
                       {expectedCup && (
                         <span className="rounded-full bg-surface-alpha px-2 py-1 font-semibold text-primary">
                           {copy.expectedCupTitle}: {localizedExpectedCupConfidence}
@@ -5503,6 +5554,50 @@ function PlanResultDialog({
               </div>
 
               <div className="grid gap-4">
+                <section
+                  className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
+                  data-testid="ai-brew-why-this-extraction"
+                >
+                  <div className="mb-3 flex min-w-0 flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Gauge size={15} className="text-blue-500" />
+                        <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
+                          {id ? 'Kenapa Ekstraksi Ini' : 'Why This Extraction'}
+                        </h4>
+                      </div>
+                      <p className="mt-1 text-xs leading-5 text-secondary">
+                        {id
+                          ? 'Rationale ini berasal dari angka planner deterministik, bukan karangan AI.'
+                          : 'This rationale comes from deterministic planner numbers, not AI-invented copy.'}
+                      </p>
+                    </div>
+                    <span className="rounded-full border border-blue-500/18 bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
+                      {extractionRationale.beanPrecision.summary}
+                    </span>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {extractionRationaleItems.map((item) => (
+                      <div key={item.label} className="rounded-xl bg-surface-alpha px-3 py-2.5">
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{item.label}</p>
+                        <p className="mt-1 text-xs leading-5 text-primary">{localizeAiBrewDynamicText(item.value, language)}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]" data-testid="ai-brew-bean-data-precision-signals">
+                    {beanDataPrecisionSignals.map((signal) => (
+                      <span key={signal} className="rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 font-medium text-secondary">
+                        {localizeAiBrewDynamicText(signal, language)}
+                      </span>
+                    ))}
+                  </div>
+                  {extractionRationale.warnings.length > 0 && (
+                    <div className="mt-3 rounded-xl border border-amber-500/18 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-700 dark:text-amber-200">
+                      {localizeAiBrewDynamicText(extractionRationale.warnings[0], language)}
+                    </div>
+                  )}
+                </section>
+
                 <section
                   className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
                   data-testid="ai-brew-pro-target-compare"
@@ -7563,7 +7658,7 @@ export function AiBrewPanel({
   const aiEngineWorkingLabel = aiEngineReadyLabel;
   const preferredBuilderMode = inferPreferredBuilderMode(formState);
 
-  const isQuickBuilder = activeBuilderModal === 'quick';
+  const isLocalBuilder = activeBuilderModal !== 'pro';
   const mineralsReady = areWaterMineralInputsReady(formState);
   const selectedWaterBrandCanAutofill = isWaterBrandAutofillAllowed(selectedWaterBrand);
   const waterReadyForGeneration = mineralsReady && (
@@ -7577,7 +7672,7 @@ export function AiBrewPanel({
     || !selectedWaterBrandCanAutofill
     || formState.waterCustomized;
   const shouldShowMineralEditor = showMineralEditor || waterNeedsManualEntry;
-  const canToggleMineralEditor = !isQuickBuilder
+  const canToggleMineralEditor = !isLocalBuilder
     && formState.waterMode === 'brand'
     && selectedWaterBrandCanAutofill;
 
@@ -7762,7 +7857,7 @@ export function AiBrewPanel({
     setAiError(null);
     clearSaveFeedback();
     syncTasteFeedback(null);
-    const generationMode = activeBuilderModal === 'quick' ? 'quick' : 'pro';
+    const generationMode = activeBuilderModal === 'pro' ? 'pro' : 'quick';
     const generationFormState = generationMode === 'quick'
       ? createQuickAiBrewFormState(formState, catalog)
       : sanitizeAiBrewFormState(formState, catalog);
@@ -8314,7 +8409,7 @@ export function AiBrewPanel({
     }
     setFormError(null);
     setShowBeanProfileEditor(false);
-    if (mode === 'quick') {
+    if (mode !== 'pro') {
       const activeBrand = catalog.waterBrands.find((item) => item.id === formState.waterBrandId);
       const quickBrand = activeBrand && isWaterBrandAutofillAllowed(activeBrand)
         ? activeBrand
@@ -8511,7 +8606,10 @@ export function AiBrewPanel({
   }
 
   function renderBuilderDialog(mode: FormMode) {
+    const isLite = mode === 'lite';
     const isPro = mode === 'pro';
+    const modeLabel = isPro ? copy.proMode : isLite ? copy.liteMode : copy.quickMode;
+    const ModeIcon = isPro ? Brain : isLite ? Gauge : Sparkles;
     const pourStyleOptions = [
       { value: 'auto', label: copy.pourStyleAuto },
       { value: 'balanced', label: copy.pourStyleBalanced },
@@ -8538,8 +8636,12 @@ export function AiBrewPanel({
       { value: 'bright_clean', label: copy.aeropressStyleBrightClean },
       { value: 'sweet_body', label: copy.aeropressStyleSweetBody },
     ] as const;
-    const dialogTitle = isPro ? `${copy.title} - ${copy.proBuilderTitle}` : copy.title;
-    const showBeanDetailsControls = isPro || showQuickBeanDetails;
+    const dialogTitle = isPro
+      ? `${copy.title} - ${copy.proBuilderTitle}`
+      : isLite
+        ? `${copy.title} - ${copy.liteBuilderTitle}`
+        : copy.title;
+    const showBeanDetailsControls = isPro || (!isLite && showQuickBeanDetails);
     const showOrigamiFilterControl = selectedDripper?.methodFamily === 'origami';
     const showAeroPressStyleControl = selectedDripper?.methodFamily === 'aeropress';
     const methodOptionPanel = showOrigamiFilterControl || showAeroPressStyleControl ? (
@@ -8964,8 +9066,8 @@ export function AiBrewPanel({
                 </button>
                 <div className="min-w-0 pr-12">
                   <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-300">
-                    {isPro ? <Brain size={13} /> : <Sparkles size={13} />}
-                    <span>{isPro ? copy.proMode : copy.quickMode}</span>
+                    <ModeIcon size={13} />
+                    <span>{modeLabel}</span>
                     <span className="opacity-70">
                       {aiEngineReadyLabel}
                     </span>
@@ -9060,6 +9162,7 @@ export function AiBrewPanel({
                               type="button"
                               onClick={() => updateForm('roastLevel', option.value as AiBrewFormState['roastLevel'])}
                               className={`min-w-0 rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.roastLevel === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
+                              data-testid={`ai-brew-roast-${option.value}`}
                             >
                               <span className="block truncate">{localizeAiBrewRoastLabel(option.value, language)}</span>
                             </button>
@@ -9775,7 +9878,7 @@ export function AiBrewPanel({
                 </div>
               )}
 
-              {!isPro && (
+              {!isPro && !isLite && (
               <div className="glass-card p-4 sm:p-5">
                 <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
                   <div className="flex min-w-0 items-start gap-2">
@@ -10107,7 +10210,20 @@ export function AiBrewPanel({
           </div>
 
           <div className="mt-6 space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <button
+                type="button"
+                onClick={() => openBuilder('lite')}
+                disabled={!catalog}
+                className="rounded-[1.4rem] border border-emerald-500/15 bg-emerald-500/5 p-4 text-left transition-all hover:border-emerald-500/35 hover:bg-emerald-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                data-testid="ai-brew-open-lite"
+              >
+                <div className="text-base font-semibold text-primary">{copy.liteMode}</div>
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                  <Gauge size={12} />
+                  {copy.aiEngineLocalValidated}
+                </div>
+              </button>
               <button
                 type="button"
                 onClick={() => openBuilder('quick')}
@@ -10269,6 +10385,7 @@ export function AiBrewPanel({
         {renderFeedback(false)}
       </div>
 
+      {renderBuilderDialog('lite')}
       {renderBuilderDialog('quick')}
       {renderBuilderDialog('pro')}
 

@@ -73,6 +73,11 @@ async function openAiBrewQuickMode(page: import('@playwright/test').Page) {
   await expect(page.getByTestId('ai-brew-builder-quick')).toBeVisible();
 }
 
+async function openAiBrewLiteMode(page: import('@playwright/test').Page) {
+  await page.getByTestId('ai-brew-open-lite').click();
+  await expect(page.getByTestId('ai-brew-builder-lite')).toBeVisible();
+}
+
 async function openAiBrewProMode(page: import('@playwright/test').Page) {
   await page.getByTestId('ai-brew-open-pro').click();
   await expect(page.getByTestId('ai-brew-builder-pro')).toBeVisible();
@@ -414,8 +419,14 @@ test('tasks tab add toggle delete persists', async ({ page }) => {
 test('ai brew reveals custom process, variety, and water inputs', async ({ page }) => {
   await expect(page.getByTestId('ai-brew-panel')).toBeVisible();
   await expect(page.getByTestId('ai-brew-coffee-name')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-open-lite')).toBeVisible();
   await expect(page.getByTestId('ai-brew-open-quick')).toBeVisible();
   await expect(page.getByTestId('ai-brew-open-pro')).toBeVisible();
+
+  await openAiBrewLiteMode(page);
+  await expect(page.getByTestId('ai-brew-coffee-name')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-bean-details-summary')).toHaveCount(0);
+  await page.getByTestId('ai-brew-close-lite').click();
 
   await openAiBrewQuickMode(page);
   await expect(page.getByTestId('ai-brew-bean-details-summary')).toBeVisible();
@@ -1038,6 +1049,9 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
       await expect(result.getByTestId('ai-brew-flow-current-card')).toContainText(firstHotTargetText);
     } else {
       await result.getByTestId('ai-brew-result-tab-details').click();
+      await expect(result.getByTestId('ai-brew-bean-data-precision')).toContainText(/Bean Data Precision|Presisi Data Bean/i);
+      await expect(result.getByTestId('ai-brew-why-this-extraction')).toContainText(/Why This Extraction|Kenapa Ekstraksi Ini/i);
+      await expect(result.getByTestId('ai-brew-bean-data-precision-signals')).toContainText(/process|proses|roast|water|TDS/i);
       await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Final ratio|Rasio Final/i);
       await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Hot concentrate|Konsentrat Panas/i);
       await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(plan.finalBeverageRatio)}`);

@@ -153,7 +153,6 @@ function getRacerConfigs(): RacerConfig[] {
 // ─── Model Fallback Chain ───
 const GEMINI_FALLBACK_CHAIN = [
     'gemini-2.5-flash',
-    'gemini-2.5-flash-lite-latest',
     'gemini-2.0-flash',
     'gemini-1.5-flash',
 ];
@@ -303,7 +302,7 @@ async function repairChatText(params: {
             ].join('\n');
 
         const response: any = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-lite-latest',
+            model: 'gemini-2.5-flash',
             contents: repairPrompt,
             config: { temperature: 0.3 },
         });
@@ -316,6 +315,121 @@ async function repairChatText(params: {
 }
 
 // ─── Race Logic (fastest provider wins) ───
+function isIndonesianLanguage(language: string): boolean {
+    const normalized = String(language || '').trim().toLowerCase();
+    return normalized === 'id' || normalized.startsWith('id-');
+}
+
+function isDeepTemplateRequest(message: string): boolean {
+    const value = String(message || '');
+    return /##\s*TL;DR/i.test(value)
+        && /##\s*Recommended Action Plan/i.test(value)
+        && /deep mode|think deeply|structured recommendations/i.test(value);
+}
+
+function extractLocalChatSubject(message: string): string {
+    const value = String(message || '').replace(/\r\n/g, '\n').trim();
+    const marker = 'User request:';
+    const markerIndex = value.lastIndexOf(marker);
+    const candidate = markerIndex >= 0 ? value.slice(markerIndex + marker.length) : value;
+    const cleaned = candidate.replace(/\s+/g, ' ').trim().replace(/[.!?]+$/, '');
+    return cleaned.slice(0, 320) || 'the current coffee request';
+}
+
+function buildLocalChatFallback(message: string, profile: ResolvedResponseProfile): string {
+    const isId = isIndonesianLanguage(profile.language);
+    const subject = extractLocalChatSubject(message);
+
+    if (isDeepTemplateRequest(message)) {
+        if (isId) {
+            return [
+                '## TL;DR',
+                `Gunakan baseline terukur untuk permintaan ini: ${subject}. Kunci resep, ubah satu variabel kecil, dan validasi dengan catatan rasa serta angka agar keputusan berikutnya bisa dipercaya.`,
+                '',
+                '## Core Analysis',
+                'Masalah kopi jarang selesai dengan banyak perubahan sekaligus. Jika dosis, grind, suhu, agitasi, dan waktu kontak berubah bersamaan, penyebab rasa akan kabur. Pendekatan yang lebih aman adalah membuat brew kontrol, mencatat hasilnya, lalu menguji satu hipotesis. Asam dan tipis biasanya mengarah ke ekstraksi rendah atau flow terlalu cepat, sedangkan pahit dan kering mengarah ke ekstraksi berlebih atau agitasi terlalu kuat.',
+                '',
+                '## Options & Tradeoffs',
+                'Opsi 1: grind lebih halus untuk menaikkan ekstraksi. Tradeoff-nya risiko flow lambat, channeling, dan rasa kering meningkat.',
+                'Opsi 2: naikkan suhu atau agitasi. Tradeoff-nya body bisa lebih berat dan bitterness lebih mudah muncul.',
+                'Opsi 3: ulangi brew kontrol tanpa mengubah resep. Ini lebih lambat, tetapi paling baik untuk membedakan masalah teknik dari masalah resep.',
+                '',
+                '## Recommended Action Plan',
+                '1. Kunci dosis, yield atau rasio, suhu air, grind setting, waktu kontak, dan teknik distribusi atau pouring.',
+                '2. Buat satu brew kontrol, lalu catat waktu, berat akhir, rasa dominan, dan tanda flow seperti channeling atau clogging.',
+                '3. Ubah satu variabel kecil sesuai defect: lebih halus untuk asam/tipis, lebih kasar untuk pahit/kering, atau perbaiki distribusi jika flow tidak rata.',
+                '4. Ulangi setting terbaik minimal sekali sebelum menjadikannya standar.',
+                '',
+                '## Risks & Validation',
+                'Risiko utama adalah mengambil keputusan dari satu cup yang belum stabil. Validasi dengan pengulangan, catatan waktu yang mirip, dan tasting saat suhu minum konsisten. Jika hasil tetap berubah-ubah, cek grinder retention, kualitas air, kesegaran biji, dan konsistensi puck atau coffee bed sebelum menambah perubahan resep.',
+            ].join('\n');
+        }
+
+        return [
+            '## TL;DR',
+            `Use a measured baseline for this request: ${subject}. Lock the recipe, change one small variable, and validate against both flavor and numbers before keeping the adjustment.`,
+            '',
+            '## Core Analysis',
+            'Coffee problems become hard to diagnose when dose, grind, temperature, agitation, and contact time all change together. A safer workflow is to brew one control, record the result, and test one clear hypothesis. Sour or thin cups usually point to low extraction, fast flow, or uneven preparation. Bitter or dry cups usually point to excessive extraction, too much agitation, or an overly fine grind.',
+            '',
+            '## Options & Tradeoffs',
+            'Option 1: grind finer to raise extraction. The tradeoff is slower flow, more channeling sensitivity, and a higher risk of dryness.',
+            'Option 2: raise temperature or agitation. The tradeoff is more body, but also easier bitterness if the roast is already developed.',
+            'Option 3: repeat a control brew without changing the recipe. This is slower, but it separates technique noise from a real recipe issue.',
+            '',
+            '## Recommended Action Plan',
+            '1. Lock dose, yield or ratio, water temperature, grind setting, contact time, and distribution or pouring method.',
+            '2. Brew one control and record time, final weight, dominant flavor, and flow signs such as channeling or clogging.',
+            '3. Change one small variable based on the defect: finer for sour or thin cups, coarser for bitter or dry cups, or better distribution for uneven flow.',
+            '4. Repeat the best setting at least once before making it the new standard.',
+            '',
+            '## Risks & Validation',
+            'The main risk is making a decision from one unstable cup. Validate with repeats, similar timing, and tasting at a consistent drinking temperature. If results keep drifting, check grinder retention, water quality, coffee age, and puck or bed consistency before adding more recipe changes.',
+        ].join('\n');
+    }
+
+    return isId
+        ? [
+            `Untuk permintaan ini: ${subject}.`,
+            '',
+            'Gunakan baseline praktis dulu: kunci dosis, yield atau rasio, suhu air, grind setting, dan waktu kontak. Setelah itu ubah satu variabel kecil berdasarkan rasa paling jelas.',
+            '',
+            'Jika cup asam atau tipis, coba grind sedikit lebih halus, suhu sedikit lebih tinggi, atau waktu kontak lebih panjang. Jika pahit atau kering, coba grind sedikit lebih kasar, kurangi agitasi, atau pendekkan kontak. Catat hasilnya sebelum menyimpan setting baru.',
+        ].join('\n')
+        : [
+            `For this request: ${subject}.`,
+            '',
+            'Use a practical baseline first: lock dose, yield or ratio, water temperature, grind setting, and contact time. Then change one small variable based on the clearest flavor defect.',
+            '',
+            'If the cup is sour or thin, try a slightly finer grind, slightly higher temperature, or longer contact time. If it is bitter or dry, try a slightly coarser grind, less agitation, or shorter contact time. Record the result before saving the new setting.',
+        ].join('\n');
+}
+
+function sendLocalChatFallback(params: {
+    res: VercelResponse;
+    requestId: string;
+    message: string;
+    profile: ResolvedResponseProfile;
+    reason: 'no_key' | 'provider_error';
+    details?: string;
+}): void {
+    const text = buildLocalChatFallback(params.message, params.profile);
+    params.res.status(200);
+    params.res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    params.res.setHeader('Cache-Control', 'no-cache, no-store');
+    params.res.setHeader('X-Provider', 'LOCAL');
+    params.res.setHeader('X-Model', 'deterministic-fallback');
+    params.res.setHeader('X-Race-Latency', '0ms');
+    params.res.setHeader('X-Winner-Latency', '0ms');
+    params.res.setHeader('X-Degraded', 'true');
+    params.res.setHeader('X-Error-Code', params.reason);
+    params.res.setHeader('X-Resolved-Language', params.profile.language);
+    console.warn(
+        `[api/chat][${params.requestId}] local_fallback_used reason=${params.reason} details="${sanitizeErrorDetails(params.details || params.reason, 180)}"`,
+    );
+    params.res.end(text);
+}
+
 function raceToSuccess(promises: Promise<RaceResult>[], timeoutMs: number): Promise<RaceResult> {
     return new Promise((resolve, reject) => {
         if (promises.length === 0) {
@@ -591,6 +705,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
     }
 
+    let latestMessageForFallback = '';
+    let resolvedProfileForFallback = DEFAULT_NORMAL_PROFILE;
+
     try {
         const {
             message,
@@ -622,6 +739,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 error: `Message too long (max ${maxMessageLength} chars)`,
             });
         }
+        latestMessageForFallback = message.slice(0, maxMessageLength);
         if (
             typeof context !== 'undefined' &&
             (typeof context !== 'string' || context.length > MAX_CONTEXT_LENGTH)
@@ -789,6 +907,7 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
                 agentProfile,
             ).slice(0, maxMessageLength);
         }
+        resolvedProfileForFallback = resolvedProfile;
 
         const contextMessages = shouldOrchestrate
             ? []
@@ -912,11 +1031,15 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
                     inputTokens: inputTokensForUsage,
                     errorCode: 'no_key',
                 });
-                return res.status(503).json({
+                sendLocalChatFallback({
+                    res,
                     requestId,
-                    error: `No API keys available for ${targetProvider}`,
-                    errorCode: 'no_key',
+                    message: latestMessageForFallback,
+                    profile: resolvedProfile,
+                    reason: 'no_key',
+                    details: `No API keys available for ${targetProvider}`,
                 });
+                return;
             }
 
             if (targetProvider === 'GEMINI') {
@@ -986,11 +1109,15 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
         }
 
         if (racers.length === 0) {
-            return res.status(503).json({
+            sendLocalChatFallback({
+                res,
                 requestId,
-                error: 'No AI providers available. Check API keys.',
-                errorCode: 'no_key',
+                message: latestMessageForFallback,
+                profile: resolvedProfile,
+                reason: 'no_key',
+                details: 'No AI providers available. Check API keys.',
             });
+            return;
         }
 
         // THE RACE
@@ -1043,10 +1170,12 @@ Keep responses concise but comprehensive. Every number must be accurate and prod
         console.error(`[api/chat][${requestId}] fatal="${details}"`);
 
         if (!res.headersSent) {
-            res.status(500).json({
+            sendLocalChatFallback({
+                res,
                 requestId,
-                error: 'All AI providers failed. Please try again.',
-                errorCode: 'provider_error',
+                message: latestMessageForFallback,
+                profile: resolvedProfileForFallback,
+                reason: 'provider_error',
                 details,
             });
         } else {

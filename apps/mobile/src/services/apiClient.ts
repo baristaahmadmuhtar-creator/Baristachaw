@@ -39,6 +39,28 @@ type ApiClientOptions = {
 };
 
 const MULTIMODAL_AI_ACTIONS = new Set<AiAction>(['analyze_image', 'analyze_attachment', 'edit_latte_art', 'transcribe']);
+const DEFAULT_REQUEST_TIMEOUT_MS = 25_000;
+const CHAT_TEXT_TIMEOUT_MS = 50_000;
+const AI_FAST_TIMEOUT_MS = 40_000;
+const AI_BALANCED_TIMEOUT_MS = 65_000;
+const AI_DEEP_TIMEOUT_MS = 150_000;
+const AI_SEARCH_TIMEOUT_MS = 75_000;
+const AI_TEXT_ATTACHMENT_TIMEOUT_MS = 65_000;
+const AI_MULTIMODAL_TIMEOUT_MS = 75_000;
+
+export function resolveMobileAiActionTimeoutMs(action: AiAction, explicitTimeoutMs?: number): number {
+  if (Number.isFinite(explicitTimeoutMs) && Number(explicitTimeoutMs) > 0) {
+    return Math.max(2_000, Number(explicitTimeoutMs));
+  }
+
+  if (action === 'fast') return AI_FAST_TIMEOUT_MS;
+  if (action === 'balanced') return AI_BALANCED_TIMEOUT_MS;
+  if (action === 'deep_think') return AI_DEEP_TIMEOUT_MS;
+  if (action === 'search') return AI_SEARCH_TIMEOUT_MS;
+  if (action === 'analyze_text') return AI_TEXT_ATTACHMENT_TIMEOUT_MS;
+  if (MULTIMODAL_AI_ACTIONS.has(action)) return AI_MULTIMODAL_TIMEOUT_MS;
+  return DEFAULT_REQUEST_TIMEOUT_MS;
+}
 
 function toAbsoluteUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path;
@@ -154,7 +176,7 @@ export class ApiClient {
   ): Promise<Response> {
     const useAuth = options.useAuth ?? true;
     const retries = Math.max(0, Math.min(3, options.retries ?? 1));
-    const timeoutMs = Math.max(2_000, options.timeoutMs ?? 25_000);
+    const timeoutMs = Math.max(2_000, options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS);
 
     let attempt = 0;
     while (true) {
@@ -268,6 +290,7 @@ export class ApiClient {
       conversationContext?: ConversationContext;
       agentProfile?: AgentProfileMemory;
     },
+    options: ApiRequestOptions = {},
   ): Promise<string> {
     return this.requestText(
       '/api/chat',
@@ -282,7 +305,7 @@ export class ApiClient {
           agentProfile: payload?.agentProfile,
         }),
       },
-      { retries: 1 },
+      { retries: 1, timeoutMs: CHAT_TEXT_TIMEOUT_MS, ...options },
     );
   }
 
@@ -297,14 +320,15 @@ export class ApiClient {
     }),
     options: ApiRequestOptions = {},
   ): Promise<StructuredAiResponse> {
-    const timeoutMs = options.timeoutMs ?? (MULTIMODAL_AI_ACTIONS.has(action) ? 55_000 : undefined);
+    const timeoutMs = resolveMobileAiActionTimeoutMs(action, options.timeoutMs);
+    const retries = options.retries ?? (action === 'deep_think' ? 0 : 1);
     return this.requestJson<StructuredAiResponse>(
       '/api/ai',
       {
         method: 'POST',
         body: JSON.stringify({ action, prompt, ...(extra || {}) }),
       },
-      { retries: 1, timeoutMs, ...options },
+      { retries, timeoutMs, ...options },
     );
   }
 }

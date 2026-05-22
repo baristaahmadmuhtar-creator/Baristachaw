@@ -35,8 +35,16 @@ import { useIOSKeyboardFix } from '../../hooks/useIOSKeyboardFix';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useRuntimeDisplayMode } from '../../hooks/useRuntimeDisplayMode';
 import { reportClientError } from '../../services/errorReporting';
+import { brewSequenceResponseDetailed, brewOptimizeResponseDetailed, raceChatResponse, deepThinkingResponseDetailed, fastResponseDetailed } from '../../services/gemini';
 import { createRecipeCollectionItem, saveCollectionItem, saveRecipe } from '../../services/storageService';
 import type { Recipe } from '../../types';
+import {
+  buildAdjustPrompt,
+  buildExplainPrompt,
+  buildOptimizationPrompt,
+  buildSequenceServerPrompt,
+  buildTroubleshootPrompt,
+} from './prompts';
 import { buildDeterministicAiCoachMarkdown } from './coachNotes';
 import { sanitizeBrewNarrative } from './antiHallucination';
 import { sanitizeAiCoachMarkdown } from './coachGuard';
@@ -105,11 +113,13 @@ import {
   listRecentBrewJournalEntries,
   loadAiBrewFormDraft,
   loadCachedAiBrewCatalogSnapshot,
+  loadCachedAiBrewSequenceOverlay,
   loadLastGeneratedBrewPlan,
   saveAiBrewFormDraft,
   saveBrewJournalEntry,
   saveBrewPreset,
   saveCachedAiBrewCatalogSnapshot,
+  saveCachedAiBrewSequenceOverlay,
   saveLastGeneratedBrewPlan,
   updateBrewJournalAiNotes,
   updateBrewJournalFeedback,
@@ -142,9 +152,7 @@ import type {
 const CUSTOM_ENTRY_ID = 'custom';
 const OMITTED_ENTRY_ID = '__omitted__';
 const AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS = 4500;
-const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 4500;
-const AI_BREW_HYBRID_REPAIR_TIMEOUT_MS = 3500;
-const AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS = 1200;
+const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 7000;
 const AI_BREW_COACH_FAST_TIMEOUT_MS = 5000;
 const AI_BREW_COACH_DEEP_TIMEOUT_MS = 8500;
 const AI_BREW_COACH_TRANSLATION_TIMEOUT_MS = 1200;
@@ -1793,7 +1801,7 @@ function withLanguageLock(promptBody: string, language: string) {
     return `${promptBody}\n\nKunci bahasa: jawab sepenuhnya dalam Bahasa Indonesia. Jangan gunakan bahasa lain untuk judul, bullet, label, catatan, maupun fallback. Nama alat, nama brand, istilah umum seperti bloom/server/bed, dan satuan tetap boleh dipertahankan. Gunakan "air turun" untuk drawdown dan "buka katup" untuk release. Pertahankan struktur heading, bullet, dan angka secara konsisten.`;
   }
   if (/^ar(?:-|$)/i.test(language)) {
-    return `${promptBody}\n\nÙ‚ÙÙ„ Ø§Ù„Ù„ØºØ©: Ø£Ø¬Ø¨ Ø¨Ø§Ù„ÙƒØ§Ù…Ù„ Ø¨Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©. Ù„Ø§ ØªØ³ØªØ®Ø¯Ù… Ø£ÙŠ Ù„ØºØ© Ø£Ø®Ø±Ù‰ ÙÙŠ Ø§Ù„Ø¹Ù†Ø§ÙˆÙŠÙ† Ø£Ùˆ Ø§Ù„Ù†Ù‚Ø§Ø· Ø£Ùˆ Ø§Ù„ØªØ³Ù…ÙŠØ§Øª Ø£Ùˆ Ø§Ù„Ù…Ù„Ø§Ø­Ø¸Ø§Øª Ø£Ùˆ Ø§Ù„Ù†ØµÙˆØµ Ø§Ù„Ø§Ø­ØªÙŠØ§Ø·ÙŠØ©. Ø­Ø§ÙØ¸ Ø¹Ù„Ù‰ Ø¨Ù†ÙŠØ© Ø§Ù„Ø¹Ù†Ø§ÙˆÙŠÙ† ÙˆØ§Ù„Ù†Ù‚Ø§Ø· ÙˆØ§Ù„Ø£Ø±Ù‚Ø§Ù… ÙƒÙ…Ø§ Ù‡ÙŠ.`;
+    return `${promptBody}\n\nÃ™â€šÃ™ÂÃ™â€ž Ã˜Â§Ã™â€žÃ™â€žÃ˜ÂºÃ˜Â©: Ã˜Â£Ã˜Â¬Ã˜Â¨ Ã˜Â¨Ã˜Â§Ã™â€žÃ™Æ’Ã˜Â§Ã™â€¦Ã™â€ž Ã˜Â¨Ã˜Â§Ã™â€žÃ™â€žÃ˜ÂºÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¨Ã™Å Ã˜Â©. Ã™â€žÃ˜Â§ Ã˜ÂªÃ˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã˜Â£Ã™Å  Ã™â€žÃ˜ÂºÃ˜Â© Ã˜Â£Ã˜Â®Ã˜Â±Ã™â€° Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€ Ã˜Â§Ã™Ë†Ã™Å Ã™â€  Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ™â€ Ã™â€šÃ˜Â§Ã˜Â· Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â³Ã™â€¦Ã™Å Ã˜Â§Ã˜Âª Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ™â€¦Ã™â€žÃ˜Â§Ã˜Â­Ã˜Â¸Ã˜Â§Ã˜Âª Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ™â€ Ã˜ÂµÃ™Ë†Ã˜Âµ Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â­Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â·Ã™Å Ã˜Â©. Ã˜Â­Ã˜Â§Ã™ÂÃ˜Â¸ Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â¨Ã™â€ Ã™Å Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€ Ã˜Â§Ã™Ë†Ã™Å Ã™â€  Ã™Ë†Ã˜Â§Ã™â€žÃ™â€ Ã™â€šÃ˜Â§Ã˜Â· Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â±Ã™â€šÃ˜Â§Ã™â€¦ Ã™Æ’Ã™â€¦Ã˜Â§ Ã™â€¡Ã™Å .`;
   }
   return promptBody + '\n\nLanguage lock: respond fully in ' + language + '. Keep all headings, bullets, and numbers structurally consistent.';
 }
@@ -1907,6 +1915,8 @@ async function normalizeMarkdownToLanguage(
 ) {
   if (!markdown.trim()) return markdown;
   if (/^en(?:-|$)/i.test(language)) return markdown;
+  const locallyLocalized = localizeAiBrewMarkdownLanguage(markdown, language);
+  if (!hasAiBrewLanguageLeak(locallyLocalized, language)) return locallyLocalized;
   const translationPrompt = [
     'Translate the markdown below fully into ' + language + ' using concise, natural barista language.',
     'Keep structure exactly: headings, list numbering, line breaks, and all numeric values unchanged.',
@@ -1916,12 +1926,11 @@ async function normalizeMarkdownToLanguage(
     markdown,
   ].join('\n');
   try {
-    const { raceChatResponse } = await import('../../services/gemini');
-    const translated = await raceChatResponse(translationPrompt, requestContext, {
+    const translated = await fastResponseDetailed(translationPrompt, requestContext, {
       timeoutMs: options?.timeoutMs,
-      fallbackToStructured: false,
+      fallbackToChat: false,
     });
-    return localizeAiBrewMarkdownLanguage(translated?.trim() || markdown, language);
+    return localizeAiBrewMarkdownLanguage(translated.text?.trim() || markdown, language);
   } catch {
     return localizeAiBrewMarkdownLanguage(markdown, language);
   }
@@ -1947,11 +1956,11 @@ async function normalizeSequenceMarkdownToLanguage(
     markdown,
   ].join('\n');
   try {
-    const { raceChatResponse } = await import('../../services/gemini');
-    const translated = await raceChatResponse(translationPrompt, requestContext, {
+    const translated = await fastResponseDetailed(translationPrompt, requestContext, {
       timeoutMs: options?.timeoutMs,
+      fallbackToChat: false,
     });
-    return localizeAiBrewMarkdownLanguage(translated?.trim() || markdown, language);
+    return localizeAiBrewMarkdownLanguage(translated.text?.trim() || markdown, language);
   } catch {
     return localizeAiBrewMarkdownLanguage(markdown, language);
   }
@@ -2025,15 +2034,29 @@ function applyHybridSequenceToPlan(
   } satisfies BrewPlan;
 }
 
-function shouldRetryHybridSequence(errors: string[]) {
-  const joined = errors.join(' | ').toLowerCase();
-  return Boolean(
-    joined.includes('response is too short')
-    || joined.includes('missing required heading')
-    || joined.includes('got 0')
-    || joined.includes('ai response indicated service unavailability')
-    || joined.includes('ai response timed out'),
-  );
+function parseBrewSequenceResponseText(raw: string) {
+  const text = String(raw || '').trim();
+  const unwrapped = text
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
+  try {
+    const parsed = JSON.parse(unwrapped) as { canonicalMarkdown?: unknown; displayMarkdown?: unknown };
+    const canonicalMarkdown = typeof parsed?.canonicalMarkdown === 'string' ? parsed.canonicalMarkdown.trim() : '';
+    const displayMarkdown = typeof parsed?.displayMarkdown === 'string' ? parsed.displayMarkdown.trim() : '';
+    if (canonicalMarkdown || displayMarkdown) {
+      return {
+        canonicalMarkdown: canonicalMarkdown || displayMarkdown,
+        displayMarkdown,
+      };
+    }
+  } catch {
+    // Non-JSON providers are still accepted as canonical markdown and guarded below.
+  }
+  return {
+    canonicalMarkdown: text,
+    displayMarkdown: '',
+  };
 }
 
 async function runHybridSequenceUpdate(
@@ -2045,6 +2068,21 @@ async function runHybridSequenceUpdate(
   },
 ) {
   if (!options.enabled) return null;
+  const cached = loadCachedAiBrewSequenceOverlay(
+    nextPlan.fingerprint,
+    options.language,
+    nextPlan.catalogVersion,
+  );
+  if (cached) {
+    return {
+      markdown: cached.markdown,
+      canonicalMarkdown: cached.canonicalMarkdown,
+      servicePattern: cached.servicePattern,
+      watch: cached.watch,
+      stepInstructions: cached.stepInstructions,
+      fallbackDiagnostics: cached.fallbackDiagnostics,
+    };
+  }
 
   const canonicalRequestContext = {
     responseProfile: {
@@ -2061,54 +2099,17 @@ async function runHybridSequenceUpdate(
     },
   };
 
-  const { buildSequenceGuidePrompt, buildSequenceRepairPrompt } = await import('./prompts');
-  const { balancedResponseDetailed, raceChatResponse } = await import('../../services/gemini');
-  const sequencePrompt = buildSequenceGuidePrompt(nextPlan).body;
-  let aiText = await raceChatResponse(
+  const sequencePrompt = buildSequenceServerPrompt(nextPlan, options.language).body;
+  const response = await brewSequenceResponseDetailed(
     sequencePrompt,
     canonicalRequestContext,
-    {
-      timeoutMs: AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS,
-      fallbackToStructured: false,
-    },
+    { timeoutMs: AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS },
   );
-
-  let canonicalOverlay = composeHybridSequenceOverlay(nextPlan, aiText);
-  if (canonicalOverlay.usedFallback && shouldRetryHybridSequence(canonicalOverlay.validation.errors)) {
-    try {
-      const repairPrompt = buildSequenceRepairPrompt(
-        nextPlan,
-        canonicalOverlay.validation.errors,
-        'en',
-      ).body;
-      const repair = await balancedResponseDetailed(
-        repairPrompt,
-        canonicalRequestContext,
-        {
-          timeoutMs: AI_BREW_HYBRID_REPAIR_TIMEOUT_MS,
-          fallbackToChat: false,
-        },
-      );
-      aiText = repair.text;
-      canonicalOverlay = composeHybridSequenceOverlay(nextPlan, aiText);
-    } catch {
-      // Keep the deterministic fallback from the first pass.
-    }
-  }
-  const displayMarkdown = await normalizeSequenceMarkdownToLanguage(
-    canonicalOverlay.markdown,
-    options.language,
-    {
-      ...canonicalRequestContext,
-      responseProfile: {
-        language: options.language,
-        verbosity: 'comprehensive' as const,
-        format: 'steps' as const,
-        tone: 'professional' as const,
-      },
-    },
-    { timeoutMs: AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS },
-  );
+  const parsed = parseBrewSequenceResponseText(response.text);
+  const canonicalOverlay = composeHybridSequenceOverlay(nextPlan, parsed.canonicalMarkdown);
+  const displayMarkdown = canonicalOverlay.usedFallback
+    ? localizeAiBrewMarkdownLanguage(canonicalOverlay.markdown, options.language)
+    : parsed.displayMarkdown || localizeAiBrewMarkdownLanguage(canonicalOverlay.markdown, options.language);
   const guardedDisplay = sanitizeAiCoachMarkdown({
     action: 'sequence',
     markdown: displayMarkdown,
@@ -2127,7 +2128,7 @@ async function runHybridSequenceUpdate(
       : []),
   ];
 
-  return {
+  const result = {
     markdown: safeDisplayMarkdown,
     canonicalMarkdown: canonicalOverlay.markdown,
     servicePattern: displayOverlay.servicePattern,
@@ -2135,6 +2136,14 @@ async function runHybridSequenceUpdate(
     stepInstructions: displayOverlay.stepInstructions,
     fallbackDiagnostics,
   };
+  saveCachedAiBrewSequenceOverlay({
+    fingerprint: nextPlan.fingerprint,
+    catalogVersion: nextPlan.catalogVersion,
+    language: options.language,
+    ...result,
+    provider: response.provider,
+  });
+  return result;
 }
 
 async function runHybridOptimizationUpdate(
@@ -2165,10 +2174,7 @@ async function runHybridOptimizationUpdate(
     },
   };
 
-  const { buildOptimizationPrompt } = await import('./prompts');
-  const { raceChatResponse } = await import('../../services/gemini');
-  const { parseAiBrewOptimizationPatch } = await import('./aiOptimizer');
-  const aiText = await raceChatResponse(
+  const aiResult = await brewOptimizeResponseDetailed(
     `${buildOptimizationPrompt(nextPlan, options.language).body}${
       options.repair
         ? '\n\nRepair pass: the previous response did not create a validated numeric delta. Return JSON only with at least one small safe numeric change inside the allowed guardrails.'
@@ -2177,11 +2183,10 @@ async function runHybridOptimizationUpdate(
     canonicalRequestContext,
     {
       timeoutMs: AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS,
-      fallbackToStructured: false,
     },
   );
 
-  return applyAiBrewOptimizationPatch(nextPlan, parseAiBrewOptimizationPatch(aiText));
+  return applyAiBrewOptimizationPatch(nextPlan, parseAiBrewOptimizationPatch(aiResult.text));
 }
 
 function nowId(prefix: string) {
@@ -6348,7 +6353,7 @@ function PlanResultDialog({
                   defaultOpen={false}
                 >
                   <p className="rounded-xl bg-surface-alpha px-3 py-3 text-sm text-secondary">
-                    TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm} Â· {formatWaterDerivationLabel(copy, plan.waterMineralDerivation)}
+                    TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm} Ã‚Â· {formatWaterDerivationLabel(copy, plan.waterMineralDerivation)}
                   </p>
                 </ResultDisclosureSection>
               </div>
@@ -8189,24 +8194,22 @@ export function AiBrewPanel({
             language,
           });
         } catch (error) {
-          console.warn(
-            getAiBrewOptimizationFallbackMessage(language),
-            error instanceof Error ? error.message : String(error || 'request_failed'),
-          );
+          if (import.meta.env.DEV) {
+            console.warn(
+              getAiBrewOptimizationFallbackMessage(language),
+              error instanceof Error ? error.message : String(error || 'request_failed'),
+            );
+          }
           optimized = applyAiBrewOptimizationPatch(nextPlan, null);
         }
 
         if (!optimized.applied) {
-          reportAiBrewRuntimeEvent({
-            name: 'ai_brew_optimizer_rejected',
-            message: getAiBrewOptimizationFallbackMessage(language),
-            details: optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
-            platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
-          });
-          console.warn(
-            getAiBrewOptimizationFallbackMessage(language),
-            optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
-          );
+          if (import.meta.env.DEV) {
+            console.warn(
+              getAiBrewOptimizationFallbackMessage(language),
+              optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
+            );
+          }
           try {
             optimized = await runHybridOptimizationUpdate(nextPlan, {
               enabled: true,
@@ -8215,10 +8218,12 @@ export function AiBrewPanel({
               repair: true,
             });
           } catch (error) {
-            console.warn(
-              getAiBrewOptimizationFallbackMessage(language),
-              error instanceof Error ? error.message : String(error || 'repair_failed'),
-            );
+            if (import.meta.env.DEV) {
+              console.warn(
+                getAiBrewOptimizationFallbackMessage(language),
+                error instanceof Error ? error.message : String(error || 'repair_failed'),
+              );
+            }
             optimized = applyAiBrewOptimizationPatch(nextPlan, null);
           }
         }
@@ -8227,16 +8232,12 @@ export function AiBrewPanel({
           if (requireOnlineAiGenerate) {
             throw new Error('ai_brew_optimizer_unavailable');
           }
-          reportAiBrewRuntimeEvent({
-            name: 'ai_brew_optimizer_no_change',
-            message: copy.aiOptimizationNoChange,
-            details: optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
-            platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
-          });
-          console.warn(
-            copy.aiOptimizationNoChange,
-            optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
-          );
+          if (import.meta.env.DEV) {
+            console.warn(
+              copy.aiOptimizationNoChange,
+              optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
+            );
+          }
         }
 
         if (optimized.applied) {
@@ -9487,7 +9488,7 @@ export function AiBrewPanel({
                             </p>
                           </div>
                           <span className="rounded-full bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
-                            {selectedProcessLabel || copy.notSpecified} Â· {selectedVarietyLabel || copy.notSpecified}
+                            {selectedProcessLabel || copy.notSpecified} Ã‚Â· {selectedVarietyLabel || copy.notSpecified}
                           </span>
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">

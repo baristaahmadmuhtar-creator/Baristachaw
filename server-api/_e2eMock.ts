@@ -72,6 +72,43 @@ function deepText(): string {
   ].join('\n');
 }
 
+function brewSequenceCanonicalText(): string {
+  return [
+    '## Service Pattern',
+    '- Use a calm service flow and keep every checkpoint tied to the planner envelope.',
+    '- Keep the selected brew mode stable; do not add bypass or extra water outside the recipe.',
+    '',
+    '## Sequence',
+    '1. Bloom at 00:00: Pour 40 ml to target 40 ml. Keep the first wetting even and protect the selected brewer profile.',
+    '2. Main Pour at 00:30: Pour 60 ml to target 100 ml. Hold a centered stream and keep bed movement tidy.',
+    '3. Finish at 01:10: Pour 40 ml to target 140 ml. Let drawdown finish without chasing the paper wall.',
+    '',
+    '## Watch',
+    '- Watch flow rate and bed shape before changing grind.',
+    '- Keep the water and bean context unchanged for the next comparison.',
+  ].join('\n');
+}
+
+function brewSequenceDisplayText(language: string): string {
+  if (language.startsWith('id')) {
+    return [
+      '## Pola Seduh',
+      '- Pakai alur seduh tenang dan jaga setiap checkpoint tetap mengikuti planner.',
+      '- Pertahankan mode seduh yang dipilih; jangan tambah bypass atau air di luar resep.',
+      '',
+      '## Urutan Seduh',
+      '1. Bloom pada 00:00: Tuang 40 ml hingga target 40 ml. Ratakan basahan awal dan jaga profil alat yang dipilih.',
+      '2. Tuang Utama pada 00:30: Tuang 60 ml hingga target 100 ml. Pakai aliran tengah dan jaga gerak bed tetap rapi.',
+      '3. Selesai pada 01:10: Tuang 40 ml hingga target 140 ml. Biarkan drawdown selesai tanpa mengejar dinding kertas.',
+      '',
+      '## Pantau',
+      '- Pantau laju aliran dan bentuk bed sebelum mengubah grind.',
+      '- Pertahankan konteks air dan bean untuk perbandingan seduhan berikutnya.',
+    ].join('\n');
+  }
+  return brewSequenceCanonicalText();
+}
+
 export function buildE2eMockChatText(language?: string): string {
   return chatTextForLanguage(normalizeLanguage(language));
 }
@@ -107,6 +144,40 @@ export function buildE2eMockAiPayload(action: string, language?: string) {
         ok: true,
         action,
         text: balancedTextForLanguage(normalizedLanguage),
+        provider,
+        model,
+        degraded: false,
+      };
+    case 'brew_sequence':
+      return {
+        ok: true,
+        action,
+        text: JSON.stringify({
+          canonicalMarkdown: brewSequenceCanonicalText(),
+          displayMarkdown: brewSequenceDisplayText(normalizedLanguage),
+        }),
+        provider,
+        model,
+        degraded: false,
+      };
+    case 'brew_optimize':
+      return {
+        ok: true,
+        action,
+        text: JSON.stringify({
+          reason: normalizedLanguage.startsWith('id')
+            ? 'Patch kecil untuk menjaga manis tanpa mengubah envelope utama.'
+            : 'Small patch to protect sweetness without changing the main envelope.',
+          confidence: 0.72,
+          totalTimeSeconds: 170,
+          pourStyleHint: 'pulse_light',
+          grindGuidance: normalizedLanguage.startsWith('id')
+            ? 'Sedikit lebih halus hanya bila drawdown terlalu cepat.'
+            : 'Slightly finer only if drawdown runs too fast.',
+          steps: [
+            { index: 1, control: normalizedLanguage.startsWith('id') ? 'Jaga aliran tengah tetap stabil.' : 'Keep the center stream stable.' },
+          ],
+        }),
         provider,
         model,
         degraded: false,

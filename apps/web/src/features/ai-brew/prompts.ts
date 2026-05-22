@@ -682,6 +682,32 @@ export function buildSequenceGuidePrompt(plan: BrewPlan, language?: string): AiB
   };
 }
 
+export function buildSequenceServerPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
+  const targetLanguage = language || 'en';
+  const base = buildSequenceGuidePrompt(plan, 'en');
+  return {
+    title: base.title,
+    body: [
+      'Server action: brew_sequence.',
+      'Return JSON only with this exact shape:',
+      '{"canonicalMarkdown":"...","displayMarkdown":"..."}',
+      '',
+      'canonicalMarkdown requirements:',
+      '- English markdown only.',
+      '- Start with ## Service Pattern and include exactly these headings in order: ## Service Pattern, ## Sequence, ## Watch.',
+      '- Keep every deterministic planner number, label, device, water/ice split, temperature, ratio, and time unchanged.',
+      '',
+      'displayMarkdown requirements:',
+      `- Use UI language ${targetLanguage}.`,
+      '- Keep identical heading order, line order, step count, and numeric values as canonicalMarkdown.',
+      '- If UI language is English, displayMarkdown may equal canonicalMarkdown.',
+      '- Do not omit method/device, target profile, water/bean, hot/ice split, or watch anchors.',
+      '',
+      base.body,
+    ].join('\n'),
+  };
+}
+
 export function buildSequenceRepairPrompt(
   plan: BrewPlan,
   errors: string[] = [],

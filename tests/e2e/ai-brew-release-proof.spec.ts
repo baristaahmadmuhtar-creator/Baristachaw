@@ -152,7 +152,7 @@ test('captures AI Brew final release proof screenshots in Indonesian', async ({ 
   await capture(page, 'switch-iced-input.png', 'switch iced input');
   await selectWaterBrand(page);
   await generatePlan(page);
-  await expect(page.getByTestId('ai-brew-result')).toContainText(/Ekstraksi|Panduan selesai|Aduk es/i);
+  await expect(page.getByTestId('ai-brew-result')).toContainText(/Ekstraksi|Setelah ekstraksi|Aduk es/i);
   await capture(page, 'switch-iced-result.png', 'switch iced result');
   await page.getByTestId('ai-brew-result-tab-flow').click();
   await expect(page.getByTestId('ai-brew-result-guide-panel')).toBeVisible();

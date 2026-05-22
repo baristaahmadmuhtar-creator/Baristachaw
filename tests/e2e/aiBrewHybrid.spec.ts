@@ -1364,7 +1364,7 @@ test('ai brew auto sequence falls back when AI hold distribution conflicts with 
             '3. Pulse 2 at 01:30: pour 120 ml to 270 ml for Hario V60 acidity target with Volvic water context and wait for 5 seconds before serving.',
             '## Watch',
             '- Keep Hario V60 flow stable for acidity target with Volvic water.',
-            '- Keep ratio and total time locked for this bean roast context.',
+            '- Keep ratio and drawdown finish locked for this bean roast context.',
           ].join('\n'),
         }),
       });

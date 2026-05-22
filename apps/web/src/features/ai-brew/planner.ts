@@ -4006,7 +4006,7 @@ function deriveV60SweetnessServiceCalibration(params: {
         'V60 hot natural sweetness calibration uses a compact service ratio, longer bloom, and calm pours so fruit sweetness lands without rough ferment notes.',
       ],
       confidenceNotes: [
-        'Natural high-aroma V60 hot baseline active: about 225 g water, 90-92C, and a 2:40-2:55 service window for 15 g.',
+        'Natural high-aroma V60 hot baseline active: about 225 g water, 90-92C, and a 2:40-2:55 extraction window for 15 g.',
       ],
     };
   }
@@ -4033,7 +4033,7 @@ function deriveV60SweetnessServiceCalibration(params: {
         : 'V60 hot More Sweetness uses a compact 1:15-ish service ratio to build sweetness without making the cup heavy.',
     ],
     confidenceNotes: [
-      'V60 hot sweetness baseline active: medium roast target ratio 1:15.0-15.3 and 2:50-3:05 service window.',
+      'V60 hot sweetness baseline active: medium roast target ratio 1:15.0-15.3 and 2:50-3:05 extraction window.',
     ],
   };
 }
@@ -4275,7 +4275,7 @@ function deriveMethodFamilyAdjustment(params: {
         adjustment.tempDeltaC = -1;
         adjustment.brewTimeDeltaSec = -20;
         adjustment.grindBias = 'finer';
-        adjustment.notes.push('AeroPress family uses short immersion and a controlled press, so the plan tightens grind and keeps the service window compact.');
+        adjustment.notes.push('AeroPress family uses short immersion and a controlled press, so the plan tightens grind and keeps the steep/press window compact.');
       }
       break;
     case 'siphon':
@@ -6528,6 +6528,20 @@ function buildSummary(plan: Pick<
   const ratioText = plan.brewMode === 'iced'
     ? `final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)} with hot concentrate 1:${formatBaristaRatio(plan.hotExtractionRatio)}`
     : `1:${formatBaristaRatio(plan.recommendedRatio)}`;
+  const tasteTimeSeconds = Math.max(0, Math.round((plan as Partial<BrewPlan>).extractionEndSeconds ?? plan.totalTimeSeconds));
+  const timeLabel = plan.methodFamily === 'espresso'
+    ? 'shot time'
+    : plan.methodFamily === 'cold_brew'
+      ? 'cold steep'
+      : plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper'
+        ? 'steep time'
+        : POUR_CONTROL_METHOD_FAMILIES.has(plan.methodFamily)
+          ? plan.brewMode === 'iced'
+            ? 'hot drawdown finish'
+            : 'drawdown finish'
+        : plan.brewMode === 'iced'
+          ? 'hot extraction time'
+          : 'extraction time';
   const modeLabel = plan.methodFamily === 'cold_brew'
     ? 'Cold brew'
     : plan.methodFamily === 'espresso'
@@ -6535,7 +6549,7 @@ function buildSummary(plan: Pick<
       : plan.brewMode === 'iced'
         ? 'Japanese-style iced brew'
         : 'Hot brew';
-  return `${modeLabel} plan for ${plan.coffeeName || 'your coffee'} on ${plan.dripper.name}, tuned for ${plan.targetProfileLabel.toLowerCase()} at ${ratioText}, ${formatBaristaTemperature(plan.waterTempC)}°C, around ${formatTime(plan.totalTimeSeconds)}.`;
+  return `${modeLabel} plan for ${plan.coffeeName || 'your coffee'} on ${plan.dripper.name}, tuned for ${plan.targetProfileLabel.toLowerCase()} at ${ratioText}, ${formatBaristaTemperature(plan.waterTempC)}°C, ${timeLabel} around ${formatTime(tasteTimeSeconds)}.`;
 }
 
 function buildServiceExecutionNote(params: {
@@ -7999,7 +8013,7 @@ export function applyAiBrewOptimizationPatch(
     plan.totalTimeSeconds,
     minPatchedTimeSeconds,
     maxPatchedTimeSeconds,
-    'brew time',
+    'main taste time',
     diagnostics,
   );
   const totalTimeSeconds = clamp(

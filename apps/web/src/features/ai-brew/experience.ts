@@ -134,11 +134,19 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
   const mainWater = plan.brewMode === 'iced'
     ? `${plan.hotWaterMl} ml ${id ? 'air panas + ' : 'hot water + '}${plan.iceMl} g ${id ? 'es' : 'ice'}`
     : `${plan.totalWaterMl} ml ${id ? 'air seduh' : 'brew water'}`;
+  const tasteTimeSeconds = Math.max(0, Math.round(plan.extractionEndSeconds ?? plan.totalTimeSeconds));
+  const timeLabel = plan.methodFamily === 'espresso'
+    ? (id ? 'shot' : 'shot')
+    : plan.methodFamily === 'cold_brew'
+      ? (id ? 'rendam dingin' : 'cold steep')
+      : plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper'
+        ? (id ? 'rendam' : 'steep')
+        : (id ? 'ekstraksi' : 'extraction');
   const beanCue = resolveAiBrewBeanCharacterInsights(plan, language)[0];
   const priorities = [
     id
-      ? `Ikuti angka utama: ${mainWater}, ${Math.round(plan.waterTempC)}°C, selesai sekitar ${formatTimeLabel(plan.totalTimeSeconds)}.`
-      : `Brew the main numbers first: ${mainWater}, ${Math.round(plan.waterTempC)}°C, finish around ${formatTimeLabel(plan.totalTimeSeconds)}.`,
+      ? `Ikuti angka utama: ${mainWater}, ${Math.round(plan.waterTempC)}°C, ${timeLabel} sekitar ${formatTimeLabel(tasteTimeSeconds)}.`
+      : `Brew the main numbers first: ${mainWater}, ${Math.round(plan.waterTempC)}°C, ${timeLabel} around ${formatTimeLabel(tasteTimeSeconds)}.`,
     id
       ? 'Pakai setting grinder awal sebagai baseline; ubah satu variabel dulu setelah melihat air turun dan rasa.'
       : 'Use the starting grinder setting as the baseline; make small corrections only after drawdown and tasting.',
@@ -186,7 +194,7 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
   if (plan.grindCalibrationRequired || plan.grindSettingMode === 'derived_baseline' || plan.grindSettingVerification === 'fallback') {
     priorities.push(id
       ? 'Baseline awal, bukan setting presisi. Validasi dengan waktu ekstraksi dan rasa.'
-      : 'Estimated starting point, not an exact setting. Validate with extraction time and taste.');
+      : 'Estimated starting point, not an exact setting. Validate with drawdown, method time, and taste.');
   } else if (plan.grindSettingVerification === 'dataset_unverified') {
     priorities.push(id
       ? 'Setting grinder masih estimasi. Validasi dengan air turun dan rasa.'

@@ -473,7 +473,7 @@ test('validator rejects sequence when hold distribution conflicts with determini
     '3. Pulse 2 at 01:30: pour 120 ml to 270 ml for Hario V60 acidity target with Volvic water context and wait for 5 seconds before serving.',
     '## Watch',
     '- Keep Hario V60 flow stable for acidity target with hard water context.',
-    '- Keep ratio 1:15.5 and total time 02:45 locked with bean roast constraints.',
+    '- Keep ratio 1:15.5 and drawdown finish 02:45 locked with bean roast constraints.',
   ].join('\n');
 
   const result = validateAiNarrative(plan, 'sequence', invalid);
@@ -884,7 +884,7 @@ test('validator rejects sop quick dial values that drift from deterministic enve
     '- total water: 285 ml',
     '- temperature: 95 C',
     '- grind: 10 clicks',
-    '- total time: 03:20',
+    '- drawdown finish: 03:20',
     '## Service Pattern',
     '- Balanced Cone Clarity Arc for Hario V60.',
     '- Hot mode active with Volvic constraints.',
@@ -902,6 +902,34 @@ test('validator rejects sop quick dial values that drift from deterministic enve
   const result = validateAiNarrative(plan, 'sop', invalid);
   assert.equal(result.valid, false);
   assert.ok(result.errors.some((item) => /quick dial/i.test(item)));
+});
+
+test('validator rejects V60 SOP quick dial that calls drawdown finish extraction time', () => {
+  const plan = createPlan();
+  const invalid = [
+    '## Quick Dial',
+    '- dose: 17.5 g',
+    '- total water: 270 ml',
+    '- temperature: 90 C',
+    '- grind: 8.5 clicks',
+    '- extraction time: 02:45',
+    '## Service Pattern',
+    '- Balanced Cone Clarity Arc for Hario V60.',
+    '- Hot mode active with Volvic constraints.',
+    '## Steps',
+    '1. Bloom at 00:00: pour 60 ml to 60 ml for Hario V60 balance profile with Volvic water and wait for bed expansion.',
+    '2. Pulse 1 at 00:40: pour 90 ml to 150 ml for Hario V60 balance profile with Volvic water and hold stream calm.',
+    '3. Pulse 2 at 01:30: pour 120 ml to 270 ml for Hario V60 balance profile with bean roast context and level gently.',
+    '## Control Points',
+    '- Keep Hario V60 flow stable for the balance target profile.',
+    '- Keep cumulative water aligned to deterministic checkpoints.',
+    '- If sour: tighten grind by 0.5 step while keeping water fixed.',
+    '- If bitter: lower temperature by 1 C and keep timing stable.',
+  ].join('\n');
+
+  const result = validateAiNarrative(plan, 'sop', invalid);
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some((item) => /drawdown finish/i.test(item)));
 });
 
 test('hybrid composer does not treat structured narrative with operational try-again wording as ai_unavailable', () => {
@@ -1230,7 +1258,7 @@ test('hybrid composer repairs SOP quick dial and control points while preserving
     '- total water: 300 ml',
     '- temperature: 96 C',
     '- grind: 10 clicks',
-    '- total time: 03:30',
+    '- drawdown finish: 03:30',
     '## Service Pattern',
     '- Balanced Cone Clarity Arc for Hario V60.',
     '- Hot mode active; keep balance target and Volvic water behavior stable.',
@@ -1568,7 +1596,7 @@ test('validator rejects sop control points without actionable sour and bitter co
     '- total water: 270 ml',
     '- temperature: 90 C',
     '- grind: 8.5 clicks',
-    '- total time: 02:45',
+    '- drawdown finish: 02:45',
     '## Service Pattern',
     '- Balanced Cone Clarity Arc for Hario V60 balance profile.',
     '- Hot mode active with Volvic constraints.',

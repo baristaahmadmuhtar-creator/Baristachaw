@@ -24,6 +24,22 @@ function formatTime(totalSeconds: number) {
   return formatAiBrewTime(totalSeconds);
 }
 
+function getPlanTasteTimeSeconds(plan: BrewPlan) {
+  return Math.max(0, Math.round(plan.extractionEndSeconds ?? plan.totalTimeSeconds));
+}
+
+const POUR_OVER_TIME_LABEL_FAMILIES = new Set<BrewPlan['methodFamily']>(['v60', 'chemex', 'kalita_wave', 'origami', 'april', 'melitta', 'kono']);
+
+function getPlanTasteTimeLabel(plan: BrewPlan, language?: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  if (plan.methodFamily === 'espresso') return id ? 'waktu shot' : 'shot time';
+  if (plan.methodFamily === 'cold_brew') return id ? 'rendam dingin' : 'cold steep';
+  if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return id ? 'waktu rendam' : 'steep time';
+  if (POUR_OVER_TIME_LABEL_FAMILIES.has(plan.methodFamily)) return id ? 'air turun selesai' : (plan.brewMode === 'iced' ? 'hot drawdown finish' : 'drawdown finish');
+  if (plan.brewMode === 'iced') return id ? 'waktu ekstraksi panas' : 'hot extraction time';
+  return id ? 'waktu ekstraksi' : 'extraction time';
+}
+
 function formatBaristaTemperature(value: number) {
   if (!Number.isFinite(value)) return '--';
   return String(Math.round(value));
@@ -155,7 +171,7 @@ function buildRecipeReasoning(
     const reasoning = [
       plan.brewMode === 'iced'
         ? `${plan.hotWaterMl} ml panas / ${plan.iceMl} ml es menjaga konsentrasi sebelum pengenceran akhir.`
-        : `${plan.totalWaterMl} ml pada ${formatBaristaTemperature(plan.waterTempC)} C menargetkan finish ${formatTime(plan.totalTimeSeconds)} untuk ${plan.dripper.name}.`,
+        : `${plan.totalWaterMl} ml pada ${formatBaristaTemperature(plan.waterTempC)} C menargetkan ${getPlanTasteTimeLabel(plan, language)} ${formatTime(getPlanTasteTimeSeconds(plan))} untuk ${plan.dripper.name}.`,
     ];
 
     if (highBufferWater) {
@@ -186,7 +202,7 @@ function buildRecipeReasoning(
   const reasoning = [
     plan.brewMode === 'iced'
       ? `${plan.hotWaterMl} ml hot / ${plan.iceMl} ml ice keeps concentration up before dilution.`
-      : `${plan.totalWaterMl} ml at ${formatBaristaTemperature(plan.waterTempC)} C targets a ${formatTime(plan.totalTimeSeconds)} finish for ${plan.dripper.name}.`,
+      : `${plan.totalWaterMl} ml at ${formatBaristaTemperature(plan.waterTempC)} C targets ${getPlanTasteTimeLabel(plan, language)} ${formatTime(getPlanTasteTimeSeconds(plan))} for ${plan.dripper.name}.`,
   ];
 
   if (highBufferWater) {

@@ -1605,6 +1605,28 @@ function getFinalWindowSeconds(plan: ReturnType<typeof buildAiBrewPlan>) {
   return plan.totalTimeSeconds - (finalStep?.startSeconds || 0);
 }
 
+const POST_EXTRACTION_ACTION_TYPES = new Set(['serve', 'mix', 'dilute', 'filter', 'decant']);
+
+function assertPostExtractionStepsDoNotSetTasteTime(plan: ReturnType<typeof buildAiBrewPlan>) {
+  const extractionEndSeconds = plan.extractionEndSeconds ?? plan.totalTimeSeconds;
+  const guideSteps = plan.workflowGuideSteps || buildWorkflowAwareGuideSteps(plan);
+  const postSteps = guideSteps.filter((step) => POST_EXTRACTION_ACTION_TYPES.has(step.actionType));
+
+  for (const step of postSteps) {
+    assert.ok(
+      step.startSeconds >= extractionEndSeconds,
+      `${plan.dripper.name} ${step.actionType} starts at ${step.startSeconds}s before taste time ${extractionEndSeconds}s`,
+    );
+  }
+
+  if (postSteps.length > 0) {
+    assert.ok(
+      extractionEndSeconds <= (plan.guideEndSeconds ?? plan.totalTimeSeconds),
+      `${plan.dripper.name} taste time should not exceed guide metadata time`,
+    );
+  }
+}
+
 test('AI Brew time semantics separates extraction from finishing work', () => {
   const timeCatalog = buildProductionAiBrewCatalogForTests();
   const base = {
@@ -1620,6 +1642,25 @@ test('AI Brew time semantics separates extraction from finishing work', () => {
     waterHardnessPpm: '45',
     waterAlkalinityPpm: '30',
   };
+  const v60Hot = buildAiBrewPlan({
+    ...base,
+    brewMode: 'hot',
+    dripperId: 'hario-v60',
+  }, timeCatalog);
+  assertPlanEnvelope(v60Hot);
+  assert.equal(v60Hot.timeDisplayMode, 'extraction');
+  assertPostExtractionStepsDoNotSetTasteTime(v60Hot);
+
+  const v60Iced = buildAiBrewPlan({
+    ...base,
+    brewMode: 'iced',
+    dripperId: 'hario-v60',
+  }, timeCatalog);
+  assertPlanEnvelope(v60Iced);
+  assert.equal(v60Iced.timeDisplayMode, 'extraction');
+  assertPostExtractionStepsDoNotSetTasteTime(v60Iced);
+  assert.equal(v60Iced.steps.reduce((sum, step) => sum + (step.pourVolumeMl || 0), 0), v60Iced.hotWaterMl);
+
   const switchIced = buildAiBrewPlan({
     ...base,
     brewMode: 'iced',
@@ -1631,17 +1672,20 @@ test('AI Brew time semantics separates extraction from finishing work', () => {
   assert.ok((switchIced.postExtractionSeconds || 0) >= 8);
   assert.ok((switchIced.extractionEndSeconds || 0) < (switchIced.guideEndSeconds || switchIced.totalTimeSeconds));
   assert.ok((switchIced.extractionEndSeconds || 0) < switchIced.totalTimeSeconds);
+  assertPostExtractionStepsDoNotSetTasteTime(switchIced);
   assert.match((switchIced.workflowGuideSteps || []).map((step) => step.primaryText).join(' '), /aduk|sajikan/i);
 
   const frenchPress = buildAiBrewPlan({ ...base, dripperId: 'french-press' }, timeCatalog);
   assertPlanEnvelope(frenchPress);
   assert.equal(frenchPress.timeDisplayMode, 'long_steep');
   assert.ok((frenchPress.guideEndSeconds || 0) >= (frenchPress.extractionEndSeconds || 0));
+  assertPostExtractionStepsDoNotSetTasteTime(frenchPress);
 
   const aeropress = buildAiBrewPlan({ ...base, dripperId: 'aeropress' }, timeCatalog);
   assertPlanEnvelope(aeropress);
   assert.ok((aeropress.workflowGuideSteps || []).some((step) => step.actionType === 'serve'));
   assert.ok((aeropress.guideEndSeconds || 0) >= (aeropress.extractionEndSeconds || 0));
+  assertPostExtractionStepsDoNotSetTasteTime(aeropress);
 
   const espresso = buildAiBrewPlan({
     ...base,
@@ -1652,6 +1696,27 @@ test('AI Brew time semantics separates extraction from finishing work', () => {
   assertPlanEnvelope(espresso);
   assert.equal(espresso.timeDisplayMode, 'pressure');
   assert.equal(espresso.extractionEndSeconds, espresso.totalTimeSeconds);
+  assertPostExtractionStepsDoNotSetTasteTime(espresso);
+
+  const moka = buildAiBrewPlan({
+    ...base,
+    dripperId: 'bialetti-moka-pot',
+    targetProfileId: 'dense_comforting',
+  }, timeCatalog);
+  assertPlanEnvelope(moka);
+  assert.equal(moka.timeDisplayMode, 'extraction');
+  assertPostExtractionStepsDoNotSetTasteTime(moka);
+
+  const coldBrew = buildAiBrewPlan({
+    ...base,
+    dripperId: 'toddy-cold-brew',
+    doseG: '60',
+    targetWaterMl: '600',
+    targetProfileId: 'soft_round',
+  }, timeCatalog);
+  assertPlanEnvelope(coldBrew);
+  assert.equal(coldBrew.timeDisplayMode, 'cold_brew');
+  assertPostExtractionStepsDoNotSetTasteTime(coldBrew);
 });
 
 function getPourShareMap(plan: ReturnType<typeof buildAiBrewPlan>) {

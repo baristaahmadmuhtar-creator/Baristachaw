@@ -15,6 +15,22 @@ function formatCoachRatio(value: number) {
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }
 
+function getPlanTasteTimeSeconds(plan: BrewPlan) {
+  return Math.max(0, Math.round(plan.extractionEndSeconds ?? plan.totalTimeSeconds));
+}
+
+const POUR_OVER_TIME_LABEL_FAMILIES = new Set<BrewPlan['methodFamily']>(['v60', 'chemex', 'kalita_wave', 'origami', 'april', 'melitta', 'kono']);
+
+function getPlanTasteTimeLabel(plan: BrewPlan, language?: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  if (plan.methodFamily === 'espresso') return id ? 'waktu shot' : 'shot time';
+  if (plan.methodFamily === 'cold_brew') return id ? 'rendam dingin' : 'cold steep';
+  if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return id ? 'waktu rendam' : 'steep time';
+  if (POUR_OVER_TIME_LABEL_FAMILIES.has(plan.methodFamily)) return id ? 'air turun selesai' : (plan.brewMode === 'iced' ? 'hot drawdown finish' : 'drawdown finish');
+  if (plan.brewMode === 'iced') return id ? 'waktu ekstraksi panas' : 'hot extraction time';
+  return id ? 'waktu ekstraksi' : 'extraction time';
+}
+
 function isOrigamiWavePlan(plan: BrewPlan) {
   return plan.formState.origamiFilterStyle === 'wave'
     || /origami.*wave|_wave_/i.test(`${plan.deviceProfileId} ${plan.deviceProfileLabel}`);
@@ -35,10 +51,10 @@ function getLockedRecipeCue(plan: BrewPlan, language?: string) {
     const manualText = String(plan.formState.targetRatio || '').trim()
       ? ' Target ratio manual dikunci.'
       : '';
-    return `Dosis ${plan.doseG} g, rasio ${ratioText}, ${waterText}, suhu ${plan.waterTempC}°C, grind ${plan.grindSettingReference}, waktu ${formatAiBrewTime(plan.totalTimeSeconds)}, dan timing step dikunci dari deterministic plan; coach tidak mengubah rasio/dosis.${manualText}`;
+    return `Dosis ${plan.doseG} g, rasio ${ratioText}, ${waterText}, suhu ${plan.waterTempC}°C, grind ${plan.grindSettingReference}, ${getPlanTasteTimeLabel(plan, language)} ${formatAiBrewTime(getPlanTasteTimeSeconds(plan))}, dan timing step dikunci dari deterministic plan; coach tidak mengubah rasio/dosis.${manualText}`;
   }
 
-  return `Dose ${plan.doseG} g, ratio ${ratioText}, ${waterText}, ${plan.waterTempC}°C, grind ${plan.grindSettingReference}, ${formatAiBrewTime(plan.totalTimeSeconds)} total time, and step timing are locked from the deterministic plan; coach does not change ratio/dose.${manualCue}`;
+  return `Dose ${plan.doseG} g, ratio ${ratioText}, ${waterText}, ${plan.waterTempC}°C, grind ${plan.grindSettingReference}, ${getPlanTasteTimeLabel(plan, language)} ${formatAiBrewTime(getPlanTasteTimeSeconds(plan))}, and step timing are locked from the deterministic plan; coach does not change ratio/dose.${manualCue}`;
 }
 
 function getMethodFamilyServiceCue(plan: BrewPlan, language?: string) {
@@ -395,7 +411,7 @@ export function buildDeterministicAiCoachMarkdown(plan: BrewPlan, mode: Determin
         '## Aturan Dial-In',
         `- ${getLockedRecipeCue(plan, language)}`,
         '- Ubah satu knob per cangkir: grind, suhu ±1°C, pola tuang/flow, atau waktu contact.',
-        `- Tahan air tetap sama dan validasi ulang di jendela ${formatAiBrewTime(Math.max(plan.totalTimeSeconds - 15, 60))}-${formatAiBrewTime(plan.totalTimeSeconds + 15)}.`,
+        `- Tahan air tetap sama dan validasi ulang di jendela ${formatAiBrewTime(Math.max(getPlanTasteTimeSeconds(plan) - 15, 60))}-${formatAiBrewTime(getPlanTasteTimeSeconds(plan) + 15)}.`,
         `- ${getMethodFamilyServiceCue(plan, language)}`,
       ].join('\n');
     }
@@ -409,7 +425,7 @@ export function buildDeterministicAiCoachMarkdown(plan: BrewPlan, mode: Determin
       '## Dial-In Rules',
       `- ${getLockedRecipeCue(plan, language)}`,
       '- Change one knob per cup: grind, temperature ±1°C, pour/flow structure, or contact time.',
-      `- Hold the water constant and re-check inside the ${formatAiBrewTime(Math.max(plan.totalTimeSeconds - 15, 60))}-${formatAiBrewTime(plan.totalTimeSeconds + 15)} window.`,
+      `- Hold the water constant and re-check inside the ${formatAiBrewTime(Math.max(getPlanTasteTimeSeconds(plan) - 15, 60))}-${formatAiBrewTime(getPlanTasteTimeSeconds(plan) + 15)} window.`,
       `- ${getMethodFamilyServiceCue(plan, language)}`,
     ].join('\n');
   }

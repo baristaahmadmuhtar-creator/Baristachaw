@@ -52,7 +52,7 @@ test('AI Brew V60 iced native shell keeps protected recipe values and Indonesian
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toBeVisible();
   await expect(result).toContainText(/Parity V60 Iced/);
-  await expect(result).toContainText(/Air panas|Es|Rasio final|Ekstraksi|Panduan selesai/i);
+  await expect(result).toContainText(/Air panas|Es|Rasio final|Ekstraksi|Setelah ekstraksi/i);
   await expect(result).not.toContainText(/Ekstraksi panas/i);
   await expect(result).not.toContainText(/Katup|Buka katup/i);
   await page.getByTestId('ai-brew-result-tab-flow').click();

@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import { useAuthModal, type EmailAuthMode } from '../../context/AuthModalContext';
 import { useGlobalState } from '../../context/GlobalState';
 import { AuthProgressMark } from './AuthProgressMark';
@@ -54,6 +54,9 @@ export function EmailPasswordAuthForm({
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState('');
   const [pendingAction, setPendingAction] = useState<PendingAuthAction | null>(null);
+  const displayNameInputRef = useRef<HTMLInputElement | null>(null);
+  const passwordInputRef = useRef<HTMLInputElement | null>(null);
+  const recoveryPasswordInputRef = useRef<HTMLInputElement | null>(null);
 
   const isSignUp = mode === 'signUp';
   const disabled = authBusy || isOffline || pendingAction !== null;
@@ -71,6 +74,18 @@ export function EmailPasswordAuthForm({
       // Keep recovery usable even if history cleanup fails.
     }
   }, [recoveryRequest]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const target = step === 'password'
+      ? (isSignUp ? displayNameInputRef.current || passwordInputRef.current : passwordInputRef.current)
+      : step === 'recovery'
+        ? recoveryPasswordInputRef.current
+        : null;
+    if (!target || target.disabled) return;
+    const focusTimer = window.setTimeout(() => target.focus(), 0);
+    return () => window.clearTimeout(focusTimer);
+  }, [isSignUp, step]);
 
   const validateEmail = () => {
     const normalized = email.trim().toLowerCase();
@@ -246,6 +261,7 @@ export function EmailPasswordAuthForm({
           <div className="auth-field-shell flex items-center gap-3 rounded-2xl px-4 py-3">
             <Lock size={18} className="shrink-0" variant="glyph" tone="purple" />
             <input
+              ref={recoveryPasswordInputRef}
               id={compact ? 'auth-modal-recovery-password' : 'auth-route-recovery-password'}
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
@@ -358,6 +374,7 @@ export function EmailPasswordAuthForm({
                 {t.authNameLabel}
               </label>
               <input
+                ref={displayNameInputRef}
                 id={compact ? 'auth-modal-name' : 'auth-route-name'}
                 type="text"
                 autoComplete="name"
@@ -380,6 +397,7 @@ export function EmailPasswordAuthForm({
             <div className="auth-field-shell flex items-center gap-3 rounded-2xl px-4 py-3">
               <Lock size={18} className="shrink-0" variant="glyph" tone="purple" />
               <input
+                ref={passwordInputRef}
                 id={compact ? 'auth-modal-password' : 'auth-route-password'}
                 type={showPassword ? 'text' : 'password'}
                 autoComplete={isSignUp ? 'new-password' : 'current-password'}

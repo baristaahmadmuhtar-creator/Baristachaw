@@ -421,7 +421,7 @@ export function WebParityScreen({
         javaScriptEnabled
         domStorageEnabled
         sharedCookiesEnabled
-        thirdPartyCookiesEnabled
+        thirdPartyCookiesEnabled={false}
       />
 
       {loading && !didReportReady.current ? (

@@ -103,6 +103,27 @@ test('mobile env defaults and app config keep store builds on web parity source 
   assert.match(appSource, /if \(mobileEnv\.webParityFallbackEnabled\) \{\s*setRootMode\('native'\);/s);
 });
 
+test('Android store config minimizes sensitive storage permissions for Play review', () => {
+  const appConfig = read('apps/mobile/app.config.ts');
+
+  assert.match(appConfig, /'android\.permission\.READ_EXTERNAL_STORAGE'/);
+  assert.match(appConfig, /'android\.permission\.READ_MEDIA_IMAGES'/);
+  assert.match(appConfig, /'android\.permission\.READ_MEDIA_VIDEO'/);
+  assert.match(appConfig, /'android\.permission\.READ_MEDIA_AUDIO'/);
+  assert.doesNotMatch(appConfig, /permissions:\s*\[[\s\S]*'READ_MEDIA_IMAGES'/);
+  assert.doesNotMatch(appConfig, /permissions:\s*\[[\s\S]*'READ_MEDIA_VIDEO'/);
+  assert.doesNotMatch(appConfig, /permissions:\s*\[[\s\S]*'READ_MEDIA_AUDIO'/);
+});
+
+test('mobile telemetry does not attach email or display name to crash user scope', () => {
+  const telemetrySource = read('apps/mobile/src/services/telemetry.ts');
+  const appSource = read('apps/mobile/App.tsx');
+
+  assert.match(telemetrySource, /type TelemetryUser = \{\s*id\?: string;\s*\};/s);
+  assert.doesNotMatch(appSource, /setTelemetryUser\(\s*session\?\.user[\s\S]*email:/);
+  assert.doesNotMatch(appSource, /setTelemetryUser\(\s*session\?\.user[\s\S]*username:/);
+});
+
 test('WebParityScreen sends native shell parity params, language, safe area, guest mode, and auth bridge', () => {
   const source = read('apps/mobile/src/screens/WebParityScreen.tsx');
 
@@ -122,6 +143,7 @@ test('WebParityScreen sends native shell parity params, language, safe area, gue
     'oauth2.googleapis.com',
     'appleid.apple.com',
     'setSupportMultipleWindows={false}',
+    'thirdPartyCookiesEnabled={false}',
   ]) {
     assert.match(source, new RegExp(escapeRegex(required)), `missing WebView parity contract: ${required}`);
   }

@@ -15,7 +15,11 @@ const IOS_APP_ICON = {
 };
 const ANDROID_BLOCKED_STORE_PERMISSIONS = [
   'android.permission.SYSTEM_ALERT_WINDOW',
+  'android.permission.READ_EXTERNAL_STORAGE',
   'android.permission.WRITE_EXTERNAL_STORAGE',
+  'android.permission.READ_MEDIA_IMAGES',
+  'android.permission.READ_MEDIA_VIDEO',
+  'android.permission.READ_MEDIA_AUDIO',
 ];
 
 function isLocalHttpUrl(value: string): boolean {
@@ -102,9 +106,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       permissions: [
         'CAMERA',
         'RECORD_AUDIO',
-        'READ_MEDIA_IMAGES',
-        'READ_MEDIA_VIDEO',
-        'READ_MEDIA_AUDIO',
       ],
       intentFilters: [
         {

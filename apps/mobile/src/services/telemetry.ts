@@ -1,7 +1,5 @@
 type TelemetryUser = {
   id?: string;
-  email?: string;
-  username?: string;
 };
 
 type TelemetryEventName =

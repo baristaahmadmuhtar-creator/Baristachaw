@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test';
 
+const realAuthEmail = process.env.BARISTACHAW_E2E_REAL_EMAIL?.trim();
+const realAuthPassword = process.env.BARISTACHAW_E2E_REAL_PASSWORD?.trim();
+
 test('mobile sign-in keeps the auth actions first without marketing panel clutter', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/masuk?lang=id', { waitUntil: 'domcontentloaded' });
@@ -32,9 +35,39 @@ test('mobile sign-in keeps the auth actions first without marketing panel clutte
   await page.getByLabel('Alamat email').fill('pemilik@example.com');
   await emailButton.click();
   await expect(page.locator('#auth-route-password')).toBeVisible();
+  await expect(page.locator('#auth-route-password')).toBeFocused();
+  await page.keyboard.press('Escape');
+  const authMetrics = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+    activeElementId: document.activeElement?.id || '',
+  }));
+  expect(authMetrics.scrollWidth).toBeLessThanOrEqual(authMetrics.clientWidth + 1);
+  expect(authMetrics.activeElementId).toBe('auth-route-password');
   await page.getByRole('button', { name: /Lupa password/i }).click();
   await expect(page.getByText('Cek kotak masuk Anda')).toBeVisible();
   await expect(page.getByText(/pemilik@example\.com/)).toBeVisible();
+});
+
+test('real email/password login reaches the app when secure env credentials are configured', async ({ page }) => {
+  test.skip(
+    !realAuthEmail || !realAuthPassword,
+    'Set BARISTACHAW_E2E_REAL_EMAIL and BARISTACHAW_E2E_REAL_PASSWORD in the local environment to run real auth without committing secrets.'
+  );
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/masuk?lang=id', { waitUntil: 'domcontentloaded' });
+
+  await page.getByLabel('Alamat email').fill(realAuthEmail!);
+  await page.getByRole('button', { name: /Lanjut dengan email/i }).click();
+  const passwordInput = page.locator('#auth-route-password');
+  await expect(passwordInput).toBeVisible();
+  await expect(passwordInput).toBeFocused();
+  await passwordInput.fill(realAuthPassword!);
+  await page.getByRole('button', { name: /^Masuk$/i }).click();
+
+  await expect(page.getByRole('heading', { name: /Baristachaw|Apa yang ingin Anda lakukan hari ini/i })).toBeVisible({ timeout: 30_000 });
+  await expect(passwordInput).toHaveCount(0);
 });
 
 test('registration page uses the same low-friction flow', async ({ page }) => {

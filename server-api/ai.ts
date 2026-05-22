@@ -1753,6 +1753,7 @@ async function callBrewOptimizeFallback(
 
   if (lastError) throw lastError;
   throw createApiError('no_key', 'No brew optimize providers configured', 503, false, 'BREW_OPTIMIZE');
+}
 
 function isIndonesianLanguage(language: string): boolean {
   const normalized = String(language || '').trim().toLowerCase();

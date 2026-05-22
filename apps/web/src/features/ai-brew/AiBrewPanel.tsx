@@ -124,6 +124,7 @@ import {
   updateBrewJournalAiNotes,
   updateBrewJournalFeedback,
 } from './storage';
+import { parseAiBrewOptimizationPatch } from './aiOptimizer';
 import { loadAiBrewCatalog } from './catalog';
 import type {
   AiBrewCatalog,
@@ -4806,6 +4807,7 @@ function PlanResultDialog({
     plan: null,
     flow: null,
     coach: null,
+    details: null,
   });
   const isQuickResult = resultMode === 'quick';
   const [guideDensity, setGuideDensity] = useState<AiBrewGuideDensity>('basic');

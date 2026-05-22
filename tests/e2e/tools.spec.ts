@@ -73,6 +73,11 @@ async function openAiBrewQuickMode(page: import('@playwright/test').Page) {
   await expect(page.getByTestId('ai-brew-builder-quick')).toBeVisible();
 }
 
+async function openAiBrewLiteMode(page: import('@playwright/test').Page) {
+  await page.getByTestId('ai-brew-open-lite').click();
+  await expect(page.getByTestId('ai-brew-builder-lite')).toBeVisible();
+}
+
 async function openAiBrewProMode(page: import('@playwright/test').Page) {
   await page.getByTestId('ai-brew-open-pro').click();
   await expect(page.getByTestId('ai-brew-builder-pro')).toBeVisible();
@@ -414,8 +419,14 @@ test('tasks tab add toggle delete persists', async ({ page }) => {
 test('ai brew reveals custom process, variety, and water inputs', async ({ page }) => {
   await expect(page.getByTestId('ai-brew-panel')).toBeVisible();
   await expect(page.getByTestId('ai-brew-coffee-name')).toHaveCount(0);
+  await expect(page.getByTestId('ai-brew-open-lite')).toBeVisible();
   await expect(page.getByTestId('ai-brew-open-quick')).toBeVisible();
   await expect(page.getByTestId('ai-brew-open-pro')).toBeVisible();
+
+  await openAiBrewLiteMode(page);
+  await expect(page.getByTestId('ai-brew-coffee-name')).toBeVisible();
+  await expect(page.getByTestId('ai-brew-bean-details-summary')).toHaveCount(0);
+  await page.getByTestId('ai-brew-close-lite').click();
 
   await openAiBrewQuickMode(page);
   await expect(page.getByTestId('ai-brew-bean-details-summary')).toBeVisible();

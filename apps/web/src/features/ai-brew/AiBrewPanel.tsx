@@ -169,10 +169,13 @@ const COPY = {
     waterBrandPicker: 'Water',
     waterQuickPicks: 'Suggested',
     waterQuickPicksDescription: '',
+    liteMode: 'Lite',
     quickMode: 'Quick',
     proMode: 'Precision',
+    liteModeDescription: 'Minimal inputs, local planner, fastest safe brew start.',
     quickModeDescription: 'Fast default recipe builder for a reliable first cup.',
     proModeDescription: '',
+    liteModeTrustHint: 'Best when you only need a safe recipe now. Uses the same deterministic local planner as Quick with fewer visible controls.',
     quickModeTrustHint: 'Best for speed and consistency. If bean profile and water stay neutral, Quick and Pro can land on the same plan.',
     proModeTrustHint: '',
     pourControlTitle: 'Pour control',
@@ -209,6 +212,7 @@ const COPY = {
     targetWaterMlPlaceholder: 'Auto',
     targetTempC: 'Temperature (C)',
     targetTempCPlaceholder: 'Auto',
+    liteBuilderTitle: 'Lite Builder',
     quickBuilderTitle: 'Quick Builder',
     proBuilderTitle: 'Precision Builder',
     closeBuilder: 'Close builder',
@@ -332,7 +336,7 @@ const COPY = {
     openPlan: 'Open result',
     emptyRecent: 'Generate once to start your local journal.',
     emptyFavorites: 'Favorite a plan to pin it here.',
-    emptyPlan: 'Pick Quick or Precision to build a brew.',
+    emptyPlan: 'Pick Lite, Quick, or Precision to build a brew.',
     actionPrioritiesTitle: 'Brew priorities',
     actionPrioritiesDescription: 'Practical moves for the next brew. Change one variable at a time.',
     warningsDescription: 'Review before brewing. These notes follow the selected language and the current water, grinder, and brewer status.',
@@ -683,10 +687,13 @@ const COPY = {
     waterBrandPicker: 'Air',
     waterQuickPicks: 'Saran',
     waterQuickPicksDescription: '',
+    liteMode: 'Lite',
     quickMode: 'Cepat',
     proMode: 'Presisi',
+    liteModeDescription: 'Input minimal, planner lokal, mulai seduh paling cepat dan aman.',
     quickModeDescription: 'Penyusun resep awal yang cepat untuk cangkir pertama yang stabil.',
     proModeDescription: '',
+    liteModeTrustHint: 'Paling cocok saat butuh resep aman sekarang. Memakai planner lokal deterministik seperti Cepat dengan kontrol yang lebih ringkas.',
     quickModeTrustHint: 'Paling cocok untuk cepat dan konsisten. Kalau profil kopi dan air masih netral, hasil Cepat dan Presisi bisa sama.',
     proModeTrustHint: '',
     pourControlTitle: 'Kontrol tuang',
@@ -723,6 +730,7 @@ const COPY = {
     targetWaterMlPlaceholder: 'Auto',
     targetTempC: 'Suhu (C)',
     targetTempCPlaceholder: 'Auto',
+    liteBuilderTitle: 'Builder Lite',
     quickBuilderTitle: 'Builder Cepat',
     proBuilderTitle: 'Builder Presisi',
     closeBuilder: 'Tutup panel',
@@ -1206,7 +1214,7 @@ const SOLUBILITY_OPTIONS = [
 
 type PickerKind = 'process' | 'variety' | 'dripper' | 'grinder' | 'water_brand' | null;
 type AiCoachMode = 'explain' | 'troubleshoot' | 'rewrite' | 'deep_analysis' | 'adjust';
-type FormMode = 'quick' | 'pro';
+type FormMode = 'lite' | 'quick' | 'pro';
 type HistoryStripTab = 'latest' | 'favorites' | 'recent';
 type ResultTab = 'plan' | 'flow' | 'coach' | 'details';
 type AiBrewGuideDensity = 'basic' | 'pro';
@@ -7650,7 +7658,7 @@ export function AiBrewPanel({
   const aiEngineWorkingLabel = aiEngineReadyLabel;
   const preferredBuilderMode = inferPreferredBuilderMode(formState);
 
-  const isQuickBuilder = activeBuilderModal === 'quick';
+  const isLocalBuilder = activeBuilderModal !== 'pro';
   const mineralsReady = areWaterMineralInputsReady(formState);
   const selectedWaterBrandCanAutofill = isWaterBrandAutofillAllowed(selectedWaterBrand);
   const waterReadyForGeneration = mineralsReady && (
@@ -7664,7 +7672,7 @@ export function AiBrewPanel({
     || !selectedWaterBrandCanAutofill
     || formState.waterCustomized;
   const shouldShowMineralEditor = showMineralEditor || waterNeedsManualEntry;
-  const canToggleMineralEditor = !isQuickBuilder
+  const canToggleMineralEditor = !isLocalBuilder
     && formState.waterMode === 'brand'
     && selectedWaterBrandCanAutofill;
 
@@ -7849,7 +7857,7 @@ export function AiBrewPanel({
     setAiError(null);
     clearSaveFeedback();
     syncTasteFeedback(null);
-    const generationMode = activeBuilderModal === 'quick' ? 'quick' : 'pro';
+    const generationMode = activeBuilderModal === 'pro' ? 'pro' : 'quick';
     const generationFormState = generationMode === 'quick'
       ? createQuickAiBrewFormState(formState, catalog)
       : sanitizeAiBrewFormState(formState, catalog);
@@ -8401,7 +8409,7 @@ export function AiBrewPanel({
     }
     setFormError(null);
     setShowBeanProfileEditor(false);
-    if (mode === 'quick') {
+    if (mode !== 'pro') {
       const activeBrand = catalog.waterBrands.find((item) => item.id === formState.waterBrandId);
       const quickBrand = activeBrand && isWaterBrandAutofillAllowed(activeBrand)
         ? activeBrand
@@ -8598,7 +8606,10 @@ export function AiBrewPanel({
   }
 
   function renderBuilderDialog(mode: FormMode) {
+    const isLite = mode === 'lite';
     const isPro = mode === 'pro';
+    const modeLabel = isPro ? copy.proMode : isLite ? copy.liteMode : copy.quickMode;
+    const ModeIcon = isPro ? Brain : isLite ? Gauge : Sparkles;
     const pourStyleOptions = [
       { value: 'auto', label: copy.pourStyleAuto },
       { value: 'balanced', label: copy.pourStyleBalanced },
@@ -8625,8 +8636,12 @@ export function AiBrewPanel({
       { value: 'bright_clean', label: copy.aeropressStyleBrightClean },
       { value: 'sweet_body', label: copy.aeropressStyleSweetBody },
     ] as const;
-    const dialogTitle = isPro ? `${copy.title} - ${copy.proBuilderTitle}` : copy.title;
-    const showBeanDetailsControls = isPro || showQuickBeanDetails;
+    const dialogTitle = isPro
+      ? `${copy.title} - ${copy.proBuilderTitle}`
+      : isLite
+        ? `${copy.title} - ${copy.liteBuilderTitle}`
+        : copy.title;
+    const showBeanDetailsControls = isPro || (!isLite && showQuickBeanDetails);
     const showOrigamiFilterControl = selectedDripper?.methodFamily === 'origami';
     const showAeroPressStyleControl = selectedDripper?.methodFamily === 'aeropress';
     const methodOptionPanel = showOrigamiFilterControl || showAeroPressStyleControl ? (
@@ -9051,8 +9066,8 @@ export function AiBrewPanel({
                 </button>
                 <div className="min-w-0 pr-12">
                   <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-300">
-                    {isPro ? <Brain size={13} /> : <Sparkles size={13} />}
-                    <span>{isPro ? copy.proMode : copy.quickMode}</span>
+                    <ModeIcon size={13} />
+                    <span>{modeLabel}</span>
                     <span className="opacity-70">
                       {aiEngineReadyLabel}
                     </span>
@@ -9863,7 +9878,7 @@ export function AiBrewPanel({
                 </div>
               )}
 
-              {!isPro && (
+              {!isPro && !isLite && (
               <div className="glass-card p-4 sm:p-5">
                 <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
                   <div className="flex min-w-0 items-start gap-2">
@@ -10195,7 +10210,20 @@ export function AiBrewPanel({
           </div>
 
           <div className="mt-6 space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <button
+                type="button"
+                onClick={() => openBuilder('lite')}
+                disabled={!catalog}
+                className="rounded-[1.4rem] border border-emerald-500/15 bg-emerald-500/5 p-4 text-left transition-all hover:border-emerald-500/35 hover:bg-emerald-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                data-testid="ai-brew-open-lite"
+              >
+                <div className="text-base font-semibold text-primary">{copy.liteMode}</div>
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                  <Gauge size={12} />
+                  {copy.aiEngineLocalValidated}
+                </div>
+              </button>
               <button
                 type="button"
                 onClick={() => openBuilder('quick')}
@@ -10357,6 +10385,7 @@ export function AiBrewPanel({
         {renderFeedback(false)}
       </div>
 
+      {renderBuilderDialog('lite')}
       {renderBuilderDialog('quick')}
       {renderBuilderDialog('pro')}
 

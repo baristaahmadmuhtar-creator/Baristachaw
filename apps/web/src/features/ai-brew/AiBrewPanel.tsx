@@ -5034,6 +5034,43 @@ function PlanResultDialog({
       detail: `${localizedGrindSettingReference} - ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)}${isFeima600nPlatformGrinder(plan.grinder) ? ` ${formatFeima600nAliasLine(language)}` : ''}`,
     },
   ];
+  const extractionRationale = plan.extractionRationale || {
+    ratio: id
+      ? `Rasio 1:${formatBrewRatio(plan.finalBeverageRatio)} mengikuti target profil dan input beans.`
+      : `Ratio 1:${formatBrewRatio(plan.finalBeverageRatio)} follows target profile and bean inputs.`,
+    temperature: id
+      ? `Suhu ${formatRoundedTemperature(plan.waterTempC)} dijaga sebagai baseline aman.`
+      : `${formatRoundedTemperature(plan.waterTempC)} is kept as the safe baseline.`,
+    time: id
+      ? `Waktu ${formatGuideTime(extractionSeconds)} dipakai sebagai target service.`
+      : `${formatGuideTime(extractionSeconds)} is used as the service target.`,
+    grind: localizedGrindRecommendation,
+    pour: id ? 'Ikuti urutan tuang deterministik.' : 'Follow the deterministic pour sequence.',
+    iceSplit: plan.iceMl > 0
+      ? `${formatRoundedMl(plan.hotWaterMl)} ${id ? 'air panas' : 'hot water'} / ${formatRoundedGrams(plan.iceMl)} ${id ? 'es' : 'ice'}`
+      : undefined,
+    beanPrecision: {
+      summary: localizedBeanCoverageLabel || (id ? 'Baseline beans' : 'Bean baseline'),
+      signals: [
+        localizedProcessLabel,
+        localizedVarietyLabel,
+        localizedRoastLabel,
+        `TDS ${plan.waterMinerals.tdsPpm}`,
+      ],
+    },
+    warnings: localizedWarnings,
+  };
+  const beanDataPrecisionSignals = extractionRationale.beanPrecision.signals
+    .filter(Boolean)
+    .slice(0, 6);
+  const extractionRationaleItems = [
+    { label: id ? 'Rasio' : 'Ratio', value: extractionRationale.ratio },
+    { label: id ? 'Suhu' : 'Temperature', value: extractionRationale.temperature },
+    { label: id ? 'Waktu ekstraksi' : 'Extraction time', value: extractionRationale.time },
+    { label: id ? 'Gilingan' : 'Grind', value: extractionRationale.grind },
+    { label: id ? 'Peta tuang' : 'Pour map', value: extractionRationale.pour },
+    ...(extractionRationale.iceSplit ? [{ label: id ? 'Split es' : 'Ice split', value: extractionRationale.iceSplit }] : []),
+  ];
   const resultHeaderClass = 'relative min-w-0 max-w-full overflow-hidden rounded-[1.5rem] border panel-divider-subtle panel-soft px-4 pb-4 pt-5 lg:px-5';
   const resultMetricCardClass = 'min-w-0 max-w-full rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/84 p-3 [overflow-wrap:anywhere]';
   const resultChipClass = 'max-w-full rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-medium text-secondary [overflow-wrap:anywhere]';
@@ -5215,6 +5252,12 @@ function PlanResultDialog({
                           {localizedBeanCoverageLabel}
                         </span>
                       )}
+                      <span
+                        className="rounded-full border border-blue-500/18 bg-blue-500/10 px-2 py-1 font-semibold text-blue-700 dark:text-blue-300"
+                        data-testid="ai-brew-bean-data-precision"
+                      >
+                        {id ? 'Presisi Data Bean' : 'Bean Data Precision'}: {extractionRationale.beanPrecision.summary}
+                      </span>
                       {expectedCup && (
                         <span className="rounded-full bg-surface-alpha px-2 py-1 font-semibold text-primary">
                           {copy.expectedCupTitle}: {localizedExpectedCupConfidence}
@@ -5503,6 +5546,50 @@ function PlanResultDialog({
               </div>
 
               <div className="grid gap-4">
+                <section
+                  className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
+                  data-testid="ai-brew-why-this-extraction"
+                >
+                  <div className="mb-3 flex min-w-0 flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Gauge size={15} className="text-blue-500" />
+                        <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
+                          {id ? 'Kenapa Ekstraksi Ini' : 'Why This Extraction'}
+                        </h4>
+                      </div>
+                      <p className="mt-1 text-xs leading-5 text-secondary">
+                        {id
+                          ? 'Rationale ini berasal dari angka planner deterministik, bukan karangan AI.'
+                          : 'This rationale comes from deterministic planner numbers, not AI-invented copy.'}
+                      </p>
+                    </div>
+                    <span className="rounded-full border border-blue-500/18 bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
+                      {extractionRationale.beanPrecision.summary}
+                    </span>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {extractionRationaleItems.map((item) => (
+                      <div key={item.label} className="rounded-xl bg-surface-alpha px-3 py-2.5">
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{item.label}</p>
+                        <p className="mt-1 text-xs leading-5 text-primary">{localizeAiBrewDynamicText(item.value, language)}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]" data-testid="ai-brew-bean-data-precision-signals">
+                    {beanDataPrecisionSignals.map((signal) => (
+                      <span key={signal} className="rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 font-medium text-secondary">
+                        {localizeAiBrewDynamicText(signal, language)}
+                      </span>
+                    ))}
+                  </div>
+                  {extractionRationale.warnings.length > 0 && (
+                    <div className="mt-3 rounded-xl border border-amber-500/18 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-700 dark:text-amber-200">
+                      {localizeAiBrewDynamicText(extractionRationale.warnings[0], language)}
+                    </div>
+                  )}
+                </section>
+
                 <section
                   className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
                   data-testid="ai-brew-pro-target-compare"
@@ -9060,6 +9147,7 @@ export function AiBrewPanel({
                               type="button"
                               onClick={() => updateForm('roastLevel', option.value as AiBrewFormState['roastLevel'])}
                               className={`min-w-0 rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.roastLevel === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
+                              data-testid={`ai-brew-roast-${option.value}`}
                             >
                               <span className="block truncate">{localizeAiBrewRoastLabel(option.value, language)}</span>
                             </button>

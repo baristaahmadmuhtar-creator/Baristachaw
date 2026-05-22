@@ -1038,6 +1038,9 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
       await expect(result.getByTestId('ai-brew-flow-current-card')).toContainText(firstHotTargetText);
     } else {
       await result.getByTestId('ai-brew-result-tab-details').click();
+      await expect(result.getByTestId('ai-brew-bean-data-precision')).toContainText(/Bean Data Precision|Presisi Data Bean/i);
+      await expect(result.getByTestId('ai-brew-why-this-extraction')).toContainText(/Why This Extraction|Kenapa Ekstraksi Ini/i);
+      await expect(result.getByTestId('ai-brew-bean-data-precision-signals')).toContainText(/process|proses|roast|water|TDS/i);
       await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Final ratio|Rasio Final/i);
       await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Hot concentrate|Konsentrat Panas/i);
       await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(plan.finalBeverageRatio)}`);

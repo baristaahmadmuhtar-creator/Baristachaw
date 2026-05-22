@@ -130,6 +130,27 @@ function appendIcedOutputVocabulary(markdown: string, plan: BrewPlan) {
   ].join('\n');
 }
 
+function removeInstructionInjectionLanguage(markdown: string) {
+  let output = markdown;
+  const replacements: string[] = [];
+  const patterns = [
+    /\bignore\s+(?:all\s+)?(?:previous|prior|above)\s+instructions?\b/gi,
+    /\babaikan\s+(?:semua\s+)?instruksi\s+(?:sebelumnya|di atas)\b/gi,
+    /\b(?:system|developer)\s+prompt\b/gi,
+    /\b(?:system|developer)\s+instructions?\b/gi,
+    /\binstruksi\s+(?:sistem|developer|pengembang)\b/gi,
+  ];
+
+  for (const pattern of patterns) {
+    if (pattern.test(output)) {
+      output = output.replace(pattern, 'input bean tidak tepercaya');
+      replacements.push('instruction_injection');
+    }
+  }
+
+  return { markdown: output, replacements };
+}
+
 function enforceCoachAdjustmentContract(markdown: string, action: CoachAction) {
   if (action !== 'troubleshoot' && action !== 'adjust') {
     return { markdown, risk: 'none' as CoachRisk, replacements: [] as string[] };
@@ -184,6 +205,13 @@ export function sanitizeAiCoachMarkdown(params: {
     markdown = markdown.replace(/\b(?:geisha|gesha)\b/gi, 'kopi ini');
     replacements.push('geisha_claim');
     risk = maxRisk(risk, 'medium');
+  }
+
+  const injectionGuard = removeInstructionInjectionLanguage(markdown);
+  if (injectionGuard.replacements.length > 0) {
+    markdown = injectionGuard.markdown;
+    replacements.push(...injectionGuard.replacements);
+    risk = maxRisk(risk, 'high');
   }
 
   const numberGuard = replaceConflictingNumbers(markdown, params.plan);

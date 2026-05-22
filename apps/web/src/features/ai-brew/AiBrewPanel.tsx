@@ -1,4 +1,4 @@
-import { lazy, Suspense, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { lazy, Suspense, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ArrowRight,
@@ -31,6 +31,7 @@ import { useGlobalState } from '../../context/GlobalState';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useNavbar } from '../../context/NavbarContext';
 import { useAiAccessGate } from '../../components/billing/AiAccessGate';
+import { useIOSKeyboardFix } from '../../hooks/useIOSKeyboardFix';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useRuntimeDisplayMode } from '../../hooks/useRuntimeDisplayMode';
 import { reportClientError } from '../../services/errorReporting';
@@ -1792,7 +1793,7 @@ function withLanguageLock(promptBody: string, language: string) {
     return `${promptBody}\n\nKunci bahasa: jawab sepenuhnya dalam Bahasa Indonesia. Jangan gunakan bahasa lain untuk judul, bullet, label, catatan, maupun fallback. Nama alat, nama brand, istilah umum seperti bloom/server/bed, dan satuan tetap boleh dipertahankan. Gunakan "air turun" untuk drawdown dan "buka katup" untuk release. Pertahankan struktur heading, bullet, dan angka secara konsisten.`;
   }
   if (/^ar(?:-|$)/i.test(language)) {
-    return `${promptBody}\n\nقفل اللغة: أجب بالكامل باللغة العربية. لا تستخدم أي لغة أخرى في العناوين أو النقاط أو التسميات أو الملاحظات أو النصوص الاحتياطية. حافظ على بنية العناوين والنقاط والأرقام كما هي.`;
+    return `${promptBody}\n\nÙ‚ÙÙ„ Ø§Ù„Ù„ØºØ©: Ø£Ø¬Ø¨ Ø¨Ø§Ù„ÙƒØ§Ù…Ù„ Ø¨Ø§Ù„Ù„ØºØ© Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©. Ù„Ø§ ØªØ³ØªØ®Ø¯Ù… Ø£ÙŠ Ù„ØºØ© Ø£Ø®Ø±Ù‰ ÙÙŠ Ø§Ù„Ø¹Ù†Ø§ÙˆÙŠÙ† Ø£Ùˆ Ø§Ù„Ù†Ù‚Ø§Ø· Ø£Ùˆ Ø§Ù„ØªØ³Ù…ÙŠØ§Øª Ø£Ùˆ Ø§Ù„Ù…Ù„Ø§Ø­Ø¸Ø§Øª Ø£Ùˆ Ø§Ù„Ù†ØµÙˆØµ Ø§Ù„Ø§Ø­ØªÙŠØ§Ø·ÙŠØ©. Ø­Ø§ÙØ¸ Ø¹Ù„Ù‰ Ø¨Ù†ÙŠØ© Ø§Ù„Ø¹Ù†Ø§ÙˆÙŠÙ† ÙˆØ§Ù„Ù†Ù‚Ø§Ø· ÙˆØ§Ù„Ø£Ø±Ù‚Ø§Ù… ÙƒÙ…Ø§ Ù‡ÙŠ.`;
   }
   return promptBody + '\n\nLanguage lock: respond fully in ' + language + '. Keep all headings, bullets, and numbers structurally consistent.';
 }
@@ -3928,6 +3929,21 @@ function focusElement(target: HTMLElement) {
   }
 }
 
+function isDialogFocusableVisible(element: HTMLElement) {
+  if (element.closest('[hidden], [aria-hidden="true"]')) return false;
+  const style = window.getComputedStyle(element);
+  if (style.display === 'none' || style.visibility === 'hidden') return false;
+  return element.getClientRects().length > 0;
+}
+
+function requestViewportMetricsRefresh() {
+  if (typeof window === 'undefined') return;
+  const dispatchResize = () => window.dispatchEvent(new Event('resize'));
+  window.requestAnimationFrame(dispatchResize);
+  window.setTimeout(dispatchResize, 120);
+  window.setTimeout(dispatchResize, 260);
+}
+
 function escapeAttributeValue(value: string) {
   if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
     return CSS.escape(value);
@@ -4023,8 +4039,8 @@ function FocusLockedDialog({
       }
       if (event.key !== 'Tab') return;
       const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      )).filter((element) => !element.hasAttribute('hidden') && element.offsetParent !== null);
+        'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )).filter(isDialogFocusableVisible);
       if (focusable.length === 0) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
@@ -4351,7 +4367,7 @@ function MasterPickerDialog({
             if (showProcessCategories) setActiveProcessCategory('all');
           }}
           placeholder={searchPlaceholder}
-          className="glass-input h-11 w-full pl-10 pr-4 text-sm"
+          className="glass-input h-11 w-full pl-10 pr-4 text-base sm:text-sm"
         />
       </div>
 
@@ -4728,6 +4744,7 @@ function PlanResultDialog({
   saveError,
   feedback,
   feedbackNoteDraft,
+  keyboardOffset,
   showProvenance,
   isAuthenticated,
   isOffline,
@@ -4759,6 +4776,7 @@ function PlanResultDialog({
   saveError: string | null;
   feedback: BrewTasteFeedback | null;
   feedbackNoteDraft: string;
+  keyboardOffset: number;
   showProvenance: boolean;
   isAuthenticated: boolean;
   isOffline: boolean;
@@ -4779,6 +4797,11 @@ function PlanResultDialog({
   const [flowAccumulatedSeconds, setFlowAccumulatedSeconds] = useState(0);
   const [flowRunning, setFlowRunning] = useState(false);
   const [flowStartedAtMs, setFlowStartedAtMs] = useState<number | null>(null);
+  const resultTabRefs = useRef<Record<ResultTab, HTMLButtonElement | null>>({
+    plan: null,
+    flow: null,
+    coach: null,
+  });
   const isQuickResult = resultMode === 'quick';
   const [guideDensity, setGuideDensity] = useState<AiBrewGuideDensity>('basic');
 
@@ -5437,8 +5460,9 @@ function PlanResultDialog({
           className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4 pb-6 pt-4 lg:px-6 lg:pb-8 lg:pt-6"
           style={{
             paddingTop: 'calc(16px + var(--safe-top, 0px))',
-            paddingBottom: 'calc(28px + var(--bottom-safe-capped, 0px))',
+            paddingBottom: `calc(28px + var(--bottom-safe-capped, 0px) + max(${keyboardOffset}px, var(--keyboard-offset, 0px)))`,
           }}
+          data-testid="ai-brew-result-scroll"
           tabIndex={0}
           aria-labelledby={isQuickResult ? undefined : activeTabId}
         >
@@ -5621,6 +5645,7 @@ function PlanResultDialog({
                   {resultTabs.map((tab) => (
                     <button
                       key={tab.id}
+                      ref={(node) => { resultTabRefs.current[tab.id] = node; }}
                       id={`ai-brew-result-tab-${tab.id}`}
                       type="button"
                       role="tab"
@@ -5894,7 +5919,7 @@ function PlanResultDialog({
                 </section>
               </div>
 
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <div className="order-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                 <section
                   className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
                   data-testid="ai-brew-pro-precision-tolerance"
@@ -5942,7 +5967,7 @@ function PlanResultDialog({
 
               {plan.iceMl > 0 && (
                 <div
-                  className="rounded-[1.2rem] border border-sky-500/20 bg-sky-500/[0.08] p-4"
+                  className="order-6 rounded-[1.2rem] border border-sky-500/20 bg-sky-500/[0.08] p-4"
                   data-testid="ai-brew-iced-calibration"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -6006,7 +6031,7 @@ function PlanResultDialog({
                 </>
               )}
 
-              <div className="order-1 grid gap-5 xl:grid-cols-[minmax(0,1.18fr)_minmax(18rem,0.82fr)]">
+              <div className="order-3 grid gap-5 xl:grid-cols-[minmax(0,1.18fr)_minmax(18rem,0.82fr)]">
                 <div className="space-y-5">
                   <div
                     className="rounded-[1.2rem] border border-blue-500/18 bg-blue-500/[0.08] p-3.5 lg:p-4"
@@ -6130,15 +6155,16 @@ function PlanResultDialog({
                         );
                       })}
                     </div>
-                    <label className="mt-3 block">
+                    <label className="mt-3 block" htmlFor="ai-brew-feedback-note">
                       <span className="mb-2 block text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.feedbackNote}</span>
                       <textarea
+                        id="ai-brew-feedback-note"
                         name="ai-brew-feedback-note"
                         value={feedbackNoteDraft}
                         onChange={(event) => onFeedbackNoteChange(event.target.value.slice(0, AI_BREW_FEEDBACK_NOTE_MAX_LENGTH))}
                         placeholder={copy.feedbackNotePlaceholder}
                         maxLength={AI_BREW_FEEDBACK_NOTE_MAX_LENGTH}
-                        className="glass-input min-h-20 w-full resize-none px-3 py-2 text-sm leading-5"
+                        className="glass-input min-h-24 w-full resize-none px-3 py-2 text-base leading-6 sm:min-h-20 sm:text-sm sm:leading-5"
                         data-testid="ai-brew-feedback-note"
                       />
                     </label>
@@ -6322,7 +6348,7 @@ function PlanResultDialog({
                   defaultOpen={false}
                 >
                   <p className="rounded-xl bg-surface-alpha px-3 py-3 text-sm text-secondary">
-                    TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm} · {formatWaterDerivationLabel(copy, plan.waterMineralDerivation)}
+                    TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm} Â· {formatWaterDerivationLabel(copy, plan.waterMineralDerivation)}
                   </p>
                 </ResultDisclosureSection>
               </div>
@@ -7479,6 +7505,12 @@ export function AiBrewPanel({
     return COPY[language as keyof typeof COPY] || fallbackCopy;
   }, [fallbackCopy, language]);
   const hasHydratedRef = useRef(false);
+  const aiBrewPanelRef = useRef<HTMLDivElement | null>(null);
+  const { keyboardOffset: aiBrewKeyboardOffset } = useIOSKeyboardFix({
+    focusScopeRef: aiBrewPanelRef,
+    enableScrollIntoViewOnFocus: true,
+    scrollIntoViewBlock: 'center',
+  });
 
   const [catalog, setCatalog] = useState<AiBrewCatalog | null>(null);
   const [catalogError, setCatalogError] = useState<string | null>(null);
@@ -7545,6 +7577,7 @@ export function AiBrewPanel({
   }, [activeBuilderModal]);
 
   const shouldHideAppNav = activeBuilderModal !== null || pickerKind !== null || resultOpen || generationBusy;
+  const aiBrewModalActive = shouldHideAppNav;
 
   useEffect(() => {
     if (shouldHideAppNav) hideNav();
@@ -7574,6 +7607,7 @@ export function AiBrewPanel({
     setActiveBuilderModal(null);
     setResultMode('quick');
     setResultOpen(shouldOpen);
+    if (shouldOpen) requestViewportMetricsRefresh();
     setAiResponse(selectDefaultAiResponse(copy, storedPlan.aiNotes, storedPlan, language));
   }
 
@@ -8260,6 +8294,7 @@ export function AiBrewPanel({
       setActiveBuilderModal(null);
       setResultMode(generationMode);
       setResultOpen(true);
+      requestViewportMetricsRefresh();
       setFormState(generationFormState);
       saveLastGeneratedBrewPlan(nextPlan);
       await saveBrewJournalEntry(journalEntry);
@@ -8625,6 +8660,7 @@ export function AiBrewPanel({
     setActiveBuilderModal(null);
     setResultMode(feedback ? 'pro' : 'quick');
     setResultOpen(true);
+    requestViewportMetricsRefresh();
     saveLastGeneratedBrewPlan(nextPlan);
     setAiResponse(selectDefaultAiResponse(copy, nextPlan.aiNotes, nextPlan, language));
     setAiError(null);
@@ -8683,6 +8719,7 @@ export function AiBrewPanel({
       setShowMineralEditor(false);
     }
     setActiveBuilderModal(mode);
+    requestViewportMetricsRefresh();
   }
 
   function closeBuilder() {
@@ -8697,6 +8734,7 @@ export function AiBrewPanel({
     clearSaveFeedback();
     setShowBeanProfileEditor(false);
     setActiveBuilderModal(preferredBuilderMode);
+    requestViewportMetricsRefresh();
   }
 
   function openPicker(kind: NonNullable<PickerKind>, trigger: HTMLButtonElement) {
@@ -9300,8 +9338,9 @@ export function AiBrewPanel({
             className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-3 pb-3 pt-3 lg:px-6 lg:pb-6 lg:pt-6"
             style={{
               paddingTop: 'calc(12px + var(--safe-top, 0px))',
-              paddingBottom: 'calc(28px + var(--bottom-safe-capped, 0px))',
+              paddingBottom: `calc(28px + var(--bottom-safe-capped, 0px) + max(${aiBrewKeyboardOffset}px, var(--keyboard-offset, 0px)))`,
             }}
+            data-testid="ai-brew-builder-scroll"
           >
             <div className="min-w-0 max-w-full space-y-4">
               <div className="relative min-w-0 max-w-full overflow-hidden rounded-[1.25rem] border panel-divider-subtle bg-surface-alpha/75 px-3.5 pb-3.5 pt-4 lg:px-5 lg:pb-4 lg:pt-5">
@@ -9353,8 +9392,9 @@ export function AiBrewPanel({
                   </div>
                   <div className="space-y-3.5">
                     <div>
-                      <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.coffeeName}</label>
+                      <label htmlFor="ai-brew-coffee-name" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.coffeeName}</label>
                       <input
+                        id="ai-brew-coffee-name"
                         name="ai-brew-coffee-name"
                         type="text"
                         value={formState.coffeeName}
@@ -9368,10 +9408,12 @@ export function AiBrewPanel({
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.dose}</label>
+                        <label htmlFor="ai-brew-dose" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.dose}</label>
                         <input
+                          id="ai-brew-dose"
                           name="ai-brew-dose"
                           type="number"
+                          inputMode="decimal"
                           min="10"
                           max="20"
                           step="0.1"
@@ -9445,7 +9487,7 @@ export function AiBrewPanel({
                             </p>
                           </div>
                           <span className="rounded-full bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
-                            {selectedProcessLabel || copy.notSpecified} · {selectedVarietyLabel || copy.notSpecified}
+                            {selectedProcessLabel || copy.notSpecified} Â· {selectedVarietyLabel || copy.notSpecified}
                           </span>
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">
@@ -9629,7 +9671,7 @@ export function AiBrewPanel({
                   <div className="space-y-3.5">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.dripper}</label>
+                        <p id="ai-brew-dripper-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.dripper}</p>
                         <button
                           type="button"
                           onClick={(event) => openPicker('dripper', event.currentTarget)}
@@ -9637,7 +9679,7 @@ export function AiBrewPanel({
                           data-testid="ai-brew-dripper-picker"
                           aria-haspopup="dialog"
                           aria-expanded={pickerKind === 'dripper'}
-                          aria-label={copy.openDripperPicker}
+                          aria-labelledby="ai-brew-dripper-label"
                         >
                           <span className="truncate">{selectedDripper?.name || copy.openPicker}</span>
                           <ArrowRight size={16} className="shrink-0 text-secondary" />
@@ -9645,7 +9687,7 @@ export function AiBrewPanel({
                       </div>
 
                       <div>
-                        <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grinder}</label>
+                        <p id="ai-brew-grinder-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grinder}</p>
                         <button
                           type="button"
                           onClick={(event) => openPicker('grinder', event.currentTarget)}
@@ -9653,7 +9695,7 @@ export function AiBrewPanel({
                           data-testid="ai-brew-grinder-picker"
                           aria-haspopup="dialog"
                           aria-expanded={pickerKind === 'grinder'}
-                          aria-label={copy.openGrinderPicker}
+                          aria-labelledby="ai-brew-grinder-label"
                         >
                           <span className="truncate">{selectedGrinder ? formatGrinderDisplayName(selectedGrinder, language, 'selected') : copy.openPicker}</span>
                           <ArrowRight size={16} className="shrink-0 text-secondary" />
@@ -9692,7 +9734,7 @@ export function AiBrewPanel({
                         {formState.waterMode === 'brand' ? (
                           <div className="space-y-3">
                             <div>
-                              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.waterBrandPicker}</label>
+                              <p id="ai-brew-water-brand-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.waterBrandPicker}</p>
                               <button
                                 type="button"
                                 onClick={(event) => openPicker('water_brand', event.currentTarget)}
@@ -9700,7 +9742,7 @@ export function AiBrewPanel({
                                 data-testid="ai-brew-water-picker"
                                 aria-haspopup="dialog"
                                 aria-expanded={pickerKind === 'water_brand'}
-                                aria-label={copy.waterOpenBrandPicker}
+                                aria-labelledby="ai-brew-water-brand-label"
                               >
                                 <span className="truncate">{selectedWaterBrand?.shortLabel || copy.waterOpenBrandPicker}</span>
                                 <ArrowRight size={16} className="shrink-0 text-secondary" />
@@ -9874,10 +9916,12 @@ export function AiBrewPanel({
                             )}
                             <div className="grid gap-4 sm:grid-cols-2">
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.tds}</label>
+                                <label htmlFor="ai-brew-water-tds" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.tds}</label>
                                 <input
+                                  id="ai-brew-water-tds"
                                   name="ai-brew-water-tds"
                                   type="number"
+                                  inputMode="decimal"
                                   min="0"
                                   max="600"
                                   step="1"
@@ -9889,10 +9933,12 @@ export function AiBrewPanel({
                                 />
                               </div>
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.hardness}</label>
+                                <label htmlFor="ai-brew-water-hardness" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.hardness}</label>
                                 <input
+                                  id="ai-brew-water-hardness"
                                   name="ai-brew-water-hardness"
                                   type="number"
+                                  inputMode="decimal"
                                   min="0"
                                   max="500"
                                   step="1"
@@ -9904,10 +9950,12 @@ export function AiBrewPanel({
                                 />
                               </div>
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.alkalinity}</label>
+                                <label htmlFor="ai-brew-water-alkalinity" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.alkalinity}</label>
                                 <input
+                                  id="ai-brew-water-alkalinity"
                                   name="ai-brew-water-alkalinity"
                                   type="number"
+                                  inputMode="decimal"
                                   min="0"
                                   max="400"
                                   step="1"
@@ -10166,7 +10214,7 @@ export function AiBrewPanel({
                     <div className="space-y-3.5">
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                          <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.process}</label>
+                          <p id="ai-brew-process-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.process}</p>
                           <button
                             type="button"
                             onClick={(event) => openPicker('process', event.currentTarget)}
@@ -10174,7 +10222,7 @@ export function AiBrewPanel({
                             data-testid="ai-brew-process-picker"
                             aria-haspopup="dialog"
                             aria-expanded={pickerKind === 'process'}
-                            aria-label={copy.openProcessPicker}
+                            aria-labelledby="ai-brew-process-label"
                           >
                             <span className="truncate">{selectedProcessLabel}</span>
                             <ArrowRight size={16} className="shrink-0 text-secondary" />
@@ -10182,7 +10230,7 @@ export function AiBrewPanel({
                         </div>
 
                         <div>
-                          <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.variety}</label>
+                          <p id="ai-brew-variety-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.variety}</p>
                           <button
                             type="button"
                             onClick={(event) => openPicker('variety', event.currentTarget)}
@@ -10190,7 +10238,7 @@ export function AiBrewPanel({
                             data-testid="ai-brew-variety-picker"
                             aria-haspopup="dialog"
                             aria-expanded={pickerKind === 'variety'}
-                            aria-label={copy.openVarietyPicker}
+                            aria-labelledby="ai-brew-variety-label"
                           >
                             <span className="truncate">{selectedVarietyLabel}</span>
                             <ArrowRight size={16} className="shrink-0 text-secondary" />
@@ -10200,8 +10248,9 @@ export function AiBrewPanel({
 
                       {formState.process === CUSTOM_ENTRY_ID && (
                         <div>
-                          <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherProcess}</label>
+                          <label htmlFor="ai-brew-process-custom" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherProcess}</label>
                           <input
+                            id="ai-brew-process-custom"
                             name="ai-brew-process-custom"
                             type="text"
                             value={formState.customProcess}
@@ -10215,8 +10264,9 @@ export function AiBrewPanel({
 
                       {formState.variety === CUSTOM_ENTRY_ID && (
                         <div>
-                          <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherVariety}</label>
+                          <label htmlFor="ai-brew-variety-custom" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherVariety}</label>
                           <input
+                            id="ai-brew-variety-custom"
                             name="ai-brew-variety-custom"
                             type="text"
                             value={formState.customVariety}
@@ -10237,8 +10287,9 @@ export function AiBrewPanel({
                             </div>
                             <div className="mt-3 grid gap-3 sm:grid-cols-3">
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetRatio}</label>
+                                <label htmlFor="ai-brew-target-ratio" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetRatio}</label>
                                 <input
+                                  id="ai-brew-target-ratio"
                                   name="ai-brew-target-ratio"
                                   type="number"
                                   min="13"
@@ -10255,8 +10306,9 @@ export function AiBrewPanel({
                                 <p className="mt-1 text-xs leading-5 text-secondary" data-testid="ai-brew-target-ratio-hint">{copy.targetRatioHint}</p>
                               </div>
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetWaterMl}</label>
+                                <label htmlFor="ai-brew-target-water" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetWaterMl}</label>
                                 <input
+                                  id="ai-brew-target-water"
                                   name="ai-brew-target-water"
                                   type="number"
                                   min="15"
@@ -10272,8 +10324,9 @@ export function AiBrewPanel({
                                 />
                               </div>
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetTempC}</label>
+                                <label htmlFor="ai-brew-target-temp" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetTempC}</label>
                                 <input
+                                  id="ai-brew-target-temp"
                                   name="ai-brew-target-temp"
                                   type="number"
                                   min="4"
@@ -10313,10 +10366,12 @@ export function AiBrewPanel({
                               <div className="mt-4 space-y-3.5">
                                 <div className="grid gap-4 sm:grid-cols-2">
                                   <div>
-                                    <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.altitudeMasl}</label>
+                                    <label htmlFor="ai-brew-bean-altitude" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.altitudeMasl}</label>
                                     <input
+                                      id="ai-brew-bean-altitude"
                                       name="ai-brew-bean-altitude"
                                       type="number"
+                                      inputMode="numeric"
                                       min="0"
                                       max="3200"
                                       step="10"
@@ -10327,10 +10382,12 @@ export function AiBrewPanel({
                                     />
                                   </div>
                                   <div>
-                                    <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.beanDensity}</label>
+                                    <label htmlFor="ai-brew-bean-density" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.beanDensity}</label>
                                     <input
+                                      id="ai-brew-bean-density"
                                       name="ai-brew-bean-density"
                                       type="number"
+                                      inputMode="decimal"
                                       min="0.55"
                                       max="0.95"
                                       step="0.01"
@@ -10343,8 +10400,8 @@ export function AiBrewPanel({
                                 </div>
 
                                 <div>
-                                  <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.roastDevelopmentTitle}</label>
-                                  <div className="grid grid-cols-3 gap-2">
+                                  <p id="ai-brew-bean-roast-development-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.roastDevelopmentTitle}</p>
+                                  <div className="grid grid-cols-3 gap-2" role="group" aria-labelledby="ai-brew-bean-roast-development-label">
                                     {ROAST_DEVELOPMENT_OPTIONS.map((option) => {
                                       const label = option.value === 'underdeveloped'
                                         ? copy.roastDevelopmentUnderdeveloped
@@ -10358,6 +10415,7 @@ export function AiBrewPanel({
                                           onClick={() => updateForm('roastDevelopment', formState.roastDevelopment === option.value ? '' : option.value)}
                                           className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.roastDevelopment === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
                                           data-testid={`ai-brew-bean-roast-${option.value}`}
+                                          aria-pressed={formState.roastDevelopment === option.value}
                                         >
                                           {label}
                                         </button>
@@ -10367,8 +10425,8 @@ export function AiBrewPanel({
                                 </div>
 
                                 <div>
-                                  <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.solubilityTitle}</label>
-                                  <div className="grid grid-cols-3 gap-2">
+                                  <p id="ai-brew-bean-solubility-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.solubilityTitle}</p>
+                                  <div className="grid grid-cols-3 gap-2" role="group" aria-labelledby="ai-brew-bean-solubility-label">
                                     {SOLUBILITY_OPTIONS.map((option) => {
                                       const label = option.value === 'low'
                                         ? copy.solubilityLow
@@ -10382,6 +10440,7 @@ export function AiBrewPanel({
                                           onClick={() => updateForm('solubility', formState.solubility === option.value ? '' : option.value)}
                                           className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.solubility === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
                                           data-testid={`ai-brew-bean-solubility-${option.value}`}
+                                          aria-pressed={formState.solubility === option.value}
                                         >
                                           {label}
                                         </button>
@@ -10450,14 +10509,21 @@ export function AiBrewPanel({
   return (
     <div className="ai-brew-compact-shell space-y-5 pb-28 lg:pb-0" data-testid="ai-brew-panel">
       {aiAccessGateModal}
-      <div aria-hidden={activeBuilderModal !== null || resultOpen} className="mx-auto max-w-4xl space-y-5">
-        <div className="glass-card p-5 lg:p-6">
+      <div
+        aria-hidden={aiBrewModalActive}
+        {...(aiBrewModalActive ? { inert: true } : {})}
+        className="mx-auto max-w-4xl space-y-5"
+      >
+        <div className="glass-card p-4 lg:p-6">
           <div className="flex items-start gap-4">
             <div className="mb-1 inline-flex h-12 w-12 items-center justify-center rounded-[1.2rem] bg-blue-500/10 text-blue-500 shadow-inner">
               <Sparkles size={22} />
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="text-2xl font-semibold tracking-tight">{copy.title}</h2>
+              {copy.subtitle ? (
+                <p className="mt-1 text-sm leading-5 text-secondary">{copy.subtitle}</p>
+              ) : null}
             </div>
           </div>
 
@@ -10480,10 +10546,13 @@ export function AiBrewPanel({
                 type="button"
                 onClick={() => openBuilder('quick')}
                 disabled={!catalog}
-                className="rounded-[1.4rem] border border-blue-500/15 bg-blue-500/5 p-4 text-left transition-all hover:border-blue-500/35 hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-[76px] rounded-[1.25rem] border border-blue-500/15 bg-blue-500/5 p-4 text-left transition-all hover:border-blue-500/35 hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                 data-testid="ai-brew-open-quick"
               >
                 <div className="text-base font-semibold text-primary">{copy.quickMode}</div>
+                {copy.quickModeDescription ? (
+                  <p className="mt-1 text-xs leading-5 text-secondary">{copy.quickModeDescription}</p>
+                ) : null}
                 <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
                   <Sparkles size={12} />
                   {copy.aiEngineLocalValidated}
@@ -10493,10 +10562,13 @@ export function AiBrewPanel({
                 type="button"
                 onClick={() => openBuilder('pro')}
                 disabled={!catalog}
-                className="rounded-[1.4rem] border border-blue-500/15 bg-blue-500/5 p-4 text-left transition-all hover:border-blue-500/35 hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-[76px] rounded-[1.25rem] border border-blue-500/15 bg-blue-500/5 p-4 text-left transition-all hover:border-blue-500/35 hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                 data-testid="ai-brew-open-pro"
               >
                 <div className="text-base font-semibold text-primary">{copy.proMode}</div>
+                {copy.proModeDescription ? (
+                  <p className="mt-1 text-xs leading-5 text-secondary">{copy.proModeDescription}</p>
+                ) : null}
                 <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
                   <Brain size={12} />
                   {copy.aiEnginePrecisionPlanner}
@@ -10511,13 +10583,15 @@ export function AiBrewPanel({
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.latestPlan} / {copy.favorites} / {copy.recent}</h3>
             </div>
-            <div className="grid grid-cols-3 gap-2 rounded-[1rem] panel-soft p-1.5">
+            <div className="grid grid-cols-3 gap-1.5 rounded-[1rem] panel-soft p-1.5" role="tablist" aria-label={`${copy.latestPlan} ${copy.favorites} ${copy.recent}`}>
               <button
                 type="button"
                 onClick={() => setHistoryStripTab('latest')}
                 className={`rounded-[0.9rem] px-3 py-2 text-sm font-medium transition-all ${historyStripTab === 'latest' ? 'shadow-[0_10px_24px_rgba(37,99,235,0.12)]' : 'text-secondary hover:text-primary'}`}
                 style={historyStripTab === 'latest' ? { backgroundColor: '#dbeafe', color: '#172554' } : undefined}
                 data-testid="ai-brew-history-tab-latest"
+                role="tab"
+                aria-selected={historyStripTab === 'latest'}
               >
                 {copy.latestPlan}
               </button>
@@ -10527,6 +10601,8 @@ export function AiBrewPanel({
                 className={`rounded-[0.9rem] px-3 py-2 text-sm font-medium transition-all ${historyStripTab === 'favorites' ? 'shadow-[0_10px_24px_rgba(37,99,235,0.12)]' : 'text-secondary hover:text-primary'}`}
                 style={historyStripTab === 'favorites' ? { backgroundColor: '#dbeafe', color: '#172554' } : undefined}
                 data-testid="ai-brew-history-tab-favorites"
+                role="tab"
+                aria-selected={historyStripTab === 'favorites'}
               >
                 {copy.favorites}
               </button>
@@ -10536,6 +10612,8 @@ export function AiBrewPanel({
                 className={`rounded-[0.9rem] px-3 py-2 text-sm font-medium transition-all ${historyStripTab === 'recent' ? 'shadow-[0_10px_24px_rgba(37,99,235,0.12)]' : 'text-secondary hover:text-primary'}`}
                 style={historyStripTab === 'recent' ? { backgroundColor: '#dbeafe', color: '#172554' } : undefined}
                 data-testid="ai-brew-history-tab-recent"
+                role="tab"
+                aria-selected={historyStripTab === 'recent'}
               >
                 {copy.recent}
               </button>
@@ -10563,7 +10641,10 @@ export function AiBrewPanel({
                   </div>
                   <button
                     type="button"
-                    onClick={() => setResultOpen(true)}
+                    onClick={() => {
+                      setResultOpen(true);
+                      requestViewportMetricsRefresh();
+                    }}
                     className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-[0_10px_26px_rgba(37,99,235,0.24)]"
                     data-testid="ai-brew-open-result"
                   >
@@ -10691,6 +10772,7 @@ export function AiBrewPanel({
         saveError={saveError}
         feedback={activeFeedback}
         feedbackNoteDraft={feedbackNoteDraft}
+        keyboardOffset={aiBrewKeyboardOffset}
         showProvenance={showProvenance}
         isAuthenticated={isAuthenticated}
         isOffline={isOffline}

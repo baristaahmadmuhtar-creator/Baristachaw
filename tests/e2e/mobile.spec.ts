@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { clearClientState } from '../helpers/cleanup';
 import { qaLogin, qaLogout } from '../fixtures/auth';
 import { buildQaUser } from '../fixtures/test-data';
@@ -12,6 +12,26 @@ test.afterEach(async ({ page }) => {
 });
 
 const createFolderButton = /Create Folder|Buat Folder/i;
+
+async function openAiBrewResult(page: Page, mode: 'quick' | 'pro', coffeeName: string) {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/tools?tab=ai-brew');
+  await clearClientState(page);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await page.goto('/tools?tab=ai-brew', { waitUntil: 'domcontentloaded' });
+
+  await page.getByTestId(mode === 'quick' ? 'ai-brew-open-quick' : 'ai-brew-open-pro').click();
+  await page.getByTestId('ai-brew-coffee-name').fill(coffeeName);
+
+  if (mode === 'pro') {
+    await page.getByTestId('ai-brew-water-picker').click();
+    await page.getByTestId('ai-brew-picker-search-water_brand').fill('aqua');
+    await page.getByTestId('ai-brew-picker-option-water_brand-aqua-id').click();
+  }
+
+  await page.getByTestId('ai-brew-generate').click();
+  await expect(page.getByTestId('ai-brew-result')).toBeVisible();
+}
 
 test('mobile main routes render', async ({ page }) => {
   await page.goto('/');
@@ -426,4 +446,131 @@ test('mobile ai brew builder keeps the action footer docked to the modal bottom'
 
   expect(Math.abs(builderBottom - footerBottom)).toBeLessThanOrEqual(24);
   expect(Math.abs(viewport!.height - footerBottom)).toBeLessThanOrEqual(24);
+});
+
+test('mobile ai brew builder keeps focused inputs and footer above simulated iOS keyboard', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await clearClientState(page);
+  await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
+  await page.goto('/tools?tab=ai-brew&runtime=web_parity&ui_profile=pwa&host_safe_bottom=34', { waitUntil: 'domcontentloaded' });
+  await page.getByTestId('ai-brew-open-quick').click();
+
+  const builder = page.getByTestId('ai-brew-builder-quick');
+  const coffeeNameInput = page.getByTestId('ai-brew-coffee-name');
+  await expect(builder).toBeVisible();
+  await coffeeNameInput.focus();
+  await page.waitForTimeout(650);
+  await page.evaluate(() => {
+    document.documentElement.dataset.keyboardOpen = 'true';
+    document.documentElement.style.setProperty('--keyboard-offset', '280px');
+    window.dispatchEvent(new CustomEvent('app:viewport-metrics', {
+      detail: {
+        keyboardOpen: true,
+        keyboardOffset: 280,
+        layoutHeight: window.innerHeight,
+        visualHeight: window.innerHeight - 280,
+        visualOffsetTop: 0,
+        visualBottom: window.innerHeight - 280,
+        baselineLayoutHeight: window.innerHeight,
+        baselineVisualBottom: window.innerHeight,
+      },
+    }));
+  });
+
+  const readMetrics = () => builder.evaluate((el) => {
+    const input = el.querySelector<HTMLElement>('[data-testid="ai-brew-coffee-name"]');
+    const generate = el.querySelector<HTMLElement>('[data-testid="ai-brew-generate"]');
+    const scroll = el.querySelector<HTMLElement>('[data-testid="ai-brew-builder-scroll"]');
+    const inputRect = input?.getBoundingClientRect();
+    const generateRect = generate?.getBoundingClientRect();
+    const viewportSafeBottom = window.innerHeight - 280;
+    return {
+      inputBottom: inputRect ? inputRect.bottom : 0,
+      generateBottom: generateRect ? generateRect.bottom : 0,
+      viewportSafeBottom,
+      scrollPaddingBottom: scroll ? Number.parseFloat(getComputedStyle(scroll).paddingBottom) : 0,
+    };
+  });
+
+  await expect.poll(async () => {
+    const metrics = await readMetrics();
+    return Math.round(metrics.generateBottom - metrics.viewportSafeBottom);
+  }, { timeout: 2000 }).toBeLessThanOrEqual(48);
+
+  const metrics = await readMetrics();
+  expect(metrics.inputBottom).toBeLessThanOrEqual(metrics.viewportSafeBottom + 8);
+  expect(metrics.scrollPaddingBottom).toBeGreaterThanOrEqual(300);
+});
+
+test('mobile ai brew result has no horizontal overflow and keeps touch targets comfortable', async ({ page }) => {
+  await openAiBrewResult(page, 'pro', 'Mobile Overflow QA');
+
+  const result = page.getByTestId('ai-brew-result');
+  const overflowState = await result.evaluate((el) => {
+    const rootOverflow = el.scrollWidth - el.clientWidth;
+    const offenders = Array.from(el.querySelectorAll<HTMLElement>('*'))
+      .filter((child) => {
+        const style = getComputedStyle(child);
+        if (style.overflowX === 'hidden' || style.overflowX === 'clip' || style.overflowX === 'auto' || style.overflowX === 'scroll') return false;
+        return child.scrollWidth > child.clientWidth + 2;
+      })
+      .slice(0, 5)
+      .map((child) => ({
+        testId: child.getAttribute('data-testid'),
+        tag: child.tagName.toLowerCase(),
+        overflow: child.scrollWidth - child.clientWidth,
+      }));
+    return { rootOverflow, offenders };
+  });
+
+  expect(overflowState.rootOverflow).toBeLessThanOrEqual(2);
+  expect(overflowState.offenders).toEqual([]);
+
+  const targetMetrics = await page.locator([
+    '[data-testid="ai-brew-result-actions"] button',
+    '[data-testid="ai-brew-taste-feedback"] button',
+    '[data-testid="ai-brew-feedback-note"]',
+  ].join(',')).evaluateAll((elements) => elements
+    .filter((element) => {
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+    })
+    .map((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        testId: element.getAttribute('data-testid'),
+        width: rect.width,
+        height: rect.height,
+      };
+    }));
+
+  expect(targetMetrics.length).toBeGreaterThan(4);
+  for (const metric of targetMetrics) {
+    expect(metric.width, `${metric.testId || 'control'} width`).toBeGreaterThanOrEqual(44);
+    expect(metric.height, `${metric.testId || 'control'} height`).toBeGreaterThanOrEqual(44);
+  }
+});
+
+test('mobile ai brew result tabs support arrow home and end keyboard navigation', async ({ page }) => {
+  await openAiBrewResult(page, 'pro', 'Mobile Tab Keyboard QA');
+
+  const planTab = page.getByTestId('ai-brew-result-tab-plan');
+  const flowTab = page.getByTestId('ai-brew-result-tab-flow');
+  const coachTab = page.getByTestId('ai-brew-result-tab-coach');
+  await expect(planTab).toHaveAttribute('aria-selected', 'true');
+
+  await planTab.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(flowTab).toHaveAttribute('aria-selected', 'true');
+  await expect(flowTab).toBeFocused();
+
+  await page.keyboard.press('End');
+  await expect(coachTab).toHaveAttribute('aria-selected', 'true');
+  await expect(coachTab).toBeFocused();
+
+  await page.keyboard.press('Home');
+  await expect(planTab).toHaveAttribute('aria-selected', 'true');
+  await expect(planTab).toBeFocused();
 });

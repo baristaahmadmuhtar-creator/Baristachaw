@@ -50,11 +50,11 @@ test('bottom nav is icon-only visually while keeping accessible link names', asy
   const nav = page.getByTestId('mobile-bottom-nav-surface');
   await expect(nav).toBeVisible();
 
-  await expect(nav.getByRole('link', { name: /Home|Beranda/i })).toBeVisible();
-  await expect(nav.getByRole('link', { name: /Scan|Pindai|Pemindai/i })).toBeVisible();
-  await expect(nav.getByRole('link', { name: /Tools|Alat/i })).toBeVisible();
-  await expect(nav.getByRole('link', { name: /Collection|Koleksi/i })).toBeVisible();
-  await expect(nav.getByRole('link', { name: /Chat|Obrolan/i })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /^(Home|Beranda)$/i })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /^(Scan|Scanner|Pemindai|Pengimbas)$/i })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /^(Tools|Alat)$/i })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /^(Collection|Koleksi)$/i })).toBeVisible();
+  await expect(nav.getByRole('link', { name: /^(Chat|Obrolan)$/i })).toBeVisible();
 
   const visualLabelCount = await nav.evaluate((el) => {
     const spans = Array.from(el.querySelectorAll('span'));

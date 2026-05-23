@@ -604,3 +604,26 @@ test('AI Brew coffee taxonomy catalog stays deduped, encoded cleanly, and risk-t
     assert.doesNotMatch(JSON.stringify(entry), /[�]|[A-Za-z]\?/, `${id} should not retain broken encoding`);
   }
 });
+
+test('AI Brew catalog provenance dates do not point past the current release date', () => {
+  const currentReleaseDate = '2026-05-23';
+  const files = [
+    'apps/web/public/data/ai-brew/processes.v2026-06.json',
+    'apps/web/public/data/ai-brew/varieties.v2026-06.json',
+    'apps/web/public/data/ai-brew/grinders.v2026-03.json',
+    'apps/web/public/data/ai-brew/grinder-settings.v2026-06.json',
+    'apps/web/public/data/ai-brew/market-signals.v2026-06.json',
+  ];
+
+  for (const file of files) {
+    const payload = readJson<{ items?: Array<{ id?: string | number; name?: string; verifiedAt?: string }>; equipment?: Array<{ id?: string | number; name?: string; verifiedAt?: string }> }>(file);
+    const entries = payload.items || payload.equipment || [];
+    for (const entry of entries) {
+      if (!entry.verifiedAt) continue;
+      assert.ok(
+        entry.verifiedAt <= currentReleaseDate,
+        `${file} ${entry.id || entry.name || 'unknown'} verifiedAt ${entry.verifiedAt} is after ${currentReleaseDate}`,
+      );
+    }
+  }
+});

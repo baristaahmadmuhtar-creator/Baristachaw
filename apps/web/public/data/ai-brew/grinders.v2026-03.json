@@ -120,7 +120,7 @@
       ],
       "verificationLevel": "official",
       "confidence": "high",
-      "verifiedAt": "2026-06-01"
+      "verifiedAt": "2026-05-23"
     },
     {
       "id": 34,
@@ -191,7 +191,7 @@
       ],
       "verificationLevel": "community_verified",
       "confidence": "medium",
-      "verifiedAt": "2026-06-01"
+      "verifiedAt": "2026-05-23"
     },
     {
       "id": 38,
@@ -1003,7 +1003,7 @@
       "catalogVersion": "2026.04.07-ai-brew-v1.4",
       "verificationLevel": "community_verified",
       "confidence": "medium",
-      "verifiedAt": "2026-06-01"
+      "verifiedAt": "2026-05-23"
     }
   ]
 }

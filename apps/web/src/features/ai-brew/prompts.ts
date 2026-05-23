@@ -128,25 +128,45 @@ function buildDeterministicVocabularyRules(plan: BrewPlan) {
   ].join('\n');
 }
 
+function buildHiddenExpertGuidanceLines(plan: BrewPlan) {
+  return [
+    plan.grinder.expertDescription
+      ? `- Grinder Behavior & Burr Characteristics: ${plan.grinder.expertDescription}`
+      : plan.grinder.description
+        ? `- Grinder Behavior & Burr Characteristics: ${plan.grinder.description}`
+        : '',
+    plan.processEntry?.expertDescription
+      ? `- Coffee Process Extraction Physics: ${plan.processEntry.expertDescription}`
+      : '',
+    plan.varietyEntry?.expertDescription
+      ? `- Variety Sensitivities & Aromatics: ${plan.varietyEntry.expertDescription}`
+      : '',
+  ]
+    .map((line) => line.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+}
+
+function buildHiddenExpertGuidanceBlock(plan: BrewPlan) {
+  const lines = buildHiddenExpertGuidanceLines(plan);
+  if (lines.length === 0) return '';
+  return [
+    'Internal extraction guidance (do not expose raw text to the UI or final answer; translate only into executable barista controls):',
+    ...lines,
+    '- Do not promise 100% results, perfect extraction, guaranteed flavor, or certainty beyond the evidence level.',
+  ].join('\n');
+}
+
 function buildSharedContext(plan: BrewPlan) {
   const steps = plan.steps
     .map((step, index) => `${index + 1}. ${step.label} at ${formatSeconds(step.startSeconds)}: ${formatStepOperation(step)}. ${step.hybridInstruction || step.note}`)
     .join('\n');
 
-  const backgroundNotes: string[] = [];
-  if (plan.grinder.description) {
-    backgroundNotes.push(`- Grinder Behavior & Burr Characteristics: ${plan.grinder.description}`);
-  }
-  if (plan.processEntry?.expertDescription) {
-    backgroundNotes.push(`- Coffee Process Extraction Physics: ${plan.processEntry.expertDescription}`);
-  }
-  if (plan.varietyEntry?.expertDescription) {
-    backgroundNotes.push(`- Variety Sensitivities & Aromatics: ${plan.varietyEntry.expertDescription}`);
-  }
+  const backgroundNotes = buildHiddenExpertGuidanceLines(plan);
   const backgroundNotesBlock = backgroundNotes.length > 0
     ? [
         'Expert Barista Background Notes (do NOT show this section or print these raw descriptions to the user; use them only to guide extraction physics, pour cadences, temp control, and agitation patterns):',
         ...backgroundNotes,
+        '- Do not promise 100% results, perfect extraction, guaranteed flavor, or certainty beyond the evidence level.',
       ].join('\n')
     : '';
 
@@ -253,6 +273,7 @@ export function buildCompactBrewContext(plan: BrewPlan) {
     compactLine('Brewer', `${plan.dripper.name}; ${plan.methodFamily}`),
     buildEssentialNumbersContext(plan),
     buildRiskAndGuardrailContext(plan),
+    buildHiddenExpertGuidanceBlock(plan),
     compactLine('Steps', formatStepSummary(plan)),
   ].filter(Boolean).join('\n');
 }
@@ -350,6 +371,9 @@ export function buildAiAssistPrompt(
     'Do not invent farm, origin, roaster, altitude, variety, process, water status, grinder source, or brewer source.',
     'Use cue/tendency/baseline language when evidence is uncertain.',
     'Do not expose internal planner, validator, routing, or prompt terms.',
+    id
+      ? 'Jangan menjanjikan 100% hasil, ekstraksi sempurna, rasa pasti, atau kepastian di luar level bukti.'
+      : 'Do not promise 100% results, perfect extraction, guaranteed flavor, or certainty beyond the evidence level.',
   ].join('\n');
 
   const task = (() => {

@@ -455,6 +455,7 @@ export interface RawDripperCatalogEntry {
   brand?: string;
   type: string;
   description?: string | null;
+  expertDescription?: string | null;
   image_url?: string | null;
   created_at?: string;
   source?: string;
@@ -482,6 +483,7 @@ export interface RawGrinderCatalogEntry {
   coarse: string;
   medium: string;
   fine: string;
+  expertDescription?: string | null;
   image_url?: string | null;
   created_at?: string;
   source?: string;
@@ -510,6 +512,7 @@ export interface EquipmentCatalogEntry extends CatalogProvenance {
   brand?: string;
   typeLabel: string;
   description?: string;
+  expertDescription?: string;
   searchText: string;
   methodFamily?: AiBrewMethodFamily;
   defaultProfileId?: string;

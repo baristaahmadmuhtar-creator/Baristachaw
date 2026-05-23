@@ -339,10 +339,218 @@ function applyEquipmentProvenance(
   };
 }
 
+function compactInternalText(value?: string | null) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function joinInternalParts(parts: Array<string | undefined>) {
+  return parts
+    .map(compactInternalText)
+    .filter(Boolean)
+    .join(' ');
+}
+
+function formatSignedBias(label: string, value: number) {
+  if (value > 0) return `${label}+${value}`;
+  if (value < 0) return `${label}${value}`;
+  return '';
+}
+
+function describeSensoryBias(bias: CatalogSensoryBias) {
+  const cues = [
+    formatSignedBias('acidity', bias.acidity),
+    formatSignedBias('sweetness', bias.sweetness),
+    formatSignedBias('body', bias.body),
+    formatSignedBias('clarity', bias.clarity),
+    bias.fermentIntensity > 0 ? `ferment intensity ${bias.fermentIntensity}/3` : '',
+    bias.bitternessRisk > 0 ? `bitterness risk ${bias.bitternessRisk}/3` : '',
+    bias.aromaVolatility > 0 ? `aroma volatility ${bias.aromaVolatility}/3` : '',
+  ].filter(Boolean);
+  return cues.length > 0 ? cues.join(', ') : 'neutral sensory bias';
+}
+
+function describeRiskTags(tags: string[] = []) {
+  const uniqueTags = Array.from(new Set(tags.map((tag) => tag.trim()).filter(Boolean)));
+  return uniqueTags.length > 0 ? `Risk tags: ${uniqueTags.join(', ')}.` : '';
+}
+
+function buildGuardrailSentence(confidence: CatalogConfidence, reviewStatus?: CatalogReviewStatus) {
+  const evidence = confidence === 'high'
+    ? 'source-backed'
+    : confidence === 'medium'
+      ? 'curated starting-point'
+      : 'low-confidence starting-point';
+  const review = reviewStatus === 'needs_review' || reviewStatus === 'conflicting'
+    ? ' Review evidence before deterministic service use.'
+    : '';
+  return `Treat this as a ${evidence} tendency, keep numeric changes inside planner limits, avoid deterministic flavor claims, and require cup feedback before stronger extraction changes.${review}`;
+}
+
+function buildProcessFamilyCue(entry: ProcessCatalogEntry, risk: ProcessRiskModel) {
+  const haystack = catalogHaystack(entry);
+  if (/\b(coferment|co_ferment|co-ferment|infused|fruit_maceration|koji|enzyme|thermal_shock)\b/.test(haystack)) {
+    return 'Experimental or ingredient-adjacent processing can show high aroma and high variability; protect clarity with conservative agitation and taste-led corrections.';
+  }
+  if (/\b(anaerobic|carbonic|lactic|yeast|extended_fermentation|mosto|submerged)\b/.test(haystack)) {
+    return 'Controlled fermentation can increase perceived sweetness, acidity expression, and aroma volatility; keep extraction pressure conservative until cup feedback is known.';
+  }
+  if (/\b(wet_hulled|giling_basah|semi_washed_indonesia)\b/.test(haystack)) {
+    return 'Wet-hulled and regional semi-washed lots often emphasize body, spice, and earthy sweetness; protect flow and avoid muddy late agitation.';
+  }
+  if (/\b(decaf|sugarcane|swiss_water|mountain_water|co2_decaf)\b/.test(haystack)) {
+    return 'Decaf processing can make structure more porous and bitterness-prone; use conservative heat, contact, and agitation changes.';
+  }
+  if (/\b(natural|dry_process|honey|pulped_natural|raisin)\b/.test(haystack)) {
+    return 'Fruit-on or mucilage-retained processing can build sweetness and body while raising muddiness and ferment-risk; keep bed flow clean.';
+  }
+  if (/\b(washed|fully_washed|double_washed|mechanically_demucilaged|wet_process)\b/.test(haystack)) {
+    return 'Washed-style processing usually supports clarity, acidity definition, and lower ferment variability; protect even saturation before increasing agitation.';
+  }
+  if (risk.variability === 'high') {
+    return 'High-variability process signal; use conservative extraction pressure and taste feedback before applying stronger changes.';
+  }
+  return 'Process signal is contextual rather than deterministic; roast, water, grinder, and cup feedback must dominate final recipe changes.';
+}
+
+function buildProcessExpertDescription(
+  entry: ProcessCatalogEntry,
+  sensoryBias: CatalogSensoryBias,
+  processRisk: ProcessRiskModel,
+  riskTags: string[],
+) {
+  const explicit = compactInternalText(entry.expertDescription);
+  const role = explicit || buildProcessFamilyCue(entry, processRisk);
+  return joinInternalParts([
+    `Extraction role: ${role}`,
+    `Sensory model: ${describeSensoryBias(sensoryBias)}.`,
+    `Process risk: ${processRisk.variability} variability, ${processRisk.overFermentRisk} over-ferment risk, ${processRisk.recommendationMode} recommendation mode.`,
+    describeRiskTags(riskTags),
+    `Guardrail: ${buildGuardrailSentence(entry.confidence, entry.reviewStatus)}`,
+  ]);
+}
+
+function buildVarietyFamilyCue(entry: VarietyCatalogEntry, taxonomy: NonNullable<VarietyCatalogEntry['taxonomy']>) {
+  const lineage = taxonomy.lineageGroup;
+  if (taxonomy.species === 'canephora' || lineage === 'canephora_clone') {
+    return 'Canephora or robusta-line material can bring body and bitterness risk; prioritize sweetness and clean texture over bright-acidity chasing.';
+  }
+  if (taxonomy.species === 'liberica' || taxonomy.species === 'excelsa' || lineage === 'liberica_excelsa') {
+    return 'Liberica or Excelsa lineage can be aromatic, woody, and body-forward; use conservative extraction and avoid over-agitation.';
+  }
+  if (lineage === 'ethiopian_landrace' || lineage === 'specialty_reference') {
+    return 'Aromatic specialty or landrace cue can support florals and clarity; protect aromatics with even saturation and restrained late agitation.';
+  }
+  if (lineage === 'kenyan_selection') {
+    return 'Kenyan selection cue can carry high acidity structure; build enough sweetness while avoiding dry channeling.';
+  }
+  if (lineage === 'introgressed' || lineage === 'indonesia_selection') {
+    return 'Introgressed or Indonesian selection cue can emphasize body, herbal tone, and robustness; keep bitterness guardrails active.';
+  }
+  if (lineage === 'bourbon_typica' || lineage === 'brazil_selection') {
+    return 'Classic sweetness lineage cue; keep recipe shifts modest and let roast, process, and cup feedback lead.';
+  }
+  if (lineage === 'f1_hybrid') {
+    return 'F1 hybrid cue can support sweetness and structure but remains lot-dependent; avoid assuming a fixed cup profile.';
+  }
+  return 'Variety cue is taxonomy context only; process, roast, water, grinder, and sensory feedback dominate final extraction decisions.';
+}
+
+function buildVarietyExpertDescription(
+  entry: VarietyCatalogEntry,
+  sensoryBias: CatalogSensoryBias,
+  taxonomy: NonNullable<VarietyCatalogEntry['taxonomy']>,
+  riskTags: string[],
+) {
+  const explicit = compactInternalText(entry.expertDescription);
+  const role = explicit || buildVarietyFamilyCue(entry, taxonomy);
+  return joinInternalParts([
+    `Extraction role: ${role}`,
+    `Taxonomy model: species ${taxonomy.species}, lineage ${taxonomy.lineageGroup}, cultivar type ${taxonomy.cultivarType}.`,
+    `Sensory model: ${describeSensoryBias(sensoryBias)}.`,
+    describeRiskTags(riskTags),
+    `Guardrail: ${buildGuardrailSentence(entry.confidence, entry.reviewStatus)} Variety never overrides roast, process, water chemistry, grinder calibration, or cup feedback.`,
+  ]);
+}
+
+function describeGrinderBehaviorCue(params: {
+  id: string;
+  name: string;
+  brand?: string;
+  typeLabel: string;
+  coarseLabel: string;
+  mediumLabel: string;
+  fineLabel: string;
+  sourceDescription?: string;
+}) {
+  const haystack = buildSearchText(
+    params.id,
+    params.name,
+    params.brand,
+    params.typeLabel,
+    params.coarseLabel,
+    params.mediumLabel,
+    params.fineLabel,
+    params.sourceDescription,
+  );
+  if (/\b(zp6|comandante|c40|c60|pietro|ode gen 2|k-ultra|k-max|k-plus)\b/.test(haystack)) {
+    return 'Higher-clarity grinder platform; it can usually support cleaner multi-pulse recipes, but dial-in still depends on burr zero, roast, paper, dose, and drawdown.';
+  }
+  if (/\b(timemore c2|timemore c3(?!\s*esp)|hario|porlex|skerton|mini slim|latina|feima|600n|smart g)\b/.test(haystack)) {
+    return 'Entry or high-fines-risk grinder platform; keep final agitation controlled and treat finer settings cautiously when drawdown slows.';
+  }
+  if (/\b(espresso|esp|j-ultra|j-max|encore esp|opus|smart grinder pro)\b/.test(haystack)) {
+    return 'Espresso-capable or espresso-leaning adjustment platform; filter settings need careful translation from zero point and should not be treated as universal.';
+  }
+  if (/\b(electric|stepless|setting|numbers)\b/.test(haystack)) {
+    return 'Electric or numbered adjustment platform; retention, burr seasoning, and calibration can shift the effective setting between grinders.';
+  }
+  return 'Manual grinder setting cue; use the stored coarse, medium, and fine bands as starting points, not exact extraction guarantees.';
+}
+
+function buildGrinderExpertDescription(params: {
+  id: string;
+  raw: RawGrinderCatalogEntry;
+  typeLabel: string;
+  coarseLabel: string;
+  mediumLabel: string;
+  fineLabel: string;
+  override?: MarketSignalRecord;
+  provenance: ReturnType<typeof applyEquipmentProvenance>;
+}) {
+  const explicit = compactInternalText(params.raw.expertDescription);
+  const sourceDescription = compactInternalText(params.override?.description);
+  const role = explicit
+    || sourceDescription
+    || describeGrinderBehaviorCue({
+      id: params.id,
+      name: params.raw.name,
+      brand: params.raw.brand,
+      typeLabel: params.typeLabel,
+      coarseLabel: params.coarseLabel,
+      mediumLabel: params.mediumLabel,
+      fineLabel: params.fineLabel,
+      sourceDescription,
+    });
+  return joinInternalParts([
+    `Burr/setting role: ${role}`,
+    `Stored bands: coarse ${params.coarseLabel || 'unknown'}, medium ${params.mediumLabel || 'unknown'}, fine ${params.fineLabel || 'unknown'}.`,
+    `Evidence: ${params.provenance.verificationLevel}, ${params.provenance.confidence} confidence, source ${params.provenance.source}.`,
+    'Calibration guardrail: treat every setting as a starting range; confirm zero point, burr seasoning, roast level, dose, paper, and drawdown before making stronger recipe changes.',
+  ]);
+}
+
+function mergeInternalExpertDescriptions(...values: Array<string | undefined>) {
+  const unique = Array.from(new Set(values.map(compactInternalText).filter(Boolean)));
+  return unique.join(' ');
+}
+
 function normalizeDripper(raw: RawDripperCatalogEntry, override?: MarketSignalRecord): EquipmentCatalogEntry {
   const explicitId = typeof raw.id === 'string' && raw.id.trim() && !/^\d+$/.test(raw.id.trim())
     ? slugify(raw.id)
     : undefined;
+  const provenance = applyEquipmentProvenance(raw, override);
   return {
     id: explicitId || slugify(raw.name),
     kind: 'dripper',
@@ -350,6 +558,7 @@ function normalizeDripper(raw: RawDripperCatalogEntry, override?: MarketSignalRe
     brand: raw.brand,
     typeLabel: raw.type,
     description: override?.description || raw.description || undefined,
+    expertDescription: compactInternalText(raw.expertDescription) || undefined,
     searchText: buildSearchText(raw.name, raw.brand, raw.type, override?.description, raw.description || undefined),
     methodFamily: inferDripperMethodFamily(raw.name, raw.type),
     defaultProfileId: override?.defaultProfileId,
@@ -358,23 +567,35 @@ function normalizeDripper(raw: RawDripperCatalogEntry, override?: MarketSignalRe
     migrationTargetIds: raw.migrationTargetIds,
     physicalConstraints: raw.physicalConstraints,
     methodProgramme: raw.methodProgramme,
-    ...applyEquipmentProvenance(raw, override),
+    ...provenance,
   };
 }
 
 function normalizeGrinder(raw: RawGrinderCatalogEntry, override?: MarketSignalRecord): EquipmentCatalogEntry {
+  const id = slugify(raw.name);
   const typeLabel = normalizeGrinderDisplayText(raw.type);
   const coarseLabel = normalizeGrinderDisplayText(raw.coarse);
   const mediumLabel = normalizeGrinderDisplayText(raw.medium);
   const fineLabel = normalizeGrinderDisplayText(raw.fine);
+  const provenance = applyEquipmentProvenance(raw, override);
 
   return {
-    id: slugify(raw.name),
+    id,
     kind: 'grinder',
     name: raw.name,
     brand: raw.brand,
     typeLabel,
     description: override?.description,
+    expertDescription: buildGrinderExpertDescription({
+      id,
+      raw,
+      typeLabel,
+      coarseLabel,
+      mediumLabel,
+      fineLabel,
+      override,
+      provenance,
+    }),
     searchText: buildSearchText(
       raw.name,
       raw.brand,
@@ -396,7 +617,7 @@ function normalizeGrinder(raw: RawGrinderCatalogEntry, override?: MarketSignalRe
       parsedMedium: parseNumericRange(mediumLabel),
       parsedFine: parseNumericRange(fineLabel),
     },
-    ...applyEquipmentProvenance(raw, override),
+    ...provenance,
   };
 }
 
@@ -641,21 +862,28 @@ function normalizeVarietyEntry(entry: VarietyCatalogEntry): VarietyCatalogEntry 
     cultivarType: taxonomyInput.cultivarType || inferCultivarType(base, lineageGroup),
     parentage: taxonomyInput.parentage,
   };
+  const riskTags = normalizeRiskTags(base) as VarietyCatalogEntry['riskTags'];
+  const sensoryBias = inferVarietySensoryBias(base, lineageGroup);
   return {
     ...base,
-    riskTags: normalizeRiskTags(base) as VarietyCatalogEntry['riskTags'],
+    riskTags,
     taxonomy,
-    sensoryBias: inferVarietySensoryBias(base, lineageGroup),
+    sensoryBias,
+    expertDescription: buildVarietyExpertDescription(base, sensoryBias, taxonomy, riskTags || []),
   };
 }
 
 function normalizeProcessEntry(entry: ProcessCatalogEntry): ProcessCatalogEntry {
   const base = normalizeSearchEntry(entry);
+  const riskTags = normalizeRiskTags(base) as ProcessCatalogEntry['riskTags'];
+  const sensoryBias = inferProcessSensoryBias(base);
+  const processRisk = inferProcessRisk(base);
   return {
     ...base,
-    riskTags: normalizeRiskTags(base) as ProcessCatalogEntry['riskTags'],
-    sensoryBias: inferProcessSensoryBias(base),
-    processRisk: inferProcessRisk(base),
+    riskTags,
+    sensoryBias,
+    processRisk,
+    expertDescription: buildProcessExpertDescription(base, sensoryBias, processRisk, riskTags || []),
   };
 }
 
@@ -678,6 +906,7 @@ function normalizeProcessEntries(entries: ProcessCatalogEntry[]) {
       aliases: Array.from(new Set([...existing.aliases, rawEntry.id, ...entry.aliases].filter(Boolean))),
       searchText: buildSearchText(existing.searchText, entry.searchText, rawEntry.id),
       notes: Array.from(new Set([...existing.notes, ...entry.notes])),
+      expertDescription: mergeInternalExpertDescriptions(existing.expertDescription, entry.expertDescription),
       reviewStatus: 'conflicting',
       reviewNotes: Array.from(new Set([
         ...(existing.reviewNotes || []),

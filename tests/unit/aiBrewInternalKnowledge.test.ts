@@ -40,6 +40,30 @@ function assertInternalExpertDescription(entry: ProcessCatalogEntry | VarietyCat
   assert.match(entry.expertDescription || '', /Extraction role:/, `${entry.id} should explain extraction role`);
   assert.match(entry.expertDescription || '', /Guardrail:/, `${entry.id} should carry a guardrail`);
   assert.doesNotMatch(entry.expertDescription || '', /\b100%\b|perfect result|guaranteed/i, `${entry.id} must not promise perfect results`);
+
+  const extractionProfile = (entry as ProcessCatalogEntry | VarietyCatalogEntry & {
+    extractionProfile?: {
+      extractionRole?: string;
+      solubilityCue?: string;
+      recipeGuidance?: string[];
+      guardrails?: string[];
+      confidence?: string;
+      sourceUrls?: string[];
+      visibility?: string;
+    };
+  }).extractionProfile;
+  assert.ok(extractionProfile, `${entry.id} should expose a structured internal extractionProfile`);
+  assert.equal(extractionProfile?.visibility, 'internal', `${entry.id} extractionProfile should be internal-only`);
+  assert.ok(extractionProfile?.extractionRole, `${entry.id} extractionProfile should explain role`);
+  assert.ok(extractionProfile?.solubilityCue, `${entry.id} extractionProfile should explain solubility cue`);
+  assert.ok(extractionProfile?.recipeGuidance?.length, `${entry.id} extractionProfile should carry recipe guidance`);
+  assert.ok(extractionProfile?.guardrails?.length, `${entry.id} extractionProfile should carry guardrails`);
+  assert.ok(extractionProfile?.sourceUrls?.length, `${entry.id} extractionProfile should keep source URLs`);
+  assert.doesNotMatch(
+    JSON.stringify(extractionProfile),
+    /\b100%\b|perfect result|guaranteed/i,
+    `${entry.id} extractionProfile must not promise perfect results`,
+  );
 }
 
 test('AI Brew catalog normalizes internal expert guidance for every process, variety, and grinder', async () => {

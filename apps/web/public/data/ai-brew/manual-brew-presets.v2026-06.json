@@ -1,0 +1,932 @@
+{
+  "catalogVersion": "2026.06.0-ai-brew-manual-presets",
+  "items": [
+    {
+      "id": "inspired-george-peng-temperature-control",
+      "safeLabel": "Inspired by George Peng Temperature Control",
+      "category": "competition_inspired",
+      "sourceAttribution": "World Brewers Cup 2025 champion reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://wcc.coffee/world-brewers-cup",
+        "https://wcc.coffee/latest-news/meet-the-2025-world-brewers-cup-finalists-pwy6e"
+      ],
+      "supportedDripperIds": ["orea-v3-v4"],
+      "originalBrewerId": "solo-dripper",
+      "fallbackDripperId": "orea-v3-v4",
+      "fallbackReason": "Solo Dripper is not currently in catalog; OREA flat-bottom fallback keeps the preset safe inside supported equipment.",
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "floral_transparent",
+        "doseG": 15,
+        "targetWaterMl": 225,
+        "targetTempC": 92,
+        "targetRatio": 15,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 85,
+        "waterHardnessPpm": 45,
+        "waterAlkalinityPpm": 30
+      },
+      "techniquePattern": "temperature_decline_finish",
+      "visibleSummary": "Temperature-decline competition style adapted to a supported flat-bottom brewer.",
+      "internalTips": [
+        "Use bloom and early water as the hotter extraction phase, then keep later pulses calmer to preserve floral clarity.",
+        "Treat the single temperature field as service-safe midpoint; do not imply multi-kettle precision unless user controls it.",
+        "Flat-bottom fallback should stay low-agitation and avoid wall chasing."
+      ],
+      "guardrails": [
+        "Keep temperature within method bounds and explain this as inspired guidance, not a locked reproduction.",
+        "Fallback brewer must remain visible when original brewer is unsupported."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "inspired-martin-woelfl-orea-v4",
+      "safeLabel": "Inspired by Martin Woelfl OREA V4",
+      "category": "competition_inspired",
+      "sourceAttribution": "World Brewers Cup 2024 winning pour-over reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://wcc.coffee/world-brewers-cup",
+        "https://europeancoffeetrip.com/winning-pour-over-recipe-martin-woelfl/"
+      ],
+      "supportedDripperIds": ["orea-v3-v4"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "balance_clean",
+        "doseG": 17,
+        "targetWaterMl": 270,
+        "targetTempC": 93,
+        "targetRatio": 15.9,
+        "pourCount": "4",
+        "pourStyle": "pulse",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "flat_bottom_fast_four",
+      "visibleSummary": "Fast flat-bottom four-pour style for clean, sweet competition balance.",
+      "internalTips": [
+        "Keep four fast, centered pulses and protect a level bed.",
+        "Use low kettle height and compact circles because OREA-style fast bottoms punish uneven flooding.",
+        "Target clean finish before chasing heavier body."
+      ],
+      "guardrails": [
+        "Do not exceed flat-bottom capacity or force late agitation when drawdown slows.",
+        "Keep this as an inspired service prefill and still let AI Brew guardrails adapt to the bean."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "inspired-carlos-medina-origami",
+      "safeLabel": "Inspired by Carlos Medina Origami",
+      "category": "competition_inspired",
+      "sourceAttribution": "World Brewers Cup 2023 champion Origami reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://wcc.coffee/world-brewers-cup",
+        "https://www.slowpoursupply.co/pages/recipe-recap-carlos-medina-s-representing-chile-world-brewers-cup-champion-recipe"
+      ],
+      "supportedDripperIds": ["origami-dripper-s-m"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "fruit_forward",
+        "doseG": 15.5,
+        "targetWaterMl": 250,
+        "targetTempC": 91,
+        "targetRatio": 16.1,
+        "pourCount": "5",
+        "pourStyle": "pulse",
+        "waterTdsPpm": 85,
+        "waterHardnessPpm": 45,
+        "waterAlkalinityPpm": 30,
+        "origamiFilterStyle": "cone"
+      },
+      "techniquePattern": "equal_five_pour",
+      "visibleSummary": "Origami five-equal-pour style for fruit clarity and controlled sweetness.",
+      "internalTips": [
+        "Hold five near-equal pours so the planner creates repeatable cumulative volumes.",
+        "Keep Origami cone mode clean and avoid high late agitation.",
+        "Use sweetness and tropical fruit clarity as direction, not certainty."
+      ],
+      "guardrails": [
+        "Keep equal-pour timing inside normal pour-over service windows.",
+        "Do not claim the preset reproduces a competition routine exactly."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "inspired-tetsu-kasuya-46",
+      "safeLabel": "Inspired by Tetsu Kasuya 4:6",
+      "category": "competition_inspired",
+      "sourceAttribution": "World Brewers Cup 2016 champion 4:6 method reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://wcc.coffee/world-brewers-cup",
+        "https://kurasu.kyoto/blogs/kurasu-journal/2016-world-brewers-cup-champion-tetsu-kasuya"
+      ],
+      "supportedDripperIds": ["hario-v60"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "more_sweetness",
+        "doseG": 15,
+        "targetWaterMl": 225,
+        "targetTempC": 92,
+        "targetRatio": 15,
+        "pourCount": "5",
+        "pourStyle": "pulse",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "four_six",
+      "visibleSummary": "4:6-inspired five-pour V60 prefill for sweetness and body control.",
+      "internalTips": [
+        "Use the first two pours to steer sweetness and acidity, then the last three to manage body.",
+        "Keep all five pours positive and rounded to service-friendly cumulative targets.",
+        "If drawdown slows, protect sweetness by reducing agitation rather than pushing finer."
+      ],
+      "guardrails": [
+        "Keep 4:6 as a safe inspired pattern and let bean, grinder, and water guardrails override.",
+        "Do not present the result as exact competition replication."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "inspired-matt-winton-five-pour-v60",
+      "safeLabel": "Inspired by Matt Winton Five-Pour V60",
+      "category": "competition_inspired",
+      "sourceAttribution": "World Brewers Cup champion-style V60 reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://wcc.coffee/world-brewers-cup",
+        "https://www.hario-europe.com/blogs/hario-community/matt-winton-world-brewers-cup-champion"
+      ],
+      "supportedDripperIds": ["hario-v60"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "balance_clean",
+        "doseG": 15,
+        "targetWaterMl": 250,
+        "targetTempC": 92,
+        "targetRatio": 16.7,
+        "pourCount": "5",
+        "pourStyle": "pulse",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "equal_five_pour",
+      "visibleSummary": "Five-pour V60 competition style for repeatable clarity and balance.",
+      "internalTips": [
+        "Use five clean pulses with modest agitation and stable intervals.",
+        "Bias toward even extraction rather than extreme acidity or body.",
+        "Keep final pour calm to reduce dryness risk."
+      ],
+      "guardrails": [
+        "Do not force five pours if the selected brewer becomes unsupported.",
+        "Use drawdown feedback before recommending finer grind."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "nordic-light-roast-v60-style",
+      "safeLabel": "Nordic Light Roast V60 Style",
+      "category": "competition_inspired",
+      "sourceAttribution": "Nordic competition-style light roast V60 reference, adapted as safe planner prefill.",
+      "verificationLevel": "internal_synthesis",
+      "sourceUrls": [
+        "https://wcc.coffee/world-brewers-cup",
+        "https://timwendelboe.no"
+      ],
+      "supportedDripperIds": ["hario-v60"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "floral_transparent",
+        "doseG": 15,
+        "targetWaterMl": 250,
+        "targetTempC": 94,
+        "targetRatio": 16.7,
+        "pourCount": "4",
+        "pourStyle": "balanced",
+        "waterTdsPpm": 75,
+        "waterHardnessPpm": 40,
+        "waterAlkalinityPpm": 25
+      },
+      "techniquePattern": "continuous_high_extraction",
+      "visibleSummary": "Nordic light-roast V60 style for floral clarity with restrained finish agitation.",
+      "internalTips": [
+        "Use higher but safe temperature and even saturation for dense light roasts.",
+        "Keep the final phase calm so clarity does not turn dry.",
+        "Treat aromatics as volatile and protect them with clean bed geometry."
+      ],
+      "guardrails": [
+        "Reduce temperature if roast is medium-dark or water buffer is low.",
+        "Do not infer Nordic flavor profile without bean evidence."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "kalita-competition-balance-style",
+      "safeLabel": "Kalita Competition Balance Style",
+      "category": "competition_inspired",
+      "sourceAttribution": "Flat-bottom World Brewers Cup style reference, adapted as safe planner prefill.",
+      "verificationLevel": "internal_synthesis",
+      "sourceUrls": [
+        "https://wcc.coffee/world-brewers-cup"
+      ],
+      "supportedDripperIds": ["kalita-wave-155-185"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "balance_clean",
+        "doseG": 16,
+        "targetWaterMl": 250,
+        "targetTempC": 92,
+        "targetRatio": 15.6,
+        "pourCount": "4",
+        "pourStyle": "balanced",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "front_loaded_four",
+      "visibleSummary": "Flat-bottom competition balance with a controlled, level-bed four-pour cadence.",
+      "internalTips": [
+        "Front-load enough water to build sweetness while keeping bed height stable.",
+        "Use centered flat-bed pours and avoid edge flooding.",
+        "Let balance and clean finish override aggressive extraction pushes."
+      ],
+      "guardrails": [
+        "Keep bed level and avoid last-second swirl on flat-bottom brewers.",
+        "Do not claim any specific champion recipe ownership."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "matt-perger-style-v60",
+      "safeLabel": "Matt Perger-Style V60",
+      "category": "competition_inspired",
+      "sourceAttribution": "Championship-era high-clarity V60 reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://wcc.coffee/world-brewers-cup",
+        "https://www.baristahustle.com"
+      ],
+      "supportedDripperIds": ["hario-v60"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "floral_transparent",
+        "doseG": 15,
+        "targetWaterMl": 250,
+        "targetTempC": 93,
+        "targetRatio": 16.7,
+        "pourCount": "4",
+        "pourStyle": "balanced",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "continuous_high_extraction",
+      "visibleSummary": "High-clarity V60 style with even saturation and controlled extraction pressure.",
+      "internalTips": [
+        "Prioritize even wetting, stable flow, and clean finish before pushing finer grind.",
+        "Use continuous or near-continuous middle loading when flow remains healthy.",
+        "Treat clarity as direction, not a promise."
+      ],
+      "guardrails": [
+        "Keep agitation bounded when grinder has high-fines risk.",
+        "Require cup feedback before stronger extraction changes."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "chemex-competition-clean-cup-style",
+      "safeLabel": "Chemex Competition Clean Cup Style",
+      "category": "competition_inspired",
+      "sourceAttribution": "Chemex clean-cup competition reference, adapted as safe planner prefill.",
+      "verificationLevel": "internal_synthesis",
+      "sourceUrls": [
+        "https://wcc.coffee/world-brewers-cup"
+      ],
+      "supportedDripperIds": ["chemex"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "floral_transparent",
+        "doseG": 24,
+        "targetWaterMl": 380,
+        "targetTempC": 94,
+        "targetRatio": 15.8,
+        "pourCount": "4",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 85,
+        "waterHardnessPpm": 45,
+        "waterAlkalinityPpm": 30
+      },
+      "techniquePattern": "chemex_clean",
+      "visibleSummary": "Chemex clean-cup style for tea-like body and low sediment.",
+      "internalTips": [
+        "Rinse thick paper hard and protect the vent side.",
+        "Use wider service time windows because Chemex drawdown is slower.",
+        "Keep pour path center-to-mid and avoid paper-wall pouring."
+      ],
+      "guardrails": [
+        "Respect Chemex minimum service time and capacity.",
+        "Do not chase ultra-fast drawdown with excessive agitation."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "cone-dripper-competition-brew",
+      "safeLabel": "Cone Dripper Competition Brew",
+      "category": "competition_inspired",
+      "sourceAttribution": "General cone-dripper competition approach, adapted as safe planner prefill.",
+      "verificationLevel": "internal_synthesis",
+      "sourceUrls": [
+        "https://wcc.coffee/world-brewers-cup"
+      ],
+      "supportedDripperIds": ["hario-v60", "origami-dripper-s-m"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "balance_clean",
+        "doseG": 15,
+        "targetWaterMl": 240,
+        "targetTempC": 93,
+        "targetRatio": 16,
+        "pourCount": "4",
+        "pourStyle": "balanced",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "front_loaded_four",
+      "visibleSummary": "Cone dripper competition-style prefill with front-loaded sweetness and clean finish.",
+      "internalTips": [
+        "Use a strong bloom and middle load, then calm final pour.",
+        "Keep the cone bed centered and avoid bypass-heavy wall pours.",
+        "Choose balance unless user targets a specific sensory axis."
+      ],
+      "guardrails": [
+        "Do not overfit to a named barista when the preset is a synthesized style.",
+        "Let brewer geometry and grinder guardrails override the cadence."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "hoffmann-style-ultimate-v60",
+      "safeLabel": "Hoffmann-Style Ultimate V60",
+      "category": "global_classic",
+      "sourceAttribution": "Global educator V60 reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://www.jameshoffmann.co.uk",
+        "https://honestcoffeeguide.com/brew-recipes/james-hoffmann-v60/"
+      ],
+      "supportedDripperIds": ["hario-v60"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "balance_clean",
+        "doseG": 15,
+        "targetWaterMl": 250,
+        "targetTempC": 94,
+        "targetRatio": 16.7,
+        "pourCount": "4",
+        "pourStyle": "balanced",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "continuous_high_extraction",
+      "visibleSummary": "Modern balanced V60 prefill with even saturation and stable drawdown.",
+      "internalTips": [
+        "Prioritize even bloom and a stable middle pour before final settling.",
+        "Use high-but-safe temperature only when roast and water support it.",
+        "Keep the final bed flat rather than adding aggressive late motion."
+      ],
+      "guardrails": [
+        "Adapt to roast level and water buffer before raising temperature.",
+        "Do not present as an exact creator-owned recipe."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "hoffmann-style-better-one-cup-v60",
+      "safeLabel": "Hoffmann-Style Better 1-Cup V60",
+      "category": "global_classic",
+      "sourceAttribution": "Global educator one-cup V60 reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://www.jameshoffmann.co.uk",
+        "https://honestcoffeeguide.com/brew-recipes/james-hoffmann-v60/"
+      ],
+      "supportedDripperIds": ["hario-v60"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "balance_clean",
+        "doseG": 15,
+        "targetWaterMl": 250,
+        "targetTempC": 93,
+        "targetRatio": 16.7,
+        "pourCount": "5",
+        "pourStyle": "pulse",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "equal_five_pour",
+      "visibleSummary": "One-cup V60 style with repeatable small pulses and clean finish.",
+      "internalTips": [
+        "Use repeatable pulse volumes and avoid flooding a small cone.",
+        "Keep agitation useful but bounded for home grinder variability.",
+        "Default to balance unless bean metadata supports a stronger target."
+      ],
+      "guardrails": [
+        "Avoid excessive late swirl with high-fines grinders.",
+        "Use source attribution as reference only."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "hoffmann-style-ultimate-aeropress",
+      "safeLabel": "Hoffmann-Style Ultimate AeroPress",
+      "category": "global_classic",
+      "sourceAttribution": "Global educator AeroPress reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://www.jameshoffmann.co.uk",
+        "https://aeropress.com"
+      ],
+      "supportedDripperIds": ["aeropress"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "soft_round",
+        "doseG": 12,
+        "targetWaterMl": 200,
+        "targetTempC": 90,
+        "targetRatio": 16.7,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 85,
+        "waterHardnessPpm": 45,
+        "waterAlkalinityPpm": 30,
+        "aeropressStyle": "standard"
+      },
+      "techniquePattern": "aeropress_clean",
+      "visibleSummary": "Clean AeroPress immersion style with measured steep and gentle press.",
+      "internalTips": [
+        "Use immersion timing and press rate as the main extraction levers.",
+        "Avoid over-stirring fine grinds because AeroPress can become harsh quickly.",
+        "Keep bypass optional and only if the target ratio requires it."
+      ],
+      "guardrails": [
+        "Respect chamber capacity and press safety.",
+        "Do not convert AeroPress guidance into pour-over pulses."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "rao-style-high-extraction-v60",
+      "safeLabel": "Rao-Style High Extraction V60",
+      "category": "global_classic",
+      "sourceAttribution": "High-extraction pour-over education reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://www.scottrao.com/blog",
+        "https://www.scottrao.com"
+      ],
+      "supportedDripperIds": ["hario-v60"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "balance_clean",
+        "doseG": 16,
+        "targetWaterMl": 270,
+        "targetTempC": 94,
+        "targetRatio": 16.9,
+        "pourCount": "4",
+        "pourStyle": "balanced",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "continuous_high_extraction",
+      "visibleSummary": "High-extraction V60 style with evenness-first pouring and feedback guardrails.",
+      "internalTips": [
+        "Increase extraction through even saturation and flow health before using finer grind.",
+        "Keep agitation controlled so high extraction does not become dryness.",
+        "Use drawdown and taste feedback as stop conditions."
+      ],
+      "guardrails": [
+        "High extraction is a direction, not a certainty.",
+        "Do not recommend finer grind if drawdown or bitterness risk is already high."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "lance-style-two-pour-v60",
+      "safeLabel": "Lance-Style Two-Pour V60",
+      "category": "global_classic",
+      "sourceAttribution": "Modern two-pour V60 education reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://www.lancehedrick.com",
+        "https://www.youtube.com/@LanceHedrick"
+      ],
+      "supportedDripperIds": ["hario-v60"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "balance_clean",
+        "doseG": 15,
+        "targetWaterMl": 250,
+        "targetTempC": 93,
+        "targetRatio": 16.7,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "two_pour",
+      "visibleSummary": "Two-pour V60 style with a long bloom and one main extraction pour.",
+      "internalTips": [
+        "Planner should emit two positive pours even though the UI count options start at three.",
+        "Use a full bloom and one controlled extraction pour, then let drawdown finish cleanly.",
+        "Keep the second pour calm if grinder fines are high."
+      ],
+      "guardrails": [
+        "Keep two-pour timing within safe pour-over service time.",
+        "Do not shorten so far that bloom or drawdown guidance becomes unsafe."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "april-style-v60-flat-bottom",
+      "safeLabel": "April-Style V60 Flat-Bottom",
+      "category": "global_classic",
+      "sourceAttribution": "April Coffee low-agitation brewer reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://www.aprilcoffeeroasters.com",
+        "https://www.aprilcoffeeroasters.com/pages/brew-guides"
+      ],
+      "supportedDripperIds": ["april-brewer", "hario-v60"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "balance_clean",
+        "doseG": 13,
+        "targetWaterMl": 200,
+        "targetTempC": 93,
+        "targetRatio": 15.4,
+        "pourCount": "4",
+        "pourStyle": "pulse",
+        "waterTdsPpm": 85,
+        "waterHardnessPpm": 45,
+        "waterAlkalinityPpm": 30
+      },
+      "techniquePattern": "flat_bottom_fast_four",
+      "visibleSummary": "April-style low-agitation four-pour prefill for fast, clean service.",
+      "internalTips": [
+        "Use short pulses and quick kettle resets.",
+        "Keep agitation low and avoid stretching the final phase.",
+        "When using V60 fallback, preserve low-agitation intent rather than forcing flat-bottom behavior."
+      ],
+      "guardrails": [
+        "Use supported brewer geometry and capacity checks.",
+        "Do not make low-agitation recipes too weak; keep target ratio bounded."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "tim-wendelboe-style-aeropress",
+      "safeLabel": "Tim Wendelboe-Style AeroPress",
+      "category": "global_classic",
+      "sourceAttribution": "Nordic AeroPress education reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://timwendelboe.no",
+        "https://aeropress.com"
+      ],
+      "supportedDripperIds": ["aeropress"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "floral_transparent",
+        "doseG": 14,
+        "targetWaterMl": 200,
+        "targetTempC": 91,
+        "targetRatio": 14.3,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 75,
+        "waterHardnessPpm": 40,
+        "waterAlkalinityPpm": 25,
+        "aeropressStyle": "standard"
+      },
+      "techniquePattern": "aeropress_clean",
+      "visibleSummary": "Nordic AeroPress style for clean aromatics and light body.",
+      "internalTips": [
+        "Use clean immersion, gentle agitation, and slow press as primary controls.",
+        "Protect light-roast aromatics with moderate temperature rather than harsh stirring.",
+        "Keep recipe flexible for dose and chamber capacity."
+      ],
+      "guardrails": [
+        "Do not overfill AeroPress chamber.",
+        "Do not imply Nordic cup character without bean evidence."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "onyx-style-v60",
+      "safeLabel": "Onyx-Style V60",
+      "category": "global_classic",
+      "sourceAttribution": "Roaster brew-guide V60 reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://onyxcoffeelab.com",
+        "https://onyxcoffeelab.com/pages/brew-guides"
+      ],
+      "supportedDripperIds": ["hario-v60"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "fruit_forward",
+        "doseG": 15,
+        "targetWaterMl": 250,
+        "targetTempC": 93,
+        "targetRatio": 16.7,
+        "pourCount": "4",
+        "pourStyle": "balanced",
+        "waterTdsPpm": 85,
+        "waterHardnessPpm": 45,
+        "waterAlkalinityPpm": 30
+      },
+      "techniquePattern": "front_loaded_four",
+      "visibleSummary": "Roaster-style V60 prefill for fruit-forward balance and clean sweetness.",
+      "internalTips": [
+        "Use a clear bloom and middle load to build sweetness.",
+        "Keep final pour calm for a clean finish.",
+        "Let process and roast metadata decide whether fruit-forward target remains appropriate."
+      ],
+      "guardrails": [
+        "Use target as a preference, not a promised cup result.",
+        "Keep adjustments inside AI Brew safety bounds."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "blue-bottle-chemex-style",
+      "safeLabel": "Blue Bottle Chemex Style",
+      "category": "global_classic",
+      "sourceAttribution": "Roaster Chemex brew-guide reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://bluebottlecoffee.com",
+        "https://bluebottlecoffee.com/brew-guides"
+      ],
+      "supportedDripperIds": ["chemex"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "soft_round",
+        "doseG": 24,
+        "targetWaterMl": 360,
+        "targetTempC": 93,
+        "targetRatio": 15,
+        "pourCount": "4",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "chemex_clean",
+      "visibleSummary": "Chemex cafe-classic style for clean body and rounded sweetness.",
+      "internalTips": [
+        "Respect thick-paper flow and longer drawdown.",
+        "Use gentle center-to-mid pours to avoid vent blockage.",
+        "Keep body soft rather than heavy or silty."
+      ],
+      "guardrails": [
+        "Do not pour down the paper wall.",
+        "Keep Chemex service timing and dose capacity realistic."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "kurasu-kyoto-style-v60",
+      "safeLabel": "Kurasu Kyoto V60 Style",
+      "category": "global_classic",
+      "sourceAttribution": "Kyoto brew-guide V60 reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://kurasu.kyoto",
+        "https://kurasu.kyoto/blogs/kurasu-journal/2016-world-brewers-cup-champion-tetsu-kasuya"
+      ],
+      "supportedDripperIds": ["hario-v60"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "balance_clean",
+        "doseG": 15,
+        "targetWaterMl": 240,
+        "targetTempC": 92,
+        "targetRatio": 16,
+        "pourCount": "5",
+        "pourStyle": "pulse",
+        "waterTdsPpm": 85,
+        "waterHardnessPpm": 45,
+        "waterAlkalinityPpm": 30
+      },
+      "techniquePattern": "four_six",
+      "visibleSummary": "Kyoto V60 style using measured pulse control and sweetness-first balance.",
+      "internalTips": [
+        "Use 4:6-inspired pulse logic without claiming exact creator ownership.",
+        "Keep first two pours sensory-directional and later pours body-directional.",
+        "Use clean drawdown feedback before changing grind."
+      ],
+      "guardrails": [
+        "Keep source attribution clear and safe.",
+        "Do not overfit the method when bean metadata conflicts."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "sweetness-focus-brew",
+      "safeLabel": "Sweetness Focus Brew",
+      "category": "taste_target",
+      "sourceAttribution": "Internal taste-target preset synthesized from safe pour-over controls.",
+      "verificationLevel": "internal_synthesis",
+      "sourceUrls": [
+        "https://sca.coffee/research",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "supportedDripperIds": ["hario-v60", "kalita-wave-155-185"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "more_sweetness",
+        "doseG": 15,
+        "targetWaterMl": 240,
+        "targetTempC": 92,
+        "targetRatio": 16,
+        "pourCount": "4",
+        "pourStyle": "balanced",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "front_loaded_four",
+      "visibleSummary": "Taste-target prefill for more sweetness with controlled front-loaded extraction.",
+      "internalTips": [
+        "Use bloom and middle load to increase sweetness perception without harsh late agitation.",
+        "Prefer balanced water buffer and moderate temperature.",
+        "If cup turns flat, shift target rather than forcing stronger extraction."
+      ],
+      "guardrails": [
+        "Taste targets are preferences, not certainty.",
+        "Keep recipe changes small until cup feedback exists."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "acidity-focus-brew",
+      "safeLabel": "Acidity Focus Brew",
+      "category": "taste_target",
+      "sourceAttribution": "Internal taste-target preset synthesized from safe pour-over controls.",
+      "verificationLevel": "internal_synthesis",
+      "sourceUrls": [
+        "https://sca.coffee/research",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "supportedDripperIds": ["hario-v60", "origami-dripper-s-m"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "more_acidity",
+        "doseG": 15,
+        "targetWaterMl": 240,
+        "targetTempC": 91,
+        "targetRatio": 16,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 80,
+        "waterHardnessPpm": 42,
+        "waterAlkalinityPpm": 25
+      },
+      "techniquePattern": "generic_fast",
+      "visibleSummary": "Taste-target prefill for brighter acidity with a safe shorter cadence.",
+      "internalTips": [
+        "Use slightly shorter contact and calmer final pour to preserve brightness.",
+        "Avoid making the recipe sour by checking sweetness and drawdown.",
+        "Use lower buffer water only within safe mineral guidance."
+      ],
+      "guardrails": [
+        "Do not shorten below safe manual-filter service time.",
+        "If acidity reads sour, restore sweetness rather than lowering extraction further."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "body-focus-brew",
+      "safeLabel": "Body Focus Brew",
+      "category": "taste_target",
+      "sourceAttribution": "Internal taste-target preset synthesized from safe flat-bottom and cone controls.",
+      "verificationLevel": "internal_synthesis",
+      "sourceUrls": [
+        "https://sca.coffee/research",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "supportedDripperIds": ["kalita-wave-155-185", "hario-v60"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "more_body",
+        "doseG": 16,
+        "targetWaterMl": 240,
+        "targetTempC": 92,
+        "targetRatio": 15,
+        "pourCount": "4",
+        "pourStyle": "balanced",
+        "waterTdsPpm": 100,
+        "waterHardnessPpm": 58,
+        "waterAlkalinityPpm": 40
+      },
+      "techniquePattern": "front_loaded_four",
+      "visibleSummary": "Taste-target prefill for more body with controlled sweetness and texture.",
+      "internalTips": [
+        "Use slightly tighter ratio and middle loading to build texture.",
+        "Prefer flat-bottom brewer when selected; keep V60 fallback centered.",
+        "Watch bitterness risk on dark roast and decaf."
+      ],
+      "guardrails": [
+        "Do not chase body through muddy late agitation.",
+        "Respect roast and process bitterness risks."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "clarity-focus-brew",
+      "safeLabel": "Clarity Focus Brew",
+      "category": "taste_target",
+      "sourceAttribution": "Internal taste-target preset synthesized from safe clarity-first pour-over controls.",
+      "verificationLevel": "internal_synthesis",
+      "sourceUrls": [
+        "https://sca.coffee/research",
+        "https://worldcoffeeresearch.org/resources/coffee-varieties-catalog"
+      ],
+      "supportedDripperIds": ["hario-v60", "chemex"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "floral_transparent",
+        "doseG": 15,
+        "targetWaterMl": 250,
+        "targetTempC": 93,
+        "targetRatio": 16.7,
+        "pourCount": "4",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 80,
+        "waterHardnessPpm": 42,
+        "waterAlkalinityPpm": 25
+      },
+      "techniquePattern": "continuous_high_extraction",
+      "visibleSummary": "Taste-target prefill for clarity with even saturation and restrained finish.",
+      "internalTips": [
+        "Use even extraction and low late agitation to reduce muddiness.",
+        "Protect aromatics with stable flow and no wall chasing.",
+        "If body becomes too light, shift toward balance instead of over-extracting."
+      ],
+      "guardrails": [
+        "Clarity target must still obey grinder fines and process variability guardrails.",
+        "Do not promise transparent cup outcome."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "fast-brew",
+      "safeLabel": "Fast Brew",
+      "category": "taste_target",
+      "sourceAttribution": "Internal fast-service preset synthesized from safe manual-filter constraints.",
+      "verificationLevel": "internal_synthesis",
+      "sourceUrls": [
+        "https://sca.coffee/research"
+      ],
+      "supportedDripperIds": ["hario-v60", "april-brewer"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "more_acidity",
+        "doseG": 15,
+        "targetWaterMl": 225,
+        "targetTempC": 92,
+        "targetRatio": 15,
+        "pourCount": "3",
+        "pourStyle": "pulse",
+        "waterTdsPpm": 85,
+        "waterHardnessPpm": 45,
+        "waterAlkalinityPpm": 30
+      },
+      "techniquePattern": "generic_fast",
+      "visibleSummary": "Fast manual-filter prefill that shortens service while keeping safe extraction windows.",
+      "internalTips": [
+        "Shorten contact through three controlled pours and a clean drawdown target.",
+        "Keep minimum service time above unsafe ultra-short filter extraction.",
+        "Use fast drawdown as workflow goal, not as flavor certainty."
+      ],
+      "guardrails": [
+        "Do not let total time drop below safe pour-over minimum.",
+        "If cup is sour or thin, return toward balance before changing grinder aggressively."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    }
+  ]
+}

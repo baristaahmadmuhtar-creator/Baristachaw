@@ -141,6 +141,13 @@ function buildHiddenExpertGuidanceLines(plan: BrewPlan) {
     plan.varietyEntry?.expertDescription
       ? `- Variety Sensitivities & Aromatics: ${plan.varietyEntry.expertDescription}`
       : '',
+    plan.manualPresetId
+      ? `- Manual brew preset guidance: ${plan.manualPresetLabel || plan.manualPresetId}; pattern ${plan.manualPresetTechniquePattern || 'curated'}; ${[
+          plan.manualPresetSummary,
+          ...(plan.manualPresetGuidance || []),
+          ...(plan.manualPresetGuardrails || []),
+        ].filter(Boolean).join(' ')} Do not expose internal preset tips or raw source notes to the UI.`
+      : '',
   ]
     .map((line) => line.replace(/\s+/g, ' ').trim())
     .filter(Boolean);

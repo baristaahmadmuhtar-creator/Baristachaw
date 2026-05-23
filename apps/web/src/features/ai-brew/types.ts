@@ -8,6 +8,23 @@ import type {
 export type AiBrewMode = 'hot' | 'iced';
 export type AiBrewPourStyle = 'auto' | 'balanced' | 'pulse' | 'gentle';
 export type AiBrewPourCount = 'auto' | '3' | '4' | '5';
+export type ManualBrewPresetCategory = 'competition_inspired' | 'global_classic' | 'taste_target';
+export type ManualBrewTechniquePattern =
+  | 'two_pour'
+  | 'four_six'
+  | 'equal_five_pour'
+  | 'flat_bottom_fast_four'
+  | 'front_loaded_four'
+  | 'continuous_high_extraction'
+  | 'temperature_decline_finish'
+  | 'chemex_clean'
+  | 'aeropress_clean'
+  | 'generic_fast';
+export type ManualBrewPresetVerificationLevel =
+  | 'official_reference'
+  | 'curated_reference'
+  | 'community_reference'
+  | 'internal_synthesis';
 export type OrigamiFilterStyle = 'auto' | 'cone' | 'wave';
 export type AeroPressRecipeStyle =
   | 'auto'
@@ -449,6 +466,51 @@ export interface CatalogProvenance {
   reviewNotes?: string[];
 }
 
+export interface CoffeeExtractionProfile {
+  extractionRole: string;
+  solubilityCue: string;
+  sensoryBias: CatalogSensoryBias;
+  riskTags: CoffeeTaxonomyRiskTag[];
+  recipeGuidance: string[];
+  guardrails: string[];
+  confidence: CatalogConfidence;
+  sourceUrls: string[];
+  visibility: 'internal';
+}
+
+export interface ManualBrewPreset {
+  id: string;
+  safeLabel: string;
+  category: ManualBrewPresetCategory;
+  sourceAttribution: string;
+  verificationLevel: ManualBrewPresetVerificationLevel;
+  sourceUrls: string[];
+  supportedDripperIds: string[];
+  originalBrewerId?: string;
+  fallbackDripperId?: string;
+  fallbackReason?: string;
+  targetDefaults: {
+    brewMode: AiBrewMode;
+    targetProfileId: string;
+    doseG: number;
+    targetWaterMl: number;
+    targetTempC: number;
+    targetRatio?: number;
+    pourCount: Extract<AiBrewPourCount, '3' | '4' | '5'>;
+    pourStyle: Exclude<AiBrewPourStyle, 'auto'>;
+    waterTdsPpm: number;
+    waterHardnessPpm: number;
+    waterAlkalinityPpm: number;
+    origamiFilterStyle?: OrigamiFilterStyle;
+    aeropressStyle?: AeroPressRecipeStyle;
+  };
+  techniquePattern: ManualBrewTechniquePattern;
+  visibleSummary: string;
+  internalTips: string[];
+  guardrails: string[];
+  catalogVersion: string;
+}
+
 export interface RawDripperCatalogEntry {
   id: number | string;
   name: string;
@@ -555,6 +617,7 @@ export interface VarietyCatalogEntry extends CatalogProvenance {
   };
   notes: string[];
   expertDescription?: string;
+  extractionProfile?: CoffeeExtractionProfile;
 }
 
 export interface ProcessCatalogEntry extends CatalogProvenance {
@@ -575,6 +638,7 @@ export interface ProcessCatalogEntry extends CatalogProvenance {
   };
   notes: string[];
   expertDescription?: string;
+  extractionProfile?: CoffeeExtractionProfile;
 }
 
 export interface WaterGuidance extends CatalogProvenance {
@@ -755,6 +819,7 @@ export interface AiBrewCatalog {
   targetProfiles: TargetProfile[];
   deviceProfiles: DeviceBrewProfile[];
   grinderSettings: GrinderSettingReference[];
+  manualBrewPresets: ManualBrewPreset[];
   switchPresets?: SwitchPublicPreset[];
   switchProgrammes?: SwitchInternalProgramme[];
   switchDoseMatrix?: SwitchDoseMatrixRow[];
@@ -791,6 +856,7 @@ export interface AiBrewFormState {
   targetTempC: string;
   pourStyle: AiBrewPourStyle;
   pourCount: AiBrewPourCount;
+  manualPresetId?: string;
   origamiFilterStyle: OrigamiFilterStyle;
   aeropressStyle: AeroPressRecipeStyle;
   switchPresetId?: SwitchPublicPresetId | '';
@@ -1079,6 +1145,14 @@ export interface BrewPlan {
   methodProgramme?: SwitchBrewProgramme | string;
   switchPresetId?: SwitchPublicPresetId;
   switchPresetLabel?: string;
+  manualPresetId?: string;
+  manualPresetLabel?: string;
+  manualPresetCategory?: ManualBrewPresetCategory;
+  manualPresetTechniquePattern?: ManualBrewTechniquePattern;
+  manualPresetSummary?: string;
+  manualPresetSourceUrls?: string[];
+  manualPresetGuidance?: string[];
+  manualPresetGuardrails?: string[];
   switchTeachingMode?: SwitchTeachingMode;
   switchDoseMatrixRowId?: string;
   switchCompatibility?: SwitchCompatibilityState;

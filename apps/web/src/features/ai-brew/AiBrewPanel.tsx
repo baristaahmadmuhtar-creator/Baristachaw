@@ -79,6 +79,7 @@ import {
   buildPlanMethodBrief,
   buildPlanRecipeIngredients,
   buildPlanRecipeMetadata,
+  applyManualBrewPresetToFormState,
   applyAiBrewOptimizationPatch,
   createDefaultAiBrewFormState,
   createQuickAiBrewFormState,
@@ -124,6 +125,8 @@ import type {
   BrewTasteFeedback,
   BrewTasteFeedbackRating,
   EquipmentCatalogEntry,
+  ManualBrewPreset,
+  ManualBrewPresetCategory,
   ProcessCatalogEntry,
   VarietyCatalogEntry,
   VerificationLevel,
@@ -149,6 +152,15 @@ const AI_BREW_COACH_DEEP_TIMEOUT_MS = 8500;
 const AI_BREW_COACH_TRANSLATION_TIMEOUT_MS = 1200;
 const AI_BREW_FEEDBACK_NOTE_MAX_LENGTH = 240;
 const AI_BREW_ASSIST_PROMPT_VERSION = 'assist-v2026-05-06';
+const MANUAL_PRESET_CONTROLLED_FIELDS = new Set<keyof AiBrewFormState>([
+  'brewMode',
+  'dripperId',
+  'targetProfileId',
+  'pourStyle',
+  'pourCount',
+  'origamiFilterStyle',
+  'aeropressStyle',
+]);
 const LARGE_CATALOG_PICKER_KINDS = new Set<NonNullable<PickerKind>>(['process', 'variety']);
 const LARGE_CATALOG_INITIAL_LIMIT = 140;
 const LARGE_CATALOG_SEARCH_LIMIT = 96;
@@ -190,6 +202,15 @@ const COPY = {
     pourCount4: '4 pours',
     pourCount5: '5 pours',
     pourControlHint: '',
+    manualPresetTitle: 'Manual Brew Presets',
+    manualPresetHint: 'Prefill brewer, ratio, water, temperature, target, and pour style. You can edit everything after selecting.',
+    manualPresetAll: 'All',
+    manualPresetCompetition: 'Competition',
+    manualPresetGlobal: 'Global',
+    manualPresetTaste: 'Taste',
+    manualPresetSearch: 'Search presets',
+    manualPresetClear: 'Clear preset',
+    manualPresetFallback: 'Fallback',
     methodOptionTitle: 'Method setup',
     origamiFilterTitle: 'Origami filter',
     origamiFilterAuto: 'Auto',
@@ -708,6 +729,15 @@ const COPY = {
     pourCount4: '4 tuang',
     pourCount5: '5 tuang',
     pourControlHint: '',
+    manualPresetTitle: 'Manual Brew Presets',
+    manualPresetHint: 'Prefill brewer, rasio, air, suhu, target, dan gaya tuang. Semua tetap bisa diedit setelah dipilih.',
+    manualPresetAll: 'Semua',
+    manualPresetCompetition: 'Kompetisi',
+    manualPresetGlobal: 'Global',
+    manualPresetTaste: 'Target rasa',
+    manualPresetSearch: 'Cari preset',
+    manualPresetClear: 'Hapus preset',
+    manualPresetFallback: 'Fallback',
     methodOptionTitle: 'Setelan metode',
     origamiFilterTitle: 'Filter Origami',
     origamiFilterAuto: 'Auto',
@@ -5219,6 +5249,11 @@ function PlanResultDialog({
                     <span className={resultChipClass}>
                       {localizedTargetProfileLabel}
                     </span>
+                    {plan.manualPresetLabel ? (
+                      <span className={`${resultChipClass} border-blue-500/18 bg-blue-500/10 text-blue-700 dark:text-blue-300`} data-testid="ai-brew-result-manual-preset-chip">
+                        {plan.manualPresetLabel}
+                      </span>
+                    ) : null}
                     {plan.targetProfileAutoSuggested && (
                       <span className={`${resultChipClass} border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300`}>
                         {copy.autoTargetSuggested}
@@ -5239,6 +5274,11 @@ function PlanResultDialog({
                     </span>
                   </div>
                   <h3 className="break-words text-lg font-semibold tracking-tight text-primary sm:text-xl">{buildLocalizedPlanRecipeName(plan, language)}</h3>
+                  {plan.manualPresetSummary ? (
+                    <p className="mt-1 text-xs leading-5 text-secondary" data-testid="ai-brew-result-manual-preset-summary">
+                      {plan.manualPresetSummary}
+                    </p>
+                  ) : null}
                   <p id={descriptionId} className="sr-only">
                     {isQuickResult
                       ? (id ? 'Hasil Quick AI Brew berisi urutan seduh ringkas dan kontrol barista inti.' : 'Quick AI Brew result with a compact brew sequence and core barista controls.')
@@ -7262,6 +7302,8 @@ export function AiBrewPanel({
   const [showBeanProfileEditor, setShowBeanProfileEditor] = useState(false);
   const [showQuickBeanDetails, setShowQuickBeanDetails] = useState(false);
   const [activeProSection, setActiveProSection] = useState<ProBuilderSectionId | null>(null);
+  const [manualPresetSearch, setManualPresetSearch] = useState('');
+  const [manualPresetCategory, setManualPresetCategory] = useState<ManualBrewPresetCategory | 'all'>('all');
   const generationStartedAtRef = useRef<number | null>(null);
   const aiAssistCacheRef = useRef(new Map<string, { title: string; markdown: string }>());
 
@@ -7466,6 +7508,26 @@ export function AiBrewPanel({
     if (!catalog) return null;
     return catalog.targetProfiles.find((item) => item.id === formState.targetProfileId) || catalog.targetProfiles[0] || null;
   }, [catalog, formState.targetProfileId]);
+
+  const manualBrewPresets = catalog?.manualBrewPresets || [];
+  const selectedManualPreset = useMemo(() => {
+    if (!formState.manualPresetId) return null;
+    return manualBrewPresets.find((item) => item.id === formState.manualPresetId) || null;
+  }, [formState.manualPresetId, manualBrewPresets]);
+
+  const filteredManualBrewPresets = useMemo(() => {
+    const query = manualPresetSearch.trim().toLowerCase();
+    return manualBrewPresets.filter((preset) => {
+      if (manualPresetCategory !== 'all' && preset.category !== manualPresetCategory) return false;
+      if (!query) return true;
+      return [
+        preset.safeLabel,
+        preset.visibleSummary,
+        preset.sourceAttribution,
+        preset.category,
+      ].join(' ').toLowerCase().includes(query);
+    });
+  }, [manualBrewPresets, manualPresetCategory, manualPresetSearch]);
 
   const targetComparePlans = useMemo(() => {
     if (!catalog || !plan) return [] as BrewPlan[];
@@ -7708,6 +7770,9 @@ export function AiBrewPanel({
     setFormState((prev) => {
       let next = { ...prev, [key]: value };
       next = normalizeBeanProfileFieldMerge(next, key);
+      if (key !== 'manualPresetId' && prev.manualPresetId && MANUAL_PRESET_CONTROLLED_FIELDS.has(key)) {
+        next.manualPresetId = '';
+      }
       if (
         catalog
         && !targetProfileTouched
@@ -7737,6 +7802,13 @@ export function AiBrewPanel({
       }
       return next;
     });
+  }
+
+  function applyManualPreset(presetId: string) {
+    if (!catalog) return;
+    setFormState((prev) => applyManualBrewPresetToFormState(prev, catalog, presetId));
+    setTargetProfileTouched(true);
+    setShowMineralEditor(true);
   }
 
   function setWaterMode(mode: WaterMode) {
@@ -8754,6 +8826,94 @@ export function AiBrewPanel({
         </div>
       </div>
     ) : null;
+    const manualPresetCategoryOptions: Array<{ value: ManualBrewPresetCategory | 'all'; label: string }> = [
+      { value: 'all', label: copy.manualPresetAll },
+      { value: 'competition_inspired', label: copy.manualPresetCompetition },
+      { value: 'global_classic', label: copy.manualPresetGlobal },
+      { value: 'taste_target', label: copy.manualPresetTaste },
+    ];
+    const manualPresetPanel = manualBrewPresets.length > 0 ? (
+      <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3" data-testid="ai-brew-manual-preset-panel">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.manualPresetTitle}</h4>
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-secondary">{copy.manualPresetHint}</p>
+            {selectedManualPreset ? (
+              <p className="mt-2 text-xs font-semibold text-blue-600 dark:text-blue-300" data-testid="ai-brew-selected-manual-preset">
+                {selectedManualPreset.safeLabel}
+              </p>
+            ) : null}
+          </div>
+          {selectedManualPreset ? (
+            <button
+              type="button"
+              onClick={() => updateForm('manualPresetId', '')}
+              className="min-h-[38px] rounded-xl bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-secondary transition-colors hover:text-primary"
+              data-testid="ai-brew-manual-preset-clear"
+            >
+              {copy.manualPresetClear}
+            </button>
+          ) : null}
+        </div>
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label={copy.manualPresetTitle}>
+          {manualPresetCategoryOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setManualPresetCategory(option.value)}
+              className={`min-h-[36px] shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                manualPresetCategory === option.value
+                  ? 'bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.18)]'
+                  : 'bg-[var(--bg-base)] text-secondary hover:text-primary'
+              }`}
+              aria-pressed={manualPresetCategory === option.value}
+              data-testid={`ai-brew-manual-preset-category-${option.value}`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <label className="mt-3 flex h-11 items-center gap-2 rounded-xl bg-[var(--bg-base)] px-3 text-sm text-secondary">
+          <Search size={15} />
+          <input
+            type="search"
+            value={manualPresetSearch}
+            onChange={(event) => setManualPresetSearch(event.target.value)}
+            placeholder={copy.manualPresetSearch}
+            aria-label={copy.manualPresetSearch}
+            className="min-w-0 flex-1 bg-transparent text-sm text-primary outline-none placeholder:text-secondary"
+            data-testid="ai-brew-manual-preset-search"
+          />
+        </label>
+        <div className="mt-3 grid max-h-[18rem] gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
+          {filteredManualBrewPresets.map((preset: ManualBrewPreset) => {
+            const active = formState.manualPresetId === preset.id;
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => applyManualPreset(preset.id)}
+                className={`min-h-[88px] rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                  active
+                    ? 'border-blue-500/40 bg-blue-500/10 text-primary'
+                    : 'panel-divider-subtle bg-[var(--bg-base)] text-secondary hover:border-blue-500/20 hover:text-primary'
+                }`}
+                aria-pressed={active}
+                data-testid={`ai-brew-manual-preset-${preset.id}`}
+              >
+                <span className="block text-sm font-semibold text-primary">{preset.safeLabel}</span>
+                <span className="mt-1 line-clamp-2 block text-xs leading-5 text-secondary">{preset.visibleSummary}</span>
+                {preset.fallbackReason ? (
+                  <span className="mt-1 inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                    {copy.manualPresetFallback}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    ) : null;
 
     const switchSizeOptions = (catalog?.drippers || []).filter((item) => (
       item.methodFamily === 'hario_switch' && isExactHarioSwitchDripperId(item.id) && !item.hidden
@@ -8983,6 +9143,7 @@ export function AiBrewPanel({
             onClick={() => {
               setFormState((prev) => ({
                 ...prev,
+                manualPresetId: prev.manualPresetId ? '' : prev.manualPresetId,
                 brewMode: 'hot',
                 switchPresetId: prev.switchPresetId === 'iced_hybrid' ? '' : prev.switchPresetId,
               }));
@@ -9002,6 +9163,7 @@ export function AiBrewPanel({
               }
               setFormState((prev) => ({
                 ...prev,
+                manualPresetId: prev.manualPresetId ? '' : prev.manualPresetId,
                 brewMode: 'iced',
                 switchPresetId: isSwitchDripper ? 'iced_hybrid' : prev.switchPresetId,
               }));
@@ -9092,6 +9254,7 @@ export function AiBrewPanel({
               </div>
 
               {renderFeedback(true)}
+              {manualPresetPanel}
 
               <div className={`grid gap-4 ${isPro ? 'xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : ''}`}>
                 <div className="glass-card p-4 sm:p-5">

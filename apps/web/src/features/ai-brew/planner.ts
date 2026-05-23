@@ -10,6 +10,7 @@ import type { BrewMethodId, GrindBias, RoastLevel } from '../barista-tools/types
 import {
   findDripper,
   findGrinder,
+  findManualBrewPreset,
   findProcessEntry,
   findTargetProfile,
   findVarietyEntry,
@@ -93,6 +94,8 @@ import type {
   FlatBottomProfileFamily,
   GrinderSettingReference,
   GrindSettingMode,
+  ManualBrewPreset,
+  ManualBrewTechniquePattern,
   MethodWorkflowValidationResult,
   OrigamiFilterStyle,
   ParsedNumericRange,
@@ -517,6 +520,106 @@ function buildPourControlNote(input: AiBrewFormState, methodFamily: AiBrewMethod
   return `${modeLabel} cadence: ${countLabel}, ${buildPourStyleLabel(input)}. Targets stay rounded and cumulative for service use.`;
 }
 
+function resolveManualPresetPourPattern(
+  pattern: ManualBrewTechniquePattern,
+  input: AiBrewFormState,
+  methodFamily: AiBrewMethodFamily,
+) {
+  const icedOffset = input.brewMode === 'iced' ? 8 : 0;
+  switch (pattern) {
+    case 'two_pour':
+      return {
+        starts: [0, 45 + icedOffset],
+        shares: normalizePourShares([0.32, 0.68]),
+        note: 'Manual preset technique: two-pour style with a long bloom and one main extraction pour.',
+      };
+    case 'four_six':
+      return {
+        starts: [0, 45 + icedOffset, 75 + icedOffset, 105 + icedOffset, 135 + icedOffset],
+        shares: normalizePourShares([0.16, 0.24, 0.2, 0.2, 0.2]),
+        note: 'Manual preset technique: Tetsu Kasuya 4:6-inspired cadence; first two pours steer acidity/sweetness, last three manage body.',
+      };
+    case 'equal_five_pour':
+      return {
+        starts: [0, 40 + icedOffset, 70 + icedOffset, 100 + icedOffset, 130 + icedOffset],
+        shares: normalizePourShares([0.2, 0.2, 0.2, 0.2, 0.2]),
+        note: 'Manual preset technique: five near-equal pours for repeatable competition-style cumulative targets.',
+      };
+    case 'flat_bottom_fast_four':
+      return {
+        starts: [0, 35 + icedOffset, 65 + icedOffset, 95 + icedOffset],
+        shares: normalizePourShares([0.22, 0.28, 0.25, 0.25]),
+        note: 'Manual preset technique: fast flat-bottom OREA-style four pours with centered, low-agitation pulses.',
+      };
+    case 'front_loaded_four':
+      return {
+        starts: [0, 35 + icedOffset, 70 + icedOffset, 105 + icedOffset],
+        shares: normalizePourShares([0.18, 0.34, 0.24, 0.24]),
+        note: 'Manual preset technique: front-loaded four-pour pattern for sweetness, then a calmer finish.',
+      };
+    case 'continuous_high_extraction':
+      return {
+        starts: [0, 35 + icedOffset, 70 + icedOffset, 110 + icedOffset],
+        shares: normalizePourShares([0.18, 0.32, 0.3, 0.2]),
+        note: 'Manual preset technique: high-evenness pour-over pattern focused on saturation and flow health.',
+      };
+    case 'temperature_decline_finish':
+      return {
+        starts: [0, 45 + icedOffset, 90 + icedOffset],
+        shares: normalizePourShares([0.25, 0.4, 0.35]),
+        note: 'Manual preset technique: temperature-decline inspired finish; use early extraction pressure, then calmer late water.',
+      };
+    case 'chemex_clean':
+      return {
+        starts: [0, 50 + icedOffset, 100 + icedOffset, 150 + icedOffset],
+        shares: normalizePourShares([0.18, 0.32, 0.25, 0.25]),
+        note: 'Manual preset technique: Chemex clean-cup cadence with thick-paper rinse, vent awareness, and gentle center-to-mid pours.',
+      };
+    case 'aeropress_clean':
+      return {
+        starts: methodFamily === 'aeropress' ? [0] : [0, 45 + icedOffset, 90 + icedOffset],
+        shares: methodFamily === 'aeropress' ? normalizePourShares([1]) : normalizePourShares([0.25, 0.4, 0.35]),
+        note: 'Manual preset technique: AeroPress clean immersion guidance; use steep and press rate as primary controls.',
+      };
+    case 'generic_fast':
+    default:
+      return {
+        starts: [0, 30 + icedOffset, 60 + icedOffset],
+        shares: normalizePourShares([0.22, 0.43, 0.35]),
+        note: 'Manual preset technique: fast manual-filter cadence that shortens service while keeping safe extraction windows.',
+      };
+  }
+}
+
+function resolveManualPresetTimeAdjustmentSeconds(preset: ManualBrewPreset | undefined) {
+  if (!preset) return 0;
+  switch (preset.techniquePattern) {
+    case 'generic_fast':
+      return -35;
+    case 'flat_bottom_fast_four':
+      return -12;
+    case 'two_pour':
+      return -8;
+    case 'chemex_clean':
+      return 15;
+    default:
+      return 0;
+  }
+}
+
+function resolveManualPresetMinimumTimeSeconds(
+  preset: ManualBrewPreset | undefined,
+  methodFamily: AiBrewMethodFamily,
+  brewMode: AiBrewFormState['brewMode'],
+) {
+  if (!preset || brewMode !== 'hot') return 0;
+  if (preset.techniquePattern === 'generic_fast') return 120;
+  if (preset.techniquePattern === 'two_pour') return 130;
+  if (preset.techniquePattern === 'chemex_clean' || methodFamily === 'chemex') return 235;
+  if (preset.techniquePattern === 'flat_bottom_fast_four') return 145;
+  return 0;
+}
+
 function resolveMinimumIcedManualPourOverTimeSeconds(profile: DeviceBrewProfile, methodFamily: AiBrewMethodFamily, brewMode: 'hot' | 'iced') {
   if (brewMode !== 'iced' || !isIcedManualPourOverFamily(methodFamily)) return 0;
   const lastPositivePourIndex = profile.steps.reduce(
@@ -547,13 +650,24 @@ function applyPourControlsToProfile(
   profile: DeviceBrewProfile,
   input: AiBrewFormState,
   methodFamily: AiBrewMethodFamily,
+  manualPreset?: ManualBrewPreset,
 ): DeviceBrewProfile {
-  if (!supportsAiBrewPourControls(methodFamily)) return profile;
-  const pourCount = resolveRequestedPourCount(input, profile);
+  if (!supportsAiBrewPourControls(methodFamily)) {
+    return manualPreset
+      ? {
+          ...profile,
+          note: `${profile.note} Manual brew preset guidance active: ${manualPreset.safeLabel}. ${manualPreset.visibleSummary}`,
+        }
+      : profile;
+  }
+  const manualPattern = manualPreset
+    ? resolveManualPresetPourPattern(manualPreset.techniquePattern, input, methodFamily)
+    : null;
+  const pourCount = manualPattern?.shares.length || resolveRequestedPourCount(input, profile);
   if (!pourCount) return profile;
 
-  const starts = buildControlledPourStarts(pourCount, input);
-  const shares = buildControlledPourShares(pourCount, input);
+  const starts = manualPattern?.starts || buildControlledPourStarts(pourCount, input);
+  const shares = manualPattern?.shares || buildControlledPourShares(pourCount, input);
   const modePrefix = input.brewMode === 'iced' ? 'Japanese iced' : 'Hot';
   const styleLabel = buildPourStyleLabel(input);
   const familyStepNote = (isFirst: boolean, isLast: boolean, isSingleMiddlePour: boolean) => {
@@ -592,20 +706,25 @@ function applyPourControlsToProfile(
   };
   return {
     ...profile,
-    id: `${profile.id}_${input.brewMode}_${input.pourStyle}_${pourCount}p`,
+    id: `${profile.id}_${input.brewMode}_${input.pourStyle}_${manualPreset?.techniquePattern || `${pourCount}p`}`,
     label: `${profile.label} ${pourCount}-pour`,
-    note: `${profile.note} ${modePrefix} cadence is controlled as ${pourCount} pours with ${styleLabel}.`,
+    note: `${profile.note} ${modePrefix} cadence is controlled as ${pourCount} pours with ${styleLabel}. ${
+      manualPreset ? `Manual brew preset guidance active: ${manualPreset.safeLabel}. ${manualPreset.visibleSummary} ${manualPattern?.note || ''}` : ''
+    }`.replace(/\s+/g, ' ').trim(),
     steps: shares.map((share, index) => {
       const isFirst = index === 0;
       const isLast = index === pourCount - 1;
       const isSingleMiddlePour = pourCount === 3 && index === 1;
+      const patternNote = manualPreset && manualPattern
+        ? `${manualPattern.note} `
+        : '';
       return {
         id: isFirst ? 'bloom' : isLast ? 'final_pour' : isSingleMiddlePour ? 'center_pour' : `pulse_${index}`,
         label: isFirst ? 'Bloom' : isLast ? 'Final Pour' : isSingleMiddlePour ? 'Center Pour' : `Pulse ${index}`,
         kind: 'pour',
         share,
         startSeconds: starts[index] ?? index * 40,
-        note: familyStepNote(isFirst, isLast, isSingleMiddlePour),
+        note: `${patternNote}${familyStepNote(isFirst, isLast, isSingleMiddlePour)}`.replace(/\s+/g, ' ').trim(),
       };
     }),
   };
@@ -622,6 +741,52 @@ function pickDefaultCatalogId<T extends { id: string }>(items: T[] | undefined, 
     if (match) return match.id;
   }
   return items[0]?.id || '';
+}
+
+function resolvePresetDripperId(preset: ManualBrewPreset, catalog: AiBrewCatalog, currentDripperId?: string) {
+  const dripperIds = new Set((catalog.drippers || []).map((item) => item.id));
+  if (currentDripperId && preset.supportedDripperIds.includes(currentDripperId) && dripperIds.has(currentDripperId)) {
+    return currentDripperId;
+  }
+  if (preset.originalBrewerId && !dripperIds.has(preset.originalBrewerId) && preset.fallbackDripperId && dripperIds.has(preset.fallbackDripperId)) {
+    return preset.fallbackDripperId;
+  }
+  const supported = preset.supportedDripperIds.find((id) => dripperIds.has(id));
+  if (supported) return supported;
+  if (preset.fallbackDripperId && dripperIds.has(preset.fallbackDripperId)) return preset.fallbackDripperId;
+  return currentDripperId || pickDefaultCatalogId(catalog.drippers, DEFAULT_DRIPPER_PRIORITY);
+}
+
+export function applyManualBrewPresetToFormState(
+  input: AiBrewFormState,
+  catalog: AiBrewCatalog,
+  presetId: string,
+): AiBrewFormState {
+  const preset = findManualBrewPreset(catalog, presetId);
+  if (!preset) return sanitizeAiBrewFormState(input, catalog);
+  const defaults = preset.targetDefaults;
+  const next: Partial<AiBrewFormState> = {
+    ...input,
+    manualPresetId: preset.id,
+    brewMode: defaults.brewMode,
+    dripperId: resolvePresetDripperId(preset, catalog, input.dripperId),
+    targetProfileId: defaults.targetProfileId,
+    doseG: String(defaults.doseG),
+    targetWaterMl: String(defaults.targetWaterMl),
+    targetTempC: String(defaults.targetTempC),
+    targetRatio: defaults.targetRatio ? String(defaults.targetRatio) : input.targetRatio,
+    pourCount: defaults.pourCount,
+    pourStyle: defaults.pourStyle,
+    waterMode: 'manual',
+    waterCustomized: true,
+    waterBrandId: '',
+    waterTdsPpm: String(defaults.waterTdsPpm),
+    waterHardnessPpm: String(defaults.waterHardnessPpm),
+    waterAlkalinityPpm: String(defaults.waterAlkalinityPpm),
+    origamiFilterStyle: defaults.origamiFilterStyle || input.origamiFilterStyle || 'auto',
+    aeropressStyle: defaults.aeropressStyle || input.aeropressStyle || 'auto',
+  };
+  return sanitizeAiBrewFormState(next, catalog);
 }
 
 function createFingerprint(input: string) {
@@ -1520,6 +1685,7 @@ type AdaptiveShareContext = {
   recipeStyle?: Exclude<AeroPressRecipeStyle, 'auto'>;
   physicalConstraints?: DevicePhysicalConstraints;
   methodProgramme?: SwitchBrewProgramme | string;
+  manualTechniquePattern?: ManualBrewTechniquePattern;
   brewMode: 'hot' | 'iced';
   roastLevel: RoastLevel;
   roastDevelopment?: BeanRoastDevelopment;
@@ -5396,6 +5562,9 @@ function buildAdaptiveStepShares(profile: DeviceBrewProfile, context: AdaptiveSh
   if (context.methodFamily === 'hario_switch') {
     return base;
   }
+  if (context.manualTechniquePattern === 'equal_five_pour' || context.manualTechniquePattern === 'four_six') {
+    return base;
+  }
   const intent = resolveContextTargetIntent(context);
 
   const deltas = Array.from({ length: count }, () => 0);
@@ -6831,6 +7000,7 @@ function finalizePlanCore(
     : null;
   const effectiveDeviceProfile = switchSelection?.adjustedProfile || deviceSelection.profile;
   const methodFamily = effectiveDeviceProfile.methodFamily || dripper.methodFamily || 'v60';
+  const manualPreset = findManualBrewPreset(catalog, input.manualPresetId || '');
   const methodId = resolveProfileBrewMethodId(effectiveDeviceProfile, methodFamily, input.brewMode);
   const ratioToolMethodId = methodId;
   const method = BREW_METHOD_MAP[methodId];
@@ -7113,8 +7283,9 @@ function finalizePlanCore(
     targetProfileId: targetProfile.id,
     base: calibratedServiceTimeBounds,
   });
-  const controlledDeviceProfile = applyPourControlsToProfile(effectiveDeviceProfile, input, methodFamily);
+  const controlledDeviceProfile = applyPourControlsToProfile(effectiveDeviceProfile, input, methodFamily, manualPreset);
   const pourControlNote = buildPourControlNote(input, methodFamily);
+  const manualPresetTimeDeltaSeconds = resolveManualPresetTimeAdjustmentSeconds(manualPreset);
   const baseTotalTimeSeconds = roundBaristaTimeSeconds(clamp(
     midpoint(roastAdjustedTargets.adjustedBrewTimeRangeSec, 0)
       + effectiveDeviceProfile.brewTimeDeltaSec
@@ -7133,18 +7304,21 @@ function finalizePlanCore(
       + doseAdjustment.brewTimeDeltaSec
       + serviceDoseTargetAdjustment.brewTimeDeltaSec
       + flavorAlignment.brewTimeDeltaSec
+      + manualPresetTimeDeltaSeconds
       + (input.brewMode === 'iced' ? -5 : 0),
     serviceTimeBounds.min,
     serviceTimeBounds.max,
   ), methodFamily);
   const minimumServiceTimeSeconds = resolveMinimumIcedManualPourOverTimeSeconds(controlledDeviceProfile, methodFamily, input.brewMode);
   const minimumMethodServiceTimeSeconds = resolveMinimumMethodServiceTimeSeconds(methodFamily, input.brewMode);
+  const minimumManualPresetTimeSeconds = resolveManualPresetMinimumTimeSeconds(manualPreset, methodFamily, input.brewMode);
   const totalTimeSeconds = roundBaristaTimeSeconds(
     clamp(
       Math.max(
         baseTotalTimeSeconds,
         minimumServiceTimeSeconds,
         minimumMethodServiceTimeSeconds,
+        minimumManualPresetTimeSeconds,
         hardToExtractHotFilterFloor?.minTimeSeconds || 0,
       ),
       serviceTimeBounds.min,
@@ -7188,6 +7362,7 @@ function finalizePlanCore(
     recipeStyle: controlledDeviceProfile.recipeStyle,
     physicalConstraints: controlledDeviceProfile.physicalConstraints,
     methodProgramme: controlledDeviceProfile.methodProgramme,
+    manualTechniquePattern: manualPreset?.techniquePattern,
     brewMode: input.brewMode,
     roastLevel: input.roastLevel,
     roastDevelopment: input.roastDevelopment || undefined,
@@ -7287,8 +7462,14 @@ function finalizePlanCore(
   const isDerivedTemplateProfile = deviceSelection.mode === 'derived_template';
 
   const notes = normalizeNoteList(
-    [targetProfile.description, controlledDeviceProfile.note],
+    [
+      targetProfile.description,
+      controlledDeviceProfile.note,
+      manualPreset ? `Manual brew preset selected: ${manualPreset.safeLabel}. ${manualPreset.visibleSummary}` : undefined,
+      manualPreset?.fallbackReason,
+    ],
     waterProfile.notes,
+    manualPreset?.guardrails || [],
     processEntry?.notes || [],
     varietyEntry?.notes || [],
     beanProfileAdjustment.notes,
@@ -7370,6 +7551,7 @@ function finalizePlanCore(
       `Grinder setting source: ${grindDetails.verificationLevel}.`,
       customProcessDetection ? `Custom process detection: ${customProcessDetection.id} (${customProcessDetection.confidence}).` : undefined,
       processRisk ? `Process risk: ${processRisk.variability} variability, ${processRisk.recommendationMode}.` : undefined,
+      manualPreset ? `Manual brew preset source: ${manualPreset.safeLabel} (${manualPreset.verificationLevel}).` : undefined,
       input.brewMode === 'iced'
         ? `Iced split source: final beverage ratio 1:${formatBaristaRatio(finalBeverageRatio)}, hot extraction ratio 1:${formatBaristaRatio(hotExtractionRatio)}, hot/ice ${hotSplitPercent}:${iceSplitPercent}.`
         : undefined,
@@ -7475,6 +7657,8 @@ function finalizePlanCore(
     targetProfileId: targetProfile.id,
     deviceProfileId: effectiveDeviceProfile.id,
     grindSettingId: grinderSetting?.id,
+    manualPresetId: manualPreset?.id,
+    manualPresetTechniquePattern: manualPreset?.techniquePattern,
     switchPresetId: switchSelection?.preset.id,
     switchDoseMatrixRowId: switchSelection?.doseRow?.id,
     pourStyle: input.pourStyle,
@@ -7562,6 +7746,14 @@ function finalizePlanCore(
     methodProgramme: controlledDeviceProfile.methodProgramme,
     switchPresetId: switchSelection?.preset.id,
     switchPresetLabel: switchSelection?.preset.label,
+    manualPresetId: manualPreset?.id,
+    manualPresetLabel: manualPreset?.safeLabel,
+    manualPresetCategory: manualPreset?.category,
+    manualPresetTechniquePattern: manualPreset?.techniquePattern,
+    manualPresetSummary: manualPreset?.visibleSummary,
+    manualPresetSourceUrls: manualPreset?.sourceUrls,
+    manualPresetGuidance: manualPreset?.internalTips,
+    manualPresetGuardrails: manualPreset?.guardrails,
     switchTeachingMode: switchSelection?.preset.teachingMode,
     switchDoseMatrixRowId: switchSelection?.doseRow?.id,
     switchCompatibility: switchSelection?.compatibility,
@@ -7684,6 +7876,7 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
   const validPourCounts = new Set(['auto', '3', '4', '5']);
   const validOrigamiFilterStyles = new Set(['auto', 'cone', 'wave']);
   const validAeroPressStyles = new Set(['auto', 'standard', 'inverted', 'bypass', 'no_bypass', 'bright_clean', 'sweet_body']);
+  const validManualPresetIds = new Set(['', ...(catalog?.manualBrewPresets || []).map((item) => item.id)]);
   const validSwitchPresetIds = new Set(['', ...(catalog?.switchPresets || []).map((item) => item.id)]);
   const validSwitchTeachingModes = new Set(['', 'full_immersion', 'full_percolation_v60_mode', 'hybrid']);
   const waterBrandId = String(input.waterBrandId || '');
@@ -7731,6 +7924,9 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
     pourCount: validPourCounts.has(String(input.pourCount))
       ? (String(input.pourCount) as AiBrewFormState['pourCount'])
       : fallback.pourCount,
+    manualPresetId: validManualPresetIds.has(String(input.manualPresetId || ''))
+      ? String(input.manualPresetId || '')
+      : '',
     origamiFilterStyle: validOrigamiFilterStyles.has(String(input.origamiFilterStyle))
       ? (String(input.origamiFilterStyle) as AiBrewFormState['origamiFilterStyle'])
       : fallback.origamiFilterStyle,

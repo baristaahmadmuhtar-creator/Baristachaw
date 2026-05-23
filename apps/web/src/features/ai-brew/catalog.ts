@@ -7,9 +7,11 @@ import type {
   CatalogReviewStatus,
   CatalogReleaseStatus,
   CatalogSensoryBias,
+  CoffeeExtractionProfile,
   DeviceBrewProfile,
   EquipmentCatalogEntry,
   GrinderSettingReference,
+  ManualBrewPreset,
   ParsedNumericRange,
   ProcessRiskModel,
   ProcessCatalogEntry,
@@ -51,7 +53,17 @@ const FILES = {
   switchDoseMatrix: `${DATA_BASE}/switch-dose-matrix.v2026-05.json`,
   switchTroubleshooting: `${DATA_BASE}/switch-troubleshooting.v2026-05.json`,
   switchKnowledge: `${DATA_BASE}/switch-knowledge.v2026-05.json`,
+  manualBrewPresets: `${DATA_BASE}/manual-brew-presets.v2026-06.json`,
 } as const;
+
+const PROCESS_PROFILE_FALLBACK_SOURCE_URLS = [
+  'https://sca.coffee/research/coffee-processing-glossary',
+  'https://sca.coffee/sca-news/25-magazine/issue-10/english/the-fermentation-effect-25-magazine-issue-10',
+];
+const VARIETY_PROFILE_FALLBACK_SOURCE_URLS = [
+  'https://worldcoffeeresearch.org/resources/coffee-varieties-catalog',
+  'https://varieties.worldcoffeeresearch.org',
+];
 
 type EquipmentKind = 'dripper' | 'grinder';
 
@@ -431,6 +443,40 @@ function buildProcessExpertDescription(
   ]);
 }
 
+function buildProcessExtractionProfile(
+  entry: ProcessCatalogEntry,
+  sensoryBias: CatalogSensoryBias,
+  processRisk: ProcessRiskModel,
+  riskTags: string[],
+): CoffeeExtractionProfile {
+  const role = compactInternalText(entry.expertDescription) || buildProcessFamilyCue(entry, processRisk);
+  const solubilityCue = processRisk.recommendationMode === 'taste_feedback_required'
+    ? 'Variable solubility signal; keep recipe moves small until the brewed cup confirms direction.'
+    : processRisk.variability === 'low'
+      ? 'Stable process signal; normal planner solubility assumptions can remain active.'
+      : 'Moderate solubility variance; use conservative temperature, grind, and agitation deltas.';
+  return {
+    extractionRole: role,
+    solubilityCue,
+    sensoryBias,
+    riskTags: riskTags as CoffeeExtractionProfile['riskTags'],
+    recipeGuidance: [
+      buildProcessFamilyCue(entry, processRisk),
+      `Use process modifier as an internal bias only: ${describeSensoryBias(sensoryBias)}.`,
+      processRisk.recommendationMode === 'deterministic'
+        ? 'Allow normal target-profile adjustments while keeping final cup feedback authoritative.'
+        : 'Prefer gentle pour, grind, and temperature changes before stronger extraction pressure.',
+    ],
+    guardrails: [
+      buildGuardrailSentence(entry.confidence, entry.reviewStatus),
+      'Do not show this internal process profile in picker descriptions or promise fixed flavor outcomes.',
+    ],
+    confidence: entry.confidence,
+    sourceUrls: Array.from(new Set([...(entry.sourceUrls || []), ...PROCESS_PROFILE_FALLBACK_SOURCE_URLS])).filter(Boolean),
+    visibility: 'internal',
+  };
+}
+
 function buildVarietyFamilyCue(entry: VarietyCatalogEntry, taxonomy: NonNullable<VarietyCatalogEntry['taxonomy']>) {
   const lineage = taxonomy.lineageGroup;
   if (taxonomy.species === 'canephora' || lineage === 'canephora_clone') {
@@ -472,6 +518,38 @@ function buildVarietyExpertDescription(
     describeRiskTags(riskTags),
     `Guardrail: ${buildGuardrailSentence(entry.confidence, entry.reviewStatus)} Variety never overrides roast, process, water chemistry, grinder calibration, or cup feedback.`,
   ]);
+}
+
+function buildVarietyExtractionProfile(
+  entry: VarietyCatalogEntry,
+  sensoryBias: CatalogSensoryBias,
+  taxonomy: NonNullable<VarietyCatalogEntry['taxonomy']>,
+  riskTags: string[],
+): CoffeeExtractionProfile {
+  const role = compactInternalText(entry.expertDescription) || buildVarietyFamilyCue(entry, taxonomy);
+  const solubilityCue = taxonomy.species === 'canephora' || taxonomy.species === 'liberica' || taxonomy.species === 'excelsa'
+    ? 'Non-standard species cue; protect against bitterness, woody tone, and over-agitation.'
+    : taxonomy.lineageGroup === 'ethiopian_landrace' || taxonomy.lineageGroup === 'specialty_reference'
+      ? 'Aromatic lineage cue; protect volatile aromatics with even saturation and calm finish pours.'
+      : 'Cultivar cue is secondary to roast, process, water chemistry, grinder calibration, and cup feedback.';
+  return {
+    extractionRole: role,
+    solubilityCue,
+    sensoryBias,
+    riskTags: riskTags as CoffeeExtractionProfile['riskTags'],
+    recipeGuidance: [
+      buildVarietyFamilyCue(entry, taxonomy),
+      `Use variety modifier as an internal bias only: ${describeSensoryBias(sensoryBias)}.`,
+      'Keep cultivar assumptions subordinate to process, roast, water, grinder, and sensory feedback.',
+    ],
+    guardrails: [
+      `${buildGuardrailSentence(entry.confidence, entry.reviewStatus)} Variety never overrides measured brew behavior.`,
+      'Do not show this internal variety profile in picker descriptions or imply a fixed premium cup.',
+    ],
+    confidence: entry.confidence,
+    sourceUrls: Array.from(new Set([...(entry.sourceUrls || []), ...VARIETY_PROFILE_FALLBACK_SOURCE_URLS])).filter(Boolean),
+    visibility: 'internal',
+  };
 }
 
 function describeGrinderBehaviorCue(params: {
@@ -864,12 +942,19 @@ function normalizeVarietyEntry(entry: VarietyCatalogEntry): VarietyCatalogEntry 
   };
   const riskTags = normalizeRiskTags(base) as VarietyCatalogEntry['riskTags'];
   const sensoryBias = inferVarietySensoryBias(base, lineageGroup);
+  const expertDescription = buildVarietyExpertDescription(base, sensoryBias, taxonomy, riskTags || []);
   return {
     ...base,
     riskTags,
     taxonomy,
     sensoryBias,
-    expertDescription: buildVarietyExpertDescription(base, sensoryBias, taxonomy, riskTags || []),
+    expertDescription,
+    extractionProfile: buildVarietyExtractionProfile(
+      { ...base, expertDescription },
+      sensoryBias,
+      taxonomy,
+      riskTags || [],
+    ),
   };
 }
 
@@ -878,12 +963,35 @@ function normalizeProcessEntry(entry: ProcessCatalogEntry): ProcessCatalogEntry 
   const riskTags = normalizeRiskTags(base) as ProcessCatalogEntry['riskTags'];
   const sensoryBias = inferProcessSensoryBias(base);
   const processRisk = inferProcessRisk(base);
+  const expertDescription = buildProcessExpertDescription(base, sensoryBias, processRisk, riskTags || []);
   return {
     ...base,
     riskTags,
     sensoryBias,
     processRisk,
-    expertDescription: buildProcessExpertDescription(base, sensoryBias, processRisk, riskTags || []),
+    expertDescription,
+    extractionProfile: buildProcessExtractionProfile(
+      { ...base, expertDescription },
+      sensoryBias,
+      processRisk,
+      riskTags || [],
+    ),
+  };
+}
+
+function mergeExtractionProfiles(
+  existing?: CoffeeExtractionProfile,
+  next?: CoffeeExtractionProfile,
+): CoffeeExtractionProfile | undefined {
+  if (!existing) return next;
+  if (!next) return existing;
+  return {
+    ...existing,
+    recipeGuidance: Array.from(new Set([...existing.recipeGuidance, ...next.recipeGuidance])),
+    guardrails: Array.from(new Set([...existing.guardrails, ...next.guardrails])),
+    riskTags: Array.from(new Set([...existing.riskTags, ...next.riskTags])),
+    sourceUrls: Array.from(new Set([...existing.sourceUrls, ...next.sourceUrls])),
+    visibility: 'internal',
   };
 }
 
@@ -907,6 +1015,7 @@ function normalizeProcessEntries(entries: ProcessCatalogEntry[]) {
       searchText: buildSearchText(existing.searchText, entry.searchText, rawEntry.id),
       notes: Array.from(new Set([...existing.notes, ...entry.notes])),
       expertDescription: mergeInternalExpertDescriptions(existing.expertDescription, entry.expertDescription),
+      extractionProfile: mergeExtractionProfiles(existing.extractionProfile, entry.extractionProfile),
       reviewStatus: 'conflicting',
       reviewNotes: Array.from(new Set([
         ...(existing.reviewNotes || []),
@@ -932,6 +1041,40 @@ function normalizeGrinderSetting(setting: GrinderSettingReference): GrinderSetti
     rangeLabel,
     parsedRange: setting.parsedRange || parseNumericRange(rangeLabel),
     catalogVersion: setting.catalogVersion || CATALOG_VERSION,
+  };
+}
+
+function normalizeManualBrewPreset(preset: ManualBrewPreset): ManualBrewPreset {
+  const targetDefaults = preset.targetDefaults || ({} as ManualBrewPreset['targetDefaults']);
+  return {
+    ...preset,
+    safeLabel: String(preset.safeLabel || preset.id).trim(),
+    sourceAttribution: String(preset.sourceAttribution || 'Curated manual brew reference').trim(),
+    sourceUrls: Array.from(new Set((preset.sourceUrls || []).map((value) => String(value || '').trim()).filter(Boolean))),
+    supportedDripperIds: Array.from(new Set((preset.supportedDripperIds || []).map((value) => String(value || '').trim()).filter(Boolean))),
+    originalBrewerId: preset.originalBrewerId ? String(preset.originalBrewerId).trim() : undefined,
+    fallbackDripperId: preset.fallbackDripperId ? String(preset.fallbackDripperId).trim() : undefined,
+    fallbackReason: preset.fallbackReason ? String(preset.fallbackReason).trim() : undefined,
+    targetDefaults: {
+      ...targetDefaults,
+      brewMode: targetDefaults.brewMode === 'iced' ? 'iced' : 'hot',
+      targetProfileId: String(targetDefaults.targetProfileId || 'balance_clean'),
+      doseG: Number.isFinite(targetDefaults.doseG) ? targetDefaults.doseG : 15,
+      targetWaterMl: Number.isFinite(targetDefaults.targetWaterMl) ? targetDefaults.targetWaterMl : 240,
+      targetTempC: Number.isFinite(targetDefaults.targetTempC) ? targetDefaults.targetTempC : 92,
+      targetRatio: Number.isFinite(targetDefaults.targetRatio) ? targetDefaults.targetRatio : undefined,
+      pourCount: targetDefaults.pourCount || '4',
+      pourStyle: targetDefaults.pourStyle || 'balanced',
+      waterTdsPpm: Number.isFinite(targetDefaults.waterTdsPpm) ? targetDefaults.waterTdsPpm : 90,
+      waterHardnessPpm: Number.isFinite(targetDefaults.waterHardnessPpm) ? targetDefaults.waterHardnessPpm : 50,
+      waterAlkalinityPpm: Number.isFinite(targetDefaults.waterAlkalinityPpm) ? targetDefaults.waterAlkalinityPpm : 35,
+      origamiFilterStyle: targetDefaults.origamiFilterStyle || 'auto',
+      aeropressStyle: targetDefaults.aeropressStyle || 'auto',
+    },
+    visibleSummary: String(preset.visibleSummary || '').trim(),
+    internalTips: Array.from(new Set((preset.internalTips || []).map((value) => String(value || '').trim()).filter(Boolean))),
+    guardrails: Array.from(new Set((preset.guardrails || []).map((value) => String(value || '').trim()).filter(Boolean))),
+    catalogVersion: preset.catalogVersion || CATALOG_VERSION,
   };
 }
 
@@ -1591,6 +1734,7 @@ export async function loadAiBrewCatalog(): Promise<AiBrewCatalog> {
     readJson<SwitchDoseMatrixFile>(FILES.switchDoseMatrix),
     readJson<SwitchTroubleshootingFile>(FILES.switchTroubleshooting),
     readJson<SwitchKnowledgeFile>(FILES.switchKnowledge),
+    readJson<JsonCollectionPayload<ManualBrewPreset>>(FILES.manualBrewPresets),
   ])
     .then(([
       drippers,
@@ -1607,6 +1751,7 @@ export async function loadAiBrewCatalog(): Promise<AiBrewCatalog> {
       switchDoseMatrix,
       switchTroubleshooting,
       switchKnowledge,
+      manualBrewPresets,
     ]) => {
       const dripperItems = getCollectionItems(drippers);
       const grinderItems = getCollectionItems(grinders);
@@ -1616,6 +1761,7 @@ export async function loadAiBrewCatalog(): Promise<AiBrewCatalog> {
       const waterBrandItems = getCollectionItems(waterBrands);
       const deviceProfileItems = getCollectionItems(deviceProfiles);
       const grinderSettingItems = getCollectionItems(grinderSettings);
+      const manualBrewPresetItems = getCollectionItems(manualBrewPresets);
       const equipmentSignals = Array.isArray(marketSignals.equipment) ? marketSignals.equipment : [];
       const signalMap = new Map(
         equipmentSignals.map((entry) => [`${entry.kind}:${entry.id}`, entry] as const),
@@ -1633,6 +1779,7 @@ export async function loadAiBrewCatalog(): Promise<AiBrewCatalog> {
           || switchDoseMatrix.catalogVersion
           || switchTroubleshooting.catalogVersion
           || switchKnowledge.catalogVersion
+          || getCollectionVersion(manualBrewPresets)
           || marketSignals.catalogVersion
           || getCollectionVersion(drippers)
           || getCollectionVersion(grinders)
@@ -1664,6 +1811,7 @@ export async function loadAiBrewCatalog(): Promise<AiBrewCatalog> {
         })),
         deviceProfiles: deviceProfileItems.map(normalizeDeviceProfile),
         grinderSettings: grinderSettingItems.map(normalizeGrinderSetting),
+        manualBrewPresets: manualBrewPresetItems.map(normalizeManualBrewPreset),
         switchPresets: Array.isArray(switchProgrammes.publicPresets) ? switchProgrammes.publicPresets : [],
         switchProgrammes: Array.isArray(switchProgrammes.internalProgrammes) ? switchProgrammes.internalProgrammes : [],
         switchDoseMatrix: Array.isArray(switchDoseMatrix.rows) ? switchDoseMatrix.rows : [],
@@ -1698,6 +1846,12 @@ export function findVarietyEntry(catalog: AiBrewCatalog, id: string) {
   const requestedId = String(id || '').trim();
   return catalog.varieties.find((item) => item.id === requestedId)
     || catalog.varieties.find((item) => item.aliases.some((alias) => alias === requestedId));
+}
+
+export function findManualBrewPreset(catalog: AiBrewCatalog, id: string) {
+  const requestedId = String(id || '').trim();
+  if (!requestedId) return undefined;
+  return catalog.manualBrewPresets.find((item) => item.id === requestedId);
 }
 
 export function findWaterBrand(catalog: AiBrewCatalog, id: string) {

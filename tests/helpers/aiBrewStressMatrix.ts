@@ -276,6 +276,7 @@ export function buildProductionAiBrewCatalogForStress(): AiBrewCatalog {
         ...entry,
         parsedRange: entry.parsedRange || parseNumericRange(entry.rangeLabel),
       })),
+    manualBrewPresets: [],
     switchPresets: switchProgrammesFile.publicPresets,
     switchProgrammes: switchProgrammesFile.internalProgrammes,
     switchDoseMatrix: switchDoseMatrixFile.rows,

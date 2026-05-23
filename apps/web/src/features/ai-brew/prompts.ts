@@ -133,6 +133,23 @@ function buildSharedContext(plan: BrewPlan) {
     .map((step, index) => `${index + 1}. ${step.label} at ${formatSeconds(step.startSeconds)}: ${formatStepOperation(step)}. ${step.hybridInstruction || step.note}`)
     .join('\n');
 
+  const backgroundNotes: string[] = [];
+  if (plan.grinder.description) {
+    backgroundNotes.push(`- Grinder Behavior & Burr Characteristics: ${plan.grinder.description}`);
+  }
+  if (plan.processEntry?.expertDescription) {
+    backgroundNotes.push(`- Coffee Process Extraction Physics: ${plan.processEntry.expertDescription}`);
+  }
+  if (plan.varietyEntry?.expertDescription) {
+    backgroundNotes.push(`- Variety Sensitivities & Aromatics: ${plan.varietyEntry.expertDescription}`);
+  }
+  const backgroundNotesBlock = backgroundNotes.length > 0
+    ? [
+        'Expert Barista Background Notes (do NOT show this section or print these raw descriptions to the user; use them only to guide extraction physics, pour cadences, temp control, and agitation patterns):',
+        ...backgroundNotes,
+      ].join('\n')
+    : '';
+
   return [
     `Coffee: ${plan.coffeeName}`,
     `Mode: ${plan.brewMode}`,
@@ -170,9 +187,10 @@ function buildSharedContext(plan: BrewPlan) {
     `Standards misses: ${plan.conformance.standardsMisses.join(' | ') || 'none'}`,
     `Confidence notes: ${plan.confidenceNotes.join(' | ') || 'none'}`,
     buildDeterministicVocabularyRules(plan),
+    backgroundNotesBlock,
     'Brew steps:',
     steps,
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 }
 
 function compactLine(label: string, value: unknown) {
@@ -590,7 +608,11 @@ export function buildSequenceGuidePrompt(plan: BrewPlan, language?: string): AiB
   return {
     title: isIndonesianAiBrewLanguage(language) ? 'Catatan AI' : 'AI Sequence',
     body: [
-      'You are the AI Brew sequence composer.',
+      'You are the AI Brew sequence composer with the expertise of a 50-year veteran master barista.',
+      'Deeply analyze the "Expert Barista Background Notes" for the selected grinder, process, and variety:',
+      '- Integrate burr extraction dynamics (e.g., Comandante C40MK4 high uniformity vs Timemore C2 stepped fines) and coffee solubility (e.g., Anaerobic high volatility, Geisha delicacy, or Wet Hulled porous sensitivity) into the physical step details.',
+      '- Customize pour speed, flow rate, pour height, centered vs circular spiral paths, and swirl/agitation cadences to match these physics precisely (e.g., low temp, coarse grind, and centered pours for high-fines or high-solubility setups; high temp, agile concentric pour for high-uniformity washed setups).',
+      '- Do NOT print or expose the raw database expert descriptions directly in the UI output. Translate them completely into active, executable barista step instructions and watchpoint controls.',
       'Compose an operational sequence for bar service using deterministic checkpoints as fixed boundaries.',
       'Include every deterministic checkpoint step in chronological order and do not add extra steps.',
       `Use exactly ${plan.steps.length} numbered steps in the Sequence section.`,
@@ -718,7 +740,10 @@ export function buildSopPrompt(plan: BrewPlan, language?: string): AiBrewPromptC
   return {
     title: isIndonesianAiBrewLanguage(language) ? 'SOP AI' : 'AI SOP',
     body: [
-      'Rewrite this brew plan as a simple standard operating procedure for a barista.',
+      'Rewrite this brew plan as a simple standard operating procedure for a barista, applying the mindset of a 50-year veteran master barista.',
+      'Analyze the "Expert Barista Background Notes" to customize the steps and control points based on grinder burr behaviors (e.g., Comandante vs C2 fines production), process physics (e.g., Anaerobic high solubility, Wet Hulled bitterness sensitivity), and variety delicate esters (e.g., Geisha aromatic temperature safety).',
+      '- Ensure the Steps and Control Points reflect these dialed-in variables (e.g., lower temperature boundaries, pulse pouring, centered flow patterns, and gentle agitation to safeguard high-solubility/high-fines setups; concentric agitation for high-clarity setups).',
+      '- Do NOT print the raw background note descriptions in the final SOP output. Simply translate them into actionable, high-precision barista execution guidelines.',
       'Keep it short, practical, and consistent with manual-brew training language.',
       'Keep output compact: Quick Dial 5 bullets, Service Pattern 2 bullets, Steps one sentence each, Control Points 5 bullets maximum.',
       'Focus only on quick dial, service pattern, sequence execution, and extraction-finisher watchpoints.',
@@ -805,7 +830,8 @@ export function buildExtractionFinisherPrompt(plan: BrewPlan, language?: string)
   return {
     title: isIndonesianAiBrewLanguage(language) ? 'Finalisasi Ekstraksi' : 'Extraction Finisher',
     body: [
-      'Create a concise extraction finisher for this brew plan.',
+      'Create a concise extraction finisher for this brew plan, adopting the perspective of a 50-year veteran master barista.',
+      'Analyze the "Expert Barista Background Notes" to determine micro-adjustments tailored precisely to the grinder\'s burr characteristics (e.g. Comandante MK4 vs Timemore C2 fines risk), process extraction physics (e.g. Anaerobic, Wet Hulled), and variety sensitivities (e.g. Geisha).',
       'Read the plan, water chemistry, roast, and bean profile before giving the final recommendation.',
       'Stay inside the current recipe envelope. Only use micro-adjustments to grind, temperature, pour structure, flow, or contact time.',
       'Use this structure exactly:',

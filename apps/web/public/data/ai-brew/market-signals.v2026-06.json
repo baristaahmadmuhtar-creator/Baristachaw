@@ -36,7 +36,7 @@
     {
       "id": "1zpresso-k-ultra",
       "kind": "grinder",
-      "description": "Widely used specialty hand grinder with official grind-setting reference support.",
+      "description": "Premium heptagonal burr set producing highly soluble particles with balanced fines. Yields high extraction yields and rich sweetness. Works beautifully with standard or multi-pulse pour patterns and medium-high temperatures.",
       "source": "1zpresso-official",
       "sourceUrls": [
         "https://1zpresso.coffee/grind-setting-reference/",
@@ -84,7 +84,7 @@
     {
       "id": "1zpresso-zp6-special",
       "kind": "grinder",
-      "description": "High-clarity specialty grinder with official pour-over reference guidance.",
+      "description": "High-clarity pour-over manual grinder with extremely low fines production. Ideal for ultra-clean, transparent tea-like cups. Safely tolerates high temperatures (93-95C) and vigorous multi-pour agitations without bitterness or drawdown stalling.",
       "source": "1zpresso-official",
       "sourceUrls": [
         "https://1zpresso.coffee/grind-setting-reference/",
@@ -148,7 +148,7 @@
     {
       "id": "breville-smart-grinder-pro",
       "kind": "grinder",
-      "description": "Widely used electric grinder in home coffee setups.",
+      "description": "Home electric flat burr grinder generating moderate-to-high fines under load. Maintain a clean, simple pour structure (2 to 3 pours maximum) and moderate temperature (88-91C) to prevent bitter channeling and bypass issues.",
       "source": "breville-curation",
       "sourceUrls": [
         "https://www.breville.com/"
@@ -257,7 +257,7 @@
     {
       "id": "comandante-c40-mk4",
       "kind": "grinder",
-      "description": "Common specialty benchmark grinder with wide community calibration data.",
+      "description": "Specialty benchmark manual grinder. High grind uniformity with exceptionally low fines. Extremely safe for high-agitation and high-temperature brewing methods. Yields excellent clarity and brightness without the risk of early filter clogging or bitterness.",
       "source": "comandante-official-curated",
       "sourceUrls": [
         "https://www.comandantegrinder.com/",
@@ -576,7 +576,7 @@
     {
       "id": "kingrinder-k6",
       "kind": "grinder",
-      "description": "High-value specialty grinder with strong enthusiast adoption.",
+      "description": "Highly versatile manual grinder with seven-star heptagonal burrs. Delivers highly balanced particle size distribution with moderate fines. Safe for multi-pour percolation and standard agitation levels; keep temperatures balanced (90-93C).",
       "source": "kingrinder-official-curated",
       "sourceUrls": [
         "https://www.kingrinder.com/",
@@ -975,7 +975,7 @@
     {
       "id": "timemore-c2",
       "kind": "grinder",
-      "description": "Entry-level grinder with very large market presence.",
+      "description": "Entry-level stepped manual burr design that generates a moderate-to-high level of fines at medium-to-fine settings. Keep brewing temperatures moderate and restrict vigorous circular agitation during the final pour stages to prevent drawdown stalling and over-extraction.",
       "source": "timemore-community",
       "sourceUrls": [
         "https://www.timemore.com/",
@@ -991,7 +991,7 @@
     {
       "id": "timemore-c3",
       "kind": "grinder",
-      "description": "Mass-market hand grinder used heavily in entry and mid-level filter setups.",
+      "description": "Mass-market manual grinder featuring Spike-to-Cut burr geometry, resulting in slightly more uniform grinds and fewer fines than C2. Still produces moderate fines under fine dialing. Restrict heavy circular agitation during final pours and keep brew temperatures moderate to preserve clean fruitiness.",
       "source": "timemore-community",
       "sourceUrls": [
         "https://www.timemore.com/",

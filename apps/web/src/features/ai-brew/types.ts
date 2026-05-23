@@ -551,6 +551,7 @@ export interface VarietyCatalogEntry extends CatalogProvenance {
     grindBias?: GrindBias;
   };
   notes: string[];
+  expertDescription?: string;
 }
 
 export interface ProcessCatalogEntry extends CatalogProvenance {
@@ -570,6 +571,7 @@ export interface ProcessCatalogEntry extends CatalogProvenance {
     grindBias?: GrindBias;
   };
   notes: string[];
+  expertDescription?: string;
 }
 
 export interface WaterGuidance extends CatalogProvenance {
@@ -1025,6 +1027,8 @@ export interface BrewPlan {
   targetProfileSuggestionReason?: string;
   dripper: EquipmentCatalogEntry;
   grinder: EquipmentCatalogEntry;
+  processEntry?: ProcessCatalogEntry;
+  varietyEntry?: VarietyCatalogEntry;
   waterMode: WaterMode;
   waterRegion: WaterMarket;
   waterBrandId: string;

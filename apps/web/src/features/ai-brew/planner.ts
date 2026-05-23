@@ -7521,6 +7521,8 @@ function finalizePlanCore(
     targetProfileSuggestionReason: targetProfileAutoSuggested ? targetProfileSuggestion.reason : undefined,
     dripper,
     grinder,
+    processEntry,
+    varietyEntry,
     waterMode: input.waterMode,
     waterRegion: input.waterRegion,
     waterBrandId: waterBrand?.id || '',

@@ -59,7 +59,8 @@
         "China",
         "Taiwan",
         "Indonesia"
-      ]
+      ],
+      "expertDescription": "Highly soluble and volatile. Easily over-extracted, leading to metallic, bitter, or dry notes. Must lower water temp to 88-90C, coarse up grind size, and keep agitation minimal using gentle center pours to preserve exotic acidity."
     },
     {
       "aliases": [
@@ -466,7 +467,8 @@
         "China",
         "Thailand",
         "Taiwan"
-      ]
+      ],
+      "expertDescription": "Exotic fruit aromatics and high acid concentration. Use lower temperatures (89-91C) to preserve delicate floral and tropical esters. Front-loaded pours are ideal to maximize aroma without over-extracting astringent phenols."
     },
     {
       "id": "carbonic_natural",
@@ -729,7 +731,8 @@
         "overFermentRisk": "medium",
         "recommendationMode": "conservative"
       },
-      "searchText": "decaf decaf special decaffeinated global colombia mexico brazil processing method varies; use roast and cup result as the primary adjustment anchor."
+      "searchText": "decaf decaf special decaffeinated global colombia mexico brazil processing method varies; use roast and cup result as the primary adjustment anchor.",
+      "expertDescription": "Highly porous due to caffeine removal, extracts very rapidly. Can easily become bitter and flat. Use lower temperature (88-90C) and coarser grind settings, keeping extraction time short to prevent dry channeling."
     },
     {
       "id": "double_anaerobic",
@@ -1168,11 +1171,12 @@
         "El Salvador",
         "Nicaragua",
         "Panama",
-        "Thailand",
-        "Vietnam",
-        "Taiwan",
+        "Colombia",
+        "Brazil",
+        "Indonesia",
         "Malaysia"
-      ]
+      ],
+      "expertDescription": "Moderate solubility, high sugar retention. Needs a balanced pour structure. Watch for extraction stalling from chaff; circular center pour is ideal to develop sweet body and prevent channeling."
     },
     {
       "aliases": [
@@ -1299,7 +1303,8 @@
         "Costa Rica",
         "Ethiopia",
         "Kenya"
-      ]
+      ],
+      "expertDescription": "Lactic acid focus creates creamy mouthfeel and high sweetness. Sensitive to heat. Use slightly cooler brew water (88-90C) to prevent 'sharp' astringency. Gentle, low-agitation pour patterns preserve the lactic body."
     },
     {
       "id": "lactic_anaerobic",
@@ -1458,6 +1463,7 @@
         "Colombia",
         "Global"
       ],
+      "expertDescription": "Fermentation-rich with intense aroma. High extraction potential; keep ratio slightly tighter to balance heavy fruit aromatics. Avoid over-extracting bitter finish.",
       "notes": [
         "Curated process expansion; sensory effect varies by producer control and green quality."
       ],
@@ -1560,6 +1566,7 @@
         "Latin America",
         "Global"
       ],
+      "expertDescription": "Decaf processing impacts bean density and porous structure. Use lower water temps (85-88C) and a finer grind to manage fast flow. Avoid agitation to prevent harsh, roasty bitterness.",
       "notes": [
         "Water-process decaf cue; relax extraction slightly and keep bitterness control visible."
       ],
@@ -1624,7 +1631,8 @@
         "Thailand",
         "Philippines",
         "Laos"
-      ]
+      ],
+      "expertDescription": "High solubility, naturally heavy sweetness. Requires steady, pulse-pour approach to manage extraction rate. Watch for over-extraction of ferment-notes; keep temperatures slightly lower (90C) and minimize agitation to maintain clarity."
     },
     {
       "id": "natural_anaerobic",
@@ -2054,6 +2062,7 @@
         "Costa Rica",
         "China"
       ],
+      "expertDescription": "High volatile acidity and fruit intensity. Requires meticulous brewing to avoid over-concentration of sharp acids. Use coarse grind with high water temp (92C+) to emphasize balanced fruit sweetness and reduce sharpness.",
       "notes": [
         "Carbonic-adjacent fermentation descriptor; keep recipe shifts bounded unless lot protocol is documented."
       ],
@@ -2122,6 +2131,7 @@
       "notes": [
         "Regional descriptor often used across Indonesia and Southeast Asia as a practical alias around wet-hulled and pulped transitions."
       ],
+      "expertDescription": "Typically heavy body, earthy or spicy undertones. Requires stable thermal mass to maintain heat. Use coarser grind to avoid muddy extraction; robust pour flow helps highlight savory complexity.",
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "origins": [
         "Indonesia",
@@ -2254,8 +2264,9 @@
         "Panama",
         "Colombia",
         "Indonesia",
-        "Global"
+        "India"
       ],
+      "expertDescription": "High sugars and solubility. Sensitive to high temp over-extraction (causing dry/woodiness). Calibrate temp slightly lower (89-91C). Moderate agitation only; centered or spiral pours work best to preserve clean fruit acidity.",
       "notes": [
         "Natural process with slow drying emphasis; protect sweetness with stable flow and avoid heavy late agitation."
       ],
@@ -2599,7 +2610,8 @@
         "Thailand",
         "Taiwan",
         "Myanmar"
-      ]
+      ],
+      "expertDescription": "Clean cup flavor profile, highly uniform green density, low extraction variability. Safe for high temperature (92-94C) extraction. Tolerates vigorous circular agitation and multi-pour percolation without bitter over-extraction."
     },
     {
       "id": "washed_anaerobic",
@@ -2717,7 +2729,8 @@
         "Papua New Guinea",
         "Timor-Leste",
         "Malaysia"
-      ]
+      ],
+      "expertDescription": "Porous, low-density, high-moisture. Highly sensitive to earthy bitterness. Barista rule: must lower temperature (86-88C), increase grind size (coarser), and use very gentle low-agitation pours to prevent astringency."
     },
     {
       "aliases": [

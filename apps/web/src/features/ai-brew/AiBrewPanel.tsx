@@ -5950,7 +5950,7 @@ function PlanResultDialog({
                       </h4>
                       <p className="mt-1 text-xs leading-5 text-secondary">
                         {id
-                          ? 'Inti keputusan sistem: target rasa, ekstraksi, air, grinder, dan alur alat diringkas tanpa klaim 100% pasti.'
+                          ? 'Inti keputusan sistem: target rasa, ekstraksi, air, grinder, dan alur alat diringkas tanpa klaim pasti.'
                           : 'Planner decision summary: taste target, extraction, water, grinder, and brewer workflow without claiming certainty.'}
                       </p>
                     </div>

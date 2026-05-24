@@ -313,8 +313,8 @@
       "targetDefaults": {
         "brewMode": "hot",
         "targetProfileId": "floral_transparent",
-        "doseG": 24,
-        "targetWaterMl": 380,
+        "doseG": 20,
+        "targetWaterMl": 315,
         "targetTempC": 94,
         "targetRatio": 15.8,
         "pourCount": "4",
@@ -684,8 +684,8 @@
       "targetDefaults": {
         "brewMode": "hot",
         "targetProfileId": "soft_round",
-        "doseG": 24,
-        "targetWaterMl": 360,
+        "doseG": 20,
+        "targetWaterMl": 300,
         "targetTempC": 93,
         "targetRatio": 15,
         "pourCount": "4",
@@ -1092,8 +1092,8 @@
       "targetDefaults": {
         "brewMode": "hot",
         "targetProfileId": "soft_round",
-        "doseG": 40,
-        "targetWaterMl": 600,
+        "doseG": 20,
+        "targetWaterMl": 300,
         "targetTempC": 20,
         "targetRatio": 15,
         "pourCount": "3",

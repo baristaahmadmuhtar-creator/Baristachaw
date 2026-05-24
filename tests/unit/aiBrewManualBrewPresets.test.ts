@@ -82,6 +82,10 @@ test('AI Brew manual brew preset catalog is safe, unique, and source-backed', as
     assert.ok(preset.internalTips.length > 0, `${preset.id} should carry internal tips`);
     assert.ok(preset.guardrails.length > 0, `${preset.id} should carry guardrails`);
     assert.ok(targetProfileIds.has(preset.targetDefaults.targetProfileId), `${preset.id} target should resolve`);
+    assert.ok(
+      preset.targetDefaults.doseG >= 10 && preset.targetDefaults.doseG <= 20,
+      `${preset.id} default dose should stay inside the visible 10-20 g UI range`,
+    );
     for (const dripperId of preset.supportedDripperIds) {
       assert.ok(dripperIds.has(dripperId), `${preset.id} supported dripper ${dripperId} should resolve`);
     }

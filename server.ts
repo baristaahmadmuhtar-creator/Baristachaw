@@ -92,7 +92,7 @@ function getContentSecurityPolicy() {
   return [
     "default-src 'self'",
     "script-src 'self' https://apis.google.com",
-    "style-src 'self' https://fonts.googleapis.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "style-src-attr 'unsafe-inline'",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https://*.googleusercontent.com",

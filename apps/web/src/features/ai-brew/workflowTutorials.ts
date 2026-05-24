@@ -2,6 +2,8 @@ import type {
   AiBrewMethodFamily,
   WorkflowGuideActionType,
   KalitaWaveRecipeStyle,
+  CleverDripperRecipeStyle,
+  ChemexRecipeStyle,
 } from './types.ts';
 
 type WorkflowTutorialCopy = {
@@ -1011,9 +1013,263 @@ const KALITA_WAVE_STYLE_TUTORIALS: Record<
   },
 };
 
+const CLEVER_DRIPPER_STYLE_TUTORIALS: Record<
+  Exclude<CleverDripperRecipeStyle, 'auto'>,
+  WorkflowTutorialProfile
+> = {
+  classic_closed: {
+    setup: {
+      en: 'Close the valve, seat your paper filter, preheat the Clever, and add your medium grounds.',
+      id: 'Tutup katup, pasang paper filter, hangatkan Clever, dan masukkan bubuk kopi gilingan medium.',
+    },
+    entry: {
+      en: 'Pour all hot water slowly over grounds. Close the lid immediately to lock heat.',
+      id: 'Tuang seluruh air panas perlahan ke atas bubuk kopi. Segera tutup penutupnya untuk menahan panas.',
+    },
+    main: {
+      en: 'Let the closed immersion steep calmly; avoid stirring to preserve high clarity.',
+      id: 'Biarkan rendaman tertutup tenang; hindari pengadukan untuk menjaga kejernihan yang tinggi.',
+    },
+    release: {
+      en: 'Place the Clever Dripper onto your server to activate the release valve and drain.',
+      id: 'Letakkan Clever Dripper di atas server untuk membuka katup pembuang dan mengalirkan kopi.',
+    },
+    finish: {
+      en: 'Let the drawdown finish completely, remove the brewer, and serve a sweet, balanced cup.',
+      id: 'Biarkan air turun selesai sepenuhnya, angkat brewer, dan sajikan cangkir yang manis dan seimbang.',
+    },
+  },
+  reverse_water_first: {
+    setup: {
+      en: 'Close the valve, rinse your filter, and pour all hot water into the empty closed chamber first.',
+      id: 'Tutup katup, bilas filter, dan tuangkan seluruh air panas ke dalam wadah kosong yang tertutup terlebih dahulu.',
+    },
+    entry: {
+      en: 'Gently scatter all coffee grounds onto the water surface. Do not stir or swirl!',
+      id: 'Taburkan bubuk kopi dengan lembut ke permukaan air. Jangan diaduk atau diputar!',
+    },
+    main: {
+      en: 'Close the lid and let steep. The grounds will extract gently as they sink naturally.',
+      id: 'Tutup penutupnya dan biarkan merendam. Bubuk kopi akan terekstraksi lembut saat tenggelam alami.',
+    },
+    release: {
+      en: 'Place on server to activate release valve. The clean liquor will drain without filter clogging.',
+      id: 'Letakkan di atas server untuk mengaktifkan katup pembuang. Cairan bersih akan mengalir tanpa menyumbat filter.',
+    },
+    finish: {
+      en: 'Let it drain completely. Enjoy brilliant cup clarity and sweet, delicate flavors.',
+      id: 'Biarkan mengalir keluar sepenuhnya. Nikmati kejernihan cangkir yang cemerlang dan rasa manis yang lembut.',
+    },
+  },
+  double_stage_hybrid: {
+    setup: {
+      en: 'Close the valve, rinse your filter, tare the scale, and add medium grounds.',
+      id: 'Tutup katup, bilas filter, tare timbangan, dan masukkan kopi gilingan medium.',
+    },
+    entry: {
+      en: 'Pour a small closed bloom to saturate grounds evenly, capturing rich, sweet compounds.',
+      id: 'Tuang air bloom tertutup sedikit untuk membasahi kopi merata, menangkap senyawa manis awal.',
+    },
+    main: {
+      en: 'Pour the second portion in spirals with the valve open, then lift the dripper to close the valve and pour the final water.',
+      id: 'Tuang porsi kedua secara spiral dengan katup terbuka, lalu angkat dripper untuk menutup katup dan tuang sisa air.',
+    },
+    release: {
+      en: 'Steep closed briefly for sweet body, then place back on the server to activate final release.',
+      id: 'Rendam tertutup singkat untuk sweet body, lalu letakkan kembali di atas server untuk rilis akhir.',
+    },
+    finish: {
+      en: 'Let the drawdown finish completely with a level bed; enjoy high cup complexity.',
+      id: 'Biarkan air turun selesai sepenuhnya dengan bed kopi rata; nikmati kompleksitas rasa tinggi.',
+    },
+  },
+  iced_clever: {
+    setup: {
+      en: 'Close the valve, weigh your ice directly into the server, and add fine grounds to the Clever.',
+      id: 'Tutup katup, timbang es langsung ke dalam server, dan masukkan kopi gilingan halus ke dalam Clever.',
+    },
+    entry: {
+      en: 'Pour all hot water rapidly into the closed chamber to brew a high-heat concentrate, and stir 3 times.',
+      id: 'Tuang seluruh air panas cepat ke wadah tertutup untuk membuat konsentrat panas, lalu aduk 3 kali.',
+    },
+    main: {
+      en: 'Close the lid and steep calmly to trap all volatile fruit aromatics inside the chamber.',
+      id: 'Tutup penutupnya dan rendam tenang untuk mengunci aromatik buah volatil di dalam wadah.',
+    },
+    release: {
+      en: 'Place the Clever on the server to release the hot concentrate directly over the ice cubes.',
+      id: 'Letakkan Clever di atas server untuk mengeluarkan konsentrat panas langsung ke atas es batu.',
+    },
+    finish: {
+      en: 'Let drawdown finish completely, then swirl the server to melt the ice evenly; serve cold.',
+      id: 'Biarkan air turun selesai, lalu putar server untuk melelehkan es secara merata; sajikan dingin.',
+    },
+  },
+  high_dose_concentrate: {
+    setup: {
+      en: 'Close the valve, add a massive dose of coarse grounds, and preheat the chamber.',
+      id: 'Tutup katup, masukkan kopi gilingan kasar dosis sangat tinggi, dan hangatkan wadah.',
+    },
+    entry: {
+      en: 'Pour hot water slowly in circular paths over the heavy bed, and stir gently to wet all grounds.',
+      id: 'Tuang air panas perlahan secara melingkar ke atas kopi dosis besar, lalu aduk perlahan agar basah merata.',
+    },
+    main: {
+      en: 'Close the lid and let steep for an extended 3.5 minutes to maximize soluble density.',
+      id: 'Tutup penutupnya dan biarkan merendam selama 3,5 menit ekstra untuk memaksimalkan densitas larutan.',
+    },
+    release: {
+      en: 'Place on server to activate release. The coarse grind will prevent the heavy bed from clogging.',
+      id: 'Letakkan di atas server untuk melepas katup. Gilingan kasar akan mencegah bed tebal tersumbat.',
+    },
+    finish: {
+      en: 'Let the rich, syrupy concentrate drain completely. Dilute with hot water bypass if desired.',
+      id: 'Biarkan konsentrat tebal sepekat sirup mengalir habis. Encerkan dengan bypass air panas jika suka.',
+    },
+  },
+};
+
+const CHEMEX_STYLE_TUTORIALS: Record<
+  Exclude<ChemexRecipeStyle, 'auto'>,
+  WorkflowTutorialProfile
+> = {
+  traditional_three_pour: {
+    setup: {
+      en: 'Rinse the thick paper, align the 3-fold side with the spout, preheat, and add medium-coarse grounds.',
+      id: 'Bilas kertas tebal, sejajarkan sisi 3-lipat dengan spout, hangatkan, dan masukkan kopi gilingan medium-coarse.',
+    },
+    entry: {
+      en: 'Wet grounds gently with a balanced bloom, keeping the bed level for even gas escape.',
+      id: 'Basahi kopi dengan lembut lewat bloom yang seimbang, menjaga bed rata agar gas keluar merata.',
+    },
+    main: {
+      en: 'Pour the second portion in slow concentric rings; keep the stream off the paper walls.',
+      id: 'Tuang porsi kedua dalam lingkaran konsentris lambat; jauhkan aliran air dari dinding kertas filter.',
+    },
+    release: {
+      en: 'Pour the final portion in the center and allow a slow percolation through thick wood-fiber.',
+      id: 'Tuang porsi akhir di pusat dan biarkan perkolasi lambat mengalir melewati serat kayu tebal.',
+    },
+    finish: {
+      en: 'Let drawdown drain completely; the dense filter will ensure maximum clarity and sweetness.',
+      id: 'Biarkan air turun mengalir habis; filter padat akan memastikan kejernihan dan kemanisan maksimal.',
+    },
+  },
+  competition_multi_pulse: {
+    setup: {
+      en: 'Rinse the paper filter thoroughly to remove any paper taste, and add medium grounds.',
+      id: 'Bilas filter kertas secara menyeluruh untuk menghilangkan rasa kertas, dan masukkan bubuk kopi medium.',
+    },
+    entry: {
+      en: 'Bloom rapidly in tight center circles to agitate all coffee grounds actively.',
+      id: 'Lakukan bloom cepat dalam lingkaran tengah yang rapat untuk mengagitasi bubuk kopi secara aktif.',
+    },
+    main: {
+      en: 'Deliver multiple fast, concentric pulses to keep water velocity high and push extraction.',
+      id: 'Lakukan beberapa pulsa konsentris cepat untuk menjaga kecepatan air tetap tinggi dan mendorong ekstraksi.',
+    },
+    release: {
+      en: 'Complete the final short pulse cleanly; let the coffee drain rapidly to preserve fruit acids.',
+      id: 'Selesaikan pulsa pendek terakhir dengan bersih; biarkan kopi mengalir cepat untuk menjaga asam buah.',
+    },
+    finish: {
+      en: 'Snappy drawdown finishes with a level bed. Serve immediate clean and vibrant fruit notes.',
+      id: 'Drawdown yang cepat berakhir dengan bed kopi yang rata. Segera sajikan aroma buah yang bersih hidup.',
+    },
+  },
+  continuous_center_pour: {
+    setup: {
+      en: 'Seat the paper filter neatly, add coarsely ground coffee, and preheat the glass carafe.',
+      id: 'Pasang filter kertas dengan rapi, masukkan kopi gilingan kasar, dan hangatkan carafe kaca.',
+    },
+    entry: {
+      en: 'Wet grounds with a calm center pour to minimize agitation; skip any swirling.',
+      id: 'Basahi kopi dengan tuangan tengah yang tenang untuk meminimalkan agitasi; jangan diputar.',
+    },
+    main: {
+      en: 'Maintain a tiny, constant centered stream, keeping kettle height low and flow constant.',
+      id: 'Jaga aliran tengah kontinu yang sangat kecil, posisikan ketel tetap rendah dan aliran stabil.',
+    },
+    release: {
+      en: 'Continue the slow centered stream, letting the heavy water column settle for sweet clarity.',
+      id: 'Lanjutkan aliran tengah lambat, biarkan kolom air yang berat tenang untuk kejernihan manis.',
+    },
+    finish: {
+      en: 'Cut the pour gracefully. Allow a slow, quiet drain to yield an exceptionally sweet, balanced cup.',
+      id: 'Hentikan tuangan dengan lembut. Biarkan aliran turun tenang menghasilkan cangkir seimbang yang sangat manis.',
+    },
+  },
+  iced_chemex: {
+    setup: {
+      en: 'Pre-load the glass carafe with measured ice, rinse your paper filter, and add fine grounds.',
+      id: 'Isi carafe kaca dengan es batu terukur, bilas filter kertas, dan masukkan kopi gilingan halus.',
+    },
+    entry: {
+      en: 'Bloom dry grounds hot. The concentrated drippings will cool instantly over the ice below.',
+      id: 'Bloom kopi kering dengan air panas. Tetesan pekat akan langsung mendingin di atas es di bawah.',
+    },
+    main: {
+      en: 'Pour hot concentrate in slow concentric circles, keeping water off the high paper walls.',
+      id: 'Tuang konsentrat panas dalam lingkaran konsentris lambat, jauhkan air dari dinding kertas tinggi.',
+    },
+    release: {
+      en: 'Deliver the final center pour; let the hot concentrate drip directly onto the ice cubes.',
+      id: 'Lakukan tuangan tengah terakhir; biarkan konsentrat panas menetes langsung ke es batu.',
+    },
+    finish: {
+      en: 'Let the final drops drain, then swirl the carafe to melt ice evenly; serve chilled.',
+      id: 'Biarkan tetesan terakhir habis, lalu putar carafe untuk melelehkan es secara merata; sajikan dingin.',
+    },
+  },
+  high_dose_heavy_body: {
+    setup: {
+      en: 'Add a massive coffee dose, grind coarse, and preheat the elegant Chemex carafe thoroughly.',
+      id: 'Masukkan dosis kopi sangat besar, giling kasar, dan hangatkan carafe Chemex yang elegan.',
+    },
+    entry: {
+      en: 'Wet the thick bed slowly; let the large dose degas completely before building water height.',
+      id: 'Basahi bed tebal secara lambat; biarkan dosis besar membuang gas sepenuhnya sebelum menambah tinggi air.',
+    },
+    main: {
+      en: 'Pour in slow, thick center rings; keep water away from the paper walls to prevent bypass.',
+      id: 'Tuang dalam lingkaran tengah lambat yang tebal; jauhkan air dari dinding kertas agar tidak bypass.',
+    },
+    release: {
+      en: 'Maintain a heavy water column to wash the deep bed, yielding rich mouthfeel and oils.',
+      id: 'Pertahankan kolom air yang berat untuk membasuh bed yang dalam, menghasilkan mouthfeel dan minyak kopi tebal.',
+    },
+    finish: {
+      en: 'Allow a slow, heavy drawdown to finish. Serve neat to enjoy a deep, syrupy comforting cup.',
+      id: 'Biarkan air turun yang lambat dan berat selesai. Sajikan murni untuk cangkir nyaman sepekat sirup.',
+    },
+  },
+};
+
 export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) {
   const phase = resolveWorkflowTutorialPhase(context.actionType);
   const language = resolveWorkflowTutorialLanguage(context.language);
+
+  if (context.methodFamily === 'clever_dripper' && context.recipeStyle) {
+    const styleKey = context.recipeStyle === 'auto' ? 'classic_closed' : context.recipeStyle;
+    const styleProfile = CLEVER_DRIPPER_STYLE_TUTORIALS[styleKey as any];
+    if (styleProfile) {
+      const copy = styleProfile[phase];
+      if (copy) {
+        return copy[language].replace(/\s+/g, ' ').trim();
+      }
+    }
+  }
+
+  if (context.methodFamily === 'chemex' && context.recipeStyle) {
+    const styleKey = context.recipeStyle === 'auto' ? 'traditional_three_pour' : context.recipeStyle;
+    const styleProfile = CHEMEX_STYLE_TUTORIALS[styleKey as any];
+    if (styleProfile) {
+      const copy = styleProfile[phase];
+      if (copy) {
+        return copy[language].replace(/\s+/g, ' ').trim();
+      }
+    }
+  }
 
   if (context.methodFamily === 'kalita_wave' && context.recipeStyle) {
     const styleKey = context.recipeStyle === 'auto' ? 'traditional_flat_three' : context.recipeStyle;

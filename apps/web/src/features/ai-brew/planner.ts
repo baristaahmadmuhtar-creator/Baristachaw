@@ -46,6 +46,8 @@ import {
 } from './cupProfile.ts';
 import { resolveSwitchPlanSelection, validateSwitchStepSafety } from './switchPlanner.ts';
 import { resolveKalitaPlanSelection, isKalitaWaveDripperId } from './kalitaPlanner.ts';
+import { resolveCleverPlanSelection, isCleverDripperId } from './cleverPlanner.ts';
+import { resolveChemexPlanSelection, isChemexDripperId } from './chemexPlanner.ts';
 export {
   buildWorkflowAwareGuideSteps,
   validateMethodWorkflowGuide,
@@ -114,6 +116,8 @@ import type {
   WorkflowGuideActionType,
   WorkflowGuideStep,
   KalitaWaveRecipeStyle,
+  CleverDripperRecipeStyle,
+  ChemexRecipeStyle,
 } from './types.ts';
 
 export type AiBrewGenerationStageId =
@@ -1731,6 +1735,8 @@ type AdaptiveShareContext = {
   methodProgramme?: SwitchBrewProgramme | string;
   manualTechniquePattern?: ManualBrewTechniquePattern;
   kalitaWaveStyle?: KalitaWaveRecipeStyle;
+  cleverDripperStyle?: CleverDripperRecipeStyle;
+  chemexStyle?: ChemexRecipeStyle;
   brewMode: 'hot' | 'iced';
   roastLevel: RoastLevel;
   roastDevelopment?: BeanRoastDevelopment;
@@ -1828,6 +1834,60 @@ function resolveImmersionReleaseCopy(context: AdaptiveShareContext) {
       middleDetail: 'Keep the switch closed and add water calmly; let immersion carry extraction instead of forcing turbulence.',
       lateDetail: 'Keep the switch closed through the later contact window; avoid stirring late so the release stays clean.',
       finishDetail: 'Open the switch cleanly and let the bed drain on its own; do not stir, shake, or top up during the finishing drain.',
+    };
+  }
+
+  const style = context.cleverDripperStyle || 'auto';
+  if (style === 'reverse_water_first') {
+    return {
+      brewerName: 'Clever',
+      closedCue: 'Keep the Clever closed',
+      releaseCue: 'open the valve',
+      setOnServerCue: 'Place the Clever on the server',
+      bloomPrep: 'Rinse the paper, preheat the brewer, and tare the scale first, then close the valve and pour all hot water into the chamber BEFORE adding coffee.',
+      openingDetail: 'Saturate the water by scattering coffee grounds evenly on the surface; do not stir!',
+      middleDetail: 'Let the grounds extract as they float and slowly sink naturally; do not agitate the chamber.',
+      lateDetail: 'Hold the later immersion phase completely still; let the coffee bed settle naturally.',
+      finishDetail: 'Open the valve cleanly by placing on the server and let the clean liquor drain completely.',
+    };
+  }
+  if (style === 'double_stage_hybrid') {
+    return {
+      brewerName: 'Clever',
+      closedCue: 'Use controlled valve checkpoints',
+      releaseCue: 'place on server / lift to close valve',
+      setOnServerCue: 'Follow the dual-stage valve checkpoints',
+      bloomPrep: 'Rinse the paper, preheat the brewer, tare the scale, and close the valve for the sweet pre-immersion bloom.',
+      openingDetail: 'Saturate the bed slowly with the valve closed to capture rich, sweet bloom compounds.',
+      middleDetail: 'Place on server to release bloom, then pour the second portion in spirals with the valve open.',
+      lateDetail: 'Lift the Clever dripper from the server (closing the valve) and pour the final water portion for a short immersion stage.',
+      finishDetail: 'Place back on the server to release the final concentrate and let it drain flat.',
+    };
+  }
+  if (style === 'iced_clever') {
+    return {
+      brewerName: 'Clever',
+      closedCue: 'Keep the Clever closed',
+      releaseCue: 'open the valve over ice',
+      setOnServerCue: 'Place the Clever over the server loaded with ice',
+      bloomPrep: 'Rinse the paper, preheat the brewer, tare the scale, close the valve, and load the server with pre-weighed ice.',
+      openingDetail: 'Pour all hot water rapidly into the closed chamber to brew a hot concentrate.',
+      middleDetail: 'Close the lid and steep to trap all volatile aromatics; prepare your server with ice.',
+      lateDetail: 'Keep the closed immersion quiet; prepare for immediate thermal locking.',
+      finishDetail: 'Place the dripper on the ice server to release the hot concentrate directly over the ice cubes.',
+    };
+  }
+  if (style === 'high_dose_concentrate') {
+    return {
+      brewerName: 'Clever',
+      closedCue: 'Keep the Clever closed',
+      releaseCue: 'open the valve',
+      setOnServerCue: 'Place the Clever on the server',
+      bloomPrep: 'Rinse the paper, preheat the brewer, and tare the scale first, then close the valve before adding the high dose.',
+      openingDetail: 'Pour hot water slowly in circular paths over the massive coffee bed; stir gently.',
+      middleDetail: 'Close the lid and steep for an extended period to maximize solubility and body.',
+      lateDetail: 'Let the heavy bed settle; do not stir or swirl late to avoid clogging the paper.',
+      finishDetail: 'Place on server. The coarse grind will prevent choking; let the rich, syrupy liquor drain completely.',
     };
   }
 
@@ -6127,20 +6187,80 @@ function buildMethodFamilyStepInstruction(params: {
       }
       break;
     case 'chemex':
-      if (phase === 'bloom') {
-        quickNote = 'Rinse hard, preheat the glass, set the three-layer side at the spout, then bloom fully.';
-        detail = 'Use a strong rinse to seat the bonded paper, warm the Chemex, keep the three-layer side facing the spout, and leave the vent open before wetting the bed.';
-      } else if (phase === 'early_middle') {
-        quickNote = 'Use a steady center-to-mid stream and let the thick filter manage flow.';
-        detail = 'Build the middle with stable flow; do not chase the paper wall or collapse the vent because that turns Chemex slow and papery.';
-      } else if (phase === 'late_middle') {
-        quickNote = 'Keep the later middle open, stable, and away from the filter wall.';
-        detail = 'Hold a calm slurry height and avoid washing the sides; Chemex should drain longer than V60 but still look open.';
-      } else {
-        quickNote = 'Finish the target water, keep the vent open, and let the thick filter draw down naturally.';
-        detail = context.brewMode === 'iced'
-          ? 'Land only the planned hot concentrate over measured ice; do not add bypass water after drawdown.'
-          : 'Let the final drawdown complete without wall rinsing or extra swirl; adjust coarser next brew if it stalls.';
+      {
+        const chemexStyle = context.chemexStyle || 'auto';
+        if (chemexStyle === 'competition_multi_pulse') {
+          if (phase === 'bloom') {
+            quickNote = 'Aggressive tight center bloom to wake up acids quickly.';
+            detail = 'Pour rapidly in the center; avoid bypass on the thick walls to trigger highly vibrant acid extraction.';
+          } else if (phase === 'early_middle') {
+            quickNote = 'Deliver second rapid concentric pulse to keep water columns high.';
+            detail = 'Increase kettle flow velocity; keep water moving in centered spirals to prevent fine clogging.';
+          } else if (phase === 'late_middle') {
+            quickNote = 'Perform third and fourth rapid center pulses; keep velocity high.';
+            detail = 'Maintain high water column height to force clean extraction through thick wood-fiber.';
+          } else {
+            quickNote = 'Final fast concentric pulse; let it drain into a level bed.';
+            detail = 'Finish the target water quickly and let the drawdown snap clean. The high-velocity stream gives bright cup clarity.';
+          }
+        } else if (chemexStyle === 'continuous_center_pour') {
+          if (phase === 'bloom') {
+            quickNote = 'Wet the grounds with a gentle center pour; skip swirling.';
+            detail = 'Deliver a slow center pour without agitation to keep the dense wood-fiber filter from choking.';
+          } else if (phase === 'early_middle') {
+            quickNote = 'Maintain a tiny, continuous centered stream without building height.';
+            detail = 'Keep kettle altitude very low and maintain a slow stream (1.5-2.0 ml/sec) directly in the center.';
+          } else if (phase === 'late_middle') {
+            quickNote = 'Continue the slow center pour with zero agitation.';
+            detail = 'Hold the steady center line to minimize water bypass, letting the thick paper slowly extract sweet compounds.';
+          } else {
+            quickNote = 'Stop pouring and let the heavy water column settle for sweet clarity.';
+            detail = 'Cut the flow smoothly; let the quiet column drain naturally to produce a sweet, syrupy, and perfectly clear cup.';
+          }
+        } else if (chemexStyle === 'iced_chemex') {
+          if (phase === 'bloom') {
+            quickNote = 'Saturate grounds slowly; server must be preloaded with ice.';
+            detail = 'Pour concentric hot water over dry grounds; ensure the elegant Chemex glass is loaded with ice below.';
+          } else if (phase === 'early_middle') {
+            quickNote = 'Pour hot concentrate in concentric circles; keep water off the thick paper.';
+            detail = 'Deliver the second hot pour cleanly, avoiding the high paper walls to keep solubility high.';
+          } else if (phase === 'late_middle') {
+            quickNote = 'Final slow center pour; drippings lock aromatics instantly.';
+            detail = 'Pour the remaining hot water through the center; the hot concentrate drips directly over ice to lock acids.';
+          } else {
+            quickNote = 'Let drawdown drain and swirl the carafe to melt remaining ice.';
+            detail = 'Let the drawdown finish completely; swirl to blend the concentrate and chilled ice for a crisp, cold finish.';
+          }
+        } else if (chemexStyle === 'high_dose_heavy_body') {
+          if (phase === 'bloom') {
+            quickNote = 'Wet the thick bed slowly; let the large dose degas fully.';
+            detail = 'Deliver a slow, wide bloom. The massive dose needs time to wet completely through the dense paper.';
+          } else if (phase === 'early_middle') {
+            quickNote = 'Pour in slow, thick center rings; avoid bypass.';
+            detail = 'Maintain a calm water level to wash the deep bed, keeping water away from the spout area to prevent bypass.';
+          } else if (phase === 'late_middle') {
+            quickNote = 'Final slow center pour to extract rich oils.';
+            detail = 'Keep the kettle stream low and heavy; wash the center bed gently without disturbing the filter walls.';
+          } else {
+            quickNote = 'Allow a slow, heavy drawdown to finish. Yields maximum body.';
+            detail = 'Let the dense drawdown finish naturally; do not stir or swirl so the cup retains massive syrupy body.';
+          }
+        } else {
+          // traditional_three_pour / auto
+          if (phase === 'bloom') {
+            quickNote = 'Rinse hard, preheat the glass, set the three-layer side at the spout, then bloom fully.';
+            detail = 'Use a strong rinse to seat the bonded paper, warm the Chemex, keep the three-layer side facing the spout, and leave the vent open before wetting the bed.';
+          } else if (phase === 'early_middle') {
+            quickNote = 'Use a steady center-to-mid stream and let the thick filter manage flow.';
+            detail = 'Build the middle with stable flow; do not chase the paper wall or collapse the vent because that turns Chemex slow and papery.';
+          } else if (phase === 'late_middle') {
+            quickNote = 'Keep the later middle open, stable, and away from the filter wall.';
+            detail = 'Hold a calm slurry height and avoid washing the sides; Chemex should drain longer than V60 but still look open.';
+          } else {
+            quickNote = 'Finish the target water, keep the vent open, and let the thick filter draw down naturally.';
+            detail = 'Let the final drawdown complete without wall rinsing or extra swirl; adjust coarser next brew if it stalls.';
+          }
+        }
       }
       break;
     case 'hario_switch':
@@ -7233,7 +7353,29 @@ function finalizePlanCore(
       doseG,
     })
     : null;
-  const effectiveDeviceProfile = switchSelection?.adjustedProfile || kalitaSelection?.adjustedProfile || deviceSelection.profile;
+  const cleverSelection = preliminaryMethodFamily === 'clever_dripper' && isCleverDripperId(dripper.id)
+    ? resolveCleverPlanSelection({
+      input,
+      catalog,
+      dripper,
+      profile: deviceSelection.profile,
+      targetProfile,
+      processEntry,
+      doseG,
+    })
+    : null;
+  const chemexSelection = preliminaryMethodFamily === 'chemex' && isChemexDripperId(dripper.id)
+    ? resolveChemexPlanSelection({
+      input,
+      catalog,
+      dripper,
+      profile: deviceSelection.profile,
+      targetProfile,
+      processEntry,
+      doseG,
+    })
+    : null;
+  const effectiveDeviceProfile = switchSelection?.adjustedProfile || kalitaSelection?.adjustedProfile || cleverSelection?.adjustedProfile || chemexSelection?.adjustedProfile || deviceSelection.profile;
   const methodFamily = effectiveDeviceProfile.methodFamily || dripper.methodFamily || 'v60';
   const manualPreset = findManualBrewPreset(catalog, input.manualPresetId || '');
   const methodId = resolveProfileBrewMethodId(effectiveDeviceProfile, methodFamily, input.brewMode);
@@ -7607,6 +7749,8 @@ function finalizePlanCore(
     methodProgramme: controlledDeviceProfile.methodProgramme,
     manualTechniquePattern: manualPreset?.techniquePattern,
     kalitaWaveStyle: kalitaSelection?.style || undefined,
+    cleverDripperStyle: cleverSelection?.style || undefined,
+    chemexStyle: chemexSelection?.style || undefined,
     brewMode: input.brewMode,
     roastLevel: input.roastLevel,
     roastDevelopment: input.roastDevelopment || undefined,
@@ -8011,6 +8155,8 @@ function finalizePlanCore(
     switchWhy: switchSelection?.tasteProgramme.sensoryReason || switchSelection?.preset.why,
     switchWatch: switchSelection?.tasteProgramme.riskWarnings[0] || switchStepValidation?.message || switchSelection?.preset.watch,
     kalitaWaveStyle: kalitaSelection?.style || undefined,
+    cleverDripperStyle: cleverSelection?.style || undefined,
+    chemexStyle: chemexSelection?.style || undefined,
     notes,
     warnings,
     extractionRationale,
@@ -8108,6 +8254,8 @@ export function createDefaultAiBrewFormState(catalog?: AiBrewCatalog): AiBrewFor
     switchPresetId: '',
     switchTeachingMode: '',
     kalitaWaveStyle: 'auto',
+    cleverDripperStyle: 'auto',
+    chemexStyle: 'auto',
   };
 }
 
@@ -8131,6 +8279,8 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
   const validSwitchPresetIds = new Set(['', ...(catalog?.switchPresets || []).map((item) => item.id)]);
   const validSwitchTeachingModes = new Set(['', 'full_immersion', 'full_percolation_v60_mode', 'hybrid']);
   const validKalitaWaveStyles = new Set(['auto', 'traditional_flat_three', 'competition_fast_four', 'continuous_slow_stream', 'iced_wave', 'high_dose_concentrate']);
+  const validCleverDripperStyles = new Set(['auto', 'classic_closed', 'reverse_water_first', 'double_stage_hybrid', 'iced_clever', 'high_dose_concentrate']);
+  const validChemexStyles = new Set(['auto', 'traditional_three_pour', 'competition_multi_pulse', 'continuous_center_pour', 'iced_chemex', 'high_dose_heavy_body']);
   const waterBrandId = String(input.waterBrandId || '');
   const dripperId = String(input.dripperId || fallback.dripperId);
   const requestedBrewMode = input.brewMode === 'iced' ? 'iced' : 'hot';
@@ -8183,10 +8333,10 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
       ? (String(input.origamiFilterStyle) as AiBrewFormState['origamiFilterStyle'])
       : fallback.origamiFilterStyle,
     aeropressStyle: validAeroPressStyles.has(String(input.aeropressStyle))
-      ? (String(input.aeropressStyle) as AiBrewFormState['aeropressStyle'])
+      ? (String(input.aeropressStyle) as AeroPressRecipeStyle)
       : fallback.aeropressStyle,
     frenchPressStyle: validFrenchPressStyles.has(String(input.frenchPressStyle))
-      ? (String(input.frenchPressStyle) as AiBrewFormState['frenchPressStyle'])
+      ? (String(input.frenchPressStyle) as FrenchPressRecipeStyle)
       : fallback.frenchPressStyle,
     switchPresetId: validSwitchPresetIds.has(String(input.switchPresetId || ''))
       ? (String(input.switchPresetId || '') as AiBrewFormState['switchPresetId'])
@@ -8197,6 +8347,12 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
     kalitaWaveStyle: validKalitaWaveStyles.has(String(input.kalitaWaveStyle))
       ? (String(input.kalitaWaveStyle) as KalitaWaveRecipeStyle)
       : fallback.kalitaWaveStyle,
+    cleverDripperStyle: validCleverDripperStyles.has(String(input.cleverDripperStyle))
+      ? (String(input.cleverDripperStyle) as CleverDripperRecipeStyle)
+      : fallback.cleverDripperStyle,
+    chemexStyle: validChemexStyles.has(String(input.chemexStyle))
+      ? (String(input.chemexStyle) as ChemexRecipeStyle)
+      : fallback.chemexStyle,
   };
 }
 
@@ -8218,6 +8374,8 @@ export function createQuickAiBrewFormState(input: AiBrewFormState, catalog?: AiB
     aeropressStyle: preserveManualPresetPrefill ? sanitized.aeropressStyle : 'auto',
     frenchPressStyle: preserveManualPresetPrefill ? sanitized.frenchPressStyle : 'auto',
     kalitaWaveStyle: preserveManualPresetPrefill ? sanitized.kalitaWaveStyle : 'auto',
+    cleverDripperStyle: preserveManualPresetPrefill ? sanitized.cleverDripperStyle : 'auto',
+    chemexStyle: preserveManualPresetPrefill ? sanitized.chemexStyle : 'auto',
   };
 }
 

@@ -536,10 +536,38 @@ function buildStepRoleMap(plan: BrewPlan) {
       }
       case 'siphon':
         return 'heat, vacuum contact, and drawdown control';
-      case 'clever_dripper':
-        return 'immersion-contact control';
-      case 'chemex':
-        return 'thick-filter flow stability';
+      case 'clever_dripper': {
+        const style = plan.cleverDripperStyle || 'auto';
+        switch (style) {
+          case 'reverse_water_first':
+            return 'reverse-pour water-first immersion, floating grounds bloom, and smooth drawdown release control';
+          case 'double_stage_hybrid':
+            return 'double-stage closed steeping, mid-brew slurry agitation, and split release drawdown control';
+          case 'iced_clever':
+            return 'iced flash concentrate immersion, closed chamber thermal lock, and rapid ice drawdown control';
+          case 'high_dose_concentrate':
+            return 'high-dose low-ratio closed immersion, extended steeping, and heavy viscosity release control';
+          case 'classic_closed':
+          default:
+            return 'classic closed-valve grounds-first immersion, sweet steeping, and automatic drawdown release control';
+        }
+      }
+      case 'chemex': {
+        const style = plan.chemexStyle || 'auto';
+        switch (style) {
+          case 'competition_multi_pulse':
+            return 'dynamic high-velocity pulse percolation, thick-filter bypass defense, and uniform bed settlement control';
+          case 'continuous_center_pour':
+            return 'slow continuous centered stream, stable water column height, and high-clarity bypass avoidance control';
+          case 'iced_chemex':
+            return 'hot concentrate percolation over measured ice server, high temperature entry, and rapid thermal lock control';
+          case 'high_dose_heavy_body':
+            return 'high-dose thick concentric pourover, deep bed filtration, and heavy body extraction control';
+          case 'traditional_three_pour':
+          default:
+            return 'traditional three-pour clarity percolation, thick wood-fiber bypass defense, and clean paper drawdown control';
+        }
+      }
       case 'kalita_wave':
       case 'april':
       case 'melitta':
@@ -681,10 +709,40 @@ function buildMethodCueChecklist(plan: BrewPlan) {
       lines.push('- Include heat/vacuum/upper-chamber cue early.');
       lines.push('- Include cut-heat/drawdown cue in final step.');
       return lines.join('\n');
-    case 'clever_dripper':
-      lines.push('- Include immersion-contact cue in entry step (step 1).');
-      lines.push('- Include release cue in final step (last step).');
+    case 'clever_dripper': {
+      const style = plan.cleverDripperStyle || 'auto';
+      lines.push('- Include closed-valve immersion steeping instructions.');
+      lines.push('- Include decisive release/drawdown instructions in the final step.');
+      if (style === 'reverse_water_first') {
+        lines.push('- Include instructions to add hot water first, then float coffee grounds gently on top without stirring.');
+      } else if (style === 'double_stage_hybrid') {
+        lines.push('- Include standard closed bloom, followed by mid-brew stir, and a split release cycle.');
+      } else if (style === 'iced_clever') {
+        lines.push('- Include closed-valve flash immersion concentrate over pre-weighed ice server instructions.');
+      } else if (style === 'high_dose_concentrate') {
+        lines.push('- Include high coffee dose, tight ratio, extended closed steeping, and slow concentrated drawdown cues.');
+      } else {
+        lines.push('- Include traditional grounds-first bloom, main steep with closed valve, and smooth drawdown release.');
+      }
       return lines.join('\n');
+    }
+    case 'chemex': {
+      const style = plan.chemexStyle || 'auto';
+      lines.push('- Include thick-filter control cues (filter wall/bypass/steady flow) across at least two steps.');
+      lines.push('- Include Chemex setup cues: hard rinse, three-layer side toward spout, and open air vent.');
+      if (style === 'competition_multi_pulse') {
+        lines.push('- Include dynamic high-velocity pulse pours, slurry agitation, and uniform bed settlement cues.');
+      } else if (style === 'continuous_center_pour') {
+        lines.push('- Include slow continuous center stream, stable water column height, low-agitation bypass avoidance cues.');
+      } else if (style === 'iced_chemex') {
+        lines.push('- Include hot concentrate extraction directly over measured ice server, high temperature entry, and rapid chill cues.');
+      } else if (style === 'high_dose_heavy_body') {
+        lines.push('- Include coffee dose, centered thick concentric pour, low-spout bypass prevention, and deep bed filtration.');
+      } else {
+        lines.push('- Include traditional bloom, three distinct concentric pours, stable height, and clean paper drawdown.');
+      }
+      return lines.join('\n');
+    }
     case 'kalita_wave': {
       const style = plan.kalitaWaveStyle || 'auto';
       lines.push('- Include flat-bed control cues (flat bed/bed height/low-spout/even bed) across at least two steps.');

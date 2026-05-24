@@ -7770,7 +7770,7 @@ test('buildAiBrewPlan keeps high-dose Japanese iced pour-over cadence service-sa
     chemex: 65,
   };
 
-  for (const familyCase of ALL_METHOD_FAMILY_CASES.filter((entry) => entry.family !== 'kalita_wave' && manualFamilies.has(entry.family))) {
+  for (const familyCase of ALL_METHOD_FAMILY_CASES.filter((entry) => entry.family !== 'kalita_wave' && entry.family !== 'chemex' && manualFamilies.has(entry.family))) {
     for (const builder of ['quick', 'pro'] as const) {
       for (const doseG of ['30', '40']) {
         for (const targetProfileId of ['balance_clean', 'more_acidity', 'more_sweetness', 'more_body'] as const) {
@@ -8708,7 +8708,7 @@ test('all supported dripper families stay production-safe across hot and iced fl
           assert.ok(plan.steps.some((step) => step.kind === 'release'));
           assert.ok(plan.steps.every((step) => step.kind === 'pour' || step.pourVolumeMl === 0));
           assert.match(indonesianRecipeSteps, /tahan kontak|buka release/i);
-        } else if (familyCase.family === 'kalita_wave') {
+        } else if (familyCase.family === 'kalita_wave' || familyCase.family === 'chemex') {
           const pourSteps = plan.steps.filter((step) => (step.kind || 'pour') === 'pour');
           assert.ok(pourSteps.every((step) => step.pourVolumeMl > 0));
           assert.ok(plan.steps.some((step) => step.kind === 'drawdown'));

@@ -48,6 +48,20 @@ export type KalitaWaveRecipeStyle =
   | 'continuous_slow_stream'
   | 'iced_wave'
   | 'high_dose_concentrate';
+export type CleverDripperRecipeStyle =
+  | 'auto'
+  | 'classic_closed'
+  | 'reverse_water_first'
+  | 'double_stage_hybrid'
+  | 'iced_clever'
+  | 'high_dose_concentrate';
+export type ChemexRecipeStyle =
+  | 'auto'
+  | 'traditional_three_pour'
+  | 'competition_multi_pulse'
+  | 'continuous_center_pour'
+  | 'iced_chemex'
+  | 'high_dose_heavy_body';
 export type AiBrewEngineMode =
   | 'local_planner'
   | 'precision_planner'
@@ -798,7 +812,12 @@ export interface DeviceBrewProfile extends CatalogProvenance {
   filterStyle: 'cone' | 'flat' | 'trapezoid' | 'immersion' | 'pressure' | 'vacuum' | 'stovetop' | 'cold_immersion' | 'batch';
   methodWorkflow?: MethodWorkflow;
   flatBottomProfile?: FlatBottomProfileFamily;
-  recipeStyle?: Exclude<AeroPressRecipeStyle, 'auto'> | Exclude<FrenchPressRecipeStyle, 'auto'>;
+  recipeStyle?:
+    | Exclude<AeroPressRecipeStyle, 'auto'>
+    | Exclude<FrenchPressRecipeStyle, 'auto'>
+    | Exclude<KalitaWaveRecipeStyle, 'auto'>
+    | Exclude<CleverDripperRecipeStyle, 'auto'>
+    | Exclude<ChemexRecipeStyle, 'auto'>;
   physicalConstraints?: DevicePhysicalConstraints;
   methodProgramme?: SwitchBrewProgramme | string;
   ratioDelta: number;
@@ -878,6 +897,8 @@ export interface AiBrewFormState {
   switchPresetId?: SwitchPublicPresetId | '';
   switchTeachingMode?: SwitchTeachingMode | '';
   kalitaWaveStyle?: KalitaWaveRecipeStyle;
+  cleverDripperStyle?: CleverDripperRecipeStyle;
+  chemexStyle?: ChemexRecipeStyle;
 }
 
 export interface BeanProfileState {
@@ -1180,6 +1201,8 @@ export interface BrewPlan {
   switchWhy?: string;
   switchWatch?: string;
   kalitaWaveStyle?: KalitaWaveRecipeStyle;
+  cleverDripperStyle?: CleverDripperRecipeStyle;
+  chemexStyle?: ChemexRecipeStyle;
   expectedCupProfile?: ExpectedCupProfile;
   readinessScores?: AiBrewReadinessScores;
   notes: string[];

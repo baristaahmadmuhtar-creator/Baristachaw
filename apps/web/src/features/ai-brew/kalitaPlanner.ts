@@ -270,6 +270,7 @@ export function resolveKalitaPlanSelection(params: {
   // Adjust label
   const dripperLabel = adjustedProfile.label.includes('155') ? '155' : '185';
   adjustedProfile.label = `Kalita Wave ${dripperLabel} - ${activeStyle.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`;
+  adjustedProfile.recipeStyle = activeStyle as any;
 
   return {
     style: activeStyle,

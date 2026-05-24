@@ -174,6 +174,8 @@ const MANUAL_PRESET_CONTROLLED_FIELDS = new Set<keyof AiBrewFormState>([
   'aeropressStyle',
   'frenchPressStyle',
   'kalitaWaveStyle',
+  'cleverDripperStyle',
+  'chemexStyle',
 ]);
 const LARGE_CATALOG_PICKER_KINDS = new Set<NonNullable<PickerKind>>(['process', 'variety']);
 const LARGE_CATALOG_INITIAL_LIMIT = 140;
@@ -256,6 +258,20 @@ const COPY = {
     kalitaWaveStyleContinuousSlowStream: 'Continuous Slow Stream',
     kalitaWaveStyleIcedWave: 'Iced Wave',
     kalitaWaveStyleHighDoseConcentrate: 'High-Dose Concentrate',
+    cleverDripperStyleTitle: 'Clever Dripper style',
+    cleverDripperStyleAuto: 'Auto',
+    cleverDripperStyleClassicClosed: 'Classic Immersion Bloom',
+    cleverDripperStyleReverseWaterFirst: 'Reverse Water First',
+    cleverDripperStyleDoubleStageHybrid: 'Double-Stage Hybrid',
+    cleverDripperStyleIcedClever: 'Iced Flash Immersion',
+    cleverDripperStyleHighDoseConcentrate: 'High-Dose Ultra Immersion',
+    chemexStyleTitle: 'Chemex style',
+    chemexStyleAuto: 'Auto',
+    chemexStyleTraditionalThreePour: 'Traditional Three-Pour Clarity',
+    chemexStyleCompetitionMultiPulse: 'Competition Multi-Pulse',
+    chemexStyleContinuousCenterPour: 'Continuous Center Pour Clarity',
+    chemexStyleIcedChemex: 'Iced Flash Concentrate',
+    chemexStyleHighDoseHeavyBody: 'High-Dose Thick-Filter Heavy',
     precisionControlTitle: 'Precision targets',
     precisionControlHint: 'Optional. Filter brewers work best around 1:13-1:17; Auto picks a safe default from the brewer, roast, and target.',
     targetRatio: 'Ratio target',
@@ -804,6 +820,20 @@ const COPY = {
     kalitaWaveStyleContinuousSlowStream: 'Continuous Slow Stream',
     kalitaWaveStyleIcedWave: 'Iced Wave',
     kalitaWaveStyleHighDoseConcentrate: 'High-Dose Concentrate',
+    cleverDripperStyleTitle: 'Gaya Clever Dripper',
+    cleverDripperStyleAuto: 'Auto',
+    cleverDripperStyleClassicClosed: 'Classic Immersion Bloom',
+    cleverDripperStyleReverseWaterFirst: 'Reverse Water First (Air Dulu)',
+    cleverDripperStyleDoubleStageHybrid: 'Double-Stage Hybrid',
+    cleverDripperStyleIcedClever: 'Iced Flash Immersion (Es)',
+    cleverDripperStyleHighDoseConcentrate: 'High-Dose Ultra Immersion',
+    chemexStyleTitle: 'Gaya Chemex',
+    chemexStyleAuto: 'Auto',
+    chemexStyleTraditionalThreePour: 'Traditional Three-Pour Clarity',
+    chemexStyleCompetitionMultiPulse: 'Competition Multi-Pulse',
+    chemexStyleContinuousCenterPour: 'Continuous Center Pour Clarity',
+    chemexStyleIcedChemex: 'Iced Flash Concentrate (Es)',
+    chemexStyleHighDoseHeavyBody: 'High-Dose Thick-Filter Heavy',
     precisionControlTitle: 'Target presisi',
     precisionControlHint: 'Opsional. Filter manual paling aman di sekitar 1:13-1:17; Auto memilih default dari alat, sangrai, dan target.',
     targetRatio: 'Rasio target',
@@ -9106,6 +9136,22 @@ export function AiBrewPanel({
       { value: 'iced_wave', label: copy.kalitaWaveStyleIcedWave },
       { value: 'high_dose_concentrate', label: copy.kalitaWaveStyleHighDoseConcentrate },
     ] as const;
+    const cleverDripperStyleOptions = [
+      { value: 'auto', label: copy.cleverDripperStyleAuto },
+      { value: 'classic_closed', label: copy.cleverDripperStyleClassicClosed },
+      { value: 'reverse_water_first', label: copy.cleverDripperStyleReverseWaterFirst },
+      { value: 'double_stage_hybrid', label: copy.cleverDripperStyleDoubleStageHybrid },
+      { value: 'iced_clever', label: copy.cleverDripperStyleIcedClever },
+      { value: 'high_dose_concentrate', label: copy.cleverDripperStyleHighDoseConcentrate },
+    ] as const;
+    const chemexStyleOptions = [
+      { value: 'auto', label: copy.chemexStyleAuto },
+      { value: 'traditional_three_pour', label: copy.chemexStyleTraditionalThreePour },
+      { value: 'competition_multi_pulse', label: copy.chemexStyleCompetitionMultiPulse },
+      { value: 'continuous_center_pour', label: copy.chemexStyleContinuousCenterPour },
+      { value: 'iced_chemex', label: copy.chemexStyleIcedChemex },
+      { value: 'high_dose_heavy_body', label: copy.chemexStyleHighDoseHeavyBody },
+    ] as const;
     const dialogTitle = isPro
       ? `${copy.title} - ${copy.proBuilderTitle}`
       : isLite
@@ -9116,7 +9162,9 @@ export function AiBrewPanel({
     const showAeroPressStyleControl = selectedDripper?.methodFamily === 'aeropress';
     const showFrenchPressStyleControl = selectedDripper?.methodFamily === 'french_press';
     const showKalitaWaveStyleControl = selectedDripper?.methodFamily === 'kalita_wave';
-    const methodOptionPanel = showOrigamiFilterControl || showAeroPressStyleControl || showFrenchPressStyleControl || showKalitaWaveStyleControl ? (
+    const showCleverDripperStyleControl = selectedDripper?.methodFamily === 'clever_dripper';
+    const showChemexStyleControl = selectedDripper?.methodFamily === 'chemex';
+    const methodOptionPanel = showOrigamiFilterControl || showAeroPressStyleControl || showFrenchPressStyleControl || showKalitaWaveStyleControl || showCleverDripperStyleControl || showChemexStyleControl ? (
       <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3" data-testid="ai-brew-method-option-panel">
         <div className="flex flex-col gap-1">
           <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.methodOptionTitle}</h4>
@@ -9423,6 +9471,196 @@ export function AiBrewPanel({
                     }`}
                     aria-pressed={formState.kalitaWaveStyle === option.value}
                     data-testid={`ai-brew-kalita-wave-style-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {showCleverDripperStyleControl ? (
+            <div>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .clever-style-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 8px;
+                }
+                @media (min-width: 640px) {
+                  .clever-style-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .clever-style-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                  }
+                }
+                .clever-style-chip {
+                  position: relative;
+                  min-height: 44px;
+                  border-radius: 12px;
+                  padding: 8px 12px;
+                  font-size: 13px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  border: 1px solid var(--panel-border-soft, rgba(0,0,0,0.06));
+                  background: var(--bg-elevated, #ffffff);
+                  color: var(--text-secondary, #3C3C43);
+                  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                              background-color 0.2s ease,
+                              color 0.2s ease,
+                              box-shadow 0.25s ease,
+                              border-color 0.2s ease;
+                  transform: scale(1);
+                  outline: none;
+                }
+                .clever-style-chip:focus-visible {
+                  box-shadow: 0 0 0 2px hsla(25, 75%, 45%, 1);
+                }
+                .clever-style-chip:hover {
+                  transform: scale(1.03);
+                  color: var(--text-primary, #000000);
+                  background-color: var(--bg-base, #F2F2F7);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .clever-style-chip:active {
+                  transform: scale(0.95);
+                  transition: transform 0.08s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                .clever-style-chip.active {
+                  background: linear-gradient(135deg, hsla(25, 75%, 45%, 1), hsla(25, 75%, 35%, 1));
+                  color: #ffffff;
+                  border-color: transparent;
+                  box-shadow: 0 0 16px hsla(25, 75%, 45%, 0.35), 0 4px 12px hsla(25, 75%, 45%, 0.2);
+                }
+                .clever-style-chip.active:hover {
+                  transform: scale(1.04);
+                  box-shadow: 0 0 20px hsla(25, 85%, 50%, 0.45), 0 6px 16px hsla(25, 85%, 50%, 0.25);
+                }
+                .clever-style-chip.active:active {
+                  transform: scale(0.96);
+                }
+                /* Dark Mode support */
+                .dark .clever-style-chip {
+                  background: #1c1c1e;
+                  border-color: rgba(255,255,255,0.08);
+                  color: #aeaeb2;
+                }
+                .dark .clever-style-chip:hover {
+                  color: #ffffff;
+                  background-color: #2c2c2e;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                }
+              ` }} />
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.cleverDripperStyleTitle}</p>
+              <div className="clever-style-grid">
+                {cleverDripperStyleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('cleverDripperStyle', option.value)}
+                    className={`clever-style-chip ${
+                      formState.cleverDripperStyle === option.value ? 'active' : ''
+                    }`}
+                    aria-pressed={formState.cleverDripperStyle === option.value}
+                    data-testid={`ai-brew-clever-dripper-style-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {showChemexStyleControl ? (
+            <div>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .chemex-style-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 8px;
+                }
+                @media (min-width: 640px) {
+                  .chemex-style-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .chemex-style-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                  }
+                }
+                .chemex-style-chip {
+                  position: relative;
+                  min-height: 44px;
+                  border-radius: 12px;
+                  padding: 8px 12px;
+                  font-size: 13px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  border: 1px solid var(--panel-border-soft, rgba(0,0,0,0.06));
+                  background: var(--bg-elevated, #ffffff);
+                  color: var(--text-secondary, #3C3C43);
+                  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                              background-color 0.2s ease,
+                              color 0.2s ease,
+                              box-shadow 0.25s ease,
+                              border-color 0.2s ease;
+                  transform: scale(1);
+                  outline: none;
+                }
+                .chemex-style-chip:focus-visible {
+                  box-shadow: 0 0 0 2px hsla(35, 60%, 35%, 1);
+                }
+                .chemex-style-chip:hover {
+                  transform: scale(1.03);
+                  color: var(--text-primary, #000000);
+                  background-color: var(--bg-base, #F2F2F7);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .chemex-style-chip:active {
+                  transform: scale(0.95);
+                  transition: transform 0.08s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                .chemex-style-chip.active {
+                  background: linear-gradient(135deg, hsla(35, 60%, 35%, 1), hsla(35, 60%, 25%, 1));
+                  color: #ffffff;
+                  border-color: transparent;
+                  box-shadow: 0 0 16px hsla(35, 60%, 35%, 0.35), 0 4px 12px hsla(35, 60%, 35%, 0.2);
+                }
+                .chemex-style-chip.active:hover {
+                  transform: scale(1.04);
+                  box-shadow: 0 0 20px hsla(35, 70%, 40%, 0.45), 0 6px 16px hsla(35, 70%, 40%, 0.25);
+                }
+                .chemex-style-chip.active:active {
+                  transform: scale(0.96);
+                }
+                /* Dark Mode support */
+                .dark .chemex-style-chip {
+                  background: #1c1c1e;
+                  border-color: rgba(255,255,255,0.08);
+                  color: #aeaeb2;
+                }
+                .dark .chemex-style-chip:hover {
+                  color: #ffffff;
+                  background-color: #2c2c2e;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                }
+              ` }} />
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.chemexStyleTitle}</p>
+              <div className="chemex-style-grid">
+                {chemexStyleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('chemexStyle', option.value)}
+                    className={`chemex-style-chip ${
+                      formState.chemexStyle === option.value ? 'active' : ''
+                    }`}
+                    aria-pressed={formState.chemexStyle === option.value}
+                    data-testid={`ai-brew-chemex-style-${option.value}`}
                   >
                     {option.label}
                   </button>

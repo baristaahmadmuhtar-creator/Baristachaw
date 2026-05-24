@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildSequenceRepairPrompt } from '../../apps/web/src/features/ai-brew/prompts.ts';
+import { buildOptimizationPrompt, buildSequenceRepairPrompt, buildSequenceServerPrompt } from '../../apps/web/src/features/ai-brew/prompts.ts';
 import type { BrewPlan } from '../../apps/web/src/features/ai-brew/types.ts';
 
 function createPlan(stepCount = 8): BrewPlan {
@@ -108,4 +108,27 @@ test('AI Brew sequence repair prompt stays under structured AI server budget', (
   assert.match(prompt, /Use exactly 8 numbered steps/);
   assert.match(prompt, /Hario V60/);
   assert.match(prompt, /TDS 95 ppm/);
+});
+
+test('AI Brew sequence server prompt stays structured and under budget', () => {
+  const prompt = buildSequenceServerPrompt(createPlan(), 'id').body;
+
+  assert.ok(prompt.length < 12000);
+  assert.match(prompt, /Server action: brew_sequence/);
+  assert.match(prompt, /"canonicalMarkdown":"\.\.\."/);
+  assert.match(prompt, /"displayMarkdown":"\.\.\."/);
+  assert.match(prompt, /## Service Pattern/);
+  assert.match(prompt, /Use exactly 8 numbered steps/);
+  assert.match(prompt, /Hario V60/);
+  assert.match(prompt, /Hot water: 180 ml/);
+  assert.match(prompt, /Ice in server: 100 g/);
+});
+
+test('AI Brew optimization prompt stays under server action budget', () => {
+  const prompt = buildOptimizationPrompt(createPlan(), 'id').body;
+
+  assert.ok(prompt.length < 12000);
+  assert.match(prompt, /Return exactly this JSON shape/);
+  assert.match(prompt, /"recommendedRatio"/);
+  assert.match(prompt, /Hario V60/);
 });

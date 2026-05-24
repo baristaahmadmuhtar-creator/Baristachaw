@@ -11,12 +11,29 @@ import type {
 const AI_BREW_FORM_STORAGE_KEY = 'BARISTACHAW_AI_BREW_FORM_V5';
 const AI_BREW_CATALOG_SNAPSHOT_STORAGE_KEY = 'BARISTACHAW_AI_BREW_CATALOG_SNAPSHOT_V5';
 const AI_BREW_LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
+const AI_BREW_SEQUENCE_CACHE_STORAGE_KEY = 'BARISTACHAW_AI_BREW_SEQUENCE_CACHE_V1';
 const AI_BREW_STORAGE_SCHEMA_VERSION = 5;
+const AI_BREW_SEQUENCE_CACHE_LIMIT = 30;
+const AI_BREW_SEQUENCE_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 interface VersionedAiBrewPayload<T> {
   schemaVersion: number;
   savedAt: number;
   payload: T;
+}
+
+export interface CachedAiBrewSequenceOverlay {
+  fingerprint: string;
+  catalogVersion: string;
+  language: string;
+  markdown: string;
+  canonicalMarkdown: string;
+  servicePattern: string[];
+  watch: string[];
+  stepInstructions: string[];
+  fallbackDiagnostics: string[];
+  provider?: string;
+  createdAt: number;
 }
 
 function byUpdatedDesc<T extends { updatedAt: number }>(a: T, b: T) {
@@ -108,6 +125,61 @@ export function loadLastGeneratedBrewPlan(expectedCatalogVersion?: string): Brew
 
 export function saveLastGeneratedBrewPlan(plan: BrewPlan) {
   writeVersionedStorage(AI_BREW_LAST_PLAN_STORAGE_KEY, plan);
+}
+
+function readAiBrewSequenceCache(): CachedAiBrewSequenceOverlay[] {
+  const entries = readVersionedStorage<CachedAiBrewSequenceOverlay[]>(AI_BREW_SEQUENCE_CACHE_STORAGE_KEY);
+  if (!Array.isArray(entries)) return [];
+  const now = Date.now();
+  return entries.filter((entry) => (
+    typeof entry?.fingerprint === 'string'
+    && typeof entry.catalogVersion === 'string'
+    && typeof entry.language === 'string'
+    && typeof entry.markdown === 'string'
+    && typeof entry.canonicalMarkdown === 'string'
+    && Array.isArray(entry.servicePattern)
+    && Array.isArray(entry.watch)
+    && Array.isArray(entry.stepInstructions)
+    && Number.isFinite(entry.createdAt)
+    && now - entry.createdAt <= AI_BREW_SEQUENCE_CACHE_TTL_MS
+  ));
+}
+
+export function loadCachedAiBrewSequenceOverlay(
+  fingerprint: string,
+  language: string,
+  catalogVersion: string,
+): CachedAiBrewSequenceOverlay | null {
+  const normalizedLanguage = String(language || 'en').trim().toLowerCase();
+  return readAiBrewSequenceCache().find((entry) => (
+    entry.fingerprint === fingerprint
+    && entry.catalogVersion === catalogVersion
+    && entry.language === normalizedLanguage
+  )) || null;
+}
+
+export function saveCachedAiBrewSequenceOverlay(entry: Omit<CachedAiBrewSequenceOverlay, 'language' | 'createdAt'> & {
+  language: string;
+  createdAt?: number;
+}) {
+  const normalizedEntry: CachedAiBrewSequenceOverlay = {
+    ...entry,
+    language: String(entry.language || 'en').trim().toLowerCase(),
+    createdAt: entry.createdAt || Date.now(),
+  };
+  const cache = readAiBrewSequenceCache()
+    .filter((item) => !(
+      item.fingerprint === normalizedEntry.fingerprint
+      && item.catalogVersion === normalizedEntry.catalogVersion
+      && item.language === normalizedEntry.language
+    ));
+  cache.unshift(normalizedEntry);
+  writeVersionedStorage(
+    AI_BREW_SEQUENCE_CACHE_STORAGE_KEY,
+    cache
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, AI_BREW_SEQUENCE_CACHE_LIMIT),
+  );
 }
 
 export async function saveBrewJournalEntry(entry: BrewJournalEntry): Promise<void> {

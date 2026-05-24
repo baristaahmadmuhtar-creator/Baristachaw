@@ -1,4 +1,4 @@
-import { lazy, Suspense, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { lazy, Suspense, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ArrowRight,
@@ -31,11 +31,20 @@ import { useGlobalState } from '../../context/GlobalState';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useNavbar } from '../../context/NavbarContext';
 import { useAiAccessGate } from '../../components/billing/AiAccessGate';
+import { useIOSKeyboardFix } from '../../hooks/useIOSKeyboardFix';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useRuntimeDisplayMode } from '../../hooks/useRuntimeDisplayMode';
 import { reportClientError } from '../../services/errorReporting';
+import { brewSequenceResponseDetailed, brewOptimizeResponseDetailed, raceChatResponse, deepThinkingResponseDetailed, fastResponseDetailed } from '../../services/gemini';
 import { createRecipeCollectionItem, saveCollectionItem, saveRecipe } from '../../services/storageService';
 import type { Recipe } from '../../types';
+import {
+  buildAdjustPrompt,
+  buildExplainPrompt,
+  buildOptimizationPrompt,
+  buildSequenceServerPrompt,
+  buildTroubleshootPrompt,
+} from './prompts';
 import { buildDeterministicAiCoachMarkdown } from './coachNotes';
 import { sanitizeBrewNarrative } from './antiHallucination';
 import { sanitizeAiCoachMarkdown } from './coachGuard';
@@ -105,15 +114,18 @@ import {
   listRecentBrewJournalEntries,
   loadAiBrewFormDraft,
   loadCachedAiBrewCatalogSnapshot,
+  loadCachedAiBrewSequenceOverlay,
   loadLastGeneratedBrewPlan,
   saveAiBrewFormDraft,
   saveBrewJournalEntry,
   saveBrewPreset,
   saveCachedAiBrewCatalogSnapshot,
+  saveCachedAiBrewSequenceOverlay,
   saveLastGeneratedBrewPlan,
   updateBrewJournalAiNotes,
   updateBrewJournalFeedback,
 } from './storage';
+import { parseAiBrewOptimizationPatch } from './aiOptimizer';
 import { loadAiBrewCatalog } from './catalog';
 import type {
   AiBrewCatalog,
@@ -144,9 +156,7 @@ import type {
 const CUSTOM_ENTRY_ID = 'custom';
 const OMITTED_ENTRY_ID = '__omitted__';
 const AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS = 4500;
-const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 4500;
-const AI_BREW_HYBRID_REPAIR_TIMEOUT_MS = 3500;
-const AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS = 1200;
+const AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS = 7000;
 const AI_BREW_COACH_FAST_TIMEOUT_MS = 5000;
 const AI_BREW_COACH_DEEP_TIMEOUT_MS = 8500;
 const AI_BREW_COACH_TRANSLATION_TIMEOUT_MS = 1200;
@@ -492,10 +502,10 @@ const COPY = {
     feedbackSaveFailed: 'Unable to save taste feedback right now.',
     feedbackCoachTitle: 'Next Brew Adjustment',
     feedbackCoachHint: 'Smallest safe correction for the next brew.',
-    guideDensitySimple: 'Summary',
-    guideDensityPro: 'Detail',
-    guideDensitySimpleHint: 'Core steps only.',
-    guideDensityProHint: 'Step-by-step barista tutorial.',
+    guideDensitySimple: 'Lite',
+    guideDensityPro: 'Pro',
+    guideDensitySimpleHint: 'Focused timer and current step.',
+    guideDensityProHint: 'Full brew guide with barista detail.',
     switchSectionTitle: 'Switch method',
     switchSectionSummary: 'Choose Hot/Iced first, then leave Auto or pick the Switch method you want.',
     switchTeachingTitle: 'How Switch can brew',
@@ -605,7 +615,7 @@ const COPY = {
     grindCatalogReference: 'Catalog reference',
     grindDerivedBaseline: 'Derived baseline',
     confidenceNotes: 'Confidence notes',
-    summaryFocusHint: 'Main focus: temperature, grind, extraction time, then one change at a time.',
+    summaryFocusHint: 'Main focus: temperature, grind, drawdown or taste time, then one change at a time.',
     waterRequired: 'Manual mineral input is required before generating.',
     openProcessPicker: 'Choose process',
     openVarietyPicker: 'Choose variety',
@@ -634,6 +644,9 @@ const COPY = {
     flowPause: 'Pause',
     flowReset: 'Reset',
     flowOpenTimer: 'Open timer',
+    flowNextAction: 'Next',
+    flowLiteScaleTitle: 'Manual scale',
+    flowLiteScaleBody: 'Use your real scale; this screen guides timing and target water.',
     flowElapsed: 'Elapsed',
     flowRemaining: 'Remaining',
     flowDone: 'Done',
@@ -1019,10 +1032,10 @@ const COPY = {
     feedbackSaveFailed: 'Catatan rasa belum bisa disimpan sekarang.',
     feedbackCoachTitle: 'Koreksi Seduhan Berikutnya',
     feedbackCoachHint: 'Koreksi aman paling kecil untuk seduhan berikutnya.',
-    guideDensitySimple: 'Ringkas',
-    guideDensityPro: 'Detail',
-    guideDensitySimpleHint: 'Langkah inti saja.',
-    guideDensityProHint: 'Tutorial barista di setiap tahap.',
+    guideDensitySimple: 'Lite',
+    guideDensityPro: 'Pro',
+    guideDensitySimpleHint: 'Timer fokus dan langkah sekarang.',
+    guideDensityProHint: 'Panduan lengkap dengan detail barista.',
     switchSectionTitle: 'Metode Switch',
     switchSectionSummary: 'Pilih Panas/Es dulu, lalu biarkan Auto atau pilih metode Switch yang kamu mau.',
     switchTeachingTitle: 'Cara Switch bekerja',
@@ -1132,7 +1145,7 @@ const COPY = {
     grindCatalogReference: 'Referensi katalog',
     grindDerivedBaseline: 'Baseline turunan',
     confidenceNotes: 'Catatan keyakinan',
-    summaryFocusHint: 'Fokus utama: suhu, gilingan, waktu ekstraksi, lalu koreksi satu variabel dulu.',
+    summaryFocusHint: 'Fokus utama: suhu, gilingan, air turun atau waktu rasa, lalu koreksi satu variabel dulu.',
     waterRequired: 'Input mineral manual wajib diisi sebelum membuat seduhan.',
     openProcessPicker: 'Pilih proses',
     openVarietyPicker: 'Pilih varietas',
@@ -1161,6 +1174,9 @@ const COPY = {
     flowPause: 'Jeda',
     flowReset: 'Ulang',
     flowOpenTimer: 'Buka timer',
+    flowNextAction: 'Lanjut',
+    flowLiteScaleTitle: 'Timbangan manual',
+    flowLiteScaleBody: 'Pakai timbangan asli; layar ini memandu waktu dan target air.',
     flowElapsed: 'Berjalan',
     flowRemaining: 'Sisa',
     flowDone: 'Selesai',
@@ -1404,6 +1420,10 @@ function getPlanExtractionSeconds(plan: BrewPlan) {
   return Math.max(0, Math.round(plan.extractionEndSeconds ?? plan.totalTimeSeconds));
 }
 
+function getPlanTimerSeconds(plan: BrewPlan) {
+  return getPlanExtractionSeconds(plan);
+}
+
 function getPlanGuideEndSeconds(plan: BrewPlan) {
   return Math.max(getPlanExtractionSeconds(plan), Math.round(plan.guideEndSeconds ?? plan.totalTimeSeconds));
 }
@@ -1423,17 +1443,36 @@ function getPlanExtractionLabel(plan: BrewPlan, language: string) {
   if (plan.methodFamily === 'espresso') return id ? 'Shot' : 'Shot';
   if (plan.methodFamily === 'cold_brew') return id ? 'Rendam dingin' : 'Cold steep';
   if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return id ? 'Rendam' : 'Steep';
+  if (AI_BREW_POUR_CONTROL_FAMILIES.has(plan.methodFamily)) return id ? 'Air turun selesai' : 'Drawdown finish';
   if (plan.brewMode === 'iced') return id ? 'Ekstraksi' : 'Hot extraction';
   return id ? 'Ekstraksi' : 'Extraction';
+}
+
+function isAiBrewPostExtractionDisplayStep(step: Pick<WorkflowGuideStep, 'actionType'>) {
+  return step.actionType === 'serve'
+    || step.actionType === 'mix'
+    || step.actionType === 'dilute'
+    || step.actionType === 'filter'
+    || step.actionType === 'decant';
 }
 
 function getPlanTimeHelperCopy(plan: BrewPlan, language: string) {
   const id = isIndonesianAiBrewLanguage(language);
   const post = getPlanPostExtractionSeconds(plan);
   if (post <= 0) {
+    if (AI_BREW_POUR_CONTROL_FAMILIES.has(plan.methodFamily)) {
+      return id
+        ? 'Waktu ini adalah target air turun selesai, bukan waktu sajikan.'
+        : 'This is the drawdown-finish target, not the serve time.';
+    }
     return id
       ? 'Waktu rasa dihitung sampai ekstraksi utama selesai.'
       : 'Taste time is counted until the main extraction is complete.';
+  }
+  if (AI_BREW_POUR_CONTROL_FAMILIES.has(plan.methodFamily)) {
+    return id
+      ? 'Angka ini adalah target air turun selesai, bukan waktu sajikan. Sajikan setelah drawdown selesai.'
+      : 'This is the drawdown-finish target, not the serve time. Serve after drawdown completes.';
   }
   if (plan.brewMode === 'iced') {
     return id
@@ -1517,12 +1556,13 @@ function buildPremiumResultSummary(plan: BrewPlan, language: string) {
   const target = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language).toLowerCase();
   const dose = formatRoundedGrams(plan.doseG);
   const temperature = formatRoundedTemperature(plan.waterTempC);
-  const extractionTime = formatTime(getPlanExtractionSeconds(plan));
-  const guideTime = formatTime(getPlanGuideEndSeconds(plan));
-  const postSeconds = getPlanPostExtractionSeconds(plan);
-  const postCopy = postSeconds > 0
-    ? (id ? ` Aduk/sajikan +${formatGuideTime(postSeconds)}.` : ` Finish +${formatGuideTime(postSeconds)}.`)
+  const extractionSeconds = getPlanExtractionSeconds(plan);
+  const extractionTime = formatTime(extractionSeconds);
+  const guideEndSeconds = getPlanGuideEndSeconds(plan);
+  const completionCopy = guideEndSeconds > extractionSeconds
+    ? (id ? ` Selesai ${formatTime(guideEndSeconds)}.` : ` Complete ${formatTime(guideEndSeconds)}.`)
     : '';
+  const extractionLabel = getPlanExtractionLabel(plan, language).toLowerCase();
 
   if (plan.brewMode === 'iced') {
     const finalBeverage = formatRoundedMl(plan.totalWaterMl);
@@ -1532,13 +1572,13 @@ function buildPremiumResultSummary(plan: BrewPlan, language: string) {
     const hotRatio = `1:${formatBrewRatio(plan.hotExtractionRatio)}`;
     const estimatedCup = formatRoundedMl(plan.estimatedCupOutputMl);
     return id
-      ? `Dosis ${dose}; total minuman ${finalBeverage}; air panas ${hotWater}; es di server ${ice}; rasio final ${finalRatio}; rasio ekstraksi ${hotRatio}; estimasi hasil cangkir ${estimatedCup}. ${temperature}, ekstraksi ${extractionTime}; panduan selesai ${guideTime}.${postCopy}`
-      : `Dose ${dose}; final beverage/total input ${finalBeverage}; hot water ${hotWater}; ice in server ${ice}; final ratio ${finalRatio}; hot extraction ratio ${hotRatio}; estimated cup output ${estimatedCup}. ${temperature}, hot extraction ${extractionTime}; guide done ${guideTime}.${postCopy}`;
+      ? `Dosis ${dose}; total minuman ${finalBeverage}; air panas ${hotWater}; es di server ${ice}; rasio final ${finalRatio}; rasio ekstraksi ${hotRatio}; estimasi hasil cangkir ${estimatedCup}. ${temperature}, ${extractionLabel} ${extractionTime}.${completionCopy}`
+      : `Dose ${dose}; final beverage/total input ${finalBeverage}; hot water ${hotWater}; ice in server ${ice}; final ratio ${finalRatio}; hot extraction ratio ${hotRatio}; estimated cup output ${estimatedCup}. ${temperature}, ${extractionLabel} ${extractionTime}.${completionCopy}`;
   }
 
   return id
-    ? `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} air; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; ekstraksi ${extractionTime}; panduan selesai ${guideTime}.${postCopy} Target ${target}.`
-    : `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} water; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; extraction ${extractionTime}; guide done ${guideTime}.${postCopy} Target ${target}.`;
+    ? `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} air; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; ${extractionLabel} ${extractionTime}.${completionCopy} Target ${target}.`
+    : `${dose} -> ${formatRoundedMl(plan.totalWaterMl)} water; 1:${formatBrewRatio(plan.recommendedRatio)}; ${temperature}; ${extractionLabel} ${extractionTime}.${completionCopy} Target ${target}.`;
 }
 
 function planUsesOnlineAi(plan: BrewPlan) {
@@ -1792,7 +1832,7 @@ function withLanguageLock(promptBody: string, language: string) {
     return `${promptBody}\n\nKunci bahasa: jawab sepenuhnya dalam Bahasa Indonesia. Jangan gunakan bahasa lain untuk judul, bullet, label, catatan, maupun fallback. Nama alat, nama brand, istilah umum seperti bloom/server/bed, dan satuan tetap boleh dipertahankan. Gunakan "air turun" untuk drawdown dan "buka katup" untuk release. Pertahankan struktur heading, bullet, dan angka secara konsisten.`;
   }
   if (/^ar(?:-|$)/i.test(language)) {
-    return `${promptBody}\n\nقفل اللغة: أجب بالكامل باللغة العربية. لا تستخدم أي لغة أخرى في العناوين أو النقاط أو التسميات أو الملاحظات أو النصوص الاحتياطية. حافظ على بنية العناوين والنقاط والأرقام كما هي.`;
+    return `${promptBody}\n\nÃ™â€šÃ™ÂÃ™â€ž Ã˜Â§Ã™â€žÃ™â€žÃ˜ÂºÃ˜Â©: Ã˜Â£Ã˜Â¬Ã˜Â¨ Ã˜Â¨Ã˜Â§Ã™â€žÃ™Æ’Ã˜Â§Ã™â€¦Ã™â€ž Ã˜Â¨Ã˜Â§Ã™â€žÃ™â€žÃ˜ÂºÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¨Ã™Å Ã˜Â©. Ã™â€žÃ˜Â§ Ã˜ÂªÃ˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã˜Â£Ã™Å  Ã™â€žÃ˜ÂºÃ˜Â© Ã˜Â£Ã˜Â®Ã˜Â±Ã™â€° Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€ Ã˜Â§Ã™Ë†Ã™Å Ã™â€  Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ™â€ Ã™â€šÃ˜Â§Ã˜Â· Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â³Ã™â€¦Ã™Å Ã˜Â§Ã˜Âª Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ™â€¦Ã™â€žÃ˜Â§Ã˜Â­Ã˜Â¸Ã˜Â§Ã˜Âª Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ™â€ Ã˜ÂµÃ™Ë†Ã˜Âµ Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â­Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â·Ã™Å Ã˜Â©. Ã˜Â­Ã˜Â§Ã™ÂÃ˜Â¸ Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â¨Ã™â€ Ã™Å Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€ Ã˜Â§Ã™Ë†Ã™Å Ã™â€  Ã™Ë†Ã˜Â§Ã™â€žÃ™â€ Ã™â€šÃ˜Â§Ã˜Â· Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â±Ã™â€šÃ˜Â§Ã™â€¦ Ã™Æ’Ã™â€¦Ã˜Â§ Ã™â€¡Ã™Å .`;
   }
   return promptBody + '\n\nLanguage lock: respond fully in ' + language + '. Keep all headings, bullets, and numbers structurally consistent.';
 }
@@ -1906,6 +1946,8 @@ async function normalizeMarkdownToLanguage(
 ) {
   if (!markdown.trim()) return markdown;
   if (/^en(?:-|$)/i.test(language)) return markdown;
+  const locallyLocalized = localizeAiBrewMarkdownLanguage(markdown, language);
+  if (!hasAiBrewLanguageLeak(locallyLocalized, language)) return locallyLocalized;
   const translationPrompt = [
     'Translate the markdown below fully into ' + language + ' using concise, natural barista language.',
     'Keep structure exactly: headings, list numbering, line breaks, and all numeric values unchanged.',
@@ -1915,12 +1957,11 @@ async function normalizeMarkdownToLanguage(
     markdown,
   ].join('\n');
   try {
-    const { raceChatResponse } = await import('../../services/gemini');
-    const translated = await raceChatResponse(translationPrompt, requestContext, {
+    const translated = await fastResponseDetailed(translationPrompt, requestContext, {
       timeoutMs: options?.timeoutMs,
-      fallbackToStructured: false,
+      fallbackToChat: false,
     });
-    return localizeAiBrewMarkdownLanguage(translated?.trim() || markdown, language);
+    return localizeAiBrewMarkdownLanguage(translated.text?.trim() || markdown, language);
   } catch {
     return localizeAiBrewMarkdownLanguage(markdown, language);
   }
@@ -1946,11 +1987,11 @@ async function normalizeSequenceMarkdownToLanguage(
     markdown,
   ].join('\n');
   try {
-    const { raceChatResponse } = await import('../../services/gemini');
-    const translated = await raceChatResponse(translationPrompt, requestContext, {
+    const translated = await fastResponseDetailed(translationPrompt, requestContext, {
       timeoutMs: options?.timeoutMs,
+      fallbackToChat: false,
     });
-    return localizeAiBrewMarkdownLanguage(translated?.trim() || markdown, language);
+    return localizeAiBrewMarkdownLanguage(translated.text?.trim() || markdown, language);
   } catch {
     return localizeAiBrewMarkdownLanguage(markdown, language);
   }
@@ -2024,15 +2065,29 @@ function applyHybridSequenceToPlan(
   } satisfies BrewPlan;
 }
 
-function shouldRetryHybridSequence(errors: string[]) {
-  const joined = errors.join(' | ').toLowerCase();
-  return Boolean(
-    joined.includes('response is too short')
-    || joined.includes('missing required heading')
-    || joined.includes('got 0')
-    || joined.includes('ai response indicated service unavailability')
-    || joined.includes('ai response timed out'),
-  );
+function parseBrewSequenceResponseText(raw: string) {
+  const text = String(raw || '').trim();
+  const unwrapped = text
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
+  try {
+    const parsed = JSON.parse(unwrapped) as { canonicalMarkdown?: unknown; displayMarkdown?: unknown };
+    const canonicalMarkdown = typeof parsed?.canonicalMarkdown === 'string' ? parsed.canonicalMarkdown.trim() : '';
+    const displayMarkdown = typeof parsed?.displayMarkdown === 'string' ? parsed.displayMarkdown.trim() : '';
+    if (canonicalMarkdown || displayMarkdown) {
+      return {
+        canonicalMarkdown: canonicalMarkdown || displayMarkdown,
+        displayMarkdown,
+      };
+    }
+  } catch {
+    // Non-JSON providers are still accepted as canonical markdown and guarded below.
+  }
+  return {
+    canonicalMarkdown: text,
+    displayMarkdown: '',
+  };
 }
 
 async function runHybridSequenceUpdate(
@@ -2044,6 +2099,21 @@ async function runHybridSequenceUpdate(
   },
 ) {
   if (!options.enabled) return null;
+  const cached = loadCachedAiBrewSequenceOverlay(
+    nextPlan.fingerprint,
+    options.language,
+    nextPlan.catalogVersion,
+  );
+  if (cached) {
+    return {
+      markdown: cached.markdown,
+      canonicalMarkdown: cached.canonicalMarkdown,
+      servicePattern: cached.servicePattern,
+      watch: cached.watch,
+      stepInstructions: cached.stepInstructions,
+      fallbackDiagnostics: cached.fallbackDiagnostics,
+    };
+  }
 
   const canonicalRequestContext = {
     responseProfile: {
@@ -2060,54 +2130,17 @@ async function runHybridSequenceUpdate(
     },
   };
 
-  const { buildSequenceGuidePrompt, buildSequenceRepairPrompt } = await import('./prompts');
-  const { balancedResponseDetailed, raceChatResponse } = await import('../../services/gemini');
-  const sequencePrompt = buildSequenceGuidePrompt(nextPlan).body;
-  let aiText = await raceChatResponse(
+  const sequencePrompt = buildSequenceServerPrompt(nextPlan, options.language).body;
+  const response = await brewSequenceResponseDetailed(
     sequencePrompt,
     canonicalRequestContext,
-    {
-      timeoutMs: AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS,
-      fallbackToStructured: false,
-    },
+    { timeoutMs: AI_BREW_HYBRID_SEQUENCE_TIMEOUT_MS },
   );
-
-  let canonicalOverlay = composeHybridSequenceOverlay(nextPlan, aiText);
-  if (canonicalOverlay.usedFallback && shouldRetryHybridSequence(canonicalOverlay.validation.errors)) {
-    try {
-      const repairPrompt = buildSequenceRepairPrompt(
-        nextPlan,
-        canonicalOverlay.validation.errors,
-        'en',
-      ).body;
-      const repair = await balancedResponseDetailed(
-        repairPrompt,
-        canonicalRequestContext,
-        {
-          timeoutMs: AI_BREW_HYBRID_REPAIR_TIMEOUT_MS,
-          fallbackToChat: false,
-        },
-      );
-      aiText = repair.text;
-      canonicalOverlay = composeHybridSequenceOverlay(nextPlan, aiText);
-    } catch {
-      // Keep the deterministic fallback from the first pass.
-    }
-  }
-  const displayMarkdown = await normalizeSequenceMarkdownToLanguage(
-    canonicalOverlay.markdown,
-    options.language,
-    {
-      ...canonicalRequestContext,
-      responseProfile: {
-        language: options.language,
-        verbosity: 'comprehensive' as const,
-        format: 'steps' as const,
-        tone: 'professional' as const,
-      },
-    },
-    { timeoutMs: AI_BREW_SEQUENCE_TRANSLATION_TIMEOUT_MS },
-  );
+  const parsed = parseBrewSequenceResponseText(response.text);
+  const canonicalOverlay = composeHybridSequenceOverlay(nextPlan, parsed.canonicalMarkdown);
+  const displayMarkdown = canonicalOverlay.usedFallback
+    ? localizeAiBrewMarkdownLanguage(canonicalOverlay.markdown, options.language)
+    : parsed.displayMarkdown || localizeAiBrewMarkdownLanguage(canonicalOverlay.markdown, options.language);
   const guardedDisplay = sanitizeAiCoachMarkdown({
     action: 'sequence',
     markdown: displayMarkdown,
@@ -2126,7 +2159,7 @@ async function runHybridSequenceUpdate(
       : []),
   ];
 
-  return {
+  const result = {
     markdown: safeDisplayMarkdown,
     canonicalMarkdown: canonicalOverlay.markdown,
     servicePattern: displayOverlay.servicePattern,
@@ -2134,6 +2167,14 @@ async function runHybridSequenceUpdate(
     stepInstructions: displayOverlay.stepInstructions,
     fallbackDiagnostics,
   };
+  saveCachedAiBrewSequenceOverlay({
+    fingerprint: nextPlan.fingerprint,
+    catalogVersion: nextPlan.catalogVersion,
+    language: options.language,
+    ...result,
+    provider: response.provider,
+  });
+  return result;
 }
 
 async function runHybridOptimizationUpdate(
@@ -2164,10 +2205,7 @@ async function runHybridOptimizationUpdate(
     },
   };
 
-  const { buildOptimizationPrompt } = await import('./prompts');
-  const { raceChatResponse } = await import('../../services/gemini');
-  const { parseAiBrewOptimizationPatch } = await import('./aiOptimizer');
-  const aiText = await raceChatResponse(
+  const aiResult = await brewOptimizeResponseDetailed(
     `${buildOptimizationPrompt(nextPlan, options.language).body}${
       options.repair
         ? '\n\nRepair pass: the previous response did not create a validated numeric delta. Return JSON only with at least one small safe numeric change inside the allowed guardrails.'
@@ -2176,11 +2214,10 @@ async function runHybridOptimizationUpdate(
     canonicalRequestContext,
     {
       timeoutMs: AI_BREW_HYBRID_OPTIMIZATION_TIMEOUT_MS,
-      fallbackToStructured: false,
     },
   );
 
-  return applyAiBrewOptimizationPatch(nextPlan, parseAiBrewOptimizationPatch(aiText));
+  return applyAiBrewOptimizationPatch(nextPlan, parseAiBrewOptimizationPatch(aiResult.text));
 }
 
 function nowId(prefix: string) {
@@ -3928,6 +3965,21 @@ function focusElement(target: HTMLElement) {
   }
 }
 
+function isDialogFocusableVisible(element: HTMLElement) {
+  if (element.closest('[hidden], [aria-hidden="true"]')) return false;
+  const style = window.getComputedStyle(element);
+  if (style.display === 'none' || style.visibility === 'hidden') return false;
+  return element.getClientRects().length > 0;
+}
+
+function requestViewportMetricsRefresh() {
+  if (typeof window === 'undefined') return;
+  const dispatchResize = () => window.dispatchEvent(new Event('resize'));
+  window.requestAnimationFrame(dispatchResize);
+  window.setTimeout(dispatchResize, 120);
+  window.setTimeout(dispatchResize, 260);
+}
+
 function escapeAttributeValue(value: string) {
   if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
     return CSS.escape(value);
@@ -4023,8 +4075,8 @@ function FocusLockedDialog({
       }
       if (event.key !== 'Tab') return;
       const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      )).filter((element) => !element.hasAttribute('hidden') && element.offsetParent !== null);
+        'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )).filter(isDialogFocusableVisible);
       if (focusable.length === 0) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
@@ -4351,7 +4403,7 @@ function MasterPickerDialog({
             if (showProcessCategories) setActiveProcessCategory('all');
           }}
           placeholder={searchPlaceholder}
-          className="glass-input h-11 w-full pl-10 pr-4 text-sm"
+          className="glass-input h-11 w-full pl-10 pr-4 text-base sm:text-sm"
         />
       </div>
 
@@ -4728,6 +4780,7 @@ function PlanResultDialog({
   saveError,
   feedback,
   feedbackNoteDraft,
+  keyboardOffset,
   showProvenance,
   isAuthenticated,
   isOffline,
@@ -4759,6 +4812,7 @@ function PlanResultDialog({
   saveError: string | null;
   feedback: BrewTasteFeedback | null;
   feedbackNoteDraft: string;
+  keyboardOffset: number;
   showProvenance: boolean;
   isAuthenticated: boolean;
   isOffline: boolean;
@@ -4779,6 +4833,12 @@ function PlanResultDialog({
   const [flowAccumulatedSeconds, setFlowAccumulatedSeconds] = useState(0);
   const [flowRunning, setFlowRunning] = useState(false);
   const [flowStartedAtMs, setFlowStartedAtMs] = useState<number | null>(null);
+  const resultTabRefs = useRef<Record<ResultTab, HTMLButtonElement | null>>({
+    plan: null,
+    flow: null,
+    coach: null,
+    details: null,
+  });
   const isQuickResult = resultMode === 'quick';
   const [guideDensity, setGuideDensity] = useState<AiBrewGuideDensity>('basic');
 
@@ -4801,15 +4861,16 @@ function PlanResultDialog({
 
   useEffect(() => {
     if (!plan || !flowRunning || !flowStartedAtMs) return undefined;
+    const timerTargetSeconds = getPlanTimerSeconds(plan);
 
     const updateElapsed = () => {
       const nextElapsed = Math.min(
-        plan.totalTimeSeconds,
+        timerTargetSeconds,
         flowAccumulatedSeconds + Math.floor((Date.now() - flowStartedAtMs) / 1000),
       );
       setFlowElapsedSeconds(nextElapsed);
-      if (nextElapsed >= plan.totalTimeSeconds) {
-        setFlowAccumulatedSeconds(plan.totalTimeSeconds);
+      if (nextElapsed >= timerTargetSeconds) {
+        setFlowAccumulatedSeconds(timerTargetSeconds);
         setFlowRunning(false);
         setFlowStartedAtMs(null);
       }
@@ -4886,10 +4947,11 @@ function PlanResultDialog({
   const extractionSeconds = getPlanExtractionSeconds(plan);
   const guideEndSeconds = getPlanGuideEndSeconds(plan);
   const postExtractionSeconds = getPlanPostExtractionSeconds(plan);
+  const timerTargetSeconds = getPlanTimerSeconds(plan);
   const tasteTimeRange = getPlanTasteTimeRange(plan);
   const extractionTimeLabel = getPlanExtractionLabel(plan, language);
-  const guideEndLabel = id ? 'Panduan selesai' : 'Guide complete';
-  const postExtractionLabel = id ? 'Aduk/sajikan' : 'Finishing';
+  const completionTimeLabel = id ? 'Selesai' : 'Complete';
+  const postExtractionLabel = id ? 'Setelah ekstraksi' : 'After extraction';
   const summaryHighlightItems = buildAiBrewCoreMetricItems(
     plan,
     copy,
@@ -4898,6 +4960,18 @@ function PlanResultDialog({
     extractionTimeLabel,
     extractionSeconds,
   );
+  const completionTimeItem = {
+    id: 'complete',
+    label: completionTimeLabel,
+    value: formatGuideTime(guideEndSeconds),
+    detail: guideEndSeconds > extractionSeconds
+      ? (id ? 'Finishing setelah waktu utama.' : 'Finishing after the main brew time.')
+      : (id ? 'Sama dengan waktu utama.' : 'Same as the main brew time.'),
+  };
+  const summaryHighlightItemsWithCompletion = [
+    ...summaryHighlightItems,
+    completionTimeItem,
+  ];
   const bloomStepCount = workflowGuideSteps.filter((step) => (
     step.actionType === 'bloom' || /bloom/i.test(step.label)
   )).length;
@@ -4907,7 +4981,8 @@ function PlanResultDialog({
     { label: 'Bloom', value: bloomStepCount > 0 ? `${bloomStepCount}x` : '-' },
     { label: id ? 'Tuang' : 'Pours', value: mainPourCount > 0 ? `${mainPourCount}x` : '-' },
     { label: id ? 'Langkah' : 'Steps', value: String(workflowGuideSteps.length) },
-    { label: guideEndLabel, value: formatGuideTime(guideEndSeconds) },
+    { label: extractionTimeLabel, value: formatGuideTime(extractionSeconds) },
+    { label: completionTimeLabel, value: formatGuideTime(guideEndSeconds) },
   ];
   const expectedCup = plan.expectedCupProfile;
   const localizedBeanCoverageLabel = plan.beanCoverage
@@ -4923,11 +4998,18 @@ function PlanResultDialog({
     ...plan.guardrails.errors.map((item) => localizeAiBrewDynamicText(item, language)),
     ...plan.warnings.map((item) => localizeAiBrewDynamicText(item, language)),
   ];
-  const flowProgressSeconds = Math.min(plan.totalTimeSeconds, flowElapsedSeconds);
-  const flowActiveStepIndex = getFlowActiveStepIndex(workflowGuideSteps, flowProgressSeconds);
-  const flowCurrentStep = workflowGuideSteps[flowActiveStepIndex] || null;
-  const flowNextStep = flowActiveStepIndex >= 0 ? workflowGuideSteps[flowActiveStepIndex + 1] || null : workflowGuideSteps[0] || null;
-  const flowRemainingSeconds = Math.max(0, plan.totalTimeSeconds - flowProgressSeconds);
+  const timedWorkflowGuideSteps = workflowGuideSteps.filter((step) => (
+    step.startSeconds < timerTargetSeconds || !isAiBrewPostExtractionDisplayStep(step)
+  ));
+  const flowProgressSeconds = Math.min(timerTargetSeconds, flowElapsedSeconds);
+  const flowActiveStepIndex = getFlowActiveStepIndex(timedWorkflowGuideSteps, flowProgressSeconds);
+  const flowCurrentStep = flowProgressSeconds >= timerTargetSeconds ? null : timedWorkflowGuideSteps[flowActiveStepIndex] || null;
+  const flowNextStep = flowProgressSeconds >= timerTargetSeconds
+    ? null
+    : flowActiveStepIndex >= 0
+      ? timedWorkflowGuideSteps[flowActiveStepIndex + 1] || null
+      : timedWorkflowGuideSteps[0] || null;
+  const flowRemainingSeconds = Math.max(0, timerTargetSeconds - flowProgressSeconds);
   const flowStepRemainingSeconds = flowNextStep
     ? Math.max(0, flowNextStep.startSeconds - flowProgressSeconds)
     : flowRemainingSeconds;
@@ -4940,7 +5022,7 @@ function PlanResultDialog({
     : copy.flowFinished;
   const flowStatusLabel = flowRunning
     ? copy.flowRunning
-    : flowProgressSeconds >= plan.totalTimeSeconds && plan.totalTimeSeconds > 0
+    : flowProgressSeconds >= timerTargetSeconds && timerTargetSeconds > 0
       ? copy.flowFinished
       : flowProgressSeconds > 0
         ? copy.flowPaused
@@ -4952,6 +5034,47 @@ function PlanResultDialog({
   const flowCurrentMetrics = flowCurrentStep
     ? splitAiBrewStepMetrics(buildAiBrewStepMetrics(flowCurrentStep, language, plan))
     : { core: [], detail: [] };
+  const flowCurrentStepStartSeconds = flowCurrentStep
+    ? Math.max(0, Math.min(timerTargetSeconds, flowCurrentStep.startSeconds))
+    : timerTargetSeconds;
+  const flowCurrentStepEndSeconds = flowCurrentStep
+    ? Math.max(
+      flowCurrentStepStartSeconds + 1,
+      Math.min(timerTargetSeconds, flowNextStep?.startSeconds ?? timerTargetSeconds),
+    )
+    : timerTargetSeconds;
+  const flowCurrentStepDurationSeconds = Math.max(1, flowCurrentStepEndSeconds - flowCurrentStepStartSeconds);
+  const flowCurrentStepElapsedSeconds = flowCurrentStep
+    ? Math.min(
+      flowCurrentStepDurationSeconds,
+      Math.max(0, flowProgressSeconds - flowCurrentStepStartSeconds),
+    )
+    : flowCurrentStepDurationSeconds;
+  const liteStepProgressPercent = flowCurrentStep
+    ? Math.min(100, Math.max(0, Math.round((flowCurrentStepElapsedSeconds / flowCurrentStepDurationSeconds) * 100)))
+    : (flowProgressSeconds >= timerTargetSeconds && timerTargetSeconds > 0 ? 100 : 0);
+  const liteProgressRingStyle = {
+    background: `conic-gradient(#2563eb ${liteStepProgressPercent}%, rgba(148, 163, 184, 0.2) 0)`,
+  } as CSSProperties;
+  const liteWaterTargetMl = Math.max(
+    0,
+    Math.round(flowCurrentStep?.targetVolumeMl || (plan.brewMode === 'iced' ? plan.hotWaterMl : plan.totalWaterMl)),
+  );
+  const liteWaterTotalMl = Math.max(1, Math.round(plan.brewMode === 'iced' ? plan.hotWaterMl : plan.totalWaterMl));
+  const liteWaterTargetLabel = `${formatRoundedMl(liteWaterTargetMl)} / ${formatRoundedMl(liteWaterTotalMl)}`;
+  const liteStepTitle = flowCurrentStep
+    ? localizeAiBrewStepLabel(flowCurrentStep.label, language)
+    : copy.flowFinished;
+  const liteStepAction = flowCurrentStep
+    ? buildAiBrewStepPrimaryCue(flowCurrentStep, language, plan)
+    : (id
+      ? 'Ekstraksi utama selesai. Lanjutkan finishing tanpa menghitungnya sebagai brew time.'
+      : 'Main extraction is complete. Finish the brew without counting it as brew time.');
+  const liteStepCue = flowCurrentStep
+    ? flowCurrentCompactCue
+    : (id
+      ? 'Cicipi hasilnya, lalu catat koreksi untuk seduhan berikutnya.'
+      : 'Taste the cup, then note one correction for the next brew.');
   const localizedProcessLabel = plan.process || copy.notSpecified;
   const localizedVarietyLabel = plan.variety || copy.notSpecified;
   const localizedRoastLabel = localizeAiBrewRoastLabel(plan.roastLevel, language);
@@ -5184,7 +5307,7 @@ function PlanResultDialog({
   );
 
   function startFlowTimer() {
-    if (flowProgressSeconds >= plan.totalTimeSeconds) {
+    if (flowProgressSeconds >= timerTargetSeconds) {
       setFlowElapsedSeconds(0);
       setFlowAccumulatedSeconds(0);
     }
@@ -5206,6 +5329,161 @@ function PlanResultDialog({
     setFlowStartedAtMs(null);
   }
 
+  function jumpToNextFlowStep() {
+    const nextSeconds = flowNextStep
+      ? Math.min(timerTargetSeconds, flowNextStep.startSeconds)
+      : timerTargetSeconds;
+    setFlowElapsedSeconds(nextSeconds);
+    setFlowAccumulatedSeconds(nextSeconds);
+    setFlowStartedAtMs(flowRunning && nextSeconds < timerTargetSeconds ? Date.now() : null);
+    if (nextSeconds >= timerTargetSeconds) {
+      setFlowRunning(false);
+    }
+  }
+
+  const liteGuidePanel = (
+    <div
+      className="rounded-[1.8rem] border border-blue-500/18 bg-[linear-gradient(180deg,rgba(37,99,235,0.10),rgba(245,158,11,0.06))] p-4 shadow-[0_18px_48px_rgba(15,23,42,0.10)]"
+      data-testid="ai-brew-flow-timer-panel"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {guideDensityToggle}
+        <span className="rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300">
+          {flowStatusLabel}
+        </span>
+      </div>
+
+      <div className="mt-5 flex justify-center" data-testid="ai-brew-lite-guide-panel">
+        <div
+          className="ai-brew-lite-progress-ring relative flex aspect-square w-full max-w-[20rem] items-center justify-center rounded-full p-2 shadow-[0_24px_52px_rgba(15,23,42,0.14)]"
+          style={liteProgressRingStyle}
+          data-testid="ai-brew-lite-progress-ring"
+          aria-label={`${copy.flowElapsed} ${formatGuideTime(flowProgressSeconds)}`}
+        >
+          <div className="absolute inset-3 rounded-full bg-[var(--bg-base)]/96 shadow-inner" />
+          <div className="relative z-10 flex max-w-[12.75rem] flex-col items-center text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">
+              {liteStepTitle}
+            </p>
+            <p className="mt-1.5 text-[3.1rem] font-semibold leading-none tracking-normal text-primary sm:text-6xl">
+              {formatGuideTime(flowProgressSeconds)}
+            </p>
+            <span className="mt-2 rounded-full bg-amber-500/12 px-2.5 py-0.5 text-[11px] font-semibold leading-5 text-amber-700 dark:text-amber-300">
+              {id ? 'Durasi tahap' : 'Step window'}: {formatGuideTime(flowCurrentStepDurationSeconds)}
+            </span>
+            <p className="mt-3 text-[1.65rem] font-semibold leading-none text-blue-700 dark:text-blue-300">
+              {liteWaterTargetLabel}
+            </p>
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary">
+              {id ? 'Tuang / target' : 'Pour / target'}
+            </p>
+            <div className="mt-2 w-full max-w-[11.75rem]" data-testid="ai-brew-flow-remaining-status">
+              <div className="grid gap-1 text-[10px] leading-4" data-testid="ai-brew-lite-water-status">
+                <span className="min-w-0 rounded-xl border border-blue-500/14 bg-[var(--bg-base)] px-2 py-0.5 font-semibold text-secondary [overflow-wrap:anywhere]">
+                  {copy.flowNextPour}: <span className="text-primary">{flowNextPourValue}</span>
+                </span>
+                <span className="min-w-0 rounded-xl border border-blue-500/14 bg-[var(--bg-base)] px-2 py-0.5 font-semibold text-secondary [overflow-wrap:anywhere]">
+                  {copy.flowTotalRemaining}: <span className="text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto mt-5 max-w-xl space-y-3 rounded-[1.4rem] border panel-divider-subtle bg-[var(--bg-base)]/84 p-3 text-center" data-testid="ai-brew-flow-current-card">
+        <p className="text-lg font-semibold leading-7 text-primary">
+          {liteStepAction}
+        </p>
+        <div className="grid gap-2 text-xs sm:grid-cols-3">
+          <span className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-2.5 py-2 text-secondary">
+            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
+            <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
+          </span>
+          <span className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-2.5 py-2 text-secondary">
+            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{extractionTimeLabel}</span>
+            <span className="font-semibold text-primary">{formatGuideTime(extractionSeconds)}</span>
+          </span>
+          <span className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-2.5 py-2 text-secondary">
+            <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.grind}</span>
+            <span className="font-semibold text-primary">{localizedGrindHeadline}</span>
+          </span>
+        </div>
+        <p className="rounded-2xl border border-blue-500/14 bg-[var(--bg-base)]/74 px-4 py-3 text-sm leading-6 text-secondary">
+          {liteStepCue}
+        </p>
+      </div>
+
+      <div className="mt-5 flex items-center justify-center gap-3">
+        <button
+          type="button"
+          onClick={flowRunning ? pauseFlowTimer : startFlowTimer}
+          disabled={workflowBlocked}
+          className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-[0_14px_28px_rgba(37,99,235,0.30)] disabled:cursor-not-allowed disabled:opacity-55"
+          data-testid="ai-brew-flow-toggle"
+          aria-label={flowRunning ? copy.flowPause : copy.flowStart}
+        >
+          {flowRunning ? <Pause size={21} /> : <Play size={21} />}
+        </button>
+        <button
+          type="button"
+          onClick={jumpToNextFlowStep}
+          disabled={workflowBlocked || flowProgressSeconds >= timerTargetSeconds}
+          className="inline-flex h-12 w-12 items-center justify-center rounded-full border panel-divider-subtle bg-[var(--bg-base)] text-primary shadow-[0_10px_24px_rgba(15,23,42,0.10)] disabled:cursor-not-allowed disabled:opacity-50"
+          data-testid="ai-brew-lite-next-step"
+          aria-label={copy.flowNextAction}
+        >
+          <ArrowRight size={19} />
+        </button>
+        <button
+          type="button"
+          onClick={resetFlowTimer}
+          className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-rose-500/18 bg-rose-500/[0.08] text-rose-600 shadow-[0_10px_24px_rgba(225,29,72,0.10)] dark:text-rose-300"
+          data-testid="ai-brew-flow-reset"
+          aria-label={copy.flowReset}
+        >
+          <RotateCcw size={18} />
+        </button>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <div className="rounded-2xl border border-amber-500/18 bg-amber-500/[0.07] px-4 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
+            {copy.flowLiteScaleTitle}
+          </p>
+          <p className="mt-1 text-sm leading-6 text-secondary">
+            {copy.flowLiteScaleBody}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onUseInTimer(timerTargetSeconds)}
+          disabled={workflowBlocked}
+          className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-4 py-2 text-sm font-medium text-primary disabled:cursor-not-allowed disabled:opacity-55"
+          data-testid="ai-brew-flow-open-timer"
+        >
+          {copy.flowOpenTimer}
+        </button>
+      </div>
+
+      <div className="mt-4 rounded-2xl bg-[var(--bg-base)]/82 p-3.5">
+        <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowNextStep}</p>
+        <p className="mt-1 text-sm font-semibold text-primary">
+          {flowNextStep
+            ? `${formatGuideTime(flowNextStep.startSeconds)} | ${localizeAiBrewStepLabel(flowNextStep.label, language)}`
+            : copy.flowFinished}
+        </p>
+        <p className="mt-1 text-sm text-secondary">
+          {flowNextStep
+            ? buildAiBrewNextStepCue(flowNextStep, flowStepRemainingSeconds, language)
+            : (id
+              ? 'Seduh selesai. Finishing tetap boleh dilakukan, tapi bukan brew time utama.'
+              : 'The brew is complete. Finishing can continue, but it is not the main brew time.')}
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <FocusLockedDialog
       open={open}
@@ -5219,8 +5497,9 @@ function PlanResultDialog({
           className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4 pb-6 pt-4 lg:px-6 lg:pb-8 lg:pt-6"
           style={{
             paddingTop: 'calc(16px + var(--safe-top, 0px))',
-            paddingBottom: 'calc(28px + var(--bottom-safe-capped, 0px))',
+            paddingBottom: `calc(28px + var(--bottom-safe-capped, 0px) + max(${keyboardOffset}px, var(--keyboard-offset, 0px)))`,
           }}
+          data-testid="ai-brew-result-scroll"
           tabIndex={0}
           aria-labelledby={isQuickResult ? undefined : activeTabId}
         >
@@ -5384,7 +5663,7 @@ function PlanResultDialog({
                     <button type="button" onClick={onEditInputs} className={resultActionButtonClass} data-testid="ai-brew-edit-inputs">
                       {copy.editInputs}
                     </button>
-                    <button type="button" onClick={() => onUseInTimer(plan.totalTimeSeconds)} disabled={workflowBlocked} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-use-timer" aria-label={copy.ariaUseInTimer.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
+                    <button type="button" onClick={() => onUseInTimer(timerTargetSeconds)} disabled={workflowBlocked} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-use-timer" aria-label={copy.ariaUseInTimer.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
                       {copy.useInTimer}
                     </button>
                     <button type="button" onClick={() => onUseInRatio(plan)} className={resultActionButtonClass} data-testid="ai-brew-use-ratio" aria-label={copy.ariaUseInRatio.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
@@ -5413,6 +5692,7 @@ function PlanResultDialog({
                   {resultTabs.map((tab) => (
                     <button
                       key={tab.id}
+                      ref={(node) => { resultTabRefs.current[tab.id] = node; }}
                       id={`ai-brew-result-tab-${tab.id}`}
                       type="button"
                       role="tab"
@@ -5487,7 +5767,7 @@ function PlanResultDialog({
                   </div>
                   <div className="mt-3" data-testid="ai-brew-result-summary-metric-strip">
                     <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2.5 text-xs sm:grid-cols-[repeat(3,minmax(0,1fr))]" data-testid="ai-brew-time-semantics">
-                      {summaryHighlightItems.map((item) => (
+                      {summaryHighlightItemsWithCompletion.map((item) => (
                         <span
                           key={item.id}
                           className="min-w-0 max-w-full rounded-2xl border border-blue-500/20 bg-blue-500/[0.09] px-4 py-4 text-secondary"
@@ -5511,7 +5791,7 @@ function PlanResultDialog({
                   <div className="mt-2 space-y-2">
                     {postExtractionSeconds > 0 && (
                       <p className="rounded-xl border border-blue-500/14 bg-[var(--bg-base)]/78 px-3 py-2 text-xs leading-5 text-secondary" data-testid="ai-brew-post-extraction-note">
-                        <span className="font-semibold text-primary">{postExtractionLabel}:</span> +{formatGuideTime(postExtractionSeconds)} {id ? 'aduk/sajikan' : 'stir/serve'}.
+                        <span className="font-semibold text-primary">{postExtractionLabel}:</span> {id ? 'aduk, tuang, atau sajikan tidak menambah waktu rasa utama.' : 'stir, pour, or serve steps do not add to the main taste time.'}
                       </p>
                     )}
                   </div>
@@ -5576,15 +5856,15 @@ function PlanResultDialog({
                 data-testid="ai-brew-result-detail-panel"
               >
               <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2.5 sm:grid-cols-[repeat(2,minmax(0,1fr))] xl:grid-cols-[repeat(3,minmax(0,1fr))]">
-                {summaryHighlightItems.map((item) => (
+                {summaryHighlightItemsWithCompletion.map((item) => (
                   <div key={`details-${item.id}`} className={resultMetricCardClass}>
                     <p className="text-[11px] uppercase tracking-widest text-secondary">{item.label}</p>
                     <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{item.value}</p>
                     {item.detail && (
                       <p className="mt-1 text-xs text-secondary">{item.detail}</p>
                     )}
-                    {item.id === 'extraction' && guideEndSeconds > extractionSeconds && (
-                      <p className="mt-1 text-xs text-secondary">{guideEndLabel}: {formatGuideTime(guideEndSeconds)}</p>
+                    {item.id === 'extraction' && postExtractionSeconds > 0 && (
+                      <p className="mt-1 text-xs text-secondary">{id ? 'Finishing setelah waktu rasa utama.' : 'Finishing happens after the main taste time.'}</p>
                     )}
                     {item.id === 'grind' && localizedGrindBandLabel !== localizedGrindHeadline && (
                       <p className="mt-1 text-xs text-secondary">{localizedGrindBandLabel}</p>
@@ -5686,7 +5966,7 @@ function PlanResultDialog({
                 </section>
               </div>
 
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <div className="order-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                 <section
                   className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
                   data-testid="ai-brew-pro-precision-tolerance"
@@ -5734,7 +6014,7 @@ function PlanResultDialog({
 
               {plan.iceMl > 0 && (
                 <div
-                  className="rounded-[1.2rem] border border-sky-500/20 bg-sky-500/[0.08] p-4"
+                  className="order-6 rounded-[1.2rem] border border-sky-500/20 bg-sky-500/[0.08] p-4"
                   data-testid="ai-brew-iced-calibration"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -5798,7 +6078,7 @@ function PlanResultDialog({
                 </>
               )}
 
-              <div className="order-1 grid gap-5 xl:grid-cols-[minmax(0,1.18fr)_minmax(18rem,0.82fr)]">
+              <div className="order-3 grid gap-5 xl:grid-cols-[minmax(0,1.18fr)_minmax(18rem,0.82fr)]">
                 <div className="space-y-5">
                   <div
                     className="rounded-[1.2rem] border border-blue-500/18 bg-blue-500/[0.08] p-3.5 lg:p-4"
@@ -5817,7 +6097,7 @@ function PlanResultDialog({
                             : 'Follow the timer. Core numbers stay visible; technique detail is for Pro.'}
                         </p>
                         <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-secondary">
-                          {summaryHighlightItems.map((item) => (
+                          {summaryHighlightItemsWithCompletion.map((item) => (
                             <span key={`guide-${item.id}`} className={resultChipClass}>
                               <span className="text-tertiary">{item.label}</span> <span className="text-primary">{item.value}</span>
                             </span>
@@ -5922,15 +6202,16 @@ function PlanResultDialog({
                         );
                       })}
                     </div>
-                    <label className="mt-3 block">
+                    <label className="mt-3 block" htmlFor="ai-brew-feedback-note">
                       <span className="mb-2 block text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.feedbackNote}</span>
                       <textarea
+                        id="ai-brew-feedback-note"
                         name="ai-brew-feedback-note"
                         value={feedbackNoteDraft}
                         onChange={(event) => onFeedbackNoteChange(event.target.value.slice(0, AI_BREW_FEEDBACK_NOTE_MAX_LENGTH))}
                         placeholder={copy.feedbackNotePlaceholder}
                         maxLength={AI_BREW_FEEDBACK_NOTE_MAX_LENGTH}
-                        className="glass-input min-h-20 w-full resize-none px-3 py-2 text-sm leading-5"
+                        className="glass-input min-h-24 w-full resize-none px-3 py-2 text-base leading-6 sm:min-h-20 sm:text-sm sm:leading-5"
                         data-testid="ai-brew-feedback-note"
                       />
                     </label>
@@ -6114,7 +6395,7 @@ function PlanResultDialog({
                   defaultOpen={false}
                 >
                   <p className="rounded-xl bg-surface-alpha px-3 py-3 text-sm text-secondary">
-                    TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm} · {formatWaterDerivationLabel(copy, plan.waterMineralDerivation)}
+                    TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm} Ã‚Â· {formatWaterDerivationLabel(copy, plan.waterMineralDerivation)}
                   </p>
                 </ResultDisclosureSection>
               </div>
@@ -6129,6 +6410,9 @@ function PlanResultDialog({
                 data-testid="ai-brew-result-guide-panel"
               >
                 <div className={isQuickResult ? 'order-2 space-y-5' : 'space-y-5'}>
+                  {guideDensity === 'basic' ? (
+                    liteGuidePanel
+                  ) : (
                   <div className="rounded-[1.4rem] border border-blue-500/18 bg-blue-500/[0.08] p-4" data-testid="ai-brew-flow-timer-panel">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
@@ -6201,7 +6485,7 @@ function PlanResultDialog({
                         </div>
                       ) : (
                         <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 xl:grid-cols-2">
-                          {summaryHighlightItems.map((item) => (
+                          {summaryHighlightItemsWithCompletion.map((item) => (
                             <span key={`flow-current-${item.id}`} className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary">
                               <span className="block text-[10px] uppercase tracking-widest text-tertiary">{item.label}</span>
                               <span className="font-semibold text-primary">{item.value}</span>
@@ -6249,7 +6533,7 @@ function PlanResultDialog({
                       </button>
                       <button
                         type="button"
-                        onClick={() => onUseInTimer(plan.totalTimeSeconds)}
+                        onClick={() => onUseInTimer(timerTargetSeconds)}
                         disabled={workflowBlocked}
                         className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-4 py-2 text-sm font-medium text-primary disabled:cursor-not-allowed disabled:opacity-55"
                         data-testid="ai-brew-flow-open-timer"
@@ -6274,9 +6558,10 @@ function PlanResultDialog({
                       </p>
                     </div>
                   </div>
+                  )}
                 </div>
 
-                {!isQuickResult && (
+                {!isQuickResult && guideDensity === 'pro' && (
                 <div className="space-y-3" data-testid="ai-brew-sequence-section">
                   {workflowGuideSteps.map((step, index) => {
                     const state = index < flowActiveStepIndex
@@ -7267,6 +7552,12 @@ export function AiBrewPanel({
     return COPY[language as keyof typeof COPY] || fallbackCopy;
   }, [fallbackCopy, language]);
   const hasHydratedRef = useRef(false);
+  const aiBrewPanelRef = useRef<HTMLDivElement | null>(null);
+  const { keyboardOffset: aiBrewKeyboardOffset } = useIOSKeyboardFix({
+    focusScopeRef: aiBrewPanelRef,
+    enableScrollIntoViewOnFocus: true,
+    scrollIntoViewBlock: 'center',
+  });
 
   const [catalog, setCatalog] = useState<AiBrewCatalog | null>(null);
   const [catalogError, setCatalogError] = useState<string | null>(null);
@@ -7335,6 +7626,7 @@ export function AiBrewPanel({
   }, [activeBuilderModal]);
 
   const shouldHideAppNav = activeBuilderModal !== null || pickerKind !== null || resultOpen || generationBusy;
+  const aiBrewModalActive = shouldHideAppNav;
 
   useEffect(() => {
     if (shouldHideAppNav) hideNav();
@@ -7364,6 +7656,7 @@ export function AiBrewPanel({
     setActiveBuilderModal(null);
     setResultMode('quick');
     setResultOpen(shouldOpen);
+    if (shouldOpen) requestViewportMetricsRefresh();
     setAiResponse(selectDefaultAiResponse(copy, storedPlan.aiNotes, storedPlan, language));
   }
 
@@ -7975,24 +8268,22 @@ export function AiBrewPanel({
             language,
           });
         } catch (error) {
-          console.warn(
-            getAiBrewOptimizationFallbackMessage(language),
-            error instanceof Error ? error.message : String(error || 'request_failed'),
-          );
+          if (import.meta.env.DEV) {
+            console.warn(
+              getAiBrewOptimizationFallbackMessage(language),
+              error instanceof Error ? error.message : String(error || 'request_failed'),
+            );
+          }
           optimized = applyAiBrewOptimizationPatch(nextPlan, null);
         }
 
         if (!optimized.applied) {
-          reportAiBrewRuntimeEvent({
-            name: 'ai_brew_optimizer_rejected',
-            message: getAiBrewOptimizationFallbackMessage(language),
-            details: optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
-            platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
-          });
-          console.warn(
-            getAiBrewOptimizationFallbackMessage(language),
-            optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
-          );
+          if (import.meta.env.DEV) {
+            console.warn(
+              getAiBrewOptimizationFallbackMessage(language),
+              optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
+            );
+          }
           try {
             optimized = await runHybridOptimizationUpdate(nextPlan, {
               enabled: true,
@@ -8001,10 +8292,12 @@ export function AiBrewPanel({
               repair: true,
             });
           } catch (error) {
-            console.warn(
-              getAiBrewOptimizationFallbackMessage(language),
-              error instanceof Error ? error.message : String(error || 'repair_failed'),
-            );
+            if (import.meta.env.DEV) {
+              console.warn(
+                getAiBrewOptimizationFallbackMessage(language),
+                error instanceof Error ? error.message : String(error || 'repair_failed'),
+              );
+            }
             optimized = applyAiBrewOptimizationPatch(nextPlan, null);
           }
         }
@@ -8013,16 +8306,12 @@ export function AiBrewPanel({
           if (requireOnlineAiGenerate) {
             throw new Error('ai_brew_optimizer_unavailable');
           }
-          reportAiBrewRuntimeEvent({
-            name: 'ai_brew_optimizer_no_change',
-            message: copy.aiOptimizationNoChange,
-            details: optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
-            platform: (isPwa ? 'pwa' : 'web') as 'web' | 'pwa',
-          });
-          console.warn(
-            copy.aiOptimizationNoChange,
-            optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
-          );
+          if (import.meta.env.DEV) {
+            console.warn(
+              copy.aiOptimizationNoChange,
+              optimized.rejected.length > 0 ? optimized.rejected : optimized.diagnostics,
+            );
+          }
         }
 
         if (optimized.applied) {
@@ -8080,6 +8369,7 @@ export function AiBrewPanel({
       setActiveBuilderModal(null);
       setResultMode(generationMode);
       setResultOpen(true);
+      requestViewportMetricsRefresh();
       setFormState(generationFormState);
       saveLastGeneratedBrewPlan(nextPlan);
       await saveBrewJournalEntry(journalEntry);
@@ -8445,6 +8735,7 @@ export function AiBrewPanel({
     setActiveBuilderModal(null);
     setResultMode(feedback ? 'pro' : 'quick');
     setResultOpen(true);
+    requestViewportMetricsRefresh();
     saveLastGeneratedBrewPlan(nextPlan);
     setAiResponse(selectDefaultAiResponse(copy, nextPlan.aiNotes, nextPlan, language));
     setAiError(null);
@@ -8503,6 +8794,7 @@ export function AiBrewPanel({
       setShowMineralEditor(false);
     }
     setActiveBuilderModal(mode);
+    requestViewportMetricsRefresh();
   }
 
   function closeBuilder() {
@@ -8517,6 +8809,7 @@ export function AiBrewPanel({
     clearSaveFeedback();
     setShowBeanProfileEditor(false);
     setActiveBuilderModal(preferredBuilderMode);
+    requestViewportMetricsRefresh();
   }
 
   function openPicker(kind: NonNullable<PickerKind>, trigger: HTMLButtonElement) {
@@ -9210,8 +9503,9 @@ export function AiBrewPanel({
             className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-3 pb-3 pt-3 lg:px-6 lg:pb-6 lg:pt-6"
             style={{
               paddingTop: 'calc(12px + var(--safe-top, 0px))',
-              paddingBottom: 'calc(28px + var(--bottom-safe-capped, 0px))',
+              paddingBottom: `calc(28px + var(--bottom-safe-capped, 0px) + max(${aiBrewKeyboardOffset}px, var(--keyboard-offset, 0px)))`,
             }}
+            data-testid="ai-brew-builder-scroll"
           >
             <div className="min-w-0 max-w-full space-y-4">
               <div className="relative min-w-0 max-w-full overflow-hidden rounded-[1.25rem] border panel-divider-subtle bg-surface-alpha/75 px-3.5 pb-3.5 pt-4 lg:px-5 lg:pb-4 lg:pt-5">
@@ -9264,8 +9558,9 @@ export function AiBrewPanel({
                   </div>
                   <div className="space-y-3.5">
                     <div>
-                      <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.coffeeName}</label>
+                      <label htmlFor="ai-brew-coffee-name" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.coffeeName}</label>
                       <input
+                        id="ai-brew-coffee-name"
                         name="ai-brew-coffee-name"
                         type="text"
                         value={formState.coffeeName}
@@ -9279,10 +9574,12 @@ export function AiBrewPanel({
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.dose}</label>
+                        <label htmlFor="ai-brew-dose" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.dose}</label>
                         <input
+                          id="ai-brew-dose"
                           name="ai-brew-dose"
                           type="number"
+                          inputMode="decimal"
                           min="10"
                           max="20"
                           step="0.1"
@@ -9356,7 +9653,7 @@ export function AiBrewPanel({
                             </p>
                           </div>
                           <span className="rounded-full bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
-                            {selectedProcessLabel || copy.notSpecified} · {selectedVarietyLabel || copy.notSpecified}
+                            {selectedProcessLabel || copy.notSpecified} Ã‚Â· {selectedVarietyLabel || copy.notSpecified}
                           </span>
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">
@@ -9540,7 +9837,7 @@ export function AiBrewPanel({
                   <div className="space-y-3.5">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.dripper}</label>
+                        <p id="ai-brew-dripper-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.dripper}</p>
                         <button
                           type="button"
                           onClick={(event) => openPicker('dripper', event.currentTarget)}
@@ -9548,7 +9845,7 @@ export function AiBrewPanel({
                           data-testid="ai-brew-dripper-picker"
                           aria-haspopup="dialog"
                           aria-expanded={pickerKind === 'dripper'}
-                          aria-label={copy.openDripperPicker}
+                          aria-labelledby="ai-brew-dripper-label"
                         >
                           <span className="truncate">{selectedDripper?.name || copy.openPicker}</span>
                           <ArrowRight size={16} className="shrink-0 text-secondary" />
@@ -9556,7 +9853,7 @@ export function AiBrewPanel({
                       </div>
 
                       <div>
-                        <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grinder}</label>
+                        <p id="ai-brew-grinder-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grinder}</p>
                         <button
                           type="button"
                           onClick={(event) => openPicker('grinder', event.currentTarget)}
@@ -9564,7 +9861,7 @@ export function AiBrewPanel({
                           data-testid="ai-brew-grinder-picker"
                           aria-haspopup="dialog"
                           aria-expanded={pickerKind === 'grinder'}
-                          aria-label={copy.openGrinderPicker}
+                          aria-labelledby="ai-brew-grinder-label"
                         >
                           <span className="truncate">{selectedGrinder ? formatGrinderDisplayName(selectedGrinder, language, 'selected') : copy.openPicker}</span>
                           <ArrowRight size={16} className="shrink-0 text-secondary" />
@@ -9603,7 +9900,7 @@ export function AiBrewPanel({
                         {formState.waterMode === 'brand' ? (
                           <div className="space-y-3">
                             <div>
-                              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.waterBrandPicker}</label>
+                              <p id="ai-brew-water-brand-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.waterBrandPicker}</p>
                               <button
                                 type="button"
                                 onClick={(event) => openPicker('water_brand', event.currentTarget)}
@@ -9611,7 +9908,7 @@ export function AiBrewPanel({
                                 data-testid="ai-brew-water-picker"
                                 aria-haspopup="dialog"
                                 aria-expanded={pickerKind === 'water_brand'}
-                                aria-label={copy.waterOpenBrandPicker}
+                                aria-labelledby="ai-brew-water-brand-label"
                               >
                                 <span className="truncate">{selectedWaterBrand?.shortLabel || copy.waterOpenBrandPicker}</span>
                                 <ArrowRight size={16} className="shrink-0 text-secondary" />
@@ -9785,10 +10082,12 @@ export function AiBrewPanel({
                             )}
                             <div className="grid gap-4 sm:grid-cols-2">
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.tds}</label>
+                                <label htmlFor="ai-brew-water-tds" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.tds}</label>
                                 <input
+                                  id="ai-brew-water-tds"
                                   name="ai-brew-water-tds"
                                   type="number"
+                                  inputMode="decimal"
                                   min="0"
                                   max="600"
                                   step="1"
@@ -9800,10 +10099,12 @@ export function AiBrewPanel({
                                 />
                               </div>
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.hardness}</label>
+                                <label htmlFor="ai-brew-water-hardness" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.hardness}</label>
                                 <input
+                                  id="ai-brew-water-hardness"
                                   name="ai-brew-water-hardness"
                                   type="number"
+                                  inputMode="decimal"
                                   min="0"
                                   max="500"
                                   step="1"
@@ -9815,10 +10116,12 @@ export function AiBrewPanel({
                                 />
                               </div>
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.alkalinity}</label>
+                                <label htmlFor="ai-brew-water-alkalinity" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.alkalinity}</label>
                                 <input
+                                  id="ai-brew-water-alkalinity"
                                   name="ai-brew-water-alkalinity"
                                   type="number"
+                                  inputMode="decimal"
                                   min="0"
                                   max="400"
                                   step="1"
@@ -10077,7 +10380,7 @@ export function AiBrewPanel({
                     <div className="space-y-3.5">
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                          <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.process}</label>
+                          <p id="ai-brew-process-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.process}</p>
                           <button
                             type="button"
                             onClick={(event) => openPicker('process', event.currentTarget)}
@@ -10085,7 +10388,7 @@ export function AiBrewPanel({
                             data-testid="ai-brew-process-picker"
                             aria-haspopup="dialog"
                             aria-expanded={pickerKind === 'process'}
-                            aria-label={copy.openProcessPicker}
+                            aria-labelledby="ai-brew-process-label"
                           >
                             <span className="truncate">{selectedProcessLabel}</span>
                             <ArrowRight size={16} className="shrink-0 text-secondary" />
@@ -10093,7 +10396,7 @@ export function AiBrewPanel({
                         </div>
 
                         <div>
-                          <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.variety}</label>
+                          <p id="ai-brew-variety-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.variety}</p>
                           <button
                             type="button"
                             onClick={(event) => openPicker('variety', event.currentTarget)}
@@ -10101,7 +10404,7 @@ export function AiBrewPanel({
                             data-testid="ai-brew-variety-picker"
                             aria-haspopup="dialog"
                             aria-expanded={pickerKind === 'variety'}
-                            aria-label={copy.openVarietyPicker}
+                            aria-labelledby="ai-brew-variety-label"
                           >
                             <span className="truncate">{selectedVarietyLabel}</span>
                             <ArrowRight size={16} className="shrink-0 text-secondary" />
@@ -10111,8 +10414,9 @@ export function AiBrewPanel({
 
                       {formState.process === CUSTOM_ENTRY_ID && (
                         <div>
-                          <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherProcess}</label>
+                          <label htmlFor="ai-brew-process-custom" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherProcess}</label>
                           <input
+                            id="ai-brew-process-custom"
                             name="ai-brew-process-custom"
                             type="text"
                             value={formState.customProcess}
@@ -10126,8 +10430,9 @@ export function AiBrewPanel({
 
                       {formState.variety === CUSTOM_ENTRY_ID && (
                         <div>
-                          <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherVariety}</label>
+                          <label htmlFor="ai-brew-variety-custom" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.otherVariety}</label>
                           <input
+                            id="ai-brew-variety-custom"
                             name="ai-brew-variety-custom"
                             type="text"
                             value={formState.customVariety}
@@ -10148,8 +10453,9 @@ export function AiBrewPanel({
                             </div>
                             <div className="mt-3 grid gap-3 sm:grid-cols-3">
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetRatio}</label>
+                                <label htmlFor="ai-brew-target-ratio" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetRatio}</label>
                                 <input
+                                  id="ai-brew-target-ratio"
                                   name="ai-brew-target-ratio"
                                   type="number"
                                   min="13"
@@ -10166,8 +10472,9 @@ export function AiBrewPanel({
                                 <p className="mt-1 text-xs leading-5 text-secondary" data-testid="ai-brew-target-ratio-hint">{copy.targetRatioHint}</p>
                               </div>
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetWaterMl}</label>
+                                <label htmlFor="ai-brew-target-water" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetWaterMl}</label>
                                 <input
+                                  id="ai-brew-target-water"
                                   name="ai-brew-target-water"
                                   type="number"
                                   min="15"
@@ -10183,8 +10490,9 @@ export function AiBrewPanel({
                                 />
                               </div>
                               <div>
-                                <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetTempC}</label>
+                                <label htmlFor="ai-brew-target-temp" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.targetTempC}</label>
                                 <input
+                                  id="ai-brew-target-temp"
                                   name="ai-brew-target-temp"
                                   type="number"
                                   min="4"
@@ -10224,10 +10532,12 @@ export function AiBrewPanel({
                               <div className="mt-4 space-y-3.5">
                                 <div className="grid gap-4 sm:grid-cols-2">
                                   <div>
-                                    <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.altitudeMasl}</label>
+                                    <label htmlFor="ai-brew-bean-altitude" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.altitudeMasl}</label>
                                     <input
+                                      id="ai-brew-bean-altitude"
                                       name="ai-brew-bean-altitude"
                                       type="number"
+                                      inputMode="numeric"
                                       min="0"
                                       max="3200"
                                       step="10"
@@ -10238,10 +10548,12 @@ export function AiBrewPanel({
                                     />
                                   </div>
                                   <div>
-                                    <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.beanDensity}</label>
+                                    <label htmlFor="ai-brew-bean-density" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.beanDensity}</label>
                                     <input
+                                      id="ai-brew-bean-density"
                                       name="ai-brew-bean-density"
                                       type="number"
+                                      inputMode="decimal"
                                       min="0.55"
                                       max="0.95"
                                       step="0.01"
@@ -10254,8 +10566,8 @@ export function AiBrewPanel({
                                 </div>
 
                                 <div>
-                                  <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.roastDevelopmentTitle}</label>
-                                  <div className="grid grid-cols-3 gap-2">
+                                  <p id="ai-brew-bean-roast-development-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.roastDevelopmentTitle}</p>
+                                  <div className="grid grid-cols-3 gap-2" role="group" aria-labelledby="ai-brew-bean-roast-development-label">
                                     {ROAST_DEVELOPMENT_OPTIONS.map((option) => {
                                       const label = option.value === 'underdeveloped'
                                         ? copy.roastDevelopmentUnderdeveloped
@@ -10269,6 +10581,7 @@ export function AiBrewPanel({
                                           onClick={() => updateForm('roastDevelopment', formState.roastDevelopment === option.value ? '' : option.value)}
                                           className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.roastDevelopment === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
                                           data-testid={`ai-brew-bean-roast-${option.value}`}
+                                          aria-pressed={formState.roastDevelopment === option.value}
                                         >
                                           {label}
                                         </button>
@@ -10278,8 +10591,8 @@ export function AiBrewPanel({
                                 </div>
 
                                 <div>
-                                  <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.solubilityTitle}</label>
-                                  <div className="grid grid-cols-3 gap-2">
+                                  <p id="ai-brew-bean-solubility-label" className="mb-2 block text-xs font-semibold uppercase tracking-widest text-secondary">{copy.solubilityTitle}</p>
+                                  <div className="grid grid-cols-3 gap-2" role="group" aria-labelledby="ai-brew-bean-solubility-label">
                                     {SOLUBILITY_OPTIONS.map((option) => {
                                       const label = option.value === 'low'
                                         ? copy.solubilityLow
@@ -10293,6 +10606,7 @@ export function AiBrewPanel({
                                           onClick={() => updateForm('solubility', formState.solubility === option.value ? '' : option.value)}
                                           className={`rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.solubility === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
                                           data-testid={`ai-brew-bean-solubility-${option.value}`}
+                                          aria-pressed={formState.solubility === option.value}
                                         >
                                           {label}
                                         </button>
@@ -10361,14 +10675,21 @@ export function AiBrewPanel({
   return (
     <div className="ai-brew-compact-shell space-y-5 pb-28 lg:pb-0" data-testid="ai-brew-panel">
       {aiAccessGateModal}
-      <div aria-hidden={activeBuilderModal !== null || resultOpen} className="mx-auto max-w-4xl space-y-5">
-        <div className="glass-card p-5 lg:p-6">
+      <div
+        aria-hidden={aiBrewModalActive}
+        {...(aiBrewModalActive ? { inert: true } : {})}
+        className="mx-auto max-w-4xl space-y-5"
+      >
+        <div className="glass-card p-4 lg:p-6">
           <div className="flex items-start gap-4">
             <div className="mb-1 inline-flex h-12 w-12 items-center justify-center rounded-[1.2rem] bg-blue-500/10 text-blue-500 shadow-inner">
               <Sparkles size={22} />
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="text-2xl font-semibold tracking-tight">{copy.title}</h2>
+              {copy.subtitle ? (
+                <p className="mt-1 text-sm leading-5 text-secondary">{copy.subtitle}</p>
+              ) : null}
             </div>
           </div>
 
@@ -10391,10 +10712,13 @@ export function AiBrewPanel({
                 type="button"
                 onClick={() => openBuilder('quick')}
                 disabled={!catalog}
-                className="rounded-[1.4rem] border border-blue-500/15 bg-blue-500/5 p-4 text-left transition-all hover:border-blue-500/35 hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-[76px] rounded-[1.25rem] border border-blue-500/15 bg-blue-500/5 p-4 text-left transition-all hover:border-blue-500/35 hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                 data-testid="ai-brew-open-quick"
               >
                 <div className="text-base font-semibold text-primary">{copy.quickMode}</div>
+                {copy.quickModeDescription ? (
+                  <p className="mt-1 text-xs leading-5 text-secondary">{copy.quickModeDescription}</p>
+                ) : null}
                 <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
                   <Sparkles size={12} />
                   {copy.aiEngineLocalValidated}
@@ -10404,10 +10728,13 @@ export function AiBrewPanel({
                 type="button"
                 onClick={() => openBuilder('pro')}
                 disabled={!catalog}
-                className="rounded-[1.4rem] border border-blue-500/15 bg-blue-500/5 p-4 text-left transition-all hover:border-blue-500/35 hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-[76px] rounded-[1.25rem] border border-blue-500/15 bg-blue-500/5 p-4 text-left transition-all hover:border-blue-500/35 hover:bg-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                 data-testid="ai-brew-open-pro"
               >
                 <div className="text-base font-semibold text-primary">{copy.proMode}</div>
+                {copy.proModeDescription ? (
+                  <p className="mt-1 text-xs leading-5 text-secondary">{copy.proModeDescription}</p>
+                ) : null}
                 <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-600 dark:text-blue-300">
                   <Brain size={12} />
                   {copy.aiEnginePrecisionPlanner}
@@ -10422,13 +10749,15 @@ export function AiBrewPanel({
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.latestPlan} / {copy.favorites} / {copy.recent}</h3>
             </div>
-            <div className="grid grid-cols-3 gap-2 rounded-[1rem] panel-soft p-1.5">
+            <div className="grid grid-cols-3 gap-1.5 rounded-[1rem] panel-soft p-1.5" role="tablist" aria-label={`${copy.latestPlan} ${copy.favorites} ${copy.recent}`}>
               <button
                 type="button"
                 onClick={() => setHistoryStripTab('latest')}
                 className={`rounded-[0.9rem] px-3 py-2 text-sm font-medium transition-all ${historyStripTab === 'latest' ? 'shadow-[0_10px_24px_rgba(37,99,235,0.12)]' : 'text-secondary hover:text-primary'}`}
                 style={historyStripTab === 'latest' ? { backgroundColor: '#dbeafe', color: '#172554' } : undefined}
                 data-testid="ai-brew-history-tab-latest"
+                role="tab"
+                aria-selected={historyStripTab === 'latest'}
               >
                 {copy.latestPlan}
               </button>
@@ -10438,6 +10767,8 @@ export function AiBrewPanel({
                 className={`rounded-[0.9rem] px-3 py-2 text-sm font-medium transition-all ${historyStripTab === 'favorites' ? 'shadow-[0_10px_24px_rgba(37,99,235,0.12)]' : 'text-secondary hover:text-primary'}`}
                 style={historyStripTab === 'favorites' ? { backgroundColor: '#dbeafe', color: '#172554' } : undefined}
                 data-testid="ai-brew-history-tab-favorites"
+                role="tab"
+                aria-selected={historyStripTab === 'favorites'}
               >
                 {copy.favorites}
               </button>
@@ -10447,6 +10778,8 @@ export function AiBrewPanel({
                 className={`rounded-[0.9rem] px-3 py-2 text-sm font-medium transition-all ${historyStripTab === 'recent' ? 'shadow-[0_10px_24px_rgba(37,99,235,0.12)]' : 'text-secondary hover:text-primary'}`}
                 style={historyStripTab === 'recent' ? { backgroundColor: '#dbeafe', color: '#172554' } : undefined}
                 data-testid="ai-brew-history-tab-recent"
+                role="tab"
+                aria-selected={historyStripTab === 'recent'}
               >
                 {copy.recent}
               </button>
@@ -10474,7 +10807,10 @@ export function AiBrewPanel({
                   </div>
                   <button
                     type="button"
-                    onClick={() => setResultOpen(true)}
+                    onClick={() => {
+                      setResultOpen(true);
+                      requestViewportMetricsRefresh();
+                    }}
                     className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-[0_10px_26px_rgba(37,99,235,0.24)]"
                     data-testid="ai-brew-open-result"
                   >
@@ -10602,6 +10938,7 @@ export function AiBrewPanel({
         saveError={saveError}
         feedback={activeFeedback}
         feedbackNoteDraft={feedbackNoteDraft}
+        keyboardOffset={aiBrewKeyboardOffset}
         showProvenance={showProvenance}
         isAuthenticated={isAuthenticated}
         isOffline={isOffline}

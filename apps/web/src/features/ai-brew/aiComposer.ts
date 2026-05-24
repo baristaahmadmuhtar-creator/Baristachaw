@@ -36,6 +36,32 @@ function formatSeconds(totalSeconds: number) {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
+function getPlanTasteTimeSeconds(plan: BrewPlan) {
+  return Math.max(0, Math.round(plan.extractionEndSeconds ?? plan.totalTimeSeconds));
+}
+
+function getPlanTasteTimeLabel(plan: BrewPlan) {
+  if (plan.methodFamily === 'espresso') return 'shot time';
+  if (plan.methodFamily === 'cold_brew') return 'cold steep';
+  if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return 'steep time';
+  if (POUR_OVER_METHODS.has(plan.methodFamily)) return plan.brewMode === 'iced' ? 'hot drawdown finish' : 'drawdown finish';
+  if (plan.brewMode === 'iced') return 'hot extraction time';
+  return 'extraction time';
+}
+
+function getAnyTasteTimeLineLabels() {
+  return [
+    'target time',
+    'extraction time',
+    'hot extraction time',
+    'drawdown finish',
+    'hot drawdown finish',
+    'steep time',
+    'shot time',
+    'cold steep',
+  ];
+}
+
 function formatBaristaRatio(value: number) {
   if (!Number.isFinite(value)) return '--';
   const rounded = Math.round(value * 10) / 10;
@@ -1307,13 +1333,15 @@ export function buildDeterministicNarrative(plan: BrewPlan, mode: AiBrewNarrativ
     const ratioLine = plan.brewMode === 'iced'
       ? `final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)} with a hot concentrate at 1:${formatBaristaRatio(plan.hotExtractionRatio)}`
       : `ratio 1:${formatBaristaRatio(plan.recommendedRatio)}`;
+    const tasteTimeLabel = getPlanTasteTimeLabel(plan);
+    const tasteTime = formatSeconds(getPlanTasteTimeSeconds(plan));
     const executionNoun = POUR_OVER_METHODS.has(plan.methodFamily) ? 'pour' : 'method';
     const microAdjustment = POUR_OVER_METHODS.has(plan.methodFamily)
       ? 'minor center-pour flow change'
       : 'minor timing or separation change';
     return [
       '## Why It Fits',
-      `This plan targets ${plan.targetProfileLabel.toLowerCase()} with ${plan.dripper.name} using ${ratioLine} at ${formatBaristaTemperature(plan.waterTempC)} C and a ${formatSeconds(plan.totalTimeSeconds)} service window. The sequence is anchored to deterministic water split (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''}) and grinder bias (${plan.grindBias}) for repeatable extraction.`,
+      `This plan targets ${plan.targetProfileLabel.toLowerCase()} with ${plan.dripper.name} using ${ratioLine} at ${formatBaristaTemperature(plan.waterTempC)} C and ${tasteTimeLabel} ${tasteTime}. The sequence is anchored to deterministic water split (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''}) and grinder bias (${plan.grindBias}) for repeatable extraction.`,
       '## Focus',
       `- Execute each ${executionNoun} checkpoint at its planned timestamp; do not shift the deterministic liquid target beyond ${plan.hotWaterMl} ml.`,
       `- Track method behavior and keep adjustments micro: grind step, 1 C temperature, or ${microAdjustment}.`,
@@ -1328,7 +1356,7 @@ export function buildDeterministicNarrative(plan: BrewPlan, mode: AiBrewNarrativ
       `- total water: ${plan.totalWaterMl} ml (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''})`,
       `- temperature: ${formatBaristaTemperature(plan.waterTempC)} C`,
       `- grind: ${plan.grindRecommendation}`,
-      `- total time: ${formatSeconds(plan.totalTimeSeconds)}`,
+      `- ${getPlanTasteTimeLabel(plan)}: ${formatSeconds(getPlanTasteTimeSeconds(plan))}`,
       '## Service Pattern',
       `- ${servicePattern.sequenceName}`,
       `- ${servicePattern.modeCue}`,
@@ -1351,7 +1379,7 @@ export function buildDeterministicNarrative(plan: BrewPlan, mode: AiBrewNarrativ
     ...stepLines,
     '## Watch',
     ...watchBullets.map((bullet) => `- ${bullet}`),
-    `- Keep final envelope locked: dose ${plan.doseG} g, final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)}${plan.iceMl > 0 ? `, hot concentrate 1:${formatBaristaRatio(plan.hotExtractionRatio)}` : ''}, water ${plan.totalWaterMl} ml (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''}), temp ${formatBaristaTemperature(plan.waterTempC)} C, brew time ${formatSeconds(plan.totalTimeSeconds)}.`
+    `- Keep final envelope locked: dose ${plan.doseG} g, final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)}${plan.iceMl > 0 ? `, hot concentrate 1:${formatBaristaRatio(plan.hotExtractionRatio)}` : ''}, water ${plan.totalWaterMl} ml (${plan.hotWaterMl} ml hot${plan.iceMl > 0 ? ` / ${plan.iceMl} ml ice` : ''}), temp ${formatBaristaTemperature(plan.waterTempC)} C, ${getPlanTasteTimeLabel(plan)} ${formatSeconds(getPlanTasteTimeSeconds(plan))}.`
   ].join('\n');
 }
 
@@ -1487,8 +1515,8 @@ function validateNumericEnvelope(
     }
     const final = Number.parseInt(timeMatches[timeMatches.length - 1][1], 10) * 60
       + Number.parseInt(timeMatches[timeMatches.length - 1][2], 10);
-    if (Math.abs(final - plan.totalTimeSeconds) > 45) {
-      warnings.push('Final referenced time is far from deterministic total brew time.');
+    if (Math.abs(final - getPlanTasteTimeSeconds(plan)) > 45) {
+      warnings.push('Final referenced time is far from deterministic main taste time.');
     }
   }
 }
@@ -2685,10 +2713,16 @@ function validateSopQuickDialEnvelope(plan: BrewPlan, mode: AiBrewNarrativeMode,
   const totalWaterLine = quickDialLines.find((line) => line.includes('total water'));
   const tempLine = quickDialLines.find((line) => line.includes('temperature'));
   const grindLine = quickDialLines.find((line) => line.includes('grind'));
-  const totalTimeLine = quickDialLines.find((line) => line.includes('total time'));
+  const expectedTimeLabel = getPlanTasteTimeLabel(plan);
+  const anyTimeLine = quickDialLines.find((line) => getAnyTasteTimeLineLabels().some((label) => line.includes(label)));
+  const timeLine = quickDialLines.find((line) => line.includes(expectedTimeLabel));
 
-  if (!doseLine || !totalWaterLine || !tempLine || !grindLine || !totalTimeLine) {
-    errors.push('Quick Dial must include dose, total water, temperature, grind, and total time.');
+  if (!doseLine || !totalWaterLine || !tempLine || !grindLine || !timeLine) {
+    if (anyTimeLine && !timeLine) {
+      errors.push(`Quick Dial time label must use "${expectedTimeLabel}" for this method, not a generic extraction/guide time.`);
+      return;
+    }
+    errors.push('Quick Dial must include dose, total water, temperature, grind, and the main extraction/steep/shot time.');
     return;
   }
 
@@ -2718,9 +2752,9 @@ function validateSopQuickDialEnvelope(plan: BrewPlan, mode: AiBrewNarrativeMode,
     return;
   }
 
-  const expectedTime = formatSeconds(plan.totalTimeSeconds).toLowerCase();
-  if (!totalTimeLine.includes(expectedTime)) {
-    errors.push(`Quick Dial total time must match deterministic value ${formatSeconds(plan.totalTimeSeconds)}.`);
+  const expectedTime = formatSeconds(getPlanTasteTimeSeconds(plan)).toLowerCase();
+  if (!timeLine.includes(expectedTime)) {
+    errors.push(`Quick Dial time must match deterministic taste-time value ${formatSeconds(getPlanTasteTimeSeconds(plan))}.`);
     return;
   }
 

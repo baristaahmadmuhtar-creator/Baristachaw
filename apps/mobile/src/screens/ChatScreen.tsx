@@ -1006,7 +1006,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
     ): Promise<AssistantResponsePayload> => {
       const boundedSourceText = clampChatPayloadText(sourceText);
       const fallbackPayload = payloadOverride || requestPayload;
-      const fallbackText = await apiClient.sendChatWithProfile(boundedSourceText, 'race', fallbackPayload);
+      const fallbackText = await apiClient.sendChatWithProfile(boundedSourceText, 'race', fallbackPayload, { timeoutMs: 70_000 });
       return {
         text: fallbackText.trim() || noResponseReturned,
         provider: 'chat_race',

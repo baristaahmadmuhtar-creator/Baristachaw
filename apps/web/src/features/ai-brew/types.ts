@@ -817,7 +817,8 @@ export interface DeviceBrewProfile extends CatalogProvenance {
     | Exclude<FrenchPressRecipeStyle, 'auto'>
     | Exclude<KalitaWaveRecipeStyle, 'auto'>
     | Exclude<CleverDripperRecipeStyle, 'auto'>
-    | Exclude<ChemexRecipeStyle, 'auto'>;
+    | Exclude<ChemexRecipeStyle, 'auto'>
+    | SwitchPublicPresetId;
   physicalConstraints?: DevicePhysicalConstraints;
   methodProgramme?: SwitchBrewProgramme | string;
   ratioDelta: number;
@@ -1119,6 +1120,13 @@ export interface BrewPlan {
   formState: AiBrewFormState;
   brewMode: AiBrewMode;
   methodFamily: AiBrewMethodFamily;
+  recipeStyle?:
+    | Exclude<AeroPressRecipeStyle, 'auto'>
+    | Exclude<FrenchPressRecipeStyle, 'auto'>
+    | Exclude<KalitaWaveRecipeStyle, 'auto'>
+    | Exclude<CleverDripperRecipeStyle, 'auto'>
+    | Exclude<ChemexRecipeStyle, 'auto'>
+    | SwitchPublicPresetId;
   methodId: BrewMethodId;
   ratioToolMethodId: BrewMethodId;
   coffeeName: string;

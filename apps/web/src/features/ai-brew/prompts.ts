@@ -763,13 +763,6 @@ function buildMethodCueChecklist(plan: BrewPlan) {
 
   lines.push('- Include percolation flow cues (concentric/circle/pulse/center/bed settle) across multiple steps, not just one.');
 
-  if (plan.methodFamily === 'chemex') {
-    lines.push('- Include thick-filter control cues (filter wall/bypass/steady flow) across at least two steps.');
-    lines.push('- Include Chemex setup cues when relevant: hard rinse, preheat glass, three-layer side toward spout, and open vent.');
-    if (plan.brewMode === 'iced') {
-      lines.push('- Chemex iced must stay hot concentrate over measured ice; do not add bypass/top-up water after drawdown.');
-    }
-  }
   if (plan.methodFamily === 'origami') {
     if (/wave/i.test(`${plan.deviceProfileId} ${plan.deviceProfileLabel}`)) {
       lines.push('- Origami wave filter must use flat-bed cues: level bed, centered pour, and no wide circular agitation.');
@@ -777,7 +770,7 @@ function buildMethodCueChecklist(plan: BrewPlan) {
       lines.push('- Origami cone filter must use cone-flow cues: compact pulses, agile flow, and no wall chasing.');
     }
   }
-  if (plan.methodFamily === 'kalita_wave' || plan.methodFamily === 'april' || plan.methodFamily === 'melitta') {
+  if (plan.methodFamily === 'april' || plan.methodFamily === 'melitta') {
     lines.push('- Include flat-bed control cues (flat bed/bed height/low-spout/even bed) across at least two steps.');
   }
 

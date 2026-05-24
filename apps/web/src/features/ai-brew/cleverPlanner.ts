@@ -217,7 +217,7 @@ export function resolveCleverPlanSelection(params: {
     case 'iced_clever':
       adjustedProfile.ratioDelta = -0.6;
       adjustedProfile.tempDeltaC = 1.5;
-      adjustedProfile.grindBias = 'fine';
+      adjustedProfile.grindBias = 'finer';
       adjustedProfile.steps = [
         {
           id: 'charge',
@@ -259,7 +259,7 @@ export function resolveCleverPlanSelection(params: {
     case 'high_dose_concentrate':
       adjustedProfile.ratioDelta = -2.0;
       adjustedProfile.tempDeltaC = -1.0;
-      adjustedProfile.grindBias = 'coarse';
+      adjustedProfile.grindBias = 'coarser';
       adjustedProfile.steps = [
         {
           id: 'charge',

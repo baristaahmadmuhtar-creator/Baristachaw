@@ -118,6 +118,8 @@ import type {
   KalitaWaveRecipeStyle,
   CleverDripperRecipeStyle,
   ChemexRecipeStyle,
+  FrenchPressRecipeStyle,
+  SwitchPublicPresetId,
 } from './types.ts';
 
 export type AiBrewGenerationStageId =
@@ -1730,7 +1732,13 @@ type AdaptiveShareContext = {
   dripperName?: string;
   filterStyle: DeviceBrewProfile['filterStyle'];
   flatBottomProfile?: FlatBottomProfileFamily;
-  recipeStyle?: Exclude<AeroPressRecipeStyle, 'auto'>;
+  recipeStyle?:
+    | Exclude<AeroPressRecipeStyle, 'auto'>
+    | Exclude<FrenchPressRecipeStyle, 'auto'>
+    | Exclude<KalitaWaveRecipeStyle, 'auto'>
+    | Exclude<CleverDripperRecipeStyle, 'auto'>
+    | Exclude<ChemexRecipeStyle, 'auto'>
+    | SwitchPublicPresetId;
   physicalConstraints?: DevicePhysicalConstraints;
   methodProgramme?: SwitchBrewProgramme | string;
   manualTechniquePattern?: ManualBrewTechniquePattern;
@@ -4398,7 +4406,13 @@ function deriveMethodFamilyAdjustment(params: {
   methodFamily: AiBrewMethodFamily;
   filterStyle: DeviceBrewProfile['filterStyle'];
   flatBottomProfile?: FlatBottomProfileFamily;
-  recipeStyle?: Exclude<AeroPressRecipeStyle, 'auto'>;
+  recipeStyle?:
+    | Exclude<AeroPressRecipeStyle, 'auto'>
+    | Exclude<FrenchPressRecipeStyle, 'auto'>
+    | Exclude<KalitaWaveRecipeStyle, 'auto'>
+    | Exclude<CleverDripperRecipeStyle, 'auto'>
+    | Exclude<ChemexRecipeStyle, 'auto'>
+    | SwitchPublicPresetId;
   brewMode: 'hot' | 'iced';
   targetProfileLabel: string;
   targetProfileId?: string;

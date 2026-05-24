@@ -101,7 +101,7 @@ export function resolveKalitaPlanSelection(params: {
     case 'competition_fast_four':
       adjustedProfile.ratioDelta = 0.2;
       adjustedProfile.tempDeltaC = 1.0;
-      adjustedProfile.grindBias = 'fine';
+      adjustedProfile.grindBias = 'finer';
       adjustedProfile.steps = [
         {
           id: 'bloom',
@@ -151,7 +151,7 @@ export function resolveKalitaPlanSelection(params: {
     case 'continuous_slow_stream':
       adjustedProfile.ratioDelta = -0.3;
       adjustedProfile.tempDeltaC = -1.5;
-      adjustedProfile.grindBias = 'coarse';
+      adjustedProfile.grindBias = 'coarser';
       adjustedProfile.steps = [
         {
           id: 'bloom',
@@ -185,7 +185,7 @@ export function resolveKalitaPlanSelection(params: {
     case 'iced_wave':
       adjustedProfile.ratioDelta = -0.65; // High concentration split
       adjustedProfile.tempDeltaC = 1.5;
-      adjustedProfile.grindBias = 'fine';
+      adjustedProfile.grindBias = 'finer';
       adjustedProfile.steps = [
         {
           id: 'bloom',
@@ -227,7 +227,7 @@ export function resolveKalitaPlanSelection(params: {
     case 'high_dose_concentrate':
       adjustedProfile.ratioDelta = -2.5; // Intense tight ratio
       adjustedProfile.tempDeltaC = -1.0;
-      adjustedProfile.grindBias = 'coarse';
+      adjustedProfile.grindBias = 'coarser';
       adjustedProfile.steps = [
         {
           id: 'bloom',

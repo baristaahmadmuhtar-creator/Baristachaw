@@ -101,7 +101,7 @@ export function resolveChemexPlanSelection(params: {
     case 'competition_multi_pulse':
       adjustedProfile.ratioDelta = 0.2;
       adjustedProfile.tempDeltaC = 1.0;
-      adjustedProfile.grindBias = 'fine';
+      adjustedProfile.grindBias = 'finer';
       adjustedProfile.steps = [
         {
           id: 'bloom',
@@ -159,7 +159,7 @@ export function resolveChemexPlanSelection(params: {
     case 'continuous_center_pour':
       adjustedProfile.ratioDelta = -0.3;
       adjustedProfile.tempDeltaC = -1.5;
-      adjustedProfile.grindBias = 'coarse';
+      adjustedProfile.grindBias = 'coarser';
       adjustedProfile.steps = [
         {
           id: 'bloom',
@@ -193,7 +193,7 @@ export function resolveChemexPlanSelection(params: {
     case 'iced_chemex':
       adjustedProfile.ratioDelta = 0.0;
       adjustedProfile.tempDeltaC = 1.5;
-      adjustedProfile.grindBias = 'fine';
+      adjustedProfile.grindBias = 'finer';
       adjustedProfile.steps = [
         {
           id: 'bloom',
@@ -235,7 +235,7 @@ export function resolveChemexPlanSelection(params: {
     case 'high_dose_heavy_body':
       adjustedProfile.ratioDelta = -2.2;
       adjustedProfile.tempDeltaC = -1.0;
-      adjustedProfile.grindBias = 'coarse';
+      adjustedProfile.grindBias = 'coarser';
       adjustedProfile.steps = [
         {
           id: 'bloom',

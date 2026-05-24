@@ -286,18 +286,18 @@
       "missingFields": []
     },
     {
-      "id": "id-guatemala-nery-pablo-washed",
+      "id": "id-guatemala-todos-santos-washed-caturra-bourbon",
       "roaster": "Subtext Coffee Roasters",
-      "lotName": "Guatemala Nery Pablo Washed Field Blend",
+      "lotName": "Guatemala Todos Santos Washed Caturra & Bourbon",
       "origin": "Guatemala",
-      "region": "Huehuetenango",
+      "region": "Todos Santos Cuchumatan, Huehuetenango",
       "process": "washed",
-      "variety": "caturra",
+      "variety": "caturra_bourbon",
       "roastLevel": "",
-      "sourceUrl": "https://www.subtext.coffee/collections/filter-coffee-beans/products/guatemala-nery-pablo-washed-caturra-bourbon",
-      "capturedAt": "2026-05-19",
-      "evidenceLevel": "roaster_page",
-      "expectedCharacter": "washed Caturra/Bourbon sweetness, citrus/chocolate balance",
+      "sourceUrl": "https://thepress.coffee/coffees/subtext-coffee-roasters-guatemala-todos-santos-washed-caturra-and-bourbon/",
+      "capturedAt": "2026-05-25",
+      "evidenceLevel": "coffee_community_reference",
+      "expectedCharacter": "washed Guatemala structure, Caturra/Bourbon sweetness, balanced filter profile",
       "missingFields": ["roastLevel"]
     },
     {

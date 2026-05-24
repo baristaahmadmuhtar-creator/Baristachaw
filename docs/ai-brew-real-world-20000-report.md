@@ -1,10 +1,10 @@
 # AI Brew Real-World 20000 Report
 
-Latest SHA: 3feb7acf9263721dae6a93414eeb9b6a9af506c4
+Latest SHA: b99b2a54095fbcffd15663931c5f61fbafcac5ea
 Local branch: main
-Origin main: 3feb7acf9263721dae6a93414eeb9b6a9af506c4
+Origin main: b99b2a54095fbcffd15663931c5f61fbafcac5ea
 Local status: dirty (local validation changes present)
-Date: 2026-05-24T06:55:08.597Z
+Date: 2026-05-24T22:59:20.787Z
 Scenario count: 20000
 
 ## Honesty Boundary
@@ -32,7 +32,7 @@ This is a 20,000-case software/barista scenario gate, not 20,000 physical brews 
 - SUMO Coffee Roasters Isano Rwanda Red Bourbon Washed: 714
 - Barista och Espresso Masha Burundi Washed Red Bourbon: 714
 - Pangea Coffee Co. Unity Costa Rica Catuai Honey Process: 714
-- Subtext Coffee Roasters Guatemala Nery Pablo Washed Field Blend: 714
+- Subtext Coffee Roasters Guatemala Todos Santos Washed Caturra & Bourbon: 714
 - Staccato Roasters Brazil Yellow Bourbon Natural: 714
 - Indian Coffee Beans Monsooned Malabar reference: 714
 - Rabbit Hole Roasters Wadi Mahyad Yemeni Natural Community Lot: 714
@@ -102,7 +102,7 @@ This is a 20,000-case software/barista scenario gate, not 20,000 physical brews 
 ## Score Summary
 Passed: 20000/20000
 Failures: 0
-Warnings: 37122
+Warnings: 37121
 Average score: 98.7
 Score distribution: min 92.4; p10 97.1; p50 98.7; p90 100; max 100
 Unique coffee input combinations: 20000
@@ -120,7 +120,7 @@ Source-backed seed lots: 28
 | varietyFit | 99.9 | 92 |
 | waterHonesty | 97.7 | 92 |
 | grinderHonesty | 97.1 | 92 |
-| temperatureLogic | 100 | 92 |
+| temperatureLogic | 100 | 100 |
 | grindLogic | 97.1 | 92 |
 | extractionTimeLogic | 100 | 100 |
 | workflowLanguageSafety | 99.8 | 92 |
@@ -182,7 +182,6 @@ No blocking software failure found.
 - geisha_body_target_risk: 359 cases; examples source-backed-00067, source-backed-00068, source-backed-00095, source-backed-00096, source-backed-00179
 - cold_brew_floral_expectation_risk: 301 cases; examples source-backed-00033, source-backed-00034, source-backed-00135, source-backed-00136, source-backed-00169
 - french_press_clarity_softening_risk: 301 cases; examples source-backed-00031, source-backed-00032, source-backed-00065, source-backed-00133, source-backed-00134
-- washed_light_temp_too_low: 1 cases; examples source-backed-12336
 
 ## Top Method-Risk Categories
 - french_press: avg 98.3; min 92.4; warnings 2450; failures 0
@@ -195,7 +194,7 @@ No blocking software failure found.
 - melitta: avg 98.8; min 94.1; warnings 2146; failures 0
 - kalita_wave: avg 98.8; min 94.1; warnings 2147; failures 0
 - april: avg 98.8; min 94.1; warnings 2149; failures 0
-- clever_dripper: avg 98.8; min 94.1; warnings 2149; failures 0
+- clever_dripper: avg 98.8; min 94.1; warnings 2148; failures 0
 - aeropress: avg 98.8; min 94.1; warnings 2143; failures 0
 
 ## Barista Interpretation
@@ -252,24 +251,24 @@ No blocking software failure found.
 | 12 | Pulpa Specialty Coffee Geisha Washed Finca Hartmann -> balance_clean | Hario Switch 03 iced | Comandante C40 MK4 | Third Wave Water / remineralized balanced | 20g, 280ml, 92.4C, Starting grind: 27 clicks. Correction range: 26 clicks to 29 clicks. If sour/thin: 26 clicks. If bitter/dry/stalled: 29 clicks., 2:40 | 100 | real_brew_validation_pending |
 | 13 | Tobo Coffee Roaster Ndiaini SL28 SL34 Washed Kenya -> balance_clean | MUGEN x Switch | Comandante C40 MK4 | Third Wave Water / remineralized balanced | 12g, 185ml, 91C, Starting grind: 28 clicks. Correction range: 26 clicks to 29 clicks. If sour/thin: 26 clicks. If bitter/dry/stalled: 29 clicks., 2:50 | 100 | real_brew_validation_pending |
 | 14 | Uncommon Coffee Kii AA Kenya SL28 SL34 Washed -> more_sweetness | MUGEN x Switch | Comandante C40 MK4 | Third Wave Water / remineralized balanced | 15g, 230ml, 91.8C, Starting grind: 27 clicks. Correction range: 25 clicks to 28 clicks. If sour/thin: 25 clicks. If bitter/dry/stalled: 28 clicks., 3:05 | 100 | real_brew_validation_pending |
-| 15 | LiLo Coffee Roasters Colombia La Parcelita Pink Bourbon Washed -> more_sweetness | Chemex | DF64 espresso/filter hybrid | Third Wave Water / remineralized balanced | 20g, 330ml, 94.8C, Starting grind: coarse filter range, verify burrs. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias coarser., 5:20 | 98.3 | fallback_grinder_calibration_risk; real_brew_validation_pending |
+| 15 | LiLo Coffee Roasters Colombia La Parcelita Pink Bourbon Washed -> more_sweetness | Chemex | DF64 espresso/filter hybrid | Third Wave Water / remineralized balanced | 20g, 330ml, 95.3C, Starting grind: coarse filter range, verify burrs. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser., 5:20 | 98.3 | fallback_grinder_calibration_risk; real_brew_validation_pending |
 | 16 | Basic Barista Pink Bourbon Washed Colombia -> more_sweetness | Chemex | DF64 espresso/filter hybrid | Third Wave Water / remineralized balanced | 30g, 495ml, 93C, Starting grind: coarse filter range, verify burrs. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias finer., 4:25 | 98.3 | fallback_grinder_calibration_risk; real_brew_validation_pending |
 | 17 | SUMO Coffee Roasters Isano Rwanda Red Bourbon Washed -> more_sweetness | Origami | DF64 espresso/filter hybrid | Third Wave Water / remineralized balanced | 12g, 185ml, 93.5C, Starting grind: filter range, dial-in required. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias finer., 3:05 | 98.3 | fallback_grinder_calibration_risk; real_brew_validation_pending |
 | 18 | Barista och Espresso Masha Burundi Washed Red Bourbon -> more_sweetness | Origami | DF64 espresso/filter hybrid | Third Wave Water / remineralized balanced | 15g, 235ml, 91.6C, Starting grind: filter range, dial-in required. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias finer., 2:50 | 98.3 | fallback_grinder_calibration_risk; real_brew_validation_pending |
 | 19 | Pangea Coffee Co. Unity Costa Rica Catuai Honey Process -> more_sweetness | Kono | DF64 espresso/filter hybrid | Third Wave Water / remineralized balanced | 18g, 270ml, 93C, Starting grind: filter range, dial-in required. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias finer., 4:30 | 98.3 | fallback_grinder_calibration_risk; real_brew_validation_pending |
-| 20 | Subtext Coffee Roasters Guatemala Nery Pablo Washed Field Blend -> more_sweetness | Kono | DF64 espresso/filter hybrid | Third Wave Water / remineralized balanced | 20g, 305ml, 93.7C, Starting grind: filter range, dial-in required. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias finer., 4:20 | 98.3 | fallback_grinder_calibration_risk; real_brew_validation_pending |
+| 20 | Subtext Coffee Roasters Guatemala Todos Santos Washed Caturra & Bourbon -> more_sweetness | Kono | DF64 espresso/filter hybrid | Third Wave Water / remineralized balanced | 20g, 305ml, 93.6C, Starting grind: filter range, dial-in required. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias finer., 4:15 | 98.3 | fallback_grinder_calibration_risk; real_brew_validation_pending |
 | 21 | Staccato Roasters Brazil Yellow Bourbon Natural -> more_sweetness | Melitta | DF64 espresso/filter hybrid | Third Wave Water / remineralized balanced | 12g, 170ml, 92.5C, Starting grind: filter range, dial-in required. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias finer., 3:00 | 98.3 | fallback_grinder_calibration_risk; real_brew_validation_pending |
 | 22 | Indian Coffee Beans Monsooned Malabar reference -> more_sweetness | Melitta | Kingrinder K6 | Third Wave Water / remineralized balanced | 15g, 230ml, 91.4C, Starting grind: 101 clicks. Correction range: 97 clicks to 105 clicks. If sour/thin: 97 clicks. If bitter/dry/stalled: 105 clicks., 3:30 | 100 | real_brew_validation_pending |
-| 23 | Rabbit Hole Roasters Wadi Mahyad Yemeni Natural Community Lot -> more_sweetness | Kalita / flat-bottom | Kingrinder K6 | Low buffer clarity water | 18g, 285ml, 93C, Starting grind: 104 clicks. Correction range: 100 clicks to 108 clicks. If sour/thin: 100 clicks. If bitter/dry/stalled: 108 clicks., 4:25 | 100 | real_brew_validation_pending |
-| 24 | Sandalj Vietnam Washed Kontum 18 -> more_sweetness | Kalita / flat-bottom | Kingrinder K6 | Low buffer clarity water | 20g, 320ml, 92.2C, Starting grind: 109 clicks. Correction range: 105 clicks to 113 clicks. If sour/thin: 105 clicks. If bitter/dry/stalled: 113 clicks., 4:10 | 100 | real_brew_validation_pending |
+| 23 | Rabbit Hole Roasters Wadi Mahyad Yemeni Natural Community Lot -> more_sweetness | Kalita / flat-bottom | Kingrinder K6 | Low buffer clarity water | 18g, 280ml, 93C, Starting grind: 100 clicks. Correction range: 96 clicks to 104 clicks. If sour/thin: 96 clicks. If bitter/dry/stalled: 104 clicks., 4:25 | 100 | real_brew_validation_pending |
+| 24 | Sandalj Vietnam Washed Kontum 18 -> more_sweetness | Kalita / flat-bottom | Kingrinder K6 | Low buffer clarity water | 20g, 315ml, 92.8C, Starting grind: 109 clicks. Correction range: 105 clicks to 113 clicks. If sour/thin: 105 clicks. If bitter/dry/stalled: 113 clicks., 4:10 | 100 | real_brew_validation_pending |
 | 25 | TheBeanGeek Thailand Doi Chang Washed -> more_sweetness | April / Orea / B75 style flat-bottom | Kingrinder K6 | Low buffer clarity water | 12g, 190ml, 91.8C, Starting grind: 105 clicks. Correction range: 101 clicks to 109 clicks. If sour/thin: 101 clicks. If bitter/dry/stalled: 109 clicks., 2:55 | 100 | real_brew_validation_pending |
 | 26 | Surfbean Coffee Roaster Laos Bolaven Washed -> more_sweetness | April / Orea / B75 style flat-bottom | Kingrinder K6 | Low buffer clarity water | 15g, 220ml, 91.3C, Starting grind: 104 clicks. Correction range: 100 clicks to 108 clicks. If sour/thin: 100 clicks. If bitter/dry/stalled: 108 clicks., 2:50 | 100 | real_brew_validation_pending |
-| 27 | Frontside Coffee Roasters Decaf Colombia Huila Sugar Cane -> more_acidity | Clever Dripper | Kingrinder K6 | Low buffer clarity water | 18g, 290ml, 90.9C, Starting grind: 90 clicks. Correction range: 79 clicks to 101 clicks. If sour/thin: 79 clicks. If bitter/dry/stalled: 101 clicks., 3:20 | 100 | real_brew_validation_pending |
-| 28 | Good Cup Coffee Liberica Barako reference -> more_acidity | Clever Dripper | Kingrinder K6 | Low buffer clarity water | 20g, 325ml, 89.6C, Starting grind: 97 clicks. Correction range: 86 clicks to 108 clicks. If sour/thin: 86 clicks. If bitter/dry/stalled: 108 clicks., 3:10 | 100 | real_brew_validation_pending |
+| 27 | Frontside Coffee Roasters Decaf Colombia Huila Sugar Cane -> more_acidity | Clever Dripper | Kingrinder K6 | Low buffer clarity water | 18g, 280ml, 91.9C, Starting grind: 90 clicks. Correction range: 79 clicks to 101 clicks. If sour/thin: 79 clicks. If bitter/dry/stalled: 101 clicks., 3:20 | 100 | real_brew_validation_pending |
+| 28 | Good Cup Coffee Liberica Barako reference -> more_acidity | Clever Dripper | Kingrinder K6 | Low buffer clarity water | 20g, 315ml, 90.6C, Starting grind: 97 clicks. Correction range: 86 clicks to 108 clicks. If sour/thin: 86 clicks. If bitter/dry/stalled: 108 clicks., 3:10 | 100 | real_brew_validation_pending |
 | 29 | Morph Coffee Aceh Gayo Queen Ketiara -> more_acidity | AeroPress | Timemore C2 | Low buffer clarity water | 12g, 180ml, 88C, Starting grind: 20 clicks. Correction range: 18 clicks to 23 clicks. If sour/thin: 18 clicks. If bitter/dry/stalled: 23 clicks., 1:15 | 100 | real_brew_validation_pending |
 | 30 | Otten Coffee Arabica Aceh Gayo Honey Process -> more_acidity | AeroPress | Timemore C2 | Low buffer clarity water | 15g, 225ml, 90C, Starting grind: 20 clicks. Correction range: 18 clicks to 22 clicks. If sour/thin: 18 clicks. If bitter/dry/stalled: 22 clicks., 1:15 | 100 | real_brew_validation_pending |
-| 31 | Otten Coffee Gayo Linung Jaya Black Honey -> more_acidity | French Press | Timemore C2 | Low buffer clarity water | 30g, 455ml, 92.1C, Starting grind: 28 clicks. Correction range: 27 clicks to 30 clicks. If sour/thin: 27 clicks. If bitter/dry/stalled: 30 clicks., 4:10 | 98.3 | french_press_clarity_softening_risk; real_brew_validation_pending |
-| 32 | Otten Coffee Aceh Gayo Anaerob Bener Meriah -> more_acidity | French Press | Timemore C2 | Low buffer clarity water | 18g, 270ml, 93.5C, Starting grind: 28 clicks. Correction range: 26 clicks to 29 clicks. If sour/thin: 26 clicks. If bitter/dry/stalled: 29 clicks., 4:20 | 98.3 | french_press_clarity_softening_risk; real_brew_validation_pending |
+| 31 | Otten Coffee Gayo Linung Jaya Black Honey -> more_acidity | French Press | Timemore C2 | Low buffer clarity water | 30g, 455ml, 92.3C, Starting grind: 28 clicks. Correction range: 26 clicks to 29 clicks. If sour/thin: 26 clicks. If bitter/dry/stalled: 29 clicks., 3:50 | 98.3 | french_press_clarity_softening_risk; real_brew_validation_pending |
+| 32 | Otten Coffee Aceh Gayo Anaerob Bener Meriah -> more_acidity | French Press | Timemore C2 | Low buffer clarity water | 18g, 270ml, 93.7C, Starting grind: 27 clicks. Correction range: 25 clicks to 28 clicks. If sour/thin: 25 clicks. If bitter/dry/stalled: 28 clicks., 4:00 | 98.3 | french_press_clarity_softening_risk; real_brew_validation_pending |
 | 33 | Otten Coffee Aceh Gayo Natural Process -> more_acidity | Cold Brew | Timemore C2 | Low buffer clarity water | 40g, 600ml, 14.8C, Starting grind: 28 clicks. Correction range: 26 clicks to 29 clicks. If sour/thin: 26 clicks. If bitter/dry/stalled: 29 clicks., 685:00 | 98.7 | cold_brew_floral_expectation_risk; real_brew_validation_pending |
 | 34 | Common Grounds Wanoja Extended Natural -> more_acidity | Cold Brew | Timemore C2 | High buffer alkaline water | 40g, 600ml, 12.5C, Starting grind: 28 clicks. Correction range: 27 clicks to 30 clicks. If sour/thin: 27 clicks. If bitter/dry/stalled: 30 clicks., 685:00 | 97.1 | high_buffer_target_risk; cold_brew_floral_expectation_risk; real_brew_validation_pending |
 | 35 | Common Grounds Toraja Sulotco -> more_acidity | V60 hot | Timemore C2 | High buffer alkaline water | 18g, 295ml, 92C, Starting grind: 18 clicks. Correction range: 16 clicks to 19 clicks. If sour/thin: 16 clicks. If bitter/dry/stalled: 19 clicks., 2:25 | 98.3 | high_buffer_target_risk; real_brew_validation_pending |
@@ -285,9 +284,9 @@ No blocking software failure found.
 | 45 | SUMO Coffee Roasters Isano Rwanda Red Bourbon Washed -> fruit_forward | Hario Switch 03 iced | Fellow Ode Gen 2 | zero-mineral RO / distilled water | 12g, 165ml, 94C, Starting grind: 6 numbers. Correction range: 4 numbers to 7 numbers. If sour/thin: 4 numbers. If bitter/dry/stalled: 7 numbers., 2:50 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
 | 46 | Barista och Espresso Masha Burundi Washed Red Bourbon -> fruit_forward | Hario Switch 03 iced | Fellow Ode Gen 2 | zero-mineral RO / distilled water | 15g, 210ml, 94C, Starting grind: 6 numbers. Correction range: 4 numbers to 7 numbers. If sour/thin: 4 numbers. If bitter/dry/stalled: 7 numbers., 2:50 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
 | 47 | Pangea Coffee Co. Unity Costa Rica Catuai Honey Process -> fruit_forward | MUGEN x Switch | Fellow Ode Gen 2 | zero-mineral RO / distilled water | 18g, 280ml, 91.7C, Starting grind: 7 numbers. Correction range: 5 numbers to 8 numbers. If sour/thin: 5 numbers. If bitter/dry/stalled: 8 numbers., 2:55 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
-| 48 | Subtext Coffee Roasters Guatemala Nery Pablo Washed Field Blend -> fruit_forward | MUGEN x Switch | Fellow Ode Gen 2 | zero-mineral RO / distilled water | 20g, 310ml, 92.9C, Starting grind: 7 numbers. Correction range: 5 numbers to 8 numbers. If sour/thin: 5 numbers. If bitter/dry/stalled: 8 numbers., 3:00 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
+| 48 | Subtext Coffee Roasters Guatemala Todos Santos Washed Caturra & Bourbon -> fruit_forward | MUGEN x Switch | Fellow Ode Gen 2 | zero-mineral RO / distilled water | 20g, 310ml, 92.6C, Starting grind: 7 numbers. Correction range: 5 numbers to 8 numbers. If sour/thin: 5 numbers. If bitter/dry/stalled: 8 numbers., 2:55 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
 | 49 | Staccato Roasters Brazil Yellow Bourbon Natural -> fruit_forward | Chemex | Fellow Ode Gen 2 | zero-mineral RO / distilled water | 30g, 495ml, 93C, Starting grind: 10 numbers. Correction range: 8 numbers to 11 numbers. If sour/thin: 8 numbers. If bitter/dry/stalled: 11 numbers., 4:50 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
-| 50 | Indian Coffee Beans Monsooned Malabar reference -> fruit_forward | Chemex | Baratza Encore | zero-mineral RO / distilled water | 20g, 330ml, 94C, Starting grind: 35 settings. Correction range: 33 settings to 37 settings. If sour/thin: 33 settings. If bitter/dry/stalled: 37 settings., 4:55 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
+| 50 | Indian Coffee Beans Monsooned Malabar reference -> fruit_forward | Chemex | Baratza Encore | zero-mineral RO / distilled water | 20g, 330ml, 94.5C, Starting grind: 35 settings. Correction range: 33 settings to 37 settings. If sour/thin: 33 settings. If bitter/dry/stalled: 37 settings., 4:55 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
 | 51 | Rabbit Hole Roasters Wadi Mahyad Yemeni Natural Community Lot -> fruit_forward | Origami | Baratza Encore | zero-mineral RO / distilled water | 18g, 255ml, 93.7C, Starting grind: 15 settings. Correction range: 13 settings to 16 settings. If sour/thin: 13 settings. If bitter/dry/stalled: 16 settings., 2:45 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
 | 52 | Sandalj Vietnam Washed Kontum 18 -> fruit_forward | Origami | Baratza Encore | zero-mineral RO / distilled water | 20g, 325ml, 89.8C, Starting grind: 15 settings. Correction range: 14 settings to 17 settings. If sour/thin: 14 settings. If bitter/dry/stalled: 17 settings., 2:10 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
 | 53 | TheBeanGeek Thailand Doi Chang Washed -> floral_transparent | Kono | Baratza Encore | zero-mineral RO / distilled water | 12g, 190ml, 91.7C, Starting grind: 15 settings. Correction range: 14 settings to 17 settings. If sour/thin: 14 settings. If bitter/dry/stalled: 17 settings., 3:30 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |

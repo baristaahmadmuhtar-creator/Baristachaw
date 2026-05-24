@@ -4181,7 +4181,7 @@ function FocusLockedDialog({
     hidden: {
       opacity: 0,
       y: isBottomSheet ? '100%' : (disableMotionShift ? 0 : 24),
-      scale: isBottomSheet ? 1 : 0.96,
+      scale: isBottomSheet || disableMotionShift ? 1 : 0.96,
     },
     visible: {
       opacity: 1,
@@ -4192,7 +4192,7 @@ function FocusLockedDialog({
     exit: {
       opacity: 0,
       y: isBottomSheet ? '100%' : (disableMotionShift ? 0 : 20),
-      scale: isBottomSheet ? 1 : 0.97,
+      scale: isBottomSheet || disableMotionShift ? 1 : 0.97,
       transition: modalExitTransition,
     },
   };
@@ -5011,6 +5011,28 @@ function PlanResultDialog({
 
   const activeTabPanelId = `ai-brew-result-panel-${activeTab}`;
   const activeTabId = `ai-brew-result-tab-${activeTab}`;
+  const focusResultTab = (nextTab: ResultTab) => {
+    setActiveTab(nextTab);
+    window.requestAnimationFrame(() => {
+      resultTabRefs.current[nextTab]?.focus();
+    });
+  };
+  const handleResultTabKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, currentTab: ResultTab) => {
+    const key = event.key;
+    if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'].includes(key)) return;
+    event.preventDefault();
+
+    const orderedTabs: ResultTab[] = resultTabs.map((tab) => tab.id).filter((tabId) => tabId !== 'details');
+    const currentIndex = Math.max(0, orderedTabs.indexOf(currentTab));
+    const nextIndex = key === 'Home'
+      ? 0
+      : key === 'End'
+        ? orderedTabs.length - 1
+        : key === 'ArrowLeft' || key === 'ArrowUp'
+          ? (currentIndex - 1 + orderedTabs.length) % orderedTabs.length
+          : (currentIndex + 1) % orderedTabs.length;
+    focusResultTab(orderedTabs[nextIndex]);
+  };
   const resultSwitchValveStates = Array.from(new Set(workflowGuideSteps
     .map((step) => step.valveState)
     .filter((state): state is NonNullable<WorkflowGuideStep['valveState']> => Boolean(state))));
@@ -5491,7 +5513,7 @@ function PlanResultDialog({
         </div>
       </div>
 
-      <div className="mx-auto mt-5 max-w-xl space-y-3 rounded-[1.6rem] border border-glass bg-surface-alpha/40 p-4 text-center" data-testid="ai-brew-flow-current-card">
+      <div className="mx-auto mt-5 max-w-xl space-y-3 rounded-[1.6rem] border border-glass bg-[var(--bg-elevated)] p-4 text-center shadow-[0_14px_32px_rgba(15,23,42,0.08)]" data-testid="ai-brew-flow-current-card">
         <p className="text-lg font-semibold leading-7 text-primary">
           {liteStepAction}
         </p>
@@ -5590,7 +5612,8 @@ function PlanResultDialog({
       onClose={onClose}
       ariaLabel={copy.summaryTitle}
       ariaDescribedBy={descriptionId}
-      className="fixed inset-0 z-[111] h-[var(--fullscreen-modal-height)] max-h-[var(--fullscreen-modal-height)] max-w-full overflow-hidden bg-[var(--bg-base)]/98 lg:inset-6 lg:mx-auto lg:h-auto lg:max-h-[calc(var(--fullscreen-modal-height)_-_3rem)] lg:max-w-6xl lg:rounded-[2rem] lg:border lg:border-glass lg:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
+      className="fixed inset-0 z-[111] max-w-full overflow-hidden bg-[var(--bg-base)]/98 lg:inset-6 lg:mx-auto lg:h-auto lg:max-h-[calc(var(--fullscreen-modal-height)_-_3rem)] lg:max-w-6xl lg:rounded-[2rem] lg:border lg:border-glass lg:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
+      disableMotionShift
     >
       <div className="flex h-full min-w-0 max-w-full flex-col overflow-hidden" data-testid="ai-brew-result">
         <div
@@ -5800,6 +5823,7 @@ function PlanResultDialog({
                       aria-controls={`ai-brew-result-panel-${tab.id}`}
                       tabIndex={activeTab === tab.id ? 0 : -1}
                       onClick={() => setActiveTab(tab.id)}
+                      onKeyDown={(event) => handleResultTabKeyDown(event, tab.id)}
                       className={`min-w-0 overflow-hidden rounded-[0.8rem] px-2 py-2 text-xs font-medium leading-4 transition-all sm:px-2.5 sm:text-sm ${
                         activeTab === tab.id
                           ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.2)]'
@@ -6545,7 +6569,7 @@ function PlanResultDialog({
                       </span>
                     </div>
 
-                    <div className="mt-4 rounded-2xl bg-[var(--bg-base)]/88 p-3.5 shadow-[0_12px_28px_rgba(15,23,42,0.08)]" data-testid="ai-brew-flow-current-card">
+                    <div className="mt-4 rounded-2xl bg-[var(--bg-elevated)] p-3.5 shadow-[0_12px_28px_rgba(15,23,42,0.08)]" data-testid="ai-brew-flow-current-card">
                       <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowCurrentStep}</p>
                       <p className="mt-1 text-sm font-semibold text-primary">
                         {flowCurrentStep ? localizeAiBrewStepLabel(flowCurrentStep.label, language) : buildLocalizedPlanRecipeName(plan, language)}
@@ -6988,7 +7012,7 @@ function PlanResultDialog({
           style={{ paddingBottom: 'calc(8px + var(--bottom-safe-capped, 0px))' }}
           data-testid="ai-brew-result-action-bar"
         >
-          <div className="grid grid-cols-[repeat(3,minmax(0,1fr))] gap-2">
+          <div className="grid grid-cols-[repeat(3,minmax(0,1fr))] gap-2" data-testid="ai-brew-result-actions">
             <button
               type="button"
               onClick={onSaveRecipe}
@@ -7005,6 +7029,23 @@ function PlanResultDialog({
               data-testid="ai-brew-result-action-guide"
             >
               {id ? 'Seduh' : copy.flowTab}
+            </button>
+            <button
+              type="button"
+              onClick={() => onUseInTimer(timerTargetSeconds)}
+              disabled={workflowBlocked}
+              className="inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary disabled:cursor-not-allowed disabled:opacity-55"
+              data-testid="ai-brew-result-action-timer"
+            >
+              {id ? 'Timer' : 'Timer'}
+            </button>
+            <button
+              type="button"
+              onClick={() => onUseInRatio(plan)}
+              className="inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
+              data-testid="ai-brew-result-action-ratio"
+            >
+              {id ? 'Rasio' : 'Ratio'}
             </button>
             <button
               type="button"
@@ -10127,7 +10168,7 @@ export function AiBrewPanel({
           closeBuilder();
         }}
         ariaLabel={dialogTitle}
-        className="fixed inset-0 z-[111] h-[calc(var(--fullscreen-modal-height)_+_1px)] max-h-[calc(var(--fullscreen-modal-height)_+_1px)] max-w-full overflow-hidden bg-[var(--bg-base)]/98 lg:inset-6 lg:mx-auto lg:h-auto lg:max-h-[calc(var(--fullscreen-modal-height)_-_3rem)] lg:max-w-5xl lg:rounded-[2rem] lg:border lg:border-glass lg:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
+        className="fixed inset-0 z-[111] max-w-full overflow-hidden bg-[var(--bg-base)]/98 lg:inset-6 lg:mx-auto lg:h-auto lg:max-h-[calc(var(--fullscreen-modal-height)_-_3rem)] lg:max-w-5xl lg:rounded-[2rem] lg:border lg:border-glass lg:shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
         disableMotionShift
       >
         <div className="relative flex h-full min-w-0 max-w-full flex-col overflow-hidden" data-testid={`ai-brew-builder-${mode}`}>
@@ -11276,7 +11317,10 @@ export function AiBrewPanel({
           </div>
           <div
             className="shrink-0 max-w-full overflow-hidden border-t panel-divider-subtle bg-[var(--bg-base)] px-3 py-3 lg:px-6 lg:py-4"
-            style={{ paddingBottom: 'calc(12px + var(--bottom-safe-capped, 0px))' }}
+            style={{
+              paddingBottom: 'calc(12px + var(--bottom-safe-capped, 0px))',
+              transform: `translateY(calc(-1 * max(${aiBrewKeyboardOffset}px, var(--keyboard-offset, 0px))))`,
+            }}
             data-testid="ai-brew-builder-footer"
           >
             <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2.5" data-testid="ai-brew-mobile-generate-bar">

@@ -34,6 +34,20 @@ export type AeroPressRecipeStyle =
   | 'no_bypass'
   | 'bright_clean'
   | 'sweet_body';
+export type FrenchPressRecipeStyle =
+  | 'auto'
+  | 'traditional'
+  | 'clean_decant'
+  | 'double_filter'
+  | 'heavy_concentrate'
+  | 'sweet_immersion';
+export type KalitaWaveRecipeStyle =
+  | 'auto'
+  | 'traditional_flat_three'
+  | 'competition_fast_four'
+  | 'continuous_slow_stream'
+  | 'iced_wave'
+  | 'high_dose_concentrate';
 export type AiBrewEngineMode =
   | 'local_planner'
   | 'precision_planner'
@@ -503,6 +517,7 @@ export interface ManualBrewPreset {
     waterAlkalinityPpm: number;
     origamiFilterStyle?: OrigamiFilterStyle;
     aeropressStyle?: AeroPressRecipeStyle;
+    frenchPressStyle?: FrenchPressRecipeStyle;
   };
   techniquePattern: ManualBrewTechniquePattern;
   visibleSummary: string;
@@ -783,7 +798,7 @@ export interface DeviceBrewProfile extends CatalogProvenance {
   filterStyle: 'cone' | 'flat' | 'trapezoid' | 'immersion' | 'pressure' | 'vacuum' | 'stovetop' | 'cold_immersion' | 'batch';
   methodWorkflow?: MethodWorkflow;
   flatBottomProfile?: FlatBottomProfileFamily;
-  recipeStyle?: Exclude<AeroPressRecipeStyle, 'auto'>;
+  recipeStyle?: Exclude<AeroPressRecipeStyle, 'auto'> | Exclude<FrenchPressRecipeStyle, 'auto'>;
   physicalConstraints?: DevicePhysicalConstraints;
   methodProgramme?: SwitchBrewProgramme | string;
   ratioDelta: number;
@@ -859,8 +874,10 @@ export interface AiBrewFormState {
   manualPresetId?: string;
   origamiFilterStyle: OrigamiFilterStyle;
   aeropressStyle: AeroPressRecipeStyle;
+  frenchPressStyle: FrenchPressRecipeStyle;
   switchPresetId?: SwitchPublicPresetId | '';
   switchTeachingMode?: SwitchTeachingMode | '';
+  kalitaWaveStyle?: KalitaWaveRecipeStyle;
 }
 
 export interface BeanProfileState {
@@ -1162,6 +1179,7 @@ export interface BrewPlan {
   switchExpectedCupShift?: SwitchExpectedCupShift;
   switchWhy?: string;
   switchWatch?: string;
+  kalitaWaveStyle?: KalitaWaveRecipeStyle;
   expectedCupProfile?: ExpectedCupProfile;
   readinessScores?: AiBrewReadinessScores;
   notes: string[];

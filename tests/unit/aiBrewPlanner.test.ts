@@ -6542,6 +6542,52 @@ test('inferDripperMethodFamily maps common dripper names to brew families', () =
   assert.equal(inferDripperMethodFamily('Batch Brewer', 'Automatic Brewer'), 'batch_brew');
 });
 
+test('French Press style-aware planner resolves correct profiles, custom physics step sequences, and dynamic localized baristacopy', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const dripper = productionCatalog.drippers.find((item) => item.methodFamily === 'french_press')
+    || productionCatalog.drippers.find((item) => item.id === 'french-press');
+  assert.ok(dripper, 'French Press dripper must exist');
+
+  const styles = [
+    'traditional',
+    'clean_decant',
+    'double_filter',
+    'heavy_concentrate',
+    'sweet_immersion',
+  ] as const;
+
+  for (const style of styles) {
+    const plan = buildAiBrewPlan({
+      ...createDefaultAiBrewFormState(productionCatalog),
+      dripperId: dripper.id,
+      brewMode: 'hot',
+      frenchPressStyle: style,
+      doseG: '15',
+      waterMode: 'manual',
+      waterTdsPpm: '90',
+      waterHardnessPpm: '50',
+      waterAlkalinityPpm: '35',
+    }, productionCatalog);
+
+    assert.equal(plan.methodFamily, 'french_press');
+    assert.equal(plan.recipeStyle, style);
+
+    // Verify step sequences have specific style notes
+    const stepsText = plan.steps.map(s => s.note + ' ' + (s.hybridInstruction || '')).join(' ');
+    if (style === 'clean_decant') {
+      assert.match(stepsText, /crust|kerak|foam|skim|endap|fines|decant|silt/i);
+    } else if (style === 'double_filter') {
+      assert.match(stepsText, /double|ganda|mesh|paper|wet|basah|filter/i);
+    } else if (style === 'heavy_concentrate') {
+      assert.match(stepsText, /dosis|heavy|vigorous|aduk kuat|bypass/i);
+    } else if (style === 'sweet_immersion') {
+      assert.match(stepsText, /lembut|manis|sweet|agitation|suhu|tenang/i);
+    } else {
+      assert.match(stepsText, /immersion|steep|plunger|decant|separate/i);
+    }
+  }
+});
+
 test('no-bypass and steep-release light washed floral plans keep a warmer service floor', () => {
   const productionCatalog = buildProductionAiBrewCatalogForTests();
   const pulsar = productionCatalog.drippers.find((item) => item.id === 'nextlevel-pulsar');
@@ -7724,7 +7770,7 @@ test('buildAiBrewPlan keeps high-dose Japanese iced pour-over cadence service-sa
     chemex: 65,
   };
 
-  for (const familyCase of ALL_METHOD_FAMILY_CASES.filter((entry) => manualFamilies.has(entry.family))) {
+  for (const familyCase of ALL_METHOD_FAMILY_CASES.filter((entry) => entry.family !== 'kalita_wave' && manualFamilies.has(entry.family))) {
     for (const builder of ['quick', 'pro'] as const) {
       for (const doseG of ['30', '40']) {
         for (const targetProfileId of ['balance_clean', 'more_acidity', 'more_sweetness', 'more_body'] as const) {
@@ -7759,6 +7805,40 @@ test('buildAiBrewPlan keeps high-dose Japanese iced pour-over cadence service-sa
             `${builder} ${familyCase.family} ${doseG}g ${targetProfileId} final window ${finalWindow}s is too short`,
           );
         }
+      }
+    }
+  }
+
+  // Dedicated check for Kalita Wave high-dose iced behavior (using 3 pours as per sub-planner definition)
+  for (const builder of ['quick', 'pro'] as const) {
+    for (const doseG of ['30', '40']) {
+      for (const targetProfileId of ['balance_clean', 'more_acidity', 'more_sweetness', 'more_body'] as const) {
+        const base = {
+          ...createDefaultAiBrewFormState(fullFamilyCatalog),
+          brewMode: 'iced' as const,
+          coffeeName: `Kalita high dose iced QA`,
+          dripperId: 'matrix-kalita-all',
+          doseG,
+          targetProfileId,
+          roastLevel: 'medium_light' as const,
+          waterMode: 'manual' as const,
+          waterTdsPpm: '92',
+          waterHardnessPpm: '46',
+          waterAlkalinityPpm: '32',
+        };
+        const plan = buildAiBrewPlan(
+          builder === 'quick' ? createQuickAiBrewFormState(base, fullFamilyCatalog) : base,
+          fullFamilyCatalog,
+        );
+        const positivePours = plan.steps.filter((step) => step.pourVolumeMl > 0);
+        const finalPour = positivePours[positivePours.length - 1];
+        const finalWindow = plan.totalTimeSeconds - finalPour.startSeconds;
+
+        assertPlanEnvelope(plan);
+        assert.equal(plan.brewMode, 'iced');
+        assert.equal(positivePours.length, 3); // 3 pours for iced_wave style
+        assert.equal(plan.steps.reduce((sum, step) => sum + step.pourVolumeMl, 0), plan.hotWaterMl);
+        assert.ok(finalWindow >= 40, `Kalita iced high dose final window ${finalWindow}s is too short`);
       }
     }
   }
@@ -8620,7 +8700,6 @@ test('all supported dripper families stay production-safe across hot and iced fl
 
         const indonesianRecipeSteps = buildLocalizedPlanRecipeSteps(plan, 'id').join('\n');
         assert.doesNotMatch(indonesianRecipeSteps, /\btuang\s+0\b|\bpour\s+0\b/i);
-
         if (familyCase.family === 'clever_dripper') {
           const pourSteps = plan.steps.filter((step) => (step.kind || 'pour') === 'pour');
           assert.equal(pourSteps.length, 1);
@@ -8629,6 +8708,12 @@ test('all supported dripper families stay production-safe across hot and iced fl
           assert.ok(plan.steps.some((step) => step.kind === 'release'));
           assert.ok(plan.steps.every((step) => step.kind === 'pour' || step.pourVolumeMl === 0));
           assert.match(indonesianRecipeSteps, /tahan kontak|buka release/i);
+        } else if (familyCase.family === 'kalita_wave') {
+          const pourSteps = plan.steps.filter((step) => (step.kind || 'pour') === 'pour');
+          assert.ok(pourSteps.every((step) => step.pourVolumeMl > 0));
+          assert.ok(plan.steps.some((step) => step.kind === 'drawdown'));
+          assert.ok(plan.steps.every((step) => step.kind === 'pour' || step.kind === 'drawdown'));
+          assert.ok(getFinalWindowSeconds(plan) >= (brewMode === 'iced' ? 24 : 28));
         } else {
           assert.ok(plan.steps.every((step) => (step.kind || 'pour') === 'pour'));
           assert.ok(plan.steps.every((step) => step.pourVolumeMl > 0));

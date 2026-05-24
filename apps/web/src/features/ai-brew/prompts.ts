@@ -500,10 +500,40 @@ function buildStepRoleMap(plan: BrewPlan) {
         return 'full saturation, long steep, and clean filter control';
       case 'batch_brew':
         return 'basket distribution, machine cycle, and batch mixing control';
-      case 'french_press':
-        return 'immersion contact, slow press, and decant control';
-      case 'aeropress':
-        return 'short immersion and steady press control';
+      case 'french_press': {
+        const style = plan.recipeStyle || 'traditional';
+        switch (style) {
+          case 'clean_decant':
+            return 'Hoffmann-style long immersion, crust break, floating oils skim, and decant-only serving control';
+          case 'double_filter':
+            return 'clean immersion, double-mesh screen stabilization, and ultra-slow plunge filtration control';
+          case 'heavy_concentrate':
+            return 'high-dose low-ratio concentrate, vigorous agitation, and heavy plunge resistance control';
+          case 'sweet_immersion':
+            return 'moderate temperature quiet immersion, minimal agitation, and feather-light slow plunge control';
+          case 'traditional':
+          default:
+            return 'immersion contact, slow press, and decant control';
+        }
+      }
+      case 'aeropress': {
+        const style = plan.recipeStyle || 'standard';
+        switch (style) {
+          case 'inverted':
+            return 'inverted chamber immersion, secure flip, and steady press control';
+          case 'bypass':
+            return 'high-strength concentrate immersion, steady press, and clean bypass dilution control';
+          case 'no_bypass':
+            return 'full-chamber no-bypass immersion, deep slurry saturation, and steady press control';
+          case 'bright_clean':
+            return 'double-filter bright immersion, low agitation, and extremely slow feather-light press control';
+          case 'sweet_body':
+            return 'fine grind sweet immersion, vigorous agitation, and firm bottom-puck press control';
+          case 'standard':
+          default:
+            return 'upright chamber immersion and steady press control';
+        }
+      }
       case 'siphon':
         return 'heat, vacuum contact, and drawdown control';
       case 'clever_dripper':
@@ -564,14 +594,89 @@ function buildMethodCueChecklist(plan: BrewPlan) {
       lines.push('- Include basket/machine-cycle cue early or middle.');
       lines.push('- Include drawdown completion and batch mixing cue by the final step.');
       return lines.join('\n');
-    case 'french_press':
-      lines.push('- Include immersion/steep cue in entry step.');
-      lines.push('- Include slow press and decant/separate cue in final step.');
+    case 'french_press': {
+      const style = plan.recipeStyle || 'traditional';
+      if (style === 'clean_decant') {
+        lines.push('- Include boiling water charge, 4-minute initial steep, and dynamic crust breaking cue.');
+        lines.push('- Include surface foam skim, floating oils removal, and 4-5 minutes quiet settle cue.');
+        lines.push('- Include decant-only serve cue in final step (mesh limits surface but do not plunge down).');
+      } else if (style === 'double_filter') {
+        lines.push('- Include double rinsed mesh screen or paper filter prep and slow circle pour early.');
+        lines.push('- Include clean container immersion steep and late gentle container swirl cue.');
+        lines.push('- Include double filter assembly insertion and 30-second extremely slow, light-force plunge cue.');
+      } else if (style === 'heavy_concentrate') {
+        lines.push('- Include high-dose fine-medium grounds, quick saturation, and 5-6 times vigorous stir cue early.');
+        lines.push('- Include thick concentrate immersion steep and heavy plunge resistance check middle.');
+        lines.push('- Include full plunge and rich concentrate serve (or optional bypass dilution) cue in final step.');
+      } else if (style === 'sweet_immersion') {
+        lines.push('- Include moderate temperature gentle water charge and feather-light exactly 2-stir agitation early.');
+        lines.push('- Include low-temperature caramel solubility steep and extended quiet immersion cue middle.');
+        lines.push('- Include 30-second ultra-slow plunge with feather-light force to prevent fines migration.');
+      } else {
+        lines.push('- Include French Press beaker preheat, coarse grounds charge, and decisive saturation cue early.');
+        lines.push('- Include calm immersion steep and plunger lid vacuum seal check middle.');
+        lines.push('- Include slow, steady press down to the bottom and immediate decant/separate serving cue in final step.');
+      }
       return lines.join('\n');
-    case 'aeropress':
-      lines.push('- Include AeroPress chamber immersion cue before pressing.');
-      lines.push('- Include steady press/plunge cue in final step; avoid forcing the last hiss.');
+    }
+    case 'aeropress': {
+      const style = plan.recipeStyle || 'standard';
+      if (style === 'inverted') {
+        lines.push('- Include inverted chamber safe assembly and rapid saturation cue early.');
+        lines.push('- Include filter cap seal and secure flip check before pressing.');
+        lines.push('- Include steady plunge cue in final step, stopping strictly before the dry hiss.');
+      } else if (style === 'bypass') {
+        lines.push('- Include high-dose concentrate immersion and vigorous stir cue early.');
+        lines.push('- Include steady press and bypass water separate reservation cue middle.');
+        lines.push('- Include final concentrate press stopping before the hiss, followed by post-brew bypass dilution.');
+      } else if (style === 'no_bypass') {
+        lines.push('- Include full-chamber upright bed edge-to-edge saturation and gentle stir cue early.');
+        lines.push('- Include plunger vacuum seal and extended steep immersion cue middle.');
+        lines.push('- Include plunger removal and slow, complete chamber press drain cue in the final step.');
+      } else if (style === 'bright_clean') {
+        lines.push('- Include double rinsed paper filter and swift circle pour clarity cue early.');
+        lines.push('- Include double stir agitation limit and vacuum seal steep cue middle.');
+        lines.push('- Include extremely slow, feather-light press and absolute pre-hiss stop cue in the final step.');
+      } else if (style === 'sweet_body') {
+        lines.push('- Include fine grounds thorough saturation and sweet solubility opening cue early.');
+        lines.push('- Include vigorous circular agitation and extended immersion steep cue middle.');
+        lines.push('- Include firm, stable plunge down to the absolute bottom of the coffee puck in the final step.');
+      } else {
+        lines.push('- Include AeroPress upright chamber decisive saturation and uniform wetting cue early.');
+        lines.push('- Include gentle stir and vacuum seal plunger insert cue middle.');
+        lines.push('- Include steady 25-35s press and strict stop at the first hiss cue in the final step.');
+      }
       return lines.join('\n');
+    }
+    case 'hario_switch': {
+      const style = plan.recipeStyle || 'hybrid_balanced';
+      if (style === 'immersion_sweet' || style === 'immersion_heavy_body') {
+        lines.push('- Include closed valve bloom and gentle water charge cue early.');
+        lines.push('- Include extended closed contact immersion steep cue middle.');
+        lines.push('- Include clean, decisive valve release cue and served finish by final step.');
+      } else if (style === 'hybrid_bright_clean') {
+        lines.push('- Include open valve bloom and clean clarity water build cue early.');
+        lines.push('- Include short mid-brew valve closure capture cue middle.');
+        lines.push('- Include early valve release and served finish cue in final step.');
+      } else if (style === 'v60_mode') {
+        lines.push('- Include open valve bloom from the start and concentric pour percolation cues early.');
+        lines.push('- Include steady middle pour with open valve and stable water height middle.');
+        lines.push('- Include drawdown completion and server swirl cue in final step; do not close the valve.');
+      } else if (style === 'iced_hybrid') {
+        lines.push('- Include closed valve concentrate bloom over pre-weighed ice server cue early.');
+        lines.push('- Include closed valve hot water fill steep cue middle.');
+        lines.push('- Include valve release directly over ice and fresh ice service cue in final step.');
+      } else if (style === 'mugen_everyday_hybrid') {
+        lines.push('- Include MUGEN closed valve compact bloom and flat rib paper fit cue early.');
+        lines.push('- Include MUGEN slow single-pour closed valve water fill cue middle.');
+        lines.push('- Include MUGEN decisive valve release and slow flat-rib drawdown cue in final step.');
+      } else {
+        lines.push('- Include closed valve bloom and low-spout gentle saturation cue early.');
+        lines.push('- Include closed valve sweeten fill and prepare-release checkpoint cue middle.');
+        lines.push('- Include valve release and open percolation finish drawdown cue in final step.');
+      }
+      return lines.join('\n');
+    }
     case 'siphon':
       lines.push('- Include heat/vacuum/upper-chamber cue early.');
       lines.push('- Include cut-heat/drawdown cue in final step.');
@@ -580,6 +685,22 @@ function buildMethodCueChecklist(plan: BrewPlan) {
       lines.push('- Include immersion-contact cue in entry step (step 1).');
       lines.push('- Include release cue in final step (last step).');
       return lines.join('\n');
+    case 'kalita_wave': {
+      const style = plan.kalitaWaveStyle || 'auto';
+      lines.push('- Include flat-bed control cues (flat bed/bed height/low-spout/even bed) across at least two steps.');
+      if (style === 'competition_fast_four') {
+        lines.push('- Include competition center pulse, rapid flow rate, extraction velocity, and rapid drawdown cues.');
+      } else if (style === 'continuous_slow_stream') {
+        lines.push('- Include continuous centered flow, constant water column, low altitude stream, and slow drawdown cues.');
+      } else if (style === 'iced_wave') {
+        lines.push('- Include hot concentrate, pre-weighed ice server, rapid drawdown, and thermal locking cues.');
+      } else if (style === 'high_dose_concentrate') {
+        lines.push('- Include high coffee dose, tight ratio, slow concentric rings, low bypass, and no circular agitation cues.');
+      } else {
+        lines.push('- Include small wave bed, calm concentric circle pours, bypass ridge preservation, and level slurry cues.');
+      }
+      return lines.join('\n');
+    }
   }
 
   lines.push('- Include percolation flow cues (concentric/circle/pulse/center/bed settle) across multiple steps, not just one.');
@@ -651,13 +772,18 @@ export function buildOptimizationPrompt(plan: BrewPlan, language?: string): AiBr
   return buildAiAssistPrompt('strict_hybrid_optimization', plan, language);
 }
 
+
+export function buildAdjustPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
+  return buildAiAssistPrompt('strict_hybrid_optimization', plan, language);
+}
+
 export function buildTroubleshootPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
   return buildAiAssistPrompt('ai_assist_taste_fix', plan, language);
 }
 
 export function buildSequenceGuidePrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
   return {
-    title: isIndonesianAiBrewLanguage(language) ? 'Catatan AI' : 'AI Sequence',
+    title: isIndonesianAiBrewLanguage(language) ? 'Kurasi Urutan Seduh' : 'AI Sequence',
     body: [
       'You are the AI Brew sequence composer with the expertise of a 50-year veteran master barista.',
       'Deeply analyze the "Expert Barista Background Notes" for the selected grinder, process, and variety:',
@@ -764,6 +890,48 @@ export function buildSequenceServerPrompt(plan: BrewPlan, language?: string): Ai
   };
 }
 
+export function buildExtractionFinisherPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
+  const finisher = buildExtractionFinisher(plan, language);
+  return {
+    title: isIndonesianAiBrewLanguage(language) ? 'Finalisasi Ekstraksi' : 'Extraction Finisher',
+    body: [
+      'Create a concise extraction finisher for this brew plan.',
+      'Read the plan, water chemistry, roast, and bean profile before giving the final recommendation.',
+      'Stay inside the current recipe envelope. Only use micro-adjustments to grind, temperature, pour structure, or ratio.',
+      'Use this structure exactly:',
+      '## Final Read',
+      '- one compact paragraph under 70 words',
+      '## Recipe Reasoning',
+      '- point 1',
+      '- point 2',
+      '- point 3',
+      '## Control Points',
+      '- point 1',
+      '- point 2',
+      '- point 3',
+      '## Taste Rescue',
+      '### Sour',
+      '- First move: ...',
+      '- Why: ...',
+      '### Bitter',
+      '- First move: ...',
+      '- Why: ...',
+      '### Thin',
+      '- First move: ...',
+      '- Why: ...',
+      'Do not invent new equipment, water values, or sensory claims beyond the provided plan.',
+      '',
+      'Local baseline to preserve:',
+      `Final read: ${finisher.finalRead}`,
+      ...finisher.recipeReasoning.map((item) => `Reasoning: ${item}`),
+      ...finisher.controlPoints.map((item) => `Control point: ${item}`),
+      ...finisher.adjustments.map((item) => `${item.taste}: ${item.action} Why: ${item.why}`),
+      '',
+      buildSharedContext(plan),
+    ].join('\n'),
+  };
+}
+
 export function buildSequenceRepairPrompt(
   plan: BrewPlan,
   errors: string[] = [],
@@ -808,142 +976,6 @@ export function buildSequenceRepairPrompt(
       buildMethodCueChecklist(plan),
       '',
       buildTargetIntentChecklist(plan),
-    ].join('\n'),
-  };
-}
-
-export function buildAdjustPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
-  return buildAiAssistPrompt('strict_hybrid_optimization', plan, language);
-}
-
-export function buildSopPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
-  return {
-    title: isIndonesianAiBrewLanguage(language) ? 'SOP AI' : 'AI SOP',
-    body: [
-      'Rewrite this brew plan as a simple standard operating procedure for a barista, applying the mindset of a 50-year veteran master barista.',
-      'Analyze the "Expert Barista Background Notes" to customize the steps and control points based on grinder burr behaviors (e.g., Comandante vs C2 fines production), process physics (e.g., Anaerobic high solubility, Wet Hulled bitterness sensitivity), and variety delicate esters (e.g., Geisha aromatic temperature safety).',
-      '- Ensure the Steps and Control Points reflect these dialed-in variables (e.g., lower temperature boundaries, pulse pouring, centered flow patterns, and gentle agitation to safeguard high-solubility/high-fines setups; concentric agitation for high-clarity setups).',
-      '- Do NOT print the raw background note descriptions in the final SOP output. Simply translate them into actionable, high-precision barista execution guidelines.',
-      'Keep it short, practical, and consistent with manual-brew training language.',
-      'Keep output compact: Quick Dial 5 bullets, Service Pattern 2 bullets, Steps one sentence each, Control Points 5 bullets maximum.',
-      'Focus only on quick dial, service pattern, sequence execution, and extraction-finisher watchpoints.',
-      'Use this structure exactly:',
-      '## Quick Dial',
-      '- dose',
-      '- total water',
-      '- temperature',
-      '- grind',
-      `- ${getPlanTasteTimeLabel(plan)}`,
-      '## Service Pattern',
-      '- one context-specific sequence style line',
-      '- one mode behavior line',
-      '## Steps',
-      '1. ...',
-      '2. ...',
-      '3. ...',
-      '## Control Points',
-      '- what to watch during execution',
-      '- one method- or target-specific watchpoint tied to this plan context',
-      '- one water or bean-context watchpoint tied to this plan context',
-      '- one adjustment if the cup tastes sour',
-      '- one adjustment if the cup tastes bitter',
-      '- both sour and bitter adjustments must be actionable (verb + controllable knob: grind/temp/pour/flow/contact time)',
-      '- include one concise extraction-finisher watchpoint from the plan context',
-      '- do not add extra sections, long explanations, or background education',
-      'Prefer concrete numbers already present in the plan. Do not invent new equipment or chemistry data.',
-      'Service Pattern style line must explicitly include selected method/device and target profile anchors.',
-      'Service Pattern style line must not use generic labels like "default pattern" or "flexible style".',
-      'Service Pattern mode line must explicitly mention the active brew mode (hot or iced).',
-      'Quick Dial must mirror deterministic values exactly for dose, total water (and iced split when present), temperature, grind recommendation, and the main extraction/steep/shot time.',
-      'Do not round, estimate, or substitute Quick Dial values with alternatives.',
-      `Use exactly ${plan.steps.length} numbered steps in the Steps section.`,
-      'Each step must include the deterministic operation and target checkpoint from the planner envelope on the same line.',
-      'Start every step with deterministic exact prefix from the envelope: "<step label> at exact planner time MM:SS: <deterministic operation>" before control instructions.',
-      'For pour checkpoints, include exactly one pour volume and one cumulative target. For non-pour checkpoints, do not invent a pour volume; keep the target/yield/action from the envelope.',
-      'Each step must reference the deterministic step label for its index (e.g., Bloom, Pulse 1, Finish).',
-      'Each step must include at least one post-checkpoint control action (wait/hold/level/swirl/release/press/stop/filter/etc).',
-      'Any explicit wait/hold/pause/rest durations in one step must fit that step\'s deterministic cadence window to the next checkpoint.',
-      'Do not add a second absolute clock timestamp (MM:SS) inside the same step line; only the deterministic prefix time is allowed.',
-      'Avoid hedging terms in step lines (if needed/optional/approximate/to taste/at your discretion).',
-      'Do not use simulated or hypothetical execution wording (simulate/pretend/imagine/hypothetical).',
-      'Do not place next-cup troubleshooting phrases (if sour/if bitter/next cup/next brew) inside Steps; keep every step immediately executable in-run.',
-      'Do not inject post-brew dilution or top-up instructions (add/top-up/bypass X ml water or ice) outside deterministic checkpoints.',
-      'Do not reference hardware or tools that conflict with the selected brewer/method; the selected brewer itself is allowed.',
-      'Do not change grind, temperature, ratio, dose, total water, or main extraction/steep/shot time inside Steps; all parameter shifts belong to next-cup troubleshooting only.',
-      'Steps must reflect phase control: entry cue in step 1, cadence-flow cue in middle steps, and closure cue in final step.',
-      '- Keep operational intent aligned with deterministic progression profile (front_loaded/back_loaded/mid_loaded/even) from the planner envelope.',
-      '- Keep step intensity language aligned with extraction pressure profile (resistant_extraction/easy_extraction/neutral_extraction) from the planner envelope.',
-      '- Keep hold/wait emphasis aligned with cadence profile (front_cadence/back_cadence/mid_cadence/even_cadence) from the planner envelope.',
-      'Step 1 must not include closure-phase words (finish/final/drawdown/release/drain).',
-      'Final step must not reintroduce entry-phase words (bloom/initial saturation/immersion/soak).',
-      'Steps section must carry context anchors (method/device + target profile + water/bean) in operational lines, not only in Control Points.',
-      '- For iced mode, include deterministic hot/ice split explicitly in Steps or Control Points using both values (X ml hot / Y ml ice).',
-      'Spread method, target, and water/bean anchors across multiple step lines so SOP remains adaptive and non-template.',
-      'Avoid repetitive step phrasing; vary actionable verbs while preserving deterministic checkpoints.',
-      '- Keep heading order fixed as written: Quick Dial -> Service Pattern -> Steps -> Control Points.',
-      '- Return markdown only, starting at the first required heading; do not add preface or code fences.',
-      '- For non-immersion brewers, avoid immersion/release-only instructions inside Steps.',
-      '- Do not mention or imply another brewer/method family that conflicts with the deterministic plan.',
-      'If chemistry values are mentioned (TDS/GH/KH), they must match deterministic planner values exactly.',
-      'Do not use generic language like "adjust as needed"; every point must be executable in bar workflow.',
-      'Control Points must explicitly contain one sour corrective bullet and one bitter corrective bullet.',
-      'Each sour/bitter corrective bullet must include an actionable verb and a controllable brewing knob (grind/temp/pour/time/flow/contact).',
-      'Operational steps must include target-intent cues and avoid opposite taste-direction language for the selected profile.',
-      'Do not combine opposing taste-direction cues in the same step line (for example body-depth and bright-acidity in one instruction).',
-      '- Step phrasing must change by phase and cannot reuse one template shell for all steps.',
-      '',
-      buildPlannerEnvelope(plan),
-      '',
-      buildStepRoleMap(plan),
-      '',
-      buildMethodCueChecklist(plan),
-      '',
-      buildTargetIntentChecklist(plan),
-      '',
-      buildSharedContext(plan),
-    ].join('\n'),
-  };
-}
-
-export function buildExtractionFinisherPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
-  const finisher = buildExtractionFinisher(plan, language);
-  return {
-    title: isIndonesianAiBrewLanguage(language) ? 'Finalisasi Ekstraksi' : 'Extraction Finisher',
-    body: [
-      'Create a concise extraction finisher for this brew plan, adopting the perspective of a 50-year veteran master barista.',
-      'Analyze the "Expert Barista Background Notes" to determine micro-adjustments tailored precisely to the grinder\'s burr characteristics (e.g. Comandante MK4 vs Timemore C2 fines risk), process extraction physics (e.g. Anaerobic, Wet Hulled), and variety sensitivities (e.g. Geisha).',
-      'Read the plan, water chemistry, roast, and bean profile before giving the final recommendation.',
-      'Stay inside the current recipe envelope. Only use micro-adjustments to grind, temperature, pour structure, flow, or contact time.',
-      'Use this structure exactly:',
-      '## Final Read',
-      '- one compact paragraph under 70 words',
-      '## Recipe Reasoning',
-      '- point 1',
-      '- point 2',
-      '- point 3',
-      '## Control Points',
-      '- point 1',
-      '- point 2',
-      '- point 3',
-      '## Taste Rescue',
-      '### Sour',
-      '- First move: ...',
-      '- Why: ...',
-      '### Bitter',
-      '- First move: ...',
-      '- Why: ...',
-      '### Thin',
-      '- First move: ...',
-      '- Why: ...',
-      'Do not invent new equipment, water values, or sensory claims beyond the provided plan.',
-      '',
-      'Local baseline to preserve:',
-      `Final read: ${finisher.finalRead}`,
-      ...finisher.recipeReasoning.map((item) => `Reasoning: ${item}`),
-      ...finisher.controlPoints.map((item) => `Control point: ${item}`),
-      ...finisher.adjustments.map((item) => `${item.taste}: ${item.action} Why: ${item.why}`),
-      '',
-      buildSharedContext(plan),
     ].join('\n'),
   };
 }

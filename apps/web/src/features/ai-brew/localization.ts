@@ -34,11 +34,11 @@ export function localizeAiBrewTargetProfile(
     case 'floral_transparent':
       return 'Floral & Transparan';
     case 'fruit_forward':
-      return 'Buah Lebih Menonjol';
+      return 'Dominan Buah (Fruit-Forward)';
     case 'soft_round':
-      return 'Lembut & Bulat';
+      return 'Lembut & Halus (Smooth)';
     case 'dense_comforting':
-      return 'Tebal & Nyaman';
+      return 'Tebal & Nyaman (Comforting)';
     default:
       return fallbackLabel;
   }
@@ -49,19 +49,19 @@ export function localizeAiBrewStageLabel(stageId: string, language?: string) {
 
   switch (stageId) {
     case 'validate_input':
-      return 'Validasi input';
+      return 'Validasi Input';
     case 'match_device_profile':
-      return 'Cocokkan profil alat';
+      return 'Cocokkan Profil Alat';
     case 'resolve_grinder_settings':
-      return 'Cari setting grinder';
+      return 'Cari Setting Grinder';
     case 'compute_brew_variables':
-      return 'Hitung variabel seduh';
+      return 'Hitung Variabel Seduh';
     case 'build_sequence':
-      return 'Susun urutan seduh';
+      return 'Susun Urutan Seduh';
     case 'hybrid_ai_sequence':
-      return 'Kalibrasi sequence AI';
+      return 'Kalibrasi Sequence AI';
     case 'run_standards_checks':
-      return 'Jalankan cek standar';
+      return 'Jalankan Cek Standar';
     default:
       return null;
   }
@@ -155,6 +155,16 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
         return 'Filter';
       case 'berhenti':
         return 'Stop';
+      case 'tuangan lambat kontinu':
+        return 'Continuous Slow Pour';
+      case 'tuangan konsentris 1':
+        return 'Concentric Pour 1';
+      case 'tuangan konsentris 2':
+        return 'Concentric Pour 2';
+      case 'tuangan konsentrat 1':
+        return 'Concentrate Pour 1';
+      case 'tuangan konsentrat 2':
+        return 'Concentrate Pour 2';
       default:
         return label;
     }
@@ -164,17 +174,17 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
     case 'bloom':
       return 'Bloom';
     case 'preheat':
-      return 'Panaskan alat';
+      return 'Panaskan Alat';
     case 'rinse and preheat':
-      return 'Bilas & panaskan';
+      return 'Bilas & Panaskan';
     case 'setup':
-      return 'Setup';
+      return 'Persiapan';
     case 'charge water':
-      return 'Isi air';
+      return 'Isi Air';
     case 'stir':
       return 'Aduk';
     case 'stir or swirl':
-      return 'Aduk / putar';
+      return 'Aduk / Putar (Swirl)';
     case 'main pour':
       return 'Tuang Utama';
     case 'center pour':
@@ -201,25 +211,25 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
     case 'final pour':
       return 'Tuang Akhir';
     case 'finish to hot-water target':
-      return 'Tuang Akhir Target Panas';
+      return 'Target Akhir Air Panas';
     case 'finish':
       return 'Selesai';
     case 'charge':
       return 'Isi Air';
     case 'steep':
-      return 'Rendam';
+      return 'Rendam (Steep)';
     case 'press':
     case 'press gently':
       return 'Tekan';
     case 'stop before hiss':
-      return 'Berhenti sebelum hiss';
+      return 'Hentikan Sebelum Desis (Hiss)';
     case 'release':
     case 'release checkpoint':
-      return 'Buka katup';
+      return 'Buka Katup';
     case 'release over ice':
-      return 'Buka katup di atas es';
+      return 'Buka Katup di Atas Es';
     case 'drawdown':
-      return 'Air turun';
+      return 'Air Turun';
     case 'heat':
       return 'Panaskan';
     case 'start brew':
@@ -229,15 +239,33 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
     case 'serve':
       return 'Sajikan';
     case 'decant':
-      return 'Tuang pisah';
+      return 'Tuang Pisah (Decant)';
     case 'dilute':
-      return 'Dilusi';
+      return 'Bypass (Dilusi)';
     case 'settle':
       return 'Endapkan';
     case 'filter':
       return 'Saring';
     case 'stop':
       return 'Berhenti';
+    case 'pulse 4':
+    case 'pulse_4':
+      return 'Pulse Keempat';
+    case 'continuous slow pour':
+    case 'continuous_slow_pour':
+      return 'Tuangan Lambat Kontinu';
+    case 'concentric pour 1':
+    case 'concentric_pour_1':
+      return 'Tuangan Konsentris 1';
+    case 'concentric pour 2':
+    case 'concentric_pour_2':
+      return 'Tuangan Konsentris 2';
+    case 'concentrate pour 1':
+    case 'concentrate_pour_1':
+      return 'Tuangan Konsentrat 1';
+    case 'concentrate pour 2':
+    case 'concentrate_pour_2':
+      return 'Tuangan Konsentrat 2';
     default:
       return label;
   }
@@ -302,55 +330,55 @@ function localizeBeanProfileSummary(text: string) {
 
 function localizeCriticalUiTerms(text: string) {
   return text
-    .replace(/\bAdditional details\b/gi, 'Detail tambahan')
+    .replace(/\bAdditional details\b/gi, 'Detail Tambahan')
     .replace(/\bBrew Guide\b/gi, 'Panduan Seduh')
-    .replace(/\bWorkflow\b/gi, 'Alur seduh')
-    .replace(/\bExpected cup\b/gi, 'Prediksi rasa')
-    .replace(/\bConfidence\b/gi, 'Keyakinan')
+    .replace(/\bWorkflow\b/gi, 'Alur Seduh')
+    .replace(/\bExpected cup\b/gi, 'Prediksi Seduhan')
+    .replace(/\bConfidence\b/gi, 'Tingkat Keyakinan')
     .replace(/\bSafety\b/gi, 'Keamanan')
-    .replace(/\bRelease over ice\b/gi, 'Buka katup di atas es')
-    .replace(/\bRelease checkpoint\b/gi, 'Titik buka katup')
-    .replace(/\bRelease\b/gi, 'Buka katup')
-    .replace(/\bDrawdown\b/gi, 'Air turun')
+    .replace(/\bRelease over ice\b/gi, 'Buka Katup di Atas Es')
+    .replace(/\bRelease checkpoint\b/gi, 'Titik Buka Katup')
+    .replace(/\bRelease\b/gi, 'Buka Katup')
+    .replace(/\bDrawdown\b/gi, 'Air Turun')
     .replace(/\bBlocked\b/gi, 'Diblokir')
-    .replace(/\bUnknown fallback\b/gi, 'Fallback aman')
-    .replace(/\bKnown high\b/gi, 'Data lengkap')
-    .replace(/\bPartial medium\b/gi, 'Data sebagian')
-    .replace(/\bManual Required\b/gi, 'Perlu manual')
-    .replace(/\bHigh Buffer\b/gi, 'Buffer tinggi')
-    .replace(/\bZero Mineral\b/gi, 'Nol mineral')
-    .replace(/\bTaste feedback required\b/gi, 'Perlu cek rasa')
-    .replace(/\bExtraction complete\b/gi, 'Ekstraksi selesai')
-    .replace(/\bNext step\b/gi, 'Langkah berikutnya')
-    .replace(/\bFinishing action\b/gi, 'Aksi finishing')
-    .replace(/\bServe step\b/gi, 'Langkah sajikan')
-    .replace(/\bStir server\b/gi, 'Aduk server')
-    .replace(/\bTarget profile\b/gi, 'Profil target')
-    .replace(/\bWater source\b/gi, 'Sumber air')
-    .replace(/\bGrinder source\b/gi, 'Sumber grinder')
-    .replace(/\bBrewer profile\b/gi, 'Profil alat')
-    .replace(/\bFallback grinder\b/gi, 'Grinder baseline')
-    .replace(/\bFamily fallback profile\b/gi, 'Profil keluarga alat')
-    .replace(/\bFamily fallback\b/gi, 'Profil keluarga alat')
-    .replace(/\bFallback family\b/gi, 'Profil keluarga alat')
-    .replace(/\bExact device profile\b/gi, 'Profil alat tepat')
-    .replace(/\bRisk caution\b/gi, 'Perlu hati-hati')
-    .replace(/\bSafe baseline\b/gi, 'Baseline aman')
-    .replace(/\bBrew plan\b/gi, 'Rencana seduh')
+    .replace(/\bUnknown fallback\b/gi, 'Estimasi Baseline')
+    .replace(/\bKnown high\b/gi, 'Terverifikasi Penuh')
+    .replace(/\bPartial medium\b/gi, 'Terverifikasi Sebagian')
+    .replace(/\bManual Required\b/gi, 'Perlu Manual')
+    .replace(/\bHigh Buffer\b/gi, 'Buffer Tinggi')
+    .replace(/\bZero Mineral\b/gi, 'Nol Mineral')
+    .replace(/\bTaste feedback required\b/gi, 'Perlu Cek Rasa')
+    .replace(/\bExtraction complete\b/gi, 'Ekstraksi Selesai')
+    .replace(/\bNext step\b/gi, 'Langkah Berikutnya')
+    .replace(/\bFinishing action\b/gi, 'Sentuhan Akhir')
+    .replace(/\bServe step\b/gi, 'Langkah Penyajian')
+    .replace(/\bStir server\b/gi, 'Aduk Server')
+    .replace(/\bTarget profile\b/gi, 'Profil Target')
+    .replace(/\bWater source\b/gi, 'Sumber Air')
+    .replace(/\bGrinder source\b/gi, 'Sumber Grinder')
+    .replace(/\bBrewer profile\b/gi, 'Profil Alat')
+    .replace(/\bFallback grinder\b/gi, 'Grinder Baseline')
+    .replace(/\bFamily fallback profile\b/gi, 'Profil Keluarga Alat')
+    .replace(/\bFamily fallback\b/gi, 'Profil Keluarga Alat')
+    .replace(/\bFallback family\b/gi, 'Profil Keluarga Alat')
+    .replace(/\bExact device profile\b/gi, 'Profil Alat Presisi')
+    .replace(/\bRisk caution\b/gi, 'Peringatan Risiko')
+    .replace(/\bSafe baseline\b/gi, 'Baseline Aman')
+    .replace(/\bBrew plan\b/gi, 'Rencana Seduh')
     .replace(/\bRecipe\b/gi, 'Resep')
-    .replace(/\bManual required\b/gi, 'Perlu manual')
+    .replace(/\bManual required\b/gi, 'Perlu Manual')
     .replace(/\bPublished\b/gi, 'Tersedia')
     .replace(/\bbrew-ready\b/gi, 'siap seduh')
-    .replace(/\bNot available\b/gi, 'Belum tersedia')
-    .replace(/\bNo data\b/gi, 'Belum ada data')
+    .replace(/\bNot available\b/gi, 'Belum Tersedia')
+    .replace(/\bNo data\b/gi, 'Belum Ada Data')
     .replace(/\bWarning\b/gi, 'Peringatan')
     .replace(/\bReady\b/gi, 'Siap')
     .replace(/\bOfficial\b/gi, 'Resmi')
     .replace(/\bCurated\b/gi, 'Kurasi')
     .replace(/\bEstimated\b/gi, 'Estimasi')
-    .replace(/\bUnknown\b/gi, 'Belum diketahui')
+    .replace(/\bUnknown\b/gi, 'Belum Diketahui')
     .replace(/\bGuide\b/gi, 'Panduan')
-    .replace(/\btaste feedback\b/gi, 'feedback rasa')
+    .replace(/\btaste feedback\b/gi, 'evaluasi rasa')
     .replace(/\btaste\b/gi, 'rasa')
     .replace(/\bvalidate with\b/gi, 'validasi dengan')
     .replace(/\bStop\b/gi, 'Berhenti')
@@ -410,7 +438,11 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/^Add process, variety, roast development, or density to improve accuracy; taste feedback remains the first correction loop\.$/i, 'Tambahkan proses, varietas, development sangrai, atau densitas untuk menaikkan akurasi; feedback rasa tetap jadi koreksi pertama.')
     .replace(/^Water source: manual mineral entry\.$/i, 'Sumber air: input mineral manual.')
     .replace(/^Device profile source: (.+)\.$/i, 'Sumber profil alat: $1.')
+    .replace(/^Brewer profile source: (.+)\.$/i, 'Sumber profil alat: $1.')
     .replace(/^Grinder setting source: (.+)\.$/i, 'Sumber setting grinder: $1.')
+    .replace(/^Grinder source: (.+)\.$/i, 'Sumber grinder: $1.')
+    .replace(/^Extraction complete\. Next step is finishing\.$/i, 'Ekstraksi selesai. Langkah berikutnya adalah sentuhan akhir (finishing).')
+    .replace(/^Fallback grinder lowers confidence; validate with drawdown and taste\.$/i, 'Grinder baseline menurunkan keyakinan; kalibrasi dari air turun dan rasa.')
     .replace(/^Using (.+) family fallback profile\.$/i, 'Menggunakan profil fallback family $1.')
     .replace(/^Bean profile modifiers active: (.+)\.$/i, (_, summary: string) => 'Modifier profil bean aktif: ' + localizeBeanProfileSummary(summary) + '.')
     .replace(/^(.+?) was selected as the brand baseline, then adjusted manually\.$/i, '$1 dipakai sebagai baseline brand lalu disesuaikan manual.')
@@ -459,6 +491,54 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/^Switch chamber validation is blocked; use the suggested safe programme before brewing\.$/i, 'Validasi ruang Switch diblokir; gunakan program aman yang disarankan sebelum seduh.')
     .replace(/^Switch chamber load is close to the safe limit; treat taste prediction as medium confidence\.$/i, 'Muatan ruang Switch mendekati batas aman; anggap prediksi rasa sebagai keyakinan sedang.')
     .replace(/^Switch preset cup profile is a curated prediction, not a guaranteed result\.$/i, 'Profil rasa preset Switch adalah prediksi kurasi, bukan hasil yang dijamin.')
+    .replace(/^Valve closed\. Bloom (\d+(?:\.\d+)?) ml \((\d+(?:\.\d+)?)x dose\); pour gently and avoid aggressive swirling\.$/i, 'Katup tertutup. Bloom $1 ml ($2x dosis); tuang lembut dan jangan swirl keras.')
+    .replace(/^Still closed\. Fill slowly to build body; open before it feels heavy or muddy\.$/i, 'Masih tertutup. Isi perlahan untuk body tebal; buka sebelum terasa berat atau muddy.')
+    .replace(/^Still closed\. Fill the remaining water gently to promote sweetness and round body\.$/i, 'Masih tertutup. Isi sisa air dengan tenang untuk sweetness dan body bulat.')
+    .replace(/^Hold closed contact time; open before flow stalls\.$/i, 'Tahan kontak tertutup secukupnya; buka sebelum flow terasa stall.')
+    .replace(/^Open the valve cleanly and let the release drain without extra agitation\.$/i, 'Buka katup sekali, lalu biarkan air turun tanpa aduk ulang.')
+    .replace(/^Swirl the server 5-8 seconds to integrate, then serve\. Note if body starts tasting muddy\.$/i, 'Aduk server 5-8 detik lalu sajikan. Catat jika body mulai muddy.')
+    .replace(/^Swirl the server 5-8 seconds to integrate, then serve\.$/i, 'Aduk server 5-8 detik lalu sajikan.')
+    .replace(/^Still closed\. Raise the chamber load to about (\d+(?:\.\d+)?) ml, then prepare for release\.$/i, 'Masih tertutup. Naikkan muatan ruang sampai sekitar $1 ml, lalu siapkan release.')
+    .replace(/^Open the valve before the bed stalls; this keeps the finish clean\.$/i, 'Buka katup sebelum bed melambat berat; ini menjaga finish tetap bersih.')
+    .replace(/^Valve open\. Complete the target with a steady center-to-mid pour, avoiding heavy wall-rinse\.$/i, 'Katup terbuka. Selesaikan target dengan jalur pusat-ke-tengah, tanpa wall-rinse berat.')
+    .replace(/^Allow the drawdown to complete naturally; do not add extra water\.$/i, 'Biarkan drawdown selesai natural; jangan tambah air di luar target.')
+    .replace(/^Valve open\. Bloom cleanly with (\d+(?:\.\d+)?) ml; keep flow low and avoid wall-rinse\.$/i, 'Katup terbuka. Bloom bersih $1 ml; jaga flow rendah dan hindari wall-rinse.')
+    .replace(/^Valve open\. Build clarity with a steady stream and minimal agitation\.$/i, 'Tetap terbuka. Bangun clarity dengan aliran stabil dan agitasi minimal.')
+    .replace(/^Close the valve briefly to capture late sweetness \((\d+(?:\.\d+)?)\s*ml\)\. Do not hold too long\.$/i, 'Tutup singkat hanya untuk capture sweetness akhir ($1 ml). Jangan tahan terlalu lama.')
+    .replace(/^Open the valve early to keep the aroma, acidity, and clarity from being muted by body\.$/i, 'Buka katup lebih awal agar aroma, acidity, dan clarity tidak tertutup body.')
+    .replace(/^Swirl the server gently and serve\.$/i, 'Aduk server singkat lalu sajikan.')
+    .replace(/^Valve open from the start\. Bloom (\d+(?:\.\d+)?) ml; this is V60 mode, not immersion\.$/i, 'Katup terbuka dari awal. Bloom $1 ml; ini Mode V60, bukan immersion.')
+    .replace(/^Keep the valve open and maintain a steady flow to protect clarity\.$/i, 'Jaga katup tetap terbuka dan flow stabil untuk clarity.')
+    .replace(/^Complete the target volume with a clean path; do not close the valve\.$/i, 'Selesaikan target dengan jalur bersih; jangan tutup katup.')
+    .replace(/^Drawdown naturally; no release checkpoint since the valve is already open\.$/i, 'Drawdown natural; tidak ada titik release karena katup sudah terbuka.')
+    .replace(/^Valve closed\. Bloom the hot concentrate with (\d+(?:\.\d+)?) ml; ice is pre-weighed in the server\.$/i, 'Katup tertutup. Bloom konsentrat panas $1 ml; es sudah ditimbang di server.')
+    .replace(/^Still closed\. Fill the hot concentrate target up to about (\d+(?:\.\d+)?) ml; do not add hidden bypass\.$/i, 'Masih tertutup. Isi target panas tertutup sampai sekitar $1 ml; jangan tambah bypass tersembunyi.')
+    .replace(/^Open the valve and release the hot concentrate directly over the ice in the server\.$/i, 'Buka katup dan release konsentrat panas langsung ke es di server.')
+    .replace(/^Valve open\. Pour only up to the hot water target; final volume is hot water \+ ice\.$/i, 'Katup terbuka. Lanjutkan hanya sampai target air panas; final beverage tetap air panas + es.')
+    .replace(/^Stir the server 5-8 seconds to integrate concentrate and ice thoroughly\.$/i, 'Aduk 5-8 detik agar konsentrat dan es menyatu.')
+    .replace(/^(.+?): MUGEN low-bypass is used with a cleaner open phase to boost clarity without exceeding Mugen capacity\.$/i, '$1: MUGEN low-bypass dipakai dengan fase terbuka lebih bersih agar clarity naik tanpa meniru kapasitas Switch 03.')
+    .replace(/^(.+?): MUGEN low-bypass provides focus and body, keeping the 200 ml chamber safe with a conservative hybrid\.$/i, '$1: MUGEN low-bypass memberi fokus dan body, tetapi chamber 200 ml dijaga dengan hybrid konservatif.')
+    .replace(/^(.+?): MUGEN low-bypass gives focused sweetness, with a safe hybrid keeping the 200 ml chamber controlled\.$/i, '$1: MUGEN low-bypass memberi sweetness terfokus; hybrid aman menjaga chamber 200 ml tetap terkendali.')
+    .replace(/^(.+?): valve open from the start to maximize clarity and transparency\.$/i, '$1: katup terbuka dari awal agar clarity dan transparansi lebih tinggi.')
+    .replace(/^(.+?): short closed phase to prevent acidity, aroma, and clarity from being masked by body\.$/i, '$1: fase tertutup dibuat pendek supaya acidity, aroma, dan clarity tidak tertutup body.')
+    .replace(/^(.+?): larger bloom and gentle closed contact capturing sweetness without harsh swirling\.$/i, '$1: bloom lebih besar dan kontak tertutup lembut menangkap sweetness tanpa swirl keras.')
+    .replace(/^(.+?): longer closed contact to enhance body, keeping chamber loads safe to avoid muddy notes\.$/i, '$1: kontak tertutup lebih panjang menaikkan body, tetapi tetap dibatasi chamber agar tidak muddy.')
+    .replace(/^(.+?): medium closed capture preserving fruit sweetness, followed by an open finish to keep it clean\.$/i, '$1: closed capture sedang menjaga fruit sweetness, lalu open finish menjaga bersih.')
+    .replace(/^(.+?): closed bloom capturing early sweetness, followed by an open finish to maintain a clean cup\.$/i, '$1: closed bloom menangkap sweetness awal, lalu open finish menjaga clean finish.')
+    .replace(/^Full immersion requires closed chamber load of (\d+(?:\.\d+)?) ml, exceeding the safe limit of (\d+(?:\.\d+)?) ml\.$/i, 'Full immersion butuh muatan ruang tertutup $1 ml, melebihi batas aman $2 ml.')
+    .replace(/^Keep the closed valve phase at (\d+(?:\.\d+)?) ml or lower; finish with the valve open\.$/i, 'Jaga fase katup tertutup di $1 ml atau lebih rendah; selesaikan dengan katup terbuka.')
+    .replace(/^High-buffer water can mute bright notes; open the valve earlier if the cup tastes flat\.$/i, 'Air buffer tinggi bisa meredam rasa cerah; buka katup lebih awal jika cangkir terasa datar.')
+    .replace(/^Grinder reference has low confidence; validate the drawdown before shifting recipe numbers\.$/i, 'Referensi grinder masih rendah keyakinan; validasi air turun sebelum mengubah angka resep.')
+    .replace(/^Manual preset is less aligned with bright\/floral targets; clarity can drop\. Use Hybrid Bright Clean or V60 Mode for more transparency\.$/i, 'Preset manual kurang selaras dengan target cerah/floral; kejernihan bisa turun. Gunakan Hybrid Bright Clean atau Mode V60 jika ingin lebih transparan.')
+    .replace(/^Manual preset is cleaner than the body target; body can taste lighter\. Use Heavy Body only if the chamber capacity is safe\.$/i, 'Preset manual lebih bersih daripada target body; body bisa lebih ringan. Gunakan Heavy Body hanya jika muatan ruang aman.')
+    .replace(/^Manual V60 mode is more transparent than the sweet\/round target; sweetness can taste lighter\.$/i, 'Mode V60 manual lebih transparan daripada target manis/bulat; rasa manis bisa lebih ringan.')
+    .replace(/^Peak closed chamber load of (\d+(?:\.\d+)?) ml exceeds the safe limit of (\d+(?:\.\d+)?) ml\. Use Switch 03, V60 mode, or a conservative hybrid\.$/i, 'Puncak muatan ruang tertutup $1 ml melebihi batas aman $2 ml. Gunakan Switch 03, Mode V60, atau hybrid konservatif.')
+    .replace(/^Peak closed chamber load of (\d+(?:\.\d+)?) ml is close to the safe limit of (\d+(?:\.\d+)?) ml\. Open the valve before the bed stalls\.$/i, 'Puncak muatan ruang tertutup $1 ml mendekati batas aman $2 ml. Buka katup sebelum bed mulai macet.')
+    .replace(/^Peak closed chamber load of (\d+(?:\.\d+)?) ml is safe below the limit of (\d+(?:\.\d+)?) ml\.$/i, 'Puncak muatan ruang tertutup $1 ml masih aman di bawah batas $2 ml.')
+    .replace(/^No dose matrix row found for this dose in (.+?); use as a conservative starting point\.$/i, '$1 belum punya baris dose matrix untuk dosis ini; gunakan sebagai titik awal konservatif.')
+    .replace(/^(.+?) is not safe for (.+?) (.+?): closed chamber load exceeds the safe limit of (\d+(?:\.\d+)?) ml\.$/i, '$1 tidak aman untuk $2 $3: muatan ruang tertutup melewati batas aman $4 ml.')
+    .replace(/^(.+?) can be used for (.+?) (.+?), but keep chamber load below (\d+(?:\.\d+)?) ml and open earlier if the flow slows\.$/i, '$1 bisa dipakai untuk $2 $3, tetapi jaga muatan ruang di bawah $4 ml dan buka lebih awal jika flow melambat.')
+    .replace(/^(.+?) is safe for (.+?) (.+?); chamber load limit is (\d+(?:\.\d+)?) ml\.$/i, '$1 aman untuk $2 $3; batas muatan ruang $4 ml.')
     .replace(/^Official (.+) reference baseline for pour over style brewing; adjust slightly finer for iced and slightly coarser for larger flat-bottom beds only after taste\.$/i, 'Baseline referensi resmi $1 untuk seduh filter; geser sedikit lebih halus untuk iced dan sedikit lebih kasar untuk flat-bottom besar hanya setelah cek rasa.')
     .replace(/^Finish calmly and let the drawdown stay tidy\.$/i, 'Akhiri dengan tenang dan biarkan air turun tetap rapi.')
     .replace(/^Stop adding water here\. Let the bed finish draining over the measured ice, then stir the server 5-8 seconds before serving\.$/i, 'Berhenti tambah air di sini. Biarkan bed selesai turun di atas es terukur, lalu aduk server 5-8 detik sebelum disajikan.')
@@ -523,7 +603,227 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/^Saturate the full bed evenly and let immersion start building sweetness\.$/i, 'Saturasi seluruh bed secara merata lalu biarkan immersion mulai membangun rasa manis.')
     .replace(/^Use the middle phase to build immersion gently rather than chasing more turbulence\.$/i, 'Gunakan fase tengah untuk membangun immersion dengan tenang, bukan mengejar turbulensi tambahan.')
     .replace(/^Keep the later immersion phase quiet so the release stays clean\.$/i, 'Jaga fase immersion akhir tetap tenang agar buka katup tetap bersih.')
-    .replace(/^Open the release cleanly and let the bed drain without stirring the finish\.$/i, 'Buka katup dengan bersih lalu biarkan bed turun tanpa mengaduk fase akhir.');
+    .replace(/^Open the release cleanly and let the bed drain without stirring the finish\.$/i, 'Buka katup dengan bersih lalu biarkan bed turun tanpa mengaduk fase akhir.')
+    // AeroPress Masterclass Styles
+    .replace(/^Assemble inverted safely and saturate the coffee bed quickly\.$/i, 'Rakit inverted dengan aman dan basahi bed kopi dengan cepat.')
+    .replace(/^Use a stable inverted setup, add water decisively to cover all grounds, and keep the chamber upright-ready\.$/i, 'Gunakan posisi terbalik (inverted) yang stabil, tuang air secara mantap hingga membasahi seluruh bed, dan pastikan chamber siap dibalik.')
+    .replace(/^Brew a compact concentrate and keep bypass water separate\.$/i, 'Seduh konsentrat kental yang padat dan pisahkan air bypass.')
+    .replace(/^Pour hot water to wet the high-dose bed cleanly; keep bypass water reserved for post-press dilution\.$/i, 'Tuang air panas untuk membasahi kopi dosis tinggi; simpan air bypass untuk diencerkan setelah selesai ditekan.')
+    .replace(/^Saturate the full-chamber upright bed edge to edge\.$/i, 'Basahi bed tegak (upright) penuh dari ujung ke ujung.')
+    .replace(/^Add water decisively across the slightly coarser bed; no post-brew bypass will be used\.$/i, 'Tuang air mantap ke seluruh bed kopi gilingan sedikit lebih kasar; resep ini tidak menggunakan bypass.')
+    .replace(/^Pour swiftly in circles over double rinsed paper filters\.$/i, 'Tuang cepat dengan memutar di atas filter kertas ganda yang sudah dibilas.')
+    .replace(/^Use double rinsed paper filters, add water swiftly to wet grounds quickly, and establish high clarity\.$/i, 'Gunakan filter kertas ganda yang dibilas, tuang air dengan cepat agar bed lekas basah, dan bangun kejernihan rasa tinggi.')
+    .replace(/^Saturate the fine grounds cleanly and prepare for agitation\.$/i, 'Basahi kopi gilingan halus secara merata dan bersiap untuk adukan.')
+    .replace(/^Wet the fine grounds thoroughly, ensuring complete saturation to open high sweet solubility\.$/i, 'Basahi kopi gilingan halus dengan menyeluruh agar kelarutan rasa manis yang tinggi terekstraksi maksimal.')
+    .replace(/^Saturate the compact upright bed quickly and evenly\.$/i, 'Basahi bed kopi tegak yang padat secara cepat dan merata.')
+    .replace(/^Add water decisively to cover all dry grounds, and let the initial wetting lock down uniform contact\.$/i, 'Tuang air secara mantap untuk menutup seluruh bagian kering, biarkan basahan awal mengunci kontak ekstraksi yang seragam.')
+    .replace(/^Stir 4 times to wet grounds, then prepare to seal\.$/i, 'Aduk 4 kali untuk membasahi kopi, lalu bersiap untuk menyegel.')
+    .replace(/^Stir thoroughly to integrate all grounds, ensuring complete contact before the flip phase\.$/i, 'Aduk rata untuk menyatukan seluruh bed kopi, pastikan kontak ekstraksi terjadi sempurna sebelum fase pembalikan.')
+    .replace(/^Stir vigorously 4-5 times to maximize early extraction\.$/i, 'Aduk kuat 4-5 kali untuk memaksimalkan ekstraksi awal.')
+    .replace(/^Use vigorous stirring to push solubility in the compact concentrate, building a sweet, heavy core\.$/i, 'Aduk dengan kuat untuk meningkatkan kelarutan pada konsentrat padat, membangun rasa manis inti yang tebal.')
+    .replace(/^Stir gently 2-3 times to settle the full slurry\.$/i, 'Aduk perlahan 2-3 kali untuk meratakan seluruh slurry.')
+    .replace(/^Agitate gently to distribute water throughout the deep slurry, avoiding heavy bottom-packing\.$/i, 'Aduk lembut untuk mendistribusikan air ke seluruh slurry yang dalam, hindari kopi menumpuk terlalu padat di bawah.')
+    .replace(/^Stir gently exactly 2 times to prevent fines migration\.$/i, 'Aduk perlahan tepat 2 kali untuk mencegah perpindahan partikel halus.')
+    .replace(/^Agitate minimally to protect clarity; do not sweep the sides or migrate fine particles\.$/i, 'Lakukan agitasi minimal untuk melindungi kejernihan; jangan mengusap dinding kertas atau memicu perpindahan fines.')
+    .replace(/^Stir vigorously 5-6 times to build heavy body\.$/i, 'Aduk kuat 5-6 kali untuk membangun body yang tebal.')
+    .replace(/^Use strong circular stirring to build texture and dissolve sweet syrupy compounds\.$/i, 'Aduk memutar dengan kuat untuk membentuk tekstur rasa dan melarutkan senyawa manis yang kental.')
+    .replace(/^Stir gently 3 times, then let contact settle\.$/i, 'Aduk perlahan 3 kali, lalu biarkan kontak ekstraksi merata.')
+    .replace(/^Agitate in calm circular paths to integrate the slurry, then let contact time build sweet extraction\.$/i, 'Lakukan adukan melingkar yang tenang untuk menyatukan slurry, lalu biarkan waktu kontak membentuk ekstraksi manis.')
+    .replace(/^Screw filter cap tightly and prepare to flip securely\.$/i, 'Kencangkan filter cap dan bersiap untuk membalikkan dengan aman.')
+    .replace(/^Seal the pre-wet cap, let the inverted slurry steep, and prepare for a decisive flip\.$/i, 'Kunci cap yang sudah dibilas, biarkan slurry inverted terendam tenang, dan bersiaplah membalikkannya secara mantap.')
+    .replace(/^Let concentrate steep briefly before the press\.$/i, 'Biarkan konsentrat terendam singkat sebelum ditekan.')
+    .replace(/^Maintain compact, high-solubility contact; prepare separate dilution water for later\.$/i, 'Pertahankan kontak kelarutan tinggi yang padat; siapkan air dilusi terpisah untuk langkah akhir.')
+    .replace(/^Seal with the plunger and allow a longer immersion steep\.$/i, 'Segel dengan plunger dan biarkan rendaman (immersion) berlangsung lebih lama.')
+    .replace(/^Insert the plunger slightly to hold the full-chamber volume; let immersion work longer for sweet depth\.$/i, 'Pasang plunger sedikit untuk menahan volume penuh chamber; biarkan immersion bekerja lebih lama untuk kedalaman rasa manis.')
+    .replace(/^Cap to seal and keep the steep window short\.$/i, 'Pasang plunger untuk menyegel dan jaga waktu rendam tetap singkat.')
+    .replace(/^Create a vacuum seal quickly, and limit immersion contact time to protect bright acidity\.$/i, 'Buat segel vakum dengan cepat, dan batasi waktu kontak rendam untuk melindungi acidity yang cerah.')
+    .replace(/^Seal with the plunger and allow a longer sweet-body immersion\.$/i, 'Segel dengan plunger dan biarkan rendam lebih lama untuk body yang manis.')
+    .replace(/^Insert the plunger and extend the steep window so deep caramel and chocolate solubility completes\.$/i, 'Pasang plunger sedikit dan perpanjang waktu rendam agar ekstraksi senyawa karamel dan cokelat yang manis tuntas.')
+    .replace(/^Insert the plunger slightly to create a vacuum seal\.$/i, 'Pasang plunger sedikit untuk membuat segel vakum.')
+    .replace(/^Create a vacuum seal to prevent premature dripping; steep calmly to hold clear flavor\.$/i, 'Buat segel vakum untuk mencegah kopi menetes sebelum waktunya; rendam tenang untuk menjaga rasa tetap jernih.')
+    .replace(/^Flip decisively and press slowly down to the grounds\.$/i, 'Balikkan secara mantap lalu tekan perlahan hingga menyentuh bed kopi.')
+    .replace(/^Flip onto the server in one smooth motion, press steadily, and stop before forcing the dry hiss\.$/i, 'Balikkan ke atas server dalam satu gerakan mulus, tekan dengan stabil, dan berhenti sebelum mendesis kering.')
+    .replace(/^Press steadily, stop before the hiss, and dilute\.$/i, 'Tekan secara stabil, berhenti sebelum desis, lalu encerkan.')
+    .replace(/^Press the concentrate steadily, stop strictly before the hiss, then dilute with reserved bypass water\.$/i, 'Tekan konsentrat kental secara stabil, berhenti tepat sebelum desis, lalu encerkan dengan air bypass terpisah.')
+    .replace(/^Remove plunger, press steadily, and drain fully\.$/i, 'Lepas plunger, tekan dengan stabil, dan biarkan tiris sepenuhnya.')
+    .replace(/^Uncap, press slowly over 30-40 seconds, and let the full chamber volume drain completely\.$/i, 'Buka plunger, tekan perlahan selama 30-40 detik, dan biarkan seluruh volume chamber turun habis dengan bersih.')
+    .replace(/^Press extremely slowly with minimal force, stopping before the hiss\.$/i, 'Tekan sangat perlahan dengan tenaga minimal, berhenti sebelum desis.')
+    .replace(/^Press with feather-light pressure over 35-40 seconds, and stop strictly before the hiss to keep lipids locked\.$/i, 'Tekan dengan tekanan sangat ringan selama 35-40 detik, dan berhenti tepat sebelum desis untuk mengunci minyak dan lipid kopi.')
+    .replace(/^Press slowly to the very bottom of the puck\.$/i, 'Tekan perlahan hingga ke bagian terbawah bed kopi.')
+    .replace(/^Apply firm, stable force down to the absolute bottom of the bed to extract sweet soluble layers\.$/i, 'Berikan tenaga penekanan yang stabil hingga dasar terdalam bed kopi untuk memeras lapisan larutan yang manis.')
+    .replace(/^Press steadily and stop at the first hiss\.$/i, 'Tekan secara stabil dan berhenti tepat pada desis pertama.')
+    .replace(/^Press steadily over 25-35 seconds, and stop strictly at the first hiss to protect clarity\.$/i, 'Tekan secara stabil selama 25-35 detik, dan berhenti tepat pada desis pertama untuk melindungi kejernihan rasa.')
+    // French Press Masterclass Styles
+    .replace(/^Pour boiling water swiftly to saturate all coffee grounds\.$/i, 'Tuang air mendidih dengan cepat untuk membasahi seluruh bubuk kopi.')
+    .replace(/^Pour boiling water swiftly to wet all grounds cleanly and establish a stable heat retention in the glass chamber\.$/i, 'Tuang air mendidih dengan cepat untuk membasahi kopi secara bersih dan menjaga retensi panas yang stabil pada glass chamber.')
+    .replace(/^Pour water in circular motions to saturate the medium-ground bed\.$/i, 'Tuang air dengan gerakan melingkar untuk membasahi bed kopi gilingan sedang.')
+    .replace(/^Pour water gently in slow circular paths to wet the medium-ground bed, promoting even wetting before the clean steep phase\.$/i, 'Tuang air secara perlahan dengan gerakan memutar lembut untuk membasahi bed kopi gilingan sedang secara merata sebelum rendaman bersih.')
+    .replace(/^Pour water rapidly over the heavy dose to wet the fine grounds\.$/i, 'Tuang air secara cepat ke kopi dosis tinggi untuk membasahi gilingan halus.')
+    .replace(/^Pour hot water rapidly to wet the high-dose bed; maintain maximum thermal mass inside the chamber\.$/i, 'Tuang air panas secara cepat untuk membasahi bed dosis tinggi; pertahankan massa termal maksimal di dalam chamber.')
+    .replace(/^Pour water gently to promote a round, sweet extraction\.$/i, 'Tuang air secara lembut untuk memicu ekstraksi rasa manis yang bulat.')
+    .replace(/^Pour water gently at a slightly lower temperature to promote high sweet solubility without dissolving bitter compounds\.$/i, 'Tuang air perlahan pada suhu sedikit lebih rendah untuk meningkatkan kelarutan manis yang tinggi tanpa mengekstraksi senyawa pahit.')
+    .replace(/^Allow the crust to form undisturbed for 4 minutes\.$/i, 'Biarkan kerak kopi (crust) terbentuk tenang tanpa gangguan selama 4 menit.')
+    .replace(/^Leave the chamber undisturbed while a thick, aromatic crust of coffee grounds forms at the surface\.$/i, 'Biarkan chamber tenang tanpa gangguan selagi kerak kopi (crust) yang kental dan aromatik terbentuk di permukaan.')
+    .replace(/^Steep cleanly while the double filter elements are prepared\.$/i, 'Rendam tenang selagi elemen penyaring ganda disiapkan.')
+    .replace(/^Allow full immersion to proceed undisturbed; prepare the double mesh or paper filter insert by pre-wetting with hot water\.$/i, 'Biarkan immersion penuh berlangsung tanpa gangguan; siapkan double mesh atau kertas saring dengan membilasnya terlebih dahulu.')
+    .replace(/^Stir vigorously 5-6 times to maximize early extraction strength\.$/i, 'Aduk dengan kuat 5-6 kali untuk memaksimalkan kekuatan ekstraksi awal.')
+    .replace(/^Use strong agitation early to break down the dense slurry, maximizing extraction from the concentrated bed\.$/i, 'Lakukan agitasi kuat di awal untuk memecah slurry yang padat, memaksimalkan kekuatan ekstraksi dari bed konsentrat kental.')
+    .replace(/^Stir gently exactly 2 times to distribute extraction evenly\.$/i, 'Aduk perlahan tepat 2 kali untuk mendistribusikan ekstraksi secara merata.')
+    .replace(/^Stir exactly twice with a light touch to distribute heat and grounds without introducing bitterness\.$/i, 'Aduk tepat dua kali dengan sentuhan ringan untuk meratakan panas dan bubuk kopi tanpa menimbulkan rasa pahit.')
+    .replace(/^Stir the crust gently, skim the surface foam and floating oils\.$/i, 'Aduk kerak kopi perlahan, buang busa permukaan dan minyak yang mengapung.')
+    .replace(/^Break the crust with 2-3 gentle folds, then skim the remaining light foam and floating oils from the surface to ensure high cup clarity\.$/i, 'Pecahkan kerak (crust) dengan 2-3 adukan lipat lembut, lalu bersihkan sisa busa dan minyak mengapung dari permukaan untuk kejernihan rasa tinggi.')
+    .replace(/^Give a light swirl to settle the grounds before placing the plunger\.$/i, 'Goyang memutar (swirl) ringan agar bubuk kopi turun sebelum plunger dipasang.')
+    .replace(/^Give a light, gentle swirl to detach grounds from the glass wall and let them settle to the bottom\.$/i, 'Goyang memutar (swirl) lembut untuk melepaskan bubuk kopi dari dinding kaca dan biarkan mengendap ke dasar.')
+    .replace(/^Let the thick immersion concentrate develop body and richness\.$/i, 'Biarkan konsentrat rendam yang kental mengembangkan body dan kekayaan rasa.')
+    .replace(/^Allow the high-strength immersion slurry to steep, building a syrupy mouthfeel and sweet cocoa structure\.$/i, 'Biarkan slurry immersion berkekuatan tinggi terendam tenang, membentuk mouthfeel seperti sirup dan struktur rasa cokelat manis.')
+    .replace(/^Steep quietly to allow sugar compounds to fully dissolve\.$/i, 'Rendam tenang agar senyawa gula terlarut sempurna.')
+    .replace(/^Steep quietly; the lower temperature protects sweet caramel and chocolate solubility\.$/i, 'Rendam tenang; suhu yang lebih rendah melindungi kelarutan senyawa manis karamel dan cokelat.')
+    .replace(/^Fit plunger and lower it just to touch the liquid surface; decant gently\.$/i, 'Pasang plunger dan turunkan mesh hanya sampai menyentuh permukaan kopi; tuang pisah perlahan.')
+    .replace(/^Fit the plunger and lower the mesh just to touch the surface \(do not plunge!\)\. Pour out extremely slowly to prevent churning the settled bed\.$/i, 'Pasang plunger dan turunkan mesh hanya sampai batas permukaan kopi (jangan ditekan!). Tuang pisah sangat perlahan agar bubuk kopi dasar tidak keruh.')
+.replace(/^Press down slowly over 30 seconds through the double filter; serve cleanly\.$/i, 'Tekan perlahan selama 30 detik melalui filter ganda; sajikan bersih.')
+    .replace(/^Press the double filter down slowly with uniform, light force over 30 seconds, trapping all fines for an ultra-clean finish\.$/i, 'Tekan filter ganda secara perlahan dengan tenaga ringan yang seragam selama 30 detik, menyaring seluruh ampas halus demi hasil akhir yang super bersih.')
+    .replace(/^Press firmly to the bottom of the puck, serve as concentrate or bypass\.$/i, 'Tekan mantap hingga ke dasar bed kopi, sajikan sebagai konsentrat kental atau tambahkan bypass.')
+    .replace(/^Apply firm, stable force down to the absolute bottom of the coffee puck to extract sweet soluble layers; serve as concentrate or dilute with bypass\.$/i, 'Berikan tenaga penekanan stabil hingga ke dasar bed kopi untuk memeras sisa larutan manis; sajikan kental atau encerkan dengan bypass.')
+    .replace(/^Plunge extremely slowly over 30 seconds to avoid fines churning\.$/i, 'Tekan plunger sangat perlahan selama 30 detik untuk menghindari turbulensi partikel halus.')
+    .replace(/^Plunge with feather-light force to avoid fines migration, and decant immediately to stop the extraction\.$/i, 'Plunge dengan tenaga sangat ringan untuk menghindari perpindahan ampas halus, lalu tuang pisah segera untuk menghentikan ekstraksi.')
+    // Non-anchored substring replacements for Switch and Clever step notes, immersion details, focus cues, and practical cues
+    .replace(/Valve closed\. Bloom (\d+(?:\.\d+)?) ml \((\d+(?:\.\d+)?)x dose\); pour gently and avoid aggressive swirling\./gi, 'Katup tertutup. Bloom $1 ml ($2x dosis); tuang lembut dan jangan swirl keras.')
+    .replace(/Still closed\. Fill slowly to build body; open before it feels heavy or muddy\./gi, 'Masih tertutup. Isi perlahan untuk body tebal; buka sebelum terasa berat atau muddy.')
+    .replace(/Still closed\. Fill the remaining water gently to promote sweetness and round body\./gi, 'Masih tertutup. Isi sisa air dengan tenang untuk sweetness dan body bulat.')
+    .replace(/Hold closed contact time; open before flow stalls\./gi, 'Tahan kontak tertutup secukupnya; buka sebelum flow terasa stall.')
+    .replace(/Open the valve cleanly and let the release drain without extra agitation\./gi, 'Buka katup sekali, lalu biarkan air turun tanpa aduk ulang.')
+    .replace(/Swirl the server 5-8 seconds to integrate, then serve\. Note if body starts tasting muddy\./gi, 'Aduk server 5-8 detik lalu sajikan. Catat jika body mulai muddy.')
+    .replace(/Swirl the server 5-8 seconds to integrate, then serve\./gi, 'Aduk server 5-8 detik lalu sajikan.')
+    .replace(/Still closed\. Raise the chamber load to about (\d+(?:\.\d+)?) ml, then prepare for release\./gi, 'Masih tertutup. Naikkan muatan ruang sampai sekitar $1 ml, lalu siapkan release.')
+    .replace(/Open the valve before the bed stalls; this keeps the finish clean\./gi, 'Buka katup sebelum bed melambat berat; ini menjaga finish tetap bersih.')
+    .replace(/Valve open\. Complete the target with a steady center-to-mid pour, avoiding heavy wall-rinse\./gi, 'Katup terbuka. Selesaikan target dengan jalur pusat-ke-tengah, tanpa wall-rinse berat.')
+    .replace(/Allow the drawdown to complete naturally; do not add extra water\./gi, 'Biarkan drawdown selesai natural; jangan tambah air di luar target.')
+    .replace(/Valve open\. Bloom cleanly with (\d+(?:\.\d+)?) ml; keep flow low and avoid wall-rinse\./gi, 'Katup terbuka. Bloom bersih $1 ml; jaga flow rendah dan hindari wall-rinse.')
+    .replace(/Valve open\. Build clarity with a steady stream and minimal agitation\./gi, 'Tetap terbuka. Bangun clarity dengan aliran stabil dan agitasi minimal.')
+    .replace(/Close the valve briefly to capture late sweetness \((\d+(?:\.\d+)?)\s*ml\)\. Do not hold too long\./gi, 'Tutup singkat hanya untuk capture sweetness akhir ($1 ml). Jangan tahan terlalu lama.')
+    .replace(/Open the valve early to keep the aroma, acidity, and clarity from being muted by body\./gi, 'Buka katup lebih awal agar aroma, acidity, dan clarity tidak tertutup body.')
+    .replace(/Swirl the server gently and serve\./gi, 'Aduk server singkat lalu sajikan.')
+    .replace(/Valve open from the start\. Bloom (\d+(?:\.\d+)?) ml; this is V60 mode, not immersion\./gi, 'Katup terbuka dari awal. Bloom $1 ml; ini Mode V60, bukan immersion.')
+    .replace(/Keep the valve open and maintain a steady flow to protect clarity\./gi, 'Jaga katup tetap terbuka dan flow stabil untuk clarity.')
+    .replace(/Complete the target volume with a clean path; do not close the valve\./gi, 'Selesaikan target dengan jalur bersih; jangan tutup katup.')
+    .replace(/Drawdown naturally; no release checkpoint since the valve is already open\./gi, 'Drawdown natural; tidak ada titik release karena katup sudah terbuka.')
+    .replace(/Valve closed\. Bloom the hot concentrate with (\d+(?:\.\d+)?) ml; ice is pre-weighed in the server\./gi, 'Katup tertutup. Bloom konsentrat panas $1 ml; es sudah ditimbang di server.')
+    .replace(/Still closed\. Fill the hot concentrate target up to about (\d+(?:\.\d+)?) ml; do not add hidden bypass\./gi, 'Masih tertutup. Isi target panas tertutup sampai sekitar $1 ml; jangan tambah bypass tersembunyi.')
+    .replace(/Open the valve and release the hot concentrate directly over the ice in the server\./gi, 'Buka katup dan release konsentrat panas langsung ke es di server.')
+    .replace(/Valve open\. Pour only up to the hot water target; final volume is hot water \+ ice\./gi, 'Katup terbuka. Lanjutkan hanya sampai target air panas; final beverage tetap air panas + es.')
+    .replace(/Stir the server 5-8 seconds to integrate concentrate and ice thoroughly\./gi, 'Aduk 5-8 detik agar konsentrat dan es menyatu.')
+    .replace(/Keep the switch closed/gi, 'Jaga katup tetap tertutup')
+    .replace(/open the switch/gi, 'buka katup')
+    .replace(/Set the Hario Switch on the server/gi, 'Letakkan Hario Switch di atas server')
+    .replace(/Rinse the V60-style paper, preheat the brewer\/server, and tare the scale first, then close the switch before adding coffee and brew water\./gi, 'Bilas kertas V60, panaskan brewer/server, tare timbangan, lalu tutup katup sebelum memasukkan kopi dan air.')
+    .replace(/Keep the switch closed, wet the full bed evenly, and let immersion start doing the work without rushing the opening\./gi, 'Jaga katup tetap tertutup, basahi seluruh bed secara merata, dan biarkan proses immersion mulai bekerja tanpa terburu-buru.')
+    .replace(/Keep the switch closed and add water calmly; let immersion carry extraction instead of forcing turbulence\./gi, 'Jaga katup tetap tertutup dan tambahkan air dengan tenang; biarkan immersion mendorong ekstraksi tanpa memaksakan agitasi berlebih.')
+    .replace(/Keep the switch closed through the later contact window; avoid stirring late so the release stays clean\./gi, 'Jaga katup tetap tertutup selama kontak akhir; hindari mengaduk di fase akhir agar aliran keluar tetap bersih.')
+    .replace(/Open the switch cleanly and let the bed drain on its own; do not stir, shake, or top up during the finishing drain\./gi, 'Buka katup sepenuhnya dan biarkan bed kopi turun dengan sendirinya; jangan diaduk, digoyang, atau ditambah air selama air turun.')
+    .replace(/Open the switch cleanly and let the bed drain on its own; do not stir or shake the brewer during the finishing drain\./gi, 'Buka katup sepenuhnya dan biarkan bed kopi turun dengan sendirinya; jangan diaduk atau digoyang selama air turun.')
+    .replace(/Keep the switch open/gi, 'Jaga katup tetap terbuka')
+    .replace(/Set the Hario Switch on the server with the valve open/gi, 'Letakkan Hario Switch di atas server dengan katup terbuka')
+    .replace(/Rinse the V60-style paper, preheat the brewer\/server, tare the scale, then leave the switch open before dosing coffee\./gi, 'Bilas kertas V60, panaskan brewer/server, tare timbangan, lalu biarkan katup tetap terbuka sebelum memasukkan kopi.')
+    .replace(/Leave the valve open from the first bloom; this is percolation mode, not immersion\./gi, 'Biarkan katup terbuka sejak bloom pertama; ini mode perkolasi, bukan immersion.')
+    .replace(/Keep the valve open and use a clean center-to-mid pour so the cup stays transparent\./gi, 'Jaga katup tetap terbuka dan gunakan tuangan tengah agar hasil seduhan tetap bersih dan jernih.')
+    .replace(/Finish the hot-water target with the valve still open; do not add a fake release step\./gi, 'Selesaikan target air panas dengan katup tetap terbuka; jangan buat langkah release buatan.')
+    .replace(/Let drawdown finish naturally with the valve open, then stir the server briefly\./gi, 'Biarkan drawdown selesai secara alami dengan katup terbuka, lalu aduk server singkat.')
+    .replace(/Use the switch briefly closed only for capture/gi, 'Tutup katup singkat hanya untuk menangkap kehalusan manis')
+    .replace(/open the switch before the cup gets heavy/gi, 'buka katup sebelum kopi terasa terlalu berat')
+    .replace(/Set the Hario Switch on the server and start with open flow/gi, 'Letakkan Hario Switch di atas server dan mulai dengan aliran terbuka')
+    .replace(/Rinse the V60-style paper, preheat the brewer\/server, tare the scale, then start with the valve open for a cleaner bloom\./gi, 'Bilas kertas V60, panaskan brewer/server, tare timbangan, lalu mulai dengan katup terbuka untuk bloom yang lebih bersih.')
+    .replace(/Start open and gentle so acidity and florals stay clear\./gi, 'Mulai dengan katup terbuka secara perlahan agar acidity dan aroma floral tetap terjaga.')
+    .replace(/Build most of the hot-water target as open percolation before the short closed capture\./gi, 'Lakukan sebagian besar target air panas dengan aliran terbuka sebelum tangkapan singkat saat katup ditutup.')
+    .replace(/Close only briefly for sweetness; avoid turning the bright target into a heavy immersion cup\./gi, 'Tutup katup secara singkat hanya untuk sweetness; hindari mengubah target cerah menjadi seduhan immersion yang tebal.')
+    .replace(/Open the switch before the finish flattens, then let drawdown stay clean\./gi, 'Buka katup sebelum rasa akhir menjadi datar, lalu biarkan air turun dengan bersih.')
+    .replace(/Keep the switch closed for the hot concentrate/gi, 'Jaga katup tetap tertutup untuk konsentrat panas')
+    .replace(/open the switch over measured ice/gi, 'buka katup di atas es yang sudah ditimbang')
+    .replace(/Set the Hario Switch over a server with measured ice/gi, 'Letakkan Hario Switch di atas server berisi es terukur')
+    .replace(/Rinse the V60-style paper, preheat the brewer, tare the scale, and put measured ice in the server before brewing\./gi, 'Bilas kertas V60, panaskan brewer, tare timbangan, dan masukkan es terukur ke dalam server sebelum menyeduh.')
+    .replace(/Bloom as hot concentrate with the valve closed; ice is already counted in the final input\./gi, 'Bloom sebagai konsentrat panas dengan katup tertutup; es sudah diperhitungkan dalam input akhir.')
+    .replace(/Add only planned hot water through the bed; do not add hidden bypass later\./gi, 'Tambahkan air panas yang direncanakan saja lewat bed kopi; jangan masukkan bypass tersembunyi setelahnya.')
+    .replace(/Keep the closed phase short so the iced cup stays fresh rather than heavy\./gi, 'Jaga fase tertutup tetap pendek agar es kopi terasa segar dan tidak terlalu berat.')
+    .replace(/Release hot concentrate over ice, then stir the server 5-8 seconds\./gi, 'Buka katup untuk mengalirkan konsentrat panas di atas es, lalu aduk server 5-8 detik.')
+    .replace(/Use a controlled closed phase/gi, 'Gunakan fase katup tertutup yang terkontrol')
+    .replace(/open the switch at the release checkpoint/gi, 'buka katup di titik release')
+    .replace(/Set the Hario Switch on the server and follow the valve checkpoints/gi, 'Letakkan Hario Switch di atas server dan ikuti petunjuk katup')
+    .replace(/Rinse the V60-style paper, preheat the brewer\/server, tare the scale, then close the switch for the first sweetness checkpoint\./gi, 'Bilas kertas V60, panaskan brewer/server, tare timbangan, lalu tutup katup untuk titik sweetness pertama.')
+    .replace(/Close for bloom to capture sweetness, but keep the chamber load within the size guardrail\./gi, 'Tutup katup saat bloom untuk menangkap rasa manis, tetapi jaga muatan ruang tetap di dalam batas aman.')
+    .replace(/Use the closed phase for sweetness, then release before the bed feels stalled\./gi, 'Gunakan fase tertutup untuk mengejar kemanisan, lalu buka katup sebelum aliran kopi macet.')
+    .replace(/Finish open if the plan asks for it; this keeps the cup cleaner than a full closed hold\./gi, 'Selesaikan dengan aliran terbuka jika direncanakan; ini menjaga cangkir lebih bersih daripada rendaman penuh.')
+    .replace(/Open the switch cleanly, finish the hot-water target, and avoid late heavy agitation\./gi, 'Buka katup sepenuhnya, selesaikan target air panas, dan hindari agitasi berat di akhir.')
+    .replace(/Keep the Clever closed/gi, 'Jaga Clever tetap tertutup')
+    .replace(/open the valve/gi, 'buka katup')
+    .replace(/Place the Clever on the server/gi, 'Letakkan Clever di atas server')
+    .replace(/Rinse the paper, preheat the brewer, and tare the scale first, then close the valve before adding coffee and brew water\./gi, 'Bilas kertas filter, panaskan brewer, tare timbangan, lalu tutup katup sebelum menambahkan kopi dan air.')
+    .replace(/Wet the entire bed evenly and let immersion start doing the work; the opening should feel full, not rushed\./gi, 'Basahi seluruh bed kopi secara merata dan biarkan immersion bekerja; pembukaan harus terasa penuh, tidak terburu-buru.')
+    .replace(/Add the next water calmly and let immersion carry extraction; there is no need to force agitation the way you would on an open dripper\./gi, 'Tambahkan air berikutnya dengan tenang dan biarkan immersion mengekstraksi; tidak perlu melakukan agitasi seperti pada dripper terbuka.')
+    .replace(/Hold the later middle phase calm and avoid stirring; Clever rewards a settled bed before the release\./gi, 'Jaga fase tengah akhir tetap tenang dan hindari pengadukan; Clever memberikan rasa lebih bersih jika bed tenang sebelum dilepas.')
+    .replace(/Open the valve cleanly and let the bed release on its own; do not stir or shake the brewer during the finishing drain\./gi, 'Buka katup sepenuhnya dan biarkan kopi turun dengan sendirinya; jangan diaduk atau digoyang selama aliran turun.')
+    .replace(/Keep the first wetting calm so clarity stays intact\./gi, 'Jaga basahan pertama tetap tenang agar clarity tetap terjaga.')
+    .replace(/Make sure all grounds are wet so the cup does not run thin later\./gi, 'Pastikan seluruh bubuk kopi basah merata agar seduhan tidak terasa tipis.')
+    .replace(/Keep the first wetting calm so the cup can build a sweeter middle\./gi, 'Jaga basahan pertama tetap tenang agar cangkir bisa membangun rasa manis di tengah.')
+    .replace(/Wet the grounds evenly before moving to the next checkpoint\./gi, 'Basahi bubuk kopi secara merata sebelum lanjut ke langkah berikutnya.')
+    .replace(/Keep the opening gentle so clarity stays intact\./gi, 'Jaga pembukaan tetap lembut agar clarity tetap utuh.')
+    .replace(/Make sure the bed is fully wet so the cup does not run thin later\./gi, 'Pastikan bed kopi basah sepenuhnya agar hasil seduhan tidak terasa tipis.')
+    .replace(/Keep the bloom calm so the cup can build a sweeter middle\./gi, 'Jaga bloom tetap tenang agar cangkir bisa membangun rasa manis di tengah.')
+    .replace(/Open the bed evenly before moving to the next checkpoint\./gi, 'Buka bed kopi secara merata sebelum lanjut ke langkah berikutnya.')
+    .replace(/Keep the middle phase clean and avoid pushing the walls\./gi, 'Jaga fase tengah tetap bersih dan hindari menyiram dinding filter.')
+    .replace(/Hold slurry depth steady through the middle phase\./gi, 'Jaga ketinggian slurry tetap stabil selama fase tengah.')
+    .replace(/Use this phase to build sweetness without spiking agitation\./gi, 'Gunakan fase ini untuk membangun rasa manis tanpa lonjakan agitasi.')
+    .replace(/Keep the flow stable and repeatable through the middle phase\./gi, 'Jaga aliran tetap stabil dan konsisten selama fase tengah.')
+    .replace(/Let the later middle phase stay light so the finish does not flatten\./gi, 'Jaga fase tengah akhir tetap ringan agar rasa akhir tidak mendatar.')
+    .replace(/Carry enough contact here to keep structure in the cup\./gi, 'Pertahankan kontak secukupnya di sini untuk menjaga struktur cangkir tetap kokoh.')
+    .replace(/Keep the later middle phase level so sweetness lands cleanly\./gi, 'Jaga ketinggian air fase tengah akhir agar sweetness mendarat bersih.')
+    .replace(/Keep the later middle phase controlled and level\./gi, 'Jaga fase tengah akhir tetap terkontrol dan rata.')
+    .replace(/Release cleanly and avoid stirring again once the brewer is draining\./gi, 'Buka aliran dengan bersih dan hindari mengaduk kembali saat aliran kopi mulai turun.')
+    .replace(/Finish the immersion phase cleanly and separate the brew from the grounds\./gi, 'Selesaikan fase immersion dengan bersih dan pisahkan seduhan kopi dari bubuknya.')
+    .replace(/Finish cleanly and avoid heavy late agitation\./gi, 'Selesaikan secara bersih dan hindari agitasi berat di akhir.')
+    .replace(/Finish with enough control to keep the cup dense, not muddy\./gi, 'Selesaikan dengan kontrol cukup agar cangkir terasa padat, tidak keruh.')
+    .replace(/Finish calmly so the aftertaste stays sweet and round\./gi, 'Selesaikan dengan tenang agar aftertaste tetap manis dan bulat.')
+    .replace(/Finish calmly and let the drawdown stay tidy\./gi, 'Selesaikan dengan tenang dan biarkan air turun dengan rapi.')
+    .replace(/Traditional Flat Three-Pour uses three distinct, calm pours to keep a flat bed and a consistent, clean extraction\. Ideal for balanced sweetness\./gi, 'Traditional Flat Three-Pour menggunakan tiga tuangan tenang terpisah untuk menjaga flat bed dan ekstraksi yang konsisten serta bersih. Ideal untuk kemanisan yang seimbang.')
+    .replace(/Watch for side-channeling\. Do not pour too close to the filter paper ridges to preserve the wave bypass effect\./gi, 'Waspadai side-channeling. Jangan menuang terlalu dekat dengan lipatan kertas filter agar efek bypass gelombang (wave) tetap terjaga.')
+    .replace(/Competition Fast Four-Pour utilizes four fast concentric pulses to maximize water-coffee agitation, bringing out high acidity and bright clarity\./gi, 'Competition Fast Four-Pour menggunakan empat pulsa konsentris cepat untuk memaksimalkan agitasi air-kopi, menonjolkan acidity tinggi dan kejernihan yang cerah.')
+    .replace(/Slurry level control is critical\. Do not let the water level rise too high, or the fast drawdown will become muddy\./gi, 'Kontrol level suspensi (slurry) sangat krusial. Jangan biarkan level air naik terlalu tinggi, atau air turun yang cepat akan menjadi keruh.')
+    .replace(/Continuous Slow Stream keeps a constant water column using a gentle, slow centered flow, yielding an exceptionally sweet cup with a velvety body\./gi, 'Continuous Slow Stream menjaga kolom air tetap konstan dengan aliran tengah yang lembut dan lambat, menghasilkan cangkir yang sangat manis dengan body beludru.')
+    .replace(/Maintain a steady hand\. Fluctuations in flow rate will disturb the flat bed structure and ruin extraction balance\./gi, 'Jaga tangan tetap stabil. Fluktuasi flow rate akan mengganggu struktur flat bed dan merusak keseimbangan ekstraksi.')
+    .replace(/Iced Wave uses a concentrated hot extraction poured directly over pre-weighed ice, preserving bright, volatile fruit acids and clean sweetness\./gi, 'Iced Wave menggunakan ekstraksi panas pekat yang dituang langsung ke atas es terukur, menjaga asam buah volatil yang cerah dan kemanisan yang bersih.')
+    .replace(/Drip path control\. Ensure the hot concentrate drips directly onto the ice core for immediate thermal locking and aroma preservation\./gi, 'Kontrol jalur tetesan. Pastikan konsentrat panas menetes langsung ke inti es untuk penguncian suhu instan dan menjaga aroma.')
+    .replace(/High-Dose Concentrate extracts a rich, heavy coffee essence using a large coffee dose and a tight water ratio\. Offers deep sweetness and huge mouthfeel\./gi, 'High-Dose Concentrate mengekstrak esensi kopi yang kaya dan berat menggunakan dosis kopi besar dan rasio air yang rapat. Memberikan kemanisan mendalam dan mouthfeel tebal.')
+    .replace(/Prevent clogging\. A coarser grind and zero circular agitation are required to stop the large coffee bed from stalling at the bottom holes\./gi, 'Cegah penyumbatan. Gilingan lebih kasar dan tanpa agitasi sirkular diperlukan agar bed kopi besar tidak mampet di lubang bawah.')
+    .replace(/Pour aggressively in center circles to wet all grounds quickly\./gi, 'Tuang dengan agresif dalam lingkaran tengah untuk membasahi seluruh kopi dengan cepat.')
+    .replace(/Deliver hot water in rapid concentric rings at the core; push hydration rapidly without letting water bypass the fluted edges\./gi, 'Alirkan air panas dalam lingkaran konsentris cepat di bagian tengah; dorong hidrasi dengan cepat tanpa membiarkan air melewati celah luar.')
+    .replace(/Pour with high flow rate in tight center concentric circles to agitate deeply\./gi, 'Tuang dengan flow rate tinggi dalam lingkaran konsentris tengah yang rapat untuk agitasi mendalam.')
+    .replace(/Increase flow rate to promote intense early agitation; keep the slurry level low to maximize velocity and clarity\./gi, 'Naikkan flow rate untuk memicu agitasi awal yang intens; jaga level cairan tetap rendah untuk memaksimalkan kecepatan dan kejernihan.')
+    .replace(/Pour with high flow rate in tight center concentric circles, creating high extraction velocity\./gi, 'Tuang dengan flow rate tinggi dalam lingkaran konsentris tengah yang rapat, menciptakan kecepatan ekstraksi tinggi.')
+    .replace(/Deliver the third quick pulse, focusing the stream entirely inside the central zone to accelerate the drawdown\./gi, 'Berikan pulsa cepat ketiga, fokuskan aliran sepenuhnya di area tengah untuk mempercepat air turun.')
+    .replace(/Final rapid concentric pulse, keeping the water level low to drain quickly\./gi, 'Pulsa konsentris cepat terakhir, jaga level air tetap rendah agar mengalir turun dengan cepat.')
+    .replace(/Complete the final short pulse cleanly; let the coffee drain rapidly and completely to produce a vibrant, crisp cup\./gi, 'Selesaikan pulsa pendek terakhir dengan bersih; biarkan kopi turun dengan cepat dan tuntas untuk menghasilkan cangkir yang hidup dan segar.')
+    .replace(/Pour gently in the center to pre-wet the grounds\./gi, 'Tuang dengan lembut di tengah untuk membasahi awal kopi.')
+    .replace(/Wet the dry coffee bed with a very gentle, low-altitude stream to avoid disturbing the flat bed\./gi, 'Basahi bed kopi kering dengan aliran yang sangat lembut dan rendah agar tidak mengganggu flat bed.')
+    .replace(/Maintain an extremely low, slow, continuous centered flow\./gi, 'Jaga aliran tengah tetap sangat kecil, lambat, dan kontinu.')
+    .replace(/Establish a tiny, continuous centered stream \(1\.5-2\.0 ml\/sec\)\. Keep the kettle height low to avoid introducing heavy turbulence\./gi, 'Buat aliran tengah kontinu yang sangat kecil (1.5-2.0 ml/detik). Jaga ketel tetap rendah agar tidak menimbulkan turbulensi berlebih.')
+    .replace(/Keep a constant water column and steady centered stream\./gi, 'Jaga kolom air tetap konstan dan aliran tengah tetap stabil.')
+    .replace(/Maintain the slow continuous pour without interruption, allowing the water column to extract evenly with minimal agitation\./gi, 'Jaga tuangan lambat kontinu tanpa jeda, membiarkan kolom air mengekstrak merata dengan agitasi minimal.')
+    .replace(/Stop pouring and let the level column drain slowly\./gi, 'Hentikan tuangan dan biarkan kolom air turun perlahan.')
+    .replace(/Gracefully cut the pour; allow the high-density slurry to drain slowly, extracting deep sweetness and velvety body\./gi, 'Hentikan tuangan dengan lembut; biarkan cairan berkepadatan tinggi turun perlahan, mengekstrak kemanisan mendalam dan body selembut beludru.')
+    .replace(/Bloom hot onto the dry bed; let gassing complete quickly\./gi, 'Bloom panas ke atas bed kering; biarkan pelepasan gas selesai dengan cepat.')
+    .replace(/Saturate the small flat bed edge-to-edge; let the gas escape rapidly so the high-density extraction starts clean\./gi, 'Basahi bed datar kecil dari ujung ke ujung; biarkan gas keluar dengan cepat agar ekstraksi berkepadatan tinggi mulai dengan bersih.')
+    .replace(/Pour hot water in quick center circles, keeping slurry low and extraction concentrated\./gi, 'Tuang air panas dalam lingkaran tengah cepat, menjaga cairan tetap rendah dan ekstraksi tetap pekat.')
+    .replace(/Apply a tight, rapid center pour to build solubility; the concentrate will drip directly onto the ice bed below\./gi, 'Gunakan tuangan tengah cepat yang rapat untuk membangun kelarutan; konsentrat akan menetes langsung ke es di bawah.')
+    .replace(/Final concentric hot pour, draining rapidly directly onto the ice bed\./gi, 'Tuangan panas konsentris terakhir, mengalir turun dengan cepat langsung ke atas es.')
+    .replace(/Top up with the remaining hot target water cleanly, ensuring high thermal locking as it drips onto the ice\./gi, 'Penuhi sisa air target panas dengan bersih, memastikan penguncian suhu tinggi saat menetes ke es.')
+    .replace(/Let the final drops drain and swirl the server to melt ice completely\./gi, 'Biarkan tetesan terakhir habis dan putar server untuk melelehkan es sepenuhnya.')
+    .replace(/Allow the concentrated draw to complete, then swirl the server to blend the hot extract and ice into a chilled balance\./gi, 'Biarkan aliran pekat selesai, lalu putar server untuk mencampur ekstrak panas dan es menjadi keseimbangan dingin.')
+    .replace(/Wet the thick bed slowly; let gas release from the high dose\./gi, 'Basahi bed tebal secara lambat; biarkan pelepasan gas dari dosis tinggi terjadi.')
+    .replace(/Pour slowly and concentric; high dose coffee packs tightly, so ensure complete water saturation before pulsing\./gi, 'Tuang dengan lambat dan konsentris; kopi dosis tinggi memadat rapat, pastikan pembasahan air sempurna sebelum mulai pulsa.')
+    .replace(/Pour in slow center concentric rings, keeping the slurry level low to avoid bypass\./gi, 'Tuang dalam lingkaran konsentris tengah yang lambat, menjaga level cairan tetap rendah untuk menghindari bypass.')
+    .replace(/Deliver slow, heavy pulses near the center to wash the deep bed, keeping the water level low to prevent edge bypass\./gi, 'Berikan pulsa berat dan lambat dekat pusat untuk membasuh bed yang dalam, menjaga level air tetap rendah untuk mencegah bypass pinggir.')
+    .replace(/Final slow concentric pour to wash the bed; avoid fluted wall agitation\./gi, 'Tuangan konsentris lambat terakhir untuk membasuh bed; hindari agitasi pada dinding bergelombang.')
+    .replace(/Finish the hot water target with slow concentric circles; do not wash down fluted walls to protect clarity\./gi, 'Selesaikan air target panas dengan lingkaran konsentris lambat; jangan basuh dinding bergelombang untuk melindungi kejernihan.')
+    .replace(/Let the thick, rich concentrate finish draining\./gi, 'Biarkan konsentrat tebal yang kaya selesai mengalir.')
+    .replace(/Allow the syrupy concentrate to drain completely; serve neat or dilute with hot water as a clean bypass\./gi, 'Biarkan konsentrat sepekat sirup mengalir tuntas; sajikan murni atau encerkan dengan air panas sebagai bypass bersih.');
 
   return localizeCriticalUiTerms(localizeBeanProfileSummary(localized));
 }

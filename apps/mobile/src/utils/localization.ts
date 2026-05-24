@@ -508,10 +508,10 @@ const MOBILE_LOCALE_BUNDLES: Record<Language, MobileLocaleBundle> = {
     home: {
       ...EN_HOME,
       quickPrompts: [
-        'Rekomendasi penggiling seduh manual terbaru',
+        'Rekomendasi grinder seduh manual terbaru',
         'Bandingkan kelebihan dan kekurangan V60 vs April dripper',
         'Tren harga kopi arabika saat ini',
-        'Alur kerja terbaik untuk menyetel espresso lebih cepat',
+        'Alur kerja terbaik untuk kalibrasi (dial-in) espresso lebih cepat',
       ],
       searchStatus: {
         sending: 'Mengirim permintaan',

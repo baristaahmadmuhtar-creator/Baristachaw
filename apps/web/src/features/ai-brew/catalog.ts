@@ -1070,6 +1070,7 @@ function normalizeManualBrewPreset(preset: ManualBrewPreset): ManualBrewPreset {
       waterAlkalinityPpm: Number.isFinite(targetDefaults.waterAlkalinityPpm) ? targetDefaults.waterAlkalinityPpm : 35,
       origamiFilterStyle: targetDefaults.origamiFilterStyle || 'auto',
       aeropressStyle: targetDefaults.aeropressStyle || 'auto',
+      frenchPressStyle: targetDefaults.frenchPressStyle || 'auto',
     },
     visibleSummary: String(preset.visibleSummary || '').trim(),
     internalTips: Array.from(new Set((preset.internalTips || []).map((value) => String(value || '').trim()).filter(Boolean))),

@@ -45,6 +45,7 @@ import {
   buildExpectedCupProfile,
 } from './cupProfile.ts';
 import { resolveSwitchPlanSelection, validateSwitchStepSafety } from './switchPlanner.ts';
+import { resolveKalitaPlanSelection, isKalitaWaveDripperId } from './kalitaPlanner.ts';
 export {
   buildWorkflowAwareGuideSteps,
   validateMethodWorkflowGuide,
@@ -112,6 +113,7 @@ import type {
   SwitchStepValidation,
   WorkflowGuideActionType,
   WorkflowGuideStep,
+  KalitaWaveRecipeStyle,
 } from './types.ts';
 
 export type AiBrewGenerationStageId =
@@ -1728,6 +1730,7 @@ type AdaptiveShareContext = {
   physicalConstraints?: DevicePhysicalConstraints;
   methodProgramme?: SwitchBrewProgramme | string;
   manualTechniquePattern?: ManualBrewTechniquePattern;
+  kalitaWaveStyle?: KalitaWaveRecipeStyle;
   brewMode: 'hot' | 'iced';
   roastLevel: RoastLevel;
   roastDevelopment?: BeanRoastDevelopment;
@@ -5989,18 +5992,80 @@ function buildMethodFamilyStepInstruction(params: {
       }
       break;
     case 'kalita_wave':
-      if (phase === 'bloom') {
-        quickNote = 'Wet the flat bed edge to edge, then let it settle level before building the cup.';
-        detail = 'Make sure the Kalita bed is fully saturated edge to edge, then let the slurry settle level before the next pulse.';
-      } else if (phase === 'early_middle') {
-        quickNote = 'Keep the flat bed level with even pulses from center to edge.';
-        detail = 'Use even pulses that cover the flat bed without flooding one side; the goal is a level slurry, not a dramatic spiral.';
-      } else if (phase === 'late_middle') {
-        quickNote = 'Protect the later middle with flat, even contact across the bed.';
-        detail = 'Keep the late middle level and even so the Kalita holds body without stalling the final drawdown.';
-      } else {
-        quickNote = 'Land the final water evenly to keep drawdown flat and tidy.';
-        detail = 'Finish by laying the final water evenly across the flat bed, then let the drawdown complete without a last-second swirl.';
+      {
+        const kalitaStyle = context.kalitaWaveStyle || 'auto';
+        if (kalitaStyle === 'competition_fast_four') {
+          if (phase === 'bloom') {
+            quickNote = 'Pour aggressively in center circles to wet all grounds quickly.';
+            detail = 'Deliver hot water in rapid concentric rings at the core; push hydration rapidly without letting water bypass the fluted edges.';
+          } else if (phase === 'early_middle') {
+            quickNote = 'Pour with high flow rate in tight center concentric circles to agitate deeply.';
+            detail = 'Increase flow rate to promote intense early agitation; keep the slurry level low to maximize velocity and clarity.';
+          } else if (phase === 'late_middle') {
+            quickNote = 'Pour with high flow rate in tight center concentric circles, creating high extraction velocity.';
+            detail = 'Deliver the third quick pulse, focusing the stream entirely inside the central zone to accelerate the drawdown.';
+          } else {
+            quickNote = 'Final rapid concentric pulse, keeping the water level low to drain quickly.';
+            detail = 'Complete the final short pulse cleanly; let the coffee drain rapidly and completely to produce a vibrant, crisp cup.';
+          }
+        } else if (kalitaStyle === 'continuous_slow_stream') {
+          if (phase === 'bloom') {
+            quickNote = 'Pour gently in the center to pre-wet the grounds.';
+            detail = 'Wet the dry coffee bed with a very gentle, low-altitude stream to avoid disturbing the flat bed.';
+          } else if (phase === 'early_middle') {
+            quickNote = 'Maintain an extremely low, slow, continuous centered flow.';
+            detail = 'Establish a tiny, continuous centered stream (1.5-2.0 ml/sec). Keep the kettle height low to avoid introducing heavy turbulence.';
+          } else if (phase === 'late_middle') {
+            quickNote = 'Keep a constant water column and steady centered stream.';
+            detail = 'Maintain the slow continuous pour without interruption, allowing the water column to extract evenly with minimal agitation.';
+          } else {
+            quickNote = 'Stop pouring and let the level column drain slowly.';
+            detail = 'Gracefully cut the pour; allow the high-density slurry to drain slowly, extracting deep sweetness and velvety body.';
+          }
+        } else if (kalitaStyle === 'iced_wave') {
+          if (phase === 'bloom') {
+            quickNote = 'Bloom hot onto the dry bed; let gassing complete quickly.';
+            detail = 'Saturate the small flat bed edge-to-edge; let the gas escape rapidly so the high-density extraction starts clean.';
+          } else if (phase === 'early_middle') {
+            quickNote = 'Pour hot water in quick center circles, keeping slurry low and extraction concentrated.';
+            detail = 'Apply a tight, rapid center pour to build solubility; the concentrate will drip directly onto the ice bed below.';
+          } else if (phase === 'late_middle') {
+            quickNote = 'Final concentric hot pour, draining rapidly directly onto the ice bed.';
+            detail = 'Top up with the remaining hot target water cleanly, ensuring high thermal locking as it drips onto the ice.';
+          } else {
+            quickNote = 'Let the final drops drain and swirl the server to melt ice completely.';
+            detail = 'Allow the concentrated draw to complete, then swirl the server to blend the hot extract and ice into a chilled balance.';
+          }
+        } else if (kalitaStyle === 'high_dose_concentrate') {
+          if (phase === 'bloom') {
+            quickNote = 'Wet the thick bed slowly; let gas release from the high dose.';
+            detail = 'Pour slowly and concentric; high dose coffee packs tightly, so ensure complete water saturation before pulsing.';
+          } else if (phase === 'early_middle') {
+            quickNote = 'Pour in slow center concentric rings, keeping the slurry level low to avoid bypass.';
+            detail = 'Deliver slow, heavy pulses near the center to wash the deep bed, keeping the water level low to prevent edge bypass.';
+          } else if (phase === 'late_middle') {
+            quickNote = 'Final slow concentric pour to wash the bed; avoid fluted wall agitation.';
+            detail = 'Finish the hot water target with slow concentric circles; do not wash down fluted walls to protect clarity.';
+          } else {
+            quickNote = 'Let the thick, rich concentrate finish draining.';
+            detail = 'Allow the syrupy concentrate to drain completely; serve neat or dilute with hot water as a clean bypass.';
+          }
+        } else {
+          // traditional_flat_three / auto (default)
+          if (phase === 'bloom') {
+            quickNote = 'Wet the flat bed edge to edge, then let it settle level before building the cup.';
+            detail = 'Make sure the Kalita bed is fully saturated edge to edge, then let the slurry settle level before the next pulse.';
+          } else if (phase === 'early_middle') {
+            quickNote = 'Keep the flat bed level with even pulses from center to edge.';
+            detail = 'Use even pulses that cover the flat bed without flooding one side; the goal is a level slurry, not a dramatic spiral.';
+          } else if (phase === 'late_middle') {
+            quickNote = 'Protect the later middle with flat, even contact across the bed.';
+            detail = 'Keep the late middle level and even so the Kalita holds body without stalling the final drawdown.';
+          } else {
+            quickNote = 'Land the final water evenly to keep drawdown flat and tidy.';
+            detail = 'Finish by laying the final water evenly across the flat bed, then let the drawdown complete without a last-second swirl.';
+          }
+        }
       }
       break;
     case 'melitta':
@@ -6142,17 +6207,73 @@ function buildMethodFamilyStepInstruction(params: {
       break;
     case 'french_press':
       if (phase === 'bloom') {
-        quickNote = 'Saturate all grounds evenly and start a clean immersion bed.';
-        detail = 'Add water evenly through the full bed, make sure no dry pockets remain, then leave the slurry quiet.';
+        if (context.recipeStyle === 'clean_decant') {
+          quickNote = 'Pour boiling water swiftly to saturate all coffee grounds.';
+          detail = 'Pour boiling water swiftly to wet all grounds cleanly and establish a stable heat retention in the glass chamber.';
+        } else if (context.recipeStyle === 'double_filter') {
+          quickNote = 'Pour water in circular motions to saturate the medium-ground bed.';
+          detail = 'Pour water gently in slow circular paths to wet the medium-ground bed, promoting even wetting before the clean steep phase.';
+        } else if (context.recipeStyle === 'heavy_concentrate') {
+          quickNote = 'Pour water rapidly over the heavy dose to wet the fine grounds.';
+          detail = 'Pour hot water rapidly to wet the high-dose bed; maintain maximum thermal mass inside the chamber.';
+        } else if (context.recipeStyle === 'sweet_immersion') {
+          quickNote = 'Pour water gently to promote a round, sweet extraction.';
+          detail = 'Pour water gently at a slightly lower temperature to promote high sweet solubility without dissolving bitter compounds.';
+        } else {
+          quickNote = 'Saturate all grounds evenly and start a clean immersion bed.';
+          detail = 'Add water evenly through the full bed, make sure no dry pockets remain, then leave the slurry quiet.';
+        }
       } else if (phase === 'early_middle') {
-        quickNote = 'Let immersion build sweetness without repeated stirring.';
-        detail = 'Hold the press undisturbed so fines settle and sweetness develops without making the cup muddy.';
+        if (context.recipeStyle === 'clean_decant') {
+          quickNote = 'Allow the crust to form undisturbed for 4 minutes.';
+          detail = 'Leave the chamber undisturbed while a thick, aromatic crust of coffee grounds forms at the surface.';
+        } else if (context.recipeStyle === 'double_filter') {
+          quickNote = 'Steep cleanly while the double filter elements are prepared.';
+          detail = 'Allow full immersion to proceed undisturbed; prepare the double mesh or paper filter insert by pre-wetting with hot water.';
+        } else if (context.recipeStyle === 'heavy_concentrate') {
+          quickNote = 'Stir vigorously 5-6 times to maximize early extraction strength.';
+          detail = 'Use strong agitation early to break down the dense slurry, maximizing extraction from the concentrated bed.';
+        } else if (context.recipeStyle === 'sweet_immersion') {
+          quickNote = 'Stir gently exactly 2 times to distribute extraction evenly.';
+          detail = 'Stir exactly twice with a light touch to distribute heat and grounds without introducing bitterness.';
+        } else {
+          quickNote = 'Let immersion build sweetness without repeated stirring.';
+          detail = 'Hold the press undisturbed so fines settle and sweetness develops without making the cup muddy.';
+        }
       } else if (phase === 'late_middle') {
-        quickNote = 'Break the crust gently and keep the bed calm before pressing.';
-        detail = 'Use only a gentle break or skim; avoid aggressive stirring late because it lifts fines into the cup.';
+        if (context.recipeStyle === 'clean_decant') {
+          quickNote = 'Stir the crust gently, skim the surface foam and floating oils.';
+          detail = 'Break the crust with 2-3 gentle folds, then skim the remaining light foam and floating oils from the surface to ensure high cup clarity.';
+        } else if (context.recipeStyle === 'double_filter') {
+          quickNote = 'Give a light swirl to settle the grounds before placing the plunger.';
+          detail = 'Give a light, gentle swirl to detach grounds from the glass wall and let them settle to the bottom.';
+        } else if (context.recipeStyle === 'heavy_concentrate') {
+          quickNote = 'Let the thick immersion concentrate develop body and richness.';
+          detail = 'Allow the high-strength immersion slurry to steep, building a syrupy mouthfeel and sweet cocoa structure.';
+        } else if (context.recipeStyle === 'sweet_immersion') {
+          quickNote = 'Steep quietly to allow sugar compounds to fully dissolve.';
+          detail = 'Steep quietly; the lower temperature protects sweet caramel and chocolate solubility.';
+        } else {
+          quickNote = 'Break the crust gently and keep the bed calm before pressing.';
+          detail = 'Use only a gentle break or skim; avoid aggressive stirring late because it lifts fines into the cup.';
+        }
       } else {
-        quickNote = 'Press slowly and decant so extraction stops cleanly.';
-        detail = 'Press with slow, even pressure, then pour off the coffee rather than leaving it on the grounds.';
+        if (context.recipeStyle === 'clean_decant') {
+          quickNote = 'Fit plunger and lower it just to touch the liquid surface; decant gently.';
+          detail = 'Fit the plunger and lower the mesh just to touch the surface (do not plunge!). Pour out extremely slowly to prevent churning the settled bed.';
+        } else if (context.recipeStyle === 'double_filter') {
+          quickNote = 'Press down slowly over 30 seconds through the double filter; serve cleanly.';
+          detail = 'Press the double filter down slowly with uniform, light force over 30 seconds, trapping all fines for an ultra-clean finish.';
+        } else if (context.recipeStyle === 'heavy_concentrate') {
+          quickNote = 'Press firmly to the bottom of the puck, serve as concentrate or bypass.';
+          detail = 'Apply firm, stable force down to the absolute bottom of the coffee puck to extract sweet soluble layers; serve as concentrate or dilute with bypass.';
+        } else if (context.recipeStyle === 'sweet_immersion') {
+          quickNote = 'Plunge extremely slowly over 30 seconds to avoid fines churning.';
+          detail = 'Plunge with feather-light force to avoid fines migration, and decant immediately to stop the extraction.';
+        } else {
+          quickNote = 'Press slowly and decant so extraction stops cleanly.';
+          detail = 'Press with slow, even pressure, then pour off the coffee rather than leaving it on the grounds.';
+        }
       }
       break;
     case 'aeropress':
@@ -6310,12 +6431,24 @@ function resolveStepTechniqueMetadata(
       agitationLevel: context.recipeStyle === 'sweet_body' || context.recipeStyle === 'no_bypass' ? 'controlled' : 'low',
     };
   }
-  if (context.methodFamily === 'french_press' || context.methodFamily === 'cold_brew' || context.methodFamily === 'clever_dripper') {
+  if (context.methodFamily === 'french_press') {
     return {
       flowRateMlPerSec: [8, 12],
       pourPath: 'immersion_charge',
       pourHeight: 'low',
-      agitationLevel: context.methodFamily === 'french_press' ? 'low' : 'minimal',
+      agitationLevel: context.recipeStyle === 'heavy_concentrate'
+        ? 'controlled'
+        : context.recipeStyle === 'clean_decant'
+          ? 'minimal'
+          : 'low',
+    };
+  }
+  if (context.methodFamily === 'cold_brew' || context.methodFamily === 'clever_dripper') {
+    return {
+      flowRateMlPerSec: [8, 12],
+      pourPath: 'immersion_charge',
+      pourHeight: 'low',
+      agitationLevel: 'minimal',
     };
   }
   if (context.methodFamily === 'moka_pot') {
@@ -6692,9 +6825,21 @@ function buildSteps(
     const isHarioSwitch = adaptiveShareContext.methodFamily === 'hario_switch';
     if (isHarioSwitch) {
       note = step.note;
+      const immersionCopy = resolveImmersionReleaseCopy(adaptiveShareContext);
+      const detail = phase === 'bloom' ? immersionCopy.openingDetail
+        : phase === 'early_middle' ? immersionCopy.middleDetail
+        : phase === 'late_middle' ? immersionCopy.lateDetail
+        : immersionCopy.finishDetail;
+      const focusCue = buildAdaptivePhaseFocusCue(adaptiveShareContext, phase);
+      const doseCue = buildAdaptiveDoseCue(adaptiveShareContext);
+      const practicalCue = buildBaristaStepPracticalCue(adaptiveShareContext, phase);
+
       hybridInstruction = joinInstructionText(
         step.note,
-        phaseInstruction.hybridInstruction,
+        detail,
+        practicalCue,
+        focusCue,
+        phase === 'finish' ? doseCue : undefined,
       );
     }
     const valveState = isHarioSwitch ? inferSwitchValveState(step, kind) : undefined;
@@ -6926,6 +7071,7 @@ type DeviceProfileSelectionOptions = {
   doseG?: number;
   origamiFilterStyle?: OrigamiFilterStyle;
   aeropressStyle?: AeroPressRecipeStyle;
+  frenchPressStyle?: FrenchPressRecipeStyle;
   targetProfileId?: string;
 };
 
@@ -6976,6 +7122,27 @@ function resolveAeroPressProfileId(
   return style === 'standard' ? 'profile_aeropress_hot' : `profile_aeropress_${style}_hot`;
 }
 
+function resolveFrenchPressProfileId(
+  dripper: EquipmentCatalogEntry,
+  brewMode: 'hot' | 'iced',
+  options?: DeviceProfileSelectionOptions,
+) {
+  const haystack = `${dripper.id} ${dripper.name}`.toLowerCase();
+  if ((!haystack.includes('french press') && !haystack.includes('press pot')) || brewMode !== 'hot') return undefined;
+  const explicitStyle = options?.frenchPressStyle && options.frenchPressStyle !== 'auto'
+    ? options.frenchPressStyle
+    : undefined;
+  const style = explicitStyle
+    || (options?.targetProfileId === 'more_acidity'
+      ? 'double_filter'
+      : options?.targetProfileId === 'more_sweetness'
+        ? 'sweet_immersion'
+        : options?.targetProfileId === 'more_body'
+          ? 'heavy_concentrate'
+          : 'traditional');
+  return style === 'traditional' ? 'profile_french_press_hot' : `profile_french_press_${style}_hot`;
+}
+
 export function resolveDeviceProfileSelection(
   catalog: AiBrewCatalog,
   dripper: EquipmentCatalogEntry,
@@ -6984,7 +7151,8 @@ export function resolveDeviceProfileSelection(
 ) {
   const profilePreferenceId = resolveKalitaWaveProfileId(dripper, brewMode, options.doseG)
     || resolveOrigamiProfileId(dripper, brewMode, options.origamiFilterStyle)
-    || resolveAeroPressProfileId(dripper, brewMode, options);
+    || resolveAeroPressProfileId(dripper, brewMode, options)
+    || resolveFrenchPressProfileId(dripper, brewMode, options);
   const requestedDefaultId = profilePreferenceId
     || (brewMode === 'iced'
       ? dripper.defaultProfileId?.replace(/_hot$/, '_iced')
@@ -7054,7 +7222,18 @@ function finalizePlanCore(
       doseG,
     })
     : null;
-  const effectiveDeviceProfile = switchSelection?.adjustedProfile || deviceSelection.profile;
+  const kalitaSelection = preliminaryMethodFamily === 'kalita_wave'
+    ? resolveKalitaPlanSelection({
+      input,
+      catalog,
+      dripper,
+      profile: deviceSelection.profile,
+      targetProfile,
+      processEntry,
+      doseG,
+    })
+    : null;
+  const effectiveDeviceProfile = switchSelection?.adjustedProfile || kalitaSelection?.adjustedProfile || deviceSelection.profile;
   const methodFamily = effectiveDeviceProfile.methodFamily || dripper.methodFamily || 'v60';
   const manualPreset = findManualBrewPreset(catalog, input.manualPresetId || '');
   const methodId = resolveProfileBrewMethodId(effectiveDeviceProfile, methodFamily, input.brewMode);
@@ -7427,6 +7606,7 @@ function finalizePlanCore(
     physicalConstraints: controlledDeviceProfile.physicalConstraints,
     methodProgramme: controlledDeviceProfile.methodProgramme,
     manualTechniquePattern: manualPreset?.techniquePattern,
+    kalitaWaveStyle: kalitaSelection?.style || undefined,
     brewMode: input.brewMode,
     roastLevel: input.roastLevel,
     roastDevelopment: input.roastDevelopment || undefined,
@@ -7521,6 +7701,7 @@ function finalizePlanCore(
     icedStrengthCalibration.warnings,
     switchSelection?.tasteProgramme.riskWarnings || [],
     switchStepValidation && switchStepValidation.status !== 'safe' ? [switchStepValidation.message] : [],
+    kalitaSelection?.watch ? [kalitaSelection.watch] : [],
     baseGuardrails.warnings,
   );
   const isDerivedTemplateProfile = deviceSelection.mode === 'derived_template';
@@ -7531,6 +7712,7 @@ function finalizePlanCore(
       controlledDeviceProfile.note,
       manualPreset ? `Manual brew preset selected: ${manualPreset.safeLabel}. ${manualPreset.visibleSummary}` : undefined,
       manualPreset?.fallbackReason,
+      kalitaSelection?.why ? kalitaSelection.why : undefined,
     ],
     waterProfile.notes,
     manualPreset?.guardrails || [],
@@ -7754,6 +7936,7 @@ function finalizePlanCore(
     formState: { ...input },
     brewMode: input.brewMode,
     methodFamily,
+    recipeStyle: controlledDeviceProfile.recipeStyle,
     methodId,
     ratioToolMethodId,
     coffeeName,
@@ -7827,6 +8010,7 @@ function finalizePlanCore(
     switchExpectedCupShift: switchSelection?.preset.expectedCupShift,
     switchWhy: switchSelection?.tasteProgramme.sensoryReason || switchSelection?.preset.why,
     switchWatch: switchSelection?.tasteProgramme.riskWarnings[0] || switchStepValidation?.message || switchSelection?.preset.watch,
+    kalitaWaveStyle: kalitaSelection?.style || undefined,
     notes,
     warnings,
     extractionRationale,
@@ -7920,8 +8104,10 @@ export function createDefaultAiBrewFormState(catalog?: AiBrewCatalog): AiBrewFor
     pourCount: 'auto',
     origamiFilterStyle: 'auto',
     aeropressStyle: 'auto',
+    frenchPressStyle: 'auto',
     switchPresetId: '',
     switchTeachingMode: '',
+    kalitaWaveStyle: 'auto',
   };
 }
 
@@ -7940,9 +8126,11 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
   const validPourCounts = new Set(['auto', '3', '4', '5']);
   const validOrigamiFilterStyles = new Set(['auto', 'cone', 'wave']);
   const validAeroPressStyles = new Set(['auto', 'standard', 'inverted', 'bypass', 'no_bypass', 'bright_clean', 'sweet_body']);
+  const validFrenchPressStyles = new Set(['auto', 'traditional', 'clean_decant', 'double_filter', 'heavy_concentrate', 'sweet_immersion']);
   const validManualPresetIds = new Set(['', ...(catalog?.manualBrewPresets || []).map((item) => item.id)]);
   const validSwitchPresetIds = new Set(['', ...(catalog?.switchPresets || []).map((item) => item.id)]);
   const validSwitchTeachingModes = new Set(['', 'full_immersion', 'full_percolation_v60_mode', 'hybrid']);
+  const validKalitaWaveStyles = new Set(['auto', 'traditional_flat_three', 'competition_fast_four', 'continuous_slow_stream', 'iced_wave', 'high_dose_concentrate']);
   const waterBrandId = String(input.waterBrandId || '');
   const dripperId = String(input.dripperId || fallback.dripperId);
   const requestedBrewMode = input.brewMode === 'iced' ? 'iced' : 'hot';
@@ -7997,12 +8185,18 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
     aeropressStyle: validAeroPressStyles.has(String(input.aeropressStyle))
       ? (String(input.aeropressStyle) as AiBrewFormState['aeropressStyle'])
       : fallback.aeropressStyle,
+    frenchPressStyle: validFrenchPressStyles.has(String(input.frenchPressStyle))
+      ? (String(input.frenchPressStyle) as AiBrewFormState['frenchPressStyle'])
+      : fallback.frenchPressStyle,
     switchPresetId: validSwitchPresetIds.has(String(input.switchPresetId || ''))
       ? (String(input.switchPresetId || '') as AiBrewFormState['switchPresetId'])
       : fallback.switchPresetId,
     switchTeachingMode: validSwitchTeachingModes.has(String(input.switchTeachingMode || ''))
       ? (String(input.switchTeachingMode || '') as AiBrewFormState['switchTeachingMode'])
       : fallback.switchTeachingMode,
+    kalitaWaveStyle: validKalitaWaveStyles.has(String(input.kalitaWaveStyle))
+      ? (String(input.kalitaWaveStyle) as KalitaWaveRecipeStyle)
+      : fallback.kalitaWaveStyle,
   };
 }
 
@@ -8022,6 +8216,8 @@ export function createQuickAiBrewFormState(input: AiBrewFormState, catalog?: AiB
     targetTempC: preserveManualPresetPrefill ? sanitized.targetTempC : '',
     origamiFilterStyle: preserveManualPresetPrefill ? sanitized.origamiFilterStyle : 'auto',
     aeropressStyle: preserveManualPresetPrefill ? sanitized.aeropressStyle : 'auto',
+    frenchPressStyle: preserveManualPresetPrefill ? sanitized.frenchPressStyle : 'auto',
+    kalitaWaveStyle: preserveManualPresetPrefill ? sanitized.kalitaWaveStyle : 'auto',
   };
 }
 
@@ -8040,6 +8236,7 @@ export function buildAiBrewPlan(input: AiBrewFormState, catalog: AiBrewCatalog):
     doseG: parseDose(sanitized.doseG),
     origamiFilterStyle: sanitized.origamiFilterStyle,
     aeropressStyle: sanitized.aeropressStyle,
+    frenchPressStyle: sanitized.frenchPressStyle,
     targetProfileId: sanitized.targetProfileId,
   });
   const grinderSetting = resolveGrinderSettingReference(catalog, grinder, deviceSelection.profile, sanitized.brewMode);
@@ -8441,6 +8638,7 @@ export async function buildAiBrewPlanProgressively(
     doseG: parseDose(sanitized.doseG),
     origamiFilterStyle: sanitized.origamiFilterStyle,
     aeropressStyle: sanitized.aeropressStyle,
+    frenchPressStyle: sanitized.frenchPressStyle,
     targetProfileId,
   });
   const deviceReferenceScore = scoreDeviceReference(deviceSelection.mode);

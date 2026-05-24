@@ -1,4 +1,4 @@
-﻿import type { AiSettings, Language } from './types';
+import type { AiSettings, Language } from './types';
 
 export type LanguageDirection = 'ltr' | 'rtl';
 
@@ -1523,7 +1523,7 @@ const ID_TRANSLATIONS: Partial<Translations> = {
     toolsGrindSizeActionWaitDegas: 'Bean sangat fresh perlu degassing',
     toolsGrindSizeActionOlderBean: 'Bean tua bisa butuh sedikit lebih halus',
     toolsGrindSizeActionKeepRange: 'Rentang aman; cek rasa dulu',
-    toolsRoastProfile: 'Roast level',
+    toolsRoastProfile: 'Level Roast',
     toolsAdaptiveDefaults: 'Setelan adaptif',
     toolsRoastLight: 'Light roast',
     toolsRoastMediumLight: 'Medium-light',

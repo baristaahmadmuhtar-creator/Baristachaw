@@ -362,6 +362,11 @@
     transition-duration: 0.15s;
   }
 
+  .tabular-nums {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+  }
+
   .glass-button {
     background-color: var(--glass-bg-hover);
     backdrop-filter: blur(20px);
@@ -610,6 +615,57 @@
 
   .glass-button-primary:active {
     transform: scale(0.95);
+  }
+
+  .switch-preset-btn {
+    min-height: 40px;
+    max-width: 7.5rem;
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border-radius: 9999px;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: scale(1);
+    border: 1px solid transparent;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .switch-preset-btn:hover {
+      transform: scale(1.03) translateY(-1px);
+    }
+  }
+
+  .switch-preset-btn:active {
+    transform: scale(0.95) translateY(0);
+    transition-duration: 0.1s;
+  }
+
+  .switch-preset-btn-active {
+    background-color: hsla(18, 95%, 55%, 1) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px hsla(18, 95%, 55%, 0.38) !important;
+    border-color: hsla(18, 95%, 55%, 1) !important;
+  }
+
+  .switch-preset-btn-inactive {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    border-color: var(--panel-border-soft);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .switch-preset-btn-inactive:hover {
+      background-color: var(--surface-alpha-hover);
+    }
   }
 
   .glass-input {
@@ -1942,6 +1998,7 @@ video {
 .ai-brew-compact-shell [data-testid="ai-brew-result-action-bar"] {
   padding-left: max(0.75rem, var(--safe-left, 0px));
   padding-right: max(0.75rem, var(--safe-right, 0px));
+  padding-bottom: max(0.75rem, var(--safe-bottom, 0px));
 }
 
 .ai-brew-compact-shell [data-testid^="ai-brew-pro-accordion-trigger-"],

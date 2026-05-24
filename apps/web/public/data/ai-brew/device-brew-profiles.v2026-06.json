@@ -5851,6 +5851,7 @@
       "catalogVersion": "2026.06.0-ai-brew-v2",
       "id": "profile_french_press_hot",
       "label": "French Press Immersion",
+      "recipeStyle": "traditional",
       "brewMode": "hot",
       "dripperIds": [
         "french-press"
@@ -5901,6 +5902,270 @@
         "https://global.hario.com/coffeelife/press.html"
       ],
       "verificationLevel": "official",
+      "methodWorkflow": "immersion"
+    },
+    {
+      "exactMatch": true,
+      "source": "ai-brew-method-expansion-2026-05",
+      "verifiedAt": "2026-05-01",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "id": "profile_french_press_clean_decant_hot",
+      "label": "French Press Clean Decant",
+      "recipeStyle": "clean_decant",
+      "brewMode": "hot",
+      "dripperIds": [
+        "french-press"
+      ],
+      "methodFamily": "french_press",
+      "brewMethodId": "french_press",
+      "filterStyle": "immersion",
+      "ratioDelta": 0.2,
+      "tempDeltaC": 0.0,
+      "brewTimeDeltaSec": 240,
+      "grindBias": "medium_coarse",
+      "note": "James Hoffmann method: long steep, skim foam, surface-only mesh to avoid fines migration.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge",
+          "kind": "pour",
+          "share": 1.0,
+          "startSeconds": 0,
+          "note": "Pour boiling water swiftly to saturate all coffee grounds."
+        },
+        {
+          "id": "steep",
+          "label": "Steep",
+          "kind": "wait",
+          "share": 0.0,
+          "startSeconds": 240,
+          "note": "Allow the crust to form undisturbed for 4 minutes."
+        },
+        {
+          "id": "break_skim",
+          "label": "Break & Skim",
+          "kind": "wait",
+          "share": 0.0,
+          "startSeconds": 300,
+          "note": "Stir the crust gently, skim the surface foam and floating oils."
+        },
+        {
+          "id": "settle",
+          "label": "Settle",
+          "kind": "wait",
+          "share": 0.0,
+          "startSeconds": 540,
+          "note": "Let the coffee sit quietly for 4 minutes so all fines completely settle to the bottom."
+        },
+        {
+          "id": "decant",
+          "label": "Decant",
+          "kind": "serve",
+          "share": 0.0,
+          "startSeconds": 570,
+          "note": "Fit plunger and lower it just to touch the liquid surface; pour out extremely gently without plunging to the bottom."
+        }
+      ],
+      "sourceUrls": [
+        "https://www.youtube.com/watch?v=st571DYYTR8"
+      ],
+      "verificationLevel": "official",
+      "methodWorkflow": "immersion"
+    },
+    {
+      "exactMatch": true,
+      "source": "ai-brew-method-expansion-2026-05",
+      "verifiedAt": "2026-05-01",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "id": "profile_french_press_double_filter_hot",
+      "label": "French Press Double Filter",
+      "recipeStyle": "double_filter",
+      "brewMode": "hot",
+      "dripperIds": [
+        "french-press"
+      ],
+      "methodFamily": "french_press",
+      "brewMethodId": "french_press",
+      "filterStyle": "immersion",
+      "ratioDelta": 0.0,
+      "tempDeltaC": 0.0,
+      "brewTimeDeltaSec": 0,
+      "grindBias": "medium",
+      "note": "Double mesh or paper filter insert to trap all fines, allowing a finer grind profile.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge",
+          "kind": "pour",
+          "share": 1.0,
+          "startSeconds": 0,
+          "note": "Pour water in circular motions to saturate the medium-ground bed."
+        },
+        {
+          "id": "steep",
+          "label": "Steep",
+          "kind": "wait",
+          "share": 0.0,
+          "startSeconds": 240,
+          "note": "Steep cleanly while the double filter elements are pre-wet and prepared."
+        },
+        {
+          "id": "settle",
+          "label": "Settle",
+          "kind": "wait",
+          "share": 0.0,
+          "startSeconds": 280,
+          "note": "Give a light swirl to settle the grounds before placing the plunger."
+        },
+        {
+          "id": "decant",
+          "label": "Plunge & Serve",
+          "kind": "serve",
+          "share": 0.0,
+          "startSeconds": 310,
+          "note": "Press down slowly over 30 seconds through the double filter; serve cleanly."
+        }
+      ],
+      "sourceUrls": [
+        "https://global.hario.com/coffeelife/press.html"
+      ],
+      "verificationLevel": "curated",
+      "methodWorkflow": "immersion"
+    },
+    {
+      "exactMatch": true,
+      "source": "ai-brew-method-expansion-2026-05",
+      "verifiedAt": "2026-05-01",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "id": "profile_french_press_heavy_concentrate_hot",
+      "label": "French Press Heavy Concentrate",
+      "recipeStyle": "heavy_concentrate",
+      "brewMode": "hot",
+      "dripperIds": [
+        "french-press"
+      ],
+      "methodFamily": "french_press",
+      "brewMethodId": "french_press",
+      "filterStyle": "immersion",
+      "ratioDelta": -5.5,
+      "tempDeltaC": 1.0,
+      "brewTimeDeltaSec": -120,
+      "grindBias": "medium_fine",
+      "note": "High-dose 1:8 ratio concentrate, heavy agitation, short steep for maximum mouthfeel and bypass dilutability.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge",
+          "kind": "pour",
+          "share": 1.0,
+          "startSeconds": 0,
+          "note": "Pour water rapidly over the heavy dose to wet the fine grounds."
+        },
+        {
+          "id": "agitate",
+          "label": "Agitate",
+          "kind": "wait",
+          "share": 0.0,
+          "startSeconds": 45,
+          "note": "Stir vigorously 5-6 times to maximize early extraction strength."
+        },
+        {
+          "id": "steep",
+          "label": "Steep",
+          "kind": "wait",
+          "share": 0.0,
+          "startSeconds": 180,
+          "note": "Let the thick immersion concentrate develop body and richness."
+        },
+        {
+          "id": "decant",
+          "label": "Press & Serve",
+          "kind": "serve",
+          "share": 0.0,
+          "startSeconds": 210,
+          "note": "Press firmly to the absolute bottom of the puck, serve as concentrate or bypass."
+        }
+      ],
+      "sourceUrls": [
+        "https://global.hario.com/coffeelife/press.html"
+      ],
+      "verificationLevel": "curated",
+      "methodWorkflow": "immersion"
+    },
+    {
+      "exactMatch": true,
+      "source": "ai-brew-method-expansion-2026-05",
+      "verifiedAt": "2026-05-01",
+      "popularityTier": "widely_used",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.0-ai-brew-v2",
+      "id": "profile_french_press_sweet_immersion_hot",
+      "label": "French Press Sweet Immersion",
+      "recipeStyle": "sweet_immersion",
+      "brewMode": "hot",
+      "dripperIds": [
+        "french-press"
+      ],
+      "methodFamily": "french_press",
+      "brewMethodId": "french_press",
+      "filterStyle": "immersion",
+      "ratioDelta": -0.5,
+      "tempDeltaC": -1.0,
+      "brewTimeDeltaSec": 60,
+      "grindBias": "medium_coarse",
+      "note": "Gently agitated, moderate temperature, slightly longer steep to maximize sweet caramel solubility.",
+      "steps": [
+        {
+          "id": "charge",
+          "label": "Charge",
+          "kind": "pour",
+          "share": 1.0,
+          "startSeconds": 0,
+          "note": "Pour water gently to promote a round, sweet extraction."
+        },
+        {
+          "id": "stir",
+          "label": "Stir",
+          "kind": "wait",
+          "share": 0.0,
+          "startSeconds": 60,
+          "note": "Stir gently exactly 2 times to distribute extraction evenly."
+        },
+        {
+          "id": "steep",
+          "label": "Steep",
+          "kind": "wait",
+          "share": 0.0,
+          "startSeconds": 300,
+          "note": "Steep quietly to allow sugar compounds to fully dissolve."
+        },
+        {
+          "id": "decant",
+          "label": "Plunge & Decant",
+          "kind": "serve",
+          "share": 0.0,
+          "startSeconds": 330,
+          "note": "Plunge extremely slowly over 30 seconds to avoid fines churning, serve immediately."
+        }
+      ],
+      "sourceUrls": [
+        "https://global.hario.com/coffeelife/press.html"
+      ],
+      "verificationLevel": "curated",
       "methodWorkflow": "immersion"
     },
     {

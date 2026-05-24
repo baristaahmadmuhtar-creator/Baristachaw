@@ -256,6 +256,8 @@ function buildControlPoints(plan: BrewPlan, language?: string) {
           return 'Pantau dose per liter, volume mesin, spray pattern, drawdown, dan aduk batch sebelum service.';
         case 'cold_brew':
           return 'Pantau saturasi air dingin, steep panjang, lalu filtrasi bersih; jangan pakai workflow hot.';
+        case 'hario_switch':
+          return 'Pantau posisi katup, muatan ruang tertutup, timing release, dan flow rate tuangan.';
         case 'chemex':
           return 'Jaga stream menjauh dari dinding filter tebal agar flow tetap terbuka sampai finish.';
         case 'clever_dripper':
@@ -291,6 +293,8 @@ function buildControlPoints(plan: BrewPlan, language?: string) {
         return 'Watch dose per liter, machine volume, spray pattern, drawdown, and batch mixing before service.';
       case 'cold_brew':
         return 'Watch cool-water saturation, long steeping, then clean filtration; do not use a hot workflow.';
+      case 'hario_switch':
+        return 'Watch valve state, closed chamber capacity, release timing, and pour flow rates.';
       case 'chemex':
         return 'Keep the stream off the thick filter wall so flow stays open through the finish.';
       case 'clever_dripper':
@@ -338,9 +342,53 @@ function buildSourAdjustment(plan: BrewPlan, hardToExtract: boolean, highBufferW
         case 'espresso':
           return 'Geser grinder sedikit lebih halus dulu; jaga yield target plan dan hanya rapikan flow bila shot masih asam.';
         case 'aeropress':
-          return 'Tambah steep 10-15 detik atau stir 1-2 kali lebih banyak sebelum press.';
-        case 'french_press':
-          return 'Tambah steep 20-30 detik sebelum settle, lalu tetap decant bersih.';
+          if (plan.recipeStyle === 'inverted') {
+            return 'Tambah rendam 10-15 detik di chamber terbalik, atau lakukan 1 adukan ekstra sebelum membalikkan alat.';
+          } else if (plan.recipeStyle === 'bypass') {
+            return 'Geser grind 0.5 step lebih halus pada konsentrat, atau kurangi sedikit porsi air bypass agar rasa manis lebih pekat.';
+          } else if (plan.recipeStyle === 'no_bypass') {
+            return 'Tambah rendam 15-20 detik dan pasang plunger lebih rapat; jika masih asam, geser grind 0.5 step lebih halus.';
+          } else if (plan.recipeStyle === 'bright_clean') {
+            return 'Geser grind 0.5 step lebih halus dan tuangkan air lebih lambat untuk memperpanjang waktu kontak tanpa agitasi ekstra.';
+          } else if (plan.recipeStyle === 'sweet_body') {
+            return 'Aduk memutar 2 kali ekstra di fase awal dan gunakan air dengan suhu +1 C lebih panas.';
+          } else {
+            return 'Tambah rendam 10-15 detik di fase vakum, atau aduk perlahan 1-2 kali ekstra sebelum memasang plunger.';
+          }
+        case 'french_press': {
+          const style = plan.recipeStyle || 'traditional';
+          if (style === 'clean_decant') {
+            return 'Perpanjang waktu rendam awal menjadi 5 menit sebelum membersihkan crust, lalu biarkan mengendap bersih.';
+          } else if (style === 'double_filter') {
+            return 'Tambah steep 20 detik, gunakan air mendidih penuh, dan pastikan double filter sudah dibilas air panas.';
+          } else if (style === 'heavy_concentrate') {
+            return 'Aduk lebih kuat 5-6 kali setelah air dituang, dan tambah steep 30 detik untuk melarutkan sari kopi padat.';
+          } else if (style === 'sweet_immersion') {
+            return 'Tingkatkan suhu air +1 C, dan perpanjang waktu rendam tenang 20-30 detik sebelum ditekan lembut.';
+          } else {
+            return 'Tambah steep 20-30 detik sebelum settle, lalu tetap decant bersih.';
+          }
+        }
+        case 'hario_switch': {
+          const style = plan.recipeStyle || 'hybrid_balanced';
+          if (style === 'hybrid_balanced') {
+            return 'Perpanjang fase katup tertutup selama 15-20 detik sebelum release, atau giling 0.5 step lebih halus untuk membuka rasa manis.';
+          } else if (style === 'hybrid_bright_clean') {
+            return 'Tutup katup 10 detik lebih awal saat capture pertengahan seduh, atau naikkan suhu air sebesar +1 C.';
+          } else if (style === 'immersion_sweet') {
+            return 'Perpanjang total rendaman tenang selama 20-30 detik, atau giling 0.5 step lebih halus; jangan aduk kopi secara kasar.';
+          } else if (style === 'immersion_heavy_body') {
+            return 'Aduk perlahan 1-2 kali ekstra saat bloom, dan perpanjang durasi rendam tertutup selama 30 detik untuk kelarutan pekat.';
+          } else if (style === 'v60_mode') {
+            return 'Giling 0.5 step lebih halus, dan jaga tuangan rapat dekat tengah untuk memperpanjang waktu turun air perkolasi.';
+          } else if (style === 'iced_hybrid') {
+            return 'Perpanjang rendam konsentrat tertutup 20-30 detik, atau kurangi sedikit volume air panas sambil menjaga berat es tetap.';
+          } else if (style === 'mugen_everyday_hybrid') {
+            return 'Perpanjang rendam fase tertutup selama 20 detik, atau tuang lebih lambat untuk memperpanjang waktu kontak di MUGEN.';
+          } else {
+            return 'Perpanjang fase katup tertutup 15-20 detik sebelum membuka katup, atau giling 0.5 step lebih halus.';
+          }
+        }
         case 'moka_pot':
           return 'Gunakan heat lebih stabil dan hentikan tepat sebelum sputter; jika masih asam, grind sedikit lebih halus.';
         case 'siphon':
@@ -357,7 +405,20 @@ function buildSourAdjustment(plan: BrewPlan, hardToExtract: boolean, highBufferW
             : 'Geser grinder 0.5 step lebih halus dan beri bloom sedikit lebih lama sebelum build pour.';
         case 'april':
           return 'Geser grinder 0.5 step lebih halus dan buat pulse tengah sedikit lebih penuh tanpa menambah swirl.';
-        case 'kalita_wave':
+        case 'kalita_wave': {
+          const style = plan.kalitaWaveStyle || 'auto';
+          if (style === 'competition_fast_four') {
+            return 'Geser grind 0.5 step lebih halus, dan naikkan suhu air +1 C untuk meningkatkan kelarutan pada aliran cepat.';
+          } else if (style === 'continuous_slow_stream') {
+            return 'Tingkatkan suhu air +1 C, dan perkecil laju aliran tengah agar kontak kolom air tetap maksimal.';
+          } else if (style === 'iced_wave') {
+            return 'Geser gilingan sedikit lebih halus pada fase panas, atau gunakan air mendidih untuk memaksimalkan konsentrat.';
+          } else if (style === 'high_dose_concentrate') {
+            return 'Perpanjang bloom 15 detik, dan tuangkan air lebih lambat di pusat untuk melarutkan bagian dalam kopi padat.';
+          } else {
+            return 'Geser grinder 0.5 step lebih halus dan buat tuangan kedua sedikit lebih penuh sambil menjaga bed tetap rata.';
+          }
+        }
         case 'melitta':
           return 'Geser grinder 0.5 step lebih halus dan buat fase tengah sedikit lebih penuh sambil menjaga bed tetap rata.';
         case 'kono':
@@ -378,9 +439,53 @@ function buildSourAdjustment(plan: BrewPlan, hardToExtract: boolean, highBufferW
       case 'espresso':
         return 'Move the grinder slightly finer first; keep the planned target yield and only tidy flow if the shot stays sour.';
       case 'aeropress':
-        return 'Add 10-15 seconds of steep or 1-2 more gentle stirs before pressing.';
-      case 'french_press':
-        return 'Add 20-30 seconds of steep before settling, then still decant cleanly.';
+        if (plan.recipeStyle === 'inverted') {
+          return 'Add 10-15 seconds of steep in the inverted chamber, or use 1 extra gentle stir before the flip.';
+        } else if (plan.recipeStyle === 'bypass') {
+          return 'Move the grind 0.5 step finer on your concentrate, or slightly reduce the bypass water volume to concentrate sweetness.';
+        } else if (plan.recipeStyle === 'no_bypass') {
+          return 'Add 15-20 seconds of steep and seal tighter; if still sour, move the grind 0.5 step finer.';
+        } else if (plan.recipeStyle === 'bright_clean') {
+          return 'Move the grind 0.5 step finer and pour slower to extend contact time without adding agitation.';
+        } else if (plan.recipeStyle === 'sweet_body') {
+          return 'Use 2 extra active stirs in the bloom phase and push water temperature +1 C warmer.';
+        } else {
+          return 'Add 10-15 seconds of steep in the vacuum phase, or stir gently 1-2 extra times before sealing.';
+        }
+      case 'french_press': {
+        const style = plan.recipeStyle || 'traditional';
+        if (style === 'clean_decant') {
+          return 'Extend the initial steep to 5 minutes before breaking the crust, then let settle cleanly.';
+        } else if (style === 'double_filter') {
+          return 'Add 20 seconds of steep, use boiling water, and make sure the double filter is pre-heated.';
+        } else if (style === 'heavy_concentrate') {
+          return 'Stir more vigorously 5-6 times right after pouring, and add 30 seconds of steep to dissolve heavy solubles.';
+        } else if (style === 'sweet_immersion') {
+          return 'Increase water temperature by +1 C, and extend the quiet steep by 20-30 seconds before plunging gently.';
+        } else {
+          return 'Add 20-30 seconds of steep before settling, then still decant cleanly.';
+        }
+      }
+      case 'hario_switch': {
+        const style = plan.recipeStyle || 'hybrid_balanced';
+        if (style === 'hybrid_balanced') {
+          return 'Extend the closed valve phase by 15-20 seconds before releasing, or grind 0.5 step finer to unlock sweetness.';
+        } else if (style === 'hybrid_bright_clean') {
+          return 'Close the valve 10 seconds earlier during the mid-brew capture, or increase your water temperature by +1 C.';
+        } else if (style === 'immersion_sweet') {
+          return 'Extend the total quiet steep by 20-30 seconds, or grind 0.5 step finer; do not stir aggressively.';
+        } else if (style === 'immersion_heavy_body') {
+          return 'Stir 1-2 extra times gently during bloom, and extend the closed steep duration by 30 seconds for deep solubles.';
+        } else if (style === 'v60_mode') {
+          return 'Grind 0.5 step finer, and keep pours compact near center to extend the percolation drawdown time.';
+        } else if (style === 'iced_hybrid') {
+          return 'Extend the closed concentrate steep by 20-30 seconds, or slightly reduce hot water volume while keeping ice constant.';
+        } else if (style === 'mugen_everyday_hybrid') {
+          return 'Extend the closed phase steep by 20 seconds, or pour even slower to increase contact time in MUGEN.';
+        } else {
+          return 'Extend the closed phase by 15-20 seconds before opening the valve, or move your grind 0.5 step finer.';
+        }
+      }
       case 'moka_pot':
         return 'Use steadier heat and stop just before sputter; if still sour, move the grind slightly finer.';
       case 'siphon':
@@ -397,7 +502,20 @@ function buildSourAdjustment(plan: BrewPlan, hardToExtract: boolean, highBufferW
           : 'Move the grinder 0.5 step finer and give the bloom slightly more time before the build pour.';
       case 'april':
         return 'Move the grinder 0.5 step finer and let the middle pulse land slightly fuller without adding swirl.';
-      case 'kalita_wave':
+      case 'kalita_wave': {
+        const style = plan.kalitaWaveStyle || 'auto';
+        if (style === 'competition_fast_four') {
+          return 'Move the grind 0.5 step finer, and increase water temperature by +1 C to raise solubility on fast flow.';
+        } else if (style === 'continuous_slow_stream') {
+          return 'Increase water temperature by +1 C, and make the centered flow rate even slower to maximize column contact.';
+        } else if (style === 'iced_wave') {
+          return 'Grind slightly finer for the hot phase, or use boiling water to maximize concentrate extraction.';
+        } else if (style === 'high_dose_concentrate') {
+          return 'Extend bloom by 15 seconds, and pour slower in the center to dissolve the deep core of the high-dose bed.';
+        } else {
+          return 'Move the grinder 0.5 step finer and make the second pour slightly fuller while keeping the bed level.';
+        }
+      }
       case 'melitta':
         return 'Move the grinder 0.5 step finer and make the middle phase slightly fuller while keeping the bed level.';
       case 'kono':
@@ -436,9 +554,53 @@ function buildBitterAdjustment(plan: BrewPlan, easyToExtract: boolean, language?
             ? 'Geser grinder sedikit lebih kasar dan kurangi channeling; suhu -1 C hanya jika shot berikutnya tetap pahit.'
             : 'Geser grinder sedikit lebih kasar dan hentikan shot di yield target.';
         case 'aeropress':
-          return 'Pendekkan steep 10-15 detik, kurangi stir, dan press tanpa memaksa hiss.';
-        case 'french_press':
-          return 'Decant lebih cepat setelah settle dan hindari menekan plunger sampai fines naik.';
+          if (plan.recipeStyle === 'inverted') {
+            return 'Pendekkan steep 10-15 detik di posisi inverted, kurangi agitasi adukan, dan balikkan secara tenang.';
+          } else if (plan.recipeStyle === 'bypass') {
+            return 'Geser grind 0.5 step lebih kasar pada konsentrat, atau hentikan press secara ketat sebelum hiss kering.';
+          } else if (plan.recipeStyle === 'no_bypass') {
+            return 'Geser grind 0.5 sampai 1 step lebih kasar untuk mencegah mampet, dan kurangi steep 15 detik.';
+          } else if (plan.recipeStyle === 'bright_clean') {
+            return 'Geser grind 0.5 step lebih kasar dan pastikan penekanan dilakukan sangat lembut tanpa tenaga tambahan.';
+          } else if (plan.recipeStyle === 'sweet_body') {
+            return 'Hentikan press tepat pada hiss awal dan kurangi durasi steep 10 detik agar rasa pahit gosong tidak keluar.';
+          } else {
+            return 'Pendekkan steep 10-15 detik, kurangi adukan awal, dan hentikan press tepat pada desis pertama.';
+          }
+        case 'french_press': {
+          const style = plan.recipeStyle || 'traditional';
+          if (style === 'clean_decant') {
+            return 'Decant sisa cairan lebih awal secara perlahan, pastikan sisa lumpur (silt) di dasar beaker tidak ikut tertuang.';
+          } else if (style === 'double_filter') {
+            return 'Tekan plunger lebih lambat (minimal 35-40 detik) dengan tenaga sangat ringan untuk menahan fines di double mesh.';
+          } else if (style === 'heavy_concentrate') {
+            return 'Kurangi agitasi adukan menjadi 3 kali adukan perlahan, atau tambahkan air bypass hangat di akhir untuk mengencerkan cup.';
+          } else if (style === 'sweet_immersion') {
+            return 'Turunkan suhu air -1 C, dan pastikan plunger ditekan secara ultra-lembut tanpa mengguncang bed kopi.';
+          } else {
+            return 'Decant lebih cepat setelah settle dan hindari menekan plunger sampai fines naik.';
+          }
+        }
+        case 'hario_switch': {
+          const style = plan.recipeStyle || 'hybrid_balanced';
+          if (style === 'hybrid_balanced') {
+            return 'Buka katup 15-20 detik lebih awal untuk mempersingkat kontak immersion, atau giling 0.5 step lebih kasar.';
+          } else if (style === 'hybrid_bright_clean') {
+            return 'Kurangi durasi capture tertutup di pertengahan seduh selama 10 detik, atau turunkan sedikit suhu air -1 C.';
+          } else if (style === 'immersion_sweet') {
+            return 'Buka katup 15-20 detik lebih awal, dan pastikan tidak ada bubuk kopi kering yang bypass atau suhu kettle terlalu tinggi.';
+          } else if (style === 'immersion_heavy_body') {
+            return 'Perpendek waktu rendam selama 30 detik, giling 0.5 step lebih kasar, dan hindari adukan atau putaran yang kuat.';
+          } else if (style === 'v60_mode') {
+            return 'Giling 0.5 step lebih kasar, atau kurangi tinggi tuangan untuk meminimalkan terbentuknya alur air (channeling).';
+          } else if (style === 'iced_hybrid') {
+            return 'Buka katup 15-20 detik lebih awal, dan periksa apakah es yang mencair telah mengencerkan target resep Anda.';
+          } else if (style === 'mugen_everyday_hybrid') {
+            return 'Buka katup 15 detik lebih awal, atau giling 0.5 step lebih kasar untuk mencegah ekstraksi berlebih pada MUGEN.';
+          } else {
+            return 'Buka katup 15-20 detik lebih awal untuk mempersingkat kontak tertutup, atau giling 0.5 step lebih kasar.';
+          }
+        }
         case 'moka_pot':
           return 'Turunkan heat, angkat sebelum sputter, dan dinginkan base jika flow mulai blonding.';
         case 'siphon':
@@ -457,7 +619,20 @@ function buildBitterAdjustment(plan: BrewPlan, easyToExtract: boolean, language?
             : 'Geser grinder 0.5 sampai 1 step lebih kasar dan hindari membanjiri kertas di fase akhir.';
         case 'april':
           return 'Geser grinder 0.5 step lebih kasar dan pendekkan pulse agar contact tidak terlalu panjang.';
-        case 'kalita_wave':
+        case 'kalita_wave': {
+          const style = plan.kalitaWaveStyle || 'auto';
+          if (style === 'competition_fast_four') {
+            return 'Geser grind 0.5 step lebih kasar, dan kurangi kecepatan aliran sirkuler di tengah untuk memperlambat drawdown.';
+          } else if (style === 'continuous_slow_stream') {
+            return 'Geser grind 0.5 step lebih kasar, atau turunkan suhu air -1 C untuk mengurangi ekstraksi berlebih dari kontak lambat.';
+          } else if (style === 'iced_wave') {
+            return 'Geser grind 0.5 step lebih kasar pada fase panas, dan percepat drawdown ke es agar rasa ashar tidak keluar.';
+          } else if (style === 'high_dose_concentrate') {
+            return 'Geser grind 0.5 step lebih kasar untuk melonggarkan fluks, dan turunkan suhu air sebesar -1.5 C.';
+          } else {
+            return 'Geser grinder 0.5 step lebih kasar dan hindari menuang terlalu dekat dengan tepi fluted kertas filter.';
+          }
+        }
         case 'melitta':
           return 'Geser grinder 0.5 step lebih kasar dan ratakan bed lebih cepat supaya fase tengah tidak terlalu berat.';
         case 'kono':
@@ -477,9 +652,53 @@ function buildBitterAdjustment(plan: BrewPlan, easyToExtract: boolean, language?
           ? 'Move the grinder slightly coarser and reduce channeling; use -1 C only if the next shot stays bitter.'
           : 'Move the grinder slightly coarser and stop the shot at target yield.';
       case 'aeropress':
-        return 'Shorten steep by 10-15 seconds, reduce stirring, and press without forcing the hiss.';
-      case 'french_press':
-        return 'Decant earlier after settling and avoid plunging hard enough to lift fines.';
+        if (plan.recipeStyle === 'inverted') {
+          return 'Shorten steep by 10-15 seconds in the inverted position, reduce stir agitation, and flip gently.';
+        } else if (plan.recipeStyle === 'bypass') {
+          return 'Move the grind 0.5 step coarser on the concentrate, or stop the plunge strictly before the dry hiss.';
+        } else if (plan.recipeStyle === 'no_bypass') {
+          return 'Move the grind 0.5 to 1 step coarser to prevent choking, and shorten the steep by 15 seconds.';
+        } else if (plan.recipeStyle === 'bright_clean') {
+          return 'Move the grind 0.5 step coarser and ensure the plunge is extremely gentle with minimal force.';
+        } else if (plan.recipeStyle === 'sweet_body') {
+          return 'Stop the press strictly at the first hiss and reduce the steep duration by 10 seconds to avoid bitter ashiness.';
+        } else {
+          return 'Shorten steep by 10-15 seconds, reduce initial stirring, and stop the plunge strictly at the first hiss.';
+        }
+      case 'french_press': {
+        const style = plan.recipeStyle || 'traditional';
+        if (style === 'clean_decant') {
+          return 'Decant the liquid earlier and more gently, making sure to leave all settled silt inside the beaker.';
+        } else if (style === 'double_filter') {
+          return 'Plunge even slower (at least 35-40 seconds) with feather-light force to trap fines in the double filter.';
+        } else if (style === 'heavy_concentrate') {
+          return 'Reduce stir agitation to 3 gentle stirs, or add warm bypass water at the end to balance the heavy cup.';
+        } else if (style === 'sweet_immersion') {
+          return 'Lower water temperature by -1 C, and ensure the plunge is ultra-gentle without disrupting the bed.';
+        } else {
+          return 'Decant earlier after settling and avoid plunging hard enough to lift fines.';
+        }
+      }
+      case 'hario_switch': {
+        const style = plan.recipeStyle || 'hybrid_balanced';
+        if (style === 'hybrid_balanced') {
+          return 'Open the valve 15-20 seconds earlier to shorten immersion contact, or move your grind 0.5 step coarser.';
+        } else if (style === 'hybrid_bright_clean') {
+          return 'Reduce the mid-brew closed capture duration by 10 seconds, or slightly lower water temperature by -1 C.';
+        } else if (style === 'immersion_sweet') {
+          return 'Release the valve 15-20 seconds earlier, and ensure no dry grounds bypass or kettle temperature is too high.';
+        } else if (style === 'immersion_heavy_body') {
+          return 'Shorten the steep time by 30 seconds, grind 0.5 step coarser, and avoid any vigorous stirring or swirling.';
+        } else if (style === 'v60_mode') {
+          return 'Grind 0.5 step coarser, or reduce pour height to minimize channel formation in the coffee bed.';
+        } else if (style === 'iced_hybrid') {
+          return 'Open the valve 15-20 seconds earlier, and check if melting ice has watered down your recipe targets.';
+        } else if (style === 'mugen_everyday_hybrid') {
+          return 'Open the valve 15 seconds earlier, or move the grind 0.5 step coarser to prevent low-bypass over-extraction.';
+        } else {
+          return 'Open the valve 15-20 seconds earlier to shorten closed contact, or move your grind 0.5 step coarser.';
+        }
+      }
       case 'moka_pot':
         return 'Lower heat, remove before sputter, and cool the base if flow starts blonding.';
       case 'siphon':
@@ -498,7 +717,20 @@ function buildBitterAdjustment(plan: BrewPlan, easyToExtract: boolean, language?
           : 'Move the grinder 0.5 to 1 step coarser and avoid flooding the paper late in the brew.';
       case 'april':
         return 'Move the grinder 0.5 step coarser and shorten the pulses so contact does not run too long.';
-      case 'kalita_wave':
+      case 'kalita_wave': {
+        const style = plan.kalitaWaveStyle || 'auto';
+        if (style === 'competition_fast_four') {
+          return 'Move the grind 0.5 step coarser, and reduce circular flow speed in the center to slow drawdown.';
+        } else if (style === 'continuous_slow_stream') {
+          return 'Move the grind 0.5 step coarser, or lower water temperature by -1 C to reduce over-extraction from long contact.';
+        } else if (style === 'iced_wave') {
+          return 'Move the grind 0.5 step coarser for the hot phase, and speed up drawdown onto ice to avoid ashiness.';
+        } else if (style === 'high_dose_concentrate') {
+          return 'Move the grind 0.5 step coarser to loosen the pack, and lower water temperature by -1.5 C.';
+        } else {
+          return 'Move the grinder 0.5 step coarser and avoid pouring too close to the fluted edges of the wave filter.';
+        }
+      }
       case 'melitta':
         return 'Move the grinder 0.5 step coarser and settle the bed earlier so the middle phase does not run too heavy.';
       case 'kono':
@@ -527,9 +759,53 @@ function buildThinAdjustment(plan: BrewPlan, _softWater: boolean, language?: str
         case 'espresso':
           return 'Cek channeling dan distribusi puck; geser grind lebih halus sedikit bila flow terlalu cepat, tanpa mengubah yield atau dose.';
         case 'aeropress':
-          return 'Pilih no-bypass, tingkatkan saturasi awal, dan press stabil tanpa mengubah rasio concentrate.';
-        case 'french_press':
-          return 'Cek decant agar tidak banyak bypass, lalu tambah contact singkat sebelum settle tanpa mengubah rasio.';
+          if (plan.recipeStyle === 'inverted') {
+            return 'Gunakan gilingan sedikit lebih halus, maksimalkan adukan awal, dan pastikan tidak ada air yang menetes sebelum dibalik.';
+          } else if (plan.recipeStyle === 'bypass') {
+            return 'Kurangi porsi air bypass sebanyak 15-20 ml untuk meningkatkan kepekatan, dan jaga rasio concentrate tetap terkunci.';
+          } else if (plan.recipeStyle === 'no_bypass') {
+            return 'Perpanjang rendam 20 detik untuk ekstraksi lebih dalam, dan aduk memutar slurry secara konsisten.';
+          } else if (plan.recipeStyle === 'bright_clean') {
+            return 'Gunakan filter kertas ganda yang dibilas sangat bersih, aduk perlahan 1 kali ekstra, dan tekan dengan sangat stabil.';
+          } else if (plan.recipeStyle === 'sweet_body') {
+            return 'Gunakan gilingan halus yang presisi, aduk kuat 6 kali untuk meningkatkan kontak, dan peras puck kopi sepenuhnya.';
+          } else {
+            return 'Gunakan no-bypass atau kurangi sedikit air bypass, perbaiki saturasi awal bed, dan tekan secara stabil.';
+          }
+        case 'french_press': {
+          const style = plan.recipeStyle || 'traditional';
+          if (style === 'clean_decant') {
+            return 'Tingkatkan agitasi dengan mengaduk pelan crust 3 kali saat menit ke-4 sebelum disaring bersih.';
+          } else if (style === 'double_filter') {
+            return 'Geser gilingan 0.5 step lebih halus, dan berikan goyangan memutar (swirl) wadah sebelum mesh diturunkan.';
+          } else if (style === 'heavy_concentrate') {
+            return 'Tingkatkan dosis kopi sebesar 1-2g atau gunakan gilingan sedikit lebih halus untuk menaikkan TDS.';
+          } else if (style === 'sweet_immersion') {
+            return 'Aduk perlahan 1 kali ekstra saat bloom, dan biarkan rendaman tenang lebih lama 30 detik.';
+          } else {
+            return 'Cek decant agar tidak banyak bypass, lalu tambah contact singkat sebelum settle tanpa mengubah rasio.';
+          }
+        }
+        case 'hario_switch': {
+          const style = plan.recipeStyle || 'hybrid_balanced';
+          if (style === 'hybrid_balanced') {
+            return 'Perpanjang bloom/immersion tertutup 15-20 detik, atau naikkan sedikit proporsi air panas di fase tertutup.';
+          } else if (style === 'hybrid_bright_clean') {
+            return 'Perpanjang capture tertutup di pertengahan seduh selama 15 detik, atau naikkan sedikit proporsi air fase tertutup.';
+          } else if (style === 'immersion_sweet') {
+            return 'Perpanjang total rendam immersion selama 25-30 detik, dan pastikan Anda telah menghangatkan brewer kaca dengan baik.';
+          } else if (style === 'immersion_heavy_body') {
+            return 'Perpanjang waktu rendam 30 detik, aduk perlahan 2-3 kali saat bloom, dan gunakan suhu kettle sedikit lebih panas.';
+          } else if (style === 'v60_mode') {
+            return 'Giling 0.5 step lebih halus, dan gunakan tuangan pulse pendek untuk memperpanjang waktu kontak total.';
+          } else if (style === 'iced_hybrid') {
+            return 'Perpanjang rendam fase tertutup 20-30 detik untuk mendapat konsentrat tinggi, pastikan target es tidak terlampaui.';
+          } else if (style === 'mugen_everyday_hybrid') {
+            return 'Perpanjang rendam tertutup 20 detik, atau giling 0.5 step lebih halus untuk menaikkan kelarutan kopi di MUGEN.';
+          } else {
+            return 'Perpanjang fase rendam tertutup selama 15-20 detik untuk meningkatkan ekstraksi sari kopi sebelum release.';
+          }
+        }
         case 'moka_pot':
           return 'Pastikan basket terisi rata sesuai plan; koreksi output dengan heat dan distribusi, bukan bypass.';
         case 'siphon':
@@ -544,7 +820,20 @@ function buildThinAdjustment(plan: BrewPlan, _softWater: boolean, language?: str
           return 'Pertahankan rasio yang sama dan buat build pour sedikit lebih stabil di tengah tanpa membanjiri filter.';
         case 'april':
           return 'Pertahankan rasio dan biarkan pulse kedua membawa contact sedikit lebih penuh tanpa menambah jeda.';
-        case 'kalita_wave':
+        case 'kalita_wave': {
+          const style = plan.kalitaWaveStyle || 'auto';
+          if (style === 'competition_fast_four') {
+            return 'Perlambat tuangan pulse ketiga sebanyak 10 detik untuk menambah contact time tanpa menambah bypass pinggir.';
+          } else if (style === 'continuous_slow_stream') {
+            return 'Pertahankan aliran tetap stabil tanpa interupsi, dan pastikan tinggi air konstan untuk meningkatkan ekstraksi padat.';
+          } else if (style === 'iced_wave') {
+            return 'Perpanjang waktu bloom panas selama 10 detik, dan kurangi sedikit volume air panas sambil menjaga berat es tetap.';
+          } else if (style === 'high_dose_concentrate') {
+            return 'Geser grind 0.5 step lebih halus, dan tuang sangat perlahan dekat pusat untuk menghindari bypass celah samping.';
+          } else {
+            return 'Pertahankan rasio dan jaga air tuangan tetap terpusat di tengah agar ekstraksi terekstrak merata tanpa bypass air samping.';
+          }
+        }
         case 'melitta':
           return 'Pertahankan rasio dan geser sedikit lebih banyak contact ke fase tengah sambil menjaga bed tetap rata.';
         case 'v60':
@@ -559,9 +848,53 @@ function buildThinAdjustment(plan: BrewPlan, _softWater: boolean, language?: str
       case 'espresso':
         return 'Check channeling and puck distribution; move the grind slightly finer if flow runs fast, without changing yield or dose.';
       case 'aeropress':
-        return 'Choose no-bypass, improve initial saturation, and press steadily without changing the concentrate ratio.';
-      case 'french_press':
-        return 'Check decanting for bypass, then add a brief contact hold before settling without changing the ratio.';
+        if (plan.recipeStyle === 'inverted') {
+          return 'Use a slightly finer grind, maximize initial stirring, and ensure zero premature leakage before the flip.';
+        } else if (plan.recipeStyle === 'bypass') {
+          return 'Reduce the bypass water volume by 15-20 ml to increase density, keeping the concentrate ratio locked.';
+        } else if (plan.recipeStyle === 'no_bypass') {
+          return 'Extend steep by 20 seconds for deeper extraction, and use a consistent circular stir to mix the slurry.';
+        } else if (plan.recipeStyle === 'bright_clean') {
+          return 'Use double rinsed filters, add 1 extra gentle stir, and keep the plunge extremely stable.';
+        } else if (plan.recipeStyle === 'sweet_body') {
+          return 'Use a precise fine grind, stir vigorously 6 times to maximize contact, and plunge fully down to squeeze the puck.';
+        } else {
+          return 'Choose no-bypass or reduce bypass volume slightly, improve initial saturation, and press steadily.';
+        }
+      case 'french_press': {
+        const style = plan.recipeStyle || 'traditional';
+        if (style === 'clean_decant') {
+          return 'Increase agitation by gently stirring the crust 3 times at the 4-minute mark before skimming.';
+        } else if (style === 'double_filter') {
+          return 'Move the grind 0.5 step finer, and give the beaker a gentle swirl before plunging.';
+        } else if (style === 'heavy_concentrate') {
+          return 'Increase coffee dose by 1-2g or use a slightly finer grind to push total dissolved solids (TDS).';
+        } else if (style === 'sweet_immersion') {
+          return 'Stir gently 1 extra time during bloom, and let the quiet steep run 30 seconds longer.';
+        } else {
+          return 'Check decanting for bypass, then add a brief contact hold before settling without changing the ratio.';
+        }
+      }
+      case 'hario_switch': {
+        const style = plan.recipeStyle || 'hybrid_balanced';
+        if (style === 'hybrid_balanced') {
+          return 'Extend the closed bloom/immersion by 15-20 seconds, or slightly increase hot water share in the closed phase.';
+        } else if (style === 'hybrid_bright_clean') {
+          return 'Extend the mid-brew closed capture by 15 seconds, or increase the closed phase water proportion slightly.';
+        } else if (style === 'immersion_sweet') {
+          return 'Extend the total immersion steep by 25-30 seconds, and ensure you preheated the glass brewer thoroughly.';
+        } else if (style === 'immersion_heavy_body') {
+          return 'Extend steep time by 30 seconds, stir 2-3 times gently during bloom, and use a slightly warmer kettle temperature.';
+        } else if (style === 'v60_mode') {
+          return 'Grind 0.5 step finer, and use shorter pulse pours to increase total contact time.';
+        } else if (style === 'iced_hybrid') {
+          return 'Extend closed contact steep by 20-30 seconds to brew a higher concentrate, ensuring ice target is not exceeded.';
+        } else if (style === 'mugen_everyday_hybrid') {
+          return 'Extend closed steep by 20 seconds, or grind 0.5 step finer to increase solubles capture in MUGEN.';
+        } else {
+          return 'Extend closed steep phase by 15-20 seconds to raise solubles extraction before releasing.';
+        }
+      }
       case 'moka_pot':
         return 'Make sure the basket is full and level; correct output with heat, not bypass.';
       case 'siphon':
@@ -576,7 +909,20 @@ function buildThinAdjustment(plan: BrewPlan, _softWater: boolean, language?: str
         return 'Keep the same ratio and make the build pour steadier through the middle without flooding the filter.';
       case 'april':
         return 'Keep the same ratio and let the second pulse carry slightly more contact without longer resets.';
-      case 'kalita_wave':
+      case 'kalita_wave': {
+        const style = plan.kalitaWaveStyle || 'auto';
+        if (style === 'competition_fast_four') {
+          return 'Slow down the third pulse pour by 10 seconds to add contact time without increasing side bypass.';
+        } else if (style === 'continuous_slow_stream') {
+          return 'Keep the flow completely steady without interruption, and ensure a constant water height to increase dense extraction.';
+        } else if (style === 'iced_wave') {
+          return 'Extend hot bloom by 10 seconds, and slightly reduce hot water volume while keeping ice weight constant.';
+        } else if (style === 'high_dose_concentrate') {
+          return 'Move the grind 0.5 step finer, and pour very slowly near the center to avoid fluted edge bypass.';
+        } else {
+          return 'Keep the same ratio and keep the pour stream tightly centered to ensure even extraction without side bypass water.';
+        }
+      }
       case 'melitta':
         return 'Keep the same ratio and shift a little more contact into the middle phase while the bed stays level.';
       case 'v60':

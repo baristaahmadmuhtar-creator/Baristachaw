@@ -34,6 +34,7 @@ import { useAiAccessGate } from '../../components/billing/AiAccessGate';
 import { useIOSKeyboardFix } from '../../hooks/useIOSKeyboardFix';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useRuntimeDisplayMode } from '../../hooks/useRuntimeDisplayMode';
+import { modalSpringTransition, modalExitTransition } from '../../utils/motionPresets';
 import { reportClientError } from '../../services/errorReporting';
 import { brewSequenceResponseDetailed, brewOptimizeResponseDetailed, raceChatResponse, deepThinkingResponseDetailed, fastResponseDetailed } from '../../services/gemini';
 import { createRecipeCollectionItem, saveCollectionItem, saveRecipe } from '../../services/storageService';
@@ -171,6 +172,8 @@ const MANUAL_PRESET_CONTROLLED_FIELDS = new Set<keyof AiBrewFormState>([
   'pourCount',
   'origamiFilterStyle',
   'aeropressStyle',
+  'frenchPressStyle',
+  'kalitaWaveStyle',
 ]);
 const LARGE_CATALOG_PICKER_KINDS = new Set<NonNullable<PickerKind>>(['process', 'variety']);
 const LARGE_CATALOG_INITIAL_LIMIT = 140;
@@ -239,6 +242,20 @@ const COPY = {
     aeropressStyleNoBypass: 'No bypass',
     aeropressStyleBrightClean: 'Bright clean',
     aeropressStyleSweetBody: 'Sweet body',
+    frenchPressStyleTitle: 'French Press style',
+    frenchPressStyleAuto: 'Auto',
+    frenchPressStyleTraditional: 'Traditional',
+    frenchPressStyleCleanDecant: 'Clean decant',
+    frenchPressStyleDoubleFilter: 'Double filter',
+    frenchPressStyleHeavyConcentrate: 'Heavy concentrate',
+    frenchPressStyleSweetImmersion: 'Sweet immersion',
+    kalitaWaveStyleTitle: 'Kalita Wave style',
+    kalitaWaveStyleAuto: 'Auto',
+    kalitaWaveStyleTraditionalFlatThree: 'Traditional Flat Three-Pour',
+    kalitaWaveStyleCompetitionFastFour: 'Competition Fast Four-Pour',
+    kalitaWaveStyleContinuousSlowStream: 'Continuous Slow Stream',
+    kalitaWaveStyleIcedWave: 'Iced Wave',
+    kalitaWaveStyleHighDoseConcentrate: 'High-Dose Concentrate',
     precisionControlTitle: 'Precision targets',
     precisionControlHint: 'Optional. Filter brewers work best around 1:13-1:17; Auto picks a safe default from the brewer, roast, and target.',
     targetRatio: 'Ratio target',
@@ -773,6 +790,20 @@ const COPY = {
     aeropressStyleNoBypass: 'Tanpa bypass',
     aeropressStyleBrightClean: 'Bright clean',
     aeropressStyleSweetBody: 'Sweet body',
+    frenchPressStyleTitle: 'Gaya French Press',
+    frenchPressStyleAuto: 'Auto',
+    frenchPressStyleTraditional: 'Tradisional',
+    frenchPressStyleCleanDecant: 'Clean decant',
+    frenchPressStyleDoubleFilter: 'Double filter',
+    frenchPressStyleHeavyConcentrate: 'Heavy concentrate',
+    frenchPressStyleSweetImmersion: 'Sweet immersion',
+    kalitaWaveStyleTitle: 'Gaya Kalita Wave',
+    kalitaWaveStyleAuto: 'Auto',
+    kalitaWaveStyleTraditionalFlatThree: 'Traditional Flat Three-Pour',
+    kalitaWaveStyleCompetitionFastFour: 'Competition Fast Four-Pour',
+    kalitaWaveStyleContinuousSlowStream: 'Continuous Slow Stream',
+    kalitaWaveStyleIcedWave: 'Iced Wave',
+    kalitaWaveStyleHighDoseConcentrate: 'High-Dose Concentrate',
     precisionControlTitle: 'Target presisi',
     precisionControlHint: 'Opsional. Filter manual paling aman di sekitar 1:13-1:17; Auto memilih default dari alat, sangrai, dan target.',
     targetRatio: 'Rasio target',
@@ -3564,6 +3595,7 @@ function buildAiBrewDeterministicStepDetailPoints(
     brewMode: plan.brewMode,
     language,
     hasWarning: workflowWarnings.length > 0,
+    recipeStyle: plan.recipeStyle,
   }));
 
   if (workflowWarnings.length > 0) {
@@ -4112,6 +4144,29 @@ function FocusLockedDialog({
     };
   }, [open, restoreFocusTarget]);
 
+  // Detect if this is a bottom-sheet styled modal on mobile
+  const isBottomSheet = className.includes('bottom-0');
+
+  const dialogVariants = {
+    hidden: {
+      opacity: 0,
+      y: isBottomSheet ? '100%' : (disableMotionShift ? 0 : 24),
+      scale: isBottomSheet ? 1 : 0.96,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: modalSpringTransition,
+    },
+    exit: {
+      opacity: 0,
+      y: isBottomSheet ? '100%' : (disableMotionShift ? 0 : 20),
+      scale: isBottomSheet ? 1 : 0.97,
+      transition: modalExitTransition,
+    },
+  };
+
   return (
     <AnimatePresence>
       {open && (
@@ -4120,14 +4175,15 @@ function FocusLockedDialog({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
             className="fixed inset-0 z-[110] bg-black/45 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div
-            initial={{ opacity: 0, y: disableMotionShift ? 0 : 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: disableMotionShift ? 0 : 18 }}
-            transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+            variants={dialogVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
@@ -5242,7 +5298,7 @@ function PlanResultDialog({
     ...(extractionRationale.iceSplit ? [{ label: id ? 'Split es' : 'Ice split', value: extractionRationale.iceSplit }] : []),
   ];
   const resultHeaderClass = 'relative min-w-0 max-w-full overflow-hidden rounded-[1.5rem] border panel-divider-subtle panel-soft px-4 pb-4 pt-5 lg:px-5';
-  const resultMetricCardClass = 'min-w-0 max-w-full rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/84 p-3 [overflow-wrap:anywhere]';
+  const resultMetricCardClass = 'min-w-0 max-w-full rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-4 py-3.5 [overflow-wrap:anywhere] hover:bg-[var(--bg-base)]/92 transition-colors duration-200';
   const resultChipClass = 'max-w-full rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-medium text-secondary [overflow-wrap:anywhere]';
   const resultActionButtonClass = 'min-h-[44px] min-w-0 w-full rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-center text-[13px] font-medium leading-4 text-primary transition-colors hover:border-blue-500/20 hover:bg-surface-alpha sm:w-auto sm:text-sm sm:whitespace-nowrap';
   const saveButtonLabel = saving
@@ -5352,7 +5408,7 @@ function PlanResultDialog({
 
   const liteGuidePanel = (
     <div
-      className="rounded-[1.8rem] border border-blue-500/18 bg-[linear-gradient(180deg,rgba(37,99,235,0.10),rgba(245,158,11,0.06))] p-4 shadow-[0_18px_48px_rgba(15,23,42,0.10)]"
+      className="rounded-[2.2rem] border border-glass bg-surface-alpha/75 p-5 shadow-[var(--panel-elev-1)] backdrop-blur-md"
       data-testid="ai-brew-flow-timer-panel"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -5364,8 +5420,13 @@ function PlanResultDialog({
 
       <div className="mt-5 flex justify-center" data-testid="ai-brew-lite-guide-panel">
         <div
-          className="ai-brew-lite-progress-ring relative flex aspect-square w-full max-w-[20rem] items-center justify-center rounded-full p-2 shadow-[0_24px_52px_rgba(15,23,42,0.14)]"
-          style={liteProgressRingStyle}
+          className="ai-brew-lite-progress-ring relative flex aspect-square w-full max-w-[20rem] items-center justify-center rounded-full p-2 transition-all duration-500"
+          style={{
+            ...liteProgressRingStyle,
+            boxShadow: flowRunning
+              ? '0 0 28px var(--focus-ring-color-soft), 0 12px 36px rgba(0, 0, 0, 0.12)'
+              : 'var(--panel-elev-1)',
+          }}
           data-testid="ai-brew-lite-progress-ring"
           aria-label={`${copy.flowElapsed} ${formatGuideTime(flowProgressSeconds)}`}
         >
@@ -5374,11 +5435,11 @@ function PlanResultDialog({
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">
               {liteStepTitle}
             </p>
-            <p className="mt-1.5 text-[3.1rem] font-semibold leading-none tracking-normal text-primary sm:text-6xl">
+            <p className="mt-1.5 text-[3.1rem] font-semibold leading-none tracking-normal text-primary sm:text-6xl tabular-nums">
               {formatGuideTime(flowProgressSeconds)}
             </p>
             <span className="mt-2 rounded-full bg-amber-500/12 px-2.5 py-0.5 text-[11px] font-semibold leading-5 text-amber-700 dark:text-amber-300">
-              {id ? 'Durasi tahap' : 'Step window'}: {formatGuideTime(flowCurrentStepDurationSeconds)}
+              {id ? 'Durasi tahap' : 'Step window'}: <span className="tabular-nums">{formatGuideTime(flowCurrentStepDurationSeconds)}</span>
             </span>
             <p className="mt-3 text-[1.65rem] font-semibold leading-none text-blue-700 dark:text-blue-300">
               {liteWaterTargetLabel}
@@ -5389,10 +5450,10 @@ function PlanResultDialog({
             <div className="mt-2 w-full max-w-[11.75rem]" data-testid="ai-brew-flow-remaining-status">
               <div className="grid gap-1 text-[10px] leading-4" data-testid="ai-brew-lite-water-status">
                 <span className="min-w-0 rounded-xl border border-blue-500/14 bg-[var(--bg-base)] px-2 py-0.5 font-semibold text-secondary [overflow-wrap:anywhere]">
-                  {copy.flowNextPour}: <span className="text-primary">{flowNextPourValue}</span>
+                  {copy.flowNextPour}: <span className="text-primary tabular-nums">{flowNextPourValue}</span>
                 </span>
                 <span className="min-w-0 rounded-xl border border-blue-500/14 bg-[var(--bg-base)] px-2 py-0.5 font-semibold text-secondary [overflow-wrap:anywhere]">
-                  {copy.flowTotalRemaining}: <span className="text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
+                  {copy.flowTotalRemaining}: <span className="text-primary tabular-nums">{formatGuideTime(flowRemainingSeconds)}</span>
                 </span>
               </div>
             </div>
@@ -5400,7 +5461,7 @@ function PlanResultDialog({
         </div>
       </div>
 
-      <div className="mx-auto mt-5 max-w-xl space-y-3 rounded-[1.4rem] border panel-divider-subtle bg-[var(--bg-base)]/84 p-3 text-center" data-testid="ai-brew-flow-current-card">
+      <div className="mx-auto mt-5 max-w-xl space-y-3 rounded-[1.6rem] border border-glass bg-surface-alpha/40 p-4 text-center" data-testid="ai-brew-flow-current-card">
         <p className="text-lg font-semibold leading-7 text-primary">
           {liteStepAction}
         </p>
@@ -5418,7 +5479,7 @@ function PlanResultDialog({
             <span className="font-semibold text-primary">{localizedGrindHeadline}</span>
           </span>
         </div>
-        <p className="rounded-2xl border border-blue-500/14 bg-[var(--bg-base)]/74 px-4 py-3 text-sm leading-6 text-secondary">
+        <p className="rounded-2xl border panel-divider-subtle bg-surface-alpha/50 px-4 py-3 text-sm leading-6 text-secondary">
           {liteStepCue}
         </p>
       </div>
@@ -5456,7 +5517,7 @@ function PlanResultDialog({
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-        <div className="rounded-2xl border border-amber-500/18 bg-amber-500/[0.07] px-4 py-3">
+        <div className="rounded-2xl border border-amber-500/12 bg-amber-500/[0.04] px-4 py-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
             {copy.flowLiteScaleTitle}
           </p>
@@ -5506,7 +5567,7 @@ function PlanResultDialog({
           className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4 pb-6 pt-4 lg:px-6 lg:pb-8 lg:pt-6"
           style={{
             paddingTop: 'calc(16px + var(--safe-top, 0px))',
-            paddingBottom: `calc(28px + var(--bottom-safe-capped, 0px) + max(${keyboardOffset}px, var(--keyboard-offset, 0px)))`,
+            paddingBottom: `calc(108px + var(--bottom-safe-capped, 0px) + max(${keyboardOffset}px, var(--keyboard-offset, 0px)))`,
           }}
           data-testid="ai-brew-result-scroll"
           tabIndex={0}
@@ -5747,16 +5808,16 @@ function PlanResultDialog({
                 className="grid min-w-0 max-w-full gap-4 overflow-x-clip"
                 data-testid="ai-brew-result-summary-panel"
               >
-                <div className="min-w-0 max-w-full overflow-hidden rounded-[1.25rem] border border-blue-500/18 bg-blue-500/[0.07] p-3.5 lg:p-4">
+                <div className="min-w-0 max-w-full overflow-hidden glass-card p-4 sm:p-5">
                   <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-blue-700 dark:text-blue-300">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">
                         {copy.planTab}
                       </p>
-                      <h4 className="mt-1 break-words text-base font-semibold text-primary">
+                      <h4 className="mt-1 break-words text-base font-semibold text-primary lg:text-lg">
                         {buildLocalizedPlanRecipeName(plan, language)}
                       </h4>
-                      <p className="mt-1 max-w-2xl break-words text-sm leading-5 text-secondary">
+                      <p className="mt-1.5 max-w-2xl break-words text-sm leading-6 text-secondary">
                         {displaySummary}
                       </p>
                     </div>
@@ -5774,32 +5835,32 @@ function PlanResultDialog({
                           : (id ? 'Perlu review' : 'Needs review')}
                     </span>
                   </div>
-                  <div className="mt-3" data-testid="ai-brew-result-summary-metric-strip">
-                    <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2.5 text-xs sm:grid-cols-[repeat(3,minmax(0,1fr))]" data-testid="ai-brew-time-semantics">
+                  <div className="mt-4" data-testid="ai-brew-result-summary-metric-strip">
+                    <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-3 text-xs sm:grid-cols-[repeat(3,minmax(0,1fr))]" data-testid="ai-brew-time-semantics">
                       {summaryHighlightItemsWithCompletion.map((item) => (
                         <span
                           key={item.id}
-                          className="min-w-0 max-w-full rounded-2xl border border-blue-500/20 bg-blue-500/[0.09] px-4 py-4 text-secondary"
+                          className="min-w-0 max-w-full rounded-2xl border panel-divider-subtle bg-surface-alpha/45 px-4 py-4 text-secondary hover:bg-surface-alpha/75 transition-colors"
                         >
                           <span className="block text-[10px] font-semibold uppercase tracking-widest text-tertiary">{item.label}</span>
-                          <span className="mt-1 block break-words text-xl font-semibold leading-tight text-primary sm:text-2xl">{item.value}</span>
+                          <span className="mt-1 block break-words text-xl font-semibold leading-tight text-primary sm:text-2xl tabular-nums">{item.value}</span>
                           {item.detail && (
-                            <span className="mt-1 block break-words text-[11px] leading-4 text-secondary">{item.detail}</span>
+                            <span className="mt-1.5 block break-words text-[11px] leading-4 text-secondary">{item.detail}</span>
                           )}
                         </span>
                       ))}
                     </div>
-                    <div className="mt-2 flex flex-wrap gap-2 text-[11px]" data-testid="ai-brew-compact-flow-snapshot">
+                    <div className="mt-3 flex flex-wrap gap-2 text-[11px]" data-testid="ai-brew-compact-flow-snapshot">
                       {compactFlowSnapshotItems.map((item) => (
-                        <span key={`flow-snapshot-${item.label}`} className="rounded-full border border-blue-500/14 bg-[var(--bg-base)]/82 px-2.5 py-1 font-semibold text-secondary">
-                          <span className="text-tertiary">{item.label}</span> <span className="text-primary">{item.value}</span>
+                        <span key={`flow-snapshot-${item.label}`} className="rounded-full border panel-divider-subtle bg-[var(--bg-base)]/50 px-2.5 py-1 font-semibold text-secondary">
+                          <span className="text-tertiary">{item.label}</span> <span className="text-primary tabular-nums">{item.value}</span>
                         </span>
                       ))}
                     </div>
                   </div>
-                  <div className="mt-2 space-y-2">
+                  <div className="mt-3 space-y-2">
                     {postExtractionSeconds > 0 && (
-                      <p className="rounded-xl border border-blue-500/14 bg-[var(--bg-base)]/78 px-3 py-2 text-xs leading-5 text-secondary" data-testid="ai-brew-post-extraction-note">
+                      <p className="rounded-xl border border-blue-500/12 bg-blue-500/[0.04] px-3 py-2.5 text-xs leading-5 text-secondary" data-testid="ai-brew-post-extraction-note">
                         <span className="font-semibold text-primary">{postExtractionLabel}:</span> {id ? 'aduk, tuang, atau sajikan tidak menambah waktu rasa utama.' : 'stir, pour, or serve steps do not add to the main taste time.'}
                       </p>
                     )}
@@ -5824,13 +5885,13 @@ function PlanResultDialog({
                 </div>
 
                 <section
-                  className="min-w-0 max-w-full overflow-hidden rounded-[1.1rem] border panel-divider-subtle bg-[var(--bg-base)]/78 p-3.5"
+                  className="min-w-0 max-w-full overflow-hidden rounded-[1.5rem] border panel-divider-subtle bg-surface-alpha/40 p-4 sm:p-5"
                   data-testid="ai-brew-pro-why-recipe"
                 >
                   <div className="flex min-w-0 items-start gap-2.5">
                     <Info size={16} className="mt-0.5 shrink-0 text-blue-500" />
                     <div className="min-w-0">
-                      <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
+                      <h4 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-secondary">
                         {id ? 'Kenapa Resep Ini' : 'Why This Recipe'}
                       </h4>
                       <p className="mt-1 text-xs leading-5 text-secondary">
@@ -5840,14 +5901,14 @@ function PlanResultDialog({
                       </p>
                     </div>
                   </div>
-                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
                     {summaryWhyRecipeItems.map((item) => (
-                      <div key={item.label} className="min-w-0 rounded-xl bg-surface-alpha px-3 py-2.5 [overflow-wrap:anywhere]">
+                      <div key={item.label} className="min-w-0 rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/70 px-4 py-3.5 [overflow-wrap:anywhere] hover:bg-[var(--bg-base)]/90 transition-colors">
                         <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
                           <p className="text-[10px] font-semibold uppercase tracking-widest text-secondary">{item.label}</p>
-                          <p className="min-w-0 break-words text-sm font-semibold text-primary">{item.value}</p>
+                          <p className="min-w-0 break-words text-sm font-semibold text-primary tabular-nums">{item.value}</p>
                         </div>
-                        <p className="mt-1 text-xs leading-5 text-secondary">{item.detail}</p>
+                        <p className="mt-1.5 text-xs leading-5 text-secondary">{item.detail}</p>
                       </div>
                     ))}
                   </div>
@@ -5868,7 +5929,7 @@ function PlanResultDialog({
                 {summaryHighlightItemsWithCompletion.map((item) => (
                   <div key={`details-${item.id}`} className={resultMetricCardClass}>
                     <p className="text-[11px] uppercase tracking-widest text-secondary">{item.label}</p>
-                    <p className="mt-1 text-base font-semibold text-primary sm:text-lg">{item.value}</p>
+                    <p className="mt-1 text-base font-semibold text-primary sm:text-lg tabular-nums">{item.value}</p>
                     {item.detail && (
                       <p className="mt-1 text-xs text-secondary">{item.detail}</p>
                     )}
@@ -5884,14 +5945,14 @@ function PlanResultDialog({
 
               <div className="grid gap-4">
                 <section
-                  className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
+                  className="rounded-[1.5rem] border panel-divider-subtle bg-surface-alpha/40 p-4 sm:p-5"
                   data-testid="ai-brew-why-this-extraction"
                 >
                   <div className="mb-3 flex min-w-0 flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <Gauge size={15} className="text-blue-500" />
-                        <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
+                        <h4 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-secondary">
                           {id ? 'Kenapa Ekstraksi Ini' : 'Why This Extraction'}
                         </h4>
                       </div>
@@ -5905,17 +5966,17 @@ function PlanResultDialog({
                       {extractionRationale.beanPrecision.summary}
                     </span>
                   </div>
-                  <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="grid gap-2.5 sm:grid-cols-2">
                     {extractionRationaleItems.map((item) => (
-                      <div key={item.label} className="rounded-xl bg-surface-alpha px-3 py-2.5">
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-secondary">{item.label}</p>
-                        <p className="mt-1 text-xs leading-5 text-primary">{localizeAiBrewDynamicText(item.value, language)}</p>
+                      <div key={item.label} className="min-w-0 rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/60 px-4 py-3 hover:bg-[var(--bg-base)]/80 transition-colors">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-secondary">{item.label}</p>
+                        <p className="mt-1 text-xs leading-5 text-primary tabular-nums">{localizeAiBrewDynamicText(item.value, language)}</p>
                       </div>
                     ))}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]" data-testid="ai-brew-bean-data-precision-signals">
                     {beanDataPrecisionSignals.map((signal) => (
-                      <span key={signal} className="rounded-full border panel-divider-subtle bg-[var(--bg-base)] px-2.5 py-1 font-medium text-secondary">
+                      <span key={signal} className="rounded-full border panel-divider-subtle bg-[var(--bg-base)]/40 px-2.5 py-1 font-medium text-secondary">
                         {localizeAiBrewDynamicText(signal, language)}
                       </span>
                     ))}
@@ -5928,24 +5989,24 @@ function PlanResultDialog({
                 </section>
 
                 <section
-                  className="rounded-[1.2rem] border panel-divider-subtle bg-[var(--bg-base)]/74 p-4"
+                  className="rounded-[1.5rem] border panel-divider-subtle bg-surface-alpha/40 p-4 sm:p-5"
                   data-testid="ai-brew-pro-target-compare"
                 >
                   <div className="mb-3 flex items-center gap-2">
                     <Target size={15} className="text-emerald-500" />
-                    <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
+                    <h4 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-secondary">
                       {id ? 'Bandingkan Profil Target' : 'Target Profile Compare'}
                     </h4>
                   </div>
-                  <div className="grid gap-2">
+                  <div className="grid gap-2.5">
                     {targetProfileCompareRows.map((item) => {
                       return (
                         <div
                           key={item.id}
-                          className={`rounded-xl border px-3 py-2.5 ${
+                          className={`rounded-2xl border px-4 py-3.5 transition-all duration-200 ${
                             item.active
-                              ? 'border-emerald-500/25 bg-emerald-500/10'
-                              : 'panel-divider-subtle bg-surface-alpha'
+                              ? 'border-emerald-500/25 bg-emerald-500/10 dark:bg-emerald-500/[0.08] shadow-[0_4px_16px_rgba(16,185,129,0.06)]'
+                              : 'panel-divider-subtle bg-surface-alpha/40 hover:bg-surface-alpha/70'
                           }`}
                         >
                           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -6438,19 +6499,19 @@ function PlanResultDialog({
                     <div className="mt-4 grid grid-cols-2 gap-2.5">
                       <div className="rounded-2xl bg-[var(--bg-base)]/82 p-3">
                         <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowElapsed}</p>
-                        <p className="mt-1 text-3xl font-semibold text-primary">{formatGuideTime(flowProgressSeconds)}</p>
+                        <p className="mt-1 text-3xl font-semibold text-primary tabular-nums">{formatGuideTime(flowProgressSeconds)}</p>
                       </div>
                       <div className="rounded-2xl bg-[var(--bg-base)]/82 p-3">
                         <p className="text-[11px] uppercase tracking-widest text-secondary">{copy.flowStepRemaining}</p>
-                        <p className="mt-1 text-3xl font-semibold text-primary">{formatGuideTime(flowStepRemainingSeconds)}</p>
+                        <p className="mt-1 text-3xl font-semibold text-primary tabular-nums">{formatGuideTime(flowStepRemainingSeconds)}</p>
                       </div>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2 text-xs" data-testid="ai-brew-flow-remaining-status">
                       <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
-                        {copy.flowNextPour}: <span className="text-primary">{flowNextPourValue}</span>
+                        {copy.flowNextPour}: <span className="text-primary tabular-nums">{flowNextPourValue}</span>
                       </span>
                       <span className="rounded-full border border-blue-500/14 bg-[var(--bg-base)] px-2.5 py-1 font-semibold text-secondary">
-                        {copy.flowTotalRemaining}: <span className="text-primary">{formatGuideTime(flowRemainingSeconds)}</span>
+                        {copy.flowTotalRemaining}: <span className="text-primary tabular-nums">{formatGuideTime(flowRemainingSeconds)}</span>
                       </span>
                     </div>
 
@@ -7928,6 +7989,7 @@ export function AiBrewPanel({
         doseG: Number.isFinite(previewDoseG) ? previewDoseG : undefined,
         origamiFilterStyle: sanitized.origamiFilterStyle,
         aeropressStyle: sanitized.aeropressStyle,
+        frenchPressStyle: sanitized.frenchPressStyle,
         targetProfileId: sanitized.targetProfileId,
       });
       const grinderSetting = resolveGrinderSettingReference(catalog, selectedGrinder, deviceSelection.profile, sanitized.brewMode);
@@ -9028,6 +9090,22 @@ export function AiBrewPanel({
       { value: 'bright_clean', label: copy.aeropressStyleBrightClean },
       { value: 'sweet_body', label: copy.aeropressStyleSweetBody },
     ] as const;
+    const frenchPressStyleOptions = [
+      { value: 'auto', label: copy.frenchPressStyleAuto },
+      { value: 'traditional', label: copy.frenchPressStyleTraditional },
+      { value: 'clean_decant', label: copy.frenchPressStyleCleanDecant },
+      { value: 'double_filter', label: copy.frenchPressStyleDoubleFilter },
+      { value: 'heavy_concentrate', label: copy.frenchPressStyleHeavyConcentrate },
+      { value: 'sweet_immersion', label: copy.frenchPressStyleSweetImmersion },
+    ] as const;
+    const kalitaWaveStyleOptions = [
+      { value: 'auto', label: copy.kalitaWaveStyleAuto },
+      { value: 'traditional_flat_three', label: copy.kalitaWaveStyleTraditionalFlatThree },
+      { value: 'competition_fast_four', label: copy.kalitaWaveStyleCompetitionFastFour },
+      { value: 'continuous_slow_stream', label: copy.kalitaWaveStyleContinuousSlowStream },
+      { value: 'iced_wave', label: copy.kalitaWaveStyleIcedWave },
+      { value: 'high_dose_concentrate', label: copy.kalitaWaveStyleHighDoseConcentrate },
+    ] as const;
     const dialogTitle = isPro
       ? `${copy.title} - ${copy.proBuilderTitle}`
       : isLite
@@ -9036,7 +9114,9 @@ export function AiBrewPanel({
     const showBeanDetailsControls = isPro || (!isLite && showQuickBeanDetails);
     const showOrigamiFilterControl = selectedDripper?.methodFamily === 'origami';
     const showAeroPressStyleControl = selectedDripper?.methodFamily === 'aeropress';
-    const methodOptionPanel = showOrigamiFilterControl || showAeroPressStyleControl ? (
+    const showFrenchPressStyleControl = selectedDripper?.methodFamily === 'french_press';
+    const showKalitaWaveStyleControl = selectedDripper?.methodFamily === 'kalita_wave';
+    const methodOptionPanel = showOrigamiFilterControl || showAeroPressStyleControl || showFrenchPressStyleControl || showKalitaWaveStyleControl ? (
       <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3" data-testid="ai-brew-method-option-panel">
         <div className="flex flex-col gap-1">
           <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.methodOptionTitle}</h4>
@@ -9068,20 +9148,281 @@ export function AiBrewPanel({
 
           {showAeroPressStyleControl ? (
             <div>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .aeropress-style-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 8px;
+                }
+                @media (min-width: 640px) {
+                  .aeropress-style-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .aeropress-style-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                  }
+                }
+                .aeropress-style-chip {
+                  position: relative;
+                  min-height: 44px;
+                  border-radius: 12px;
+                  padding: 8px 12px;
+                  font-size: 14px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  border: 1px solid var(--panel-border-soft, rgba(0,0,0,0.06));
+                  background: var(--bg-elevated, #ffffff);
+                  color: var(--text-secondary, #3C3C43);
+                  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                              background-color 0.2s ease,
+                              color 0.2s ease,
+                              box-shadow 0.25s ease,
+                              border-color 0.2s ease;
+                  transform: scale(1);
+                  outline: none;
+                }
+                .aeropress-style-chip:focus-visible {
+                  box-shadow: 0 0 0 2px var(--primary, #2563eb);
+                }
+                .aeropress-style-chip:hover {
+                  transform: scale(1.03);
+                  color: var(--text-primary, #000000);
+                  background-color: var(--bg-base, #F2F2F7);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .aeropress-style-chip:active {
+                  transform: scale(0.95);
+                  transition: transform 0.08s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                .aeropress-style-chip.active {
+                  background: linear-gradient(135deg, var(--primary, #2563eb), #1d4ed8);
+                  color: #ffffff;
+                  border-color: transparent;
+                  box-shadow: 0 0 16px hsla(224, 76%, 48%, 0.35), 0 4px 12px hsla(224, 76%, 48%, 0.2);
+                }
+                .aeropress-style-chip.active:hover {
+                  transform: scale(1.04);
+                  box-shadow: 0 0 20px hsla(224, 85%, 60%, 0.45), 0 6px 16px hsla(224, 85%, 60%, 0.25);
+                }
+                .aeropress-style-chip.active:active {
+                  transform: scale(0.96);
+                }
+                /* Dark Mode support */
+                .dark .aeropress-style-chip {
+                  background: #1c1c1e;
+                  border-color: rgba(255,255,255,0.08);
+                  color: #aeaeb2;
+                }
+                .dark .aeropress-style-chip:hover {
+                  color: #ffffff;
+                  background-color: #2c2c2e;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                }
+              ` }} />
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.aeropressStyleTitle}</p>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="aeropress-style-grid">
                 {aeropressStyleOptions.map((option) => (
                   <button
                     key={option.value}
                     type="button"
                     onClick={() => updateForm('aeropressStyle', option.value)}
-                    className={`min-h-[42px] rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-                      formState.aeropressStyle === option.value
-                        ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.18)]'
-                        : 'bg-[var(--bg-base)] text-secondary hover:text-primary'
+                    className={`aeropress-style-chip ${
+                      formState.aeropressStyle === option.value ? 'active' : ''
                     }`}
                     aria-pressed={formState.aeropressStyle === option.value}
                     data-testid={`ai-brew-aeropress-style-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {showFrenchPressStyleControl ? (
+            <div>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .french-press-style-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 8px;
+                }
+                @media (min-width: 640px) {
+                  .french-press-style-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .french-press-style-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                  }
+                }
+                .french-press-style-chip {
+                  position: relative;
+                  min-height: 44px;
+                  border-radius: 12px;
+                  padding: 8px 12px;
+                  font-size: 14px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  border: 1px solid var(--panel-border-soft, rgba(0,0,0,0.06));
+                  background: var(--bg-elevated, #ffffff);
+                  color: var(--text-secondary, #3C3C43);
+                  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                              background-color 0.2s ease,
+                              color 0.2s ease,
+                              box-shadow 0.25s ease,
+                              border-color 0.2s ease;
+                  transform: scale(1);
+                  outline: none;
+                }
+                .french-press-style-chip:focus-visible {
+                  box-shadow: 0 0 0 2px #d97706;
+                }
+                .french-press-style-chip:hover {
+                  transform: scale(1.03);
+                  color: var(--text-primary, #000000);
+                  background-color: var(--bg-base, #F2F2F7);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .french-press-style-chip:active {
+                  transform: scale(0.95);
+                  transition: transform 0.08s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                .french-press-style-chip.active {
+                  background: linear-gradient(135deg, #d97706, #b45309);
+                  color: #ffffff;
+                  border-color: transparent;
+                  box-shadow: 0 0 16px hsla(28, 76%, 48%, 0.35), 0 4px 12px hsla(28, 76%, 48%, 0.2);
+                }
+                .french-press-style-chip.active:hover {
+                  transform: scale(1.04);
+                  box-shadow: 0 0 20px hsla(28, 85%, 60%, 0.45), 0 6px 16px hsla(28, 85%, 60%, 0.25);
+                }
+                .french-press-style-chip.active:active {
+                  transform: scale(0.96);
+                }
+                /* Dark Mode support */
+                .dark .french-press-style-chip {
+                  background: #1c1c1e;
+                  border-color: rgba(255,255,255,0.08);
+                  color: #aeaeb2;
+                }
+                .dark .french-press-style-chip:hover {
+                  color: #ffffff;
+                  background-color: #2c2c2e;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                }
+              ` }} />
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.frenchPressStyleTitle}</p>
+              <div className="french-press-style-grid">
+                {frenchPressStyleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('frenchPressStyle', option.value)}
+                    className={`french-press-style-chip ${
+                      formState.frenchPressStyle === option.value ? 'active' : ''
+                    }`}
+                    aria-pressed={formState.frenchPressStyle === option.value}
+                    data-testid={`ai-brew-french-press-style-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {showKalitaWaveStyleControl ? (
+            <div>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .kalita-style-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 8px;
+                }
+                @media (min-width: 640px) {
+                  .kalita-style-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .kalita-style-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                  }
+                }
+                .kalita-style-chip {
+                  position: relative;
+                  min-height: 44px;
+                  border-radius: 12px;
+                  padding: 8px 12px;
+                  font-size: 13px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  border: 1px solid var(--panel-border-soft, rgba(0,0,0,0.06));
+                  background: var(--bg-elevated, #ffffff);
+                  color: var(--text-secondary, #3C3C43);
+                  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                              background-color 0.2s ease,
+                              color 0.2s ease,
+                              box-shadow 0.25s ease,
+                              border-color 0.2s ease;
+                  transform: scale(1);
+                  outline: none;
+                }
+                .kalita-style-chip:focus-visible {
+                  box-shadow: 0 0 0 2px hsla(205, 95%, 55%, 1);
+                }
+                .kalita-style-chip:hover {
+                  transform: scale(1.03);
+                  color: var(--text-primary, #000000);
+                  background-color: var(--bg-base, #F2F2F7);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .kalita-style-chip:active {
+                  transform: scale(0.95);
+                  transition: transform 0.08s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                .kalita-style-chip.active {
+                  background: linear-gradient(135deg, hsla(205, 95%, 55%, 1), hsla(205, 95%, 45%, 1));
+                  color: #ffffff;
+                  border-color: transparent;
+                  box-shadow: 0 0 16px hsla(205, 95%, 55%, 0.35), 0 4px 12px hsla(205, 95%, 55%, 0.2);
+                }
+                .kalita-style-chip.active:hover {
+                  transform: scale(1.04);
+                  box-shadow: 0 0 20px hsla(205, 95%, 60%, 0.45), 0 6px 16px hsla(205, 95%, 60%, 0.25);
+                }
+                .kalita-style-chip.active:active {
+                  transform: scale(0.96);
+                }
+                /* Dark Mode support */
+                .dark .kalita-style-chip {
+                  background: #1c1c1e;
+                  border-color: rgba(255,255,255,0.08);
+                  color: #aeaeb2;
+                }
+                .dark .kalita-style-chip:hover {
+                  color: #ffffff;
+                  background-color: #2c2c2e;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                }
+              ` }} />
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.kalitaWaveStyleTitle}</p>
+              <div className="kalita-style-grid">
+                {kalitaWaveStyleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('kalitaWaveStyle', option.value)}
+                    className={`kalita-style-chip ${
+                      formState.kalitaWaveStyle === option.value ? 'active' : ''
+                    }`}
+                    aria-pressed={formState.kalitaWaveStyle === option.value}
+                    data-testid={`ai-brew-kalita-wave-style-${option.value}`}
                   >
                     {option.label}
                   </button>
@@ -9332,11 +9673,11 @@ export function AiBrewPanel({
       ? copy.switchManualExplainer
       : copy.switchAutoExplainer;
     const targetProfilePanel = (
-      <div className="min-w-0 max-w-full overflow-hidden rounded-[1.1rem] border panel-divider-subtle panel-soft p-3" data-testid="ai-brew-target-profile-panel">
+      <div className="min-w-0 max-w-full overflow-hidden rounded-[1.5rem] border panel-divider-subtle bg-surface-alpha/40 p-4 sm:p-5" data-testid="ai-brew-target-profile-panel">
         <div className="mb-3 flex min-w-0 items-start gap-2">
           <Target size={15} className="mt-0.5 shrink-0 text-emerald-500" />
           <div className="min-w-0">
-            <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.profileTitle}</h4>
+            <h4 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-secondary">{copy.profileTitle}</h4>
             {isSwitchDripper ? (
               <p className="mt-1 text-xs leading-5 text-secondary" data-testid="ai-brew-switch-target-clarifier">
                 {copy.switchTargetClarifier}
@@ -9350,7 +9691,11 @@ export function AiBrewPanel({
               key={option.id}
               type="button"
               onClick={() => updateForm('targetProfileId', option.id)}
-              className={`min-w-0 rounded-[0.9rem] border p-3 text-left transition-all ${formState.targetProfileId === option.id ? 'border-blue-500/25 bg-blue-500/10 shadow-[0_12px_26px_rgba(37,99,235,0.14)]' : 'border-[var(--panel-border-soft)] bg-surface-alpha hover:border-blue-500/20'}`}
+              className={`min-w-0 rounded-[1rem] border p-3.5 text-left transition-all duration-200 ease-out ${
+                formState.targetProfileId === option.id
+                  ? 'border-blue-500/25 bg-blue-500/10 shadow-[0_12px_26px_rgba(37,99,235,0.14)] scale-[1.03] text-primary font-semibold'
+                  : 'border-[var(--panel-border-soft)] bg-surface-alpha/60 text-secondary hover:border-blue-500/20 hover:text-primary hover:scale-[1.01]'
+              }`}
               data-testid={`ai-brew-target-profile-${option.id}`}
               aria-pressed={formState.targetProfileId === option.id}
               aria-label={`${copy.profileTitle}: ${option.translatedLabel}${formState.targetProfileId === option.id ? `, ${isIndonesianAiBrewLanguage(language) ? 'terpilih' : 'selected'}` : ''}`}
@@ -9424,8 +9769,8 @@ export function AiBrewPanel({
             <button
               type="button"
               onClick={() => updateForm('switchPresetId', '')}
-              className={`min-h-[40px] max-w-[7.5rem] shrink-0 truncate rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
-                !formState.switchPresetId ? 'bg-blue-600 text-white' : 'bg-[var(--bg-base)] text-primary hover:bg-surface-alpha-hover'
+              className={`switch-preset-btn ${
+                !formState.switchPresetId ? 'switch-preset-btn-active' : 'switch-preset-btn-inactive'
               }`}
               data-testid="ai-brew-switch-preset-auto-inline"
               aria-pressed={!formState.switchPresetId}
@@ -9447,8 +9792,8 @@ export function AiBrewPanel({
                       brewMode: preset.iced ? 'iced' : prev.brewMode,
                     }));
                   }}
-                  className={`min-h-[40px] max-w-[7.5rem] shrink-0 truncate rounded-full px-3 py-2 text-xs font-semibold transition-colors ${
-                    active ? 'bg-blue-600 text-white' : 'bg-[var(--bg-base)] text-primary hover:bg-surface-alpha-hover'
+                  className={`switch-preset-btn ${
+                    active ? 'switch-preset-btn-active' : 'switch-preset-btn-inactive'
                   }`}
                   data-testid={`ai-brew-switch-preset-inline-${preset.id}`}
                   aria-pressed={active}
@@ -9552,7 +9897,7 @@ export function AiBrewPanel({
             className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-3 pb-3 pt-3 lg:px-6 lg:pb-6 lg:pt-6"
             style={{
               paddingTop: 'calc(12px + var(--safe-top, 0px))',
-              paddingBottom: `calc(28px + var(--bottom-safe-capped, 0px) + max(${aiBrewKeyboardOffset}px, var(--keyboard-offset, 0px)))`,
+              paddingBottom: `calc(108px + var(--bottom-safe-capped, 0px) + max(${aiBrewKeyboardOffset}px, var(--keyboard-offset, 0px)))`,
             }}
             data-testid="ai-brew-builder-scroll"
           >
@@ -9648,8 +9993,10 @@ export function AiBrewPanel({
                                   key={dose}
                                   type="button"
                                   onClick={() => updateForm('doseG', String(dose))}
-                                  className={`min-h-[36px] shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
-                                    active ? 'bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.18)]' : 'bg-surface-alpha text-secondary hover:text-primary'
+                                  className={`min-h-[36px] shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-200 ease-out ${
+                                    active
+                                      ? 'bg-blue-600 text-white shadow-[0_6px_16px_rgba(37,99,235,0.22)] scale-[1.04]'
+                                      : 'bg-surface-alpha text-secondary hover:text-primary hover:bg-surface-alpha-hover hover:scale-[1.01]'
                                   }`}
                                   data-testid={`ai-brew-dose-chip-${dose}`}
                                   aria-pressed={active}
@@ -9670,7 +10017,11 @@ export function AiBrewPanel({
                               key={option.value}
                               type="button"
                               onClick={() => updateForm('roastLevel', option.value as AiBrewFormState['roastLevel'])}
-                              className={`min-w-0 rounded-xl px-3 py-2 text-xs font-medium transition-all ${formState.roastLevel === option.value ? 'bg-blue-600 text-white' : 'bg-surface-alpha text-secondary hover:text-primary'}`}
+                              className={`min-w-0 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200 ease-out ${
+                                formState.roastLevel === option.value
+                                  ? 'bg-blue-600 text-white shadow-[0_6px_16px_rgba(37,99,235,0.22)] scale-[1.04]'
+                                  : 'bg-surface-alpha text-secondary hover:text-primary hover:bg-surface-alpha-hover hover:scale-[1.01]'
+                              }`}
                               data-testid={`ai-brew-roast-${option.value}`}
                             >
                               <span className="block truncate">{localizeAiBrewRoastLabel(option.value, language)}</span>

@@ -22,7 +22,7 @@ function hasOnlineAiOptimization(plan: BrewPlan) {
 function grinderStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
   if (plan.grindCalibrationRequired || plan.grindSettingMode === 'derived_baseline' || plan.grindSettingVerification === 'fallback') {
-    return id ? 'Baseline grinder' : 'Grinder Baseline';
+    return id ? 'Grinder baseline' : 'Baseline grinder';
   }
   if (plan.grindSettingVerification === 'official') return id ? 'Grinder resmi' : 'Grinder Official';
   if (plan.grindSettingVerification === 'community_verified' || plan.grindSettingVerification === 'curated') {
@@ -33,8 +33,8 @@ function grinderStatusLabel(plan: BrewPlan, language: string) {
 
 function waterStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
-  if (plan.waterClassification === 'zero_mineral_ro') return id ? 'Mineral nol / RO' : 'Zero Mineral / RO';
-  if (plan.waterClassification === 'low_mineral_clarity') return id ? 'Mineral rendah / clean' : 'Low-Mineral Clarity';
+  if (plan.waterClassification === 'zero_mineral_ro') return id ? 'Mineral nol (RO)' : 'Zero Mineral / RO';
+  if (plan.waterClassification === 'low_mineral_clarity') return id ? 'Mineral rendah / jernih' : 'Low-Mineral Clarity';
   if (plan.waterClassification === 'demineral_direct_experiment') return id ? 'Eksperimen demineral' : 'Demineral Experiment';
   if (plan.waterClassification === 'high_buffer') return id ? 'Buffer tinggi' : 'High Buffer';
   if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady) {
@@ -46,7 +46,7 @@ function waterStatusLabel(plan: BrewPlan, language: string) {
 
 function brewerStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
-  if (plan.deviceProfileMode === 'exact') return id ? 'Profil alat exact' : 'Device Exact';
+  if (plan.deviceProfileMode === 'exact') return id ? 'Profil alat presisi' : 'Device Exact';
   if (plan.deviceProfileMode === 'derived_template') return id ? 'Template turunan' : 'Derived Template';
   return id ? 'Profil keluarga alat' : 'Family Fallback';
 }
@@ -54,13 +54,14 @@ function brewerStatusLabel(plan: BrewPlan, language: string) {
 export function resolveAiBrewConfidenceBadges(plan: BrewPlan, language: string): AiBrewConfidenceBadge[] {
   return [
     hasOnlineAiOptimization(plan)
-      ? { label: isIndonesian(language) ? 'AI + Tervalidasi Planner' : 'AI + Planner Validated', tone: 'blue' as const }
+      ? { label: isIndonesian(language) ? 'AI + Planner Tervalidasi' : 'AI + Planner Validated', tone: 'blue' as const }
       : { label: isIndonesian(language) ? 'Planner Lokal' : 'Local Planner', tone: 'slate' as const },
     {
       label: waterStatusLabel(plan, language),
       tone: plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady
         ? 'amber'
-        : plan.waterClassification === 'high_buffer'
+        : plan.waterClassification === 'zero_mineral_ro'
+          || plan.waterClassification === 'high_buffer'
           || plan.waterClassification === 'demineral_direct_experiment'
           || plan.waterMineralDerivation === 'estimated_from_community_profile'
           || plan.waterMineralDerivation === 'estimated_from_classification'

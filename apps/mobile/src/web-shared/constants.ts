@@ -1,4 +1,4 @@
-﻿import type { AiSettings, Language } from './types';
+import type { AiSettings, Language } from './types';
 
 export type LanguageDirection = 'ltr' | 'rtl';
 
@@ -1023,7 +1023,7 @@ const ID_TRANSLATIONS: Partial<Translations> = {
     toolsEspressoShotSummary: '{label}: rasio {ratioMin}-{ratioMax}, target {timeMin}-{timeMax} detik.',
     toolsModeBasic: 'Rasio',
     toolsModeAdvanced: 'Ukuran Giling',
-    toolsRoastProfile: 'Level roast',
+    toolsRoastProfile: 'Level Roast',
     toolsAdaptiveDefaults: 'Setelan adaptif',
     toolsRoastLight: 'Light roast',
     toolsRoastMediumLight: 'Medium-light',

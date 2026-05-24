@@ -3,15 +3,24 @@ import assert from 'node:assert/strict';
 import { ensureStoredTheme } from '../../apps/web/src/utils/themeStorage.ts';
 
 function withSystemTheme(isDark: boolean, run: () => void) {
-  const originalWindow = globalThis.window;
-  globalThis.window = {
-    matchMedia: () => ({ matches: isDark }),
-  } as any;
+  const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  
+  Object.defineProperty(globalThis, 'window', {
+    value: {
+      matchMedia: () => ({ matches: isDark }),
+    },
+    configurable: true,
+    writable: true,
+  });
+  
   try {
     run();
   } finally {
-    if (originalWindow) globalThis.window = originalWindow;
-    else delete (globalThis as any).window;
+    if (originalDescriptor) {
+      Object.defineProperty(globalThis, 'window', originalDescriptor);
+    } else {
+      delete (globalThis as any).window;
+    }
   }
 }
 

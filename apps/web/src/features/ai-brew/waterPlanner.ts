@@ -38,8 +38,8 @@ export function resolveWaterAdjustmentAdvice(water: {
       warnings.push('Air demineral bisa dipakai sebagai eksperimen filter, tetapi body sering sangat ringan dan cup bisa hollow.');
       adjustments.push('Gunakan sebagai starting point low-confidence; kalau cup kosong, remineralize, blend, atau sedikit lebih halus.');
     } else {
-      warnings.push('TDS sangat rendah; air ini lebih cocok sebagai base remineralisasi daripada brew-ready water.');
-      adjustments.push('Pertimbangkan blend dengan air mineral lebih tinggi TDS/GH/KH.');
+      warnings.push('TDS sangat rendah; air rendah mineral bisa bekerja baik untuk seduhan yang fokus pada clarity.');
+      adjustments.push('Gunakan sebagai starting point; remineralisasi atau blend jika rasa cup kosong/hollow.');
     }
   }
 
@@ -110,7 +110,7 @@ export function deriveWaterMineralProfile(input: AiBrewFormState, guidance: Wate
       warnings.push(...(waterBrand.brewBlockReason || []));
     }
     if (waterBrand.classification === 'zero_mineral_ro') {
-      warnings.push(`${waterBrand.shortLabel}: useful as a custom-water base, but not direct brew-ready; add brew minerals manually.`);
+      warnings.push(`${waterBrand.shortLabel}: useful as a custom-water base; low-TDS water can work well for clarity-focused brewing, but remineralize if cup tastes hollow.`);
     }
     if (waterBrand.classification === 'low_mineral_clarity') {
       warnings.push(`${waterBrand.shortLabel}: low-mineral clarity water. Expect a clean cup, but verify body and acidity from taste.`);

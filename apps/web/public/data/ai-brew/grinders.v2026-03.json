@@ -923,6 +923,27 @@
       "releaseStatus": "established"
     },
     {
+      "id": "baratza-encore",
+      "name": "Baratza Encore",
+      "brand": "Baratza",
+      "type": "Stepped (1 - 40) Electric",
+      "coarse": "30 - 40 settings",
+      "medium": "15 - 29 settings",
+      "fine": "8 - 14 settings",
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://www.baratza.com/en-us/product/encoretm-zcg485",
+        "https://assets.breville.com/ZCG485/manual-encore-v1-0-en-010923.pdf"
+      ],
+      "catalogVersion": "2026.06.3-grinder-provenance",
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established"
+    },
+    {
       "id": "fellow-opus",
       "name": "Fellow Opus",
       "brand": "Fellow",

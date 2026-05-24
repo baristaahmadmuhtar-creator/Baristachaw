@@ -1841,7 +1841,7 @@ function withLanguageLock(promptBody: string, language: string) {
     return `${promptBody}\n\nKunci bahasa: jawab sepenuhnya dalam Bahasa Indonesia. Jangan gunakan bahasa lain untuk judul, bullet, label, catatan, maupun fallback. Nama alat, nama brand, istilah umum seperti bloom/server/bed, dan satuan tetap boleh dipertahankan. Gunakan "air turun" untuk drawdown dan "buka katup" untuk release. Pertahankan struktur heading, bullet, dan angka secara konsisten.`;
   }
   if (/^ar(?:-|$)/i.test(language)) {
-    return `${promptBody}\n\nÃ™â€šÃ™ÂÃ™â€ž Ã˜Â§Ã™â€žÃ™â€žÃ˜ÂºÃ˜Â©: Ã˜Â£Ã˜Â¬Ã˜Â¨ Ã˜Â¨Ã˜Â§Ã™â€žÃ™Æ’Ã˜Â§Ã™â€¦Ã™â€ž Ã˜Â¨Ã˜Â§Ã™â€žÃ™â€žÃ˜ÂºÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¨Ã™Å Ã˜Â©. Ã™â€žÃ˜Â§ Ã˜ÂªÃ˜Â³Ã˜ÂªÃ˜Â®Ã˜Â¯Ã™â€¦ Ã˜Â£Ã™Å  Ã™â€žÃ˜ÂºÃ˜Â© Ã˜Â£Ã˜Â®Ã˜Â±Ã™â€° Ã™ÂÃ™Å  Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€ Ã˜Â§Ã™Ë†Ã™Å Ã™â€  Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ™â€ Ã™â€šÃ˜Â§Ã˜Â· Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â³Ã™â€¦Ã™Å Ã˜Â§Ã˜Âª Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ™â€¦Ã™â€žÃ˜Â§Ã˜Â­Ã˜Â¸Ã˜Â§Ã˜Âª Ã˜Â£Ã™Ë† Ã˜Â§Ã™â€žÃ™â€ Ã˜ÂµÃ™Ë†Ã˜Âµ Ã˜Â§Ã™â€žÃ˜Â§Ã˜Â­Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â·Ã™Å Ã˜Â©. Ã˜Â­Ã˜Â§Ã™ÂÃ˜Â¸ Ã˜Â¹Ã™â€žÃ™â€° Ã˜Â¨Ã™â€ Ã™Å Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€ Ã˜Â§Ã™Ë†Ã™Å Ã™â€  Ã™Ë†Ã˜Â§Ã™â€žÃ™â€ Ã™â€šÃ˜Â§Ã˜Â· Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â±Ã™â€šÃ˜Â§Ã™â€¦ Ã™Æ’Ã™â€¦Ã˜Â§ Ã™â€¡Ã™Å .`;
+    return `${promptBody}\n\nقفل اللغة: أجب بالكامل باللغة العربية. لا تستخدم أي لغة أخرى في العناوين أو النقاط أو التسميات أو الملاحظات أو النصوص الاحتياطية. حافظ على بنية العناوين والنقاط والأرقام كما هي.`;
   }
   return promptBody + '\n\nLanguage lock: respond fully in ' + language + '. Keep all headings, bullets, and numbers structurally consistent.';
 }
@@ -6404,7 +6404,7 @@ function PlanResultDialog({
                   defaultOpen={false}
                 >
                   <p className="rounded-xl bg-surface-alpha px-3 py-3 text-sm text-secondary">
-                    TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm} Ã‚Â· {formatWaterDerivationLabel(copy, plan.waterMineralDerivation)}
+                    TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm} · {formatWaterDerivationLabel(copy, plan.waterMineralDerivation)}
                   </p>
                 </ResultDisclosureSection>
               </div>
@@ -9702,7 +9702,7 @@ export function AiBrewPanel({
                             </p>
                           </div>
                           <span className="rounded-full bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
-                            {selectedProcessLabel || copy.notSpecified} Ã‚Â· {selectedVarietyLabel || copy.notSpecified}
+                            {selectedProcessLabel || copy.notSpecified} · {selectedVarietyLabel || copy.notSpecified}
                           </span>
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">

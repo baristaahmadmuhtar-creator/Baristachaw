@@ -173,6 +173,7 @@ const ESPRESSO_NOT_RECOMMENDED_HINTS = [
   /\btimemore\s*c2\b/i,
   /\btimemore\s*c3\b(?!\s*esp)/i,
   /\bfellow\s*ode\b/i,
+  /\bbaratza\s*encore\b(?!\s*esp)/i,
   /\bfeima\b/i,
   /\b600n\b/i,
   /\blatina\b/i,
@@ -186,6 +187,11 @@ const ESPRESSO_NOT_RECOMMENDED_HINTS = [
   /\bq2\b/i,
   /\bzp6\b/i,
   /\bbrew[-\s]?focused\b/i,
+  /\bunknown\s+manual\b/i,
+  /\bunknown\s+electric\b/i,
+  /\bfallback\s+manual\b/i,
+  /\bfallback\s+electric\b/i,
+  /\bmanual\s+calibration\b/i,
 ];
 
 export function getRatioMethodFamily(methodId: BrewMethodId): AiBrewMethodFamily {

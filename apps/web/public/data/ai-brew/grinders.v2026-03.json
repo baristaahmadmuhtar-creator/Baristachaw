@@ -987,6 +987,29 @@
       "releaseStatus": "established"
     },
     {
+      "id": "df64-gen2",
+      "name": "DF64 Gen2",
+      "brand": "DF64 / Turin",
+      "type": "Stepless (0 - 90 dial) Electric Flat Burr - zero point and burr alignment calibration required",
+      "coarse": "55 - 80 dial numbers",
+      "medium": "35 - 55 dial numbers",
+      "fine": "5 - 20 dial numbers",
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://df64coffee.com/products/df64-gen-2-single-dose-coffee-grinder",
+        "https://dfgrinders.com/products/df64-coffee-grinder",
+        "https://www.turingrinders.com/products/turin-df64-gen-2-single-dose-coffee-grinder-1",
+        "https://df64grinders.com/faqs"
+      ],
+      "catalogVersion": "2026.06.4-grinder-safety",
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-23",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established"
+    },
+    {
       "id": "varia-vs3-gen-2",
       "name": "Varia VS3 Gen 2",
       "brand": "Varia",

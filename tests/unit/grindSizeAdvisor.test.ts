@@ -115,16 +115,23 @@ test('numbered dial grinders preserve decimal roast shifts in Grind Size output'
 test('Grind Size blocks espresso for filter-only grinders and prioritizes selectable espresso grinders', async () => {
   const catalog = await loadCatalogForTest();
   const timemoreC2 = catalog.grinders.find((entry) => entry.id === 'timemore-c2');
+  const baratzaEncore = catalog.grinders.find((entry) => entry.id === 'baratza-encore');
+  const fellowOde = catalog.grinders.find((entry) => entry.id === 'fellow-ode-gen-2');
   const encoreEsp = catalog.grinders.find((entry) => entry.id === 'baratza-encore-esp');
   assert.ok(timemoreC2, 'Timemore C2 fixture must exist');
+  assert.ok(baratzaEncore, 'Baratza Encore non-ESP fixture must exist');
+  assert.ok(fellowOde, 'Fellow Ode Gen 2 fixture must exist');
   assert.ok(encoreEsp, 'Baratza Encore ESP fixture must exist');
 
-  const c2Compatibility = getGrindSizeCompatibility(catalog, 'espresso', timemoreC2);
+  for (const grinder of [timemoreC2, baratzaEncore, fellowOde]) {
+    const compatibility = getGrindSizeCompatibility(catalog, 'espresso', grinder);
+    assert.equal(compatibility.state, 'not_recommended', `${grinder.id} should be blocked for espresso`);
+    assert.equal(compatibility.selectable, false, `${grinder.id} should not be selectable for espresso`);
+    assert.match(compatibility.reason, /espresso|fine|halus/i);
+  }
+
   const espCompatibility = getGrindSizeCompatibility(catalog, 'espresso', encoreEsp);
 
-  assert.equal(c2Compatibility.state, 'not_recommended');
-  assert.equal(c2Compatibility.selectable, false);
-  assert.match(c2Compatibility.reason, /espresso|fine|halus/i);
   assert.notEqual(espCompatibility.state, 'not_recommended');
   assert.equal(espCompatibility.selectable, true);
 
@@ -133,6 +140,70 @@ test('Grind Size blocks espresso for filter-only grinders and prioritizes select
   const espIndex = sorted.findIndex((entry) => entry.id === encoreEsp.id);
   assert.ok(espIndex >= 0 && c2Index >= 0);
   assert.ok(espIndex < c2Index, 'espresso-capable grinders should appear before filter-only grinders');
+});
+
+test('Grind Size advice hard-gates espresso output for blocked grinders even on direct calls', async () => {
+  const catalog = await loadCatalogForTest();
+  const blockedIds = ['baratza-encore', 'timemore-c2', 'fellow-ode-gen-2'];
+
+  for (const grinderId of blockedIds) {
+    const advice = buildGrindSizeAdvice({
+      catalog,
+      methodId: 'espresso',
+      grinderId,
+      roastLevel: 'medium',
+      targetProfileId: 'balance_clean',
+      espressoContext: {
+        doseG: 18,
+        yieldG: 36,
+        shotTimeSec: 28,
+        pressureBar: 9,
+        zeroPointKnown: false,
+      },
+    });
+
+    assert.equal(advice.compatibilityState, 'not_recommended', `${grinderId} should remain hard-gated`);
+    assert.equal(advice.compatibilitySelectable, false, `${grinderId} should not be selectable`);
+    assert.match(advice.primarySetting, /tidak direkomendasikan/i, `${grinderId} must not show a numeric espresso setting`);
+    assert.doesNotMatch(advice.primarySetting, /\d/, `${grinderId} must not expose espresso dial numbers`);
+    assert.equal(advice.grindBandLabel, 'Tidak direkomendasikan');
+    assert.notEqual(advice.capabilityKind, 'espresso_capable');
+    assert.notEqual(advice.capabilityKind, 'espresso_baseline');
+    assert.equal(advice.espressoInsight, undefined);
+  }
+});
+
+test('Grind Size catalog treats DF64 Gen 2 as calibration-required espresso/filter hybrid', async () => {
+  const catalog = await loadCatalogForTest();
+  const grinder = catalog.grinders.find((entry) => entry.id === 'df64-gen2');
+  assert.ok(grinder, 'DF64 Gen 2 fixture must exist in the production grinder catalog');
+  assert.match(`${grinder.name} ${grinder.searchText}`, /df64/i);
+  assert.match(`${grinder.typeLabel} ${grinder.searchText}`, /zero|burr|alignment|calibration/i);
+
+  const espressoCompatibility = getGrindSizeCompatibility(catalog, 'espresso', grinder);
+  assert.equal(espressoCompatibility.selectable, true);
+  assert.equal(espressoCompatibility.state, 'caution');
+  assert.match(espressoCompatibility.reason, /kalibrasi|calibr/i);
+
+  const advice = buildGrindSizeAdvice({
+    catalog,
+    methodId: 'espresso',
+    grinderId: grinder.id,
+    roastLevel: 'medium',
+    targetProfileId: 'balance_clean',
+    espressoContext: {
+      doseG: 18,
+      yieldG: 36,
+      shotTimeSec: 28,
+      pressureBar: 9,
+      zeroPointKnown: false,
+    },
+  });
+
+  assert.equal(advice.compatibilitySelectable, true);
+  assert.equal(advice.compatibilityState, 'caution');
+  assert.equal(advice.warningKind, 'espresso_calibration');
+  assert.match(`${advice.warning} ${advice.setting?.note}`, /kalibrasi|zero|burr|dial-in|exact/i);
 });
 
 test('Grind Size matrix keeps all visible grinders method-safe and finite', async () => {

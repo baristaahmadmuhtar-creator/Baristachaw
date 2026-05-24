@@ -271,10 +271,19 @@ test('grind size calculator reacts to roast and espresso compatibility without t
   await expect(page.getByTestId('grinder-option-timemore-c2')).toBeDisabled();
   await expect(page.getByTestId('grinder-option-timemore-c2')).toContainText(/not recommended|tidak disarankan/i);
 
+  await page.getByTestId('grinder-search').fill('Baratza Encore');
+  await expect(page.getByTestId('grinder-option-baratza-encore')).toBeDisabled();
+  await expect(page.getByTestId('grinder-option-baratza-encore')).toContainText(/not recommended|tidak disarankan/i);
+
   await page.getByTestId('grinder-search').fill('Encore ESP');
   await expect(page.getByTestId('grinder-option-baratza-encore-esp')).toBeEnabled();
   await page.getByTestId('grinder-option-baratza-encore-esp').click();
   await expect(page.getByTestId('grind-size-recommendation')).toContainText(/Espresso|shot|dial-in|fine|halus/i);
+
+  await page.getByTestId('grinder-search').fill('DF64');
+  await expect(page.getByTestId('grinder-option-df64-gen2')).toBeEnabled();
+  await page.getByTestId('grinder-option-df64-gen2').click();
+  await expect(page.getByTestId('grind-size-recommendation')).toContainText(/calibration|kalibrasi|dial-in/i);
 });
 
 test('method switch changes yield output and advanced mode computes extraction', async ({ page }) => {

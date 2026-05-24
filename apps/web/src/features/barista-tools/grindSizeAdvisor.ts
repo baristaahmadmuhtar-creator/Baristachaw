@@ -514,10 +514,44 @@ export function buildGrindSizeAdvice(input: GrindSizeAdviceInput): GrindSizeAdvi
     || targetProfiles.find((entry) => entry.id === 'balance_clean')
     || targetProfiles[0];
   const grindBias = combineGrindBias(roastBias, targetProfile?.grindBias, methodFamily);
+  const compatibility = getGrindSizeCompatibility(input.catalog, input.methodId, grinder);
+  const correctionKind = toCorrectionKind(grindBias);
+
+  if (!compatibility.selectable) {
+    return {
+      methodFamily,
+      brewMode,
+      dripper,
+      grinder,
+      deviceProfile,
+      setting: undefined,
+      grindBandLabel: 'Tidak direkomendasikan',
+      primarySetting: 'Tidak direkomendasikan untuk espresso',
+      correctionRange: '',
+      correctionTip: 'Pilih grinder espresso-capable, atau gunakan Moka Pot, AeroPress pekat, atau filter kuat sebagai alternatif.',
+      confidenceLabel: 'Guardrail keselamatan',
+      capabilityLabel: 'Tidak direkomendasikan untuk espresso',
+      warning: compatibility.reason,
+      sourceLabel: 'Guardrail keselamatan grinder',
+      confidenceKind: 'safe_baseline',
+      sourceKind: 'baseline_method',
+      capabilityKind: 'check_fine',
+      warningKind: undefined,
+      correctionKind,
+      roastBiasKind: toCorrectionKind(roastBias),
+      targetBiasKind: toCorrectionKind(targetProfile?.grindBias),
+      targetProfileLabel: targetProfile?.label,
+      targetProfileDescription: targetProfile?.description,
+      compatibilityState: compatibility.state,
+      compatibilitySelectable: compatibility.selectable,
+      compatibilityReason: compatibility.reason,
+      espressoInsight: undefined,
+    };
+  }
+
   const setting = grinder && deviceProfile
     ? resolveGrinderSettingReference(input.catalog, grinder, deviceProfile, brewMode)
     : undefined;
-  const compatibility = getGrindSizeCompatibility(input.catalog, input.methodId, grinder);
   const recommendation = grinder
     ? buildGrindRecommendation(grinder, setting, grindBias, input.roastLevel, brewMode)
     : undefined;
@@ -527,7 +561,6 @@ export function buildGrindSizeAdvice(input: GrindSizeAdviceInput): GrindSizeAdvi
   const sourceKind: GrindSizeConfidenceKind | 'baseline_method' = setting?.calibrationRequired
     ? 'baseline_method'
     : verificationKind(setting?.verificationLevel);
-  const correctionKind = toCorrectionKind(grindBias);
 
   return {
     methodFamily,

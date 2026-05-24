@@ -2342,6 +2342,38 @@
       "catalogVersion": "2026.06.3-grinder-provenance"
     },
     {
+      "id": "gs_df64_gen2_cone",
+      "grinderId": "df64-gen2",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot",
+        "profile_family_kono_iced"
+      ],
+      "rangeLabel": "35 - 55 dial numbers",
+      "note": "DF64 Gen2 medium filter baseline from public DF64/Turin guidance. Calibrate burr-touch zero point and burr alignment first; adjust the dial while burrs are spinning, then correct from drawdown and taste.",
+      "referenceType": "curated_chart",
+      "zeroPointMethod": "Set dial reference after confirming burr-touch zero point; do not compare numbers across units without calibration.",
+      "calibrationRequired": true,
+      "source": "df64-curated-zero-point-required",
+      "sourceUrls": [
+        "https://df64coffee.com/products/df64-gen-2-single-dose-coffee-grinder",
+        "https://dfgrinders.com/products/df64-coffee-grinder",
+        "https://www.turingrinders.com/products/turin-df64-gen-2-single-dose-coffee-grinder-1",
+        "https://df64grinders.com/faqs"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-23",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.4-grinder-safety"
+    },
+    {
       "id": "gs_varia_vs3_gen_2_cone",
       "grinderId": "varia-vs3-gen-2",
       "brewMode": "both",

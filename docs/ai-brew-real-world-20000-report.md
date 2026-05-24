@@ -1,10 +1,10 @@
 # AI Brew Real-World 20000 Report
 
-Latest SHA: 34e62a27c623fe6c4b83fd88a9f20275beb7229e
-Local branch: codex/ai-brew-extraction-time-semantics
-Origin main: 34e62a27c623fe6c4b83fd88a9f20275beb7229e
+Latest SHA: 04b7e6a95066f84b9e490e20c6917f408aeb3812
+Local branch: main
+Origin main: 04b7e6a95066f84b9e490e20c6917f408aeb3812
 Local status: dirty (local validation changes present)
-Date: 2026-05-20T09:33:26.660Z
+Date: 2026-05-24T06:33:56.753Z
 Scenario count: 20000
 
 ## Honesty Boundary
@@ -64,9 +64,10 @@ This is a 20,000-case software/barista scenario gate, not 20,000 physical brews 
 - Timemore C2: 1820
 - Timemore C3: 1820
 - Fellow Ode Gen 2: 1820
-- Unknown electric grinder: 3633
+- Baratza Encore: 1820
 - Latina Sumba / Sumbawa: 1814
 - Unknown manual grinder: 1813
+- Unknown electric grinder: 1813
 
 ## Water Coverage
 - Volvic style bottled water: 1113
@@ -101,11 +102,11 @@ This is a 20,000-case software/barista scenario gate, not 20,000 physical brews 
 ## Score Summary
 Passed: 20000/20000
 Failures: 0
-Warnings: 38942
+Warnings: 37122
 Average score: 98.7
 Score distribution: min 92.4; p10 97.1; p50 98.7; p90 100; max 100
 Unique coffee input combinations: 20000
-Coverage density: 28 bean archetypes, 12 methods, 10 grinders, 18 waters, 8 targets, 5 roast levels.
+Coverage density: 28 bean archetypes, 12 methods, 11 grinders, 18 waters, 8 targets, 5 roast levels.
 Source-backed seed lots: 28
 
 | Category | Average | Minimum |
@@ -118,9 +119,9 @@ Source-backed seed lots: 28
 | processFit | 100 | 100 |
 | varietyFit | 99.9 | 92 |
 | waterHonesty | 97.7 | 92 |
-| grinderHonesty | 96.4 | 92 |
+| grinderHonesty | 97.1 | 92 |
 | temperatureLogic | 100 | 92 |
-| grindLogic | 96.4 | 92 |
+| grindLogic | 97.1 | 92 |
 | extractionTimeLogic | 100 | 100 |
 | workflowLanguageSafety | 99.8 | 92 |
 | pourFlowLogic | 99.9 | 92 |
@@ -174,7 +175,6 @@ No blocking software failure found.
 - fallback_grinder_calibration_risk: 7260 cases; examples source-backed-00015, source-backed-00016, source-backed-00017, source-backed-00018, source-backed-00019
 - water_manual_verification_risk: 2222 cases; examples source-backed-00067, source-backed-00068, source-backed-00069, source-backed-00070, source-backed-00071
 - zero_mineral_remineralize_risk: 2222 cases; examples source-backed-00045, source-backed-00046, source-backed-00047, source-backed-00048, source-backed-00049
-- grinder_fixture_not_found: 1820 cases; examples source-backed-00050, source-backed-00051, source-backed-00052, source-backed-00053, source-backed-00054
 - high_buffer_target_risk: 1235 cases; examples source-backed-00034, source-backed-00035, source-backed-00036, source-backed-00037, source-backed-00038
 - demineral_direct_filter_experiment_risk: 1111 cases; examples source-backed-00155, source-backed-00156, source-backed-00157, source-backed-00158, source-backed-00159
 - low_mineral_filter_clarity_risk: 1111 cases; examples source-backed-00144, source-backed-00145, source-backed-00146, source-backed-00147, source-backed-00148
@@ -182,20 +182,21 @@ No blocking software failure found.
 - geisha_body_target_risk: 359 cases; examples source-backed-00067, source-backed-00068, source-backed-00095, source-backed-00096, source-backed-00179
 - cold_brew_floral_expectation_risk: 301 cases; examples source-backed-00033, source-backed-00034, source-backed-00135, source-backed-00136, source-backed-00169
 - french_press_clarity_softening_risk: 301 cases; examples source-backed-00031, source-backed-00032, source-backed-00065, source-backed-00133, source-backed-00134
+- washed_light_temp_too_low: 1 cases; examples source-backed-12336
 
 ## Top Method-Risk Categories
-- french_press: avg 98.3; min 92.4; warnings 2557; failures 0
-- cold_brew: avg 98.4; min 92.8; warnings 2563; failures 0
-- v60: avg 98.7; min 94.1; warnings 4526; failures 0
-- hario_switch: avg 98.7; min 94.1; warnings 11260; failures 0
-- chemex: avg 98.7; min 94.1; warnings 2253; failures 0
-- origami: avg 98.7; min 94.1; warnings 2257; failures 0
-- kono: avg 98.7; min 94.1; warnings 2255; failures 0
-- melitta: avg 98.7; min 94.1; warnings 2254; failures 0
-- kalita_wave: avg 98.7; min 94.1; warnings 2253; failures 0
-- april: avg 98.7; min 94.1; warnings 2256; failures 0
-- clever_dripper: avg 98.7; min 94.1; warnings 2257; failures 0
-- aeropress: avg 98.7; min 94.1; warnings 2251; failures 0
+- french_press: avg 98.3; min 92.4; warnings 2450; failures 0
+- cold_brew: avg 98.4; min 92.8; warnings 2457; failures 0
+- v60: avg 98.8; min 94.1; warnings 4310; failures 0
+- hario_switch: avg 98.8; min 94.1; warnings 10728; failures 0
+- chemex: avg 98.8; min 94.1; warnings 2147; failures 0
+- origami: avg 98.8; min 94.1; warnings 2149; failures 0
+- kono: avg 98.8; min 94.1; warnings 2147; failures 0
+- melitta: avg 98.8; min 94.1; warnings 2146; failures 0
+- kalita_wave: avg 98.8; min 94.1; warnings 2147; failures 0
+- april: avg 98.8; min 94.1; warnings 2149; failures 0
+- clever_dripper: avg 98.8; min 94.1; warnings 2149; failures 0
+- aeropress: avg 98.8; min 94.1; warnings 2143; failures 0
 
 ## Barista Interpretation
 - Premium washed/floral coffees are evaluated for higher temperature, clarity, water-buffer honesty, and target mismatch warnings.
@@ -222,7 +223,6 @@ No blocking software failure found.
 - source-backed-00068: Pulpa Specialty Coffee Geisha Washed Finca Hartmann with Cold Brew scored 94.5; review warnings/copy before physical validation.
 - source-backed-00095: Five Petal Coffee Janson Lot 980 Green Tip Geisha Washed with Clever Dripper scored 95.8; review warnings/copy before physical validation.
 - source-backed-00096: Pulpa Specialty Coffee Geisha Washed Finca Hartmann with Clever Dripper scored 95.8; review warnings/copy before physical validation.
-- source-backed-00133: Staccato Roasters Brazil Yellow Bourbon Natural with French Press scored 95.8; review warnings/copy before physical validation.
 - source-backed-00134: Indian Coffee Beans Monsooned Malabar reference with French Press scored 94.9; review warnings/copy before physical validation.
 - source-backed-00135: Rabbit Hole Roasters Wadi Mahyad Yemeni Natural Community Lot with Cold Brew scored 95.4; review warnings/copy before physical validation.
 - source-backed-00136: Sandalj Vietnam Washed Kontum 18 with Cold Brew scored 95.4; review warnings/copy before physical validation.
@@ -230,6 +230,7 @@ No blocking software failure found.
 - source-backed-00168: Good Cup Coffee Liberica Barako reference with French Press scored 94.5; review warnings/copy before physical validation.
 - source-backed-00169: Morph Coffee Aceh Gayo Queen Ketiara with Cold Brew scored 93.3; review warnings/copy before physical validation.
 - source-backed-00239: LiLo Coffee Roasters Colombia La Parcelita Pink Bourbon Washed with V60 hot scored 95.8; review warnings/copy before physical validation.
+- source-backed-00240: Basic Barista Pink Bourbon Washed Colombia with V60 hot scored 95.8; review warnings/copy before physical validation.
 
 ## What Outputs Were Wrong
 - No blocking wrong output was found in this software gate.
@@ -286,12 +287,12 @@ No blocking software failure found.
 | 47 | Pangea Coffee Co. Unity Costa Rica Catuai Honey Process -> fruit_forward | MUGEN x Switch | Fellow Ode Gen 2 | zero-mineral RO / distilled water | 18g, 280ml, 91.7C, Starting grind: 7 numbers. Correction range: 5 numbers to 8 numbers. If sour/thin: 5 numbers. If bitter/dry/stalled: 8 numbers., 2:55 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
 | 48 | Subtext Coffee Roasters Guatemala Nery Pablo Washed Field Blend -> fruit_forward | MUGEN x Switch | Fellow Ode Gen 2 | zero-mineral RO / distilled water | 20g, 310ml, 92.9C, Starting grind: 7 numbers. Correction range: 5 numbers to 8 numbers. If sour/thin: 5 numbers. If bitter/dry/stalled: 8 numbers., 3:00 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
 | 49 | Staccato Roasters Brazil Yellow Bourbon Natural -> fruit_forward | Chemex | Fellow Ode Gen 2 | zero-mineral RO / distilled water | 30g, 495ml, 93C, Starting grind: 10 numbers. Correction range: 8 numbers to 11 numbers. If sour/thin: 8 numbers. If bitter/dry/stalled: 11 numbers., 4:50 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
-| 50 | Indian Coffee Beans Monsooned Malabar reference -> fruit_forward | Chemex | Unknown electric grinder | zero-mineral RO / distilled water | 20g, 330ml, 94C, Starting grind: manual calibration. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias coarser., 4:55 | 97.9 | grinder_fixture_not_found; zero_mineral_remineralize_risk; real_brew_validation_pending |
-| 51 | Rabbit Hole Roasters Wadi Mahyad Yemeni Natural Community Lot -> fruit_forward | Origami | Unknown electric grinder | zero-mineral RO / distilled water | 18g, 255ml, 93.7C, Starting grind: manual calibration. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias coarser., 2:45 | 97.9 | grinder_fixture_not_found; zero_mineral_remineralize_risk; real_brew_validation_pending |
-| 52 | Sandalj Vietnam Washed Kontum 18 -> fruit_forward | Origami | Unknown electric grinder | zero-mineral RO / distilled water | 20g, 325ml, 89.8C, Starting grind: manual calibration. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias coarser., 2:10 | 97.9 | grinder_fixture_not_found; zero_mineral_remineralize_risk; real_brew_validation_pending |
-| 53 | TheBeanGeek Thailand Doi Chang Washed -> floral_transparent | Kono | Unknown electric grinder | zero-mineral RO / distilled water | 12g, 190ml, 91.7C, Starting grind: manual calibration. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias coarser., 3:30 | 97.9 | grinder_fixture_not_found; zero_mineral_remineralize_risk; real_brew_validation_pending |
-| 54 | Surfbean Coffee Roaster Laos Bolaven Washed -> floral_transparent | Kono | Unknown electric grinder | zero-mineral RO / distilled water | 15g, 240ml, 91.5C, Starting grind: manual calibration. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias coarser., 3:20 | 97.9 | grinder_fixture_not_found; zero_mineral_remineralize_risk; real_brew_validation_pending |
-| 55 | Frontside Coffee Roasters Decaf Colombia Huila Sugar Cane -> floral_transparent | Melitta | Unknown electric grinder | zero-mineral RO / distilled water | 18g, 290ml, 89C, Starting grind: manual calibration. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias coarser., 2:20 | 97.9 | grinder_fixture_not_found; zero_mineral_remineralize_risk; real_brew_validation_pending |
+| 50 | Indian Coffee Beans Monsooned Malabar reference -> fruit_forward | Chemex | Baratza Encore | zero-mineral RO / distilled water | 20g, 330ml, 94C, Starting grind: 35 settings. Correction range: 33 settings to 37 settings. If sour/thin: 33 settings. If bitter/dry/stalled: 37 settings., 4:55 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
+| 51 | Rabbit Hole Roasters Wadi Mahyad Yemeni Natural Community Lot -> fruit_forward | Origami | Baratza Encore | zero-mineral RO / distilled water | 18g, 255ml, 93.7C, Starting grind: 15 settings. Correction range: 13 settings to 16 settings. If sour/thin: 13 settings. If bitter/dry/stalled: 16 settings., 2:45 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
+| 52 | Sandalj Vietnam Washed Kontum 18 -> fruit_forward | Origami | Baratza Encore | zero-mineral RO / distilled water | 20g, 325ml, 89.8C, Starting grind: 15 settings. Correction range: 14 settings to 17 settings. If sour/thin: 14 settings. If bitter/dry/stalled: 17 settings., 2:10 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
+| 53 | TheBeanGeek Thailand Doi Chang Washed -> floral_transparent | Kono | Baratza Encore | zero-mineral RO / distilled water | 12g, 190ml, 91.7C, Starting grind: 15 settings. Correction range: 14 settings to 17 settings. If sour/thin: 14 settings. If bitter/dry/stalled: 17 settings., 3:30 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
+| 54 | Surfbean Coffee Roaster Laos Bolaven Washed -> floral_transparent | Kono | Baratza Encore | zero-mineral RO / distilled water | 15g, 240ml, 91.5C, Starting grind: 15 settings. Correction range: 14 settings to 17 settings. If sour/thin: 14 settings. If bitter/dry/stalled: 17 settings., 3:20 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
+| 55 | Frontside Coffee Roasters Decaf Colombia Huila Sugar Cane -> floral_transparent | Melitta | Baratza Encore | zero-mineral RO / distilled water | 18g, 290ml, 89C, Starting grind: 20 settings. Correction range: 19 settings to 22 settings. If sour/thin: 19 settings. If bitter/dry/stalled: 22 settings., 2:20 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
 
 ## Recommended Fixes
 - No planner recipe-math patch is justified by this run. Prioritize physical brew validation, field feedback capture, grinder calibration logs, and continued copy QA.

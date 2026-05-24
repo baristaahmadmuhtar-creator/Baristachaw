@@ -1,10 +1,10 @@
 # AI Brew Real-World 10000 Report
 
-Latest SHA: e87145d1900ea14f1c8cdab84a597866bd76d73a
-Local branch: ai-brew-real-world-production-hardening
-Origin main: 64c86eaf08dbbc3757530658be5619ef216b6454
+Latest SHA: aec7047d4346cfba70b5e4adbfe8a5c4af3ee564
+Local branch: main
+Origin main: 898aa1c91ad8e119e4bb0c6e547ce5f358cf8ea1
 Local status: dirty (local validation changes present)
-Date: 2026-05-19T13:46:32.907Z
+Date: 2026-05-24T00:23:35.774Z
 Scenario count: 10000
 
 ## Honesty Boundary

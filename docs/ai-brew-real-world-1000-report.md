@@ -1,12 +1,10 @@
 # AI Brew Real-World 1000 Report
 
-Latest SHA: 34e62a27c623fe6c4b83fd88a9f20275beb7229e
-Integrated branches: codex/ai-brew-v60-hardening, codex/ai-brew-extraction-time-semantics, codex/ai-brew-lite-guide
-Release branch: release/ai-brew-final
-Origin main: 34e62a27c623fe6c4b83fd88a9f20275beb7229e
-Local status: merged (release integration)
-Date: 2026-05-22T14:58:28.216Z
-Previous validation date: 2026-05-20T09:32:50.115Z
+Latest SHA: aec7047d4346cfba70b5e4adbfe8a5c4af3ee564
+Local branch: main
+Origin main: 898aa1c91ad8e119e4bb0c6e547ce5f358cf8ea1
+Local status: clean
+Date: 2026-05-24T00:23:12.392Z
 Scenario count: 1000
 
 ## Honesty Boundary

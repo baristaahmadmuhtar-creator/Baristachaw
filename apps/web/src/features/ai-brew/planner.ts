@@ -233,6 +233,25 @@ const ICED_HOT_EXTRACTION_RATIO_BOUNDS: Record<AiBrewMethodFamily, { min: number
   espresso: { min: 1.6, max: 2.5 },
 };
 
+const TARGET_WATER_METHOD_LIMITS: Record<AiBrewMethodFamily, { min: number; max: number }> = {
+  v60: { min: 80, max: 900 },
+  chemex: { min: 120, max: 1200 },
+  kalita_wave: { min: 80, max: 850 },
+  clever_dripper: { min: 100, max: 750 },
+  hario_switch: { min: 100, max: 750 },
+  origami: { min: 80, max: 850 },
+  april: { min: 80, max: 850 },
+  melitta: { min: 80, max: 850 },
+  kono: { min: 80, max: 850 },
+  french_press: { min: 150, max: 1200 },
+  aeropress: { min: 60, max: 320 },
+  siphon: { min: 180, max: 800 },
+  moka_pot: { min: 80, max: 450 },
+  cold_brew: { min: 160, max: 2000 },
+  batch_brew: { min: 300, max: 2500 },
+  espresso: { min: 15, max: 90 },
+};
+
 const GRIND_BIAS_SCORE: Record<GrindBias, number> = {
   finer: -1,
   same: 0,
@@ -385,13 +404,13 @@ function shouldUseFrontLoadedHotV60PourMap(input: AiBrewFormState) {
 function resolveRequestedPourCount(input: AiBrewFormState, profile: DeviceBrewProfile) {
   const explicitCount = Number.parseInt(input.pourCount, 10);
   if (Number.isFinite(explicitCount)) return clamp(Math.round(explicitCount), 3, 5);
+  const doseG = parseDose(input.doseG);
   if (
     profile.methodFamily === 'v60'
     && profile.exactMatch
     && profile.dripperIds.includes('hario-v60')
     && input.brewMode === 'iced'
   ) {
-    const doseG = parseDose(input.doseG);
     if (doseG <= 18) return 3;
     if (doseG <= 26) return 4;
     return 5;
@@ -402,8 +421,24 @@ function resolveRequestedPourCount(input: AiBrewFormState, profile: DeviceBrewPr
     && input.brewMode === 'iced'
     && isLightOrMediumLightRoast(input.roastLevel)
   ) {
-    const doseG = parseDose(input.doseG);
     if (doseG <= 18) return 3;
+  }
+  if (input.pourStyle === 'auto' && input.pourCount === 'auto' && input.brewMode === 'hot') {
+    const methodFamily = profile.methodFamily || 'v60';
+    const isCone = methodFamily === 'v60' || methodFamily === 'origami' || methodFamily === 'kono';
+    const isFlatBottom = methodFamily === 'kalita_wave' || methodFamily === 'april' || methodFamily === 'melitta';
+    const isFastFlatBottom = methodFamily === 'april'
+      || profile.dripperIds.some((id) => /orea|april|flat/i.test(id))
+      || /orea|april|flat[-\s]?bottom/i.test(`${profile.id} ${profile.label} ${profile.note}`);
+    const wantsStructure = input.targetProfileId === 'more_sweetness'
+      || input.targetProfileId === 'more_body'
+      || input.targetProfileId === 'dense_comforting'
+      || input.targetProfileId === 'soft_round';
+
+    if (isCone && doseG >= 19 && wantsStructure) return 5;
+    if (isCone && doseG >= 17) return 4;
+    if (methodFamily === 'chemex' && doseG >= 20) return 4;
+    if ((isFlatBottom || isFastFlatBottom) && doseG >= 18) return 4;
   }
   if (
     profile.methodFamily === 'v60'
@@ -975,6 +1010,48 @@ function parseDose(value: string) {
   return clamp(parsed, 8, 40);
 }
 
+function resolveManualPresetScalingRatio(preset: ManualBrewPreset) {
+  const explicitRatio = preset.targetDefaults.targetRatio;
+  if (typeof explicitRatio === 'number' && Number.isFinite(explicitRatio) && explicitRatio > 0) return explicitRatio;
+  return preset.targetDefaults.targetWaterMl / preset.targetDefaults.doseG;
+}
+
+export function resolveManualPresetScaledWaterMl(
+  preset: ManualBrewPreset | null | undefined,
+  nextDoseG: number,
+  currentTargetWaterMl: string,
+  methodFamily: AiBrewMethodFamily = 'v60',
+  previousDoseG?: number,
+) {
+  if (!preset || !Number.isFinite(nextDoseG) || nextDoseG <= 0) return null;
+  const currentTargetWater = Number.parseFloat(currentTargetWaterMl || '');
+  if (!Number.isFinite(currentTargetWater) || currentTargetWater <= 0) return null;
+
+  const ratio = resolveManualPresetScalingRatio(preset);
+  if (!Number.isFinite(ratio) || ratio <= 0) return null;
+
+  const previousDose = typeof previousDoseG === 'number' && Number.isFinite(previousDoseG)
+    ? previousDoseG
+    : preset.targetDefaults.doseG;
+  const expectedPreviousWater = roundBaristaVolumeMl(calcWaterFromDoseRatio(previousDose, ratio), methodFamily);
+  const presetDefaultWater = roundBaristaVolumeMl(preset.targetDefaults.targetWaterMl, methodFamily);
+  const followsPresetWater = Math.abs(currentTargetWater - presetDefaultWater) <= 0.51
+    || Math.abs(currentTargetWater - expectedPreviousWater) <= 0.51;
+  if (!followsPresetWater) return null;
+
+  const nextWater = roundBaristaVolumeMl(calcWaterFromDoseRatio(nextDoseG, ratio), methodFamily);
+  if (!Number.isFinite(nextWater) || nextWater <= 0) return null;
+
+  const hardLimits = TARGET_WATER_METHOD_LIMITS[methodFamily];
+  const clampedWater = hardLimits
+    ? clamp(nextWater, hardLimits.min, hardLimits.max)
+    : nextWater;
+  const roundedClampedWater = roundBaristaVolumeMl(clampedWater, methodFamily);
+  return hardLimits
+    ? clamp(roundedClampedWater, hardLimits.min, hardLimits.max)
+    : roundedClampedWater;
+}
+
 function parseRequiredNumber(label: string, value: string, min: number, max: number) {
   const parsed = Number.parseFloat(value);
   if (!Number.isFinite(parsed)) throw new Error(`${label} is required.`);
@@ -992,44 +1069,9 @@ function parseOptionalNumber(label: string, value: string, min: number, max: num
 }
 
 function resolveTargetWaterOverrideBounds(methodFamily: AiBrewMethodFamily, doseG: number, ratioLowerBound: number, ratioUpperBound: number) {
-  const methodMaxWaterMl: Record<AiBrewMethodFamily, number> = {
-    v60: 900,
-    chemex: 1200,
-    kalita_wave: 850,
-    clever_dripper: 750,
-    hario_switch: 750,
-    origami: 850,
-    april: 850,
-    melitta: 850,
-    kono: 850,
-    french_press: 1200,
-    aeropress: 320,
-    siphon: 800,
-    moka_pot: 450,
-    cold_brew: 2000,
-    batch_brew: 2500,
-    espresso: 90,
-  };
-  const methodMinWaterMl: Record<AiBrewMethodFamily, number> = {
-    v60: 80,
-    chemex: 120,
-    kalita_wave: 80,
-    clever_dripper: 100,
-    hario_switch: 100,
-    origami: 80,
-    april: 80,
-    melitta: 80,
-    kono: 80,
-    french_press: 150,
-    aeropress: 60,
-    siphon: 180,
-    moka_pot: 80,
-    cold_brew: 160,
-    batch_brew: 300,
-    espresso: 15,
-  };
-  const min = Math.ceil(Math.max(methodMinWaterMl[methodFamily], doseG * ratioLowerBound));
-  const max = Math.floor(Math.min(methodMaxWaterMl[methodFamily], doseG * ratioUpperBound));
+  const hardLimits = TARGET_WATER_METHOD_LIMITS[methodFamily];
+  const min = Math.ceil(Math.max(hardLimits.min, doseG * ratioLowerBound));
+  const max = Math.floor(Math.min(hardLimits.max, doseG * ratioUpperBound));
   return { min, max: Math.max(min, max) };
 }
 
@@ -7127,9 +7169,15 @@ function finalizePlanCore(
     ratioUpperBound,
   ), 2);
   const targetWaterBounds = resolveTargetWaterOverrideBounds(methodFamily, doseG, ratioLowerBound, ratioUpperBound);
+  const manualPresetScaledWaterMl = resolveManualPresetScaledWaterMl(
+    manualPreset,
+    doseG,
+    input.targetWaterMl || '',
+    methodFamily,
+  );
   const targetWaterOverrideMl = parseOptionalNumber(
     'Target water',
-    input.targetWaterMl || '',
+    manualPresetScaledWaterMl !== null ? String(manualPresetScaledWaterMl) : input.targetWaterMl || '',
     targetWaterBounds.min,
     targetWaterBounds.max,
   );
@@ -7172,7 +7220,9 @@ function finalizePlanCore(
 
   if (targetWaterOverrideMl !== null) {
     precisionOverrideNotes.push(
-      `Precision target water active: ${totalWaterMl} ml; ratio recalculated from ${roundTo(doseG, 1)} g dose to 1:${formatBaristaRatio(recommendedRatio)}.`,
+      manualPresetScaledWaterMl !== null
+        ? `Manual preset water scaled for ${roundTo(doseG, 1)} g dose: ${totalWaterMl} ml at 1:${formatBaristaRatio(recommendedRatio)}.`
+        : `Precision target water active: ${totalWaterMl} ml; ratio recalculated from ${roundTo(doseG, 1)} g dose to 1:${formatBaristaRatio(recommendedRatio)}.`,
     );
   } else if (targetRatioOverride !== null) {
     precisionOverrideNotes.push(
@@ -7958,6 +8008,7 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
 
 export function createQuickAiBrewFormState(input: AiBrewFormState, catalog?: AiBrewCatalog): AiBrewFormState {
   const sanitized = sanitizeAiBrewFormState(input, catalog);
+  const preserveManualPresetPrefill = Boolean(sanitized.manualPresetId);
   return {
     ...sanitized,
     customProcess: sanitized.process === CUSTOM_ENTRY_ID ? sanitized.customProcess : '',
@@ -7966,11 +8017,11 @@ export function createQuickAiBrewFormState(input: AiBrewFormState, catalog?: AiB
     beanDensityGml: '',
     roastDevelopment: '',
     solubility: '',
-    targetRatio: '',
-    targetWaterMl: '',
-    targetTempC: '',
-    origamiFilterStyle: 'auto',
-    aeropressStyle: 'auto',
+    targetRatio: preserveManualPresetPrefill ? sanitized.targetRatio : '',
+    targetWaterMl: preserveManualPresetPrefill ? sanitized.targetWaterMl : '',
+    targetTempC: preserveManualPresetPrefill ? sanitized.targetTempC : '',
+    origamiFilterStyle: preserveManualPresetPrefill ? sanitized.origamiFilterStyle : 'auto',
+    aeropressStyle: preserveManualPresetPrefill ? sanitized.aeropressStyle : 'auto',
   };
 }
 

@@ -7,6 +7,7 @@ import {
   applyManualBrewPresetToFormState,
   buildAiBrewPlan,
   createDefaultAiBrewFormState,
+  createQuickAiBrewFormState,
 } from '../../apps/web/src/features/ai-brew/planner.ts';
 import { buildAiAssistPrompt } from '../../apps/web/src/features/ai-brew/prompts.ts';
 import type { AiBrewCatalog, AiBrewFormState, BrewPlan } from '../../apps/web/src/features/ai-brew/types.ts';
@@ -53,21 +54,29 @@ function positivePours(plan: BrewPlan) {
   return plan.steps.filter((step) => (step.pourVolumeMl || 0) > 0);
 }
 
+function assertPresetPlanEnvelope(plan: BrewPlan) {
+  assert.ok(Number.isFinite(plan.doseG), 'dose should be finite');
+  assert.ok(Number.isFinite(plan.totalWaterMl), 'total water should be finite');
+  assert.ok(Number.isFinite(plan.recommendedRatio), 'ratio should be finite');
+  assert.ok(plan.totalWaterMl > plan.doseG, 'water should exceed dose');
+  assert.ok(plan.steps.length > 0, 'plan should include brew steps');
+}
+
 test('AI Brew manual brew preset catalog is safe, unique, and source-backed', async () => {
   const catalog = await loadCatalogForTest();
   const presets = catalog.manualBrewPresets || [];
 
-  assert.equal(presets.length, 25, 'MVP should ship exactly 25 manual brew presets');
+  assert.equal(presets.length, 35, 'Production should ship 35 brew presets after expanded method coverage');
   assert.equal(new Set(presets.map((preset) => preset.id)).size, presets.length, 'Preset ids should be unique');
   assert.equal(new Set(presets.map((preset) => preset.safeLabel)).size, presets.length, 'Preset safe labels should be unique');
   assert.equal(presets.filter((preset) => preset.category === 'competition_inspired').length, 10);
-  assert.equal(presets.filter((preset) => preset.category === 'global_classic').length, 10);
+  assert.equal(presets.filter((preset) => preset.category === 'global_classic').length, 20);
   assert.equal(presets.filter((preset) => preset.category === 'taste_target').length, 5);
 
   const dripperIds = new Set(catalog.drippers.map((dripper) => dripper.id));
   const targetProfileIds = new Set(catalog.targetProfiles.map((profile) => profile.id));
   for (const preset of presets) {
-    assert.match(preset.safeLabel, /Inspired by|Style|Focus|Competition|Nordic|Fast|Classic|Ultimate|Better|Kyoto|Chemex|AeroPress|V60|OREA|Origami|Kalita/i);
+    assert.match(preset.safeLabel, /Inspired by|Style|Focus|Competition|Nordic|Fast|Classic|Ultimate|Better|Kyoto|Chemex|AeroPress|V60|OREA|Origami|Kalita|Switch|Clever|French Press|Moka|Iced|Siphon|Cold Brew|Manhattan|Coffee Collective|Rogue Wave/i);
     assert.doesNotMatch(preset.safeLabel, /\bofficial\b/i, `${preset.id} should not claim official ownership`);
     assert.ok(preset.sourceUrls.length > 0, `${preset.id} should keep source URLs`);
     assert.ok(preset.internalTips.length > 0, `${preset.id} should carry internal tips`);
@@ -109,6 +118,131 @@ test('AI Brew manual brew preset remains attached when users edit numeric prefil
   assert.doesNotMatch(controlledSet, /'targetTempC'/, 'Temperature edits should not detach the preset starting point');
   assert.match(controlledSet, /'dripperId'/, 'Brewer changes should still detach incompatible preset identity');
   assert.match(controlledSet, /'pourCount'/, 'Pour-count changes should detach technique-pattern identity');
+});
+
+test('AI Brew manual brew preset dose edits from 17-20 g keep water scaled inside safe ratio bounds', async () => {
+  const catalog = await loadCatalogForTest();
+  const presetIds = [
+    'inspired-tetsu-kasuya-46',
+    'inspired-martin-woelfl-orea-v4',
+    'inspired-carlos-medina-origami',
+    'lance-style-two-pour-v60',
+    'fast-brew',
+  ];
+
+  for (const presetId of presetIds) {
+    const preset = catalog.manualBrewPresets?.find((item) => item.id === presetId);
+    assert.ok(preset, `${presetId} should resolve`);
+    const form = applyManualBrewPresetToFormState(createDefaultAiBrewFormState(catalog), catalog, presetId);
+    const presetRatio = preset.targetDefaults.targetRatio
+      || preset.targetDefaults.targetWaterMl / preset.targetDefaults.doseG;
+
+    for (const doseG of [17, 18, 19, 20]) {
+      const plan = buildAiBrewPlan({ ...form, doseG: String(doseG) }, catalog);
+      const ratioDelta = Math.abs(plan.recommendedRatio - presetRatio);
+
+      assert.equal(plan.doseG, doseG, `${presetId} should preserve edited ${doseG} g dose`);
+      assert.ok(
+        ratioDelta <= 0.55,
+        `${presetId} ${doseG} g should preserve preset ratio direction, got 1:${plan.recommendedRatio}`,
+      );
+      assert.ok(plan.totalWaterMl >= doseG * (presetRatio - 0.7), `${presetId} should not keep stale low water at ${doseG} g`);
+      assertPresetPlanEnvelope(plan);
+    }
+  }
+});
+
+test('AI Brew quick mode preserves manual preset ratio and temperature when dose is edited', async () => {
+  const catalog = await loadCatalogForTest();
+  const form = applyManualBrewPresetToFormState(
+    createDefaultAiBrewFormState(catalog),
+    catalog,
+    'inspired-tetsu-kasuya-46',
+  );
+  const quickPlan = buildAiBrewPlan(createQuickAiBrewFormState({ ...form, doseG: '20' }, catalog), catalog);
+
+  assert.equal(quickPlan.manualPresetId, 'inspired-tetsu-kasuya-46');
+  assert.equal(quickPlan.doseG, 20);
+  assert.equal(quickPlan.totalWaterMl, 300);
+  assert.equal(quickPlan.recommendedRatio, 15);
+  assert.equal(quickPlan.waterTempC, 92);
+  assert.equal(positivePours(quickPlan).length, 5);
+});
+
+test('AI Brew manual brew presets are compact and user-toggleable in the builder UI', () => {
+  const panelSource = fs.readFileSync(path.join(ROOT, 'apps/web/src/features/ai-brew/AiBrewPanel.tsx'), 'utf8');
+
+  assert.match(panelSource, /manualPresetTitle:\s*'Brew Presets'/);
+  assert.doesNotMatch(panelSource, /manualPresetTitle:\s*'Manual Brew Presets'/);
+  assert.match(panelSource, /manualPresetExpanded/);
+  assert.match(panelSource, /data-testid="ai-brew-manual-preset-toggle"/);
+  assert.match(panelSource, /data-testid="ai-brew-manual-preset-list"/);
+  assert.match(panelSource, /data-testid="ai-brew-manual-preset-compact-summary"/);
+  assert.match(panelSource, /aria-expanded=\{manualPresetExpanded\}/);
+});
+
+test('AI Brew every brew preset generates a guarded recipe for source-backed real beans', async () => {
+  const catalog = await loadCatalogForTest();
+  const presets = catalog.manualBrewPresets || [];
+  const sourceBackedBeans = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'tests/fixtures/ai-brew-source-backed-filter-beans.json'), 'utf8'),
+  ) as {
+    items: Array<{
+      id: string;
+      roaster?: string;
+      lotName?: string;
+      origin?: string;
+      process?: string;
+      variety?: string;
+      roastLevel?: string;
+    }>;
+  };
+  const processIds = new Set(catalog.processes.map((process) => process.id));
+  const varietyIds = new Set(catalog.varieties.map((variety) => variety.id));
+  const manualRequiredWater = {
+    waterMode: 'manual' as const,
+    waterCustomized: true,
+    waterTdsPpm: '90',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '35',
+  };
+
+  presets.forEach((preset, index) => {
+    const bean = sourceBackedBeans.items[index % sourceBackedBeans.items.length];
+    const process = bean.process && processIds.has(bean.process) ? bean.process : bean.process ? 'custom' : '';
+    const variety = bean.variety && varietyIds.has(bean.variety) ? bean.variety : bean.variety ? 'custom' : '';
+    const baseForm = applyManualBrewPresetToFormState(
+      {
+        ...createDefaultAiBrewFormState(catalog),
+        ...manualRequiredWater,
+        coffeeName: `${bean.roaster || 'Source-backed'} ${bean.lotName || bean.id}`.trim(),
+        origin: bean.origin || '',
+        process,
+        customProcess: process === 'custom' ? bean.process || '' : '',
+        variety,
+        customVariety: variety === 'custom' ? bean.variety || '' : '',
+        roastLevel: (bean.roastLevel || 'medium_light') as AiBrewFormState['roastLevel'],
+      },
+      catalog,
+      preset.id,
+    );
+
+    for (const doseG of [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]) {
+      const plan = buildAiBrewPlan({ ...baseForm, doseG: String(doseG) }, catalog);
+
+      assert.equal(plan.manualPresetId, preset.id, `${preset.id} should remain attached at ${doseG} g`);
+      assert.equal(plan.manualPresetLabel, preset.safeLabel, `${preset.id} label should reach result metadata`);
+      assert.equal(plan.doseG, doseG, `${preset.id} should preserve edited ${doseG} g dose`);
+      assert.ok(plan.manualPresetSummary, `${preset.id} should expose only a short public summary`);
+      assert.ok(plan.workflowGuideSteps?.length, `${preset.id} should create public guide steps`);
+      assertPresetPlanEnvelope(plan);
+      assert.doesNotMatch(
+        [plan.summary, plan.manualPresetSummary, ...plan.notes, ...plan.warnings].join('\n'),
+        /\b100%\b|perfect extraction|guaranteed flavor|world official recipe/i,
+        `${preset.id} should not leak unsafe claims`,
+      );
+    }
+  });
 });
 
 test('AI Brew manual brew preset technique patterns affect planner steps inside guardrails', async () => {
@@ -162,7 +296,8 @@ test('AI Brew manual brew preset guidance is hidden in prompts and not exposed t
 
   const panelSource = fs.readFileSync(path.join(ROOT, 'apps/web/src/features/ai-brew/AiBrewPanel.tsx'), 'utf8');
   assert.match(panelSource, /data-testid="ai-brew-manual-preset-panel"/);
-  assert.match(panelSource, /Manual Brew Presets|manualPresetTitle/);
+  assert.match(panelSource, /Brew Presets|manualPresetTitle/);
+  assert.doesNotMatch(panelSource, /Manual Brew Presets/);
   assert.doesNotMatch(
     panelSource.match(/function buildProcessPickerOptions[\s\S]*?function buildVarietyPickerOptions/)?.[0] || '',
     /extractionProfile|expertDescription/,

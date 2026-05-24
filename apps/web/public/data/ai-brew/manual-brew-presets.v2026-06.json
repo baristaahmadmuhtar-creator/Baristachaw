@@ -745,6 +745,377 @@
       "catalogVersion": "2026.06.0-ai-brew-manual-presets"
     },
     {
+      "id": "rogue-wave-origami-style",
+      "safeLabel": "Rogue Wave-Style Origami",
+      "category": "global_classic",
+      "sourceAttribution": "Roaster Origami brew-guide reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://roguewavecoffee.ca/blogs/brew-guide/recipe-how-to-make-an-origami-pour-over",
+        "https://www.stumptowncoffee.com/pages/brew-guide-origami"
+      ],
+      "supportedDripperIds": ["origami-dripper-s-m", "origami-dripper-air-s"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "fruit_forward",
+        "doseG": 15,
+        "targetWaterMl": 240,
+        "targetTempC": 92,
+        "targetRatio": 16,
+        "pourCount": "4",
+        "pourStyle": "balanced",
+        "waterTdsPpm": 85,
+        "waterHardnessPpm": 45,
+        "waterAlkalinityPpm": 30,
+        "origamiFilterStyle": "cone"
+      },
+      "techniquePattern": "front_loaded_four",
+      "visibleSummary": "Origami roaster-style prefill for fruit clarity with a controlled four-pour cadence.",
+      "internalTips": [
+        "Use cone mode as the default when the user wants fruit clarity and a clean finish.",
+        "Front-load sweetness, then keep the final pour calm to reduce dryness.",
+        "If the user switches to wave filter, keep the bed level and reduce edge flow."
+      ],
+      "guardrails": [
+        "Do not imply this is an official Rogue Wave recipe inside the app.",
+        "Let Origami filter style and bean metadata override the generic fruit-forward target."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "manhattan-roasters-pour-over-style",
+      "safeLabel": "Manhattan-Style Pour Over",
+      "category": "global_classic",
+      "sourceAttribution": "Modern roaster pour-over approach, adapted as safe planner prefill.",
+      "verificationLevel": "internal_synthesis",
+      "sourceUrls": [
+        "https://manhattancoffeeroasters.com",
+        "https://wcc.coffee/world-brewers-cup"
+      ],
+      "supportedDripperIds": ["hario-v60", "origami-dripper-s-m"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "floral_transparent",
+        "doseG": 15,
+        "targetWaterMl": 250,
+        "targetTempC": 93,
+        "targetRatio": 16.7,
+        "pourCount": "4",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 80,
+        "waterHardnessPpm": 42,
+        "waterAlkalinityPpm": 25
+      },
+      "techniquePattern": "continuous_high_extraction",
+      "visibleSummary": "Modern light-roast pour-over prefill for aromatics and transparent sweetness.",
+      "internalTips": [
+        "Use even saturation and restrained final agitation for high-aroma coffees.",
+        "Protect delicate florals by adjusting water and temperature before forcing finer grind.",
+        "Use stronger extraction pressure only when drawdown remains healthy."
+      ],
+      "guardrails": [
+        "Do not attach specific roaster tasting notes unless the user provides the bean.",
+        "Do not promise floral output; keep it as target direction."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "coffee-collective-filter-style",
+      "safeLabel": "Coffee Collective-Style Filter",
+      "category": "global_classic",
+      "sourceAttribution": "Nordic roaster filter-brewing reference, adapted as safe planner prefill.",
+      "verificationLevel": "internal_synthesis",
+      "sourceUrls": [
+        "https://coffeecollective.dk",
+        "https://sca.coffee/research"
+      ],
+      "supportedDripperIds": ["hario-v60", "kalita-wave-155-185"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "balance_clean",
+        "doseG": 16,
+        "targetWaterMl": 260,
+        "targetTempC": 93,
+        "targetRatio": 16.3,
+        "pourCount": "4",
+        "pourStyle": "balanced",
+        "waterTdsPpm": 85,
+        "waterHardnessPpm": 45,
+        "waterAlkalinityPpm": 30
+      },
+      "techniquePattern": "front_loaded_four",
+      "visibleSummary": "Nordic roaster-style filter prefill for clean sweetness and balanced acidity.",
+      "internalTips": [
+        "Use balanced mineral water and moderate-high temperature for clean specialty filter.",
+        "Keep the middle load stable so sweetness does not collapse into thin acidity.",
+        "Prefer cup feedback over large ratio jumps."
+      ],
+      "guardrails": [
+        "Do not claim cafe-specific calibration without grinder and water evidence.",
+        "Keep target changes small and reversible."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "hario-switch-hybrid-style",
+      "safeLabel": "Hario Switch Hybrid Style",
+      "category": "global_classic",
+      "sourceAttribution": "Hario Switch hybrid immersion-percolation references, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://brewtuner.io/guides/hario-switch-brew-guide",
+        "https://wackercoffeeco.com/blogs/coffee-brewing-guides/hario-switch-brewing-guide"
+      ],
+      "supportedDripperIds": ["hario-switch-03", "hario-switch-02", "mugen-x-switch"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "soft_round",
+        "doseG": 15,
+        "targetWaterMl": 240,
+        "targetTempC": 92,
+        "targetRatio": 16,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "aeropress_clean",
+      "visibleSummary": "Switch hybrid prefill for immersion sweetness with clean percolation finish.",
+      "internalTips": [
+        "Use the Switch planner's valve and chamber safety as the source of truth.",
+        "Favor immersion sweetness, then release cleanly instead of adding aggressive late agitation.",
+        "If the selected Switch size is too small, let the exact-size guardrail adjust or block."
+      ],
+      "guardrails": [
+        "Never bypass Switch chamber safety limits.",
+        "Do not translate this into V60-only pour language in the public guide."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "clever-dripper-immersion-style",
+      "safeLabel": "Clever Immersion Sweetness",
+      "category": "global_classic",
+      "sourceAttribution": "Clever Dripper immersion reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://www.kobricks.com/brewguides/pdf/cleverdrip.pdf",
+        "https://sca.coffee/research"
+      ],
+      "supportedDripperIds": ["clever-dripper"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "more_sweetness",
+        "doseG": 18,
+        "targetWaterMl": 270,
+        "targetTempC": 92,
+        "targetRatio": 15,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "aeropress_clean",
+      "visibleSummary": "Clever immersion-first prefill for easy sweetness and forgiving extraction.",
+      "internalTips": [
+        "Use steep time and drawdown cleanliness as the main controls.",
+        "Keep agitation minimal after wetting so fines settle before release.",
+        "If the cup tastes hollow, extend steep before changing dose."
+      ],
+      "guardrails": [
+        "Do not produce pour-over pulse instructions for Clever.",
+        "Keep release and drawdown steps clear in the guide."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "hoffmann-style-french-press",
+      "safeLabel": "Hoffmann-Style French Press",
+      "category": "global_classic",
+      "sourceAttribution": "Global educator French press reference, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://www.jameshoffmann.co.uk",
+        "https://sca.coffee/research"
+      ],
+      "supportedDripperIds": ["french-press"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "soft_round",
+        "doseG": 20,
+        "targetWaterMl": 300,
+        "targetTempC": 93,
+        "targetRatio": 15,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "aeropress_clean",
+      "visibleSummary": "French press clarity prefill with long steep, gentle press, and clean decant.",
+      "internalTips": [
+        "Use time, skimming, and decanting to improve clarity while preserving body.",
+        "Do not over-press or disturb settled fines.",
+        "For dark roasts, lower temperature before changing ratio."
+      ],
+      "guardrails": [
+        "Keep French press guide immersion-specific.",
+        "Do not promise sediment-free results."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "modern-low-heat-moka-pot",
+      "safeLabel": "Modern Low-Heat Moka Pot",
+      "category": "global_classic",
+      "sourceAttribution": "Modern moka pot low-heat brew-guide references, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://www.roastcc.com/brewing-guides/moka-pot",
+        "https://coffeebrewguides.com/moka-pot-guide/"
+      ],
+      "supportedDripperIds": ["bialetti-moka-pot"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "dense_comforting",
+        "doseG": 18,
+        "targetWaterMl": 150,
+        "targetTempC": 94,
+        "targetRatio": 8.3,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "aeropress_clean",
+      "visibleSummary": "Moka pot prefill for low-heat, steady-flow concentrated coffee.",
+      "internalTips": [
+        "Use heat control and stop-before-sputter as primary extraction guardrails.",
+        "Keep the output concentrated; do not translate moka into filter-coffee ratio expectations.",
+        "If bitterness risk is high, reduce heat and temperature before changing dose."
+      ],
+      "guardrails": [
+        "Never use pour-over pulse language for moka pot.",
+        "Do not overstate espresso-like pressure or crema."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "japanese-iced-v60-flash-brew",
+      "safeLabel": "Japanese Iced V60 Flash Brew",
+      "category": "global_classic",
+      "sourceAttribution": "Japanese iced V60 flash-brew references, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://www.vibrantcoffeeroasters.com/v60-iced",
+        "https://www.roastcc.com/learn/how-to-make-iced-coffee"
+      ],
+      "supportedDripperIds": ["hario-v60"],
+      "targetDefaults": {
+        "brewMode": "iced",
+        "targetProfileId": "fruit_forward",
+        "doseG": 15,
+        "targetWaterMl": 240,
+        "targetTempC": 92,
+        "targetRatio": 16,
+        "pourCount": "3",
+        "pourStyle": "pulse",
+        "waterTdsPpm": 85,
+        "waterHardnessPpm": 45,
+        "waterAlkalinityPpm": 30
+      },
+      "techniquePattern": "generic_fast",
+      "visibleSummary": "Japanese iced V60 prefill that brews hot concentrate directly over measured ice.",
+      "internalTips": [
+        "Keep hot-water and ice split explicit in every guide.",
+        "Use slightly finer grind and strong bloom only inside iced guardrails.",
+        "Do not add late bypass water after the hot concentrate plan is set."
+      ],
+      "guardrails": [
+        "Never hide ice dilution math.",
+        "Do not call final beverage ratio the same as hot extraction ratio."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "siphon-clean-aromatic-style",
+      "safeLabel": "Siphon Clean Aromatic Style",
+      "category": "global_classic",
+      "sourceAttribution": "Siphon/vacuum brewer guide references, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://www.starbucksreserve.com/brew-guides/siphon",
+        "https://prima-coffee.com/blog/siphon-brewing-guide/"
+      ],
+      "supportedDripperIds": ["hario-siphon"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "floral_transparent",
+        "doseG": 20,
+        "targetWaterMl": 300,
+        "targetTempC": 92,
+        "targetRatio": 15,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 85,
+        "waterHardnessPpm": 45,
+        "waterAlkalinityPpm": 30
+      },
+      "techniquePattern": "aeropress_clean",
+      "visibleSummary": "Siphon prefill for clean aromatics with controlled heat and gentle agitation.",
+      "internalTips": [
+        "Use heat stability and gentle agitation as primary controls.",
+        "Protect aromatics by avoiding violent stirring or overlong drawdown.",
+        "Keep safety notes clear because siphon uses heat and glass."
+      ],
+      "guardrails": [
+        "Do not produce pour-over pulse language for siphon.",
+        "Keep flame/heat safety and drawdown clarity visible in guide steps."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "toddy-style-cold-brew-immersion",
+      "safeLabel": "Toddy-Style Cold Brew Immersion",
+      "category": "global_classic",
+      "sourceAttribution": "Cold brew immersion system references, adapted as safe planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://www.toddycafe.com/brewing",
+        "https://specialtycoffeemap.com/en/brew-guides/cold-brew"
+      ],
+      "supportedDripperIds": ["toddy-cold-brew"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "soft_round",
+        "doseG": 40,
+        "targetWaterMl": 600,
+        "targetTempC": 20,
+        "targetRatio": 15,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "aeropress_clean",
+      "visibleSummary": "Cold brew immersion prefill for smooth concentrate-style brewing and clean filtration.",
+      "internalTips": [
+        "Use long steep and clean filtration as the main brew controls.",
+        "Keep serving dilution separate from extraction planning.",
+        "Warn that cold brew mutes some volatile florals compared with hot flash brew."
+      ],
+      "guardrails": [
+        "Do not label cold brew as hot extraction even if the shared form field uses brewMode.",
+        "Do not promise low acidity as a certain outcome."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
       "id": "sweetness-focus-brew",
       "safeLabel": "Sweetness Focus Brew",
       "category": "taste_target",

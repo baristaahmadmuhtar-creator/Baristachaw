@@ -23,9 +23,16 @@ function hasItems(payload: LibrarySyncPayload): boolean {
   return Boolean(payload.aiBrewJournal?.length || payload.collectionItems?.length);
 }
 
+function isLocalDevHost() {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location?.hostname || '';
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+}
+
 export async function syncAiBrewLibraryToCloud(payload: LibrarySyncPayload): Promise<LibrarySyncResult> {
   if (!hasItems(payload)) return { ok: true, synced: false, reason: 'empty_payload' };
   if (typeof window === 'undefined') return { ok: true, synced: false, reason: 'server_render' };
+  if (isLocalDevHost()) return { ok: true, synced: false, reason: 'local_dev' };
   if (typeof navigator !== 'undefined' && navigator.onLine === false) {
     return { ok: true, synced: false, reason: 'offline' };
   }

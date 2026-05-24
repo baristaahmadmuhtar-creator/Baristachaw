@@ -4611,6 +4611,44 @@ test('AI Brew core brewer production profiles keep method-specific SOP cues', ()
   assert.match(profileText('profile_clever_dripper_iced'), /valve closed|measured ice|server 5-8 seconds/i);
 });
 
+test('AI Brew auto pour control adapts 17-20 g doses by method and target without a preset', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const baseInput = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+    coffeeName: 'Auto pour dose QA',
+    process: 'washed',
+    variety: 'bourbon',
+    roastLevel: 'medium_light' as const,
+    pourStyle: 'auto' as const,
+    pourCount: 'auto' as const,
+  };
+  const scenarios = [
+    { dripperId: 'hario-v60', doseG: '17', targetProfileId: 'more_acidity', minPours: 4 },
+    { dripperId: 'hario-v60', doseG: '20', targetProfileId: 'more_sweetness', minPours: 5 },
+    { dripperId: 'orea-v3-v4', doseG: '20', targetProfileId: 'balance_clean', minPours: 4 },
+    { dripperId: 'origami-dripper-s-m', doseG: '20', targetProfileId: 'more_acidity', minPours: 4 },
+    { dripperId: 'kalita-wave-155-185', doseG: '20', targetProfileId: 'more_body', minPours: 4 },
+    { dripperId: 'chemex', doseG: '20', targetProfileId: 'floral_transparent', minPours: 4 },
+  ];
+
+  for (const scenario of scenarios) {
+    const plan = buildAiBrewPlan({ ...baseInput, ...scenario }, productionCatalog);
+    const positivePourCount = plan.steps.filter((step) => step.pourVolumeMl > 0).length;
+
+    assertPlanEnvelope(plan);
+    assert.equal(plan.doseG, Number.parseFloat(scenario.doseG));
+    assert.ok(
+      positivePourCount >= scenario.minPours,
+      `${scenario.dripperId} ${scenario.doseG} g ${scenario.targetProfileId} should use at least ${scenario.minPours} positive pours, got ${positivePourCount}`,
+    );
+  }
+});
+
 test('AI Brew production golden recipes keep non-V60 device workflows distinct', () => {
   const productionCatalog = buildProductionAiBrewCatalogForTests();
   const baseInput = {

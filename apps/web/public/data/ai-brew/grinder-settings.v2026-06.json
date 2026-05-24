@@ -2458,6 +2458,174 @@
       "releaseStatus": "established",
       "confidence": "medium",
       "catalogVersion": "2026.06.1-ai-brew-v2.1"
+    },
+    {
+      "id": "gs_df54_cone",
+      "grinderId": "turin-df54",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot",
+        "profile_family_kono_iced"
+      ],
+      "rangeLabel": "40 - 60 dial numbers",
+      "note": "DF54 flat burr medium filter baseline from Turin community guidelines; adjust dial while burrs are spinning, and correct from drawdown and taste.",
+      "source": "df54-community-curated",
+      "sourceUrls": [
+        "https://df64coffee.com/products/turin-df54-single-dose-flat-burr-grinder",
+        "https://honestcoffeeguide.com/turin-df54-grind-settings/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-19",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.4-grinder-safety"
+    },
+    {
+      "id": "gs_df54_flat",
+      "grinderId": "turin-df54",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_melitta_iced",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "45 - 65 dial numbers",
+      "note": "DF54 flat-bottom filter baseline; adjust from drawdown and taste.",
+      "source": "df54-community-curated",
+      "sourceUrls": [
+        "https://df64coffee.com/products/turin-df54-single-dose-flat-burr-grinder",
+        "https://honestcoffeeguide.com/turin-df54-grind-settings/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-19",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.4-grinder-safety"
+    },
+    {
+      "id": "gs_df83_cone",
+      "grinderId": "turin-df83",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot",
+        "profile_family_kono_iced"
+      ],
+      "rangeLabel": "35 - 55 dial numbers",
+      "note": "DF83 large flat burr medium filter baseline; zero point and burr alignment calibration required.",
+      "source": "df83-community-curated",
+      "sourceUrls": [
+        "https://df64coffee.com/products/df83-single-dose-coffee-grinder",
+        "https://honestcoffeeguide.com/turin-df83-grind-settings/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-23",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.4-grinder-safety"
+    },
+    {
+      "id": "gs_df83_flat",
+      "grinderId": "turin-df83",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_melitta_iced",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "40 - 60 dial numbers",
+      "note": "DF83 flat-bottom filter baseline; adjust from drawdown and taste.",
+      "source": "df83-community-curated",
+      "sourceUrls": [
+        "https://df64coffee.com/products/df83-single-dose-coffee-grinder",
+        "https://honestcoffeeguide.com/turin-df83-grind-settings/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-05-23",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "medium",
+      "catalogVersion": "2026.06.4-grinder-safety"
+    },
+    {
+      "id": "gs_timemore_sculptor_078_cone",
+      "grinderId": "timemore-sculptor-078",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_v60_hot",
+        "profile_family_v60_iced",
+        "profile_family_origami_hot",
+        "profile_family_origami_iced",
+        "profile_family_kono_hot",
+        "profile_family_kono_iced"
+      ],
+      "rangeLabel": "14 - 20 settings",
+      "note": "Chestnut Sculptor 078 patented vortex flat burr cone baseline. Designed strictly for high clarity drip; calibrate zero point before treating it as exact. Warning: strictly filter-only, no espresso recommended.",
+      "source": "timemore-official",
+      "sourceUrls": [
+        "https://www.timemore.com/products/timemore-sculptor-078",
+        "https://honestcoffeeguide.com/timemore-sculptor-078-grind-settings/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-19",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.4-grinder-safety"
+    },
+    {
+      "id": "gs_timemore_sculptor_078_flat",
+      "grinderId": "timemore-sculptor-078",
+      "brewMode": "both",
+      "profileIds": [
+        "profile_family_april_hot",
+        "profile_family_april_iced",
+        "profile_family_kalita_hot",
+        "profile_family_kalita_iced",
+        "profile_family_melitta_hot",
+        "profile_family_melitta_iced",
+        "profile_family_clever_hot",
+        "profile_family_clever_iced"
+      ],
+      "rangeLabel": "16 - 25 settings",
+      "note": "Sculptor 078 flat-bottom filter baseline; adjust from drawdown and taste.",
+      "source": "timemore-official",
+      "sourceUrls": [
+        "https://www.timemore.com/products/timemore-sculptor-078",
+        "https://honestcoffeeguide.com/timemore-sculptor-078-grind-settings/"
+      ],
+      "verificationLevel": "official",
+      "verifiedAt": "2026-05-19",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.06.4-grinder-safety"
     }
   ]
 }

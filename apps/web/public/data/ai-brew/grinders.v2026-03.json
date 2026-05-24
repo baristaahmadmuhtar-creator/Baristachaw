@@ -1048,6 +1048,69 @@
       "verificationLevel": "community_verified",
       "confidence": "medium",
       "verifiedAt": "2026-05-23"
+    },
+    {
+      "id": "turin-df54",
+      "name": "Turin DF54",
+      "brand": "DF64 / Turin",
+      "type": "Stepless (0 - 90 dial) Electric Flat Burr",
+      "coarse": "65 - 85 dial numbers",
+      "medium": "40 - 60 dial numbers",
+      "fine": "10 - 25 dial numbers",
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://df64coffee.com/products/turin-df54-single-dose-flat-burr-grinder",
+        "https://honestcoffeeguide.com/turin-df54-grind-settings/"
+      ],
+      "catalogVersion": "2026.06.4-grinder-safety",
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established"
+    },
+    {
+      "id": "turin-df83",
+      "name": "Turin DF83",
+      "brand": "DF83 / Turin",
+      "type": "Stepless (0 - 90 dial) Electric Flat Burr - zero point and burr alignment calibration required",
+      "coarse": "58 - 80 dial numbers",
+      "medium": "35 - 55 dial numbers",
+      "fine": "8 - 22 dial numbers",
+      "source": "curated_2026",
+      "sourceUrls": [
+        "https://df64coffee.com/products/df83-single-dose-coffee-grinder",
+        "https://honestcoffeeguide.com/turin-df83-grind-settings/"
+      ],
+      "catalogVersion": "2026.06.4-grinder-safety",
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-23",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established"
+    },
+    {
+      "id": "timemore-sculptor-078",
+      "name": "TIMEMORE Sculptor 078",
+      "brand": "Timemore",
+      "type": "Stepped Brew Grinder Electric (Rotary dial 1 - 36)",
+      "coarse": "28 - 36 settings",
+      "medium": "14 - 27 settings",
+      "fine": "8 - 13 settings",
+      "source": "official_2026",
+      "sourceUrls": [
+        "https://www.timemore.com/products/timemore-sculptor-078",
+        "https://honestcoffeeguide.com/timemore-sculptor-078-grind-settings/"
+      ],
+      "catalogVersion": "2026.06.4-grinder-safety",
+      "verificationLevel": "official",
+      "confidence": "high",
+      "verifiedAt": "2026-05-19",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established"
     }
   ]
 }

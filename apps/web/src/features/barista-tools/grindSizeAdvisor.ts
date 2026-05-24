@@ -186,6 +186,7 @@ const ESPRESSO_NOT_RECOMMENDED_HINTS = [
   /\bq\s*air\b/i,
   /\bq2\b/i,
   /\bzp6\b/i,
+  /\bsculptor\s*078\b(?!\s*s)/i,
   /\bbrew[-\s]?focused\b/i,
   /\bunknown\s+manual\b/i,
   /\bunknown\s+electric\b/i,

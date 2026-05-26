@@ -1,6 +1,7 @@
 ﻿import express from "express";
 import { createServer as createViteServer } from "vite";
 import cookieParser from "cookie-parser";
+import compression from "compression";
 import dotenv from "dotenv";
 import path from "node:path";
 import aiHandler from "./server-api/ai";
@@ -43,9 +44,9 @@ const WEB_ROOT = path.resolve(process.cwd(), "apps/web");
 const WEB_DIST = path.join(WEB_ROOT, "dist");
 
 app.disable("x-powered-by");
+app.use(compression({ threshold: 1024 }));
 
 // Keep local dev parity with attachment payload testing.
-// Production still relies on client-side compression/size caps for serverless limits.
 app.use(express.json({ limit: "15mb" }));
 app.use(express.urlencoded({ extended: false, limit: "100kb", parameterLimit: 200 }));
 app.use(cookieParser());

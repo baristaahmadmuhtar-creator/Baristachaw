@@ -649,14 +649,62 @@ function buildBitterAdjustment(plan: BrewPlan, easyToExtract: boolean, language?
             return 'Buka katup 15-20 detik lebih awal untuk mempersingkat kontak tertutup, atau giling 0.5 step lebih kasar.';
           }
         }
-        case 'moka_pot':
-          return 'Turunkan heat, angkat sebelum sputter, dan dinginkan base jika flow mulai blonding.';
-        case 'siphon':
-          return 'Kurangi extract 10-15 detik atau remove heat lebih cepat sambil menjaga drawdown bersih.';
-        case 'batch_brew':
-          return 'Geser grind sedikit lebih kasar atau pendekkan cycle mesin tanpa mengubah volume brew.';
-        case 'cold_brew':
-          return 'Pendekkan steep 1-2 jam atau encerkan setelah filtrasi; jangan tambah agitasi.';
+        case 'moka_pot': {
+          const style = plan.mokaPotStyle || 'auto';
+          if (style === 'preheated_boiler') {
+            return 'Gunakan air pra-didih yang bersuhu sedikit lebih rendah (90-92 C) untuk mengisi boiler, dan kecilkan api kompor.';
+          } else if (style === 'low_temp_controlled') {
+            return 'Kurangi panas kompor ke tingkat minimal, dan bungkus boiler dengan kain basah dingin saat blonding pertama.';
+          } else if (style === 'iced_moka_concentrate') {
+            return 'Angkat pot dari kompor tepat sebelum sputter pertama, dan swirl konsentrat kental di atas es.';
+          } else if (style === 'high_yield_robust') {
+            return 'Turunkan api kompor ke medium pada pertengahan jalan, dan dinginkan dasar pot di air mengalir dingin.';
+          } else {
+            return 'Turunkan heat, angkat sebelum sputter, dan dinginkan base jika flow mulai blonding.';
+          }
+        }
+        case 'siphon': {
+          const style = plan.siphonStyle || 'auto';
+          if (style === 'competition_triple_agitation') {
+            return 'Kurangi waktu rendam di upper chamber sebanyak 10 detik, dan lakukan adukan turbin akhir dengan sangat lembut.';
+          } else if (style === 'low_temp_delicate') {
+            return 'Giling kopi 0.5 step lebih kasar, dan pastikan filter kertas adaptor siphon terpasang dengan bersih.';
+          } else if (style === 'high_body_fast_drawdown') {
+            return 'Kurangi waktu rendam di upper chamber menjadi 35 detik, atau gunakan gilingan sedikit lebih kasar.';
+          } else if (style === 'spirit_infusion_style') {
+            return 'Perkecil porsi rempah atau buah kering di bowl bawah agar aroma tidak berubah menjadi tajam pahit.';
+          } else {
+            return 'Kurangi extract 10-15 detik atau remove heat lebih cepat sambil menjaga drawdown bersih.';
+          }
+        }
+        case 'batch_brew': {
+          const style = plan.batchBrewStyle || 'auto';
+          if (style === 'heavy_batch_catering') {
+            return 'Giling 0.5 step lebih kasar untuk melonggarkan bed besar, atau kurangi volume seduh mesin sebesar 50 ml.';
+          } else if (style === 'bright_light_roast_batch') {
+            return 'Giling 0.5 step lebih kasar, dan kurangi suhu air mesin jika roast terasa terlalu kering.';
+          } else if (style === 'pre_wet_hybrid_batch') {
+            return 'Kurangi porsi air panas pra-basah manual, atau giling kopi sedikit lebih kasar.';
+          } else if (style === 'high_extraction_thermos') {
+            return 'Giling kopi 0.5 step lebih kasar untuk melonggarkan filtrasi, dan kurangi suhu air kettle -1 C.';
+          } else {
+            return 'Geser grind sedikit lebih kasar atau pendekkan cycle mesin tanpa mengubah volume brew.';
+          }
+        }
+        case 'cold_brew': {
+          const style = plan.coldBrewStyle || 'auto';
+          if (style === 'cold_drip_tower') {
+            return 'Percepat tetesan air menjadi 1 tetes per 1 detik, atau giling 0.5 step lebih kasar.';
+          } else if (style === 'double_extraction_concentrate') {
+            return 'Perpendek total rendaman dingin selama 4 jam di kulkas, atau gunakan gilingan yang lebih kasar.';
+          } else if (style === 'accelerated_room_temp') {
+            return 'Perpendek waktu rendam di suhu ruang menjadi 6 jam, atau giling kopi 0.5 step lebih kasar.';
+          } else if (style === 'japanese_slow_drip') {
+            return 'Giling 0.5 step lebih kasar, dan pastikan tetesan air dingin tidak mampet di dasar kerucut.';
+          } else {
+            return 'Pendekkan steep 1-2 jam atau encerkan setelah filtrasi; jangan tambah agitasi.';
+          }
+        }
         case 'clever_dripper': {
           const style = plan.cleverDripperStyle || 'auto';
           if (style === 'reverse_water_first') {
@@ -902,14 +950,62 @@ function buildThinAdjustment(plan: BrewPlan, _softWater: boolean, language?: str
             return 'Perpanjang fase rendam tertutup selama 15-20 detik untuk meningkatkan ekstraksi sari kopi sebelum release.';
           }
         }
-        case 'moka_pot':
-          return 'Pastikan basket terisi rata sesuai plan; koreksi output dengan heat dan distribusi, bukan bypass.';
-        case 'siphon':
-          return 'Tambah extract singkat di upper chamber dan jaga drawdown bersih tanpa mengubah rasio.';
-        case 'batch_brew':
-          return 'Cek bypass basket, spray pattern, dan aduk batch sebelum service supaya konsentrasi merata.';
-        case 'cold_brew':
-          return 'Perbaiki saturasi awal dan filtrasi, lalu sajikan pada dilution plan yang sama.';
+        case 'moka_pot': {
+          const style = plan.mokaPotStyle || 'auto';
+          if (style === 'preheated_boiler') {
+            return 'Giling 0.5 step lebih halus, dan pastikan basket corong terisi penuh hingga bibir keranjang.';
+          } else if (style === 'low_temp_controlled') {
+            return 'Pertahankan api sangat kecil untuk memaksimalkan kontak tekanan lambat kompor, dan giling sedikit lebih halus.';
+          } else if (style === 'iced_moka_concentrate') {
+            return 'Giling 0.5 step lebih halus untuk meningkatkan TDS, dan kurangi es di server sebanyak 10g.';
+          } else if (style === 'high_yield_robust') {
+            return 'Giling 0.5 step lebih halus, dan pastikan kopi bubuk diratakan secara merata di keranjang corong.';
+          } else {
+            return 'Pastikan basket terisi rata sesuai plan; koreksi output dengan heat dan distribusi, bukan bypass.';
+          }
+        }
+        case 'siphon': {
+          const style = plan.siphonStyle || 'auto';
+          if (style === 'competition_triple_agitation') {
+            return 'Perpanjang waktu rendam di upper chamber selama 10 detik, dan lakukan zig-zag stir lebih aktif di fase awal.';
+          } else if (style === 'low_temp_delicate') {
+            return 'Giling kopi 0.5 step lebih halus, dan pertahankan agitasi spiral lembut untuk menjaga kelarutan manis.';
+          } else if (style === 'high_body_fast_drawdown') {
+            return 'Giling kopi sedikit lebih halus, dan aduk memutar 5 kali kuat saat air naik ke wadah atas.';
+          } else if (style === 'spirit_infusion_style') {
+            return 'Tingkatkan dosis kopi sebesar 1g, dan pastikan filter kain siphon terpasang dengan kencang.';
+          } else {
+            return 'Tambah extract singkat di upper chamber dan jaga drawdown bersih tanpa mengubah rasio.';
+          }
+        }
+        case 'batch_brew': {
+          const style = plan.batchBrewStyle || 'auto';
+          if (style === 'heavy_batch_catering') {
+            return 'Giling 0.5 step lebih halus untuk memperlama contact time, atau naikkan dosis kopi sebesar 3g.';
+          } else if (style === 'bright_light_roast_batch') {
+            return 'Giling sedikit lebih halus, dan pastikan water spray membasahi seluruh permukaan bed secara merata.';
+          } else if (style === 'pre_wet_hybrid_batch') {
+            return 'Perpanjang durasi pra-basah (pre-wet) manual kopi bubuk selama 15 detik sebelum mesin dinyalakan.';
+          } else if (style === 'high_extraction_thermos') {
+            return 'Giling kopi 0.5 step lebih halus, dan pastikan spray head mesin menyiram merata.';
+          } else {
+            return 'Cek bypass basket, spray pattern, dan aduk batch sebelum service supaya konsentrasi merata.';
+          }
+        }
+        case 'cold_brew': {
+          const style = plan.coldBrewStyle || 'auto';
+          if (style === 'cold_drip_tower') {
+            return 'Giling kopi 0.5 step lebih halus pada kolom kaca, dan perlambat tetesan air menjadi 1 tetes per 2 detik.';
+          } else if (style === 'double_extraction_concentrate') {
+            return 'Tingkatkan dosis kopi kasar sebesar 5g, dan aduk slurry lebih aktif saat awal pencampuran.';
+          } else if (style === 'accelerated_room_temp') {
+            return 'Giling kopi 0.5 step lebih halus, dan pastikan kopi basah merata sejak awal.';
+          } else if (style === 'japanese_slow_drip') {
+            return 'Giling kopi sedikit lebih halus, dan kurangi volume es batu di server sebanyak 10g.';
+          } else {
+            return 'Perbaiki saturasi awal dan filtrasi, lalu sajikan pada dilution plan yang sama.';
+          }
+        }
         case 'clever_dripper': {
           const style = plan.cleverDripperStyle || 'auto';
           if (style === 'reverse_water_first') {

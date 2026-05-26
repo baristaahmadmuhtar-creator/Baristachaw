@@ -773,6 +773,10 @@ function buildMethodCueChecklist(plan: BrewPlan) {
   if (plan.methodFamily === 'april' || plan.methodFamily === 'melitta') {
     lines.push('- Include flat-bed control cues (flat bed/bed height/low-spout/even bed) across at least two steps.');
   }
+  if (plan.methodFamily === 'kono') {
+    lines.push('- Kono Meimon must use sweet-core center-dripping cues early.');
+    lines.push('- Include slow expansion and rapid concentric wash cues in middle or late steps.');
+  }
 
   return lines.join('\n');
 }

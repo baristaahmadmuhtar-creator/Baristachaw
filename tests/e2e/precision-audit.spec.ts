@@ -3,14 +3,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // Output paths
-const ARTIFACT_DIR = path.resolve('C:/Users/Alpha/.gemini/antigravity/brain/f8595447-7f15-4c5c-9d54-eeef1285fde1/artifacts/precision-audit');
+const ARTIFACT_DIR = path.resolve(process.env.PRECISION_AUDIT_ARTIFACT_DIR || 'artifacts/precision-audit');
 const SCREENSHOT_DIR = path.join(ARTIFACT_DIR, 'screenshots');
 const RESULTS_JSON = path.join(ARTIFACT_DIR, 'results.json');
+const PRECISION_AUDIT_EMAIL = process.env.LIVE_AI_BREW_EMAIL || process.env.PROD_SMOKE_EMAIL || '';
+const PRECISION_AUDIT_PASSWORD = process.env.LIVE_AI_BREW_PASSWORD || process.env.PROD_SMOKE_PASSWORD || '';
+const shouldRunPrecisionAudit = Boolean(PRECISION_AUDIT_EMAIL && PRECISION_AUDIT_PASSWORD);
 
 // Ensure directories exist
 fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
 
 test.describe.configure({ mode: 'serial' });
+test.skip(!shouldRunPrecisionAudit, 'Set LIVE_AI_BREW_EMAIL/LIVE_AI_BREW_PASSWORD or PROD_SMOKE_EMAIL/PROD_SMOKE_PASSWORD to run precision audit.');
 test.setTimeout(300_000); // 5 minutes per test case
 
 // Shared login helper
@@ -21,7 +25,7 @@ async function login(page: Page) {
   // Fill email
   const emailInput = page.locator('#auth-route-email');
   await expect(emailInput).toBeVisible({ timeout: 20000 });
-  await emailInput.fill('kucinghiko2022@gmail.com');
+  await emailInput.fill(PRECISION_AUDIT_EMAIL);
   
   // Submit email
   const emailButton = page.getByRole('button', { name: /Lanjut dengan email/i });
@@ -31,7 +35,7 @@ async function login(page: Page) {
   // Fill password
   const passwordInput = page.locator('#auth-route-password');
   await expect(passwordInput).toBeVisible({ timeout: 20000 });
-  await passwordInput.fill('Ahmadmuhtarali1@');
+  await passwordInput.fill(PRECISION_AUDIT_PASSWORD);
   
   // Submit password
   const submitButton = page.locator('button[type="submit"]');

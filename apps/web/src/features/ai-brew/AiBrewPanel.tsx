@@ -176,11 +176,23 @@ const MANUAL_PRESET_CONTROLLED_FIELDS = new Set<keyof AiBrewFormState>([
   'kalitaWaveStyle',
   'cleverDripperStyle',
   'chemexStyle',
+  'mokaPotStyle',
+  'coldBrewStyle',
+  'batchBrewStyle',
+  'siphonStyle',
+  'origamiStyle',
+  'aprilStyle',
+  'melittaStyle',
+  'konoStyle',
 ]);
 const LARGE_CATALOG_PICKER_KINDS = new Set<NonNullable<PickerKind>>(['process', 'variety']);
 const LARGE_CATALOG_INITIAL_LIMIT = 140;
 const LARGE_CATALOG_SEARCH_LIMIT = 96;
 const Markdown = lazy(async () => ({ default: (await import('react-markdown')).default }));
+type AiBrewStyleOption<K extends keyof AiBrewFormState> = {
+  value: NonNullable<AiBrewFormState[K]>;
+  label: string;
+};
 const COPY = {
   en: {
     title: 'AI Brew',
@@ -272,6 +284,62 @@ const COPY = {
     chemexStyleContinuousCenterPour: 'Continuous Center Pour Clarity',
     chemexStyleIcedChemex: 'Iced Flash Concentrate',
     chemexStyleHighDoseHeavyBody: 'High-Dose Thick-Filter Heavy',
+    mokaPotStyleTitle: 'Moka Pot style',
+    mokaPotStyleAuto: 'Auto',
+    mokaPotStyleClassicItalian: 'Traditional Stovetop',
+    mokaPotStyleSpecialtyModern: 'Preheated Boiler',
+    mokaPotStyleHighYieldRistretto: 'Low-Temp Controlled',
+    mokaPotStyleDilutedAmericano: 'High-Yield Robust',
+    mokaPotStyleIcedMokaConcentrate: 'Iced Moka Concentrate',
+    coldBrewStyleTitle: 'Cold Brew style',
+    coldBrewStyleAuto: 'Auto',
+    coldBrewStyleTraditionalConcentrate: 'Classic Toddy Immersion',
+    coldBrewStyleReadyToDrinkSweet: 'Cold Drip Tower',
+    coldBrewStyleHotBloomColdBrew: 'Double Extraction Concentrate',
+    coldBrewStyleDoubleFilteredBright: 'Accelerated Room Temp',
+    coldBrewStyleHighDoseIntense: 'Japanese Slow Drip',
+    batchBrewStyleTitle: 'Batch Brewer style',
+    batchBrewStyleAuto: 'Auto',
+    batchBrewStyleStandardSpecialty: 'SCA Gold Cup',
+    batchBrewStyleHighYieldCommercial: 'Heavy Batch Catering',
+    batchBrewStyleSingleCupGoldCup: 'Bright Light-Roast Batch',
+    batchBrewStyleIcedBatchBrew: 'Pre-Wet Hybrid Batch',
+    batchBrewStylePreInfusionSweetness: 'High Extraction Thermos',
+    siphonStyleTitle: 'Siphon style',
+    siphonStyleAuto: 'Auto',
+    siphonStyleTraditionalClean: 'Traditional Vacuum Siphon',
+    siphonStyleCompetitionFastStir: 'Competition Triple Agitation',
+    siphonStyleDoubleStageAgitation: 'Spirit Infusion Style',
+    siphonStyleLowTemperatureDelicate: 'Low-Temperature Delicate',
+    siphonStyleHighDoseIntense: 'High-Body Fast Drawdown',
+    origamiStyleTitle: 'Origami style',
+    origamiStyleAuto: 'Auto',
+    origamiStyleConeSweetnessClarity: 'Cone Dripper Style',
+    origamiStyleWaveHighExtraction: 'Wave Dripper Style',
+    origamiStyleCompetitionMultiPour: 'Mugen One-Pour',
+    origamiStyleJapaneseIcedOrigami: 'Iced Origami',
+    origamiStyleHighDoseHeavyBody: 'Competition Hybrid Flow',
+    aprilStyleTitle: 'April Brewer style',
+    aprilStyleAuto: 'Auto',
+    aprilStyleTraditionalTwoPour: 'April Flat-Bottom Standard',
+    aprilStyleCompetitionMultiPour: 'April Continuous Slow',
+    aprilStyleSinglePourCoarse: 'Competition Two-Pour',
+    aprilStyleIcedApril: 'Iced April Style',
+    aprilStyleHighDoseSweet: 'High-Body Heavy Dose',
+    melittaStyleTitle: 'Melitta style',
+    melittaStyleAuto: 'Auto',
+    melittaStyleTraditionalSinglePour: 'Traditional One-Pour',
+    melittaStyleDoublePourClassic: 'Aromaboy Style',
+    melittaStyleContinuousPourOver: 'Three-Pour Melitta',
+    melittaStyleIcedMelitta: 'Iced Melitta Brew',
+    melittaStyleHighDoseHeavy: 'Dense Classic Extraction',
+    konoStyleTitle: 'Kono Meimon style',
+    konoStyleAuto: 'Auto',
+    konoStyleSweetCoreCenterDripping: 'Kono Meimon Traditional',
+    konoStyleConcentricSpiralWash: 'Kono Dripper Standard',
+    konoStyleCompetitionPulse: 'Kono Slow-Drip Body',
+    konoStyleJapaneseIcedKono: 'Iced Kono Meimon',
+    konoStyleHighDoseSlowExtraction: 'Kono Agitation Sweet',
     precisionControlTitle: 'Precision targets',
     precisionControlHint: 'Optional. Filter brewers work best around 1:13-1:17; Auto picks a safe default from the brewer, roast, and target.',
     targetRatio: 'Ratio target',
@@ -834,6 +902,62 @@ const COPY = {
     chemexStyleContinuousCenterPour: 'Continuous Center Pour Clarity',
     chemexStyleIcedChemex: 'Iced Flash Concentrate (Es)',
     chemexStyleHighDoseHeavyBody: 'High-Dose Thick-Filter Heavy',
+    mokaPotStyleTitle: 'Gaya Moka Pot',
+    mokaPotStyleAuto: 'Auto',
+    mokaPotStyleClassicItalian: 'Stovetop Tradisional',
+    mokaPotStyleSpecialtyModern: 'Boiler Dipanaskan Dulu',
+    mokaPotStyleHighYieldRistretto: 'Kontrol Suhu Rendah',
+    mokaPotStyleDilutedAmericano: 'Robust Hasil Tinggi',
+    mokaPotStyleIcedMokaConcentrate: 'Konsentrat Moka Es',
+    coldBrewStyleTitle: 'Gaya Cold Brew',
+    coldBrewStyleAuto: 'Auto',
+    coldBrewStyleTraditionalConcentrate: 'Immersion Toddy Klasik',
+    coldBrewStyleReadyToDrinkSweet: 'Menara Tetes Dingin',
+    coldBrewStyleHotBloomColdBrew: 'Konsentrat Ekstraksi Ganda',
+    coldBrewStyleDoubleFilteredBright: 'Suhu Ruang Dipercepat',
+    coldBrewStyleHighDoseIntense: 'Tetes Lambat Jepang',
+    batchBrewStyleTitle: 'Gaya Batch Brewer',
+    batchBrewStyleAuto: 'Auto',
+    batchBrewStyleStandardSpecialty: 'SCA Gold Cup',
+    batchBrewStyleHighYieldCommercial: 'Batch Catering Berat',
+    batchBrewStyleSingleCupGoldCup: 'Batch Light Roast Terang',
+    batchBrewStyleIcedBatchBrew: 'Batch Hybrid Pre-Wet',
+    batchBrewStylePreInfusionSweetness: 'Thermos Ekstraksi Tinggi',
+    siphonStyleTitle: 'Gaya Siphon',
+    siphonStyleAuto: 'Auto',
+    siphonStyleTraditionalClean: 'Siphon Vakum Tradisional',
+    siphonStyleCompetitionFastStir: 'Agitasi Tiga Kali Kompetisi',
+    siphonStyleDoubleStageAgitation: 'Gaya Infusi Spirit',
+    siphonStyleLowTemperatureDelicate: 'Suhu Rendah Lembut',
+    siphonStyleHighDoseIntense: 'Body Tinggi Drawdown Cepat',
+    origamiStyleTitle: 'Gaya Origami',
+    origamiStyleAuto: 'Auto',
+    origamiStyleConeSweetnessClarity: 'Gaya Dripper Kerucut',
+    origamiStyleWaveHighExtraction: 'Gaya Dripper Wave',
+    origamiStyleCompetitionMultiPour: 'Mugen Satu Tuang',
+    origamiStyleJapaneseIcedOrigami: 'Origami Es',
+    origamiStyleHighDoseHeavyBody: 'Hybrid Flow Kompetisi',
+    aprilStyleTitle: 'Gaya April Brewer',
+    aprilStyleAuto: 'Auto',
+    aprilStyleTraditionalTwoPour: 'April Flat-Bottom Standar',
+    aprilStyleCompetitionMultiPour: 'April Kontinu Lambat',
+    aprilStyleSinglePourCoarse: 'Kompetisi Dua Tuang',
+    aprilStyleIcedApril: 'Gaya April Es',
+    aprilStyleHighDoseSweet: 'Dosis Berat Body Tinggi',
+    melittaStyleTitle: 'Gaya Melitta',
+    melittaStyleAuto: 'Auto',
+    melittaStyleTraditionalSinglePour: 'Satu Tuang Tradisional',
+    melittaStyleDoublePourClassic: 'Gaya Aromaboy',
+    melittaStyleContinuousPourOver: 'Melitta Tiga Tuang',
+    melittaStyleIcedMelitta: 'Seduh Es Melitta',
+    melittaStyleHighDoseHeavy: 'Ekstraksi Klasik Padat',
+    konoStyleTitle: 'Gaya Kono Meimon',
+    konoStyleAuto: 'Auto',
+    konoStyleSweetCoreCenterDripping: 'Kono Meimon Tradisional',
+    konoStyleConcentricSpiralWash: 'Kono Dripper Standar',
+    konoStyleCompetitionPulse: 'Kono Slow-Drip Body',
+    konoStyleJapaneseIcedKono: 'Kono Meimon Es',
+    konoStyleHighDoseSlowExtraction: 'Kono Agitasi Manis',
     precisionControlTitle: 'Target presisi',
     precisionControlHint: 'Opsional. Filter manual paling aman di sekitar 1:13-1:17; Auto memilih default dari alat, sangrai, dan target.',
     targetRatio: 'Rasio target',
@@ -9176,7 +9300,7 @@ export function AiBrewPanel({
       { value: 'continuous_slow_stream', label: copy.kalitaWaveStyleContinuousSlowStream },
       { value: 'iced_wave', label: copy.kalitaWaveStyleIcedWave },
       { value: 'high_dose_concentrate', label: copy.kalitaWaveStyleHighDoseConcentrate },
-    ] as const;
+    ] as const satisfies readonly AiBrewStyleOption<'kalitaWaveStyle'>[];
     const cleverDripperStyleOptions = [
       { value: 'auto', label: copy.cleverDripperStyleAuto },
       { value: 'classic_closed', label: copy.cleverDripperStyleClassicClosed },
@@ -9184,7 +9308,7 @@ export function AiBrewPanel({
       { value: 'double_stage_hybrid', label: copy.cleverDripperStyleDoubleStageHybrid },
       { value: 'iced_clever', label: copy.cleverDripperStyleIcedClever },
       { value: 'high_dose_concentrate', label: copy.cleverDripperStyleHighDoseConcentrate },
-    ] as const;
+    ] as const satisfies readonly AiBrewStyleOption<'cleverDripperStyle'>[];
     const chemexStyleOptions = [
       { value: 'auto', label: copy.chemexStyleAuto },
       { value: 'traditional_three_pour', label: copy.chemexStyleTraditionalThreePour },
@@ -9192,7 +9316,71 @@ export function AiBrewPanel({
       { value: 'continuous_center_pour', label: copy.chemexStyleContinuousCenterPour },
       { value: 'iced_chemex', label: copy.chemexStyleIcedChemex },
       { value: 'high_dose_heavy_body', label: copy.chemexStyleHighDoseHeavyBody },
-    ] as const;
+    ] as const satisfies readonly AiBrewStyleOption<'chemexStyle'>[];
+    const mokaPotStyleOptions = [
+      { value: 'auto', label: copy.mokaPotStyleAuto },
+      { value: 'traditional_stovetop', label: copy.mokaPotStyleClassicItalian },
+      { value: 'preheated_boiler', label: copy.mokaPotStyleSpecialtyModern },
+      { value: 'low_temp_controlled', label: copy.mokaPotStyleHighYieldRistretto },
+      { value: 'high_yield_robust', label: copy.mokaPotStyleDilutedAmericano },
+      { value: 'iced_moka_concentrate', label: copy.mokaPotStyleIcedMokaConcentrate },
+    ] as const satisfies readonly AiBrewStyleOption<'mokaPotStyle'>[];
+    const coldBrewStyleOptions = [
+      { value: 'auto', label: copy.coldBrewStyleAuto },
+      { value: 'classic_toddy_immersion', label: copy.coldBrewStyleTraditionalConcentrate },
+      { value: 'cold_drip_tower', label: copy.coldBrewStyleReadyToDrinkSweet },
+      { value: 'double_extraction_concentrate', label: copy.coldBrewStyleHotBloomColdBrew },
+      { value: 'accelerated_room_temp', label: copy.coldBrewStyleDoubleFilteredBright },
+      { value: 'japanese_slow_drip', label: copy.coldBrewStyleHighDoseIntense },
+    ] as const satisfies readonly AiBrewStyleOption<'coldBrewStyle'>[];
+    const batchBrewStyleOptions = [
+      { value: 'auto', label: copy.batchBrewStyleAuto },
+      { value: 'sca_gold_cup', label: copy.batchBrewStyleStandardSpecialty },
+      { value: 'heavy_batch_catering', label: copy.batchBrewStyleHighYieldCommercial },
+      { value: 'bright_light_roast_batch', label: copy.batchBrewStyleSingleCupGoldCup },
+      { value: 'pre_wet_hybrid_batch', label: copy.batchBrewStyleIcedBatchBrew },
+      { value: 'high_extraction_thermos', label: copy.batchBrewStylePreInfusionSweetness },
+    ] as const satisfies readonly AiBrewStyleOption<'batchBrewStyle'>[];
+    const siphonStyleOptions = [
+      { value: 'auto', label: copy.siphonStyleAuto },
+      { value: 'traditional_vacuum_siphon', label: copy.siphonStyleTraditionalClean },
+      { value: 'competition_triple_agitation', label: copy.siphonStyleCompetitionFastStir },
+      { value: 'spirit_infusion_style', label: copy.siphonStyleDoubleStageAgitation },
+      { value: 'low_temp_delicate', label: copy.siphonStyleLowTemperatureDelicate },
+      { value: 'high_body_fast_drawdown', label: copy.siphonStyleHighDoseIntense },
+    ] as const satisfies readonly AiBrewStyleOption<'siphonStyle'>[];
+    const origamiStyleOptions = [
+      { value: 'auto', label: copy.origamiStyleAuto },
+      { value: 'cone_dripper_style', label: copy.origamiStyleConeSweetnessClarity },
+      { value: 'wave_dripper_style', label: copy.origamiStyleWaveHighExtraction },
+      { value: 'mugen_one_pour', label: copy.origamiStyleCompetitionMultiPour },
+      { value: 'iced_origami', label: copy.origamiStyleJapaneseIcedOrigami },
+      { value: 'competition_hybrid_flow', label: copy.origamiStyleHighDoseHeavyBody },
+    ] as const satisfies readonly AiBrewStyleOption<'origamiStyle'>[];
+    const aprilStyleOptions = [
+      { value: 'auto', label: copy.aprilStyleAuto },
+      { value: 'april_flat_bottom_standard', label: copy.aprilStyleTraditionalTwoPour },
+      { value: 'april_continuous_slow', label: copy.aprilStyleCompetitionMultiPour },
+      { value: 'competition_two_pour', label: copy.aprilStyleSinglePourCoarse },
+      { value: 'iced_april_style', label: copy.aprilStyleIcedApril },
+      { value: 'high_body_heavy_dose', label: copy.aprilStyleHighDoseSweet },
+    ] as const satisfies readonly AiBrewStyleOption<'aprilStyle'>[];
+    const melittaStyleOptions = [
+      { value: 'auto', label: copy.melittaStyleAuto },
+      { value: 'traditional_melitta_one_pour', label: copy.melittaStyleTraditionalSinglePour },
+      { value: 'aromaboy_style', label: copy.melittaStyleDoublePourClassic },
+      { value: 'three_pour_melitta', label: copy.melittaStyleContinuousPourOver },
+      { value: 'iced_melitta_brew', label: copy.melittaStyleIcedMelitta },
+      { value: 'dense_classic_extraction', label: copy.melittaStyleHighDoseHeavy },
+    ] as const satisfies readonly AiBrewStyleOption<'melittaStyle'>[];
+    const konoStyleOptions = [
+      { value: 'auto', label: copy.konoStyleAuto },
+      { value: 'kono_meimon_traditional', label: copy.konoStyleSweetCoreCenterDripping },
+      { value: 'kono_dripper_standard', label: copy.konoStyleConcentricSpiralWash },
+      { value: 'kono_slow_drip_body', label: copy.konoStyleCompetitionPulse },
+      { value: 'iced_kono_meimon', label: copy.konoStyleJapaneseIcedKono },
+      { value: 'kono_agitation_sweet', label: copy.konoStyleHighDoseSlowExtraction },
+    ] as const satisfies readonly AiBrewStyleOption<'konoStyle'>[];
     const dialogTitle = isPro
       ? `${copy.title} - ${copy.proBuilderTitle}`
       : isLite
@@ -9205,7 +9393,29 @@ export function AiBrewPanel({
     const showKalitaWaveStyleControl = selectedDripper?.methodFamily === 'kalita_wave';
     const showCleverDripperStyleControl = selectedDripper?.methodFamily === 'clever_dripper';
     const showChemexStyleControl = selectedDripper?.methodFamily === 'chemex';
-    const methodOptionPanel = showOrigamiFilterControl || showAeroPressStyleControl || showFrenchPressStyleControl || showKalitaWaveStyleControl || showCleverDripperStyleControl || showChemexStyleControl ? (
+    const showMokaPotStyleControl = selectedDripper?.methodFamily === 'moka_pot';
+    const showColdBrewStyleControl = selectedDripper?.methodFamily === 'cold_brew';
+    const showBatchBrewStyleControl = selectedDripper?.methodFamily === 'batch_brew';
+    const showSiphonStyleControl = selectedDripper?.methodFamily === 'siphon';
+    const showOrigamiStyleControl = selectedDripper?.methodFamily === 'origami';
+    const showAprilStyleControl = selectedDripper?.methodFamily === 'april';
+    const showMelittaStyleControl = selectedDripper?.methodFamily === 'melitta';
+    const showKonoStyleControl = selectedDripper?.methodFamily === 'kono';
+    const methodOptionPanel =
+      showOrigamiFilterControl ||
+      showOrigamiStyleControl ||
+      showAeroPressStyleControl ||
+      showFrenchPressStyleControl ||
+      showKalitaWaveStyleControl ||
+      showCleverDripperStyleControl ||
+      showChemexStyleControl ||
+      showMokaPotStyleControl ||
+      showColdBrewStyleControl ||
+      showBatchBrewStyleControl ||
+      showSiphonStyleControl ||
+      showAprilStyleControl ||
+      showMelittaStyleControl ||
+      showKonoStyleControl ? (
       <div className="rounded-[1.1rem] border panel-divider-subtle panel-soft p-3" data-testid="ai-brew-method-option-panel">
         <div className="flex flex-col gap-1">
           <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.methodOptionTitle}</h4>
@@ -9702,6 +9912,766 @@ export function AiBrewPanel({
                     }`}
                     aria-pressed={formState.chemexStyle === option.value}
                     data-testid={`ai-brew-chemex-style-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {showMokaPotStyleControl ? (
+            <div>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .moka-pot-style-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 8px;
+                }
+                @media (min-width: 640px) {
+                  .moka-pot-style-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .moka-pot-style-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                  }
+                }
+                .moka-pot-style-chip {
+                  position: relative;
+                  min-height: 44px;
+                  border-radius: 12px;
+                  padding: 8px 12px;
+                  font-size: 14px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  border: 1px solid var(--panel-border-soft, rgba(0,0,0,0.06));
+                  background: var(--bg-elevated, #ffffff);
+                  color: var(--text-secondary, #3C3C43);
+                  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                              background-color 0.2s ease,
+                              color 0.2s ease,
+                              box-shadow 0.25s ease,
+                              border-color 0.2s ease;
+                  transform: scale(1);
+                  outline: none;
+                }
+                .moka-pot-style-chip:focus-visible {
+                  box-shadow: 0 0 0 2px hsla(20, 80%, 40%, 1);
+                }
+                .moka-pot-style-chip:hover {
+                  transform: scale(1.03);
+                  color: var(--text-primary, #000000);
+                  background-color: var(--bg-base, #F2F2F7);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .moka-pot-style-chip:active {
+                  transform: scale(0.95);
+                  transition: transform 0.08s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                .moka-pot-style-chip.active {
+                  background: linear-gradient(135deg, hsla(20, 80%, 40%, 1), hsla(20, 80%, 30%, 1));
+                  color: #ffffff;
+                  border-color: transparent;
+                  box-shadow: 0 0 16px hsla(20, 80%, 40%, 0.35), 0 4px 12px hsla(20, 80%, 40%, 0.2);
+                }
+                .moka-pot-style-chip.active:hover {
+                  transform: scale(1.04);
+                  box-shadow: 0 0 20px hsla(20, 90%, 45%, 0.45), 0 6px 16px hsla(20, 90%, 45%, 0.25);
+                }
+                .moka-pot-style-chip.active:active {
+                  transform: scale(0.96);
+                }
+                /* Dark Mode support */
+                .dark .moka-pot-style-chip {
+                  background: #1c1c1e;
+                  border-color: rgba(255,255,255,0.08);
+                  color: #aeaeb2;
+                }
+                .dark .moka-pot-style-chip:hover {
+                  color: #ffffff;
+                  background-color: #2c2c2e;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                }
+              ` }} />
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.mokaPotStyleTitle}</p>
+              <div className="moka-pot-style-grid">
+                {mokaPotStyleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('mokaPotStyle', option.value)}
+                    className={`moka-pot-style-chip ${
+                      formState.mokaPotStyle === option.value ? 'active' : ''
+                    }`}
+                    aria-pressed={formState.mokaPotStyle === option.value}
+                    data-testid={`ai-brew-moka-pot-style-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {showColdBrewStyleControl ? (
+            <div>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .cold-brew-style-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 8px;
+                }
+                @media (min-width: 640px) {
+                  .cold-brew-style-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .cold-brew-style-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                  }
+                }
+                .cold-brew-style-chip {
+                  position: relative;
+                  min-height: 44px;
+                  border-radius: 12px;
+                  padding: 8px 12px;
+                  font-size: 14px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  border: 1px solid var(--panel-border-soft, rgba(0,0,0,0.06));
+                  background: var(--bg-elevated, #ffffff);
+                  color: var(--text-secondary, #3C3C43);
+                  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                              background-color 0.2s ease,
+                              color 0.2s ease,
+                              box-shadow 0.25s ease,
+                              border-color 0.2s ease;
+                  transform: scale(1);
+                  outline: none;
+                }
+                .cold-brew-style-chip:focus-visible {
+                  box-shadow: 0 0 0 2px hsla(200, 85%, 45%, 1);
+                }
+                .cold-brew-style-chip:hover {
+                  transform: scale(1.03);
+                  color: var(--text-primary, #000000);
+                  background-color: var(--bg-base, #F2F2F7);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .cold-brew-style-chip:active {
+                  transform: scale(0.95);
+                  transition: transform 0.08s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                .cold-brew-style-chip.active {
+                  background: linear-gradient(135deg, hsla(200, 85%, 45%, 1), hsla(200, 85%, 35%, 1));
+                  color: #ffffff;
+                  border-color: transparent;
+                  box-shadow: 0 0 16px hsla(200, 85%, 45%, 0.35), 0 4px 12px hsla(200, 85%, 45%, 0.2);
+                }
+                .cold-brew-style-chip.active:hover {
+                  transform: scale(1.04);
+                  box-shadow: 0 0 20px hsla(200, 95%, 50%, 0.45), 0 6px 16px hsla(200, 95%, 50%, 0.25);
+                }
+                .cold-brew-style-chip.active:active {
+                  transform: scale(0.96);
+                }
+                /* Dark Mode support */
+                .dark .cold-brew-style-chip {
+                  background: #1c1c1e;
+                  border-color: rgba(255,255,255,0.08);
+                  color: #aeaeb2;
+                }
+                .dark .cold-brew-style-chip:hover {
+                  color: #ffffff;
+                  background-color: #2c2c2e;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                }
+              ` }} />
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.coldBrewStyleTitle}</p>
+              <div className="cold-brew-style-grid">
+                {coldBrewStyleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('coldBrewStyle', option.value)}
+                    className={`cold-brew-style-chip ${
+                      formState.coldBrewStyle === option.value ? 'active' : ''
+                    }`}
+                    aria-pressed={formState.coldBrewStyle === option.value}
+                    data-testid={`ai-brew-cold-brew-style-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {showBatchBrewStyleControl ? (
+            <div>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .batch-brew-style-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 8px;
+                }
+                @media (min-width: 640px) {
+                  .batch-brew-style-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .batch-brew-style-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                  }
+                }
+                .batch-brew-style-chip {
+                  position: relative;
+                  min-height: 44px;
+                  border-radius: 12px;
+                  padding: 8px 12px;
+                  font-size: 14px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  border: 1px solid var(--panel-border-soft, rgba(0,0,0,0.06));
+                  background: var(--bg-elevated, #ffffff);
+                  color: var(--text-secondary, #3C3C43);
+                  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                              background-color 0.2s ease,
+                              color 0.2s ease,
+                              box-shadow 0.25s ease,
+                              border-color 0.2s ease;
+                  transform: scale(1);
+                  outline: none;
+                }
+                .batch-brew-style-chip:focus-visible {
+                  box-shadow: 0 0 0 2px hsla(150, 70%, 40%, 1);
+                }
+                .batch-brew-style-chip:hover {
+                  transform: scale(1.03);
+                  color: var(--text-primary, #000000);
+                  background-color: var(--bg-base, #F2F2F7);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .batch-brew-style-chip:active {
+                  transform: scale(0.95);
+                  transition: transform 0.08s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                .batch-brew-style-chip.active {
+                  background: linear-gradient(135deg, hsla(150, 70%, 40%, 1), hsla(150, 70%, 30%, 1));
+                  color: #ffffff;
+                  border-color: transparent;
+                  box-shadow: 0 0 16px hsla(150, 70%, 40%, 0.35), 0 4px 12px hsla(150, 70%, 40%, 0.2);
+                }
+                .batch-brew-style-chip.active:hover {
+                  transform: scale(1.04);
+                  box-shadow: 0 0 20px hsla(150, 80%, 45%, 0.45), 0 6px 16px hsla(150, 80%, 45%, 0.25);
+                }
+                .batch-brew-style-chip.active:active {
+                  transform: scale(0.96);
+                }
+                /* Dark Mode support */
+                .dark .batch-brew-style-chip {
+                  background: #1c1c1e;
+                  border-color: rgba(255,255,255,0.08);
+                  color: #aeaeb2;
+                }
+                .dark .batch-brew-style-chip:hover {
+                  color: #ffffff;
+                  background-color: #2c2c2e;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                }
+              ` }} />
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.batchBrewStyleTitle}</p>
+              <div className="batch-brew-style-grid">
+                {batchBrewStyleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('batchBrewStyle', option.value)}
+                    className={`batch-brew-style-chip ${
+                      formState.batchBrewStyle === option.value ? 'active' : ''
+                    }`}
+                    aria-pressed={formState.batchBrewStyle === option.value}
+                    data-testid={`ai-brew-batch-brew-style-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {showSiphonStyleControl ? (
+            <div>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .siphon-style-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 8px;
+                }
+                @media (min-width: 640px) {
+                  .siphon-style-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .siphon-style-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                  }
+                }
+                .siphon-style-chip {
+                  position: relative;
+                  min-height: 44px;
+                  border-radius: 12px;
+                  padding: 8px 12px;
+                  font-size: 14px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  border: 1px solid var(--panel-border-soft, rgba(0,0,0,0.06));
+                  background: var(--bg-elevated, #ffffff);
+                  color: var(--text-secondary, #3C3C43);
+                  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                              background-color 0.2s ease,
+                              color 0.2s ease,
+                              box-shadow 0.25s ease,
+                              border-color 0.2s ease;
+                  transform: scale(1);
+                  outline: none;
+                }
+                .siphon-style-chip:focus-visible {
+                  box-shadow: 0 0 0 2px hsla(185, 80%, 45%, 1);
+                }
+                .siphon-style-chip:hover {
+                  transform: scale(1.03);
+                  color: var(--text-primary, #000000);
+                  background-color: var(--bg-base, #F2F2F7);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .siphon-style-chip:active {
+                  transform: scale(0.95);
+                  transition: transform 0.08s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                .siphon-style-chip.active {
+                  background: linear-gradient(135deg, hsla(185, 80%, 45%, 1), hsla(185, 80%, 35%, 1));
+                  color: #ffffff;
+                  border-color: transparent;
+                  box-shadow: 0 0 16px hsla(185, 80%, 45%, 0.35), 0 4px 12px hsla(185, 80%, 45%, 0.2);
+                }
+                .siphon-style-chip.active:hover {
+                  transform: scale(1.04);
+                  box-shadow: 0 0 20px hsla(185, 90%, 50%, 0.45), 0 6px 16px hsla(185, 90%, 50%, 0.25);
+                }
+                .siphon-style-chip.active:active {
+                  transform: scale(0.96);
+                }
+                /* Dark Mode support */
+                .dark .siphon-style-chip {
+                  background: #1c1c1e;
+                  border-color: rgba(255,255,255,0.08);
+                  color: #aeaeb2;
+                }
+                .dark .siphon-style-chip:hover {
+                  color: #ffffff;
+                  background-color: #2c2c2e;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                }
+              ` }} />
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.siphonStyleTitle}</p>
+              <div className="siphon-style-grid">
+                {siphonStyleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('siphonStyle', option.value)}
+                    className={`siphon-style-chip ${
+                      formState.siphonStyle === option.value ? 'active' : ''
+                    }`}
+                    aria-pressed={formState.siphonStyle === option.value}
+                    data-testid={`ai-brew-siphon-style-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {showOrigamiStyleControl ? (
+            <div>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .origami-style-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 8px;
+                }
+                @media (min-width: 640px) {
+                  .origami-style-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .origami-style-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                  }
+                }
+                .origami-style-chip {
+                  position: relative;
+                  min-height: 44px;
+                  border-radius: 12px;
+                  padding: 8px 12px;
+                  font-size: 14px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  border: 1px solid var(--panel-border-soft, rgba(0,0,0,0.06));
+                  background: var(--bg-elevated, #ffffff);
+                  color: var(--text-secondary, #3C3C43);
+                  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                              background-color 0.2s ease,
+                              color 0.2s ease,
+                              box-shadow 0.25s ease,
+                              border-color 0.2s ease;
+                  transform: scale(1);
+                  outline: none;
+                }
+                .origami-style-chip:focus-visible {
+                  box-shadow: 0 0 0 2px hsla(320, 80%, 50%, 1);
+                }
+                .origami-style-chip:hover {
+                  transform: scale(1.03);
+                  color: var(--text-primary, #000000);
+                  background-color: var(--bg-base, #F2F2F7);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .origami-style-chip:active {
+                  transform: scale(0.95);
+                  transition: transform 0.08s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                .origami-style-chip.active {
+                  background: linear-gradient(135deg, hsla(320, 80%, 50%, 1), hsla(320, 80%, 40%, 1));
+                  color: #ffffff;
+                  border-color: transparent;
+                  box-shadow: 0 0 16px hsla(320, 80%, 50%, 0.35), 0 4px 12px hsla(320, 80%, 50%, 0.2);
+                }
+                .origami-style-chip.active:hover {
+                  transform: scale(1.04);
+                  box-shadow: 0 0 20px hsla(320, 90%, 55%, 0.45), 0 6px 16px hsla(320, 90%, 55%, 0.25);
+                }
+                .origami-style-chip.active:active {
+                  transform: scale(0.96);
+                }
+                /* Dark Mode support */
+                .dark .origami-style-chip {
+                  background: #1c1c1e;
+                  border-color: rgba(255,255,255,0.08);
+                  color: #aeaeb2;
+                }
+                .dark .origami-style-chip:hover {
+                  color: #ffffff;
+                  background-color: #2c2c2e;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                }
+              ` }} />
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.origamiStyleTitle}</p>
+              <div className="origami-style-grid">
+                {origamiStyleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('origamiStyle', option.value)}
+                    className={`origami-style-chip ${
+                      formState.origamiStyle === option.value ? 'active' : ''
+                    }`}
+                    aria-pressed={formState.origamiStyle === option.value}
+                    data-testid={`ai-brew-origami-style-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {showAprilStyleControl ? (
+            <div>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .april-style-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 8px;
+                }
+                @media (min-width: 640px) {
+                  .april-style-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .april-style-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                  }
+                }
+                .april-style-chip {
+                  position: relative;
+                  min-height: 44px;
+                  border-radius: 12px;
+                  padding: 8px 12px;
+                  font-size: 14px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  border: 1px solid var(--panel-border-soft, rgba(0,0,0,0.06));
+                  background: var(--bg-elevated, #ffffff);
+                  color: var(--text-secondary, #3C3C43);
+                  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                              background-color 0.2s ease,
+                              color 0.2s ease,
+                              box-shadow 0.25s ease,
+                              border-color 0.2s ease;
+                  transform: scale(1);
+                  outline: none;
+                }
+                .april-style-chip:focus-visible {
+                  box-shadow: 0 0 0 2px hsla(215, 50%, 45%, 1);
+                }
+                .april-style-chip:hover {
+                  transform: scale(1.03);
+                  color: var(--text-primary, #000000);
+                  background-color: var(--bg-base, #F2F2F7);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .april-style-chip:active {
+                  transform: scale(0.95);
+                  transition: transform 0.08s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                .april-style-chip.active {
+                  background: linear-gradient(135deg, hsla(215, 50%, 45%, 1), hsla(215, 50%, 35%, 1));
+                  color: #ffffff;
+                  border-color: transparent;
+                  box-shadow: 0 0 16px hsla(215, 50%, 45%, 0.35), 0 4px 12px hsla(215, 50%, 45%, 0.2);
+                }
+                .april-style-chip.active:hover {
+                  transform: scale(1.04);
+                  box-shadow: 0 0 20px hsla(215, 60%, 50%, 0.45), 0 6px 16px hsla(215, 60%, 50%, 0.25);
+                }
+                .april-style-chip.active:active {
+                  transform: scale(0.96);
+                }
+                /* Dark Mode support */
+                .dark .april-style-chip {
+                  background: #1c1c1e;
+                  border-color: rgba(255,255,255,0.08);
+                  color: #aeaeb2;
+                }
+                .dark .april-style-chip:hover {
+                  color: #ffffff;
+                  background-color: #2c2c2e;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                }
+              ` }} />
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.aprilStyleTitle}</p>
+              <div className="april-style-grid">
+                {aprilStyleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('aprilStyle', option.value)}
+                    className={`april-style-chip ${
+                      formState.aprilStyle === option.value ? 'active' : ''
+                    }`}
+                    aria-pressed={formState.aprilStyle === option.value}
+                    data-testid={`ai-brew-april-style-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {showMelittaStyleControl ? (
+            <div>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .melitta-style-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 8px;
+                }
+                @media (min-width: 640px) {
+                  .melitta-style-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .melitta-style-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                  }
+                }
+                .melitta-style-chip {
+                  position: relative;
+                  min-height: 44px;
+                  border-radius: 12px;
+                  padding: 8px 12px;
+                  font-size: 14px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  border: 1px solid var(--panel-border-soft, rgba(0,0,0,0.06));
+                  background: var(--bg-elevated, #ffffff);
+                  color: var(--text-secondary, #3C3C43);
+                  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                              background-color 0.2s ease,
+                              color 0.2s ease,
+                              box-shadow 0.25s ease,
+                              border-color 0.2s ease;
+                  transform: scale(1);
+                  outline: none;
+                }
+                .melitta-style-chip:focus-visible {
+                  box-shadow: 0 0 0 2px hsla(45, 75%, 45%, 1);
+                }
+                .melitta-style-chip:hover {
+                  transform: scale(1.03);
+                  color: var(--text-primary, #000000);
+                  background-color: var(--bg-base, #F2F2F7);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .melitta-style-chip:active {
+                  transform: scale(0.95);
+                  transition: transform 0.08s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                .melitta-style-chip.active {
+                  background: linear-gradient(135deg, hsla(45, 75%, 45%, 1), hsla(45, 75%, 35%, 1));
+                  color: #ffffff;
+                  border-color: transparent;
+                  box-shadow: 0 0 16px hsla(45, 75%, 45%, 0.35), 0 4px 12px hsla(45, 75%, 45%, 0.2);
+                }
+                .melitta-style-chip.active:hover {
+                  transform: scale(1.04);
+                  box-shadow: 0 0 20px hsla(45, 85%, 50%, 0.45), 0 6px 16px hsla(45, 85%, 50%, 0.25);
+                }
+                .melitta-style-chip.active:active {
+                  transform: scale(0.96);
+                }
+                /* Dark Mode support */
+                .dark .melitta-style-chip {
+                  background: #1c1c1e;
+                  border-color: rgba(255,255,255,0.08);
+                  color: #aeaeb2;
+                }
+                .dark .melitta-style-chip:hover {
+                  color: #ffffff;
+                  background-color: #2c2c2e;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                }
+              ` }} />
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.melittaStyleTitle}</p>
+              <div className="melitta-style-grid">
+                {melittaStyleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('melittaStyle', option.value)}
+                    className={`melitta-style-chip ${
+                      formState.melittaStyle === option.value ? 'active' : ''
+                    }`}
+                    aria-pressed={formState.melittaStyle === option.value}
+                    data-testid={`ai-brew-melitta-style-${option.value}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {showKonoStyleControl ? (
+            <div>
+              <style dangerouslySetInnerHTML={{ __html: `
+                .kono-style-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, minmax(0, 1fr));
+                  gap: 8px;
+                }
+                @media (min-width: 640px) {
+                  .kono-style-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                  }
+                }
+                @media (min-width: 1024px) {
+                  .kono-style-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                  }
+                }
+                .kono-style-chip {
+                  position: relative;
+                  min-height: 44px;
+                  border-radius: 12px;
+                  padding: 8px 12px;
+                  font-size: 14px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  border: 1px solid var(--panel-border-soft, rgba(0,0,0,0.06));
+                  background: var(--bg-elevated, #ffffff);
+                  color: var(--text-secondary, #3C3C43);
+                  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                              background-color 0.2s ease,
+                              color 0.2s ease,
+                              box-shadow 0.25s ease,
+                              border-color 0.2s ease;
+                  transform: scale(1);
+                  outline: none;
+                }
+                .kono-style-chip:focus-visible {
+                  box-shadow: 0 0 0 2px hsla(0, 75%, 45%, 1);
+                }
+                .kono-style-chip:hover {
+                  transform: scale(1.03);
+                  color: var(--text-primary, #000000);
+                  background-color: var(--bg-base, #F2F2F7);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+                }
+                .kono-style-chip:active {
+                  transform: scale(0.95);
+                  transition: transform 0.08s cubic-bezier(0.25, 0.8, 0.25, 1);
+                }
+                .kono-style-chip.active {
+                  background: linear-gradient(135deg, hsla(0, 75%, 45%, 1), hsla(0, 75%, 35%, 1));
+                  color: #ffffff;
+                  border-color: transparent;
+                  box-shadow: 0 0 16px hsla(0, 75%, 45%, 0.35), 0 4px 12px hsla(0, 75%, 45%, 0.2);
+                }
+                .kono-style-chip.active:hover {
+                  transform: scale(1.04);
+                  box-shadow: 0 0 20px hsla(0, 85%, 50%, 0.45), 0 6px 16px hsla(0, 85%, 50%, 0.25);
+                }
+                .kono-style-chip.active:active {
+                  transform: scale(0.96);
+                }
+                /* Dark Mode support */
+                .dark .kono-style-chip {
+                  background: #1c1c1e;
+                  border-color: rgba(255,255,255,0.08);
+                  color: #aeaeb2;
+                }
+                .dark .kono-style-chip:hover {
+                  color: #ffffff;
+                  background-color: #2c2c2e;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                }
+              ` }} />
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.konoStyleTitle}</p>
+              <div className="kono-style-grid">
+                {konoStyleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateForm('konoStyle', option.value)}
+                    className={`kono-style-chip ${
+                      formState.konoStyle === option.value ? 'active' : ''
+                    }`}
+                    aria-pressed={formState.konoStyle === option.value}
+                    data-testid={`ai-brew-kono-style-${option.value}`}
                   >
                     {option.label}
                   </button>

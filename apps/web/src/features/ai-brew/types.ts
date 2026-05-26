@@ -62,6 +62,62 @@ export type ChemexRecipeStyle =
   | 'continuous_center_pour'
   | 'iced_chemex'
   | 'high_dose_heavy_body';
+export type MokaPotRecipeStyle =
+  | 'auto'
+  | 'traditional_stovetop'
+  | 'preheated_boiler'
+  | 'low_temp_controlled'
+  | 'iced_moka_concentrate'
+  | 'high_yield_robust';
+export type ColdBrewRecipeStyle =
+  | 'auto'
+  | 'classic_toddy_immersion'
+  | 'cold_drip_tower'
+  | 'double_extraction_concentrate'
+  | 'accelerated_room_temp'
+  | 'japanese_slow_drip';
+export type BatchBrewRecipeStyle =
+  | 'auto'
+  | 'sca_gold_cup'
+  | 'heavy_batch_catering'
+  | 'bright_light_roast_batch'
+  | 'pre_wet_hybrid_batch'
+  | 'high_extraction_thermos';
+export type SiphonRecipeStyle =
+  | 'auto'
+  | 'traditional_vacuum_siphon'
+  | 'competition_triple_agitation'
+  | 'low_temp_delicate'
+  | 'high_body_fast_drawdown'
+  | 'spirit_infusion_style';
+export type OrigamiRecipeStyle =
+  | 'auto'
+  | 'cone_dripper_style'
+  | 'wave_dripper_style'
+  | 'mugen_one_pour'
+  | 'iced_origami'
+  | 'competition_hybrid_flow';
+export type AprilRecipeStyle =
+  | 'auto'
+  | 'april_flat_bottom_standard'
+  | 'april_continuous_slow'
+  | 'competition_two_pour'
+  | 'iced_april_style'
+  | 'high_body_heavy_dose';
+export type MelittaRecipeStyle =
+  | 'auto'
+  | 'traditional_melitta_one_pour'
+  | 'aromaboy_style'
+  | 'three_pour_melitta'
+  | 'iced_melitta_brew'
+  | 'dense_classic_extraction';
+export type KonoRecipeStyle =
+  | 'auto'
+  | 'kono_meimon_traditional'
+  | 'kono_dripper_standard'
+  | 'kono_slow_drip_body'
+  | 'iced_kono_meimon'
+  | 'kono_agitation_sweet';
 export type AiBrewEngineMode =
   | 'local_planner'
   | 'precision_planner'
@@ -818,6 +874,14 @@ export interface DeviceBrewProfile extends CatalogProvenance {
     | Exclude<KalitaWaveRecipeStyle, 'auto'>
     | Exclude<CleverDripperRecipeStyle, 'auto'>
     | Exclude<ChemexRecipeStyle, 'auto'>
+    | Exclude<MokaPotRecipeStyle, 'auto'>
+    | Exclude<ColdBrewRecipeStyle, 'auto'>
+    | Exclude<BatchBrewRecipeStyle, 'auto'>
+    | Exclude<SiphonRecipeStyle, 'auto'>
+    | Exclude<OrigamiRecipeStyle, 'auto'>
+    | Exclude<AprilRecipeStyle, 'auto'>
+    | Exclude<MelittaRecipeStyle, 'auto'>
+    | Exclude<KonoRecipeStyle, 'auto'>
     | SwitchPublicPresetId;
   physicalConstraints?: DevicePhysicalConstraints;
   methodProgramme?: SwitchBrewProgramme | string;
@@ -900,6 +964,14 @@ export interface AiBrewFormState {
   kalitaWaveStyle?: KalitaWaveRecipeStyle;
   cleverDripperStyle?: CleverDripperRecipeStyle;
   chemexStyle?: ChemexRecipeStyle;
+  mokaPotStyle?: MokaPotRecipeStyle;
+  coldBrewStyle?: ColdBrewRecipeStyle;
+  batchBrewStyle?: BatchBrewRecipeStyle;
+  siphonStyle?: SiphonRecipeStyle;
+  origamiStyle?: OrigamiRecipeStyle;
+  aprilStyle?: AprilRecipeStyle;
+  melittaStyle?: MelittaRecipeStyle;
+  konoStyle?: KonoRecipeStyle;
 }
 
 export interface BeanProfileState {
@@ -1126,6 +1198,14 @@ export interface BrewPlan {
     | Exclude<KalitaWaveRecipeStyle, 'auto'>
     | Exclude<CleverDripperRecipeStyle, 'auto'>
     | Exclude<ChemexRecipeStyle, 'auto'>
+    | Exclude<MokaPotRecipeStyle, 'auto'>
+    | Exclude<ColdBrewRecipeStyle, 'auto'>
+    | Exclude<BatchBrewRecipeStyle, 'auto'>
+    | Exclude<SiphonRecipeStyle, 'auto'>
+    | Exclude<OrigamiRecipeStyle, 'auto'>
+    | Exclude<AprilRecipeStyle, 'auto'>
+    | Exclude<MelittaRecipeStyle, 'auto'>
+    | Exclude<KonoRecipeStyle, 'auto'>
     | SwitchPublicPresetId;
   methodId: BrewMethodId;
   ratioToolMethodId: BrewMethodId;
@@ -1211,6 +1291,14 @@ export interface BrewPlan {
   kalitaWaveStyle?: KalitaWaveRecipeStyle;
   cleverDripperStyle?: CleverDripperRecipeStyle;
   chemexStyle?: ChemexRecipeStyle;
+  mokaPotStyle?: MokaPotRecipeStyle;
+  coldBrewStyle?: ColdBrewRecipeStyle;
+  batchBrewStyle?: BatchBrewRecipeStyle;
+  siphonStyle?: SiphonRecipeStyle;
+  origamiStyle?: OrigamiRecipeStyle;
+  aprilStyle?: AprilRecipeStyle;
+  melittaStyle?: MelittaRecipeStyle;
+  konoStyle?: KonoRecipeStyle;
   expectedCupProfile?: ExpectedCupProfile;
   readinessScores?: AiBrewReadinessScores;
   notes: string[];

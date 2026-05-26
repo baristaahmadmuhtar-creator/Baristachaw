@@ -207,10 +207,13 @@ test('pwa chat preserves zoomable viewport and restores after leaving chat', asy
 
   const chatViewport = await page.locator('meta[name="viewport"]').getAttribute('content');
   expect(chatViewport).toContain('viewport-fit=cover');
-  expect(chatViewport).toContain('user-scalable=no');
-  expect(chatViewport).toContain('maximum-scale=1.0');
+  expect(chatViewport).toContain('interactive-widget=resizes-content');
+  expect(chatViewport).not.toMatch(/user-scalable\s*=/i);
+  expect(chatViewport).not.toMatch(/maximum-scale\s*=/i);
 
   await page.goto('/?runtime=web_parity&ui_profile=pwa', { waitUntil: 'domcontentloaded' });
   const restoredViewport = await page.locator('meta[name="viewport"]').getAttribute('content');
-  expect(restoredViewport).toContain('user-scalable=no');
+  expect(restoredViewport).toContain('viewport-fit=cover');
+  expect(restoredViewport).not.toMatch(/user-scalable\s*=/i);
+  expect(restoredViewport).not.toMatch(/maximum-scale\s*=/i);
 });

@@ -479,6 +479,8 @@ export function Scanner() {
                 <button
                   type="button"
                   onClick={openPrimaryPicker}
+                  aria-label={t.scannerGalleryFile}
+                  data-testid="scanner-gallery-picker"
                   className="glass-button py-3 text-sm font-medium"
                 >
                   {t.scannerGalleryFile}
@@ -487,6 +489,8 @@ export function Scanner() {
                   type="button"
                   onClick={() => { void openCameraPicker(); }}
                   disabled={!cameraSupported}
+                  aria-label={t.scannerCamera}
+                  data-testid="scanner-camera-picker"
                   className={`py-3 text-sm font-medium ${cameraSupported ? "glass-button" : "glass-button opacity-60 cursor-not-allowed"}`}
                 >
                   {t.scannerCamera}

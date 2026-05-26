@@ -99,6 +99,17 @@ alter table public.ai_brew_journal force row level security;
 alter table public.recipe_library_items enable row level security;
 alter table public.recipe_library_items force row level security;
 
+grant usage on schema public to anon, authenticated, service_role;
+
+revoke all on public.ai_brew_journal from anon, authenticated;
+revoke all on public.recipe_library_items from anon, authenticated;
+
+grant select on public.ai_brew_journal to authenticated;
+grant select on public.recipe_library_items to authenticated;
+grant all on public.ai_brew_journal to service_role;
+grant all on public.recipe_library_items to service_role;
+grant usage, select on all sequences in schema public to service_role;
+
 drop policy if exists "service role manages ai brew journal" on public.ai_brew_journal;
 create policy "service role manages ai brew journal"
 on public.ai_brew_journal
@@ -153,4 +164,3 @@ select
 from information_schema.tables
 where table_schema = 'public'
   and table_name in ('ai_brew_journal', 'recipe_library_items');
-

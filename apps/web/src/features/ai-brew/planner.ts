@@ -48,6 +48,14 @@ import { resolveSwitchPlanSelection, validateSwitchStepSafety } from './switchPl
 import { resolveKalitaPlanSelection, isKalitaWaveDripperId } from './kalitaPlanner.ts';
 import { resolveCleverPlanSelection, isCleverDripperId } from './cleverPlanner.ts';
 import { resolveChemexPlanSelection, isChemexDripperId } from './chemexPlanner.ts';
+import { resolveMokaPlanSelection, isMokaPotDripperId } from './mokaPlanner.ts';
+import { resolveColdBrewPlanSelection, isColdBrewDripperId } from './coldBrewPlanner.ts';
+import { resolveBatchPlanSelection, isBatchBrewDripperId } from './batchPlanner.ts';
+import { resolveSiphonPlanSelection, isSiphonDripperId } from './siphonPlanner.ts';
+import { resolveOrigamiPlanSelection, isOrigamiDripperId } from './origamiPlanner.ts';
+import { resolveAprilPlanSelection, isAprilDripperId } from './aprilPlanner.ts';
+import { resolveMelittaPlanSelection, isMelittaDripperId } from './melittaPlanner.ts';
+import { resolveKonoPlanSelection, isKonoDripperId } from './konoPlanner.ts';
 export {
   buildWorkflowAwareGuideSteps,
   validateMethodWorkflowGuide,
@@ -118,6 +126,14 @@ import type {
   KalitaWaveRecipeStyle,
   CleverDripperRecipeStyle,
   ChemexRecipeStyle,
+  MokaPotRecipeStyle,
+  ColdBrewRecipeStyle,
+  BatchBrewRecipeStyle,
+  SiphonRecipeStyle,
+  OrigamiRecipeStyle,
+  AprilRecipeStyle,
+  MelittaRecipeStyle,
+  KonoRecipeStyle,
   FrenchPressRecipeStyle,
   SwitchPublicPresetId,
 } from './types.ts';
@@ -1738,6 +1754,14 @@ type AdaptiveShareContext = {
     | Exclude<KalitaWaveRecipeStyle, 'auto'>
     | Exclude<CleverDripperRecipeStyle, 'auto'>
     | Exclude<ChemexRecipeStyle, 'auto'>
+    | Exclude<MokaPotRecipeStyle, 'auto'>
+    | Exclude<ColdBrewRecipeStyle, 'auto'>
+    | Exclude<BatchBrewRecipeStyle, 'auto'>
+    | Exclude<SiphonRecipeStyle, 'auto'>
+    | Exclude<OrigamiRecipeStyle, 'auto'>
+    | Exclude<AprilRecipeStyle, 'auto'>
+    | Exclude<MelittaRecipeStyle, 'auto'>
+    | Exclude<KonoRecipeStyle, 'auto'>
     | SwitchPublicPresetId;
   physicalConstraints?: DevicePhysicalConstraints;
   methodProgramme?: SwitchBrewProgramme | string;
@@ -1745,6 +1769,14 @@ type AdaptiveShareContext = {
   kalitaWaveStyle?: KalitaWaveRecipeStyle;
   cleverDripperStyle?: CleverDripperRecipeStyle;
   chemexStyle?: ChemexRecipeStyle;
+  mokaPotStyle?: MokaPotRecipeStyle;
+  coldBrewStyle?: ColdBrewRecipeStyle;
+  batchBrewStyle?: BatchBrewRecipeStyle;
+  siphonStyle?: SiphonRecipeStyle;
+  origamiStyle?: OrigamiRecipeStyle;
+  aprilStyle?: AprilRecipeStyle;
+  melittaStyle?: MelittaRecipeStyle;
+  konoStyle?: KonoRecipeStyle;
   brewMode: 'hot' | 'iced';
   roastLevel: RoastLevel;
   roastDevelopment?: BeanRoastDevelopment;
@@ -3299,12 +3331,18 @@ function deriveDoseAdjustment(
   adjustment.grindBias = normalizedOffset <= -0.35 ? 'finer' : normalizedOffset >= 0.35 ? 'coarser' : 'same';
 
   if (Math.abs(normalizedOffset) >= 0.2) {
+    const methodLabel = methodFamily.replace(/_/g, ' ');
+    const doseNote = methodFamily === 'moka_pot'
+      ? normalizedOffset < 0
+        ? 'Dose sits below the nominal moka pot basket fill range, so extraction was tightened slightly.'
+        : 'Dose sits above the nominal moka pot basket fill range, so extraction was opened slightly.'
+      : normalizedOffset < 0
+        ? `Dose sits below the nominal ${methodLabel} service bed depth, so extraction was tightened slightly.`
+        : `Dose sits above the nominal ${methodLabel} service bed depth, so extraction was opened slightly.`;
     adjustment.notes.push(
-      normalizedOffset < 0
-        ? `Dose sits below the nominal ${methodFamily.replace(/_/g, ' ')} service bed depth, so extraction was tightened slightly.`
-        : `Dose sits above the nominal ${methodFamily.replace(/_/g, ' ')} service bed depth, so extraction was opened slightly.`,
+      doseNote,
     );
-    adjustment.confidenceNotes.push(`Dose calibration active around ${doseG} g on ${methodFamily.replace(/_/g, ' ')}.`);
+    adjustment.confidenceNotes.push(`Dose calibration active around ${doseG} g on ${methodLabel}.`);
   }
 
   return {
@@ -4412,6 +4450,14 @@ function deriveMethodFamilyAdjustment(params: {
     | Exclude<KalitaWaveRecipeStyle, 'auto'>
     | Exclude<CleverDripperRecipeStyle, 'auto'>
     | Exclude<ChemexRecipeStyle, 'auto'>
+    | Exclude<MokaPotRecipeStyle, 'auto'>
+    | Exclude<ColdBrewRecipeStyle, 'auto'>
+    | Exclude<BatchBrewRecipeStyle, 'auto'>
+    | Exclude<SiphonRecipeStyle, 'auto'>
+    | Exclude<OrigamiRecipeStyle, 'auto'>
+    | Exclude<AprilRecipeStyle, 'auto'>
+    | Exclude<MelittaRecipeStyle, 'auto'>
+    | Exclude<KonoRecipeStyle, 'auto'>
     | SwitchPublicPresetId;
   brewMode: 'hot' | 'iced';
   targetProfileLabel: string;
@@ -5920,12 +5966,18 @@ function buildAdaptiveDoseCue(context: AdaptiveShareContext) {
     if (isImmersionLedAdaptiveFamily(context.methodFamily)) {
       return 'This lighter dose needs cleaner contact and shorter idle gaps between checkpoints.';
     }
+    if (context.methodFamily === 'moka_pot') {
+      return 'This lighter basket fill needs cleaner flow and shorter idle gaps between checkpoints.';
+    }
     if (isNonManualFlowAdaptiveFamily(context.methodFamily)) {
       return 'This lighter dose needs cleaner flow and shorter idle gaps between checkpoints.';
     }
     return 'This lighter bed depth needs cleaner flow and shorter idle gaps between pours.';
   }
   if (context.doseScale >= 0.35) {
+    if (context.methodFamily === 'moka_pot') {
+      return 'This fuller basket can carry a bit more contact, so do not rush the middle checkpoints.';
+    }
     return 'This deeper bed can carry a bit more contact, so do not rush the middle checkpoints.';
   }
   return undefined;
@@ -6022,7 +6074,10 @@ function buildMethodFamilyStepInstruction(params: {
       }
       break;
     case 'origami':
-      if (context.filterStyle === 'flat') {
+      if (context.origamiStyle && context.origamiStyle !== 'auto') {
+        quickNote = fallbackNote;
+        detail = fallbackNote;
+      } else if (context.filterStyle === 'flat') {
         if (phase === 'bloom') {
           quickNote = 'Set the wave filter level and saturate the flat bed edge to edge.';
           detail = 'Use the wave paper like a Kalita bed: wet evenly, keep the base flat, and avoid cone-style wall chasing.';
@@ -6051,7 +6106,10 @@ function buildMethodFamilyStepInstruction(params: {
       }
       break;
     case 'kono':
-      if (phase === 'bloom') {
+      if (context.konoStyle && context.konoStyle !== 'auto') {
+        quickNote = fallbackNote;
+        detail = fallbackNote;
+      } else if (phase === 'bloom') {
         quickNote = 'Keep the bloom centered and slightly deeper to establish a sweet core.';
         detail = 'Stay tighter in the center during bloom so the Kono can build its sweeter contact path before the flow opens.';
       } else if (phase === 'early_middle') {
@@ -6440,7 +6498,10 @@ function buildMethodFamilyStepInstruction(params: {
       }
       break;
     case 'siphon':
-      if (phase === 'bloom') {
+      if (context.siphonStyle && context.siphonStyle !== 'auto') {
+        quickNote = fallbackNote;
+        detail = fallbackNote;
+      } else if (phase === 'bloom') {
         quickNote = 'Load water and stabilize the upper chamber before agitation.';
         detail = 'Let the water rise fully, then add coffee and keep the first stir gentle so the vacuum bed stays clean.';
       } else if (phase === 'early_middle') {
@@ -6455,7 +6516,10 @@ function buildMethodFamilyStepInstruction(params: {
       }
       break;
     case 'moka_pot':
-      if (phase === 'bloom') {
+      if (context.mokaPotStyle && context.mokaPotStyle !== 'auto') {
+        quickNote = fallbackNote;
+        detail = fallbackNote;
+      } else if (phase === 'bloom') {
         quickNote = 'Fill the base correctly and level the basket without tamping.';
         detail = 'Keep water below the safety valve and level the grounds loosely; do not tamp because the pot needs a safe pressure path.';
       } else if (phase === 'early_middle') {
@@ -6470,7 +6534,10 @@ function buildMethodFamilyStepInstruction(params: {
       }
       break;
     case 'cold_brew':
-      if (phase === 'bloom') {
+      if (context.coldBrewStyle && context.coldBrewStyle !== 'auto') {
+        quickNote = fallbackNote;
+        detail = fallbackNote;
+      } else if (phase === 'bloom') {
         quickNote = 'Saturate coarse grounds evenly with cool water.';
         detail = 'Add water in stages and make sure the coarse bed is fully wet before the long steep starts.';
       } else if (phase === 'early_middle') {
@@ -6485,7 +6552,10 @@ function buildMethodFamilyStepInstruction(params: {
       }
       break;
     case 'batch_brew':
-      if (phase === 'bloom') {
+      if (context.batchBrewStyle && context.batchBrewStyle !== 'auto') {
+        quickNote = fallbackNote;
+        detail = fallbackNote;
+      } else if (phase === 'bloom') {
         quickNote = 'Start with a level bed and correct brew basket setup.';
         detail = 'Level the bed, confirm the filter is seated, and start the cycle without overloading the basket.';
       } else if (phase === 'early_middle') {
@@ -7389,7 +7459,108 @@ function finalizePlanCore(
       doseG,
     })
     : null;
-  const effectiveDeviceProfile = switchSelection?.adjustedProfile || kalitaSelection?.adjustedProfile || cleverSelection?.adjustedProfile || chemexSelection?.adjustedProfile || deviceSelection.profile;
+  const mokaSelection = preliminaryMethodFamily === 'moka_pot' && isMokaPotDripperId(dripper.id)
+    ? resolveMokaPlanSelection({
+      input,
+      catalog,
+      dripper,
+      profile: deviceSelection.profile,
+      targetProfile,
+      processEntry,
+      doseG,
+    })
+    : null;
+  const coldBrewSelection = preliminaryMethodFamily === 'cold_brew' && isColdBrewDripperId(dripper.id)
+    ? resolveColdBrewPlanSelection({
+      input,
+      catalog,
+      dripper,
+      profile: deviceSelection.profile,
+      targetProfile,
+      processEntry,
+      doseG,
+    })
+    : null;
+  const batchBrewSelection = preliminaryMethodFamily === 'batch_brew' && isBatchBrewDripperId(dripper.id)
+    ? resolveBatchPlanSelection({
+      input,
+      catalog,
+      dripper,
+      profile: deviceSelection.profile,
+      targetProfile,
+      processEntry,
+      doseG,
+    })
+    : null;
+  const siphonSelection = preliminaryMethodFamily === 'siphon' && isSiphonDripperId(dripper.id)
+    ? resolveSiphonPlanSelection({
+      input,
+      catalog,
+      dripper,
+      profile: deviceSelection.profile,
+      targetProfile,
+      processEntry,
+      doseG,
+    })
+    : null;
+  const origamiSelection = preliminaryMethodFamily === 'origami' && isOrigamiDripperId(dripper.id)
+    ? resolveOrigamiPlanSelection({
+      input,
+      catalog,
+      dripper,
+      profile: deviceSelection.profile,
+      targetProfile,
+      processEntry,
+      doseG,
+    })
+    : null;
+  const aprilSelection = preliminaryMethodFamily === 'april' && isAprilDripperId(dripper.id)
+    ? resolveAprilPlanSelection({
+      input,
+      catalog,
+      dripper,
+      profile: deviceSelection.profile,
+      targetProfile,
+      processEntry,
+      doseG,
+    })
+    : null;
+  const melittaSelection = preliminaryMethodFamily === 'melitta' && isMelittaDripperId(dripper.id)
+    ? resolveMelittaPlanSelection({
+      input,
+      catalog,
+      dripper,
+      profile: deviceSelection.profile,
+      targetProfile,
+      processEntry,
+      doseG,
+    })
+    : null;
+  const konoSelection = preliminaryMethodFamily === 'kono' && isKonoDripperId(dripper.id)
+    ? resolveKonoPlanSelection({
+      input,
+      catalog,
+      dripper,
+      profile: deviceSelection.profile,
+      targetProfile,
+      processEntry,
+      doseG,
+    })
+    : null;
+  const effectiveDeviceProfile =
+    switchSelection?.adjustedProfile ||
+    kalitaSelection?.adjustedProfile ||
+    cleverSelection?.adjustedProfile ||
+    chemexSelection?.adjustedProfile ||
+    mokaSelection?.adjustedProfile ||
+    coldBrewSelection?.adjustedProfile ||
+    batchBrewSelection?.adjustedProfile ||
+    siphonSelection?.adjustedProfile ||
+    origamiSelection?.adjustedProfile ||
+    aprilSelection?.adjustedProfile ||
+    melittaSelection?.adjustedProfile ||
+    konoSelection?.adjustedProfile ||
+    deviceSelection.profile;
   const methodFamily = effectiveDeviceProfile.methodFamily || dripper.methodFamily || 'v60';
   const manualPreset = findManualBrewPreset(catalog, input.manualPresetId || '');
   const methodId = resolveProfileBrewMethodId(effectiveDeviceProfile, methodFamily, input.brewMode);
@@ -7765,6 +7936,14 @@ function finalizePlanCore(
     kalitaWaveStyle: kalitaSelection?.style || undefined,
     cleverDripperStyle: cleverSelection?.style || undefined,
     chemexStyle: chemexSelection?.style || undefined,
+    mokaPotStyle: mokaSelection?.style || undefined,
+    coldBrewStyle: coldBrewSelection?.style || undefined,
+    batchBrewStyle: batchBrewSelection?.style || undefined,
+    siphonStyle: siphonSelection?.style || undefined,
+    origamiStyle: origamiSelection?.style || undefined,
+    aprilStyle: aprilSelection?.style || undefined,
+    melittaStyle: melittaSelection?.style || undefined,
+    konoStyle: konoSelection?.style || undefined,
     brewMode: input.brewMode,
     roastLevel: input.roastLevel,
     roastDevelopment: input.roastDevelopment || undefined,
@@ -7860,6 +8039,16 @@ function finalizePlanCore(
     switchSelection?.tasteProgramme.riskWarnings || [],
     switchStepValidation && switchStepValidation.status !== 'safe' ? [switchStepValidation.message] : [],
     kalitaSelection?.watch ? [kalitaSelection.watch] : [],
+    cleverSelection?.watch ? [cleverSelection.watch] : [],
+    chemexSelection?.watch ? [chemexSelection.watch] : [],
+    mokaSelection?.watch ? [mokaSelection.watch] : [],
+    coldBrewSelection?.watch ? [coldBrewSelection.watch] : [],
+    batchBrewSelection?.watch ? [batchBrewSelection.watch] : [],
+    siphonSelection?.watch ? [siphonSelection.watch] : [],
+    origamiSelection?.watch ? [origamiSelection.watch] : [],
+    aprilSelection?.watch ? [aprilSelection.watch] : [],
+    melittaSelection?.watch ? [melittaSelection.watch] : [],
+    konoSelection?.watch ? [konoSelection.watch] : [],
     baseGuardrails.warnings,
   );
   const isDerivedTemplateProfile = deviceSelection.mode === 'derived_template';
@@ -7871,6 +8060,16 @@ function finalizePlanCore(
       manualPreset ? `Manual brew preset selected: ${manualPreset.safeLabel}. ${manualPreset.visibleSummary}` : undefined,
       manualPreset?.fallbackReason,
       kalitaSelection?.why ? kalitaSelection.why : undefined,
+      cleverSelection?.why ? cleverSelection.why : undefined,
+      chemexSelection?.why ? chemexSelection.why : undefined,
+      mokaSelection?.why ? mokaSelection.why : undefined,
+      coldBrewSelection?.why ? coldBrewSelection.why : undefined,
+      batchBrewSelection?.why ? batchBrewSelection.why : undefined,
+      siphonSelection?.why ? siphonSelection.why : undefined,
+      origamiSelection?.why ? origamiSelection.why : undefined,
+      aprilSelection?.why ? aprilSelection.why : undefined,
+      melittaSelection?.why ? melittaSelection.why : undefined,
+      konoSelection?.why ? konoSelection.why : undefined,
     ],
     waterProfile.notes,
     manualPreset?.guardrails || [],
@@ -8171,6 +8370,14 @@ function finalizePlanCore(
     kalitaWaveStyle: kalitaSelection?.style || undefined,
     cleverDripperStyle: cleverSelection?.style || undefined,
     chemexStyle: chemexSelection?.style || undefined,
+    mokaPotStyle: mokaSelection?.style || undefined,
+    coldBrewStyle: coldBrewSelection?.style || undefined,
+    batchBrewStyle: batchBrewSelection?.style || undefined,
+    siphonStyle: siphonSelection?.style || undefined,
+    origamiStyle: origamiSelection?.style || undefined,
+    aprilStyle: aprilSelection?.style || undefined,
+    melittaStyle: melittaSelection?.style || undefined,
+    konoStyle: konoSelection?.style || undefined,
     notes,
     warnings,
     extractionRationale,
@@ -8270,6 +8477,14 @@ export function createDefaultAiBrewFormState(catalog?: AiBrewCatalog): AiBrewFor
     kalitaWaveStyle: 'auto',
     cleverDripperStyle: 'auto',
     chemexStyle: 'auto',
+    mokaPotStyle: 'auto',
+    coldBrewStyle: 'auto',
+    batchBrewStyle: 'auto',
+    siphonStyle: 'auto',
+    origamiStyle: 'auto',
+    aprilStyle: 'auto',
+    melittaStyle: 'auto',
+    konoStyle: 'auto',
   };
 }
 
@@ -8295,6 +8510,14 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
   const validKalitaWaveStyles = new Set(['auto', 'traditional_flat_three', 'competition_fast_four', 'continuous_slow_stream', 'iced_wave', 'high_dose_concentrate']);
   const validCleverDripperStyles = new Set(['auto', 'classic_closed', 'reverse_water_first', 'double_stage_hybrid', 'iced_clever', 'high_dose_concentrate']);
   const validChemexStyles = new Set(['auto', 'traditional_three_pour', 'competition_multi_pulse', 'continuous_center_pour', 'iced_chemex', 'high_dose_heavy_body']);
+  const validMokaPotStyles = new Set(['auto', 'traditional_stovetop', 'preheated_boiler', 'low_temp_controlled', 'iced_moka_concentrate', 'high_yield_robust']);
+  const validColdBrewStyles = new Set(['auto', 'classic_toddy_immersion', 'cold_drip_tower', 'double_extraction_concentrate', 'accelerated_room_temp', 'japanese_slow_drip']);
+  const validBatchBrewStyles = new Set(['auto', 'sca_gold_cup', 'heavy_batch_catering', 'bright_light_roast_batch', 'pre_wet_hybrid_batch', 'high_extraction_thermos']);
+  const validSiphonStyles = new Set(['auto', 'traditional_vacuum_siphon', 'competition_triple_agitation', 'low_temp_delicate', 'high_body_fast_drawdown', 'spirit_infusion_style']);
+  const validOrigamiStyles = new Set(['auto', 'cone_dripper_style', 'wave_dripper_style', 'mugen_one_pour', 'iced_origami', 'competition_hybrid_flow']);
+  const validAprilStyles = new Set(['auto', 'april_flat_bottom_standard', 'april_continuous_slow', 'competition_two_pour', 'iced_april_style', 'high_body_heavy_dose']);
+  const validMelittaStyles = new Set(['auto', 'traditional_melitta_one_pour', 'aromaboy_style', 'three_pour_melitta', 'iced_melitta_brew', 'dense_classic_extraction']);
+  const validKonoStyles = new Set(['auto', 'kono_meimon_traditional', 'kono_dripper_standard', 'kono_slow_drip_body', 'iced_kono_meimon', 'kono_agitation_sweet']);
   const waterBrandId = String(input.waterBrandId || '');
   const dripperId = String(input.dripperId || fallback.dripperId);
   const requestedBrewMode = input.brewMode === 'iced' ? 'iced' : 'hot';
@@ -8367,6 +8590,30 @@ export function sanitizeAiBrewFormState(input: Partial<AiBrewFormState>, catalog
     chemexStyle: validChemexStyles.has(String(input.chemexStyle))
       ? (String(input.chemexStyle) as ChemexRecipeStyle)
       : fallback.chemexStyle,
+    mokaPotStyle: validMokaPotStyles.has(String(input.mokaPotStyle))
+      ? (String(input.mokaPotStyle) as MokaPotRecipeStyle)
+      : fallback.mokaPotStyle,
+    coldBrewStyle: validColdBrewStyles.has(String(input.coldBrewStyle))
+      ? (String(input.coldBrewStyle) as ColdBrewRecipeStyle)
+      : fallback.coldBrewStyle,
+    batchBrewStyle: validBatchBrewStyles.has(String(input.batchBrewStyle))
+      ? (String(input.batchBrewStyle) as BatchBrewRecipeStyle)
+      : fallback.batchBrewStyle,
+    siphonStyle: validSiphonStyles.has(String(input.siphonStyle))
+      ? (String(input.siphonStyle) as SiphonRecipeStyle)
+      : fallback.siphonStyle,
+    origamiStyle: validOrigamiStyles.has(String(input.origamiStyle))
+      ? (String(input.origamiStyle) as OrigamiRecipeStyle)
+      : fallback.origamiStyle,
+    aprilStyle: validAprilStyles.has(String(input.aprilStyle))
+      ? (String(input.aprilStyle) as AprilRecipeStyle)
+      : fallback.aprilStyle,
+    melittaStyle: validMelittaStyles.has(String(input.melittaStyle))
+      ? (String(input.melittaStyle) as MelittaRecipeStyle)
+      : fallback.melittaStyle,
+    konoStyle: validKonoStyles.has(String(input.konoStyle))
+      ? (String(input.konoStyle) as KonoRecipeStyle)
+      : fallback.konoStyle,
   };
 }
 
@@ -8390,6 +8637,14 @@ export function createQuickAiBrewFormState(input: AiBrewFormState, catalog?: AiB
     kalitaWaveStyle: preserveManualPresetPrefill ? sanitized.kalitaWaveStyle : 'auto',
     cleverDripperStyle: preserveManualPresetPrefill ? sanitized.cleverDripperStyle : 'auto',
     chemexStyle: preserveManualPresetPrefill ? sanitized.chemexStyle : 'auto',
+    mokaPotStyle: preserveManualPresetPrefill ? sanitized.mokaPotStyle : 'auto',
+    coldBrewStyle: preserveManualPresetPrefill ? sanitized.coldBrewStyle : 'auto',
+    batchBrewStyle: preserveManualPresetPrefill ? sanitized.batchBrewStyle : 'auto',
+    siphonStyle: preserveManualPresetPrefill ? sanitized.siphonStyle : 'auto',
+    origamiStyle: preserveManualPresetPrefill ? sanitized.origamiStyle : 'auto',
+    aprilStyle: preserveManualPresetPrefill ? sanitized.aprilStyle : 'auto',
+    melittaStyle: preserveManualPresetPrefill ? sanitized.melittaStyle : 'auto',
+    konoStyle: preserveManualPresetPrefill ? sanitized.konoStyle : 'auto',
   };
 }
 

@@ -93,6 +93,8 @@ import type {
 } from '../../apps/web/src/features/ai-brew/types.ts';
 import type { BrewMethodId } from '../../apps/web/src/features/barista-tools/types.ts';
 
+const MOKA_METHOD_LEAK_PATTERN = /\b(bloom|drawdown|final pour|tuang akhir|spiral|v60)\b|(?:filter[-\s]?bed|coffee bed|level(?:ed)? bed|bed depth|bed drain|bed down|settle(?:d)? bed|wet(?:ting)? the bed|bed\s+(?:level|settle|drain|depth))/i;
+
 const catalog: AiBrewCatalog = {
   catalogVersion: 'test-v2',
   drippers: [
@@ -2923,7 +2925,7 @@ test('AI Brew release snapshot matrix keeps global methods safe, honest, and met
     { label: 'AeroPress sweet', input: { dripperId: findDripperId(/^AeroPress$/i), targetProfileId: 'more_sweetness' }, expectedMethod: 'aeropress', requiredText: /charge|stir|press|hiss/i, forbiddenText: /final pour|wall/i },
     { label: 'French Press body', input: { dripperId: findDripperId(/^French Press$/i), targetProfileId: 'more_body' }, expectedMethod: 'french_press', requiredText: /charge|steep|settle|decant/i, forbiddenText: /bloom|final pour/i },
     { label: 'Clever balanced', input: { dripperId: findDripperId(/^Clever Dripper$/i), targetProfileId: 'balance_clean' }, expectedMethod: 'clever_dripper', requiredText: /charge|steep|release|drawdown/i },
-    { label: 'Moka', input: { dripperId: findDripperId(/^Bialetti Moka Pot$/i), targetProfileId: 'dense_comforting' }, expectedMethod: 'moka_pot', requiredText: /boiler|basket|heat|sputter/i, forbiddenText: /bloom|kettle|final pour/i },
+    { label: 'Moka', input: { dripperId: findDripperId(/^Bialetti Moka Pot$/i), targetProfileId: 'dense_comforting' }, expectedMethod: 'moka_pot', requiredText: /boiler|basket|heat|sputter/i, forbiddenText: MOKA_METHOD_LEAK_PATTERN },
     { label: 'Espresso', input: { dripperId: findDripperId(/^Espresso Machine$/i), targetProfileId: 'balance_clean' }, expectedMethod: 'espresso', requiredText: /dose|puck|shot|yield|flow/i, forbiddenText: /bloom|kettle|drawdown bed/i },
     { label: 'Cold Brew', input: { dripperId: findDripperId(/^Toddy Cold Brew$/i), doseG: '60', targetProfileId: 'soft_round' }, expectedMethod: 'cold_brew', requiredText: /saturate|steep|filter|dilute/i, forbiddenText: /bloom|kettle|hot water/i },
   ];
@@ -4818,6 +4820,10 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
     assert.match(entry.plan.steps.map((step) => step.kind || 'pour').join(','), entry.kindPattern);
     assert.match(textFor(entry.plan), entry.cue);
     assert.doesNotMatch(textFor(entry.plan), /\b(Pulse 1|Pulse 2|Final Pour|Center Pour|Second Pour)\b/i);
+    if (entry.plan.methodFamily === 'moka_pot') {
+      assert.ok(entry.plan.steps.every((step) => step.kind !== 'drawdown'), 'Moka steps should not use drawdown kind');
+      assert.doesNotMatch(textFor(entry.plan), MOKA_METHOD_LEAK_PATTERN, 'Moka golden text should stay stovetop-specific');
+    }
     assert.equal(positivePourCount(entry.plan), 1);
   }
 });
@@ -4856,7 +4862,49 @@ test('workflow-aware guide expands all-method operational phases and validates r
     assert.equal(validation.passed, true, `${entry.label} workflow should pass: ${validation.blockingErrors.join('; ')}`);
     assert.match(text, entry.pattern, `${entry.label} guide should include required phases`);
     assert.doesNotMatch(text, /\b(Pulse 1|Pulse 2|Final Pour|Center Pour)\b/i, `${entry.label} should not use generic V60 labels`);
+    if (entry.plan.methodFamily === 'moka_pot') {
+      assert.doesNotMatch(text, MOKA_METHOD_LEAK_PATTERN, `${entry.label} guide should stay stovetop-specific`);
+    }
   }
+});
+
+test('Moka compact audit narrative stays free of pour-over workflow language', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(productionCatalog),
+    brewMode: 'hot',
+    dripperId: 'bialetti-moka-pot',
+    targetProfileId: 'dense_comforting',
+    coffeeName: 'Indonesia Catimor compact body',
+    doseG: '18',
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+    process: 'washed',
+    variety: 'bourbon',
+  }, productionCatalog);
+  const guide = plan.workflowGuideSteps || buildWorkflowAwareGuideSteps(plan);
+  const correction = buildTasteFeedbackCorrection(plan, 'bitter', 'en');
+  const compactAuditText = [
+    plan.summary,
+    ...plan.notes,
+    ...plan.warnings,
+    ...plan.confidenceNotes,
+    ...(plan.beanCoverage?.warnings || []),
+    ...(plan.expectedCupProfile?.warnings || []),
+    ...plan.steps.map((step) => `${step.label} ${step.kind || ''} ${step.note || ''} ${step.hybridInstruction || ''}`),
+    ...guide.map((step) => `${step.label} ${step.actionType} ${step.primaryText} ${step.secondaryText || ''}`),
+    correction.primaryCorrection,
+    correction.backupCorrection,
+    correction.guardrail,
+  ].join('\n');
+
+  assert.equal(plan.methodFamily, 'moka_pot');
+  assert.deepEqual(plan.steps.map((step) => step.kind), ['pour', 'heat', 'serve']);
+  assert.match(compactAuditText, /boiler|basket|sputter|heat/i);
+  assert.doesNotMatch(compactAuditText, MOKA_METHOD_LEAK_PATTERN);
 });
 
 test('workflow validator blocks too-simple or method-wrong guide output', () => {
@@ -5022,7 +5070,7 @@ test('taste feedback correction is one-knob, method-correct, and keeps protected
     { label: 'V60 sour', plan: planFor(/^Hario V60$/i), rating: 'sour' as const, expected: /finer|lebih halus/i, forbidden: /add water|tambah air|change ratio|ubah rasio/i },
     { label: 'AeroPress bitter', plan: planFor(/^AeroPress$/i), rating: 'bitter' as const, expected: /press|hiss|steep|tekan/i, forbidden: /final pour|drawdown bed/i },
     { label: 'French Press muddy', plan: planFor(/^French Press$/i), rating: 'muddy' as const, expected: /settle|decant|diamkan/i, forbidden: /pour lower|tuang rendah|final pour/i },
-    { label: 'Moka bitter', plan: planFor(/^Bialetti Moka Pot$/i), rating: 'bitter' as const, expected: /heat|sputter|panas/i, forbidden: /bloom|final pour/i },
+    { label: 'Moka bitter', plan: planFor(/^Bialetti Moka Pot$/i), rating: 'bitter' as const, expected: /heat|sputter|panas/i, forbidden: MOKA_METHOD_LEAK_PATTERN },
     { label: 'Espresso sour', plan: planFor(/^Espresso Machine$/i), rating: 'sour' as const, expected: /puck|tamp|flow|halus/i, forbidden: /add water|tambah air|bloom/i },
     { label: 'Cold Brew thin', plan: planFor(/^Toddy Cold Brew$/i), rating: 'thin' as const, expected: /saturation|steep|filtration|saturasi/i, forbidden: /kettle|temperature|bloom/i },
   ];
@@ -5077,7 +5125,7 @@ test('all-method public snapshot matrix includes workflow, expected cup, feedbac
     { label: 'Clever hot', input: { dripperId: findDripperId(/^Clever Dripper$/i) }, required: /(charge|isi)[\s\S]*(steep|rendam)[\s\S]*(release|alirkan)[\s\S]*(drawdown|air turun)/i, forbidden: /Final Pour/i, minGuide: 5 },
     { label: 'AeroPress hot', input: { dripperId: findDripperId(/^AeroPress$/i), aeropressStyle: 'standard' }, required: /(charge|isi)[\s\S]*(stir|aduk)[\s\S]*(steep|rendam)[\s\S]*(press|tekan)[\s\S]*hiss/i, forbidden: /final pour|drawdown bed/i, minGuide: 6 },
     { label: 'French Press hot', input: { dripperId: findDripperId(/^French Press$/i) }, required: /(charge|isi)[\s\S]*(steep|rendam)[\s\S]*(settle|endapkan)[\s\S]*(decant|tuang pisah)/i, forbidden: /final pour|bloom/i, minGuide: 5 },
-    { label: 'Moka Pot hot', input: { dripperId: findDripperId(/^Bialetti Moka Pot$/i) }, required: /boiler[\s\S]*basket[\s\S]*(heat|panas)[\s\S]*sputter/i, forbidden: /bloom|final pour/i, minGuide: 4 },
+    { label: 'Moka Pot hot', input: { dripperId: findDripperId(/^Bialetti Moka Pot$/i) }, required: /boiler[\s\S]*basket[\s\S]*(heat|panas)[\s\S]*sputter/i, forbidden: MOKA_METHOD_LEAK_PATTERN, minGuide: 4 },
     { label: 'Siphon hot', input: { dripperId: findDripperId(/^Hario Siphon$/i) }, required: /(draw-up|air naik)[\s\S]*(stir|aduk)[\s\S]*(contact|kontak)[\s\S]*(drawdown|air turun)/i, forbidden: /final pour/i, minGuide: 5 },
     { label: 'Batch Brewer hot', input: { dripperId: findDripperId(/^Batch Brewer$/i), doseG: '55' }, required: /dose\/l|spray|drawdown|air turun|mix batch|aduk batch/i, forbidden: /manual pour|bloom pour/i, minGuide: 5 },
     { label: 'Espresso hot', input: { dripperId: findDripperId(/^Espresso Machine$/i) }, required: /dose[\s\S]*puck[\s\S]*(shot|yield|output)[\s\S]*(flow|aliran)[\s\S]*(stop|berhenti)/i, forbidden: /bloom|kettle|final pour/i, minGuide: 5 },
@@ -5102,7 +5150,7 @@ test('all-method public snapshot matrix includes workflow, expected cup, feedbac
       assert.equal(correction.protectedNumbersLocked, true, `${entry.label} ${rating} correction`);
       const correctionText = `${correction.primaryCorrection} ${correction.backupCorrection}`.toLowerCase();
       if (plan.methodFamily === 'espresso') assert.doesNotMatch(correctionText, /add water|bloom|kettle/);
-      if (plan.methodFamily === 'moka_pot') assert.doesNotMatch(correctionText, /bloom|final pour/);
+      if (plan.methodFamily === 'moka_pot') assert.doesNotMatch(correctionText, MOKA_METHOD_LEAK_PATTERN);
       if (plan.methodFamily === 'cold_brew') assert.doesNotMatch(correctionText, /kettle|raise temperature/);
     }
     if (plan.brewMode === 'iced') {
@@ -5385,7 +5433,7 @@ test('AI Brew 10000-combination global stress matrix keeps drippers, targets, be
       assert.doesNotMatch(operationalText, /bloom|air turun|drawdown|final pour|tuang akhir/i, `${index} Espresso should not leak filter workflow`);
     }
     if (plan.methodFamily === 'moka_pot') {
-      assert.doesNotMatch(operationalText, /bloom|final pour|tuang akhir/i, `${index} Moka should not leak filter workflow`);
+      assert.doesNotMatch(operationalText, MOKA_METHOD_LEAK_PATTERN, `${index} Moka should not leak filter workflow`);
     }
 
     const coverageCategory = plan.beanCoverage?.category || 'missing';
@@ -5929,7 +5977,7 @@ test('AI Brew 100000-combination iced guide stress matrix keeps bloom, pours, ti
       assert.doesNotMatch(operationalText, /final pour|tuang akhir|tuang tengah|bloom \d/i, `${index} French Press should not leak pour-over steps`);
     }
     if (plan.methodFamily === 'moka_pot') {
-      assert.doesNotMatch(operationalText, /bloom|final pour|tuang akhir/i, `${index} Moka should not leak filter or espresso workflow`);
+      assert.doesNotMatch(operationalText, MOKA_METHOD_LEAK_PATTERN, `${index} Moka should not leak filter or espresso workflow`);
     }
 
     const coverageCategory = plan.beanCoverage?.category || 'missing';

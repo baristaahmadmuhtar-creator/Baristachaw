@@ -29,8 +29,7 @@ async function submitCreateFolder(page: import('@playwright/test').Page, name: s
   const createInput = page.getByRole('textbox', { name: folderNameInput });
   await expect(createInput).toBeVisible();
   await createInput.click();
-  await createInput.fill('');
-  await createInput.pressSequentially(name);
+  await createInput.fill(name);
   await expect(createInput).toHaveValue(name);
   const submitButton = createInput.locator('xpath=following-sibling::button[1]');
   await expect(submitButton).toBeEnabled({ timeout: 10_000 });

@@ -234,7 +234,8 @@ test('mobile ai brew builder uses app fullscreen height in pwa profile', async (
   expect(metrics.scrollPaddingBottom).toBeGreaterThanOrEqual(27);
 });
 
-test('mobile ai brew result workspace keeps primary actions inside the viewport', async ({ page }) => {
+test('mobile ai brew result workspace keeps primary actions inside the viewport', async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.includes('Mobile'), 'mobile-only viewport and action bar visibility checks');
   await page.goto('/tools?tab=ai-brew');
   await clearClientState(page);
   await qaLogin(page.request, buildQaUser({ planCode: 'starter' }));
@@ -503,7 +504,8 @@ test('mobile ai brew builder keeps focused inputs and footer above simulated iOS
   expect(metrics.scrollPaddingBottom).toBeGreaterThanOrEqual(300);
 });
 
-test('mobile ai brew result has no horizontal overflow and keeps touch targets comfortable', async ({ page }) => {
+test('mobile ai brew result has no horizontal overflow and keeps touch targets comfortable', async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.includes('Mobile'), 'mobile-only touch target checks');
   await openAiBrewResult(page, 'pro', 'Mobile Overflow QA');
 
   const result = page.getByTestId('ai-brew-result');

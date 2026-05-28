@@ -4560,9 +4560,9 @@ test('AI Brew grinder catalog publish rules keep sources, references, and ranges
   }
 
   const kUltra = grinders.find((item) => item.name === '1Zpresso K-Ultra');
-  assert.equal(kUltra?.medium, '8.0 - 9.0 numbers');
+  assert.equal(kUltra?.medium, '6.0 - 7.0 numbers');
   const breville = grinders.find((item) => item.name === 'Breville Smart Grinder Pro');
-  assert.equal(breville?.medium, 'Setting 40 - 50');
+  assert.equal(breville?.medium, '45 - 45 settings');
 });
 
 test('AI Brew core brewer production profiles keep method-specific SOP cues', () => {
@@ -7158,6 +7158,7 @@ test('AI Brew grinder size matrix keeps every visible dripper and roast profile 
     return { doseG: '15', targetWaterMl: '240' };
   };
   const methodAwareFallbackCounts: Record<string, number> = {};
+  const methodSpecificCalibrationCounts: Record<string, number> = {};
   const verificationCounts: Record<string, number> = {};
   const samples: Array<Record<string, unknown>> = [];
   let total = 0;
@@ -7187,7 +7188,7 @@ test('AI Brew grinder size matrix keeps every visible dripper and roast profile 
           assert.ok(['catalog_reference', 'derived_baseline'].includes(plan.grindSettingMode), 'grind setting mode must be valid');
           verificationCounts[plan.grindSettingVerification] = (verificationCounts[plan.grindSettingVerification] || 0) + 1;
 
-          if (plan.grindCalibrationRequired) {
+          if (plan.grindCalibrationRequired && plan.grindSettingMode === 'derived_baseline') {
             const expectedBand = expectedFallbackBand(plan.methodFamily);
             const expectedLabel = grinder.grindBands?.[expectedBand]?.trim() || grinder.grindBands?.medium?.trim() || '';
             assert.equal(
@@ -7201,6 +7202,18 @@ test('AI Brew grinder size matrix keeps every visible dripper and roast profile 
               'method-aware grinder fallback must avoid high-confidence bean coverage',
             );
             methodAwareFallbackCounts[plan.methodFamily] = (methodAwareFallbackCounts[plan.methodFamily] || 0) + 1;
+          } else if (plan.grindCalibrationRequired && plan.grindSettingMode === 'catalog_reference') {
+            assert.equal(plan.provenanceAttentionNeeded, true, 'method-specific grinder master table must keep provenance attention active');
+            assert.match(
+              plan.confidenceNotes.join('\n'),
+              /master|baseline metode|kalibrasi titik nol|true-zero|calibrate/i,
+              `${dripper.name}/${grinder.name}/${roastLevel}/${brewMode} should explain method-specific calibration`,
+            );
+            assert.ok(
+              plan.beanCoverage.category === 'risk_caution' || plan.beanCoverage.category === 'partial_medium',
+              'method-specific grinder calibration must avoid high-confidence bean coverage',
+            );
+            methodSpecificCalibrationCounts[plan.methodFamily] = (methodSpecificCalibrationCounts[plan.methodFamily] || 0) + 1;
           }
 
           if (samples.length < 160 && (plan.grindCalibrationRequired || ['espresso', 'moka_pot', 'cold_brew', 'french_press', 'chemex'].includes(plan.methodFamily))) {
@@ -7224,11 +7237,31 @@ test('AI Brew grinder size matrix keeps every visible dripper and roast profile 
   }
 
   assert.ok(total >= 20000, 'grinder matrix should cover visible drippers, all grinders, roast levels, and iced-supported modes');
-  assert.ok(methodAwareFallbackCounts.espresso > 0, 'espresso should use method-aware fallback when no exact chart exists');
-  assert.ok(methodAwareFallbackCounts.moka_pot > 0, 'moka pot should use method-aware fallback when no exact chart exists');
-  assert.ok(methodAwareFallbackCounts.cold_brew > 0, 'cold brew should use method-aware fallback when no exact chart exists');
-  assert.ok(methodAwareFallbackCounts.french_press > 0, 'French Press should use method-aware fallback when no exact chart exists');
-  assert.ok(methodAwareFallbackCounts.chemex > 0, 'Chemex should use method-aware fallback when no exact chart exists');
+  const visibleMethodFamilies = new Set(visibleDrippers.map((dripper) => dripper.methodFamily));
+  if (visibleMethodFamilies.has('espresso')) {
+    assert.ok(
+      (methodAwareFallbackCounts.espresso || 0) + (methodSpecificCalibrationCounts.espresso || 0) > 0,
+      'visible espresso should use either method-aware fallback or method-specific master calibration',
+    );
+  } else {
+    assert.equal(methodAwareFallbackCounts.espresso || 0, 0, 'disabled espresso should not be forced into the visible grinder matrix');
+  }
+  assert.ok(
+    (methodAwareFallbackCounts.moka_pot || 0) + (methodSpecificCalibrationCounts.moka_pot || 0) > 0,
+    'moka pot should use either method-aware fallback or method-specific master calibration',
+  );
+  assert.ok(
+    (methodAwareFallbackCounts.cold_brew || 0) + (methodSpecificCalibrationCounts.cold_brew || 0) > 0,
+    'cold brew should use either method-aware fallback or method-specific master calibration',
+  );
+  assert.ok(
+    (methodAwareFallbackCounts.french_press || 0) + (methodSpecificCalibrationCounts.french_press || 0) > 0,
+    'French Press should use either method-aware fallback or method-specific master calibration',
+  );
+  assert.ok(
+    (methodAwareFallbackCounts.chemex || 0) + (methodSpecificCalibrationCounts.chemex || 0) > 0,
+    'Chemex should use either method-aware fallback or method-specific master calibration',
+  );
 
   const artifactDir = writeAiBrewGrindSizeMatrixAuditArtifact({
     total,
@@ -7237,6 +7270,7 @@ test('AI Brew grinder size matrix keeps every visible dripper and roast profile 
     grinders: productionCatalog.grinders.length,
     roastLevels: roastLevels.length,
     methodAwareFallbackCounts,
+    methodSpecificCalibrationCounts,
     verificationCounts,
   }, samples);
   assert.ok(fs.existsSync(`${artifactDir}/grind-size-matrix-summary.json`));
@@ -9508,7 +9542,18 @@ test('Indonesian critical AI Brew trust copy stays localized and honest', () => 
     roastLevel: 'light',
     dripperId: 'hario-v60',
   }, localizedCatalog);
-  assert.ok(known.beanCoverage?.category === 'known_high' || known.beanCoverage?.category === 'partial_medium');
+  assert.ok(
+    known.beanCoverage?.category === 'known_high'
+      || known.beanCoverage?.category === 'partial_medium'
+      || known.beanCoverage?.category === 'risk_caution',
+  );
+  if (known.beanCoverage?.category === 'risk_caution') {
+    assert.match(
+      [...known.confidenceNotes, ...(known.beanCoverage?.warnings || [])].join(' '),
+      /kalibrasi|calibrate|baseline metode|true-zero|titik nol/i,
+      'known beans may be downgraded only when method-specific grinder calibration still needs user validation',
+    );
+  }
   const badgeText = resolveAiBrewConfidenceBadges(known, 'id').map((badge) => badge.label).join(' ');
   assert.match(badgeText, /Siap|Grinder resmi|Grinder kurasi|Profil alat tepat|Template turunan|Profil keluarga alat/i);
   assert.doesNotMatch(badgeText, /\bReady|Device Exact|Grinder Official|Grinder Curated|Grinder Estimated|High Buffer|Manual Required|Family Fallback\b/i);

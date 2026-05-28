@@ -19,7 +19,7 @@ test('invalid mobile tools tab recovers to a populated tools surface instead of 
   });
 
   await expect(page.getByRole('heading', { name: /Alat Barista|Barista Tools/i })).toBeVisible();
-  await expect(page.getByRole('tab', { name: /AI Brew|AI Seduh|Kalkulator|Rasio/i }).first()).toBeVisible();
+  await expect(page.getByRole('tab', { name: /Brew|AI Brew|AI Seduh|Kalkulator|Rasio/i }).first()).toBeVisible();
   await expectMobileParityPageHealthy(page, 'invalid tools tab recovery');
 });
 

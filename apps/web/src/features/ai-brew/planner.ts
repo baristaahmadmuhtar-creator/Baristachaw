@@ -1364,17 +1364,6 @@ function buildBeanCoverageState(params: {
     };
   }
 
-  if (riskyBean || riskyWater || riskyReference) {
-    return {
-      category: 'risk_caution',
-      confidence: 'medium',
-      label: 'Risk bean / caution',
-      reasons: normalizeNoteList(reasons, ['Safe baseline used with caution flags.']),
-      warnings: normalizeNoteList(warnings),
-      nextAction: 'Brew the conservative baseline, then use taste feedback before changing dose or ratio.',
-    };
-  }
-
   if (!hasBeanDetail) {
     return {
       category: 'unknown_fallback',
@@ -1383,6 +1372,17 @@ function buildBeanCoverageState(params: {
       reasons: normalizeNoteList(['No process, variety, origin, or bean profile was provided.']),
       warnings: normalizeNoteList(warnings),
       nextAction: 'Use the balanced baseline, then record taste feedback after brewing.',
+    };
+  }
+
+  if (riskyBean || riskyWater || riskyReference) {
+    return {
+      category: 'risk_caution',
+      confidence: 'medium',
+      label: 'Risk bean / caution',
+      reasons: normalizeNoteList(reasons, ['Safe baseline used with caution flags.']),
+      warnings: normalizeNoteList(warnings),
+      nextAction: 'Brew the conservative baseline, then use taste feedback before changing dose or ratio.',
     };
   }
 

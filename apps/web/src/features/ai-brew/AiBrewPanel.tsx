@@ -207,16 +207,18 @@ const COPY = {
     waterBrand: 'Brand',
     waterManual: 'Manual mineral',
     waterBrandPicker: 'Water',
+    comingSoon: 'Coming Soon',
+    espressoComingSoon: 'Espresso Brew is coming soon. For production MVP, use Basic Brew or Advanced Brew first.',
     waterQuickPicks: 'Suggested',
     waterQuickPicksDescription: '',
-    liteMode: 'Lite',
-    quickMode: 'Quick',
-    proMode: 'Precision',
-    liteModeDescription: 'Minimal inputs, local planner, fastest safe brew start.',
-    quickModeDescription: 'Fast default recipe builder for a reliable first cup.',
+    liteMode: 'Espresso Brew',
+    quickMode: 'Basic Brew',
+    proMode: 'Advanced Brew',
+    liteModeDescription: 'Coming Soon - espresso workflow is being prepared as a dedicated launch surface.',
+    quickModeDescription: 'Fast baseline recipe builder for a stable first cup.',
     proModeDescription: '',
-    liteModeTrustHint: 'Best when you only need a safe recipe now. Uses the same deterministic local planner as Quick with fewer visible controls.',
-    quickModeTrustHint: 'Best for speed and consistency. If bean profile and water stay neutral, Quick and Pro can land on the same plan.',
+    liteModeTrustHint: 'Coming Soon - espresso needs a separate dial-in flow, pressure logic, and grinder calibration before launch.',
+    quickModeTrustHint: 'Best for speed and consistency. If bean profile and water stay neutral, Basic and Advanced can land on the same plan.',
     proModeTrustHint: '',
     pourControlTitle: 'Pour control',
     pourStyleTitle: 'Interval style',
@@ -340,7 +342,7 @@ const COPY = {
     konoStyleCompetitionPulse: 'Kono Slow-Drip Body',
     konoStyleJapaneseIcedKono: 'Iced Kono Meimon',
     konoStyleHighDoseSlowExtraction: 'Kono Agitation Sweet',
-    precisionControlTitle: 'Precision targets',
+    precisionControlTitle: 'Advanced targets',
     precisionControlHint: 'Optional. Filter brewers work best around 1:13-1:17; Auto picks a safe default from the brewer, roast, and target.',
     targetRatio: 'Ratio target',
     targetRatioPlaceholder: 'Auto',
@@ -349,9 +351,9 @@ const COPY = {
     targetWaterMlPlaceholder: 'Auto',
     targetTempC: 'Temperature (C)',
     targetTempCPlaceholder: 'Auto',
-    liteBuilderTitle: 'Lite Builder',
-    quickBuilderTitle: 'Quick Builder',
-    proBuilderTitle: 'Precision Builder',
+    liteBuilderTitle: 'Espresso Brew Coming Soon',
+    quickBuilderTitle: 'Basic Brew Builder',
+    proBuilderTitle: 'Advanced Brew Builder',
     closeBuilder: 'Close builder',
     historyStripDescription: 'Reuse saved brews.',
     proDetails: 'Pro brew details',
@@ -473,7 +475,7 @@ const COPY = {
     openPlan: 'Open result',
     emptyRecent: 'Generate once to start your local journal.',
     emptyFavorites: 'Favorite a plan to pin it here.',
-    emptyPlan: 'Pick Lite, Quick, or Precision to build a brew.',
+    emptyPlan: 'Pick Basic Brew or Advanced Brew to build a brew.',
     actionPrioritiesTitle: 'Brew priorities',
     actionPrioritiesDescription: 'Practical moves for the next brew. Change one variable at a time.',
     warningsDescription: 'Review before brewing. These notes follow the selected language and the current water, grinder, and brewer status.',
@@ -513,8 +515,6 @@ const COPY = {
     exactProfile: 'Exact profile',
     derivedTemplateProfile: 'Template-derived profile',
     fallbackProfile: 'Family fallback',
-    useInTimer: 'Use in Timer',
-    useInRatio: 'Use in Ratio',
     save: 'Save',
     saveToCollection: 'Save to Collection',
     saved: 'Saved',
@@ -538,7 +538,7 @@ const COPY = {
     aiFallbackDisabledByAdmin: 'AI is only used when you tap an AI Assist action.',
     aiEngineOnlineOptimized: 'AI + Planner Validated',
     aiEngineLocalValidated: 'Local planner',
-    aiEnginePrecisionPlanner: 'Precision planner',
+    aiEnginePrecisionPlanner: 'Advanced planner',
     aiEngineWorkingOnline: 'AI Assist working...',
     aiEngineWorkingLocal: 'Local planner',
     aiPrecisionAssistNote: 'AI is only used when you tap an AI Assist action.',
@@ -749,10 +749,7 @@ const COPY = {
     flowStart: 'Start',
     flowPause: 'Pause',
     flowReset: 'Reset',
-    flowOpenTimer: 'Open timer',
     flowNextAction: 'Next',
-    flowLiteScaleTitle: 'Manual scale',
-    flowLiteScaleBody: 'Use your real scale; this screen guides timing and target water.',
     flowElapsed: 'Elapsed',
     flowRemaining: 'Remaining',
     flowDone: 'Done',
@@ -806,8 +803,6 @@ const COPY = {
     noVerifiedGrinderSettingShort: 'No verified setting yet',
     aiGenerateFailed: 'AI is unavailable for this brew right now.',
     aiCoachFailed: 'AI Coach is unavailable right now.',
-    ariaUseInTimer: 'Use {name} in timer',
-    ariaUseInRatio: 'Use {name} in ratio calculator',
     ariaSaveToCollection: 'Save {name} to collection',
     ariaFavoriteAdd: 'Save {name} to favorites',
     ariaFavoriteRemove: 'Remove {name} from favorites',
@@ -825,16 +820,18 @@ const COPY = {
     waterBrand: 'Brand air',
     waterManual: 'Mineral manual',
     waterBrandPicker: 'Air',
+    comingSoon: 'Coming Soon',
+    espressoComingSoon: 'Espresso Brew masih Coming Soon. Untuk MVP produksi, gunakan Basic Brew atau Advanced Brew dulu.',
     waterQuickPicks: 'Saran',
     waterQuickPicksDescription: '',
-    liteMode: 'Lite',
-    quickMode: 'Cepat',
-    proMode: 'Presisi',
-    liteModeDescription: 'Input minimal, planner lokal, mulai seduh paling cepat dan aman.',
-    quickModeDescription: 'Penyusun resep awal yang cepat untuk cangkir pertama yang stabil.',
+    liteMode: 'Espresso Brew',
+    quickMode: 'Basic Brew',
+    proMode: 'Advanced Brew',
+    liteModeDescription: 'Coming Soon - workflow espresso disiapkan sebagai fitur khusus.',
+    quickModeDescription: 'Penyusun resep dasar yang cepat untuk cangkir pertama yang stabil.',
     proModeDescription: '',
-    liteModeTrustHint: 'Paling cocok saat butuh resep aman sekarang. Memakai planner lokal deterministik seperti Cepat dengan kontrol yang lebih ringkas.',
-    quickModeTrustHint: 'Paling cocok untuk cepat dan konsisten. Kalau profil kopi dan air masih netral, hasil Cepat dan Presisi bisa sama.',
+    liteModeTrustHint: 'Coming Soon - espresso butuh flow dial-in, logika tekanan, dan kalibrasi grinder terpisah sebelum launch.',
+    quickModeTrustHint: 'Paling cocok untuk cepat dan konsisten. Kalau profil kopi dan air masih netral, hasil Basic dan Advanced bisa sama.',
     proModeTrustHint: '',
     pourControlTitle: 'Kontrol tuang',
     pourStyleTitle: 'Gaya interval',
@@ -958,7 +955,7 @@ const COPY = {
     konoStyleCompetitionPulse: 'Kono Slow-Drip Body',
     konoStyleJapaneseIcedKono: 'Kono Meimon Es',
     konoStyleHighDoseSlowExtraction: 'Kono Agitasi Manis',
-    precisionControlTitle: 'Target presisi',
+    precisionControlTitle: 'Target advanced',
     precisionControlHint: 'Opsional. Filter manual paling aman di sekitar 1:13-1:17; Auto memilih default dari alat, sangrai, dan target.',
     targetRatio: 'Rasio target',
     targetRatioPlaceholder: 'Auto',
@@ -967,9 +964,9 @@ const COPY = {
     targetWaterMlPlaceholder: 'Auto',
     targetTempC: 'Suhu (C)',
     targetTempCPlaceholder: 'Auto',
-    liteBuilderTitle: 'Builder Lite',
-    quickBuilderTitle: 'Builder Cepat',
-    proBuilderTitle: 'Builder Presisi',
+    liteBuilderTitle: 'Espresso Brew Coming Soon',
+    quickBuilderTitle: 'Builder Basic Brew',
+    proBuilderTitle: 'Builder Advanced Brew',
     closeBuilder: 'Tutup panel',
     historyStripDescription: 'Pakai lagi seduhan yang tersimpan.',
     proDetails: 'Detail seduh presisi',
@@ -1091,7 +1088,7 @@ const COPY = {
     openPlan: 'Buka hasil',
     emptyRecent: 'Buat satu seduhan untuk mulai jurnal lokal.',
     emptyFavorites: 'Tandai favorit agar resep muncul di sini.',
-    emptyPlan: 'Pilih Cepat atau Presisi untuk menyusun seduhan.',
+    emptyPlan: 'Pilih Basic Brew atau Advanced Brew untuk menyusun seduhan.',
     actionPrioritiesTitle: 'Prioritas seduh',
     actionPrioritiesDescription: 'Aksi praktis untuk seduhan berikutnya. Ubah satu variabel saja.',
     warningsDescription: 'Baca sebelum seduh. Catatan ini mengikuti bahasa aplikasi dan status air, grinder, serta alat yang dipakai.',
@@ -1131,8 +1128,6 @@ const COPY = {
     exactProfile: 'Profil tepat',
     derivedTemplateProfile: 'Profil turunan template',
     fallbackProfile: 'Profil keluarga alat',
-    useInTimer: 'Pakai di Timer',
-    useInRatio: 'Pakai di Rasio',
     save: 'Simpan',
     saveToCollection: 'Simpan ke Koleksi',
     saved: 'Tersimpan',
@@ -1156,7 +1151,7 @@ const COPY = {
     aiFallbackDisabledByAdmin: 'AI hanya dipakai saat kamu menekan tombol asisten.',
     aiEngineOnlineOptimized: 'AI + rencana tervalidasi',
     aiEngineLocalValidated: 'Rencana lokal',
-    aiEnginePrecisionPlanner: 'Rencana presisi',
+    aiEnginePrecisionPlanner: 'Rencana advanced',
     aiEngineWorkingOnline: 'Asisten AI bekerja...',
     aiEngineWorkingLocal: 'Rencana lokal',
     aiPrecisionAssistNote: 'AI hanya dipakai saat kamu menekan tombol asisten.',
@@ -1367,10 +1362,7 @@ const COPY = {
     flowStart: 'Mulai',
     flowPause: 'Jeda',
     flowReset: 'Ulang',
-    flowOpenTimer: 'Buka timer',
     flowNextAction: 'Lanjut',
-    flowLiteScaleTitle: 'Timbangan manual',
-    flowLiteScaleBody: 'Pakai timbangan asli; layar ini memandu waktu dan target air.',
     flowElapsed: 'Berjalan',
     flowRemaining: 'Sisa',
     flowDone: 'Selesai',
@@ -1424,8 +1416,6 @@ const COPY = {
     noVerifiedGrinderSettingShort: 'Belum ada setting terverifikasi',
     aiGenerateFailed: 'AI belum bisa dipakai untuk seduhan ini sekarang.',
     aiCoachFailed: 'AI Coach belum bisa dipakai sekarang.',
-    ariaUseInTimer: 'Gunakan {name} di timer',
-    ariaUseInRatio: 'Gunakan {name} di kalkulator rasio',
     ariaSaveToCollection: 'Simpan {name} ke koleksi',
     ariaFavoriteAdd: 'Simpan {name} ke favorit',
     ariaFavoriteRemove: 'Hapus {name} dari favorit',
@@ -1494,6 +1484,8 @@ interface PickerOption {
   ariaLabel: string;
   tone?: 'highlight' | 'muted' | 'default';
   trustStatus?: BrewerProfileTrustStatus;
+  disabled?: boolean;
+  unavailableReason?: string;
 }
 
 const CORE_BREWER_IDS = [
@@ -1845,6 +1837,42 @@ function formatGrindHeadlineForDisplay(value: string, language?: string) {
     .replace(/\bReference official grinder chart\b/gi, id ? 'Lihat chart resmi grinder' : 'Reference official grinder chart');
 }
 
+function compactGrindHeadlineForMetric(value: string) {
+  return value
+    .replace(/^\s*(?:Gilingan awal|Starting grind)\s*:\s*/i, '')
+    .trim();
+}
+
+type AiBrewCoreMetricItem = {
+  id: string;
+  label: string;
+  value: string;
+  detail?: string;
+};
+
+function buildBloomMetricItem(plan: BrewPlan, language: string): AiBrewCoreMetricItem | null {
+  const bloomIndex = plan.steps.findIndex((step) => /bloom/i.test(step.label));
+  if (bloomIndex < 0) return null;
+  const bloomStep = plan.steps[bloomIndex];
+  const nextStep = plan.steps.slice(bloomIndex + 1).find((step) => step.startSeconds > bloomStep.startSeconds);
+  const durationSeconds = Math.max(
+    1,
+    Math.round((nextStep?.startSeconds ?? (bloomStep.startSeconds + 30)) - bloomStep.startSeconds),
+  );
+  const bloomVolumeMl = Math.max(0, Math.round(bloomStep.pourVolumeMl || bloomStep.targetVolumeMl));
+  if (bloomVolumeMl <= 0) return null;
+  const id = isIndonesianAiBrewLanguage(language);
+
+  return {
+    id: 'bloom',
+    label: 'Bloom',
+    value: `${formatRoundedMl(bloomVolumeMl)} / ${durationSeconds}${id ? ' dtk' : 's'}`,
+    detail: id
+      ? `Target awal ${formatRoundedMl(bloomStep.targetVolumeMl)} air panas.`
+      : `Initial target ${formatRoundedMl(bloomStep.targetVolumeMl)} hot water.`,
+  };
+}
+
 function buildAiBrewCoreMetricItems(
   plan: BrewPlan,
   copy: CopySet,
@@ -1852,8 +1880,9 @@ function buildAiBrewCoreMetricItems(
   localizedGrindHeadline: string,
   extractionTimeLabel: string,
   extractionSeconds: number,
-) {
+): AiBrewCoreMetricItem[] {
   const id = isIndonesianAiBrewLanguage(language);
+  const bloomMetric = buildBloomMetricItem(plan, language);
   return [
     {
       id: 'dose',
@@ -1874,6 +1903,7 @@ function buildAiBrewCoreMetricItems(
       value: `1:${formatBrewRatio(plan.finalBeverageRatio)}`,
       detail: plan.iceMl > 0 ? `${id ? 'Konsentrat' : 'Hot concentrate'} 1:${formatBrewRatio(plan.hotExtractionRatio)}` : '',
     },
+    ...(bloomMetric ? [bloomMetric] : []),
     {
       id: 'temp',
       label: copy.temp,
@@ -1882,7 +1912,7 @@ function buildAiBrewCoreMetricItems(
     {
       id: 'grind',
       label: copy.grind,
-      value: localizedGrindHeadline,
+      value: compactGrindHeadlineForMetric(localizedGrindHeadline),
     },
     {
       id: 'extraction',
@@ -4705,18 +4735,23 @@ function MasterPickerDialog({
                   <button
                     key={item.id}
                     type="button"
+                    disabled={item.disabled}
                     onClick={() => {
+                      if (item.disabled) return;
                       onSelect(item.id);
                       closePickerDialog();
                     }}
                     className={`flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left transition-colors ${
-                      item.tone === 'highlight'
+                      item.disabled
+                        ? 'cursor-not-allowed border border-[var(--panel-border-soft)] bg-[var(--bg-base)]/36 opacity-70'
+                        : item.tone === 'highlight'
                         ? 'border border-blue-500/15 bg-blue-500/5 hover:bg-blue-500/10'
                         : item.tone === 'muted'
                           ? 'border border-[var(--panel-border-soft)] bg-[var(--bg-base)]/45 hover:bg-surface-alpha'
                           : 'hover:bg-surface-alpha'
                     }`}
                     aria-label={item.ariaLabel}
+                    aria-disabled={item.disabled || undefined}
                     data-testid={`ai-brew-picker-option-${kind}-${item.id}`}
                   >
                     <div className="min-w-0 flex-1">
@@ -4726,6 +4761,9 @@ function MasterPickerDialog({
                       )}
                       {item.description && (
                         <p className="mt-1 text-xs leading-5 text-secondary">{item.description}</p>
+                      )}
+                      {item.unavailableReason && (
+                        <p className="mt-1 text-xs leading-5 text-amber-700 dark:text-amber-300">{item.unavailableReason}</p>
                       )}
                       {item.badges.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
@@ -4737,7 +4775,11 @@ function MasterPickerDialog({
                         </div>
                       )}
                     </div>
-                    <ArrowRight size={16} className="mt-1 shrink-0 text-secondary" />
+                    {item.disabled ? (
+                      <Clock3 size={16} className="mt-1 shrink-0 text-secondary" />
+                    ) : (
+                      <ArrowRight size={16} className="mt-1 shrink-0 text-secondary" />
+                    )}
                   </button>
                 ))}
               </div>
@@ -5005,8 +5047,6 @@ function PlanResultDialog({
   isOffline,
   onClose,
   onEditInputs,
-  onUseInTimer,
-  onUseInRatio,
   onSaveRecipe,
   onToggleFavorite,
   onFeedbackNoteChange,
@@ -5037,8 +5077,6 @@ function PlanResultDialog({
   isOffline: boolean;
   onClose: () => void;
   onEditInputs: () => void;
-  onUseInTimer: (durationSeconds: number) => void;
-  onUseInRatio: (plan: BrewPlan) => void;
   onSaveRecipe: () => void;
   onToggleFavorite: () => void;
   onFeedbackNoteChange: (value: string) => void;
@@ -5177,6 +5215,11 @@ function PlanResultDialog({
     ? formatPlanSwitchPresetLabel(plan, language)
     : '';
   const displaySummary = compactResultSummaryForDisplay(buildPremiumResultSummary(plan, language), plan, language);
+  const icedSetupSummary = plan.iceMl > 0
+    ? (id
+      ? `${formatRoundedGrams(plan.iceMl)} es di server + ${formatRoundedMl(plan.hotWaterMl)} air panas ke bed kopi. Berhenti di target panas, lalu aduk server 5-8 detik sebelum minum.`
+      : `${formatRoundedGrams(plan.iceMl)} ice in the server + ${formatRoundedMl(plan.hotWaterMl)} hot water through the coffee bed. Stop at the hot target, then stir the server for 5-8 seconds before drinking.`)
+    : '';
   const methodBrief = buildPlanMethodBrief(plan, language);
   const aiEngineOnline = planUsesOnlineAi(plan);
   const planHeaderWater = formatPlanHeaderWater(plan, language);
@@ -5641,18 +5684,18 @@ function PlanResultDialog({
         <p className="text-lg font-semibold leading-7 text-primary">
           {liteStepAction}
         </p>
-        <div className="grid gap-2 text-xs sm:grid-cols-3">
-          <span className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-2.5 py-2 text-secondary">
+        <div className="grid grid-cols-3 gap-1.5 text-[11px]">
+          <span className="min-w-0 rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-2 py-2 text-center text-secondary">
             <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
-            <span className="font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
+            <span className="block truncate font-semibold text-primary">1:{formatBrewRatio(plan.finalBeverageRatio)}</span>
           </span>
-          <span className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-2.5 py-2 text-secondary">
+          <span className="min-w-0 rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-2 py-2 text-center text-secondary">
             <span className="block text-[10px] uppercase tracking-widest text-tertiary">{extractionTimeLabel}</span>
-            <span className="font-semibold text-primary">{formatGuideTime(extractionSeconds)}</span>
+            <span className="block truncate font-semibold text-primary">{formatGuideTime(extractionSeconds)}</span>
           </span>
-          <span className="rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-2.5 py-2 text-secondary">
+          <span className="min-w-0 rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-2 py-2 text-center text-secondary">
             <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.grind}</span>
-            <span className="font-semibold text-primary">{localizedGrindHeadline}</span>
+            <span className="block truncate font-semibold text-primary">{compactGrindHeadlineForMetric(localizedGrindHeadline)}</span>
           </span>
         </div>
         <p className="rounded-2xl border panel-divider-subtle bg-surface-alpha/50 px-4 py-3 text-sm leading-6 text-secondary">
@@ -5689,26 +5732,6 @@ function PlanResultDialog({
           aria-label={copy.flowReset}
         >
           <RotateCcw size={18} />
-        </button>
-      </div>
-
-      <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-        <div className="rounded-2xl border border-amber-500/12 bg-amber-500/[0.04] px-4 py-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
-            {copy.flowLiteScaleTitle}
-          </p>
-          <p className="mt-1 text-sm leading-6 text-secondary">
-            {copy.flowLiteScaleBody}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => onUseInTimer(timerTargetSeconds)}
-          disabled={workflowBlocked}
-          className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-4 py-2 text-sm font-medium text-primary disabled:cursor-not-allowed disabled:opacity-55"
-          data-testid="ai-brew-flow-open-timer"
-        >
-          {copy.flowOpenTimer}
         </button>
       </div>
 
@@ -5807,7 +5830,7 @@ function PlanResultDialog({
                   ) : null}
                   <p id={descriptionId} className="sr-only">
                     {isQuickResult
-                      ? (id ? 'Hasil Quick AI Brew berisi urutan seduh ringkas dan kontrol barista inti.' : 'Quick AI Brew result with a compact brew sequence and core barista controls.')
+                      ? (id ? 'Hasil Basic Brew berisi urutan seduh ringkas dan kontrol barista inti.' : 'Basic Brew result with a compact brew sequence and core barista controls.')
                       : `${formatRoundedGrams(plan.doseG)} - ${planHeaderWater} - ${extractionTimeLabel} ${formatGuideTime(extractionSeconds)} - ${formatRoundedTemperature(plan.waterTempC)}`}
                   </p>
                 </div>
@@ -5830,7 +5853,7 @@ function PlanResultDialog({
                         className="rounded-full border border-blue-500/18 bg-blue-500/10 px-2 py-1 font-semibold text-blue-700 dark:text-blue-300"
                         data-testid="ai-brew-bean-data-precision"
                       >
-                        {id ? 'Presisi Data Bean' : 'Bean Data Precision'}: {extractionRationale.beanPrecision.summary}
+                        {id ? 'Akurasi Data Bean' : 'Bean Data Accuracy'}: {extractionRationale.beanPrecision.summary}
                       </span>
                       {expectedCup && (
                         <span className="rounded-full bg-surface-alpha px-2 py-1 font-semibold text-primary">
@@ -5909,12 +5932,6 @@ function PlanResultDialog({
                   <div className="mt-2 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 sm:flex sm:flex-wrap sm:items-center">
                     <button type="button" onClick={onEditInputs} className={resultActionButtonClass} data-testid="ai-brew-edit-inputs">
                       {copy.editInputs}
-                    </button>
-                    <button type="button" onClick={() => onUseInTimer(timerTargetSeconds)} disabled={workflowBlocked} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-use-timer" aria-label={copy.ariaUseInTimer.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
-                      {copy.useInTimer}
-                    </button>
-                    <button type="button" onClick={() => onUseInRatio(plan)} className={resultActionButtonClass} data-testid="ai-brew-use-ratio" aria-label={copy.ariaUseInRatio.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
-                      {copy.useInRatio}
                     </button>
                     <button type="button" onClick={onSaveRecipe} disabled={saving || workflowBlocked} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-save" aria-label={copy.ariaSaveToCollection.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
                       {saveButtonLabel}
@@ -6035,6 +6052,17 @@ function PlanResultDialog({
                         </span>
                       ))}
                     </div>
+                    {icedSetupSummary && (
+                      <div className="mt-3 rounded-2xl border border-sky-500/18 bg-sky-500/[0.08] px-3 py-3" data-testid="ai-brew-summary-iced-setup">
+                        <div className="flex items-start gap-2">
+                          <Snowflake size={15} className="mt-0.5 shrink-0 text-sky-500" />
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-widest text-secondary">{copy.iceSetupTitle}</p>
+                            <p className="mt-1 text-sm leading-5 text-primary">{icedSetupSummary}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="mt-3 space-y-2">
                     {postExtractionSeconds > 0 && (
@@ -6222,7 +6250,7 @@ function PlanResultDialog({
                   <div className="mb-3 flex items-center gap-2">
                     <Gauge size={15} className="text-amber-500" />
                     <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">
-                      {id ? 'Toleransi Presisi' : 'Precision Tolerance'}
+                      {id ? 'Toleransi Advanced' : 'Advanced Tolerance'}
                     </h4>
                   </div>
                   <div className="grid gap-2 sm:grid-cols-2">
@@ -6326,7 +6354,7 @@ function PlanResultDialog({
                 </>
               )}
 
-              <div className="order-3 grid gap-5 xl:grid-cols-[minmax(0,1.18fr)_minmax(18rem,0.82fr)]">
+              <div className="order-7 grid gap-5 xl:grid-cols-[minmax(0,1.18fr)_minmax(18rem,0.82fr)]">
                 <div className="space-y-5">
                   <div
                     className="rounded-[1.2rem] border border-blue-500/18 bg-blue-500/[0.08] p-3.5 lg:p-4"
@@ -6341,8 +6369,8 @@ function PlanResultDialog({
                         </div>
                         <p className="max-w-2xl text-sm text-secondary">
                           {isIndonesianAiBrewLanguage(language)
-                            ? 'Ikuti timer. Angka penting tetap terlihat; detail teknik untuk Pro.'
-                            : 'Follow the timer. Core numbers stay visible; technique detail is for Pro.'}
+                            ? 'Ikuti urutan seduh dari atas. Target air, waktu, dan koreksi tetap jelas; detail Pro menjelaskan alasan teknik tanpa mengulang angka yang sama.'
+                            : 'Follow the brew sequence from top to bottom. Water targets, timing, and corrections stay clear; Pro detail explains technique without repeating the same numbers.'}
                         </p>
                         <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-secondary">
                           {summaryHighlightItemsWithCompletion.map((item) => (
@@ -6779,15 +6807,6 @@ function PlanResultDialog({
                         <RotateCcw size={15} />
                         {copy.flowReset}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => onUseInTimer(timerTargetSeconds)}
-                        disabled={workflowBlocked}
-                        className="inline-flex min-h-[44px] items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-4 py-2 text-sm font-medium text-primary disabled:cursor-not-allowed disabled:opacity-55"
-                        data-testid="ai-brew-flow-open-timer"
-                      >
-                        {copy.flowOpenTimer}
-                      </button>
                     </div>
 
                     <div className="mt-4 rounded-2xl bg-[var(--bg-base)]/82 p-3.5">
@@ -7156,23 +7175,6 @@ function PlanResultDialog({
             </button>
             <button
               type="button"
-              onClick={() => onUseInTimer(timerTargetSeconds)}
-              disabled={workflowBlocked}
-              className="inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary disabled:cursor-not-allowed disabled:opacity-55"
-              data-testid="ai-brew-result-action-timer"
-            >
-              {id ? 'Timer' : 'Timer'}
-            </button>
-            <button
-              type="button"
-              onClick={() => onUseInRatio(plan)}
-              className="inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
-              data-testid="ai-brew-result-action-ratio"
-            >
-              {id ? 'Rasio' : 'Ratio'}
-            </button>
-            <button
-              type="button"
               onClick={onEditInputs}
               className="inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
               data-testid="ai-brew-result-action-edit"
@@ -7278,6 +7280,7 @@ function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopyS
 
   return displayItems.map((item): PickerOption => {
     const isCoreBrewer = kind === 'dripper' && CORE_BREWER_PRIORITY.has(item.id);
+    const espressoComingSoon = kind === 'dripper' && item.methodFamily === 'espresso';
     const trustStatus = kind === 'dripper'
       ? resolveBrewerProfileTrustStatus({
         deviceProfileMode: item.defaultProfileId || isCoreBrewer ? 'exact' : item.confidence === 'low' ? 'family_fallback' : 'derived_template',
@@ -7303,7 +7306,7 @@ function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopyS
         : [item.brand, item.typeLabel].filter(Boolean).join(' - ')
       : item.brand ? `${item.brand} - ${item.typeLabel}` : item.typeLabel;
     const description = kind === 'dripper'
-      ? [trustDetail, item.description].filter(Boolean).join(' - ')
+      ? [espressoComingSoon ? copy.espressoComingSoon : trustDetail, item.description].filter(Boolean).join(' - ')
       : '';
 
     return {
@@ -7317,10 +7320,15 @@ function buildEquipmentPickerOptions(items: EquipmentCatalogEntry[], copy: CopyS
           ? copy.brewerCoreSection
           : copy.brewerSpecialtySection
         : '',
-      badges: trustStatus ? [formatBrewerProfileTrustLabel(trustStatus, language)] : [],
+      badges: [
+        ...(espressoComingSoon ? [copy.comingSoon] : []),
+        ...(trustStatus ? [formatBrewerProfileTrustLabel(trustStatus, language)] : []),
+      ],
       ariaLabel: copy.pickerSelectEquipment.replace('{kind}', kindLabel).replace('{label}', item.name),
-      tone: trustStatus === 'exact' ? 'highlight' : trustStatus === 'calibration_required' ? 'muted' : 'default',
+      tone: espressoComingSoon ? 'muted' : trustStatus === 'exact' ? 'highlight' : trustStatus === 'calibration_required' ? 'muted' : 'default',
       trustStatus,
+      disabled: espressoComingSoon,
+      unavailableReason: espressoComingSoon ? copy.espressoComingSoon : undefined,
     };
   });
 }
@@ -7771,13 +7779,7 @@ function normalizeBeanProfileFieldMerge(next: AiBrewFormState, key: keyof AiBrew
   };
 }
 
-export function AiBrewPanel({
-  onUseInTimer,
-  onUseInRatio,
-}: {
-  onUseInTimer: (durationSeconds: number) => void;
-  onUseInRatio: (plan: BrewPlan) => void;
-}) {
+export function AiBrewPanel() {
   const { language, t } = useGlobalState();
   const { isAuthenticated, openAuthModal } = useAuthModal();
   const { ensureAiAccess, hasPaidAiAccess, aiAccessGateModal } = useAiAccessGate('brew');
@@ -7806,8 +7808,6 @@ export function AiBrewPanel({
     pickerClose: t.close || COPY.en.pickerClose,
     noPickerResults: t.noPickerResults || COPY.en.noPickerResults,
     load: t.load || COPY.en.load,
-    useInTimer: t.useInTimer || COPY.en.useInTimer,
-    useInRatio: t.useInRatio || COPY.en.useInRatio,
     saved: t.saved || COPY.en.saved,
     favorite: t.favorite || COPY.en.favorite,
     unfavorite: t.unfavorite || COPY.en.unfavorite,
@@ -7915,7 +7915,7 @@ export function AiBrewPanel({
     setActiveJournalId(storedPlan.id);
     const nextForm = sanitizeAiBrewFormState(loadPlanIntoForm(storedPlan), nextCatalog);
     setFormState(nextForm);
-    setShowMineralEditor(nextForm.waterMode === 'manual' || nextForm.waterCustomized);
+    setShowMineralEditor(nextForm.waterMode === 'manual');
     setShowProvenance(storedPlan.provenanceAttentionNeeded);
     clearSaveFeedback();
     syncTasteFeedback(null);
@@ -7936,7 +7936,7 @@ export function AiBrewPanel({
       const draft = loadAiBrewFormDraft(createDefaultAiBrewFormState(nextCatalog));
       const nextForm = sanitizeAiBrewFormState(draft, nextCatalog);
       setFormState(nextForm);
-      setShowMineralEditor(nextForm.waterMode === 'manual' || nextForm.waterCustomized);
+      setShowMineralEditor(nextForm.waterMode === 'manual');
     }
     hasHydratedRef.current = true;
   }
@@ -8289,14 +8289,10 @@ export function AiBrewPanel({
     || formState.waterCustomized
   );
   const canCompleteWaterMinerals = Boolean(selectedWaterBrand && selectedWaterCompletion && !selectedWaterBrandCanAutofill);
-  const waterNeedsManualEntry = formState.waterMode === 'manual'
-    || !selectedWaterBrand
-    || !selectedWaterBrandCanAutofill
-    || formState.waterCustomized;
-  const shouldShowMineralEditor = showMineralEditor || waterNeedsManualEntry;
+  const shouldShowMineralEditor = formState.waterMode === 'manual' || showMineralEditor;
   const canToggleMineralEditor = !isLocalBuilder
     && formState.waterMode === 'brand'
-    && selectedWaterBrandCanAutofill;
+    && Boolean(selectedWaterBrand);
 
   useEffect(() => {
     if (!catalog || formState.waterMode !== 'brand' || !formState.waterBrandId) return;
@@ -8384,7 +8380,7 @@ export function AiBrewPanel({
     if (!catalog) return;
     setFormState((prev) => applyManualBrewPresetToFormState(prev, catalog, presetId));
     setTargetProfileTouched(true);
-    setShowMineralEditor(true);
+    setShowMineralEditor(false);
     setManualPresetExpanded(false);
   }
 
@@ -8413,7 +8409,7 @@ export function AiBrewPanel({
           : prev.waterAlkalinityPpm,
       waterNotes: mode === 'manual' ? '' : mode === 'brand' && fallbackBrand ? (fallbackBrand.notes[0] || '') : prev.waterNotes,
     }));
-    setShowMineralEditor(mode === 'manual' || !fallbackCanAutofill);
+    setShowMineralEditor(mode === 'manual');
   }
 
   function applyWaterBrandSelection(brandId: string) {
@@ -8435,7 +8431,7 @@ export function AiBrewPanel({
       waterAlkalinityPpm: prefill.waterAlkalinityPpm,
       waterNotes: brand.notes[0] || '',
     }));
-    setShowMineralEditor(!canAutofill);
+    setShowMineralEditor(false);
     if (canAutofill) {
       setNotice(copy.waterBrandAutofilled);
     } else if (brand.classification === 'zero_mineral_ro') {
@@ -9010,7 +9006,7 @@ export function AiBrewPanel({
     if (!catalog) return;
     const nextForm = sanitizeAiBrewFormState(loadPlanIntoForm(nextPlan), catalog);
     setFormState(nextForm);
-    setShowMineralEditor(nextForm.waterMode === 'manual' || nextForm.waterCustomized);
+    setShowMineralEditor(nextForm.waterMode === 'manual');
     setPlan(nextPlan);
     setShowProvenance(nextPlan.provenanceAttentionNeeded);
     setActiveJournalId(journalId);
@@ -9049,6 +9045,10 @@ export function AiBrewPanel({
 
   function openBuilder(mode: FormMode) {
     if (!catalog) return;
+    if (mode === 'lite') {
+      setNotice(copy.espressoComingSoon);
+      return;
+    }
     if (!ensureAiAccess(`ai_brew_${mode}`)) return;
     if (isOffline) {
       setNotice(copy.aiOffline);
@@ -9155,9 +9155,7 @@ export function AiBrewPanel({
       },
       {
         key: 'sequence',
-        label: activeBuilderModal === 'pro'
-          ? (id ? 'Presisi' : 'Precision')
-          : (id ? 'Urutan' : 'Sequence'),
+        label: activeBuilderModal === 'pro' ? 'Advanced' : (id ? 'Urutan' : 'Sequence'),
         start: 4,
         end: totalStages - 1,
       },
@@ -11297,8 +11295,8 @@ export function AiBrewPanel({
                             </div>
                             <p className="mt-1 text-xs leading-5 text-secondary">
                               {isIndonesianAiBrewLanguage(language)
-                                ? 'Wajib untuk Presisi: proses dan varietas membantu target rasa lebih tepat.'
-                                : 'Required for Precision: process and variety help the taste target land better.'}
+                                ? 'Wajib untuk Advanced Brew: proses dan varietas membantu target rasa lebih tepat.'
+                                : 'Required for Advanced Brew: process and variety help the taste target land better.'}
                             </p>
                           </div>
                           <span className="rounded-full bg-[var(--bg-base)] px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
@@ -12350,14 +12348,18 @@ export function AiBrewPanel({
               <button
                 type="button"
                 onClick={() => openBuilder('lite')}
-                disabled={!catalog}
-                className="rounded-[1.4rem] border border-emerald-500/15 bg-emerald-500/5 p-4 text-left transition-all hover:border-emerald-500/35 hover:bg-emerald-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled
+                aria-disabled="true"
+                className="cursor-not-allowed rounded-[1.4rem] border border-[var(--panel-border-soft)] bg-[var(--bg-base)]/45 p-4 text-left opacity-85"
                 data-testid="ai-brew-open-lite"
               >
                 <div className="text-base font-semibold text-primary">{copy.liteMode}</div>
-                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-                  <Gauge size={12} />
-                  {copy.aiEngineLocalValidated}
+                {copy.liteModeDescription ? (
+                  <p className="mt-1 text-xs leading-5 text-secondary">{copy.liteModeDescription}</p>
+                ) : null}
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                  <Clock3 size={12} />
+                  {copy.comingSoon}
                 </div>
               </button>
               <button
@@ -12599,8 +12601,6 @@ export function AiBrewPanel({
           setResultOpen(false);
         }}
         onEditInputs={handleEditInputs}
-        onUseInTimer={onUseInTimer}
-        onUseInRatio={onUseInRatio}
         onSaveRecipe={() => { void handleSaveRecipe(); }}
         onToggleFavorite={() => { void handleToggleFavorite(); }}
         onFeedbackNoteChange={setFeedbackNoteDraft}

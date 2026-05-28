@@ -45,6 +45,7 @@ test('indonesian merged translations do not silently fall back to English except
     'chatBrandName',
     'chatAssistantNamePlaceholder',
     'chatMemoryDetailBalanced',
+    'toolsTabAiBrew',
     'toolsMethodEspresso',
     'toolsMethodChemex',
     'toolsMethodKalitaWave',

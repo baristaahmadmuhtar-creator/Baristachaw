@@ -116,13 +116,13 @@ test('workflow tutorials keep method-language safety strict', () => {
   assert.match(paperFilter, /\b(bloom|bed|pour)\b/i);
 });
 
-test('AI Brew result guide labels use Lite/Pro without renaming Quick/Precision entry cards', () => {
+test('AI Brew entry cards expose Basic/Advanced while keeping guide density Lite/Pro', () => {
   const source = readFileSync(resolve(process.cwd(), 'apps/web/src/features/ai-brew/AiBrewPanel.tsx'), 'utf8');
 
-  assert.match(source, /quickMode:\s*'Quick'/);
-  assert.match(source, /proMode:\s*'Precision'/);
-  assert.match(source, /quickMode:\s*'Cepat'/);
-  assert.match(source, /proMode:\s*'Presisi'/);
+  assert.match(source, /liteMode:\s*'Espresso Brew'/);
+  assert.match(source, /quickMode:\s*'Basic Brew'/);
+  assert.match(source, /proMode:\s*'Advanced Brew'/);
+  assert.match(source, /espressoComingSoon:\s*'Espresso Brew/);
 
   assert.match(source, /guideDensitySimple:\s*'Lite'/);
   assert.match(source, /guideDensityPro:\s*'Pro'/);

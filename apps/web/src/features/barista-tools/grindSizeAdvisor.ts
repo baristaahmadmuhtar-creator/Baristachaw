@@ -172,6 +172,7 @@ const ESPRESSO_READY_HINTS = [
 const ESPRESSO_NOT_RECOMMENDED_HINTS = [
   /\btimemore\s*c2\b/i,
   /\btimemore\s*c3\b(?!\s*esp)/i,
+  /\btimemore\s*s3\b(?!\s*esp)/i,
   /\bfellow\s*ode\b/i,
   /\bbaratza\s*encore\b(?!\s*esp)/i,
   /\bfeima\b/i,

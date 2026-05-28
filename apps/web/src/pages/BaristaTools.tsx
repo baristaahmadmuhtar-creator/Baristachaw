@@ -5,12 +5,12 @@ import {
   Calculator,
   CheckSquare,
   Clock3,
+  Coffee,
   Info,
   Pause,
   Play,
   Plus,
   RotateCcw,
-  Sparkles,
   Thermometer,
   Timer,
   X,
@@ -41,7 +41,6 @@ import {
   type RatioSettingsState,
 } from '../features/barista-tools/ratioState';
 import { parseTodoItemsFromStorage, type TodoItemState } from '../features/barista-tools/todoState';
-import type { BrewPlan } from '../features/ai-brew/types';
 import { useGlobalState } from '../context/GlobalState';
 import { useNavbar } from '../context/NavbarContext';
 import { useIOSKeyboardFix } from '../hooks/useIOSKeyboardFix';
@@ -91,11 +90,6 @@ const formatClock = (totalSeconds: number) => {
   const s = totalSeconds % 60;
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
-
-function roundAiBrewRatioForTools(value: number) {
-  if (!Number.isFinite(value)) return value;
-  return Math.round(value * 10) / 10;
-}
 
 export function BaristaTools() {
   const { t } = useGlobalState();
@@ -595,48 +589,6 @@ export function BaristaTools() {
 
   const timerProgress = timerDuration > 0 ? (timerSeconds / timerDuration) * 100 : 0;
 
-  const handleUsePlanInTimer = (durationSeconds: number) => {
-    setTimerDuration(Math.max(1, Math.round(durationSeconds)));
-    setTimerSeconds(0);
-    setTimerRunning(false);
-    selectTab('timer');
-  };
-
-  const handleUsePlanInRatio = (plan: BrewPlan) => {
-    const finalBeverageRatio = roundAiBrewRatioForTools(
-      Number.isFinite(plan.finalBeverageRatio) ? plan.finalBeverageRatio : plan.recommendedRatio,
-    );
-    setLastEditedField('ratio');
-    setRatioState((prev) => ({
-      ...prev,
-      methodId: plan.ratioToolMethodId,
-      mode: 'advanced',
-      analysisExpanded: true,
-      roastInputMode: 'level',
-      roastLevel: plan.roastLevel,
-      agtronValue: '',
-      applyRoastAdaptiveDefaults: false,
-      dose: String(plan.doseG),
-      water: String(plan.totalWaterMl),
-      ratio: String(finalBeverageRatio),
-      tdsPercent: '',
-      measuredOutput: '',
-    }));
-    setImportedAiBrewIcedSplit(plan.iceMl > 0 ? {
-      methodId: plan.ratioToolMethodId,
-      doseG: plan.doseG,
-      totalWaterMl: plan.totalWaterMl,
-      hotWaterMl: plan.hotWaterMl,
-      iceMl: plan.iceMl,
-      finalBeverageRatio,
-      hotExtractionRatio: roundAiBrewRatioForTools(plan.hotExtractionRatio),
-      hotWaterSharePercent: plan.hotWaterSharePercent,
-      iceSharePercent: plan.iceSharePercent,
-    } : null);
-    setCalculatorPanel('ratio');
-    selectTab('ratio');
-  };
-
   return (
     <motion.div
       ref={pageRef}
@@ -669,7 +621,7 @@ export function BaristaTools() {
           onKeyDown={(event) => handleTabKeyDown(event, 'ai_brew')}
           className={tabClass('ai_brew')}
         >
-          <Sparkles size={16} className="shrink-0" />
+          <Coffee size={16} className="shrink-0" />
           <span className="truncate">{t.toolsTabAiBrew}</span>
         </button>
         <button
@@ -734,7 +686,7 @@ export function BaristaTools() {
               {t.toolsLoadingAiBrew}
             </div>
           }>
-            <AiBrewPanel onUseInTimer={handleUsePlanInTimer} onUseInRatio={handleUsePlanInRatio} />
+            <AiBrewPanel />
           </Suspense>
         </motion.section>
       )}

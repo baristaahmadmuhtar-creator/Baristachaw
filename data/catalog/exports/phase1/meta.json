@@ -1,13 +1,13 @@
 {
-  "version": "2026.03.10-asean-first-phase1",
-  "generated_at": "2026-05-18T05:53:46.889Z",
+  "version": "2026.07.0-master-grinder-calibration",
+  "generated_at": "2026-05-28T14:50:34.644Z",
   "counts": {
     "waters_total": 107,
     "waters_published": 76,
     "waters_brew_ready": 65,
     "drippers_total": 36,
     "drippers_published": 36,
-    "grinders_total": 53,
-    "grinders_published": 33
+    "grinders_total": 66,
+    "grinders_published": 66
   }
 }

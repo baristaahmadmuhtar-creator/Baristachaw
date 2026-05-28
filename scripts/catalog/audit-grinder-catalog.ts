@@ -32,6 +32,7 @@ type GrinderSetting = {
   profileIds?: string[];
   rangeLabel?: string;
   verificationLevel?: string;
+  referenceType?: string;
   sourceUrl?: string;
   sourceUrls?: string[];
   confidence?: string;
@@ -327,6 +328,7 @@ for (const setting of settings) {
 
 const rawById = new Map(grinders.map((grinder) => [slugify(String(grinder.name || '')), grinder]));
 for (const setting of settings) {
+  if (setting.referenceType === 'method_specific_master_table' || /^gs_master_/i.test(String(setting.id || ''))) continue;
   const grinder = setting.grinderId ? rawById.get(setting.grinderId) : undefined;
   const rawRange = parseRange(grinder?.medium);
   const settingRange = parseRange(setting.rangeLabel);

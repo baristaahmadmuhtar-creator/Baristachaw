@@ -115,15 +115,17 @@ test('numbered dial grinders preserve decimal roast shifts in Grind Size output'
 test('Grind Size blocks espresso for filter-only grinders and prioritizes selectable espresso grinders', async () => {
   const catalog = await loadCatalogForTest();
   const timemoreC2 = catalog.grinders.find((entry) => entry.id === 'timemore-c2');
+  const timemoreS3 = catalog.grinders.find((entry) => entry.id === 'timemore-s3');
   const baratzaEncore = catalog.grinders.find((entry) => entry.id === 'baratza-encore');
   const fellowOde = catalog.grinders.find((entry) => entry.id === 'fellow-ode-gen-2');
   const encoreEsp = catalog.grinders.find((entry) => entry.id === 'baratza-encore-esp');
   assert.ok(timemoreC2, 'Timemore C2 fixture must exist');
+  assert.ok(timemoreS3, 'Timemore S3 fixture must exist');
   assert.ok(baratzaEncore, 'Baratza Encore non-ESP fixture must exist');
   assert.ok(fellowOde, 'Fellow Ode Gen 2 fixture must exist');
   assert.ok(encoreEsp, 'Baratza Encore ESP fixture must exist');
 
-  for (const grinder of [timemoreC2, baratzaEncore, fellowOde]) {
+  for (const grinder of [timemoreC2, timemoreS3, baratzaEncore, fellowOde]) {
     const compatibility = getGrindSizeCompatibility(catalog, 'espresso', grinder);
     assert.equal(compatibility.state, 'not_recommended', `${grinder.id} should be blocked for espresso`);
     assert.equal(compatibility.selectable, false, `${grinder.id} should not be selectable for espresso`);
@@ -144,7 +146,7 @@ test('Grind Size blocks espresso for filter-only grinders and prioritizes select
 
 test('Grind Size advice hard-gates espresso output for blocked grinders even on direct calls', async () => {
   const catalog = await loadCatalogForTest();
-  const blockedIds = ['baratza-encore', 'timemore-c2', 'fellow-ode-gen-2'];
+  const blockedIds = ['baratza-encore', 'timemore-c2', 'timemore-s3', 'fellow-ode-gen-2'];
 
   for (const grinderId of blockedIds) {
     const advice = buildGrindSizeAdvice({
@@ -247,4 +249,63 @@ test('Grind Size matrix keeps all visible grinders method-safe and finite', asyn
 
   assert.ok(checked > 20_000, `expected broad grind-size matrix coverage, got ${checked}`);
   assert.ok(blockedEspresso > 0, 'espresso should block at least one filter-only grinder');
+});
+
+test('Grind Size uses the 2026 master grinder calibration table across pressure, cone, flat, immersion, and ice profiles', async () => {
+  const catalog = await loadCatalogForTest();
+  const grinderIds = new Set(catalog.grinders.map((entry) => entry.id));
+  const settingById = new Map(catalog.grinderSettings.map((entry) => [entry.id, entry]));
+
+  for (const requiredId of [
+    'pietro-m-modal-burrs',
+    'pietro-b-modal-burrs',
+    'timemore-s3-esp',
+    'baratza-encore-esp-pro',
+    'kingrinder-p2',
+    'kingrinder-p1-p0',
+  ]) {
+    assert.ok(grinderIds.has(requiredId), `Expected master grinder entry missing: ${requiredId}`);
+  }
+  assert.equal(grinderIds.has('pietro-flat-burr'), false, 'Pietro should be split by M-Modal and B-Modal burrs');
+  assert.equal(grinderIds.has('kingrinder-p0-p1-p2'), false, 'KINGrinder P-series should split P2 from P1/P0');
+
+  for (const [settingId, expectedRange] of [
+    ['gs_master_1zpresso-k-ultra_cone_hot', '6.0 - 7.0 numbers'],
+    ['gs_master_1zpresso-k-ultra_cone_iced', '5.0 - 5.8 numbers'],
+    ['gs_master_1zpresso-k-ultra_moka_pot', '4.0 - 5.0 numbers'],
+    ['gs_master_comandante-c40-mk4_flat_hot', '26 - 30 clicks'],
+    ['gs_master_comandante-c40-mk4_chemex_hot', '28 - 32 clicks'],
+    ['gs_master_comandante-c40-mk4_french_press', '30 - 35 clicks'],
+    ['gs_master_pietro-m-modal-burrs_cone_hot', '4.0 - 6.2 numbers'],
+    ['gs_master_pietro-b-modal-burrs_cone_hot', '4.5 - 7.0 numbers'],
+    ['gs_master_timemore-s3-esp_espresso', '20 - 30 clicks'],
+    ['gs_master_baratza-encore-esp-pro_flat_hot', '50 - 55 settings'],
+  ] as const) {
+    assert.equal(settingById.get(settingId)?.rangeLabel, expectedRange, `${settingId} should use the master table range`);
+    assert.equal(settingById.get(settingId)?.referenceType, 'method_specific_master_table');
+    assert.equal(settingById.get(settingId)?.calibrationRequired, true);
+  }
+
+  const methodSuffixes = [
+    'moka_pot',
+    'aeropress',
+    'siphon',
+    'cone_hot',
+    'cone_iced',
+    'clever_hot',
+    'clever_iced',
+    'flat_hot',
+    'flat_iced',
+    'chemex_hot',
+    'chemex_iced',
+    'french_press',
+    'cold_brew',
+    'batch_brew',
+  ];
+  for (const grinderId of grinderIds) {
+    if (grinderId.startsWith('unknown-')) continue;
+    for (const suffix of methodSuffixes) {
+      assert.ok(settingById.has(`gs_master_${grinderId}_${suffix}`), `${grinderId} is missing ${suffix} master setting`);
+    }
+  }
 });

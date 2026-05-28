@@ -89,8 +89,8 @@ test('AI Brew Brew Guide has Lite and Pro modes with Lite as the safe default', 
   assert.match(SOURCE, /data-testid="ai-brew-flow-remaining-status"/);
   assert.match(SOURCE, /id \? 'Tuang \/ target' : 'Pour \/ target'/);
   assert.doesNotMatch(SOURCE, /Time brew utama/);
-  assert.match(SOURCE, /Pakai timbangan asli/);
-  assert.match(SOURCE, /Use your real scale/);
+  assert.doesNotMatch(SOURCE, /Pakai timbangan asli/);
+  assert.doesNotMatch(SOURCE, /Use your real scale/);
   assert.match(SOURCE, /setGuideDensity\('basic'\)/);
 });
 

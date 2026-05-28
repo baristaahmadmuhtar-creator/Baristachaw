@@ -593,15 +593,11 @@ for (const config of MATRIX) {
         console.log('Testing "Favorite"...');
         await page.getByTestId('ai-brew-favorite').click();
       } else if (config.caseNum === 4) {
-        // 2. Use in Timer
-        console.log('Testing "Use in Timer"...');
-        await page.getByTestId('ai-brew-use-timer').click();
-        await expect(page.getByRole('tab', { name: /^(Timer|Pengatur Waktu)$/i })).toHaveClass(/bg-white/);
+        console.log('Verifying timer handoff is hidden for MVP...');
+        await expect(page.getByTestId('ai-brew-use-timer')).toHaveCount(0);
       } else if (config.caseNum === 9) {
-        // 3. Use in Ratio
-        console.log('Testing "Use in Ratio"...');
-        await page.getByTestId('ai-brew-use-ratio').click();
-        await expect(page.getByRole('tab', { name: /^(Calculator|Kalkulator|Ratio|Rasio)$/i })).toHaveClass(/bg-white/);
+        console.log('Verifying ratio handoff is hidden for MVP...');
+        await expect(page.getByTestId('ai-brew-use-ratio')).toHaveCount(0);
       }
       
       console.log(`Secondary actions successfully verified for Case #${config.caseNum}!`);

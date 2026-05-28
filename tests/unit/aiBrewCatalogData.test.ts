@@ -389,13 +389,13 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   assert.equal(sanPellegrino.tds_ppm, 860);
   assert.equal(sanPellegrino.coffee_parameters.hardness_ppm_as_caco3, 624.6);
 
-  const timemoreC2Cone = grinderSettings.find((entry) => entry.id === 'gs_timemore_c2_cone');
-  const timemoreC2Flat = grinderSettings.find((entry) => entry.id === 'gs_timemore_c2_flat');
-  const kinuM47Cone = grinderSettings.find((entry) => entry.id === 'gs_kinu_m47_cone');
-  const harioMiniSlimCone = grinderSettings.find((entry) => entry.id === 'gs_hario_mini_slim_cone');
-  const c3EspFlat = grinderSettings.find((entry) => entry.id === 'gs_timemore_c3_esp_flat');
-  const feima600nCone = grinderSettings.find((entry) => entry.id === 'gs_feima_600n_cone');
-  const feima600nFlat = grinderSettings.find((entry) => entry.id === 'gs_feima_600n_flat');
+  const timemoreC2Cone = grinderSettings.find((entry) => entry.id === 'gs_master_timemore-c2_cone_hot');
+  const timemoreC2Flat = grinderSettings.find((entry) => entry.id === 'gs_master_timemore-c2_flat_hot');
+  const kinuM47Cone = grinderSettings.find((entry) => entry.id === 'gs_master_kinu-m47_cone_hot');
+  const harioMiniSlimCone = grinderSettings.find((entry) => entry.id === 'gs_master_hario-mini-slim_cone_hot');
+  const c3EspFlat = grinderSettings.find((entry) => entry.id === 'gs_master_timemore-c3-esp-pro_flat_hot');
+  const feima600nCone = grinderSettings.find((entry) => entry.id === 'gs_master_feima-600n_cone_hot');
+  const feima600nFlat = grinderSettings.find((entry) => entry.id === 'gs_master_feima-600n_flat_hot');
   assert.equal(new Set(grinderSettings.map((entry) => entry.id)).size, grinderSettings.length, 'Grinder setting catalog should not contain duplicate IDs');
   assert.ok(timemoreC2Cone && timemoreC2Flat, 'Timemore C2 should have cone and flat grinder-setting references');
   assert.ok(kinuM47Cone, 'Kinu M47 should include cone grinder-setting reference');
@@ -404,25 +404,29 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   assert.ok(feima600nCone && feima600nFlat, 'Feima 600N should include cone and flat grinder-setting references');
 
   for (const id of [
-    'gs_1zpresso_k_max_flat',
-    'gs_1zpresso_q_air_q2_cone',
-    'gs_1zpresso_x_pro_x_ultra_flat',
-    'gs_comandante_c60_baracuda_cone',
-    'gs_feima_600n_cone',
-    'gs_feima_600n_flat',
-    'gs_hario_smart_g_flat',
-    'gs_timemore_c3_max_cone',
-    'gs_kingrinder_k0_k1_cone',
-    'gs_1zpresso_k_plus_flat',
-    'gs_timemore_sculptor_078s_filter',
-    'gs_baratza_encore_esp_cone',
-    'gs_baratza_encore_esp_flat',
-    'gs_fellow_opus_cone',
-    'gs_fellow_opus_flat',
-    'gs_fellow_ode_gen_2_cone',
-    'gs_fellow_ode_gen_2_flat',
-    'gs_varia_vs3_gen_2_cone',
-    'gs_varia_vs3_gen_2_flat',
+    'gs_master_1zpresso-k-max_flat_hot',
+    'gs_master_1zpresso-q-air-q2_cone_hot',
+    'gs_master_1zpresso-x-pro-x-ultra_flat_hot',
+    'gs_master_comandante-c60-baracuda_cone_hot',
+    'gs_master_feima-600n_cone_hot',
+    'gs_master_feima-600n_flat_hot',
+    'gs_master_hario-smart-g_flat_hot',
+    'gs_master_timemore-c3-max_cone_hot',
+    'gs_master_kingrinder-k1-k0_cone_hot',
+    'gs_master_1zpresso-k-plus_flat_hot',
+    'gs_master_timemore-sculptor-078s_cone_hot',
+    'gs_master_baratza-encore-esp_cone_hot',
+    'gs_master_baratza-encore-esp_flat_hot',
+    'gs_master_fellow-opus_cone_hot',
+    'gs_master_fellow-opus_flat_hot',
+    'gs_master_fellow-ode-gen-2_cone_hot',
+    'gs_master_fellow-ode-gen-2_flat_hot',
+    'gs_master_varia-vs3-gen-2_cone_hot',
+    'gs_master_varia-vs3-gen-2_flat_hot',
+    'gs_master_pietro-m-modal-burrs_cone_hot',
+    'gs_master_pietro-b-modal-burrs_cone_hot',
+    'gs_master_timemore-s3-esp_espresso',
+    'gs_master_baratza-encore-esp-pro_flat_hot',
   ]) {
     assert.ok(grinderSettings.some((entry) => entry.id === id), `Expected grinder setting missing: ${id}`);
   }
@@ -606,7 +610,7 @@ test('AI Brew coffee taxonomy catalog stays deduped, encoded cleanly, and risk-t
 });
 
 test('AI Brew catalog provenance dates do not point past the current release date', () => {
-  const currentReleaseDate = '2026-05-23';
+  const currentReleaseDate = '2026-05-28';
   const files = [
     'apps/web/public/data/ai-brew/processes.v2026-06.json',
     'apps/web/public/data/ai-brew/varieties.v2026-06.json',

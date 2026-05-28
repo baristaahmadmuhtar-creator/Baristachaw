@@ -1,1116 +1,1457 @@
 {
-  "catalogVersion": "2026.03.09-ai-brew-v1",
+  "catalogVersion": "2026.07.0-master-grinder-calibration",
   "items": [
     {
-      "id": 1,
-      "name": "Vesper VS-3 FOLD",
-      "brand": "Vesper",
-      "type": "Klik (External)",
-      "coarse": "25 - 30 Klik",
-      "medium": "15 - 24 Klik",
-      "fine": "2 - 12 Klik",
-      "source": "user_dataset",
-      "sourceUrls": [
-        "https://shopee.co.id/Vesper-manual-coffee-grinder-VS-3-external-adjustable-setting-seven-stars-conical-burr-espresso-pour-over-grinder-kopi-manual-i.132485012.29440047723"
-      ],
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
-    },
-    {
-      "id": "1zpresso-je-plus-grinder",
-      "name": "1Zpresso JE-Plus Grinder",
+      "id": "1zpresso-k-ultra",
+      "name": "1Zpresso K-Ultra",
       "brand": "1Zpresso",
-      "type": "Official catalog listing",
-      "coarse": "Reference official grinder chart",
-      "medium": "Reference official grinder chart",
-      "fine": "Reference official grinder chart",
-      "source": "official_2026",
+      "type": "External ring, 100 clicks/rotation, 20 micron per click",
+      "coarse": "8.0 - 10.0 numbers",
+      "medium": "6.0 - 7.0 numbers",
+      "fine": "2.0 - 2.5 numbers",
+      "expertDescription": "1Zpresso K-Ultra calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, 100 clicks/rotation, 20 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
       "sourceUrls": [
-        "https://1zpresso.coffee/grinder/",
-        "https://1zpresso.coffee/jp/manual/"
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
       ],
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.09-ai-brew-v1"
-    },
-    {
-      "id": "1zpresso-jx-pro-s",
-      "name": "1Zpresso JX-Pro S",
-      "brand": "1Zpresso",
-      "type": "Numbers + Clicks (External)",
-      "coarse": "3.0 - 3.6 rotations",
-      "medium": "2.2 - 2.8 rotations",
-      "fine": "1.0 - 1.6 rotations",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://1zpresso.coffee/grinder/",
-        "https://1zpresso.coffee/jp/manual/"
-      ],
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.11-ai-brew-v1.1"
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
     },
     {
       "id": "1zpresso-k-max",
       "name": "1Zpresso K-Max",
       "brand": "1Zpresso",
-      "type": "Numbers + Clicks (External)",
-      "coarse": "7.0 - 8.5 numbers",
-      "medium": "5.8 - 7.0 numbers",
-      "fine": "3.5 - 5.0 numbers",
-      "source": "curated_2026",
+      "type": "External ring, 90 clicks/rotation, 22 micron per click",
+      "coarse": "7.5 - 9.0 numbers",
+      "medium": "5.5 - 6.5 numbers",
+      "fine": "2.6 - 2.6 numbers",
+      "expertDescription": "1Zpresso K-Max calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, 90 clicks/rotation, 22 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
       "sourceUrls": [
-        "https://1zpresso.coffee/grinder/",
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
       ],
       "verificationLevel": "curated",
       "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.11-ai-brew-v1.2"
-    },
-    {
-      "id": 2,
-      "name": "Timemore C5 ESP PRO",
-      "brand": "Timemore",
-      "type": "Klik (Internal)",
-      "coarse": "110 - 120 Klik",
-      "medium": "75 - 100 Klik",
-      "fine": "25 - 60 Klik",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.timemore.com/products/timemore-manual-coffee-grinder-chestnut-c5-series?variant=47768620302578"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 32,
-      "name": "1Zpresso J-Ultra",
-      "brand": "1Zpresso",
-      "type": "Putaran (External)",
-      "coarse": "3.5 - 4.5 Putaran",
-      "medium": "2.5 - 3.5 Putaran",
-      "fine": "1.0 - 1.6 Putaran",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://1zpresso.coffee/jp/manual-jultra-en/",
-        "https://1zpresso.coffee/wp-content/uploads/2023/11/J-Ultra-%E5%88%BB%E5%BA%A6%E5%BB%BA%E8%AD%B0-20231103-%E7%B9%81%E9%AB%94.jpg"
-      ],
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 33,
-      "name": "1Zpresso K-Ultra",
-      "brand": "1Zpresso",
-      "type": "Nomor (External)",
-      "coarse": "9.5 - 10.5 numbers",
-      "medium": "8.0 - 9.0 numbers",
-      "fine": "5.0 - 6.5 numbers",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://1zpresso.coffee/jp/manual/",
-        "https://1zpresso.coffee/grind-setting-reference/"
-      ],
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-23"
-    },
-    {
-      "id": 34,
-      "name": "1Zpresso Q Air / Q2",
-      "brand": "1Zpresso",
-      "type": "Klik (Internal)",
-      "coarse": "22 - 26 Klik",
-      "medium": "15 - 20 Klik",
-      "fine": "10 - 14 Klik",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://1zpresso.coffee/jp/manual/",
-        "https://1zpresso.coffee/grind-setting-reference/"
-      ],
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 35,
-      "name": "1Zpresso X-Pro / X-Ultra",
-      "brand": "1Zpresso",
-      "type": "Putaran (External)",
-      "coarse": "2.0 - 2.4 Putaran",
-      "medium": "1.2 - 1.5 Putaran",
-      "fine": "0.3 - 0.5 Putaran",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://1zpresso.coffee/jp/manual/",
-        "https://1zpresso.coffee/wp-content/uploads/2023/08/X-Ultra-%E7%A0%94%E7%A3%A8%E5%BB%BA%E8%AD%B0%E5%8D%A1%E7%B9%81%E9%AB%94-20230802.jpg"
-      ],
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 36,
-      "name": "1Zpresso ZP6 Special",
-      "brand": "1Zpresso",
-      "type": "Nomor (External)",
-      "coarse": "Nomor 6.0 - 7.5",
-      "medium": "Nomor 3.5 - 5.5",
-      "fine": "0 (Tidak Disarankan)",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://1zpresso.coffee/jp/manual/",
-        "https://1zpresso.coffee/wp-content/uploads/2022/10/ZP6-%E7%A0%94%E7%A3%A8%E5%BB%BA%E8%AD%B0%E5%8D%A1%E7%B9%81%E9%AB%94-20221018.jpg"
-      ],
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 37,
-      "name": "Breville Smart Grinder Pro",
-      "brand": "Breville",
-      "type": "Setting (Electric)",
-      "coarse": "Setting 50 - 60",
-      "medium": "Setting 40 - 50",
-      "fine": "Setting 1 - 25",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.breville.com/en-us/product/bcg820",
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
-      ],
-      "verificationLevel": "community_verified",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-23"
-    },
-    {
-      "id": 38,
-      "name": "Comandante C40 MK4",
-      "brand": "Comandante",
-      "type": "Klik (Internal)",
-      "coarse": "25 - 35 Klik",
-      "medium": "18 - 35 Klik",
-      "fine": "7 - 13 Klik",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://comandantegrinder.com/pages/faq",
-        "https://www.comandantegrinder.com/downloads/C40-Manual-E-Q3-21-web.pdf"
-      ],
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 39,
-      "name": "Comandante C60 Baracuda",
-      "brand": "Comandante",
-      "type": "Klik (Internal)",
-      "coarse": "35 - 45 Klik",
-      "medium": "20 - 30 Klik",
-      "fine": "10 - 18 Klik",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://comandantegrinder.com/products/baracuda-c60-nautilus-blue",
-        "https://comandantegrinder.com/downloads/c60-baracuda.pdf"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 40,
-      "name": "Etzinger etz-I",
-      "brand": "Etzinger",
-      "type": "Angka (External)",
-      "coarse": "Angka 18 - 22",
-      "medium": "Angka 12 - 16",
-      "fine": "Angka 4 - 8",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://etzinger-ag.com/coffee-grinders/etz-i-hand-grinders",
-        "https://etzinger-ag.com/XooWebKit/bin/download.php/49a7b_4729b9d583/Instructions%20etz-I.pdf"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 41,
-      "name": "Hario Canister (C-20)",
-      "brand": "Hario",
-      "type": "Notch (Internal)",
-      "coarse": "4 - 5 Notch",
-      "medium": "2 - 3 Notch",
-      "fine": "1 Notch",
-      "source": "user_dataset",
-      "sourceUrls": [
-        "https://global.hario.com/grinder/"
-      ],
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 42,
-      "name": "Hario Mini Slim+",
-      "brand": "Hario",
-      "type": "Klik (Internal)",
-      "coarse": "10 - 13 Klik",
-      "medium": "7 - 10 Klik",
-      "fine": "3 - 5 Klik",
-      "source": "user_dataset",
-      "sourceUrls": [
-        "https://global.hario.com/grinder/"
-      ],
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 43,
-      "name": "Hario Skerton Pro",
-      "brand": "Hario",
-      "type": "Notch (Internal)",
-      "coarse": "8 - 10 Notch",
-      "medium": "5 - 7 Notch",
-      "fine": "1 - 4 Notch",
-      "source": "user_dataset",
-      "sourceUrls": [
-        "https://global.hario.com/grinder/"
-      ],
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 44,
-      "name": "Kingrinder K6",
-      "brand": "KINGrinder",
-      "type": "Klik (External)",
-      "coarse": "90 - 120 Klik",
-      "medium": "60 - 115 Klik",
-      "fine": "30 - 50 Klik",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://www.kingrinder.com/exterior-adjustment",
-        "https://uploads.strikinglycdn.com/files/353ff58b-a58b-441e-b9d1-dd16ccb9a69d/Kingrinder%20Manual%20-%20Exterior%20Adjustment%20-%20V3.pdf?id=3880364"
-      ],
-      "verificationLevel": "official",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 45,
-      "name": "Kingrinder P0/P1/P2",
-      "brand": "KINGrinder",
-      "type": "Klik (Internal)",
-      "coarse": "35 - 45 Klik",
-      "medium": "20 - 30 Klik",
-      "fine": "15 - 20 Klik",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.kingrinder.com/jp-interior-adjustment"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 46,
-      "name": "Kinu M47",
-      "brand": "Kinu",
-      "type": "Putaran (External)",
-      "coarse": "4.0 - 5.0 Putaran",
-      "medium": "2.5 - 3.5 Putaran",
-      "fine": "0.8 - 1.2 Putaran",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://kinugrinders.de/pages/m47-classic",
-        "https://kinugrinders.de/wp-content/uploads/2021/01/Kinu%20-%20M47%20Classic%20User%20Manual.pdf"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 47,
-      "name": "Latina Sumba / Sumbawa",
-      "brand": "Latina",
-      "type": "Klik (Internal)",
-      "coarse": "10 - 14 Klik",
-      "medium": "7 - 10 Klik",
-      "fine": "3 - 5 Klik",
-      "source": "user_dataset",
-      "sourceUrls": [
-        "https://maharaja.coffee/merchandise/latina/",
-        "https://www.cikopi.com/2016/03/sumba-penggiling-kopi-manual/"
-      ],
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 48,
-      "name": "Latina Sumo",
-      "brand": "Latina",
-      "type": "Klik (Internal)",
-      "coarse": "20 - 25 Klik",
-      "medium": "15 - 20 Klik",
-      "fine": "8 - 12 Klik",
-      "source": "user_dataset",
-      "sourceUrls": [
-        "https://maharaja.coffee/merchandise/latina/"
-      ],
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 49,
-      "name": "Mazzer Omega",
-      "brand": "Mazzer",
-      "type": "Angka (External)",
-      "coarse": "Angka 9 - 11",
-      "medium": "Angka 6 - 8",
-      "fine": "Angka 1 - 3",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://www.mazzer.com/wp-content/uploads/2023/03/Omega-Istruzioni-2023-4.pdf"
-      ],
-      "verificationLevel": "official",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 50,
-      "name": "OE Lido 3 / OG",
-      "brand": "Orphan Espresso",
-      "type": "Mark (External)",
-      "coarse": "12 - 15 Mark",
-      "medium": "6 - 10 Mark",
-      "fine": "2 - 4 Mark",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.oehandgrinders.com/assets/images/OE%20Website/LIDO%20ET%20Operation%20Manual%20Website%20PDF.pdf"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 51,
-      "name": "Pietro (Flat Burr)",
-      "brand": "Pietro",
-      "type": "Angka (Vertical)",
-      "coarse": "Angka 7 - 9",
-      "medium": "Angka 5 - 7",
-      "fine": "Angka 1 - 2.5",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://pietrogrinders.com/shop/en/products/pietro-manual-coffee-grinder.html"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 52,
-      "name": "Porlex Mini II",
-      "brand": "Porlex",
-      "type": "Klik (Internal)",
-      "coarse": "10 - 13 Klik",
-      "medium": "7 - 9 Klik",
-      "fine": "3 - 5 Klik",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://www.porlexgrinders.com/products/porlex-mini-grinder-ii"
-      ],
-      "verificationLevel": "official",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 53,
-      "name": "Starseeker Edge / Edge+",
-      "brand": "Starseeker",
-      "type": "Klik (External)",
-      "coarse": "80 - 100 Klik",
-      "medium": "50 - 70 Klik",
-      "fine": "20 - 40 Klik",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.starseekercoffee.com/products/starseeker-edge-titanium-burr-coffee-grinder-48mm-espresso-burrs-stepless-fineness-adjustment-electric-coffee-grinders-black"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 55,
-      "name": "Timemore C3 ESP",
-      "brand": "Timemore",
-      "type": "Klik (Multipoint)",
-      "coarse": "21 - 25 Klik",
-      "medium": "14 - 18 Klik",
-      "fine": "0.8 - 1.1 Putaran",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.timemore.com/es/products/timemore-manual-coffee-grinder-stainless-steel-conical-burr-coffee-grinder-manual-hand-coffee-grinder-with-adjustable-setting-pour-over-coffee-hand-grinder-esp"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 56,
-      "name": "Timemore Chestnut X",
-      "brand": "Timemore",
-      "type": "Mayor (Internal)",
-      "coarse": "20 - 24 Mayor",
-      "medium": "14 - 18 Mayor",
-      "fine": "6 - 10 Mayor",
-      "source": "user_dataset",
-      "sourceUrls": [
-        "https://www.timemore.com/es/pages/download-center"
-      ],
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
-    },
-    {
-      "id": 57,
-      "name": "Timemore Nano / Plus",
-      "brand": "Timemore",
-      "type": "Klik (Internal)",
-      "coarse": "20 - 24 Klik",
-      "medium": "14 - 18 Klik",
-      "fine": "10 - 12 Klik",
-      "source": "user_dataset",
-      "sourceUrls": [
-        "https://www.timemore.com/products/timemore-manual-coffee-grinder-chestnut-nano-3-black",
-        "https://www.timemore.com/es/pages/download-center"
-      ],
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
-    },
-    {
-      "id": 58,
-      "name": "Timemore S3",
-      "brand": "Timemore",
-      "type": "Angka (External)",
-      "coarse": "Angka 7.5 - 9.0",
-      "medium": "Angka 4.5 - 6.5",
-      "fine": "Angka 1.5 - 3.0",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.timemore.com/products/timemore-manual-coffee-grinder-chestnut-s3"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 59,
-      "name": "Timemore Slim Plus",
-      "brand": "Timemore",
-      "type": "Klik (Internal)",
-      "coarse": "22 - 26 Klik",
-      "medium": "15 - 20 Klik",
-      "fine": "10 - 14 Klik",
-      "source": "user_dataset",
-      "sourceUrls": [
-        "https://www.timemore.com/es/pages/download-center"
-      ],
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
-    },
-    {
-      "id": 60,
-      "name": "Varia Hand Grinder",
-      "brand": "Varia",
-      "type": "Klik (External)",
-      "coarse": "90 - 110 Klik",
-      "medium": "60 - 85 Klik",
-      "fine": "20 - 40 Klik",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.variabrewing.com/products/varia-vs3-grinder"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 61,
-      "name": "Wacaco Exagrind",
-      "brand": "Wacaco",
-      "type": "Putaran/Klik",
-      "coarse": "1.5 - 2.0 Putaran",
-      "medium": "1.0 - 1.3 Putaran",
-      "fine": "0 - 20 Klik",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://www.wacaco.com/fr/products/exagrind",
-        "https://wacaco.com/products/exagrind?country=US&currency=USD&variant=54405959909449"
-      ],
-      "verificationLevel": "official",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 69,
-      "name": "Timemore C5",
-      "brand": "Timemore",
-      "type": "Klik (Internal)",
-      "coarse": "15 - 16 Klik",
-      "medium": "9 - 14 Klik",
-      "fine": "2 - 8 Klik",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.timemore.com/products/timemore-manual-coffee-grinder-chestnut-c5-series?variant=47768620302578"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 70,
-      "name": "MHW-3BOMBER Blade R3",
-      "brand": "MHW-3BOMBER",
-      "type": "Klik (External)",
-      "coarse": "110 - 165 klik",
-      "medium": "90 - 130 klik",
-      "fine": "20 - 70 klik",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://mhw3bomber.com/ja/products/mhw-3bomber-precision-r3-manual-coffee-grinder-1",
-        "https://honestcoffeeguide.com/mhw-3bomber-blade-r3-grind-settings/"
-      ],
-      "verificationLevel": "community_verified",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 71,
-      "name": "Timemore x Millab M01",
-      "brand": "Timemore x Millab",
-      "type": "Setting (External)",
-      "coarse": "8.0 - 10.0 settings",
-      "medium": "5.0 - 9.0 settings",
-      "fine": "0.0 - 1.5 settings",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://www.timemore.com/collections/em5/products/timemore-x-millab-m01-coffee-grinder?variant=48044560646386"
-      ],
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 72,
-      "name": "Timemore C3",
-      "brand": "Timemore",
-      "type": "Klik (Internal)",
-      "coarse": "21 - 24 Klik",
-      "medium": "11 - 20 Klik",
-      "fine": "2 - 10 Klik",
-      "source": "user_dataset",
-      "sourceUrls": [
-        "https://www.timemore.com/products/c3-series"
-      ],
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 73,
-      "name": "Timemore C2",
-      "brand": "Timemore",
-      "type": "Klik (Internal)",
-      "coarse": "25 - 30 Klik",
-      "medium": "13 - 24 Klik",
-      "fine": "2 - 12 klik",
-      "source": "user_dataset",
-      "sourceUrls": [
-        "https://www.timemore.com/products/timemore-chestnut-c2s-manual-coffee-grinder"
-      ],
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.06.3-grinder-provenance"
-    },
-    {
-      "id": 74,
-      "name": "Mavo Phantox Pro",
-      "brand": "Mavo",
-      "type": "Nomor (External)",
-      "coarse": "Nomor 10 - 12",
-      "medium": "Nomor 6 - 10",
-      "fine": "Nomor 1 - 4",
-      "source": "user_dataset",
-      "sourceUrls": [
-        "https://mavocoffee.com/products/phantox-pro-coffee-grinder",
-        "https://coffeegeek.com/blog/new-products/mavos-phantox-pro-wants-to-shake-up-the-mid-range-manual-grinder-market/"
-      ],
-      "verificationLevel": "dataset_unverified",
-      "confidence": "low"
-    },
-    {
-      "id": "comandante-x25-trailmaster",
-      "name": "Comandante X25 Trailmaster",
-      "brand": "Comandante",
-      "type": "Clicks (Internal)",
-      "coarse": "24 - 30 clicks",
-      "medium": "18 - 24 clicks",
-      "fine": "12 - 16 clicks",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.comandantegrinder.com/",
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.11-ai-brew-v1.2"
-    },
-    {
-      "id": "hario-smart-g",
-      "name": "HARIO Smart G",
-      "brand": "Hario",
-      "type": "Clicks (Internal)",
-      "coarse": "24 - 30 clicks",
-      "medium": "18 - 24 clicks",
-      "fine": "8 - 14 clicks",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.hario-europe.com/products/smart-g-coffee-grinder"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.11-ai-brew-v1.1"
-    },
-    {
-      "id": "kingrinder-k2",
-      "name": "KINGrinder K2",
-      "brand": "KINGrinder",
-      "type": "Clicks (External)",
-      "coarse": "85 - 115 clicks",
-      "medium": "60 - 85 clicks",
-      "fine": "35 - 55 clicks",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.kingrinder.com/",
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.11-ai-brew-v1.2"
-    },
-    {
-      "id": "kingrinder-k4",
-      "name": "KINGrinder K4",
-      "brand": "KINGrinder",
-      "type": "Clicks (External)",
-      "coarse": "95 - 120 clicks",
-      "medium": "75 - 95 clicks",
-      "fine": "40 - 65 clicks",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.11-ai-brew-v1.1"
-    },
-    {
-      "id": "timemore-c3-max",
-      "name": "TIMEMORE C3 Max",
-      "brand": "Timemore",
-      "type": "Clicks (Internal)",
-      "coarse": "22 - 28 clicks",
-      "medium": "15 - 21 clicks",
-      "fine": "5 - 12 clicks",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.11-ai-brew-v1.1"
-    },
-    {
-      "id": "timemore-chestnut-c5-pro",
-      "name": "TIMEMORE Chestnut C5 Pro",
-      "brand": "Timemore",
-      "type": "Stepped Manual Grinder",
-      "coarse": "Official stepped settings",
-      "medium": "Official stepped settings",
-      "fine": "Official stepped settings",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://www.timemore.com/products/timemore-manual-coffee-grinder-chestnut-c5-series?variant=47768620302578"
-      ],
-      "verificationLevel": "official",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.09-ai-brew-v1"
-    },
-    {
-      "id": "kingrinder-k0-k1",
-      "name": "KINGrinder K0 / K1",
-      "brand": "KINGrinder",
-      "type": "Clicks (External)",
-      "coarse": "95 - 125 clicks",
-      "medium": "70 - 95 clicks",
-      "fine": "45 - 68 clicks",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.kingrinder.com/",
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.12-ai-brew-v1.3"
-    },
-    {
-      "id": "kingrinder-k3",
-      "name": "KINGrinder K3",
-      "brand": "KINGrinder",
-      "type": "Clicks (External)",
-      "coarse": "90 - 118 clicks",
-      "medium": "64 - 90 clicks",
-      "fine": "38 - 60 clicks",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://www.kingrinder.com/",
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
-      ],
-      "verificationLevel": "curated",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.12-ai-brew-v1.3"
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
     },
     {
       "id": "1zpresso-k-plus",
       "name": "1Zpresso K-Plus",
       "brand": "1Zpresso",
-      "type": "Numbers + Clicks (External)",
-      "coarse": "7.2 - 8.8 numbers",
-      "medium": "5.8 - 7.2 numbers",
-      "fine": "3.6 - 5.2 numbers",
-      "source": "curated_2026",
+      "type": "External ring, 90 clicks/rotation, 22 micron per click",
+      "coarse": "8.0 - 9.5 numbers",
+      "medium": "6.5 - 7.5 numbers",
+      "fine": "3.0 - 3.0 numbers",
+      "expertDescription": "1Zpresso K-Plus calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, 90 clicks/rotation, 22 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
       "sourceUrls": [
-        "https://1zpresso.coffee/grinder/",
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
       ],
       "verificationLevel": "curated",
       "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.12-ai-brew-v1.3"
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "1zpresso-zp6-special",
+      "name": "1Zpresso ZP6 Special",
+      "brand": "1Zpresso",
+      "type": "External ring, 90 clicks/rotation, 22 micron per click",
+      "coarse": "4.5 - 6.0 numbers",
+      "medium": "3.5 - 4.5 numbers",
+      "fine": "2.0 - 3.0 numbers",
+      "expertDescription": "1Zpresso ZP6 Special calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, 90 clicks/rotation, 22 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "1zpresso-j-ultra",
+      "name": "1Zpresso J-Ultra",
+      "brand": "1Zpresso",
+      "type": "External ring, 100 clicks/rotation, 8 micron per click",
+      "coarse": "4.3 - 5.0 turns",
+      "medium": "3.0 - 3.8 turns",
+      "fine": "1.5 - 2.2 turns",
+      "expertDescription": "1Zpresso J-Ultra calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, 100 clicks/rotation, 8 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
     },
     {
       "id": "1zpresso-j-max-s",
       "name": "1Zpresso J-Max S",
       "brand": "1Zpresso",
-      "type": "Turns (External)",
-      "coarse": "2.4 - 3.2 turns",
-      "medium": "1.8 - 2.4 turns",
-      "fine": "1.0 - 1.6 turns",
-      "source": "curated_2026",
+      "type": "External ring, 90 clicks/rotation, 8.8 micron per click",
+      "coarse": "4.1 - 4.8 turns",
+      "medium": "2.8 - 3.5 turns",
+      "fine": "1.3 - 1.8 turns",
+      "expertDescription": "1Zpresso J-Max S calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, 90 clicks/rotation, 8.8 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
       "sourceUrls": [
-        "https://1zpresso.coffee/grinder/",
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
       ],
       "verificationLevel": "curated",
       "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.12-ai-brew-v1.3"
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "1zpresso-je-plus-grinder",
+      "name": "1Zpresso JE-Plus Grinder",
+      "brand": "1Zpresso",
+      "type": "Top adjustment ring, 40 clicks/rotation, 12.5 micron per click",
+      "coarse": "4.0 - 4.8 numbers",
+      "medium": "2.8 - 3.2 numbers",
+      "fine": "1.2 - 1.5 numbers",
+      "expertDescription": "1Zpresso JE-Plus Grinder calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Top adjustment ring, 40 clicks/rotation, 12.5 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "1zpresso-jx-pro-s",
+      "name": "1Zpresso JX-Pro S",
+      "brand": "1Zpresso",
+      "type": "Top adjustment ring, 40 clicks/rotation, 12.5 micron per click",
+      "coarse": "4.2 - 4.8 numbers",
+      "medium": "3.0 - 3.5 numbers",
+      "fine": "1.5 - 1.8 numbers",
+      "expertDescription": "1Zpresso JX-Pro S calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Top adjustment ring, 40 clicks/rotation, 12.5 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "1zpresso-x-pro-x-ultra",
+      "name": "1Zpresso X-Pro / X-Ultra",
+      "brand": "1Zpresso",
+      "type": "External ring, 60 clicks/rotation, 12.5 micron per click",
+      "coarse": "2.5 - 3.5 turns",
+      "medium": "1.8 - 2.2 turns",
+      "fine": "0.8 - 1.2 turns",
+      "expertDescription": "1Zpresso X-Pro / X-Ultra calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, 60 clicks/rotation, 12.5 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "comandante-c40-mk4",
+      "name": "Comandante C40 MK4",
+      "brand": "Comandante",
+      "type": "Internal clicks, 30 micron per click",
+      "coarse": "30 - 35 clicks",
+      "medium": "20 - 28 clicks",
+      "fine": "9 - 12 clicks",
+      "expertDescription": "Comandante C40 MK4 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal clicks, 30 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "comandante-c60-baracuda",
+      "name": "Comandante C60 Baracuda",
+      "brand": "Comandante",
+      "type": "Internal clicks, GX50 burr, 21 micron per click",
+      "coarse": "35 - 55 clicks",
+      "medium": "21 - 35 clicks",
+      "fine": "10 - 15 clicks",
+      "expertDescription": "Comandante C60 Baracuda calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal clicks, GX50 burr, 21 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "comandante-x25-trailmaster",
+      "name": "Comandante X25 Trailmaster",
+      "brand": "Comandante",
+      "type": "Internal clicks, C40-style reference",
+      "coarse": "30 - 35 clicks",
+      "medium": "20 - 28 clicks",
+      "fine": "9 - 12 clicks",
+      "expertDescription": "Comandante X25 Trailmaster calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal clicks, C40-style reference. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "kinu-m47",
+      "name": "Kinu M47",
+      "brand": "Kinu",
+      "type": "Top threaded dial, 50 divisions/rotation, stepless",
+      "coarse": "3.5 - 4.0 turns",
+      "medium": "3.0 - 3.0 turns",
+      "fine": "0.9 - 1.3 turns",
+      "expertDescription": "Kinu M47 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Top threaded dial, 50 divisions/rotation, stepless. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
     },
     {
       "id": "kinu-m47-phoenix",
       "name": "Kinu M47 Phoenix",
       "brand": "Kinu",
-      "type": "Turns (Stepless)",
-      "coarse": "2.5 - 3.3 turns",
-      "medium": "1.9 - 2.5 turns",
-      "fine": "1.1 - 1.8 turns",
-      "source": "curated_2026",
+      "type": "Top threaded dial, 50 divisions/rotation, stepless",
+      "coarse": "3.5 - 4.0 turns",
+      "medium": "3.0 - 3.0 turns",
+      "fine": "1.5 - 1.5 turns",
+      "expertDescription": "Kinu M47 Phoenix calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Top threaded dial, 50 divisions/rotation, stepless. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
       "sourceUrls": [
-        "https://www.kinugrinders.com/",
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
       ],
       "verificationLevel": "curated",
       "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.12-ai-brew-v1.3"
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
     },
     {
-      "id": "timemore-sculptor-078s",
-      "name": "TIMEMORE Sculptor 078S",
+      "id": "mazzer-omega",
+      "name": "Mazzer Omega",
+      "brand": "Mazzer",
+      "type": "External ring, 33 micron per click, true zero",
+      "coarse": "7.5 - 9.0 numbers",
+      "medium": "7.2 - 8.0 numbers",
+      "fine": "4.0 - 4.4 numbers",
+      "expertDescription": "Mazzer Omega calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, 33 micron per click, true zero. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "pietro-m-modal-burrs",
+      "name": "Pietro (M-Modal Burrs)",
+      "brand": "Pietro",
+      "type": "Vertical side slider, 15 micron per division",
+      "coarse": "6.2 - 10.0 numbers",
+      "medium": "4.0 - 6.2 numbers",
+      "fine": "0.5 - 1.5 numbers",
+      "expertDescription": "Pietro (M-Modal Burrs) calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: flat burr clarity/flow platform; Vertical side slider, 15 micron per division. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "pietro-b-modal-burrs",
+      "name": "Pietro (B-Modal Burrs)",
+      "brand": "Pietro",
+      "type": "Vertical side slider, 15 micron per division",
+      "coarse": "7.0 - 10.0 numbers",
+      "medium": "4.5 - 7.0 numbers",
+      "fine": "1.0 - 2.0 numbers",
+      "expertDescription": "Pietro (B-Modal Burrs) calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: flat burr clarity/flow platform; Vertical side slider, 15 micron per division. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "etzinger-etz-i",
+      "name": "Etzinger etz-I",
+      "brand": "Etzinger",
+      "type": "Stepped external ring",
+      "coarse": "8.0 - 10.0 numbers",
+      "medium": "5.0 - 6.5 numbers",
+      "fine": "1.5 - 2.2 numbers",
+      "expertDescription": "Etzinger etz-I calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Stepped external ring. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "oe-lido-3-og",
+      "name": "OE Lido 3 / OG",
+      "brand": "Orphan Espresso",
+      "type": "Stepless external marked ring",
+      "coarse": "22 - 26 marks",
+      "medium": "12 - 16 marks",
+      "fine": "4 - 6 marks",
+      "expertDescription": "OE Lido 3 / OG calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Stepless external marked ring. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "timemore-x-millab-m01",
+      "name": "Timemore x Millab M01",
       "brand": "Timemore",
-      "type": "Numbers (Stepless Electric)",
-      "coarse": "9 - 12 numbers",
-      "medium": "6 - 9 numbers",
-      "fine": "2 - 5 numbers",
-      "source": "curated_2026",
+      "type": "External lens ring, 12.5 micron per click",
+      "coarse": "8.0 - 10.0 settings",
+      "medium": "5.0 - 7.5 settings",
+      "fine": "0.4 - 1.5 settings",
+      "expertDescription": "Timemore x Millab M01 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External lens ring, 12.5 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
       "sourceUrls": [
-        "https://www.timemore.com/",
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
       ],
       "verificationLevel": "curated",
       "confidence": "medium",
-      "verifiedAt": "2026-05-19",
-      "catalogVersion": "2026.03.12-ai-brew-v1.3"
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
     },
     {
-      "id": "baratza-encore-esp",
-      "name": "Baratza Encore ESP",
-      "brand": "Baratza",
-      "type": "Stepped (1 - 40) Electric",
-      "coarse": "25 - 40 settings",
-      "medium": "15 - 30 settings",
-      "fine": "1 - 13 settings",
-      "source": "official_2026",
+      "id": "timemore-c2",
+      "name": "Timemore C2",
+      "brand": "Timemore",
+      "type": "Internal clicks, 12 divisions/rotation",
+      "coarse": "20 - 25 clicks",
+      "medium": "15 - 20 clicks",
+      "fine": "8 - 8 clicks",
+      "expertDescription": "Timemore C2 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal clicks, 12 divisions/rotation. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
       "sourceUrls": [
-        "https://www.baratza.com/en-us/product/encoretm-esp-zcg495",
-        "https://www.baratza.com/en-gb/product/encoretm-esp-zcg495",
-        "https://assets.breville.com/ZCG495/manual-encoreesp-v1-0-en-010923.pdf"
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
       ],
-      "catalogVersion": "2026.06.3-grinder-provenance",
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
-      "popularityTier": "widely_used",
-      "marketSegment": "mass_market",
-      "releaseStatus": "established"
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "timemore-c3",
+      "name": "Timemore C3",
+      "brand": "Timemore",
+      "type": "Internal clicks, S2C burrs, 12 divisions/rotation",
+      "coarse": "16 - 20 clicks",
+      "medium": "13 - 15 clicks",
+      "fine": "7 - 9 clicks",
+      "expertDescription": "Timemore C3 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal clicks, S2C burrs, 12 divisions/rotation. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "timemore-c3-max",
+      "name": "TIMEMORE C3 Max",
+      "brand": "Timemore",
+      "type": "Internal clicks, S2C burrs, 12 divisions/rotation",
+      "coarse": "16 - 20 clicks",
+      "medium": "13 - 15 clicks",
+      "fine": "7 - 9 clicks",
+      "expertDescription": "TIMEMORE C3 Max calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal clicks, S2C burrs, 12 divisions/rotation. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "timemore-c3-esp-pro",
+      "name": "Timemore C3 ESP / Pro",
+      "brand": "Timemore",
+      "type": "Internal multipoint click ring",
+      "coarse": "50 - 60 clicks",
+      "medium": "40 - 45 clicks",
+      "fine": "20 - 25 clicks",
+      "expertDescription": "Timemore C3 ESP / Pro calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal multipoint click ring. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "timemore-chestnut-x",
+      "name": "Timemore Chestnut X",
+      "brand": "Timemore",
+      "type": "Dual internal clicks, 1-23 major and micro adjustment",
+      "coarse": "19 - 23 numbers",
+      "medium": "15 - 19 numbers",
+      "fine": "5 - 7 numbers",
+      "expertDescription": "Timemore Chestnut X calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Dual internal clicks, 1-23 major and micro adjustment. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "timemore-nano-plus",
+      "name": "Timemore Nano / Plus",
+      "brand": "Timemore",
+      "type": "Internal clicks",
+      "coarse": "20 - 25 clicks",
+      "medium": "15 - 20 clicks",
+      "fine": "8 - 8 clicks",
+      "expertDescription": "Timemore Nano / Plus calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal clicks. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "timemore-slim-plus",
+      "name": "Timemore Slim Plus",
+      "brand": "Timemore",
+      "type": "Internal clicks, 12 divisions/rotation",
+      "coarse": "24 - 24 clicks",
+      "medium": "20 - 20 clicks",
+      "fine": "8 - 8 clicks",
+      "expertDescription": "Timemore Slim Plus calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal clicks, 12 divisions/rotation. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "timemore-s3",
+      "name": "Timemore S3",
+      "brand": "Timemore",
+      "type": "External top dial, 15 micron per click, 90 divisions",
+      "coarse": "7.5 - 9.0 numbers",
+      "medium": "5.0 - 6.5 numbers",
+      "fine": "0.4 - 3.8 numbers",
+      "expertDescription": "Timemore S3 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External top dial, 15 micron per click, 90 divisions. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "timemore-s3-esp",
+      "name": "Timemore S3 ESP",
+      "brand": "Timemore",
+      "type": "External top dial, espresso-optimized",
+      "coarse": "60 - 75 clicks",
+      "medium": "45 - 55 clicks",
+      "fine": "20 - 30 clicks",
+      "expertDescription": "Timemore S3 ESP calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External top dial, espresso-optimized. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "timemore-c5",
+      "name": "Timemore C5",
+      "brand": "Timemore",
+      "type": "Internal clicks, C-series platform",
+      "coarse": "16 - 20 clicks",
+      "medium": "13 - 15 clicks",
+      "fine": "7 - 9 clicks",
+      "expertDescription": "Timemore C5 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal clicks, C-series platform. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "timemore-c5-esp-pro",
+      "name": "Timemore C5 ESP PRO",
+      "brand": "Timemore",
+      "type": "Internal multipoint click ring, C5 ESP chassis",
+      "coarse": "50 - 60 clicks",
+      "medium": "40 - 45 clicks",
+      "fine": "20 - 25 clicks",
+      "expertDescription": "Timemore C5 ESP PRO calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal multipoint click ring, C5 ESP chassis. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "timemore-chestnut-c5-pro",
+      "name": "TIMEMORE Chestnut C5 Pro",
+      "brand": "Timemore",
+      "type": "Stepped manual clicks",
+      "coarse": "16 - 20 clicks",
+      "medium": "13 - 15 clicks",
+      "fine": "8 - 8 clicks",
+      "expertDescription": "TIMEMORE Chestnut C5 Pro calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Stepped manual clicks. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "mavo-phantox-pro",
+      "name": "Mavo Phantox Pro",
+      "brand": "Mavo",
+      "type": "Stepped external ring",
+      "coarse": "11.0 - 11.0 numbers",
+      "medium": "7.0 - 10.0 numbers",
+      "fine": "1.0 - 1.5 numbers",
+      "expertDescription": "Mavo Phantox Pro calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Stepped external ring. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "kingrinder-k6",
+      "name": "KINGrinder K6",
+      "brand": "KINGrinder",
+      "type": "External ring, 60 clicks/rotation, 16 micron per click",
+      "coarse": "90 - 120 clicks",
+      "medium": "60 - 80 clicks",
+      "fine": "15 - 25 clicks",
+      "expertDescription": "KINGrinder K6 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, 60 clicks/rotation, 16 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "kingrinder-k4",
+      "name": "KINGrinder K4",
+      "brand": "KINGrinder",
+      "type": "External ring, 60 clicks/rotation, 16 micron per click",
+      "coarse": "90 - 120 clicks",
+      "medium": "55 - 75 clicks",
+      "fine": "15 - 25 clicks",
+      "expertDescription": "KINGrinder K4 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, 60 clicks/rotation, 16 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "kingrinder-k3",
+      "name": "KINGrinder K3",
+      "brand": "KINGrinder",
+      "type": "External ring, 60 clicks/rotation, 20 micron per click",
+      "coarse": "120 - 140 clicks",
+      "medium": "60 - 80 clicks",
+      "fine": "28 - 40 clicks",
+      "expertDescription": "KINGrinder K3 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, 60 clicks/rotation, 20 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "kingrinder-k2",
+      "name": "KINGrinder K2",
+      "brand": "KINGrinder",
+      "type": "External ring, 60 clicks/rotation, 20 micron per click",
+      "coarse": "80 - 100 clicks",
+      "medium": "60 - 80 clicks",
+      "fine": "28 - 40 clicks",
+      "expertDescription": "KINGrinder K2 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, 60 clicks/rotation, 20 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "kingrinder-k1-k0",
+      "name": "KINGrinder K1 / K0",
+      "brand": "KINGrinder",
+      "type": "Internal clicks, 38 mm burr platform",
+      "coarse": "120 - 140 clicks",
+      "medium": "80 - 100 clicks",
+      "fine": "40 - 55 clicks",
+      "expertDescription": "KINGrinder K1 / K0 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal clicks, 38 mm burr platform. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "kingrinder-p2",
+      "name": "KINGrinder P2",
+      "brand": "KINGrinder",
+      "type": "Internal clicks, 23.3 micron per click",
+      "coarse": "65 - 120 clicks",
+      "medium": "38 - 55 clicks",
+      "fine": "17 - 35 clicks",
+      "expertDescription": "KINGrinder P2 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal clicks, 23.3 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "kingrinder-p1-p0",
+      "name": "KINGrinder P1 / P0",
+      "brand": "KINGrinder",
+      "type": "Internal clicks, entry P-series platform",
+      "coarse": "65 - 120 clicks",
+      "medium": "38 - 55 clicks",
+      "fine": "17 - 35 clicks",
+      "expertDescription": "KINGrinder P1 / P0 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal clicks, entry P-series platform. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "wacaco-exagrind",
+      "name": "Wacaco Exagrind",
+      "brand": "Wacaco",
+      "type": "Internal bottom dial, 30 clicks/rotation, 33 micron per click",
+      "coarse": "42 - 46 clicks",
+      "medium": "26 - 34 clicks",
+      "fine": "10 - 15 clicks",
+      "expertDescription": "Wacaco Exagrind calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal bottom dial, 30 clicks/rotation, 33 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "mhw-3bomber-r3",
+      "name": "MHW-3BOMBER R3",
+      "brand": "MHW-3BOMBER",
+      "type": "External ring, approximately 8 micron per click",
+      "coarse": "140 - 150 clicks",
+      "medium": "90 - 110 clicks",
+      "fine": "20 - 40 clicks",
+      "expertDescription": "MHW-3BOMBER R3 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External ring, approximately 8 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "vesper-vs-3-fold",
+      "name": "Vesper VS-3 FOLD",
+      "brand": "Vesper",
+      "type": "External manual clicks",
+      "coarse": "40 - 46 clicks",
+      "medium": "24 - 32 clicks",
+      "fine": "10 - 12 clicks",
+      "expertDescription": "Vesper VS-3 FOLD calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External manual clicks. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "varia-hand-grinder",
+      "name": "Varia Hand Grinder",
+      "brand": "Varia",
+      "type": "External manual clicks",
+      "coarse": "40 - 46 clicks",
+      "medium": "24 - 34 clicks",
+      "fine": "10 - 20 clicks",
+      "expertDescription": "Varia Hand Grinder calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; External manual clicks. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
     },
     {
       "id": "baratza-encore",
       "name": "Baratza Encore",
       "brand": "Baratza",
-      "type": "Stepped (1 - 40) Electric",
-      "coarse": "30 - 40 settings",
-      "medium": "15 - 29 settings",
-      "fine": "8 - 14 settings",
-      "source": "official_2026",
+      "type": "Stepped collar, 1-40 settings",
+      "coarse": "20 - 30 settings",
+      "medium": "12 - 15 settings",
+      "fine": "6 - 8 settings",
+      "expertDescription": "Baratza Encore calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Stepped collar, 1-40 settings. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
       "sourceUrls": [
-        "https://www.baratza.com/en-us/product/encoretm-zcg485",
-        "https://assets.breville.com/ZCG485/manual-encore-v1-0-en-010923.pdf"
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
       ],
-      "catalogVersion": "2026.06.3-grinder-provenance",
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
-      "popularityTier": "widely_used",
-      "marketSegment": "mass_market",
-      "releaseStatus": "established"
-    },
-    {
-      "id": "fellow-opus",
-      "name": "Fellow Opus",
-      "brand": "Fellow",
-      "type": "Stepped (1 - 11, 41+ positions) Electric",
-      "coarse": "8 - 11 numbers",
-      "medium": "4.5 - 7.5 numbers",
-      "fine": "1 - 3 numbers",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://fellowproducts.com/pages/gear-guide-opus",
-        "https://help.fellowproducts.com/hc/en-us/articles/12697790417947-What-does-the-in-41-adjustable-settings-mean"
-      ],
-      "catalogVersion": "2026.06.3-grinder-provenance",
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
       "popularityTier": "specialty_common",
       "marketSegment": "specialty_mainstream",
-      "releaseStatus": "established"
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "baratza-encore-esp",
+      "name": "Baratza Encore ESP",
+      "brand": "Baratza",
+      "type": "Stepped collar, 1-20 micro and 21-40 macro",
+      "coarse": "30 - 40 settings",
+      "medium": "22 - 25 settings",
+      "fine": "0 - 13 settings",
+      "expertDescription": "Baratza Encore ESP calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Stepped collar, 1-20 micro and 21-40 macro. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "baratza-encore-esp-pro",
+      "name": "Baratza Encore ESP PRO",
+      "brand": "Baratza",
+      "type": "Digital stepped collar, 0-60 settings",
+      "coarse": "55 - 60 settings",
+      "medium": "45 - 50 settings",
+      "fine": "25 - 35 settings",
+      "expertDescription": "Baratza Encore ESP PRO calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Digital stepped collar, 0-60 settings. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
     },
     {
       "id": "fellow-ode-gen-2",
       "name": "Fellow Ode Gen 2",
       "brand": "Fellow",
-      "type": "Stepped Brew Grinder Electric",
-      "coarse": "8 - 11 numbers",
-      "medium": "4 - 8 numbers",
-      "fine": "2 - 4 numbers",
-      "source": "official_2026",
+      "type": "Front stepped dial, 1-11 settings",
+      "coarse": "8.0 - 9.0 numbers",
+      "medium": "5.0 - 5.0 numbers",
+      "fine": "3.0 - 3.0 numbers",
+      "expertDescription": "Fellow Ode Gen 2 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: flat burr clarity/flow platform; Front stepped dial, 1-11 settings. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
       "sourceUrls": [
-        "https://help.fellowproducts.com/hc/en-us/articles/9962302561819-What-are-the-recommended-grind-settings-for-Ode-Gen-2-Brew-Burrs",
-        "https://help.fellowproducts.com/hc/en-us/articles/10034632333339-Is-Ode-Gen-2-suitable-for-grinding-espresso",
-        "https://help.fellowproducts.com/hc/en-us/articles/29101533994267-How-should-I-dial-in-my-grinder-when-brewing-with-Aiden-Getting-Started-With-Aiden-Pt-3"
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
       ],
-      "catalogVersion": "2026.06.3-grinder-provenance",
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
-      "popularityTier": "specialty_common",
-      "marketSegment": "specialty_mainstream",
-      "releaseStatus": "established"
-    },
-    {
-      "id": "df64-gen2",
-      "name": "DF64 Gen2",
-      "brand": "DF64 / Turin",
-      "type": "Stepless (0 - 90 dial) Electric Flat Burr - zero point and burr alignment calibration required",
-      "coarse": "55 - 80 dial numbers",
-      "medium": "35 - 55 dial numbers",
-      "fine": "5 - 20 dial numbers",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://df64coffee.com/products/df64-gen-2-single-dose-coffee-grinder",
-        "https://dfgrinders.com/products/df64-coffee-grinder",
-        "https://www.turingrinders.com/products/turin-df64-gen-2-single-dose-coffee-grinder-1",
-        "https://df64grinders.com/faqs"
-      ],
-      "catalogVersion": "2026.06.4-grinder-safety",
       "verificationLevel": "curated",
       "confidence": "medium",
-      "verifiedAt": "2026-05-23",
+      "verifiedAt": "2026-05-28",
       "popularityTier": "specialty_common",
       "marketSegment": "specialty_mainstream",
-      "releaseStatus": "established"
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
     },
     {
-      "id": "varia-vs3-gen-2",
-      "name": "Varia VS3 Gen 2",
-      "brand": "Varia",
-      "type": "Stepless Electric",
-      "coarse": "8.3 - 18 numbers",
-      "medium": "3.7 - 12.1 numbers",
-      "fine": "0.2 - 3.3 numbers",
-      "source": "curated_2026",
+      "id": "fellow-opus",
+      "name": "Fellow Opus",
+      "brand": "Fellow",
+      "type": "Stepped dial with internal micro ring",
+      "coarse": "6.0 - 11.0 numbers",
+      "medium": "5.0 - 6.5 numbers",
+      "fine": "1.5 - 2.5 numbers",
+      "expertDescription": "Fellow Opus calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Stepped dial with internal micro ring. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
       "sourceUrls": [
-        "https://www.variabrewing.com/products/varia-vs3-grinder",
-        "https://honestcoffeeguide.com/varia-vs3-gen-2-grind-settings/"
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
       ],
-      "catalogVersion": "2026.06.2-ai-brew-grinder-plus",
-      "verificationLevel": "community_verified",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-04",
-      "popularityTier": "specialty_common",
-      "marketSegment": "specialty_mainstream",
-      "releaseStatus": "established"
-    },
-    {
-      "id": "feima-600n",
-      "name": "Feima 600N",
-      "brand": "Feima (Yang-Chia)",
-      "type": "Stepped (1 - 8, 16 clicks) Electric",
-      "coarse": "6.5 - 8.0 settings",
-      "medium": "4.0 - 6.0 settings",
-      "fine": "1.0 - 2.5 settings",
-      "source": "curated_2026",
-      "sourceUrl": "https://honestcoffeeguide.com/coffee-grind-size-chart/",
-      "sourceUrls": [
-        "https://www.tgc-coffee.com/en/data/yang-chia-600N",
-        "https://honestcoffeeguide.com/coffee-grind-size-chart/"
-      ],
-      "catalogVersion": "2026.04.07-ai-brew-v1.4",
-      "verificationLevel": "community_verified",
-      "confidence": "medium",
-      "verifiedAt": "2026-05-23"
-    },
-    {
-      "id": "turin-df54",
-      "name": "Turin DF54",
-      "brand": "DF64 / Turin",
-      "type": "Stepless (0 - 90 dial) Electric Flat Burr",
-      "coarse": "65 - 85 dial numbers",
-      "medium": "40 - 60 dial numbers",
-      "fine": "10 - 25 dial numbers",
-      "source": "official_2026",
-      "sourceUrls": [
-        "https://df64coffee.com/products/turin-df54-single-dose-flat-burr-grinder",
-        "https://honestcoffeeguide.com/turin-df54-grind-settings/"
-      ],
-      "catalogVersion": "2026.06.4-grinder-safety",
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
-      "popularityTier": "widely_used",
-      "marketSegment": "mass_market",
-      "releaseStatus": "established"
-    },
-    {
-      "id": "turin-df83",
-      "name": "Turin DF83",
-      "brand": "DF83 / Turin",
-      "type": "Stepless (0 - 90 dial) Electric Flat Burr - zero point and burr alignment calibration required",
-      "coarse": "58 - 80 dial numbers",
-      "medium": "35 - 55 dial numbers",
-      "fine": "8 - 22 dial numbers",
-      "source": "curated_2026",
-      "sourceUrls": [
-        "https://df64coffee.com/products/df83-single-dose-coffee-grinder",
-        "https://honestcoffeeguide.com/turin-df83-grind-settings/"
-      ],
-      "catalogVersion": "2026.06.4-grinder-safety",
       "verificationLevel": "curated",
       "confidence": "medium",
-      "verifiedAt": "2026-05-23",
+      "verifiedAt": "2026-05-28",
       "popularityTier": "specialty_common",
       "marketSegment": "specialty_mainstream",
-      "releaseStatus": "established"
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
     },
     {
       "id": "timemore-sculptor-078",
       "name": "TIMEMORE Sculptor 078",
       "brand": "Timemore",
-      "type": "Stepped Brew Grinder Electric (Rotary dial 1 - 36)",
-      "coarse": "28 - 36 settings",
-      "medium": "14 - 27 settings",
-      "fine": "8 - 13 settings",
-      "source": "official_2026",
+      "type": "Front stepped dial, 1-36 settings",
+      "coarse": "11.0 - 14.0 settings",
+      "medium": "5.0 - 10.0 settings",
+      "fine": "2.0 - 3.0 settings",
+      "expertDescription": "TIMEMORE Sculptor 078 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: flat burr clarity/flow platform; Front stepped dial, 1-36 settings. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
       "sourceUrls": [
-        "https://www.timemore.com/products/timemore-sculptor-078",
-        "https://honestcoffeeguide.com/timemore-sculptor-078-grind-settings/"
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
       ],
-      "catalogVersion": "2026.06.4-grinder-safety",
-      "verificationLevel": "official",
-      "confidence": "high",
-      "verifiedAt": "2026-05-19",
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
       "popularityTier": "specialty_common",
       "marketSegment": "specialty_mainstream",
-      "releaseStatus": "established"
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "timemore-sculptor-078s",
+      "name": "TIMEMORE Sculptor 078S",
+      "brand": "Timemore",
+      "type": "Front stepless dial",
+      "coarse": "10.0 - 12.0 settings",
+      "medium": "8.0 - 10.0 settings",
+      "fine": "1.0 - 3.0 settings",
+      "expertDescription": "TIMEMORE Sculptor 078S calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: flat burr clarity/flow platform; Front stepless dial. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "turin-df54",
+      "name": "Turin DF54",
+      "brand": "Turin",
+      "type": "Top stepless dial, 0-90 numbers",
+      "coarse": "67 - 90 dial numbers",
+      "medium": "55 - 65 dial numbers",
+      "fine": "10 - 15 dial numbers",
+      "expertDescription": "Turin DF54 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: flat burr clarity/flow platform; Top stepless dial, 0-90 numbers. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "df64-gen2",
+      "name": "DF64 Gen2",
+      "brand": "Turin",
+      "type": "Top stepless dial, 0-90 numbers",
+      "coarse": "55 - 65 dial numbers",
+      "medium": "40 - 50 dial numbers",
+      "fine": "5 - 15 dial numbers",
+      "expertDescription": "DF64 Gen2 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: flat burr clarity/flow platform; Top stepless dial, 0-90 numbers. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "turin-df83",
+      "name": "Turin DF83",
+      "brand": "Turin",
+      "type": "Top stepless dial, 0-90 numbers",
+      "coarse": "75 - 85 dial numbers",
+      "medium": "50 - 65 dial numbers",
+      "fine": "10 - 25 dial numbers",
+      "expertDescription": "Turin DF83 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: flat burr clarity/flow platform; Top stepless dial, 0-90 numbers. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "breville-smart-grinder-pro",
+      "name": "Breville Smart Grinder Pro",
+      "brand": "Breville",
+      "type": "Digital stepped settings",
+      "coarse": "50 - 50 settings",
+      "medium": "45 - 45 settings",
+      "fine": "1 - 15 settings",
+      "expertDescription": "Breville Smart Grinder Pro calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Digital stepped settings. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "starseeker-edge-edge",
+      "name": "Starseeker Edge / Edge+",
+      "brand": "Starseeker",
+      "type": "Stepless external ring, 10 scale marks with sub-divisions",
+      "coarse": "8.0 - 9.0 numbers",
+      "medium": "4.0 - 5.0 numbers",
+      "fine": "1.0 - 1.5 numbers",
+      "expertDescription": "Starseeker Edge / Edge+ calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Stepless external ring, 10 scale marks with sub-divisions. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "varia-vs3-gen-2",
+      "name": "Varia VS3 Gen 2",
+      "brand": "Varia",
+      "type": "Stepless hopper collar, approximately 10 micron increment",
+      "coarse": "11.0 - 15.0 numbers",
+      "medium": "7.5 - 10.0 numbers",
+      "fine": "3.5 - 5.0 numbers",
+      "expertDescription": "Varia VS3 Gen 2 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Stepless hopper collar, approximately 10 micron increment. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "hario-canister-c-20",
+      "name": "Hario Canister (C-20)",
+      "brand": "Hario",
+      "type": "Internal rotating notches",
+      "coarse": "13 - 13 notches",
+      "medium": "10 - 10 notches",
+      "fine": "3 - 3 notches",
+      "expertDescription": "Hario Canister (C-20) calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: ceramic entry grinder platform; Internal rotating notches. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "hario-mini-slim",
+      "name": "Hario Mini Slim+",
+      "brand": "Hario",
+      "type": "Internal triangular standard clicks",
+      "coarse": "15 - 15 clicks",
+      "medium": "12 - 12 clicks",
+      "fine": "6 - 6 clicks",
+      "expertDescription": "Hario Mini Slim+ calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: ceramic entry grinder platform; Internal triangular standard clicks. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "hario-skerton-pro",
+      "name": "Hario Skerton Pro",
+      "brand": "Hario",
+      "type": "Top notch click ring",
+      "coarse": "13 - 13 notches",
+      "medium": "10 - 10 notches",
+      "fine": "3 - 3 notches",
+      "expertDescription": "Hario Skerton Pro calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: ceramic entry grinder platform; Top notch click ring. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "hario-smart-g",
+      "name": "HARIO Smart G",
+      "brand": "Hario",
+      "type": "Internal triangular standard clicks",
+      "coarse": "7 - 12 clicks",
+      "medium": "5 - 6 clicks",
+      "fine": "1 - 2 clicks",
+      "expertDescription": "HARIO Smart G calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: ceramic entry grinder platform; Internal triangular standard clicks. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "porlex-mini-ii",
+      "name": "Porlex Mini II",
+      "brand": "Porlex",
+      "type": "Internal clicks, ceramic burr, 37 micron per click",
+      "coarse": "13 - 16 clicks",
+      "medium": "11 - 14 clicks",
+      "fine": "4 - 6 clicks",
+      "expertDescription": "Porlex Mini II calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: ceramic entry grinder platform; Internal clicks, ceramic burr, 37 micron per click. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "latina-sumba-sumbawa",
+      "name": "Latina Sumba / Sumbawa",
+      "brand": "Latina",
+      "type": "Internal clicks, Mini Slim style mechanism",
+      "coarse": "15 - 15 clicks",
+      "medium": "12 - 12 clicks",
+      "fine": "6 - 6 clicks",
+      "expertDescription": "Latina Sumba / Sumbawa calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: ceramic entry grinder platform; Internal clicks, Mini Slim style mechanism. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "latina-sumo",
+      "name": "Latina Sumo",
+      "brand": "Latina",
+      "type": "Top notch click ring, Skerton style",
+      "coarse": "13 - 13 clicks",
+      "medium": "10 - 10 clicks",
+      "fine": "3 - 3 clicks",
+      "expertDescription": "Latina Sumo calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: ceramic entry grinder platform; Top notch click ring, Skerton style. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "feima-600n",
+      "name": "Feima 600N",
+      "brand": "Feima",
+      "type": "Stepped ghost-burr 600N platform",
+      "coarse": "6.0 - 8.0 settings",
+      "medium": "4.0 - 5.0 settings",
+      "fine": "1.0 - 1.5 settings",
+      "expertDescription": "Feima 600N calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: flat burr clarity/flow platform; Stepped ghost-burr 600N platform. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
+    },
+    {
+      "id": "1zpresso-q-air-q2",
+      "name": "1Zpresso Q Air / Q2",
+      "brand": "1Zpresso",
+      "type": "Internal pentagonal clicks, 30 clicks/rotation",
+      "coarse": "80 - 110 clicks",
+      "medium": "60 - 75 clicks",
+      "fine": "33 - 33 clicks",
+      "expertDescription": "1Zpresso Q Air / Q2 calibrated from the 2026.07.0-master-grinder-calibration master grinder table. Mechanical cue: conical burr body/forgiveness platform; Internal pentagonal clicks, 30 clicks/rotation. Iced filter settings are intentionally finer than hot equivalents to compensate for lower active hot-water solvent and shorter contact time. Treat all numbers as true-zero starting ranges; burr seasoning, roast density, RDT, dose, paper/filter behavior, flow, brew time, and taste still decide the final setting.",
+      "source": "curated_2026_master_calibration",
+      "sourceUrls": [
+        "https://honestcoffeeguide.com/coffee-grind-size-chart/",
+        "https://sca.coffee/research"
+      ],
+      "verificationLevel": "curated",
+      "confidence": "medium",
+      "verifiedAt": "2026-05-28",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "catalogVersion": "2026.07.0-master-grinder-calibration"
     }
   ]
 }

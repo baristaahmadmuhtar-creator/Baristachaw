@@ -686,6 +686,7 @@ function normalizeGrinder(raw: RawGrinderCatalogEntry, override?: MarketSignalRe
       mediumLabel,
       raw.fine,
       fineLabel,
+      raw.expertDescription,
     ),
     grindBands: {
       coarse: coarseLabel,

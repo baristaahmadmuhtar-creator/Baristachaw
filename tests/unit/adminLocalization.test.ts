@@ -86,6 +86,8 @@ test('AI Brew normal user copy hides provider internals and old engine labels', 
   assert.doesNotMatch(source, /Groq Llama|Gemini 2\.5|DeepSeek Chat|OpenRouter Llama|estimated USD|token count|provider stack/i);
   assert.match(source, /Local planner/);
   assert.match(source, /Rencana lokal/);
-  assert.match(source, /Precision planner/);
-  assert.match(source, /Rencana presisi/);
+  assert.match(source, /Basic Brew/);
+  assert.match(source, /Advanced Brew/);
+  assert.match(source, /Coming Soon/);
+  assert.doesNotMatch(source, /Precision planner|Rencana presisi/);
 });

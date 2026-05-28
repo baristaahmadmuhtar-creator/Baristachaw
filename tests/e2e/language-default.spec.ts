@@ -52,7 +52,7 @@ test('fresh launch defaults to English and AI Brew result surfaces stay English'
 
   await expect(page.getByRole('heading', { name: /Barista Tools/i })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-  await expect(page.getByRole('tab', { name: /AI Brew/i })).toBeVisible();
+  await expect(page.getByRole('tab', { name: /^Brew$/i })).toBeVisible();
   await expect(page.getByRole('tab', { name: /Calculator/i })).toBeVisible();
 
   let visibleText = await page.locator('body').innerText();

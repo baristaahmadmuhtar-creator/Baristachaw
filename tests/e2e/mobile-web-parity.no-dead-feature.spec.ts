@@ -19,7 +19,7 @@ test('all visible Barista Tools tabs open populated panels in native shell mode'
   });
 
   const tabs = [
-    { id: 'ai_brew', panel: 'ai_brew', text: /AI Brew|AI Seduh|Buat/i },
+    { id: 'ai_brew', panel: 'ai_brew', text: /Brew|AI Brew|AI Seduh|Buat/i },
     { id: 'timer', panel: 'timer', button: /Mulai|Start/i },
     { id: 'ratio', panel: 'ratio', text: /Rasio|Ukuran Giling|Dosis/i },
     { id: 'todo', panel: 'todo', text: /Tugas|Tambah/i },

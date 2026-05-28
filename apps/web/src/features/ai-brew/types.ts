@@ -511,6 +511,7 @@ export type GrinderReferenceType =
   | 'official_chart'
   | 'community_verified'
   | 'curated_baseline'
+  | 'method_specific_master_table'
   | 'derived_from_grinder_band'
   | 'fallback_estimate'
   | 'user_calibration';

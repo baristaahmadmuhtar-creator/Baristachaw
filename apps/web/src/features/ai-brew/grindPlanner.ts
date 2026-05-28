@@ -75,6 +75,7 @@ function isEspressoNotRecommendedGrinder(grinder: EquipmentCatalogEntry) {
   return haystackHasAny(haystack, [
     /\btimemore\s*c2\b/i,
     /\btimemore\s*c3\b(?!\s*esp)/i,
+    /\btimemore\s*s3\b(?!\s*esp)/i,
     /\bfellow\s*ode\b/i,
     /\bbaratza\s*encore\b(?!\s*esp)/i,
     /\bfeima\b/i,
@@ -202,12 +203,14 @@ export function resolveGrinderSettingReference(
   brewMode: 'hot' | 'iced',
 ) {
   const modeMatch = (entry: GrinderSettingReference) => entry.brewMode === brewMode || entry.brewMode === 'both';
+  const espressoNotRecommended = deviceProfile.methodFamily === 'espresso'
+    && isEspressoNotRecommendedGrinder(grinder);
   const exact = catalog.grinderSettings.find((entry) =>
     entry.grinderId === grinder.id
     && modeMatch(entry)
     && entry.profileIds.includes(deviceProfile.id),
   );
-  if (exact) return exact;
+  if (exact && !espressoNotRecommended) return exact;
 
   const familyIds = catalog.deviceProfiles
     .filter((entry) => !entry.exactMatch && entry.methodFamily === deviceProfile.methodFamily && entry.brewMode === brewMode)
@@ -218,7 +221,7 @@ export function resolveGrinderSettingReference(
     && modeMatch(entry)
     && entry.profileIds.some((profileId) => familyIds.includes(profileId)),
   );
-  if (familySetting) return familySetting;
+  if (familySetting && !espressoNotRecommended) return familySetting;
 
   const fallbackBand = selectFallbackGrinderBand(grinder, deviceProfile.methodFamily);
   if (!fallbackBand) return undefined;
@@ -226,9 +229,6 @@ export function resolveGrinderSettingReference(
   const hasCatalogBandProvenance = grinder.sourceUrls.length > 0
     && grinder.verificationLevel !== 'dataset_unverified'
     && grinder.verificationLevel !== 'fallback';
-  const espressoNotRecommended = deviceProfile.methodFamily === 'espresso'
-    && isEspressoNotRecommendedGrinder(grinder);
-
   const idSuffix = deviceProfile.methodFamily === 'v60'
     ? brewMode
     : `${deviceProfile.methodFamily}_${brewMode}`;

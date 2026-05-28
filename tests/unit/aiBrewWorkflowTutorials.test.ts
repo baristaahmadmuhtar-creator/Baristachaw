@@ -126,13 +126,13 @@ test('AI Brew entry cards expose Basic/Advanced while keeping guide density Lite
 
   assert.match(source, /guideDensitySimple:\s*'Lite'/);
   assert.match(source, /guideDensityPro:\s*'Pro'/);
-  assert.match(source, /guideDensitySimpleHint:\s*'Focused timer and current step\.'/);
-  assert.match(source, /guideDensityProHint:\s*'Full brew guide with barista detail\.'/);
+  assert.match(source, /guideDensitySimpleHint:\s*'Timer and current step stay in view\.'/);
+  assert.match(source, /guideDensityProHint:\s*'Full guide with practical barista detail\.'/);
 
   assert.match(source, /guideDensitySimple:\s*'Lite'/);
   assert.match(source, /guideDensityPro:\s*'Pro'/);
-  assert.match(source, /guideDensitySimpleHint:\s*'Timer fokus dan langkah sekarang\.'/);
-  assert.match(source, /guideDensityProHint:\s*'Panduan lengkap dengan detail barista\.'/);
+  assert.match(source, /guideDensitySimpleHint:\s*'Timer dan langkah aktif tetap di atas\.'/);
+  assert.match(source, /guideDensityProHint:\s*'Panduan lengkap dengan detail teknik barista\.'/);
 });
 
 test('every visible AI Brew dripper resolves tutorial detail for each generated workflow step', () => {

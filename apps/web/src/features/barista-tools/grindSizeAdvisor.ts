@@ -309,6 +309,13 @@ export function getGrindSizeCompatibility(
   const hasCoarse = Boolean(grinder.grindBands?.coarse?.trim());
   const grinderSettings = Array.isArray(catalog.grinderSettings) ? catalog.grinderSettings : [];
   const deviceProfiles = Array.isArray(catalog.deviceProfiles) ? catalog.deviceProfiles : [];
+  const matchingMethodSettingExists = grinderSettings.some((setting) =>
+    setting.grinderId === grinder.id
+    && setting.profileIds.some((profileId) => {
+      const profile = deviceProfiles.find((entry) => entry.id === profileId);
+      return profile?.methodFamily === methodFamily;
+    })
+  );
   const exactSettingExists = grinderSettings.some((setting) =>
     setting.grinderId === grinder.id
     && !setting.calibrationRequired
@@ -357,10 +364,12 @@ export function getGrindSizeCompatibility(
   }
 
   return {
-    state: exactSettingExists ? 'compatible' : 'caution',
+    state: exactSettingExists || matchingMethodSettingExists ? 'compatible' : 'caution',
     selectable: true,
     reason: exactSettingExists
       ? 'Cocok dengan referensi metode di katalog.'
+      : matchingMethodSettingExists
+        ? 'Cocok sebagai baseline master table; tetap dial-in dari rasa seduhan pertama.'
       : 'Bisa dipakai sebagai baseline, tetapi tetap butuh koreksi dari rasa.',
   };
 }
@@ -439,7 +448,7 @@ function warningCopy(params: {
     return 'Espresso sangat sensitif. Ini baseline grinder, bukan jaminan shot; kalibrasi nol, dose, yield, dan waktu shot dulu.';
   }
   if (params.setting.calibrationRequired) {
-    return 'Belum ada chart spesifik untuk metode ini. Mulai dari baseline katalog, lalu koreksi satu variabel dari rasa.';
+    return 'Range master table ini adalah titik awal terkalibrasi. Validasi di seduhan pertama, lalu koreksi satu variabel dari rasa.';
   }
   if (params.deviceProfile?.brewMode === 'iced') {
     return 'Untuk seduh es, mulai sedikit lebih halus dari hot bila cup terasa tipis, tetapi jangan ubah air panas dan es sekaligus.';
@@ -580,12 +589,12 @@ export function buildGrindSizeAdvice(input: GrindSizeAdviceInput): GrindSizeAdvi
         ? 'Sangrai gelap biasanya lebih aman sedikit lebih kasar.'
         : 'Mulai dari tengah range, lalu koreksi 0.5 step atau 1-2 klik dari rasa.',
     confidenceLabel: setting?.calibrationRequired
-      ? 'Estimasi terarah'
+      ? 'Baseline terkalibrasi'
       : verificationLabel(setting?.verificationLevel),
     capabilityLabel: capabilityLabel({ methodFamily, setting, grinder }),
     warning: warningCopy({ methodFamily, setting, deviceProfile }),
     sourceLabel: setting?.calibrationRequired
-      ? 'Baseline katalog + metode'
+      ? 'Master table + metode'
       : verificationLabel(setting?.verificationLevel),
     confidenceKind,
     sourceKind,

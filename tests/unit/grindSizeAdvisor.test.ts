@@ -208,6 +208,33 @@ test('Grind Size catalog treats DF64 Gen 2 as calibration-required espresso/filt
   assert.match(`${advice.warning} ${advice.setting?.note}`, /kalibrasi|zero|burr|dial-in|exact/i);
 });
 
+test('Grind Size labels master-table filter settings as compatible calibrated baselines, not blanket caution', async () => {
+  const catalog = await loadCatalogForTest();
+  const grinder = catalog.grinders.find((entry) => entry.id === '1zpresso-k-ultra');
+  assert.ok(grinder, '1Zpresso K-Ultra fixture must exist in the production grinder catalog');
+
+  const compatibility = getGrindSizeCompatibility(catalog, 'v60', grinder);
+  assert.equal(compatibility.selectable, true);
+  assert.equal(compatibility.state, 'compatible');
+  assert.match(compatibility.reason, /master table|baseline/i);
+  assert.doesNotMatch(compatibility.reason, /hati-hati/i);
+
+  const advice = buildGrindSizeAdvice({
+    catalog,
+    methodId: 'v60',
+    grinderId: grinder.id,
+    roastLevel: 'medium',
+    targetProfileId: 'balance_clean',
+  });
+  assert.equal(advice.compatibilitySelectable, true);
+  assert.equal(advice.compatibilityState, 'compatible');
+  assert.equal(advice.warningKind, 'calibration_required');
+  assert.equal(advice.confidenceKind, 'directed_estimate');
+  assert.equal(advice.sourceKind, 'baseline_method');
+  assert.match(advice.warning || '', /master table|terkalibrasi/i);
+  assert.doesNotMatch(`${advice.confidenceLabel} ${advice.sourceLabel}`, /Hati-hati/i);
+});
+
 test('Grind Size matrix keeps all visible grinders method-safe and finite', async () => {
   const catalog = await loadCatalogForTest();
   const roastLevels: RoastLevel[] = ['light', 'medium_light', 'medium', 'medium_dark', 'dark'];

@@ -215,11 +215,11 @@ const COPY = {
     quickMode: 'Basic Brew',
     proMode: 'Advanced Brew',
     liteModeDescription: 'Coming Soon - espresso workflow is being prepared as a dedicated launch surface.',
-    quickModeDescription: 'Fast baseline recipe builder for a stable first cup.',
-    proModeDescription: '',
+    quickModeDescription: 'Fast, safe baseline for a stable first cup.',
+    proModeDescription: 'Full control for beans, water, grinder, and taste precision.',
     liteModeTrustHint: 'Coming Soon - espresso needs a separate dial-in flow, pressure logic, and grinder calibration before launch.',
-    quickModeTrustHint: 'Best for speed and consistency. If bean profile and water stay neutral, Basic and Advanced can land on the same plan.',
-    proModeTrustHint: '',
+    quickModeTrustHint: 'Best for daily brewing. Start here, taste the cup, then correct one variable.',
+    proModeTrustHint: 'Use when process, variety, water minerals, grinder, and target taste all matter.',
     pourControlTitle: 'Pour control',
     pourStyleTitle: 'Interval style',
     pourCountTitle: 'Pour count',
@@ -610,8 +610,8 @@ const COPY = {
     feedbackCoachHint: 'Smallest safe correction for the next brew.',
     guideDensitySimple: 'Lite',
     guideDensityPro: 'Pro',
-    guideDensitySimpleHint: 'Focused timer and current step.',
-    guideDensityProHint: 'Full brew guide with barista detail.',
+    guideDensitySimpleHint: 'Timer and current step stay in view.',
+    guideDensityProHint: 'Full guide with practical barista detail.',
     switchSectionTitle: 'Switch method',
     switchSectionSummary: 'Choose Hot/Iced first, then leave Auto or pick the Switch method you want.',
     switchTeachingTitle: 'How Switch can brew',
@@ -828,11 +828,11 @@ const COPY = {
     quickMode: 'Basic Brew',
     proMode: 'Advanced Brew',
     liteModeDescription: 'Coming Soon - workflow espresso disiapkan sebagai fitur khusus.',
-    quickModeDescription: 'Penyusun resep dasar yang cepat untuk cangkir pertama yang stabil.',
-    proModeDescription: '',
+    quickModeDescription: 'Baseline cepat dan aman untuk cangkir pertama yang stabil.',
+    proModeDescription: 'Kontrol penuh untuk beans, air, grinder, dan presisi rasa.',
     liteModeTrustHint: 'Coming Soon - espresso butuh flow dial-in, logika tekanan, dan kalibrasi grinder terpisah sebelum launch.',
-    quickModeTrustHint: 'Paling cocok untuk cepat dan konsisten. Kalau profil kopi dan air masih netral, hasil Basic dan Advanced bisa sama.',
-    proModeTrustHint: '',
+    quickModeTrustHint: 'Paling praktis untuk seduh harian. Mulai dari sini, cicipi, lalu koreksi satu variabel.',
+    proModeTrustHint: 'Pakai saat proses, varietas, mineral air, grinder, dan target rasa perlu dibaca lengkap.',
     pourControlTitle: 'Kontrol tuang',
     pourStyleTitle: 'Gaya interval',
     pourCountTitle: 'Jumlah tuang',
@@ -1151,7 +1151,7 @@ const COPY = {
     aiFallbackDisabledByAdmin: 'AI hanya dipakai saat kamu menekan tombol asisten.',
     aiEngineOnlineOptimized: 'AI + rencana tervalidasi',
     aiEngineLocalValidated: 'Rencana lokal',
-    aiEnginePrecisionPlanner: 'Rencana advanced',
+    aiEnginePrecisionPlanner: 'Rencana lanjutan',
     aiEngineWorkingOnline: 'Asisten AI bekerja...',
     aiEngineWorkingLocal: 'Rencana lokal',
     aiPrecisionAssistNote: 'AI hanya dipakai saat kamu menekan tombol asisten.',
@@ -1223,8 +1223,8 @@ const COPY = {
     feedbackCoachHint: 'Koreksi aman paling kecil untuk seduhan berikutnya.',
     guideDensitySimple: 'Lite',
     guideDensityPro: 'Pro',
-    guideDensitySimpleHint: 'Timer fokus dan langkah sekarang.',
-    guideDensityProHint: 'Panduan lengkap dengan detail barista.',
+    guideDensitySimpleHint: 'Timer dan langkah aktif tetap di atas.',
+    guideDensityProHint: 'Panduan lengkap dengan detail teknik barista.',
     switchSectionTitle: 'Metode Switch',
     switchSectionSummary: 'Pilih Panas/Es dulu, lalu biarkan Auto atau pilih metode Switch yang kamu mau.',
     switchTeachingTitle: 'Cara Switch bekerja',
@@ -3443,7 +3443,7 @@ function buildAiBrewWorkflowFocusCue(
         if (step.actionType === 'release' || step.actionType === 'drawdown') {
           return 'Open the valve cleanly, then let drawdown finish without extra stirring.';
         }
-        return 'Keep the chamber load safe and follow the valve position for this stage.';
+        return 'Keep the chamber volume safe; follow each valve cue so the release stays clean.';
       case 'v60':
       case 'origami':
       case 'kono':
@@ -3494,7 +3494,7 @@ function buildAiBrewWorkflowFocusCue(
       if (step.actionType === 'release' || step.actionType === 'drawdown') {
         return 'Buka katup bersih, lalu biarkan air turun tanpa adukan tambahan.';
       }
-      return 'Jaga muatan ruang aman dan ikuti posisi katup sesuai tahap.';
+      return 'Jaga volume chamber aman; ikuti cue katup tiap langkah agar aliran tetap bersih.';
     case 'v60':
     case 'origami':
     case 'kono':
@@ -5090,6 +5090,8 @@ function PlanResultDialog({
   const [flowAccumulatedSeconds, setFlowAccumulatedSeconds] = useState(0);
   const [flowRunning, setFlowRunning] = useState(false);
   const [flowStartedAtMs, setFlowStartedAtMs] = useState<number | null>(null);
+  const resultScrollRef = useRef<HTMLDivElement | null>(null);
+  const flowGuideRef = useRef<HTMLDivElement | null>(null);
   const resultTabRefs = useRef<Record<ResultTab, HTMLButtonElement | null>>({
     plan: null,
     flow: null,
@@ -5357,8 +5359,8 @@ function PlanResultDialog({
   const liteStepCue = flowCurrentStep
     ? flowCurrentCompactCue
     : (id
-      ? 'Cicipi hasilnya, lalu catat koreksi untuk seduhan berikutnya.'
-      : 'Taste the cup, then note one correction for the next brew.');
+      ? 'Seduhan selesai. Cicipi saat hangat, lalu catat satu koreksi untuk brew berikutnya.'
+      : 'Brew complete. Taste while warm, then note one correction for the next brew.');
   const localizedProcessLabel = plan.process || copy.notSpecified;
   const localizedVarietyLabel = plan.variety || copy.notSpecified;
   const localizedRoastLabel = localizeAiBrewRoastLabel(plan.roastLevel, language);
@@ -5599,11 +5601,30 @@ function PlanResultDialog({
     setFlowStartedAtMs(Date.now());
   }
 
+  function scrollFlowGuideIntoView() {
+    window.requestAnimationFrame(() => {
+      const container = resultScrollRef.current;
+      const target = flowGuideRef.current;
+      if (!container || !target) return;
+      const top = Math.max(0, target.offsetTop - container.offsetTop - 8);
+      container.scrollTo({ top, behavior: 'smooth' });
+    });
+  }
+
   function pauseFlowTimer() {
     setFlowAccumulatedSeconds(flowProgressSeconds);
     setFlowElapsedSeconds(flowProgressSeconds);
     setFlowRunning(false);
     setFlowStartedAtMs(null);
+  }
+
+  function toggleFlowTimer() {
+    if (flowRunning) {
+      pauseFlowTimer();
+    } else {
+      startFlowTimer();
+    }
+    scrollFlowGuideIntoView();
   }
 
   function resetFlowTimer() {
@@ -5627,6 +5648,7 @@ function PlanResultDialog({
 
   const liteGuidePanel = (
     <div
+      ref={flowGuideRef}
       className="rounded-[2.2rem] border border-glass bg-surface-alpha/75 p-5 shadow-[var(--panel-elev-1)] backdrop-blur-md"
       data-testid="ai-brew-flow-timer-panel"
     >
@@ -5706,7 +5728,7 @@ function PlanResultDialog({
       <div className="mt-5 flex items-center justify-center gap-3">
         <button
           type="button"
-          onClick={flowRunning ? pauseFlowTimer : startFlowTimer}
+          onClick={toggleFlowTimer}
           disabled={workflowBlocked}
           className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-[0_14px_28px_rgba(37,99,235,0.30)] disabled:cursor-not-allowed disabled:opacity-55"
           data-testid="ai-brew-flow-toggle"
@@ -5764,6 +5786,7 @@ function PlanResultDialog({
     >
       <div className="flex h-full min-w-0 max-w-full flex-col overflow-hidden" data-testid="ai-brew-result">
         <div
+          ref={resultScrollRef}
           className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4 pb-6 pt-4 lg:px-6 lg:pb-8 lg:pt-6"
           style={{
             paddingTop: 'calc(16px + var(--safe-top, 0px))',
@@ -6689,9 +6712,10 @@ function PlanResultDialog({
                   {guideDensity === 'basic' ? (
                     liteGuidePanel
                   ) : (
-                  <div className="rounded-[1.4rem] border border-blue-500/18 bg-blue-500/[0.08] p-4" data-testid="ai-brew-flow-timer-panel">
+                  <div ref={flowGuideRef} className="rounded-[1.4rem] border border-blue-500/18 bg-blue-500/[0.08] p-4" data-testid="ai-brew-flow-timer-panel">
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="space-y-1">
+                      <div className="min-w-0 space-y-3">
+                        {guideDensityToggle}
                         <div className="flex items-center gap-2">
                           <Clock3 size={16} className="text-blue-500" />
                           <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.flowTitle}</h4>
@@ -6787,10 +6811,9 @@ function PlanResultDialog({
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-2">
-                      {guideDensityToggle}
                       <button
                         type="button"
-                        onClick={flowRunning ? pauseFlowTimer : startFlowTimer}
+                        onClick={toggleFlowTimer}
                         disabled={workflowBlocked}
                         className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)] disabled:cursor-not-allowed disabled:opacity-55"
                         data-testid="ai-brew-flow-toggle"

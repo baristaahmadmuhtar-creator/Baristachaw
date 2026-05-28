@@ -75,8 +75,8 @@ test('AI Brew generated result uses compact tabs before dense detail', () => {
 test('AI Brew Brew Guide has Lite and Pro modes with Lite as the safe default', () => {
   assert.match(SOURCE, /guideDensitySimple: 'Lite'/);
   assert.match(SOURCE, /guideDensityPro: 'Pro'/);
-  assert.match(SOURCE, /guideDensitySimpleHint: 'Focused timer and current step\.'/);
-  assert.match(SOURCE, /guideDensityProHint: 'Full brew guide with barista detail\.'/);
+  assert.match(SOURCE, /guideDensitySimpleHint: 'Timer and current step stay in view\.'/);
+  assert.match(SOURCE, /guideDensityProHint: 'Full guide with practical barista detail\.'/);
   assert.match(SOURCE, /data-testid="ai-brew-lite-guide-panel"/);
   assert.match(SOURCE, /data-testid="ai-brew-lite-progress-ring"/);
   assert.match(SOURCE, /ai-brew-lite-progress-ring/);
@@ -87,6 +87,10 @@ test('AI Brew Brew Guide has Lite and Pro modes with Lite as the safe default', 
   assert.match(SOURCE, /data-testid="ai-brew-lite-next-step"/);
   assert.match(SOURCE, /data-testid="ai-brew-lite-water-status"/);
   assert.match(SOURCE, /data-testid="ai-brew-flow-remaining-status"/);
+  assert.match(SOURCE, /function scrollFlowGuideIntoView\(\)/);
+  assert.match(SOURCE, /function toggleFlowTimer\(\)/);
+  assert.match(SOURCE, /onClick=\{toggleFlowTimer\}/);
+  assert.match(SOURCE, /ref=\{flowGuideRef\}/);
   assert.match(SOURCE, /id \? 'Tuang \/ target' : 'Pour \/ target'/);
   assert.doesNotMatch(SOURCE, /Time brew utama/);
   assert.doesNotMatch(SOURCE, /Pakai timbangan asli/);

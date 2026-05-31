@@ -81,6 +81,22 @@ async function pickWater(page: import('@playwright/test').Page, query: string, i
   await page.getByTestId(`ai-brew-picker-option-water_brand-${id}`).first().click();
 }
 
+async function pickProcess(page: import('@playwright/test').Page, query: string, id: string) {
+  const builder = page.getByTestId('ai-brew-builder-pro');
+  await builder.getByTestId('ai-brew-pro-bean-required').scrollIntoViewIfNeeded();
+  await builder.getByTestId('ai-brew-process-picker').click();
+  await page.getByTestId('ai-brew-picker-search-process').fill(query);
+  await page.getByTestId(`ai-brew-picker-option-process-${id}`).first().click();
+}
+
+async function pickVariety(page: import('@playwright/test').Page, query: string, id: string) {
+  const builder = page.getByTestId('ai-brew-builder-pro');
+  await builder.getByTestId('ai-brew-pro-bean-required').scrollIntoViewIfNeeded();
+  await builder.getByTestId('ai-brew-variety-picker').click();
+  await page.getByTestId('ai-brew-picker-search-variety').fill(query);
+  await page.getByTestId(`ai-brew-picker-option-variety-${id}`).first().click();
+}
+
 async function readStoredPlan(page: import('@playwright/test').Page): Promise<BrewPlan> {
   const raw = await page.evaluate((storageKey) => localStorage.getItem(storageKey), LAST_PLAN_STORAGE_KEY);
   if (!raw) {
@@ -1297,6 +1313,40 @@ test('ai brew deterministic sequence changes pour-map structure across bean extr
   await expect(resistantPours).not.toEqual(baselinePours);
   await expect(resistantShares[0]).toBeLessThan(baselineShares[0]);
   await expect(resistantShares[resistantShares.length - 1]).toBeGreaterThan(baselineShares[baselineShares.length - 1]);
+});
+
+test('ai brew regenerates fresh output identity after process and variety edits', async ({ page }) => {
+  await qaLogin(page.request);
+  await mockAiApis(page);
+
+  await openProBuilder(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Hybrid Realtime Bean Edit');
+  await pickWater(page, 'aqua', 'aqua-id');
+  await pickProcess(page, 'fully washed', 'fully_washed');
+  await pickVariety(page, 'anacafe', 'anacafe_14');
+  await page.getByTestId('ai-brew-generate').click();
+
+  await expect(page.getByTestId('ai-brew-result')).toBeVisible({ timeout: 60_000 });
+  const firstPlan = await readStoredPlan(page);
+  await expect(firstPlan.process).toMatch(/washed/i);
+  await expect(firstPlan.variety).toMatch(/anacafe/i);
+  await expect(page.getByTestId('ai-brew-result')).toContainText(firstPlan.process);
+  await expect(page.getByTestId('ai-brew-result')).toContainText(firstPlan.variety);
+
+  await page.getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
+  await page.getByTestId('ai-brew-edit-inputs').click();
+  await pickProcess(page, 'anaerobic carbonic', 'anaerobic_carbonic');
+  await pickVariety(page, 'andina', 'andina');
+  await page.getByTestId('ai-brew-generate').click();
+
+  await expect(page.getByTestId('ai-brew-result')).toBeVisible({ timeout: 60_000 });
+  const secondPlan = await readStoredPlan(page);
+  await expect(secondPlan.fingerprint).not.toBe(firstPlan.fingerprint);
+  await expect(secondPlan.process).toMatch(/anaerobic|carbonic/i);
+  await expect(secondPlan.variety).toMatch(/andina/i);
+  await expect(page.getByTestId('ai-brew-result')).toContainText(secondPlan.process);
+  await expect(page.getByTestId('ai-brew-result')).toContainText(secondPlan.variety);
+  await expect(page.getByTestId('ai-brew-result')).not.toContainText(firstPlan.variety);
 });
 test('ai brew auto sequence falls back when AI conflicts with easy extraction pressure profile', async ({ page }) => {
   await qaLogin(page.request);

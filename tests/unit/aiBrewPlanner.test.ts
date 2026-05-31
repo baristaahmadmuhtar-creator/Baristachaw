@@ -3925,6 +3925,87 @@ test('variety detail alone visibly changes expected-cup prediction when process 
   );
 });
 
+test('AI Brew plan fingerprint changes whenever process or variety input changes', () => {
+  const neutralProcessA: ProcessCatalogEntry = {
+    ...catalog.processes[0],
+    id: 'qa_neutral_process_a',
+    label: 'QA Neutral Process A',
+    searchText: 'qa neutral process a',
+    aliases: [],
+    notes: ['Neutral process A context.'],
+  };
+  const neutralProcessB: ProcessCatalogEntry = {
+    ...catalog.processes[0],
+    id: 'qa_neutral_process_b',
+    label: 'QA Neutral Process B',
+    searchText: 'qa neutral process b',
+    aliases: [],
+    notes: ['Neutral process B context.'],
+  };
+  const neutralVarietyA: VarietyCatalogEntry = {
+    ...catalog.varieties[0],
+    id: 'qa_neutral_variety_a',
+    label: 'QA Neutral Variety A',
+    searchText: 'qa neutral variety a',
+    aliases: [],
+    notes: ['Neutral variety A context.'],
+  };
+  const neutralVarietyB: VarietyCatalogEntry = {
+    ...catalog.varieties[0],
+    id: 'qa_neutral_variety_b',
+    label: 'QA Neutral Variety B',
+    searchText: 'qa neutral variety b',
+    aliases: [],
+    notes: ['Neutral variety B context.'],
+  };
+  const neutralCatalog: AiBrewCatalog = {
+    ...catalog,
+    processes: [...catalog.processes, neutralProcessA, neutralProcessB],
+    varieties: [...catalog.varieties, neutralVarietyA, neutralVarietyB],
+  };
+
+  const baseInput = {
+    ...createDefaultAiBrewFormState(neutralCatalog),
+    coffeeName: 'Realtime input fingerprint QA',
+    dripperId: 'hario-v60',
+    grinderId: 'comandante-c40',
+    targetProfileId: 'balance_clean',
+    doseG: '15',
+    brewMode: 'hot' as const,
+    roastLevel: 'medium' as const,
+    waterMode: 'manual' as const,
+    waterBrandId: '',
+    waterTdsPpm: '90',
+    waterHardnessPpm: '45',
+    waterAlkalinityPpm: '35',
+  };
+
+  const processA = buildAiBrewPlan({ ...baseInput, process: neutralProcessA.id, variety: '' }, neutralCatalog);
+  const processB = buildAiBrewPlan({ ...baseInput, process: neutralProcessB.id, variety: '' }, neutralCatalog);
+  const varietyA = buildAiBrewPlan({ ...baseInput, process: '', variety: neutralVarietyA.id }, neutralCatalog);
+  const varietyB = buildAiBrewPlan({ ...baseInput, process: '', variety: neutralVarietyB.id }, neutralCatalog);
+  const customA = buildAiBrewPlan({
+    ...baseInput,
+    process: 'custom',
+    customProcess: 'low oxygen natural',
+    variety: 'custom',
+    customVariety: 'farm selection A',
+  }, neutralCatalog);
+  const customB = buildAiBrewPlan({
+    ...baseInput,
+    process: 'custom',
+    customProcess: 'thermal shock washed',
+    variety: 'custom',
+    customVariety: 'farm selection B',
+  }, neutralCatalog);
+
+  assert.notEqual(processA.process, processB.process);
+  assert.notEqual(varietyA.variety, varietyB.variety);
+  assert.notEqual(processA.fingerprint, processB.fingerprint, 'changing process must invalidate cached/generated output identity');
+  assert.notEqual(varietyA.fingerprint, varietyB.fingerprint, 'changing variety must invalidate cached/generated output identity');
+  assert.notEqual(customA.fingerprint, customB.fingerprint, 'changing custom process/variety text must invalidate cached/generated output identity');
+});
+
 test('AI Brew shared core calibrates 10-20 g target profile, dose, process, and custom variety signals', () => {
   assert.equal(resolveDefaultTargetProfileIdForBean({
     coffeeName: 'Panama Gesha washed',

@@ -16,7 +16,7 @@ test.afterEach(async ({ page }) => {
 test('admin users get a mobile Admin entry and can return to the app', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await qaLogin(page.request, buildQaAdminUser());
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.goto('/?language=id', { waitUntil: 'domcontentloaded' });
 
   const mobileNav = page.getByTestId('mobile-bottom-nav');
   await expect(mobileNav).toBeVisible({ timeout: 30_000 });
@@ -35,7 +35,7 @@ test('admin users get a mobile Admin entry and can return to the app', async ({ 
 test('admin mobile manage opens account control without scrolling', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await qaLogin(page.request, buildQaAdminUser());
-  await page.goto('/admin?tab=users', { waitUntil: 'domcontentloaded' });
+  await page.goto('/admin?tab=users&language=id', { waitUntil: 'domcontentloaded' });
 
   await expect(page.getByRole('heading', { name: 'Manajemen Admin' })).toBeVisible({ timeout: 30_000 });
   await page.getByRole('button', { name: 'Kelola' }).first().click();
@@ -49,13 +49,13 @@ test('admin mobile exposes editable plans and catalog operations', async ({ page
   await page.setViewportSize({ width: 390, height: 844 });
   await qaLogin(page.request, buildQaAdminUser());
 
-  await page.goto('/admin?tab=plans', { waitUntil: 'domcontentloaded' });
+  await page.goto('/admin?tab=plans&language=id', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Manajemen Admin' })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText('Katalog plan')).toBeVisible();
   await expect(page.getByLabel('Catatan operator').first()).toBeVisible();
   await expect(page.getByRole('button', { name: 'Simpan' }).first()).toBeVisible();
 
-  await page.goto('/admin?tab=database', { waitUntil: 'domcontentloaded' });
+  await page.goto('/admin?tab=database&language=id', { waitUntil: 'domcontentloaded' });
   await expect(page.getByText('Operasi katalog')).toBeVisible();
   await expect(page.getByText('Request katalog baru')).toBeVisible();
   await expect(page.getByLabel('Payload JSON')).toBeVisible();
@@ -65,7 +65,7 @@ test('admin AI control shows provider health without exposing secrets', async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await qaLogin(page.request, buildQaAdminUser());
 
-  await page.goto('/admin?tab=ai', { waitUntil: 'domcontentloaded' });
+  await page.goto('/admin?tab=ai&language=id', { waitUntil: 'domcontentloaded' });
 
   await expect(page.getByRole('heading', { name: 'Manajemen Admin' })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText('Kontrol provider AI')).toBeVisible();

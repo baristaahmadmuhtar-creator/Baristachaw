@@ -135,6 +135,7 @@ const CHECKOUT_MODE_OPTIONS: CheckoutMode[] = ['disabled', 'external', 'stripe_c
 const CATALOG_KIND_OPTIONS: AdminCatalogKind[] = ['grinder', 'water', 'dripper'];
 const FEATURE_STATUS_OPTIONS: FeatureFlagStatus[] = ['available', 'maintenance', 'disabled'];
 const FEATURE_SURFACE_OPTIONS: FeatureSurface[] = ['global', 'web', 'pwa', 'mobile', 'admin'];
+const OPERATOR_REASON_MIN_LENGTH = 12;
 const ROLE_WEIGHT: Record<AdminRole, number> = {
   owner: 5,
   admin: 4,
@@ -239,10 +240,16 @@ function parseAdminList(value: string): string[] {
     .filter((item, index, list) => list.indexOf(item) === index);
 }
 
-function normalizedNumber(value: string, integer = true): number | null {
+function normalizedNumber(value: string, integer = true, min = 0): number | null {
   const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return null;
+  if (!Number.isFinite(parsed) || parsed < min) return null;
   return integer ? Math.round(parsed) : Math.round(parsed * 100) / 100;
+}
+
+function normalizedPlanNumber(key: keyof PlanEditorDraft, value: string): number | null {
+  const integer = key !== 'priceMonthlyUsd';
+  const min = key === 'seats' || key === 'supportSlaHours' ? 1 : 0;
+  return normalizedNumber(value, integer, min);
 }
 
 function sameStringList(left: string[], right: string[]): boolean {
@@ -266,13 +273,13 @@ function buildPlanEditorPatch(plan: AdminPlan, draft: PlanEditorDraft): AdminPla
   }
 
   const numericFields: Array<[keyof AdminPlanPatch, number | null, number]> = [
-    ['priceMonthlyUsd', normalizedNumber(draft.priceMonthlyUsd, false), plan.priceMonthlyUsd],
-    ['aiDailyLimit', normalizedNumber(draft.aiDailyLimit), plan.aiDailyLimit],
-    ['deepDailyLimit', normalizedNumber(draft.deepDailyLimit), plan.deepDailyLimit],
-    ['scannerDailyLimit', normalizedNumber(draft.scannerDailyLimit), plan.scannerDailyLimit],
-    ['storageMb', normalizedNumber(draft.storageMb), plan.storageMb],
-    ['seats', normalizedNumber(draft.seats), plan.seats],
-    ['supportSlaHours', normalizedNumber(draft.supportSlaHours), plan.supportSlaHours],
+    ['priceMonthlyUsd', normalizedPlanNumber('priceMonthlyUsd', draft.priceMonthlyUsd), plan.priceMonthlyUsd],
+    ['aiDailyLimit', normalizedPlanNumber('aiDailyLimit', draft.aiDailyLimit), plan.aiDailyLimit],
+    ['deepDailyLimit', normalizedPlanNumber('deepDailyLimit', draft.deepDailyLimit), plan.deepDailyLimit],
+    ['scannerDailyLimit', normalizedPlanNumber('scannerDailyLimit', draft.scannerDailyLimit), plan.scannerDailyLimit],
+    ['storageMb', normalizedPlanNumber('storageMb', draft.storageMb), plan.storageMb],
+    ['seats', normalizedPlanNumber('seats', draft.seats), plan.seats],
+    ['supportSlaHours', normalizedPlanNumber('supportSlaHours', draft.supportSlaHours), plan.supportSlaHours],
   ];
   for (const [key, next, current] of numericFields) {
     if (next !== null && next !== current) {
@@ -303,7 +310,7 @@ function billingMarketForPlan(plan: AdminPlan, fallback: BillingMarket): Billing
 }
 
 function hasOperatorReasonText(value: unknown): boolean {
-  return typeof value === 'string' && value.replace(/\s+/g, ' ').trim().length >= 12;
+  return typeof value === 'string' && value.replace(/\s+/g, ' ').trim().length >= OPERATOR_REASON_MIN_LENGTH;
 }
 
 function userPatchRequiresOperatorReasonOnClient(patch: AdminUserPatch): boolean {
@@ -685,7 +692,10 @@ function classifyUserPatchRisk(user: AdminUserRecord, patch: AdminUserPatch, adm
 }
 
 function featureFlagPatchRequiresMessage(flag: AdminFeatureFlag, patch: AdminFeatureFlagPatch): boolean {
-  return Boolean(patch.status && patch.status !== flag.status && patch.status !== 'available');
+  const nextStatus = patch.status || flag.status;
+  if (nextStatus === 'available') return false;
+  if (patch.status && patch.status !== flag.status) return true;
+  return typeof patch.message === 'string' && patch.message.trim() !== (flag.message || '').trim();
 }
 
 function describeFeatureFlagPatch(flag: AdminFeatureFlag, patch: AdminFeatureFlagPatch): string[] {
@@ -1227,7 +1237,7 @@ function ConfirmUserMutationDialog({
   const admin = useAdminCopy();
   const isCritical = pending.risk.level === 'critical';
   const [operatorReason, setOperatorReason] = useState('');
-  const reasonReady = !pending.risk.requiresReason || operatorReason.trim().length >= 8;
+  const reasonReady = !pending.risk.requiresReason || hasOperatorReasonText(operatorReason);
 
   useEffect(() => {
     setOperatorReason('');
@@ -1368,7 +1378,7 @@ function ConfirmFeatureFlagMutationDialog({
   const nextStatus = pending.patch.status || pending.flag.status;
   const isDisabled = nextStatus === 'disabled';
   const [message, setMessage] = useState(initialFeatureFlagMessage(pending.flag, pending.patch));
-  const messageReady = message.trim().length >= 12;
+  const messageReady = message.trim().length >= OPERATOR_REASON_MIN_LENGTH;
 
   useEffect(() => {
     setMessage(initialFeatureFlagMessage(pending.flag, pending.patch));
@@ -1853,6 +1863,7 @@ function AccountInspector({
   onDismissError,
   onPatch,
   onCopy,
+  onDirtyChange,
 }: {
   user: AdminUserRecord;
   plans: AdminPlan[];
@@ -1862,6 +1873,7 @@ function AccountInspector({
   onDismissError: () => void;
   onPatch: (userId: string, patch: AdminUserPatch) => void;
   onCopy: (value: string, label: string) => void;
+  onDirtyChange?: (userId: string, dirty: boolean) => void;
 }) {
   const admin = useAdminCopy();
   const titleId = useId();
@@ -1903,6 +1915,7 @@ function AccountInspector({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
 
+  const currentRecoveryStatus = user.accountRecoveryStatus || 'none';
   const dirty = displayName.trim() !== user.name
     || username.trim() !== user.username
     || role !== user.role
@@ -1912,10 +1925,15 @@ function AccountInspector({
     || billingProvider !== user.billing.provider
     || billingMarket !== user.billing.market
     || paymentActionRequired !== Boolean(user.billing.paymentActionRequired)
-    || recoveryStatus !== user.accountRecoveryStatus
+    || recoveryStatus !== currentRecoveryStatus
     || passwordResetRequired !== Boolean(user.passwordResetRequired)
     || notes.trim() !== (user.notes || '')
     || supportNote.trim() !== (user.supportNote || '');
+
+  useEffect(() => {
+    onDirtyChange?.(user.id, dirty);
+    return () => onDirtyChange?.(user.id, false);
+  }, [dirty, onDirtyChange, user.id]);
 
   const selectedPlan = plans.find((plan) => plan.code === planCode) || plans.find((plan) => plan.code === user.planCode) || plans[0];
   const provisionalPlanCode = planCode === 'free' ? 'starter' : planCode;
@@ -1959,7 +1977,7 @@ function AccountInspector({
     if (billingProvider !== user.billing.provider) patch.billingProvider = billingProvider;
     if (billingMarket !== user.billing.market) patch.billingMarket = billingMarket;
     if (paymentActionRequired !== Boolean(user.billing.paymentActionRequired)) patch.paymentActionRequired = paymentActionRequired;
-    if (recoveryStatus !== user.accountRecoveryStatus) patch.accountRecoveryStatus = recoveryStatus;
+    if (recoveryStatus !== currentRecoveryStatus) patch.accountRecoveryStatus = recoveryStatus;
     if (passwordResetRequired !== Boolean(user.passwordResetRequired)) patch.passwordResetRequired = passwordResetRequired;
     if (notes.trim() !== (user.notes || '')) patch.notes = notes.trim();
     if (supportNote.trim() !== (user.supportNote || '')) patch.supportNote = supportNote.trim();
@@ -2377,10 +2395,12 @@ function PlanEditorCard({
   plan,
   busy,
   onPatch,
+  onDirtyChange,
 }: {
   plan: AdminPlan;
   busy: boolean;
   onPatch: (planCode: PlanCode, patch: AdminPlanPatch) => void;
+  onDirtyChange?: (planCode: PlanCode, dirty: boolean) => void;
 }) {
   const admin = useAdminCopy();
   const [draft, setDraft] = useState<PlanEditorDraft>(() => planToDraft(plan));
@@ -2391,16 +2411,22 @@ function PlanEditorCard({
 
   const patch = useMemo(() => buildPlanEditorPatch(plan, draft), [draft, plan]);
   const changedKeys = Object.keys(patch).filter((key) => key !== 'operatorNote');
+  const dirty = changedKeys.length > 0;
   const invalidNumber = [
-    draft.priceMonthlyUsd,
-    draft.aiDailyLimit,
-    draft.deepDailyLimit,
-    draft.scannerDailyLimit,
-    draft.storageMb,
-    draft.seats,
-    draft.supportSlaHours,
-  ].some((value) => normalizedNumber(value, value !== draft.priceMonthlyUsd) === null);
-  const canSave = changedKeys.length > 0 && hasOperatorReasonText(draft.operatorNote) && !invalidNumber && !busy;
+    ['priceMonthlyUsd', draft.priceMonthlyUsd],
+    ['aiDailyLimit', draft.aiDailyLimit],
+    ['deepDailyLimit', draft.deepDailyLimit],
+    ['scannerDailyLimit', draft.scannerDailyLimit],
+    ['storageMb', draft.storageMb],
+    ['seats', draft.seats],
+    ['supportSlaHours', draft.supportSlaHours],
+  ].some(([key, value]) => normalizedPlanNumber(key as keyof PlanEditorDraft, value) === null);
+  const canSave = dirty && hasOperatorReasonText(draft.operatorNote) && !invalidNumber && !busy;
+
+  useEffect(() => {
+    onDirtyChange?.(plan.code, dirty);
+    return () => onDirtyChange?.(plan.code, false);
+  }, [dirty, onDirtyChange, plan.code]);
 
   const setField = <K extends keyof PlanEditorDraft>(key: K, value: PlanEditorDraft[K]) => {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -2559,10 +2585,12 @@ function PlansPanel({
   plans,
   busyPlanCode,
   onPatch,
+  onDirtyChange,
 }: {
   plans: AdminPlan[];
   busyPlanCode: PlanCode | null;
   onPatch: (planCode: PlanCode, patch: AdminPlanPatch) => void;
+  onDirtyChange?: (planCode: PlanCode, dirty: boolean) => void;
 }) {
   return (
     <div className="grid gap-3 xl:grid-cols-2">
@@ -2572,6 +2600,7 @@ function PlansPanel({
           plan={plan}
           busy={busyPlanCode === plan.code}
           onPatch={onPatch}
+          onDirtyChange={onDirtyChange}
         />
       ))}
     </div>
@@ -2585,7 +2614,7 @@ function CatalogDatabasePanel({
 }: {
   snapshot: AdminSnapshot;
   busy: boolean;
-  onCreate: (patch: AdminCatalogRequestPatch) => void;
+  onCreate: (patch: AdminCatalogRequestPatch) => Promise<boolean>;
 }) {
   const admin = useAdminCopy();
   const [kind, setKind] = useState<AdminCatalogKind>('grinder');
@@ -2596,7 +2625,7 @@ function CatalogDatabasePanel({
   const [payloadText, setPayloadText] = useState('{\n  "brand": "",\n  "model": "",\n  "region": "Indonesia"\n}');
   const [parseError, setParseError] = useState('');
 
-  const submit = () => {
+  const submit = async () => {
     try {
       const payload = JSON.parse(payloadText) as Record<string, unknown>;
       if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
@@ -2604,7 +2633,7 @@ function CatalogDatabasePanel({
         return;
       }
       setParseError('');
-      onCreate({
+      const saved = await onCreate({
         kind,
         title: title.trim(),
         entityId: entityId.trim() || undefined,
@@ -2612,10 +2641,12 @@ function CatalogDatabasePanel({
         payload,
         operatorNote: operatorNote.trim(),
       });
-      setTitle('');
-      setEntityId('');
-      setSourceUrl('');
-      setOperatorNote('');
+      if (saved) {
+        setTitle('');
+        setEntityId('');
+        setSourceUrl('');
+        setOperatorNote('');
+      }
     } catch {
       setParseError(admin.text('payloadInvalid'));
     }
@@ -3307,6 +3338,9 @@ export function AdminManagement() {
   const [pendingFeatureFlagPatch, setPendingFeatureFlagPatch] = useState<PendingFeatureFlagPatch | null>(null);
   const [toast, setToast] = useState('');
   const [isDark, setIsDark] = useState(false);
+  const [dirtyAccountIds, setDirtyAccountIds] = useState<Set<string>>(() => new Set());
+  const [dirtyPlanCodes, setDirtyPlanCodes] = useState<Set<PlanCode>>(() => new Set());
+  const refreshSequenceRef = useRef(0);
 
   useEffect(() => {
     setActiveTab(tabFromSearch(location.search));
@@ -3345,7 +3379,31 @@ export function AdminManagement() {
     });
   }, [selectTab]);
 
+  const trackAccountDraftDirty = useCallback((userId: string, dirty: boolean) => {
+    setDirtyAccountIds((current) => {
+      const hasValue = current.has(userId);
+      if ((dirty && hasValue) || (!dirty && !hasValue)) return current;
+      const next = new Set(current);
+      if (dirty) next.add(userId);
+      else next.delete(userId);
+      return next;
+    });
+  }, []);
+
+  const trackPlanDraftDirty = useCallback((planCode: PlanCode, dirty: boolean) => {
+    setDirtyPlanCodes((current) => {
+      const hasValue = current.has(planCode);
+      if ((dirty && hasValue) || (!dirty && !hasValue)) return current;
+      const next = new Set(current);
+      if (dirty) next.add(planCode);
+      else next.delete(planCode);
+      return next;
+    });
+  }, []);
+
   const refresh = useCallback(async (options?: { silent?: boolean; aiUsageRange?: AdminAiUsageRange }) => {
+    const requestSequence = refreshSequenceRef.current + 1;
+    refreshSequenceRef.current = requestSequence;
     if (!options?.silent) {
       const hasSnapshot = Boolean(snapshotRef.current);
       setLoading(!hasSnapshot);
@@ -3353,15 +3411,19 @@ export function AdminManagement() {
     }
     try {
       const next = await fetchAdminSnapshot(options?.aiUsageRange || aiUsageRange);
+      if (requestSequence !== refreshSequenceRef.current) return;
       setSnapshot(next);
       setError(null);
       setAccountErrorUserId(null);
     } catch (err) {
+      if (requestSequence !== refreshSequenceRef.current) return;
       if (err instanceof AdminApiError) setError(err);
       else setError(new AdminApiError('Gagal memuat snapshot admin.', { status: 0 }));
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (requestSequence === refreshSequenceRef.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   }, [aiUsageRange]);
 
@@ -3374,16 +3436,31 @@ export function AdminManagement() {
     void refresh({ aiUsageRange: range });
   }, [refresh]);
 
+  const invalidateInFlightRefreshes = useCallback(() => {
+    refreshSequenceRef.current += 1;
+  }, []);
+
+  const liveRefreshPaused = Boolean(
+    pendingUserPatch
+      || pendingFeatureFlagPatch
+      || busyUserId
+      || busyFlagKey
+      || busyPlanCode
+      || busyCatalogRequest
+      || dirtyAccountIds.size
+      || dirtyPlanCodes.size,
+  );
+
   useEffect(() => {
     const intervalSec = snapshot?.realtime.intervalSec || 12;
     const timer = window.setInterval(() => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === 'visible' && !liveRefreshPaused) {
         void refresh({ silent: true });
       }
     }, intervalSec * 1000);
 
     const onVisibility = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === 'visible' && !liveRefreshPaused) {
         void refresh({ silent: true });
       }
     };
@@ -3392,7 +3469,7 @@ export function AdminManagement() {
       window.clearInterval(timer);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [refresh, snapshot?.realtime.intervalSec]);
+  }, [liveRefreshPaused, refresh, snapshot?.realtime.intervalSec]);
 
   useEffect(() => {
     if (!toast) return;
@@ -3480,8 +3557,15 @@ export function AdminManagement() {
     if (!selectedUserId || !snapshot?.users.length) return;
     if (!snapshot.users.some((user) => user.id === selectedUserId)) {
       setSelectedUserId(null);
+      return;
     }
-  }, [selectedUserId, snapshot?.users]);
+    if (activeTab === 'users' && filteredUsers.length && !filteredUsers.some((user) => user.id === selectedUserId)) {
+      setSelectedUserId(filteredUsers[0].id);
+    }
+    if (activeTab === 'users' && !filteredUsers.length) {
+      setSelectedUserId(null);
+    }
+  }, [activeTab, filteredUsers, selectedUserId, snapshot?.users]);
 
   const blockingError = error && (error.status === 401 || error.status === 403) ? error : null;
 
@@ -3586,6 +3670,7 @@ export function AdminManagement() {
   }, [selectTab]);
 
   const commitUserPatch = async (userId: string, patch: AdminUserPatch) => {
+    invalidateInFlightRefreshes();
     setBusyUserId(userId);
     setAccountErrorUserId(null);
     try {
@@ -3635,6 +3720,7 @@ export function AdminManagement() {
   };
 
   const commitFeatureFlagPatch = async (key: string, patch: AdminFeatureFlagPatch) => {
+    invalidateInFlightRefreshes();
     setBusyFlagKey(key);
     setAccountErrorUserId(null);
     try {
@@ -3651,6 +3737,7 @@ export function AdminManagement() {
   };
 
   const commitPlanPatch = async (planCode: PlanCode, patch: AdminPlanPatch) => {
+    invalidateInFlightRefreshes();
     setBusyPlanCode(planCode);
     setAccountErrorUserId(null);
     try {
@@ -3666,7 +3753,8 @@ export function AdminManagement() {
     }
   };
 
-  const commitCatalogRequest = async (patch: AdminCatalogRequestPatch) => {
+  const commitCatalogRequest = async (patch: AdminCatalogRequestPatch): Promise<boolean> => {
+    invalidateInFlightRefreshes();
     setBusyCatalogRequest(true);
     setAccountErrorUserId(null);
     try {
@@ -3674,9 +3762,11 @@ export function AdminManagement() {
       setSnapshot(next);
       setError(null);
       setToast(admin.text('catalogSaved'));
+      return true;
     } catch (err) {
       if (err instanceof AdminApiError) setError(err);
       setToast(admin.text('catalogFailed'));
+      return false;
     } finally {
       setBusyCatalogRequest(false);
     }
@@ -3756,9 +3846,12 @@ export function AdminManagement() {
             <div className="flex flex-wrap items-center gap-2">
               {snapshot ? <StatusBadge value={snapshot.dataMode} /> : null}
               {snapshot ? (
-                <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-surface-alpha px-2.5 text-[11px] font-semibold text-secondary">
+                <span className={clsx(
+                  'inline-flex min-h-7 items-center gap-1.5 rounded-full px-2.5 text-[11px] font-semibold',
+                  liveRefreshPaused ? 'bg-amber-500/10 text-amber-800 dark:text-amber-300' : 'bg-surface-alpha text-secondary',
+                )}>
                   <Activity size={13} />
-                  {admin.text('live')} {snapshot.realtime.intervalSec}s / #{snapshot.realtime.sequence}
+                  {liveRefreshPaused ? admin.text('livePaused') : admin.text('live')} {snapshot.realtime.intervalSec}s / #{snapshot.realtime.sequence}
                 </span>
               ) : null}
               {snapshot ? (
@@ -3806,6 +3899,31 @@ export function AdminManagement() {
               <div key={index} className="h-32 rounded-2xl border border-glass bg-surface-alpha loading-shimmer" />
             ))}
           </div>
+        ) : null}
+
+        {error && !snapshot && !blockingError ? (
+          <section className="rounded-[1.4rem] border border-rose-500/25 bg-rose-500/10 p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle size={18} className="text-rose-500" />
+                  <h2 className="text-base font-semibold text-primary">
+                    {error.errorCode ? admin.enumLabel(error.errorCode) : admin.text('adminRequestFailed')}
+                  </h2>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-secondary">{error.message}</p>
+                {error.details ? <p className="mt-1 text-xs leading-5 text-tertiary">{error.details}</p> : null}
+              </div>
+              <button
+                type="button"
+                onClick={() => void refresh()}
+                className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.24)] transition-colors hover:bg-blue-700"
+              >
+                <RefreshCcw size={15} className={refreshing ? 'animate-spin' : ''} />
+                {admin.text('retry')}
+              </button>
+            </div>
+          </section>
         ) : null}
 
         {snapshot ? (
@@ -4004,6 +4122,7 @@ export function AdminManagement() {
                           }}
                           onPatch={handleUserPatch}
                           onCopy={(value, label) => void handleCopy(value, label)}
+                          onDirtyChange={trackAccountDraftDirty}
                         />
                       ) : null}
                     </div>
@@ -4021,7 +4140,12 @@ export function AdminManagement() {
                     <SlidersHorizontal size={18} className="text-blue-500" />
                   </div>
                   <BillingReadinessPanel snapshot={snapshot} />
-                  <PlansPanel plans={snapshot.plans} busyPlanCode={busyPlanCode} onPatch={(planCode, patch) => void commitPlanPatch(planCode, patch)} />
+                  <PlansPanel
+                    plans={snapshot.plans}
+                    busyPlanCode={busyPlanCode}
+                    onPatch={(planCode, patch) => void commitPlanPatch(planCode, patch)}
+                    onDirtyChange={trackPlanDraftDirty}
+                  />
                 </motion.section>
               ) : null}
 
@@ -4066,7 +4190,7 @@ export function AdminManagement() {
                     </div>
                     <StatusBadge value={snapshot.dataMode} />
                   </div>
-                  <CatalogDatabasePanel snapshot={snapshot} busy={busyCatalogRequest} onCreate={(patch) => void commitCatalogRequest(patch)} />
+                  <CatalogDatabasePanel snapshot={snapshot} busy={busyCatalogRequest} onCreate={commitCatalogRequest} />
                   <ChecksPanel checks={snapshot.checks} />
                 </motion.section>
               ) : null}

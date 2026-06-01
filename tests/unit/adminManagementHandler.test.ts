@@ -502,6 +502,64 @@ test('admin management denies analyst mutations', async () => {
   assert.equal(body.errorCode, 'admin_role_forbidden');
 });
 
+test('admin management prevents non-owner admins from granting owner access', async () => {
+  const token = createToken({
+    id: 'admin-user',
+    email: 'admin@example.com',
+    name: 'Admin User',
+    role: 'admin',
+    isAdmin: true,
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_pro_barista',
+      patch: {
+        role: 'owner',
+        supportNote: 'Operator reason: unauthorized owner promotion should be blocked.',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 403);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'admin_role_forbidden');
+});
+
+test('admin management keeps support admins out of account status changes', async () => {
+  const token = createToken({
+    id: 'support-user',
+    email: 'support@example.com',
+    name: 'Support User',
+    role: 'support',
+    isAdmin: true,
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_user',
+      userId: 'runtime_user_trial_review',
+      patch: {
+        status: 'active',
+        supportNote: 'Operator reason: support should not directly change status.',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 403);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'admin_role_forbidden');
+});
+
 test('admin management fails closed when Supabase user write fails', async () => {
   const originalFetch = globalThis.fetch;
   process.env.SUPABASE_URL = 'https://unit-project.supabase.co';
@@ -903,6 +961,62 @@ test('admin management requires operator message for unavailable feature flags',
   assert.equal(res.statusCode, 400);
   const body = JSON.parse(res.body);
   assert.equal(body.errorCode, 'feature_flag_message_required');
+});
+
+test('admin management rejects unknown feature flag keys', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_feature_flag',
+      key: 'made_up_flag',
+      patch: {
+        status: 'maintenance',
+        message: 'Unknown feature flag should not be created from admin UI.',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 400);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'validation_error');
+  assert.equal(body.error, 'feature flag key is unknown');
+});
+
+test('admin management rejects invalid feature flag statuses', async () => {
+  const token = createToken({
+    id: 'owner-user',
+    email: 'owner@example.com',
+    name: 'Owner User',
+  });
+  const req = makeReq({
+    method: 'PATCH',
+    cookies: { auth_token: token },
+    body: {
+      action: 'update_feature_flag',
+      key: 'scanner',
+      patch: {
+        status: 'paused',
+        message: 'Invalid status must not normalize to available.',
+      },
+    },
+  });
+  const res = createMockRes();
+
+  await adminManagementHandler(req, res as any);
+
+  assert.equal(res.statusCode, 400);
+  const body = JSON.parse(res.body);
+  assert.equal(body.errorCode, 'validation_error');
+  assert.equal(body.error, 'status is invalid');
 });
 
 test('admin management accepts disabled feature flags with operator message', async () => {

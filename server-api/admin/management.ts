@@ -10,12 +10,15 @@ import {
 import { requireAdmin, type AdminAccess } from './_access.js';
 import {
   buildRuntimeFeatureFlags,
+  FEATURE_FLAG_STATUSES,
+  FEATURE_FLAG_SURFACES,
   mergeFeatureFlagsWithDefaults,
   normalizeFeatureFlagKey,
-  normalizeFeatureFlagPatch,
   RUNTIME_FEATURE_FLAG_PATCHES,
   type AdminFeatureFlag,
   type FeatureFlagPatch,
+  type FeatureFlagStatus,
+  type FeatureSurface,
 } from './_featureFlags.js';
 import {
   resolveAiProviderAdminSnapshot,
@@ -347,6 +350,16 @@ const VALID_BILLING_PROVIDERS = new Set<BillingProvider>(['none', 'admin', 'goog
 const VALID_BILLING_MARKETS = new Set<BillingMarket>(['indonesia', 'brunei', 'global', 'unknown']);
 const VALID_CHECKOUT_MODES = new Set<CheckoutMode>(['disabled', 'external', 'stripe_checkout', 'play_billing', 'app_store', 'manual_invoice']);
 const VALID_CATALOG_KINDS = new Set<CatalogKind>(['water', 'dripper', 'grinder']);
+const VALID_FEATURE_FLAG_STATUSES = new Set<FeatureFlagStatus>(FEATURE_FLAG_STATUSES);
+const VALID_FEATURE_FLAG_SURFACES = new Set<FeatureSurface>(FEATURE_FLAG_SURFACES);
+const VALID_FEATURE_FLAG_KEYS = new Set(buildRuntimeFeatureFlags().map((flag) => flag.key));
+const ADMIN_ROLE_WEIGHT: Record<AdminRole, number> = {
+  owner: 5,
+  admin: 4,
+  support: 3,
+  analyst: 2,
+  user: 1,
+};
 const RESERVED_USERNAMES = new Set([
   'account',
   'admin',
@@ -1900,7 +1913,7 @@ async function loadSupabaseAudit(config: Extract<SupabaseConfig, { configured: t
 
 async function loadSupabaseFeatureFlags(config: Extract<SupabaseConfig, { configured: true }>): Promise<AdminFeatureFlag[]> {
   const rows = await supabaseRest<any[]>(config, 'app_feature_flags?select=*&order=key.asc');
-  return mergeFeatureFlagsWithDefaults(rows, RUNTIME_FEATURE_FLAG_PATCHES);
+  return mergeFeatureFlagsWithDefaults(rows);
 }
 
 async function upsertSupabaseAdminUser(
@@ -2146,7 +2159,42 @@ function validatePatch(body: any): { ok: true; userId: string; patch: UserPatch 
 function validateFeatureFlagPatch(body: any): { ok: true; key: string; patch: FeatureFlagPatch } | ValidationError {
   const key = normalizeFeatureFlagKey(body?.key);
   if (!key) return { ok: false, error: 'key is required' };
-  const patch = normalizeFeatureFlagPatch(body?.patch);
+  if (!VALID_FEATURE_FLAG_KEYS.has(key)) {
+    return {
+      ok: false,
+      error: 'feature flag key is unknown',
+      details: `Allowed values: ${Array.from(VALID_FEATURE_FLAG_KEYS).join(', ')}`,
+    };
+  }
+  const rawPatch = body?.patch && typeof body.patch === 'object' ? body.patch as Record<string, unknown> : {};
+  const patch: FeatureFlagPatch = {};
+  if ('status' in rawPatch) {
+    const validated = validateEnumValue(rawPatch.status, 'status', VALID_FEATURE_FLAG_STATUSES);
+    if (validated.ok === false) return validated;
+    patch.status = validated.value;
+  }
+  if ('message' in rawPatch) {
+    const validated = validatePatchText(rawPatch.message, 'message', 240);
+    if (validated.ok === false) return validated;
+    patch.message = validated.value;
+  }
+  if ('surfaces' in rawPatch) {
+    const rawSurfaces = Array.isArray(rawPatch.surfaces)
+      ? rawPatch.surfaces
+      : typeof rawPatch.surfaces === 'string'
+        ? rawPatch.surfaces.split(/[\n,;]+/)
+        : [];
+    if (!rawSurfaces.length) {
+      return { ok: false, error: 'surfaces must include at least one surface' };
+    }
+    const surfaces: FeatureSurface[] = [];
+    for (const rawSurface of rawSurfaces) {
+      const validated = validateEnumValue(rawSurface, 'surface', VALID_FEATURE_FLAG_SURFACES);
+      if (validated.ok === false) return validated;
+      if (!surfaces.includes(validated.value)) surfaces.push(validated.value);
+    }
+    patch.surfaces = surfaces.slice(0, 5);
+  }
   if (Object.keys(patch).length === 0) return { ok: false, error: 'patch is empty' };
   return { ok: true, key, patch };
 }
@@ -2307,8 +2355,12 @@ function featureFlagPatchRequiresMessage(patch: FeatureFlagPatch): boolean {
   return patch.status === 'maintenance' || patch.status === 'disabled';
 }
 
+function hasFeatureFlagMessage(value: unknown): boolean {
+  return typeof value === 'string' && value.replace(/\s+/g, ' ').trim().length >= 12;
+}
+
 function featureFlagPatchHasMessage(patch: FeatureFlagPatch): boolean {
-  return typeof patch.message === 'string' && patch.message.replace(/\s+/g, ' ').trim().length >= 12;
+  return hasFeatureFlagMessage(patch.message);
 }
 
 function featureFlagPatchSeverity(patch: FeatureFlagPatch): AdminAuditEvent['severity'] {
@@ -2417,7 +2469,6 @@ function authorizeUserMutation(admin: AdminAccess, patch: UserPatch): Authorizat
   }
   if (admin.role === 'support') {
     const allowedFields = new Set([
-      'status',
       'notes',
       'supportNote',
       'accountRecoveryStatus',
@@ -2429,7 +2480,7 @@ function authorizeUserMutation(admin: AdminAccess, patch: UserPatch): Authorizat
       'paymentActionRequired',
     ]);
     const forbidden = Object.keys(patch).filter((key) => !allowedFields.has(key));
-    if (forbidden.length > 0 || patch.status === 'deleted' || patch.billingStatus === 'active' || patch.billingStatus === 'trialing') {
+    if (forbidden.length > 0 || patch.billingStatus === 'active' || patch.billingStatus === 'trialing') {
       return {
         ok: false,
         statusCode: 403,
@@ -2446,6 +2497,58 @@ function authorizeUserMutation(admin: AdminAccess, patch: UserPatch): Authorizat
     error: 'This admin role cannot mutate account management',
     errorCode: 'admin_role_forbidden',
   };
+}
+
+async function authorizeUserTargetMutation(
+  admin: AdminAccess,
+  rawUser: Record<string, unknown> | undefined,
+  userId: string,
+  patch: UserPatch,
+): Promise<AuthorizationError | null> {
+  const snapshot = await buildAdminSnapshot(`admin_target_authorize_${Date.now()}`, admin, rawUser);
+  const target = snapshot.users.find((user) => user.id === userId);
+  if (!target) return null;
+  const adminWeight = ADMIN_ROLE_WEIGHT[admin.role] || 0;
+  const targetWeight = ADMIN_ROLE_WEIGHT[target.role] || 0;
+  const nextRoleWeight = patch.role ? ADMIN_ROLE_WEIGHT[patch.role] || 0 : targetWeight;
+
+  if (target.role === 'owner' && admin.role !== 'owner') {
+    return {
+      ok: false,
+      statusCode: 403,
+      error: 'Only owners can change owner accounts',
+      errorCode: 'admin_role_forbidden',
+      details: `Target role: ${target.role}`,
+    };
+  }
+  if (patch.role === 'owner' && admin.role !== 'owner') {
+    return {
+      ok: false,
+      statusCode: 403,
+      error: 'Only owners can grant owner access',
+      errorCode: 'admin_role_forbidden',
+      details: `Requested role: ${patch.role}`,
+    };
+  }
+  if (admin.role !== 'owner' && nextRoleWeight >= adminWeight && patch.role && patch.role !== target.role) {
+    return {
+      ok: false,
+      statusCode: 403,
+      error: 'Admins cannot grant equal or higher admin roles',
+      errorCode: 'admin_role_forbidden',
+      details: `Requested role: ${patch.role}`,
+    };
+  }
+  if (admin.role !== 'owner' && targetWeight > adminWeight) {
+    return {
+      ok: false,
+      statusCode: 403,
+      error: 'Admins cannot mutate accounts with a higher role',
+      errorCode: 'admin_role_forbidden',
+      details: `Target role: ${target.role}`,
+    };
+  }
+  return null;
 }
 
 function authorizeFeatureFlagMutation(admin: AdminAccess): AuthorizationError | null {
@@ -2806,11 +2909,21 @@ async function updateFeatureFlag(
 ): Promise<AdminSnapshot> {
   const config = getSupabaseConfig();
   const requestId = `admin_flag_${Date.now()}`;
+  const currentFlags = config.configured
+    ? await loadSupabaseFeatureFlags(config).catch(() => buildRuntimeFeatureFlags())
+    : buildRuntimeFeatureFlags(RUNTIME_FEATURE_FLAG_PATCHES);
+  const currentFlag = currentFlags.find((flag) => flag.key === key);
+  const nextStatus = patch.status || currentFlag?.status || 'available';
+  const nextMessage = typeof patch.message === 'string' ? patch.message : currentFlag?.message || '';
+  if (nextStatus !== 'available' && !hasFeatureFlagMessage(nextMessage)) {
+    throw new AdminMutationError('Maintenance and disabled feature flags require an operator message', {
+      statusCode: 400,
+      errorCode: 'feature_flag_message_required',
+    });
+  }
   if (config.configured) {
     try {
       await patchSupabaseFeatureFlag(config, admin, key, patch);
-      const previous = RUNTIME_FEATURE_FLAG_PATCHES.get(key) || {};
-      RUNTIME_FEATURE_FLAG_PATCHES.set(key, { ...previous, ...patch });
       return buildAdminSnapshot(requestId, admin, rawUser);
     } catch (error) {
       const details = sanitizeErrorDetails(error, 180);
@@ -3126,6 +3239,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           error: authorization.error,
           errorCode: authorization.errorCode,
           details: authorization.details,
+        });
+      }
+      const targetAuthorization = await authorizeUserTargetMutation(access.admin, access.auth.user, validated.userId, validated.patch);
+      if (targetAuthorization) {
+        return res.status(targetAuthorization.statusCode).json({
+          ok: false,
+          requestId,
+          error: targetAuthorization.error,
+          errorCode: targetAuthorization.errorCode,
+          details: targetAuthorization.details,
         });
       }
       if (userPatchRequiresOperatorReason(validated.patch) && !userPatchHasOperatorReason(validated.patch)) {

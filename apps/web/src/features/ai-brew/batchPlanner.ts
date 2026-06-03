@@ -271,6 +271,8 @@ export function resolveBatchPlanSelection(params: {
       break;
   }
 
+  adjustedProfile.recipeStyle = activeStyle as DeviceBrewProfile['recipeStyle'];
+
   return {
     style: activeStyle,
     adjustedProfile,

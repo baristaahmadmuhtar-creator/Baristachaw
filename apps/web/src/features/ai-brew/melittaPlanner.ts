@@ -255,6 +255,8 @@ export function resolveMelittaPlanSelection(params: {
       break;
   }
 
+  adjustedProfile.recipeStyle = activeStyle as DeviceBrewProfile['recipeStyle'];
+
   return {
     style: activeStyle,
     adjustedProfile,

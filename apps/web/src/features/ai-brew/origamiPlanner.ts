@@ -263,6 +263,8 @@ export function resolveOrigamiPlanSelection(params: {
       break;
   }
 
+  adjustedProfile.recipeStyle = activeStyle as DeviceBrewProfile['recipeStyle'];
+
   return {
     style: activeStyle,
     adjustedProfile,

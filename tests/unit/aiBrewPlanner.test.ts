@@ -4872,11 +4872,32 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
   for (const [style, plan] of Object.entries(aeropressPlans)) {
     assertBasicGoldenEnvelope(plan, { ratio: [12.5, 15.2], temp: [80, 90], time: [60, 150] });
     assert.ok(plan.steps.some((step) => step.kind === 'press'), `${style} AeroPress should include a press step`);
-    assert.match(textFor(plan), /stir|press|hiss|steep/i);
+    assert.match(textFor(plan), /stir|aduk|press|tekan|hiss|desis|steep|rendam/i);
     assert.equal(positivePourCount(plan), 1);
   }
   assert.ok(aeropressPlans.sweetBody.totalTimeSeconds > aeropressPlans.brightClean.totalTimeSeconds);
   assert.match(textFor(aeropressPlans.bypass), /dilute|bypass water after pressing only/i);
+
+  const aeropressGuideText = Object.fromEntries(Object.entries(aeropressPlans).map(([style, plan]) => [
+    style,
+    (plan.workflowGuideSteps || buildWorkflowAwareGuideSteps(plan))
+      .map((step) => `${step.label} ${step.actionType} ${step.primaryText} ${step.secondaryText || ''} ${step.techniqueChips.map((chipItem) => `${chipItem.key}:${chipItem.value}`).join(' ')}`)
+      .join('\n'),
+  ]));
+  assert.match(aeropressGuideText.standard, /Aduk 3 kali|3x/i);
+  assert.match(aeropressGuideText.inverted, /terbalik|Balikkan|4x|30-40 detik/i);
+  assert.match(aeropressGuideText.bypass, /Bypass terukur|setelah tekan saja|air bypass tidak melewati lapisan kopi/i);
+  assert.match(aeropressGuideText.noBypass, /seluruh air resep|tanpa air bypass tambahan|tanpa air tambahan|30-40 detik/i);
+  assert.match(aeropressGuideText.brightClean, /Aduk 2-3 kali|20-30 detik|akhir rasa tetap bersih|tanpa air tambahan/i);
+  assert.match(aeropressGuideText.sweetBody, /Aduk 5 kali|Rendam lebih panjang|35-45 detik/i);
+  for (const [style, guideText] of Object.entries(aeropressGuideText)) {
+    assert.doesNotMatch(guideText, /final pour|drawdown bed|tuang akhir|bloom/i, `${style} AeroPress guide should not leak pour-over language`);
+    if (style !== 'bypass') {
+      assert.doesNotMatch(guideText, /Tambahkan bypass|Bypass terukur|setelah tekan saja|setelah press saja|dilution:/i, `${style} AeroPress guide must not ask for bypass dilution`);
+    }
+    const plan = aeropressPlans[style as keyof typeof aeropressPlans];
+    assert.equal(plan.workflowValidation?.passed, true, `${style} AeroPress workflow should validate`);
+  }
 
   const nonPourOverCases: Array<{
     plan: ReturnType<typeof buildAiBrewPlan>;
@@ -4926,13 +4947,13 @@ test('workflow-aware guide expands all-method operational phases and validates r
     ...overrides,
   }, productionCatalog);
   const cases: Array<{ label: string; plan: ReturnType<typeof buildAiBrewPlan>; pattern: RegExp }> = [
-    { label: 'AeroPress', plan: planFor({ dripperId: 'aeropress', aeropressStyle: 'standard' }), pattern: /(charge|isi)[\s\S]*(stir|aduk)[\s\S]*(steep|rendam)[\s\S]*(press|tekan)[\s\S]*hiss/i },
+    { label: 'AeroPress', plan: planFor({ dripperId: 'aeropress', aeropressStyle: 'standard' }), pattern: /(charge|isi)[\s\S]*(stir|aduk)[\s\S]*(steep|rendam)[\s\S]*(press|tekan)[\s\S]*(hiss|desis)/i },
     { label: 'French Press', plan: planFor({ dripperId: 'french-press' }), pattern: /(charge|isi)[\s\S]*(steep|rendam)[\s\S]*(settle|endapkan|crust)[\s\S]*(press|tekan|decant|tuang pisah)/i },
     { label: 'Clever', plan: planFor({ dripperId: 'clever-dripper' }), pattern: /(charge|isi)[\s\S]*(steep|rendam)[\s\S]*(release|alirkan)[\s\S]*(drawdown|air turun)/i },
-    { label: 'Moka', plan: planFor({ dripperId: 'bialetti-moka-pot' }), pattern: /(below valve|di bawah valve)[\s\S]*basket[\s\S]*(heat|panas)[\s\S]*sputter/i },
+    { label: 'Moka', plan: planFor({ dripperId: 'bialetti-moka-pot' }), pattern: /(below valve|di bawah valve|garis aman|ruang air)[\s\S]*basket[\s\S]*(heat|panas)[\s\S]*(sputter|semburan)/i },
     { label: 'Espresso', plan: planFor({ dripperId: 'espresso-machine' }), pattern: /dose[\s\S]*(puck|tamp|distribusi)[\s\S]*(shot|yield|output)[\s\S]*(flow|aliran)[\s\S]*(stop|berhenti)/i },
     { label: 'Siphon', plan: planFor({ dripperId: 'hario-siphon' }), pattern: /(draw-up|air naik)[\s\S]*(stir|aduk)[\s\S]*(contact|kontak)[\s\S]*(drawdown|air turun)/i },
-    { label: 'Batch', plan: planFor({ dripperId: 'batch-brewer' }), pattern: /(dose\/l|dose per liter)[\s\S]*spray[\s\S]*(drawdown|air turun)[\s\S]*(mix batch|aduk batch)/i },
+    { label: 'Batch', plan: planFor({ dripperId: 'batch-brewer' }), pattern: /(dose\/l|dose per liter)[\s\S]*(spray|pancuran|mesin)[\s\S]*(drawdown|air turun)[\s\S]*(mix batch|aduk batch)/i },
     { label: 'Cold Brew', plan: planFor({ dripperId: 'toddy-cold-brew' }), pattern: /(saturate|basahi)[\s\S]*(steep|rendam)[\s\S]*filter[\s\S]*(after filtration|setelah filtrasi|dilute|dilusi)/i },
   ];
 
@@ -4947,6 +4968,133 @@ test('workflow-aware guide expands all-method operational phases and validates r
       assert.doesNotMatch(text, MOKA_METHOD_LEAK_PATTERN, `${entry.label} guide should stay stovetop-specific`);
     }
   }
+});
+
+test('all selectable AI Brew method styles generate valid workflow guides', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const rawIndonesianGuideLeak = /\b(paper filter|paper|bed|dripper|server|drawdown bed|carafe|load|sec|slurry|flutes)\b/i;
+  const familyLeakPatterns = new Map<AiBrewMethodFamily, RegExp>([
+    ['french_press', /\b(bloom|final pour|tuang akhir|spiral|filter wall|center-to-mid)\b/i],
+    ['clever_dripper', /\b(final pour|tuang akhir|spiral|v60-only|center-to-mid)\b/i],
+    ['moka_pot', MOKA_METHOD_LEAK_PATTERN],
+    ['cold_brew', /\b(hot pour|kettle|bloom|tuang panas|air panas)\b/i],
+    ['batch_brew', /\b(manual pour|bloom pour|spiral|tuang manual|v60)\b/i],
+    ['siphon', /\b(final pour|tuang akhir|spiral|v60|moka|sputter)\b/i],
+  ]);
+  const styleMatrix: Array<{
+    label: string;
+    dripperId: string;
+    styleField: keyof AiBrewFormState;
+    styles: string[];
+    doseG?: string;
+  }> = [
+    { label: 'AeroPress', dripperId: 'aeropress', styleField: 'aeropressStyle', styles: ['standard', 'inverted', 'bypass', 'no_bypass', 'bright_clean', 'sweet_body'] },
+    { label: 'French Press', dripperId: 'french-press', styleField: 'frenchPressStyle', styles: ['traditional', 'clean_decant', 'double_filter', 'heavy_concentrate', 'sweet_immersion'] },
+    { label: 'Kalita Wave', dripperId: 'kalita-wave-155-185', styleField: 'kalitaWaveStyle', styles: ['traditional_flat_three', 'competition_fast_four', 'continuous_slow_stream', 'iced_wave', 'high_dose_concentrate'] },
+    { label: 'Clever Dripper', dripperId: 'clever-dripper', styleField: 'cleverDripperStyle', styles: ['classic_closed', 'reverse_water_first', 'double_stage_hybrid', 'iced_clever', 'high_dose_concentrate'] },
+    { label: 'Chemex', dripperId: 'chemex', styleField: 'chemexStyle', styles: ['traditional_three_pour', 'competition_multi_pulse', 'continuous_center_pour', 'iced_chemex', 'high_dose_heavy_body'] },
+    { label: 'Moka Pot', dripperId: 'bialetti-moka-pot', styleField: 'mokaPotStyle', styles: ['traditional_stovetop', 'preheated_boiler', 'low_temp_controlled', 'iced_moka_concentrate', 'high_yield_robust'] },
+    { label: 'Cold Brew', dripperId: 'toddy-cold-brew', styleField: 'coldBrewStyle', styles: ['classic_toddy_immersion', 'cold_drip_tower', 'double_extraction_concentrate', 'accelerated_room_temp', 'japanese_slow_drip'], doseG: '60' },
+    { label: 'Batch Brew', dripperId: 'batch-brewer', styleField: 'batchBrewStyle', styles: ['sca_gold_cup', 'heavy_batch_catering', 'bright_light_roast_batch', 'pre_wet_hybrid_batch', 'high_extraction_thermos'], doseG: '60' },
+    { label: 'Siphon', dripperId: 'hario-siphon', styleField: 'siphonStyle', styles: ['traditional_vacuum_siphon', 'competition_triple_agitation', 'low_temp_delicate', 'high_body_fast_drawdown', 'spirit_infusion_style'] },
+    { label: 'Origami', dripperId: 'origami-dripper-s-m', styleField: 'origamiStyle', styles: ['cone_dripper_style', 'wave_dripper_style', 'mugen_one_pour', 'iced_origami', 'competition_hybrid_flow'] },
+    { label: 'April', dripperId: 'april-brewer', styleField: 'aprilStyle', styles: ['april_flat_bottom_standard', 'april_continuous_slow', 'competition_two_pour', 'iced_april_style', 'high_body_heavy_dose'] },
+    { label: 'Melitta', dripperId: 'melitta', styleField: 'melittaStyle', styles: ['traditional_melitta_one_pour', 'aromaboy_style', 'three_pour_melitta', 'iced_melitta_brew', 'dense_classic_extraction'] },
+    { label: 'Kono', dripperId: 'kono-meimon', styleField: 'konoStyle', styles: ['kono_meimon_traditional', 'kono_dripper_standard', 'kono_slow_drip_body', 'iced_kono_meimon', 'kono_agitation_sweet'] },
+  ];
+
+  let checked = 0;
+  for (const entry of styleMatrix) {
+    const fingerprints = new Set<string>();
+    for (const style of entry.styles) {
+      const plan = buildAiBrewPlan({
+        ...createDefaultAiBrewFormState(productionCatalog),
+        brewMode: 'hot',
+        coffeeName: `${entry.label} style QA`,
+        doseG: entry.doseG || '15',
+        grinderId: '1zpresso-k-ultra',
+        dripperId: entry.dripperId,
+        waterMode: 'manual',
+        waterTdsPpm: '90',
+        waterHardnessPpm: '50',
+        waterAlkalinityPpm: '35',
+        process: 'washed',
+        variety: 'gesha',
+        roastLevel: 'medium_light',
+        [entry.styleField]: style,
+      }, productionCatalog);
+      const guide = plan.workflowGuideSteps || buildWorkflowAwareGuideSteps(plan);
+      const validation = plan.workflowValidation || validateMethodWorkflowGuide(plan, guide);
+      const guideText = guide
+        .map((step) => `${step.label} ${step.actionType} ${step.primaryText} ${step.secondaryText || ''}`)
+        .join('\n');
+
+      checked += 1;
+      assert.equal(validation.passed, true, `${entry.label}/${style} workflow should validate: ${validation.blockingErrors.join(' | ')}`);
+      assert.ok(guide.length >= 3, `${entry.label}/${style} should render a multi-step guide`);
+      assert.doesNotMatch(guideText, /generic clever only|single charge only/i, `${entry.label}/${style} guide should not collapse to a generic fallback`);
+      assert.doesNotMatch(guideText, rawIndonesianGuideLeak, `${entry.label}/${style} guide should avoid raw English in Indonesian operational copy`);
+      const familyLeak = familyLeakPatterns.get(plan.methodFamily);
+      if (familyLeak) {
+        assert.doesNotMatch(guideText, familyLeak, `${entry.label}/${style} guide should stay method-specific`);
+      }
+      if (!['v60', 'chemex', 'kalita_wave', 'origami', 'april', 'melitta', 'kono'].includes(plan.methodFamily)) {
+        assert.doesNotMatch(guideText, /final pour|tuang akhir|center-to-mid stream/i, `${entry.label}/${style} should not leak pour-over-only copy`);
+      }
+      fingerprints.add(guideText.replace(/\d+(?::\d{2})?\s*(?:ml|g|detik|h|m)?/gi, '#'));
+    }
+    assert.equal(fingerprints.size, entry.styles.length, `${entry.label} style guides should have distinct operational fingerprints`);
+  }
+
+  assert.equal(checked, 66, 'matrix should cover every selectable non-Switch method style');
+});
+
+test('Hario Switch public presets generate style-specific validated workflow guides', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const presets = [
+    'immersion_sweet',
+    'immersion_heavy_body',
+    'hybrid_balanced',
+    'hybrid_bright_clean',
+    'v60_mode',
+    'iced_hybrid',
+    'mugen_everyday_hybrid',
+  ] as const;
+  const fingerprints = new Set<string>();
+
+  for (const preset of presets) {
+    const plan = buildAiBrewPlan({
+      ...createDefaultAiBrewFormState(productionCatalog),
+      brewMode: preset === 'iced_hybrid' ? 'iced' : 'hot',
+      coffeeName: `Switch preset QA ${preset}`,
+      doseG: preset === 'mugen_everyday_hybrid' ? '18' : '15',
+      targetWaterMl: preset === 'mugen_everyday_hybrid' ? '240' : '210',
+      grinderId: '1zpresso-k-ultra',
+      dripperId: preset === 'mugen_everyday_hybrid' ? 'mugen-x-switch' : 'hario-switch-03',
+      waterMode: 'manual',
+      waterTdsPpm: '90',
+      waterHardnessPpm: '50',
+      waterAlkalinityPpm: '35',
+      process: 'washed',
+      variety: 'bourbon',
+      roastLevel: 'medium_light',
+      switchPresetId: preset,
+    }, productionCatalog);
+    const guide = plan.workflowGuideSteps || buildWorkflowAwareGuideSteps(plan);
+    const validation = plan.workflowValidation || validateMethodWorkflowGuide(plan, guide);
+    const guideText = guide
+      .map((step) => `${step.label} ${step.actionType} ${step.primaryText} ${step.secondaryText || ''} ${step.techniqueChips.map((chip) => `${chip.label} ${chip.value}`).join(' ')}`)
+      .join('\n');
+
+    assert.equal(plan.methodFamily, 'hario_switch');
+    assert.equal(plan.switchPresetId, preset);
+    assert.equal(validation.passed, true, `${preset} Switch workflow should validate: ${validation.blockingErrors.join(' | ')}`);
+    assert.match(guideText, /Katup|katup|muatan ruang|air turun|sajikan/i, `${preset} should expose valve and chamber cues`);
+    assert.doesNotMatch(guideText, /\b(paper filter|server|drawdown bed|slurry|flutes|generic clever only)\b/i, `${preset} should avoid raw/incorrect guide copy`);
+    fingerprints.add(guideText.replace(/\d+(?::\d{2})?\s*(?:ml|g|detik|h|m)?/gi, '#'));
+  }
+
+  assert.equal(fingerprints.size, presets.length, 'Switch presets should keep distinct guide fingerprints');
 });
 
 test('Moka compact audit narrative stays free of pour-over workflow language', () => {
@@ -5204,7 +5352,7 @@ test('all-method public snapshot matrix includes workflow, expected cup, feedbac
     { label: 'Melitta hot', input: { dripperId: findDripperId(/^Melitta$/i) }, required: /trapezoid|drawdown|pour/i, minGuide: 4 },
     { label: 'Kono hot', input: { dripperId: findDripperId(/^Kono Meimon$/i) }, required: /center|drawdown|pour/i, minGuide: 4 },
     { label: 'Clever hot', input: { dripperId: findDripperId(/^Clever Dripper$/i) }, required: /(charge|isi)[\s\S]*(steep|rendam)[\s\S]*(release|alirkan)[\s\S]*(drawdown|air turun)/i, forbidden: /Final Pour/i, minGuide: 5 },
-    { label: 'AeroPress hot', input: { dripperId: findDripperId(/^AeroPress$/i), aeropressStyle: 'standard' }, required: /(charge|isi)[\s\S]*(stir|aduk)[\s\S]*(steep|rendam)[\s\S]*(press|tekan)[\s\S]*hiss/i, forbidden: /final pour|drawdown bed/i, minGuide: 6 },
+    { label: 'AeroPress hot', input: { dripperId: findDripperId(/^AeroPress$/i), aeropressStyle: 'standard' }, required: /(charge|isi)[\s\S]*(stir|aduk)[\s\S]*(steep|rendam)[\s\S]*(press|tekan)[\s\S]*(hiss|desis)/i, forbidden: /final pour|drawdown bed/i, minGuide: 6 },
     { label: 'French Press hot', input: { dripperId: findDripperId(/^French Press$/i) }, required: /(charge|isi)[\s\S]*(steep|rendam)[\s\S]*(settle|endapkan)[\s\S]*(decant|tuang pisah)/i, forbidden: /final pour|bloom/i, minGuide: 5 },
     { label: 'Moka Pot hot', input: { dripperId: findDripperId(/^Bialetti Moka Pot$/i) }, required: /boiler[\s\S]*basket[\s\S]*(heat|panas)[\s\S]*sputter/i, forbidden: MOKA_METHOD_LEAK_PATTERN, minGuide: 4 },
     { label: 'Siphon hot', input: { dripperId: findDripperId(/^Hario Siphon$/i) }, required: /(draw-up|air naik)[\s\S]*(stir|aduk)[\s\S]*(contact|kontak)[\s\S]*(drawdown|air turun)/i, forbidden: /final pour/i, minGuide: 5 },
@@ -7091,7 +7239,7 @@ test('non-dripper method profiles generate action-safe AI Brew plans without fak
     const narrative = collectPlanNarrative(plan);
     if (entry.family === 'aeropress') {
       assert.ok(plan.waterTempC >= 88);
-      assert.match(narrative, /Preheat the chamber|Panaskan chamber|berhenti sebelum hiss|stop before the final dry hiss/i);
+      assert.match(narrative, /Preheat the chamber|Panaskan chamber|ruang seduh|berhenti sebelum (hiss|desis)|stop before the final dry hiss/i);
     }
     if (entry.family === 'french_press') {
       assert.match(narrative, /coarse, even grind|grind kasar|tuang pisah|decant immediately/i);

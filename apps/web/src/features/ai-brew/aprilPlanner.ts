@@ -271,6 +271,8 @@ export function resolveAprilPlanSelection(params: {
       break;
   }
 
+  adjustedProfile.recipeStyle = activeStyle as DeviceBrewProfile['recipeStyle'];
+
   return {
     style: activeStyle,
     adjustedProfile,

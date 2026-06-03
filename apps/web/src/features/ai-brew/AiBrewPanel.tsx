@@ -2839,6 +2839,12 @@ function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: s
 function localizeWorkflowChipValue(value: string, language: string) {
   if (!isIndonesianAiBrewLanguage(language)) {
     return value
+      .replace(/filter \+ tutup dibilas/g, 'filter and cap rinsed')
+      .replace(/setelah tekan saja/g, 'after pressing only')
+      .replace(/sebelum desis/g, 'before the hiss')
+      .replace(/desis/g, 'hiss')
+      .replace(/detik/g, 'seconds')
+      .replace(/dibilas/g, 'rinsed')
       .replace(/air panas/g, 'hot water')
       .replace(/air dingin/g, 'cold water')
       .replace(/buka katup/g, 'release')
@@ -2890,7 +2896,7 @@ function localizeWorkflowChipValue(value: string, language: string) {
     .replace(/\blow\b/g, 'rendah')
     .replace(/\bmedium\b/g, 'sedang')
     .replace(/\bcontrolled\b/g, 'terkontrol')
-    .replace(/before hiss/g, 'sebelum hiss')
+    .replace(/before hiss/g, 'sebelum desis')
     .replace(/before sputter/g, 'sebelum sputter')
     .replace(/below valve/g, 'di bawah valve')
     .replace(/di bawah valve/g, 'di bawah katup')
@@ -3005,12 +3011,171 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     [/^Bilas filter, panaskan brewer\/server, buang air bilas, lalu tara timbangan\.$/i, 'Rinse the filter, preheat the brewer/server, discard rinse water, then tare the scale.'],
     [/^Bilas\/panaskan alat, tara timbangan, lalu siapkan metode sebelum seduh\.$/i, 'Rinse and preheat the brewer, tare the scale, then set up the method before brewing.'],
     [/^Setup \| Bilas\/panaskan alat, tara timbangan, lalu siapkan metode sebelum seduh\.$/i, 'Setup | Rinse and preheat the brewer, tare the scale, then set up the method before brewing.'],
+    [/^Bilas filter, panaskan Clever, dan siapkan dua fase: rendam lalu alirkan\.$/i, 'Rinse the filter, preheat the Clever, and set up two stages: steep first, then release.'],
+    [/^Isi fase rendam pertama, basahi semua bubuk, lalu tahan kontak\.$/i, 'Fill the first steep stage, wet all grounds evenly, then hold contact.'],
+    [/^Basahi hamparan kopi merata; biarkan rendaman mulai bekerja\.$/i, 'Wet the coffee evenly and let the immersion begin working.'],
+    [/^Tambahkan sisa air sesuai target sebelum pelepas dibuka\.$/i, 'Add the remaining planned water before opening the release.'],
+    [/^Buka pelepas dan biarkan gaya gravitasi menyelesaikan fase turun\.$/i, 'Open the release and let gravity finish the flow.'],
+    [/^Biarkan aliran keluar bersih tanpa tambahan air\.$/i, 'Let the clean flow finish without adding more water.'],
+    [/^Biarkan air turun selesai tanpa tambah air\.$/i, 'Let the flow finish without adding more water.'],
+    [/^Aduk cangkir pelan sebelum disajikan\.$/i, 'Stir the cup gently before serving.'],
+    [/^Bilas kertas V60, panaskan alat dan wadah saji, tara timbangan, lalu setel katup Switch sesuai program\.$/i, 'Rinse the V60 filter, preheat the brewer and serving vessel, tare the scale, then set the Switch valve for the selected program.'],
+    [/^Bilas kertas V60, panaskan alat dan wadah saji, tara timbangan, lalu masukkan ([0-9.,]+ g) es ke wadah saji\. Seduh target air panas saja\.$/i, 'Rinse the V60 filter, preheat the brewer and serving vessel, tare the scale, then place $1 ice in the serving vessel. Brew only the hot-water target.'],
+    [/^Katup set sebelum seduh$/i, 'Valve set before brewing'],
+    [/^Program ([a-z_ ]+): fase perkolasi terbuka; jaga tuangan rapi sampai target\.$/i, 'Program $1: open percolation phase; keep the pour tidy until target.'],
+    [/^Program ([a-z_ ]+): isi ruang seduh pelan dan jaga muatan tetap di bawah batas aman\.$/i, 'Program $1: fill the chamber calmly and keep the load under the safe limit.'],
+    [/^Program ([a-z_ ]+): buka katup bersih dan biarkan aliran turun tanpa agitasi tambahan\.$/i, 'Program $1: open the valve cleanly and let the flow finish without extra agitation.'],
   ];
   for (const [pattern, replacement] of exactMap) {
     if (pattern.test(text)) return replacement;
   }
 
   text = text
+    .replace(/\bTuang air ke ruang seduh dan basahi bubuk kopi merata\b/gi, 'Pour water into the chamber and wet the coffee evenly')
+    .replace(/\bAduk 3 kali atau swirl ringan sekali, lalu hentikan agitasi\b/gi, 'Stir 3 times or swirl lightly once, then stop agitation')
+    .replace(/\bRendam sampai waktu tekan; ruang seduh tetap stabil dan tertutup\b/gi, 'Steep until press time; keep the chamber stable and covered')
+    .replace(/\bBerhenti sebelum desis kering, lalu pisahkan brewer dari cangkir\b/gi, 'Stop before the dry hiss, then remove the brewer from the cup')
+    .replace(/\bBerhenti sebelum desis kering\b/gi, 'Stop before the dry hiss')
+    .replace(/\bBerhenti sebelum desis pertama\b/gi, 'Stop before the first hiss')
+    .replace(/\bBerhenti sebelum desis\b/gi, 'Stop before the hiss')
+    .replace(/\bAduk cangkir pelan, lalu sajikan\b/gi, 'Stir the cup gently, then serve')
+    .replace(/\bpastikan segel rapat\b/gi, 'confirm the seal is tight')
+    .replace(/\btetap stabil dan tertutup\b/gi, 'stable and covered')
+    .replace(/\bhentikan agitasi\b/gi, 'stop agitation')
+    .replace(/\bswirl ringan sekali\b/gi, 'swirl lightly once')
+    .replace(/\bRakit posisi terbalik di permukaan rata, bilas filter dan tutup, lalu cek segel plunger sebelum air masuk\b/gi, 'Assemble inverted on a level surface, rinse the filter and cap, then check the plunger seal before adding water')
+    .replace(/\bTuang air ke ruang seduh terbalik, basahi semua bubuk, dan jaga alat tetap tegak\b/gi, 'Pour water into the inverted chamber, wet all grounds, and keep the brewer upright')
+    .replace(/\bAduk 4 kali, pasang tutup rapat, lalu hentikan agitasi\b/gi, 'Stir 4 times, lock the cap firmly, then stop agitation')
+    .replace(/\bRendam sampai waktu balik; ruang seduh tetap diam supaya ekstraksi merata\b/gi, 'Steep until the flip time; keep the chamber still so extraction stays even')
+    .replace(/\bBalikkan ke atas cangkir dalam satu gerakan mantap, tanpa mengguncang bubur kopi\b/gi, 'Flip onto the cup in one confident motion without shaking the coffee slurry')
+    .replace(/\bAduk cangkir pelan, lalu sajikan hasil rendaman penuh selagi aroma masih hidup\b/gi, 'Stir the cup gently, then serve the full-immersion brew while aromatics are fresh')
+    .replace(/\bSiapkan AeroPress tegak, bilas filter dan tutup, lalu pisahkan air bypass untuk setelah tekan saja\b/gi, 'Set up the AeroPress upright, rinse the filter and cap, then keep bypass water separate until after pressing only')
+    .replace(/\bTuang air konsentrat ke ruang seduh dan basahi bubuk merata; air bypass tidak melewati lapisan kopi\b/gi, 'Pour concentrate water into the chamber and wet the coffee evenly; bypass water does not pass through the coffee layer')
+    .replace(/\bAduk 3 kali untuk ekstraksi awal, lalu biarkan bubur kopi tenang singkat\b/gi, 'Stir 3 times for early extraction, then let the coffee slurry rest briefly')
+    .replace(/\bRendam singkat sebagai konsentrat; jaga kontak padat tanpa agitasi tambahan\b/gi, 'Steep briefly as a concentrate; keep dense contact without extra agitation')
+    .replace(/\bTekan konsentrat 25-35 detik dan berhenti sebelum desis\b/gi, 'Press the concentrate for 25-35 seconds and stop before the hiss')
+    .replace(/\bBerhenti sebelum desis kering agar konsentrat tidak menjadi kasar\b/gi, 'Stop before the dry hiss so the concentrate does not turn harsh')
+    .replace(/\bTambahkan air bypass terukur setelah tekan saja, aduk cangkir sampai rata, lalu sajikan\b/gi, 'Add measured bypass water after pressing only, stir the cup evenly, then serve')
+    .replace(/\bSiapkan AeroPress tegak, bilas filter dan tutup, lalu pastikan semua air resep memang masuk ruang seduh\b/gi, 'Set up the AeroPress upright, rinse the filter and cap, then confirm all recipe water goes into the chamber')
+    .replace(/\bTuang seluruh air resep ke ruang seduh; tidak ada air bypass tambahan setelah tekan\b/gi, 'Pour all recipe water into the chamber; there is no extra bypass water after pressing')
+    .replace(/\bAduk 3 kali, lalu biarkan bubur kopi tenang agar fase tekan tetap bersih\b/gi, 'Stir 3 times, then let the coffee slurry rest so the pressing phase stays clean')
+    .replace(/\bRendam lebih panjang sampai semua air di ruang seduh mengekstrak merata\b/gi, 'Steep longer until all water in the chamber extracts evenly')
+    .replace(/\bTekan pelan 30-40 detik; biarkan volume penuh turun bersih\b/gi, 'Press slowly for 30-40 seconds and let the full volume pass cleanly')
+    .replace(/\bBerhenti sebelum desis kering; jangan paksa sisa cairan dari lapisan kopi\b/gi, 'Stop before the dry hiss; do not force the remaining liquid from the coffee layer')
+    .replace(/\bAduk cangkir pelan dan sajikan tanpa air bypass tambahan\b/gi, 'Stir the cup gently and serve without extra bypass water')
+    .replace(/\bBilas filter dan tutup, gunakan segel rapi, dan siapkan gaya bersih dengan agitasi rendah\b/gi, 'Rinse the filter and cap, use a clean seal, and prepare a clear low-agitation style')
+    .replace(/\bTuang air cepat dan merata ke ruang seduh agar bubuk basah lengkap tanpa gerakan berat\b/gi, 'Pour water quickly and evenly into the chamber so the grounds wet fully without heavy movement')
+    .replace(/\bAduk 2-3 kali saja, lalu hentikan agitasi agar kejernihan tetap tinggi\b/gi, 'Stir only 2-3 times, then stop agitation to keep clarity high')
+    .replace(/\bRendam singkat; kontak cukup untuk kejernihan tanpa membuat cangkir terasa berat\b/gi, 'Steep briefly; keep enough contact for clarity without making the cup heavy')
+    .replace(/\bTekan sangat stabil 20-30 detik dengan tenaga ringan\b/gi, 'Press very steadily for 20-30 seconds with light force')
+    .replace(/\bBerhenti sebelum desis pertama agar akhir rasa tetap bersih\b/gi, 'Stop before the first hiss so the finish stays clean')
+    .replace(/\bAduk cangkir sekali dan sajikan tanpa air tambahan\b/gi, 'Stir the cup once and serve without extra water')
+    .replace(/\bSiapkan ruang seduh hangat, bilas filter dan tutup, dan gunakan setup yang mendukung tekstur manis\b/gi, 'Preheat the chamber, rinse the filter and cap, and use a setup that supports sweet texture')
+    .replace(/\bTuang air ke ruang seduh dan basahi bubuk sampai penuh merata\b/gi, 'Pour water into the chamber and wet the grounds fully and evenly')
+    .replace(/\bAduk 5 kali untuk membangun body, lalu biarkan bubur kopi tenang\b/gi, 'Stir 5 times to build body, then let the coffee slurry rest')
+    .replace(/\bRendam lebih panjang agar rasa manis dan tekstur terkumpul\b/gi, 'Steep longer so sweetness and texture build together')
+    .replace(/\bTekan pelan 35-45 detik; jaga tekanan stabil sampai sebelum desis\b/gi, 'Press slowly for 35-45 seconds and keep pressure steady until before the hiss')
+    .replace(/\bBerhenti sebelum desis kering supaya body tetap manis, bukan kasar\b/gi, 'Stop before the dry hiss so body stays sweet, not harsh')
+    .replace(/\bAduk cangkir pelan dan sajikan sebagai cangkir tebal tanpa air tambahan\b/gi, 'Stir the cup gently and serve as a heavy cup without extra water')
+    .replace(/\bStop before the dry hiss agar konsentrat tidak menjadi kasar\b/gi, 'Stop before the dry hiss so the concentrate does not turn harsh')
+    .replace(/\bStop before the dry hiss; jangan paksa sisa cairan dari coffee layer\b/gi, 'Stop before the dry hiss; do not force the remaining liquid from the coffee layer')
+    .replace(/\bStop before the first hiss agar finish tetap cleanly\b/gi, 'Stop before the first hiss so the finish stays clean')
+    .replace(/\bStop before the dry hiss supaya body stays sweet, bukan kasar\b/gi, 'Stop before the dry hiss so body stays sweet, not harsh')
+    .replace(/\bBilas filter Chemex tebal\b/gi, 'Rinse the thick Chemex filter')
+    .replace(/\bBilas filter berlipat\b/gi, 'Rinse the wave filter')
+    .replace(/\bBilas filter Melitta\b/gi, 'Rinse the Melitta filter')
+    .replace(/\bBilas filter Kono\b/gi, 'Rinse the Kono filter')
+    .replace(/\bBilas filter Origami\b/gi, 'Rinse the Origami filter')
+    .replace(/\bBilas filter April\b/gi, 'Rinse the April filter')
+    .replace(/\bPilih filter kerucut Origami\b/gi, 'Choose the Origami cone filter')
+    .replace(/\bPilih filter berlipat Origami\b/gi, 'Choose the Origami wave filter')
+    .replace(/\bfilter berlipat\b/gi, 'wave filter')
+    .replace(/\bfilter kerucut\b/gi, 'cone filter')
+    .replace(/\bwadah saji\b/gi, 'serving vessel')
+    .replace(/\bteko kaca\b/gi, 'glass carafe')
+    .replace(/\bkaca\b/gi, 'glass')
+    .replace(/\bjalur udara filter\b/gi, 'filter air path')
+    .replace(/\bjalur udara\b/gi, 'air path')
+    .replace(/\bhamparan kopi\b/gi, 'coffee bed')
+    .replace(/\bpermukaan kopi\b/gi, 'coffee surface')
+    .replace(/\bpermukaan\b/gi, 'surface')
+    .replace(/\bpulsa\b/gi, 'pulses')
+    .replace(/\baliran tengah\b/gi, 'center stream')
+    .replace(/\baliran kecil\b/gi, 'small stream')
+    .replace(/\baliran lambat\b/gi, 'slow stream')
+    .replace(/\baliran rendah\b/gi, 'low flow')
+    .replace(/\baliran stabil\b/gi, 'stable flow')
+    .replace(/\baliran keluar\b/gi, 'outflow')
+    .replace(/\bfase turun\b/gi, 'drawdown phase')
+    .replace(/\bfase rendam\b/gi, 'steep phase')
+    .replace(/\brendaman\b/gi, 'immersion')
+    .replace(/\bRuang atas\b/gi, 'Upper chamber')
+    .replace(/\bruang atas\b/gi, 'upper chamber')
+    .replace(/\bruang air\b/gi, 'boiler')
+    .replace(/\bkatup pengaman\b/gi, 'safety valve')
+    .replace(/\bkatup tetes\b/gi, 'drip valve')
+    .replace(/\bkatup\b/gi, 'valve')
+    .replace(/\bKeranjang\b/gi, 'Basket')
+    .replace(/\bkeranjang\b/gi, 'basket')
+    .replace(/\bpancuran mesin\b/gi, 'machine spray')
+    .replace(/\bsiklus mesin\b/gi, 'machine cycle')
+    .replace(/\bmesin\b/gi, 'machine')
+    .replace(/\btermos\b/gi, 'thermos')
+    .replace(/\bpenekan\b/gi, 'plunger')
+    .replace(/\bpenahan\b/gi, 'retainer')
+    .replace(/\bpartikel halus\b/gi, 'fines')
+    .replace(/\bkerak\b/gi, 'crust')
+    .replace(/\bbusa kasar\b/gi, 'coarse foam')
+    .replace(/\bgumpalan kering\b/gi, 'dry pockets')
+    .replace(/\bbagian kering\b/gi, 'dry pockets')
+    .replace(/\btetes dingin\b/gi, 'cold drip')
+    .replace(/\blaju tetes\b/gi, 'drip rate')
+    .replace(/\btetesan akhir\b/gi, 'final drops')
+    .replace(/\btetesan pertama\b/gi, 'first drops')
+    .replace(/\btetesan\b/gi, 'drops')
+    .replace(/\bsuhu ruang\b/gi, 'room temperature')
+    .replace(/\bdingin\b/gi, 'cold')
+    .replace(/\bsemburan kasar\b/gi, 'harsh sputtering')
+    .replace(/\brasa rebus\b/gi, 'boiled flavor')
+    .replace(/\brasa matang\b/gi, 'cooked flavor')
+    .replace(/\bterukur\b/gi, 'measured')
+    .replace(/\bsetel\b/gi, 'set')
+    .replace(/\bSetel\b/gi, 'Set')
+    .replace(/\bsetelan\b/gi, 'setting')
+    .replace(/\bpanas lebih rendah\b/gi, 'lower heat')
+    .replace(/\bpanas rendah-sedang\b/gi, 'low-medium heat')
+    .replace(/\bpanas sedang\b/gi, 'medium heat')
+    .replace(/\bPakai\b/gi, 'Use')
+    .replace(/\bpakai\b/gi, 'use')
+    .replace(/\bGunakan\b/gi, 'Use')
+    .replace(/\bgunakan\b/gi, 'use')
+    .replace(/\bJaga\b/gi, 'Keep')
+    .replace(/\bjaga\b/gi, 'keep')
+    .replace(/\bTunggu\b/gi, 'Wait')
+    .replace(/\btunggu\b/gi, 'wait')
+    .replace(/\bHentikan\b/gi, 'Stop')
+    .replace(/\bhentikan\b/gi, 'stop')
+    .replace(/\bAngkat\b/gi, 'Remove')
+    .replace(/\bangkat\b/gi, 'remove')
+    .replace(/\bKecilkan\b/gi, 'Lower')
+    .replace(/\bkecilkan\b/gi, 'lower')
+    .replace(/\bMatikan\b/gi, 'Turn off')
+    .replace(/\bmatikan\b/gi, 'turn off')
+    .replace(/\bRatakan\b/gi, 'Level')
+    .replace(/\bratakan\b/gi, 'level')
+    .replace(/\bSelesaikan\b/gi, 'Finish')
+    .replace(/\bselesaikan\b/gi, 'finish')
+    .replace(/\bHasil seduh\b/gi, 'Brew')
+    .replace(/\bhasil seduh\b/gi, 'brew')
+    .replace(/\bpenyelesaian sajian\b/gi, 'serving finish')
+    .replace(/\btersaring\b/gi, 'filtered')
+    .replace(/\bmenyaring\b/gi, 'filter')
+    .replace(/\bmemisahkan\b/gi, 'separate')
+    .replace(/\baman pangan\b/gi, 'food-safe')
+    .replace(/\bgaya gravitasi\b/gi, 'gravity')
+    .replace(/\bpelepas\b/gi, 'release')
+    .replace(/\balas datar\b/gi, 'flat-bottom')
+    .replace(/\btrapesium\b/gi, 'trapezoid')
     .replace(/\bBilas\/panaskan alat\b/gi, 'Rinse and preheat the brewer')
     .replace(/\bBilas filter tebal\b/gi, 'Rinse the thick paper filter')
     .replace(/\bBilas filter\b/gi, 'Rinse the filter')
@@ -3021,6 +3186,75 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\bbuang air bilas\b/gi, 'discard rinse water')
     .replace(/\btara timbangan\b/gi, 'tare the scale')
     .replace(/\bsiapkan metode sebelum seduh\b/gi, 'set up the method before brewing')
+    .replace(/\bSiapkan AeroPress tegak\b/gi, 'Set up the AeroPress upright')
+    .replace(/\bsiapkan AeroPress tegak\b/gi, 'set up the AeroPress upright')
+    .replace(/\bSiapkan ruang seduh hangat\b/gi, 'Preheat the chamber')
+    .replace(/\bsiapkan ruang seduh hangat\b/gi, 'preheat the chamber')
+    .replace(/\bSiapkan\b/gi, 'Set up')
+    .replace(/\bsiapkan\b/gi, 'set up')
+    .replace(/\bRakit posisi terbalik\b/gi, 'Assemble the inverted position')
+    .replace(/\brakit posisi terbalik\b/gi, 'assemble the inverted position')
+    .replace(/\bRakit\b/gi, 'Assemble')
+    .replace(/\brakit\b/gi, 'assemble')
+    .replace(/\bposisi terbalik\b/gi, 'inverted position')
+    .replace(/\bfilter \+ tutup dibilas\b/gi, 'filter and cap rinsed')
+    .replace(/\bdi atas cangkir\b/gi, 'over the cup')
+    .replace(/\bke atas cangkir\b/gi, 'onto the cup')
+    .replace(/\bdari cangkir\b/gi, 'from the cup')
+    .replace(/\bcangkir\b/gi, 'cup')
+    .replace(/\bcup tebal\b/gi, 'heavy cup')
+    .replace(/\bbilas filter dan tutup\b/gi, 'rinse the filter and cap')
+    .replace(/\bBilas filter dan tutup\b/gi, 'Rinse the filter and cap')
+    .replace(/\bruang seduh terbalik\b/gi, 'inverted chamber')
+    .replace(/\bruang seduh dan cup\b/gi, 'chamber and cup')
+    .replace(/\bruang seduh dan cangkir\b/gi, 'chamber and cup')
+    .replace(/\bruang seduh\b/gi, 'chamber')
+    .replace(/\bsegel plunger\b/gi, 'plunger seal')
+    .replace(/\bsegel tidak lepas\b/gi, 'seal does not loosen')
+    .replace(/\bsegel rapat\b/gi, 'tight seal')
+    .replace(/\bsegel rapi\b/gi, 'clean seal')
+    .replace(/\bpasang tutup rapat\b/gi, 'lock the cap firmly')
+    .replace(/\btutup\b/gi, 'cap')
+    .replace(/\btegak\b/gi, 'upright')
+    .replace(/\bterbalik\b/gi, 'inverted')
+    .replace(/\bbubur kopi\b/gi, 'coffee slurry')
+    .replace(/\bair bypass tidak melewati lapisan kopi\b/gi, 'bypass water does not pass through the coffee layer')
+    .replace(/\blapisan kopi\b/gi, 'coffee layer')
+    .replace(/\btanpa air bypass tambahan\b/gi, 'without extra bypass water')
+    .replace(/\bair bypass terukur\b/gi, 'measured bypass water')
+    .replace(/\bair bypass\b/gi, 'bypass water')
+    .replace(/\bsetelah tekan saja\b/gi, 'after pressing only')
+    .replace(/\bsetelah tekan\b/gi, 'after pressing')
+    .replace(/\bselesai tekan\b/gi, 'pressing is finished')
+    .replace(/\bsemua air resep\b/gi, 'all recipe water')
+    .replace(/\bseluruh air resep\b/gi, 'all recipe water')
+    .replace(/\btidak ada air tambahan\b/gi, 'there is no extra water')
+    .replace(/\btanpa air tambahan\b/gi, 'without extra water')
+    .replace(/\btanpa air bypass tambahan\b/gi, 'without extra bypass water')
+    .replace(/\bair tambahan\b/gi, 'extra water')
+    .replace(/\bdesis kering\b/gi, 'dry hiss')
+    .replace(/\bdesis pertama\b/gi, 'first hiss')
+    .replace(/\bdesis\b/gi, 'hiss')
+    .replace(/\bsebelum desis\b/gi, 'before the hiss')
+    .replace(/\bsebelum dry hiss\b/gi, 'before the dry hiss')
+    .replace(/\bsebelum first hiss\b/gi, 'before the first hiss')
+    .replace(/\bwaktu tekan\b/gi, 'press time')
+    .replace(/\bTekan konsentrat\b/gi, 'Press the concentrate')
+    .replace(/\btekan konsentrat\b/gi, 'press the concentrate')
+    .replace(/\bTekan sangat stabil\b/gi, 'Press very steadily')
+    .replace(/\btekan sangat stabil\b/gi, 'press very steadily')
+    .replace(/\bTekan pelan\b/gi, 'Press slowly')
+    .replace(/\btekan pelan\b/gi, 'press slowly')
+    .replace(/\bTekan stabil\b/gi, 'Press steadily')
+    .replace(/\btekan stabil\b/gi, 'press steadily')
+    .replace(/\bhasil rendaman penuh\b/gi, 'full-immersion brew')
+    .replace(/\btekstur manis\b/gi, 'sweet texture')
+    .replace(/\bbody tetap manis\b/gi, 'body stays sweet')
+    .replace(/\bbukan air tambahan di luar rencana\b/gi, 'not extra water outside the plan')
+    .replace(/\bBuat konsentrat dulu\b/gi, 'Make the concentrate first')
+    .replace(/\bbuat konsentrat dulu\b/gi, 'make the concentrate first')
+    .replace(/\bakhir rasa\b/gi, 'finish')
+    .replace(/\bkejernihan\b/gi, 'clarity')
     .replace(/\bratakan bed\b/gi, 'level the bed')
     .replace(/\bsiapkan pulse rendah\b/gi, 'prepare gentle pulses')
     .replace(/\bset katup\b/gi, 'set the valve')
@@ -3048,6 +3282,8 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\brendam\b/gi, 'steep')
     .replace(/\bTekan\b/gi, 'Press')
     .replace(/\btekan\b/gi, 'press')
+    .replace(/\bBerhenti\b/gi, 'Stop')
+    .replace(/\bberhenti\b/gi, 'stop')
     .replace(/\bAduk\b/gi, 'Stir')
     .replace(/\baduk\b/gi, 'stir')
     .replace(/\bPanaskan\b/gi, 'Heat')
@@ -3069,8 +3305,8 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\bbubuk\b/gi, 'grounds')
     .replace(/\bkopi\b/gi, 'coffee')
     .replace(/\bes\b/gi, 'ice')
-    .replace(/\bke server\b/gi, 'to the server')
-    .replace(/\bdi server\b/gi, 'in the server')
+    .replace(/\bke server\b/gi, 'to the serving vessel')
+    .replace(/\bdi server\b/gi, 'in the serving vessel')
     .replace(/\bdi atas es\b/gi, 'over ice')
     .replace(/\bsebelum hiss\b/gi, 'before the hiss')
     .replace(/\bsebelum sputter\b/gi, 'before sputtering')
@@ -3079,6 +3315,16 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\bdengan\b/gi, 'with')
     .replace(/\bsampai\b/gi, 'until')
     .replace(/\bsegera\b/gi, 'promptly')
+    .replace(/\bkali\b/gi, 'times')
+    .replace(/\bdetik\b/gi, 'seconds')
+    .replace(/\bvalve buka\b/gi, 'valve open')
+    .replace(/\bvalve cap\b/gi, 'valve closed')
+    .replace(/\bvalve closed\b/gi, 'valve closed')
+    .replace(/\bbuka valve\b/gi, 'open valve')
+    .replace(/\bServe setelah drawdown\b/gi, 'Serve after drawdown')
+    .replace(/\bdo not add air\b/gi, 'do not add water')
+    .replace(/\bdi luar resep\b/gi, 'outside the recipe')
+    .replace(/\bLet drawdown cleanly\b/gi, 'Let the flow finish cleanly')
     .replace(/\s+([.,;:])/g, '$1')
     .replace(/\s+/g, ' ')
     .trim();
@@ -3090,6 +3336,11 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
   const id = isIndonesianAiBrewLanguage(language);
   const target = formatRoundedMl(step.targetVolumeMl);
   const pour = formatRoundedMl(step.pourVolumeMl);
+  if (plan?.methodFamily && step.primaryText?.trim()) {
+    return id
+      ? localizeAiBrewDynamicText(step.primaryText, language)
+      : translateWorkflowGuideTextToEnglish(step.primaryText);
+  }
   switch (step.actionType) {
     case 'rinse_preheat':
     case 'setup':
@@ -3152,7 +3403,7 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
           ? `Let drawdown finish at ${formatRoundedMl(plan.hotWaterMl)} hot water; do not add bypass.`
           : 'Let drawdown finish naturally without another pour.');
     case 'press':
-      return id ? 'Tekan stabil 20-30 detik; berhenti sebelum hiss terasa kering.' : 'Press steadily for 20-30 seconds; stop before the hiss feels dry.';
+      return id ? 'Tekan stabil 20-30 detik; berhenti sebelum desis terasa kering.' : 'Press steadily for 20-30 seconds; stop before the hiss feels dry.';
     case 'heat':
       return id ? 'Pakai panas stabil dan moderat sesuai metode.' : 'Use steady, moderate heat for this method.';
     case 'monitor_flow':
@@ -3417,8 +3668,8 @@ function buildAiBrewNextStepCue(step: AiBrewDisplayStep, remainingSeconds: numbe
     : `Next pour in ${formatGuideTime(remainingSeconds)}`;
 }
 
-function buildAiBrewStepQuickNote(step: AiBrewDisplayStep, language: string) {
-  if (isWorkflowGuideStep(step)) return buildWorkflowGuideActionText(step, language);
+function buildAiBrewStepQuickNote(step: AiBrewDisplayStep, language: string, plan?: BrewPlan) {
+  if (isWorkflowGuideStep(step)) return buildWorkflowGuideActionText(step, language, plan);
   return normalizeAiBrewInstructionText(localizeAiBrewDynamicText(step.note, language));
 }
 
@@ -3515,8 +3766,8 @@ function buildAiBrewWorkflowFocusCue(
         : 'Jaga rendaman tenang; hindari adukan agresif menjelang akhir.';
     case 'aeropress':
       return step.actionType === 'press'
-        ? 'Tekan stabil dan berhenti sebelum hiss terasa dipaksa.'
-        : 'Basahi chamber merata dan jaga steep tetap ringkas.';
+        ? 'Tekan stabil dan berhenti sebelum desis terasa dipaksa.'
+        : 'Basahi ruang seduh merata dan jaga rendaman tetap ringkas.';
     case 'espresso':
       return 'Baca aliran shot dan berhenti di target hasil, bukan menambah volume.';
     case 'moka_pot':
@@ -3559,8 +3810,8 @@ function buildAiBrewStepMethodFocusCue(
       if (kind === 'press' || kind === 'serve') return id ? 'Fokus: tekan pelan lalu tuang pisah supaya fines berhenti mengekstrak.' : 'Focus: press slowly, then decant so fines stop extracting.';
       return id ? 'Fokus: rendaman tenang. Jangan aduk agresif menjelang akhir.' : 'Focus: calm immersion. Avoid aggressive stirring near the end.';
     case 'aeropress':
-      if (kind === 'press') return id ? 'Fokus: tekan stabil; berhenti sebelum hiss terakhir terasa dipaksa.' : 'Focus: steady press; stop before the final hiss feels forced.';
-      return id ? 'Fokus: chamber basah rata dan steep tetap pendek.' : 'Focus: evenly wet chamber and keep the steep compact.';
+      if (kind === 'press') return id ? 'Fokus: tekan stabil; berhenti sebelum desis terakhir terasa dipaksa.' : 'Focus: steady press; stop before the final hiss feels forced.';
+      return id ? 'Fokus: ruang seduh basah rata dan rendaman tetap pendek.' : 'Focus: evenly wet chamber and keep the steep compact.';
     case 'siphon':
       if (kind === 'heat') return id ? 'Fokus: panas stabil sampai vacuum bekerja, bukan boiling agresif.' : 'Focus: stable heat until vacuum works, not aggressive boiling.';
       if (kind === 'drawdown' || kind === 'serve') return id ? 'Fokus: matikan panas dan biarkan air turun selesai tanpa agitasi tambahan.' : 'Focus: cut heat and let drawdown finish without extra agitation.';
@@ -3691,7 +3942,22 @@ function buildAiBrewWorkflowControlDetail(plan: BrewPlan, step: AiBrewDisplaySte
     case 'french_press':
       return 'Kontrol French Press: steep tenang, press pelan, lalu pindahkan ke server agar ampas berhenti mengekstrak.';
     case 'aeropress':
-      return 'Kontrol AeroPress: basahi chamber merata, press stabil, dan berhenti sebelum hiss terakhir dipaksa.';
+      if (plan.recipeStyle === 'bypass') {
+        return 'Kontrol AeroPress: seduh konsentrat dulu, tekan stabil, lalu bypass hanya setelah tekan sesuai resep.';
+      }
+      if (plan.recipeStyle === 'no_bypass') {
+        return 'Kontrol AeroPress: semua air masuk ruang seduh; jangan tambah bypass setelah tekan.';
+      }
+      if (plan.recipeStyle === 'bright_clean') {
+        return 'Kontrol AeroPress: agitasi sedikit, tekan ringan, dan berhenti sebelum desis agar akhir rasa tetap jernih.';
+      }
+      if (plan.recipeStyle === 'sweet_body') {
+        return 'Kontrol AeroPress: aduk lebih penuh, rendam lebih panjang, lalu tekan pelan agar body manis tidak kasar.';
+      }
+      if (plan.recipeStyle === 'inverted') {
+        return 'Kontrol AeroPress: pastikan segel posisi terbalik aman sebelum dibalik, lalu tekan stabil tanpa mengguncang bubur kopi.';
+      }
+      return 'Kontrol AeroPress: basahi ruang seduh merata, tekan stabil, dan berhenti sebelum desis terakhir dipaksa.';
     case 'espresso':
       return 'Kontrol espresso: baca aliran shot dan yield; koreksi utama dari grind, bukan menambah waktu sembarang.';
     case 'moka_pot':
@@ -3762,7 +4028,7 @@ function buildAiBrewDeterministicStepDetailPoints(
   const workflowWarnings = isWorkflowGuideStep(step) ? step.warnings : [];
   const visibleStepText = isWorkflowGuideStep(step)
     ? buildWorkflowGuideActionText(step, language, plan)
-    : buildAiBrewStepQuickNote(step, language);
+    : buildAiBrewStepQuickNote(step, language, plan);
   const workflowFocusCue = isWorkflowGuideStep(step)
     ? buildAiBrewWorkflowFocusCue(plan, step, language)
     : '';
@@ -3812,7 +4078,7 @@ function buildAiBrewStepDetailPoints(
   language: string,
   visibleReferences: string[] = [],
 ) {
-  const fallbackNote = normalizeAiBrewInstructionText(buildAiBrewStepQuickNote(step, language));
+  const fallbackNote = normalizeAiBrewInstructionText(buildAiBrewStepQuickNote(step, language, plan));
   const detailText = normalizeAiBrewInstructionText(
     localizeAiBrewDynamicText(step.hybridInstruction || '', language),
   );
@@ -3850,9 +4116,9 @@ function formatAiBrewPourPath(path: AiBrewDisplayStep['pourPath'], language: str
     case 'compact_spiral':
       return id ? 'spiral ringkas' : 'compact spiral';
     case 'immersion_charge':
-      return id ? 'charge immersion' : 'immersion charge';
+      return id ? 'isi rendaman' : 'immersion charge';
     case 'press':
-      return 'press';
+      return id ? 'tekan' : 'press';
     case 'heat_control':
       return id ? 'kontrol panas' : 'heat control';
     case 'machine_flow':
@@ -3994,7 +4260,7 @@ function renderAiBrewSequenceStepCard(
 ) {
   const localizedStepLabel = localizeAiBrewStepLabel(step.label, language);
   const stepActionText = buildAiBrewStepActionText(step, language, plan);
-  const stepQuickNote = buildAiBrewStepQuickNote(step, language);
+  const stepQuickNote = buildAiBrewStepQuickNote(step, language, plan);
   const stepMetrics = filterAiBrewStepMetricsForDensity(buildAiBrewStepMetrics(step, language, plan), density);
   const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
   const normalizedActionText = normalizeAiBrewInstructionText(stepActionText).toLowerCase();
@@ -5314,7 +5580,7 @@ function PlanResultDialog({
         ? copy.flowPaused
         : copy.flowReady;
   const flowCurrentCue = flowCurrentStep
-    ? (buildAiBrewStepMethodFocusCue(plan, flowCurrentStep, language) || buildAiBrewStepQuickNote(flowCurrentStep, language))
+    ? (buildAiBrewStepMethodFocusCue(plan, flowCurrentStep, language) || buildAiBrewStepQuickNote(flowCurrentStep, language, plan))
     : displaySummary;
   const flowCurrentCompactCue = compactAiBrewInstruction(flowCurrentCue);
   const flowCurrentMetrics = flowCurrentStep
@@ -6427,7 +6693,7 @@ function PlanResultDialog({
                       {plan.steps.map((step, index) => {
                         const localizedStepLabel = localizeAiBrewStepLabel(step.label, language);
                         const stepActionText = buildAiBrewStepActionText(step, language, plan);
-                        const stepQuickNote = buildAiBrewStepQuickNote(step, language);
+                        const stepQuickNote = buildAiBrewStepQuickNote(step, language, plan);
                         const stepDetailPoints = buildAiBrewStepDetailPoints(step, language);
                         const stepMetrics = buildAiBrewStepMetrics(step, language, plan);
 
@@ -6859,7 +7125,7 @@ function PlanResultDialog({
                       : index === flowActiveStepIndex
                         ? 'current'
                         : 'next';
-                    const quickNote = buildAiBrewStepQuickNote(step, language);
+                    const quickNote = buildAiBrewStepQuickNote(step, language, plan);
                     const methodFocusCue = buildAiBrewStepMethodFocusCue(plan, step, language);
                     const activeCue = methodFocusCue || quickNote;
                     const compactActiveCue = compactAiBrewInstruction(activeCue);
@@ -9305,7 +9571,7 @@ export function AiBrewPanel() {
       { value: 'no_bypass', label: copy.aeropressStyleNoBypass },
       { value: 'bright_clean', label: copy.aeropressStyleBrightClean },
       { value: 'sweet_body', label: copy.aeropressStyleSweetBody },
-    ] as const;
+    ] as const satisfies readonly AiBrewStyleOption<'aeropressStyle'>[];
     const frenchPressStyleOptions = [
       { value: 'auto', label: copy.frenchPressStyleAuto },
       { value: 'traditional', label: copy.frenchPressStyleTraditional },

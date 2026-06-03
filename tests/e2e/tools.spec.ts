@@ -697,7 +697,7 @@ test('ai brew guide renders workflow-specific phases for non-pour-over methods',
       query: 'aeropress',
       optionId: 'aeropress',
       coffeeName: 'QA AeroPress Workflow',
-      expected: /Charge water|Isi air|Stir|Aduk|Steep|Rendam|Press|Tekan|Stop before hiss|Berhenti sebelum hiss/i,
+      expected: /Charge water|Isi air|Stir|Aduk|Steep|Rendam|Press|Tekan|Stop before hiss|Berhenti sebelum (hiss|desis)/i,
     },
     {
       query: 'french press',
@@ -724,7 +724,7 @@ test('ai brew guide renders workflow-specific phases for non-pour-over methods',
 
     const result = page.getByTestId('ai-brew-result');
     await expect(result).toContainText(entry.coffeeName);
-    await result.getByTestId('ai-brew-result-tab-flow').click();
+    await result.getByTestId('ai-brew-result-tab-flow').click({ force: true });
     await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
     await expect(result.getByTestId('ai-brew-flow-current-card')).toBeVisible();
     await expect(result.getByTestId('ai-brew-sequence-section')).toHaveCount(0);
@@ -737,6 +737,471 @@ test('ai brew guide renders workflow-specific phases for non-pour-over methods',
     expect(guideText).toMatch(entry.expected);
     await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
   }
+});
+
+test('ai brew AeroPress styles render bilingual guides and regenerate without stale style copy', async ({ page }) => {
+  test.setTimeout(210_000);
+  type AeroPressStyle = 'standard' | 'inverted' | 'bypass' | 'no_bypass' | 'bright_clean' | 'sweet_body';
+  const styleCases: Array<{
+    style: AeroPressStyle;
+    targetProfileId: string;
+    processQuery: string;
+    processOptionId: string;
+    varietyQuery: string;
+    varietyPattern: RegExp;
+    visibleId: RegExp;
+    visibleEn: RegExp;
+    stored: RegExp;
+    forbiddenNonBypass?: RegExp;
+  }> = [
+    {
+      style: 'standard',
+      targetProfileId: 'balance_clean',
+      processQuery: 'Washed',
+      processOptionId: 'washed',
+      varietyQuery: 'Bourbon',
+      varietyPattern: /Bourbon/i,
+      visibleId: /Aduk 3 kali|25-35 detik|desis kering/i,
+      visibleEn: /Stir 3 times|25-35 seconds|dry hiss/i,
+      stored: /Aduk 3 kali|25-35 detik|desis kering/i,
+    },
+    {
+      style: 'inverted',
+      targetProfileId: 'more_sweetness',
+      processQuery: 'Natural',
+      processOptionId: 'natural',
+      varietyQuery: 'Gesha',
+      varietyPattern: /Gesha|Geisha/i,
+      visibleId: /terbalik|Balikkan|30-40 detik/i,
+      visibleEn: /inverted|Flip|30-40 seconds/i,
+      stored: /terbalik|Balikkan|30-40 detik/i,
+    },
+    {
+      style: 'bypass',
+      targetProfileId: 'floral_transparent',
+      processQuery: 'Washed',
+      processOptionId: 'washed',
+      varietyQuery: 'Ethiopian',
+      varietyPattern: /Ethiopian|Heirloom|Landrace/i,
+      visibleId: /Bypass terukur|setelah tekan saja|air bypass tidak melewati lapisan kopi/i,
+      visibleEn: /Measured bypass|after pressing only|bypass water does not pass through the coffee layer/i,
+      stored: /Bypass terukur|setelah tekan saja|air bypass tidak melewati lapisan kopi/i,
+    },
+    {
+      style: 'no_bypass',
+      targetProfileId: 'dense_comforting',
+      processQuery: 'Wet Hulled',
+      processOptionId: 'wet_hulled',
+      varietyQuery: 'Catimor',
+      varietyPattern: /Catimor|Ateng/i,
+      visibleId: /seluruh air resep|tanpa air bypass tambahan|30-40 detik/i,
+      visibleEn: /all recipe water|without extra bypass water|30-40 seconds/i,
+      stored: /seluruh air resep|tanpa air bypass tambahan|30-40 detik/i,
+    },
+    {
+      style: 'bright_clean',
+      targetProfileId: 'more_acidity',
+      processQuery: 'Washed',
+      processOptionId: 'washed',
+      varietyQuery: 'Caturra',
+      varietyPattern: /Caturra/i,
+      visibleId: /Aduk 2-3 kali|20-30 detik|tanpa air tambahan/i,
+      visibleEn: /Stir 2-3 times|20-30 seconds|without extra water/i,
+      stored: /Aduk 2-3 kali|20-30 detik|tanpa air tambahan/i,
+    },
+    {
+      style: 'sweet_body',
+      targetProfileId: 'more_body',
+      processQuery: 'Natural',
+      processOptionId: 'natural',
+      varietyQuery: 'Bourbon',
+      varietyPattern: /Bourbon/i,
+      visibleId: /Aduk 5 kali|35-45 detik|cangkir tebal/i,
+      visibleEn: /Stir 5 times|35-45 seconds|heavy cup/i,
+      stored: /Aduk 5 kali|35-45 detik|cangkir tebal/i,
+    },
+  ];
+  const languageCases = [
+    { language: 'id', expectedKey: 'visibleId' as const, leak: /\b(chamber|paper filter|slurry|puck|cup|press|hiss|steep)\b/i },
+    { language: 'en', expectedKey: 'visibleEn' as const, leak: /\b(Tuang|Aduk|Rendam|Tekan|Sajikan|ruang seduh|cangkir|desis)\b/i },
+  ] as const;
+  const languageCaseByCode = Object.fromEntries(languageCases.map((item) => [item.language, item])) as Record<
+    'id' | 'en',
+    typeof languageCases[number]
+  >;
+  const e2eMatrix: Array<{ language: 'id' | 'en'; style: AeroPressStyle }> = [
+    { language: 'id', style: 'bypass' },
+    { language: 'id', style: 'no_bypass' },
+    { language: 'en', style: 'standard' },
+    { language: 'en', style: 'inverted' },
+    { language: 'en', style: 'bright_clean' },
+    { language: 'en', style: 'sweet_body' },
+  ];
+  const nonBypassCommand = /Tambahkan air bypass|Bypass terukur|Add the measured bypass|Measured bypass|setelah tekan saja|after pressing only/i;
+
+  async function pickProcessAndVariety(entry: typeof styleCases[number]) {
+    await expect(page.getByTestId('ai-brew-process-picker')).toBeVisible();
+    await page.getByTestId('ai-brew-process-picker').click();
+    await setVisibleInputValue(page, 'ai-brew-picker-search-process', entry.processQuery);
+    await page.getByTestId(`ai-brew-picker-option-process-${entry.processOptionId}`).click();
+
+    await expect(page.getByTestId('ai-brew-variety-picker')).toBeVisible();
+    await page.getByTestId('ai-brew-variety-picker').click();
+    await setVisibleInputValue(page, 'ai-brew-picker-search-variety', entry.varietyQuery);
+    const firstVariety = page.locator('[data-testid^="ai-brew-picker-option-variety-"]').first();
+    await expect(firstVariety).toContainText(entry.varietyPattern);
+    await firstVariety.click();
+  }
+
+  async function generateAeroPressStyle(language: 'id' | 'en', entry: typeof styleCases[number]) {
+    await openAiBrewProMode(page);
+    await setVisibleInputValue(page, 'ai-brew-coffee-name', `QA AeroPress ${language} ${entry.style}`);
+    await pickProcessAndVariety(entry);
+    await page.getByTestId(`ai-brew-target-profile-${entry.targetProfileId}`).click();
+    if (!/AeroPress/i.test((await page.getByTestId('ai-brew-dripper-picker').textContent()) || '')) {
+      await page.getByTestId('ai-brew-dripper-picker').click();
+      await page.getByTestId('ai-brew-picker-search-dripper').fill('aeropress');
+      await page.getByTestId('ai-brew-picker-option-dripper-aeropress').click();
+    }
+    if (!/K-Ultra|1Zpresso/i.test((await page.getByTestId('ai-brew-grinder-picker').textContent()) || '')) {
+      await page.getByTestId('ai-brew-grinder-picker').click();
+      const grinderSearch = page.getByTestId('ai-brew-picker-search-grinder');
+      try {
+        await expect(grinderSearch).toBeVisible({ timeout: 5_000 });
+      } catch {
+        await page.getByTestId('ai-brew-grinder-picker').click();
+        await expect(grinderSearch).toBeVisible({ timeout: 10_000 });
+      }
+      await grinderSearch.fill('K-Ultra');
+      await page.getByTestId('ai-brew-picker-option-grinder-1zpresso-k-ultra').click();
+    }
+    await openAiBrewProSection(page, 'method');
+    await page.getByTestId(`ai-brew-aeropress-style-${entry.style}`).click();
+    await expect(page.getByTestId(`ai-brew-aeropress-style-${entry.style}`)).toHaveAttribute('aria-pressed', 'true');
+    if (!/Aqua/i.test((await page.getByTestId('ai-brew-water-picker').textContent()) || '')) {
+      await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
+    }
+    await page.getByTestId('ai-brew-generate').click();
+
+    const result = page.getByTestId('ai-brew-result');
+    await expect(result).toContainText(`QA AeroPress ${language} ${entry.style}`);
+    await result.getByTestId('ai-brew-result-tab-flow').click({ force: true });
+    await expect(result.getByTestId('ai-brew-guide-density-basic')).toHaveAttribute('aria-pressed', 'true');
+    await result.getByTestId('ai-brew-guide-density-pro').click();
+    await expect(result.getByTestId('ai-brew-guide-density-pro')).toHaveAttribute('aria-pressed', 'true');
+    const guidePanel = result.getByTestId('ai-brew-result-guide-panel');
+    await expect(guidePanel).toBeVisible();
+    const visibleGuideText = ((await guidePanel.textContent()) || '').replace(/\s+/g, ' ');
+    const plan = await readStoredAiBrewPlan(page);
+    const guideText = (plan.workflowGuideSteps || [])
+      .map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''} ${(step.detailBullets || []).join(' ')}`)
+      .join(' ');
+
+    await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
+    const closePro = page.getByTestId('ai-brew-close-pro');
+    if (await closePro.count()) {
+      await closePro.click();
+    }
+    return { guideText, plan, visibleGuideText };
+  }
+
+  let activeLanguage: 'id' | 'en' | '' = '';
+  const fingerprints = new Map<string, string>();
+  for (const e2eCase of e2eMatrix) {
+    const languageCase = languageCaseByCode[e2eCase.language];
+    const entry = styleCases.find((item) => item.style === e2eCase.style);
+    expect(entry).toBeTruthy();
+    if (!entry) continue;
+
+    if (activeLanguage !== e2eCase.language) {
+      activeLanguage = e2eCase.language;
+      await page.evaluate(({ language }) => {
+        localStorage.setItem('BARISTA_LANGUAGE', language);
+        localStorage.setItem('BARISTA_LANGUAGE_ID_DEFAULT_MIGRATED', '1');
+      }, { language: e2eCase.language });
+      await page.goto(`/tools?tab=ai-brew&language=${e2eCase.language}`, { waitUntil: 'domcontentloaded' });
+    }
+
+    const generated = await generateAeroPressStyle(e2eCase.language, entry);
+    expect(generated.plan.methodFamily).toBe('aeropress');
+    expect(generated.plan.recipeStyle).toBe(entry.style);
+    expect(generated.plan.targetProfileId).toBe(entry.targetProfileId);
+    expect(String(generated.plan.process || '').toLowerCase().replace(/[_-]+/g, ' '))
+      .toContain(entry.processOptionId.toLowerCase().replace(/[_-]+/g, ' '));
+    expect(generated.plan.variety).toBeTruthy();
+    expect(generated.plan.workflowValidation?.passed).toBe(true);
+    expect(generated.visibleGuideText).toMatch(entry[languageCase.expectedKey]);
+    expect(generated.visibleGuideText).not.toMatch(languageCase.leak);
+    expect(generated.guideText).toMatch(entry.stored);
+    expect(`${generated.visibleGuideText} ${generated.guideText}`).not.toMatch(/final pour|tuang akhir|drawdown bed|center-to-mid|bloom/i);
+    if (entry.style !== 'bypass') {
+      expect(`${generated.visibleGuideText} ${generated.guideText}`).not.toMatch(entry.forbiddenNonBypass || nonBypassCommand);
+    }
+    fingerprints.set(`${e2eCase.language}:${entry.style}`, JSON.stringify({
+      style: generated.plan.recipeStyle,
+      target: generated.plan.targetProfileId,
+      process: generated.plan.process,
+      variety: generated.plan.variety,
+      temp: generated.plan.waterTempC,
+      ratio: generated.plan.recommendedRatio,
+      guide: generated.guideText,
+    }));
+  }
+
+  expect(fingerprints.get('en:standard')).not.toEqual(fingerprints.get('en:sweet_body'));
+  expect(fingerprints.get('id:bypass')).not.toEqual(fingerprints.get('id:no_bypass'));
+});
+
+test('ai brew non-AeroPress style guides render method-specific copy through the UI', async ({ page }) => {
+  test.setTimeout(300_000);
+  const cases: Array<{
+    label: string;
+    query: string;
+    optionId: string;
+    styleTestId?: string;
+    switchPresetTestId?: string;
+    expectedFamily: BrewPlan['methodFamily'];
+    expectedStyle?: string;
+    expectedSwitchPreset?: string;
+    brewMode?: 'hot' | 'iced';
+    dose?: string;
+    stored: RegExp;
+    visible: RegExp;
+    forbidden: RegExp;
+  }> = [
+    {
+      label: 'French Press clean decant',
+      query: 'french press',
+      optionId: 'french-press',
+      styleTestId: 'ai-brew-french-press-style-clean_decant',
+      expectedFamily: 'french_press',
+      expectedStyle: 'clean_decant',
+      stored: /wadah saji kedua|tuang pisah perlahan|clean decant/i,
+      visible: /decant|tuang pisah|French Press/i,
+      forbidden: /bloom|final pour|tuang akhir|spiral|v60/i,
+    },
+    {
+      label: 'Kalita iced wave',
+      query: 'kalita wave',
+      optionId: 'kalita-wave-155-185',
+      styleTestId: 'ai-brew-kalita-wave-style-iced_wave',
+      expectedFamily: 'kalita_wave',
+      expectedStyle: 'iced_wave',
+      brewMode: 'iced',
+      stored: /filter berlipat|target air panas|wave es/i,
+      visible: /hot water|air panas|ice|es/i,
+      forbidden: /French Press|Moka|sputter/i,
+    },
+    {
+      label: 'Clever double stage',
+      query: 'clever',
+      optionId: 'clever-dripper',
+      styleTestId: 'ai-brew-clever-dripper-style-double_stage_hybrid',
+      expectedFamily: 'clever_dripper',
+      expectedStyle: 'double_stage_hybrid',
+      stored: /dua fase|fase rendam pertama|hybrid dua tahap/i,
+      visible: /release|alirkan|hybrid/i,
+      forbidden: /final pour|tuang akhir|spiral|sputter/i,
+    },
+    {
+      label: 'Chemex continuous center',
+      query: 'chemex',
+      optionId: 'chemex',
+      styleTestId: 'ai-brew-chemex-style-continuous_center_pour',
+      expectedFamily: 'chemex',
+      expectedStyle: 'continuous_center_pour',
+      stored: /aliran tengah|Tuang kontinu|Chemex kontinu/i,
+      visible: /center|tengah|continuous|kontinu/i,
+      forbidden: /French Press|Moka|sputter/i,
+    },
+    {
+      label: 'Moka low temp',
+      query: 'moka',
+      optionId: 'bialetti-moka-pot',
+      styleTestId: 'ai-brew-moka-pot-style-low_temp_controlled',
+      expectedFamily: 'moka_pot',
+      expectedStyle: 'low_temp_controlled',
+      stored: /panas rendah-sedang|aliran tipis|kontrol suhu rendah/i,
+      visible: /low|rendah|Moka|sputter|semburan/i,
+      forbidden: /bloom|final pour|tuang akhir|spiral|v60/i,
+    },
+    {
+      label: 'Cold drip tower',
+      query: 'cold brew',
+      optionId: 'toddy-cold-brew',
+      styleTestId: 'ai-brew-cold-brew-style-cold_drip_tower',
+      expectedFamily: 'cold_brew',
+      expectedStyle: 'cold_drip_tower',
+      dose: '60',
+      stored: /menara tetes dingin|laju tetes|tetes dingin/i,
+      visible: /cold drip|tetes dingin|drip/i,
+      forbidden: /hot pour|kettle|bloom|tuang panas|air panas/i,
+    },
+    {
+      label: 'Batch pre wet',
+      query: 'batch',
+      optionId: 'batch-brewer',
+      styleTestId: 'ai-brew-batch-brew-style-pre_wet_hybrid_batch',
+      expectedFamily: 'batch_brew',
+      expectedStyle: 'pre_wet_hybrid_batch',
+      dose: '60',
+      stored: /basah awal|siklus utama|pancuran mesin/i,
+      visible: /pre-wet|basah awal|machine|mesin/i,
+      forbidden: /manual pour|bloom pour|spiral|v60/i,
+    },
+    {
+      label: 'Siphon delicate',
+      query: 'siphon',
+      optionId: 'hario-siphon',
+      styleTestId: 'ai-brew-siphon-style-low_temp_delicate',
+      expectedFamily: 'siphon',
+      expectedStyle: 'low_temp_delicate',
+      stored: /panas lebih lembut|suhu rendah|ruang atas/i,
+      visible: /siphon|upper chamber|ruang atas|air naik/i,
+      forbidden: /final pour|tuang akhir|spiral|moka|sputter/i,
+    },
+    {
+      label: 'Origami wave',
+      query: 'origami',
+      optionId: 'origami-dripper-s-m',
+      styleTestId: 'ai-brew-origami-style-wave_dripper_style',
+      expectedFamily: 'origami',
+      expectedStyle: 'wave_dripper_style',
+      stored: /filter berlipat Origami|Origami wave|permukaan tetap datar/i,
+      visible: /Origami|wave|berlipat/i,
+      forbidden: /Moka|sputter|French Press/i,
+    },
+    {
+      label: 'April two pour',
+      query: 'april',
+      optionId: 'april-brewer',
+      styleTestId: 'ai-brew-april-style-competition_two_pour',
+      expectedFamily: 'april',
+      expectedStyle: 'competition_two_pour',
+      stored: /dua tuang utama|April dua tuang|alas datar/i,
+      visible: /two|dua|April/i,
+      forbidden: /Moka|sputter|French Press/i,
+    },
+    {
+      label: 'Melitta three pour',
+      query: 'melitta',
+      optionId: 'melitta',
+      styleTestId: 'ai-brew-melitta-style-three_pour_melitta',
+      expectedFamily: 'melitta',
+      expectedStyle: 'three_pour_melitta',
+      stored: /tiga tuang bertahap|Melitta tiga tuang|trapesium/i,
+      visible: /three|tiga|Melitta/i,
+      forbidden: /Moka|sputter|French Press/i,
+    },
+    {
+      label: 'Kono slow body',
+      query: 'kono',
+      optionId: 'kono-meimon',
+      styleTestId: 'ai-brew-kono-style-kono_slow_drip_body',
+      expectedFamily: 'kono',
+      expectedStyle: 'kono_slow_drip_body',
+      stored: /aliran lambat untuk body|Kono slow|body/i,
+      visible: /slow|lambat|Kono/i,
+      forbidden: /Moka|sputter|French Press/i,
+    },
+    {
+      label: 'Switch bright clean',
+      query: 'switch 03',
+      optionId: 'hario-switch-03',
+      switchPresetTestId: 'ai-brew-switch-preset-inline-hybrid_bright_clean',
+      expectedFamily: 'hario_switch',
+      expectedSwitchPreset: 'hybrid_bright_clean',
+      stored: /Program hybrid bright clean|katup|muatan ruang|air turun/i,
+      visible: /Switch|valve|katup|hybrid/i,
+      forbidden: /paper filter|server|drawdown bed|slurry|flutes/i,
+    },
+  ];
+
+  const fingerprints = new Map<string, string>();
+
+  for (const entry of cases) {
+    await openAiBrewProMode(page);
+    await setVisibleInputValue(page, 'ai-brew-coffee-name', `QA Style ${entry.label}`);
+    if (entry.dose) {
+      await setVisibleInputValue(page, 'ai-brew-dose', entry.dose);
+    }
+    await page.getByTestId('ai-brew-dripper-picker').click();
+    await page.getByTestId('ai-brew-picker-search-dripper').fill(entry.query);
+    await page.getByTestId(`ai-brew-picker-option-dripper-${entry.optionId}`).click();
+    if (entry.brewMode === 'iced') {
+      await page.getByTestId('ai-brew-builder-mode-iced').click();
+      await expect(page.getByTestId('ai-brew-builder-mode-iced')).toHaveAttribute('aria-pressed', 'true');
+    }
+    await openAiBrewProSection(page, 'method');
+    if (entry.styleTestId) {
+      await page.getByTestId(entry.styleTestId).click();
+      await expect(page.getByTestId(entry.styleTestId)).toHaveAttribute('aria-pressed', 'true');
+    }
+    if (entry.switchPresetTestId) {
+      await page.getByTestId(entry.switchPresetTestId).click();
+      await expect(page.getByTestId(entry.switchPresetTestId)).toHaveAttribute('aria-pressed', 'true');
+    }
+    if (!/Aqua/i.test((await page.getByTestId('ai-brew-water-picker').textContent()) || '')) {
+      await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
+    }
+    await page.getByTestId('ai-brew-generate').click();
+
+    const result = page.getByTestId('ai-brew-result');
+    await expect(result).toContainText(`QA Style ${entry.label}`);
+    await result.getByTestId('ai-brew-result-tab-flow').click({ force: true });
+    await result.getByTestId('ai-brew-guide-density-pro').click();
+    const guidePanel = result.getByTestId('ai-brew-result-guide-panel');
+    await expect(guidePanel).toBeVisible();
+    const visibleText = ((await guidePanel.textContent()) || '').replace(/\s+/g, ' ');
+    const plan = await readStoredAiBrewPlan(page);
+    const storedText = (plan.workflowGuideSteps || [])
+      .map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''} ${step.techniqueChips.map((chip) => `${chip.label} ${chip.value}`).join(' ')}`)
+      .join(' ');
+
+    expect(plan.methodFamily).toBe(entry.expectedFamily);
+    if (entry.expectedStyle) expect(plan.recipeStyle).toBe(entry.expectedStyle);
+    if (entry.expectedSwitchPreset) expect(plan.switchPresetId).toBe(entry.expectedSwitchPreset);
+    expect(plan.workflowValidation?.passed).toBe(true);
+    expect(storedText).toMatch(entry.stored);
+    expect(visibleText).toMatch(entry.visible);
+    expect(`${storedText} ${visibleText}`).not.toMatch(entry.forbidden);
+    fingerprints.set(entry.label, JSON.stringify({
+      family: plan.methodFamily,
+      style: plan.recipeStyle || plan.switchPresetId,
+      ratio: plan.recommendedRatio,
+      temp: plan.waterTempC,
+      guide: storedText,
+    }));
+
+    await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
+    const closePro = page.getByTestId('ai-brew-close-pro');
+    if (await closePro.count()) await closePro.click();
+  }
+
+  expect(new Set(fingerprints.values()).size).toBe(cases.length);
+});
+
+test('ai brew manual preset applies source-backed defaults and generates a validated guide', async ({ page }) => {
+  await openAiBrewQuickMode(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Manual Preset George Peng');
+  await page.getByTestId('ai-brew-manual-preset-toggle').click();
+  await expect(page.getByTestId('ai-brew-manual-preset-list')).toBeVisible();
+  await setVisibleInputValue(page, 'ai-brew-manual-preset-search', 'George Peng');
+  await page.getByTestId('ai-brew-manual-preset-inspired-george-peng-temperature-control').click();
+  await expect(page.getByTestId('ai-brew-selected-manual-preset')).toContainText(/George Peng/i);
+  await page.getByTestId('ai-brew-generate').click();
+
+  const result = page.getByTestId('ai-brew-result');
+  await expect(result).toContainText('QA Manual Preset George Peng');
+  await expect(result.getByTestId('ai-brew-result-manual-preset-chip')).toContainText(/George Peng/i);
+  await result.getByTestId('ai-brew-result-tab-flow').click();
+  await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
+  const plan = await readStoredAiBrewPlan(page);
+  expect(plan.manualPresetId).toBe('inspired-george-peng-temperature-control');
+  expect(plan.manualPresetLabel).toMatch(/George Peng/i);
+  expect(plan.dripper.id).toBe('orea-v3-v4');
+  expect(plan.workflowValidation?.passed).toBe(true);
+  expect((plan.workflowGuideSteps || []).length).toBeGreaterThan(3);
 });
 
 test('ai brew grinder picker shows Feima 600N platform aliases without losing the canonical entry', async ({ page }) => {

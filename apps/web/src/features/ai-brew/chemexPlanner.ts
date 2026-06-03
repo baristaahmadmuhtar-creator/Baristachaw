@@ -277,6 +277,7 @@ export function resolveChemexPlanSelection(params: {
 
   // Adjust label
   adjustedProfile.label = `Chemex - ${activeStyle.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`;
+  adjustedProfile.recipeStyle = activeStyle as DeviceBrewProfile['recipeStyle'];
 
   return {
     style: activeStyle,

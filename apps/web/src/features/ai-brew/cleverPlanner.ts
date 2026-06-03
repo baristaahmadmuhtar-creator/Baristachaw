@@ -154,36 +154,36 @@ export function resolveCleverPlanSelection(params: {
       adjustedProfile.grindBias = 'same';
       adjustedProfile.steps = [
         {
-          id: 'bloom',
-          label: 'Closed Bloom',
+          id: 'first_charge',
+          label: 'First Charge',
           kind: 'pour',
           share: 0.20,
           startSeconds: 0,
-          note: 'Bloom hot with the valve closed. Wet the bed evenly.',
+          note: 'Add the first hot-water charge with the release closed. Wet all grounds evenly.',
         },
         {
           id: 'first_release',
-          label: 'Bloom Release',
+          label: 'First Release',
           kind: 'release',
           share: 0,
           startSeconds: 30,
-          note: 'Place on server to release the sweet bloom liquid.',
+          note: 'Place on the serving vessel to release the first sweet liquor.',
         },
         {
-          id: 'percolation_pour',
-          label: 'Percolation Pour',
+          id: 'second_charge',
+          label: 'Second Charge',
           kind: 'pour',
           share: 0.50,
           startSeconds: 50,
-          note: 'Pour the second portion in gentle center spirals while keeping the valve open.',
+          note: 'Remove the Clever so the release closes, then add the next water portion calmly.',
         },
         {
           id: 'immersion_charge',
-          label: 'Immersion Pour',
+          label: 'Immersion Top Up',
           kind: 'pour',
           share: 0.30,
           startSeconds: 100,
-          note: 'Lift the dripper from the server (closing the valve) and pour the final water portion.',
+          note: 'Finish the planned hot-water charge while the release stays closed.',
         },
         {
           id: 'steep',
@@ -199,19 +199,19 @@ export function resolveCleverPlanSelection(params: {
           kind: 'release',
           share: 0,
           startSeconds: 160,
-          note: 'Place back on the server to release the final rich concentrate.',
+          note: 'Place back on the serving vessel to release the final rich liquor.',
         },
         {
           id: 'drawdown',
-          label: 'Drawdown',
+          label: 'Drain',
           kind: 'drawdown',
           share: 0,
           startSeconds: 215,
-          note: 'Let the final percolation finish flat.',
+          note: 'Let the flow finish cleanly without adding more water.',
         },
       ];
-      why = 'Double-Stage Steep-and-Percolate blends a closed bloom, an open percolation phase, and a final closed immersion stage to give high complexity and juicy sweetness.';
-      watch = 'Valve handoff timing is key. Be prepared to lift the dripper cleanly from the server to stop the flow.';
+      why = 'Double-Stage Hybrid uses two closed immersion charges with a controlled release between them, keeping sweetness while improving clarity.';
+      watch = 'Release timing is key. Lift the Clever cleanly to stop the first flow, then return it only when the second steep is finished.';
       break;
 
     case 'iced_clever':

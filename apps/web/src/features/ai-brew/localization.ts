@@ -130,6 +130,7 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
       case 'tekan':
         return 'Press';
       case 'berhenti sebelum hiss':
+      case 'berhenti sebelum desis':
         return 'Stop Before Hiss';
       case 'buka katup':
         return 'Release';

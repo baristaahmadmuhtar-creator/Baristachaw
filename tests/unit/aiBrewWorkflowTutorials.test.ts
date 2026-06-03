@@ -89,7 +89,7 @@ const AEROPRESS_STYLE_CASES = [
   {
     style: 'sweet_body',
     en: /five|35-45|sweetness and body/i,
-    id: /lima|35-45|manis dan body/i,
+    id: /lima|35-45|manis dan tekstur/i,
   },
 ] as const;
 const AEROPRESS_ACTIONS: WorkflowGuideActionType[] = ['setup', 'charge', 'steep', 'press', 'serve'];
@@ -181,6 +181,24 @@ test('workflow tutorials keep method-language safety strict', () => {
 
   const paperFilter = resolveWorkflowTutorialDetail({ methodFamily: 'v60', actionType: 'bloom', brewMode: 'hot', language: 'en' });
   assert.match(paperFilter, /\b(bloom|bed|pour)\b/i);
+});
+
+test('V60 Indonesian tutorial copy avoids avoidable raw English terms', () => {
+  const hotText = METHOD_ACTIONS.v60
+    .map((actionType) => resolveWorkflowTutorialDetail({ methodFamily: 'v60', actionType, brewMode: 'hot', language: 'id' }))
+    .join(' ');
+  const icedText = METHOD_ACTIONS.v60
+    .map((actionType) => resolveWorkflowTutorialDetail({ methodFamily: 'v60', actionType, brewMode: 'iced', language: 'id' }))
+    .join(' ');
+
+  for (const [label, text] of [['hot', hotText], ['iced', icedText]] as const) {
+    assert.doesNotMatch(
+      text,
+      /\b(brewer|server|bed|drawdown|slurry|paper)\b/i,
+      `${label} V60 Indonesian tutorial should avoid raw English terms: ${text}`,
+    );
+    assert.match(text, /alat seduh|wadah saji|hamparan kopi|fase turun/i);
+  }
 });
 
 test('AeroPress style tutorials are bilingual, style-specific, and free from leakage', () => {

@@ -1842,6 +1842,50 @@ test('ai brew uses latest edited inputs when regenerating without reset', async 
 
   await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
   await openAiBrewProMode(page);
+  await page.getByTestId('ai-brew-process-picker').click();
+  await setVisibleInputValue(page, 'ai-brew-picker-search-process', 'natural');
+  await page.getByTestId('ai-brew-picker-option-process-natural').click();
+  await page.getByTestId('ai-brew-variety-picker').click();
+  await setVisibleInputValue(page, 'ai-brew-picker-search-variety', 'gesha');
+  await page.locator('[data-testid^="ai-brew-picker-option-variety-"]').first().click();
+  await page.evaluate(() => {
+    const generate = document.querySelector<HTMLElement>('[data-testid="ai-brew-generate"]');
+    if (!generate) throw new Error('Missing ai-brew-generate');
+    generate.click();
+  });
+
+  const beanResult = page.getByTestId('ai-brew-result');
+  await expect(beanResult).toContainText('QA Roast Live Sync');
+  const beanPlan = await readStoredAiBrewPlan(page);
+  expect(String(beanPlan.process || '').toLowerCase()).toContain('natural');
+  expect(String(beanPlan.variety || '').toLowerCase()).toMatch(/gesha|geisha/);
+  expect(beanPlan.fingerprint).not.toBe(waterPlan.fingerprint);
+
+  await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
+  await openAiBrewProMode(page);
+  await openAiBrewProSection(page, 'recipe');
+  await page.evaluate(() => {
+    const clickByTestId = (testId: string) => {
+      const element = document.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
+      if (!element) throw new Error(`Missing ${testId}`);
+      element.click();
+    };
+    clickByTestId('ai-brew-pour-style-pulse');
+    clickByTestId('ai-brew-pour-count-5');
+    clickByTestId('ai-brew-generate');
+  });
+
+  const pourStyleResult = page.getByTestId('ai-brew-result');
+  await expect(pourStyleResult).toContainText('QA Roast Live Sync');
+  const pourStylePlan = await readStoredAiBrewPlan(page);
+  expect(pourStylePlan.formState.pourStyle).toBe('pulse');
+  expect(pourStylePlan.formState.pourCount).toBe('5');
+  expect(pourStylePlan.steps.filter((step: { pourVolumeMl?: number }) => (step.pourVolumeMl || 0) > 0).length)
+    .toBeGreaterThanOrEqual(5);
+  expect(pourStylePlan.fingerprint).not.toBe(beanPlan.fingerprint);
+
+  await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
+  await openAiBrewProMode(page);
   await page.getByTestId('ai-brew-dripper-picker').click();
   await page.getByTestId('ai-brew-picker-search-dripper').fill('moka');
   await page.getByTestId('ai-brew-picker-option-dripper-bialetti-moka-pot').click();
@@ -1868,7 +1912,7 @@ test('ai brew uses latest edited inputs when regenerating without reset', async 
     .join(' ');
   expect(mokaGuideText).toMatch(/boiler|basket|panas|heat|sputter|semburan/i);
   expect(mokaGuideText).not.toMatch(/bloom|drawdown bed|final pour|tuang akhir|spiral|v60/i);
-  expect(mokaPlan.fingerprint).not.toBe(waterPlan.fingerprint);
+  expect(mokaPlan.fingerprint).not.toBe(pourStylePlan.fingerprint);
 });
 
 test('ai brew quick and pro iced modes show final ratio and hot concentrate split', async ({ page }) => {

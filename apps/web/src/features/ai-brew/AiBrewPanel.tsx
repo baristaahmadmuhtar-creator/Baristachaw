@@ -3025,6 +3025,14 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     [/^Program ([a-z_ ]+): fase perkolasi terbuka; jaga tuangan rapi sampai target\.$/i, 'Program $1: open percolation phase; keep the pour tidy until target.'],
     [/^Program ([a-z_ ]+): isi ruang seduh pelan dan jaga muatan tetap di bawah batas aman\.$/i, 'Program $1: fill the chamber calmly and keep the load under the safe limit.'],
     [/^Program ([a-z_ ]+): buka katup bersih dan biarkan aliran turun tanpa agitasi tambahan\.$/i, 'Program $1: open the valve cleanly and let the flow finish without extra agitation.'],
+    [/^Tekan stabil ([0-9-]+) detik sampai desis selesai\.$/i, 'Press steadily for $1 seconds and continue through the hiss.'],
+    [/^Tekan pelan ([0-9-]+) detik sampai desis selesai; biarkan volume penuh turun bersih\.$/i, 'Press slowly for $1 seconds, continue through the hiss, and let the full volume pass cleanly.'],
+    [/^Tekan pelan ([0-9-]+) detik dan lanjutkan sampai desis selesai\.$/i, 'Press slowly for $1 seconds and continue through the hiss.'],
+    [/^Tekan sampai desis selesai, lalu pisahkan alat dari cangkir\.$/i, 'Press through the hiss, then remove the AeroPress from the cup.'],
+    [/^Tekan sampai desis selesai, lalu angkat alat dari cangkir\.$/i, 'Press through the hiss, then remove the AeroPress from the cup.'],
+    [/^Tekan sampai desis selesai agar hasil penuh turun tanpa tambahan air\.$/i, 'Press through the hiss so the full-volume brew lands without extra water.'],
+    [/^Tekan sampai desis selesai supaya minyak dan tekstur ikut turun\.$/i, 'Press through the hiss so oils and texture land in the cup.'],
+    [/^Jaga tekanan stabil sampai desis selesai\.$/i, 'Keep steady pressure through the hiss.'],
   ];
   for (const [pattern, replacement] of exactMap) {
     if (pattern.test(text)) return replacement;
@@ -3038,6 +3046,15 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\bBerhenti sebelum desis kering\b/gi, 'Stop before the dry hiss')
     .replace(/\bBerhenti sebelum desis pertama\b/gi, 'Stop before the first hiss')
     .replace(/\bBerhenti sebelum desis\b/gi, 'Stop before the hiss')
+    .replace(/\bTekan sampai desis selesai, lalu pisahkan alat dari cangkir\b/gi, 'Press through the hiss, then remove the AeroPress from the cup')
+    .replace(/\bTekan sampai desis selesai, lalu angkat alat dari cangkir\b/gi, 'Press through the hiss, then remove the AeroPress from the cup')
+    .replace(/\bTekan sampai desis selesai agar hasil penuh turun tanpa tambahan air\b/gi, 'Press through the hiss so the full-volume brew lands without extra water')
+    .replace(/\bTekan sampai desis selesai supaya minyak dan tekstur ikut turun\b/gi, 'Press through the hiss so oils and texture land in the cup')
+    .replace(/\bTekan stabil ([0-9-]+) detik sampai desis selesai\b/gi, 'Press steadily for $1 seconds and continue through the hiss')
+    .replace(/\bTekan pelan ([0-9-]+) detik sampai desis selesai; biarkan volume penuh turun bersih\b/gi, 'Press slowly for $1 seconds, continue through the hiss, and let the full volume pass cleanly')
+    .replace(/\bTekan pelan ([0-9-]+) detik dan lanjutkan sampai desis selesai\b/gi, 'Press slowly for $1 seconds and continue through the hiss')
+    .replace(/\bJaga tekanan stabil sampai desis selesai\b/gi, 'Keep steady pressure through the hiss')
+    .replace(/\bTarget waktu\b/gi, 'Target time')
     .replace(/\bAduk cangkir pelan, lalu sajikan\b/gi, 'Stir the cup gently, then serve')
     .replace(/\bpastikan segel rapat\b/gi, 'confirm the seal is tight')
     .replace(/\btetap stabil dan tertutup\b/gi, 'stable and covered')
@@ -6902,7 +6919,16 @@ function PlanResultDialog({
                     >
                       <div className="space-y-2 text-sm text-amber-700 dark:text-amber-200">
                         {localizedWarnings.map((warning, index) => (
-                          <p key={`${warning}-${index}`} className="rounded-xl bg-[var(--bg-base)]/72 px-3 py-2 leading-5">{warning}</p>
+                          <p
+                            key={`${warning}-${index}`}
+                            className={`rounded-xl bg-[var(--bg-base)]/72 px-3 py-2 leading-5 ${
+                              warning.toLowerCase().includes('plunger') || warning.toLowerCase().includes('penekan')
+                                ? 'animate-pulse text-rose-600 dark:text-rose-400 font-bold border border-rose-500/30'
+                                : ''
+                            }`}
+                          >
+                            {warning}
+                          </p>
                         ))}
                       </div>
                     </ResultDisclosureSection>

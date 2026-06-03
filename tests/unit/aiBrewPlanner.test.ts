@@ -82,6 +82,7 @@ import type {
   DeviceBrewProfile,
   EquipmentCatalogEntry,
   GrinderSettingReference,
+  ManualBrewPreset,
   ProcessCatalogEntry,
   RawDripperCatalogEntry,
   RawGrinderCatalogEntry,
@@ -4310,6 +4311,7 @@ function buildProductionAiBrewCatalogForTests(): AiBrewCatalog {
     switchDoseMatrix: switchDoseMatrixFile.rows,
     switchTroubleshooting: switchTroubleshootingFile.items,
     switchKnowledge: switchKnowledgeFile.item,
+    manualBrewPresets: readJsonItems<ManualBrewPreset>('apps/web/public/data/ai-brew/manual-brew-presets.v2026-06.json'),
   };
 }
 
@@ -4873,7 +4875,11 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
     assertBasicGoldenEnvelope(plan, { ratio: [12.5, 15.2], temp: [80, 90], time: [60, 150] });
     assert.ok(plan.steps.some((step) => step.kind === 'press'), `${style} AeroPress should include a press step`);
     assert.match(textFor(plan), /stir|aduk|press|tekan|hiss|desis|steep|rendam/i);
-    assert.equal(positivePourCount(plan), 1);
+    if (plan.hotWaterMl > 240 && style !== 'inverted') {
+      assert.equal(positivePourCount(plan), 2, `${style} AeroPress should include a bloom and charge pour when hotWaterMl > 240`);
+    } else {
+      assert.equal(positivePourCount(plan), 1, `${style} AeroPress should include a single pour`);
+    }
   }
   assert.ok(aeropressPlans.sweetBody.totalTimeSeconds > aeropressPlans.brightClean.totalTimeSeconds);
   assert.match(textFor(aeropressPlans.bypass), /dilute|bypass water after pressing only/i);
@@ -4891,11 +4897,19 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
   assert.match(aeropressGuideText.brightClean, /Aduk 2-3 kali|20-30 detik|akhir rasa tetap bersih|tanpa air tambahan/i);
   assert.match(aeropressGuideText.sweetBody, /Aduk 5 kali|Rendam lebih panjang|35-45 detik/i);
   for (const [style, guideText] of Object.entries(aeropressGuideText)) {
-    assert.doesNotMatch(guideText, /final pour|drawdown bed|tuang akhir|bloom/i, `${style} AeroPress guide should not leak pour-over language`);
+    const plan = aeropressPlans[style as keyof typeof aeropressPlans];
+    const hasCapacityBloom = plan.steps.some((step) => step.id === 'bloom');
+    assert.doesNotMatch(
+      guideText,
+      hasCapacityBloom ? /final pour|drawdown bed|tuang akhir/i : /final pour|drawdown bed|tuang akhir|bloom/i,
+      `${style} AeroPress guide should not leak pour-over language`,
+    );
+    if (hasCapacityBloom) {
+      assert.match(guideText, /Bloom|blooming|30 ml/i, `${style} AeroPress high-volume guide should show capacity bloom`);
+    }
     if (style !== 'bypass') {
       assert.doesNotMatch(guideText, /Tambahkan bypass|Bypass terukur|setelah tekan saja|setelah press saja|dilution:/i, `${style} AeroPress guide must not ask for bypass dilution`);
     }
-    const plan = aeropressPlans[style as keyof typeof aeropressPlans];
     assert.equal(plan.workflowValidation?.passed, true, `${style} AeroPress workflow should validate`);
   }
 
@@ -4927,6 +4941,171 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
       assert.doesNotMatch(textFor(entry.plan), MOKA_METHOD_LEAK_PATTERN, 'Moka golden text should stay stovetop-specific');
     }
     assert.equal(positivePourCount(entry.plan), 1);
+  }
+});
+
+test('AeroPress upright high-volume guides preserve bloom and main charge checkpoints', () => {
+  const catalog = buildProductionAiBrewCatalogForTests();
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'hot',
+    dripperId: 'aeropress',
+    aeropressStyle: 'bright_clean',
+    doseG: '18',
+    targetWaterMl: '260',
+    targetProfileId: 'fruit_forward',
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+    process: 'washed',
+    variety: 'gesha',
+    roastLevel: 'light',
+  }, catalog);
+
+  const positiveSteps = plan.steps.filter((step) => (step.pourVolumeMl || 0) > 0);
+  assert.deepEqual(positiveSteps.map((step) => step.id), ['bloom', 'charge']);
+  assert.deepEqual(positiveSteps.map((step) => step.pourVolumeMl), [30, 230]);
+
+  const guide = plan.workflowGuideSteps || buildWorkflowAwareGuideSteps(plan);
+  const guideText = guide
+    .map((step) => `${step.label} ${step.actionType} ${step.primaryText} ${step.secondaryText || ''} ${step.sourceStepIds.join(',')}`)
+    .join('\n');
+  const preservedVolumeIds = new Set(guide.flatMap((step) => step.sourceStepIds));
+  assert.ok(preservedVolumeIds.has('bloom'), 'Guide should preserve the capacity bloom source step');
+  assert.ok(preservedVolumeIds.has('charge'), 'Guide should preserve the main charge source step');
+  assert.match(guideText, /Bloom[\s\S]*(30 ml|30ml)/i);
+  assert.match(guideText, /(Main Charge|Isi air utama|Tuang sisa air|remaining water|sisa air)[\s\S]*(230 ml|230ml|260 ml|260ml)/i);
+  assert.doesNotMatch(guideText, /final pour|drawdown bed|tuang akhir/i);
+  assert.equal(plan.workflowValidation?.passed, true);
+});
+
+test('AI Brew direct manualPresetId applies AeroPress preset defaults before planning', () => {
+  const catalog = buildProductionAiBrewCatalogForTests();
+  const base = createDefaultAiBrewFormState(catalog);
+
+  const cases = [
+    {
+      presetId: 'inspired-wac-championship-style',
+      label: /Nemo Pop|WAC 2025/i,
+      totalWaterMl: 170,
+      hotWaterMl: 100,
+      waterTempC: 84,
+      recipeStyle: 'bypass',
+    },
+    {
+      presetId: 'inspired-aeropress-cold-brew-express',
+      label: /Cold Brew Express/i,
+      totalWaterMl: 100,
+      hotWaterMl: 100,
+      waterTempC: 20,
+      recipeStyle: 'sweet_body',
+    },
+  ] as const;
+
+  for (const entry of cases) {
+    const plan = buildAiBrewPlan({
+      ...base,
+      manualPresetId: entry.presetId,
+    }, catalog);
+
+    assert.equal(plan.manualPresetId, entry.presetId);
+    assert.match(plan.manualPresetLabel || '', entry.label);
+    assert.equal(plan.methodFamily, 'aeropress');
+    assert.equal(plan.dripper.id, 'aeropress');
+    assert.equal(plan.recipeStyle, entry.recipeStyle);
+    assert.equal(plan.totalWaterMl, entry.totalWaterMl);
+    assert.equal(plan.hotWaterMl, entry.hotWaterMl);
+    assert.equal(plan.waterTempC, entry.waterTempC);
+    assert.equal(plan.workflowValidation?.passed, true);
+  }
+});
+
+test('AeroPress light roast service temperatures do not keep stale low-temperature warnings', () => {
+  const catalog = buildProductionAiBrewCatalogForTests();
+  const base = createDefaultAiBrewFormState(catalog);
+  const grinder = catalog.grinders.find((item) => /k-ultra/i.test(item.name)) || catalog.grinders[0];
+  const common = {
+    ...base,
+    dripperId: 'aeropress',
+    grinderId: grinder.id,
+    waterMode: 'manual' as const,
+    waterTdsPpm: '90',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '35',
+    brewMode: 'hot' as const,
+    process: 'washed',
+    variety: 'geisha',
+  };
+
+  const cases = [
+    {
+      label: 'medium-light standard sweetness',
+      input: {
+        ...common,
+        aeropressStyle: 'standard' as const,
+        targetProfileId: 'more_sweetness',
+        roastLevel: 'medium_light' as const,
+        doseG: '15',
+      },
+      minTempC: 91,
+    },
+    {
+      label: 'light bright clean high-volume',
+      input: {
+        ...common,
+        aeropressStyle: 'bright_clean' as const,
+        targetProfileId: 'fruit_forward',
+        roastLevel: 'light' as const,
+        doseG: '18',
+        targetWaterMl: '260',
+      },
+      minTempC: 91,
+    },
+  ] as const;
+
+  for (const entry of cases) {
+    const plan = buildAiBrewPlan(entry.input, catalog);
+    assert.ok(plan.waterTempC >= entry.minTempC, `${entry.label} should keep a realistic AeroPress service temp`);
+    assert.doesNotMatch(
+      [...plan.warnings, ...(plan.conformance?.warnings || []), ...(plan.guardrails?.warnings || [])].join(' '),
+      /temp may be too low|too low for .* roast|Consider raising/i,
+      `${entry.label} should not keep low-temp warning once actual service temp is ${plan.waterTempC}C`,
+    );
+  }
+});
+
+test('V60 workflow guide uses polished Indonesian stage labels for hot and iced service', () => {
+  const catalog = buildProductionAiBrewCatalogForTests();
+  const base = createDefaultAiBrewFormState(catalog);
+  const grinder = catalog.grinders.find((item) => /k-ultra/i.test(item.name)) || catalog.grinders[0];
+  const common = {
+    ...base,
+    dripperId: 'hario-v60',
+    grinderId: grinder.id,
+    waterMode: 'manual' as const,
+    waterTdsPpm: '90',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '35',
+    roastLevel: 'medium_light' as const,
+    targetProfileId: 'more_sweetness',
+    doseG: '15',
+    pourStyle: 'auto' as const,
+    pourCount: 'auto' as const,
+  };
+
+  for (const brewMode of ['hot', 'iced'] as const) {
+    const plan = buildAiBrewPlan({ ...common, brewMode }, catalog);
+    const guideText = (plan.workflowGuideSteps || buildWorkflowAwareGuideSteps(plan))
+      .map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''}`)
+      .join('\n');
+
+    assert.match(guideText, /Tuang tahap tengah/i, `${brewMode} V60 should name the middle pour naturally`);
+    assert.match(guideText, /Tuang penutup/i, `${brewMode} V60 should name the final pour naturally`);
+    assert.match(guideText, /Air turun selesai/i, `${brewMode} V60 should use a clear drawdown-finish label`);
+    assert.doesNotMatch(guideText, /\b(Tuang tengah|Tuang akhir|Finish)\b/i, `${brewMode} V60 should not expose rough draft labels`);
+    assert.doesNotMatch(guideText, /\b(drawdown|bed|server|slurry)\b/i, `${brewMode} V60 Indonesian guide should not leak avoidable English terms`);
   }
 });
 
@@ -7199,7 +7378,7 @@ test('non-dripper method profiles generate action-safe AI Brew plans without fak
       brewMode: 'iced' as const,
       dripperId: entry.dripperId,
       coffeeName: `${entry.name} QA`,
-      doseG: entry.family === 'cold_brew' ? '60' : entry.family === 'batch_brew' ? '55' : '18',
+      doseG: entry.family === 'cold_brew' ? '60' : entry.family === 'batch_brew' ? '55' : entry.family === 'aeropress' ? '15' : '18',
       waterTdsPpm: '95',
       waterHardnessPpm: '55',
       waterAlkalinityPpm: '40',

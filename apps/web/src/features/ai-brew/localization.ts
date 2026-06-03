@@ -129,6 +129,8 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
         return 'Steep';
       case 'tekan':
         return 'Press';
+      case 'tekan sampai selesai':
+        return 'Press Through';
       case 'berhenti sebelum hiss':
       case 'berhenti sebelum desis':
         return 'Stop Before Hiss';
@@ -1137,7 +1139,37 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/Pour in rapid circular rings, creating turbulence inside the Kono bottom\. The short ribs keep slurry high\./gi, 'Tuang dalam lingkaran cepat, membuat turbulensi di dasar Kono. Rusuk yang pendek menjaga slurry tetap tinggi.')
     .replace(/Pour the final portion in an extremely slow center stream to settle the coffee bed flat and wash grounds down\./gi, 'Tuang porsi akhir dalam aliran tengah yang sangat lambat untuk meratakan bed kopi dan membasuh kopi turun.')
     .replace(/Let the bed settle completely flat\. Beautiful complex sweetness, balanced acidity, and heavy mouthfeel\./gi, 'Biarkan bed mengendap rata sempurna. Kemanisan kompleks yang indah, keasaman seimbang, dan sensasi mulut yang tebal.')
-    .replace(/Allow a slow, heavy drawdown to finish\. Yields maximum body\./gi, 'Biarkan air turun yang lambat dan berat selesai. Menghasilkan body maksimal.');
+    .replace(/Allow a slow, heavy drawdown to finish\. Yields maximum body\./gi, 'Biarkan air turun yang lambat dan berat selesai. Menghasilkan body maksimal.')
+    // AeroPress dynamic cues localization
+    .replace(/Wet and shrink the coffee bed; due to chamber limits, bloom with 30 ml for 20s\./gi, 'Basahi dan susutkan hamparan kopi; karena batas ruang seduh, lakukan blooming dengan 30 ml selama 20 detik.')
+    .replace(/Due to physical chamber limits for high volume upright brews, wet and shrink the coffee bed first by blooming with 30 ml for 20 seconds before adding the remaining water\./gi, 'Karena batas kapasitas fisik ruang seduh untuk metode tegak bervolume tinggi, basahi dan susutkan hamparan kopi dengan blooming 30 ml selama 20 detik sebelum menuang sisa air.')
+    .replace(/Pour remaining water to target volume and let immersion start\./gi, 'Tuangkan sisa air sampai target volume dan biarkan rendaman dimulai.')
+    .replace(/Pour the remaining water steadily to reach the target volume for the main immersion phase\./gi, 'Tuangkan sisa air secara stabil untuk mencapai target volume pada fase rendam utama.')
+    .replace(/Safety Warning: Make sure the plunger is inserted at least 2 cm into the chamber before flipping the AeroPress!/gi, 'Peringatan keamanan: Pastikan penekan masuk minimal 2 cm ke dalam ruang seduh sebelum AeroPress dibalik!')
+    .replace(/Safety Warning: Make sure the press plunger is inserted at least 2 cm into the AeroPress chamber before flipping!/gi, 'Peringatan keamanan: Pastikan penekan masuk minimal 2 cm ke dalam ruang seduh AeroPress sebelum dibalik!')
+    .replace(/Use 5x aggressive Cross-Stir \(North-South, East-West\) to increase extraction\./gi, 'Gunakan adukan silang (Cross-Stir) 5x agresif (Utara-Selatan, Barat-Timur) untuk menaikkan ekstraksi.')
+    .replace(/Stir vigorously 5 times using back-and-forth cross motions \(North-South, East-West\) to maximize kinetic energy and build body, then attach the plunger\./gi, 'Aduk kuat 5 kali menggunakan gerakan silang maju-mundur (Utara-Selatan, Barat-Timur) untuk memaksimalkan energi kinetik dan membentuk tekstur, lalu pasang penekan.')
+    .replace(/Swirl gently 2 times and let the slurry settle; avoid paddle contact to keep clarity high\./gi, 'Goyang memutar lembut 2 kali dan biarkan campuran kopi tenang; hindari adukan sendok agar kejernihan tetap tinggi.')
+    .replace(/Gently swirl the entire AeroPress in circular motions 2 times\. Do not stir with a spoon\/paddle to prevent fines from clogging the filter, preserving a high-clarity profile\./gi, 'Goyang memutar seluruh AeroPress perlahan 2 kali. Jangan aduk memakai sendok untuk mencegah ampas halus menyumbat filter, menjaga profil kejernihan tinggi.')
+    .replace(/Use 3x intense Cross-Stir to mix the concentrate slurry\./gi, 'Gunakan adukan silang 3x intens untuk meratakan konsentrat.')
+    .replace(/Stir intensely 3 times in cross directions \(North-South, East-West\) to build extraction in the small volume, then secure the plunger\./gi, 'Aduk intens 3 kali dalam arah silang (Utara-Selatan, Barat-Timur) untuk membangun ekstraksi pada volume kecil, lalu pasang penekan.')
+    .replace(/Stir gently 4 times in a circular motion, then secure the cap\./gi, 'Aduk melingkar lembut 4 kali, lalu pasang penutup filter.')
+    .replace(/Stir 4 times memutar \(circular\) gently, then secure the cap\./gi, 'Aduk melingkar lembut 4 kali, lalu pasang penutup filter.')
+    .replace(/Stir 4 times in a calm circular motion to distribute grounds evenly in the inverted chamber before securing the filter cap\./gi, 'Aduk 4 kali dengan gerakan melingkar tenang untuk meratakan bubuk kopi di dalam chamber terbalik sebelum memasang penutup filter.')
+    .replace(/Use 3x Cross-Stir to wet all grounds quickly\./gi, 'Gunakan adukan silang (Cross-Stir) 3x untuk membasahi semua bubuk kopi dengan cepat.')
+    .replace(/Stir 3 times in cross directions \(North-South, East-West\) to wet the high dose coffee rapidly\./gi, 'Aduk 3 kali dalam arah silang (Utara-Selatan, Barat-Timur) untuk membasahi kopi dosis tinggi secara cepat.')
+    .replace(/Use 3x gentle Cross-Stir \(North-South, East-West\) to wet all grounds\./gi, 'Gunakan adukan silang (Cross-Stir) 3x lembut (Utara-Selatan, Barat-Timur) untuk membasahi semua bubuk kopi.')
+    .replace(/Stir 3 times gently in back-and-forth cross motions \(North-South, East-West\) to settle the coffee bed and ensure even extraction\./gi, 'Aduk 3 kali dengan lembut dalam gerakan silang maju-mundur (Utara-Selatan, Barat-Timur) untuk meratakan bed kopi dan menjamin ekstraksi merata.')
+    .replace(/Press steadily and stop before the hiss to keep the cup clean\./gi, 'Tekan secara stabil dan berhenti sebelum desis agar cangkir tetap jernih.')
+    .replace(/Press steadily with light pressure, stopping at the first hiss to keep the finish clean and limit fines carry-over\./gi, 'Tekan secara stabil dengan tekanan ringan, berhenti saat desis pertama agar akhir rasa tetap bersih dan ampas halus tidak terbawa berlebih.')
+    .replace(/Press steadily with light pressure, stopping exactly when you hear the first hissing sound to avoid extracting heavier, bitter oils\./gi, 'Tekan secara stabil dengan tekanan ringan, berhenti saat desis pertama agar akhir rasa tetap bersih dan ampas halus tidak terbawa berlebih.')
+    .replace(/Press concentrate steadily and stop before the hiss\./gi, 'Tekan konsentrat secara stabil dan berhenti sebelum desis.')
+    .replace(/Press the concentrate steadily, stopping before the hiss to keep it sweet and clean, then dilute with bypass water in the cup\./gi, 'Tekan konsentrat secara stabil, berhenti sebelum desis untuk menjaganya manis dan bersih, lalu encerkan dengan air bypass di dalam cangkir.')
+    .replace(/Press steadily and press completely through the hiss\./gi, 'Tekan secara stabil dan tekan terus hingga desis selesai.')
+    .replace(/Apply steady pressure and press completely through the hiss to carry more oils and texture into the cup\./gi, 'Berikan tekanan stabil dan tekan habis melewati desis agar lebih banyak minyak dan tekstur ikut turun ke cangkir.')
+    .replace(/Apply firm force and press completely through the hiss to extract the rich oils and lipids that build the body\./gi, 'Berikan tekanan stabil dan tekan habis melewati desis agar lebih banyak minyak dan tekstur ikut turun ke cangkir.')
+    .replace(/Press slowly and completely through the hiss to extract sweetness and roundness from the inverted immersion\./gi, 'Tekan perlahan dan habis melewati desis untuk mengekstrak rasa manis dan kebulatan dari rendaman terbalik.')
+    .replace(/Press steadily with light, constant pressure completely through the hiss to capture the full sweet range of the extraction\./gi, 'Tekan secara stabil dengan tekanan ringan yang konstan hingga habis melewati desis untuk menangkap spektrum manis ekstraksi yang utuh.');
 
   return localizeCriticalUiTerms(localizeBeanProfileSummary(localized));
 }

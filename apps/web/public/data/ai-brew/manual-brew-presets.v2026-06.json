@@ -1298,6 +1298,83 @@
         "If cup is sour or thin, return toward balance before changing grinder aggressively."
       ],
       "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "inspired-wac-championship-style",
+      "safeLabel": "Inspired by Nemo Pop WAC 2025",
+      "category": "competition_inspired",
+      "sourceAttribution": "2025 World AeroPress Champion Nemo Pop reference, adapted as a safe planner prefill.",
+      "verificationLevel": "official_reference",
+      "sourceUrls": [
+        "https://aeropress.com/blogs/w-a-c-aeropress-recipes/1st-nemo-pop-australia-2025"
+      ],
+      "supportedDripperIds": ["aeropress"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "fruit_forward",
+        "doseG": 18,
+        "targetWaterMl": 170,
+        "targetTempC": 84,
+        "targetRatio": 9.4,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 125,
+        "waterHardnessPpm": 62,
+        "waterAlkalinityPpm": 38,
+        "aeropressStyle": "bypass"
+      },
+      "techniquePattern": "aeropress_clean",
+      "visibleSummary": "WAC 2025 Nemo Pop style: 70 g bypass in the cup, 100 g brew water at 84°C, double filter, and short controlled press.",
+      "internalTips": [
+        "Use 18g coffee around a coarse AeroPress championship range; the official reference used Trailmaster X25 at 31 clicks and fines sifted below 200 micron.",
+        "Place 70g bypass water in the cup or carafe first; brew only 100g water at 84C through the AeroPress chamber.",
+        "Wet all grounds, stir NSNS-WEWE at 25s, then press gently at 50s for about 20s.",
+        "Flow Control Cap and two AeroPress paper filters are preferred for this style."
+      ],
+      "guardrails": [
+        "Bypass water belongs in the cup or carafe, not in the chamber.",
+        "This is an adapted starting point from a competition recipe; present it as calibration guidance, not a promise of competition results.",
+        "If there is no Flow Control Cap, keep the chamber stable and expect more pre-drip than the official reference."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "inspired-aeropress-cold-brew-express",
+      "safeLabel": "AeroPress Cold Brew Express",
+      "category": "global_classic",
+      "sourceAttribution": "Official AeroPress Express Cold Brew reference, adapted as a safe planner prefill.",
+      "verificationLevel": "official_reference",
+      "sourceUrls": [
+        "https://aeropress.com/blogs/aeropress-recipes/express-cold-brew"
+      ],
+      "supportedDripperIds": ["aeropress"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "soft_round",
+        "doseG": 30,
+        "targetWaterMl": 100,
+        "targetTempC": 20,
+        "targetRatio": 3.3,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 85,
+        "waterHardnessPpm": 45,
+        "waterAlkalinityPpm": 30,
+        "aeropressStyle": "sweet_body"
+      },
+      "techniquePattern": "aeropress_clean",
+      "visibleSummary": "Official Express Cold Brew style: 30g fine coffee, 100ml cold or room-temperature water, 2-minute vigorous stir, then press onto ice.",
+      "internalTips": [
+        "Use a fine grind to compensate for cold water and short contact time.",
+        "Stir vigorously for 2 minutes so cold water can extract enough soluble material.",
+        "Press over about 30 seconds into a glass with ice, then stir before tasting."
+      ],
+      "guardrails": [
+        "Use cold or room-temperature water only; do not display hot-brew temperature language for this preset.",
+        "Keep press steady to avoid filter blowout under a fine grind.",
+        "Add extra cold water or milk only after the pressed coffee is separated from the chamber."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
     }
   ]
 }

@@ -652,27 +652,27 @@ function buildMethodCueChecklist(plan: BrewPlan) {
       if (style === 'inverted') {
         lines.push('- Include inverted chamber safe assembly and rapid saturation cue early.');
         lines.push('- Include filter cap seal and secure flip check before pressing.');
-        lines.push('- Include steady plunge cue in final step, stopping strictly before the dry hiss.');
+        lines.push('- Include steady plunge cue in final step, pressing completely through the hiss to extract rich sweetness and body.');
       } else if (style === 'bypass') {
         lines.push('- Include high-dose concentrate immersion and vigorous stir cue early.');
         lines.push('- Include steady press and bypass water separate reservation cue middle.');
-        lines.push('- Include final concentrate press stopping before the hiss, followed by post-brew bypass dilution.');
+        lines.push('- Include final concentrate press stopping before the hiss to preserve clarity, followed by post-brew bypass dilution.');
       } else if (style === 'no_bypass') {
         lines.push('- Include full-chamber upright bed edge-to-edge saturation and gentle stir cue early.');
         lines.push('- Include plunger vacuum seal and extended steep immersion cue middle.');
-        lines.push('- Include plunger removal and slow, complete chamber press drain cue in the final step.');
+        lines.push('- Include plunger removal and slow press completely through the hiss for full body extraction in the final step.');
       } else if (style === 'bright_clean') {
         lines.push('- Include double rinsed paper filter and swift circle pour clarity cue early.');
         lines.push('- Include double stir agitation limit and vacuum seal steep cue middle.');
-        lines.push('- Include extremely slow, feather-light press and absolute pre-hiss stop cue in the final step.');
+        lines.push('- Include extremely slow, feather-light press and absolute pre-hiss stop cue to maximize clarity in the final step.');
       } else if (style === 'sweet_body') {
         lines.push('- Include fine grounds thorough saturation and sweet solubility opening cue early.');
         lines.push('- Include vigorous circular agitation and extended immersion steep cue middle.');
-        lines.push('- Include firm, stable plunge down to the absolute bottom of the coffee puck in the final step.');
+        lines.push('- Include firm, stable plunge completely through the hiss to the absolute bottom of the coffee puck in the final step.');
       } else {
         lines.push('- Include AeroPress upright chamber decisive saturation and uniform wetting cue early.');
         lines.push('- Include gentle stir and vacuum seal plunger insert cue middle.');
-        lines.push('- Include steady 25-35s press and strict stop at the first hiss cue in the final step.');
+        lines.push('- Include steady 25-35s press, pressing completely through the hiss for balanced extraction in the final step.');
       }
       return lines.join('\n');
     }

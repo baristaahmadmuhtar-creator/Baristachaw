@@ -464,6 +464,7 @@ function normalizeWorkflowTutorialCopy(value: string, language: WorkflowTutorial
     [/\bpaper filter\b/gi, 'filter kertas'],
     [/\bfilter cap\b/gi, 'tutup filter'],
     [/\bdry pockets?\b/gi, 'bagian kering'],
+    [/\bbrewer\b/gi, 'alat seduh'],
     [/\bspray head\b/gi, 'pancuran mesin'],
     [/\broom temp\b/gi, 'suhu ruang'],
     [/\bpre-wet\b/gi, 'basahi awal'],
@@ -490,6 +491,7 @@ function normalizeWorkflowTutorialCopy(value: string, language: WorkflowTutorial
     [/\bpuck\b/gi, 'lapisan kopi'],
     [/\bchamber\b/gi, 'ruang seduh'],
     [/\bhiss\b/gi, 'desis'],
+    [/\bnatural\b/gi, 'alami'],
     [/\bmesh\b/gi, 'saringan'],
     [/\bplunger\b/gi, 'penekan'],
     [/Â°C/g, 'C'],
@@ -662,11 +664,11 @@ const AEROPRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
     },
     main: {
       en: 'Stir three calm strokes, seal with the plunger, and let the coffee steep without extra movement.',
-      id: 'Aduk tiga gerakan tenang, segel dengan plunger, lalu biarkan kopi merendam tanpa gerakan tambahan.',
+      id: 'Aduk tiga gerakan tenang, segel dengan penekan, lalu biarkan kopi merendam tanpa gerakan tambahan.',
     },
     release: {
-      en: 'Press smoothly for 25-35 seconds and stop before the dry hiss.',
-      id: 'Tekan halus 25-35 detik dan berhenti sebelum desis kering.',
+      en: 'Press smoothly for 25-35 seconds and continue through the hiss for a complete balanced cup.',
+      id: 'Tekan halus 25-35 detik dan lanjutkan melewati desis untuk cangkir seimbang yang utuh.',
     },
     finish: {
       en: 'Swirl the cup once so early sweetness and late extraction taste even.',
@@ -676,7 +678,7 @@ const AEROPRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
   inverted: {
     setup: {
       en: 'Assemble the inverted chamber on a level surface, rinse the filter cap, and check the plunger seal.',
-      id: 'Rakit ruang seduh terbalik di permukaan rata, bilas tutup filter, dan cek segel plunger.',
+      id: 'Rakit ruang seduh terbalik di permukaan rata, bilas tutup filter, dan pastikan penekan masuk minimal 2 cm.',
     },
     entry: {
       en: 'Add water steadily and wet the coffee edge to edge while the brewer stays stable.',
@@ -687,8 +689,8 @@ const AEROPRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
       id: 'Aduk empat kali, pasang tutup, rendam tenang, lalu balikkan ke cangkir dalam satu gerakan mantap.',
     },
     release: {
-      en: 'Press slowly for 30-40 seconds, keeping the cup and chamber aligned.',
-      id: 'Tekan perlahan 30-40 detik sambil menjaga cangkir dan ruang seduh sejajar.',
+      en: 'Press slowly for 30-40 seconds through the hiss, keeping the cup and chamber aligned.',
+      id: 'Tekan perlahan 30-40 detik sampai desis selesai sambil menjaga cangkir dan ruang seduh sejajar.',
     },
     finish: {
       en: 'Serve the full-immersion cup while the sweet aromatics are still fresh.',
@@ -731,8 +733,8 @@ const AEROPRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
       id: 'Aduk tiga gerakan lembut, segel, dan rendam lebih lama untuk ekstraksi satu volume yang utuh.',
     },
     release: {
-      en: 'Press slowly for 30-40 seconds and let the full chamber volume pass cleanly.',
-      id: 'Tekan perlahan 30-40 detik dan biarkan seluruh volume ruang seduh turun bersih.',
+      en: 'Press slowly for 30-40 seconds through the hiss and let the full chamber volume pass cleanly.',
+      id: 'Tekan perlahan 30-40 detik sampai desis selesai dan biarkan seluruh volume ruang seduh turun bersih.',
     },
     finish: {
       en: 'Serve without extra water so the cup reflects the full chamber extraction.',
@@ -772,11 +774,11 @@ const AEROPRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
     },
     main: {
       en: 'Stir five full strokes, seal, and steep longer to build sweetness and body.',
-      id: 'Aduk penuh lima kali, segel, dan rendam lebih lama untuk membangun manis dan body.',
+      id: 'Aduk penuh lima kali, segel, dan rendam lebih lama untuk membangun manis dan tekstur.',
     },
     release: {
-      en: 'Press slowly for 35-45 seconds with steady force, stopping before the dry hiss.',
-      id: 'Tekan perlahan 35-45 detik dengan tenaga stabil, berhenti sebelum desis kering.',
+      en: 'Press slowly for 35-45 seconds with steady force and continue through the hiss for texture.',
+      id: 'Tekan perlahan 35-45 detik dengan tenaga stabil dan lanjutkan melewati desis untuk tekstur.',
     },
     finish: {
       en: 'Mix the cup gently and serve a dense, sweet AeroPress without extra water.',

@@ -87,6 +87,7 @@ import type {
   AiBrewCatalog,
   AiBrewFormState,
   AiBrewMethodFamily,
+  AiBrewMode,
   AeroPressRecipeStyle,
   BeanCoverageState,
   BeanProfileState,
@@ -848,6 +849,54 @@ export function applyManualBrewPresetToFormState(
   return sanitizeAiBrewFormState(next, catalog);
 }
 
+function applyManualBrewPresetDefaultsForPlanning(input: AiBrewFormState, catalog: AiBrewCatalog): AiBrewFormState {
+  const presetId = String(input.manualPresetId || '');
+  if (!Array.isArray(catalog.manualBrewPresets) || catalog.manualBrewPresets.length === 0) return input;
+  const preset = findManualBrewPreset(catalog, presetId);
+  if (!preset) return input;
+
+  const presetApplied = applyManualBrewPresetToFormState(input, catalog, preset.id);
+  const hasPrecisionOverrides = [
+    input.targetWaterMl,
+    input.targetTempC,
+    input.targetRatio,
+  ].some(hasValue);
+  const hasWaterOverrides = [
+    input.waterBrandId,
+    input.waterTdsPpm,
+    input.waterHardnessPpm,
+    input.waterAlkalinityPpm,
+    input.waterNotes,
+  ].some(hasValue);
+
+  return {
+    ...presetApplied,
+    coffeeName: input.coffeeName,
+    process: input.process,
+    customProcess: input.customProcess,
+    variety: input.variety,
+    customVariety: input.customVariety,
+    roastLevel: input.roastLevel,
+    altitudeMasl: input.altitudeMasl,
+    beanDensityGml: input.beanDensityGml,
+    roastDevelopment: input.roastDevelopment,
+    solubility: input.solubility,
+    grinderId: input.grinderId || presetApplied.grinderId,
+    doseG: hasPrecisionOverrides ? String(input.doseG || presetApplied.doseG) : presetApplied.doseG,
+    targetWaterMl: hasPrecisionOverrides && hasValue(input.targetWaterMl) ? String(input.targetWaterMl) : presetApplied.targetWaterMl,
+    targetTempC: hasPrecisionOverrides && hasValue(input.targetTempC) ? String(input.targetTempC) : presetApplied.targetTempC,
+    targetRatio: hasPrecisionOverrides && hasValue(input.targetRatio) ? String(input.targetRatio) : presetApplied.targetRatio,
+    waterMode: hasWaterOverrides ? input.waterMode : presetApplied.waterMode,
+    waterRegion: hasWaterOverrides ? input.waterRegion : presetApplied.waterRegion,
+    waterBrandId: hasWaterOverrides ? input.waterBrandId : presetApplied.waterBrandId,
+    waterCustomized: hasWaterOverrides ? input.waterCustomized : presetApplied.waterCustomized,
+    waterTdsPpm: hasWaterOverrides ? String(input.waterTdsPpm || '') : presetApplied.waterTdsPpm,
+    waterHardnessPpm: hasWaterOverrides ? String(input.waterHardnessPpm || '') : presetApplied.waterHardnessPpm,
+    waterAlkalinityPpm: hasWaterOverrides ? String(input.waterAlkalinityPpm || '') : presetApplied.waterAlkalinityPpm,
+    waterNotes: hasWaterOverrides ? String(input.waterNotes || '') : presetApplied.waterNotes,
+  };
+}
+
 function createFingerprint(input: string) {
   let hash = 5381;
   for (let index = 0; index < input.length; index += 1) {
@@ -1076,6 +1125,29 @@ export function resolveManualPresetScaledWaterMl(
     : roundedClampedWater;
 }
 
+function resolveManualPresetBrewWaterOverrideMl(
+  preset: ManualBrewPreset | null | undefined,
+  nextDoseG: number,
+  totalWaterMl: number,
+  methodFamily: AiBrewMethodFamily,
+  brewMode: AiBrewMode,
+) {
+  if (!preset || brewMode !== 'hot' || methodFamily !== 'aeropress') return null;
+  if (preset.id !== 'inspired-wac-championship-style') return null;
+
+  const officialDoseG = 18;
+  const officialBrewWaterMl = 100;
+  const brewWaterRatio = officialBrewWaterMl / officialDoseG;
+  const scaledBrewWaterMl = roundBaristaVolumeMl(calcWaterFromDoseRatio(nextDoseG, brewWaterRatio), methodFamily);
+  if (!Number.isFinite(scaledBrewWaterMl) || scaledBrewWaterMl <= 0) return null;
+
+  return clamp(
+    scaledBrewWaterMl,
+    1,
+    Math.max(1, totalWaterMl - 1),
+  );
+}
+
 function parseRequiredNumber(label: string, value: string, min: number, max: number) {
   const parsed = Number.parseFloat(value);
   if (!Number.isFinite(parsed)) throw new Error(`${label} is required.`);
@@ -1237,6 +1309,31 @@ function normalizeNoteList(...groups: Array<Array<string | undefined>>) {
         .filter((value): value is string => Boolean(value)),
     ),
   );
+}
+
+function resolveAeroPressLowTempWarningFloor(roastLevel: RoastLevel) {
+  if (roastLevel === 'light' || roastLevel === 'medium_light') return 91;
+  if (roastLevel === 'medium') return 90;
+  if (roastLevel === 'medium_dark') return 88;
+  return 86;
+}
+
+function isStaleAeroPressLowTempWarning(note: string, methodFamily: AiBrewMethodFamily, roastLevel: RoastLevel, waterTempC: number) {
+  if (methodFamily !== 'aeropress') return false;
+  if (!/temp may be too low|too low for .* roast|consider raising/i.test(note)) return false;
+  return waterTempC >= resolveAeroPressLowTempWarningFloor(roastLevel);
+}
+
+function filterContextualConformanceWarnings(
+  notes: string[],
+  params: { methodFamily: AiBrewMethodFamily; roastLevel: RoastLevel; waterTempC: number },
+) {
+  return notes.filter((note) => !isStaleAeroPressLowTempWarning(
+    note,
+    params.methodFamily,
+    params.roastLevel,
+    params.waterTempC,
+  ));
 }
 
 function joinInstructionText(...parts: Array<string | undefined>) {
@@ -4415,6 +4512,8 @@ function buildExtractionRationale(params: {
   ).slice(0, 6);
   const hotOrTotalWater = params.iceMl > 0
     ? `${params.hotWaterMl} ml hot water into ${params.iceMl} g ice`
+    : params.hotWaterMl < params.totalWaterMl
+      ? `${params.hotWaterMl} ml brew water plus ${Math.max(0, params.totalWaterMl - params.hotWaterMl)} ml bypass`
     : `${params.totalWaterMl} ml water`;
 
   return {
@@ -6050,6 +6149,7 @@ function buildMethodFamilyStepInstruction(params: {
   phase: AdaptiveStepPhase;
   context: AdaptiveShareContext;
   fallbackNote: string;
+  stepId?: string;
 }) {
   const { methodFamily, phase, context, fallbackNote } = params;
   let quickNote = fallbackNote;
@@ -6469,7 +6569,13 @@ function buildMethodFamilyStepInstruction(params: {
       }
       break;
     case 'aeropress':
-      if (phase === 'bloom') {
+      if (params.stepId === 'overflow_bloom') {
+        quickNote = 'Wet and shrink the coffee bed; due to chamber limits, bloom with 30 ml for 20s.';
+        detail = 'Due to physical chamber limits for high volume upright brews, wet and shrink the coffee bed first by blooming with 30 ml for 20 seconds before adding the remaining water.';
+      } else if (params.stepId === 'main_charge') {
+        quickNote = 'Pour remaining water to target volume and let immersion start.';
+        detail = 'Pour the remaining water steadily to reach the target volume for the main immersion phase.';
+      } else if (phase === 'bloom') {
         quickNote = context.recipeStyle === 'inverted'
           ? 'Assemble inverted safely, then wet the compact bed quickly and evenly.'
           : 'Wet the compact bed quickly and evenly.';
@@ -6477,12 +6583,25 @@ function buildMethodFamilyStepInstruction(params: {
           ? 'Use a stable inverted setup, add water decisively, wet all grounds, and keep the slurry compact before attaching the cap.'
           : 'Add water decisively, wet all grounds, and keep the slurry compact so the short contact window stays controlled.';
       } else if (phase === 'early_middle') {
-        quickNote = context.recipeStyle === 'sweet_body'
-          ? 'Stir 5 times, then let the fuller immersion contact settle.'
-          : context.recipeStyle === 'bright_clean'
-            ? 'Stir 2-3 times, then stop so clarity stays high.'
-            : 'Use one gentle agitation pass, then let contact settle.';
-        detail = 'Use the planned stir count, then stop; AeroPress benefits from repeatable agitation more than constant stirring.';
+        if (context.recipeStyle === 'sweet_body') {
+          quickNote = 'Use 5x aggressive Cross-Stir (North-South, East-West) to increase extraction.';
+          detail = 'Stir vigorously 5 times using back-and-forth cross motions (North-South, East-West) to maximize kinetic energy and build body, then attach the plunger.';
+        } else if (context.recipeStyle === 'bright_clean') {
+          quickNote = 'Swirl gently 2 times and let the slurry settle; avoid paddle contact to keep clarity high.';
+          detail = 'Gently swirl the entire AeroPress in circular motions 2 times. Do not stir with a spoon/paddle to prevent fines from clogging the filter, preserving a high-clarity profile.';
+        } else if (context.recipeStyle === 'bypass') {
+          quickNote = 'Use 3x intense Cross-Stir to mix the concentrate slurry.';
+          detail = 'Stir intensely 3 times in cross directions (North-South, East-West) to build extraction in the small volume, then secure the plunger.';
+        } else if (context.recipeStyle === 'inverted') {
+          quickNote = 'Stir gently 4 times in a circular motion, then secure the cap.';
+          detail = 'Stir 4 times in a calm circular motion to distribute grounds evenly in the inverted chamber before securing the filter cap.';
+        } else if (context.manualTechniquePattern === 'aeropress_clean') {
+          quickNote = 'Use 3x Cross-Stir to wet all grounds quickly.';
+          detail = 'Stir 3 times in cross directions (North-South, East-West) to wet the high dose coffee rapidly.';
+        } else {
+          quickNote = 'Use 3x gentle Cross-Stir (North-South, East-West) to wet all grounds.';
+          detail = 'Stir 3 times gently in back-and-forth cross motions (North-South, East-West) to settle the coffee bed and ensure even extraction.';
+        }
       } else if (phase === 'late_middle') {
         quickNote = context.recipeStyle === 'bypass'
           ? 'Prepare the bypass water separately; do not push it through the puck.'
@@ -6491,10 +6610,22 @@ function buildMethodFamilyStepInstruction(params: {
           ? 'Keep dilution water ready for after pressing; the extraction phase stays as a concentrate.'
           : 'Attach or prepare the cap and keep the brewer stable so the press starts on time.';
       } else {
-        quickNote = 'Press steadily for the target duration and stop before the hiss turns harsh.';
-        detail = context.recipeStyle === 'bypass'
-          ? 'Press steadily, stop at the hiss or target yield, then dilute in the cup after extraction is separated.'
-          : 'Apply steady pressure and stop when the target yield is reached or the hiss starts to sound dry.';
+        if (context.recipeStyle === 'bright_clean') {
+          quickNote = 'Press steadily and stop before the hiss to keep the cup clean.';
+          detail = 'Press steadily with light pressure, stopping at the first hiss to keep the finish clean and limit fines carry-over.';
+        } else if (context.recipeStyle === 'bypass') {
+          quickNote = 'Press concentrate steadily and stop before the hiss.';
+          detail = 'Press the concentrate steadily, stopping before the hiss to keep it sweet and clean, then dilute with bypass water in the cup.';
+        } else if (context.recipeStyle === 'sweet_body') {
+          quickNote = 'Press steadily and press completely through the hiss.';
+          detail = 'Apply steady pressure and press completely through the hiss to carry more oils and texture into the cup.';
+        } else if (context.recipeStyle === 'inverted') {
+          quickNote = 'Press steadily and press completely through the hiss.';
+          detail = 'Press slowly and completely through the hiss to extract sweetness and roundness from the inverted immersion.';
+        } else {
+          quickNote = 'Press steadily and press completely through the hiss.';
+          detail = 'Press steadily with light, constant pressure completely through the hiss to capture the full sweet range of the extraction.';
+        }
       }
       break;
     case 'siphon':
@@ -7075,8 +7206,67 @@ function buildSteps(
       hybridInstruction,
     };
   });
+  let finalSteps: BrewPlanStep[] = steps;
+  if (adaptiveShareContext.methodFamily === 'aeropress' && hotWaterMl > 240 && adaptiveShareContext.recipeStyle !== 'inverted') {
+    const chargeIndex = steps.findIndex((step) => step.id === 'charge');
+    if (chargeIndex !== -1) {
+      const originalChargeStep = steps[chargeIndex];
+      const bloomStepInstruction = buildMethodFamilyStepInstruction({
+        methodFamily: 'aeropress',
+        phase: 'bloom',
+        context: { ...adaptiveShareContext, recipeStyle: 'no_bypass' },
+        fallbackNote: 'Wet and shrink the coffee bed; due to chamber limits, bloom with 30 ml for 20s.',
+        stepId: 'overflow_bloom',
+      } as any);
+
+      const mainChargeStepInstruction = buildMethodFamilyStepInstruction({
+        methodFamily: 'aeropress',
+        phase: 'bloom',
+        context: adaptiveShareContext,
+        fallbackNote: 'Pour remaining water to target volume and let immersion start.',
+        stepId: 'main_charge',
+      } as any);
+
+      const bloomStep: BrewPlanStep = {
+        ...originalChargeStep,
+        id: 'bloom',
+        label: 'Bloom',
+        pourVolumeMl: 30,
+        targetVolumeMl: 30,
+        startSeconds: 0,
+        note: bloomStepInstruction.note,
+        hybridInstruction: bloomStepInstruction.hybridInstruction,
+      };
+
+      const mainChargeStep: BrewPlanStep = {
+        ...originalChargeStep,
+        id: 'charge',
+        label: 'Main Charge',
+        pourVolumeMl: hotWaterMl - 30,
+        targetVolumeMl: hotWaterMl,
+        startSeconds: 20,
+        note: mainChargeStepInstruction.note,
+        hybridInstruction: mainChargeStepInstruction.hybridInstruction,
+      };
+
+      const newSteps: BrewPlanStep[] = [];
+      for (let i = 0; i < steps.length; i++) {
+        if (i === chargeIndex) {
+          newSteps.push(bloomStep, mainChargeStep);
+        } else {
+          const step = steps[i];
+          newSteps.push({
+            ...step,
+            startSeconds: step.startSeconds + 20,
+            targetVolumeMl: hotWaterMl,
+          });
+        }
+      }
+      finalSteps = newSteps;
+    }
+  }
   return applyStepTechniqueMetadata(
-    polishIcedManualPourOverSteps(steps, adaptiveShareContext),
+    polishIcedManualPourOverSteps(finalSteps, adaptiveShareContext),
     adaptiveShareContext,
   );
 }
@@ -7085,7 +7275,9 @@ function buildSummary(plan: Pick<
   BrewPlan,
   'brewMode' | 'methodFamily' | 'coffeeName' | 'dripper' | 'targetProfileLabel' | 'recommendedRatio' | 'finalBeverageRatio' | 'hotExtractionRatio' | 'waterTempC' | 'totalTimeSeconds'
 >) {
-  const ratioText = plan.brewMode === 'iced'
+  const hasSeparateExtractionRatio = plan.brewMode === 'iced'
+    || (plan.methodFamily === 'aeropress' && Math.abs(plan.hotExtractionRatio - plan.finalBeverageRatio) > 0.05);
+  const ratioText = hasSeparateExtractionRatio
     ? `final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)} with hot concentrate 1:${formatBaristaRatio(plan.hotExtractionRatio)}`
     : `1:${formatBaristaRatio(plan.recommendedRatio)}`;
   const tasteTimeSeconds = Math.max(0, Math.round((plan as Partial<BrewPlan>).extractionEndSeconds ?? plan.totalTimeSeconds));
@@ -7126,6 +7318,10 @@ function buildServiceExecutionNote(params: {
 }) {
   if (params.brewMode === 'iced') {
     return `Japanese-style iced is locked: brew ${params.hotWaterMl} ml hot concentrate over ${params.iceMl} g ice (${params.hotSplitPercent}%:${params.iceSplitPercent}%). Total input is ${params.totalWaterMl} ml, not final cup output. Final ratio is 1:${formatBaristaRatio(params.finalBeverageRatio)}; hot concentrate extracts at 1:${formatBaristaRatio(params.hotExtractionRatio)}. Keep pours compact to hold sweetness and clarity, then stir the chilled server after drawdown so service is not confused with another brew step.`;
+  }
+  if (params.methodFamily === 'aeropress' && params.hotWaterMl < params.totalWaterMl) {
+    const bypassWaterMl = Math.max(0, params.totalWaterMl - params.hotWaterMl);
+    return `AeroPress bypass split is locked: brew ${params.hotWaterMl} ml through the chamber, then add ${bypassWaterMl} ml bypass water in the cup after pressing. Final ratio is 1:${formatBaristaRatio(params.finalBeverageRatio)}; concentrate extracts at 1:${formatBaristaRatio(params.hotExtractionRatio)}.`;
   }
   switch (params.methodFamily) {
     case 'cold_brew':
@@ -7650,8 +7846,17 @@ function finalizePlanCore(
     processEntry,
   });
 
-  const ratioLowerBound = method.ratioRange[0] - 0.75;
-  const ratioUpperBound = method.ratioRange[1] + 0.75;
+  let ratioLowerBound = method.ratioRange[0] - 0.75;
+  let ratioUpperBound = method.ratioRange[1] + 0.75;
+  if (manualPreset) {
+    const presetRatio = resolveManualPresetScalingRatio(manualPreset);
+    if (presetRatio < ratioLowerBound) {
+      ratioLowerBound = Math.max(1, presetRatio - 0.75);
+    }
+    if (presetRatio > ratioUpperBound) {
+      ratioUpperBound = presetRatio + 0.75;
+    }
+  }
   const baseRecommendedRatio = roundTo(clamp(
     roastAdjustedTargets.adjustedRatioDefault
       + effectiveDeviceProfile.ratioDelta
@@ -7776,15 +7981,33 @@ function finalizePlanCore(
       );
     }
   }
+  const manualPresetBrewWaterOverrideMl = resolveManualPresetBrewWaterOverrideMl(
+    manualPreset,
+    doseG,
+    totalWaterMl,
+    methodFamily,
+    input.brewMode,
+  );
+  if (manualPresetBrewWaterOverrideMl !== null) {
+    hotWaterMl = manualPresetBrewWaterOverrideMl;
+  }
+  const manualPresetBypassWaterMl = input.brewMode === 'hot'
+    ? roundTo(Math.max(0, totalWaterMl - hotWaterMl), 0)
+    : 0;
   const iceMl = input.brewMode === 'iced'
     ? roundTo(totalWaterMl - hotWaterMl, 0)
     : 0;
   const finalBeverageRatio = recommendedRatio;
-  const hotExtractionRatio = input.brewMode === 'iced'
+  const hotExtractionRatio = input.brewMode === 'iced' || manualPresetBypassWaterMl > 0
     ? roundTo(hotWaterMl / doseG, 2)
     : recommendedRatio;
+  if (manualPresetBypassWaterMl > 0) {
+    precisionOverrideNotes.push(
+      `AeroPress bypass split active: brew ${hotWaterMl} ml through the chamber, then add ${manualPresetBypassWaterMl} ml bypass water in the cup after pressing. Final ratio 1:${formatBaristaRatio(finalBeverageRatio)}, concentrate ratio 1:${formatBaristaRatio(hotExtractionRatio)}.`,
+    );
+  }
 
-  const methodTempBounds = methodFamily === 'cold_brew'
+  const methodTempBounds = (methodFamily === 'cold_brew' || input.manualPresetId === 'inspired-aeropress-cold-brew-express')
     ? { min: 4, max: 25 }
     : { min: 78, max: 98 };
   const targetTempOverrideC = parseOptionalNumber(
@@ -7882,7 +8105,7 @@ function finalizePlanCore(
   const minimumServiceTimeSeconds = resolveMinimumIcedManualPourOverTimeSeconds(controlledDeviceProfile, methodFamily, input.brewMode);
   const minimumMethodServiceTimeSeconds = resolveMinimumMethodServiceTimeSeconds(methodFamily, input.brewMode);
   const minimumManualPresetTimeSeconds = resolveManualPresetMinimumTimeSeconds(manualPreset, methodFamily, input.brewMode);
-  const totalTimeSeconds = roundBaristaTimeSeconds(
+  let totalTimeSeconds = roundBaristaTimeSeconds(
     clamp(
       Math.max(
         baseTotalTimeSeconds,
@@ -7970,6 +8193,9 @@ function finalizePlanCore(
     originTargetMethodMiddleShareDelta: originTargetMethodAdjustment.middleShareDelta,
     originTargetMethodLastShareDelta: originTargetMethodAdjustment.lastShareDelta,
   });
+  if (methodFamily === 'aeropress' && hotWaterMl > 240 && controlledDeviceProfile.recipeStyle !== 'inverted') {
+    totalTimeSeconds += 20;
+  }
   const switchStepValidation = switchSelection
     ? validateSwitchStepSafety({
       steps,
@@ -7985,7 +8211,7 @@ function finalizePlanCore(
     method,
     doseG,
     waterMl: hotWaterMl,
-    ratio: recommendedRatio,
+    ratio: hotExtractionRatio,
   });
   const estimatedBrewOutputMl = input.brewMode === 'iced'
     ? roundEstimatedCupOutputMl(estimateCupOutputMl(hotWaterMl, doseG, input.brewMode), methodFamily)
@@ -8025,6 +8251,21 @@ function finalizePlanCore(
   }, {
     roastLevel: input.roastLevel,
   });
+  const filteredBaseGuardrailWarnings = filterContextualConformanceWarnings(baseGuardrails.warnings, {
+    methodFamily,
+    roastLevel: input.roastLevel,
+    waterTempC,
+  });
+  const filteredBaseConformanceWarnings = filterContextualConformanceWarnings(baseConformance.warnings, {
+    methodFamily,
+    roastLevel: input.roastLevel,
+    waterTempC,
+  });
+  const filteredBaseConformanceMisses = filterContextualConformanceWarnings(baseConformance.standardsMisses, {
+    methodFamily,
+    roastLevel: input.roastLevel,
+    waterTempC,
+  });
 
   const grindSettingMode: GrindSettingMode = grinderSetting?.id.startsWith('derived_') ? 'derived_baseline' : 'catalog_reference';
   const grindCalibrationRequired = Boolean(grinderSetting?.calibrationRequired);
@@ -8033,6 +8274,9 @@ function finalizePlanCore(
     : [];
   const warnings = normalizeNoteList(
     [deviceSelection.fallbackUsed ? `Using ${effectiveDeviceProfile.label} family fallback profile.` : undefined],
+    methodFamily === 'aeropress' && controlledDeviceProfile.recipeStyle === 'inverted'
+      ? ['Safety Warning: Make sure the press plunger is inserted at least 2 cm into the AeroPress chamber before flipping!']
+      : [],
     temperatureWarnings,
     waterProfile.warnings,
     icedStrengthCalibration.warnings,
@@ -8049,7 +8293,7 @@ function finalizePlanCore(
     aprilSelection?.watch ? [aprilSelection.watch] : [],
     melittaSelection?.watch ? [melittaSelection.watch] : [],
     konoSelection?.watch ? [konoSelection.watch] : [],
-    baseGuardrails.warnings,
+    filteredBaseGuardrailWarnings,
   );
   const isDerivedTemplateProfile = deviceSelection.mode === 'derived_template';
 
@@ -8423,9 +8667,9 @@ function finalizePlanCore(
       warnings,
     },
     conformance: {
-      warnings: normalizeNoteList(baseConformance.warnings, warnings),
+      warnings: normalizeNoteList(filteredBaseConformanceWarnings, warnings),
       standardsHits: baseConformance.standardsHits,
-      standardsMisses: normalizeNoteList(baseConformance.standardsMisses, waterProfile.warnings),
+      standardsMisses: normalizeNoteList(filteredBaseConformanceMisses, waterProfile.warnings),
     },
     deviceProfileId: effectiveDeviceProfile.id,
     deviceProfileLabel: effectiveDeviceProfile.label,
@@ -8686,7 +8930,7 @@ export function createQuickAiBrewFormState(input: AiBrewFormState, catalog?: AiB
 }
 
 export function buildAiBrewPlan(input: AiBrewFormState, catalog: AiBrewCatalog): BrewPlan {
-  const sanitized = sanitizeAiBrewFormState(input, catalog);
+  const sanitized = sanitizeAiBrewFormState(applyManualBrewPresetDefaultsForPlanning(input, catalog), catalog);
   const dripper = findDripper(catalog, sanitized.dripperId) || catalog.drippers[0];
   const grinder = findGrinder(catalog, sanitized.grinderId) || catalog.grinders[0];
   if (!dripper || !grinder) throw new Error('AI Brew equipment catalog is incomplete.');
@@ -8903,7 +9147,7 @@ export function applyAiBrewOptimizationPatch(
   const hotWaterSharePercent = roundTo(totalWaterMl > 0 ? (hotWaterMl / totalWaterMl) * 100 : 100, 0);
   const iceSharePercent = roundTo(totalWaterMl > 0 ? (iceMl / totalWaterMl) * 100 : 0, 0);
 
-  const tempBounds = plan.methodFamily === 'cold_brew' ? { min: 4, max: 25 } : { min: 78, max: 98 };
+  const tempBounds = (plan.methodFamily === 'cold_brew' || plan.manualPresetId === 'inspired-aeropress-cold-brew-express') ? { min: 4, max: 25 } : { min: 78, max: 98 };
   const minPatchedTempC = Math.max(tempBounds.min, plan.waterTempC - deltaBounds.tempC);
   const maxPatchedTempC = Math.min(tempBounds.max, plan.waterTempC + deltaBounds.tempC);
   const rawWaterTempC = clampPatchValue(

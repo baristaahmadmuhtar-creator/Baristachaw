@@ -66,11 +66,11 @@ test('AI Brew manual brew preset catalog is safe, unique, and source-backed', as
   const catalog = await loadCatalogForTest();
   const presets = catalog.manualBrewPresets || [];
 
-  assert.equal(presets.length, 35, 'Production should ship 35 brew presets after expanded method coverage');
+  assert.equal(presets.length, 37, 'Production should ship 37 brew presets after expanded method coverage');
   assert.equal(new Set(presets.map((preset) => preset.id)).size, presets.length, 'Preset ids should be unique');
   assert.equal(new Set(presets.map((preset) => preset.safeLabel)).size, presets.length, 'Preset safe labels should be unique');
-  assert.equal(presets.filter((preset) => preset.category === 'competition_inspired').length, 10);
-  assert.equal(presets.filter((preset) => preset.category === 'global_classic').length, 20);
+  assert.equal(presets.filter((preset) => preset.category === 'competition_inspired').length, 11);
+  assert.equal(presets.filter((preset) => preset.category === 'global_classic').length, 21);
   assert.equal(presets.filter((preset) => preset.category === 'taste_target').length, 5);
 
   const dripperIds = new Set(catalog.drippers.map((dripper) => dripper.id));
@@ -83,8 +83,8 @@ test('AI Brew manual brew preset catalog is safe, unique, and source-backed', as
     assert.ok(preset.guardrails.length > 0, `${preset.id} should carry guardrails`);
     assert.ok(targetProfileIds.has(preset.targetDefaults.targetProfileId), `${preset.id} target should resolve`);
     assert.ok(
-      preset.targetDefaults.doseG >= 10 && preset.targetDefaults.doseG <= 20,
-      `${preset.id} default dose should stay inside the visible 10-20 g UI range`,
+      preset.targetDefaults.doseG >= 10 && (preset.targetDefaults.doseG <= 20 || preset.id === 'inspired-aeropress-cold-brew-express'),
+      `${preset.id} default dose should stay inside the visible 10-20 g UI range unless source-backed cold extraction needs a larger dose`,
     );
     for (const dripperId of preset.supportedDripperIds) {
       assert.ok(dripperIds.has(dripperId), `${preset.id} supported dripper ${dripperId} should resolve`);
@@ -96,6 +96,65 @@ test('AI Brew manual brew preset catalog is safe, unique, and source-backed', as
     }
     assert.doesNotMatch(JSON.stringify(preset), /\b100%\b|perfect result|guaranteed/i);
   }
+});
+
+test('AI Brew AeroPress presets follow latest official WAC and Express Cold Brew references', async () => {
+  const catalog = await loadCatalogForTest();
+  const presets = catalog.manualBrewPresets || [];
+  const wac = presets.find((preset) => preset.id === 'inspired-wac-championship-style');
+  const cold = presets.find((preset) => preset.id === 'inspired-aeropress-cold-brew-express');
+
+  assert.ok(wac, 'WAC championship preset should exist');
+  assert.match(wac.safeLabel, /Nemo Pop|WAC 2025/i);
+  assert.equal(wac.verificationLevel, 'official_reference');
+  assert.equal(wac.targetDefaults.doseG, 18);
+  assert.equal(wac.targetDefaults.targetWaterMl, 170);
+  assert.equal(wac.targetDefaults.targetTempC, 84);
+  assert.equal(wac.targetDefaults.aeropressStyle, 'bypass');
+  assert.ok(wac.sourceUrls.some((url) => /1st-nemo-pop-australia-2025/.test(url)));
+  assert.match(
+    [wac.sourceAttribution, wac.visibleSummary, ...wac.internalTips, ...wac.guardrails].join('\n'),
+    /70\s*g.*bypass|100\s*g.*brew|84.*C|NSNS-WEWE|Flow Control|double filter/i,
+  );
+  assert.doesNotMatch(JSON.stringify(wac), /25g|82.?C|George Stanica/i);
+
+  const wacPlan = applyPreset(catalog, wac.id);
+  const wacGuideText = (wacPlan.workflowGuideSteps || [])
+    .map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''}`)
+    .join('\n');
+  assert.equal(wacPlan.manualPresetId, wac.id);
+  assert.equal(wacPlan.doseG, 18);
+  assert.ok(wacPlan.totalWaterMl >= 165 && wacPlan.totalWaterMl <= 175);
+  assert.deepEqual(positivePours(wacPlan).map((step) => step.pourVolumeMl), [100]);
+  assert.match(wacGuideText, /100\s*(g|ml)/i);
+  assert.match(wacGuideText, /70\s*(g|ml).*bypass|bypass.*70\s*(g|ml)/i);
+  assert.ok(wacPlan.waterTempC >= 82 && wacPlan.waterTempC <= 86);
+  assert.match(
+    [
+      wacPlan.manualPresetSummary,
+      ...wacPlan.notes,
+      ...wacPlan.warnings,
+      ...(wacPlan.workflowGuideSteps || []).map((step) => `${step.primaryText} ${step.secondaryText || ''}`),
+    ].join('\n'),
+    /WAC 2025|Nemo Pop|70\s*g.*bypass|100\s*(g|ml).*brew|bypass/i,
+  );
+
+  assert.ok(cold, 'Express Cold Brew preset should exist');
+  assert.equal(cold.verificationLevel, 'official_reference');
+  assert.equal(cold.targetDefaults.doseG, 30);
+  assert.equal(cold.targetDefaults.targetWaterMl, 100);
+  assert.ok(cold.targetDefaults.targetTempC >= 4 && cold.targetDefaults.targetTempC <= 25);
+  assert.ok(cold.sourceUrls.some((url) => /express-cold-brew/.test(url)));
+  assert.match(
+    [cold.sourceAttribution, cold.visibleSummary, ...cold.internalTips, ...cold.guardrails].join('\n'),
+    /30\s*g|100\s*ml|fine|2-minute|2 minutes|vigorous|ice/i,
+  );
+
+  const coldPlan = applyPreset(catalog, cold.id);
+  assert.equal(coldPlan.manualPresetId, cold.id);
+  assert.equal(coldPlan.doseG, 30);
+  assert.ok(coldPlan.waterTempC >= 4 && coldPlan.waterTempC <= 25);
+  assert.match([coldPlan.manualPresetSummary, ...coldPlan.notes, ...coldPlan.warnings].join('\n'), /cold|2-minute|fine/i);
 });
 
 test('AI Brew manual brew presets prefill form state without generating automatically', async () => {

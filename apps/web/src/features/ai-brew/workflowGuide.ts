@@ -248,16 +248,17 @@ function buildAeroPressStyleGuideCopy(style: AeroPressGuideStyle) {
   switch (style) {
     case 'inverted':
       return {
-        setup: 'Rakit posisi terbalik di permukaan rata, bilas filter dan tutup, lalu cek segel plunger sebelum air masuk.',
+        setup: 'Rakit posisi terbalik di permukaan rata, bilas filter dan tutup, lalu pastikan penekan masuk minimal 2 cm sebelum air masuk.',
         charge: 'Tuang air ke ruang seduh terbalik, basahi semua bubuk, dan jaga alat tetap tegak.',
         stir: 'Aduk 4 kali, pasang tutup rapat, lalu hentikan agitasi.',
         steep: 'Rendam sampai waktu balik; ruang seduh tetap diam supaya ekstraksi merata.',
         flip: 'Balikkan ke atas cangkir dalam satu gerakan mantap, tanpa mengguncang bubur kopi.',
-        press: 'Tekan stabil 30-40 detik; berhenti sebelum desis kering.',
-        stop: 'Berhenti sebelum desis kering, lalu angkat brewer dari cangkir.',
+        press: 'Tekan stabil 30-40 detik sampai desis selesai.',
+        stop: 'Tekan sampai desis selesai, lalu angkat alat dari cangkir.',
         serve: 'Aduk cangkir pelan, lalu sajikan hasil rendaman penuh selagi aroma masih hidup.',
         stirChip: '4x',
         pressChip: '30-40 detik',
+        stopChip: 'desis selesai',
       };
     case 'bypass':
       return {
@@ -271,6 +272,7 @@ function buildAeroPressStyleGuideCopy(style: AeroPressGuideStyle) {
         serve: 'Tambahkan air bypass terukur setelah tekan saja, aduk cangkir sampai rata, lalu sajikan.',
         stirChip: '3x',
         pressChip: '25-35 detik',
+        stopChip: 'sebelum desis',
       };
     case 'no_bypass':
       return {
@@ -279,11 +281,12 @@ function buildAeroPressStyleGuideCopy(style: AeroPressGuideStyle) {
         stir: 'Aduk 3 kali, lalu biarkan bubur kopi tenang agar fase tekan tetap bersih.',
         steep: 'Rendam lebih panjang sampai semua air di ruang seduh mengekstrak merata.',
         flip: '',
-        press: 'Tekan pelan 30-40 detik; biarkan volume penuh turun bersih.',
-        stop: 'Berhenti sebelum desis kering; jangan paksa sisa cairan dari lapisan kopi.',
+        press: 'Tekan pelan 30-40 detik sampai desis selesai; biarkan volume penuh turun bersih.',
+        stop: 'Tekan sampai desis selesai agar hasil penuh turun tanpa tambahan air.',
         serve: 'Aduk cangkir pelan dan sajikan tanpa air bypass tambahan.',
         stirChip: '3x',
         pressChip: '30-40 detik',
+        stopChip: 'desis selesai',
       };
     case 'bright_clean':
       return {
@@ -297,19 +300,21 @@ function buildAeroPressStyleGuideCopy(style: AeroPressGuideStyle) {
         serve: 'Aduk cangkir sekali dan sajikan tanpa air tambahan.',
         stirChip: '2-3x',
         pressChip: '20-30 detik',
+        stopChip: 'sebelum desis',
       };
     case 'sweet_body':
       return {
-        setup: 'Siapkan ruang seduh hangat, bilas filter dan tutup, dan gunakan setup yang mendukung tekstur manis.',
+        setup: 'Hangatkan ruang seduh, bilas filter dan tutup, lalu siapkan gaya seduh untuk tekstur manis.',
         charge: 'Tuang air ke ruang seduh dan basahi bubuk sampai penuh merata.',
-        stir: 'Aduk 5 kali untuk membangun body, lalu biarkan bubur kopi tenang.',
+        stir: 'Aduk silang 5 kali untuk membangun tekstur, lalu biarkan bubur kopi tenang.',
         steep: 'Rendam lebih panjang agar rasa manis dan tekstur terkumpul.',
         flip: '',
-        press: 'Tekan pelan 35-45 detik; jaga tekanan stabil sampai sebelum desis.',
-        stop: 'Berhenti sebelum desis kering supaya body tetap manis, bukan kasar.',
+        press: 'Tekan pelan 35-45 detik dan lanjutkan sampai desis selesai.',
+        stop: 'Tekan sampai desis selesai supaya minyak dan tekstur ikut turun.',
         serve: 'Aduk cangkir pelan dan sajikan sebagai cangkir tebal tanpa air tambahan.',
         stirChip: '5x',
         pressChip: '35-45 detik',
+        stopChip: 'desis selesai',
       };
     default:
       return {
@@ -318,11 +323,12 @@ function buildAeroPressStyleGuideCopy(style: AeroPressGuideStyle) {
         stir: 'Aduk 3 kali atau swirl ringan sekali, lalu hentikan agitasi.',
         steep: 'Rendam sampai waktu tekan; ruang seduh tetap stabil dan tertutup.',
         flip: '',
-        press: 'Tekan stabil 25-35 detik; berhenti sebelum desis kering.',
-        stop: 'Berhenti sebelum desis kering, lalu pisahkan brewer dari cangkir.',
+        press: 'Tekan stabil 25-35 detik sampai desis selesai.',
+        stop: 'Tekan sampai desis selesai, lalu pisahkan alat dari cangkir.',
         serve: 'Aduk cangkir pelan, lalu sajikan.',
         stirChip: '3x',
         pressChip: '25-35 detik',
+        stopChip: 'desis selesai',
       };
   }
 }
@@ -644,10 +650,11 @@ function buildPouroverGuide(plan: BrewPlan): WorkflowGuideStep[] {
   ];
 
   plan.steps.forEach((step, index) => {
+    if (step.pourVolumeMl <= 0) return;
     const isFirstPour = step.pourVolumeMl > 0 && step.id === first?.id;
     const isLastPour = step.pourVolumeMl > 0 && step.id === last?.id;
     const actionType: WorkflowGuideActionType = isFirstPour ? 'bloom' : (step.kind || 'pour') === 'drawdown' ? 'drawdown' : 'pour';
-    const label = isFirstPour ? 'Bloom' : isLastPour ? 'Tuang akhir' : index <= 1 ? 'Tuang tengah' : step.label;
+    const label = isFirstPour ? 'Bloom' : isLastPour ? 'Tuang penutup' : index <= 1 ? 'Tuang tahap tengah' : step.label;
     const targetText = isIced && step.pourVolumeMl > 0
       ? `Target ${formatMl(step.targetVolumeMl)} air panas.`
       : `Target ${formatMl(step.targetVolumeMl)}.`;
@@ -663,7 +670,7 @@ function buildPouroverGuide(plan: BrewPlan): WorkflowGuideStep[] {
 
   guide.push(operationalStep({
     id: `guide_${plan.methodFamily}_drawdown`,
-    label: 'Air turun',
+    label: 'Air turun selesai',
     actionType: 'drawdown',
       startSeconds: Math.max(last?.startSeconds || 0, plan.totalTimeSeconds - 20),
       endSeconds: plan.totalTimeSeconds,
@@ -696,13 +703,19 @@ function buildPouroverGuide(plan: BrewPlan): WorkflowGuideStep[] {
 function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
   const style = resolveAeroPressGuideStyle(plan);
   const styleCopy = buildAeroPressStyleGuideCopy(style);
-  const charge = firstVolumeStep(plan);
+  const volumeSteps = plan.steps.filter((step) => step.pourVolumeMl > 0);
+  const charge = volumeSteps[0] || firstVolumeStep(plan);
+  const finalCharge = volumeSteps.length > 0 ? volumeSteps[volumeSteps.length - 1] : charge;
   const press = findKind(plan, 'press');
   const serve = findKind(plan, 'serve');
   const flip = plan.steps.find((step) => step.id === 'flip');
   const pressStart = press?.startSeconds ?? Math.max(45, plan.totalTimeSeconds - 30);
   const steepEnd = style === 'inverted' && flip ? flip.startSeconds : pressStart;
-  const chargeTarget = charge?.targetVolumeMl || plan.hotWaterMl;
+  const chargeTarget = finalCharge?.targetVolumeMl || charge?.targetVolumeMl || plan.hotWaterMl;
+  const hasCapacityBloom = volumeSteps.some((step) => step.id === 'bloom');
+  const bypassWaterMl = style === 'bypass' && plan.totalWaterMl > plan.hotWaterMl
+    ? Math.round(plan.totalWaterMl - plan.hotWaterMl)
+    : 0;
   const guide: WorkflowGuideStep[] = [
     operationalStep({
       id: 'guide_aeropress_setup',
@@ -712,17 +725,35 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       primaryText: styleCopy.setup,
       techniqueChips: [chip('basket_prep', 'Persiapan', 'filter + tutup dibilas')],
     }),
-    charge ? sourceStep('charge', charge, {
-      label: 'Isi air',
-      primaryText: `${styleCopy.charge} Target ${formatMl(charge.pourVolumeMl || chargeTarget)}.`,
-      secondaryText: style === 'bypass'
-        ? 'Buat konsentrat dulu; bypass hanya setelah tekan.'
-        : 'Basahi semua bubuk secara merata tanpa agitasi berlebihan.',
-      techniqueChips: [
-        chip('charge', 'Isi', formatMl(charge.pourVolumeMl || chargeTarget)),
-        ...techniqueChipsFromStep(charge),
-      ],
-    }) : operationalStep({
+  ];
+
+  if (volumeSteps.length > 0) {
+    volumeSteps.forEach((step, index) => {
+      const amount = step.pourVolumeMl || step.targetVolumeMl || chargeTarget;
+      const isCapacityBloom = hasCapacityBloom && step.id === 'bloom';
+      const isMainCharge = hasCapacityBloom && step.id === 'charge';
+      guide.push(sourceStep(isCapacityBloom ? 'bloom' : 'charge', step, {
+        label: isCapacityBloom ? 'Bloom' : isMainCharge ? 'Isi air utama' : 'Isi air',
+        primaryText: isCapacityBloom
+          ? `Bloom ${formatMl(amount)} selama 20 detik untuk membasahi dan menyusutkan hamparan kopi. Target ${formatMl(step.targetVolumeMl || amount)}.`
+          : isMainCharge
+            ? `Tuang sisa air ${formatMl(amount)} sampai target ${formatMl(step.targetVolumeMl || chargeTarget)}. ${styleCopy.charge}`
+            : `${styleCopy.charge} Target ${formatMl(amount)}.`,
+        secondaryText: isCapacityBloom
+          ? 'Fase ini khusus mencegah luapan pada AeroPress tegak bervolume tinggi.'
+          : style === 'bypass'
+            ? 'Buat konsentrat dulu; bypass hanya setelah tekan.'
+            : index > 0
+              ? 'Lanjutkan isi air utama setelah bloom, tetap rendah dan stabil.'
+              : 'Basahi semua bubuk secara merata tanpa agitasi berlebihan.',
+        techniqueChips: [
+          chip(isCapacityBloom ? 'saturation' : 'charge', isCapacityBloom ? 'Bloom' : 'Isi', formatMl(amount)),
+          ...techniqueChipsFromStep(step),
+        ],
+      }));
+    });
+  } else {
+    guide.push(operationalStep({
       id: 'guide_aeropress_charge',
       label: 'Isi air',
       actionType: 'charge',
@@ -731,7 +762,10 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       targetVolumeMl: plan.hotWaterMl,
       primaryText: `${styleCopy.charge} Target ${formatMl(plan.hotWaterMl)}.`,
       techniqueChips: [chip('charge', 'Isi', formatMl(plan.hotWaterMl))],
-    }),
+    }));
+  }
+
+  guide.push(
     operationalStep({
       id: 'guide_aeropress_stir',
       label: 'Aduk ringan',
@@ -752,7 +786,7 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       primaryText: `${styleCopy.steep} Target waktu ${formatTime(steepEnd)}.`,
       techniqueChips: [chip('steep', 'Rendam', formatTime(Math.max(10, steepEnd)))],
     }),
-  ];
+  );
 
   if (style === 'inverted') {
     guide.push(flip ? sourceStep('wait', flip, {
@@ -777,8 +811,10 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       primaryText: styleCopy.press,
       secondaryText: style === 'bypass'
         ? 'Tekan konsentrat dulu; air bypass tetap terpisah sampai selesai tekan.'
-        : 'Jaga tekanan stabil dan berhenti sebelum desis kering.',
-      techniqueChips: [chip('press', 'Tekan', styleCopy.pressChip), chip('stop', 'Berhenti', 'sebelum desis')],
+        : style === 'bright_clean'
+          ? 'Jaga tekanan ringan dan berhenti tepat sebelum desis pertama.'
+          : 'Jaga tekanan stabil sampai desis selesai.',
+      techniqueChips: [chip('press', 'Tekan', styleCopy.pressChip), chip('stop', 'Berhenti', styleCopy.stopChip)],
     }) : operationalStep({
       id: 'guide_aeropress_press',
       label: 'Tekan',
@@ -788,23 +824,26 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       endSeconds: Math.min(plan.totalTimeSeconds, pressStart + 30),
       targetVolumeMl: plan.hotWaterMl,
       primaryText: styleCopy.press,
-      techniqueChips: [chip('press', 'Tekan', styleCopy.pressChip), chip('stop', 'Berhenti', 'sebelum desis')],
+      techniqueChips: [chip('press', 'Tekan', styleCopy.pressChip), chip('stop', 'Berhenti', styleCopy.stopChip)],
     }),
     operationalStep({
       id: 'guide_aeropress_stop',
-      label: 'Berhenti sebelum desis',
+      label: styleCopy.stopChip === 'sebelum desis' ? 'Berhenti sebelum desis' : 'Tekan sampai selesai',
       actionType: 'stop',
       startSeconds: Math.min(plan.totalTimeSeconds, pressStart + 25),
       targetVolumeMl: plan.hotWaterMl,
       primaryText: styleCopy.stop,
-      techniqueChips: [chip('stop', 'Berhenti', 'sebelum desis')],
+      techniqueChips: [chip('stop', 'Berhenti', styleCopy.stopChip)],
       sourceStepIds: press ? [press.id] : [],
     }));
 
   if (style === 'bypass') {
+    const bypassPrimaryText = bypassWaterMl > 0
+      ? `Tambahkan ${formatMl(bypassWaterMl)} air bypass terukur setelah tekan saja, aduk cangkir sampai rata, lalu sajikan.`
+      : styleCopy.serve;
     guide.push(serve ? sourceStep('dilute', serve, {
       label: 'Bypass terukur',
-      primaryText: styleCopy.serve,
+      primaryText: bypassPrimaryText,
       secondaryText: 'Air bypass adalah bagian resep setelah tekan, bukan air tambahan di luar rencana.',
       techniqueChips: [chip('dilution', 'Bypass', 'setelah tekan saja')],
     }) : operationalStep({
@@ -813,7 +852,7 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       actionType: 'dilute',
       startSeconds: plan.totalTimeSeconds,
       targetVolumeMl: plan.hotWaterMl,
-      primaryText: styleCopy.serve,
+      primaryText: bypassPrimaryText,
       secondaryText: 'Air bypass adalah bagian resep setelah tekan, bukan air tambahan di luar rencana.',
       techniqueChips: [chip('dilution', 'Bypass', 'setelah tekan saja')],
     }));

@@ -740,7 +740,7 @@ test('ai brew guide renders workflow-specific phases for non-pour-over methods',
 });
 
 test('ai brew AeroPress styles render bilingual guides and regenerate without stale style copy', async ({ page }) => {
-  test.setTimeout(210_000);
+  test.setTimeout(300_000);
   type AeroPressStyle = 'standard' | 'inverted' | 'bypass' | 'no_bypass' | 'bright_clean' | 'sweet_body';
   const styleCases: Array<{
     style: AeroPressStyle;

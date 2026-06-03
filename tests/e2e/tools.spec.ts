@@ -1181,6 +1181,241 @@ test('ai brew non-AeroPress style guides render method-specific copy through the
   expect(new Set(fingerprints.values()).size).toBe(cases.length);
 });
 
+test('ai brew all non-AeroPress selectable styles generate fresh validated plans through the UI', async ({ page }) => {
+  test.setTimeout(700_000);
+  type UiStyleFamilyCase = {
+    label: string;
+    query: string;
+    optionId: string;
+    expectedFamily: BrewPlan['methodFamily'];
+    stylePrefix: string;
+    styles: string[];
+    dose?: string;
+    forbidden: RegExp;
+  };
+  const styleFamilies: UiStyleFamilyCase[] = [
+    {
+      label: 'French Press',
+      query: 'french press',
+      optionId: 'french-press',
+      expectedFamily: 'french_press',
+      stylePrefix: 'ai-brew-french-press-style',
+      styles: ['traditional', 'clean_decant', 'double_filter', 'heavy_concentrate', 'sweet_immersion'],
+      forbidden: /bloom|final pour|tuang akhir|spiral|v60|drawdown bed/i,
+    },
+    {
+      label: 'Kalita Wave',
+      query: 'kalita wave',
+      optionId: 'kalita-wave-155-185',
+      expectedFamily: 'kalita_wave',
+      stylePrefix: 'ai-brew-kalita-wave-style',
+      styles: ['traditional_flat_three', 'competition_fast_four', 'continuous_slow_stream', 'iced_wave', 'high_dose_concentrate'],
+      forbidden: /French Press|Moka|sputter|semburan/i,
+    },
+    {
+      label: 'Clever Dripper',
+      query: 'clever',
+      optionId: 'clever-dripper',
+      expectedFamily: 'clever_dripper',
+      stylePrefix: 'ai-brew-clever-dripper-style',
+      styles: ['classic_closed', 'reverse_water_first', 'double_stage_hybrid', 'iced_clever', 'high_dose_concentrate'],
+      forbidden: /final pour|tuang akhir|spiral|sputter|semburan/i,
+    },
+    {
+      label: 'Chemex',
+      query: 'chemex',
+      optionId: 'chemex',
+      expectedFamily: 'chemex',
+      stylePrefix: 'ai-brew-chemex-style',
+      styles: ['traditional_three_pour', 'competition_multi_pulse', 'continuous_center_pour', 'iced_chemex', 'high_dose_heavy_body'],
+      forbidden: /French Press|Moka|sputter|semburan/i,
+    },
+    {
+      label: 'Moka Pot',
+      query: 'moka',
+      optionId: 'bialetti-moka-pot',
+      expectedFamily: 'moka_pot',
+      stylePrefix: 'ai-brew-moka-pot-style',
+      styles: ['traditional_stovetop', 'preheated_boiler', 'low_temp_controlled', 'iced_moka_concentrate', 'high_yield_robust'],
+      forbidden: /bloom|drawdown bed|final pour|tuang akhir|spiral|v60|filter wall/i,
+    },
+    {
+      label: 'Cold Brew',
+      query: 'cold brew',
+      optionId: 'toddy-cold-brew',
+      expectedFamily: 'cold_brew',
+      stylePrefix: 'ai-brew-cold-brew-style',
+      styles: ['classic_toddy_immersion', 'cold_drip_tower', 'double_extraction_concentrate', 'accelerated_room_temp', 'japanese_slow_drip'],
+      dose: '60',
+      forbidden: /hot pour|kettle|bloom|tuang panas|air panas|final pour|tuang akhir/i,
+    },
+    {
+      label: 'Batch Brew',
+      query: 'batch',
+      optionId: 'batch-brewer',
+      expectedFamily: 'batch_brew',
+      stylePrefix: 'ai-brew-batch-brew-style',
+      styles: ['sca_gold_cup', 'heavy_batch_catering', 'bright_light_roast_batch', 'pre_wet_hybrid_batch', 'high_extraction_thermos'],
+      dose: '60',
+      forbidden: /manual pour|bloom pour|spiral|v60|tuang manual/i,
+    },
+    {
+      label: 'Siphon',
+      query: 'siphon',
+      optionId: 'hario-siphon',
+      expectedFamily: 'siphon',
+      stylePrefix: 'ai-brew-siphon-style',
+      styles: ['traditional_vacuum_siphon', 'competition_triple_agitation', 'low_temp_delicate', 'high_body_fast_drawdown', 'spirit_infusion_style'],
+      forbidden: /final pour|tuang akhir|spiral|moka|sputter|semburan/i,
+    },
+    {
+      label: 'Origami',
+      query: 'origami',
+      optionId: 'origami-dripper-s-m',
+      expectedFamily: 'origami',
+      stylePrefix: 'ai-brew-origami-style',
+      styles: ['cone_dripper_style', 'wave_dripper_style', 'mugen_one_pour', 'iced_origami', 'competition_hybrid_flow'],
+      forbidden: /Moka|sputter|semburan|French Press/i,
+    },
+    {
+      label: 'April',
+      query: 'april',
+      optionId: 'april-brewer',
+      expectedFamily: 'april',
+      stylePrefix: 'ai-brew-april-style',
+      styles: ['april_flat_bottom_standard', 'april_continuous_slow', 'competition_two_pour', 'iced_april_style', 'high_body_heavy_dose'],
+      forbidden: /Moka|sputter|semburan|French Press/i,
+    },
+    {
+      label: 'Melitta',
+      query: 'melitta',
+      optionId: 'melitta',
+      expectedFamily: 'melitta',
+      stylePrefix: 'ai-brew-melitta-style',
+      styles: ['traditional_melitta_one_pour', 'aromaboy_style', 'three_pour_melitta', 'iced_melitta_brew', 'dense_classic_extraction'],
+      forbidden: /Moka|sputter|semburan|French Press/i,
+    },
+    {
+      label: 'Kono',
+      query: 'kono',
+      optionId: 'kono-meimon',
+      expectedFamily: 'kono',
+      stylePrefix: 'ai-brew-kono-style',
+      styles: ['kono_meimon_traditional', 'kono_dripper_standard', 'kono_slow_drip_body', 'iced_kono_meimon', 'kono_agitation_sweet'],
+      forbidden: /Moka|sputter|semburan|French Press/i,
+    },
+  ];
+
+  async function setModeForStyle(style: string) {
+    const hot = page.getByTestId('ai-brew-builder-mode-hot');
+    const iced = page.getByTestId('ai-brew-builder-mode-iced');
+    const wantsIced = style.includes('iced');
+    const target = wantsIced && await iced.isEnabled() ? iced : hot;
+    await target.click();
+    await expect(target).toHaveAttribute('aria-pressed', 'true');
+  }
+
+  async function editCurrentResultInputs() {
+    const secondaryActions = page.getByTestId('ai-brew-result-secondary-actions');
+    if (await secondaryActions.count()) {
+      const isOpen = await secondaryActions.evaluate((node) => (node as HTMLDetailsElement).open).catch(() => false);
+      if (!isOpen) {
+        await secondaryActions.locator('summary').click();
+      }
+      await page.getByTestId('ai-brew-edit-inputs').click();
+    } else {
+      await page.getByTestId('ai-brew-result-action-edit').click();
+    }
+    await expect(page.getByTestId('ai-brew-builder-pro')).toBeVisible();
+  }
+
+  async function openFamilyBuilder(family: UiStyleFamilyCase) {
+    await openAiBrewProMode(page);
+    await setVisibleInputValue(page, 'ai-brew-coffee-name', `QA All Styles ${family.label}`);
+    if (family.dose) await setVisibleInputValue(page, 'ai-brew-dose', family.dose);
+    await page.getByTestId('ai-brew-dripper-picker').click();
+    await page.getByTestId('ai-brew-picker-search-dripper').fill(family.query);
+    await page.getByTestId(`ai-brew-picker-option-dripper-${family.optionId}`).click();
+    await openAiBrewProSection(page, 'method');
+    if (!/Aqua/i.test((await page.getByTestId('ai-brew-water-picker').textContent()) || '')) {
+      await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
+      await openAiBrewProSection(page, 'method');
+    }
+  }
+
+  for (const family of styleFamilies) {
+    await openFamilyBuilder(family);
+    const familyFingerprints = new Set<string>();
+    for (const style of family.styles) {
+      await openAiBrewProSection(page, 'method');
+      await setModeForStyle(style);
+      const styleButton = page.getByTestId(`${family.stylePrefix}-${style}`);
+      await styleButton.click();
+      await expect(styleButton).toHaveAttribute('aria-pressed', 'true');
+      await page.getByTestId('ai-brew-generate').click();
+
+      const result = page.getByTestId('ai-brew-result');
+      await expect(result).toContainText(`QA All Styles ${family.label}`);
+      const plan = await readStoredAiBrewPlan(page);
+      const storedText = (plan.workflowGuideSteps || [])
+        .map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''}`)
+        .join(' ');
+
+      expect(plan.methodFamily).toBe(family.expectedFamily);
+      expect(plan.recipeStyle).toBe(style);
+      expect(plan.workflowValidation?.passed).toBe(true);
+      expect(storedText).not.toMatch(family.forbidden);
+      familyFingerprints.add(JSON.stringify({
+        style: plan.recipeStyle,
+        mode: plan.brewMode,
+        ratio: plan.recommendedRatio,
+        temp: plan.waterTempC,
+        time: plan.totalTimeSeconds,
+        guide: storedText.replace(/\d+(?::\d{2})?\s*(?:ml|g|detik|seconds|h|m)?/gi, '#'),
+      }));
+      await editCurrentResultInputs();
+    }
+
+    expect(familyFingerprints.size).toBe(family.styles.length);
+    const closePro = page.getByTestId('ai-brew-close-pro');
+    if (await closePro.count()) await closePro.click();
+  }
+
+  const switchPresets = ['immersion_sweet', 'immersion_heavy_body', 'hybrid_balanced', 'hybrid_bright_clean', 'v60_mode', 'iced_hybrid'] as const;
+  const switchFingerprints = new Set<string>();
+
+  await openAiBrewProMode(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA All Styles Switch');
+  await setVisibleInputValue(page, 'ai-brew-dose', '15');
+  await page.getByTestId('ai-brew-dripper-picker').click();
+  await page.getByTestId('ai-brew-picker-search-dripper').fill('switch 03');
+  await page.getByTestId('ai-brew-picker-option-dripper-hario-switch-03').click();
+  await openAiBrewProSection(page, 'method');
+
+  for (const preset of switchPresets) {
+    await openAiBrewProSection(page, 'method');
+    await setModeForStyle(preset);
+    const presetButton = page.getByTestId(`ai-brew-switch-preset-inline-${preset}`);
+    await presetButton.click();
+    await expect(presetButton).toHaveAttribute('aria-pressed', 'true');
+    await page.getByTestId('ai-brew-generate').click();
+    await expect(page.getByTestId('ai-brew-result')).toContainText('QA All Styles Switch');
+    const plan = await readStoredAiBrewPlan(page);
+    const storedText = (plan.workflowGuideSteps || [])
+      .map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''}`)
+      .join(' ');
+
+    expect(plan.methodFamily).toBe('hario_switch');
+    expect(plan.switchPresetId).toBe(preset);
+    expect(plan.workflowValidation?.passed).toBe(true);
+    expect(storedText).toMatch(/Katup|katup|muatan ruang|air turun|valve/i);
+    expect(storedText).not.toMatch(/paper filter|server|drawdown bed|slurry|flutes/i);
+    switchFingerprints.add(storedText.replace(/\d+(?::\d{2})?\s*(?:ml|g|detik|seconds|h|m)?/gi, '#'));
+    await editCurrentResultInputs();
+  }
+  expect(switchFingerprints.size).toBe(switchPresets.length);
+});
+
 test('ai brew manual preset applies source-backed defaults and generates a validated guide', async ({ page }) => {
   await openAiBrewQuickMode(page);
   await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Manual Preset George Peng');
@@ -1481,6 +1716,159 @@ test('ai brew quick and pro modes honor target profile changes in the generated 
   expect(proWater).toBeLessThan(quickWater);
   expect(proTemp).toBeGreaterThanOrEqual(quickTemp);
   expect(proTime).toBeGreaterThan(quickTime);
+});
+
+test('ai brew uses latest edited inputs when regenerating without reset', async ({ page }) => {
+  test.setTimeout(240_000);
+
+  await openAiBrewProMode(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Roast Live Sync');
+
+  if (!/V60/i.test((await page.getByTestId('ai-brew-dripper-picker').textContent()) || '')) {
+    await page.getByTestId('ai-brew-dripper-picker').click();
+    await page.getByTestId('ai-brew-picker-search-dripper').fill('v60');
+    await page.getByTestId('ai-brew-picker-option-dripper-hario-v60').click();
+  }
+
+  if (!/K-Ultra|1Zpresso/i.test((await page.getByTestId('ai-brew-grinder-picker').textContent()) || '')) {
+    await page.getByTestId('ai-brew-grinder-picker').click();
+    await page.getByTestId('ai-brew-picker-search-grinder').fill('K-Ultra');
+    await page.getByTestId('ai-brew-picker-option-grinder-1zpresso-k-ultra').click();
+  }
+
+  await page.getByTestId('ai-brew-process-picker').click();
+  await setVisibleInputValue(page, 'ai-brew-picker-search-process', 'washed');
+  await page.getByTestId('ai-brew-picker-option-process-washed').click();
+
+  await page.getByTestId('ai-brew-variety-picker').click();
+  await setVisibleInputValue(page, 'ai-brew-picker-search-variety', 'bourbon');
+  await page.locator('[data-testid^="ai-brew-picker-option-variety-"]').first().click();
+
+  await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
+  await page.getByTestId('ai-brew-target-profile-more_sweetness').click();
+  await page.getByTestId('ai-brew-roast-medium_light').click();
+  await page.getByTestId('ai-brew-generate').click();
+
+  const firstResult = page.getByTestId('ai-brew-result');
+  await expect(firstResult).toContainText('QA Roast Live Sync');
+  const firstPlan = await readStoredAiBrewPlan(page);
+  expect(firstPlan.targetProfileId).toBe('more_sweetness');
+  expect(firstPlan.roastLevel).toBe('medium_light');
+  expect(Math.round(firstPlan.waterTempC)).toBe(93);
+  expect(firstPlan.formState.targetTempC).toBe('');
+
+  await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
+  await openAiBrewProMode(page);
+  await expect(page.getByTestId('ai-brew-roast-medium_light')).toBeVisible();
+
+  await page.evaluate(() => {
+    const clickByTestId = (testId: string) => {
+      const element = document.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
+      if (!element) throw new Error(`Missing ${testId}`);
+      element.click();
+    };
+    clickByTestId('ai-brew-roast-medium');
+    clickByTestId('ai-brew-generate');
+  });
+
+  const secondResult = page.getByTestId('ai-brew-result');
+  await expect(secondResult).toContainText('QA Roast Live Sync');
+  const secondPlan = await readStoredAiBrewPlan(page);
+  expect(secondPlan.targetProfileId).toBe('more_sweetness');
+  expect(secondPlan.roastLevel).toBe('medium');
+  expect(Math.round(secondPlan.waterTempC)).toBe(92);
+  expect(secondPlan.formState.targetTempC).toBe('');
+  expect(secondPlan.waterTempC).toBeLessThan(firstPlan.waterTempC);
+  expect(secondPlan.fingerprint).not.toBe(firstPlan.fingerprint);
+
+  await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
+  await openAiBrewProMode(page);
+  await page.evaluate(() => {
+    const clickByTestId = (testId: string) => {
+      const element = document.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
+      if (!element) throw new Error(`Missing ${testId}`);
+      element.click();
+    };
+    clickByTestId('ai-brew-target-profile-more_body');
+    clickByTestId('ai-brew-roast-medium_dark');
+    clickByTestId('ai-brew-generate');
+  });
+
+  const thirdResult = page.getByTestId('ai-brew-result');
+  await expect(thirdResult).toContainText('QA Roast Live Sync');
+  const thirdPlan = await readStoredAiBrewPlan(page);
+  expect(thirdPlan.targetProfileId).toBe('more_body');
+  expect(thirdPlan.roastLevel).toBe('medium_dark');
+  expect(Math.round(thirdPlan.waterTempC)).toBe(91);
+  expect(thirdPlan.formState.targetTempC).toBe('');
+  expect(thirdPlan.fingerprint).not.toBe(secondPlan.fingerprint);
+
+  await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
+  await openAiBrewProMode(page);
+  await page.getByTestId('ai-brew-grinder-picker').click();
+  await page.getByTestId('ai-brew-picker-search-grinder').fill('Comandante C40');
+  await page.getByTestId('ai-brew-picker-option-grinder-comandante-c40-mk4').click();
+  await page.evaluate(() => {
+    const generate = document.querySelector<HTMLElement>('[data-testid="ai-brew-generate"]');
+    if (!generate) throw new Error('Missing ai-brew-generate');
+    generate.click();
+  });
+
+  const grinderResult = page.getByTestId('ai-brew-result');
+  await expect(grinderResult).toContainText('QA Roast Live Sync');
+  const grinderPlan = await readStoredAiBrewPlan(page);
+  expect(grinderPlan.grinder.id).toBe('comandante-c40-mk4');
+  expect(grinderPlan.formState.grinderId).toBe('comandante-c40-mk4');
+  expect(grinderPlan.fingerprint).not.toBe(thirdPlan.fingerprint);
+
+  await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
+  await openAiBrewProMode(page);
+  await switchAiBrewToManualWater(page, { tds: '85', hardness: '38', alkalinity: '25' });
+  await page.evaluate(() => {
+    const generate = document.querySelector<HTMLElement>('[data-testid="ai-brew-generate"]');
+    if (!generate) throw new Error('Missing ai-brew-generate');
+    generate.click();
+  });
+
+  const waterResult = page.getByTestId('ai-brew-result');
+  await expect(waterResult).toContainText('QA Roast Live Sync');
+  const waterPlan = await readStoredAiBrewPlan(page);
+  expect(waterPlan.waterMode).toBe('manual');
+  expect(waterPlan.waterBrandId).toBe('');
+  expect(waterPlan.waterMinerals.tdsPpm).toBe(85);
+  expect(waterPlan.waterMinerals.hardnessPpm).toBe(38);
+  expect(waterPlan.waterMinerals.alkalinityPpm).toBe(25);
+  expect(waterPlan.fingerprint).not.toBe(grinderPlan.fingerprint);
+
+  await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
+  await openAiBrewProMode(page);
+  await page.getByTestId('ai-brew-dripper-picker').click();
+  await page.getByTestId('ai-brew-picker-search-dripper').fill('moka');
+  await page.getByTestId('ai-brew-picker-option-dripper-bialetti-moka-pot').click();
+  await openAiBrewProSection(page, 'method');
+  await page.evaluate(() => {
+    const clickByTestId = (testId: string) => {
+      const element = document.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
+      if (!element) throw new Error(`Missing ${testId}`);
+      element.click();
+    };
+    clickByTestId('ai-brew-moka-pot-style-low_temp_controlled');
+    clickByTestId('ai-brew-generate');
+  });
+
+  const mokaResult = page.getByTestId('ai-brew-result');
+  await expect(mokaResult).toContainText('QA Roast Live Sync');
+  const mokaPlan = await readStoredAiBrewPlan(page);
+  expect(mokaPlan.methodFamily).toBe('moka_pot');
+  expect(mokaPlan.recipeStyle).toBe('low_temp_controlled');
+  expect(mokaPlan.formState.dripperId).toBe('bialetti-moka-pot');
+  expect(mokaPlan.formState.mokaPotStyle).toBe('low_temp_controlled');
+  const mokaGuideText = (mokaPlan.workflowGuideSteps || [])
+    .map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''}`)
+    .join(' ');
+  expect(mokaGuideText).toMatch(/boiler|basket|panas|heat|sputter|semburan/i);
+  expect(mokaGuideText).not.toMatch(/bloom|drawdown bed|final pour|tuang akhir|spiral|v60/i);
+  expect(mokaPlan.fingerprint).not.toBe(waterPlan.fingerprint);
 });
 
 test('ai brew quick and pro iced modes show final ratio and hot concentrate split', async ({ page }) => {

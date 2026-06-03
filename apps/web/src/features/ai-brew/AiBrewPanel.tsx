@@ -1,4 +1,4 @@
-import { lazy, Suspense, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ArrowRight,
@@ -861,54 +861,54 @@ const COPY = {
     methodOptionTitle: 'Setelan metode',
     origamiFilterTitle: 'Filter Origami',
     origamiFilterAuto: 'Auto',
-    origamiFilterCone: 'Cone',
-    origamiFilterWave: 'Wave',
+    origamiFilterCone: 'Filter kerucut',
+    origamiFilterWave: 'Filter berlipat',
     aeropressStyleTitle: 'Gaya AeroPress',
     aeropressStyleAuto: 'Auto',
-    aeropressStyleStandard: 'Standard',
-    aeropressStyleInverted: 'Inverted',
-    aeropressStyleBypass: 'Bypass',
+    aeropressStyleStandard: 'Standar',
+    aeropressStyleInverted: 'Terbalik',
+    aeropressStyleBypass: 'Bypass terukur',
     aeropressStyleNoBypass: 'Tanpa bypass',
-    aeropressStyleBrightClean: 'Bright clean',
-    aeropressStyleSweetBody: 'Sweet body',
+    aeropressStyleBrightClean: 'Terang bersih',
+    aeropressStyleSweetBody: 'Manis berisi',
     frenchPressStyleTitle: 'Gaya French Press',
     frenchPressStyleAuto: 'Auto',
     frenchPressStyleTraditional: 'Tradisional',
-    frenchPressStyleCleanDecant: 'Clean decant',
-    frenchPressStyleDoubleFilter: 'Double filter',
-    frenchPressStyleHeavyConcentrate: 'Heavy concentrate',
-    frenchPressStyleSweetImmersion: 'Sweet immersion',
+    frenchPressStyleCleanDecant: 'Tuang pisah bersih',
+    frenchPressStyleDoubleFilter: 'Saring dua kali',
+    frenchPressStyleHeavyConcentrate: 'Konsentrat berat',
+    frenchPressStyleSweetImmersion: 'Rendaman manis',
     kalitaWaveStyleTitle: 'Gaya Kalita Wave',
     kalitaWaveStyleAuto: 'Auto',
-    kalitaWaveStyleTraditionalFlatThree: 'Traditional Flat Three-Pour',
-    kalitaWaveStyleCompetitionFastFour: 'Competition Fast Four-Pour',
-    kalitaWaveStyleContinuousSlowStream: 'Continuous Slow Stream',
-    kalitaWaveStyleIcedWave: 'Iced Wave',
-    kalitaWaveStyleHighDoseConcentrate: 'High-Dose Concentrate',
+    kalitaWaveStyleTraditionalFlatThree: 'Tiga tuang alas datar',
+    kalitaWaveStyleCompetitionFastFour: 'Empat tuang cepat',
+    kalitaWaveStyleContinuousSlowStream: 'Aliran lambat kontinu',
+    kalitaWaveStyleIcedWave: 'Wave es',
+    kalitaWaveStyleHighDoseConcentrate: 'Konsentrat dosis tinggi',
     cleverDripperStyleTitle: 'Gaya Clever Dripper',
     cleverDripperStyleAuto: 'Auto',
-    cleverDripperStyleClassicClosed: 'Classic Immersion Bloom',
-    cleverDripperStyleReverseWaterFirst: 'Reverse Water First (Air Dulu)',
-    cleverDripperStyleDoubleStageHybrid: 'Double-Stage Hybrid',
-    cleverDripperStyleIcedClever: 'Iced Flash Immersion (Es)',
-    cleverDripperStyleHighDoseConcentrate: 'High-Dose Ultra Immersion',
+    cleverDripperStyleClassicClosed: 'Rendam klasik tertutup',
+    cleverDripperStyleReverseWaterFirst: 'Air dulu',
+    cleverDripperStyleDoubleStageHybrid: 'Hybrid dua tahap',
+    cleverDripperStyleIcedClever: 'Rendaman kilat es',
+    cleverDripperStyleHighDoseConcentrate: 'Rendaman pekat dosis tinggi',
     chemexStyleTitle: 'Gaya Chemex',
     chemexStyleAuto: 'Auto',
-    chemexStyleTraditionalThreePour: 'Traditional Three-Pour Clarity',
-    chemexStyleCompetitionMultiPulse: 'Competition Multi-Pulse',
-    chemexStyleContinuousCenterPour: 'Continuous Center Pour Clarity',
-    chemexStyleIcedChemex: 'Iced Flash Concentrate (Es)',
-    chemexStyleHighDoseHeavyBody: 'High-Dose Thick-Filter Heavy',
+    chemexStyleTraditionalThreePour: 'Tiga tuang bersih',
+    chemexStyleCompetitionMultiPulse: 'Pulsa bertahap kompetisi',
+    chemexStyleContinuousCenterPour: 'Aliran tengah kontinu',
+    chemexStyleIcedChemex: 'Konsentrat es cepat',
+    chemexStyleHighDoseHeavyBody: 'Dosis tinggi filter tebal',
     mokaPotStyleTitle: 'Gaya Moka Pot',
     mokaPotStyleAuto: 'Auto',
     mokaPotStyleClassicItalian: 'Stovetop Tradisional',
     mokaPotStyleSpecialtyModern: 'Boiler Dipanaskan Dulu',
     mokaPotStyleHighYieldRistretto: 'Kontrol Suhu Rendah',
-    mokaPotStyleDilutedAmericano: 'Robust Hasil Tinggi',
+    mokaPotStyleDilutedAmericano: 'Kuat hasil tinggi',
     mokaPotStyleIcedMokaConcentrate: 'Konsentrat Moka Es',
     coldBrewStyleTitle: 'Gaya Cold Brew',
     coldBrewStyleAuto: 'Auto',
-    coldBrewStyleTraditionalConcentrate: 'Immersion Toddy Klasik',
+    coldBrewStyleTraditionalConcentrate: 'Rendaman Toddy klasik',
     coldBrewStyleReadyToDrinkSweet: 'Menara Tetes Dingin',
     coldBrewStyleHotBloomColdBrew: 'Konsentrat Ekstraksi Ganda',
     coldBrewStyleDoubleFilteredBright: 'Suhu Ruang Dipercepat',
@@ -916,31 +916,31 @@ const COPY = {
     batchBrewStyleTitle: 'Gaya Batch Brewer',
     batchBrewStyleAuto: 'Auto',
     batchBrewStyleStandardSpecialty: 'SCA Gold Cup',
-    batchBrewStyleHighYieldCommercial: 'Batch Catering Berat',
-    batchBrewStyleSingleCupGoldCup: 'Batch Light Roast Terang',
-    batchBrewStyleIcedBatchBrew: 'Batch Hybrid Pre-Wet',
+    batchBrewStyleHighYieldCommercial: 'Batch katering berat',
+    batchBrewStyleSingleCupGoldCup: 'Batch sangrai ringan terang',
+    batchBrewStyleIcedBatchBrew: 'Batch hybrid basah awal',
     batchBrewStylePreInfusionSweetness: 'Thermos Ekstraksi Tinggi',
     siphonStyleTitle: 'Gaya Siphon',
     siphonStyleAuto: 'Auto',
     siphonStyleTraditionalClean: 'Siphon Vakum Tradisional',
     siphonStyleCompetitionFastStir: 'Agitasi Tiga Kali Kompetisi',
-    siphonStyleDoubleStageAgitation: 'Gaya Infusi Spirit',
+    siphonStyleDoubleStageAgitation: 'Gaya infusi spirit',
     siphonStyleLowTemperatureDelicate: 'Suhu Rendah Lembut',
-    siphonStyleHighDoseIntense: 'Body Tinggi Drawdown Cepat',
+    siphonStyleHighDoseIntense: 'Body tinggi air turun cepat',
     origamiStyleTitle: 'Gaya Origami',
     origamiStyleAuto: 'Auto',
-    origamiStyleConeSweetnessClarity: 'Gaya Dripper Kerucut',
-    origamiStyleWaveHighExtraction: 'Gaya Dripper Wave',
+    origamiStyleConeSweetnessClarity: 'Gaya filter kerucut',
+    origamiStyleWaveHighExtraction: 'Gaya filter berlipat',
     origamiStyleCompetitionMultiPour: 'Mugen Satu Tuang',
     origamiStyleJapaneseIcedOrigami: 'Origami Es',
-    origamiStyleHighDoseHeavyBody: 'Hybrid Flow Kompetisi',
+    origamiStyleHighDoseHeavyBody: 'Aliran hybrid kompetisi',
     aprilStyleTitle: 'Gaya April Brewer',
     aprilStyleAuto: 'Auto',
-    aprilStyleTraditionalTwoPour: 'April Flat-Bottom Standar',
+    aprilStyleTraditionalTwoPour: 'April alas datar standar',
     aprilStyleCompetitionMultiPour: 'April Kontinu Lambat',
     aprilStyleSinglePourCoarse: 'Kompetisi Dua Tuang',
     aprilStyleIcedApril: 'Gaya April Es',
-    aprilStyleHighDoseSweet: 'Dosis Berat Body Tinggi',
+    aprilStyleHighDoseSweet: 'Dosis berat berisi',
     melittaStyleTitle: 'Gaya Melitta',
     melittaStyleAuto: 'Auto',
     melittaStyleTraditionalSinglePour: 'Satu Tuang Tradisional',
@@ -951,8 +951,8 @@ const COPY = {
     konoStyleTitle: 'Gaya Kono Meimon',
     konoStyleAuto: 'Auto',
     konoStyleSweetCoreCenterDripping: 'Kono Meimon Tradisional',
-    konoStyleConcentricSpiralWash: 'Kono Dripper Standar',
-    konoStyleCompetitionPulse: 'Kono Slow-Drip Body',
+    konoStyleConcentricSpiralWash: 'Kono standar',
+    konoStyleCompetitionPulse: 'Kono tetes lambat berisi',
     konoStyleJapaneseIcedKono: 'Kono Meimon Es',
     konoStyleHighDoseSlowExtraction: 'Kono Agitasi Manis',
     precisionControlTitle: 'Target advanced',
@@ -8116,8 +8116,13 @@ export function AiBrewPanel() {
   const [catalog, setCatalog] = useState<AiBrewCatalog | null>(null);
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(true);
-  const [formState, setFormState] = useState<AiBrewFormState>(() => loadAiBrewFormDraft(createDefaultAiBrewFormState()));
-  const [targetProfileTouched, setTargetProfileTouched] = useState(false);
+  const formStateRef = useRef<AiBrewFormState>(createDefaultAiBrewFormState());
+  const [formState, setFormState] = useState<AiBrewFormState>(() => {
+    const initialForm = loadAiBrewFormDraft(formStateRef.current);
+    formStateRef.current = initialForm;
+    return initialForm;
+  });
+  const targetProfileTouchedRef = useRef(false);
   const [activeBuilderModal, setActiveBuilderModal] = useState<FormMode | null>(null);
   const [historyStripTab, setHistoryStripTab] = useState<HistoryStripTab>('latest');
   const [plan, setPlan] = useState<BrewPlan | null>(null);
@@ -8152,6 +8157,22 @@ export function AiBrewPanel() {
   const [manualPresetExpanded, setManualPresetExpanded] = useState(false);
   const generationStartedAtRef = useRef<number | null>(null);
   const aiAssistCacheRef = useRef(new Map<string, { title: string; markdown: string }>());
+
+  const commitFormState = useCallback((
+    update: AiBrewFormState | ((previous: AiBrewFormState) => AiBrewFormState),
+  ) => {
+    const base = formStateRef.current;
+    const next = typeof update === 'function'
+      ? (update as (previous: AiBrewFormState) => AiBrewFormState)(base)
+      : update;
+    formStateRef.current = next;
+    setFormState(next);
+    return next;
+  }, []);
+
+  useEffect(() => {
+    formStateRef.current = formState;
+  }, [formState]);
 
   useEffect(() => {
     if (!generationBusy) {
@@ -8203,7 +8224,7 @@ export function AiBrewPanel() {
     setPlan(storedPlan);
     setActiveJournalId(storedPlan.id);
     const nextForm = sanitizeAiBrewFormState(loadPlanIntoForm(storedPlan), nextCatalog);
-    setFormState(nextForm);
+    commitFormState(nextForm);
     setShowMineralEditor(nextForm.waterMode === 'manual');
     setShowProvenance(storedPlan.provenanceAttentionNeeded);
     clearSaveFeedback();
@@ -8224,7 +8245,7 @@ export function AiBrewPanel() {
     } else {
       const draft = loadAiBrewFormDraft(createDefaultAiBrewFormState(nextCatalog));
       const nextForm = sanitizeAiBrewFormState(draft, nextCatalog);
-      setFormState(nextForm);
+      commitFormState(nextForm);
       setShowMineralEditor(nextForm.waterMode === 'manual');
     }
     hasHydratedRef.current = true;
@@ -8343,9 +8364,9 @@ export function AiBrewPanel() {
 
   useEffect(() => {
     if (formState.brewMode !== 'iced' || selectedDripperSupportsIced) return;
-    setFormState((prev) => (prev.brewMode === 'iced' ? { ...prev, brewMode: 'hot' } : prev));
+    commitFormState((prev) => (prev.brewMode === 'iced' ? { ...prev, brewMode: 'hot' } : prev));
     setNotice(copy.icedUnavailable);
-  }, [copy.icedUnavailable, formState.brewMode, selectedDripperSupportsIced]);
+  }, [commitFormState, copy.icedUnavailable, formState.brewMode, selectedDripperSupportsIced]);
 
   const selectedGrinder = useMemo(() => {
     if (!catalog) return null;
@@ -8587,7 +8608,7 @@ export function AiBrewPanel() {
     if (!catalog || formState.waterMode !== 'brand' || !formState.waterBrandId) return;
     const stillVisible = catalog.waterBrands.some((item) => item.id === formState.waterBrandId);
     if (stillVisible) return;
-    setFormState((prev) => ({
+    commitFormState((prev) => ({
       ...prev,
       waterBrandId: '',
       waterCustomized: false,
@@ -8597,7 +8618,7 @@ export function AiBrewPanel() {
       waterNotes: '',
     }));
     setShowMineralEditor(true);
-  }, [catalog, formState.waterBrandId, formState.waterMode, userFacingWaterBrands]);
+  }, [catalog, commitFormState, formState.waterBrandId, formState.waterMode, userFacingWaterBrands]);
 
   async function refreshSavedViews() {
     const [recent, nextPresets] = await Promise.all([
@@ -8610,9 +8631,9 @@ export function AiBrewPanel() {
 
   function updateForm<K extends keyof AiBrewFormState>(key: K, value: AiBrewFormState[K]) {
     if (key === 'targetProfileId') {
-      setTargetProfileTouched(true);
+      targetProfileTouchedRef.current = true;
     }
-    setFormState((prev) => {
+    commitFormState((prev) => {
       let next = { ...prev, [key]: value };
       next = normalizeBeanProfileFieldMerge(next, key);
       if (catalog && key === 'doseG' && prev.manualPresetId) {
@@ -8636,7 +8657,7 @@ export function AiBrewPanel() {
       }
       if (
         catalog
-        && !targetProfileTouched
+        && !targetProfileTouchedRef.current
         && key !== 'targetProfileId'
         && (
           key === 'coffeeName'
@@ -8667,19 +8688,21 @@ export function AiBrewPanel() {
 
   function applyManualPreset(presetId: string) {
     if (!catalog) return;
-    setFormState((prev) => applyManualBrewPresetToFormState(prev, catalog, presetId));
-    setTargetProfileTouched(true);
+    commitFormState((prev) => applyManualBrewPresetToFormState(prev, catalog, presetId));
+    targetProfileTouchedRef.current = true;
     setShowMineralEditor(false);
     setManualPresetExpanded(false);
   }
 
   function setWaterMode(mode: WaterMode) {
-    const fallbackBrand = catalog?.waterBrands.find((item) => item.id === formState.waterBrandId);
+    const latestFormState = formStateRef.current;
+    const fallbackBrand = catalog?.waterBrands.find((item) => item.id === latestFormState.waterBrandId);
     const fallbackPrefill = buildWaterPrefillValues(fallbackBrand);
     const fallbackCanAutofill = isWaterBrandAutofillAllowed(fallbackBrand);
-    setFormState((prev) => ({
+    commitFormState((prev) => ({
       ...prev,
       waterMode: mode,
+      waterBrandId: mode === 'manual' ? '' : prev.waterBrandId,
       waterCustomized: mode === 'manual' ? true : false,
       waterTdsPpm: mode === 'manual'
         ? ''
@@ -8709,7 +8732,7 @@ export function AiBrewPanel() {
     const knownFieldCount = countKnownWaterFields(brand);
     const canAutofill = isWaterBrandAutofillAllowed(brand);
 
-    setFormState((prev) => ({
+    commitFormState((prev) => ({
       ...prev,
       waterMode: 'brand',
       waterRegion: brand.marketCode,
@@ -8743,7 +8766,7 @@ export function AiBrewPanel() {
       ...selectedWaterCompletion.warnings,
     ].filter(Boolean);
 
-    setFormState((prev) => ({
+    commitFormState((prev) => ({
       ...prev,
       waterMode: 'brand',
       waterRegion: selectedWaterBrand.marketCode,
@@ -8765,7 +8788,7 @@ export function AiBrewPanel() {
     alkalinity: number;
     note: string;
   }) {
-    setFormState((prev) => ({
+    commitFormState((prev) => ({
       ...prev,
       waterMode: 'manual',
       waterBrandId: '',
@@ -8792,18 +8815,28 @@ export function AiBrewPanel() {
     clearSaveFeedback();
     syncTasteFeedback(null);
     const generationMode = activeBuilderModal === 'pro' ? 'pro' : 'quick';
+    const latestFormState = formStateRef.current;
     const generationFormState = generationMode === 'quick'
-      ? createQuickAiBrewFormState(formState, catalog)
-      : sanitizeAiBrewFormState(formState, catalog);
+      ? createQuickAiBrewFormState(latestFormState, catalog)
+      : sanitizeAiBrewFormState(latestFormState, catalog);
+    const generationWaterBrand = generationFormState.waterBrandId
+      ? catalog.waterBrands.find((item) => item.id === generationFormState.waterBrandId) || null
+      : null;
+    const generationWaterBrandCanAutofill = isWaterBrandAutofillAllowed(generationWaterBrand);
+    const generationWaterReady = areWaterMineralInputsReady(generationFormState) && (
+      generationFormState.waterMode === 'manual'
+      || generationWaterBrandCanAutofill
+      || generationFormState.waterCustomized
+    );
 
     if (generationFormState.waterMode === 'brand' && !generationFormState.waterBrandId) {
       setFormError(copy.waterNoBrand);
       return;
     }
 
-    if (!waterReadyForGeneration) {
+    if (!generationWaterReady) {
       setFormError(
-        generationFormState.waterMode === 'brand' && selectedWaterBrand?.presetStatus !== 'autofill'
+        generationFormState.waterMode === 'brand' && generationWaterBrand?.presetStatus !== 'autofill'
           ? copy.waterBrandNeedsManual
           : copy.waterRequired,
       );
@@ -8939,7 +8972,7 @@ export function AiBrewPanel() {
       setResultMode(generationMode);
       setResultOpen(true);
       requestViewportMetricsRefresh();
-      setFormState(generationFormState);
+      commitFormState(generationFormState);
       saveLastGeneratedBrewPlan(nextPlan);
       await saveBrewJournalEntry(journalEntry);
       void syncAiBrewLibraryToCloud({ aiBrewJournal: [journalEntry] });
@@ -8969,8 +9002,8 @@ export function AiBrewPanel() {
     setShowMineralEditor(false);
     setShowBeanProfileEditor(false);
     setShowQuickBeanDetails(false);
-    setTargetProfileTouched(false);
-    setFormState(createDefaultAiBrewFormState(catalog));
+    targetProfileTouchedRef.current = false;
+    commitFormState(createDefaultAiBrewFormState(catalog));
   }
 
   async function handleSaveRecipe() {
@@ -9294,7 +9327,7 @@ export function AiBrewPanel() {
   function hydrateFromPlan(nextPlan: BrewPlan, feedback?: BrewTasteFeedback | null, journalId = nextPlan.id) {
     if (!catalog) return;
     const nextForm = sanitizeAiBrewFormState(loadPlanIntoForm(nextPlan), catalog);
-    setFormState(nextForm);
+    commitFormState(nextForm);
     setShowMineralEditor(nextForm.waterMode === 'manual');
     setPlan(nextPlan);
     setShowProvenance(nextPlan.provenanceAttentionNeeded);
@@ -9346,13 +9379,14 @@ export function AiBrewPanel() {
     setFormError(null);
     setShowBeanProfileEditor(false);
     if (mode !== 'pro') {
-      const activeBrand = catalog.waterBrands.find((item) => item.id === formState.waterBrandId);
+      const latestFormState = formStateRef.current;
+      const activeBrand = catalog.waterBrands.find((item) => item.id === latestFormState.waterBrandId);
       const quickBrand = activeBrand && isWaterBrandAutofillAllowed(activeBrand)
         ? activeBrand
         : quickSelectableWaterBrands[0];
       if (quickBrand) {
         const prefill = buildWaterPrefillValues(quickBrand);
-        setFormState((prev) => ({
+        commitFormState((prev) => ({
           ...prev,
           waterMode: 'brand',
           waterRegion: quickBrand.marketCode,
@@ -11277,7 +11311,7 @@ export function AiBrewPanel() {
                   key={item.id}
                   type="button"
                   onClick={() => {
-                    setFormState((prev) => ({
+                    commitFormState((prev) => ({
                       ...prev,
                       dripperId: item.id,
                       switchPresetId: item.id === 'mugen-x-switch'
@@ -11321,7 +11355,7 @@ export function AiBrewPanel() {
                   key={preset.id}
                   type="button"
                   onClick={() => {
-                    setFormState((prev) => ({
+                    commitFormState((prev) => ({
                       ...prev,
                       switchPresetId: preset.id as SwitchPublicPresetId,
                       switchTeachingMode: preset.teachingMode,
@@ -11364,7 +11398,7 @@ export function AiBrewPanel() {
           <button
             type="button"
             onClick={() => {
-              setFormState((prev) => ({
+              commitFormState((prev) => ({
                 ...prev,
                 manualPresetId: prev.manualPresetId ? '' : prev.manualPresetId,
                 brewMode: 'hot',
@@ -11384,7 +11418,7 @@ export function AiBrewPanel() {
                 setNotice(copy.icedUnavailable);
                 return;
               }
-              setFormState((prev) => ({
+              commitFormState((prev) => ({
                 ...prev,
                 manualPresetId: prev.manualPresetId ? '' : prev.manualPresetId,
                 brewMode: 'iced',

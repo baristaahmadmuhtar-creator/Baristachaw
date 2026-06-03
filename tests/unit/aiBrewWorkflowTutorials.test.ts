@@ -291,6 +291,40 @@ test('AI Brew entry cards expose Basic/Advanced while keeping guide density Lite
   assert.match(source, /guideDensityProHint:\s*'Panduan lengkap dengan detail teknik barista\.'/);
 });
 
+test('Indonesian AI Brew style chip labels use natural operational copy', () => {
+  const source = readFileSync(resolve(process.cwd(), 'apps/web/src/features/ai-brew/AiBrewPanel.tsx'), 'utf8');
+  const idCopyStart = source.indexOf('  id: {');
+  const idCopyEnd = source.indexOf('    precisionControlTitle:', idCopyStart);
+  assert.ok(idCopyStart > 0 && idCopyEnd > idCopyStart, 'Indonesian AI Brew copy block should be discoverable');
+  const idCopy = source.slice(idCopyStart, idCopyEnd);
+  const forbiddenRawIdLabels = [
+    /frenchPressStyleCleanDecant:\s*'Clean decant'/,
+    /frenchPressStyleDoubleFilter:\s*'Double filter'/,
+    /frenchPressStyleHeavyConcentrate:\s*'Heavy concentrate'/,
+    /frenchPressStyleSweetImmersion:\s*'Sweet immersion'/,
+    /kalitaWaveStyleTraditionalFlatThree:\s*'Traditional Flat Three-Pour'/,
+    /kalitaWaveStyleCompetitionFastFour:\s*'Competition Fast Four-Pour'/,
+    /kalitaWaveStyleContinuousSlowStream:\s*'Continuous Slow Stream'/,
+    /cleverDripperStyleClassicClosed:\s*'Classic Immersion Bloom'/,
+    /chemexStyleContinuousCenterPour:\s*'Continuous Center Pour Clarity'/,
+    /batchBrewStyleIcedBatchBrew:\s*'Batch Hybrid Pre-Wet'/,
+    /siphonStyleHighDoseIntense:\s*'Body Tinggi Drawdown Cepat'/,
+  ];
+
+  for (const pattern of forbiddenRawIdLabels) {
+    assert.doesNotMatch(idCopy, pattern);
+  }
+
+  assert.match(idCopy, /frenchPressStyleCleanDecant:\s*'Tuang pisah bersih'/);
+  assert.match(idCopy, /origamiFilterCone:\s*'Filter kerucut'/);
+  assert.match(idCopy, /origamiFilterWave:\s*'Filter berlipat'/);
+  assert.match(idCopy, /kalitaWaveStyleTraditionalFlatThree:\s*'Tiga tuang alas datar'/);
+  assert.match(idCopy, /cleverDripperStyleClassicClosed:\s*'Rendam klasik tertutup'/);
+  assert.match(idCopy, /chemexStyleContinuousCenterPour:\s*'Aliran tengah kontinu'/);
+  assert.match(idCopy, /batchBrewStyleIcedBatchBrew:\s*'Batch hybrid basah awal'/);
+  assert.match(idCopy, /siphonStyleHighDoseIntense:\s*'Body tinggi air turun cepat'/);
+});
+
 test('every visible AI Brew dripper resolves tutorial detail for each generated workflow step', () => {
   const catalog = buildProductionAiBrewCatalogForStress();
   const visibleDrippers = catalog.drippers.filter((dripper) => !dripper.hidden && !dripper.deprecated);

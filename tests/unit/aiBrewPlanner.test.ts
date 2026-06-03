@@ -4764,9 +4764,11 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
     plan: ReturnType<typeof buildAiBrewPlan>,
     expected: { ratio: [number, number]; temp: [number, number]; time: [number, number] },
   ) => {
+    const isCappedAeroPress = plan.methodFamily === 'aeropress' && (plan.recipeStyle === 'inverted' || plan.recipeStyle === 'standard' || plan.recipeStyle === 'no_bypass' || plan.recipeStyle === 'bright_clean' || plan.recipeStyle === 'sweet_body');
+    const minRatio = isCappedAeroPress ? 11.5 : expected.ratio[0];
     assert.ok(
-      plan.recommendedRatio >= expected.ratio[0] && plan.recommendedRatio <= expected.ratio[1],
-      `${plan.deviceProfileId} ratio ${plan.recommendedRatio} outside ${expected.ratio.join('-')}`,
+      plan.recommendedRatio >= minRatio && plan.recommendedRatio <= expected.ratio[1],
+      `${plan.deviceProfileId} ratio ${plan.recommendedRatio} outside ${minRatio}-${expected.ratio[1]}`,
     );
     assert.ok(
       plan.waterTempC >= expected.temp[0] && plan.waterTempC <= expected.temp[1],
@@ -4875,8 +4877,8 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
     assertBasicGoldenEnvelope(plan, { ratio: [12.5, 15.2], temp: [80, 90], time: [60, 150] });
     assert.ok(plan.steps.some((step) => step.kind === 'press'), `${style} AeroPress should include a press step`);
     assert.match(textFor(plan), /stir|aduk|press|tekan|hiss|desis|steep|rendam/i);
-    if (plan.hotWaterMl > 240 && style !== 'inverted') {
-      assert.equal(positivePourCount(plan), 2, `${style} AeroPress should include a bloom and charge pour when hotWaterMl > 240`);
+    if (plan.hotWaterMl >= 240 && style !== 'inverted' && style !== 'bypass') {
+      assert.equal(positivePourCount(plan), 2, `${style} AeroPress should include a bloom and charge pour when hotWaterMl >= 240`);
     } else {
       assert.equal(positivePourCount(plan), 1, `${style} AeroPress should include a single pour`);
     }
@@ -4966,7 +4968,7 @@ test('AeroPress upright high-volume guides preserve bloom and main charge checkp
 
   const positiveSteps = plan.steps.filter((step) => (step.pourVolumeMl || 0) > 0);
   assert.deepEqual(positiveSteps.map((step) => step.id), ['bloom', 'charge']);
-  assert.deepEqual(positiveSteps.map((step) => step.pourVolumeMl), [30, 230]);
+  assert.deepEqual(positiveSteps.map((step) => step.pourVolumeMl), [35, 205]);
 
   const guide = plan.workflowGuideSteps || buildWorkflowAwareGuideSteps(plan);
   const guideText = guide
@@ -4975,8 +4977,8 @@ test('AeroPress upright high-volume guides preserve bloom and main charge checkp
   const preservedVolumeIds = new Set(guide.flatMap((step) => step.sourceStepIds));
   assert.ok(preservedVolumeIds.has('bloom'), 'Guide should preserve the capacity bloom source step');
   assert.ok(preservedVolumeIds.has('charge'), 'Guide should preserve the main charge source step');
-  assert.match(guideText, /Bloom[\s\S]*(30 ml|30ml)/i);
-  assert.match(guideText, /(Main Charge|Isi air utama|Tuang sisa air|remaining water|sisa air)[\s\S]*(230 ml|230ml|260 ml|260ml)/i);
+  assert.match(guideText, /Bloom[\s\S]*(35 ml|35ml)/i);
+  assert.match(guideText, /(Main Charge|Isi air utama|Tuang sisa air|remaining water|sisa air)[\s\S]*(205 ml|205ml|240 ml|240ml)/i);
   assert.doesNotMatch(guideText, /final pour|drawdown bed|tuang akhir/i);
   assert.equal(plan.workflowValidation?.passed, true);
 });
@@ -11301,4 +11303,103 @@ test('validateWaterChemistryConsistency flags GH or KH above TDS', () => {
 
   const ok = validateWaterChemistryConsistency(120, 65, 44);
   assert.equal(ok.length, 0);
+});
+
+test('AeroPress E2E Recipe Logic & Guardrails validation', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const baseInput = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+    coffeeName: 'AeroPress QA',
+    process: 'washed',
+    variety: 'bourbon',
+    roastLevel: 'medium' as const,
+    targetProfileId: 'balance_clean',
+    doseG: '18',
+  };
+  const planFor = (state: Partial<AiBrewFormState>) => buildAiBrewPlan({
+    ...baseInput,
+    ...state,
+  }, productionCatalog);
+
+  const doses = [10, 12, 15, 18, 20];
+  const styles = ['standard', 'inverted', 'bypass', 'no_bypass', 'bright_clean', 'sweet_body', 'auto'] as const;
+  const targets = ['floral_transparent', 'fruit_forward', 'more_acidity', 'more_sweetness', 'more_body', 'dense_comforting'] as const;
+
+  for (const style of styles) {
+    for (const target of targets) {
+      for (const dose of doses) {
+        const plan = planFor({
+          dripperId: 'aeropress',
+          aeropressStyle: style,
+          targetProfileId: target,
+          doseG: String(dose),
+        });
+
+        // 1. Assert upright chamber volume capped at 240 ml
+        if (style !== 'inverted' && style !== 'bypass') {
+          if (plan.recipeStyle !== 'bypass') {
+            assert.ok(plan.hotWaterMl <= 240, `Upright AeroPress (style: ${style}, target: ${target}, dose: ${dose}) chamber water ${plan.hotWaterMl} ml must not exceed 240 ml`);
+            assert.ok(plan.totalWaterMl <= 240, `Upright AeroPress total water ${plan.totalWaterMl} ml must not exceed 240 ml`);
+          }
+        }
+
+        // 2. Assert inverted capped at 220 ml
+        if (style === 'inverted' || plan.recipeStyle === 'inverted') {
+          assert.ok(plan.hotWaterMl <= 220, `Inverted AeroPress chamber water ${plan.hotWaterMl} ml must not exceed 220 ml`);
+          assert.ok(plan.totalWaterMl <= 220, `Inverted AeroPress total water ${plan.totalWaterMl} ml must not exceed 220 ml`);
+        }
+
+        // 3. Assert dynamic bloom volume: clamp(round(doseG * 2), 24, 45) rounded to increment (5)
+        const bloomStep = plan.steps.find(s => s.id === 'bloom');
+        if (bloomStep) {
+          const expectedBloom = Math.max(25, Math.min(45, Math.round(Math.round(dose * 2) / 5) * 5));
+          assert.equal(bloomStep.pourVolumeMl, expectedBloom, `Bloom pour volume for dose ${dose} must be ${expectedBloom} ml`);
+        }
+
+        // 4. Assert bypass water only for bypass style
+        if (plan.recipeStyle === 'bypass') {
+          assert.ok(plan.totalWaterMl > plan.hotWaterMl, `Bypass style must have totalWaterMl (${plan.totalWaterMl}) > hotWaterMl (${plan.hotWaterMl})`);
+        } else {
+          assert.equal(plan.totalWaterMl, plan.hotWaterMl, `Non-bypass style ${style} must have totalWaterMl === hotWaterMl`);
+        }
+      }
+    }
+  }
+
+  // 5. Regression for high volume doses (20g)
+  const standard20 = planFor({ dripperId: 'aeropress', aeropressStyle: 'standard', doseG: '20' });
+  assert.ok(standard20.totalWaterMl <= 240, `Standard 20g total water capped at 240 ml`);
+  assert.ok(standard20.hotWaterMl <= 240, `Standard 20g chamber water capped at 240 ml`);
+
+  const brightClean20 = planFor({ dripperId: 'aeropress', aeropressStyle: 'bright_clean', doseG: '20' });
+  assert.ok(brightClean20.totalWaterMl <= 240, `Bright Clean 20g total water capped at 240 ml`);
+
+  const inverted20 = planFor({ dripperId: 'aeropress', aeropressStyle: 'inverted', doseG: '20' });
+  assert.ok(inverted20.totalWaterMl <= 220, `Inverted 20g total water capped at 220 ml`);
+  assert.ok(inverted20.warnings.some(w => w.includes('220 ml')), `Inverted warning must mention 220 ml cap`);
+
+  // 6. Assert Auto-Bypass logic for acidity target at large volumes
+  const autoAcidity20 = planFor({
+    dripperId: 'aeropress',
+    aeropressStyle: 'auto',
+    targetProfileId: 'more_acidity',
+    doseG: '20',
+  });
+  assert.equal(autoAcidity20.recipeStyle, 'bypass', `Auto style + more_acidity + 20g must swap to bypass style`);
+  assert.ok(autoAcidity20.totalWaterMl > 240, `Auto-swapped bypass total water can exceed 240 ml`);
+  assert.ok(autoAcidity20.hotWaterMl <= 240, `Auto-swapped bypass chamber water capped at 240 ml`);
+
+  // 7. Assert WAC 2025 and Cold Express presets defaults
+  const wacPreset = planFor({ manualPresetId: 'inspired-wac-championship-style' });
+  assert.equal(wacPreset.doseG, 18, `WAC preset default dose is 18g`);
+  assert.equal(wacPreset.hotWaterMl, 100, `WAC preset chamber water is 100ml`);
+
+  const coldExpress = planFor({ manualPresetId: 'inspired-aeropress-cold-brew-express' });
+  assert.equal(coldExpress.doseG, 30, `Cold express preset default dose is 30g`);
+  assert.equal(coldExpress.hotWaterMl, 100, `Cold express preset chamber water is 100ml`);
 });

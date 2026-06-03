@@ -761,9 +761,9 @@ test('ai brew AeroPress styles render bilingual guides and regenerate without st
       processOptionId: 'washed',
       varietyQuery: 'Bourbon',
       varietyPattern: /Bourbon/i,
-      visibleId: /Aduk 3 kali|25-35 detik|desis kering/i,
-      visibleEn: /Stir 3 times|25-35 seconds|dry hiss/i,
-      stored: /Aduk 3 kali|25-35 detik|desis kering/i,
+      visibleId: /Aduk 3 kali|25-35 detik|desis selesai/i,
+      visibleEn: /Stir 3 times|25-35 seconds|hiss/i,
+      stored: /Aduk 3 kali|25-35 detik|desis selesai/i,
     },
     {
       style: 'inverted',
@@ -933,7 +933,10 @@ test('ai brew AeroPress styles render bilingual guides and regenerate without st
     expect(generated.visibleGuideText).toMatch(entry[languageCase.expectedKey]);
     expect(generated.visibleGuideText).not.toMatch(languageCase.leak);
     expect(generated.guideText).toMatch(entry.stored);
-    expect(`${generated.visibleGuideText} ${generated.guideText}`).not.toMatch(/final pour|tuang akhir|drawdown bed|center-to-mid|bloom/i);
+    const allowsCapacityBloom = (generated.plan.steps || []).some((step) => step.id === 'bloom');
+    expect(`${generated.visibleGuideText} ${generated.guideText}`).not.toMatch(
+      allowsCapacityBloom ? /final pour|tuang akhir|drawdown bed|center-to-mid/i : /final pour|tuang akhir|drawdown bed|center-to-mid|bloom/i,
+    );
     if (entry.style !== 'bypass') {
       expect(`${generated.visibleGuideText} ${generated.guideText}`).not.toMatch(entry.forbiddenNonBypass || nonBypassCommand);
     }

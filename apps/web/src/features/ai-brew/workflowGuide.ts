@@ -877,43 +877,43 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
 function buildFrenchPressStyleGuideCopy(plan: BrewPlan): MethodStyleGuideCopy {
   const copies: Record<string, MethodStyleGuideCopy> = {
     traditional: {
-      setup: 'Panaskan French Press, tara timbangan, dan gunakan gilingan kasar yang merata.',
-      charge: 'Masukkan air penuh, basahi semua bubuk, lalu tutup ringan.',
-      main: 'Rendam tenang; jangan terus diaduk setelah semua bubuk basah.',
-      release: 'Pecah kerak pelan, bersihkan busa kasar, lalu biarkan partikel halus mengendap.',
-      finish: 'Tekan pelan, tuang pisah segera, lalu sajikan.',
+      setup: 'Panaskan French Press dan wadah saji, lalu gunakan gilingan kasar yang merata.',
+      charge: 'Tuang air panas dengan mantap agar semua bubuk basah tanpa perlu adukan berat.',
+      main: 'Rendam tenang; biarkan kerak kopi terbentuk utuh pada awal seduh sebagai penahan panas alami.',
+      release: 'Pecah kerak perlahan, bersihkan busa kasar bila perlu, lalu beri waktu partikel halus mengendap.',
+      finish: 'Tekan penekan perlahan hanya untuk menahan bubuk, lalu tuang pisah segera agar ekstraksi berhenti.',
       chip: 'tradisional',
     },
     clean_decant: {
-      setup: 'Panaskan French Press dan siapkan wadah saji kedua untuk tuang pisah bersih.',
-      charge: 'Masukkan air penuh dan basahi bubuk tanpa agitasi berat.',
-      main: 'Rendam tenang dengan fase endap lebih panjang untuk cangkir bersih.',
-      release: 'Jangan tekan dalam; posisikan penekan hanya sebagai penahan bubuk.',
-      finish: 'Tuang pisah perlahan ke wadah saji agar seduhan tidak terus mengekstrak.',
+      setup: 'Panaskan French Press dan wadah saji terpisah, lalu gunakan gilingan kasar sampai medium-kasar.',
+      charge: 'Tuang air panas cepat dan merata agar semua bubuk basah tanpa membuat rendaman terlalu keruh.',
+      main: 'Rendam 4 menit, lalu jaga alat tetap diam agar partikel halus mulai turun.',
+      release: 'Pecah kerak perlahan, bersihkan busa kasar, lalu diamkan 5-8 menit agar sedimen mengendap.',
+      finish: 'Posisikan penekan tepat di bawah permukaan cairan tanpa menekan ke dasar, lalu tuang pisah sangat perlahan.',
       chip: 'clean decant',
     },
     double_filter: {
-      setup: 'Panaskan French Press dan siapkan saringan kedua bila ingin cangkir lebih bersih.',
-      charge: 'Masukkan air penuh, basahi bubuk, lalu jaga rendaman tetap tenang.',
-      main: 'Rendam stabil; hindari adukan berulang yang membawa partikel halus.',
-      release: 'Tekan pelan hanya sampai menahan bubuk, lalu tuang lewat saringan kedua.',
-      finish: 'Sajikan setelah tuang pisah kedua selesai.',
+      setup: 'Bilas filter kertas bila dipakai, pasang rapi pada penekan, lalu gunakan gilingan sedang sampai medium-halus.',
+      charge: 'Tuang air awal untuk membasahi semua bubuk, lalu lanjutkan sisa air dengan aliran mantap.',
+      main: 'Rendam singkat dan jaga permukaan tetap tenang; filter tambahan membutuhkan campuran yang tidak terlalu berdebu.',
+      release: 'Pasang penekan berfilter kertas secara tegak lurus dan tekan sangat lambat 45-60 detik agar tidak robek atau tersumbat.',
+      finish: 'Tuang bersih ke wadah saji. Kertas membantu mengurangi sedimen dan menahan lebih banyak lipid kopi dibanding jaring logam saja.',
       chip: 'dua saringan',
     },
     heavy_concentrate: {
-      setup: 'Panaskan French Press dan siapkan dosis lebih tinggi dengan ruang aduk aman.',
-      charge: 'Masukkan air sesuai resep dan basahi bubuk sampai seluruh permukaan lembap.',
-      main: 'Rendam lebih panjang untuk body; aduk hanya di awal agar tidak keruh.',
-      release: 'Endapkan cukup lama sebelum ditekan supaya partikel halus turun.',
-      finish: 'Tekan sangat pelan, tuang pisah, lalu sajikan sebagai cangkir tebal.',
+      setup: 'Panaskan French Press dan siapkan dosis tinggi dengan ruang aduk aman.',
+      charge: 'Tuang air panas cepat agar dosis besar basah penuh sejak awal.',
+      main: 'Rendam 4-5 menit agar konsentrat punya body, manis, dan tekstur untuk susu atau es.',
+      release: 'Aduk permukaan perlahan bila ada bagian kering, lalu biarkan partikel halus turun.',
+      finish: 'Tekan plunger secara mantap ke dasar wadah, tuang pisah segera sebagai basis minuman susu atau kopi es.',
       chip: 'konsentrat body',
     },
     sweet_immersion: {
-      setup: 'Panaskan French Press dan siapkan rendaman manis dengan agitasi lembut.',
-      charge: 'Masukkan air penuh, aduk singkat, lalu biarkan bubuk kontak merata.',
-      main: 'Rendam stabil untuk rasa manis; hindari gerakan kasar di tengah waktu.',
-      release: 'Pecah kerak pelan dan beri waktu endap sebelum penekan turun.',
-      finish: 'Tekan pelan, tuang pisah segera, lalu sajikan.',
+      setup: 'Panaskan French Press dan gunakan air sedikit lebih rendah untuk menjaga rasa manis tetap lembut.',
+      charge: 'Tuang air lembut dan merata, lalu aduk perlahan dua kali saja.',
+      main: 'Rendam tenang sekitar 5 menit; kontak stabil memberi rasa manis tanpa agitasi akhir yang kasar.',
+      release: 'Aduk permukaan secara sangat perlahan, lalu biarkan partikel kopi mengendap alami selama 1-2 menit.',
+      finish: 'Tekan plunger sangat perlahan selama 30 detik dengan tekanan minimal. Tuang pisah segera ke cangkir saji.',
       chip: 'immersion manis',
     },
   };
@@ -923,11 +923,24 @@ function buildFrenchPressStyleGuideCopy(plan: BrewPlan): MethodStyleGuideCopy {
 function buildFrenchPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
   const charge = firstVolumeStep(plan);
   const serve = findKind(plan, 'serve') || plan.steps.at(-1);
-  const steepStart = Math.min(60, Math.max(20, Math.round(plan.totalTimeSeconds * 0.2)));
-  const settleStart = Math.max(steepStart + 30, Math.round(plan.totalTimeSeconds * 0.72));
-  const pressStart = Math.max(settleStart + 15, (serve?.startSeconds || plan.totalTimeSeconds) - 30);
+  const style = plan.recipeStyle || 'traditional';
   const styleCopy = buildFrenchPressStyleGuideCopy(plan);
-  return stepsSorted([
+
+  let steepStart = Math.min(60, Math.max(20, Math.round(plan.totalTimeSeconds * 0.2)));
+  let settleStart = Math.max(steepStart + 30, Math.round(plan.totalTimeSeconds * 0.72));
+  let pressStart = Math.max(settleStart + 15, (serve?.startSeconds || plan.totalTimeSeconds) - 30);
+
+  if (style === 'clean_decant') {
+    steepStart = 15;
+    settleStart = 240;
+    pressStart = plan.totalTimeSeconds - 20;
+  } else if (style === 'double_filter') {
+    steepStart = 30;
+    settleStart = 90;
+    pressStart = plan.totalTimeSeconds - 45;
+  }
+
+  const steps: WorkflowGuideStep[] = [
     operationalStep({
       id: 'guide_french_press_setup',
       label: 'Panaskan alat',
@@ -936,12 +949,17 @@ function buildFrenchPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       primaryText: styleCopy.setup,
       techniqueChips: [chip('basket_prep', 'Persiapan', styleCopy.chip)],
     }),
-    charge ? sourceStep('charge', charge, {
+  ];
+
+  if (charge) {
+    steps.push(sourceStep('charge', charge, {
       label: 'Isi air',
       primaryText: `${styleCopy.charge} Target ${formatMl(charge.pourVolumeMl || plan.hotWaterMl)}.`,
-      secondaryText: 'Pastikan semua bubuk basah sebelum fase rendam.',
+      secondaryText: style === 'double_filter' ? 'Basahi awal 30 detik untuk pelepasan CO2, lalu tuang sisa air secara cepat.' : 'Pastikan semua bubuk basah sebelum fase rendam.',
       techniqueChips: [chip('charge', 'Isi', formatMl(charge.pourVolumeMl || plan.hotWaterMl))],
-    }) : operationalStep({
+    }));
+  } else {
+    steps.push(operationalStep({
       id: 'guide_french_press_charge',
       label: 'Isi air',
       actionType: 'charge',
@@ -950,49 +968,59 @@ function buildFrenchPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       targetVolumeMl: plan.hotWaterMl,
       primaryText: `${styleCopy.charge} Target ${formatMl(plan.hotWaterMl)}.`,
       techniqueChips: [chip('charge', 'Isi', formatMl(plan.hotWaterMl))],
-    }),
-    operationalStep({
-      id: 'guide_french_press_steep',
-      label: 'Rendam',
-      actionType: 'steep',
-      startSeconds: steepStart,
-      endSeconds: settleStart,
-      targetVolumeMl: plan.hotWaterMl,
-      primaryText: styleCopy.main,
-      techniqueChips: [chip('steep', 'Rendam', formatTime(Math.max(0, settleStart - steepStart)))],
-    }),
-    operationalStep({
-      id: 'guide_french_press_settle',
-      label: 'Endapkan',
-      actionType: 'settle',
-      startSeconds: settleStart,
-      endSeconds: pressStart,
-      targetVolumeMl: plan.hotWaterMl,
-      primaryText: styleCopy.release,
-      techniqueChips: [chip('settle', 'Endapkan', 'pelan')],
-    }),
-    operationalStep({
-      id: 'guide_french_press_press',
-      label: 'Tekan pelan',
-      actionType: 'press',
-      kind: 'press',
-      startSeconds: pressStart,
-      endSeconds: serve?.startSeconds || plan.totalTimeSeconds,
-      targetVolumeMl: plan.hotWaterMl,
-      primaryText: 'Tekan pelan; jangan memeras hamparan kopi.',
-      techniqueChips: [chip('press', 'Tekan', 'pelan')],
-    }),
-    operationalStep({
-      id: 'guide_french_press_decant',
-      label: 'Tuang pisah',
-      actionType: 'decant',
-      startSeconds: serve?.startSeconds || plan.totalTimeSeconds,
-      targetVolumeMl: plan.hotWaterMl,
-      primaryText: styleCopy.finish,
-      techniqueChips: [chip('decant', 'Tuang pisah', 'hentikan ekstraksi')],
-      sourceStepIds: serve ? [serve.id] : [],
-    }),
-  ]);
+    }));
+  }
+
+  steps.push(operationalStep({
+    id: 'guide_french_press_steep',
+    label: 'Rendam',
+    actionType: 'steep',
+    startSeconds: steepStart,
+    endSeconds: settleStart,
+    targetVolumeMl: plan.hotWaterMl,
+    primaryText: styleCopy.main,
+    techniqueChips: [chip('steep', 'Rendam', formatTime(Math.max(0, settleStart - steepStart)))],
+  }));
+
+  steps.push(operationalStep({
+    id: 'guide_french_press_settle',
+    label: style === 'clean_decant' ? 'Skim & Settle' : 'Endapkan',
+    actionType: 'settle',
+    startSeconds: settleStart,
+    endSeconds: pressStart,
+    targetVolumeMl: plan.hotWaterMl,
+    primaryText: styleCopy.release,
+    techniqueChips: [chip('settle', 'Endapkan', style === 'clean_decant' ? '5-8 menit' : 'pelan')],
+  }));
+
+  steps.push(operationalStep({
+    id: 'guide_french_press_press',
+    label: style === 'clean_decant' ? 'Apungkan penekan' : 'Tekan pelan',
+    actionType: style === 'clean_decant' ? 'settle' : 'press',
+    kind: 'press',
+    startSeconds: pressStart,
+    endSeconds: serve?.startSeconds || plan.totalTimeSeconds,
+    targetVolumeMl: plan.hotWaterMl,
+    primaryText: style === 'clean_decant'
+      ? 'Posisikan plunger tepat di bawah permukaan cairan kopi. JANGAN ditekan ke dasar agar partikel halus dasar tidak keruh.'
+      : style === 'double_filter'
+        ? 'Tekan plunger berfilter kertas secara tegak lurus dan sangat lambat (45-60 detik) sesuai Hukum Darcy.'
+        : 'Tekan penekan (plunger) perlahan; jangan memeras hamparan kopi.',
+    techniqueChips: [chip('press', style === 'clean_decant' ? 'Apungkan' : 'Tekan', style === 'double_filter' ? '45-60s' : 'pelan')],
+  }));
+
+  steps.push(operationalStep({
+    id: 'guide_french_press_decant',
+    label: 'Tuang pisah',
+    actionType: 'decant',
+    startSeconds: serve?.startSeconds || plan.totalTimeSeconds,
+    targetVolumeMl: plan.hotWaterMl,
+    primaryText: styleCopy.finish,
+    techniqueChips: [chip('decant', 'Tuang pisah', 'hentikan ekstraksi')],
+    sourceStepIds: serve ? [serve.id] : [],
+  }));
+
+  return stepsSorted(steps);
 }
 
 function buildCleverStyleGuideCopy(plan: BrewPlan): MethodStyleGuideCopy {

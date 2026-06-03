@@ -1388,7 +1388,17 @@ function validateNumerics(plan, scenario, reasons) {
   if (Math.abs(poured - plan.hotWaterMl) > 1) addReason(reasons, 'pour_sum', 'fail', `pour/extract volume ${poured} does not match hot water ${plan.hotWaterMl}`);
   if (scenario.inputPatch.brewMode === 'hot') {
     if (plan.iceMl !== 0) addReason(reasons, 'hot_has_ice', 'fail', 'hot request produced ice');
-    if (plan.hotWaterMl !== plan.totalWaterMl) addReason(reasons, 'hot_split_wrong', 'fail', 'hot request split hot water from total water');
+    const planText = compactText(plan);
+    const hasLegitHotBypass =
+      plan.methodFamily === 'aeropress'
+      && plan.recipeStyle === 'bypass'
+      && plan.hotWaterMl > 0
+      && plan.hotWaterMl < plan.totalWaterMl
+      && /bypass|dilut|encer|setelah tekan|after press/i.test(planText)
+      && !/\b(ice|iced|es)\b/i.test(planText);
+    if (plan.hotWaterMl !== plan.totalWaterMl && !hasLegitHotBypass) {
+      addReason(reasons, 'hot_split_wrong', 'fail', 'hot request split hot water from total water');
+    }
   }
   if (scenario.inputPatch.brewMode === 'iced' && plan.brewMode === 'iced') {
     if (Math.abs(plan.hotWaterMl + plan.iceMl - plan.totalWaterMl) > 1) addReason(reasons, 'iced_split_wrong', 'fail', 'iced hot water + ice does not equal total');

@@ -62,10 +62,34 @@ function getMethodFamilyServiceCue(plan: BrewPlan, language?: string) {
     switch (plan.methodFamily) {
       case 'espresso':
         return 'Kunci service pattern ada di yield, flow, dan stop cue shot; jangan pakai pola filter manual.';
-      case 'aeropress':
-        return 'Kunci service pattern ada di steep singkat, jumlah stir, press stabil, dan berhenti sebelum hiss dipaksa.';
-      case 'french_press':
-        return 'Kunci service pattern ada di immersion tenang, settle fines, lalu decant agar ekstraksi berhenti bersih.';
+      case 'aeropress': {
+        const style = plan.recipeStyle || 'standard';
+        switch (style) {
+          case 'inverted':
+            return 'Kunci service pattern ada di persiapan terbalik, plunger/penekan masuk minimal 2 cm, 4x adukan tenang, balikkan mantap, dan tekan stabil.';
+          case 'bypass':
+            return 'Kunci service pattern ada di pembuatan konsentrat pekat, 3x adukan awal, tekan berhenti sebelum desis, lalu tambahkan bypass terukur setelahnya.';
+          case 'no_bypass':
+            return 'Kunci service pattern ada di penyeduhan seluruh air langsung di chamber, 3x adukan lembut, rendam penuh, dan tekan melewati desis.';
+          case 'bright_clean':
+            return 'Kunci service pattern ada di kertas filter ganda (bila ada), agitasi rendah dengan 2-3x adukan ringan, dan tekan berhenti sebelum desis pertama.';
+          case 'sweet_body':
+            return 'Kunci service pattern ada di ruang seduh hangat dengan air panas, 5x adukan silang untuk tekstur manis, rendam lebih panjang, dan tekan melewati desis.';
+          default:
+            return 'Kunci service pattern ada di steep singkat, 3x adukan tenang, tekan stabil, dan tekan melewati desis.';
+        }
+      }
+      case 'french_press': {
+        const style = plan.recipeStyle || 'traditional';
+        let cue = 'Kunci service: rendaman tenang, kerak kopi dibiarkan utuh pada awal seduh, partikel halus diberi waktu mengendap, lalu seduhan dituang pisah.';
+        cue += ' Wadah kaca biasanya kehilangan panas lebih cepat daripada baja berinsulasi; panaskan alat dan wadah saji sebelum seduh agar ekstraksi lebih konsisten.';
+        if (style === 'double_filter') {
+          cue += ' Gaya Double Filter memakai kertas untuk mengurangi sedimen dan menahan lebih banyak minyak kopi dibanding jaring logam saja. Tekan sangat pelan 45-60 detik agar kertas tidak robek atau tersumbat partikel halus.';
+        } else {
+          cue += ' Catatan kesehatan: French Press tanpa kertas dapat membawa lebih banyak cafestol dan kahweol daripada kopi paper-filtered; gunakan Double Filter bila ingin mengurangi paparan lipid kopi.';
+        }
+        return cue;
+      }
       case 'moka_pot':
         return 'Kunci service pattern ada di basket rata, air boiler di bawah valve, heat stabil, dan stop sebelum sputter.';
       case 'siphon':
@@ -100,10 +124,34 @@ function getMethodFamilyServiceCue(plan: BrewPlan, language?: string) {
   switch (plan.methodFamily) {
     case 'espresso':
       return 'The service pattern depends on shot yield, flow, and stop cue; do not treat it like a manual filter brew.';
-    case 'aeropress':
-      return 'The service pattern depends on compact steeping, stir count, a steady press, and stopping before a forced hiss.';
-    case 'french_press':
-      return 'The service pattern depends on calm immersion, fines settling, and decanting so extraction stops cleanly.';
+    case 'aeropress': {
+      const style = plan.recipeStyle || 'standard';
+      switch (style) {
+        case 'inverted':
+          return 'The service pattern depends on inverted assembly, a secure 2 cm plunger safety depth, 4 calm stirs, a stable flip, and pressing through the hiss.';
+        case 'bypass':
+          return 'The service pattern depends on brewing a compact concentrate, 3 initial stirs, stopping the press before the hiss, then diluting with measured bypass water.';
+        case 'no_bypass':
+          return 'The service pattern depends on adding all recipe water to the chamber directly, 3 gentle stirs, a complete steep, and pressing through the hiss.';
+        case 'bright_clean':
+          return 'The service pattern depends on optional double papers, low agitation with 2-3 light stirs, and stopping the press before the first dry hiss.';
+        case 'sweet_body':
+          return 'The service pattern depends on a preheated chamber, 5 cross-stirs to build sweet texture, a longer steep, and pressing through the hiss.';
+        default:
+          return 'The service pattern depends on a short steep, 3 calm stirs, steady pressing, and pressing through the hiss.';
+      }
+    }
+    case 'french_press': {
+      const style = plan.recipeStyle || 'traditional';
+      let cue = 'The service pattern depends on calm immersion, preserving the crust early, giving fines time to settle, and decanting cleanly.';
+      cue += ' Glass vessels usually lose heat faster than insulated stainless steel, so preheat the brewer and serving vessel for repeatable extraction.';
+      if (style === 'double_filter') {
+        cue += ' Double Filter style uses paper to reduce sediment and retain more coffee oils than metal mesh alone. Press very slowly for 45-60 seconds to avoid tearing or clogging the paper.';
+      } else {
+        cue += ' Health note: unfiltered French Press can carry more cafestol and kahweol than paper-filtered coffee; use Double Filter when lower coffee-lipid exposure is preferred.';
+      }
+      return cue;
+    }
     case 'moka_pot':
       return 'The service pattern depends on a level basket, boiler water below the valve, stable heat, and stopping before sputter.';
     case 'siphon':

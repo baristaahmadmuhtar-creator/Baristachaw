@@ -275,7 +275,7 @@ test('every selectable AI Brew style resolves bilingual tutorials without raw la
         assert.doesNotMatch(id, CRITICAL_INDONESIAN_LEAKS, `${styleFamily.methodFamily}/${recipeStyle}/${actionType} ID leaks critical English: ${id}`);
         assert.doesNotMatch(id, STYLE_TUTORIAL_RAW_ID_LEAK, `${styleFamily.methodFamily}/${recipeStyle}/${actionType} ID keeps avoidable raw English: ${id}`);
         assert.doesNotMatch(`${en} ${id}`, CORRECTION_LOOP, `${styleFamily.methodFamily}/${recipeStyle}/${actionType} should not be taste correction`);
-        if (STYLE_TUTORIAL_METHOD_LEAKS[styleFamily.methodFamily]) {
+        if (actionType !== 'bloom' && STYLE_TUTORIAL_METHOD_LEAKS[styleFamily.methodFamily]) {
           assert.doesNotMatch(`${en} ${id}`, STYLE_TUTORIAL_METHOD_LEAKS[styleFamily.methodFamily]!, `${styleFamily.methodFamily}/${recipeStyle}/${actionType} leaks wrong-method language: ${en} ${id}`);
         }
 

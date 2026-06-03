@@ -633,7 +633,7 @@ function buildMethodCueChecklist(plan: BrewPlan) {
         lines.push('- Include clean container immersion steep and late gentle container swirl cue.');
         lines.push('- Include double filter assembly insertion and 30-second extremely slow, light-force plunge cue.');
       } else if (style === 'heavy_concentrate') {
-        lines.push('- Include high-dose fine-medium grounds, quick saturation, and 5-6 times vigorous stir cue early.');
+        lines.push('- Include high-dose coarse-to-medium grounds, quick saturation, and 5-6 times vigorous stir cue early.');
         lines.push('- Include thick concentrate immersion steep and heavy plunge resistance check middle.');
         lines.push('- Include full plunge and rich concentrate serve (or optional bypass dilution) cue in final step.');
       } else if (style === 'sweet_immersion') {
@@ -641,7 +641,7 @@ function buildMethodCueChecklist(plan: BrewPlan) {
         lines.push('- Include low-temperature caramel solubility steep and extended quiet immersion cue middle.');
         lines.push('- Include 30-second ultra-slow plunge with feather-light force to prevent fines migration.');
       } else {
-        lines.push('- Include French Press beaker preheat, coarse grounds charge, and decisive saturation cue early.');
+        lines.push('- Include French Press vessel preheat, coarse grounds charge, and decisive saturation cue early.');
         lines.push('- Include calm immersion steep and plunger lid vacuum seal check middle.');
         lines.push('- Include slow, steady press down to the bottom and immediate decant/separate serving cue in final step.');
       }
@@ -668,7 +668,7 @@ function buildMethodCueChecklist(plan: BrewPlan) {
       } else if (style === 'sweet_body') {
         lines.push('- Include fine grounds thorough saturation and sweet solubility opening cue early.');
         lines.push('- Include vigorous circular agitation and extended immersion steep cue middle.');
-        lines.push('- Include firm, stable plunge completely through the hiss to the absolute bottom of the coffee puck in the final step.');
+        lines.push('- Include firm, stable plunge completely through the hiss to carry texture through the coffee bed in the final step.');
       } else {
         lines.push('- Include AeroPress upright chamber decisive saturation and uniform wetting cue early.');
         lines.push('- Include gentle stir and vacuum seal plunger insert cue middle.');

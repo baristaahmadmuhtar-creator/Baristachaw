@@ -202,6 +202,78 @@ export function resolveGrinderSettingReference(
   deviceProfile: DeviceBrewProfile,
   brewMode: 'hot' | 'iced',
 ) {
+  if (deviceProfile.methodFamily === 'french_press') {
+    const isDoubleFilter = deviceProfile.recipeStyle === 'double_filter';
+    let rangeLabel = '';
+    let parsedRange: ParsedNumericRange | null = null;
+    let note = '';
+
+    if (grinder.id === 'comandante-c40-mk4') {
+      if (isDoubleFilter) {
+        rangeLabel = '20 - 25 clicks';
+        parsedRange = { min: 20, max: 25, unitLabel: 'clicks', precision: 0 };
+        note = 'French Press double filter style calibrated for Comandante C40: 20-25 clicks (medium-fine).';
+      } else {
+        rangeLabel = '31 - 35 clicks';
+        parsedRange = { min: 31, max: 35, unitLabel: 'clicks', precision: 0 };
+        note = 'French Press coarse style calibrated for Comandante C40: 31-35 clicks.';
+      }
+    } else if (grinder.id === 'baratza-encore') {
+      if (isDoubleFilter) {
+        rangeLabel = '#12 - #15';
+        parsedRange = { min: 12, max: 15, unitLabel: 'setting', precision: 0 };
+        note = 'French Press double filter style calibrated for Baratza Encore: #12-#15 (medium-fine).';
+      } else {
+        rangeLabel = '#26 - #32';
+        parsedRange = { min: 26, max: 32, unitLabel: 'setting', precision: 0 };
+        note = 'French Press coarse style calibrated for Baratza Encore: #26-#32.';
+      }
+    } else if (grinder.id === 'fellow-ode-gen-2') {
+      if (isDoubleFilter) {
+        rangeLabel = '3.0 - 5.0';
+        parsedRange = { min: 3.0, max: 5.0, unitLabel: '', precision: 1 };
+        note = 'French Press double filter style calibrated for Fellow Ode Gen 2: 3.0-5.0 (medium-fine).';
+      } else {
+        rangeLabel = '8.0 - 11.0';
+        parsedRange = { min: 8.0, max: 11.0, unitLabel: '', precision: 1 };
+        note = 'French Press coarse style calibrated for Fellow Ode Gen 2: 8.0-11.0.';
+      }
+    } else if (grinder.id === 'timemore-c2') {
+      if (isDoubleFilter) {
+        rangeLabel = '16 - 20 clicks';
+        parsedRange = { min: 16, max: 20, unitLabel: 'clicks', precision: 0 };
+        note = 'French Press double filter style calibrated for Timemore C2: 16-20 clicks (medium-fine).';
+      } else {
+        rangeLabel = '24 - 28 clicks';
+        parsedRange = { min: 24, max: 28, unitLabel: 'clicks', precision: 0 };
+        note = 'French Press coarse style calibrated for Timemore C2: 24-28 clicks.';
+      }
+    }
+
+    if (parsedRange) {
+      return {
+        id: `calibrated_fp_${grinder.id}_${deviceProfile.id}`,
+        grinderId: grinder.id,
+        brewMode,
+        profileIds: [deviceProfile.id],
+        rangeLabel,
+        parsedRange,
+        note,
+        referenceType: 'method_specific_master_table',
+        calibrationRequired: false,
+        source: 'french_press_style_calibration',
+        sourceUrls: grinder.sourceUrls || [],
+        verificationLevel: 'curated',
+        verifiedAt: '2026-06-04',
+        popularityTier: grinder.popularityTier,
+        marketSegment: grinder.marketSegment,
+        releaseStatus: grinder.releaseStatus,
+        confidence: 'high',
+        catalogVersion: catalog.catalogVersion,
+      } satisfies GrinderSettingReference;
+    }
+  }
+
   const modeMatch = (entry: GrinderSettingReference) => entry.brewMode === brewMode || entry.brewMode === 'both';
   const espressoNotRecommended = deviceProfile.methodFamily === 'espresso'
     && isEspressoNotRecommendedGrinder(grinder);

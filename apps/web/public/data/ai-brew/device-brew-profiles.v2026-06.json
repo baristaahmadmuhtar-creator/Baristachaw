@@ -6190,7 +6190,7 @@
       "tempDeltaC": -1.5,
       "brewTimeDeltaSec": -15,
       "grindBias": "finer",
-      "note": "AeroPress standard style: upright charge, 3 stirs, short steep, steady 25-35 second press, stop before hiss.",
+      "note": "AeroPress standard style: upright charge, 3 stirs, short steep, and steady 25-35 second press through the hiss for a complete balanced cup.",
       "steps": [
         {
           "id": "charge",
@@ -6222,7 +6222,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 90,
-          "note": "Press steadily for 25-35 seconds and stop before the hiss turns harsh."
+          "note": "Press steadily for 25-35 seconds and continue through the hiss with light, even force."
         }
       ],
       "sourceUrls": [
@@ -6253,7 +6253,7 @@
       "ratioDelta": -0.1,
       "tempDeltaC": -1.2,
       "brewTimeDeltaSec": 0,
-      "grindBias": "finer",
+      "grindBias": "same",
       "note": "AeroPress Inverted style: steep, defined stir count, controlled press duration, and stop cue are encoded as operational steps.",
       "steps": [
         {
@@ -6286,7 +6286,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 95,
-          "note": "Press 30-40 seconds and stop before the dry hiss."
+          "note": "Press 30-40 seconds and continue through the hiss while keeping the cup and chamber aligned."
         }
       ],
       "sourceUrls": [
@@ -6414,7 +6414,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 105,
-          "note": "Press 30-40 seconds and stop before harsh hiss."
+          "note": "Press 30-40 seconds and continue through the hiss for a complete no-bypass cup."
         }
       ],
       "sourceUrls": [
@@ -6445,7 +6445,7 @@
       "ratioDelta": 0.35,
       "tempDeltaC": 0.2,
       "brewTimeDeltaSec": -12,
-      "grindBias": "same",
+      "grindBias": "coarser",
       "note": "AeroPress Bright Clean style: steep, defined stir count, controlled press duration, and stop cue are encoded as operational steps.",
       "steps": [
         {
@@ -6534,7 +6534,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 130,
-          "note": "Press 35-45 seconds and stop before dry hiss."
+          "note": "Press 35-45 seconds and continue through the hiss to carry texture into the cup."
         }
       ],
       "sourceUrls": [

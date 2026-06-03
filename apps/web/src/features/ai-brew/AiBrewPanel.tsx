@@ -6828,6 +6828,104 @@ function PlanResultDialog({
                     )}
                   </ResultDisclosureSection>
 
+                  {plan.methodFamily === 'aeropress' && (
+                    <ResultDisclosureSection
+                      title={id ? 'Troubleshooting AeroPress' : 'AeroPress Troubleshooting'}
+                      summary={id ? 'Guard kapasitas, style, dan tekanan' : 'Capacity, style, and press guards'}
+                      icon={<AlertTriangle size={15} />}
+                      defaultOpen={false}
+                      tone="amber"
+                    >
+                      <div className="space-y-3 text-sm leading-5">
+                        <div className="rounded-xl bg-surface-alpha p-3">
+                          <p className="font-semibold text-primary">{id ? 'Air Meluap / Ruang Terlalu Penuh' : 'Overflow / Chamber Too Full'}</p>
+                          <p className="mt-1 text-xs text-secondary">
+                            {id
+                              ? 'Gunakan batas praktis: sekitar 240 ml untuk posisi tegak dan 220 ml untuk inverted. Jika target volume lebih besar, pilih bypass terukur atau turunkan rasio air.'
+                              : 'Use the practical limit: about 240 ml upright and 220 ml inverted. If the target volume is larger, use measured bypass or tighten the water ratio.'}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-surface-alpha p-3">
+                          <p className="font-semibold text-primary">{id ? 'Cangkir Terlalu Tipis' : 'Cup Tastes Too Thin'}</p>
+                          <p className="mt-1 text-xs text-secondary">
+                            {id
+                              ? 'Penyebab umum: bypass terlalu banyak, gilingan terlalu kasar, atau suhu terlalu rendah untuk light roast. Solusi: kurangi bypass 10-20 ml, giling 1-2 klik lebih halus, atau naikkan suhu 1-2°C.'
+                              : 'Common cause: too much bypass, grind too coarse, or temperature too low for light roast. Solution: reduce bypass by 10-20 ml, grind 1-2 clicks finer, or raise temperature 1-2°C.'}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-surface-alpha p-3">
+                          <p className="font-semibold text-primary">{id ? 'Press Macet / Terlalu Berat' : 'Press Stalls / Feels Too Heavy'}</p>
+                          <p className="mt-1 text-xs text-secondary">
+                            {id
+                              ? 'Jangan dipaksa. Tarik penekan sedikit, tunggu 5 detik, lalu tekan lagi dengan tenaga badan ringan. Untuk seduhan berikutnya, kasar 1-2 klik atau kurangi adukan.'
+                              : 'Do not force it. Lift the plunger slightly, wait 5 seconds, then press again with light body weight. For the next brew, go 1-2 clicks coarser or reduce agitation.'}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-surface-alpha p-3">
+                          <p className="font-semibold text-primary">{id ? 'Inverted Tidak Stabil' : 'Inverted Feels Unstable'}</p>
+                          <p className="mt-1 text-xs text-secondary">
+                            {id
+                              ? 'Pastikan penekan masuk minimal 2 cm, meja rata, dan volume tidak melewati batas aman. Bila ragu, pakai posisi tegak dengan flow control cap.'
+                              : 'Make sure the plunger is inserted at least 2 cm, the table is level, and the volume stays under the safe cap. If unsure, brew upright with a flow control cap.'}
+                          </p>
+                        </div>
+                      </div>
+                    </ResultDisclosureSection>
+                  )}
+
+                  {plan.methodFamily === 'french_press' && (
+                    <ResultDisclosureSection
+                      title={id ? 'Troubleshooting French Press' : 'French Press Troubleshooting'}
+                      summary={id ? 'Panduan kendala mekanis & rasa' : 'Mechanical & taste troubleshooting'}
+                      icon={<AlertTriangle size={15} />}
+                      defaultOpen={false}
+                      tone="amber"
+                    >
+                      <div className="space-y-3 text-sm leading-5">
+                        <div className="rounded-xl bg-surface-alpha p-3">
+                          <p className="font-semibold text-primary">{id ? 'Asam Tipis & Encer' : 'Sour & Thin / Under-extracted'}</p>
+                          <p className="mt-1 text-xs text-secondary">
+                            {id
+                              ? 'Penyebab: gilingan terlalu kasar atau alat kehilangan panas di awal. Solusi: giling 2-3 klik lebih halus, panaskan alat lebih serius, dan pastikan semua bubuk basah sejak tuangan pertama.'
+                              : 'Cause: grind is too coarse or the brewer loses heat early. Solution: grind 2-3 clicks finer, preheat more thoroughly, and make sure all grounds wet on the first charge.'}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-surface-alpha p-3">
+                          <p className="font-semibold text-primary">{id ? 'Pahit Berdebu & Tajam' : 'Bitter & Dusty / Over-extracted'}</p>
+                          <p className="mt-1 text-xs text-secondary">
+                            {id
+                              ? 'Penyebab: penekan dipaksa turun cepat dan mengangkat sedimen halus. Solusi: tekan lebih pelan atau gunakan Clean Decant; apungkan penekan tepat di bawah permukaan tanpa mendorong dasar.'
+                              : 'Cause: the plunger is forced down quickly and lifts fine sediment. Solution: press more slowly or use Clean Decant; float the mesh just below the surface.'}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-surface-alpha p-3">
+                          <p className="font-semibold text-primary">{id ? 'Kering di Tenggorokan' : 'Astringent / Dry finish'}</p>
+                          <p className="mt-1 text-xs text-secondary">
+                            {id
+                              ? 'Penyebab: suhu terlalu tinggi untuk roast yang mudah larut, gilingan terlalu halus, atau adukan akhir terlalu kasar. Solusi: turunkan 2°C, kasar 1-2 klik, dan biarkan endapan turun sebelum tuang pisah.'
+                              : 'Cause: temperature is too high for an easy-solubility roast, grind is too fine, or late agitation is too rough. Solution: lower 2°C, go 1-2 clicks coarser, and let sediment settle before decanting.'}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-surface-alpha p-3">
+                          <p className="font-semibold text-primary">{id ? 'Plunger Macet / Keras' : 'Plunger Stuck / Clogged'}</p>
+                          <p className="mt-1 text-xs text-secondary">
+                            {id
+                              ? 'Penyebab: partikel halus menutup jalur filter atau kertas tambahan terlalu rapat. Solusi: jangan dipaksa; tarik penekan sedikit, tunggu 5 detik, lalu tekan ulang sangat pelan.'
+                              : 'Cause: fines block the filter path or added paper sits too tightly. Solution: do not force it; lift the plunger slightly, wait 5 seconds, then press again very slowly.'}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-surface-alpha p-3">
+                          <p className="font-semibold text-primary">{id ? 'Sedimen Bocor di Pinggir' : 'Silt Leak'}</p>
+                          <p className="mt-1 text-xs text-secondary">
+                            {id
+                              ? 'Penyebab: jaring tidak rapat, kertas terlipat, atau penekan turun miring. Solusi: pasang ulang filter, tekan lurus, dan tuang pisah perlahan agar sedimen tetap di dasar.'
+                              : 'Cause: mesh is not seated, paper folds, or the plunger travels at an angle. Solution: reseat the filter, press straight, and decant slowly.'}
+                          </p>
+                        </div>
+                      </div>
+                    </ResultDisclosureSection>
+                  )}
+
                   <ResultDisclosureSection
                     title={copy.waterSourceUsed}
                     summary={plan.waterBrandLabel || copy.waterSelectedManual}

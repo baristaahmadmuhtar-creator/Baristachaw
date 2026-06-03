@@ -304,8 +304,8 @@ const WORKFLOW_TUTORIALS: Record<AiBrewMethodFamily, WorkflowTutorialProfile> = 
       id: 'Rendam dengan tenang; AeroPress mendapat kejernihan dari kontak merata, bukan gerakan berat.',
     },
     release: {
-      en: 'Press with steady pressure and stop before forcing the final hiss.',
-      id: 'Tekan dengan tekanan stabil dan berhenti sebelum memaksa desis terakhir.',
+      en: 'Press with steady pressure and follow the active style cue; clarity styles stop earlier, body styles press through.',
+      id: 'Tekan dengan tekanan stabil dan ikuti cue gaya aktif; gaya jernih berhenti lebih awal, gaya body menekan sampai selesai.',
     },
     finish: {
       en: 'Stir the cup or bypass gently only when the recipe calls for it.',
@@ -320,24 +320,24 @@ const WORKFLOW_TUTORIALS: Record<AiBrewMethodFamily, WorkflowTutorialProfile> = 
   },
   french_press: {
     setup: {
-      en: 'Warm the beaker, add coarse coffee, and start with a calm, even charge.',
-      id: 'Hangatkan beaker, masukkan kopi kasar, lalu mulai dengan isi air yang tenang dan merata.',
+      en: 'Warm the French Press, add coarse coffee, and start with a calm, even charge.',
+      id: 'Hangatkan French Press, masukkan kopi kasar, lalu mulai dengan isi air yang tenang dan merata.',
     },
     entry: {
-      en: 'Make sure all grounds are wet, then leave the slurry quiet for the steep.',
-      id: 'Pastikan semua bubuk basah, lalu biarkan slurry tenang selama rendaman.',
+      en: 'Make sure all grounds are wet, then leave the mixture quiet for the steep.',
+      id: 'Pastikan semua bubuk basah, lalu biarkan campuran kopi tenang selama rendaman.',
     },
     main: {
       en: 'Keep the steep still; clarity comes from patience and fines settling.',
-      id: 'Jaga rendaman tetap diam; kejernihan datang dari sabar dan fines yang mengendap.',
+      id: 'Jaga rendaman tetap diam; kejernihan datang dari kesabaran dan partikel halus yang mengendap.',
     },
     release: {
       en: 'Plunge slowly to the surface of the grounds, then decant instead of squeezing.',
-      id: 'Tekan plunger pelan sampai permukaan ampas, lalu tuang pindah tanpa memeras.',
+      id: 'Tekan penekan pelan sampai permukaan ampas, lalu tuang pisah tanpa memeras.',
     },
     finish: {
       en: 'Decant fully so extraction stops and the last cup stays clean.',
-      id: 'Pindahkan seluruh kopi agar ekstraksi berhenti dan cup terakhir tetap bersih.',
+      id: 'Tuang pisah seluruh kopi agar ekstraksi berhenti dan cangkir terakhir tetap bersih.',
     },
   },
   espresso: {
@@ -540,114 +540,136 @@ function resolveWorkflowTutorialPhase(actionType: WorkflowGuideActionType): Work
 }
 
 const FRENCH_PRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
-  traditional: {
+  auto: {
     setup: {
-      en: 'Preheat your French Press beaker with hot water, discard the water, and add your coarsely ground coffee.',
-      id: 'Panaskan terlebih dahulu French Press beaker dengan air panas, buang airnya, lalu masukkan bubuk kopi gilingan kasar.',
+      en: 'Preheat the French Press and serving vessel, then add evenly coarse grounds for a forgiving immersion baseline.',
+      id: 'Panaskan French Press dan wadah saji, lalu masukkan kopi gilingan kasar merata untuk dasar rendaman yang mudah diulang.',
     },
     entry: {
-      en: 'Pour hot water rapidly to saturate every grounds pocket, ensuring complete saturation.',
-      id: 'Tuang air panas secara cepat untuk membasahi setiap bagian bubuk kopi, memastikan pembasahan sempurna.',
+      en: 'Pour firmly enough to wet every pocket of coffee; the first pour should saturate, not splash.',
+      id: 'Tuang cukup mantap sampai semua bagian kopi basah; tuangan awal harus membasahi, bukan memercik kasar.',
     },
     main: {
-      en: 'Place the lid on the plunger cleanly but do not press down; let the immersion steep calmly.',
-      id: 'Pasang tutup plunger dengan bersih tetapi jangan ditekan; biarkan rendaman (immersion) menyeduh dengan tenang.',
+      en: 'Let the crust sit quietly at first, then keep movement low so fines can settle instead of clouding the cup.',
+      id: 'Biarkan kerak kopi tenang di awal, lalu minimalkan gerakan agar partikel halus turun dan cangkir tidak keruh.',
     },
     release: {
-      en: 'Press the plunger down slowly with stable, gentle force until the mesh reaches the bottom puck.',
-      id: 'Tekan plunger ke bawah secara perlahan dengan tenaga yang lembut dan stabil hingga mesh menyentuh dasar bed kopi.',
+      en: 'Press gently only after settling; the plunger is a separator, not a squeezing tool.',
+      id: 'Tekan perlahan setelah fase endap; penekan berfungsi sebagai pemisah, bukan alat memeras kopi.',
     },
     finish: {
-      en: 'Decant the full beverage immediately into your cups or a carafe to prevent over-extraction and bitterness.',
-      id: 'Tuang pisah seluruh seduhan segera ke dalam cangkir atau wadah terpisah untuk mencegah over-ekstraksi dan rasa pahit.',
+      en: 'Decant promptly. Unfiltered immersion carries more coffee oils than paper-filtered coffee, so use paper if lipid exposure matters.',
+      id: 'Tuang pisah segera. Imersi tanpa kertas membawa lebih banyak minyak kopi, jadi gunakan kertas bila ingin paparan lipid lebih rendah.',
+    },
+  },
+  traditional: {
+    setup: {
+      en: 'Preheat the French Press, discard the rinse water, and add coarse grounds for a classic full-immersion cup.',
+      id: 'Panaskan French Press, buang air bilas, lalu masukkan kopi gilingan kasar untuk cangkir imersi klasik.',
+    },
+    entry: {
+      en: 'Pour hot water quickly and evenly so the whole coffee mass reaches full contact at the same time.',
+      id: 'Tuang air panas cepat dan merata agar seluruh bubuk kopi mulai kontak pada waktu yang sama.',
+    },
+    main: {
+      en: 'Rest with the lid on and avoid repeated stirring; calm contact builds sweetness while fines settle.',
+      id: 'Tutup ringan dan hindari adukan berulang; kontak tenang membangun manis sambil menurunkan partikel halus.',
+    },
+    release: {
+      en: 'Break the crust gently, skim rough foam if needed, then press slowly without forcing the bottom sediment.',
+      id: 'Pecah kerak perlahan, bersihkan busa kasar bila perlu, lalu tekan pelan tanpa memaksa sedimen dasar.',
+    },
+    finish: {
+      en: 'Decant immediately into cups or a clean vessel so the brew stops sitting on the grounds.',
+      id: 'Tuang pisah segera ke cangkir atau wadah bersih agar seduhan tidak terus kontak dengan ampas.',
     },
   },
   clean_decant: {
     setup: {
-      en: 'Preheat the beaker, weigh your medium-coarse grounds, and start with a swift, boiling charge.',
-      id: 'Panaskan beaker, timbang kopi gilingan medium-coarse, lalu mulai dengan tuangan air mendidih yang cepat.',
+      en: 'Preheat the press and prepare a second vessel; this style prioritizes settling over force.',
+      id: 'Panaskan alat dan siapkan wadah kedua; gaya ini mengutamakan pengendapan, bukan tekanan.',
     },
     entry: {
-      en: 'Pour boiling water swiftly over the grounds to wet all coffee evenly and maximize heat retention.',
-      id: 'Tuang air mendidih dengan cepat ke atas kopi untuk membasahi kopi secara merata dan memaksimalkan retensi panas.',
+      en: 'Pour swiftly to wet all grounds, then leave the brewer still so the heavy particles can start sinking.',
+      id: 'Tuang cepat sampai semua bubuk basah, lalu diamkan alat agar partikel berat mulai turun.',
     },
     main: {
-      en: 'Let steep for 4 minutes. Stir the crust gently, skim the surface foam and floating oils, and let settle for 4-5 minutes.',
-      id: 'Biarkan merendam 4 menit. Aduk kerak (crust) perlahan, bersihkan busa permukaan dan minyak mengapung, lalu biarkan mengendap 4-5 menit.',
+      en: 'After the first steep, disturb the crust gently and give the cup several quiet minutes to clear.',
+      id: 'Setelah rendaman awal, pecah kerak dengan lembut dan beri beberapa menit tenang agar seduhan lebih bersih.',
     },
     release: {
-      en: 'Fit the plunger and lower it just to touch the liquid surface; do not plunge down to avoid disturbing settled fines.',
-      id: 'Pasang plunger dan turunkan mesh hanya sampai batas permukaan kopi; jangan ditekan ke bawah agar partikel halus dasar tidak keruh.',
+      en: 'Float the plunger just below the surface; do not press it down into the settled fines.',
+      id: 'Apungkan penekan tepat di bawah permukaan; jangan dorong ke dasar yang berisi partikel halus.',
     },
     finish: {
-      en: 'Decant extremely slowly and gently, leaving the last bit of liquid and settled silt inside the beaker.',
-      id: 'Tuang pisah sangat perlahan dan lembut, tinggalkan sedikit cairan sisa dan endapan lumpur halus di dalam beaker.',
+      en: 'Decant very slowly and leave the last silty liquid behind for a cleaner French Press cup.',
+      id: 'Tuang pisah sangat perlahan dan tinggalkan cairan akhir yang berendapan untuk cangkir lebih bersih.',
     },
   },
   double_filter: {
     setup: {
-      en: 'Warm the beaker, load your medium grounds, and prepare your pre-wet double mesh screens or paper filter insert.',
-      id: 'Hangatkan beaker, masukkan kopi gilingan sedang, dan siapkan double mesh screen atau filter kertas basah.',
+      en: 'Preheat the brewer, rinse the paper if used, and fit it neatly so the mesh still moves straight.',
+      id: 'Panaskan alat, bilas kertas bila dipakai, lalu pasang rapi agar jaring penekan tetap bergerak lurus.',
     },
     entry: {
-      en: 'Pour water in slow circular motions to saturate the grounds evenly without channeling.',
-      id: 'Tuang air secara perlahan dengan gerakan memutar lembut untuk membasahi bed kopi secara merata tanpa rongga air.',
+      en: 'Wet the grounds evenly before the main steep; avoid a dusty grind that can clog the added paper.',
+      id: 'Basahi bubuk merata sebelum rendaman utama; hindari gilingan terlalu berdebu yang mudah menyumbat kertas.',
     },
     main: {
-      en: 'Steep cleanly with the lid off; give a light, gentle swirl near the end to detach grounds from the walls.',
-      id: 'Rendam bersih dengan tutup terbuka; goyang memutar (swirl) lembut menjelang akhir untuk melepaskan bubuk kopi dari dinding.',
+      en: 'Keep the steep compact and calm. The extra filter increases resistance, so agitation must stay controlled.',
+      id: 'Jaga rendaman singkat dan tenang. Filter tambahan menaikkan hambatan, jadi agitasi harus terkendali.',
     },
     release: {
-      en: 'Insert the double filter assembly, and plunge extremely slowly with uniform, light force over 30 seconds.',
-      id: 'Pasang rangkaian filter ganda, lalu tekan plunger sangat lambat dengan tenaga ringan yang seragam selama 30 detik.',
+      en: 'Press slowly for 45-60 seconds with light, even force so the paper does not tear or clog.',
+      id: 'Tekan perlahan 45-60 detik dengan tenaga ringan merata agar kertas tidak robek atau tersumbat.',
     },
     finish: {
-      en: 'Serve the ultra-clean, silt-free cup immediately; enjoy high clarity and round, sweet immersion body.',
-      id: 'Segera sajikan cangkir yang sangat jernih bebas ampas halus; nikmati kejernihan rasa tinggi dan body immersion yang manis.',
+      en: 'Decant cleanly; paper filtration reduces sediment and coffee-oil carryover compared with metal mesh alone.',
+      id: 'Tuang pisah bersih; filtrasi kertas mengurangi sedimen dan minyak kopi dibanding jaring logam saja.',
     },
   },
   heavy_concentrate: {
     setup: {
-      en: 'Warm the beaker, add a high dose of fine-medium grounds, and prepare separate hot bypass water if desired.',
-      id: 'Hangatkan beaker, masukkan bubuk kopi gilingan fine-medium dosis tinggi, dan siapkan air bypass panas jika diperlukan.',
+      en: 'Preheat thoroughly and keep enough headroom for a heavy dose; this style is built for strength.',
+      id: 'Panaskan alat dengan baik dan sisakan ruang aman untuk dosis besar; gaya ini dibuat untuk kekuatan rasa.',
     },
     entry: {
-      en: 'Pour water rapidly over the heavy dose to fully saturate the grounds, then stir vigorously 5-6 times.',
-      id: 'Tuang air panas secara cepat ke bed kopi dosis tinggi agar basah sempurna, lalu segera aduk kuat 5-6 kali.',
+      en: 'Pour quickly over the heavy dose and stir 5-6 times so no dry pockets remain.',
+      id: 'Tuang cepat ke dosis besar dan aduk 5-6 kali agar tidak ada bagian kering tertinggal.',
     },
     main: {
-      en: 'Let the thick concentrate steep, allowing high agitation to dissolve heavy cocoa and syrupy body compounds.',
-      id: 'Biarkan konsentrat kental merendam, membiarkan agitasi kuat melarutkan body cokelat tebal dan manis karamel.',
+      en: 'Steep long enough to build body and cocoa-like depth, but avoid rough stirring late in the brew.',
+      id: 'Rendam cukup lama untuk membangun body dan rasa cokelat, tetapi hindari adukan kasar di akhir.',
     },
     release: {
-      en: 'Press the heavy plunger steadily down to the bottom of the puck, extracting the rich soluble core.',
-      id: 'Tekan plunger yang terasa berat dengan stabil hingga ke dasar bed kopi, memeras seluruh inti sari rasa kental.',
+      en: 'Let the dense mixture settle briefly before pressing; forcing early makes the cup dusty.',
+      id: 'Biarkan campuran pekat mengendap sebentar sebelum ditekan; memaksa terlalu awal membuat cangkir berdebu.',
     },
     finish: {
-      en: 'Serve as a rich concentrate shot, or dilute with clean bypass water to open up sweet, balanced mouthfeel.',
-      id: 'Sajikan langsung sebagai konsentrat kental padat, atau encerkan dengan air bypass untuk membuka mouthfeel seimbang.',
+      en: 'Decant as a concentrate for milk, ice, or controlled dilution, then record the final strength.',
+      id: 'Tuang pisah sebagai konsentrat untuk susu, es, atau dilusi terukur, lalu catat kekuatan akhirnya.',
     },
   },
   sweet_immersion: {
     setup: {
-      en: 'Preheat the beaker, weigh your medium-coarse grounds, and use a moderate temperature kettle.',
-      id: 'Hangatkan beaker, timbang kopi gilingan medium-coarse, dan pastikan menggunakan air bersuhu sedang.',
+      en: 'Preheat the brewer and use slightly cooler water with coarse, even grounds for a softer sweet cup.',
+      id: 'Panaskan alat dan gunakan air sedikit lebih rendah dengan gilingan kasar merata untuk cangkir manis lembut.',
     },
     entry: {
-      en: 'Pour water gently to promote sweetness, and stir gently exactly 2 times with a light touch.',
-      id: 'Tuang air secara lembut untuk memicu rasa manis, lalu segera aduk perlahan tepat 2 kali dengan sentuhan ringan.',
+      en: 'Pour gently and stir only twice; the goal is complete wetting without harsh turbulence.',
+      id: 'Tuang lembut dan aduk dua kali saja; tujuannya basah merata tanpa turbulensi kasar.',
     },
     main: {
-      en: 'Steep quietly at a slightly lower temperature to preserve sweet caramel solubility and protect against bitterness.',
-      id: 'Rendam tenang pada suhu sedikit lebih rendah untuk menjaga kelarutan manis karamel dan melindunginya dari rasa pahit.',
+      en: 'Steep quietly so sweetness develops while late bitterness stays restrained.',
+      id: 'Rendam tenang agar rasa manis terbentuk sementara pahit akhir tetap tertahan.',
     },
     release: {
-      en: 'Plunge extremely slowly over 30 seconds with feather-light force to avoid fines migration.',
-      id: 'Tekan plunger sangat perlahan selama 30 detik dengan tenaga sangat ringan untuk menghindari perpindahan partikel halus.',
+      en: 'Press with very light force and let the mesh guide the grounds instead of compressing them.',
+      id: 'Tekan dengan tenaga sangat ringan dan biarkan jaring menahan bubuk tanpa memadatkannya.',
     },
     finish: {
-      en: 'Decant immediately into your cups; serve a beautifully sweet, round, and highly comforting cup.',
-      id: 'Tuang pisah segera ke cangkir; sajikan cangkir yang sangat manis, bulat lembut, dan sangat nyaman dinikmati.',
+      en: 'Decant right away and serve a round, sweet cup before the brew keeps extracting in the press.',
+      id: 'Tuang pisah segera dan sajikan cangkir manis bulat sebelum seduhan terus kontak di alat.',
     },
   },
 };

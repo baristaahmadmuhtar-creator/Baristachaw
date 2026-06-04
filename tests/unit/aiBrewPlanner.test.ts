@@ -7046,6 +7046,174 @@ test('French Press style-aware planner resolves correct profiles, custom physics
   }
 });
 
+test('French Press Auto Traditional routes targets, dose batches, origins, and health guardrails safely', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const dripper = productionCatalog.drippers.find((item) => item.methodFamily === 'french_press')
+    || productionCatalog.drippers.find((item) => item.id === 'french-press');
+  assert.ok(dripper, 'French Press dripper must exist');
+  const base = createDefaultAiBrewFormState(productionCatalog);
+
+  const autoCases = [
+    { targetProfileId: 'more_sweetness', expectedStyle: 'sweet_immersion', expectedText: /sweet|manis|gentle|tenang/i },
+    { targetProfileId: 'soft_round', expectedStyle: 'sweet_immersion', expectedText: /sweet|manis|gentle|tenang/i },
+    { targetProfileId: 'floral_transparent', expectedStyle: 'clean_decant', expectedText: /clean|decant|settle|endap|jernih/i },
+    { targetProfileId: 'more_acidity', expectedStyle: 'clean_decant', expectedText: /clean|decant|settle|endap|jernih/i },
+    { targetProfileId: 'more_body', expectedStyle: 'heavy_concentrate', expectedText: /concentrate|konsentrat|body|milk|susu/i },
+    { targetProfileId: 'dense_comforting', expectedStyle: 'heavy_concentrate', expectedText: /concentrate|konsentrat|body|milk|susu/i },
+    { targetProfileId: 'balance_clean', expectedStyle: 'traditional', expectedText: /traditional|tradisional|immersion|rendam/i },
+  ] as const;
+
+  for (const entry of autoCases) {
+    const plan = buildAiBrewPlan({
+      ...base,
+      dripperId: dripper.id,
+      frenchPressStyle: 'auto',
+      targetProfileId: entry.targetProfileId,
+      doseG: '20',
+      waterMode: 'manual',
+      waterTdsPpm: '95',
+      waterHardnessPpm: '45',
+      waterAlkalinityPpm: '35',
+    }, productionCatalog);
+    const text = collectPlanNarrative(plan);
+
+    assert.equal(plan.methodFamily, 'french_press');
+    assert.equal(plan.recipeStyle, entry.expectedStyle, `${entry.targetProfileId} should auto-route to ${entry.expectedStyle}`);
+    assert.match(text, entry.expectedText, `${entry.targetProfileId} should carry style-specific French Press copy`);
+    assert.doesNotMatch(text, /\b(final pour|tuang akhir|spiral|drawdown bed|center-to-mid|wall rinse)\b/i);
+    assert.doesNotMatch(text, /\b(LDL.*\d+|cholesterol.*\d+|guarantee|menjamin|medical advice|saran medis)\b/i);
+  }
+
+  const batches = [
+    { doseG: '5', water: [70, 85], ratio: [14, 16.7], warning: /small batch|minimum dose|rendaman kecil|dosis kecil/i },
+    { doseG: '10', water: [140, 165], ratio: [14, 16.7], warning: /small batch|minimum dose|rendaman kecil|dosis kecil/i },
+    { doseG: '15', water: [210, 255], ratio: [14, 16.7], warning: /250 ml|small batch|batch kecil/i },
+    { doseG: '30', water: [420, 500], ratio: [14, 16.7], warning: /500 ml|medium batch|batch sedang/i },
+    { doseG: '50', water: [500, 560], ratio: [9, 11.5], warning: /headroom|ruang aman|heavy dose|dosis besar/i, style: 'heavy_concentrate' },
+    { doseG: '80', water: [560, 660], ratio: [7, 9.5], warning: /maximum practical|batas praktis|headroom|ruang aman/i, style: 'heavy_concentrate' },
+  ] as const;
+
+  for (const entry of batches) {
+    const plan = buildAiBrewPlan({
+      ...base,
+      dripperId: dripper.id,
+      frenchPressStyle: entry.style || 'traditional',
+      targetProfileId: entry.style === 'heavy_concentrate' ? 'more_body' : 'balance_clean',
+      doseG: entry.doseG,
+      waterMode: 'manual',
+      waterTdsPpm: '95',
+      waterHardnessPpm: '45',
+      waterAlkalinityPpm: '35',
+    }, productionCatalog);
+    const text = [
+      collectPlanNarrative(plan),
+      ...plan.notes,
+      ...plan.warnings,
+      ...plan.confidenceNotes,
+    ].join(' ');
+    assert.ok(plan.totalWaterMl >= entry.water[0] && plan.totalWaterMl <= entry.water[1], `${entry.doseG} g water ${plan.totalWaterMl} ml`);
+    assert.ok(plan.finalBeverageRatio >= entry.ratio[0] && plan.finalBeverageRatio <= entry.ratio[1], `${entry.doseG} g ratio 1:${plan.finalBeverageRatio}`);
+    assert.match(text, entry.warning, `${entry.doseG} g should expose batch/headroom guardrail`);
+  }
+
+  const origins = [
+    { coffeeName: 'Ethiopia Yirgacheffe washed', pattern: /Ethiopia|floral|clean decant|tuang pisah bersih/i },
+    { coffeeName: 'Kenya SL28 washed', pattern: /Kenya|acidity|bright|clean decant|tuang pisah bersih/i },
+    { coffeeName: 'Brazil natural cerrado', pattern: /Brazil|nut|body|sweet immersion|rendaman manis/i },
+    { coffeeName: 'Sumatra wet hulled', pattern: /Sumatra|earth|body|concentrate|konsentrat/i },
+    { coffeeName: 'Java washed arabica', pattern: /Java|balanced|sweet|rendaman/i },
+    { coffeeName: 'Flores Bajawa honey', pattern: /Flores|spice|sweet|rendaman/i },
+  ] as const;
+
+  for (const entry of origins) {
+    const plan = buildAiBrewPlan({
+      ...base,
+      dripperId: dripper.id,
+      frenchPressStyle: 'auto',
+      coffeeName: entry.coffeeName,
+      targetProfileId: /Ethiopia|Kenya/i.test(entry.coffeeName) ? 'floral_transparent' : /Sumatra/i.test(entry.coffeeName) ? 'more_body' : 'more_sweetness',
+      doseG: '20',
+      waterMode: 'manual',
+      waterTdsPpm: '95',
+      waterHardnessPpm: '45',
+      waterAlkalinityPpm: '35',
+    }, productionCatalog);
+    assert.match([
+      collectPlanNarrative(plan),
+      ...plan.notes,
+      ...plan.warnings,
+      ...plan.confidenceNotes,
+    ].join(' '), entry.pattern);
+  }
+});
+
+test('French Press grinder calibration covers requested master grinder set by style', () => {
+  const catalog = buildProductionAiBrewCatalogForTests();
+  const dripper = catalog.drippers.find((item) => item.methodFamily === 'french_press')
+    || catalog.drippers.find((item) => item.id === 'french-press');
+  assert.ok(dripper);
+  const base = createDefaultAiBrewFormState(catalog);
+  const grinders = [
+    /Comandante C40/i,
+    /Timemore C2/i,
+    /Timemore S3/i,
+    /KINGrinder K6/i,
+    /Baratza Encore$/i,
+    /Fellow Ode Gen 2/i,
+  ];
+
+  for (const grinderPattern of grinders) {
+    const grinder = catalog.grinders.find((item) => grinderPattern.test(item.name));
+    assert.ok(grinder, `Missing grinder ${grinderPattern}`);
+    const coarse = buildAiBrewPlan({
+      ...base,
+      dripperId: dripper.id,
+      grinderId: grinder.id,
+      frenchPressStyle: 'traditional',
+      targetProfileId: 'balance_clean',
+      doseG: '20',
+      waterMode: 'manual',
+      waterTdsPpm: '95',
+      waterHardnessPpm: '45',
+      waterAlkalinityPpm: '35',
+    }, catalog);
+    const doubleFilter = buildAiBrewPlan({
+      ...base,
+      dripperId: dripper.id,
+      grinderId: grinder.id,
+      frenchPressStyle: 'double_filter',
+      targetProfileId: 'floral_transparent',
+      doseG: '20',
+      waterMode: 'manual',
+      waterTdsPpm: '95',
+      waterHardnessPpm: '45',
+      waterAlkalinityPpm: '35',
+    }, catalog);
+    const heavy = buildAiBrewPlan({
+      ...base,
+      dripperId: dripper.id,
+      grinderId: grinder.id,
+      frenchPressStyle: 'heavy_concentrate',
+      targetProfileId: 'more_body',
+      doseG: '40',
+      waterMode: 'manual',
+      waterTdsPpm: '95',
+      waterHardnessPpm: '45',
+      waterAlkalinityPpm: '35',
+    }, catalog);
+
+    assert.match(`${coarse.grindRecommendation} ${coarse.grindBandLabel}`, /coarse|kasar|click|setting|numbers|dial/i, `${grinder.name} coarse French Press`);
+    assert.match(`${doubleFilter.grindRecommendation} ${doubleFilter.grindBandLabel}`, /medium|filter|click|setting|numbers|dial/i, `${grinder.name} double-filter French Press`);
+    assert.match(`${heavy.grindRecommendation} ${heavy.grindBandLabel}`, /coarse|medium|concentrate|click|setting|numbers|dial/i, `${grinder.name} heavy French Press`);
+    assert.match(
+      coarse.warnings
+        .concat(doubleFilter.warnings, heavy.warnings, coarse.confidenceNotes, doubleFilter.confidenceNotes, heavy.confidenceNotes)
+        .join(' '),
+      /starting point|calibrat|zero|season|titik awal|kalibrasi/i,
+    );
+  }
+});
+
 test('no-bypass and steep-release light washed floral plans keep a warmer service floor', () => {
   const productionCatalog = buildProductionAiBrewCatalogForTests();
   const pulsar = productionCatalog.drippers.find((item) => item.id === 'nextlevel-pulsar');

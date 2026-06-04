@@ -1083,6 +1083,13 @@ function parseDose(value: string) {
   return clamp(parsed, 8, 40);
 }
 
+function parseDoseForMethod(value: string, methodFamily: AiBrewMethodFamily) {
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed)) return methodFamily === 'french_press' ? 20 : 15;
+  if (methodFamily === 'french_press') return clamp(parsed, 5, 80);
+  return clamp(parsed, 8, 40);
+}
+
 function resolveManualPresetScalingRatio(preset: ManualBrewPreset) {
   const explicitRatio = preset.targetDefaults.targetRatio;
   if (typeof explicitRatio === 'number' && Number.isFinite(explicitRatio) && explicitRatio > 0) return explicitRatio;
@@ -4686,8 +4693,8 @@ function deriveMethodFamilyAdjustment(params: {
         adjustment.tempDeltaC = -0.3;
         adjustment.brewTimeDeltaSec = 15; // Shorter contact due to medium-fine grind
         adjustment.grindBias = 'finer';
-        adjustment.notes.push('French Press double filter style uses a medium-fine grind and a 1:14.3 ratio, using paper filtration to reduce sediment and retain more coffee lipids than metal mesh alone.');
-        adjustment.notes.push('French Press health guard: paper filtration is the safer default when users want lower diterpene exposure, but this is a brewing guardrail rather than medical advice.');
+        adjustment.notes.push('French Press double filter style uses a medium to medium-coarse starting grind and a 1:14.3 ratio, using paper filtration to reduce sediment and lower coffee-oil carryover versus metal mesh alone.');
+        adjustment.notes.push('French Press health guard: paper filtration is the safer default when users want lower diterpene exposure; treat this as a brewing guardrail and ask a clinician for personal health decisions.');
       } else if (params.recipeStyle === 'clean_decant') {
         adjustment.ratioDelta = 0.0; // 1:15
         adjustment.tempDeltaC = -0.4;
@@ -7576,12 +7583,13 @@ function resolveFrenchPressProfileId(
   const explicitStyle = options?.frenchPressStyle && options.frenchPressStyle !== 'auto'
     ? options.frenchPressStyle
     : undefined;
+  const targetProfileId = options?.targetProfileId;
   const style = explicitStyle
-    || (options?.targetProfileId === 'more_acidity'
-      ? 'double_filter'
-      : options?.targetProfileId === 'more_sweetness'
-        ? 'sweet_immersion'
-        : options?.targetProfileId === 'more_body'
+    || (targetProfileId === 'more_sweetness' || targetProfileId === 'soft_round'
+      ? 'sweet_immersion'
+      : targetProfileId === 'more_acidity' || targetProfileId === 'floral_transparent' || targetProfileId === 'fruit_forward'
+        ? 'clean_decant'
+        : targetProfileId === 'more_body' || targetProfileId === 'dense_comforting'
           ? 'heavy_concentrate'
           : 'traditional');
   return style === 'traditional' ? 'profile_french_press_hot' : `profile_french_press_${style}_hot`;
@@ -7651,7 +7659,7 @@ function finalizePlanCore(
 ) {
   const targetProfile = findTargetProfile(catalog, input.targetProfileId) || catalog.targetProfiles[0];
   const targetPourBehavior = resolveTargetPourBehavior(targetProfile.id, targetProfile);
-  const doseG = parseDose(input.doseG);
+  const selectionDoseG = parseDose(input.doseG);
   const preliminaryMethodFamily = deviceSelection.profile.methodFamily || dripper.methodFamily || 'v60';
   const switchSelection = preliminaryMethodFamily === 'hario_switch'
     ? resolveSwitchPlanSelection({
@@ -7663,7 +7671,7 @@ function finalizePlanCore(
       processEntry,
       waterClassification: waterBrand?.classification,
       grinderVerification: grinderSetting?.verificationLevel,
-      doseG,
+      doseG: selectionDoseG,
     })
     : null;
   const kalitaSelection = preliminaryMethodFamily === 'kalita_wave'
@@ -7674,7 +7682,7 @@ function finalizePlanCore(
       profile: deviceSelection.profile,
       targetProfile,
       processEntry,
-      doseG,
+      doseG: selectionDoseG,
     })
     : null;
   const cleverSelection = preliminaryMethodFamily === 'clever_dripper' && isCleverDripperId(dripper.id)
@@ -7685,7 +7693,7 @@ function finalizePlanCore(
       profile: deviceSelection.profile,
       targetProfile,
       processEntry,
-      doseG,
+      doseG: selectionDoseG,
     })
     : null;
   const chemexSelection = preliminaryMethodFamily === 'chemex' && isChemexDripperId(dripper.id)
@@ -7696,7 +7704,7 @@ function finalizePlanCore(
       profile: deviceSelection.profile,
       targetProfile,
       processEntry,
-      doseG,
+      doseG: selectionDoseG,
     })
     : null;
   const mokaSelection = preliminaryMethodFamily === 'moka_pot' && isMokaPotDripperId(dripper.id)
@@ -7707,7 +7715,7 @@ function finalizePlanCore(
       profile: deviceSelection.profile,
       targetProfile,
       processEntry,
-      doseG,
+      doseG: selectionDoseG,
     })
     : null;
   const coldBrewSelection = preliminaryMethodFamily === 'cold_brew' && isColdBrewDripperId(dripper.id)
@@ -7718,7 +7726,7 @@ function finalizePlanCore(
       profile: deviceSelection.profile,
       targetProfile,
       processEntry,
-      doseG,
+      doseG: selectionDoseG,
     })
     : null;
   const batchBrewSelection = preliminaryMethodFamily === 'batch_brew' && isBatchBrewDripperId(dripper.id)
@@ -7729,7 +7737,7 @@ function finalizePlanCore(
       profile: deviceSelection.profile,
       targetProfile,
       processEntry,
-      doseG,
+      doseG: selectionDoseG,
     })
     : null;
   const siphonSelection = preliminaryMethodFamily === 'siphon' && isSiphonDripperId(dripper.id)
@@ -7740,7 +7748,7 @@ function finalizePlanCore(
       profile: deviceSelection.profile,
       targetProfile,
       processEntry,
-      doseG,
+      doseG: selectionDoseG,
     })
     : null;
   const origamiSelection = preliminaryMethodFamily === 'origami' && isOrigamiDripperId(dripper.id)
@@ -7751,7 +7759,7 @@ function finalizePlanCore(
       profile: deviceSelection.profile,
       targetProfile,
       processEntry,
-      doseG,
+      doseG: selectionDoseG,
     })
     : null;
   const aprilSelection = preliminaryMethodFamily === 'april' && isAprilDripperId(dripper.id)
@@ -7762,7 +7770,7 @@ function finalizePlanCore(
       profile: deviceSelection.profile,
       targetProfile,
       processEntry,
-      doseG,
+      doseG: selectionDoseG,
     })
     : null;
   const melittaSelection = preliminaryMethodFamily === 'melitta' && isMelittaDripperId(dripper.id)
@@ -7773,7 +7781,7 @@ function finalizePlanCore(
       profile: deviceSelection.profile,
       targetProfile,
       processEntry,
-      doseG,
+      doseG: selectionDoseG,
     })
     : null;
   const konoSelection = preliminaryMethodFamily === 'kono' && isKonoDripperId(dripper.id)
@@ -7784,7 +7792,7 @@ function finalizePlanCore(
       profile: deviceSelection.profile,
       targetProfile,
       processEntry,
-      doseG,
+      doseG: selectionDoseG,
     })
     : null;
   let effectiveDeviceProfile =
@@ -7802,6 +7810,7 @@ function finalizePlanCore(
     konoSelection?.adjustedProfile ||
     deviceSelection.profile;
   const methodFamily = effectiveDeviceProfile.methodFamily || dripper.methodFamily || 'v60';
+  const doseG = parseDoseForMethod(input.doseG, methodFamily);
   const manualPreset = findManualBrewPreset(catalog, input.manualPresetId || '');
   let methodId = resolveProfileBrewMethodId(effectiveDeviceProfile, methodFamily, input.brewMode);
   const ratioToolMethodId = methodId;
@@ -8198,6 +8207,89 @@ function finalizePlanCore(
         );
       }
     }
+  }
+
+  if (methodFamily === 'french_press') {
+    const fpStyle = effectiveDeviceProfile.recipeStyle || 'traditional';
+    if (
+      fpStyle === 'heavy_concentrate'
+      && targetWaterOverrideMl === null
+      && targetRatioOverride === null
+      && doseG >= 45
+    ) {
+      const heavyDoseRatio = doseG >= 60 ? 8 : 10;
+      if ((doseG >= 60 && recommendedRatio > heavyDoseRatio) || (doseG < 60 && recommendedRatio < heavyDoseRatio)) {
+        recommendedRatio = heavyDoseRatio;
+        totalWaterMl = roundBaristaVolumeMl(calcWaterFromDoseRatio(doseG, recommendedRatio), methodFamily);
+        hotWaterMl = totalWaterMl;
+        precisionOverrideNotes.push(
+          doseG >= 60
+            ? 'French Press maximum practical dose guard active: heavy concentrate is capped near 1:8 to protect vessel headroom; split the brew or use a larger press if more volume is needed.'
+            : 'French Press heavy concentrate dose guard active: 45-59 g service loads stay near 1:10 so strength is high without making the press dangerously full.'
+        );
+      }
+    }
+
+    if (doseG <= 10) {
+      precisionOverrideNotes.push(
+        'French Press small batch/minimum dose guard active: preheat hard, keep the charge compact, and decant promptly because tiny batches lose heat fast.'
+      );
+    } else if (doseG <= 16) {
+      precisionOverrideNotes.push(
+        'French Press 250 ml small batch guard active: this dose sits in the small-press range, so use a warm vessel and avoid late stirring.'
+      );
+    } else if (doseG >= 25 && doseG <= 35) {
+      precisionOverrideNotes.push(
+        'French Press 500 ml medium batch guard active: keep enough headroom for the crust, then settle and decant rather than forcing the plunger.'
+      );
+    }
+
+    if (doseG >= 35) {
+      precisionOverrideNotes.push(
+        'French Press heavy dose headroom guard active: leave room for crust expansion, use controlled agitation, and decant in one steady pour.'
+      );
+    }
+    if (doseG >= 60) {
+      precisionOverrideNotes.push(
+        'French Press maximum practical dose warning: 60-80 g loads are service-size batches and need a large press, strong preheat, and conservative headroom.'
+      );
+    }
+
+    if (input.roastLevel === 'light' || input.roastLevel === 'medium_light') {
+      precisionOverrideNotes.push(
+        'French Press roast guard: light and light-medium roasts need hotter preheated immersion, slightly longer contact, and controlled agitation before settling.'
+      );
+    } else if (input.roastLevel === 'medium_dark' || input.roastLevel === 'dark') {
+      precisionOverrideNotes.push(
+        'French Press roast guard: medium-dark and dark roasts need lower temperature, gentler agitation, and earlier clean decant to avoid dry bitterness.'
+      );
+    } else {
+      precisionOverrideNotes.push(
+        'French Press roast guard: medium roast stays near the baseline; adjust from taste before changing more than one variable.'
+      );
+    }
+
+    const originCue = `${input.coffeeName || ''} ${originAdjustment.matchedOrigins.join(' ')}`.toLowerCase();
+    if (originCue.includes('ethiopia')) {
+      precisionOverrideNotes.push('French Press origin cue: Ethiopia usually benefits from clean decant, floral clarity, steady heat, and restrained agitation.');
+    } else if (originCue.includes('kenya')) {
+      precisionOverrideNotes.push('French Press origin cue: Kenya acidity stays brighter with clean decant, careful settling, and no hard late press.');
+    } else if (originCue.includes('brazil')) {
+      precisionOverrideNotes.push('French Press origin cue: Brazil nut and chocolate profiles suit sweet immersion or body-forward service without rough agitation.');
+    } else if (originCue.includes('sumatra')) {
+      precisionOverrideNotes.push('French Press origin cue: Sumatra earthy body fits heavy concentrate or rich immersion, with early decant to keep the finish clean.');
+    } else if (originCue.includes('java')) {
+      precisionOverrideNotes.push('French Press origin cue: Java balanced spice works well with sweet immersion and a calm steep before clean decant.');
+    } else if (originCue.includes('flores')) {
+      precisionOverrideNotes.push('French Press origin cue: Flores spice and sweetness fit sweet immersion, moderate heat, and a slow decant after settling.');
+    }
+
+    precisionOverrideNotes.push(
+      'French Press science: full immersion moves toward equilibrium; TDS/EY respond to grind surface area, temperature, contact time, and agitation, then decanting stops contact.'
+    );
+    precisionOverrideNotes.push(
+      'French Press filtration guard: metal mesh carries more coffee oils and sediment than paper; double filter lowers lipid carryover without promising medical outcomes.'
+    );
   }
   const manualPresetBypassWaterMl = input.brewMode === 'hot'
     ? roundTo(Math.max(0, totalWaterMl - hotWaterMl), 0)

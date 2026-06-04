@@ -259,7 +259,7 @@ const COPY = {
     aeropressStyleBrightClean: 'Bright clean',
     aeropressStyleSweetBody: 'Sweet body',
     frenchPressStyleTitle: 'French Press style',
-    frenchPressStyleAuto: 'Auto',
+    frenchPressStyleAuto: 'Auto Traditional',
     frenchPressStyleTraditional: 'Traditional',
     frenchPressStyleCleanDecant: 'Clean decant',
     frenchPressStyleDoubleFilter: 'Double filter',
@@ -872,7 +872,7 @@ const COPY = {
     aeropressStyleBrightClean: 'Terang bersih',
     aeropressStyleSweetBody: 'Manis berisi',
     frenchPressStyleTitle: 'Gaya French Press',
-    frenchPressStyleAuto: 'Auto',
+    frenchPressStyleAuto: 'Auto tradisional',
     frenchPressStyleTraditional: 'Tradisional',
     frenchPressStyleCleanDecant: 'Tuang pisah bersih',
     frenchPressStyleDoubleFilter: 'Saring dua kali',
@@ -6849,7 +6849,7 @@ function PlanResultDialog({
                           <p className="font-semibold text-primary">{id ? 'Cangkir Terlalu Tipis' : 'Cup Tastes Too Thin'}</p>
                           <p className="mt-1 text-xs text-secondary">
                             {id
-                              ? 'Penyebab umum: bypass terlalu banyak, gilingan terlalu kasar, atau suhu terlalu rendah untuk light roast. Solusi: kurangi bypass 10-20 ml, giling 1-2 klik lebih halus, atau naikkan suhu 1-2°C.'
+                              ? 'Penyebab umum: bypass terlalu banyak, gilingan terlalu kasar, atau suhu terlalu rendah untuk roast terang. Solusi: kurangi bypass 10-20 ml, giling 1-2 klik lebih halus, atau naikkan suhu 1-2°C.'
                               : 'Common cause: too much bypass, grind too coarse, or temperature too low for light roast. Solution: reduce bypass by 10-20 ml, grind 1-2 clicks finer, or raise temperature 1-2°C.'}
                           </p>
                         </div>
@@ -6867,6 +6867,42 @@ function PlanResultDialog({
                             {id
                               ? 'Pastikan penekan masuk minimal 2 cm, meja rata, dan volume tidak melewati batas aman. Bila ragu, pakai posisi tegak dengan flow control cap.'
                               : 'Make sure the plunger is inserted at least 2 cm, the table is level, and the volume stays under the safe cap. If unsure, brew upright with a flow control cap.'}
+                          </p>
+                        </div>
+                      </div>
+                    </ResultDisclosureSection>
+                  )}
+
+                  {plan.methodFamily === 'french_press' && (
+                    <ResultDisclosureSection
+                      title={id ? 'Sains French Press' : 'French Press Science'}
+                      summary={id ? 'Imersi, panas, dan filtrasi' : 'Immersion, heat, and filtration'}
+                      icon={<FlaskConical size={15} />}
+                      defaultOpen={false}
+                    >
+                      <div className="grid gap-2.5 sm:grid-cols-3 text-sm leading-5">
+                        <div className="rounded-xl bg-surface-alpha p-3">
+                          <p className="font-semibold text-primary">{id ? 'Ekstraksi Imersi' : 'Immersion Extraction'}</p>
+                          <p className="mt-1 text-xs text-secondary">
+                            {id
+                              ? 'Rendaman bergerak menuju keseimbangan. TDS/EY dibentuk oleh luas permukaan gilingan, suhu, waktu kontak, dan sedikit agitasi awal.'
+                              : 'Full immersion moves toward equilibrium. TDS/EY is shaped by grind surface area, temperature, contact time, and light early agitation.'}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-surface-alpha p-3">
+                          <p className="font-semibold text-primary">{id ? 'Panas & Kerak' : 'Heat & Crust'}</p>
+                          <p className="mt-1 text-xs text-secondary">
+                            {id
+                              ? 'Panaskan alat lebih serius untuk dosis kecil. Pecah kerak dengan lembut, lalu beri waktu agar partikel halus turun sebelum tuang pisah.'
+                              : 'Preheat harder for small doses. Break the crust gently, then give fine particles time to settle before decanting.'}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-surface-alpha p-3">
+                          <p className="font-semibold text-primary">{id ? 'Filtrasi & Kesehatan' : 'Filtration & Health'}</p>
+                          <p className="mt-1 text-xs text-secondary">
+                            {id
+                              ? 'Jaring logam membawa lebih banyak minyak dan sedimen. Kertas atau filtrasi dua lapis menurunkan bawaan lemak kopi; ini guardrail seduh, bukan arahan kesehatan pribadi.'
+                              : 'Metal mesh carries more oils and sediment. Paper or double-filter lowers coffee-lipid carryover; this is a brewing guardrail, not personal health direction.'}
                           </p>
                         </div>
                       </div>
@@ -6902,7 +6938,7 @@ function PlanResultDialog({
                           <p className="font-semibold text-primary">{id ? 'Kering di Tenggorokan' : 'Astringent / Dry finish'}</p>
                           <p className="mt-1 text-xs text-secondary">
                             {id
-                              ? 'Penyebab: suhu terlalu tinggi untuk roast yang mudah larut, gilingan terlalu halus, atau adukan akhir terlalu kasar. Solusi: turunkan 2°C, kasar 1-2 klik, dan biarkan endapan turun sebelum tuang pisah.'
+                              ? 'Penyebab: suhu terlalu tinggi untuk profil sangrai yang mudah larut, gilingan terlalu halus, atau adukan akhir terlalu kasar. Solusi: turunkan 2°C, kasar 1-2 klik, dan biarkan endapan turun sebelum tuang pisah.'
                               : 'Cause: temperature is too high for an easy-solubility roast, grind is too fine, or late agitation is too rough. Solution: lower 2°C, go 1-2 clicks coarser, and let sediment settle before decanting.'}
                           </p>
                         </div>

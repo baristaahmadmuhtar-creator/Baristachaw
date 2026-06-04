@@ -112,7 +112,7 @@ const ALL_STYLE_TUTORIAL_CASES: Array<{
   styles: readonly string[];
   actions: readonly WorkflowGuideActionType[];
 }> = [
-  { methodFamily: 'french_press', styles: ['traditional', 'clean_decant', 'double_filter', 'heavy_concentrate', 'sweet_immersion'], actions: METHOD_ACTIONS.french_press },
+  { methodFamily: 'french_press', styles: ['auto', 'traditional', 'clean_decant', 'double_filter', 'heavy_concentrate', 'sweet_immersion'], actions: METHOD_ACTIONS.french_press },
   { methodFamily: 'kalita_wave', styles: ['traditional_flat_three', 'competition_fast_four', 'continuous_slow_stream', 'iced_wave', 'high_dose_concentrate'], actions: METHOD_ACTIONS.kalita_wave },
   { methodFamily: 'clever_dripper', styles: ['classic_closed', 'reverse_water_first', 'double_stage_hybrid', 'iced_clever', 'high_dose_concentrate'], actions: METHOD_ACTIONS.clever_dripper },
   { methodFamily: 'chemex', styles: ['traditional_three_pour', 'competition_multi_pulse', 'continuous_center_pour', 'iced_chemex', 'high_dose_heavy_body'], actions: METHOD_ACTIONS.chemex },
@@ -181,6 +181,20 @@ test('workflow tutorials keep method-language safety strict', () => {
 
   const paperFilter = resolveWorkflowTutorialDetail({ methodFamily: 'v60', actionType: 'bloom', brewMode: 'hot', language: 'en' });
   assert.match(paperFilter, /\b(bloom|bed|pour)\b/i);
+});
+
+test('French Press tutorials encode science and health guardrails without medical overclaim', () => {
+  const styles = ['auto', 'traditional', 'clean_decant', 'double_filter', 'heavy_concentrate', 'sweet_immersion'] as const;
+  const actions = METHOD_ACTIONS.french_press;
+  const combined = styles.flatMap((style) => actions.flatMap((actionType) => [
+    resolveWorkflowTutorialDetail({ methodFamily: 'french_press', recipeStyle: style, actionType, brewMode: 'hot', language: 'en' }),
+    resolveWorkflowTutorialDetail({ methodFamily: 'french_press', recipeStyle: style, actionType, brewMode: 'hot', language: 'id' }),
+  ])).join(' ');
+
+  assert.match(combined, /immersion|rendam|diffusion|difusi|equilibrium|TDS|EY|crust|kerak|thermal|panas|sediment|partikel/i);
+  assert.match(combined, /cafestol|kahweol|lipid|minyak kopi|paper-filtered|filtrasi kertas/i);
+  assert.doesNotMatch(combined, /\b(LDL\s*\d+|\d+\s*(?:mg\/dL|percent|%)|guarantee|menjamin|medical advice|saran medis|diagnosis)\b/i);
+  assert.doesNotMatch(combined, /\b(final pour|tuang akhir|spiral|drawdown bed|center-to-mid|wall rinse)\b/i);
 });
 
 test('V60 Indonesian tutorial copy avoids avoidable raw English terms', () => {

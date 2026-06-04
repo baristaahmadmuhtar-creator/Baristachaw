@@ -542,24 +542,24 @@ function resolveWorkflowTutorialPhase(actionType: WorkflowGuideActionType): Work
 const FRENCH_PRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   auto: {
     setup: {
-      en: 'Preheat the French Press and serving vessel, then add evenly coarse grounds for a forgiving immersion baseline.',
-      id: 'Panaskan French Press dan wadah saji, lalu masukkan kopi gilingan kasar merata untuk dasar rendaman yang mudah diulang.',
+      en: 'Auto Traditional selects the safest French Press lane from target, dose, roast, and water; preheat before dosing.',
+      id: 'Auto tradisional memilih jalur French Press paling aman dari target, dosis, profil sangrai, dan air; panaskan alat sebelum dosis.',
     },
     entry: {
-      en: 'Pour firmly enough to wet every pocket of coffee; the first pour should saturate, not splash.',
-      id: 'Tuang cukup mantap sampai semua bagian kopi basah; tuangan awal harus membasahi, bukan memercik kasar.',
+      en: 'Charge all water evenly, then let the selected style decide whether the brew needs cleaner settling, sweeter contact, or heavier strength.',
+      id: 'Tuang semua air merata, lalu biarkan gaya terpilih menentukan apakah seduhan butuh endapan bersih, kontak lebih manis, atau rasa lebih kuat.',
     },
     main: {
-      en: 'Let the crust sit quietly at first, then keep movement low so fines can settle instead of clouding the cup.',
-      id: 'Biarkan kerak kopi tenang di awal, lalu minimalkan gerakan agar partikel halus turun dan cangkir tidak keruh.',
+      en: 'Use quiet immersion as the baseline: diffusion, contact time, and heat retention shape TDS/EY more than repeated stirring.',
+      id: 'Gunakan rendaman tenang sebagai dasar: difusi, waktu kontak, dan panas alat membentuk TDS/EY lebih besar daripada adukan berulang.',
     },
     release: {
-      en: 'Press gently only after settling; the plunger is a separator, not a squeezing tool.',
-      id: 'Tekan perlahan setelah fase endap; penekan berfungsi sebagai pemisah, bukan alat memeras kopi.',
+      en: 'Press only as far as the chosen style needs; for clean service, float the plunger and protect the settled sediment.',
+      id: 'Tekan hanya sejauh kebutuhan gaya terpilih; untuk sajian bersih, apungkan penekan dan jaga endapan tetap di dasar.',
     },
     finish: {
-      en: 'Decant promptly. Unfiltered immersion carries more coffee oils than paper-filtered coffee, so use paper if lipid exposure matters.',
-      id: 'Tuang pisah segera. Imersi tanpa kertas membawa lebih banyak minyak kopi, jadi gunakan kertas bila ingin paparan lipid lebih rendah.',
+      en: 'Decant promptly and note the chosen filter path; metal mesh carries more sediment and oils, while paper lowers lipid carryover.',
+      id: 'Tuang pisah segera dan catat jalur filtrasi; jaring logam membawa lebih banyak sedimen dan minyak, sedangkan kertas menurunkan bawaan lemak kopi.',
     },
   },
   traditional: {
@@ -2346,7 +2346,7 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
   }
 
   if (context.methodFamily === 'french_press' && context.recipeStyle) {
-    const styleKey = context.recipeStyle === 'auto' ? 'traditional' : context.recipeStyle;
+    const styleKey = context.recipeStyle === 'auto' ? 'auto' : context.recipeStyle;
     const styleProfile = FRENCH_PRESS_STYLE_TUTORIALS[styleKey];
     if (styleProfile) {
       const copy = styleProfile[phase];

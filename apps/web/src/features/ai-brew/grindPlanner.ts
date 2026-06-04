@@ -203,50 +203,96 @@ export function resolveGrinderSettingReference(
   brewMode: 'hot' | 'iced',
 ) {
   if (deviceProfile.methodFamily === 'french_press') {
-    const isDoubleFilter = deviceProfile.recipeStyle === 'double_filter';
+    const style = deviceProfile.recipeStyle || 'traditional';
+    const isDoubleFilter = style === 'double_filter';
+    const isHeavy = style === 'heavy_concentrate';
     let rangeLabel = '';
     let parsedRange: ParsedNumericRange | null = null;
     let note = '';
 
     if (grinder.id === 'comandante-c40-mk4') {
       if (isDoubleFilter) {
-        rangeLabel = '20 - 25 clicks';
-        parsedRange = { min: 20, max: 25, unitLabel: 'clicks', precision: 0 };
-        note = 'French Press double filter style calibrated for Comandante C40: 20-25 clicks (medium-fine).';
+        rangeLabel = '22 - 27 clicks';
+        parsedRange = { min: 22, max: 27, unitLabel: 'clicks', precision: 0 };
+        note = 'French Press double filter starting point for Comandante C40: 22-27 clicks (medium to medium-coarse); calibrate from sediment and press resistance.';
+      } else if (isHeavy) {
+        rangeLabel = '24 - 31 clicks';
+        parsedRange = { min: 24, max: 31, unitLabel: 'clicks', precision: 0 };
+        note = 'French Press heavy concentrate starting point for Comandante C40: 24-31 clicks; tighten only if the cup tastes thin after decant.';
       } else {
         rangeLabel = '31 - 35 clicks';
         parsedRange = { min: 31, max: 35, unitLabel: 'clicks', precision: 0 };
-        note = 'French Press coarse style calibrated for Comandante C40: 31-35 clicks.';
+        note = 'French Press coarse starting point for Comandante C40: 31-35 clicks; calibrate from true zero, roast density, and sediment.';
       }
     } else if (grinder.id === 'baratza-encore') {
       if (isDoubleFilter) {
-        rangeLabel = '#12 - #15';
-        parsedRange = { min: 12, max: 15, unitLabel: 'setting', precision: 0 };
-        note = 'French Press double filter style calibrated for Baratza Encore: #12-#15 (medium-fine).';
+        rangeLabel = '#16 - #22';
+        parsedRange = { min: 16, max: 22, unitLabel: 'setting', precision: 0 };
+        note = 'French Press double filter starting point for Baratza Encore: #16-#22 (medium to medium-coarse); calibrate from sediment and press resistance.';
+      } else if (isHeavy) {
+        rangeLabel = '#22 - #28';
+        parsedRange = { min: 22, max: 28, unitLabel: 'setting', precision: 0 };
+        note = 'French Press heavy concentrate starting point for Baratza Encore: #22-#28; tighten only after tasting and checking sludge.';
       } else {
         rangeLabel = '#26 - #32';
         parsedRange = { min: 26, max: 32, unitLabel: 'setting', precision: 0 };
-        note = 'French Press coarse style calibrated for Baratza Encore: #26-#32.';
+        note = 'French Press coarse starting point for Baratza Encore: #26-#32; calibrate by taste, roast density, and sediment.';
       }
     } else if (grinder.id === 'fellow-ode-gen-2') {
       if (isDoubleFilter) {
-        rangeLabel = '3.0 - 5.0';
-        parsedRange = { min: 3.0, max: 5.0, unitLabel: '', precision: 1 };
-        note = 'French Press double filter style calibrated for Fellow Ode Gen 2: 3.0-5.0 (medium-fine).';
+        rangeLabel = '5.0 - 7.0';
+        parsedRange = { min: 5.0, max: 7.0, unitLabel: 'setting', precision: 1 };
+        note = 'French Press double filter starting point for Fellow Ode Gen 2: 5.0-7.0 (medium to medium-coarse); calibrate from press feel and clarity.';
+      } else if (isHeavy) {
+        rangeLabel = '6.5 - 8.5';
+        parsedRange = { min: 6.5, max: 8.5, unitLabel: 'setting', precision: 1 };
+        note = 'French Press heavy concentrate starting point for Fellow Ode Gen 2: 6.5-8.5; tighten only if strength is low after decant.';
       } else {
         rangeLabel = '8.0 - 11.0';
-        parsedRange = { min: 8.0, max: 11.0, unitLabel: '', precision: 1 };
-        note = 'French Press coarse style calibrated for Fellow Ode Gen 2: 8.0-11.0.';
+        parsedRange = { min: 8.0, max: 11.0, unitLabel: 'setting', precision: 1 };
+        note = 'French Press coarse starting point for Fellow Ode Gen 2: 8.0-11.0; calibrate from roast density and sediment.';
       }
     } else if (grinder.id === 'timemore-c2') {
       if (isDoubleFilter) {
-        rangeLabel = '16 - 20 clicks';
-        parsedRange = { min: 16, max: 20, unitLabel: 'clicks', precision: 0 };
-        note = 'French Press double filter style calibrated for Timemore C2: 16-20 clicks (medium-fine).';
+        rangeLabel = '20 - 24 clicks';
+        parsedRange = { min: 20, max: 24, unitLabel: 'clicks', precision: 0 };
+        note = 'French Press double filter starting point for Timemore C2: 20-24 clicks (medium to medium-coarse); calibrate from sediment and flow through the added paper.';
+      } else if (isHeavy) {
+        rangeLabel = '22 - 26 clicks';
+        parsedRange = { min: 22, max: 26, unitLabel: 'clicks', precision: 0 };
+        note = 'French Press heavy concentrate starting point for Timemore C2: 22-26 clicks; tighten only after checking strength and sediment.';
       } else {
         rangeLabel = '24 - 28 clicks';
         parsedRange = { min: 24, max: 28, unitLabel: 'clicks', precision: 0 };
-        note = 'French Press coarse style calibrated for Timemore C2: 24-28 clicks.';
+        note = 'French Press coarse starting point for Timemore C2: 24-28 clicks; calibrate by taste and press resistance.';
+      }
+    } else if (grinder.id === 'timemore-s3') {
+      if (isDoubleFilter) {
+        rangeLabel = '7.0 - 8.5';
+        parsedRange = { min: 7.0, max: 8.5, unitLabel: 'dial', precision: 1 };
+        note = 'French Press double filter starting point for Timemore S3: 7.0-8.5 on the top dial; calibrate from zero point and sediment.';
+      } else if (isHeavy) {
+        rangeLabel = '8.0 - 10.0';
+        parsedRange = { min: 8.0, max: 10.0, unitLabel: 'dial', precision: 1 };
+        note = 'French Press heavy concentrate starting point for Timemore S3: 8.0-10.0 on the top dial; tighten only if the concentrate is weak.';
+      } else {
+        rangeLabel = '9.0 - 11.0';
+        parsedRange = { min: 9.0, max: 11.0, unitLabel: 'dial', precision: 1 };
+        note = 'French Press coarse starting point for Timemore S3: 9.0-11.0 on the top dial; calibrate from zero point, seasoning, and roast density.';
+      }
+    } else if (grinder.id === 'kingrinder-k6') {
+      if (isDoubleFilter) {
+        rangeLabel = '75 - 90 clicks';
+        parsedRange = { min: 75, max: 90, unitLabel: 'clicks', precision: 0 };
+        note = 'French Press double filter starting point for KINGrinder K6: 75-90 clicks from true zero; calibrate from sediment and paper resistance.';
+      } else if (isHeavy) {
+        rangeLabel = '85 - 105 clicks';
+        parsedRange = { min: 85, max: 105, unitLabel: 'clicks', precision: 0 };
+        note = 'French Press heavy concentrate starting point for KINGrinder K6: 85-105 clicks from true zero; tighten only after tasting strength.';
+      } else {
+        rangeLabel = '90 - 120 clicks';
+        parsedRange = { min: 90, max: 120, unitLabel: 'clicks', precision: 0 };
+        note = 'French Press coarse starting point for KINGrinder K6: 90-120 clicks from true zero; calibrate from burr seasoning, roast density, and sediment.';
       }
     }
 

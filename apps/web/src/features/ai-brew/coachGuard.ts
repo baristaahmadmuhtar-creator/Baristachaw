@@ -44,6 +44,10 @@ function maxRisk(current: CoachRisk, next: CoachRisk): CoachRisk {
   return riskRank(next) > riskRank(current) ? next : current;
 }
 
+function isIndonesianCoachLanguage(language?: string) {
+  return !language || String(language).toLowerCase().startsWith('id');
+}
+
 function primaryGrindToken(plan: BrewPlan) {
   const recommendation = plan.grindRecommendation || plan.grindSettingReference || '';
   const settingMatch = recommendation.match(/setting\s*\d+(?:[-.]\d+)?/i);
@@ -87,7 +91,7 @@ function replaceConflictingNumbers(markdown: string, plan: BrewPlan) {
   return { markdown: output, risk, replacements };
 }
 
-function replaceConflictingGrind(markdown: string, plan: BrewPlan) {
+function replaceConflictingGrind(markdown: string, plan: BrewPlan, language?: string) {
   const primary = primaryGrindToken(plan);
   if (!primary) return { markdown, risk: 'none' as CoachRisk, replacements: [] as string[] };
 
@@ -103,7 +107,9 @@ function replaceConflictingGrind(markdown: string, plan: BrewPlan) {
   });
 
   if (!/kalibrasi dengan (?:air turun|drawdown) dan rasa|calibrate by drawdown and taste/i.test(output)) {
-    output += '\n\nSetelan grinder adalah titik awal. Kalibrasi dengan air turun dan rasa.';
+    output += isIndonesianCoachLanguage(language)
+      ? '\n\nSetelan grinder adalah titik awal. Kalibrasi dengan air turun dan rasa.'
+      : '\n\nThe grinder setting is a starting point. Calibrate by drawdown and taste.';
     replacements.push('grind_calibration_note');
     risk = maxRisk(risk, 'low');
   }
@@ -117,10 +123,18 @@ function hasUnsafeExtraWater(markdown: string, plan: BrewPlan) {
   return !planAllowsBypass && /\b(?:top[-\s]?up|bypass|add extra water|tambah air|air tambahan)\b/i.test(markdown);
 }
 
-function appendIcedOutputVocabulary(markdown: string, plan: BrewPlan) {
+function appendIcedOutputVocabulary(markdown: string, plan: BrewPlan, language?: string) {
   if (plan.brewMode !== 'iced') return markdown;
   if (/total input/i.test(markdown) && /hot water|air panas/i.test(markdown) && /estimasi hasil|estimated cup/i.test(markdown)) {
     return markdown;
+  }
+  if (!isIndonesianCoachLanguage(language)) {
+    return [
+      markdown,
+      '',
+      `Total input: ${plan.totalWaterMl} ml (${plan.hotWaterMl} ml hot water + ${plan.iceMl} g ice).`,
+      `Estimated cup output after coffee retention: ±${plan.estimatedCupOutputMl} ml.`,
+    ].join('\n');
   }
   return [
     markdown,
@@ -151,29 +165,38 @@ function removeInstructionInjectionLanguage(markdown: string) {
   return { markdown: output, replacements };
 }
 
-function enforceCoachAdjustmentContract(markdown: string, action: CoachAction) {
+function enforceCoachAdjustmentContract(markdown: string, action: CoachAction, language?: string) {
   if (action !== 'troubleshoot' && action !== 'adjust') {
     return { markdown, risk: 'none' as CoachRisk, replacements: [] as string[] };
   }
   let output = markdown;
   let risk: CoachRisk = 'none';
   const replacements: string[] = [];
+  const id = isIndonesianCoachLanguage(language);
 
   if (/\b(?:ubah|ganti|naikkan|turunkan|increase|decrease|change|raise|lower)\b[^.\n]{0,42}\b(?:rasio|ratio|dosis|dose)\b/i.test(output)) {
     output = output.replace(
       /\b(?:ubah|ganti|naikkan|turunkan|increase|decrease|change|raise|lower)\b[^.\n]{0,42}\b(?:rasio|ratio|dosis|dose)\b[^\n.]*/gi,
-      'Jangan ubah rasio/dosis dari plan ini; mulai dari koreksi grind kecil, pouring/agitation, lalu suhu kecil',
+      id
+        ? 'Jangan ubah rasio/dosis dari plan ini; mulai dari koreksi grind kecil, pouring/agitation, lalu suhu kecil'
+        : 'Do not change ratio or dose in this plan; start with a small grind move, pour/agitation control, then a small temperature change',
     );
     risk = maxRisk(risk, 'medium');
     replacements.push('ratio_dose_adjustment_blocked');
   }
 
   if (!/grind kecil|pouring\/agitation|agitasi|suhu kecil/i.test(output)) {
-    output += [
-      '',
-      'Urutan koreksi: 1) grind kecil, 2) pouring/agitation, 3) suhu kecil.',
-      'Jangan ubah rasio/dosis pada seduhan ini.',
-    ].join('\n');
+    output += id
+      ? [
+          '',
+          'Urutan koreksi: 1) grind kecil, 2) pouring/agitation, 3) suhu kecil.',
+          'Jangan ubah rasio/dosis pada seduhan ini.',
+        ].join('\n')
+      : [
+          '',
+          'Correction order: 1) small grind move, 2) pour/agitation control, 3) small temperature change.',
+          'Do not change ratio or dose for this brew.',
+        ].join('\n');
     risk = maxRisk(risk, 'low');
     replacements.push('coach_adjustment_order');
   }
@@ -185,6 +208,7 @@ export function sanitizeAiCoachMarkdown(params: {
   action: CoachAction;
   markdown: string;
   plan: BrewPlan;
+  language?: string;
 }): {
   markdown: string;
   risk: CoachRisk;
@@ -194,7 +218,7 @@ export function sanitizeAiCoachMarkdown(params: {
   let risk: CoachRisk = 'none';
   const replacements: string[] = [];
 
-  const sanitizedNarrative = sanitizeBrewNarrative(markdown, params.plan);
+  const sanitizedNarrative = sanitizeBrewNarrative(markdown, params.plan, params.language);
   if (sanitizedNarrative !== markdown) {
     markdown = sanitizedNarrative;
     replacements.push('brew_narrative');
@@ -202,7 +226,7 @@ export function sanitizeAiCoachMarkdown(params: {
   }
 
   if (!isExplicitGeishaVariety(params.plan.variety) && /\b(?:geisha|gesha)\b/i.test(markdown)) {
-    markdown = markdown.replace(/\b(?:geisha|gesha)\b/gi, 'kopi ini');
+    markdown = markdown.replace(/\b(?:geisha|gesha)\b/gi, isIndonesianCoachLanguage(params.language) ? 'kopi ini' : 'this coffee');
     replacements.push('geisha_claim');
     risk = maxRisk(risk, 'medium');
   }
@@ -219,21 +243,29 @@ export function sanitizeAiCoachMarkdown(params: {
   risk = maxRisk(risk, numberGuard.risk);
   replacements.push(...numberGuard.replacements);
 
-  const grindGuard = replaceConflictingGrind(markdown, params.plan);
+  const grindGuard = replaceConflictingGrind(markdown, params.plan, params.language);
   markdown = grindGuard.markdown;
   risk = maxRisk(risk, grindGuard.risk);
   replacements.push(...grindGuard.replacements);
 
   if (params.plan.waterPresetStatus === 'manual_required' || !params.plan.waterIsBrewReady) {
     if (/\b(?:ideal water|air ideal|excellent water|ready brew|brew-ready)\b/i.test(markdown)) {
-      markdown = markdown.replace(/\b(?:ideal water|air ideal|excellent water|ready brew|brew-ready)\b/gi, 'air perlu verifikasi mineral');
+      markdown = markdown.replace(
+        /\b(?:ideal water|air ideal|excellent water|ready brew|brew-ready)\b/gi,
+        isIndonesianCoachLanguage(params.language) ? 'air perlu verifikasi mineral' : 'water needs mineral verification',
+      );
       replacements.push('water_claim');
       risk = maxRisk(risk, 'medium');
     }
   }
 
   if (params.plan.deviceProfileMode !== 'exact' && /\b(?:profil exact|exact profile)\b/i.test(markdown)) {
-    markdown = markdown.replace(/\b(?:profil exact|exact profile)\b/gi, params.plan.deviceProfileMode === 'family_fallback' ? 'butuh kalibrasi' : 'profil turunan');
+    markdown = markdown.replace(
+      /\b(?:profil exact|exact profile)\b/gi,
+      params.plan.deviceProfileMode === 'family_fallback'
+        ? (isIndonesianCoachLanguage(params.language) ? 'butuh kalibrasi' : 'needs calibration')
+        : (isIndonesianCoachLanguage(params.language) ? 'profil turunan' : 'derived profile'),
+    );
     replacements.push('brewer_profile_claim');
     risk = maxRisk(risk, 'medium');
   }
@@ -243,27 +275,30 @@ export function sanitizeAiCoachMarkdown(params: {
     risk = maxRisk(risk, 'high');
   }
 
-  const coachContract = enforceCoachAdjustmentContract(markdown, params.action);
+  const coachContract = enforceCoachAdjustmentContract(markdown, params.action, params.language);
   markdown = coachContract.markdown;
   risk = maxRisk(risk, coachContract.risk);
   replacements.push(...coachContract.replacements);
 
-  if (params.action === 'troubleshoot' && !/Mulai dari perubahan terkecil dulu/i.test(markdown)) {
-    markdown = `Mulai dari perubahan terkecil dulu.\n\n${markdown}`;
+  if (params.action === 'troubleshoot' && !/Mulai dari perubahan terkecil dulu|Start with the smallest change first/i.test(markdown)) {
+    markdown = isIndonesianCoachLanguage(params.language)
+      ? `Mulai dari perubahan terkecil dulu.\n\n${markdown}`
+      : `Start with the smallest change first.\n\n${markdown}`;
     replacements.push('troubleshoot_order_note');
     risk = maxRisk(risk, 'low');
   }
 
   if (params.action === 'explain' && !/Catatan sumber data|source data/i.test(markdown)) {
-    const caveat = formatSafeBrewCaveat(params.plan);
+    const caveat = formatSafeBrewCaveat(params.plan, params.language);
     if (caveat) {
-      markdown += `\n\n### Catatan sumber data\n${caveat.split('\n').map((line) => `- ${line}`).join('\n')}`;
+      const heading = isIndonesianCoachLanguage(params.language) ? 'Catatan sumber data' : 'Source Data Notes';
+      markdown += `\n\n### ${heading}\n${caveat.split('\n').map((line) => `- ${line}`).join('\n')}`;
       replacements.push('source_caveat');
       risk = maxRisk(risk, 'low');
     }
   }
 
-  markdown = appendIcedOutputVocabulary(markdown, params.plan);
+  markdown = appendIcedOutputVocabulary(markdown, params.plan, params.language);
 
   return {
     markdown,

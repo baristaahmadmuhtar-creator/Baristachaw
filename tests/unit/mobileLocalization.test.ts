@@ -4,18 +4,20 @@ import assert from 'node:assert/strict';
 import { getMobileLocalization, resolveMobileLanguage } from '../../apps/mobile/src/utils/localization.ts';
 
 test('mobile localization resolves supported language tags', () => {
-  assert.equal(resolveMobileLanguage('ar-SA'), 'ar');
+  assert.equal(resolveMobileLanguage('en-US'), 'en');
   assert.equal(resolveMobileLanguage('id_ID'), 'id');
   assert.equal(resolveMobileLanguage('fr-FR'), 'en');
+  assert.equal(resolveMobileLanguage('ar-SA'), 'en');
 });
 
-test('mobile localization keeps arabic rtl, locale, and localized home copy', () => {
+test('mobile localization falls back unsupported store-shell languages to safe English copy', () => {
   const localization = getMobileLocalization('ar-SA');
 
-  assert.equal(localization.locale, 'ar');
-  assert.equal(localization.direction, 'rtl');
-  assert.equal(localization.copy.home.sections.quickPathsTitle, '\u0645\u0633\u0627\u0631\u0627\u062a \u0633\u0631\u064a\u0639\u0629');
-  assert.equal(localization.web.language, '\u0644\u063a\u0629');
+  assert.equal(localization.language, 'en');
+  assert.equal(localization.locale, 'en-US');
+  assert.equal(localization.direction, 'ltr');
+  assert.equal(localization.copy.home.sections.quickPathsTitle, 'Quick paths');
+  assert.equal(localization.web.language, 'Language');
 });
 
 test('mobile localization exposes localized chat sheet labels', () => {

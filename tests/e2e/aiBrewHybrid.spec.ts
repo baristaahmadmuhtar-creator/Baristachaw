@@ -293,7 +293,7 @@ test('ai brew Indonesian brew guide details do not leak raw English technique co
   await expect(sequenceNote.getByTestId('ai-brew-step-detail-2')).toHaveCount(0);
   await page.getByTestId('ai-brew-guide-density-pro').click();
   await expect(sequenceNote).toContainText(/Detail tambahan|Panduan Seduh|Bilas filter/i);
-  await expect(sequenceNote).toContainText(/Tuang tenang dari tengah|Jaga bed rata|Kopi:|Tuang: mulai dari tengah/i);
+  await expect(sequenceNote).toContainText(/Tuang rendah dan stabil|hamparan kopi tetap rata|jangan kejar dinding filter|fase turun selesai alami/i);
   await expect(sequenceNote.getByTestId('ai-brew-step-detail-2')).not.toContainText(/Koreksi|jika .*asam|jika .*pahit/i);
   await expect(sequenceNote.getByTestId('ai-brew-step-detail-2')).not.toContainText(/Gunakan jalur tuang bersih dari tengah ke area tengah-luar/i);
   await expect(sequenceNote).not.toContainText(/Use a clean center-to-mid path|avoid wall rinsing|Pour through the center|riding the wall|Rinse the paper filter|coffee weight|sweeter middle|Wet all grounds/i);

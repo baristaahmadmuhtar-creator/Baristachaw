@@ -35,7 +35,7 @@ test('Indonesian web parity shell keeps critical tools and AI Brew copy localize
   await expectMobileParityPageHealthy(page, 'Indonesian tools parity');
   await expectNoCriticalIndonesianEnglishLeak(page, 'Indonesian tools parity');
 
-  await page.getByRole('tab', { name: /Brew|AI Brew|AI Seduh/i }).click();
+  await page.getByRole('tab', { name: /Seduh|Brew|AI Brew|AI Seduh/i }).click();
   await expect(page.getByTestId('ai-brew-open-quick')).toBeVisible();
   await expectNoCriticalIndonesianEnglishLeak(page, 'Indonesian AI Brew landing');
 });

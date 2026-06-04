@@ -44,6 +44,7 @@
         "test:e2e:prod": "LIVE_E2E=1 playwright test tests/e2e --project=chromium --project=firefox --project=webkit",
         "test:a11y": "playwright test tests/a11y --project=chromium",
         "test:a11y:prod": "LIVE_E2E=1 playwright test tests/a11y --project=chromium",
+        "test:i18n": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs --test --test-isolation=none tests/unit/languageMetaEncoding.test.ts tests/unit/languageDirectionLocaleContract.test.ts tests/unit/defaultEnglishLanguage.test.ts tests/unit/translationPlaceholders.integration.test.ts tests/unit/translationCopyQuality.test.ts tests/unit/mobilePreferredLanguageWiring.test.ts tests/unit/mobileAuthLocalization.test.ts tests/unit/mobileParityLocalizationWiring.test.ts",
         "test:ai-brew": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs --test --test-isolation=none tests/unit/aiBrew*.test.ts",
         "test:ai-brew:switch": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs --test --test-isolation=none --test-name-pattern=\"Hario Switch|Switch\" tests/unit/aiBrew*.test.ts",
         "test:ai-brew:matrix": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs --test --test-isolation=none --test-name-pattern=\"matrix|Matrix\" tests/unit/aiBrewPlanner.test.ts",

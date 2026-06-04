@@ -51,7 +51,7 @@ test('AI Brew V60 iced native shell keeps protected recipe values and Indonesian
 
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toBeVisible();
-  await expect(result).toContainText(/Parity V60 Iced/);
+  await expect(result).toContainText(/Parity V60 es|Parity V60 Iced/i);
   await expect(result).toContainText(/Air panas|Es|Rasio final|Ekstraksi|Setelah ekstraksi/i);
   await expect(result).not.toContainText(/Ekstraksi panas/i);
   await expect(result).not.toContainText(/Katup|Buka katup/i);
@@ -90,7 +90,7 @@ test('AI Brew Hario Switch iced native shell keeps valve safety and timer semant
 
   const result = page.getByTestId('ai-brew-result');
   await expect(result).toBeVisible();
-  await expect(result).toContainText(/Parity Switch Iced/);
+  await expect(result).toContainText(/Parity Switch es|Parity Switch Iced/i);
   await expect(result).toContainText(/Katup|Buka katup|Muatan ruang|Air turun/i);
   await page.getByTestId('ai-brew-result-tab-flow').click();
   await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();

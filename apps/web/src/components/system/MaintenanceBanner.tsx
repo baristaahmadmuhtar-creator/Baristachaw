@@ -5,9 +5,19 @@ import { useLocation } from 'react-router-dom';
 import { useAccountStatus } from '../../context/AccountStatusContext';
 import { useGlobalState } from '../../context/GlobalState';
 
+function localizeRuntimeMaintenanceMessage(message: string, language: string) {
+  if (!message || language !== 'id') return message;
+
+  if (/paid plan is waiting for admin billing verification/i.test(message)) {
+    return 'Paket berbayar Anda masih menunggu verifikasi billing admin. Hubungi support sebelum mengandalkan limit berbayar.';
+  }
+
+  return message;
+}
+
 export function MaintenanceBanner() {
   const location = useLocation();
-  const { t } = useGlobalState();
+  const { language, t } = useGlobalState();
   const { snapshot, maintenance } = useAccountStatus();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const shouldShow = !isAdminRoute && snapshot && (snapshot.appAccess.status !== 'ok' || maintenance.length > 0);
@@ -20,9 +30,10 @@ export function MaintenanceBanner() {
   const minimized = Boolean(shouldShow && noticeKey && minimizedKey === noticeKey);
 
   const primaryFlag = maintenance[0];
-  const message = snapshot?.appAccess.message
+  const rawMessage = snapshot?.appAccess.message
     || primaryFlag?.message
     || (primaryFlag ? t.homeFeatureUnavailableMessage.replace('{feature}', primaryFlag.label).replace('{status}', primaryFlag.status) : '');
+  const message = localizeRuntimeMaintenanceMessage(rawMessage, language);
   const statusLabel = snapshot?.appAccess.status === 'blocked'
     ? t.homeWorkspaceBlocked
     : primaryFlag?.status === 'disabled'
@@ -68,7 +79,7 @@ export function MaintenanceBanner() {
             type="button"
             className="pointer-events-auto absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-white transition hover:bg-white/14 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
             onClick={() => setMinimizedKey(noticeKey)}
-            aria-label="Minimize maintenance notice"
+            aria-label={language === 'id' ? 'Minimalkan pemberitahuan pemeliharaan' : 'Minimize maintenance notice'}
           >
             <X size={14} />
           </button>

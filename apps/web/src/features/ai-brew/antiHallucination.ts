@@ -55,44 +55,63 @@ export function isExplicitGeishaVariety(variety?: string): boolean {
   return GEISHA_TEST_PATTERN.test(String(variety || ''));
 }
 
-export function formatSafeBrewCaveat(plan: BrewPlan): string {
+function isIndonesianLanguage(language?: string) {
+  return !language || String(language).toLowerCase().startsWith('id');
+}
+
+export function formatSafeBrewCaveat(plan: BrewPlan, language?: string): string {
   const caveats: string[] = [];
+  const id = isIndonesianLanguage(language);
   if (!isExplicitGeishaVariety(plan.variety)) {
-    caveats.push('Data varietas belum dikunci; sistem tidak akan mengarang varietas.');
+    caveats.push(id
+      ? 'Data varietas belum dikunci; sistem tidak akan mengarang varietas.'
+      : 'Variety data is not locked; the system will not invent it.');
   }
   if (isUnknownValue(plan.process)) {
-    caveats.push('Data proses belum dikunci; resep memakai baseline roast level dan target profil.');
+    caveats.push(id
+      ? 'Data proses belum dikunci; resep memakai baseline roast level dan target profil.'
+      : 'Process data is not locked; the recipe uses roast level and target profile as the baseline.');
   }
   if (isLowTrustWater(plan)) {
-    caveats.push('Air ini rendah mineral atau butuh input manual; gunakan sebagai base remineralisasi atau isi mineral manual.');
+    caveats.push(id
+      ? 'Air ini rendah mineral atau butuh input manual; gunakan sebagai base remineralisasi atau isi mineral manual.'
+      : 'This water is low-mineral or needs manual input; use it as a remineralization base or enter minerals manually.');
   }
   if (plan.grindSettingVerification !== 'official') {
-    caveats.push('Setelan grinder adalah titik awal; kalibrasi dengan air turun dan rasa.');
+    caveats.push(id
+      ? 'Setelan grinder adalah titik awal; kalibrasi dengan air turun dan rasa.'
+      : 'The grinder setting is a starting point; calibrate by drawdown and taste.');
   }
   if (!brewerIsExact(plan)) {
-    caveats.push('Profil alat ini turunan/eksperimental; lakukan kalibrasi rasa.');
+    caveats.push(id
+      ? 'Profil alat ini turunan/eksperimental; lakukan kalibrasi rasa.'
+      : 'This brewer profile is derived or experimental; calibrate from the cup.');
   }
   return caveats.join('\n');
 }
 
-export function sanitizeBrewNarrative(text: string, plan: BrewPlan): string {
+export function sanitizeBrewNarrative(text: string, plan: BrewPlan, language?: string): string {
   let output = String(text || '');
   if (!output.trim()) return output;
+  const id = isIndonesianLanguage(language);
 
   if (!isExplicitGeishaVariety(plan.variety)) {
-    output = output.replace(GEISHA_PATTERN, 'kopi ini');
+    output = output.replace(GEISHA_PATTERN, id ? 'kopi ini' : 'this coffee');
   }
 
   if (isUnknownValue(plan.process)) {
-    output = output.replace(PROCESS_FACT_PATTERN, 'proses belum dikunci');
+    output = output.replace(PROCESS_FACT_PATTERN, id ? 'proses belum dikunci' : 'process not locked');
   }
 
-  output = output.replace(ORIGIN_DETAIL_LINE_PATTERN, 'Catatan asal detail belum dikunci di planner.');
+  output = output.replace(
+    ORIGIN_DETAIL_LINE_PATTERN,
+    id ? 'Catatan asal detail belum dikunci di planner.' : 'Detailed origin notes are not locked in the planner.',
+  );
 
   if (isLowTrustWater(plan)) {
-    output = output.replace(READY_WATER_CLAIM_PATTERN, 'butuh verifikasi mineral');
+    output = output.replace(READY_WATER_CLAIM_PATTERN, id ? 'butuh verifikasi mineral' : 'needs mineral verification');
     if (!/rendah mineral|manual|required|remineral/i.test(output)) {
-      output += `\n\n${formatSafeBrewCaveat(plan).split('\n').find((line) => /air/i.test(line)) || 'Air perlu diverifikasi manual sebelum dianggap siap seduh.'}`;
+      output += `\n\n${formatSafeBrewCaveat(plan, language).split('\n').find((line) => /air|water/i.test(line)) || (id ? 'Air perlu diverifikasi manual sebelum dianggap siap seduh.' : 'Water needs manual verification before it is treated as brew-ready.')}`;
     }
   }
 
@@ -101,7 +120,9 @@ export function sanitizeBrewNarrative(text: string, plan: BrewPlan): string {
   }
 
   if (!brewerIsExact(plan)) {
-    const label = plan.deviceProfileMode === 'family_fallback' ? 'Butuh kalibrasi' : 'Profil turunan';
+    const label = plan.deviceProfileMode === 'family_fallback'
+      ? (id ? 'Butuh kalibrasi' : 'Needs calibration')
+      : (id ? 'Profil turunan' : 'Derived profile');
     output = output.replace(EXACT_BREWER_CLAIM_PATTERN, label);
   }
 

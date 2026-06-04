@@ -4167,6 +4167,16 @@ test('AI Brew coach guard preserves deterministic grind, water, brewer, and reci
   assert.doesNotMatch(explain.markdown, /Air ideal|Profil exact/i);
   assert.match(explain.markdown, /Kalibrasi dengan air turun dan rasa/i);
 
+  const englishExplain = sanitizeAiCoachMarkdown({
+    action: 'explain',
+    plan,
+    language: 'en',
+    markdown: '### Why\nGeisha washed with ideal water. Exact profile. Total water 999 ml. Grind setting 9.',
+  });
+  assert.match(englishExplain.markdown, /calibrate by drawdown and taste/i);
+  assert.match(englishExplain.markdown, /Source Data Notes/i);
+  assert.doesNotMatch(englishExplain.markdown, /Air ini|Setelan grinder|Data varietas|Data proses|Catatan sumber data|air turun/i);
+
   const troubleshoot = sanitizeAiCoachMarkdown({
     action: 'troubleshoot',
     plan,

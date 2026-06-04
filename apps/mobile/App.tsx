@@ -19,7 +19,7 @@ import { MobileAuthGate } from './src/screens/MobileAuthGate';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { usePreferredMobileLanguage } from './src/hooks/usePreferredMobileLanguage';
 import { useNetworkStatus } from './src/hooks/useNetworkStatus';
-import { ApiClient } from './src/services/apiClient';
+import { ApiClient, ApiError } from './src/services/apiClient';
 import { clearAuthSession, inspectAuthSession, saveAuthSession } from './src/services/authStore';
 import {
   clearSupabaseMobileSession,
@@ -58,6 +58,31 @@ const TAB_ICONS: Record<string, { active: IoniconName; idle: IoniconName }> = {
   Collection: { active: 'book', idle: 'book-outline' },
   Tools: { active: 'speedometer', idle: 'speedometer-outline' },
 };
+
+const SESSION_BOOT_TIMEOUT_MS = 4_000;
+const SESSION_SYNC_TIMEOUT_MS = 8_000;
+
+function isSessionTimeoutError(error: unknown): boolean {
+  return error instanceof ApiError && error.errorCode === 'timeout';
+}
+
+function withSessionBootTimeout<T>(task: Promise<T>, phase: string, timeoutMs = SESSION_BOOT_TIMEOUT_MS): Promise<T> {
+  let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutHandle = setTimeout(() => {
+      reject(new ApiError('Session check timed out.', {
+        status: 0,
+        errorCode: 'timeout',
+        retryable: true,
+        details: phase,
+      }));
+    }, timeoutMs);
+  });
+
+  return Promise.race([task, timeout]).finally(() => {
+    if (timeoutHandle) clearTimeout(timeoutHandle);
+  });
+}
 
 function resolveSystemPalette(colorScheme: ReturnType<typeof useColorScheme>) {
   return colorScheme === 'dark'
@@ -175,6 +200,8 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
   const colorScheme = useColorScheme();
   const systemPalette = useMemo(() => resolveSystemPalette(colorScheme), [colorScheme]);
   const { isOnline } = useNetworkStatus();
+  const preferredLanguage = usePreferredMobileLanguage();
+  const localeState = useMemo(() => getMobileLocalization(preferredLanguage), [preferredLanguage]);
   const didReportBootReady = useRef(false);
   const authBusyProviderRef = useRef<AuthProvider>(null);
   const handledAuthUrlsRef = useRef<Set<string>>(new Set());
@@ -188,6 +215,57 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
 
   const accessToken = session?.accessToken || null;
   const apiClient = useMemo(() => new ApiClient({ getAccessToken: () => accessToken }), [accessToken]);
+  const parityShellCopy = useMemo(() => {
+    if (localeState.language === 'id') {
+      return {
+        preparing: 'Membuka Baristachaw...',
+        sessionExpired: 'Sesi login berakhir. Silakan masuk lagi.',
+        previousExpired: 'Sesi sebelumnya berakhir. Masuk lagi untuk melanjutkan.',
+        storedReset: 'Data login tersimpan direset. Silakan masuk lagi.',
+        bootstrapFailed: 'Gagal menyiapkan login. Coba muat ulang aplikasi.',
+        sessionCheckSlow: 'Koneksi lambat saat memeriksa sesi. Lanjut sebagai tamu atau masuk lagi.',
+        offlineSignIn: 'Tidak ada koneksi internet. Sambungkan lagi untuk masuk.',
+        offlineRecovery: 'Tidak ada koneksi internet. Sambungkan lagi untuk memulihkan akun.',
+        loginCompleteFailed: 'Gagal menyelesaikan login.',
+        googleFailed: 'Gagal masuk dengan Google.',
+        facebookRequiresSupabase: 'Masuk dengan Facebook membutuhkan Supabase Auth. Aktifkan provider Facebook untuk build ini.',
+        facebookFailed: 'Gagal masuk dengan Facebook.',
+        emailUnavailable: 'Masuk dengan email belum tersedia di perangkat ini. Gunakan Google untuk melanjutkan.',
+        emailRecoveryUnavailable: 'Pemulihan email belum tersedia di perangkat ini. Gunakan Google untuk melanjutkan.',
+        emailFailed: 'Gagal masuk dengan email.',
+        recoverySendFailed: 'Tautan pemulihan belum bisa dikirim.',
+        recoveryInactive: 'Tautan pemulihan belum aktif. Buka ulang tautan dari email Anda.',
+        passwordSaveOffline: 'Tidak ada koneksi internet. Sambungkan lagi untuk menyimpan password.',
+        passwordUpdateFailed: 'Password baru belum bisa disimpan.',
+        appleUnavailable: 'Apple Sign-In belum diaktifkan pada build ini.',
+        appleFailed: 'Gagal masuk dengan Apple.',
+      };
+    }
+
+    return {
+      preparing: 'Opening Baristachaw...',
+      sessionExpired: 'Your session expired. Please sign in again.',
+      previousExpired: 'Your previous session expired. Sign in again to continue.',
+      storedReset: 'Stored sign-in data was reset. Please sign in again.',
+      bootstrapFailed: 'Could not prepare sign-in. Reload the app and try again.',
+      sessionCheckSlow: 'Session check is slow. Continue as guest or sign in again.',
+      offlineSignIn: 'No internet connection. Reconnect to sign in.',
+      offlineRecovery: 'No internet connection. Reconnect to recover your account.',
+      loginCompleteFailed: 'Could not complete sign-in.',
+      googleFailed: 'Failed to sign in with Google.',
+      facebookRequiresSupabase: 'Facebook sign-in needs Supabase Auth. Enable the Facebook provider for this build.',
+      facebookFailed: 'Failed to sign in with Facebook.',
+      emailUnavailable: 'Email sign-in is not available on this device yet. Continue with Google.',
+      emailRecoveryUnavailable: 'Email recovery is not available on this device yet. Continue with Google.',
+      emailFailed: 'Failed to sign in with email.',
+      recoverySendFailed: 'Could not send the recovery link.',
+      recoveryInactive: 'The recovery link is not active. Open the latest link from your email.',
+      passwordSaveOffline: 'No internet connection. Reconnect to save your new password.',
+      passwordUpdateFailed: 'Could not save the new password.',
+      appleUnavailable: 'Apple Sign-In is not enabled in this build.',
+      appleFailed: 'Failed to sign in with Apple.',
+    };
+  }, [localeState.language]);
 
   useEffect(() => {
     authBusyProviderRef.current = authBusyProvider;
@@ -231,21 +309,28 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
     if (!isOnline) return true;
     try {
       const bootstrapClient = new ApiClient({ getAccessToken: () => targetSession.accessToken });
-      await bootstrapClient.getAuthMe();
+      await bootstrapClient.getAuthMe({
+        retries: 0,
+        timeoutMs: phase.includes('bootstrap') ? SESSION_BOOT_TIMEOUT_MS : SESSION_SYNC_TIMEOUT_MS,
+      });
       return true;
     } catch (error) {
-      captureError(error, { phase, reason: 'web_parity_session_verify_failed' });
-      await clearNativeSession('server_rejected', 'Sesi login berakhir. Silakan masuk lagi.');
+      const timedOut = isSessionTimeoutError(error);
+      captureError(error, {
+        phase,
+        reason: timedOut ? 'web_parity_session_verify_timeout' : 'web_parity_session_verify_failed',
+      });
+      await clearNativeSession(timedOut ? 'session_check_timeout' : 'server_rejected', timedOut ? parityShellCopy.sessionCheckSlow : parityShellCopy.sessionExpired);
       return false;
     }
-  }, [clearNativeSession, isOnline]);
+  }, [clearNativeSession, isOnline, parityShellCopy.sessionCheckSlow, parityShellCopy.sessionExpired]);
 
   useEffect(() => {
     let cancelled = false;
 
     const bootstrap = async () => {
       try {
-        const storedState = await inspectAuthSession();
+        const storedState = await withSessionBootTimeout(inspectAuthSession(), 'web_parity_auth_store');
         if (cancelled) return;
 
         if (storedState.status === 'active') {
@@ -258,10 +343,14 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
           return;
         }
 
+        let sessionRestoreError: string | null = null;
         if (isOnline && isSupabaseAuthConfigured) {
           try {
             const bootstrapClient = new ApiClient({ getAccessToken: () => null });
-            const restoredSession = await restoreSupabaseMobileSession(bootstrapClient);
+            const restoredSession = await withSessionBootTimeout(
+              restoreSupabaseMobileSession(bootstrapClient),
+              'web_parity_supabase_restore',
+            );
             if (restoredSession && !cancelled) {
               await saveAuthSession(restoredSession);
               setSession(restoredSession);
@@ -272,24 +361,29 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
               return;
             }
           } catch (error) {
-            captureError(error, { phase: 'web_parity_supabase_restore' });
+            const timedOut = isSessionTimeoutError(error);
+            if (timedOut) sessionRestoreError = parityShellCopy.sessionCheckSlow;
+            captureError(error, {
+              phase: 'web_parity_supabase_restore',
+              reason: timedOut ? 'session_restore_timeout' : 'session_restore_failed',
+            });
           }
         }
 
         if (storedState.status === 'expired') {
           await clearAuthSession().catch(() => undefined);
-          setAuthError('Sesi sebelumnya berakhir. Masuk lagi untuk melanjutkan.');
+          setAuthError(parityShellCopy.previousExpired);
         } else if (storedState.status === 'invalid') {
           await clearAuthSession().catch(() => undefined);
-          setAuthError('Data login tersimpan direset. Silakan masuk lagi.');
+          setAuthError(parityShellCopy.storedReset);
         } else {
-          setAuthError(null);
+          setAuthError(sessionRestoreError);
         }
         setSession(null);
       } catch (error) {
         captureError(error, { phase: 'web_parity_auth_bootstrap' });
         setSession(null);
-        setAuthError('Gagal menyiapkan login. Coba muat ulang aplikasi.');
+        setAuthError(isSessionTimeoutError(error) ? parityShellCopy.sessionCheckSlow : parityShellCopy.bootstrapFailed);
       } finally {
         if (!cancelled) {
           setBooting(false);
@@ -302,7 +396,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
     return () => {
       cancelled = true;
     };
-  }, [isOnline, verifySession]);
+  }, [isOnline, parityShellCopy.bootstrapFailed, parityShellCopy.previousExpired, parityShellCopy.sessionCheckSlow, parityShellCopy.storedReset, verifySession]);
 
   useEffect(() => {
     if (!booting && !didReportBootReady.current) {
@@ -333,16 +427,16 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
     if (!session?.expiresAt) return;
     const msUntilExpiry = session.expiresAt - Date.now();
     if (msUntilExpiry <= 0) {
-      void clearNativeSession('expired_in_memory', 'Sesi login berakhir. Silakan masuk lagi.');
+      void clearNativeSession('expired_in_memory', parityShellCopy.sessionExpired);
       return;
     }
 
     const timeout = setTimeout(() => {
-      void clearNativeSession('expired_in_memory', 'Sesi login berakhir. Silakan masuk lagi.');
+      void clearNativeSession('expired_in_memory', parityShellCopy.sessionExpired);
     }, msUntilExpiry + 250);
 
     return () => clearTimeout(timeout);
-  }, [clearNativeSession, session?.expiresAt]);
+  }, [clearNativeSession, parityShellCopy.sessionExpired, session?.expiresAt]);
 
   useEffect(() => {
     if (!isSupabaseAuthConfigured) return;
@@ -355,7 +449,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       if (authBusyProviderRef.current) return;
 
       if (!isOnline) {
-        setAuthError('Tidak ada koneksi internet. Sambungkan lagi untuk masuk.');
+        setAuthError(parityShellCopy.offlineSignIn);
         return;
       }
 
@@ -376,7 +470,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
         const provider = result.session.provider === 'google' ? 'google' : 'email';
         await persistSession(result.session, provider);
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Gagal menyelesaikan login.';
+        const message = error instanceof Error ? error.message : parityShellCopy.loginCompleteFailed;
         setAuthError(message);
         captureError(error, { phase: 'web_parity_supabase_deep_link' });
       } finally {
@@ -396,11 +490,11 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       cancelled = true;
       subscription.remove();
     };
-  }, [apiClient, isOnline, persistSession, session]);
+  }, [apiClient, isOnline, parityShellCopy.loginCompleteFailed, parityShellCopy.offlineSignIn, persistSession, session]);
 
   const handleGoogleLogin = async () => {
     if (!isOnline) {
-      setAuthError('Tidak ada koneksi internet. Sambungkan lagi untuk masuk.');
+      setAuthError(parityShellCopy.offlineSignIn);
       return;
     }
 
@@ -414,7 +508,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
         : await startGoogleMobileOAuth(apiClient);
       await persistSession(nextSession, 'google');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Gagal masuk dengan Google.';
+      const message = error instanceof Error ? error.message : parityShellCopy.googleFailed;
       setAuthError(message);
       captureError(error, { phase: 'web_parity_login_google' });
       trackEvent('auth_fail_google', { message, surface: 'web_parity_gate' });
@@ -425,11 +519,11 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
 
   const handleFacebookLogin = async () => {
     if (!isSupabaseAuthConfigured) {
-      setAuthError('Masuk dengan Facebook membutuhkan Supabase Auth. Aktifkan provider Facebook di Supabase untuk build ini.');
+      setAuthError(parityShellCopy.facebookRequiresSupabase);
       return;
     }
     if (!isOnline) {
-      setAuthError('Tidak ada koneksi internet. Sambungkan lagi untuk masuk.');
+      setAuthError(parityShellCopy.offlineSignIn);
       return;
     }
 
@@ -441,7 +535,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       const nextSession = await startFacebookSupabaseOAuth(apiClient);
       await persistSession(nextSession, 'facebook');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Gagal masuk dengan Facebook.';
+      const message = error instanceof Error ? error.message : parityShellCopy.facebookFailed;
       setAuthError(message);
       captureError(error, { phase: 'web_parity_login_facebook' });
       trackEvent('action_failed', { action: 'auth_login', provider: 'facebook', message, surface: 'web_parity_gate' });
@@ -452,11 +546,11 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
 
   const handleEmailAuth = async (payload: EmailAuthPayload) => {
     if (!isSupabaseAuthConfigured) {
-      setAuthError('Masuk dengan email belum tersedia di perangkat ini. Gunakan Google untuk melanjutkan.');
+      setAuthError(parityShellCopy.emailUnavailable);
       return;
     }
     if (!isOnline) {
-      setAuthError('Tidak ada koneksi internet. Sambungkan lagi untuk masuk.');
+      setAuthError(parityShellCopy.offlineSignIn);
       return;
     }
 
@@ -472,7 +566,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       }
       await persistSession(result.session, 'email');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Gagal masuk dengan email.';
+      const message = error instanceof Error ? error.message : parityShellCopy.emailFailed;
       setAuthError(message);
       captureError(error, { phase: `web_parity_email_${payload.mode}` });
     } finally {
@@ -482,12 +576,12 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
 
   const handlePasswordReset = async (payload: PasswordResetPayload): Promise<string> => {
     if (!isSupabaseAuthConfigured) {
-      const message = 'Pemulihan email belum tersedia di perangkat ini. Gunakan Google untuk melanjutkan.';
+      const message = parityShellCopy.emailRecoveryUnavailable;
       setAuthError(message);
       throw new Error(message);
     }
     if (!isOnline) {
-      const message = 'Tidak ada koneksi internet. Sambungkan lagi untuk memulihkan akun.';
+      const message = parityShellCopy.offlineRecovery;
       setAuthError(message);
       throw new Error(message);
     }
@@ -500,7 +594,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       const result = await sendPasswordResetSupabaseEmail(payload.email);
       return result.message;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Tautan pemulihan belum bisa dikirim.';
+      const message = error instanceof Error ? error.message : parityShellCopy.recoverySendFailed;
       setAuthError(message);
       captureError(error, { phase: 'web_parity_password_reset' });
       throw new Error(message);
@@ -511,12 +605,12 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
 
   const handlePasswordUpdate = async (payload: PasswordUpdatePayload): Promise<void> => {
     if (!passwordRecoveryActive) {
-      const message = 'Tautan pemulihan belum aktif. Buka ulang tautan dari email Anda.';
+      const message = parityShellCopy.recoveryInactive;
       setAuthError(message);
       throw new Error(message);
     }
     if (!isOnline) {
-      const message = 'Tidak ada koneksi internet. Sambungkan lagi untuk menyimpan password.';
+      const message = parityShellCopy.passwordSaveOffline;
       setAuthError(message);
       throw new Error(message);
     }
@@ -530,7 +624,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       await persistSession(nextSession, 'email');
       trackEvent('auth_password_update_succeeded', { surface: 'web_parity_gate' });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Password baru belum bisa disimpan.';
+      const message = error instanceof Error ? error.message : parityShellCopy.passwordUpdateFailed;
       setAuthError(message);
       captureError(error, { phase: 'web_parity_password_update' });
       throw new Error(message);
@@ -541,11 +635,11 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
 
   const handleAppleLogin = async () => {
     if (!mobileEnv.enableAppleSignIn) {
-      setAuthError('Apple Sign-In belum diaktifkan pada build ini.');
+      setAuthError(parityShellCopy.appleUnavailable);
       return;
     }
     if (!isOnline) {
-      setAuthError('Tidak ada koneksi internet. Sambungkan lagi untuk masuk.');
+      setAuthError(parityShellCopy.offlineSignIn);
       return;
     }
 
@@ -555,7 +649,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       const nextSession = await startAppleMobileOAuth(apiClient);
       await persistSession(nextSession, 'apple');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Gagal masuk dengan Apple.';
+      const message = error instanceof Error ? error.message : parityShellCopy.appleFailed;
       setAuthError(message);
       captureError(error, { phase: 'web_parity_login_apple' });
     } finally {
@@ -568,8 +662,8 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
   }, [clearNativeSession]);
 
   const handleNativeAuthExpired = useCallback(() => {
-    void clearNativeSession('web_auth_expired', 'Sesi login berakhir. Silakan masuk lagi.');
-  }, [clearNativeSession]);
+    void clearNativeSession('web_auth_expired', parityShellCopy.sessionExpired);
+  }, [clearNativeSession, parityShellCopy.sessionExpired]);
 
   const handleContinueGuestParity = useCallback(() => {
     setAuthError(null);
@@ -581,7 +675,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
     return (
       <View style={[styles.bootingPage, { backgroundColor: systemPalette.bgBase }]}>
         <ActivityIndicator size="large" color={systemPalette.accent} />
-        <Text style={[styles.bootingText, { color: systemPalette.textSecondary }]}>Menyiapkan login aman...</Text>
+        <Text style={[styles.bootingText, { color: systemPalette.textSecondary }]}>{parityShellCopy.preparing}</Text>
       </View>
     );
   }
@@ -676,22 +770,6 @@ function NativeApp({ onBootReady }: NativeAppProps) {
         preparing: 'Menyiapkan Baristachaw...',
       };
     }
-    if (localeState.language === 'ar') {
-      return {
-        sessionExpired: 'انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.',
-        previousExpired: 'انتهت جلستك السابقة. سجّل الدخول مرة أخرى لاستعادة الميزات المباشرة.',
-        storedReset: 'تمت إعادة تعيين بيانات تسجيل الدخول المحفوظة. يرجى تسجيل الدخول مرة أخرى.',
-        offlineSignIn: 'لا يوجد اتصال بالإنترنت. أعد الاتصال لتسجيل الدخول.',
-        signInFailed: 'فشل تسجيل الدخول.',
-        signInFailedApple: 'فشل تسجيل الدخول باستخدام Apple.',
-        signInFailedEmail: 'Email sign-in failed.',
-        signInFailedTitle: 'فشل تسجيل الدخول',
-        appleUnavailable: 'تسجيل الدخول باستخدام Apple غير مفعّل في هذا الإصدار.',
-        supabaseUnavailable: 'Email sign-in is not available on this device yet.',
-        emailConfirmationTitle: 'Verify email',
-        preparing: 'جارٍ تجهيز Baristachaw...',
-      };
-    }
     return {
       sessionExpired: 'Your session expired. Please sign in again.',
       previousExpired: 'Your previous session expired. Sign in again to restore live features.',
@@ -707,6 +785,9 @@ function NativeApp({ onBootReady }: NativeAppProps) {
       preparing: 'Preparing Baristachaw...',
     };
   }, [localeState.language]);
+  const sessionCheckSlowCopy = localeState.language === 'id'
+    ? 'Koneksi lambat saat memeriksa sesi. Lanjut sebagai tamu atau masuk lagi.'
+    : 'Session check is slow. Continue as guest or sign in again.';
 
   useEffect(() => {
     authBusyProviderRef.current = authBusyProvider;
@@ -735,21 +816,25 @@ function NativeApp({ onBootReady }: NativeAppProps) {
     if (!isOnline) return true;
     try {
       const bootstrapClient = new ApiClient({ getAccessToken: () => targetSession.accessToken });
-      await bootstrapClient.getAuthMe();
+      await bootstrapClient.getAuthMe({
+        retries: 0,
+        timeoutMs: phase.includes('bootstrap') ? SESSION_BOOT_TIMEOUT_MS : SESSION_SYNC_TIMEOUT_MS,
+      });
       return true;
     } catch (error) {
-      captureError(error, { phase, reason: 'session_verify_failed' });
-      await invalidateSession('server_rejected', shellCopy.sessionExpired);
+      const timedOut = isSessionTimeoutError(error);
+      captureError(error, { phase, reason: timedOut ? 'session_verify_timeout' : 'session_verify_failed' });
+      await invalidateSession(timedOut ? 'session_check_timeout' : 'server_rejected', timedOut ? sessionCheckSlowCopy : shellCopy.sessionExpired);
       return false;
     }
-  }, [invalidateSession, isOnline, shellCopy.sessionExpired]);
+  }, [invalidateSession, isOnline, sessionCheckSlowCopy, shellCopy.sessionExpired]);
 
   useEffect(() => {
     let cancelled = false;
 
     const bootstrap = async () => {
       try {
-        const storedState = await inspectAuthSession();
+        const storedState = await withSessionBootTimeout(inspectAuthSession(), 'native_auth_store');
         if (cancelled) return;
 
         if (storedState.status === 'active') {
@@ -764,7 +849,10 @@ function NativeApp({ onBootReady }: NativeAppProps) {
           if (isOnline && isSupabaseAuthConfigured) {
             try {
               const bootstrapClient = new ApiClient({ getAccessToken: () => null });
-              const restoredSession = await restoreSupabaseMobileSession(bootstrapClient);
+              const restoredSession = await withSessionBootTimeout(
+                restoreSupabaseMobileSession(bootstrapClient),
+                'native_supabase_restore',
+              );
               if (restoredSession) {
                 await saveAuthSession(restoredSession);
                 setSession(restoredSession);
@@ -773,7 +861,9 @@ function NativeApp({ onBootReady }: NativeAppProps) {
                 trackEvent('auth_session_restored', { provider: restoredSession.provider || 'supabase' });
               }
             } catch (error) {
-              captureError(error, { phase: 'bootstrap_supabase_restore' });
+              const timedOut = isSessionTimeoutError(error);
+              if (timedOut) setAuthError(sessionCheckSlowCopy);
+              captureError(error, { phase: 'bootstrap_supabase_restore', reason: timedOut ? 'session_restore_timeout' : 'session_restore_failed' });
             }
           }
 
@@ -792,6 +882,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
         }
       } catch (error) {
         captureError(error, { phase: 'bootstrap' });
+        if (isSessionTimeoutError(error)) setAuthError(sessionCheckSlowCopy);
       } finally {
         if (!cancelled) {
           setBooting(false);
@@ -804,7 +895,7 @@ function NativeApp({ onBootReady }: NativeAppProps) {
     return () => {
       cancelled = true;
     };
-  }, [isOnline, shellCopy.previousExpired, shellCopy.storedReset, verifySession]);
+  }, [isOnline, sessionCheckSlowCopy, shellCopy.previousExpired, shellCopy.storedReset, verifySession]);
 
   useEffect(() => {
     if (!isOnline) {

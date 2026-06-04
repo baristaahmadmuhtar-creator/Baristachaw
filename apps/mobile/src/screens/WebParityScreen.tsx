@@ -207,82 +207,19 @@ export function WebParityScreen({
     switch (language) {
       case 'id':
         return {
-          loading: 'Memuat tampilan paritas web...',
-          errorTitle: 'Masalah Tampilan Paritas',
-          loadError: 'Aplikasi web gagal dimuat di sesi ini.',
-          httpError: 'Aplikasi web mengembalikan respons yang tidak terduga.',
+          loading: 'Membuka Baristachaw...',
+          errorTitle: 'Aplikasi belum bisa dibuka',
+          loadError: 'Baristachaw belum berhasil dimuat di sesi ini.',
+          httpError: 'Baristachaw mengembalikan respons yang tidak terduga.',
           reload: 'Muat ulang',
           open: 'Buka di browser',
         };
-      case 'ar':
-        return {
-          loading: 'جارٍ تحميل عرض تكافؤ الويب...',
-          errorTitle: 'مشكلة في عرض التكافؤ',
-          loadError: 'تعذر تحميل تطبيق الويب في هذه الجلسة.',
-          httpError: 'أعاد تطبيق الويب استجابة غير متوقعة.',
-          reload: 'إعادة التحميل',
-          open: 'فتح في المتصفح',
-        };
-      case 'zh':
-        return {
-          loading: '正在加载网页对齐视图...',
-          errorTitle: '对齐视图错误',
-          loadError: '此会话中的网页应用加载失败。',
-          httpError: '网页应用返回了异常响应。',
-          reload: '重新加载',
-          open: '在浏览器中打开',
-        };
-      case 'ja':
-        return {
-          loading: 'Webパリティ表示を読み込み中...',
-          errorTitle: 'パリティ表示エラー',
-          loadError: 'このセッションでWebアプリを読み込めませんでした。',
-          httpError: 'Webアプリから予期しない応答が返されました。',
-          reload: '再読み込み',
-          open: 'ブラウザーで開く',
-        };
-      case 'ko':
-        return {
-          loading: '웹 패리티 보기를 불러오는 중...',
-          errorTitle: '패리티 보기 오류',
-          loadError: '이 세션에서 웹 앱을 불러오지 못했습니다.',
-          httpError: '웹 앱이 예상치 못한 응답을 반환했습니다.',
-          reload: '다시 불러오기',
-          open: '브라우저에서 열기',
-        };
-      case 'th':
-        return {
-          loading: 'กำลังโหลดมุมมองเว็บพาริตี้...',
-          errorTitle: 'ข้อผิดพลาดของมุมมองพาริตี้',
-          loadError: 'แอปเว็บโหลดไม่สำเร็จในเซสชันนี้',
-          httpError: 'แอปเว็บส่งการตอบกลับที่ไม่คาดคิด',
-          reload: 'โหลดใหม่',
-          open: 'เปิดในเบราว์เซอร์',
-        };
-      case 'vi':
-        return {
-          loading: 'Đang tải chế độ đồng bộ web...',
-          errorTitle: 'Lỗi chế độ đồng bộ',
-          loadError: 'Ứng dụng web không tải được trong phiên này.',
-          httpError: 'Ứng dụng web trả về phản hồi không mong muốn.',
-          reload: 'Tải lại',
-          open: 'Mở trong trình duyệt',
-        };
-      case 'ms':
-        return {
-          loading: 'Memuat paparan pariti web...',
-          errorTitle: 'Ralat paparan pariti',
-          loadError: 'Aplikasi web gagal dimuat dalam sesi ini.',
-          httpError: 'Aplikasi web memberikan respons yang tidak dijangka.',
-          reload: 'Muat semula',
-          open: 'Buka dalam pelayar',
-        };
       default:
         return {
-          loading: 'Loading web parity...',
-          errorTitle: 'Parity View Error',
-          loadError: 'Web app failed to load in this session.',
-          httpError: 'Web app returned an unexpected response.',
+          loading: 'Opening Baristachaw...',
+          errorTitle: 'App could not open',
+          loadError: 'Baristachaw could not load in this session.',
+          httpError: 'Baristachaw returned an unexpected response.',
           reload: 'Reload',
           open: 'Open in browser',
         };

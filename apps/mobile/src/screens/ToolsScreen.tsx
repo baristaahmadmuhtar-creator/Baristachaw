@@ -176,40 +176,7 @@ export function ToolsScreen() {
         saveTasksFailed: 'Tugas belum bisa disimpan sekarang.',
       };
     }
-    if (language === 'ar') {
-      return {
-        running: 'قيد التشغيل',
-        complete: 'مكتمل',
-        paused: 'متوقف مؤقتًا',
-        ready: 'جاهز',
-        recipeMismatch: 'عدم تطابق الوصفة',
-        yieldReady: 'العائد جاهز',
-        yieldPending: 'العائد قيد الانتظار',
-        ratioSubtitle: 'تحليل سريع للنسبة بمنهج SCA مع تحذيرات أوضح.',
-        todoSubtitle: 'تبقى مهام الوردية ظاهرة ومختصرة بين الجولات.',
-        timerSurface: 'سطح تركيز واحد للتوقيت والتقدم.',
-        target: 'الهدف',
-        presets: 'الإعدادات المسبقة',
-        presetsSubtitle: 'احتفظ بنوافذ التحضير الشائعة على بعد لمسة واحدة.',
-        ratioSurface: 'جمّع المدخلات أولًا ثم التحذيرات بالأسفل.',
-        expected: 'المتوقع',
-        dose: 'الجرعة (غ)',
-        water: 'الماء (مل)',
-        output: 'الناتج (مل)',
-        result: 'النتيجة',
-        addInputs: 'أدخل القيم الكاملة لعرض العائد.',
-        coherentRecipe: 'تبدو الوصفة متماسكة. النسبة المتوقعة تدور حول',
-        enterInputs: 'أدخل الجرعة والماء والنسبة وTDS والناتج لحساب عائد الاستخلاص.',
-        taskSyncIssue: 'مشكلة مزامنة المهام',
-        deleteTask: 'حذف',
-        noTasks: 'لا توجد مهام بعد',
-        addTaskHint: 'أضف مهمة وردية من الشريط السفلي.',
-        addTask: 'إضافة مهمة',
-        taskSubtitle: 'أضف مهمة واحدة في كل مرة.',
-        taskCardTitle: 'مهمة',
-        taskCardSubtitle: 'اجعلها قصيرة وموجهة للتنفيذ.',
-      };
-    }
+
     return {
       running: 'Running',
       complete: 'Complete',

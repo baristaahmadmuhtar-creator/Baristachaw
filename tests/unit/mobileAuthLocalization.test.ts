@@ -1,9 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import type { Language } from '../../apps/mobile/src/web-shared/types.ts';
-import { LANGUAGE_META } from '../../apps/mobile/src/web-shared/constants.ts';
 import { resolveMobileAuthBundle, resolveMobileAuthCopy } from '../../apps/mobile/src/utils/authLocalization.ts';
+import type { Language } from '../../apps/mobile/src/web-shared/types.ts';
 
 const BROKEN_ENCODING_PATTERNS = [
   /\?{3,}/,
@@ -13,10 +12,11 @@ const BROKEN_ENCODING_PATTERNS = [
   /�/,
 ];
 
-test('mobile auth gate exposes localized first-screen labels for every supported language', () => {
+test('mobile auth gate exposes localized first-screen labels for claimed launch languages', () => {
   const english = resolveMobileAuthBundle('en');
+  const launchLanguages: Language[] = ['en', 'id'];
 
-  for (const language of Object.keys(LANGUAGE_META) as Language[]) {
+  for (const language of launchLanguages) {
     const copy = resolveMobileAuthBundle(language);
     const values = [
       copy.modes.signIn.subtitle,
@@ -44,7 +44,9 @@ test('mobile auth gate exposes localized first-screen labels for every supported
   }
 });
 
-test('mobile auth copy defaults unsupported locale tags to English', () => {
+test('mobile auth copy defaults unsupported locale tags to English for store shell safety', () => {
   assert.equal(resolveMobileAuthCopy('signIn', 'fr-FR').submit, 'Sign in with email');
   assert.equal(resolveMobileAuthBundle('fr-FR').guestContinue, 'Continue as guest');
+  assert.equal(resolveMobileAuthBundle('ar').guestContinue, 'Continue as guest');
+  assert.equal(resolveMobileAuthBundle('zh').googleContinue, 'Continue with Google');
 });

@@ -148,8 +148,26 @@ test('WebParityScreen sends native shell parity params, language, safe area, gue
     assert.match(source, new RegExp(escapeRegex(required)), `missing WebView parity contract: ${required}`);
   }
 
-  assert.match(source, /case 'id':\s*return \{\s*loading: 'Memuat tampilan paritas web\.\.\.'/s);
-  assert.match(source, /default:\s*return \{\s*loading: 'Loading web parity\.\.\.'/s);
+  assert.match(source, /case 'id':\s*return \{\s*loading: 'Membuka Baristachaw\.\.\.'/s);
+  assert.match(source, /default:\s*return \{\s*loading: 'Opening Baristachaw\.\.\.'/s);
+  assert.doesNotMatch(source, /loading: 'Memuat tampilan paritas web|loading: 'Loading web parity/);
+});
+
+test('mobile auth bootstrap cannot trap Android on an endless session loading screen', () => {
+  const appSource = read('apps/mobile/App.tsx');
+  const apiSource = read('apps/mobile/src/services/apiClient.ts');
+  const localizationSource = read('apps/mobile/src/utils/localization.ts');
+
+  assert.match(apiSource, /async getAuthMe\(options: ApiRequestOptions = \{\}\)/);
+  assert.match(appSource, /const SESSION_BOOT_TIMEOUT_MS = 4_000/);
+  assert.match(appSource, /const SESSION_SYNC_TIMEOUT_MS = 8_000/);
+  assert.match(appSource, /function withSessionBootTimeout/);
+  assert.match(appSource, /withSessionBootTimeout\(inspectAuthSession\(\), 'web_parity_auth_store'\)/);
+  assert.match(appSource, /withSessionBootTimeout\(\s*restoreSupabaseMobileSession\(bootstrapClient\),\s*'web_parity_supabase_restore'/s);
+  assert.match(appSource, /withSessionBootTimeout\(inspectAuthSession\(\), 'native_auth_store'\)/);
+  assert.match(appSource, /withSessionBootTimeout\(\s*restoreSupabaseMobileSession\(bootstrapClient\),\s*'native_supabase_restore'/s);
+  assert.match(appSource, /timeoutMs: phase\.includes\('bootstrap'\) \? SESSION_BOOT_TIMEOUT_MS : SESSION_SYNC_TIMEOUT_MS/);
+  assert.match(localizationSource, /const MOBILE_SUPPORTED_LANGUAGES = new Set<Language>\(\['en', 'id'\]\)/);
 });
 
 test('mobile parity gate does not claim unsupported Asia locales as full readiness', () => {

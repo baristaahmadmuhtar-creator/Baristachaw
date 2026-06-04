@@ -1983,7 +1983,7 @@ function selectDefaultAiResponse(
       if (typeof markdown !== 'string' || !markdown) continue;
       const guardAction = mapCoachModeToGuardAction(mode);
       const guarded = plan
-        ? sanitizeAiCoachMarkdown({ action: guardAction, markdown, plan })
+        ? sanitizeAiCoachMarkdown({ action: guardAction, markdown, plan, language })
         : { markdown, risk: 'none' as const, replacements: [] };
       const localizedMarkdown = localizeAiBrewMarkdownLanguage(guarded.markdown, language);
       return {
@@ -2369,6 +2369,7 @@ async function runHybridSequenceUpdate(
     action: 'sequence',
     markdown: displayMarkdown,
     plan: nextPlan,
+    language: options.language,
   });
   const safeDisplayMarkdown = guardedDisplay.risk === 'high' || hasAiBrewLanguageLeak(guardedDisplay.markdown, options.language)
     ? localizeAiBrewMarkdownLanguage(canonicalOverlay.markdown, options.language)
@@ -9266,7 +9267,7 @@ export function AiBrewPanel() {
       const markdown = await normalizeMarkdownToLanguage(rawMarkdown, language, requestContext, {
         timeoutMs: AI_BREW_COACH_TRANSLATION_TIMEOUT_MS,
       });
-      const guarded = sanitizeAiCoachMarkdown({ action: 'troubleshoot', markdown, plan });
+      const guarded = sanitizeAiCoachMarkdown({ action: 'troubleshoot', markdown, plan, language });
       const safeMarkdown = guarded.risk === 'high'
         || isAiBrewGenericFailureMarkdown(rawMarkdown)
         || isAiBrewGenericFailureMarkdown(markdown)
@@ -9370,8 +9371,10 @@ export function AiBrewPanel() {
       markdown: sanitizeBrewNarrative(
         localizeAiBrewMarkdownLanguage(buildDeterministicAiCoachMarkdown(plan, guardAction, language), language),
         plan,
+        language,
       ),
       plan,
+      language,
     }).markdown;
     const cacheKey = buildAiAssistCacheKey(plan, mode, language);
     const cached = aiAssistCacheRef.current.get(cacheKey);
@@ -9465,7 +9468,7 @@ export function AiBrewPanel() {
       const markdown = await normalizeMarkdownToLanguage(rawMarkdown, language, requestContext, {
         timeoutMs: AI_BREW_COACH_TRANSLATION_TIMEOUT_MS,
       });
-      const guarded = sanitizeAiCoachMarkdown({ action: guardAction, markdown, plan });
+      const guarded = sanitizeAiCoachMarkdown({ action: guardAction, markdown, plan, language });
       const safeMarkdown = guarded.risk === 'high'
         || isAiBrewGenericFailureMarkdown(rawMarkdown)
         || isAiBrewGenericFailureMarkdown(markdown)

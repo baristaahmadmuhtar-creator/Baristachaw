@@ -3,7 +3,6 @@ import {
   getLanguageDirection,
   getLanguageLocale,
   getTranslations,
-  isSupportedLanguage,
   type Translations,
 } from '../web-shared/constants';
 import type { Language } from '../web-shared/types';
@@ -906,10 +905,13 @@ const MOBILE_LOCALE_BUNDLES: Record<Language, MobileLocaleBundle> = {
   ms: { home: buildDerivedHomeCopy('ms'), chat: buildDerivedChatCopy('ms') },
 };
 
+const MOBILE_SUPPORTED_LANGUAGES = new Set<Language>(['en', 'id']);
+
 export function resolveMobileLanguage(value?: string | null): Language {
   const normalized = String(value || '').trim();
-  const short = normalized.toLowerCase().split(/[-_]/)[0];
-  return isSupportedLanguage(short) ? short : DEFAULT_LANGUAGE;
+  const short = normalized.toLowerCase().split(/[-_]/)[0] as Language;
+  if (MOBILE_SUPPORTED_LANGUAGES.has(short)) return short;
+  return DEFAULT_LANGUAGE;
 }
 
 export function getMobileLocalization(value?: string | null): {

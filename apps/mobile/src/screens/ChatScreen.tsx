@@ -346,37 +346,7 @@ export function ChatScreen({ apiClient, session, isOnline, guestModeEnabled, onS
         noResponseReturned: 'Tidak ada respons yang dikembalikan.',
       };
     }
-    if (localeState.language === 'ar') {
-      return {
-        notSavedYet: 'لم يتم الحفظ بعد',
-        updated: 'تم التحديث',
-        loadHistoryFailed: 'تعذر تحميل سجل المحادثة.',
-        cameraPermission: 'مطلوب إذن الكاميرا لالتقاط مرفق صورة.',
-        libraryPermission: 'مطلوب إذن مكتبة الصور لاختيار الوسائط.',
-        readAttachmentFailed: 'تعذر قراءة المرفق المحدد.',
-        attachmentTooLarge: `المرفق كبير جدًا (الحد الأقصى ${MAX_INLINE_ATTACHMENT_LABEL}).`,
-        signInForChatTools: 'سجّل الدخول لاستخدام أدوات المحادثة.',
-        offlineSend: 'أنت غير متصل. أعد الاتصال لإرسال الرسائل.',
-        shareTitle: 'رد دردشة Baristachaw',
-        signInForImages: 'سجّل الدخول لاستخدام أدوات الصور.',
-        offlineImages: 'أنت غير متصل. أعد الاتصال لإنشاء الصور.',
-        generatedImageReuseFailed: 'تعذر إعادة استخدام الصورة المُنشأة.',
-        offlineSpeech: 'أنت غير متصل. أعد الاتصال لتشغيل الصوت المنطوق.',
-        voiceUnavailable: 'صوت الملاحظة الصوتية غير متاح على هذا الجهاز.',
-        openSourceUnsupported: 'تعذر فتح رابط المصدر على هذا الجهاز.',
-        openSourceFailed: 'تعذر فتح رابط المصدر.',
-        voiceEmpty: 'كانت الملاحظة الصوتية فارغة. حاول مرة أخرى.',
-        voiceTooLarge: `الملاحظة الصوتية كبيرة جدًا (الحد الأقصى ${MAX_INLINE_ATTACHMENT_LABEL}).`,
-        voiceProcessFailed: 'تعذر معالجة الملاحظة الصوتية. حاول مرة أخرى.',
-        signInForVoice: 'سجّل الدخول لاستخدام الملاحظة الصوتية.',
-        offlineVoice: 'أنت غير متصل. تحتاج الملاحظة الصوتية إلى الإنترنت للمعالجة.',
-        microphonePermission: 'مطلوب إذن الميكروفون للملاحظة الصوتية.',
-        startRecordingFailed: 'تعذر بدء التسجيل.',
-        sendFailed: 'تعذر إرسال الرسالة.',
-        share: 'مشاركة',
-        deep: 'عميق',
-      };
-    }
+
     return {
       notSavedYet: 'Not saved yet',
       updated: 'Updated',

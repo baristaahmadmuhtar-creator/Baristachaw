@@ -264,8 +264,8 @@ export class ApiClient {
     );
   }
 
-  async getAuthMe(): Promise<UserProfile> {
-    const data = await this.requestJson<{ user: UserProfile }>('/api/auth/me', { method: 'GET' });
+  async getAuthMe(options: ApiRequestOptions = {}): Promise<UserProfile> {
+    const data = await this.requestJson<{ user: UserProfile }>('/api/auth/me', { method: 'GET' }, options);
     return data.user;
   }
 

@@ -308,15 +308,21 @@ export function buildCompactBrewContext(plan: BrewPlan) {
 export function buildFriendlyToneInstruction(language?: string) {
   if (isIndonesianAiBrewLanguage(language)) {
     return [
-      'Tulis seperti senior barista yang ramah, singkat, dan praktis.',
-      'Pakai Bahasa Indonesia natural.',
+      'Jawab sepenuhnya dalam Bahasa Indonesia.',
+      'Jangan campur bahasa; istilah kopi umum boleh bila natural.',
+      'Tulis singkat, ramah, seperti barista senior.',
+      'Jangan mengarang data bean, origin, farm, varietas, proses, altitude, roaster, atau catatan rasa.',
+      'Jika data bean belum lengkap, sebutkan sebagai estimasi atau data belum lengkap.',
       'Jangan pakai istilah internal sistem.',
     ].join('\n');
   }
 
   return [
+    'Respond only in English.',
+    'Do not mix languages; standard coffee terms may stay when appropriate.',
     'Write like a friendly senior barista: short, practical, and natural.',
-    'Use clear English.',
+    'Do not invent missing bean data, origin, farm, variety, process, altitude, roaster, or tasting notes.',
+    'If bean data is incomplete, say it is incomplete or an estimate.',
     'Do not use internal system terms.',
   ].join('\n');
 }
@@ -328,7 +334,7 @@ export function estimatePromptSize(prompt: string) {
 export function compactContextToBudget(context: string, maxChars: number) {
   if (context.length <= maxChars) return context;
   const lines = context.split('\n').filter(Boolean);
-  const required = lines.filter((line) => /^(Coffee|Mode|Target profile|Brewer|Dose|Ratio|Total water|Hot water|Ice|Temperature|Target time|Extraction time|Hot extraction time|Drawdown finish|Hot drawdown finish|Steep time|Shot time|Cold steep|Grind):/i.test(line));
+  const required = lines.filter((line) => /^(Coffee|Mode|Target profile|Process|Variety|Roast|Brewer|Dose|Ratio|Total water|Hot water|Ice|Temperature|Target time|Extraction time|Hot extraction time|Drawdown finish|Hot drawdown finish|Steep time|Shot time|Cold steep|Grind):/i.test(line));
   const optional = lines.filter((line) => !required.includes(line));
   const selected: string[] = [];
 
@@ -398,6 +404,12 @@ export function buildAiAssistPrompt(
     'Do not invent farm, origin, roaster, altitude, variety, process, water status, grinder source, or brewer source.',
     'Use cue/tendency/baseline language when evidence is uncertain.',
     'Do not expose internal planner, validator, routing, or prompt terms.',
+    id
+      ? 'Jawab sepenuhnya dalam Bahasa Indonesia. Jangan campur bahasa.'
+      : 'Respond only in English. Do not mix languages.',
+    id
+      ? 'Jangan mengarang data bean; tandai data belum lengkap/input manual/estimasi.'
+      : 'Do not invent missing bean data; mark incomplete/manual/estimate.',
     id
       ? 'Jangan menjanjikan 100% hasil, ekstraksi sempurna, rasa pasti, atau kepastian di luar level bukti.'
       : 'Do not promise 100% results, perfect extraction, guaranteed flavor, or certainty beyond the evidence level.',
@@ -918,6 +930,19 @@ export function buildSequenceGuidePrompt(plan: BrewPlan, language?: string): AiB
 
 export function buildSequenceServerPrompt(plan: BrewPlan, language?: string): AiBrewPromptContext {
   const targetLanguage = language || 'en';
+  const displayLanguageRules = isIndonesianAiBrewLanguage(targetLanguage)
+    ? [
+        '- displayMarkdown must be written only in Indonesian.',
+        '- Do not mix languages. Use natural Indonesian barista wording; coffee terms that are normal in Indonesia may remain when appropriate.',
+        '- Do not invent missing bean data, farm, origin, altitude, variety, process, roaster, water status, or grinder source.',
+        '- If evidence is incomplete, say data belum lengkap, input manual, or estimasi AI in Indonesian.',
+      ]
+    : [
+        '- displayMarkdown must be written only in English.',
+        '- Do not mix languages. Use natural professional English; coffee method names and brands may remain unchanged.',
+        '- Do not invent missing bean data, farm, origin, altitude, variety, process, roaster, water status, or grinder source.',
+        '- If evidence is incomplete, say incomplete data, manual input, or AI estimate in English.',
+      ];
   const base = buildSequenceGuidePrompt(plan, 'en');
   const serverGuide = compactContextToBudget(base.body, 9400);
   return {
@@ -934,6 +959,7 @@ export function buildSequenceServerPrompt(plan: BrewPlan, language?: string): Ai
       '',
       'displayMarkdown requirements:',
       `- Use UI language ${targetLanguage}.`,
+      ...displayLanguageRules,
       '- Keep identical heading order, line order, step count, and numeric values as canonicalMarkdown.',
       '- If UI language is English, displayMarkdown may equal canonicalMarkdown.',
       '- Do not omit method/device, target profile, water/bean, hot/ice split, or watch anchors.',

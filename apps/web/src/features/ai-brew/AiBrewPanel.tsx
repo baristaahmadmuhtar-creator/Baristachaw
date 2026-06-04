@@ -820,17 +820,17 @@ const COPY = {
     waterBrand: 'Brand air',
     waterManual: 'Mineral manual',
     waterBrandPicker: 'Air',
-    comingSoon: 'Coming Soon',
-    espressoComingSoon: 'Espresso Brew masih Coming Soon. Untuk MVP produksi, gunakan Basic Brew atau Advanced Brew dulu.',
+    comingSoon: 'Segera hadir',
+    espressoComingSoon: 'Seduh espresso belum siap untuk MVP produksi. Gunakan Seduh Dasar atau Seduh Lanjutan dulu.',
     waterQuickPicks: 'Saran',
     waterQuickPicksDescription: '',
-    liteMode: 'Espresso Brew',
-    quickMode: 'Basic Brew',
-    proMode: 'Advanced Brew',
-    liteModeDescription: 'Coming Soon - workflow espresso disiapkan sebagai fitur khusus.',
-    quickModeDescription: 'Baseline cepat dan aman untuk cangkir pertama yang stabil.',
+    liteMode: 'Seduh Espresso',
+    quickMode: 'Seduh Dasar',
+    proMode: 'Seduh Lanjutan',
+    liteModeDescription: 'Segera hadir - alur espresso sedang disiapkan sebagai fitur khusus.',
+    quickModeDescription: 'Titik awal cepat dan aman untuk cangkir pertama yang stabil.',
     proModeDescription: 'Kontrol penuh untuk beans, air, grinder, dan presisi rasa.',
-    liteModeTrustHint: 'Coming Soon - espresso butuh flow dial-in, logika tekanan, dan kalibrasi grinder terpisah sebelum launch.',
+    liteModeTrustHint: 'Segera hadir - espresso perlu alur dial-in, logika tekanan, dan kalibrasi grinder terpisah sebelum rilis.',
     quickModeTrustHint: 'Paling praktis untuk seduh harian. Mulai dari sini, cicipi, lalu koreksi satu variabel.',
     proModeTrustHint: 'Pakai saat proses, varietas, mineral air, grinder, dan target rasa perlu dibaca lengkap.',
     pourControlTitle: 'Kontrol tuang',
@@ -845,7 +845,7 @@ const COPY = {
     pourCount4: '4 tuang',
     pourCount5: '5 tuang',
     pourControlHint: '',
-    manualPresetTitle: 'Brew Presets',
+    manualPresetTitle: 'Preset seduh',
     manualPresetCompact: 'Default tertutup. Pilih hanya saat butuh titik awal cepat.',
     manualPresetHint: 'Opsional untuk mengisi alat, rasio, air, suhu, target, dan gaya tuang. Kontrol tuang Auto tetap bekerja saat preset disembunyikan.',
     manualPresetAll: 'Semua',
@@ -964,9 +964,9 @@ const COPY = {
     targetWaterMlPlaceholder: 'Auto',
     targetTempC: 'Suhu (C)',
     targetTempCPlaceholder: 'Auto',
-    liteBuilderTitle: 'Espresso Brew Coming Soon',
-    quickBuilderTitle: 'Builder Basic Brew',
-    proBuilderTitle: 'Builder Advanced Brew',
+    liteBuilderTitle: 'Seduh Espresso Segera Hadir',
+    quickBuilderTitle: 'Panel Seduh Dasar',
+    proBuilderTitle: 'Panel Seduh Lanjutan',
     closeBuilder: 'Tutup panel',
     historyStripDescription: 'Pakai lagi seduhan yang tersimpan.',
     proDetails: 'Detail seduh presisi',
@@ -1002,13 +1002,13 @@ const COPY = {
     waterStatusZeroMineral: 'Mineral nol / RO',
     waterStatusEstimated: 'Estimasi',
     waterStatusCaution: 'Siap dengan catatan',
-    grindVerified: 'Referensi grind terverifikasi',
+    grindVerified: 'Referensi gilingan terverifikasi',
     grindOfficialReference: 'Referensi resmi',
     grindCuratedReference: 'Referensi kurasi',
     grindCommunityReference: 'Referensi komunitas',
-    grindEstimatedBaseline: 'Baseline estimasi',
-    grindCalibrationNote: 'Setting grinder bergantung pada titik nol burr, kalibrasi, sangrai, dan dosis. Mulai dari sini, lalu koreksi dari air turun dan rasa.',
-    grindFallback: 'Baseline gilingan',
+    grindEstimatedBaseline: 'Estimasi gilingan',
+    grindCalibrationNote: 'Setelan grinder bergantung pada titik nol burr, kalibrasi, sangrai, dan dosis. Mulai dari sini, lalu koreksi dari air turun dan rasa.',
+    grindFallback: 'Titik awal gilingan',
     profileExactStatus: 'Profil alat tepat',
     profileFallbackStatus: 'Profil keluarga alat',
     processOptionalNote: 'Proses opsional. Tidak ada penyesuaian proses otomatis yang dipakai.',
@@ -1057,11 +1057,11 @@ const COPY = {
     waterHighBufferWarning: 'Alkalinitas/buffer tinggi bisa meredam keasaman dan membuat kopi floral terasa datar. Pakai kontak lebih pendek atau mineral manual untuk kopi yang sensitif.',
     waterAlkalineWarning: 'Air alkalin bisa meredam keasaman. Verifikasi manual sebelum dianggap ramah filter.',
     waterCompleteMinerals: 'Lengkapi mineral',
-    waterCompleteMineralsHint: 'Mengisi kolom kosong dari data katalog, kimia brand yang tersedia, atau baseline klasifikasi konservatif. Statusnya tetap manual sampai terverifikasi.',
+    waterCompleteMineralsHint: 'Mengisi kolom kosong dari data katalog, kimia brand yang tersedia, atau titik awal klasifikasi konservatif. Statusnya tetap manual sampai terverifikasi.',
     waterCompleteMineralsApplied: 'Mineral sudah dilengkapi. Cek catatan, lalu buat seduhan.',
     waterCompleteMineralsUnavailable: 'Pilih brand air dulu.',
     waterCompleteMineralsRoNote: 'Untuk air RO/low-mineral, ini target remineralisasi, bukan profil mineral asli label.',
-    waterCompleteMineralsEstimatedNote: 'Baseline klasifikasi - verifikasi manual sebelum dipublikasikan sebagai profil brand.',
+    waterCompleteMineralsEstimatedNote: 'Titik awal klasifikasi - verifikasi manual sebelum dipublikasikan sebagai profil brand.',
     waterWhyManualTitle: 'Kenapa manual?',
     waterWhyManualBody: 'Manual wajib ketika panel mineral belum lengkap, masih estimasi, terlalu rendah mineral, alkalin/buffer tinggi, atau belum didukung sumber publik tepercaya. Ini mencegah klaim "siap seduh" yang salah dan resep yang buruk.',
     waterEditMinerals: 'Edit mineral',
@@ -1088,7 +1088,7 @@ const COPY = {
     openPlan: 'Buka hasil',
     emptyRecent: 'Buat satu seduhan untuk mulai jurnal lokal.',
     emptyFavorites: 'Tandai favorit agar resep muncul di sini.',
-    emptyPlan: 'Pilih Basic Brew atau Advanced Brew untuk menyusun seduhan.',
+    emptyPlan: 'Pilih Seduh Dasar atau Seduh Lanjutan untuk menyusun seduhan.',
     actionPrioritiesTitle: 'Prioritas seduh',
     actionPrioritiesDescription: 'Aksi praktis untuk seduhan berikutnya. Ubah satu variabel saja.',
     warningsDescription: 'Baca sebelum seduh. Catatan ini mengikuti bahasa aplikasi dan status air, grinder, serta alat yang dipakai.',
@@ -1108,7 +1108,7 @@ const COPY = {
     finalRatio: 'Rasio Final',
     hotConcentrate: 'Konsentrat Panas',
     iceSetupTitle: 'Setup seduh es',
-    iceSetupDetail: 'Masukkan es ke server dulu, seduh hanya sampai target air panas, biarkan air turun selesai, lalu aduk 5-8 detik sampai lelehan merata.',
+    iceSetupDetail: 'Masukkan es ke wadah saji dulu, seduh hanya sampai target air panas, biarkan air turun selesai, lalu aduk 5-8 detik sampai lelehan merata.',
     cupOutput: 'Estimasi Hasil Cangkir',
     hotWater: 'Air Panas',
     ice: 'Es',
@@ -1163,7 +1163,7 @@ const COPY = {
     aiAssistUsedDeepAnalysis: 'AI dipakai untuk analisis dalam',
     aiAssistCacheReused: 'Jawaban AI sebelumnya digunakan ulang.',
     aiOptimizationAccepted: 'AI memberi penyesuaian kecil dan sistem sudah memvalidasi hasilnya.',
-    aiOptimizationRejectedProtected: 'Saran AI tidak dipakai karena mencoba mengubah angka penting. Resep tervalidasi tetap dipertahankan. Gunakan hasil ini sebagai baseline, lalu koreksi satu variabel saja.',
+    aiOptimizationRejectedProtected: 'Saran AI tidak dipakai karena mencoba mengubah angka penting. Resep tervalidasi tetap dipertahankan. Gunakan hasil ini sebagai titik awal, lalu koreksi satu variabel saja.',
     updateNotes: 'Perbarui Catatan',
     updatingNotes: 'Memperbarui Catatan',
     aiNotesManualHint: 'Pakai AI hanya saat perlu.',
@@ -1215,7 +1215,7 @@ const COPY = {
     feedbackMuddy: 'Keruh / berat',
     feedbackAstringent: 'Sepat',
     feedbackNote: 'Catatan singkat',
-    feedbackNotePlaceholder: 'mis. air turun cepat, rasa tajam, grind satu klik lebih halus',
+    feedbackNotePlaceholder: 'mis. air turun cepat, rasa tajam, gilingan satu klik lebih halus',
     feedbackSaveNote: 'Simpan catatan',
     feedbackSaved: 'Catatan rasa tersimpan.',
     feedbackSaveFailed: 'Catatan rasa belum bisa disimpan sekarang.',
@@ -1267,10 +1267,10 @@ const COPY = {
     beanDetailsHint: 'Proses natural/washed, varietas, dan asal membuat resep lebih akurat, tapi mode Cepat tetap bisa berjalan tanpa itu.',
     beanDetailsAdd: 'Tambah detail kopi',
     beanDetailsHide: 'Sembunyikan detail kopi',
-    quickSummaryAuto: 'Detail kopi tetap opsional; hasil ini masih baseline.',
+    quickSummaryAuto: 'Detail kopi tetap opsional; hasil ini masih titik awal.',
     moreAiTools: 'Alat AI lainnya',
     beanCoverageTitle: 'Cakupan data kopi',
-    beanCoverageFallback: 'Data kopi belum lengkap; AI Brew memakai baseline aman.',
+    beanCoverageFallback: 'Data kopi belum lengkap; AI Brew memakai titik awal aman.',
     beanCoverageTasteLoop: 'Gunakan feedback rasa setelah seduh untuk koreksi berikutnya.',
     expectedCupTitle: 'Prediksi Rasa',
     cupAcidity: 'Asam',
@@ -1307,12 +1307,12 @@ const COPY = {
     manualEntry: 'Lainnya / Manual',
     notSpecified: 'Belum ditentukan',
     exactMatch: 'Cocok tepat',
-    fallbackUsed: 'Baseline pengganti dipakai',
+    fallbackUsed: 'Titik awal pengganti dipakai',
     verifiedOfficial: 'Resmi',
     verifiedCommunity: 'Komunitas',
     verifiedCurated: 'Kurasi',
     verifiedDataset: 'Dataset',
-    verifiedFallback: 'Baseline',
+    verifiedFallback: 'Titik awal',
     lowConfidence: 'Keyakinan rendah',
     reviewFresh: 'Data katalog',
     reviewNeedsReview: 'Butuh verifikasi',
@@ -1330,9 +1330,9 @@ const COPY = {
     processGroup: 'Keluarga proses',
     varietyGroup: 'Keluarga varietas',
     profileUsed: 'Profil yang dipakai',
-    grindSource: 'Sumber setting gilingan',
+    grindSource: 'Sumber setelan gilingan',
     grindCatalogReference: 'Referensi katalog',
-    grindDerivedBaseline: 'Baseline turunan',
+    grindDerivedBaseline: 'Titik awal turunan',
     confidenceNotes: 'Catatan keyakinan',
     summaryFocusHint: 'Fokus utama: suhu, gilingan, air turun atau waktu rasa, lalu koreksi satu variabel dulu.',
     waterRequired: 'Input mineral manual wajib diisi sebelum membuat seduhan.',
@@ -1412,7 +1412,7 @@ const COPY = {
     waterBadgeIdealV60: 'Ideal untuk V60',
     waterBadgeHighBuffer: 'Buffer tinggi',
     waterBadgeManualMinerals: 'Mineral manual',
-    noVerifiedGrinderSettingDetail: 'Belum ada setting grinder terverifikasi untuk grinder dan profil ini.',
+    noVerifiedGrinderSettingDetail: 'Belum ada setelan grinder terverifikasi untuk grinder dan profil ini.',
     noVerifiedGrinderSettingShort: 'Belum ada setting terverifikasi',
     aiGenerateFailed: 'AI belum bisa dipakai untuk seduhan ini sekarang.',
     aiCoachFailed: 'AI Coach belum bisa dipakai sekarang.',
@@ -1626,7 +1626,7 @@ function getPlanTasteTimeRange(plan: BrewPlan): [number, number] {
 
 function getPlanExtractionLabel(plan: BrewPlan, language: string) {
   const id = isIndonesianAiBrewLanguage(language);
-  if (plan.methodFamily === 'espresso') return id ? 'Shot' : 'Shot';
+  if (plan.methodFamily === 'espresso') return id ? 'Ekstraksi' : 'Shot';
   if (plan.methodFamily === 'cold_brew') return id ? 'Rendam dingin' : 'Cold steep';
   if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return id ? 'Rendam' : 'Steep';
   if (AI_BREW_POUR_CONTROL_FAMILIES.has(plan.methodFamily)) return id ? 'Air turun selesai' : 'Drawdown finish';
@@ -1657,7 +1657,7 @@ function getPlanTimeHelperCopy(plan: BrewPlan, language: string) {
   }
   if (AI_BREW_POUR_CONTROL_FAMILIES.has(plan.methodFamily)) {
     return id
-      ? 'Angka ini adalah target air turun selesai, bukan waktu sajikan. Sajikan setelah drawdown selesai.'
+      ? 'Angka ini adalah target air turun selesai, bukan waktu sajikan. Sajikan setelah air turun selesai.'
       : 'This is the drawdown-finish target, not the serve time. Serve after drawdown completes.';
   }
   if (plan.brewMode === 'iced') {
@@ -1758,7 +1758,7 @@ function buildPremiumResultSummary(plan: BrewPlan, language: string) {
     const hotRatio = `1:${formatBrewRatio(plan.hotExtractionRatio)}`;
     const estimatedCup = formatRoundedMl(plan.estimatedCupOutputMl);
     return id
-      ? `Dosis ${dose}; total minuman ${finalBeverage}; air panas ${hotWater}; es di server ${ice}; rasio final ${finalRatio}; rasio ekstraksi ${hotRatio}; estimasi hasil cangkir ${estimatedCup}. ${temperature}, ${extractionLabel} ${extractionTime}.${completionCopy}`
+      ? `Dosis ${dose}; total minuman ${finalBeverage}; air panas ${hotWater}; es di wadah saji ${ice}; rasio final ${finalRatio}; rasio ekstraksi ${hotRatio}; estimasi hasil cangkir ${estimatedCup}. ${temperature}, ${extractionLabel} ${extractionTime}.${completionCopy}`
       : `Dose ${dose}; final beverage/total input ${finalBeverage}; hot water ${hotWater}; ice in server ${ice}; final ratio ${finalRatio}; hot extraction ratio ${hotRatio}; estimated cup output ${estimatedCup}. ${temperature}, ${extractionLabel} ${extractionTime}.${completionCopy}`;
   }
 
@@ -2053,7 +2053,7 @@ function createHybridAiSequenceProgress(
 
 function withLanguageLock(promptBody: string, language: string) {
   if (/^id(?:-|$)/i.test(language)) {
-    return `${promptBody}\n\nKunci bahasa: jawab sepenuhnya dalam Bahasa Indonesia. Jangan gunakan bahasa lain untuk judul, bullet, label, catatan, maupun fallback. Nama alat, nama brand, istilah umum seperti bloom/server/bed, dan satuan tetap boleh dipertahankan. Gunakan "air turun" untuk drawdown dan "buka katup" untuk release. Pertahankan struktur heading, bullet, dan angka secara konsisten.`;
+    return `${promptBody}\n\nKunci bahasa: jawab sepenuhnya dalam Bahasa Indonesia. Jangan gunakan bahasa lain untuk judul, bullet, label, catatan, maupun fallback. Nama alat, nama brand, istilah umum seperti blooming, bypass, drawdown, dan satuan tetap boleh dipertahankan. Gunakan "wadah saji" untuk server, "hamparan kopi" untuk bed, "campuran kopi" untuk slurry, "air turun" untuk drawdown, dan "buka katup" untuk release. Pertahankan struktur heading, bullet, dan angka secara konsisten.`;
   }
   if (/^ar(?:-|$)/i.test(language)) {
     return `${promptBody}\n\nقفل اللغة: أجب بالكامل باللغة العربية. لا تستخدم أي لغة أخرى في العناوين أو النقاط أو التسميات أو الملاحظات أو النصوص الاحتياطية. حافظ على بنية العناوين والنقاط والأرقام كما هي.`;
@@ -2098,7 +2098,7 @@ function localizeAiBrewMarkdownLanguage(markdown: string, language: string) {
         .replace(/\bGrind recommendation:/gi, 'Rekomendasi gilingan:')
         .replace(/\bTotal input\b/gi, 'Total input')
         .replace(/\bHot water\b/gi, 'Air panas')
-        .replace(/\bIce in server\b/gi, 'Es di server')
+        .replace(/\bIce in server\b/gi, 'Es di wadah saji')
         .replace(/\bEstimated cup output\b/gi, 'Estimasi hasil cangkir')
         .replace(/\bFinal ratio\b/gi, 'Rasio final')
         .replace(/\bBrew time\b/gi, 'Waktu seduh')
@@ -2205,7 +2205,7 @@ async function normalizeSequenceMarkdownToLanguage(
     'For every numbered Sequence line, keep the deterministic checkpoint prefix unchanged through the operation text, including pour, wait, release, drawdown, and all ml/time targets.',
     'Translate only the control instruction after that fixed checkpoint prefix.',
     'Keep numbering, line order, and all numeric values unchanged.',
-    'Use short service-ready sentences. For Indonesian, prefer natural terms like "tuang", "target", "bed", "server", "air turun", and "buka katup"; avoid stiff textbook phrasing.',
+    'Use short service-ready sentences. For Indonesian, prefer natural terms like "tuang", "target", "hamparan kopi", "wadah saji", "campuran kopi", "air turun", and "buka katup"; avoid stiff textbook phrasing.',
     'Return only translated markdown.',
     '',
     markdown,
@@ -2957,9 +2957,9 @@ function formatSwitchPresetLabelById(
   const id = isIndonesianAiBrewLanguage(language);
   switch (presetId) {
     case 'immersion_sweet':
-      return id ? 'Immersion manis' : 'Immersion Sweet';
+      return id ? 'Rendaman manis' : 'Immersion Sweet';
     case 'immersion_heavy_body':
-      return id ? 'Immersion body' : 'Immersion Body';
+      return id ? 'Rendaman body' : 'Immersion Body';
     case 'hybrid_balanced':
       return id ? 'Hybrid seimbang' : 'Hybrid Balanced';
     case 'hybrid_bright_clean':
@@ -3363,7 +3363,7 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
     case 'setup':
       if (id) {
         return plan?.brewMode === 'iced'
-          ? `Bilas/panaskan alat, tara timbangan, lalu siapkan es ${formatRoundedGrams(plan.iceMl)} di server.`
+          ? `Bilas/panaskan alat, tara timbangan, lalu siapkan es ${formatRoundedGrams(plan.iceMl)} di wadah saji.`
           : 'Bilas/panaskan alat, tara timbangan, lalu siapkan metode sebelum seduh.';
       }
       {
@@ -3377,12 +3377,12 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
     case 'dose':
       if (id) {
         if (plan?.methodFamily === 'espresso') return `Dosis ${formatRoundedGrams(plan.doseG)}, distribusi rata, lalu tamp level.`;
-        return `Dosis ${plan ? formatRoundedGrams(plan.doseG) : ''} dan siapkan bed sesuai metode.`;
+        return `Dosis ${plan ? formatRoundedGrams(plan.doseG) : ''} dan siapkan hamparan kopi sesuai metode.`;
       }
       if (plan?.methodFamily === 'espresso') return `Dose ${formatRoundedGrams(plan.doseG)}, distribute evenly, then tamp level.`;
       return `Dose ${plan ? formatRoundedGrams(plan.doseG) : ''} and prepare the bed for this method.`;
     case 'puck_prep':
-      return id ? 'Distribusi rata, tamp level, dan bersihkan rim basket sebelum shot.' : 'Distribute evenly, tamp level, and clean the basket rim before the shot.';
+      return id ? 'Distribusi rata, tamp level, dan bersihkan bibir keranjang sebelum ekstraksi.' : 'Distribute evenly, tamp level, and clean the basket rim before the shot.';
     case 'bloom':
       return id
         ? (plan?.brewMode === 'iced'
@@ -3400,11 +3400,11 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
           ? `Pour ${pour}; target ${target} hot water.`
           : `Pour ${pour}; stop at ${target}.`);
     case 'charge':
-      return id ? `Tuang ${pour || target} dan basahi bed merata.` : `Add ${pour || target} and wet the bed evenly.`;
+      return id ? `Tuang ${pour || target} dan basahi hamparan kopi merata.` : `Add ${pour || target} and wet the bed evenly.`;
     case 'stir':
       return id ? 'Aduk 3-5x atau putar ringan, lalu hentikan agitasi.' : 'Stir 3-5 times or swirl lightly, then stop agitation.';
     case 'swirl':
-      return id ? 'Putar ringan sekali saja untuk meratakan slurry.' : 'Use one light swirl only to even out the slurry.';
+      return id ? 'Putar ringan sekali saja untuk meratakan campuran kopi.' : 'Use one light swirl only to even out the slurry.';
     case 'steep':
       return id
         ? (step.endSeconds ? `Rendam sampai ${formatGuideTime(step.endSeconds)}; jangan tambah air.` : 'Rendam stabil; jangan tambah air.')
@@ -3428,7 +3428,7 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
     case 'extract':
       return id
         ? (plan?.methodFamily === 'espresso'
-          ? `Mulai shot dan ekstrak sampai hasil ${formatRoundedMl(plan.totalWaterMl)}.`
+          ? `Mulai ekstraksi espresso sampai hasil ${formatRoundedMl(plan.totalWaterMl)}.`
           : `Ekstrak sampai target ${target}.`)
         : (plan?.methodFamily === 'espresso'
           ? `Start the shot and extract to ${formatRoundedMl(plan.totalWaterMl)} yield.`
@@ -3451,7 +3451,7 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
     case 'dilute':
       return id ? 'Dilusi hanya setelah filtrasi bila butuh kekuatan sajian lebih ringan.' : 'Dilute only after filtration if the serving strength needs to be lighter.';
     case 'mix':
-      return id ? 'Aduk batch/carafe pelan sebelum evaluasi rasa atau sajikan.' : 'Gently mix the batch or carafe before tasting or serving.';
+      return id ? 'Aduk batch/wadah saji pelan sebelum evaluasi rasa atau sajikan.' : 'Gently mix the batch or carafe before tasting or serving.';
     case 'serve':
       return id ? 'Sajikan setelah fase metode selesai bersih.' : 'Serve after the method finishes cleanly.';
     default:
@@ -3749,7 +3749,7 @@ function buildAiBrewWorkflowFocusCue(
 
   if (step.actionType === 'setup' || step.actionType === 'rinse_preheat') {
     return plan && aiBrewUsesPaperFilter(plan)
-      ? 'Siapkan filter, alat, server, dan timbangan dulu; setup yang bersih membuat rasa pertama lebih mudah dibaca.'
+      ? 'Siapkan filter, alat, wadah saji, dan timbangan dulu; setup yang bersih membuat rasa pertama lebih mudah dibaca.'
       : 'Siapkan alat dan timbangan dulu; setup yang bersih membuat rasa pertama lebih mudah dibaca.';
   }
 
@@ -3766,20 +3766,20 @@ function buildAiBrewWorkflowFocusCue(
     case 'v60':
     case 'origami':
     case 'kono':
-      return 'Tuang rendah dan stabil dari tengah ke tengah-luar; jaga bed rata, bukan mengejar dinding filter.';
+      return 'Tuang rendah dan stabil dari tengah ke tengah-luar; jaga hamparan kopi rata, bukan mengejar dinding filter.';
     case 'chemex':
       return 'Jaga aliran stabil dan vent filter tetap terbuka; jangan kejar dinding kertas.';
     case 'kalita_wave':
     case 'april':
     case 'melitta':
-      return 'Pakai pulse pendek di tengah bed. Jaga permukaan rata, jangan flooding.';
+      return 'Pakai pulse pendek di tengah hamparan kopi. Jaga permukaan rata, jangan sampai air menggenang.';
     case 'clever_dripper':
       return step.actionType === 'release' || step.actionType === 'drawdown'
         ? 'Buka katup bersih dan biarkan air turun tanpa diaduk lagi.'
         : 'Jaga rendaman tenang; kontak stabil lebih penting daripada agitasi besar.';
     case 'french_press':
       return step.actionType === 'decant' || step.actionType === 'serve'
-        ? 'Tuang pisah setelah press agar ekstraksi berhenti bersih.'
+        ? 'Tuang pisah setelah ditekan agar ekstraksi berhenti bersih.'
         : 'Jaga rendaman tenang; hindari adukan agresif menjelang akhir.';
     case 'aeropress':
       return step.actionType === 'press'
@@ -3790,11 +3790,11 @@ function buildAiBrewWorkflowFocusCue(
     case 'moka_pot':
       return 'Pakai panas moderat dan angkat sebelum sputter kasar.';
     case 'cold_brew':
-      return 'Pastikan semua bubuk basah, lalu steep stabil tanpa agitasi berulang.';
+      return 'Pastikan semua bubuk basah, lalu rendam stabil tanpa agitasi berulang.';
     case 'batch_brew':
       return 'Biarkan siklus mesin selesai, lalu aduk batch pelan sebelum cicip.';
     default:
-      return 'Jaga aliran stabil, bed rapi, lalu baca koreksi dari hasil cangkir.';
+      return 'Jaga aliran stabil, hamparan kopi rapi, lalu baca koreksi dari hasil cangkir.';
   }
 }
 
@@ -3811,20 +3811,20 @@ function buildAiBrewStepMethodFocusCue(
 
   switch (plan.methodFamily) {
     case 'espresso':
-      if (kind === 'extract') return id ? 'Fokus: mulai shot, baca aliran, dan berhenti hanya saat target hasil tercapai.' : 'Focus: start the shot, read flow, and stop only when target yield lands.';
-      return id ? 'Fokus: pisahkan espresso di target hasil; jangan tambah volume setelah shot selesai.' : 'Focus: separate espresso at target yield; do not add volume after the shot.';
+      if (kind === 'extract') return id ? 'Fokus: mulai ekstraksi, baca aliran, dan berhenti hanya saat target hasil tercapai.' : 'Focus: start the shot, read flow, and stop only when target yield lands.';
+      return id ? 'Fokus: pisahkan espresso di target hasil; jangan tambah volume setelah ekstraksi selesai.' : 'Focus: separate espresso at target yield; do not add volume after the shot.';
     case 'moka_pot':
       if (kind === 'heat') return id ? 'Fokus: panas moderat. Angkat sebelum sputter kasar atau rasa rebus muncul.' : 'Focus: moderate heat. Remove before harsh sputtering or boiled flavor appears.';
       return id ? 'Fokus: basket tetap longgar, base di bawah katup aman, dan sajikan saat target tercapai.' : 'Focus: keep basket loose, base below safety valve, and serve when target lands.';
     case 'cold_brew':
-      if (kind === 'wait') return id ? 'Fokus: steep stabil. Jangan tambah agitasi saat semua bed sudah basah.' : 'Focus: stable steep. Do not add agitation once the whole bed is wet.';
+      if (kind === 'wait') return id ? 'Fokus: rendam stabil. Jangan tambah agitasi saat semua bubuk sudah basah.' : 'Focus: stable steep. Do not add agitation once the whole bed is wet.';
       if (kind === 'serve') return id ? 'Fokus: saring/tuang pisah bersih agar ekstraksi berhenti.' : 'Focus: filter/decant cleanly so extraction stops.';
-      return id ? 'Fokus: hilangkan dry pocket sebelum steep panjang dimulai.' : 'Focus: remove dry pockets before the long steep starts.';
+      return id ? 'Fokus: hilangkan bagian kering sebelum rendaman panjang dimulai.' : 'Focus: remove dry pockets before the long steep starts.';
     case 'batch_brew':
       if (kind === 'drawdown' || kind === 'serve') return id ? 'Fokus: tunggu air turun selesai, lalu aduk batch sebelum cicip.' : 'Focus: wait for drawdown, then mix the batch before tasting.';
-      return id ? 'Fokus: bed basket rata dan siklus mesin tidak diganggu.' : 'Focus: level basket bed and keep the machine cycle undisturbed.';
+      return id ? 'Fokus: hamparan kopi di keranjang rata dan siklus mesin tidak diganggu.' : 'Focus: level basket bed and keep the machine cycle undisturbed.';
     case 'french_press':
-      if (kind === 'press' || kind === 'serve') return id ? 'Fokus: tekan pelan lalu tuang pisah supaya fines berhenti mengekstrak.' : 'Focus: press slowly, then decant so fines stop extracting.';
+      if (kind === 'press' || kind === 'serve') return id ? 'Fokus: tekan pelan lalu tuang pisah supaya partikel halus berhenti mengekstrak.' : 'Focus: press slowly, then decant so fines stop extracting.';
       return id ? 'Fokus: rendaman tenang. Jangan aduk agresif menjelang akhir.' : 'Focus: calm immersion. Avoid aggressive stirring near the end.';
     case 'aeropress':
       if (kind === 'press') return id ? 'Fokus: tekan stabil; berhenti sebelum desis terakhir terasa dipaksa.' : 'Focus: steady press; stop before the final hiss feels forced.';
@@ -3832,7 +3832,7 @@ function buildAiBrewStepMethodFocusCue(
     case 'siphon':
       if (kind === 'heat') return id ? 'Fokus: panas stabil sampai vacuum bekerja, bukan boiling agresif.' : 'Focus: stable heat until vacuum works, not aggressive boiling.';
       if (kind === 'drawdown' || kind === 'serve') return id ? 'Fokus: matikan panas dan biarkan air turun selesai tanpa agitasi tambahan.' : 'Focus: cut heat and let drawdown finish without extra agitation.';
-      return id ? 'Fokus: agitasi singkat saat upper chamber aktif.' : 'Focus: brief agitation while the upper chamber is active.';
+      return id ? 'Fokus: agitasi singkat saat ruang atas aktif.' : 'Focus: brief agitation while the upper chamber is active.';
     case 'clever_dripper':
       if (kind === 'release' || kind === 'drawdown') return id ? 'Fokus: buka katup bersih dan jangan aduk saat air turun.' : 'Focus: clean release and no stirring during drawdown.';
       return id ? 'Fokus: waktu kontak stabil; rendaman jangan terlalu gelisah.' : 'Focus: stable contact time; keep immersion calm.';
@@ -3841,9 +3841,9 @@ function buildAiBrewStepMethodFocusCue(
     case 'kalita_wave':
     case 'april':
     case 'melitta':
-      return id ? 'Fokus: flat bed tetap rata; pulse pendek lebih aman daripada flooding.' : 'Focus: keep the flat bed level; short pulses are safer than flooding.';
+      return id ? 'Fokus: hamparan flat-bottom tetap rata; pulse pendek lebih aman daripada air menggenang.' : 'Focus: keep the flat bed level; short pulses are safer than flooding.';
     default:
-      return id ? 'Fokus: aliran dari tengah tetap stabil, bed rapi, dan air turun bersih.' : 'Focus: stable center-to-mid flow and clean drawdown.';
+      return id ? 'Fokus: aliran dari tengah tetap stabil, hamparan kopi rapi, dan air turun bersih.' : 'Focus: stable center-to-mid flow and clean drawdown.';
   }
 }
 
@@ -3905,7 +3905,7 @@ function buildAiBrewBeanContextDetail(plan: BrewPlan, step: AiBrewDisplayStep, l
       : 'Kopi: pertahankan suhu dan jalur tuang bersih supaya floral/asam manis tetap jernih.';
   }
   if (/wet.?hulled|giling basah|robusta|canephora|liberica|excelsa/i.test(beanText) || plan.roastLevel === 'medium_dark' || plan.roastLevel === 'dark') {
-    return 'Kopi: profil berat atau sangrai gelap lebih aman dengan gerakan tenang dan bed tidak terlalu diaduk.';
+    return 'Kopi: profil berat atau sangrai gelap lebih aman dengan gerakan tenang dan hamparan kopi tidak terlalu diaduk.';
   }
   return 'Kopi: data proses/varietas belum lengkap; seduh bersih dulu agar rasa pertama mudah dibaca.';
 }
@@ -3918,7 +3918,7 @@ function buildAiBrewWorkflowControlDetail(plan: BrewPlan, step: AiBrewDisplaySte
     switch (actionType) {
       case 'setup':
       case 'rinse_preheat':
-        return `Setup es: timbang ${formatRoundedGrams(plan.iceMl)} es di server dulu; bed kopi hanya menerima ${formatRoundedMl(plan.hotWaterMl)} air panas.`;
+        return `Setup es: timbang ${formatRoundedGrams(plan.iceMl)} es di wadah saji dulu; hamparan kopi hanya menerima ${formatRoundedMl(plan.hotWaterMl)} air panas.`;
       case 'bloom':
         return 'Bloom es: basahi semua bubuk dengan air panas saja; jangan biarkan es dihitung sebagai air tuang.';
       case 'drawdown':
@@ -3926,9 +3926,9 @@ function buildAiBrewWorkflowControlDetail(plan: BrewPlan, step: AiBrewDisplaySte
         return 'Air turun: biarkan tetes terakhir selesai di atas es; jangan tambah bypass air setelah target panas tercapai.';
       case 'serve':
       case 'mix':
-        return 'Aduk/sajikan: aduk server 5-8 detik agar konsentrat panas dan lelehan es menyatu rata.';
+        return 'Aduk/sajikan: aduk wadah saji 5-8 detik agar konsentrat panas dan lelehan es menyatu rata.';
       default:
-        return `Kontrol es: berhenti di target air panas ${formatRoundedMl(plan.hotWaterMl)}; es hanya bypass terukur di server.`;
+        return `Kontrol es: berhenti di target air panas ${formatRoundedMl(plan.hotWaterMl)}; es hanya bypass terukur di wadah saji.`;
     }
   }
 
@@ -3936,28 +3936,28 @@ function buildAiBrewWorkflowControlDetail(plan: BrewPlan, step: AiBrewDisplaySte
     case 'v60':
     case 'origami':
     case 'kono':
-      if (actionType === 'setup' || actionType === 'rinse_preheat') return 'Siapkan filter rata, server hangat, dan timbangan nol; dari sini aliran seduh lebih mudah dikontrol.';
-      if (actionType === 'bloom') return 'Bloom: tuang cukup untuk membasahi semua bubuk; bed rata lebih penting daripada spiral besar.';
+      if (actionType === 'setup' || actionType === 'rinse_preheat') return 'Siapkan filter rata, wadah saji hangat, dan timbangan nol; dari sini aliran seduh lebih mudah dikontrol.';
+      if (actionType === 'bloom') return 'Bloom: tuang cukup untuk membasahi semua bubuk; hamparan kopi rata lebih penting daripada spiral besar.';
       if (actionType === 'drawdown') return 'Air turun: biarkan cone bersih alami; hindari bilas dinding filter di akhir.';
-      if (actionType === 'serve') return 'Sajikan: swirl server ringan sebelum tuang supaya layer rasa merata.';
-      return 'Tuang: jaga kettle rendah, buka ke tengah-luar seperlunya, lalu kembali ke tengah sebelum bed terlalu tinggi.';
+      if (actionType === 'serve') return 'Sajikan: putar wadah saji ringan sebelum tuang supaya lapisan rasa merata.';
+      return 'Tuang: jaga ketel rendah, buka ke tengah-luar seperlunya, lalu kembali ke tengah sebelum hamparan kopi terlalu tinggi.';
     case 'chemex':
       if (actionType === 'setup' || actionType === 'rinse_preheat') return 'Siapkan lipatan filter di sisi spout dan bilas sampai kertas benar-benar hangat; vent harus tetap terbuka.';
       return actionType === 'drawdown'
         ? 'Air turun Chemex: biarkan vent terbuka dan jangan bilas dinding; filter tebal butuh aliran sabar.'
-        : 'Kontrol Chemex: tuang stabil di tengah bed; pulse besar biasanya membuat kertas tebal lebih mudah melambat.';
+        : 'Kontrol Chemex: tuang stabil di tengah hamparan kopi; pulse besar biasanya membuat kertas tebal lebih mudah melambat.';
     case 'kalita_wave':
     case 'april':
     case 'melitta':
-      return 'Kontrol flat-bottom: pulse pendek dari tengah, bed tetap rata, dan jangan banjiri satu sisi filter.';
+      return 'Kontrol flat-bottom: pulse pendek dari tengah, hamparan kopi tetap rata, dan jangan banjiri satu sisi filter.';
     case 'hario_switch':
       return actionType === 'release' || actionType === 'drawdown'
         ? 'Kontrol Switch: buka katup sekali dengan bersih; biarkan air turun tanpa aduk ulang.'
         : 'Kontrol Switch: pastikan katup sesuai fase dan muatan ruang aman sebelum mulai.';
     case 'clever_dripper':
-      return 'Kontrol Clever: selesaikan steep dulu, baru release; fase turun hanya memisahkan kopi dari bubuk.';
+      return 'Kontrol Clever: selesaikan rendam dulu, baru buka katup; fase turun hanya memisahkan kopi dari bubuk.';
     case 'french_press':
-      return 'Kontrol French Press: steep tenang, press pelan, lalu pindahkan ke server agar ampas berhenti mengekstrak.';
+      return 'Kontrol French Press: rendam tenang, tekan pelan, lalu pindahkan ke wadah saji agar ampas berhenti mengekstrak.';
     case 'aeropress':
       if (plan.recipeStyle === 'bypass') {
         return 'Kontrol AeroPress: seduh konsentrat dulu, tekan stabil, lalu bypass hanya setelah tekan sesuai resep.';
@@ -5233,7 +5233,7 @@ function buildTargetProfileEffectText(targetProfileId: string, language: string)
     case 'balance_clean':
     default:
       return id
-        ? 'Efek target: baseline bersih, bloom 2x, pulse seimbang, agitasi rendah, air turun normal.'
+      ? 'Efek target: titik awal bersih, bloom 2x, pulse seimbang, agitasi rendah, air turun normal.'
         : 'Target effect: clean baseline, 2x bloom, balanced pulses, low agitation, normal drawdown.';
   }
 }
@@ -5502,7 +5502,7 @@ function PlanResultDialog({
   const displaySummary = compactResultSummaryForDisplay(buildPremiumResultSummary(plan, language), plan, language);
   const icedSetupSummary = plan.iceMl > 0
     ? (id
-      ? `${formatRoundedGrams(plan.iceMl)} es di server + ${formatRoundedMl(plan.hotWaterMl)} air panas ke bed kopi. Berhenti di target panas, lalu aduk server 5-8 detik sebelum minum.`
+      ? `${formatRoundedGrams(plan.iceMl)} es di wadah saji + ${formatRoundedMl(plan.hotWaterMl)} air panas ke hamparan kopi. Berhenti di target panas, lalu aduk wadah saji 5-8 detik sebelum minum.`
       : `${formatRoundedGrams(plan.iceMl)} ice in the server + ${formatRoundedMl(plan.hotWaterMl)} hot water through the coffee bed. Stop at the hot target, then stir the server for 5-8 seconds before drinking.`)
     : '';
   const methodBrief = buildPlanMethodBrief(plan, language);
@@ -5652,7 +5652,7 @@ function PlanResultDialog({
   const beanPredictionContextDetail = id
     ? hasSpecificProcess && hasSpecificVariety
       ? `${localizedRoastLabel}, proses ${localizedProcessLabel}, varietas ${localizedVarietyLabel}, dan ${localizedWaterStyle} dibaca bersama supaya prediksi rasa tetap berbasis data input.`
-      : `${localizedRoastLabel} dibaca bersama air, grinder, dan alat. Proses/varietas belum lengkap, jadi prediksi rasa dijaga sebagai baseline dan perlu cek rasa pertama.`
+      : `${localizedRoastLabel} dibaca bersama air, grinder, dan alat. Proses/varietas belum lengkap, jadi prediksi rasa dijaga sebagai titik awal dan perlu cek rasa pertama.`
     : hasSpecificProcess && hasSpecificVariety
       ? `${localizedRoastLabel} roast, ${localizedProcessLabel} process, ${localizedVarietyLabel} variety, and ${localizedWaterStyle} water are read together so the cup prediction stays grounded in input data.`
       : `${localizedRoastLabel} roast is read with water, grinder, and brewer data. Process/variety are incomplete, so the cup prediction stays baseline and needs first-brew feedback.`;
@@ -5769,7 +5769,7 @@ function PlanResultDialog({
       ? `Rasio 1:${formatBrewRatio(plan.finalBeverageRatio)} mengikuti target profil dan input beans.`
       : `Ratio 1:${formatBrewRatio(plan.finalBeverageRatio)} follows target profile and bean inputs.`,
     temperature: id
-      ? `Suhu ${formatRoundedTemperature(plan.waterTempC)} dijaga sebagai baseline aman.`
+      ? `Suhu ${formatRoundedTemperature(plan.waterTempC)} dijaga sebagai titik awal aman.`
       : `${formatRoundedTemperature(plan.waterTempC)} is kept as the safe baseline.`,
     time: id
       ? `Waktu ${formatGuideTime(extractionSeconds)} dipakai sebagai target service.`
@@ -5780,7 +5780,7 @@ function PlanResultDialog({
       ? `${formatRoundedMl(plan.hotWaterMl)} ${id ? 'air panas' : 'hot water'} / ${formatRoundedGrams(plan.iceMl)} ${id ? 'es' : 'ice'}`
       : undefined,
     beanPrecision: {
-      summary: localizedBeanCoverageLabel || (id ? 'Baseline beans' : 'Bean baseline'),
+    summary: localizedBeanCoverageLabel || (id ? 'Titik awal beans' : 'Bean baseline'),
       signals: [
         localizedProcessLabel,
         localizedVarietyLabel,
@@ -6136,7 +6136,7 @@ function PlanResultDialog({
                   ) : null}
                   <p id={descriptionId} className="sr-only">
                     {isQuickResult
-                      ? (id ? 'Hasil Basic Brew berisi urutan seduh ringkas dan kontrol barista inti.' : 'Basic Brew result with a compact brew sequence and core barista controls.')
+                      ? (id ? 'Hasil Seduh Dasar berisi urutan seduh ringkas dan kontrol barista inti.' : 'Basic Brew result with a compact brew sequence and core barista controls.')
                       : `${formatRoundedGrams(plan.doseG)} - ${planHeaderWater} - ${extractionTimeLabel} ${formatGuideTime(extractionSeconds)} - ${formatRoundedTemperature(plan.waterTempC)}`}
                   </p>
                 </div>
@@ -6195,7 +6195,7 @@ function PlanResultDialog({
                               </div>
                               <p className="mt-2 text-[11px] leading-5 text-secondary">
                                 {id
-                                  ? 'Angka ini membaca target, alat, air, grinder, roast, dan data bean yang tersedia. Kalau proses/varietas kosong, hasil tetap baseline dan wajib dikunci lewat cek rasa.'
+                                  ? 'Angka ini membaca target, alat, air, grinder, roast, dan data bean yang tersedia. Kalau proses/varietas kosong, hasil tetap berupa titik awal dan wajib dikunci lewat cek rasa.'
                                   : 'These scores use the target, brewer, water, grinder, roast, and available bean data. If process/variety are missing, this stays a baseline and needs taste feedback.'}
                               </p>
                             </div>
@@ -6608,7 +6608,7 @@ function PlanResultDialog({
                       <p className="mt-2 text-sm leading-5 text-secondary">{copy.iceSetupDetail}</p>
                       <p className="mt-2 rounded-xl border border-sky-500/15 bg-[var(--bg-base)]/70 px-3 py-2 text-sm font-medium leading-5 text-primary">
                         {id
-                          ? `${formatRoundedGrams(plan.iceMl)} es di server + ${formatRoundedMl(plan.hotWaterMl)} air panas ke bed kopi. Berhenti di target panas, lalu aduk server sebelum minum.`
+                          ? `${formatRoundedGrams(plan.iceMl)} es di wadah saji + ${formatRoundedMl(plan.hotWaterMl)} air panas ke hamparan kopi. Berhenti di target panas, lalu aduk wadah saji sebelum minum.`
                           : `${formatRoundedGrams(plan.iceMl)} ice in the server + ${formatRoundedMl(plan.hotWaterMl)} hot water through the bed. Stop at the hot target, then stir the server before drinking.`}
                       </p>
                     </div>
@@ -6831,7 +6831,7 @@ function PlanResultDialog({
                   {plan.methodFamily === 'aeropress' && (
                     <ResultDisclosureSection
                       title={id ? 'Troubleshooting AeroPress' : 'AeroPress Troubleshooting'}
-                      summary={id ? 'Guard kapasitas, style, dan tekanan' : 'Capacity, style, and press guards'}
+                      summary={id ? 'Guard kapasitas, gaya, dan tekanan' : 'Capacity, style, and press guards'}
                       icon={<AlertTriangle size={15} />}
                       defaultOpen={false}
                       tone="amber"
@@ -6876,13 +6876,13 @@ function PlanResultDialog({
                   {plan.methodFamily === 'french_press' && (
                     <ResultDisclosureSection
                       title={id ? 'Sains French Press' : 'French Press Science'}
-                      summary={id ? 'Imersi, panas, dan filtrasi' : 'Immersion, heat, and filtration'}
+                      summary={id ? 'Rendaman, panas, dan filtrasi' : 'Immersion, heat, and filtration'}
                       icon={<FlaskConical size={15} />}
                       defaultOpen={false}
                     >
                       <div className="grid gap-2.5 sm:grid-cols-3 text-sm leading-5">
                         <div className="rounded-xl bg-surface-alpha p-3">
-                          <p className="font-semibold text-primary">{id ? 'Ekstraksi Imersi' : 'Immersion Extraction'}</p>
+                          <p className="font-semibold text-primary">{id ? 'Ekstraksi Rendaman' : 'Immersion Extraction'}</p>
                           <p className="mt-1 text-xs text-secondary">
                             {id
                               ? 'Rendaman bergerak menuju keseimbangan. TDS/EY dibentuk oleh luas permukaan gilingan, suhu, waktu kontak, dan sedikit agitasi awal.'
@@ -7206,7 +7206,7 @@ function PlanResultDialog({
                           </span>
                           <span className="rounded-xl border panel-divider-subtle bg-surface-alpha px-2.5 py-2 text-secondary sm:col-span-1">
                             <span className="block text-[10px] uppercase tracking-widest text-tertiary">{id ? 'Kontrol' : 'Control'}</span>
-                            <span className="font-semibold text-primary">{id ? 'Aliran stabil + bed rata' : 'Stable flow + even bed'}</span>
+                            <span className="font-semibold text-primary">{id ? 'Aliran stabil + hamparan rata' : 'Stable flow + even bed'}</span>
                           </span>
                         </div>
                       ) : (
@@ -7389,7 +7389,7 @@ function PlanResultDialog({
                   <p>{id ? 'Coach mengikuti rencana deterministik. Angka resep tidak diubah oleh AI.' : 'Coach follows the deterministic planner. AI does not change recipe numbers.'}</p>
                   <p>{copy.coachCostHint}</p>
                   {hasLowConfidenceCoachData && (
-                    <p>{id ? 'Sebagian data bersifat kurasi/estimasi; gunakan sebagai baseline, bukan klaim final.' : 'Some data is curated/estimated; use it as a baseline, not a final factual claim.'}</p>
+                    <p>{id ? 'Sebagian data bersifat kurasi/estimasi; gunakan sebagai titik awal, bukan klaim final.' : 'Some data is curated/estimated; use it as a baseline, not a final factual claim.'}</p>
                   )}
                 </div>
                 <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-[repeat(3,minmax(0,1fr))]">
@@ -8075,7 +8075,7 @@ function buildWaterTargetFitHint(
     return {
       tone: 'caution' as const,
       text: isIndonesianAiBrewLanguage(language)
-        ? 'Air ini cenderung membuat body terasa tipis. Untuk body yang lebih penuh, naikkan hardness atau pakai baseline mineral yang lebih kuat.'
+        ? 'Air ini cenderung membuat body terasa tipis. Untuk body yang lebih penuh, naikkan hardness atau pakai titik awal mineral yang lebih kuat.'
         : 'This water can make body feel thin. For more weight, increase hardness or use a fuller mineral baseline.',
     };
   }
@@ -8093,7 +8093,7 @@ function buildWaterTargetFitHint(
     return {
       tone: 'ok' as const,
       text: isIndonesianAiBrewLanguage(language)
-        ? 'Baseline air ini cukup aman untuk mulai. Setelan berikutnya sebaiknya fokus ke gilingan, aliran, dan target rasa sebelum mengubah mineral.'
+        ? 'Titik awal air ini cukup aman untuk mulai. Setelan berikutnya sebaiknya fokus ke gilingan, aliran, dan target rasa sebelum mengubah mineral.'
         : 'This is a reliable starting water. Tune grind, flow, and taste target before changing minerals.',
     };
   }
@@ -11778,7 +11778,7 @@ export function AiBrewPanel() {
                             </div>
                             <p className="mt-1 text-xs leading-5 text-secondary">
                               {isIndonesianAiBrewLanguage(language)
-                                ? 'Wajib untuk Advanced Brew: proses dan varietas membantu target rasa lebih tepat.'
+                                ? 'Wajib untuk Seduh Lanjutan: proses dan varietas membantu target rasa lebih tepat.'
                                 : 'Required for Advanced Brew: process and variety help the taste target land better.'}
                             </p>
                           </div>

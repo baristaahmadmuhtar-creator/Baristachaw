@@ -2402,7 +2402,7 @@ test('Hario Switch exact variants preserve every volume checkpoint without chang
   );
   const hotBrief = buildPlanMethodBrief(hot, 'id');
   assert.match(hotBrief.controlValue, /Valve tertutup|switch/i);
-  assert.match(hotBrief.watch.join(' '), /preheat|switch|swirl/i);
+  assert.match(hotBrief.watch.join(' '), /preheat|switch|swirl|panaskan|putar/i);
 
   const iced = buildAiBrewPlan({ ...base, brewMode: 'iced' }, catalog);
   assertPlanEnvelope(iced);
@@ -4165,7 +4165,7 @@ test('AI Brew coach guard preserves deterministic grind, water, brewer, and reci
   assert.match(explain.markdown, expectedGrindPattern);
   assert.doesNotMatch(explain.markdown, /geisha|gesha/i);
   assert.doesNotMatch(explain.markdown, /Air ideal|Profil exact/i);
-  assert.match(explain.markdown, /Kalibrasi dengan drawdown dan rasa/i);
+  assert.match(explain.markdown, /Kalibrasi dengan air turun dan rasa/i);
 
   const troubleshoot = sanitizeAiCoachMarkdown({
     action: 'troubleshoot',
@@ -5132,7 +5132,7 @@ test('workflow-aware guide expands all-method operational phases and validates r
     { label: 'French Press', plan: planFor({ dripperId: 'french-press' }), pattern: /(charge|isi)[\s\S]*(steep|rendam)[\s\S]*(settle|endapkan|crust)[\s\S]*(press|tekan|decant|tuang pisah)/i },
     { label: 'Clever', plan: planFor({ dripperId: 'clever-dripper' }), pattern: /(charge|isi)[\s\S]*(steep|rendam)[\s\S]*(release|alirkan)[\s\S]*(drawdown|air turun)/i },
     { label: 'Moka', plan: planFor({ dripperId: 'bialetti-moka-pot' }), pattern: /(below valve|di bawah valve|garis aman|ruang air)[\s\S]*basket[\s\S]*(heat|panas)[\s\S]*(sputter|semburan)/i },
-    { label: 'Espresso', plan: planFor({ dripperId: 'espresso-machine' }), pattern: /dose[\s\S]*(puck|tamp|distribusi)[\s\S]*(shot|yield|output)[\s\S]*(flow|aliran)[\s\S]*(stop|berhenti)/i },
+    { label: 'Espresso', plan: planFor({ dripperId: 'espresso-machine' }), pattern: /(dose|dosis)[\s\S]*(puck|tamp|distribusi)[\s\S]*(shot|yield|output|hasil|ekstraksi)[\s\S]*(flow|aliran)[\s\S]*(stop|berhenti)/i },
     { label: 'Siphon', plan: planFor({ dripperId: 'hario-siphon' }), pattern: /(draw-up|air naik)[\s\S]*(stir|aduk)[\s\S]*(contact|kontak)[\s\S]*(drawdown|air turun)/i },
     { label: 'Batch', plan: planFor({ dripperId: 'batch-brewer' }), pattern: /(dose\/l|dose per liter)[\s\S]*(spray|pancuran|mesin)[\s\S]*(drawdown|air turun)[\s\S]*(mix batch|aduk batch)/i },
     { label: 'Cold Brew', plan: planFor({ dripperId: 'toddy-cold-brew' }), pattern: /(saturate|basahi)[\s\S]*(steep|rendam)[\s\S]*filter[\s\S]*(after filtration|setelah filtrasi|dilute|dilusi)/i },
@@ -5538,7 +5538,7 @@ test('all-method public snapshot matrix includes workflow, expected cup, feedbac
     { label: 'Moka Pot hot', input: { dripperId: findDripperId(/^Bialetti Moka Pot$/i) }, required: /boiler[\s\S]*basket[\s\S]*(heat|panas)[\s\S]*sputter/i, forbidden: MOKA_METHOD_LEAK_PATTERN, minGuide: 4 },
     { label: 'Siphon hot', input: { dripperId: findDripperId(/^Hario Siphon$/i) }, required: /(draw-up|air naik)[\s\S]*(stir|aduk)[\s\S]*(contact|kontak)[\s\S]*(drawdown|air turun)/i, forbidden: /final pour/i, minGuide: 5 },
     { label: 'Batch Brewer hot', input: { dripperId: findDripperId(/^Batch Brewer$/i), doseG: '55' }, required: /dose\/l|spray|drawdown|air turun|mix batch|aduk batch/i, forbidden: /manual pour|bloom pour/i, minGuide: 5 },
-    { label: 'Espresso hot', input: { dripperId: findDripperId(/^Espresso Machine$/i) }, required: /dose[\s\S]*puck[\s\S]*(shot|yield|output)[\s\S]*(flow|aliran)[\s\S]*(stop|berhenti)/i, forbidden: /bloom|kettle|final pour/i, minGuide: 5 },
+    { label: 'Espresso hot', input: { dripperId: findDripperId(/^Espresso Machine$/i) }, required: /(dose|dosis)[\s\S]*puck[\s\S]*(shot|yield|output|hasil|ekstraksi)[\s\S]*(flow|aliran)[\s\S]*(stop|berhenti)/i, forbidden: /bloom|kettle|final pour/i, minGuide: 5 },
     { label: 'Cold Brew', input: { dripperId: findDripperId(/^Toddy Cold Brew$/i), doseG: '60' }, required: /(saturate|basahi)[\s\S]*(steep|rendam)[\s\S]*filter[\s\S]*(dilute|dilusi)/i, forbidden: /bloom|kettle/i, minGuide: 4 },
   ];
 

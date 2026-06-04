@@ -2,6 +2,7 @@ import type { BrewPlan } from './types';
 import {
   formatAiBrewTime,
   isIndonesianAiBrewLanguage,
+  localizeAiBrewDynamicText,
   localizeAiBrewTargetProfile,
 } from './localization.ts';
 
@@ -20,6 +21,10 @@ export interface BrewExtractionFinisher {
   adjustments: ExtractionTasteAdjustment[];
 }
 
+function polishFinisherText(value: string, language?: string) {
+  return isIndonesianAiBrewLanguage(language) ? localizeAiBrewDynamicText(value, language) : value;
+}
+
 function formatTime(totalSeconds: number) {
   return formatAiBrewTime(totalSeconds);
 }
@@ -32,7 +37,7 @@ const POUR_OVER_TIME_LABEL_FAMILIES = new Set<BrewPlan['methodFamily']>(['v60', 
 
 function getPlanTasteTimeLabel(plan: BrewPlan, language?: string) {
   const id = isIndonesianAiBrewLanguage(language);
-  if (plan.methodFamily === 'espresso') return id ? 'waktu shot' : 'shot time';
+  if (plan.methodFamily === 'espresso') return id ? 'waktu ekstraksi espresso' : 'shot time';
   if (plan.methodFamily === 'cold_brew') return id ? 'rendam dingin' : 'cold steep';
   if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return id ? 'waktu rendam' : 'steep time';
   if (POUR_OVER_TIME_LABEL_FAMILIES.has(plan.methodFamily)) return id ? 'air turun selesai' : (plan.brewMode === 'iced' ? 'hot drawdown finish' : 'drawdown finish');
@@ -243,38 +248,38 @@ function buildControlPoints(plan: BrewPlan, language?: string) {
     if (isIndonesianAiBrewLanguage(language)) {
       switch (plan.methodFamily) {
         case 'espresso':
-          return 'Pantau yield, flow, dan stop cue shot; jangan menambah air seperti filter manual.';
+          return 'Pantau hasil ekstraksi, aliran, dan tanda berhenti espresso; jangan menambah air seperti filter manual.';
         case 'aeropress':
-          return 'Pantau steep, jumlah stir, durasi press, dan stop sebelum hiss terakhir dipaksa.';
+          return 'Pantau waktu rendam, jumlah adukan, durasi tekan, dan berhenti sebelum desis terakhir dipaksa.';
         case 'french_press':
-          return 'Pantau immersion, settle fines, dan decant; jangan cari drawdown atau pulse tuang.';
+          return 'Pantau rendaman, endapan partikel halus, dan tuang pisah; jangan cari air turun atau tuangan bertahap.';
         case 'moka_pot':
-          return 'Pantau basket rata, air boiler di bawah valve, heat stabil, dan stop sebelum sputter.';
+          return 'Pantau keranjang rata, air boiler di bawah katup, panas stabil, dan berhenti sebelum semburan akhir.';
         case 'siphon':
-          return 'Pantau draw-up, stir singkat, extract di upper chamber, remove heat, lalu drawdown bersih.';
+          return 'Pantau air naik, adukan singkat, ekstraksi di ruang atas, lepas sumber panas, lalu air turun bersih.';
         case 'batch_brew':
-          return 'Pantau dose per liter, volume mesin, spray pattern, drawdown, dan aduk batch sebelum service.';
+          return 'Pantau dosis per liter, volume mesin, pola semprotan, air turun, dan aduk seduhan batch sebelum disajikan.';
         case 'cold_brew':
-          return 'Pantau saturasi air dingin, steep panjang, lalu filtrasi bersih; jangan pakai workflow hot.';
+          return 'Pantau saturasi air dingin, rendaman panjang, lalu filtrasi bersih; jangan pakai alur seduh panas.';
         case 'hario_switch':
-          return 'Pantau posisi katup, muatan ruang tertutup, timing release, dan flow rate tuangan.';
+          return 'Pantau posisi katup, muatan ruang tertutup, waktu buka katup, dan laju tuang.';
         case 'chemex':
-          return 'Jaga stream menjauh dari dinding filter tebal agar flow tetap terbuka sampai finish.';
+          return 'Jaga aliran menjauh dari dinding filter tebal agar air tetap turun lancar sampai akhir.';
         case 'clever_dripper':
-          return 'Biarkan immersion tetap tenang lalu buka release dengan bersih tanpa mengaduk bed.';
+          return 'Biarkan rendaman tetap tenang lalu buka katup dengan bersih tanpa mengaduk hamparan kopi.';
         case 'april':
-          return 'Jaga pulse tetap pendek dan rendah agitasi; jangan memanjangkan jeda hanya untuk mengejar body.';
+          return 'Jaga tuangan bertahap tetap pendek dan rendah agitasi; jangan memanjangkan jeda hanya untuk mengejar body.';
         case 'kalita_wave':
-          return 'Pastikan bed tetap rata di fase tengah; kalau bed miring, koreksi aliran sebelum ubah grind.';
+          return 'Pastikan hamparan kopi tetap rata di fase tengah; kalau miring, koreksi aliran sebelum mengubah gilingan.';
         case 'melitta':
-          return 'Jaga bed trapezoid tetap rata dan measured; hindari membebani satu sisi kertas di akhir.';
+          return 'Jaga hamparan kopi trapezoid tetap rata dan terukur; hindari membebani satu sisi kertas di akhir.';
         case 'kono':
-          return 'Pertahankan jalur tuang lebih terpusat di tengah supaya sweet contact tetap stabil.';
+          return 'Pertahankan jalur tuang lebih terpusat di tengah supaya kontak manis tetap stabil.';
         case 'origami':
-          return 'Jaga pulse tetap ringkas dan ringan agar flow cone yang cepat tidak berubah jadi bypass.';
+          return 'Jaga tuangan bertahap tetap ringkas dan ringan agar aliran cone yang cepat tidak berubah jadi bypass.';
         case 'v60':
         default:
-          return 'Jaga stream tetap center-to-mid dan jangan mengejar dinding filter di fase akhir.';
+          return 'Jaga aliran tetap dari tengah ke sekeliling bagian tengah dan jangan mengejar dinding filter di fase akhir.';
       }
     }
 
@@ -712,13 +717,13 @@ function buildBitterAdjustment(plan: BrewPlan, easyToExtract: boolean, language?
           } else if (style === 'double_stage_hybrid') {
             return 'Buka katup bloom 10 detik lebih cepat, atau perkecil porsi air pada fase rendam tertutup akhir agar tidak terlalu kering.';
           } else if (style === 'iced_clever') {
-            return 'Buka katup release 15 detik lebih cepat, dan pastikan es batu tidak sepenuhnya meleleh sebelum ekstraksi selesai.';
+            return 'Buka katup 15 detik lebih cepat, dan pastikan es batu tidak sepenuhnya meleleh sebelum ekstraksi selesai.';
           } else if (style === 'high_dose_concentrate') {
-            return 'Giling 0.5 step lebih kasar untuk mencegah penyumbatan bed kopi tebal, dan kurangi waktu rendam total selama 30 detik.';
+            return 'Giling 0.5 step lebih kasar untuk mencegah penyumbatan hamparan kopi tebal, dan kurangi waktu rendam total selama 30 detik.';
           } else {
             return mayNeedTempDrop
-              ? 'Geser grinder 0.5 step lebih kasar atau release 10 detik lebih cepat; suhu -1 C hanya jika masih kering.'
-              : 'Geser grinder 0.5 step lebih kasar dan jaga release tetap tenang.';
+              ? 'Geser grinder 0.5 step lebih kasar atau buka katup 10 detik lebih cepat; suhu -1 C hanya jika masih kering.'
+              : 'Geser grinder 0.5 step lebih kasar dan jaga fase buka katup tetap tenang.';
           }
         }
         case 'chemex': {
@@ -728,12 +733,12 @@ function buildBitterAdjustment(plan: BrewPlan, easyToExtract: boolean, language?
           } else if (style === 'continuous_center_pour') {
             return 'Giling 0.5 step lebih kasar, atau turunkan suhu air sebesar -1 C untuk mengurangi ekstraksi berlebih dari kontak lambat.';
           } else if (style === 'iced_chemex') {
-            return 'Giling 0.5 step lebih kasar pada fase panas, dan pastikan es batu di dalam carafe belum sepenuhnya mencair saat seduh selesai.';
+            return 'Giling 0.5 step lebih kasar pada fase panas, dan pastikan es batu di dalam wadah saji belum sepenuhnya mencair saat seduh selesai.';
           } else if (style === 'high_dose_heavy_body') {
-            return 'Giling 0.5 sampai 1 step lebih kasar untuk melonggarkan bed kopi, dan kurangi porsi air di fase tengah agar drawdown tidak mampet.';
+            return 'Giling 0.5 sampai 1 step lebih kasar untuk melonggarkan hamparan kopi, dan kurangi porsi air di fase tengah agar air turun tidak mampet.';
           } else {
             return mayNeedTempDrop
-              ? 'Geser grinder 0.5 step lebih kasar dan jaga stream menjauh dari dinding filter; suhu -1 C hanya jika masih kering.'
+              ? 'Geser grinder 0.5 step lebih kasar dan jaga aliran menjauh dari dinding filter; suhu -1 C hanya jika masih kering.'
               : 'Geser grinder 0.5 sampai 1 step lebih kasar dan hindari membanjiri kertas di fase akhir.';
           }
         }
@@ -891,7 +896,7 @@ function buildBitterAdjustment(plan: BrewPlan, easyToExtract: boolean, language?
     taste: 'bitter',
     action,
     why: isIndonesianAiBrewLanguage(language)
-      ? 'Rasa pahit dan kering di akhir biasanya berarti fase akhir seduhan menarik terlalu banyak dari fines atau contact time terlalu panjang.'
+      ? 'Rasa pahit dan kering di akhir biasanya berarti fase akhir seduhan menarik terlalu banyak dari partikel halus atau waktu kontak terlalu panjang.'
       : 'A bitter, drying finish here usually means the tail end of the brew is pulling too much from fines or overlong contact time.',
   };
 }
@@ -908,7 +913,7 @@ function buildThinAdjustment(plan: BrewPlan, _softWater: boolean, language?: str
           } else if (plan.recipeStyle === 'bypass') {
             return 'Kurangi porsi air bypass sebanyak 15-20 ml untuk meningkatkan kepekatan, dan jaga rasio concentrate tetap terkunci.';
           } else if (plan.recipeStyle === 'no_bypass') {
-            return 'Perpanjang rendam 20 detik untuk ekstraksi lebih dalam, dan aduk memutar slurry secara konsisten.';
+            return 'Perpanjang rendam 20 detik untuk ekstraksi lebih dalam, dan aduk memutar campuran kopi secara konsisten.';
           } else if (plan.recipeStyle === 'bright_clean') {
             return 'Gunakan filter kertas ganda yang dibilas sangat bersih, aduk perlahan 1 kali ekstra, dan tekan dengan sangat stabil.';
           } else if (plan.recipeStyle === 'sweet_body') {
@@ -927,17 +932,17 @@ function buildThinAdjustment(plan: BrewPlan, _softWater: boolean, language?: str
           } else if (style === 'sweet_immersion') {
             return 'Aduk perlahan 1 kali ekstra saat bloom, dan biarkan rendaman tenang lebih lama 30 detik.';
           } else {
-            return 'Cek decant agar tidak banyak bypass, lalu tambah contact singkat sebelum settle tanpa mengubah rasio.';
+            return 'Cek tuang pisah agar tidak banyak bypass, lalu tambah waktu kontak singkat sebelum endap tanpa mengubah rasio.';
           }
         }
         case 'hario_switch': {
           const style = plan.recipeStyle || 'hybrid_balanced';
           if (style === 'hybrid_balanced') {
-            return 'Perpanjang bloom/immersion tertutup 15-20 detik, atau naikkan sedikit proporsi air panas di fase tertutup.';
+            return 'Perpanjang bloom/rendaman tertutup 15-20 detik, atau naikkan sedikit proporsi air panas di fase tertutup.';
           } else if (style === 'hybrid_bright_clean') {
             return 'Perpanjang capture tertutup di pertengahan seduh selama 15 detik, atau naikkan sedikit proporsi air fase tertutup.';
           } else if (style === 'immersion_sweet') {
-            return 'Perpanjang total rendam immersion selama 25-30 detik, dan pastikan Anda telah menghangatkan brewer kaca dengan baik.';
+            return 'Perpanjang total rendaman selama 25-30 detik, dan pastikan alat kaca sudah dihangatkan dengan baik.';
           } else if (style === 'immersion_heavy_body') {
             return 'Perpanjang waktu rendam 30 detik, aduk perlahan 2-3 kali saat bloom, dan gunakan suhu kettle sedikit lebih panas.';
           } else if (style === 'v60_mode') {
@@ -947,7 +952,7 @@ function buildThinAdjustment(plan: BrewPlan, _softWater: boolean, language?: str
           } else if (style === 'mugen_everyday_hybrid') {
             return 'Perpanjang rendam tertutup 20 detik, atau giling 0.5 step lebih halus untuk menaikkan kelarutan kopi di MUGEN.';
           } else {
-            return 'Perpanjang fase rendam tertutup selama 15-20 detik untuk meningkatkan ekstraksi sari kopi sebelum release.';
+            return 'Perpanjang fase rendam tertutup selama 15-20 detik untuk meningkatkan ekstraksi sari kopi sebelum buka katup.';
           }
         }
         case 'moka_pot': {
@@ -957,17 +962,17 @@ function buildThinAdjustment(plan: BrewPlan, _softWater: boolean, language?: str
           } else if (style === 'low_temp_controlled') {
             return 'Pertahankan api sangat kecil untuk memaksimalkan kontak tekanan lambat kompor, dan giling sedikit lebih halus.';
           } else if (style === 'iced_moka_concentrate') {
-            return 'Giling 0.5 step lebih halus untuk meningkatkan TDS, dan kurangi es di server sebanyak 10g.';
+            return 'Giling 0.5 step lebih halus untuk meningkatkan TDS, dan kurangi es di wadah saji sebanyak 10g.';
           } else if (style === 'high_yield_robust') {
             return 'Giling 0.5 step lebih halus, dan pastikan kopi bubuk diratakan secara merata di keranjang corong.';
           } else {
-            return 'Pastikan basket terisi rata sesuai plan; koreksi output dengan heat dan distribusi, bukan bypass.';
+            return 'Pastikan keranjang terisi rata sesuai rencana; koreksi hasil dengan panas dan distribusi, bukan bypass.';
           }
         }
         case 'siphon': {
           const style = plan.siphonStyle || 'auto';
           if (style === 'competition_triple_agitation') {
-            return 'Perpanjang waktu rendam di upper chamber selama 10 detik, dan lakukan zig-zag stir lebih aktif di fase awal.';
+            return 'Perpanjang waktu rendam di ruang atas selama 10 detik, dan lakukan adukan zig-zag lebih aktif di fase awal.';
           } else if (style === 'low_temp_delicate') {
             return 'Giling kopi 0.5 step lebih halus, dan pertahankan agitasi spiral lembut untuk menjaga kelarutan manis.';
           } else if (style === 'high_body_fast_drawdown') {
@@ -975,21 +980,21 @@ function buildThinAdjustment(plan: BrewPlan, _softWater: boolean, language?: str
           } else if (style === 'spirit_infusion_style') {
             return 'Tingkatkan dosis kopi sebesar 1g, dan pastikan filter kain siphon terpasang dengan kencang.';
           } else {
-            return 'Tambah extract singkat di upper chamber dan jaga drawdown bersih tanpa mengubah rasio.';
+            return 'Tambah ekstraksi singkat di ruang atas dan jaga air turun tetap bersih tanpa mengubah rasio.';
           }
         }
         case 'batch_brew': {
           const style = plan.batchBrewStyle || 'auto';
           if (style === 'heavy_batch_catering') {
-            return 'Giling 0.5 step lebih halus untuk memperlama contact time, atau naikkan dosis kopi sebesar 3g.';
+            return 'Giling 0.5 step lebih halus untuk memperlama waktu kontak, atau naikkan dosis kopi sebesar 3g.';
           } else if (style === 'bright_light_roast_batch') {
-            return 'Giling sedikit lebih halus, dan pastikan water spray membasahi seluruh permukaan bed secara merata.';
+            return 'Giling sedikit lebih halus, dan pastikan semprotan air membasahi seluruh hamparan kopi secara merata.';
           } else if (style === 'pre_wet_hybrid_batch') {
             return 'Perpanjang durasi pra-basah (pre-wet) manual kopi bubuk selama 15 detik sebelum mesin dinyalakan.';
           } else if (style === 'high_extraction_thermos') {
-            return 'Giling kopi 0.5 step lebih halus, dan pastikan spray head mesin menyiram merata.';
+            return 'Giling kopi 0.5 step lebih halus, dan pastikan kepala semprot mesin menyiram merata.';
           } else {
-            return 'Cek bypass basket, spray pattern, dan aduk batch sebelum service supaya konsentrasi merata.';
+            return 'Cek bypass keranjang, pola semprotan, dan aduk batch sebelum disajikan supaya konsentrasi merata.';
           }
         }
         case 'cold_brew': {
@@ -997,13 +1002,13 @@ function buildThinAdjustment(plan: BrewPlan, _softWater: boolean, language?: str
           if (style === 'cold_drip_tower') {
             return 'Giling kopi 0.5 step lebih halus pada kolom kaca, dan perlambat tetesan air menjadi 1 tetes per 2 detik.';
           } else if (style === 'double_extraction_concentrate') {
-            return 'Tingkatkan dosis kopi kasar sebesar 5g, dan aduk slurry lebih aktif saat awal pencampuran.';
+            return 'Tingkatkan dosis kopi kasar sebesar 5g, dan aduk campuran kopi lebih aktif saat awal pencampuran.';
           } else if (style === 'accelerated_room_temp') {
             return 'Giling kopi 0.5 step lebih halus, dan pastikan kopi basah merata sejak awal.';
           } else if (style === 'japanese_slow_drip') {
-            return 'Giling kopi sedikit lebih halus, dan kurangi volume es batu di server sebanyak 10g.';
+            return 'Giling kopi sedikit lebih halus, dan kurangi volume es batu di wadah saji sebanyak 10g.';
           } else {
-            return 'Perbaiki saturasi awal dan filtrasi, lalu sajikan pada dilution plan yang sama.';
+            return 'Perbaiki saturasi awal dan filtrasi, lalu sajikan pada rencana dilusi yang sama.';
           }
         }
         case 'clever_dripper': {
@@ -1017,7 +1022,7 @@ function buildThinAdjustment(plan: BrewPlan, _softWater: boolean, language?: str
           } else if (style === 'high_dose_concentrate') {
             return 'Geser grind 0.5 step lebih halus, aduk melingkar lembut di fase awal, dan hindari penambahan air bypass (dilusi) di akhir.';
           } else {
-            return 'Pertahankan rasio dan tambah sedikit contact di steep sebelum release, bukan agitasi ekstra.';
+            return 'Pertahankan rasio dan tambah sedikit waktu kontak saat rendam sebelum buka katup, bukan agitasi ekstra.';
           }
         }
         case 'chemex': {
@@ -1187,7 +1192,7 @@ export function buildExtractionFinisher(plan: BrewPlan, language?: string): Brew
   const highBufferWater = hasHighBufferWater(plan);
   const softWater = hasSoftWater(plan);
 
-  return {
+  const finisher = {
     finalRead: buildFinalRead(plan, hardToExtract, easyToExtract, highBufferWater, softWater, language),
     recipeReasoning: buildRecipeReasoning(plan, hardToExtract, easyToExtract, highBufferWater, softWater, language),
     controlPoints: buildControlPoints(plan, language),
@@ -1196,5 +1201,16 @@ export function buildExtractionFinisher(plan: BrewPlan, language?: string): Brew
       buildBitterAdjustment(plan, easyToExtract, language),
       buildThinAdjustment(plan, softWater, language),
     ],
+  };
+  if (!isIndonesianAiBrewLanguage(language)) return finisher;
+  return {
+    finalRead: polishFinisherText(finisher.finalRead, language),
+    recipeReasoning: finisher.recipeReasoning.map((item) => polishFinisherText(item, language)),
+    controlPoints: finisher.controlPoints.map((item) => polishFinisherText(item, language)),
+    adjustments: finisher.adjustments.map((item) => ({
+      ...item,
+      action: polishFinisherText(item.action, language),
+      why: polishFinisherText(item.why, language),
+    })),
   };
 }

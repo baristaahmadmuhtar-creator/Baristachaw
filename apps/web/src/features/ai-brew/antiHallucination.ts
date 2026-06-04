@@ -67,7 +67,7 @@ export function formatSafeBrewCaveat(plan: BrewPlan): string {
     caveats.push('Air ini rendah mineral atau butuh input manual; gunakan sebagai base remineralisasi atau isi mineral manual.');
   }
   if (plan.grindSettingVerification !== 'official') {
-    caveats.push('Setting grinder adalah titik awal; kalibrasi dengan drawdown dan rasa.');
+    caveats.push('Setelan grinder adalah titik awal; kalibrasi dengan air turun dan rasa.');
   }
   if (!brewerIsExact(plan)) {
     caveats.push('Profil alat ini turunan/eksperimental; lakukan kalibrasi rasa.');

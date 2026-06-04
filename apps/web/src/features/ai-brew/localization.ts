@@ -314,7 +314,7 @@ export function localizeAiBrewWaterClassificationLabel(label: string, language?:
     case 'balanced':
       return 'Seimbang';
     case 'estimated baseline':
-      return 'Baseline estimasi';
+      return 'Estimasi awal';
     default:
       return label;
   }
@@ -355,7 +355,7 @@ function localizeCriticalUiTerms(text: string) {
     .replace(/\bNext step\b/gi, 'Langkah Berikutnya')
     .replace(/\bFinishing action\b/gi, 'Sentuhan Akhir')
     .replace(/\bServe step\b/gi, 'Langkah Penyajian')
-    .replace(/\bStir server\b/gi, 'Aduk Server')
+    .replace(/\bStir server\b/gi, 'Aduk wadah saji')
     .replace(/\bTarget profile\b/gi, 'Profil Target')
     .replace(/\bWater source\b/gi, 'Sumber Air')
     .replace(/\bGrinder source\b/gi, 'Sumber Grinder')
@@ -387,6 +387,137 @@ function localizeCriticalUiTerms(text: string) {
     .replace(/\bStop\b/gi, 'Berhenti')
     .replace(/\bServe\b/gi, 'Sajikan')
     .replace(/\bStir\b/gi, 'Aduk');
+}
+
+function polishIndonesianBaristaCopy(text: string) {
+  return text
+    .replace(/\bPut measured ice in the\b/gi, 'Masukkan es terukur ke')
+    .replace(/\bPut ice in the\b/gi, 'Masukkan es ke')
+    .replace(/\bwet the\b/gi, 'basahi')
+    .replace(/\band keep the\b/gi, 'dan jaga')
+    .replace(/\bcalm during\b/gi, 'tetap tenang selama')
+    .replace(/\bUse short pulses and avoid\b/gi, 'Gunakan pulse pendek dan hindari')
+    .replace(/\bunsafe combination\b/gi, 'kombinasi tidak aman')
+    .replace(/\bUnknown bean\b/gi, 'Bean belum diketahui')
+    .replace(/\bincomplete data\b/gi, 'data belum lengkap')
+    .replace(/\bnot enough data\b/gi, 'data belum cukup')
+    .replace(/\bhigh confidence\b/gi, 'keyakinan tinggi')
+    .replace(/\bmanual verification\b/gi, 'verifikasi manual')
+    .replace(/\bmanual minerals\b/gi, 'mineral manual')
+    .replace(/\bbrew plan\b/gi, 'rencana seduh')
+    .replace(/\bdeterministic plan\b/gi, 'rencana deterministik')
+    .replace(/\bplan timing\b/gi, 'jadwal rencana')
+    .replace(/\btiming plan\b/gi, 'jadwal rencana')
+    .replace(/\bworkflow\b/gi, 'alur')
+    .replace(/\bstop cue\b/gi, 'tanda berhenti')
+    .replace(/\bshot\b/gi, 'ekstraksi espresso')
+    .replace(/\byield\b/gi, 'hasil ekstraksi')
+    .replace(/\bdose\b/gi, 'dosis')
+    .replace(/\bgrind\b/gi, 'gilingan')
+    .replace(/\bcupping\b/gi, 'uji rasa')
+    .replace(/\bknob\b/gi, 'variabel')
+    .replace(/\bExtend steep contact time before release\b/gi, 'Perpanjang waktu rendam sebelum buka katup')
+    .replace(/\bthen stir\b/gi, 'lalu aduk')
+    .replace(/\bthen Aduk\b/gi, 'lalu aduk')
+    .replace(/\bstir\b/gi, 'aduk')
+    .replace(/\bpaper-filtered\b/gi, 'disaring kertas')
+    .replace(/\bpaper filter\b/gi, 'filter kertas')
+    .replace(/\bfilter paper\b/gi, 'filter kertas')
+    .replace(/\bpaper\b/gi, 'kertas')
+    .replace(/\bbrewer\/server\b/gi, 'alat seduh/wadah saji')
+    .replace(/\bbrewer\b/gi, 'alat seduh')
+    .replace(/\bcarafe\b/gi, 'wadah saji')
+    .replace(/\bserver\b/gi, 'wadah saji')
+    .replace(/\bupper chamber\b/gi, 'ruang atas')
+    .replace(/\bbrew chamber\b/gi, 'ruang seduh')
+    .replace(/\bchamber\b/gi, 'ruang seduh')
+    .replace(/\bdry pocket\b/gi, 'bagian bubuk yang masih kering')
+    .replace(/\bflat[-\s]?bottom bed\b/gi, 'hamparan flat-bottom')
+    .replace(/\bflat bed\b/gi, 'hamparan flat-bottom')
+    .replace(/\bcoffee bed\b/gi, 'hamparan kopi')
+    .replace(/\bbed kopi\b/gi, 'hamparan kopi')
+    .replace(/\bbed\b/gi, 'hamparan kopi')
+    .replace(/\bslurry\b/gi, 'campuran kopi')
+    .replace(/\bdrawdown\b/gi, 'air turun')
+    .replace(/\brelease checkpoint\b/gi, 'titik buka katup')
+    .replace(/\brelease\b/gi, 'buka katup')
+    .replace(/\bvalve\b/gi, 'katup')
+    .replace(/\bflow rate\b/gi, 'laju tuang')
+    .replace(/\bflow\b/gi, 'aliran')
+    .replace(/\bflooding\b/gi, 'air menggenang')
+    .replace(/\bfines\b/gi, 'partikel halus')
+    .replace(/\bpuck\b/gi, 'padatan kopi')
+    .replace(/\broom temp(?:erature)?\b/gi, 'suhu ruang')
+    .replace(/\bpre-wet\b/gi, 'pra-basah')
+    .replace(/\bLet bloom\b/gi, 'Biarkan blooming')
+    .replace(/\blet bloom\b/gi, 'biarkan blooming')
+    .replace(/\bbloom phase\b/gi, 'fase blooming')
+    .replace(/\bLoad\b/gi, 'Muatan')
+    .replace(/\bload\b/gi, 'muatan')
+    .replace(/\bsec\b/gi, 'detik')
+    .replace(/\bseconds\b/gi, 'detik')
+    .replace(/\bsteep\b/gi, 'rendam')
+    .replace(/\bpress\b/gi, 'tekan')
+    .replace(/\bhissing\b/gi, 'desis')
+    .replace(/\bhiss\b/gi, 'desis')
+    .replace(/\bheat\b/gi, 'panas')
+    .replace(/\bsputter\b/gi, 'semburan akhir')
+    .replace(/\bdecanting\b/gi, 'tuang pisah')
+    .replace(/\bdecant\b/gi, 'tuang pisah')
+    .replace(/\bsettle\b/gi, 'mengendap')
+    .replace(/\bpulses\b/gi, 'tuangan bertahap')
+    .replace(/\bpulse\b/gi, 'tuangan bertahap')
+    .replace(/\bstream\b/gi, 'aliran')
+    .replace(/\bcharge\b/gi, 'isi air')
+    .replace(/\bmeasured\b/gi, 'terukur')
+    .replace(/\bbuild pour\b/gi, 'tuangan pembentuk')
+    .replace(/\bwall flow\b/gi, 'aliran dinding filter')
+    .replace(/\bflat[-\s]?bottom\b/gi, 'alas datar')
+    .replace(/\bconcentrate\b/gi, 'konsentrat')
+    .replace(/\bbrewing\b/gi, 'penyeduhan')
+    .replace(/\bstep\b/gi, 'tingkat')
+    .replace(/\bfinish\b/gi, 'akhir')
+    .replace(/\bclean akhir\b/gi, 'akhir rasa bersih')
+    .replace(/\bopen akhir\b/gi, 'fase terbuka akhir')
+    .replace(/\bclosed capture\b/gi, 'fase tertutup')
+    .replace(/\bcapture\b/gi, 'menangkap')
+    .replace(/\bclosed\b/gi, 'tertutup')
+    .replace(/\bopen\b/gi, 'terbuka')
+    .replace(/\bmuddy\b/gi, 'keruh')
+    .replace(/\bservice\b/gi, 'saji')
+    .replace(/\bfeedback\b/gi, 'evaluasi rasa')
+    .replace(/\bcontact time\b/gi, 'waktu kontak')
+    .replace(/\bcontact\b/gi, 'kontak')
+    .replace(/\bbaseline\b/gi, 'titik awal')
+    .replace(/\bmodifier\b/gi, 'penyesuaian')
+    .replace(/\bfamily\b/gi, 'keluarga')
+    .replace(/\bexact\b/gi, 'presisi')
+    .replace(/\bmanual\b/gi, 'manual')
+    .replace(/\bbrand\b/gi, 'brand')
+    .replace(/\bimmersion\b/gi, 'rendaman')
+    .replace(/\bclean cup\b/gi, 'cangkir bersih')
+    .replace(/\bhigh[-\s]?clarity\b/gi, 'kejernihan tinggi')
+    .replace(/\bclarity\b/gi, 'kejernihan')
+    .replace(/\btransparency\b/gi, 'transparansi')
+    .replace(/\bsweetness\b/gi, 'rasa manis')
+    .replace(/\bfinal beverage\b/gi, 'minuman akhir')
+    .replace(/\bside-channeling\b/gi, 'jalur samping')
+    .replace(/\bwall-rinse\b/gi, 'bilasan dinding filter')
+    .replace(/\bcenter-to-mid\b/gi, 'pusat-ke-tengah')
+    .replace(/\bspray pattern\b/gi, 'pola semprotan')
+    .replace(/\bspray head\b/gi, 'kepala semprot')
+    .replace(/\bwater spray\b/gi, 'semprotan air')
+    .replace(/\bmesh\b/gi, 'saringan')
+    .replace(/\bcap\b/gi, 'tutup')
+    .replace(/\bcup\b/gi, 'cangkir')
+    .replace(/\biced\b/gi, 'es')
+    .replace(/\bAir Turun\b/g, 'air turun')
+    .replace(/\bBuka Katup\b/g, 'buka katup')
+    .replace(/\bAduk\b/g, 'aduk')
+    .replace(/\bbefore saji\b/gi, 'sebelum disajikan')
+    .replace(/\s+([.,;:])/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 export function localizeAiBrewDynamicText(text: string, language?: string) {
@@ -433,7 +564,7 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/^Dark roast: protect bitterness with lower extraction pressure\.$/i, 'Sangrai gelap: lindungi dari pahit dengan tekanan ekstraksi lebih rendah.')
     .replace(/^Non-arabica or robusta\/canephora cue: keep bitterness protection active\.$/i, 'Cue non-arabika atau robusta/canephora: tetap aktifkan perlindungan pahit.')
     .replace(/^Water needs caution or manual verification before treating the prediction as high confidence\.$/i, 'Air perlu hati-hati atau verifikasi manual sebelum prediksi dianggap berkeyakinan tinggi.')
-    .replace(/^Grinder setting is estimated or fallback; calibrate by drawdown and taste\.$/i, 'Setting grinder masih estimasi atau fallback; kalibrasi dari air turun dan rasa.')
+    .replace(/^Grinder setting is estimated or fallback; calibrate by drawdown and taste\.$/i, 'Setelan grinder masih estimasi atau fallback; kalibrasi dari air turun dan rasa.')
     .replace(/^Adjust dose, water target, brewer size, or unsafe manual preset before brewing\.$/i, 'Ubah dosis, target air, ukuran alat, atau preset manual yang tidak aman sebelum seduh.')
     .replace(/^Brew the conservative baseline, then use taste feedback before changing dose or ratio\.$/i, 'Seduh baseline konservatif dulu, lalu gunakan feedback rasa sebelum mengubah dosis atau rasio.')
     .replace(/^Use the balanced baseline, then record taste feedback after brewing\.$/i, 'Gunakan baseline seimbang, lalu catat feedback rasa setelah seduh.')
@@ -488,7 +619,7 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/^High-buffer water can mute acidity and floral clarity\.$/i, 'Air buffer tinggi bisa meredam acidity dan kejernihan floral.')
     .replace(/^Zero-mineral\/RO water should not be used without remineralization\.$/i, 'Air nol mineral/RO sebaiknya tidak dipakai tanpa remineralisasi.')
     .replace(/^Water minerals need manual verification before treating this profile as locked\.$/i, 'Mineral air perlu verifikasi manual sebelum profil ini dianggap terkunci.')
-    .replace(/^Fallback grinder setting lowers confidence; validate with drawdown and taste\.$/i, 'Setting grinder fallback menurunkan keyakinan; validasi dengan air turun dan rasa.')
+    .replace(/^Fallback grinder setting lowers confidence; validate with drawdown and taste\.$/i, 'Setelan grinder fallback menurunkan keyakinan; validasi dengan air turun dan rasa.')
     .replace(/^High-variability process needs taste feedback before stronger extraction changes\.$/i, 'Proses variabilitas tinggi perlu feedback rasa sebelum perubahan ekstraksi yang lebih kuat.')
     .replace(/^Workflow validation did not pass, so sensory prediction is not release-grade\.$/i, 'Validasi panduan belum lolos, jadi prediksi rasa belum siap dipakai.')
     .replace(/^Switch chamber validation is blocked; use the suggested safe programme before brewing\.$/i, 'Validasi ruang Switch diblokir; gunakan program aman yang disarankan sebelum seduh.')
@@ -1171,7 +1302,7 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/Press slowly and completely through the hiss to extract sweetness and roundness from the inverted immersion\./gi, 'Tekan perlahan dan habis melewati desis untuk mengekstrak rasa manis dan kebulatan dari rendaman terbalik.')
     .replace(/Press steadily with light, constant pressure completely through the hiss to capture the full sweet range of the extraction\./gi, 'Tekan secara stabil dengan tekanan ringan yang konstan hingga habis melewati desis untuk menangkap spektrum manis ekstraksi yang utuh.');
 
-  return localizeCriticalUiTerms(localizeBeanProfileSummary(localized));
+  return polishIndonesianBaristaCopy(localizeCriticalUiTerms(localizeBeanProfileSummary(localized)));
 }
 
 export function localizeAiBrewSummary(plan: Pick<
@@ -1193,7 +1324,7 @@ export function localizeAiBrewSummary(plan: Pick<
           ? 'hot extraction time'
           : 'extraction time';
   const indonesianTimeLabel = plan.methodFamily === 'espresso'
-    ? 'waktu shot'
+    ? 'waktu ekstraksi espresso'
     : plan.methodFamily === 'cold_brew'
       ? 'rendam dingin'
       : plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper'

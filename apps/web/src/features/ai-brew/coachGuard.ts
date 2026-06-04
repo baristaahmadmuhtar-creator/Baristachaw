@@ -102,8 +102,8 @@ function replaceConflictingGrind(markdown: string, plan: BrewPlan) {
     return primary;
   });
 
-  if (!/kalibrasi dengan drawdown dan rasa|calibrate by drawdown and taste/i.test(output)) {
-    output += '\n\nSetting grinder adalah titik awal. Kalibrasi dengan drawdown dan rasa.';
+  if (!/kalibrasi dengan (?:air turun|drawdown) dan rasa|calibrate by drawdown and taste/i.test(output)) {
+    output += '\n\nSetelan grinder adalah titik awal. Kalibrasi dengan air turun dan rasa.';
     replacements.push('grind_calibration_note');
     risk = maxRisk(risk, 'low');
   }

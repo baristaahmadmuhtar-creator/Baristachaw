@@ -23,7 +23,7 @@ const POUR_OVER_TIME_LABEL_FAMILIES = new Set<BrewPlan['methodFamily']>(['v60', 
 
 function getPlanTasteTimeLabel(plan: BrewPlan, language?: string) {
   const id = isIndonesianAiBrewLanguage(language);
-  if (plan.methodFamily === 'espresso') return id ? 'waktu shot' : 'shot time';
+  if (plan.methodFamily === 'espresso') return id ? 'waktu ekstraksi espresso' : 'shot time';
   if (plan.methodFamily === 'cold_brew') return id ? 'rendam dingin' : 'cold steep';
   if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return id ? 'waktu rendam' : 'steep time';
   if (POUR_OVER_TIME_LABEL_FAMILIES.has(plan.methodFamily)) return id ? 'air turun selesai' : (plan.brewMode === 'iced' ? 'hot drawdown finish' : 'drawdown finish');
@@ -51,7 +51,7 @@ function getLockedRecipeCue(plan: BrewPlan, language?: string) {
     const manualText = String(plan.formState.targetRatio || '').trim()
       ? ' Target ratio manual dikunci.'
       : '';
-    return `Dosis ${plan.doseG} g, rasio ${ratioText}, ${waterText}, suhu ${plan.waterTempC}°C, grind ${plan.grindSettingReference}, ${getPlanTasteTimeLabel(plan, language)} ${formatAiBrewTime(getPlanTasteTimeSeconds(plan))}, dan timing step dikunci dari deterministic plan; coach tidak mengubah rasio/dosis.${manualText}`;
+    return `Dosis ${plan.doseG} g, rasio ${ratioText}, ${waterText}, suhu ${plan.waterTempC}°C, gilingan ${plan.grindSettingReference}, ${getPlanTasteTimeLabel(plan, language)} ${formatAiBrewTime(getPlanTasteTimeSeconds(plan))}, dan jadwal langkah dikunci dari rencana deterministik; AI Coach tidak mengubah rasio/dosis.${manualText}`;
   }
 
   return `Dose ${plan.doseG} g, ratio ${ratioText}, ${waterText}, ${plan.waterTempC}°C, grind ${plan.grindSettingReference}, ${getPlanTasteTimeLabel(plan, language)} ${formatAiBrewTime(getPlanTasteTimeSeconds(plan))}, and step timing are locked from the deterministic plan; coach does not change ratio/dose.${manualCue}`;
@@ -61,63 +61,63 @@ function getMethodFamilyServiceCue(plan: BrewPlan, language?: string) {
   if (isIndonesianAiBrewLanguage(language)) {
     switch (plan.methodFamily) {
       case 'espresso':
-        return 'Kunci service pattern ada di yield, flow, dan stop cue shot; jangan pakai pola filter manual.';
+        return 'Kunci eksekusi ada di hasil ekstraksi, aliran, dan tanda berhenti espresso; jangan pakai pola filter manual.';
       case 'aeropress': {
         const style = plan.recipeStyle || 'standard';
         switch (style) {
           case 'inverted':
-            return 'Kunci service pattern ada di persiapan terbalik, plunger/penekan masuk minimal 2 cm, 4x adukan tenang, balikkan mantap, dan tekan stabil.';
+            return 'Kunci eksekusi ada di persiapan terbalik, penekan masuk minimal 2 cm, 4x adukan tenang, balikkan mantap, dan tekan stabil.';
           case 'bypass':
-            return 'Kunci service pattern ada di pembuatan konsentrat pekat, 3x adukan awal, tekan berhenti sebelum desis, lalu tambahkan bypass terukur setelahnya.';
+            return 'Kunci eksekusi ada di pembuatan konsentrat pekat, 3x adukan awal, berhenti menekan sebelum desis, lalu tambahkan bypass terukur setelahnya.';
           case 'no_bypass':
-            return 'Kunci service pattern ada di penyeduhan seluruh air langsung di chamber, 3x adukan lembut, rendam penuh, dan tekan melewati desis.';
+            return 'Kunci eksekusi ada di penyeduhan seluruh air langsung di ruang seduh, 3x adukan lembut, rendam penuh, dan tekan melewati desis.';
           case 'bright_clean':
-            return 'Kunci service pattern ada di kertas filter ganda (bila ada), agitasi rendah dengan 2-3x adukan ringan, dan tekan berhenti sebelum desis pertama.';
+            return 'Kunci eksekusi ada di kertas filter ganda bila tersedia, agitasi rendah dengan 2-3x adukan ringan, dan berhenti menekan sebelum desis pertama.';
           case 'sweet_body':
-            return 'Kunci service pattern ada di ruang seduh hangat dengan air panas, 5x adukan silang untuk tekstur manis, rendam lebih panjang, dan tekan melewati desis.';
+            return 'Kunci eksekusi ada di ruang seduh yang sudah hangat, 5x adukan silang untuk tekstur manis, rendam lebih panjang, dan tekan melewati desis.';
           default:
-            return 'Kunci service pattern ada di steep singkat, 3x adukan tenang, tekan stabil, dan tekan melewati desis.';
+            return 'Kunci eksekusi ada di rendaman singkat, 3x adukan tenang, tekanan stabil, dan tekan melewati desis.';
         }
       }
       case 'french_press': {
         const style = plan.recipeStyle || 'traditional';
-        let cue = 'Kunci service: rendaman tenang, kerak kopi dibiarkan utuh pada awal seduh, partikel halus diberi waktu mengendap, lalu seduhan dituang pisah.';
+        let cue = 'Kunci eksekusi: rendaman tenang, kerak kopi dibiarkan utuh pada awal seduh, partikel halus diberi waktu mengendap, lalu seduhan dituang pisah.';
         cue += ' Wadah kaca biasanya kehilangan panas lebih cepat daripada baja berinsulasi; panaskan alat dan wadah saji sebelum seduh agar ekstraksi lebih konsisten.';
         if (style === 'double_filter') {
-          cue += ' Gaya Double Filter memakai kertas untuk mengurangi sedimen dan menahan lebih banyak minyak kopi dibanding jaring logam saja. Tekan sangat pelan 45-60 detik agar kertas tidak robek atau tersumbat partikel halus.';
+          cue += ' Gaya filter ganda memakai kertas untuk mengurangi sedimen dan menahan lebih banyak minyak kopi dibanding jaring logam saja. Tekan sangat pelan 45-60 detik agar kertas tidak robek atau tersumbat partikel halus.';
         } else {
-          cue += ' Catatan kesehatan: French Press tanpa kertas dapat membawa lebih banyak cafestol dan kahweol daripada kopi paper-filtered; gunakan Double Filter bila ingin mengurangi paparan lipid kopi.';
+          cue += ' Catatan kesehatan: French Press tanpa kertas dapat membawa lebih banyak cafestol dan kahweol daripada kopi yang disaring kertas; gunakan filter ganda bila ingin mengurangi paparan lipid kopi.';
         }
         return cue;
       }
       case 'moka_pot':
-        return 'Kunci service pattern ada di basket rata, air boiler di bawah valve, heat stabil, dan stop sebelum sputter.';
+        return 'Kunci eksekusi ada di keranjang yang rata, air boiler di bawah katup, panas stabil, dan berhenti sebelum semburan akhir.';
       case 'siphon':
-        return 'Kunci service pattern ada di heat stabil, draw-up bersih, stir singkat, lalu drawdown setelah heat dilepas.';
+        return 'Kunci eksekusi ada di panas stabil, air naik dengan bersih, adukan singkat, lalu air turun setelah sumber panas dilepas.';
       case 'batch_brew':
-        return 'Kunci service pattern ada di dosis per liter, distribusi spray, drawdown mesin, dan aduk batch sebelum service.';
+        return 'Kunci eksekusi ada di dosis per liter, distribusi semprotan mesin, waktu air turun, dan aduk seduhan batch sebelum disajikan.';
       case 'cold_brew':
-        return 'Kunci service pattern ada di saturasi air dingin, steep panjang, lalu filtrasi/decant bersih.';
+        return 'Kunci eksekusi ada di saturasi air dingin, rendaman panjang, lalu filtrasi atau tuang pisah dengan bersih.';
       case 'chemex':
-        return 'Kunci service pattern ada di flow yang tetap terbuka lewat kertas tebal; jangan dorong dinding filter.';
+        return 'Kunci eksekusi ada di aliran yang tetap terbuka lewat kertas tebal; jangan dorong air ke dinding filter.';
       case 'clever_dripper':
-        return 'Kunci service pattern ada di steep yang tenang lalu release yang bersih; jangan mengejar turbulensi setelah charge.';
+        return 'Kunci eksekusi ada di rendaman yang tenang lalu buka katup dengan bersih; jangan mengejar turbulensi setelah air masuk.';
       case 'april':
-        return 'Kunci service pattern ada di pulse pendek, reset cepat, dan agitasi rendah dari awal sampai akhir.';
+        return 'Kunci eksekusi ada di tuangan pendek, jeda cepat, dan agitasi rendah dari awal sampai akhir.';
       case 'kalita_wave':
-        return 'Kunci service pattern ada di bed yang rata dan fase tengah yang stabil, bukan spiral besar.';
+        return 'Kunci eksekusi ada di hamparan kopi yang rata dan fase tengah yang stabil, bukan putaran besar.';
       case 'melitta':
-        return 'Kunci service pattern ada di bed trapezoid yang level dan measured dari bloom sampai finish.';
+        return 'Kunci eksekusi ada di hamparan kopi trapezoid yang rata dan terukur dari blooming sampai akhir.';
       case 'kono':
-        return 'Kunci service pattern ada di jalur tuang yang lebih terpusat untuk menjaga sweet contact di tengah.';
+        return 'Kunci eksekusi ada di jalur tuang yang lebih terpusat untuk menjaga kontak manis di tengah.';
       case 'origami':
         if (isOrigamiWavePlan(plan)) {
-          return 'Kunci service pattern ada di bed wave yang rata, center pour, dan drawdown tenang seperti flat-bottom.';
+          return 'Kunci eksekusi ada di hamparan kopi wave yang rata, tuangan tengah, dan air turun tenang seperti alat beralas datar.';
         }
-        return 'Kunci service pattern ada di pulse yang ringkas dan flow cone yang cepat tetapi tetap terkendali.';
+        return 'Kunci eksekusi ada di tuangan ringkas dan aliran cone yang cepat tetapi tetap terkendali.';
       case 'v60':
       default:
-        return 'Kunci service pattern ada di aliran center-to-mid yang bersih dengan dinding filter tetap tenang.';
+        return 'Kunci eksekusi ada di aliran dari tengah ke sekeliling bagian tengah, dengan dinding filter tetap tenang.';
     }
   }
 
@@ -186,8 +186,8 @@ function getMethodFamilyServiceCue(plan: BrewPlan, language?: string) {
 function getBrewModeDialInCue(plan: BrewPlan, language?: string) {
   if (isIndonesianAiBrewLanguage(language)) {
     return plan.brewMode === 'iced'
-      ? `Jangan ubah split ${plan.hotWaterMl} ml panas / ${plan.iceMl} ml es bersamaan dengan grind di ronde yang sama.`
-      : `Jangan ubah suhu ${plan.waterTempC}°C dan grind bersamaan dalam satu ronde cupping.`;
+      ? `Jangan ubah pembagian ${plan.hotWaterMl} ml air panas / ${plan.iceMl} ml es bersamaan dengan gilingan di ronde yang sama.`
+      : `Jangan ubah suhu ${plan.waterTempC}°C dan gilingan bersamaan dalam satu ronde uji rasa.`;
   }
   return plan.brewMode === 'iced'
     ? `Do not change the ${plan.hotWaterMl} ml hot / ${plan.iceMl} ml ice split in the same round as the grind.`
@@ -198,34 +198,34 @@ function getBrighterShift(plan: BrewPlan, language?: string) {
   if (isIndonesianAiBrewLanguage(language)) {
     switch (plan.methodFamily) {
       case 'espresso':
-        return 'Hentikan shot 2-3 detik lebih cepat di stop cue yang sama sambil mempertahankan dose dan yield plan.';
+        return 'Hentikan ekstraksi 2-3 detik lebih cepat pada tanda berhenti yang sama sambil mempertahankan dosis dan hasil ekstraksi rencana.';
       case 'aeropress':
-        return 'Pendekkan steep 8-12 detik atau press sedikit lebih cepat tanpa memaksa hiss.';
+        return 'Pendekkan rendaman 8-12 detik atau tekan sedikit lebih cepat tanpa memaksa desis.';
       case 'french_press':
-        return 'Decant 15 detik lebih cepat setelah settle, atau geser grind 0.5 step lebih kasar.';
+        return 'Tuang pisah 15 detik lebih cepat setelah partikel halus mengendap, atau geser gilingan 0.5 step lebih kasar.';
       case 'moka_pot':
-        return 'Turunkan heat sedikit dan hentikan lebih cepat sebelum sputter supaya finish lebih bersih.';
+        return 'Turunkan panas sedikit dan hentikan lebih cepat sebelum semburan akhir supaya akhir rasa lebih bersih.';
       case 'siphon':
-        return 'Kurangi waktu extract 8-12 detik sebelum remove heat, lalu jaga drawdown bersih.';
+        return 'Kurangi waktu ekstraksi 8-12 detik sebelum melepas sumber panas, lalu jaga air turun tetap bersih.';
       case 'batch_brew':
-        return 'Pendekkan cycle sedikit atau rapikan distribusi spray tanpa mengubah dose per liter.';
+        return 'Pendekkan siklus mesin sedikit atau rapikan distribusi semprotan tanpa mengubah dosis per liter.';
       case 'cold_brew':
-        return 'Pendekkan steep 1-2 jam atau encerkan concentrate setelah filtrasi, bukan saat brewing.';
+        return 'Pendekkan rendaman 1-2 jam atau encerkan konsentrat setelah filtrasi, bukan saat penyeduhan.';
       case 'clever_dripper':
-        return 'Lepas 10 detik lebih cepat atau geser grind 0.5 step lebih kasar sambil mempertahankan rasio.';
+        return 'Buka katup 10 detik lebih cepat atau geser gilingan 0.5 step lebih kasar sambil mempertahankan rasio.';
       case 'chemex':
-        return 'Geser grind 0.5 step lebih kasar dan jaga build pour tetap jauh dari dinding filter.';
+        return 'Geser gilingan 0.5 step lebih kasar dan jaga tuangan pembentuk tetap jauh dari dinding filter.';
       case 'april':
-        return 'Pendekkan pulse sedikit dan jaga jeda tetap singkat agar finish terasa lebih terbuka.';
+        return 'Pendekkan tuangan bertahap sedikit dan jaga jeda tetap singkat agar akhir rasa terasa lebih terbuka.';
       case 'kalita_wave':
       case 'melitta':
-        return 'Geser grind 0.5 step lebih kasar dan kurangi beban fase tengah sedikit tanpa membuat bed miring.';
+        return 'Geser gilingan 0.5 step lebih kasar dan kurangi beban fase tengah sedikit tanpa membuat hamparan kopi miring.';
       case 'kono':
-        return 'Buka jalur tuang sedikit lebih lebar di fase akhir atau geser grind 0.5 step lebih kasar.';
+        return 'Buka jalur tuang sedikit lebih lebar di fase akhir atau geser gilingan 0.5 step lebih kasar.';
       case 'origami':
       case 'v60':
       default:
-        return 'Geser grind 0.5 step lebih kasar dan buat fase akhir sedikit lebih ringan tanpa memburu dinding filter.';
+        return 'Geser gilingan 0.5 step lebih kasar dan buat fase akhir sedikit lebih ringan tanpa memburu dinding filter.';
     }
   }
 
@@ -266,34 +266,34 @@ function getSweeterShift(plan: BrewPlan, language?: string) {
   if (isIndonesianAiBrewLanguage(language)) {
     switch (plan.methodFamily) {
       case 'espresso':
-        return 'Geser grind lebih halus sampai flow tetap stabil tanpa mengubah yield target.';
+        return 'Geser gilingan lebih halus sampai aliran tetap stabil tanpa mengubah target hasil ekstraksi.';
       case 'aeropress':
-        return 'Tambah steep 10 detik atau stir 1-2 kali lebih banyak sebelum press stabil.';
+        return 'Tambah rendaman 10 detik atau aduk 1-2 kali lebih banyak sebelum menekan stabil.';
       case 'french_press':
-        return 'Tambah steep 15-20 detik lalu tetap decant bersih setelah fines settle.';
+        return 'Tambah rendaman 15-20 detik lalu tetap tuang pisah dengan bersih setelah partikel halus mengendap.';
       case 'moka_pot':
-        return 'Jaga heat lebih stabil dan hentikan tepat sebelum sputter agar sweetness tidak terbakar.';
+        return 'Jaga panas lebih stabil dan hentikan tepat sebelum semburan akhir agar rasa manis tidak terbakar.';
       case 'siphon':
-        return 'Tambah extract 8-12 detik di upper chamber dengan stir singkat yang tetap lembut.';
+        return 'Tambah ekstraksi 8-12 detik di ruang atas dengan adukan singkat yang tetap lembut.';
       case 'batch_brew':
-        return 'Geser grind sedikit lebih halus atau rapikan distribusi spray sambil menjaga dose per liter tetap sama.';
+        return 'Geser gilingan sedikit lebih halus atau rapikan distribusi semprotan sambil menjaga dosis per liter tetap sama.';
       case 'cold_brew':
-        return 'Tambah steep 1-2 jam atau tingkatkan saturasi awal tanpa mengubah rasio concentrate.';
+        return 'Tambah rendaman 1-2 jam atau tingkatkan saturasi awal tanpa mengubah rasio konsentrat.';
       case 'clever_dripper':
-        return 'Tambah steep 10 detik sebelum release sambil mempertahankan air dan rasio yang sama.';
+        return 'Tambah rendaman 10 detik sebelum membuka katup sambil mempertahankan air dan rasio yang sama.';
       case 'chemex':
-        return 'Geser grind 0.5 step lebih halus atau naikkan suhu 1°C jika bloom sudah stabil.';
+        return 'Geser gilingan 0.5 step lebih halus atau naikkan suhu 1°C jika blooming sudah stabil.';
       case 'april':
-        return 'Biarkan pulse tengah membawa sedikit volume lebih besar tanpa menambah swirl.';
+        return 'Biarkan tuangan tengah membawa sedikit volume lebih besar tanpa menambah goyangan.';
       case 'kalita_wave':
       case 'melitta':
-        return 'Geser sedikit lebih banyak air ke fase tengah sambil menjaga bed tetap rata.';
+        return 'Geser sedikit lebih banyak air ke fase tengah sambil menjaga hamparan kopi tetap rata.';
       case 'kono':
-        return 'Pertahankan jalur tuang lebih terpusat sedikit lebih lama di tengah untuk memperpanjang sweet contact.';
+        return 'Pertahankan jalur tuang lebih terpusat sedikit lebih lama di tengah untuk memperpanjang kontak manis.';
       case 'origami':
       case 'v60':
       default:
-        return 'Geser grind 0.5 step lebih halus atau buat fase tengah sedikit lebih penuh tanpa menambah bypass.';
+        return 'Geser gilingan 0.5 step lebih halus atau buat fase tengah sedikit lebih penuh tanpa menambah bypass.';
     }
   }
 
@@ -334,34 +334,34 @@ function getTighterShift(plan: BrewPlan, language?: string) {
   if (isIndonesianAiBrewLanguage(language)) {
     switch (plan.methodFamily) {
       case 'espresso':
-        return 'Rapikan flow dan stop cue shot tanpa mengubah yield target atau menambah air.';
+        return 'Rapikan aliran dan tanda berhenti espresso tanpa mengubah target hasil ekstraksi atau menambah air.';
       case 'aeropress':
-        return 'Pakai gaya no-bypass dan press tetap stabil tanpa mengubah rasio concentrate.';
+        return 'Pakai gaya no-bypass dan tekan tetap stabil tanpa mengubah rasio konsentrat.';
       case 'french_press':
-        return 'Kurangi bypass saat decant, jaga fines settle, dan perpanjang contact singkat bila masih tipis.';
+        return 'Kurangi bypass saat tuang pisah, biarkan partikel halus mengendap, dan perpanjang kontak singkat bila masih tipis.';
       case 'moka_pot':
         return 'Gunakan basket penuh rata dan jangan encerkan hasil di brewer.';
       case 'siphon':
-        return 'Tambah contact singkat di upper chamber dan pertahankan drawdown bersih.';
+        return 'Tambah kontak singkat di ruang atas dan pertahankan air turun yang bersih.';
       case 'batch_brew':
-        return 'Rapikan distribusi basket dan aduk batch sebelum service agar konsentrasi merata.';
+        return 'Rapikan distribusi keranjang dan aduk seduhan batch sebelum disajikan agar konsentrasi merata.';
       case 'cold_brew':
         return 'Perbaiki saturasi awal dan filtrasi, lalu sajikan pada dilution plan yang sama.';
       case 'clever_dripper':
-        return 'Tahan steep sedikit lebih stabil dan release tetap bersih pada rasio yang sama.';
+        return 'Tahan rendaman sedikit lebih stabil dan buka katup tetap bersih pada rasio yang sama.';
       case 'chemex':
-        return 'Buat build pour lebih stabil di tengah dan hindari wall flow pada rasio yang sama.';
+        return 'Buat tuangan pembentuk lebih stabil di tengah dan hindari aliran di dinding filter pada rasio yang sama.';
       case 'april':
-        return 'Jaga pulse tetap pendek dan sedikit lebih terpusat, bukan lebih agresif.';
+        return 'Jaga tuangan bertahap tetap pendek dan sedikit lebih terpusat, bukan lebih agresif.';
       case 'kalita_wave':
       case 'melitta':
-        return 'Naikkan contact fase tengah sedikit sambil menjaga bed tetap rata dan rasio tetap sama.';
+        return 'Naikkan kontak fase tengah sedikit sambil menjaga hamparan kopi tetap rata dan rasio tetap sama.';
       case 'kono':
         return 'Pertahankan jalur tuang yang lebih terpusat di tengah tanpa mengubah rasio.';
       case 'origami':
       case 'v60':
       default:
-        return 'Pertahankan flow akhir tetap tenang dan buat contact tengah lebih konsisten tanpa mengubah rasio.';
+        return 'Pertahankan aliran akhir tetap tenang dan buat kontak tengah lebih konsisten tanpa mengubah rasio.';
     }
   }
 
@@ -458,7 +458,7 @@ export function buildDeterministicAiCoachMarkdown(plan: BrewPlan, mode: Determin
         '',
         '## Aturan Dial-In',
         `- ${getLockedRecipeCue(plan, language)}`,
-        '- Ubah satu knob per cangkir: grind, suhu ±1°C, pola tuang/flow, atau waktu contact.',
+        '- Ubah satu variabel per cangkir: gilingan, suhu ±1°C, pola tuang/aliran, atau waktu kontak.',
         `- Tahan air tetap sama dan validasi ulang di jendela ${formatAiBrewTime(Math.max(getPlanTasteTimeSeconds(plan) - 15, 60))}-${formatAiBrewTime(getPlanTasteTimeSeconds(plan) + 15)}.`,
         `- ${getMethodFamilyServiceCue(plan, language)}`,
       ].join('\n');

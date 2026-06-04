@@ -1453,8 +1453,8 @@ function buildBeanCoverageState(params: {
   if (params.input.roastLevel === 'dark') warnings.push('Dark roast: protect bitterness with lower extraction pressure.');
   if (/\b(robusta|canephora|liberica|excelsa)\b/i.test(beanText) || hasAnyRiskTag(params.processEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa']) || hasAnyRiskTag(params.varietyEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa', 'unusual-species'])) warnings.push('Robusta/canephora/non-arabica cenderung lebih body-heavy dan mudah pahit jika ekstraksi terlalu agresif.');
   if (riskyWater) warnings.push('Water needs caution or manual verification before treating the prediction as high confidence.');
-  if (!grinderKnown) warnings.push('Setting grinder masih estimasi/fallback; kalibrasi dari waktu ekstraksi dan rasa.');
-  if (params.grindCalibrationRequired) warnings.push('Setting grinder memakai baseline metode; kalibrasi titik nol dan rasa sebelum dianggap presisi.');
+  if (!grinderKnown) warnings.push('Setelan grinder masih estimasi/fallback; kalibrasi dari waktu ekstraksi dan rasa.');
+  if (params.grindCalibrationRequired) warnings.push('Setelan grinder memakai baseline metode; kalibrasi titik nol dan rasa sebelum dianggap presisi.');
   if (params.switchValidation && params.switchValidation.status !== 'safe') warnings.push(params.switchValidation.message);
 
   if (unsafe) {
@@ -9794,13 +9794,13 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
     primaryLabel: defaultPrimaryLabel,
     primaryValue: defaultPrimaryValue,
     controlLabel: id ? 'Kontrol utama' : 'Main control',
-    controlValue: id ? `Jaga ${target} dengan waktu dan flow stabil.` : `Keep ${target} with stable time and flow.`,
+    controlValue: id ? `Jaga ${target} dengan waktu dan aliran stabil.` : `Keep ${target} with stable time and flow.`,
     successLabel: id ? 'Tanda selesai' : 'Finish cue',
     successCue: defaultSuccess,
     watch: id
       ? [
           'Ikuti checkpoint berurutan sebagai output utama.',
-          'Baca flow time dulu: terlalu cepat biasanya perlu sedikit lebih halus, terlalu lambat biasanya perlu sedikit lebih kasar.',
+          'Baca waktu aliran dulu: terlalu cepat biasanya perlu sedikit lebih halus, terlalu lambat biasanya perlu sedikit lebih kasar.',
         ]
       : [
           'Follow checkpoints in order as the main output.',
@@ -9812,16 +9812,16 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
     case 'espresso':
       return {
         ...common,
-        primaryLabel: id ? 'Yield espresso' : 'Espresso yield',
+        primaryLabel: id ? 'Hasil espresso' : 'Espresso yield',
         primaryValue: formatMethodBriefMl(plan.totalWaterMl),
         controlValue: id
-          ? 'Stop berdasarkan yield, waktu, dan flow. Jangan mengejar volume dengan ekstraksi berlebih.'
+          ? 'Berhenti berdasarkan hasil, waktu, dan aliran. Jangan mengejar volume dengan ekstraksi berlebih.'
           : 'Stop by yield, time, and flow. Do not chase volume by over-extending extraction.',
         successCue: id
-          ? 'Aliran menyempit bersih dan shot berhenti di target yield sebelum blonding agresif.'
+          ? 'Aliran menyempit bersih dan ekstraksi berhenti di target hasil sebelum blonding agresif.'
           : 'Flow narrows cleanly and the shot stops at target yield before aggressive blonding.',
         watch: id
-          ? ['Yield adalah minuman espresso di cup, bukan air seduh filter.', 'Lihat flow dan waktu bersamaan sebelum menghentikan shot.']
+          ? ['Hasil adalah minuman espresso di cangkir, bukan air seduh filter.', 'Lihat aliran dan waktu bersamaan sebelum menghentikan ekstraksi.']
           : ['Yield is espresso beverage output, not a filter-brew pour volume.', 'Read flow and time together before stopping the shot.'],
       };
     case 'moka_pot':
@@ -9836,7 +9836,7 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
           ? 'Angkat sebelum sputter kasar atau rasa rebus muncul.'
           : 'Remove from heat before harsh sputtering or boiled flavor appears.',
         watch: id
-          ? ['Panas terlalu tinggi membuat rasa cepat pahit.', 'Sajikan saat upper chamber sudah terisi sesuai target.']
+          ? ['Panas terlalu tinggi membuat rasa cepat pahit.', 'Sajikan saat ruang atas sudah terisi sesuai target.']
           : ['Too much heat turns the cup bitter fast.', 'Serve when the upper chamber reaches target output.'],
       };
     case 'cold_brew':
@@ -9845,13 +9845,13 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
         primaryLabel: id ? 'Air dingin' : 'Cool water',
         primaryValue: formatMethodBriefMl(plan.totalWaterMl),
         controlValue: id
-          ? `Saturasi bed kasar penuh, lalu tahan steep sekitar ${formatTime(plan.totalTimeSeconds)}.`
+          ? `Basahi seluruh kopi kasar, lalu rendam sekitar ${formatTime(plan.totalTimeSeconds)}.`
           : `Fully saturate the coarse bed, then hold the steep around ${formatTime(plan.totalTimeSeconds)}.`,
         successCue: id
-          ? 'Filter atau decant bersih agar ekstraksi berhenti sebelum disajikan.'
+          ? 'Saring atau tuang pisah dengan bersih agar ekstraksi berhenti sebelum disajikan.'
           : 'Filter or decant cleanly so extraction stops before service.',
         watch: id
-          ? ['Dry pocket membuat hasil tipis dan tidak rata.', 'Pisahkan kopi dari ampas sebelum simpan atau serving.']
+          ? ['Bagian bubuk yang masih kering membuat hasil tipis dan tidak rata.', 'Pisahkan kopi dari ampas sebelum disimpan atau disajikan.']
           : ['Dry pockets make extraction thin and uneven.', 'Separate brew from grounds before storage or service.'],
       };
     case 'batch_brew':
@@ -9860,65 +9860,65 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
         primaryLabel: id ? 'Air siklus mesin' : 'Machine cycle water',
         primaryValue: formatMethodBriefMl(plan.totalWaterMl),
         controlValue: id
-          ? 'Ratakan basket, biarkan siklus mesin dan drawdown selesai, lalu aduk batch.'
+          ? 'Ratakan keranjang, biarkan siklus mesin dan air turun selesai, lalu aduk batch.'
           : 'Level the basket, let the machine cycle and drawdown finish, then mix the batch.',
         successCue: id
-          ? 'Carafe tercampur rata dan tidak ada channel besar di bed.'
+          ? 'Wadah saji tercampur rata dan tidak ada jalur besar di hamparan kopi.'
           : 'Carafe is mixed evenly and the bed shows no major channeling.',
         watch: id
-          ? ['Bed miring membuat batch tidak konsisten.', 'Aduk carafe sebelum evaluasi rasa.']
+          ? ['Hamparan kopi miring membuat batch tidak konsisten.', 'Aduk wadah saji sebelum evaluasi rasa.']
           : ['An uneven bed makes the batch inconsistent.', 'Mix the carafe before judging flavor.'],
       };
     case 'french_press':
       return {
         ...common,
         controlValue: id
-          ? 'Immersion penuh, steep stabil, lalu press pelan dan decant.'
+          ? 'Rendaman penuh, waktu rendam stabil, lalu tekan pelan dan tuang pisah.'
           : 'Full immersion, stable steep, then slow press and decant.',
         successCue: id
-          ? 'Plunge terasa halus dan brew dipisahkan agar fines tidak terus mengekstrak.'
+          ? 'Tekanan terasa halus dan seduhan dipisahkan agar partikel halus tidak terus mengekstrak.'
           : 'Plunge feels smooth and brew is separated so fines stop extracting.',
         watch: id
-          ? ['Jangan aduk agresif menjelang akhir.', 'Decant setelah press agar rasa tidak makin berat.']
+          ? ['Jangan aduk agresif menjelang akhir.', 'Tuang pisah setelah ditekan agar rasa tidak makin berat.']
           : ['Avoid aggressive late stirring.', 'Decant after pressing so the cup does not keep getting heavier.'],
       };
     case 'aeropress':
       return {
         ...common,
         controlValue: id
-          ? 'Immersion pendek, timing ketat, lalu press stabil tanpa memaksa akhir.'
+          ? 'Rendaman pendek, timing ketat, lalu tekan stabil tanpa memaksa akhir.'
           : 'Short immersion, tight timing, then steady press without forcing the finish.',
         successCue: id
-          ? 'Press selesai halus di target; hindari memaksa hiss terakhir.'
+          ? 'Tekanan selesai halus di target; hindari memaksa desis terakhir.'
           : 'Press finishes smoothly at target; avoid forcing the final hiss.',
         watch: id
-          ? ['Chamber harus basah rata sebelum press.', 'Tekanan stabil lebih penting daripada press cepat.']
+          ? ['Ruang seduh harus basah rata sebelum ditekan.', 'Tekanan stabil lebih penting daripada menekan cepat.']
           : ['Chamber should be evenly wet before pressing.', 'Stable pressure matters more than a fast press.'],
       };
     case 'siphon':
       return {
         ...common,
         controlValue: id
-          ? 'Jaga heat/vacuum stabil, agitasi singkat, lalu biarkan drawdown selesai.'
+          ? 'Jaga panas/vakum stabil, agitasi singkat, lalu biarkan air turun selesai.'
           : 'Keep heat/vacuum stable, agitate briefly, then let drawdown finish.',
         successCue: id
-          ? 'Drawdown turun bersih setelah heat-off tanpa agitasi tambahan.'
+          ? 'Air turun bersih setelah panas dimatikan tanpa agitasi tambahan.'
           : 'Drawdown finishes cleanly after heat-off without extra agitation.',
         watch: id
-          ? ['Jangan over-stir saat upper chamber aktif.', 'Cut heat tepat waktu supaya finish tidak kasar.']
+          ? ['Jangan aduk berlebihan saat ruang atas aktif.', 'Matikan panas tepat waktu supaya akhir rasa tidak kasar.']
           : ['Do not over-stir while the upper chamber is active.', 'Cut heat on time so the finish stays clean.'],
       };
     case 'hario_switch':
       return {
         ...common,
         controlValue: id
-          ? 'Katup Switch mengatur fase tertutup/terbuka; ikuti target muatan chamber dan checkpoint release.'
+          ? 'Katup Switch mengatur fase tertutup/terbuka; ikuti target muatan ruang dan titik buka katup.'
           : 'Switch valve controls closed/open phases; follow chamber load targets and the release checkpoint.',
         successCue: id
-          ? 'Release stabil, bed tidak terguncang, dan cup tetap manis tanpa finish keruh.'
+          ? 'Buka katup stabil, hamparan kopi tidak terguncang, dan cangkir tetap manis tanpa akhir rasa keruh.'
           : 'Release flows steadily, the bed stays settled, and the cup keeps sweetness without a muddy finish.',
         watch: id
-          ? ['Rinse filter, preheat body kaca, dan tara timbangan sebelum mulai.', 'Jangan lewati batas muatan chamber saat katup tertutup.']
+          ? ['Bilas filter, panaskan bodi kaca Switch, dan tara timbangan sebelum mulai.', 'Jangan lewati batas muatan ruang saat katup tertutup.']
           : ['Rinse the filter, preheat the glass body, and tare the scale first.', 'Do not exceed chamber load while the valve is closed.'],
       };
     case 'clever_dripper':
@@ -9926,26 +9926,26 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
         return {
           ...common,
           controlValue: id
-            ? 'Valve tertutup untuk bloom/steep, lalu buka switch bersih di checkpoint release.'
+            ? 'Katup tertutup untuk bloom/rendam, lalu buka Switch dengan bersih di titik buka katup.'
             : 'Keep the valve closed for bloom/steep, then open the switch cleanly at the release checkpoint.',
           successCue: id
-            ? 'Release stabil, bed tidak terguncang, dan cup tetap manis tanpa finish keruh.'
+            ? 'Buka katup stabil, hamparan kopi tidak terguncang, dan cangkir tetap manis tanpa akhir rasa keruh.'
             : 'Release flows steadily, the bed stays settled, and the cup keeps sweetness without a muddy finish.',
           watch: id
-            ? ['Rinse filter, preheat body kaca, dan tara timbangan sebelum mulai.', 'Jangan swirl berat tepat sebelum membuka switch.']
+            ? ['Bilas filter, panaskan bodi kaca Switch, dan tara timbangan sebelum mulai.', 'Jangan putar berat tepat sebelum membuka Switch.']
             : ['Rinse the filter, preheat the glass body, and tare the scale first.', 'Avoid heavy swirling right before opening the switch.'],
         };
       }
       return {
         ...common,
         controlValue: id
-          ? 'Bangun immersion tenang, lalu release bersih di checkpoint.'
+          ? 'Bangun rendaman tenang, lalu buka katup dengan bersih di titik yang ditentukan.'
           : 'Build calm immersion, then release cleanly at checkpoint.',
         successCue: id
-          ? 'Release mengalir stabil dan finish tidak keruh atau kasar.'
+          ? 'Aliran buka katup stabil dan akhir rasa tidak keruh atau kasar.'
           : 'Release flows steadily and the finish is not muddy or harsh.',
         watch: id
-          ? ['Contact time adalah kontrol utama.', 'Jangan swirl berat menjelang release.']
+          ? ['Waktu kontak adalah kontrol utama.', 'Jangan putar berat menjelang buka katup.']
           : ['Contact time is the main control.', 'Avoid heavy swirling before release.'],
       };
     case 'chemex':
@@ -9955,10 +9955,10 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
           ? 'Jaga aliran stabil dan hindari bypass di dinding filter tebal.'
           : 'Keep flow stable and avoid bypass through the thick filter wall.',
         successCue: id
-          ? 'Drawdown tetap terbuka, tidak tersendat oleh filter.'
+          ? 'Air turun tetap lancar, tidak tersendat oleh filter.'
           : 'Drawdown stays open and does not stall through the filter.',
         watch: id
-          ? ['Filter tebal butuh flow stabil.', 'Hindari turbulensi agresif di akhir.']
+          ? ['Filter tebal butuh aliran stabil.', 'Hindari turbulensi agresif di akhir.']
           : ['Thick filters need steady flow.', 'Avoid aggressive turbulence late.'],
       };
     case 'kalita_wave':
@@ -9967,13 +9967,13 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
       return {
         ...common,
         controlValue: id
-          ? 'Jaga flat bed rata dengan pulse pendek dan spout rendah.'
+          ? 'Jaga hamparan flat-bottom rata dengan pulse pendek dan cerat rendah.'
           : 'Keep the flat bed level with short pulses and a low spout.',
         successCue: id
-          ? 'Permukaan bed rata dan drawdown turun seragam.'
+          ? 'Permukaan hamparan kopi rata dan air turun seragam.'
           : 'Bed surface stays level and drawdown finishes evenly.',
         watch: id
-          ? ['Bed miring membuat ekstraksi tidak rata.', 'Pulse pendek lebih aman daripada flooding.']
+          ? ['Hamparan kopi miring membuat ekstraksi tidak rata.', 'Pulse pendek lebih aman daripada air menggenang.']
           : ['A tilted bed extracts unevenly.', 'Short pulses are safer than flooding.'],
       };
     default:
@@ -9984,7 +9984,7 @@ export function buildPlanMethodBrief(plan: BrewPlan, locale?: string): AiBrewMet
             ? 'Mulai center-focused, lalu buka alur perlahan untuk menjaga sweetness.'
             : 'Start center-focused, then widen gently to preserve sweetness.',
           successCue: id
-            ? 'Center tetap bersih dan finish manis tanpa turbulence akhir.'
+            ? 'Tengah tetap bersih dan akhir rasa manis tanpa turbulensi akhir.'
             : 'Center stays clean and finish remains sweet without late turbulence.',
         }
         : common;
@@ -10018,7 +10018,7 @@ function buildPlanRecipeStepAction(step: BrewPlan['steps'][number], locale?: str
 
   if (kind === 'release') {
     return id
-      ? `buka release pada target ${step.targetVolumeMl} ml`
+      ? `buka katup pada target ${step.targetVolumeMl} ml`
       : `open release at target ${step.targetVolumeMl} ml`;
   }
   if (kind === 'wait') {
@@ -10028,7 +10028,7 @@ function buildPlanRecipeStepAction(step: BrewPlan['steps'][number], locale?: str
   }
   if (kind === 'drawdown') {
     return id
-      ? `biarkan drawdown lanjut; target tetap ${step.targetVolumeMl} ml`
+      ? `biarkan air turun lanjut; target tetap ${step.targetVolumeMl} ml`
       : `let drawdown continue; target stays ${step.targetVolumeMl} ml`;
   }
   if (kind === 'press') {
@@ -10073,7 +10073,7 @@ export function buildPlanRecipeSteps(plan: BrewPlan, locale?: string) {
 export function buildPlanRecipeIngredients(plan: BrewPlan, locale?: string) {
   const id = isIndonesianLocale(locale);
   const waterIngredientName = plan.methodFamily === 'espresso'
-    ? (id ? 'Yield espresso' : 'Espresso yield')
+    ? (id ? 'Hasil espresso' : 'Espresso yield')
     : plan.methodFamily === 'cold_brew'
       ? (id ? 'Air dingin' : 'Cool water')
       : id

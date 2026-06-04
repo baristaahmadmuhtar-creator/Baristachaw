@@ -124,6 +124,27 @@ test('AI Brew sequence server prompt stays structured and under budget', () => {
   assert.match(prompt, /Ice in server: 100 g/);
 });
 
+test('AI Brew prompts lock Indonesian and English output language without mixed-language fallback', () => {
+  const idPrompt = buildSequenceServerPrompt(createPlan(), 'id').body;
+  const enPrompt = buildSequenceServerPrompt(createPlan(), 'en').body;
+  const idAssistPrompt = buildOptimizationPrompt(createPlan(), 'id').body;
+  const enAssistPrompt = buildOptimizationPrompt(createPlan(), 'en').body;
+
+  assert.match(idPrompt, /displayMarkdown must be written only in Indonesian/i);
+  assert.match(idPrompt, /Do not mix languages/i);
+  assert.match(idPrompt, /Do not invent missing bean data/i);
+  assert.match(idAssistPrompt, /Jawab sepenuhnya dalam Bahasa Indonesia/i);
+  assert.match(idAssistPrompt, /Jangan campur bahasa/i);
+  assert.match(idAssistPrompt, /Jangan mengarang data bean/i);
+
+  assert.match(enPrompt, /displayMarkdown must be written only in English/i);
+  assert.match(enPrompt, /Do not mix languages/i);
+  assert.match(enPrompt, /Do not invent missing bean data/i);
+  assert.match(enAssistPrompt, /Respond only in English/i);
+  assert.match(enAssistPrompt, /Do not mix languages/i);
+  assert.match(enAssistPrompt, /Do not invent missing bean data/i);
+});
+
 test('AI Brew optimization prompt stays under server action budget', () => {
   const prompt = buildOptimizationPrompt(createPlan(), 'id').body;
 

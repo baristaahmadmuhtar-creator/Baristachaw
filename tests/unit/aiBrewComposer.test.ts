@@ -307,8 +307,8 @@ test('method brief gives non pour-over methods usable barista-facing focus', () 
     dripper: { id: 'french-press', name: 'French Press' } as BrewPlan['dripper'],
   }), 'id');
 
-  assert.match(`${espresso.primaryLabel} ${espresso.controlValue} ${espresso.successCue}`, /Yield espresso|yield|flow/i);
-  assert.match(`${frenchPress.controlValue} ${frenchPress.successCue}`, /Immersion|press|decant/i);
+  assert.match(`${espresso.primaryLabel} ${espresso.controlValue} ${espresso.successCue}`, /Hasil espresso|yield|flow|aliran/i);
+  assert.match(`${frenchPress.controlValue} ${frenchPress.successCue}`, /Rendaman|tekan|tuang pisah|Immersion|press|decant/i);
   assert.ok(espresso.watch.length >= 2);
   assert.ok(frenchPress.watch.length >= 2);
 });

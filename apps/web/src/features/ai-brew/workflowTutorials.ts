@@ -351,11 +351,11 @@ const WORKFLOW_TUTORIALS: Record<AiBrewMethodFamily, WorkflowTutorialProfile> = 
     },
     main: {
       en: 'Watch the stream, yield, and time together; this is a starting point, not a shot guarantee.',
-      id: 'Pantau aliran, yield, dan waktu bersamaan; ini titik awal, bukan jaminan shot.',
+      id: 'Pantau aliran, hasil ekstraksi, dan waktu bersamaan; ini titik awal, bukan jaminan espresso.',
     },
     release: {
       en: 'Stop at the planned yield, then read the stream pattern before changing grind.',
-      id: 'Berhenti di yield rencana, lalu baca pola aliran sebelum mengubah grind.',
+      id: 'Berhenti di hasil rencana, lalu baca pola aliran sebelum mengubah gilingan.',
     },
     finish: {
       en: 'Stir the espresso once before tasting so crema and liquid are balanced.',
@@ -479,6 +479,23 @@ function normalizeWorkflowTutorialCopy(value: string, language: WorkflowTutorial
     [/\bpreheat\b/gi, 'hangatkan'],
     [/\bglass\b/gi, 'kaca'],
     [/\bclay-blue\b/gi, 'keramik'],
+    [/\byield\b/gi, 'hasil ekstraksi'],
+    [/\bshot\b/gi, 'ekstraksi espresso'],
+    [/\bgrind\b/gi, 'gilingan'],
+    [/\bmouthfeel\b/gi, 'sensasi mulut'],
+    [/\bacidity\b/gi, 'keasaman'],
+    [/\bpulses\b/gi, 'tuangan bertahap'],
+    [/\bpulse\b/gi, 'tuangan bertahap'],
+    [/\bspray head\b/gi, 'pancuran mesin'],
+    [/\bspray\b/gi, 'semprotan'],
+    [/\bcarafe\b/gi, 'wadah saji'],
+    [/\bflow\b/gi, 'aliran'],
+    [/\bstream\b/gi, 'aliran'],
+    [/\bdrain\b/gi, 'tiris'],
+    [/\bdrips\b/gi, 'tetesan'],
+    [/\bdrip\b/gi, 'tetes'],
+    [/\bBloom\b/g, 'Lakukan blooming'],
+    [/\bbloom\b/g, 'blooming'],
     [/\bdose\b/gi, 'dosis'],
     [/\bload\b/gi, 'masukkan'],
     [/\bsec\b/gi, 'detik'],
@@ -494,7 +511,7 @@ function normalizeWorkflowTutorialCopy(value: string, language: WorkflowTutorial
     [/\bnatural\b/gi, 'alami'],
     [/\bmesh\b/gi, 'saringan'],
     [/\bplunger\b/gi, 'penekan'],
-    [/Â°C/g, 'C'],
+    [/\u00c2°C/g, '°C'],
   ];
 
   for (const [pattern, replacement] of replacements) {
@@ -1033,7 +1050,7 @@ const KALITA_WAVE_STYLE_TUTORIALS: Record<
     },
     finish: {
       en: 'Serve a sweet, heavy cup with velvety mouthfeel and syrupy body.',
-      id: 'Sajikan cangkir yang manis dan berat dengan mouthfeel beludru dan body sepekat sirup.',
+      id: 'Sajikan cangkir yang manis dan berat dengan sensasi mulut beludru dan body sepekat sirup.',
     },
   },
   iced_wave: {
@@ -1249,7 +1266,7 @@ const CHEMEX_STYLE_TUTORIALS: Record<
   continuous_center_pour: {
     setup: {
       en: 'Seat the paper filter neatly, add coarsely ground coffee, and preheat the glass carafe.',
-      id: 'Pasang filter kertas dengan rapi, masukkan kopi gilingan kasar, dan hangatkan carafe kaca.',
+      id: 'Pasang filter kertas dengan rapi, masukkan kopi gilingan kasar, dan hangatkan wadah kaca.',
     },
     entry: {
       en: 'Wet grounds with a calm center pour to minimize agitation; skip any swirling.',
@@ -1271,7 +1288,7 @@ const CHEMEX_STYLE_TUTORIALS: Record<
   iced_chemex: {
     setup: {
       en: 'Pre-load the glass carafe with measured ice, rinse your paper filter, and add fine grounds.',
-      id: 'Isi carafe kaca dengan es batu terukur, bilas filter kertas, dan masukkan kopi gilingan halus.',
+      id: 'Isi wadah kaca dengan es batu terukur, bilas filter kertas, dan masukkan kopi gilingan halus.',
     },
     entry: {
       en: 'Bloom dry grounds hot. The concentrated drippings will cool instantly over the ice below.',
@@ -1287,13 +1304,13 @@ const CHEMEX_STYLE_TUTORIALS: Record<
     },
     finish: {
       en: 'Let the final drops drain, then swirl the carafe to melt ice evenly; serve chilled.',
-      id: 'Biarkan tetesan terakhir habis, lalu putar carafe untuk melelehkan es secara merata; sajikan dingin.',
+      id: 'Biarkan tetesan terakhir habis, lalu putar wadah saji untuk melelehkan es secara merata; sajikan dingin.',
     },
   },
   high_dose_heavy_body: {
     setup: {
       en: 'Add a massive coffee dose, grind coarse, and preheat the elegant Chemex carafe thoroughly.',
-      id: 'Masukkan dosis kopi sangat besar, giling kasar, dan hangatkan carafe Chemex yang elegan.',
+      id: 'Masukkan dosis kopi sangat besar, giling kasar, dan hangatkan wadah Chemex secara menyeluruh.',
     },
     entry: {
       en: 'Wet the thick bed slowly; let the large dose degas completely before building water height.',
@@ -1305,7 +1322,7 @@ const CHEMEX_STYLE_TUTORIALS: Record<
     },
     release: {
       en: 'Maintain a heavy water column to wash the deep bed, yielding rich mouthfeel and oils.',
-      id: 'Pertahankan kolom air yang berat untuk membasuh bed yang dalam, menghasilkan mouthfeel dan minyak kopi tebal.',
+      id: 'Pertahankan kolom air yang berat untuk membasuh hamparan kopi yang dalam, menghasilkan sensasi mulut dan minyak kopi yang tebal.',
     },
     finish: {
       en: 'Allow a slow, heavy drawdown to finish. Serve neat to enjoy a deep, syrupy comforting cup.',
@@ -1458,7 +1475,7 @@ const COLD_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
     },
     entry: {
       en: 'Adjust the dripper valve to exactly 1 drop per 1.5 seconds. Pre-wet the bed to start hydration.',
-      id: 'Atur katup dripper tepat 1 tetes per 1,5 detik. Basahi bed kopi awal untuk memulai hidrasi.'
+      id: 'Atur katup dripper tepat 1 tetes per 1,5 detik. Basahi hamparan kopi awal untuk memulai hidrasi.'
     },
     main: {
       en: 'Maintain steady drip rates as the water percolates slowly through the narrow column.',
@@ -1466,7 +1483,7 @@ const COLD_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
     },
     release: {
       en: 'Let the final drips pass through the bed. The slow gravity drip yields high clarity.',
-      id: 'Biarkan tetesan akhir melewati bed kopi. Tetesan gravitasi yang lambat menghasilkan kejernihan tinggi.'
+      id: 'Biarkan tetesan akhir melewati hamparan kopi. Tetesan gravitasi yang lambat menghasilkan kejernihan tinggi.'
     },
     finish: {
       en: 'Swirl the collected iced liquor. Let it mature in a sealed bottle for 24 hours for wine-like complexity.',
@@ -1845,7 +1862,7 @@ const ORIGAMI_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Work
     },
     main: {
       en: 'Pour in rapid, concentric hot pulses in the center. Keep the grind finer to increase soluble strength.',
-      id: 'Tuang air panas dalam pulsa tengah cepat konsentris. Jaga gilingan tetap halus untuk meningkatkan kepekatan rasa.'
+      id: 'Tuang air panas dengan tahap tengah yang cepat dan konsentris. Jaga gilingan tetap halus untuk meningkatkan kepekatan rasa.'
     },
     release: {
       en: 'The hot concentrate drains rapidly through the open flutes, locking sparkling fruit acids instantly over ice.',
@@ -1922,7 +1939,7 @@ const APRIL_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workfl
     },
     finish: {
       en: 'Serve a clean, incredibly sweet cup with velvety mouthfeel and balanced acidity.',
-      id: 'Sajikan cangkir yang bersih dan sangat manis dengan mouthfeel selembut beludru dan acidity seimbang.'
+      id: 'Sajikan cangkir yang bersih dan sangat manis dengan sensasi mulut selembut beludru dan keasaman seimbang.'
     }
   },
   competition_two_pour: {
@@ -2085,11 +2102,11 @@ const MELITTA_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Work
   dense_classic_extraction: {
     setup: {
       en: 'Load a fine grind and level the bed. Preheat the trapezoid dripper thoroughly.',
-      id: 'Gunakan gilingan halus dan ratakan bed kopi. Hangatkan dripper trapezoid secara merata.'
+      id: 'Gunakan gilingan halus dan ratakan hamparan kopi. Hangatkan dripper trapezoid secara merata.'
     },
     entry: {
       en: 'Bloom along the center axis. Let grounds degas for 45 seconds to open up the fine bed.',
-      id: 'Bloom sepanjang sumbu tengah. Biarkan gas keluar 45 detik agar bed halus yang padat terbuka.'
+      id: 'Lakukan blooming sepanjang sumbu tengah. Biarkan gas keluar 45 detik agar hamparan kopi halus yang padat terbuka.'
     },
     main: {
       en: 'Pour in extremely slow concentric ovals. The fine grounds restrict flow, building intense contact time.',
@@ -2101,7 +2118,7 @@ const MELITTA_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Work
     },
     finish: {
       en: 'Swirl the server and serve. Enjoy a highly extracted classic cup with heavy mouthfeel and cocoa finish.',
-      id: 'Putar server lalu sajikan. Nikmati cangkir klasik ekstraksi tinggi dengan mouthfeel tebal dan rasa cokelat di akhir.'
+      id: 'Putar wadah saji lalu sajikan. Nikmati cangkir klasik ekstraksi tinggi dengan sensasi mulut tebal dan rasa cokelat di akhir.'
     }
   }
 };
@@ -2148,7 +2165,7 @@ const KONO_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workflo
     },
     finish: {
       en: 'Swirl the server and serve. The cup offers exceptional sweetness, balanced acidity, and round mouthfeel.',
-      id: 'Putar server lalu sajikan. Cangkir ini menyajikan rasa manis yang istimewa, acidity seimbang, dan mouthfeel bulat.'
+      id: 'Putar wadah saji lalu sajikan. Cangkir ini menyajikan rasa manis yang istimewa, keasaman seimbang, dan sensasi mulut bulat.'
     }
   },
   kono_slow_drip_body: {

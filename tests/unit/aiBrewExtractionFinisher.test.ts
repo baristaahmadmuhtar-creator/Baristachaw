@@ -20,7 +20,7 @@ function createPlan(overrides: Partial<BrewPlan> = {}) {
     roastLevel: 'light',
     beanProfile: {
       active: true,
-      summary: '1850 masl Â· low solubility',
+      summary: '1850 masl · low solubility',
       notes: [],
       altitudeMasl: 1850,
       roastDevelopment: 'underdeveloped',

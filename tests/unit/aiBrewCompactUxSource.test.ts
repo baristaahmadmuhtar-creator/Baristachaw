@@ -21,7 +21,7 @@ test('AI Brew quick mode keeps Switch setup compact and single-source-of-truth',
 test('AI Brew quick mode keeps optional bean detail and AI tools collapsed', () => {
   assert.match(SOURCE, /data-testid="ai-brew-bean-details-toggle"/);
   assert.match(SOURCE, /data-testid="ai-brew-bean-details-summary"/);
-  assert.match(SOURCE, /Detail kopi tetap opsional; hasil ini masih baseline/);
+  assert.match(SOURCE, /Detail kopi tetap opsional; hasil ini masih titik awal/);
   assert.doesNotMatch(SOURCE, /Biarkan Auto untuk hasil aman/);
   assert.match(SOURCE, /primaryAiAssistActions/);
   assert.match(SOURCE, /advancedAiAssistActions/);

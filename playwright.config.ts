@@ -21,7 +21,7 @@ export default defineConfig({
     baseURL,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: shouldUseSystemChrome ? 'off' : 'retain-on-failure',
     actionTimeout: 20_000,
     navigationTimeout: 60_000,
     extraHTTPHeaders: shouldUseLiveAi ? undefined : { 'x-e2e-mock': '1' },

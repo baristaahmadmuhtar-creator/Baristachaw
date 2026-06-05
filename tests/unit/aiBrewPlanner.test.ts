@@ -1180,7 +1180,13 @@ function assertPlanEnvelope(plan: ReturnType<typeof buildAiBrewPlan>) {
   assert.ok(plan.iceSharePercent >= 0 && plan.iceSharePercent <= 100);
   const minTempC = plan.methodFamily === 'cold_brew' ? 0 : 78;
   assert.ok(plan.waterTempC >= minTempC && plan.waterTempC <= 98);
-  const maxTimeSeconds = plan.methodFamily === 'cold_brew' ? 48 * 60 * 60 : plan.methodFamily === 'espresso' ? 75 : 420;
+  const maxTimeSeconds = plan.methodFamily === 'cold_brew'
+    ? 48 * 60 * 60
+    : plan.methodFamily === 'espresso'
+      ? 75
+      : plan.methodFamily === 'french_press'
+        ? 540
+        : 420;
   const minTimeSeconds = plan.methodFamily === 'espresso' ? 15 : 75;
   assert.ok(plan.totalTimeSeconds >= minTimeSeconds && plan.totalTimeSeconds <= maxTimeSeconds);
 }
@@ -4540,7 +4546,7 @@ test('P0 rendered output snapshots stay method-specific, ratio-correct, and user
       input: { dripperId: findProductionDripperId(productionCatalog, /^French Press$/i), doseG: '15', targetWaterMl: '210', targetProfileId: 'more_body' },
       required: /charge|isi|steep|rendam|settle|endap|press|tekan|decant|tuang pisah/i,
       forbidden: /drawdown|final pour|bloom pour|1:8/,
-      window: [390, 480],
+      window: [390, 510],
     },
   ];
 
@@ -7428,6 +7434,98 @@ test('French Press style-aware planner resolves correct profiles, custom physics
       assert.match(stepsText, /immersion|steep|plunger|decant|separate/i);
     }
   }
+});
+
+test('French Press production styles keep ratio envelope, Volvic-like water label, and rendered copy safe', () => {
+  const catalog = buildProductionAiBrewCatalogForTests();
+  const dripper = catalog.drippers.find((item) => item.methodFamily === 'french_press')
+    || catalog.drippers.find((item) => item.id === 'french-press');
+  assert.ok(dripper, 'French Press dripper must exist');
+  const base = {
+    ...createDefaultAiBrewFormState(catalog),
+    dripperId: dripper.id,
+    brewMode: 'hot' as const,
+    grinderId: '1zpresso-k-ultra',
+    doseG: '15',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '130',
+    waterHardnessPpm: '62.9',
+    waterAlkalinityPpm: '60.7',
+    roastLevel: 'medium' as const,
+  };
+  const cases = [
+    { style: 'auto', targetProfileId: 'more_sweetness', process: 'natural', variety: 'red catuai', ratio: [14, 15], time: [360, 480], text: /rendaman manis|sweet immersion|tuang pisah|decant/i },
+    { style: 'traditional', targetProfileId: 'balance_clean', process: 'washed', variety: 'bourbon', ratio: [14, 15], time: [330, 450], text: /tradisional|traditional|rendam|steep/i },
+    { style: 'clean_decant', targetProfileId: 'floral_transparent', process: 'washed', variety: 'gesha', ratio: [15, 16], time: [420, 540], text: /clean decant|tuang pisah bersih|sedimen|slow/i },
+    { style: 'double_filter', targetProfileId: 'floral_transparent', process: 'washed', variety: 'typica', ratio: [14.5, 15.5], time: [300, 420], text: /double|dua saringan|paper|kertas|metal/i },
+    { style: 'heavy_concentrate', targetProfileId: 'more_body', process: 'natural', variety: 'bourbon', ratio: [11, 12], time: [390, 510], text: /concentrate|konsentrat|dilute|dilusi|milk|susu/i },
+    { style: 'sweet_immersion', targetProfileId: 'more_sweetness', process: 'natural', variety: 'red catuai', ratio: [14, 15], time: [390, 510], text: /sweet immersion|rendaman manis|body|manis/i },
+  ] as const;
+
+  for (const entry of cases) {
+    const plan = buildAiBrewPlan({
+      ...base,
+      frenchPressStyle: entry.style,
+      targetProfileId: entry.targetProfileId,
+      process: entry.process,
+      variety: entry.variety,
+    }, catalog);
+    const text = collectUserFacingRecipeText(plan);
+    assert.equal(plan.methodFamily, 'french_press');
+    assert.equal(plan.finalBeverageRatio, Math.round((plan.totalWaterMl / plan.doseG) * 100) / 100);
+    assert.ok(plan.finalBeverageRatio >= entry.ratio[0] && plan.finalBeverageRatio <= entry.ratio[1], `${entry.style} ratio 1:${plan.finalBeverageRatio}`);
+    assert.ok(canonicalFinishSeconds(plan) >= entry.time[0] && canonicalFinishSeconds(plan) <= entry.time[1], `${entry.style} finish ${canonicalFinishSeconds(plan)}`);
+    assertRatioInvariant(plan);
+    assert.match(plan.waterMinerals.styleLabel, /moderate mineral.*upper-buffered|moderate mineral, upper-buffered/i);
+    assert.doesNotMatch(plan.waterMinerals.styleLabel, /hard/i);
+    assert.match(text, /upper-buffered|alkalinity|alkalinitas|buffer/i);
+    assert.match(text, entry.text, `${entry.style} style copy`);
+    assertNoBrokenRecipeText(text);
+    assert.doesNotMatch(text, /\b(?:Action\s+Action|ActionAction|\$(?:\d+|\{)|undefined|null|NaN|Pressgentle|Stophiss|Press \$1 seconds)\b/i);
+    assert.doesNotMatch(text, /\b(drawdown|bloom|final pour|pour map|flat bed|center-to-mid|hiss)\b/i);
+    assert.doesNotMatch(text, /\b(?:stir\s+\d+(?:-\d+)?\s+times\s+saja|pour\s+air|dua\s+times|serve\s+setelah)\b/i);
+    assert.equal(validateBrewPlanOutput(plan).allowed, true, `${entry.style} output guard`);
+  }
+
+  const exact = buildAiBrewPlan({
+    ...base,
+    frenchPressStyle: 'traditional',
+    targetWaterMl: '215',
+    targetProfileId: 'more_sweetness',
+    process: 'natural',
+    variety: 'red catuai',
+  }, catalog);
+  assert.equal(Math.round(exact.finalBeverageRatio * 10) / 10, 14.3);
+  assert.match(collectUserFacingRecipeText(exact), /1:14\.3/i);
+});
+
+test('French Press output guard blocks placeholders, mixed language fragments, and pour-over vocabulary', () => {
+  const catalog = buildProductionAiBrewCatalogForTests();
+  const dripper = catalog.drippers.find((item) => item.methodFamily === 'french_press')
+    || catalog.drippers.find((item) => item.id === 'french-press');
+  assert.ok(dripper, 'French Press dripper must exist');
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    dripperId: dripper.id,
+    frenchPressStyle: 'sweet_immersion',
+    targetProfileId: 'more_sweetness',
+    doseG: '15',
+    waterMode: 'manual',
+    waterTdsPpm: '130',
+    waterHardnessPpm: '62.9',
+    waterAlkalinityPpm: '60.7',
+  }, catalog);
+
+  assert.equal(validateBrewPlanOutput({
+    ...plan,
+    summary: `${plan.summary} Action Action stir dua times saja.`,
+  }).allowed, false);
+  assert.equal(validateBrewPlanOutput({
+    ...plan,
+    workflowGuideSteps: (plan.workflowGuideSteps || []).map((step, index) => index === 0
+      ? { ...step, primaryText: `${step.primaryText} drawdown bloom final pour.` }
+      : step),
+  }).allowed, false);
 });
 
 test('French Press Auto Traditional routes targets, dose batches, origins, and health guardrails safely', () => {

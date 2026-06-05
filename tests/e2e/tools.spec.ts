@@ -1207,7 +1207,7 @@ test('ai brew all non-AeroPress selectable styles generate fresh validated plans
       expectedFamily: 'french_press',
       stylePrefix: 'ai-brew-french-press-style',
       styles: ['traditional', 'clean_decant', 'double_filter', 'heavy_concentrate', 'sweet_immersion'],
-      forbidden: /bloom|final pour|tuang akhir|spiral|v60|drawdown bed/i,
+      forbidden: /\b(bloom|final pour|tuang akhir|spiral|v60|drawdown|pour map|flat bed|center-to-mid|hiss)\b|Action\s+Action/i,
     },
     {
       label: 'Kalita Wave',
@@ -1370,7 +1370,23 @@ test('ai brew all non-AeroPress selectable styles generate fresh validated plans
       expect(plan.methodFamily).toBe(family.expectedFamily);
       expect(plan.recipeStyle).toBe(style);
       expect(plan.workflowValidation?.passed).toBe(true);
+      const expectedRatio = Math.round((plan.totalWaterMl / plan.doseG) * 10) / 10;
+      expect(Math.round(plan.finalBeverageRatio * 10) / 10).toBe(expectedRatio);
+      await expect(result).toContainText(new RegExp(`1:${formatAiBrewDisplayRatio(plan.finalBeverageRatio).replace('.', '\\.')}`));
       expect(storedText).not.toMatch(family.forbidden);
+      if (family.expectedFamily === 'french_press') {
+        expect(storedText).toMatch(/Charge water|Isi air|Steep|Rendam|Press gently|Tekan pelan|Decant|Tuang pisah/i);
+        expect(storedText).not.toMatch(/\$(?:\d+|\{)|\b(?:undefined|null|NaN)\b|ActionAction|Pressgentle|Stophiss|stir\s+\d+(?:-\d+)?\s+times\s+saja|pour\s+air/i);
+        if (style === 'heavy_concentrate') {
+          expect(plan.finalBeverageRatio).toBeGreaterThanOrEqual(11);
+          expect(plan.finalBeverageRatio).toBeLessThanOrEqual(12);
+          expect(storedText).toMatch(/concentrate|konsentrat|dilute|dilusi|milk|susu/i);
+        } else {
+          expect(plan.finalBeverageRatio).toBeGreaterThanOrEqual(12);
+          expect(plan.finalBeverageRatio).toBeLessThanOrEqual(17);
+          expect(storedText).not.toMatch(/dilute only when planned|dilusi dengan air atau susu/i);
+        }
+      }
       familyFingerprints.add(JSON.stringify({
         style: plan.recipeStyle,
         mode: plan.brewMode,

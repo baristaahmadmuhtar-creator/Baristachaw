@@ -1091,6 +1091,43 @@ function parseDoseForMethod(value: string, methodFamily: AiBrewMethodFamily) {
   return clamp(parsed, 8, 40);
 }
 
+type EffectiveFrenchPressStyle = Exclude<FrenchPressRecipeStyle, 'auto'>;
+
+function resolveFrenchPressProductionEnvelope(style: EffectiveFrenchPressStyle, doseG: number) {
+  switch (style) {
+    case 'clean_decant':
+      return {
+        ratio: { min: 15, max: 16 },
+        finishSeconds: { min: 420, max: 540 },
+      };
+    case 'double_filter':
+      return {
+        ratio: { min: 14.5, max: 15.5 },
+        finishSeconds: { min: 300, max: 420 },
+      };
+    case 'heavy_concentrate':
+      return {
+        ratio: doseG >= 60
+          ? { min: 8, max: 12 }
+          : doseG >= 45
+            ? { min: 9, max: 12 }
+            : { min: 11, max: 12 },
+        finishSeconds: { min: 390, max: 510 },
+      };
+    case 'sweet_immersion':
+      return {
+        ratio: { min: 14, max: 15 },
+        finishSeconds: { min: 390, max: 510 },
+      };
+    case 'traditional':
+    default:
+      return {
+        ratio: { min: 14, max: 15 },
+        finishSeconds: { min: 330, max: 390 },
+      };
+  }
+}
+
 function resolveManualPresetScalingRatio(preset: ManualBrewPreset) {
   const explicitRatio = preset.targetDefaults.targetRatio;
   if (typeof explicitRatio === 'number' && Number.isFinite(explicitRatio) && explicitRatio > 0) return explicitRatio;
@@ -4730,28 +4767,28 @@ function deriveMethodFamilyAdjustment(params: {
     case 'french_press':
       adjustment.sequenceSignature = 'immersion_press';
       if (params.recipeStyle === 'heavy_concentrate') {
-        adjustment.ratioDelta = -5.0; // Brings 1:15 default to 1:10
+        adjustment.ratioDelta = -3.5; // Brings 1:15 default toward a safer 1:11-1:12 concentrate.
         adjustment.tempDeltaC = -0.2;
-        adjustment.brewTimeDeltaSec = 30; // Shorter steep for heavy concentrate
+        adjustment.brewTimeDeltaSec = 90;
         adjustment.grindBias = 'coarser';
-        adjustment.notes.push('French Press heavy concentrate style uses a narrow 1:10 ratio to produce a thick, lipid-rich extraction base.');
+        adjustment.notes.push('French Press heavy concentrate style is labeled as concentrate and keeps dilution with water or milk explicit so it is not mistaken for normal black coffee.');
         adjustment.notes.push('French Press health guard: unfiltered immersion coffee can carry more cafestol and kahweol than paper-filtered coffee; use a paper or double-filter variant if LDL cholesterol management matters.');
       } else if (params.recipeStyle === 'double_filter') {
-        adjustment.ratioDelta = -0.7; // Brings 1:15 default to 1:14.3
+        adjustment.ratioDelta = 0;
         adjustment.tempDeltaC = -0.3;
-        adjustment.brewTimeDeltaSec = 15; // Shorter contact due to medium-fine grind
+        adjustment.brewTimeDeltaSec = 20;
         adjustment.grindBias = 'finer';
-        adjustment.notes.push('French Press double filter style uses a medium to medium-coarse starting grind and a 1:14.3 ratio, using paper filtration to reduce sediment and lower coffee-oil carryover versus metal mesh alone.');
+        adjustment.notes.push('French Press double filter style uses a medium to medium-coarse starting grind around 1:15, using paper plus metal filtration to reduce sediment and lower coffee-oil carryover versus metal mesh alone.');
         adjustment.notes.push('French Press health guard: paper filtration is the safer default when users want lower diterpene exposure; treat this as a brewing guardrail and ask a clinician for personal health decisions.');
       } else if (params.recipeStyle === 'clean_decant') {
-        adjustment.ratioDelta = 0.0; // 1:15
+        adjustment.ratioDelta = 0.6;
         adjustment.tempDeltaC = -0.4;
-        adjustment.brewTimeDeltaSec = 360; // Clean decant uses a much longer steeping time (Hoffmann style)
+        adjustment.brewTimeDeltaSec = 240;
         adjustment.grindBias = 'coarser';
         adjustment.notes.push('French Press clean decant style relies on a long (Hoffmann-style) settle phase to sink fine particles to the bottom.');
         adjustment.notes.push('French Press health guard: unfiltered immersion coffee can carry more cafestol and kahweol than paper-filtered coffee; choose Double Filter for lower lipid carryover.');
       } else if (params.recipeStyle === 'sweet_immersion') {
-        adjustment.ratioDelta = 0.0; // 1:15
+        adjustment.ratioDelta = -0.1;
         adjustment.tempDeltaC = -1.0; // Cooler temperature
         adjustment.brewTimeDeltaSec = 85;
         adjustment.grindBias = 'coarser';
@@ -8030,17 +8067,10 @@ function finalizePlanCore(
   let ratioLowerBound = method.ratioRange[0] - 0.75;
   let ratioUpperBound = method.ratioRange[1] + 0.75;
   if (methodFamily === 'french_press') {
-    const fpStyle = effectiveDeviceProfile.recipeStyle || 'traditional';
-    if (fpStyle === 'heavy_concentrate') {
-      ratioLowerBound = 8;
-      ratioUpperBound = 11;
-    } else if (fpStyle === 'double_filter') {
-      ratioLowerBound = 13;
-      ratioUpperBound = 15.5;
-    } else {
-      ratioLowerBound = 14;
-      ratioUpperBound = 16.7;
-    }
+    const fpStyle = (effectiveDeviceProfile.recipeStyle || 'traditional') as EffectiveFrenchPressStyle;
+    const envelope = resolveFrenchPressProductionEnvelope(fpStyle, doseG);
+    ratioLowerBound = envelope.ratio.min;
+    ratioUpperBound = envelope.ratio.max;
   }
   if (manualPreset) {
     const presetRatio = resolveManualPresetScalingRatio(manualPreset);
@@ -8159,17 +8189,10 @@ function finalizePlanCore(
     let ratioLowerBound = method.ratioRange[0] - 0.75;
     let ratioUpperBound = method.ratioRange[1] + 0.75;
     if (methodFamily === 'french_press') {
-      const fpStyle = effectiveDeviceProfile.recipeStyle || 'traditional';
-      if (fpStyle === 'heavy_concentrate') {
-        ratioLowerBound = 8;
-        ratioUpperBound = 11;
-      } else if (fpStyle === 'double_filter') {
-        ratioLowerBound = 13;
-        ratioUpperBound = 15.5;
-      } else {
-        ratioLowerBound = 14;
-        ratioUpperBound = 16.7;
-      }
+      const fpStyle = (effectiveDeviceProfile.recipeStyle || 'traditional') as EffectiveFrenchPressStyle;
+      const envelope = resolveFrenchPressProductionEnvelope(fpStyle, doseG);
+      ratioLowerBound = envelope.ratio.min;
+      ratioUpperBound = envelope.ratio.max;
     }
     if (manualPreset) {
       const presetRatio = resolveManualPresetScalingRatio(manualPreset);
@@ -8446,7 +8469,7 @@ function finalizePlanCore(
     ? roundTo(totalWaterMl - hotWaterMl, 0)
     : 0;
   const finalBeverageRatio = roundTo(totalWaterMl / doseG, 2);
-  if (targetWaterOverrideMl !== null || methodFamily === 'batch_brew' || methodFamily === 'aeropress') {
+  if (targetWaterOverrideMl !== null || methodFamily === 'batch_brew' || methodFamily === 'aeropress' || methodFamily === 'french_press') {
     recommendedRatio = finalBeverageRatio;
   }
   const hotExtractionRatio = roundTo(hotWaterMl / doseG, 2);
@@ -8528,7 +8551,9 @@ function finalizePlanCore(
     ? { min: 21600, max: 64800 }
     : methodFamily === 'espresso'
       ? { min: 20, max: 45 }
-      : { min: 75, max: 420 };
+      : methodFamily === 'french_press'
+        ? { min: 240, max: 540 }
+        : { min: 75, max: 420 };
   const calibratedServiceTimeBounds = v60SweetnessServiceCalibration
     ? {
       min: Math.max(methodTimeBounds.min, v60SweetnessServiceCalibration.timeMinSec),
@@ -8596,6 +8621,22 @@ function finalizePlanCore(
         totalTimeSeconds,
         aeropressProductionTarget.finishRangeSeconds[0],
         aeropressProductionTarget.finishRangeSeconds[1],
+      ),
+      methodFamily,
+    );
+  }
+  if (
+    methodFamily === 'french_press'
+    && input.brewMode === 'hot'
+    && !manualPreset
+  ) {
+    const fpStyle = (effectiveDeviceProfile.recipeStyle || 'traditional') as EffectiveFrenchPressStyle;
+    const envelope = resolveFrenchPressProductionEnvelope(fpStyle, doseG);
+    totalTimeSeconds = roundBaristaTimeSeconds(
+      clamp(
+        totalTimeSeconds,
+        envelope.finishSeconds.min,
+        envelope.finishSeconds.max,
       ),
       methodFamily,
     );

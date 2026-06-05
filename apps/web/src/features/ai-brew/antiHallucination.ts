@@ -21,8 +21,8 @@ const ORIGIN_DETAIL_LINE_PATTERN = /^(?:.*\b(?:altitude|ketinggian|farm|estate|r
 const READY_WATER_CLAIM_PATTERN = /\b(?:ideal|excellent|ready[-\s]?brew|brew[-\s]?ready|sangat cocok|sempurna)\b/gi;
 const OFFICIAL_GRINDER_CLAIM_PATTERN = /\b(?:official grinder|official grind|verified grind reference|referensi grinder resmi|setting resmi)\b/gi;
 const EXACT_BREWER_CLAIM_PATTERN = /\b(?:profil exact|exact profile|profil siap)\b/gi;
-const PLACEHOLDER_OR_BROKEN_COPY_PATTERN = /\$(?:\d+|\{)|\b(?:undefined|null|NaN|\[object Object\]|ActionAction|Pressgentle|Stophiss|Programbloom|Valveset|Press35-45 seconds|Stophiss finished)\b|target-profile extraction pressure|deterministic planner numbers, not AI-invented copy|flow matched to french_press/i;
-const BROKEN_MIXED_LANGUAGE_PATTERN = /\b(?:Valveset sebelum seduh|Programbloom then immersion|Serve setelah aliran finish cleanly|Level coffee bed datar|Let partikel coffee|Stir 2-3 times saja)\b/i;
+const PLACEHOLDER_OR_BROKEN_COPY_PATTERN = /\$(?:\d+|\{)|\b(?:undefined|null|NaN|\[object Object\]|ActionAction|Action\s+Action|Pressgentle|Stophiss|Programbloom|Valveset|Press35-45 seconds|Press \$1 seconds|Stophiss finished)\b|target-profile extraction pressure|deterministic planner numbers, not AI-invented copy|flow matched to french_press/i;
+const BROKEN_MIXED_LANGUAGE_PATTERN = /\b(?:Valveset sebelum seduh|Programbloom then immersion|Serve setelah aliran finish cleanly|Level coffee bed datar|Let partikel coffee|Stir 2-3 times saja|stir\s+\d+(?:-\d+)?\s+times\s+saja|pour\s+air\s+\w+|dua\s+times|serve\s+setelah)\b/i;
 
 function normalized(value?: string) {
   return String(value || '').trim().toLowerCase();
@@ -176,7 +176,7 @@ export function validateUserFacingRecipeText(plan: BrewPlan): BrewGuardResult {
   if (plan.methodFamily === 'aeropress' && /\b(drawdown|pour map|bloom pour|bloom phase|let bloom|blooming|programbloom|final pour|flat bed|bed drawdown|center-to-mid|v60)\b/i.test(text)) {
     reasons.push('AeroPress text contains pour-over workflow vocabulary');
   }
-  if (plan.methodFamily === 'french_press' && /\b(drawdown|pour map|bloom pour|final pour|center-to-mid|flow matched to french_press)\b/i.test(text)) {
+  if (plan.methodFamily === 'french_press' && /\b(drawdown|pour map|bloom|final pour|flat bed|center-to-mid|hiss|flow matched to french_press)\b/i.test(text)) {
     reasons.push('French Press text contains pour-over workflow vocabulary');
   }
   if (plan.methodFamily === 'espresso' && /\b(bloom|kettle pour|filter wall|add water like manual brew)\b/i.test(text)) {
@@ -193,7 +193,9 @@ export function validateUserFacingRecipeText(plan: BrewPlan): BrewGuardResult {
     risk: reasons.length === 0 ? 'none' : 'blocked',
     reason: reasons.join('; ') || undefined,
     safeText: reasons.length
-      ? 'Recipe adjusted to keep timing, ratio, and device safety consistent.'
+      ? plan.methodFamily === 'french_press'
+        ? 'Recipe adjusted to keep ratio, steep timing, and French Press workflow consistent.'
+        : 'Recipe adjusted to keep timing, ratio, and device safety consistent.'
       : undefined,
   };
 }
@@ -351,7 +353,7 @@ export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
   if (plan.methodFamily === 'aeropress' && /final pour|drawdown bed|wall rinse/i.test(narrative)) {
     reasons.push('AeroPress narrative contains pour-over workflow wording');
   }
-  if (plan.methodFamily === 'french_press' && /final pour|bloom pour|center-to-mid/i.test(narrative)) {
+  if (plan.methodFamily === 'french_press' && /drawdown|pour map|bloom|final pour|flat bed|center-to-mid|hiss/i.test(narrative)) {
     reasons.push('French Press narrative contains pour-over workflow wording');
   }
   if (plan.methodFamily === 'moka_pot' && /bloom|final pour|center-to-mid|kettle pour/i.test(narrative)) {

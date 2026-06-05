@@ -28,13 +28,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright Chromium
-        run: npx playwright install chromium
+      - name: Verify system Chrome
+        run: google-chrome --version
 
       - name: Run release verification
         run: npm run release:verify
         env:
           CI: "1"
+          PLAYWRIGHT_USE_SYSTEM_CHROME: "1"
 
   final-production-gate:
     name: Final Production Gate

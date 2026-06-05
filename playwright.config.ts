@@ -4,6 +4,8 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL || process.env.BASE_URL || 'http
 const shouldUseLiveAi = String(process.env.LIVE_E2E || '').trim() === '1';
 const shouldStartWebServer = !process.env.PLAYWRIGHT_BASE_URL && !process.env.BASE_URL;
 const shouldReuseExistingServer = String(process.env.PLAYWRIGHT_REUSE_SERVER || '').trim() === '1' && !process.env.CI;
+const shouldUseSystemChrome = String(process.env.PLAYWRIGHT_USE_SYSTEM_CHROME || '').trim() === '1';
+const systemChrome = shouldUseSystemChrome ? { channel: 'chrome' as const } : {};
 
 export default defineConfig({
   testDir: './tests',
@@ -43,7 +45,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], ...systemChrome },
     },
     {
       name: 'firefox',
@@ -55,7 +57,7 @@ export default defineConfig({
     },
     {
       name: 'Mobile Chrome',
-      use: { ...devices['Pixel 7'] },
+      use: { ...devices['Pixel 7'], ...systemChrome },
     },
     {
       name: 'Mobile Safari',

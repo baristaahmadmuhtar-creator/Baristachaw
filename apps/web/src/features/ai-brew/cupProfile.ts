@@ -620,7 +620,9 @@ export function buildAiBrewReadinessScores(plan: BrewPlan): AiBrewReadinessScore
     if (plan.waterClassification === 'low_mineral_clarity') return 72;
     if (plan.waterMineralDerivation === 'estimated_from_community_profile') return 78;
     if (plan.waterMineralDerivation === 'estimated_from_classification') return 64;
+    if (plan.waterClassification === 'moderate_upper_buffered') return 82;
     if (plan.waterClassification === 'high_buffer' || plan.waterClassification === 'alkaline_caution') return 76;
+    if (plan.waterClassification === 'hard_mineral' || plan.waterClassification === 'high_tds') return 72;
     if (plan.waterMineralDerivation === 'manual') return 88;
     return 94;
   })();

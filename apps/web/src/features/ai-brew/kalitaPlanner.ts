@@ -32,7 +32,10 @@ export function resolveKalitaPlanSelection(params: {
   doseG: number;
 }): KalitaPlanSelection {
   const { input, profile, doseG } = params;
+  const targetId = params.targetProfile?.id || '';
   const style = input.kalitaWaveStyle || 'auto';
+  const isLargeWaveProfile = /(^|[_\s-])185($|[_\s-])/i.test(`${profile.id} ${profile.label}`) || doseG >= 18;
+  const largeWaveTimeDeltaSec = isLargeWaveProfile && targetId !== 'more_body' && targetId !== 'dense_comforting' ? 20 : 0;
   
   // Resolve active style
   let activeStyle: KalitaWaveRecipeStyle = style;
@@ -59,6 +62,13 @@ export function resolveKalitaPlanSelection(params: {
     case 'traditional_flat_three':
       adjustedProfile.ratioDelta = 0.0;
       adjustedProfile.tempDeltaC = 0.0;
+      adjustedProfile.brewTimeDeltaSec = (targetId === 'more_sweetness'
+        ? -25
+        : targetId === 'more_acidity' || targetId === 'floral_transparent'
+          ? -35
+          : targetId === 'more_body' || targetId === 'dense_comforting'
+            ? 15
+            : 0) + largeWaveTimeDeltaSec;
       adjustedProfile.grindBias = 'same';
       adjustedProfile.steps = [
         {

@@ -18,6 +18,7 @@ import {
 } from './catalog.ts';
 import {
   formatAiBrewTime,
+  formatAiBrewTimeForLanguage,
   isIndonesianAiBrewLanguage,
   localizeAiBrewDynamicText,
   localizeAiBrewStepLabel,
@@ -1171,21 +1172,39 @@ function parseOptionalNumber(label: string, value: string, min: number, max: num
   return parsed;
 }
 
-function resolveTargetWaterOverrideBounds(methodFamily: AiBrewMethodFamily, doseG: number, ratioLowerBound: number, ratioUpperBound: number) {
+function resolveTargetWaterOverrideBounds(methodFamily: AiBrewMethodFamily, doseG: number, ratioLowerBound: number, ratioUpperBound: number, brewMode: 'hot' | 'iced' = 'hot') {
   const hardLimits = TARGET_WATER_METHOD_LIMITS[methodFamily];
+  if (methodFamily === 'french_press') {
+    const min = Math.ceil(Math.max(hardLimits.min, doseG * 12));
+    const max = Math.floor(Math.min(hardLimits.max, doseG * 17));
+    return { min, max: Math.max(min, max) };
+  }
+  if (brewMode === 'iced') {
+    const finalRatioMin = methodFamily === 'espresso' ? ratioLowerBound : 12;
+    const finalRatioMax = methodFamily === 'espresso' ? ratioUpperBound : 18;
+    const min = Math.ceil(Math.max(hardLimits.min, doseG * finalRatioMin));
+    const max = Math.floor(Math.min(hardLimits.max, doseG * finalRatioMax));
+    return { min, max: Math.max(min, max) };
+  }
   const min = Math.ceil(Math.max(hardLimits.min, doseG * ratioLowerBound));
   const max = Math.floor(Math.min(hardLimits.max, doseG * ratioUpperBound));
   return { min, max: Math.max(min, max) };
 }
 
 function formatTime(totalSeconds: number) {
+  const safeSeconds = Math.max(0, Math.round(totalSeconds));
+  if (safeSeconds >= 3600) {
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
   return formatAiBrewTime(totalSeconds);
 }
 
 function formatBaristaRatio(value: number) {
   if (!Number.isFinite(value)) return '--';
   const rounded = Math.round(value * 10) / 10;
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+  return rounded.toFixed(1);
 }
 
 function formatBaristaTemperature(value: number) {
@@ -1551,6 +1570,16 @@ function buildAdaptiveStepStartSeconds(
   const count = profile.steps.length;
   if (count === 0) return [] as number[];
   if (count === 1) return [0];
+  if (
+    context.methodFamily === 'hario_switch'
+    && (
+      context.recipeStyle === 'immersion_sweet'
+      || context.recipeStyle === 'immersion_heavy_body'
+      || context.recipeStyle === 'mugen_everyday_hybrid'
+    )
+  ) {
+    return profile.steps.map((step, index) => Math.max(index === 0 ? 0 : 10 * index, Math.round(step.startSeconds)));
+  }
 
   const minGapSeconds = 10;
   const intentForFinalWindow = resolveContextTargetIntent(context);
@@ -4511,7 +4540,20 @@ function buildExtractionRationale(params: {
   const naturalFermentWarning = isNaturalLikeProcess(undefined, params.input.process, params.input.customProcess)
     ? 'Natural, honey, or ferment-like process: keep agitation gentle and change one variable after tasting.'
     : undefined;
-  const genericTasteWarning = 'Treat this as a production starting recipe: validate aroma, sweetness, bitterness, and drawdown before changing numbers.';
+  const finishCue = params.methodFamily === 'aeropress'
+    ? 'press finish'
+    : params.methodFamily === 'french_press'
+      ? 'decant'
+      : params.methodFamily === 'hario_switch'
+        ? 'release and drawdown finish'
+        : params.methodFamily === 'espresso'
+          ? 'shot stop'
+          : params.methodFamily === 'moka_pot'
+            ? 'service stop'
+            : params.methodFamily === 'cold_brew'
+              ? 'filtration finish'
+              : 'drawdown';
+  const genericTasteWarning = `This recipe is calculated from the dose, ratio, brew method, bean profile, roast level, grinder baseline, and water condition. Use it as a starting point, then validate aroma, sweetness, bitterness, and ${finishCue} before changing numbers.`;
   const rationaleWarnings = normalizeNoteList(
     params.warnings,
     params.beanCoverage?.warnings || [],
@@ -4526,13 +4568,19 @@ function buildExtractionRationale(params: {
   return {
     ratio: params.iceMl > 0
       ? `Final ratio 1:${formatBaristaRatio(params.finalBeverageRatio)} keeps iced strength after dilution; hot concentrate 1:${formatBaristaRatio(params.hotExtractionRatio)} extracts with ${hotOrTotalWater}.`
-      : `Brew ratio 1:${formatBaristaRatio(params.recommendedRatio)} balances ${params.targetProfileLabel} with ${params.processLabel} process and ${params.input.roastLevel} roast solubility.`,
-    temperature: `${formatBaristaTemperature(params.waterTempC)}C is selected from roast, process, water minerals, and target-profile extraction pressure.`,
+      : `Brew ratio 1:${formatBaristaRatio(params.finalBeverageRatio)} balances ${params.targetProfileLabel} with ${params.processLabel} process and ${params.input.roastLevel} roast solubility.`,
+    temperature: `${formatBaristaTemperature(params.waterTempC)}C is selected from roast, process, water minerals, and target extraction style.`,
     time: `${formatTime(params.totalTimeSeconds)} service window keeps contact time aligned with ${params.methodFamily.replace(/_/g, ' ')} flow and ${params.targetProfileLabel}.`,
     grind: `${params.grindBias === 'finer' ? 'Finer' : params.grindBias === 'coarser' ? 'Coarser' : 'Neutral'} grind bias: ${params.grindRecommendation}`,
-    pour: positivePours.length > 0
-      ? `Pour map uses ${positivePours.length} checkpoints from ${firstPour?.pourVolumeMl || 0} ml to final target ${lastPour?.targetVolumeMl || params.hotWaterMl} ml with ${techniqueSignals.join(', ') || 'controlled flow'} technique.`
-      : `Workflow map uses ${params.steps.length} checkpoints with controlled contact and no extra water outside the deterministic plan.`,
+    pour: params.methodFamily === 'aeropress'
+      ? `AeroPress workflow charges ${params.hotWaterMl} ml in the chamber, then controls stir, steep, press, and serve checkpoints.`
+      : params.methodFamily === 'french_press'
+        ? `French Press workflow charges ${params.hotWaterMl} ml, then controls steep, settle, gentle press, and full decant checkpoints.`
+        : params.methodFamily === 'hario_switch'
+          ? `Switch workflow uses valve state, chamber load, release, and drawdown checkpoints from ${firstPour?.pourVolumeMl || 0} ml to final target ${lastPour?.targetVolumeMl || params.hotWaterMl} ml.`
+          : positivePours.length > 0
+            ? `Pour map uses ${positivePours.length} checkpoints from ${firstPour?.pourVolumeMl || 0} ml to final target ${lastPour?.targetVolumeMl || params.hotWaterMl} ml with ${techniqueSignals.join(', ') || 'controlled flow'} technique.`
+            : `Workflow map uses ${params.steps.length} checkpoints with controlled contact and no extra water outside the deterministic plan.`,
     iceSplit: params.iceMl > 0
       ? `Iced split uses ${params.hotWaterSharePercent}% hot water and ${params.iceSharePercent}% ice: ${params.hotWaterMl} ml hot concentrate over ${params.iceMl} g measured ice.`
       : undefined,
@@ -4705,7 +4753,7 @@ function deriveMethodFamilyAdjustment(params: {
       } else if (params.recipeStyle === 'sweet_immersion') {
         adjustment.ratioDelta = 0.0; // 1:15
         adjustment.tempDeltaC = -1.0; // Cooler temperature
-        adjustment.brewTimeDeltaSec = 60;
+        adjustment.brewTimeDeltaSec = 85;
         adjustment.grindBias = 'coarser';
         adjustment.notes.push('French Press sweet immersion style keeps water temperature lower and avoids late agitation to lock in sweet compounds.');
         adjustment.notes.push('French Press health guard: unfiltered immersion coffee can carry more cafestol and kahweol than paper-filtered coffee; choose Double Filter for lower lipid carryover.');
@@ -4834,7 +4882,7 @@ function deriveTargetFamilyAdjustment(params: {
         adjustment.firstShareDelta = -0.012;
         adjustment.lastShareDelta = 0.012;
       } else if (targetIntent === 'sweetness') {
-        adjustment.ratioDelta = -0.02;
+        adjustment.ratioDelta = params.targetProfileId === 'soft_round' ? -0.16 : -0.02;
         adjustment.tempDeltaC = 0.1;
         adjustment.brewTimeDeltaSec = 4;
         adjustment.middleShift = 0.18;
@@ -5598,7 +5646,7 @@ function resolveMethodFamilyFinalWindowBounds(methodFamily: AiBrewMethodFamily, 
     case 'moka_pot':
       return { min: 30, max: 70 };
     case 'french_press':
-      return { min: 35, max: 90 };
+      return { min: 15, max: 30 };
     case 'siphon':
       return { min: 28, max: 70 };
     case 'cold_brew':
@@ -7330,21 +7378,27 @@ function buildSummary(plan: Pick<
     || (plan.methodFamily === 'aeropress' && Math.abs(plan.hotExtractionRatio - plan.finalBeverageRatio) > 0.05);
   const ratioText = hasSeparateExtractionRatio
     ? `final ratio 1:${formatBaristaRatio(plan.finalBeverageRatio)} with hot concentrate 1:${formatBaristaRatio(plan.hotExtractionRatio)}`
-    : `1:${formatBaristaRatio(plan.recommendedRatio)}`;
+    : `1:${formatBaristaRatio(plan.finalBeverageRatio)}`;
   const tasteTimeSeconds = Math.max(0, Math.round((plan as Partial<BrewPlan>).extractionEndSeconds ?? plan.totalTimeSeconds));
   const timeLabel = plan.methodFamily === 'espresso'
     ? 'shot time'
     : plan.methodFamily === 'cold_brew'
       ? 'cold steep'
-      : plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper'
-        ? 'steep time'
-        : POUR_CONTROL_METHOD_FAMILIES.has(plan.methodFamily)
-          ? plan.brewMode === 'iced'
-            ? 'hot drawdown finish'
-            : 'drawdown finish'
-        : plan.brewMode === 'iced'
-          ? 'hot extraction time'
-          : 'extraction time';
+      : plan.methodFamily === 'french_press'
+        ? 'decant time'
+        : plan.methodFamily === 'clever_dripper'
+          ? 'release finish'
+          : plan.methodFamily === 'aeropress'
+            ? 'press finish'
+            : plan.methodFamily === 'moka_pot'
+              ? 'service stop'
+              : POUR_CONTROL_METHOD_FAMILIES.has(plan.methodFamily)
+                ? plan.brewMode === 'iced'
+                  ? 'hot drawdown finish'
+                  : 'drawdown finish'
+                : plan.brewMode === 'iced'
+                  ? 'hot extraction time'
+                  : 'extraction time';
   const modeLabel = plan.methodFamily === 'cold_brew'
     ? 'Cold brew'
     : plan.methodFamily === 'espresso'
@@ -7353,6 +7407,31 @@ function buildSummary(plan: Pick<
         ? 'Japanese-style iced brew'
         : 'Hot brew';
   return `${modeLabel} plan for ${plan.coffeeName || 'your coffee'} on ${plan.dripper.name}, tuned for ${plan.targetProfileLabel.toLowerCase()} at ${ratioText}, ${formatBaristaTemperature(plan.waterTempC)}°C, ${timeLabel} around ${formatTime(tasteTimeSeconds)}.`;
+}
+
+function buildCanonicalTimeRationale(params: {
+  methodFamily: AiBrewMethodFamily;
+  brewMode: 'hot' | 'iced';
+  totalTimeSeconds: number;
+  targetProfileLabel: string;
+}) {
+  const methodLabel = params.methodFamily.replace(/_/g, ' ');
+  const finishLabel = params.methodFamily === 'aeropress'
+    ? 'press finish'
+    : params.methodFamily === 'french_press'
+      ? 'decant window'
+      : params.methodFamily === 'hario_switch'
+        ? 'release drawdown finish'
+        : params.methodFamily === 'espresso'
+          ? 'shot stop'
+          : params.methodFamily === 'moka_pot'
+            ? 'stop-before-sputter service cue'
+            : params.methodFamily === 'cold_brew'
+              ? 'steep or filtration finish'
+              : params.brewMode === 'iced'
+                ? 'hot drawdown finish'
+                : 'drawdown finish';
+  return `${formatTime(params.totalTimeSeconds)} ${finishLabel} keeps contact time aligned with ${methodLabel} workflow and ${params.targetProfileLabel}.`;
 }
 
 function buildServiceExecutionNote(params: {
@@ -7590,7 +7669,7 @@ function resolveFrenchPressProfileId(
       : targetProfileId === 'more_acidity' || targetProfileId === 'floral_transparent' || targetProfileId === 'fruit_forward'
         ? 'clean_decant'
         : targetProfileId === 'more_body' || targetProfileId === 'dense_comforting'
-          ? 'heavy_concentrate'
+          ? 'sweet_immersion'
           : 'traditional');
   return style === 'traditional' ? 'profile_french_press_hot' : `profile_french_press_${style}_hot`;
 }
@@ -7669,7 +7748,7 @@ function finalizePlanCore(
       profile: deviceSelection.profile,
       targetProfile,
       processEntry,
-      waterClassification: waterBrand?.classification,
+      waterClassification: waterProfile.classification ?? waterBrand?.classification,
       grinderVerification: grinderSetting?.verificationLevel,
       doseG: selectionDoseG,
     })
@@ -7945,7 +8024,7 @@ function finalizePlanCore(
     ratioLowerBound,
     ratioUpperBound,
   ), 2);
-  const targetWaterBounds = resolveTargetWaterOverrideBounds(methodFamily, doseG, ratioLowerBound, ratioUpperBound);
+  const targetWaterBounds = resolveTargetWaterOverrideBounds(methodFamily, doseG, ratioLowerBound, ratioUpperBound, input.brewMode);
   const manualPresetScaledWaterMl = resolveManualPresetScaledWaterMl(
     manualPreset,
     doseG,
@@ -8297,10 +8376,11 @@ function finalizePlanCore(
   const iceMl = input.brewMode === 'iced'
     ? roundTo(totalWaterMl - hotWaterMl, 0)
     : 0;
-  const finalBeverageRatio = recommendedRatio;
-  const hotExtractionRatio = input.brewMode === 'iced' || manualPresetBypassWaterMl > 0
-    ? roundTo(hotWaterMl / doseG, 2)
-    : recommendedRatio;
+  const finalBeverageRatio = roundTo(totalWaterMl / doseG, 2);
+  if (targetWaterOverrideMl !== null || methodFamily === 'batch_brew') {
+    recommendedRatio = finalBeverageRatio;
+  }
+  const hotExtractionRatio = roundTo(hotWaterMl / doseG, 2);
   if (manualPresetBypassWaterMl > 0) {
     precisionOverrideNotes.push(
       `AeroPress bypass split active: brew ${hotWaterMl} ml through the chamber, then add ${manualPresetBypassWaterMl} ml bypass water in the cup after pressing. Final ratio 1:${formatBaristaRatio(finalBeverageRatio)}, concentrate ratio 1:${formatBaristaRatio(hotExtractionRatio)}.`,
@@ -8344,6 +8424,7 @@ function finalizePlanCore(
     methodTempBounds.max,
     v60SweetnessServiceCalibration?.maxTempC ?? baristaTemperatureCalibration.maxTempC ?? methodTempBounds.max,
     targetAwareProcessAdjustment.maxTempC ?? methodTempBounds.max,
+    waterProfile.tempMaxC ?? methodTempBounds.max,
   );
   const waterTempC = roundTo(targetTempOverrideC ?? clamp(
     typeof v60SweetnessServiceCalibration?.tempC === 'number'
@@ -8899,7 +8980,7 @@ function finalizePlanCore(
     waterPresetStatus: waterBrand?.presetStatus,
     waterPublishState: waterBrand?.publishState,
     waterIsBrewReady: waterIsBrewReadyForPlan,
-    waterClassification: waterBrand?.classification,
+    waterClassification: waterProfile.classification ?? waterBrand?.classification,
     waterBrewBlockReason: waterBrand?.brewBlockReason || [],
     waterBrandMarkets: waterBrand?.markets || [],
     waterBrandVerification: waterBrand?.verificationLevel,
@@ -8996,12 +9077,27 @@ function finalizePlanCore(
       ...workflowValidation.warnings,
     ];
   const timeSemantics = deriveBrewPlanTimeSemantics(plan, workflowGuideSteps);
+  const canonicalSummary = buildSummary({
+    ...plan,
+    ...timeSemantics,
+  });
+  const canonicalExtractionRationale = {
+    ...plan.extractionRationale,
+    time: buildCanonicalTimeRationale({
+      methodFamily,
+      brewMode: input.brewMode,
+      totalTimeSeconds: timeSemantics.extractionEndSeconds ?? totalTimeSeconds,
+      targetProfileLabel: targetProfile.label,
+    }),
+  };
 
   const planWithWorkflow = {
     ...plan,
     workflowGuideSteps,
     workflowValidation,
     ...timeSemantics,
+    summary: canonicalSummary,
+    extractionRationale: canonicalExtractionRationale,
     warnings: workflowValidation.passed
       ? plan.warnings
       : normalizeNoteList(plan.warnings, workflowValidation.blockingErrors),
@@ -9443,7 +9539,8 @@ export function applyAiBrewOptimizationPatch(
     hotWaterMl = clampRoundedToIncrement(totalWaterMl * requestedShare, lowerHotWaterMl, upperHotWaterMl, volumeIncrementMl);
   }
   const iceMl = plan.brewMode === 'iced' ? roundTo(totalWaterMl - hotWaterMl, 0) : 0;
-  const hotExtractionRatio = plan.brewMode === 'iced' ? roundTo(hotWaterMl / plan.doseG, 2) : nextRatio;
+  const finalBeverageRatio = roundTo(totalWaterMl / plan.doseG, 2);
+  const hotExtractionRatio = roundTo(hotWaterMl / plan.doseG, 2);
   const hotWaterSharePercent = roundTo(totalWaterMl > 0 ? (hotWaterMl / totalWaterMl) * 100 : 100, 0);
   const iceSharePercent = roundTo(totalWaterMl > 0 ? (iceMl / totalWaterMl) * 100 : 0, 0);
 
@@ -9486,8 +9583,8 @@ export function applyAiBrewOptimizationPatch(
     estimateCupOutputMl(totalWaterMl, plan.doseG, plan.brewMode),
     plan.methodFamily,
   );
-  const baseGuardrails = validateBrewInputs({ method, doseG: plan.doseG, waterMl: totalWaterMl, ratio: nextRatio }, { roastLevel: plan.roastLevel });
-  const baseConformance = evaluateConformance({ method, doseG: plan.doseG, waterMl: totalWaterMl, ratio: nextRatio }, { roastLevel: plan.roastLevel });
+  const baseGuardrails = validateBrewInputs({ method, doseG: plan.doseG, waterMl: totalWaterMl, ratio: finalBeverageRatio }, { roastLevel: plan.roastLevel });
+  const baseConformance = evaluateConformance({ method, doseG: plan.doseG, waterMl: totalWaterMl, ratio: finalBeverageRatio }, { roastLevel: plan.roastLevel });
   const optimizationReason = patch.reason?.trim().slice(0, 220);
   const grindGuidance = sanitizeOptimizationGrindGuidance(patch.grindGuidance, plan);
   const warnings = normalizeNoteList(plan.warnings, baseGuardrails.warnings);
@@ -9507,8 +9604,8 @@ export function applyAiBrewOptimizationPatch(
   const extractionRationale = {
     ...plan.extractionRationale,
     ratio: plan.brewMode === 'iced'
-      ? `Final ratio 1:${formatBaristaRatio(nextRatio)} keeps iced strength after dilution; hot concentrate 1:${formatBaristaRatio(hotExtractionRatio)} extracts with ${hotWaterMl} ml hot water into ${iceMl} g ice.`
-      : `Brew ratio 1:${formatBaristaRatio(nextRatio)} remains inside optimizer guardrails for ${plan.targetProfileLabel} and ${plan.roastLevel} roast solubility.`,
+      ? `Final ratio 1:${formatBaristaRatio(finalBeverageRatio)} keeps iced strength after dilution; hot concentrate 1:${formatBaristaRatio(hotExtractionRatio)} extracts with ${hotWaterMl} ml hot water into ${iceMl} g ice.`
+      : `Brew ratio 1:${formatBaristaRatio(finalBeverageRatio)} remains inside optimizer guardrails for ${plan.targetProfileLabel} and ${plan.roastLevel} roast solubility.`,
     temperature: `${formatBaristaTemperature(waterTempC)}C remains inside optimizer guardrails and must be validated by taste before further pressure changes.`,
     time: `${formatTime(totalTimeSeconds)} service window remains inside optimizer guardrails for ${plan.methodFamily.replace(/_/g, ' ')} flow.`,
     pour: positivePourSteps.length > 0
@@ -9536,7 +9633,7 @@ export function applyAiBrewOptimizationPatch(
     hotWaterMl,
     iceMl,
     recommendedRatio: nextRatio,
-    finalBeverageRatio: nextRatio,
+    finalBeverageRatio,
     hotExtractionRatio,
     hotWaterSharePercent,
     iceSharePercent,
@@ -9552,7 +9649,7 @@ export function applyAiBrewOptimizationPatch(
       dripper: plan.dripper,
       targetProfileLabel: plan.targetProfileLabel,
       recommendedRatio: nextRatio,
-      finalBeverageRatio: nextRatio,
+      finalBeverageRatio,
       hotExtractionRatio,
       waterTempC,
       totalTimeSeconds,
@@ -10120,11 +10217,12 @@ export function buildLocalizedPlanRecipeDescription(plan: BrewPlan, locale?: str
 
 export function buildLocalizedPlanRecipeSteps(plan: BrewPlan, locale?: string) {
   const id = isIndonesianLocale(locale);
-  return plan.steps.map((step) =>
-    id
-      ? `${localizeAiBrewStepLabel(step.label, locale)} (${formatTime(step.startSeconds)}): ${buildPlanRecipeStepAction(step, locale, plan)}. ${localizeAiBrewDynamicText(step.hybridInstruction || step.note, locale)}`
-      : `${localizeAiBrewStepLabel(step.label, locale)} (${formatTime(step.startSeconds)}): ${buildPlanRecipeStepAction(step, locale, plan)}. ${localizeAiBrewDynamicText(step.hybridInstruction || step.note, locale)}`
-  );
+  return plan.steps.map((step) => {
+    const stepTime = formatAiBrewTimeForLanguage(step.startSeconds, locale);
+    return id
+      ? `${localizeAiBrewStepLabel(step.label, locale)} (${stepTime}): ${buildPlanRecipeStepAction(step, locale, plan)}. ${localizeAiBrewDynamicText(step.hybridInstruction || step.note, locale)}`
+      : `${localizeAiBrewStepLabel(step.label, locale)} (${stepTime}): ${buildPlanRecipeStepAction(step, locale, plan)}. ${localizeAiBrewDynamicText(step.hybridInstruction || step.note, locale)}`;
+  });
 }
 
 export function buildBrewPlanRecipeSignature(plan: Pick<

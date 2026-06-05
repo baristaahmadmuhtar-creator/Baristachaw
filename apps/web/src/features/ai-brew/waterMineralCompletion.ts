@@ -24,6 +24,13 @@ const CLASSIFICATION_BASELINES: Record<WaterClassification, {
   alkalinityPpm: number;
 }> = {
   balanced: { tdsPpm: 105, hardnessPpm: 58, alkalinityPpm: 42 },
+  low_mineral: { tdsPpm: 28, hardnessPpm: 20, alkalinityPpm: 16 },
+  soft_low_buffer: { tdsPpm: 65, hardnessPpm: 32, alkalinityPpm: 24 },
+  moderate: { tdsPpm: 110, hardnessPpm: 58, alkalinityPpm: 42 },
+  moderate_upper_buffered: { tdsPpm: 130, hardnessPpm: 62, alkalinityPpm: 62 },
+  hard_mineral: { tdsPpm: 190, hardnessPpm: 125, alkalinityPpm: 70 },
+  high_tds: { tdsPpm: 240, hardnessPpm: 95, alkalinityPpm: 75 },
+  blocked_unsuitable: { tdsPpm: 300, hardnessPpm: 160, alkalinityPpm: 130 },
   soft_balanced: { tdsPpm: 90, hardnessPpm: 48, alkalinityPpm: 34 },
   body_builder: { tdsPpm: 120, hardnessPpm: 70, alkalinityPpm: 48 },
   high_buffer: { tdsPpm: 145, hardnessPpm: 58, alkalinityPpm: 82 },

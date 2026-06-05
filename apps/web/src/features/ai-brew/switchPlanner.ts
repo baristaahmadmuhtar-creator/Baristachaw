@@ -430,7 +430,7 @@ function switchTechniqueForIntent(intent: SwitchTasteIntent, presetId: SwitchPub
       pourPath: 'center_to_mid',
       pourHeight: 'low',
       agitationLevel: 'minimal',
-      pourStyle: 'clean low-flow center-to-mid',
+      pourStyle: 'clean low-flow valve-open stream',
     };
   }
   if (intent === 'body' || intent === 'dense' || presetId === 'immersion_heavy_body') {
@@ -448,7 +448,7 @@ function switchTechniqueForIntent(intent: SwitchTasteIntent, presetId: SwitchPub
       pourPath: 'center_to_mid',
       pourHeight: 'low',
       agitationLevel: 'low',
-      pourStyle: 'gentle center-to-mid pour',
+      pourStyle: 'gentle valve-open stream',
     };
   }
   return {
@@ -456,7 +456,7 @@ function switchTechniqueForIntent(intent: SwitchTasteIntent, presetId: SwitchPub
     pourPath: 'center_to_mid',
     pourHeight: 'low',
     agitationLevel: 'low',
-    pourStyle: 'balanced center-to-mid pour',
+    pourStyle: 'balanced valve-open stream',
   };
 }
 
@@ -705,7 +705,7 @@ function fullImmersionSteps(preset: SwitchPublicPreset, taste: SwitchTasteProgra
       label: 'Serve',
       kind: 'serve',
       share: 0,
-      startSeconds: taste.releaseSeconds + 55,
+      startSeconds: taste.releaseSeconds + 85,
       note: 'Swirl the server 5-8 seconds to integrate, then serve. Note if body starts tasting muddy.',
       valveState: 'open',
       chamberState: 'served',
@@ -767,7 +767,7 @@ function balancedHybridSteps(preset: SwitchPublicPreset, taste: SwitchTasteProgr
         kind: 'pour',
         share: shareFromMl(openFinishMl, hotReferenceMl),
         startSeconds: taste.releaseSeconds + 35,
-        note: 'Valve open. Complete the target with a steady center-to-mid pour, avoiding heavy wall-rinse.',
+        note: 'Valve open. Complete the target with a steady open-flow stream, avoiding heavy wall-rinse.',
         valveState: 'open',
         chamberState: 'percolation',
         switchProgramme: programme,

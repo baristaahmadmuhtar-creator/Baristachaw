@@ -528,6 +528,12 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/^No bean-profile modifier active\.$/i, 'Belum ada modifier profil bean yang aktif.')
     .replace(/^Manual mineral input is active for this brew plan\.$/i, 'Input mineral manual aktif untuk brew plan ini.')
     .replace(/^Low-TDS water may need a touch more thermal energy\.$/i, 'Air dengan TDS rendah mungkin butuh sedikit tambahan energi panas.')
+    .replace(/^Add water in stages and make sure the coarse bed is fully wet before the long steep starts\.$/i, 'Masukkan air bertahap sampai seluruh bubuk kasar basah merata sebelum rendam panjang dimulai.')
+    .replace(/^Leave the vessel covered at the planned temperature; strength comes from time, not stirring\.$/i, 'Tutup wadah sesuai suhu rencana; kekuatan rasa dibangun dari waktu rendam, bukan dari adukan berulang.')
+    .replace(/^Separate the concentrate from the grounds first, then dilute or serve over ice after the extraction is stopped\.$/i, 'Pisahkan konsentrat dari ampas terlebih dulu, lalu dilusi atau sajikan di atas es setelah ekstraksi berhenti.')
+    .replace(/^Filter cleanly first, then dilute or serve only after the grounds are separated\.$/i, 'Saring sampai bersih terlebih dulu, lalu dilusi atau sajikan hanya setelah ampas terpisah.')
+    .replace(/^Filter cleanly\.$/i, 'Saring sampai bersih.')
+    .replace(/^This lighter dose needs cleaner contact and shorter idle gaps between checkpoints\.$/i, 'Dosis yang lebih ringan butuh kontak lebih rapi dan jeda antartahap yang tidak terlalu panjang.')
     .replace(/^Higher-TDS water can read fuller and heavier with the same brew settings\.$/i, 'Air dengan TDS lebih tinggi bisa terasa lebih penuh dan berat pada setting seduh yang sama.')
     .replace(/^Water hardness is below the recommended band\.$/i, 'Hardness air berada di bawah rentang rekomendasi.')
     .replace(/^Water hardness is above the recommended band\.$/i, 'Hardness air berada di atas rentang rekomendasi.')
@@ -1345,7 +1351,7 @@ export function localizeAiBrewSummary(plan: Pick<
         ? 'Ice brew'
         : 'Hot brew';
   if (!isIndonesianAiBrewLanguage(language)) {
-    return `${englishModeLabel} plan for ${plan.coffeeName || 'your coffee'} on ${plan.dripper.name}, tuned for ${plan.targetProfileLabel.toLowerCase()} at ${englishRatioText}, ${formatBaristaTemperature(plan.waterTempC)}°C, ${englishTimeLabel} around ${formatAiBrewTime(tasteTimeSeconds)}.`;
+    return `${englishModeLabel} plan for ${plan.coffeeName || 'your coffee'} on ${plan.dripper.name}, tuned for ${plan.targetProfileLabel.toLowerCase()} at ${englishRatioText}, ${formatBaristaTemperature(plan.waterTempC)}°C, ${englishTimeLabel} around ${formatAiBrewTimeForLanguage(tasteTimeSeconds, language)}.`;
   }
 
   const coffeeName = plan.coffeeName || 'kopi ini';
@@ -1360,7 +1366,7 @@ export function localizeAiBrewSummary(plan: Pick<
       : plan.brewMode === 'iced'
         ? 'Plan seduh es'
         : 'Plan seduh panas';
-  return `${modeLabel} untuk ${coffeeName} dengan ${plan.dripper.name}, disetel untuk profil ${target} pada ${ratioText}, ${formatBaristaTemperature(plan.waterTempC)}°C, ${indonesianTimeLabel} sekitar ${formatAiBrewTime(tasteTimeSeconds)}.`;
+  return `${modeLabel} untuk ${coffeeName} dengan ${plan.dripper.name}, disetel untuk profil ${target} pada ${ratioText}, ${formatBaristaTemperature(plan.waterTempC)}°C, ${indonesianTimeLabel} sekitar ${formatAiBrewTimeForLanguage(tasteTimeSeconds, language)}.`;
 }
 
 export function formatAiBrewTime(totalSeconds: number) {
@@ -1373,4 +1379,15 @@ export function formatAiBrewTime(totalSeconds: number) {
   const minutes = Math.floor(safeSeconds / 60);
   const seconds = safeSeconds % 60;
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+export function formatAiBrewTimeForLanguage(totalSeconds: number, language?: string) {
+  const safeSeconds = Math.max(0, Math.round(totalSeconds));
+  const isEnglish = String(language || '').toLowerCase().startsWith('en');
+  if (isEnglish && safeSeconds >= 3600) {
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
+  return formatAiBrewTime(safeSeconds);
 }

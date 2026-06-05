@@ -187,8 +187,8 @@ const EASY_EXTRACTION_CONFLICT_PATTERN = /\b(extend(?:ed)?\s+contact|slow(?:er)?
 const SERVICE_PATTERN_GENERIC_PATTERN = /\b(default|standard|generic|flexible|simple)\s+(style|pattern)\b/i;
 const FLAT_BED_METHODS = new Set<BrewPlan['methodFamily']>(['kalita_wave', 'april', 'melitta']);
 const POUR_OVER_METHODS = new Set<BrewPlan['methodFamily']>(['v60', 'chemex', 'kalita_wave', 'origami', 'april', 'melitta', 'kono']);
-const RELEASE_HARDWARE_METHODS = new Set<BrewPlan['methodFamily']>(['clever_dripper', 'aeropress', 'french_press']);
-const IMMERSION_WORKFLOW_METHODS = new Set<BrewPlan['methodFamily']>(['clever_dripper', 'french_press', 'aeropress', 'siphon', 'cold_brew']);
+const RELEASE_HARDWARE_METHODS = new Set<BrewPlan['methodFamily']>(['hario_switch', 'clever_dripper', 'aeropress', 'french_press']);
+const IMMERSION_WORKFLOW_METHODS = new Set<BrewPlan['methodFamily']>(['hario_switch', 'clever_dripper', 'french_press', 'aeropress', 'siphon', 'cold_brew']);
 const MANUAL_POUR_OVER_CONFLICT_PATTERN = /\b(concentric|circle|spiral|ring\s+pour|gooseneck\s+circle|kettle\s+circle)\b/i;
 const METHOD_CUE_PATTERNS: Partial<Record<BrewPlan['methodFamily'], RegExp>> = {
   espresso: /\b(espresso|shot|yield|extract|flow|pressure|pump|stop)\b/i,
@@ -1922,14 +1922,22 @@ function validateStepPhaseControl(plan: BrewPlan, mode: AiBrewNarrativeMode, nor
     }
   }
 }
-function validateStepPhaseIntentConsistency(mode: AiBrewNarrativeMode, normalized: string, errors: string[]) {
+function validateStepPhaseIntentConsistency(plan: BrewPlan, mode: AiBrewNarrativeMode, normalized: string, errors: string[]) {
   if (mode === 'generate') return;
   const stepLines = getStepSectionLines(mode, normalized);
   if (stepLines.length < 2) return;
   const firstLine = stepLines[0];
   if (HARD_FINAL_PHASE_CUE_PATTERN.test(firstLine)) {
+    if (
+      plan.methodFamily === 'hario_switch'
+      && /\b(?:valve\s+closed|closed\s+valve|katup\s+tertutup|closed\s+chamber|chamber\s+load)\b/i.test(firstLine)
+      && !/\b(?:release|drawdown|serve|finish|final|open\s+valve|katup\s+dibuka)\b/i.test(firstLine)
+    ) {
+      // Valve-closed is a valid Switch entry state, not a closure-phase instruction.
+    } else {
     errors.push('Step 1 contains closure-phase wording (finish/final/drawdown/release) that conflicts with entry intent.');
     return;
+    }
   }
   const finalLine = stepLines[stepLines.length - 1];
   if (HARD_ENTRY_PHASE_CUE_PATTERN.test(finalLine)) {
@@ -1942,6 +1950,13 @@ function validateStepPhaseIntentConsistency(mode: AiBrewNarrativeMode, normalize
     const hasHardEntryCue = HARD_ENTRY_PHASE_CUE_PATTERN.test(line);
     const hasHardFinalCue = HARD_FINAL_PHASE_CUE_PATTERN.test(line);
     const hasMidCue = MID_PHASE_CUE_PATTERN.test(line);
+    if (
+      plan.methodFamily === 'hario_switch'
+      && hasHardFinalCue
+      && /\b(?:release|open\s+valve|valve\s+open|katup\s+dibuka|drawdown)\b/i.test(line)
+    ) {
+      continue;
+    }
     if ((hasHardEntryCue || hasHardFinalCue) && !hasMidCue) {
       errors.push('Middle step drifts from cadence-flow intent; keep middle steps focused on mid-phase control.');
       return;
@@ -2207,6 +2222,13 @@ function validateMethodWorkflowConstraints(plan: BrewPlan, mode: AiBrewNarrative
   if (plan.methodFamily === 'clever_dripper') {
     if (PERCOLATION_WORKFLOW_PATTERN.test(stepText)) {
       errors.push('Clever Dripper workflow must not rely on cone pulse/concentric pour language.');
+    }
+    return;
+  }
+
+  if (plan.methodFamily === 'hario_switch') {
+    if (!/\b(?:valve|release|chamber|closed|open|switch)\b/i.test(stepText)) {
+      errors.push('Hario Switch workflow must include valve, chamber, or release control cues.');
     }
     return;
   }
@@ -2833,7 +2855,7 @@ export function validateAiNarrative(plan: BrewPlan, mode: AiBrewNarrativeMode, r
   validateStepActionDiversity(plan, mode, normalized, errors);
   validateStepHoldDurations(plan, mode, normalized, errors);
   validateStepPhaseControl(plan, mode, normalized, errors);
-  validateStepPhaseIntentConsistency(mode, normalized, errors);
+  validateStepPhaseIntentConsistency(plan, mode, normalized, errors);
   validateStepDeterminismLanguage(mode, normalized, errors);
   validateStepDilutionInstructions(mode, normalized, errors);
   validateStepUnsupportedHardwareInstructions(plan, mode, normalized, errors);

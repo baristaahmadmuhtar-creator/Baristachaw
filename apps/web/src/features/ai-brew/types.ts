@@ -527,6 +527,13 @@ export type DeviceProfileMode = 'exact' | 'derived_template' | 'family_fallback'
 export type GrindSettingMode = 'catalog_reference' | 'derived_baseline';
 export type WaterClassification =
   | 'balanced'
+  | 'low_mineral'
+  | 'soft_low_buffer'
+  | 'moderate'
+  | 'moderate_upper_buffered'
+  | 'hard_mineral'
+  | 'high_tds'
+  | 'blocked_unsuitable'
   | 'zero_mineral_ro'
   | 'low_mineral_clarity'
   | 'demineral_direct_experiment'

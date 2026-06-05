@@ -1,6 +1,7 @@
 import type {
   AiBrewFormState,
   BrewPlan,
+  WaterClassification,
   WaterBrandProfile,
   WaterGuidance,
   WaterMineralInput,
@@ -61,6 +62,102 @@ export function canUseWaterBrandAutofill(waterBrand?: WaterBrandProfile) {
     && minerals.alkalinityPpm >= 0
     && minerals.alkalinityPpm <= 400,
   );
+}
+
+function classifyManualWaterMinerals(params: {
+  tdsPpm: number;
+  hardnessPpm: number;
+  alkalinityPpm: number;
+  brandClassification?: WaterClassification;
+}) {
+  const { tdsPpm, hardnessPpm, alkalinityPpm, brandClassification } = params;
+  if (brandClassification && brandClassification !== 'balanced') {
+    if (brandClassification === 'zero_mineral_ro' || brandClassification === 'demineral_direct_experiment') {
+      return {
+        classification: brandClassification,
+        styleLabel: brandClassification === 'zero_mineral_ro' ? 'Zero-mineral / RO base water' : 'Demineralized direct-use experiment',
+        warning: 'Zero-mineral or demineralized water is not a full brew-ready profile without mineral context.',
+      };
+    }
+    if (brandClassification === 'low_mineral_clarity') {
+      return {
+        classification: brandClassification,
+        styleLabel: 'Low-mineral clarity water',
+        warning: 'Low-mineral water can taste clean, but body may be thin and acidity may sharpen.',
+      };
+    }
+    if (brandClassification === 'high_buffer' || brandClassification === 'alkaline_caution') {
+      return {
+        classification: brandClassification,
+        styleLabel: brandClassification === 'high_buffer' ? 'High-buffer water' : 'Alkaline caution water',
+        warning: brandClassification === 'high_buffer'
+          ? 'High alkalinity can mute acidity and flatten floral clarity.'
+          : 'Alkaline-labeled water can soften acidity and floral clarity; verify with a meter or taste before treating it as locked.',
+      };
+    }
+  }
+
+  if (tdsPpm <= 10 || (hardnessPpm <= 5 && alkalinityPpm <= 5)) {
+    return {
+      classification: 'zero_mineral_ro' as WaterClassification,
+      styleLabel: 'Zero-mineral / RO base water',
+      warning: 'Zero-mineral water needs remineralization or a verified mineral blend before normal brewing.',
+    };
+  }
+  if (tdsPpm >= 220) {
+    return {
+      classification: 'high_tds' as WaterClassification,
+      styleLabel: 'High-TDS water',
+      warning: 'High-TDS water can make the cup heavy and muted; verify minerals before using it as a baseline.',
+    };
+  }
+  if (hardnessPpm >= 120 && alkalinityPpm >= 85) {
+    return {
+      classification: 'hard_mineral' as WaterClassification,
+      styleLabel: 'Hard mineral / high-buffer water',
+      warning: 'Hard, high-buffer water can mute acidity, flatten florals, and increase scale risk.',
+    };
+  }
+  if (hardnessPpm >= 120) {
+    return {
+      classification: 'hard_mineral' as WaterClassification,
+      styleLabel: 'Hard mineral water',
+      warning: 'High hardness can make the cup heavier and raise scale risk.',
+    };
+  }
+  if (alkalinityPpm >= 85) {
+    return {
+      classification: 'high_buffer' as WaterClassification,
+      styleLabel: 'High-buffer water',
+      warning: 'High alkalinity can mute acidity and flatten floral clarity.',
+    };
+  }
+  if (hardnessPpm < 40 && alkalinityPpm < 30) {
+    return {
+      classification: 'soft_low_buffer' as WaterClassification,
+      styleLabel: 'Soft / low-buffer water',
+      warning: 'Soft, low-buffer water can taste vivid but may sharpen acidity.',
+    };
+  }
+  if (tdsPpm < 30 || hardnessPpm < 25) {
+    return {
+      classification: 'low_mineral' as WaterClassification,
+      styleLabel: 'Low-mineral water',
+      warning: 'Low-mineral water can taste clean, but the cup may be thin without mineral support.',
+    };
+  }
+  if (hardnessPpm >= 40 && hardnessPpm <= 90 && alkalinityPpm >= 55 && alkalinityPpm < 85) {
+    return {
+      classification: 'moderate_upper_buffered' as WaterClassification,
+      styleLabel: 'Moderate mineral / upper-buffered water',
+      warning: 'Upper-buffered water may soften acidity and floral clarity.',
+    };
+  }
+  return {
+    classification: 'moderate' as WaterClassification,
+    styleLabel: 'Moderate mineral water',
+    warning: undefined,
+  };
 }
 
 export function deriveWaterMineralProfile(input: AiBrewFormState, guidance: WaterGuidance, waterBrand?: WaterBrandProfile) {
@@ -161,33 +258,46 @@ export function deriveWaterMineralProfile(input: AiBrewFormState, guidance: Wate
     confidenceNotes.push('Water alkalinity is above the recommended band.');
   }
 
+  const numericClassification = classifyManualWaterMinerals({
+    tdsPpm,
+    hardnessPpm,
+    alkalinityPpm,
+    brandClassification: waterBrand?.classification,
+  });
+  if (numericClassification.warning) {
+    if (numericClassification.classification === 'moderate_upper_buffered') {
+      warnings.push(numericClassification.warning);
+      confidenceNotes.push('Water classification separates moderate hardness from upper-buffered alkalinity.');
+    } else if (!warnings.some((warning) => warning === numericClassification.warning)) {
+      warnings.push(numericClassification.warning);
+    }
+  }
+
   const waterAdvice = resolveWaterAdjustmentAdvice({
     tdsPpm,
     hardnessPpm,
     alkalinityPpm,
-    classification: waterBrand?.classification,
+    classification: numericClassification.classification,
   });
   warnings.push(...waterAdvice.warnings);
   notes.push(...waterAdvice.adjustments);
 
-  let styleLabel = 'Balanced mineral input';
-  if (hardnessPpm < guidance.recommended.hardnessPpm[0] && alkalinityPpm < guidance.recommended.alkalinityPpm[0]) {
-    styleLabel = 'Soft / low buffer water';
-  } else if (hardnessPpm > guidance.recommended.hardnessPpm[1] || alkalinityPpm > guidance.recommended.alkalinityPpm[1]) {
-    styleLabel = 'Hard / buffered water';
-  } else if (tdsPpm < guidance.recommended.tdsPpm[0]) {
-    styleLabel = 'Low-TDS water';
-  } else if (tdsPpm > guidance.recommended.tdsPpm[1]) {
-    styleLabel = 'High-TDS water';
-  }
+  const delicateTarget = /acidity|floral|transparent/i.test(input.targetProfileId || '');
+  const upperBufferedTempMaxC = numericClassification.classification === 'moderate_upper_buffered'
+    || numericClassification.classification === 'high_buffer'
+    || numericClassification.classification === 'alkaline_caution'
+    ? delicateTarget ? 92 : 93.5
+    : undefined;
 
   return {
+    classification: numericClassification.classification,
+    tempMaxC: upperBufferedTempMaxC,
     minerals: {
       tdsPpm,
       hardnessPpm,
       alkalinityPpm,
       notes: input.waterNotes.trim() || undefined,
-      styleLabel,
+      styleLabel: numericClassification.styleLabel,
     } satisfies WaterMineralInput,
     ratioDelta,
     tempDeltaC,

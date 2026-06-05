@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
 import {
+  buildDeterministicNarrative,
+  validateAiNarrative,
+} from '../../apps/web/src/features/ai-brew/aiComposer.ts';
+import {
   applyAiBrewOptimizationPatch,
   buildAiBrewPlan,
   buildAiBrewPlanProgressively,
@@ -1162,7 +1166,15 @@ function assertPlanEnvelope(plan: ReturnType<typeof buildAiBrewPlan>) {
   assert.ok(tasteTimeRangeSeconds[0] <= extractionEndSeconds && tasteTimeRangeSeconds[1] >= extractionEndSeconds);
   assert.ok(plan.timeDisplayMode, `${plan.dripper.name} should expose time display mode`);
   assert.ok(plan.recommendedRatio > 0);
-  assert.equal(plan.finalBeverageRatio, plan.recommendedRatio);
+  assert.equal(
+    Math.round(plan.finalBeverageRatio * 100) / 100,
+    Math.round((plan.totalWaterMl / plan.doseG) * 100) / 100,
+    `${plan.dripper.name} final ratio should match total water / dose`,
+  );
+  assert.ok(
+    Math.abs(plan.finalBeverageRatio - plan.recommendedRatio) <= 0.35 || Boolean(plan.formState.targetWaterMl),
+    `${plan.dripper.name} final ratio should stay close to planner target unless water is explicitly overridden`,
+  );
   assert.ok(plan.hotExtractionRatio > 0);
   assert.ok(plan.hotWaterSharePercent >= 0 && plan.hotWaterSharePercent <= 100);
   assert.ok(plan.iceSharePercent >= 0 && plan.iceSharePercent <= 100);
@@ -4329,6 +4341,248 @@ function explicitNonNumericRange(label: string) {
   return /reference official grinder chart|official stepped settings|manual setting required/i.test(label);
 }
 
+function findProductionDripperId(productionCatalog: AiBrewCatalog, pattern: RegExp) {
+  const match = productionCatalog.drippers.find((entry) => pattern.test(entry.name) || pattern.test(entry.id));
+  assert.ok(match, `Missing production dripper for ${pattern}`);
+  return match.id;
+}
+
+function collectUserFacingRecipeText(plan: ReturnType<typeof buildAiBrewPlan>) {
+  return [
+    plan.summary,
+    plan.grindRecommendation,
+    plan.waterMinerals.styleLabel,
+    plan.extractionRationale.ratio,
+    plan.extractionRationale.temperature,
+    plan.extractionRationale.time,
+    plan.extractionRationale.grind,
+    plan.extractionRationale.pour,
+    ...plan.extractionRationale.warnings,
+    ...plan.notes,
+    ...plan.warnings,
+    ...plan.steps.map((step) => `${step.label} ${step.note} ${step.hybridInstruction || ''}`),
+    ...(plan.workflowGuideSteps || []).map((step) => [
+      step.label,
+      step.primaryText,
+      step.secondaryText || '',
+      ...step.techniqueChips.map((chip) => `${chip.label} ${chip.value}`),
+      ...step.warnings,
+    ].join(' ')),
+    ...(plan.aiNotes ? Object.values(plan.aiNotes).filter(Boolean) : []),
+  ].join('\n');
+}
+
+function assertNoBrokenRecipeText(text: string) {
+  assert.doesNotMatch(text, /\b(?:undefined|null|NaN|\[object Object\])\b/i);
+  assert.doesNotMatch(text, /\$(?:\d+|\{)|ActionAction|Pressgentle|Stophiss|Programbloom|Valveset/i);
+  assert.doesNotMatch(text, /target-profile extraction pressure|deterministic planner numbers, not AI-invented copy/i);
+}
+
+function assertRatioInvariant(plan: ReturnType<typeof buildAiBrewPlan>) {
+  const expectedFinal = Math.round((plan.totalWaterMl / plan.doseG) * 10) / 10;
+  const expectedHot = Math.round((plan.hotWaterMl / plan.doseG) * 10) / 10;
+  assert.equal(Math.round(plan.finalBeverageRatio * 10) / 10, expectedFinal, `${plan.dripper.name} final ratio`);
+  assert.equal(Math.round(plan.hotExtractionRatio * 10) / 10, expectedHot, `${plan.dripper.name} hot extraction ratio`);
+  assert.match(plan.extractionRationale.ratio, new RegExp(`1:${expectedFinal.toFixed(1).replace(/\\.0$/, '(?:\\\\.0)?')}`));
+}
+
+function canonicalFinishSeconds(plan: ReturnType<typeof buildAiBrewPlan>) {
+  return Math.round(plan.extractionEndSeconds ?? plan.totalTimeSeconds);
+}
+
+test('P0 water classification separates moderate hardness from upper-buffered alkalinity', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const base = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Natural Red Catuai QA',
+    doseG: '15',
+    process: 'natural',
+    variety: 'red catuai',
+    roastLevel: 'medium_light' as const,
+    dripperId: findProductionDripperId(productionCatalog, /Hario V60/i),
+    grinderId: 'feima-600n',
+    targetProfileId: 'floral_transparent',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '130',
+    waterHardnessPpm: '62.9',
+    waterAlkalinityPpm: '60.7',
+  };
+
+  const floral = buildAiBrewPlan(base, productionCatalog);
+  assert.match(floral.waterMinerals.styleLabel, /moderate mineral.*upper-buffered|moderate mineral, upper-buffered/i);
+  assert.doesNotMatch(floral.waterMinerals.styleLabel, /hard/i);
+  assert.match([...floral.warnings, ...floral.notes, ...floral.confidenceNotes].join(' '), /upper-buffered|buffer/i);
+  assert.ok(floral.waterTempC >= 90 && floral.waterTempC <= 92.5, `floral upper-buffer temp ${floral.waterTempC}`);
+
+  const sweet = buildAiBrewPlan({
+    ...base,
+    targetProfileId: 'more_sweetness',
+  }, productionCatalog);
+  assert.ok(sweet.waterTempC >= 91 && sweet.waterTempC <= 93.5, `sweet upper-buffer temp ${sweet.waterTempC}`);
+});
+
+test('P0 ratio validator uses canonical total water and hot water math', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const cases = [
+    { label: 'V60 15/230', input: { dripperId: findProductionDripperId(productionCatalog, /Hario V60/i), doseG: '15', targetWaterMl: '230' } },
+    { label: 'Kalita 15/235', input: { dripperId: findProductionDripperId(productionCatalog, /Kalita Wave/i), doseG: '15', targetWaterMl: '235', targetProfileId: 'more_sweetness' } },
+    { label: 'Switch 02 15/230', input: { dripperId: 'hario-switch-02', doseG: '15', targetWaterMl: '230', targetProfileId: 'more_sweetness' } },
+    { label: 'Switch 03 15/230', input: { dripperId: 'hario-switch-03', doseG: '15', targetWaterMl: '230', targetProfileId: 'more_sweetness' } },
+    { label: 'MUGEN x SWITCH 15/230', input: { dripperId: 'mugen-x-switch', doseG: '15', targetWaterMl: '230', targetProfileId: 'more_sweetness' } },
+    { label: 'AeroPress 15/195', input: { dripperId: findProductionDripperId(productionCatalog, /^AeroPress$/i), doseG: '15', targetWaterMl: '195', targetProfileId: 'more_sweetness' } },
+    { label: 'French Press 15/210', input: { dripperId: findProductionDripperId(productionCatalog, /^French Press$/i), doseG: '15', targetWaterMl: '210', targetProfileId: 'more_body' } },
+    { label: 'V60 iced split', input: { dripperId: findProductionDripperId(productionCatalog, /Hario V60/i), brewMode: 'iced' as const, doseG: '15', targetWaterMl: '210', targetProfileId: 'more_sweetness' } },
+  ];
+
+  for (const entry of cases) {
+    const plan = buildAiBrewPlan({
+      ...createDefaultAiBrewFormState(productionCatalog),
+      coffeeName: entry.label,
+      process: 'washed',
+      variety: 'bourbon',
+      roastLevel: 'medium_light',
+      grinderId: '1zpresso-k-ultra',
+      waterMode: 'manual',
+      waterTdsPpm: '95',
+      waterHardnessPpm: '55',
+      waterAlkalinityPpm: '40',
+      ...entry.input,
+    }, productionCatalog);
+    assertRatioInvariant(plan);
+    assert.equal(validateBrewPlanOutput(plan).allowed, true, `${entry.label} guard`);
+  }
+});
+
+test('P0 output guard blocks stale ratios, timing contradictions, placeholders, and method vocabulary leaks', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const aero = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(productionCatalog),
+    dripperId: findProductionDripperId(productionCatalog, /^AeroPress$/i),
+    doseG: '15',
+    targetWaterMl: '195',
+    targetProfileId: 'more_sweetness',
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, productionCatalog);
+
+  assert.equal(validateBrewPlanOutput({ ...aero, finalBeverageRatio: 15.5 }).allowed, false);
+  assert.equal(validateBrewPlanOutput({
+    ...aero,
+    serveStartSeconds: Math.max(0, canonicalFinishSeconds(aero) - 30),
+  }).allowed, false);
+  assert.equal(validateBrewPlanOutput({
+    ...aero,
+    summary: `${aero.summary} $1 seconds undefined ActionAction deterministic planner numbers, not AI-invented copy.`,
+  }).allowed, false);
+  assert.equal(validateBrewPlanOutput({
+    ...aero,
+    workflowGuideSteps: (aero.workflowGuideSteps || []).map((step, index) => index === 0
+      ? { ...step, primaryText: `${step.primaryText} drawdown bed final pour.` }
+      : step),
+  }).allowed, false);
+});
+
+test('P0 rendered output snapshots stay method-specific, ratio-correct, and user-safe', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const base = {
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Production QA Natural Red Catuai',
+    process: 'natural',
+    variety: 'red catuai',
+    roastLevel: 'medium_light' as const,
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual' as const,
+    waterTdsPpm: '130',
+    waterHardnessPpm: '62.9',
+    waterAlkalinityPpm: '60.7',
+  };
+  const cases = [
+    {
+      label: 'Switch 02 hybrid',
+      input: { dripperId: 'hario-switch-02', doseG: '15', targetWaterMl: '230', targetProfileId: 'more_sweetness' },
+      required: /katup|valve|release|open finish|buka/i,
+      forbidden: /generic clever|Pressgentle|Stophiss|Hard \/ buffered|1:15\.5/i,
+      window: [190, 210],
+    },
+    {
+      label: 'Switch 03 full immersion',
+      input: { dripperId: 'hario-switch-03', doseG: '15', targetWaterMl: '230', targetProfileId: 'more_sweetness' },
+      required: /full immersion|immersion|katup|valve|release/i,
+      forbidden: /1:15\.5|Hard \/ buffered/i,
+      window: [200, 225],
+    },
+    {
+      label: 'MUGEN x SWITCH',
+      input: { dripperId: 'mugen-x-switch', doseG: '15', targetWaterMl: '230', targetProfileId: 'more_sweetness' },
+      required: /MUGEN|low-bypass|controlled wall|katup|valve/i,
+      forbidden: /generic hario switch|1:15\.5|Hard \/ buffered/i,
+      window: [205, 235],
+    },
+    {
+      label: 'Kalita sweetness',
+      input: { dripperId: findProductionDripperId(productionCatalog, /Kalita Wave/i), doseG: '15', targetWaterMl: '235', targetProfileId: 'more_sweetness' },
+      required: /flat|hamparan|drawdown|air turun/i,
+      forbidden: /1:15\.6|4:10/,
+      window: [210, 235],
+    },
+    {
+      label: 'AeroPress sweetness',
+      input: { dripperId: findProductionDripperId(productionCatalog, /^AeroPress$/i), doseG: '15', targetWaterMl: '195', targetProfileId: 'more_sweetness' },
+      required: /charge|isi|stir|aduk|steep|rendam|press|tekan|hiss|desis/i,
+      forbidden: /drawdown|final pour|bloom pour|\$1 seconds/i,
+      window: [170, 200],
+    },
+    {
+      label: 'French Press body',
+      input: { dripperId: findProductionDripperId(productionCatalog, /^French Press$/i), doseG: '15', targetWaterMl: '210', targetProfileId: 'more_body' },
+      required: /charge|isi|steep|rendam|settle|endap|press|tekan|decant|tuang pisah/i,
+      forbidden: /drawdown|final pour|bloom pour|1:8/,
+      window: [390, 480],
+    },
+  ];
+
+  for (const entry of cases) {
+    const plan = buildAiBrewPlan({ ...base, ...entry.input }, productionCatalog);
+    const text = collectUserFacingRecipeText(plan);
+    assertRatioInvariant(plan);
+    assertNoBrokenRecipeText(text);
+    assert.match(text, entry.required, `${entry.label} required text`);
+    assert.doesNotMatch(text, entry.forbidden, `${entry.label} forbidden text`);
+    assert.equal(validateBrewPlanOutput(plan).allowed, true, `${entry.label} guard allowed`);
+    assert.ok(canonicalFinishSeconds(plan) >= entry.window[0] && canonicalFinishSeconds(plan) <= entry.window[1], `${entry.label} finish ${canonicalFinishSeconds(plan)}`);
+    if (plan.methodFamily === 'hario_switch') {
+      assert.notEqual(plan.workflowValidation?.status, 'blocked', `${entry.label} workflow`);
+      assert.equal(plan.switchStepValidation?.status, 'safe', `${entry.label} switch safety`);
+    }
+  }
+});
+
+test('P0 AI Composer allows Hario Switch valve and release language but keeps hardware scoped', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  for (const dripperId of ['hario-switch-02', 'hario-switch-03', 'mugen-x-switch']) {
+    const plan = buildAiBrewPlan({
+      ...createDefaultAiBrewFormState(productionCatalog),
+      coffeeName: `AI Composer ${dripperId}`,
+      dripperId,
+      doseG: '15',
+      targetWaterMl: '230',
+      targetProfileId: 'more_sweetness',
+      grinderId: '1zpresso-k-ultra',
+      waterMode: 'manual',
+      waterTdsPpm: '95',
+      waterHardnessPpm: '55',
+      waterAlkalinityPpm: '40',
+    }, productionCatalog);
+    const narrative = buildDeterministicNarrative(plan, 'sequence');
+    const validation = validateAiNarrative(plan, 'sequence', narrative);
+    assert.equal(validation.valid, true, `${dripperId}: ${validation.errors.join('; ')}`);
+    assert.match(narrative, /valve|release|chamber|open/i);
+  }
+});
+
 test('AI Brew process, variety, and origin knowledge catalog stays expanded and provenance-safe', () => {
   type KnowledgeEntry = {
     id: string;
@@ -5446,6 +5700,51 @@ test('expected cup profile and readiness scores reflect target, bean, water, and
   }, catalog);
   assert.match(highBuffer.expectedCupProfile?.warnings.join(' ') || '', /High-buffer water/i);
   assert.ok((highBuffer.readinessScores?.water || 0) < 85);
+
+  const alkalineCatalog = {
+    ...catalog,
+    waterBrands: [
+      ...catalog.waterBrands,
+      {
+        ...catalog.waterBrands[0],
+        id: 'pristine-8-6-plus-id',
+        brandGroupId: 'pristine-8-6-plus',
+        skuLabel: 'Pristine 8.6+ natural mineral water',
+        label: 'Pristine 8.6+',
+        shortLabel: 'Pristine 8.6+',
+        country: 'Indonesia',
+        searchText: 'pristine 8.6 alkaline high buffer floral acidity muted',
+        classification: 'alkaline_caution' as const,
+        classificationLabel: 'Alkaline caution',
+        classificationNote: 'Alkaline profile can soften acidity and mute florals.',
+        classificationCaution: 'Use as a capped-confidence filter starting point.',
+        chemistry: {
+          tdsPpm: 29,
+          hardnessPpm: 20.7,
+          alkalinityPpm: 17.7,
+        },
+        resolvedMinerals: {
+          tdsPpm: 29,
+          hardnessPpm: 20.7,
+          alkalinityPpm: 17.7,
+          derivation: 'estimated_from_community_profile' as const,
+        },
+      },
+    ],
+  };
+  const alkalineCaution = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(alkalineCatalog),
+    coffeeName: 'Pristine alkaline QA',
+    process: 'washed',
+    variety: 'ethiopian_heirloom',
+    waterMode: 'brand',
+    waterBrandId: 'pristine-8-6-plus-id',
+    targetProfileId: 'floral_transparent',
+  }, alkalineCatalog);
+  assert.equal(alkalineCaution.waterClassification, 'alkaline_caution');
+  assert.equal(alkalineCaution.expectedCupProfile?.confidence, 'medium');
+  assert.match(alkalineCaution.waterMinerals.styleLabel, /alkaline caution/i);
+  assert.match(alkalineCaution.expectedCupProfile?.warnings.join(' ') || '', /High-buffer|mute acidity|floral clarity/i);
 
   const zeroMineral = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),
@@ -7068,8 +7367,8 @@ test('French Press Auto Traditional routes targets, dose batches, origins, and h
     { targetProfileId: 'soft_round', expectedStyle: 'sweet_immersion', expectedText: /sweet|manis|gentle|tenang/i },
     { targetProfileId: 'floral_transparent', expectedStyle: 'clean_decant', expectedText: /clean|decant|settle|endap|jernih/i },
     { targetProfileId: 'more_acidity', expectedStyle: 'clean_decant', expectedText: /clean|decant|settle|endap|jernih/i },
-    { targetProfileId: 'more_body', expectedStyle: 'heavy_concentrate', expectedText: /concentrate|konsentrat|body|milk|susu/i },
-    { targetProfileId: 'dense_comforting', expectedStyle: 'heavy_concentrate', expectedText: /concentrate|konsentrat|body|milk|susu/i },
+    { targetProfileId: 'more_body', expectedStyle: 'sweet_immersion', expectedText: /sweet|manis|body|decant|tuang pisah/i },
+    { targetProfileId: 'dense_comforting', expectedStyle: 'sweet_immersion', expectedText: /sweet|manis|body|decant|tuang pisah/i },
     { targetProfileId: 'balance_clean', expectedStyle: 'traditional', expectedText: /traditional|tradisional|immersion|rendam/i },
   ] as const;
 
@@ -7093,6 +7392,20 @@ test('French Press Auto Traditional routes targets, dose batches, origins, and h
     assert.doesNotMatch(text, /\b(final pour|tuang akhir|spiral|drawdown bed|center-to-mid|wall rinse)\b/i);
     assert.doesNotMatch(text, /\b(LDL.*\d+|cholesterol.*\d+|guarantee|menjamin|medical advice|saran medis)\b/i);
   }
+
+  const explicitConcentrate = buildAiBrewPlan({
+    ...base,
+    dripperId: dripper.id,
+    frenchPressStyle: 'heavy_concentrate',
+    targetProfileId: 'more_body',
+    doseG: '50',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '45',
+    waterAlkalinityPpm: '35',
+  }, productionCatalog);
+  assert.equal(explicitConcentrate.recipeStyle, 'heavy_concentrate');
+  assert.match(collectPlanNarrative(explicitConcentrate), /concentrate|konsentrat|body|milk|susu/i);
 
   const batches = [
     { doseG: '5', water: [70, 85], ratio: [14, 16.7], warning: /small batch|minimum dose|rendaman kecil|dosis kecil/i },
@@ -7576,7 +7889,7 @@ test('non-dripper method profiles generate action-safe AI Brew plans without fak
       assert.equal(totalPoured, plan.hotWaterMl);
       assert.equal(plan.steps.at(-1)?.targetVolumeMl, plan.hotWaterMl);
       assert.ok(plan.recommendedRatio > 0);
-      assert.equal(plan.finalBeverageRatio, plan.recommendedRatio);
+      assert.equal(Math.round(plan.finalBeverageRatio * 100) / 100, Math.round((plan.totalWaterMl / plan.doseG) * 100) / 100);
       assert.ok(plan.iceMl === 0);
       if (entry.family === 'cold_brew') {
         assert.ok(plan.waterTempC >= 4 && plan.waterTempC <= 25);
@@ -8203,7 +8516,7 @@ test('buildAiBrewPlan creates a japanese iced plan with split water and derived 
   assert.equal(plan.ratioToolMethodId, 'v60_japanese_iced');
   assert.ok(plan.iceMl > 0);
   assert.ok(plan.hotWaterMl < plan.totalWaterMl);
-  assert.equal(plan.finalBeverageRatio, plan.recommendedRatio);
+  assert.equal(Math.round(plan.finalBeverageRatio * 100) / 100, Math.round((plan.totalWaterMl / plan.doseG) * 100) / 100);
   assert.equal(plan.hotExtractionRatio, Number((plan.hotWaterMl / plan.doseG).toFixed(2)));
   assert.ok(plan.hotExtractionRatio >= 8.8, `Expected hot concentrate >= 1:8.8, got 1:${plan.hotExtractionRatio} (${plan.hotWaterMl} ml / ${plan.doseG} g)`);
   assert.ok(plan.hotExtractionRatio <= 10.8);
@@ -9360,7 +9673,7 @@ test('all supported dripper families stay production-safe across hot and iced fl
         if (brewMode === 'hot') {
           assert.equal(plan.iceMl, 0);
           assert.equal(plan.hotWaterMl, plan.totalWaterMl);
-          assert.equal(plan.hotExtractionRatio, plan.recommendedRatio);
+          assert.equal(plan.hotExtractionRatio, Number((plan.hotWaterMl / plan.doseG).toFixed(2)));
         } else {
           assert.ok(plan.iceMl > 0);
           assert.ok(plan.hotWaterMl < plan.totalWaterMl);

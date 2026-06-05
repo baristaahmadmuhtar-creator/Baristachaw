@@ -5863,7 +5863,7 @@
       "tempDeltaC": -0.2,
       "brewTimeDeltaSec": 20,
       "grindBias": "coarser",
-      "note": "French Press is full immersion: charge, steep, settle, decant. No drawdown or manual pour pulse workflow.",
+      "note": "French Press is full immersion: charge water, steep, settle, press gently, and decant cleanly.",
       "steps": [
         {
           "id": "charge",

@@ -583,7 +583,15 @@ function validatePlanEnvelope(plan: AiBrewPlan, requestedMode: 'hot' | 'iced', w
   if (requestedMode === 'hot') {
     if (plan.brewMode !== 'hot') reasons.push('hot request did not produce hot plan');
     if (plan.iceMl !== 0) reasons.push('hot plan has ice');
-    if (plan.hotWaterMl !== plan.totalWaterMl) reasons.push('hot plan hot water differs from total water');
+    const hotBypassStyle = plan.iceMl === 0
+      && plan.hotWaterMl < plan.totalWaterMl
+      && (
+        plan.methodFamily === 'aeropress'
+        || /bypass|concentrate/i.test(String(plan.recipeStyle || ''))
+      );
+    if (plan.hotWaterMl !== plan.totalWaterMl && !hotBypassStyle) {
+      reasons.push('hot plan hot water differs from total water');
+    }
   }
   if (requestedMode === 'iced' && plan.brewMode === 'iced') {
     if (plan.hotWaterMl + plan.iceMl !== plan.totalWaterMl) reasons.push('iced split does not add to total');

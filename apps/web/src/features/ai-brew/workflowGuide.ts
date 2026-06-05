@@ -1317,6 +1317,7 @@ function buildMokaGuide(plan: BrewPlan): WorkflowGuideStep[] {
   const heat = findKind(plan, 'heat');
   const serve = findKind(plan, 'serve') || plan.steps.at(-1);
   const heatStart = heat?.startSeconds || Math.max(30, Math.round(plan.totalTimeSeconds * 0.25));
+  const stopStart = Math.max(plan.totalTimeSeconds, serve?.startSeconds || 0);
   const styleCopy = buildMokaStyleGuideCopy(plan);
   return stepsSorted([
     operationalStep({
@@ -1362,7 +1363,7 @@ function buildMokaGuide(plan: BrewPlan): WorkflowGuideStep[] {
       id: 'guide_moka_stop',
       label: 'Berhenti sebelum sputter',
       actionType: 'stop',
-      startSeconds: serve?.startSeconds || plan.totalTimeSeconds,
+      startSeconds: stopStart,
       targetVolumeMl: plan.hotWaterMl,
       primaryText: styleCopy.finish,
       techniqueChips: [chip('stop', 'Berhenti', 'sebelum sputter')],

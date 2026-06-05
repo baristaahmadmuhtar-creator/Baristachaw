@@ -39,7 +39,9 @@ function getPlanTasteTimeLabel(plan: BrewPlan, language?: string) {
   const id = isIndonesianAiBrewLanguage(language);
   if (plan.methodFamily === 'espresso') return id ? 'waktu ekstraksi espresso' : 'shot time';
   if (plan.methodFamily === 'cold_brew') return id ? 'rendam dingin' : 'cold steep';
-  if (plan.methodFamily === 'french_press' || plan.methodFamily === 'clever_dripper') return id ? 'waktu rendam' : 'steep time';
+  if (plan.methodFamily === 'french_press') return id ? 'waktu tuang pisah' : 'decant time';
+  if (plan.methodFamily === 'aeropress') return id ? 'waktu selesai tekan' : 'press finish';
+  if (plan.methodFamily === 'clever_dripper') return id ? 'waktu buka katup' : 'release finish';
   if (POUR_OVER_TIME_LABEL_FAMILIES.has(plan.methodFamily)) return id ? 'air turun selesai' : (plan.brewMode === 'iced' ? 'hot drawdown finish' : 'drawdown finish');
   if (plan.brewMode === 'iced') return id ? 'waktu ekstraksi panas' : 'hot extraction time';
   return id ? 'waktu ekstraksi' : 'extraction time';
@@ -180,7 +182,9 @@ function buildRecipeReasoning(
     ];
 
     if (highBufferWater) {
-      reasoning.push(`KH ${plan.waterMinerals.alkalinityPpm} ppm akan menahan acidity, jadi jaga drawdown tuntas dan grind tetap rapi.`);
+      reasoning.push(usesManualDrawdown(plan)
+        ? `KH ${plan.waterMinerals.alkalinityPpm} ppm akan menahan acidity, jadi jaga drawdown tuntas dan grind tetap rapi.`
+        : `KH ${plan.waterMinerals.alkalinityPpm} ppm akan menahan acidity, jadi jaga waktu kontak dan grind tetap rapi.`);
     } else if (softWater) {
       reasoning.push(`GH ${plan.waterMinerals.hardnessPpm} / KH ${plan.waterMinerals.alkalinityPpm} tergolong lunak, jadi clarity cepat muncul tetapi harshness juga lebih cepat terlihat.`);
     } else {
@@ -211,7 +215,9 @@ function buildRecipeReasoning(
   ];
 
   if (highBufferWater) {
-    reasoning.push(`KH ${plan.waterMinerals.alkalinityPpm} ppm will cushion acidity, so keep drawdown complete and grind tidy.`);
+    reasoning.push(usesManualDrawdown(plan)
+      ? `KH ${plan.waterMinerals.alkalinityPpm} ppm will cushion acidity, so keep drawdown complete and grind tidy.`
+      : `KH ${plan.waterMinerals.alkalinityPpm} ppm will cushion acidity, so keep contact time and grind tidy.`);
   } else if (softWater) {
     reasoning.push(`GH ${plan.waterMinerals.hardnessPpm} / KH ${plan.waterMinerals.alkalinityPpm} is soft, so clarity comes fast but harshness shows quickly too.`);
   } else {
@@ -242,8 +248,9 @@ function buildRecipeReasoning(
 }
 
 function buildControlPoints(plan: BrewPlan, language?: string) {
-  const lowerBound = Math.max(plan.totalTimeSeconds - 15, 60);
-  const upperBound = plan.totalTimeSeconds + 15;
+  const tasteTimeSeconds = getPlanTasteTimeSeconds(plan);
+  const lowerBound = Math.max(tasteTimeSeconds - 15, 60);
+  const upperBound = tasteTimeSeconds + 15;
   const methodPoint = (() => {
     if (isIndonesianAiBrewLanguage(language)) {
       switch (plan.methodFamily) {
@@ -288,8 +295,8 @@ function buildControlPoints(plan: BrewPlan, language?: string) {
         return 'Watch yield, flow, and shot stop cue; do not add water like a manual filter brew.';
       case 'aeropress':
         return 'Watch steep, stir count, press duration, and stop before forcing the final hiss.';
-      case 'french_press':
-        return 'Watch immersion, fines settling, and decanting; do not look for drawdown or pour pulses.';
+        case 'french_press':
+          return 'Watch immersion, fines settling, and decanting; do not look for pour-over flow cues.';
       case 'moka_pot':
         return 'Watch a level basket, boiler water below the valve, stable heat, and stop before sputter.';
       case 'siphon':

@@ -1929,7 +1929,8 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
     expect(plan.iceMl).toBeGreaterThan(0);
     expect(plan.hotWaterMl).toBeGreaterThan(0);
     expect(plan.hotWaterMl).toBeLessThan(plan.totalWaterMl);
-    expect(plan.finalBeverageRatio).toBe(plan.recommendedRatio);
+    expect(plan.finalBeverageRatio).toBe(Math.round((plan.totalWaterMl / plan.doseG) * 100) / 100);
+    expect(Math.abs(plan.recommendedRatio - plan.finalBeverageRatio)).toBeLessThanOrEqual(0.35);
     expect(plan.hotExtractionRatio).toBeGreaterThanOrEqual(8.7);
     expect(plan.hotExtractionRatio).toBeLessThanOrEqual(10.9);
     expect(plan.steps.length).toBeGreaterThanOrEqual(4);

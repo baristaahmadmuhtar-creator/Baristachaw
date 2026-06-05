@@ -56,6 +56,10 @@ test('keyboard-open contracts reduce page bottom padding and keeps bottom filler
   const pageContainer = page.locator('.page-container').first();
   await expect(pageContainer).toBeVisible();
 
+  // Let the initial viewport sync burst settle before simulating keyboard state.
+  // Otherwise the app's pageshow follow-up can overwrite the synthetic root flag.
+  await page.waitForTimeout(650);
+
   await page.evaluate(() => {
     document.documentElement.dataset.keyboardOpen = 'true';
     document.documentElement.style.setProperty('--safe-bottom', '16px');

@@ -6190,7 +6190,7 @@
       "tempDeltaC": -1.5,
       "brewTimeDeltaSec": -15,
       "grindBias": "finer",
-      "note": "AeroPress standard style: upright charge, 3 stirs, short steep, and steady 25-35 second press through the hiss for a complete balanced cup.",
+      "note": "AeroPress standard style: upright charge, 3 stirs, short steep, and steady 20-30 second press that stops before the dry hiss for a balanced cup.",
       "steps": [
         {
           "id": "charge",
@@ -6222,7 +6222,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 90,
-          "note": "Press steadily for 25-35 seconds and continue through the hiss with light, even force."
+          "note": "Press steadily for 20-30 seconds and stop before the dry hiss with light, even force."
         }
       ],
       "sourceUrls": [
@@ -6286,7 +6286,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 95,
-          "note": "Press 30-40 seconds and continue through the hiss while keeping the cup and chamber aligned."
+          "note": "Press 20-30 seconds and stop before the dry hiss while keeping the cup and chamber aligned."
         }
       ],
       "sourceUrls": [
@@ -6342,7 +6342,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 75,
-          "note": "Press 25-35 seconds, stop before hiss, then dilute in the cup."
+          "note": "Press 20-30 seconds, stop before hiss, then dilute in the cup."
         },
         {
           "id": "serve",
@@ -6414,7 +6414,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 105,
-          "note": "Press 30-40 seconds and continue through the hiss for a complete no-bypass cup."
+          "note": "Press 25-35 seconds and stop before the dry hiss for a complete no-bypass cup."
         }
       ],
       "sourceUrls": [
@@ -6534,7 +6534,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 130,
-          "note": "Press 35-45 seconds and continue through the hiss to carry texture into the cup."
+          "note": "Press 25-35 seconds near the hiss, then stop before the finish turns dry or gritty."
         }
       ],
       "sourceUrls": [

@@ -66,17 +66,17 @@ function getMethodFamilyServiceCue(plan: BrewPlan, language?: string) {
         const style = plan.recipeStyle || 'standard';
         switch (style) {
           case 'inverted':
-            return 'Kunci eksekusi ada di persiapan terbalik, penekan masuk minimal 2 cm, 4x adukan tenang, balikkan mantap, dan tekan stabil.';
+            return 'Kunci eksekusi ada di persiapan terbalik, penekan masuk minimal 2 cm, 4x adukan tenang, balikkan mantap, lalu tekan stabil dan berhenti sebelum desis kering.';
           case 'bypass':
             return 'Kunci eksekusi ada di pembuatan konsentrat pekat, 3x adukan awal, berhenti menekan sebelum desis, lalu tambahkan bypass terukur setelahnya.';
           case 'no_bypass':
-            return 'Kunci eksekusi ada di penyeduhan seluruh air langsung di ruang seduh, 3x adukan lembut, rendam penuh, dan tekan melewati desis.';
+            return 'Kunci eksekusi ada di penyeduhan seluruh air langsung di ruang seduh, 3x adukan lembut, rendam penuh, lalu berhenti sebelum desis kering.';
           case 'bright_clean':
             return 'Kunci eksekusi ada di kertas filter ganda bila tersedia, agitasi rendah dengan 2-3x adukan ringan, dan berhenti menekan sebelum desis pertama.';
           case 'sweet_body':
-            return 'Kunci eksekusi ada di ruang seduh yang sudah hangat, 5x adukan silang untuk tekstur manis, rendam lebih panjang, dan tekan melewati desis.';
+            return 'Kunci eksekusi ada di ruang seduh yang sudah hangat, 5x adukan silang untuk tekstur manis, rendam lebih panjang, lalu tekan mendekati desis tanpa memaksa fines dan pahit masuk ke cangkir.';
           default:
-            return 'Kunci eksekusi ada di rendaman singkat, 3x adukan tenang, tekanan stabil, dan tekan melewati desis.';
+            return 'Kunci eksekusi ada di rendaman singkat, 3x adukan tenang, tekanan stabil, dan berhenti sebelum desis kering.';
         }
       }
       case 'french_press': {
@@ -128,17 +128,17 @@ function getMethodFamilyServiceCue(plan: BrewPlan, language?: string) {
       const style = plan.recipeStyle || 'standard';
       switch (style) {
         case 'inverted':
-          return 'The service pattern depends on inverted assembly, a secure 2 cm plunger safety depth, 4 calm stirs, a stable flip, and pressing through the hiss.';
+          return 'The service pattern depends on inverted assembly, a secure 2 cm plunger safety depth, 4 calm stirs, a stable flip, and stopping before the dry hiss.';
         case 'bypass':
           return 'The service pattern depends on brewing a compact concentrate, 3 initial stirs, stopping the press before the hiss, then diluting with measured bypass water.';
         case 'no_bypass':
-          return 'The service pattern depends on adding all recipe water to the chamber directly, 3 gentle stirs, a complete steep, and pressing through the hiss.';
+          return 'The service pattern depends on adding all recipe water to the chamber directly, 3 gentle stirs, a complete steep, and stopping before the dry hiss.';
         case 'bright_clean':
           return 'The service pattern depends on optional double papers, low agitation with 2-3 light stirs, and stopping the press before the first dry hiss.';
         case 'sweet_body':
-          return 'The service pattern depends on a preheated chamber, 5 cross-stirs to build sweet texture, a longer steep, and pressing through the hiss.';
+          return 'The service pattern depends on a preheated chamber, 5 cross-stirs to build sweet texture, a longer steep, and pressing near the hiss without forcing fines or bitterness into the cup.';
         default:
-          return 'The service pattern depends on a short steep, 3 calm stirs, steady pressing, and pressing through the hiss.';
+          return 'The service pattern depends on a short steep, 3 calm stirs, steady pressing, and stopping before the dry hiss.';
       }
     }
     case 'french_press': {

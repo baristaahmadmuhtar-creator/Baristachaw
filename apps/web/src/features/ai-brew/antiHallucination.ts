@@ -22,7 +22,7 @@ const READY_WATER_CLAIM_PATTERN = /\b(?:ideal|excellent|ready[-\s]?brew|brew[-\s
 const OFFICIAL_GRINDER_CLAIM_PATTERN = /\b(?:official grinder|official grind|verified grind reference|referensi grinder resmi|setting resmi)\b/gi;
 const EXACT_BREWER_CLAIM_PATTERN = /\b(?:profil exact|exact profile|profil siap)\b/gi;
 const PLACEHOLDER_OR_BROKEN_COPY_PATTERN = /\$(?:\d+|\{)|\b(?:undefined|null|NaN|\[object Object\]|ActionAction|Pressgentle|Stophiss|Programbloom|Valveset|Press35-45 seconds|Stophiss finished)\b|target-profile extraction pressure|deterministic planner numbers, not AI-invented copy|flow matched to french_press/i;
-const BROKEN_MIXED_LANGUAGE_PATTERN = /\b(?:Valveset sebelum seduh|Programbloom then immersion|Serve setelah aliran finish cleanly|Level coffee bed datar|Let partikel coffee)\b/i;
+const BROKEN_MIXED_LANGUAGE_PATTERN = /\b(?:Valveset sebelum seduh|Programbloom then immersion|Serve setelah aliran finish cleanly|Level coffee bed datar|Let partikel coffee|Stir 2-3 times saja)\b/i;
 
 function normalized(value?: string) {
   return String(value || '').trim().toLowerCase();
@@ -173,7 +173,7 @@ export function validateUserFacingRecipeText(plan: BrewPlan): BrewGuardResult {
   ) {
     reasons.push('moderate hardness/alkalinity water is mislabeled as hard buffered water');
   }
-  if (plan.methodFamily === 'aeropress' && /\b(drawdown|pour map|bloom pour|final pour|bed drawdown|center-to-mid)\b/i.test(text)) {
+  if (plan.methodFamily === 'aeropress' && /\b(drawdown|pour map|bloom pour|bloom phase|let bloom|blooming|programbloom|final pour|flat bed|bed drawdown|center-to-mid|v60)\b/i.test(text)) {
     reasons.push('AeroPress text contains pour-over workflow vocabulary');
   }
   if (plan.methodFamily === 'french_press' && /\b(drawdown|pour map|bloom pour|final pour|center-to-mid|flow matched to french_press)\b/i.test(text)) {

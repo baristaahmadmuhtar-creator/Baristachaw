@@ -761,9 +761,9 @@ test('ai brew AeroPress styles render bilingual guides and regenerate without st
       processOptionId: 'washed',
       varietyQuery: 'Bourbon',
       varietyPattern: /Bourbon/i,
-      visibleId: /Aduk 3 kali|25-35 detik|desis selesai/i,
-      visibleEn: /Stir 3 times|25-35 seconds|hiss/i,
-      stored: /Aduk 3 kali|25-35 detik|desis selesai/i,
+      visibleId: /Aduk 3 kali|20-30 detik|berhenti sebelum desis/i,
+      visibleEn: /Stir 3 times|20-30 seconds|stop before (?:the )?(?:dry )?hiss/i,
+      stored: /Aduk 3 kali|20-30 detik|berhenti sebelum desis/i,
     },
     {
       style: 'inverted',
@@ -772,9 +772,9 @@ test('ai brew AeroPress styles render bilingual guides and regenerate without st
       processOptionId: 'natural',
       varietyQuery: 'Gesha',
       varietyPattern: /Gesha|Geisha/i,
-      visibleId: /terbalik|Balikkan|30-40 detik/i,
-      visibleEn: /inverted|Flip|30-40 seconds/i,
-      stored: /terbalik|Balikkan|30-40 detik/i,
+      visibleId: /terbalik|Balikkan|20-30 detik|berhenti sebelum desis/i,
+      visibleEn: /inverted|Flip|20-30 seconds|stop before (?:the )?(?:dry )?hiss/i,
+      stored: /terbalik|Balikkan|20-30 detik|berhenti sebelum desis/i,
     },
     {
       style: 'bypass',
@@ -794,9 +794,9 @@ test('ai brew AeroPress styles render bilingual guides and regenerate without st
       processOptionId: 'wet_hulled',
       varietyQuery: 'Catimor',
       varietyPattern: /Catimor|Ateng/i,
-      visibleId: /seluruh air resep|tanpa air bypass tambahan|30-40 detik/i,
-      visibleEn: /all recipe water|without extra bypass water|30-40 seconds/i,
-      stored: /seluruh air resep|tanpa air bypass tambahan|30-40 detik/i,
+      visibleId: /seluruh air resep|tanpa air bypass tambahan|25-35 detik|berhenti sebelum desis/i,
+      visibleEn: /all recipe water|without extra bypass water|25-35 seconds|stop before (?:the )?(?:dry )?hiss/i,
+      stored: /seluruh air resep|tanpa air bypass tambahan|25-35 detik|berhenti sebelum desis/i,
     },
     {
       style: 'bright_clean',
@@ -816,9 +816,9 @@ test('ai brew AeroPress styles render bilingual guides and regenerate without st
       processOptionId: 'natural',
       varietyQuery: 'Bourbon',
       varietyPattern: /Bourbon/i,
-      visibleId: /Aduk 5 kali|35-45 detik|cangkir tebal/i,
-      visibleEn: /Stir 5 times|35-45 seconds|heavy cup/i,
-      stored: /Aduk 5 kali|35-45 detik|cangkir tebal/i,
+      visibleId: /Aduk 5 kali|25-35 detik|mendekati desis|cangkir tebal/i,
+      visibleEn: /Stir 5 times|25-35 seconds|near the hiss|heavy cup/i,
+      stored: /Aduk 5 kali|25-35 detik|mendekati desis|cangkir tebal/i,
     },
   ];
   const languageCases = [
@@ -933,10 +933,13 @@ test('ai brew AeroPress styles render bilingual guides and regenerate without st
     expect(generated.visibleGuideText).toMatch(entry[languageCase.expectedKey]);
     expect(generated.visibleGuideText).not.toMatch(languageCase.leak);
     expect(generated.guideText).toMatch(entry.stored);
-    const allowsCapacityBloom = (generated.plan.steps || []).some((step) => step.id === 'bloom');
+    const allowsCapacityPreWet = (generated.plan.steps || []).some((step) => step.id === 'pre_wet');
     expect(`${generated.visibleGuideText} ${generated.guideText}`).not.toMatch(
-      allowsCapacityBloom ? /final pour|tuang akhir|drawdown bed|center-to-mid/i : /final pour|tuang akhir|drawdown bed|center-to-mid|bloom/i,
+      /final pour|tuang akhir|drawdown|flat bed|V60|pour map|center-to-mid|bloom/i,
     );
+    if (allowsCapacityPreWet) {
+      expect(`${generated.visibleGuideText} ${generated.guideText}`).toMatch(/Pra-basah|Pre-wet/i);
+    }
     if (entry.style !== 'bypass') {
       expect(`${generated.visibleGuideText} ${generated.guideText}`).not.toMatch(entry.forbiddenNonBypass || nonBypassCommand);
     }

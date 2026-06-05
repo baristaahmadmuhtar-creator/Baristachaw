@@ -167,7 +167,7 @@ const AI_BREW_KNOWLEDGE_SEEDS: AiBrewKnowledgeSeed[] = [
     keyword: 'Natural',
     aliases: ['natural', 'dry process', 'raised bed natural', 'dry-process'],
     content:
-      'Knowledge v2 - Natural: sweetness dan aroma buah mudah naik, tetapi muddiness juga cepat muncul; gunakan agitation lebih rendah, bed rapi, dan hindari late pour yang terlalu agresif.',
+      'Knowledge v2 - Natural: rasa manis dan aroma buah mudah naik, tetapi kesan ferment atau keruh juga cepat muncul; gunakan agitasi lebih rendah dan hindari kontak akhir yang terlalu agresif.',
     priority: 79,
   },
   {
@@ -359,7 +359,7 @@ const AI_BREW_KNOWLEDGE_SEEDS: AiBrewKnowledgeSeed[] = [
     keyword: 'AeroPress',
     aliases: ['aeropress', 'aero press'],
     content:
-      'Knowledge v2 - AeroPress: kontrol utama adalah steep, stir count, press pressure, stop-before-hiss, dan bypass/no-bypass; jangan pakai bahasa drawdown V60.',
+      'Knowledge v2 - AeroPress: kontrol utama adalah waktu rendam, jumlah adukan, tekanan saat menekan, titik berhenti sebelum desis, serta bypass/no-bypass; gunakan bahasa charge, stir, steep, press, dan serve.',
     priority: 88,
   },
   {
@@ -541,7 +541,7 @@ function buildUniversalMethodSafetyNote(methodFamily?: AiBrewMethodFamily) {
     case 'moka_pot':
       return 'Knowledge v2 - Universal method safety: untuk Moka Pot, jaga heat dan stop-before-sputter; rasa pahit sering dari fase akhir yang dipaksa, bukan selalu dari grind.';
     case 'aeropress':
-      return 'Knowledge v2 - Universal method safety: untuk AeroPress, steep, stir count, press duration, dan bypass/no-bypass adalah variabel utama; ubah satu saja tiap ronde.';
+      return 'Knowledge v2 - Universal method safety: untuk AeroPress, waktu rendam, jumlah adukan, durasi tekan, dan bypass/no-bypass adalah variabel utama; ubah satu saja tiap ronde.';
     case 'french_press':
       return 'Knowledge v2 - Universal method safety: untuk French Press, kontrol steep, crust break, settle, slow press, dan decant; jangan mengejar clarity dengan logika pour-over.';
     case 'cold_brew':
@@ -578,7 +578,7 @@ function isKnowledgeSeedSafeForMethod(seed: AiBrewKnowledgeSeed, methodFamily?: 
     case 'french_press':
       return !/\b(bloom|drawdown|pour spiral|compact spiral|wall-chasing|dinding filter|paper filter|v60)\b/i.test(content);
     case 'aeropress':
-      return !/\b(drawdown|wall-chasing|dinding filter|paper filter|v60 spiral)\b/i.test(content);
+      return !/\b(bloom|drawdown|final pour|late pour|pour path|wall-chasing|dinding filter|paper filter|v60|flat bed)\b/i.test(content);
     case 'batch_brew':
       return !/\b(center-to-mid|compact spiral|manual pour|tuang tengah|v60)\b/i.test(content);
     default:

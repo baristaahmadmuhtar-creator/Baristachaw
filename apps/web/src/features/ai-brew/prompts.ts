@@ -664,7 +664,7 @@ function buildMethodCueChecklist(plan: BrewPlan) {
       if (style === 'inverted') {
         lines.push('- Include inverted chamber safe assembly and rapid saturation cue early.');
         lines.push('- Include filter cap seal and secure flip check before pressing.');
-        lines.push('- Include steady plunge cue in final step, pressing completely through the hiss to extract rich sweetness and body.');
+        lines.push('- Include steady 20-30s press cue in final step, stopping before the dry hiss for sweetness without forcing fines.');
       } else if (style === 'bypass') {
         lines.push('- Include high-dose concentrate immersion and vigorous stir cue early.');
         lines.push('- Include steady press and bypass water separate reservation cue middle.');
@@ -672,7 +672,7 @@ function buildMethodCueChecklist(plan: BrewPlan) {
       } else if (style === 'no_bypass') {
         lines.push('- Include full-chamber upright bed edge-to-edge saturation and gentle stir cue early.');
         lines.push('- Include plunger vacuum seal and extended steep immersion cue middle.');
-        lines.push('- Include plunger removal and slow press completely through the hiss for full body extraction in the final step.');
+        lines.push('- Include slow 25-35s press and stop before the dry hiss for a clean no-bypass finish.');
       } else if (style === 'bright_clean') {
         lines.push('- Include double rinsed paper filter and swift circle pour clarity cue early.');
         lines.push('- Include double stir agitation limit and vacuum seal steep cue middle.');
@@ -680,11 +680,11 @@ function buildMethodCueChecklist(plan: BrewPlan) {
       } else if (style === 'sweet_body') {
         lines.push('- Include fine grounds thorough saturation and sweet solubility opening cue early.');
         lines.push('- Include vigorous circular agitation and extended immersion steep cue middle.');
-        lines.push('- Include firm, stable plunge completely through the hiss to carry texture through the coffee bed in the final step.');
+        lines.push('- Include stable 25-35s press near the hiss, with a warning to stop if the finish turns dry, gritty, or bitter.');
       } else {
         lines.push('- Include AeroPress upright chamber decisive saturation and uniform wetting cue early.');
         lines.push('- Include gentle stir and vacuum seal plunger insert cue middle.');
-        lines.push('- Include steady 25-35s press, pressing completely through the hiss for balanced extraction in the final step.');
+        lines.push('- Include steady 20-30s press, stopping before the dry hiss for balanced extraction in the final step.');
       }
       return lines.join('\n');
     }

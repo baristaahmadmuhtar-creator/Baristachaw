@@ -4533,7 +4533,7 @@ test('P0 rendered output snapshots stay method-specific, ratio-correct, and user
       input: { dripperId: findProductionDripperId(productionCatalog, /^AeroPress$/i), doseG: '15', targetWaterMl: '195', targetProfileId: 'more_sweetness' },
       required: /charge|isi|stir|aduk|steep|rendam|press|tekan|hiss|desis/i,
       forbidden: /drawdown|final pour|bloom pour|\$1 seconds/i,
-      window: [170, 200],
+      window: [110, 150],
     },
     {
       label: 'French Press body',
@@ -5137,12 +5137,20 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
   assert.equal(aeropressPlans.noBypass.deviceProfileId, 'profile_aeropress_no_bypass_hot');
   assert.equal(aeropressPlans.brightClean.deviceProfileId, 'profile_aeropress_bright_clean_hot');
   assert.equal(aeropressPlans.sweetBody.deviceProfileId, 'profile_aeropress_sweet_body_hot');
+  const aeropressTimeWindows: Record<string, [number, number]> = {
+    standard: [110, 150],
+    inverted: [125, 165],
+    bypass: [95, 135],
+    noBypass: [140, 180],
+    brightClean: [90, 130],
+    sweetBody: [150, 195],
+  };
   for (const [style, plan] of Object.entries(aeropressPlans)) {
-    assertBasicGoldenEnvelope(plan, { ratio: [12.5, 15.2], temp: [80, 90], time: [60, 150] });
+    assertBasicGoldenEnvelope(plan, { ratio: [12.5, 15.2], temp: [80, 90], time: aeropressTimeWindows[style] || [60, 195] });
     assert.ok(plan.steps.some((step) => step.kind === 'press'), `${style} AeroPress should include a press step`);
     assert.match(textFor(plan), /stir|aduk|press|tekan|hiss|desis|steep|rendam/i);
     if (plan.hotWaterMl >= 240 && style !== 'inverted' && style !== 'bypass') {
-      assert.equal(positivePourCount(plan), 2, `${style} AeroPress should include a bloom and charge pour when hotWaterMl >= 240`);
+      assert.equal(positivePourCount(plan), 2, `${style} AeroPress should include a pre-wet and charge pour when hotWaterMl >= 240`);
     } else {
       assert.equal(positivePourCount(plan), 1, `${style} AeroPress should include a single pour`);
     }
@@ -5157,21 +5165,22 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
       .join('\n'),
   ]));
   assert.match(aeropressGuideText.standard, /Aduk 3 kali|3x/i);
-  assert.match(aeropressGuideText.inverted, /terbalik|Balikkan|4x|30-40 detik/i);
-  assert.match(aeropressGuideText.bypass, /Bypass terukur|setelah tekan saja|air bypass tidak melewati lapisan kopi/i);
-  assert.match(aeropressGuideText.noBypass, /seluruh air resep|tanpa air bypass tambahan|tanpa air tambahan|30-40 detik/i);
+  assert.match(aeropressGuideText.standard, /20-30 detik|berhenti sebelum desis/i);
+  assert.match(aeropressGuideText.inverted, /terbalik|Balikkan|4x|20-30 detik|berhenti sebelum desis/i);
+  assert.match(aeropressGuideText.bypass, /Bypass terukur|air konsentrat|air bypass|setelah tekan saja|air bypass tidak melewati lapisan kopi/i);
+  assert.match(aeropressGuideText.noBypass, /seluruh air resep|tanpa air bypass tambahan|tanpa air tambahan|25-35 detik|berhenti sebelum desis/i);
   assert.match(aeropressGuideText.brightClean, /Aduk 2-3 kali|20-30 detik|akhir rasa tetap bersih|tanpa air tambahan/i);
-  assert.match(aeropressGuideText.sweetBody, /Aduk 5 kali|Rendam lebih panjang|35-45 detik/i);
+  assert.match(aeropressGuideText.sweetBody, /Aduk 5 kali|Rendam lebih panjang|25-35 detik|mendekati desis|fines|pahit/i);
   for (const [style, guideText] of Object.entries(aeropressGuideText)) {
     const plan = aeropressPlans[style as keyof typeof aeropressPlans];
-    const hasCapacityBloom = plan.steps.some((step) => step.id === 'bloom');
+    const hasCapacityPreWet = plan.steps.some((step) => step.id === 'pre_wet');
     assert.doesNotMatch(
       guideText,
-      hasCapacityBloom ? /final pour|drawdown bed|tuang akhir/i : /final pour|drawdown bed|tuang akhir|bloom/i,
+      /final pour|drawdown|flat bed|V60|pour map|tuang akhir|bloom/i,
       `${style} AeroPress guide should not leak pour-over language`,
     );
-    if (hasCapacityBloom) {
-      assert.match(guideText, /Bloom|blooming|30 ml/i, `${style} AeroPress high-volume guide should show capacity bloom`);
+    if (hasCapacityPreWet) {
+      assert.match(guideText, /Pra-basah|pre-wet|30 ml|35 ml/i, `${style} AeroPress high-volume guide should show capacity pre-wet`);
     }
     if (style !== 'bypass') {
       assert.doesNotMatch(guideText, /Tambahkan bypass|Bypass terukur|setelah tekan saja|setelah press saja|dilution:/i, `${style} AeroPress guide must not ask for bypass dilution`);
@@ -5210,7 +5219,7 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
   }
 });
 
-test('AeroPress upright high-volume guides preserve bloom and main charge checkpoints', () => {
+test('AeroPress upright high-volume guides preserve pre-wet and main charge checkpoints', () => {
   const catalog = buildProductionAiBrewCatalogForTests();
   const plan = buildAiBrewPlan({
     ...createDefaultAiBrewFormState(catalog),
@@ -5231,7 +5240,7 @@ test('AeroPress upright high-volume guides preserve bloom and main charge checkp
   }, catalog);
 
   const positiveSteps = plan.steps.filter((step) => (step.pourVolumeMl || 0) > 0);
-  assert.deepEqual(positiveSteps.map((step) => step.id), ['bloom', 'charge']);
+  assert.deepEqual(positiveSteps.map((step) => step.id), ['pre_wet', 'charge']);
   assert.deepEqual(positiveSteps.map((step) => step.pourVolumeMl), [35, 205]);
 
   const guide = plan.workflowGuideSteps || buildWorkflowAwareGuideSteps(plan);
@@ -5239,12 +5248,78 @@ test('AeroPress upright high-volume guides preserve bloom and main charge checkp
     .map((step) => `${step.label} ${step.actionType} ${step.primaryText} ${step.secondaryText || ''} ${step.sourceStepIds.join(',')}`)
     .join('\n');
   const preservedVolumeIds = new Set(guide.flatMap((step) => step.sourceStepIds));
-  assert.ok(preservedVolumeIds.has('bloom'), 'Guide should preserve the capacity bloom source step');
+  assert.ok(preservedVolumeIds.has('pre_wet'), 'Guide should preserve the capacity pre-wet source step');
   assert.ok(preservedVolumeIds.has('charge'), 'Guide should preserve the main charge source step');
-  assert.match(guideText, /Bloom[\s\S]*(35 ml|35ml)/i);
+  assert.match(guideText, /Pra-basah|pre-wet/i);
+  assert.match(guideText, /(35 ml|35ml)/i);
   assert.match(guideText, /(Main Charge|Isi air utama|Tuang sisa air|remaining water|sisa air)[\s\S]*(205 ml|205ml|240 ml|240ml)/i);
-  assert.doesNotMatch(guideText, /final pour|drawdown bed|tuang akhir/i);
+  assert.doesNotMatch(guideText, /final pour|drawdown|flat bed|V60|pour map|tuang akhir|bloom/i);
   assert.equal(plan.workflowValidation?.passed, true);
+});
+
+test('AeroPress production styles keep ratio, bypass split, water label, and user-facing copy safe', () => {
+  const catalog = buildProductionAiBrewCatalogForTests();
+  const base = {
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'hot' as const,
+    dripperId: 'aeropress',
+    grinderId: '1zpresso-k-ultra',
+    doseG: '15',
+    process: 'natural',
+    variety: 'red catuai',
+    roastLevel: 'medium' as const,
+    waterMode: 'manual' as const,
+    waterTdsPpm: '130',
+    waterHardnessPpm: '62.9',
+    waterAlkalinityPpm: '60.7',
+  };
+  const cases: Array<{
+    style: AeroPressRecipeStyle;
+    targetProfileId: string;
+    finalRatio: [number, number];
+    hotRatio: [number, number];
+    time: [number, number];
+    text: RegExp;
+  }> = [
+    { style: 'auto', targetProfileId: 'more_sweetness', finalRatio: [13, 14], hotRatio: [13, 14], time: [110, 150], text: /20-30 detik|berhenti sebelum desis|stop before/i },
+    { style: 'standard', targetProfileId: 'balance_clean', finalRatio: [13, 14], hotRatio: [13, 14], time: [110, 150], text: /20-30 detik|berhenti sebelum desis|stop before/i },
+    { style: 'inverted', targetProfileId: 'more_sweetness', finalRatio: [13, 14], hotRatio: [13, 14], time: [125, 165], text: /terbalik|Balikkan|20-30 detik|berhenti sebelum desis/i },
+    { style: 'bypass', targetProfileId: 'floral_transparent', finalRatio: [12, 13], hotRatio: [8, 10], time: [60, 135], text: /air konsentrat|air bypass|setelah tekan saja|concentrate ratio/i },
+    { style: 'no_bypass', targetProfileId: 'dense_comforting', finalRatio: [13.8, 14.2], hotRatio: [13.8, 14.2], time: [140, 180], text: /seluruh air resep|25-35 detik|berhenti sebelum desis/i },
+    { style: 'bright_clean', targetProfileId: 'more_acidity', finalRatio: [14, 15], hotRatio: [14, 15], time: [90, 130], text: /Aduk 2-3 kali|20-30 detik|berhenti sebelum desis/i },
+    { style: 'sweet_body', targetProfileId: 'more_body', finalRatio: [12, 13], hotRatio: [12, 13], time: [150, 195], text: /Aduk 5 kali|25-35 detik|mendekati desis|fines|pahit/i },
+  ];
+
+  for (const entry of cases) {
+    const plan = buildAiBrewPlan({
+      ...base,
+      aeropressStyle: entry.style,
+      targetProfileId: entry.targetProfileId,
+    }, catalog);
+    const text = collectUserFacingRecipeText(plan);
+    assert.equal(plan.methodFamily, 'aeropress');
+    assert.ok(plan.finalBeverageRatio >= entry.finalRatio[0] && plan.finalBeverageRatio <= entry.finalRatio[1], `${entry.style} final ratio ${plan.finalBeverageRatio}`);
+    assert.ok(plan.hotExtractionRatio >= entry.hotRatio[0] && plan.hotExtractionRatio <= entry.hotRatio[1], `${entry.style} hot ratio ${plan.hotExtractionRatio}`);
+    assert.ok(canonicalFinishSeconds(plan) >= entry.time[0] && canonicalFinishSeconds(plan) <= entry.time[1], `${entry.style} finish ${canonicalFinishSeconds(plan)}`);
+    assertRatioInvariant(plan);
+    assertNoBrokenRecipeText(text);
+    assert.match(text, entry.text, `${entry.style} workflow copy`);
+    assert.match(plan.waterMinerals.styleLabel, /moderate mineral.*upper-buffered|moderate mineral, upper-buffered/i);
+    assert.doesNotMatch(plan.waterMinerals.styleLabel, /hard/i);
+    assert.match(text, /upper-buffered|alkalinity|alkalinitas|buffer/i);
+    assert.match(text, /natural|ferment/i);
+    assert.doesNotMatch(text, /\$(?:\d+|\{)|\b(?:undefined|null|NaN|ActionAction|Pressgentle|Stophiss)\b|Press \$1 seconds|Stir 2-3 times saja/i);
+    assert.doesNotMatch(text, /\b(drawdown|final pour|flat bed|V60|pour map|bloom pour)\b/i);
+    assert.equal(validateBrewPlanOutput(plan).allowed, true, `${entry.style} output guard`);
+  }
+
+  const exact = buildAiBrewPlan({
+    ...base,
+    aeropressStyle: 'standard',
+    targetWaterMl: '195',
+  }, catalog);
+  assert.equal(Math.round(exact.finalBeverageRatio * 10) / 10, 13.0);
+  assert.match(collectUserFacingRecipeText(exact), /1:13\.0|Final ratio 1:13\.0|rasio akhir 1:13\.0/i);
 });
 
 test('AI Brew direct manualPresetId applies AeroPress preset defaults before planning', () => {

@@ -3026,14 +3026,14 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     [/^Program ([a-z_ ]+): fase perkolasi terbuka; jaga tuangan rapi sampai target\.$/i, 'Program $1: open percolation phase; keep the pour tidy until target.'],
     [/^Program ([a-z_ ]+): isi ruang seduh pelan dan jaga muatan tetap di bawah batas aman\.$/i, 'Program $1: fill the chamber calmly and keep the load under the safe limit.'],
     [/^Program ([a-z_ ]+): buka katup bersih dan biarkan aliran turun tanpa agitasi tambahan\.$/i, 'Program $1: open the valve cleanly and let the flow finish without extra agitation.'],
-    [/^Tekan stabil ([0-9-]+) detik sampai desis selesai\.$/i, 'Press steadily for $1 seconds and continue through the hiss.'],
-    [/^Tekan pelan ([0-9-]+) detik sampai desis selesai; biarkan volume penuh turun bersih\.$/i, 'Press slowly for $1 seconds, continue through the hiss, and let the full volume pass cleanly.'],
-    [/^Tekan pelan ([0-9-]+) detik dan lanjutkan sampai desis selesai\.$/i, 'Press slowly for $1 seconds and continue through the hiss.'],
-    [/^Tekan sampai desis selesai, lalu pisahkan alat dari cangkir\.$/i, 'Press through the hiss, then remove the AeroPress from the cup.'],
-    [/^Tekan sampai desis selesai, lalu angkat alat dari cangkir\.$/i, 'Press through the hiss, then remove the AeroPress from the cup.'],
-    [/^Tekan sampai desis selesai agar hasil penuh turun tanpa tambahan air\.$/i, 'Press through the hiss so the full-volume brew lands without extra water.'],
-    [/^Tekan sampai desis selesai supaya minyak dan tekstur ikut turun\.$/i, 'Press through the hiss so oils and texture land in the cup.'],
-    [/^Jaga tekanan stabil sampai desis selesai\.$/i, 'Keep steady pressure through the hiss.'],
+    [/^Tekan stabil ([0-9-]+) detik sampai desis selesai\.$/i, 'Press steadily for $1 seconds and stop before the dry hiss.'],
+    [/^Tekan pelan ([0-9-]+) detik sampai desis selesai; biarkan volume penuh turun bersih\.$/i, 'Press slowly for $1 seconds and stop before the dry hiss so the full volume stays clean.'],
+    [/^Tekan pelan ([0-9-]+) detik dan lanjutkan sampai desis selesai\.$/i, 'Press slowly for $1 seconds and stop before the dry hiss.'],
+    [/^Tekan sampai desis selesai, lalu pisahkan alat dari cangkir\.$/i, 'Stop before the dry hiss, then remove the AeroPress from the cup.'],
+    [/^Tekan sampai desis selesai, lalu angkat alat dari cangkir\.$/i, 'Stop before the dry hiss, then remove the AeroPress from the cup.'],
+    [/^Tekan sampai desis selesai agar hasil penuh turun tanpa tambahan air\.$/i, 'Stop before the dry hiss so the full-volume brew stays clean without extra water.'],
+    [/^Tekan sampai desis selesai supaya minyak dan tekstur ikut turun\.$/i, 'Press near the hiss for texture, then stop before the finish turns dry.'],
+    [/^Jaga tekanan stabil sampai desis selesai\.$/i, 'Keep steady pressure and stop before the dry hiss.'],
   ];
   for (const [pattern, replacement] of exactMap) {
     if (pattern.test(text)) return replacement;
@@ -3041,20 +3041,30 @@ function translateWorkflowGuideTextToEnglish(value: string) {
 
   text = text
     .replace(/\bTuang air ke ruang seduh dan basahi bubuk kopi merata\b/gi, 'Pour water into the chamber and wet the coffee evenly')
+    .replace(/\bPra-basah ([0-9.,]+ ml) selama 20 detik untuk membasahi dan menyusutkan bubuk kopi\. Target ([0-9.,]+ ml)\b/gi, 'Pre-wet with $1 for 20 seconds to wet and shrink the coffee grounds. Target $2')
+    .replace(/\bPra-basah\b/gi, 'Pre-wet')
+    .replace(/\bFase ini khusus mencegah luapan pada AeroPress tegak bervolume tinggi\b/gi, 'This phase prevents overflow in high-volume upright AeroPress brewing')
+    .replace(/\bLanjutkan isi air utama setelah pra-basah, tetap rendah dan stabil\b/gi, 'Continue the main water charge after pre-wet, keeping it low and stable')
     .replace(/\bAduk 3 kali atau swirl ringan sekali, lalu hentikan agitasi\b/gi, 'Stir 3 times or swirl lightly once, then stop agitation')
     .replace(/\bRendam sampai waktu tekan; ruang seduh tetap stabil dan tertutup\b/gi, 'Steep until press time; keep the chamber stable and covered')
+    .replace(/\bTekan stabil ([0-9-]+) detik dan berhenti sebelum desis terasa kering\b/gi, 'Press steadily for $1 seconds and stop before the dry hiss')
+    .replace(/\bTekan pelan ([0-9-]+) detik dan berhenti sebelum desis terasa kering; biarkan volume penuh turun bersih\b/gi, 'Press slowly for $1 seconds and stop before the dry hiss so the full volume stays clean')
+    .replace(/\bTekan pelan ([0-9-]+) detik sampai mendekati desis; jangan paksa tekanan bila rasa mulai pahit atau kering\b/gi, 'Press slowly for $1 seconds near the hiss; do not force pressure if the cup starts turning bitter or dry')
+    .replace(/\bBerhenti mendekati desis\. Gaya ini mengejar body, tetapi tekanan berlebih bisa membawa fines dan rasa pahit\b/gi, 'Stop near the hiss. This style chases body, but excess pressure can carry fines and bitterness')
+    .replace(/\bJaga tekanan stabil dan berhenti sebelum desis terasa kering\b/gi, 'Keep steady pressure and stop before the dry hiss')
+    .replace(/\bJaga tekanan stabil sampai mendekati desis; hentikan bila terasa berat, pahit, atau kering\b/gi, 'Keep steady pressure near the hiss; stop if it feels heavy, bitter, or dry')
     .replace(/\bBerhenti sebelum desis kering, lalu pisahkan brewer dari cangkir\b/gi, 'Stop before the dry hiss, then remove the brewer from the cup')
     .replace(/\bBerhenti sebelum desis kering\b/gi, 'Stop before the dry hiss')
     .replace(/\bBerhenti sebelum desis pertama\b/gi, 'Stop before the first hiss')
     .replace(/\bBerhenti sebelum desis\b/gi, 'Stop before the hiss')
-    .replace(/\bTekan sampai desis selesai, lalu pisahkan alat dari cangkir\b/gi, 'Press through the hiss, then remove the AeroPress from the cup')
-    .replace(/\bTekan sampai desis selesai, lalu angkat alat dari cangkir\b/gi, 'Press through the hiss, then remove the AeroPress from the cup')
-    .replace(/\bTekan sampai desis selesai agar hasil penuh turun tanpa tambahan air\b/gi, 'Press through the hiss so the full-volume brew lands without extra water')
-    .replace(/\bTekan sampai desis selesai supaya minyak dan tekstur ikut turun\b/gi, 'Press through the hiss so oils and texture land in the cup')
-    .replace(/\bTekan stabil ([0-9-]+) detik sampai desis selesai\b/gi, 'Press steadily for $1 seconds and continue through the hiss')
-    .replace(/\bTekan pelan ([0-9-]+) detik sampai desis selesai; biarkan volume penuh turun bersih\b/gi, 'Press slowly for $1 seconds, continue through the hiss, and let the full volume pass cleanly')
-    .replace(/\bTekan pelan ([0-9-]+) detik dan lanjutkan sampai desis selesai\b/gi, 'Press slowly for $1 seconds and continue through the hiss')
-    .replace(/\bJaga tekanan stabil sampai desis selesai\b/gi, 'Keep steady pressure through the hiss')
+    .replace(/\bTekan sampai desis selesai, lalu pisahkan alat dari cangkir\b/gi, 'Stop before the dry hiss, then remove the AeroPress from the cup')
+    .replace(/\bTekan sampai desis selesai, lalu angkat alat dari cangkir\b/gi, 'Stop before the dry hiss, then remove the AeroPress from the cup')
+    .replace(/\bTekan sampai desis selesai agar hasil penuh turun tanpa tambahan air\b/gi, 'Stop before the dry hiss so the full-volume brew stays clean without extra water')
+    .replace(/\bTekan sampai desis selesai supaya minyak dan tekstur ikut turun\b/gi, 'Press near the hiss for texture, then stop before the finish turns dry')
+    .replace(/\bTekan stabil ([0-9-]+) detik sampai desis selesai\b/gi, 'Press steadily for $1 seconds and stop before the dry hiss')
+    .replace(/\bTekan pelan ([0-9-]+) detik sampai desis selesai; biarkan volume penuh turun bersih\b/gi, 'Press slowly for $1 seconds and stop before the dry hiss so the full volume stays clean')
+    .replace(/\bTekan pelan ([0-9-]+) detik dan lanjutkan sampai desis selesai\b/gi, 'Press slowly for $1 seconds and stop before the dry hiss')
+    .replace(/\bJaga tekanan stabil sampai desis selesai\b/gi, 'Keep steady pressure and stop before the dry hiss')
     .replace(/\bTarget waktu\b/gi, 'Target time')
     .replace(/\bAduk cangkir pelan, lalu sajikan\b/gi, 'Stir the cup gently, then serve')
     .replace(/\bpastikan segel rapat\b/gi, 'confirm the seal is tight')
@@ -3071,14 +3081,16 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\bTuang air konsentrat ke ruang seduh dan basahi bubuk merata; air bypass tidak melewati lapisan kopi\b/gi, 'Pour concentrate water into the chamber and wet the coffee evenly; bypass water does not pass through the coffee layer')
     .replace(/\bAduk 3 kali untuk ekstraksi awal, lalu biarkan bubur kopi tenang singkat\b/gi, 'Stir 3 times for early extraction, then let the coffee slurry rest briefly')
     .replace(/\bRendam singkat sebagai konsentrat; jaga kontak padat tanpa agitasi tambahan\b/gi, 'Steep briefly as a concentrate; keep dense contact without extra agitation')
-    .replace(/\bTekan konsentrat 25-35 detik dan berhenti sebelum desis\b/gi, 'Press the concentrate for 25-35 seconds and stop before the hiss')
+    .replace(/\bTekan konsentrat 20-30 detik dan berhenti sebelum desis\b/gi, 'Press the concentrate for 20-30 seconds and stop before the hiss')
+    .replace(/\bSeduh ([0-9.,]+ ml) air konsentrat di ruang seduh, lalu tambahkan ([0-9.,]+ ml) air bypass terukur di cangkir setelah tekan saja\. Aduk sampai rata, lalu sajikan\b/gi, 'Brew $1 concentrate water in the chamber, then add $2 measured bypass water in the cup after pressing only. Stir evenly, then serve')
     .replace(/\bBerhenti sebelum desis kering agar konsentrat tidak menjadi kasar\b/gi, 'Stop before the dry hiss so the concentrate does not turn harsh')
     .replace(/\bTambahkan air bypass terukur setelah tekan saja, aduk cangkir sampai rata, lalu sajikan\b/gi, 'Add measured bypass water after pressing only, stir the cup evenly, then serve')
     .replace(/\bSiapkan AeroPress tegak, bilas filter dan tutup, lalu pastikan semua air resep memang masuk ruang seduh\b/gi, 'Set up the AeroPress upright, rinse the filter and cap, then confirm all recipe water goes into the chamber')
     .replace(/\bTuang seluruh air resep ke ruang seduh; tidak ada air bypass tambahan setelah tekan\b/gi, 'Pour all recipe water into the chamber; there is no extra bypass water after pressing')
     .replace(/\bAduk 3 kali, lalu biarkan bubur kopi tenang agar fase tekan tetap bersih\b/gi, 'Stir 3 times, then let the coffee slurry rest so the pressing phase stays clean')
     .replace(/\bRendam lebih panjang sampai semua air di ruang seduh mengekstrak merata\b/gi, 'Steep longer until all water in the chamber extracts evenly')
-    .replace(/\bTekan pelan 30-40 detik; biarkan volume penuh turun bersih\b/gi, 'Press slowly for 30-40 seconds and let the full volume pass cleanly')
+    .replace(/\bTekan pelan 25-35 detik dan berhenti sebelum desis terasa kering; biarkan volume penuh turun bersih\b/gi, 'Press slowly for 25-35 seconds and stop before the dry hiss so the full volume stays clean')
+    .replace(/\bTekan pelan 30-40 detik; biarkan volume penuh turun bersih\b/gi, 'Press slowly for 25-35 seconds and stop before the dry hiss so the full volume stays clean')
     .replace(/\bBerhenti sebelum desis kering; jangan paksa sisa cairan dari lapisan kopi\b/gi, 'Stop before the dry hiss; do not force the remaining liquid from the coffee layer')
     .replace(/\bAduk cangkir pelan dan sajikan tanpa air bypass tambahan\b/gi, 'Stir the cup gently and serve without extra bypass water')
     .replace(/\bBilas filter dan tutup, gunakan segel rapi, dan siapkan gaya bersih dengan agitasi rendah\b/gi, 'Rinse the filter and cap, use a clean seal, and prepare a clear low-agitation style')
@@ -3092,7 +3104,8 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\bTuang air ke ruang seduh dan basahi bubuk sampai penuh merata\b/gi, 'Pour water into the chamber and wet the grounds fully and evenly')
     .replace(/\bAduk 5 kali untuk membangun body, lalu biarkan bubur kopi tenang\b/gi, 'Stir 5 times to build body, then let the coffee slurry rest')
     .replace(/\bRendam lebih panjang agar rasa manis dan tekstur terkumpul\b/gi, 'Steep longer so sweetness and texture build together')
-    .replace(/\bTekan pelan 35-45 detik; jaga tekanan stabil sampai sebelum desis\b/gi, 'Press slowly for 35-45 seconds and keep pressure steady until before the hiss')
+    .replace(/\bTekan pelan 25-35 detik sampai mendekati desis; jangan paksa tekanan bila rasa mulai pahit atau kering\b/gi, 'Press slowly for 25-35 seconds near the hiss; do not force pressure if the cup starts turning bitter or dry')
+    .replace(/\bTekan pelan 35-45 detik; jaga tekanan stabil sampai sebelum desis\b/gi, 'Press slowly for 25-35 seconds near the hiss; do not force pressure if the cup starts turning bitter or dry')
     .replace(/\bBerhenti sebelum desis kering supaya body tetap manis, bukan kasar\b/gi, 'Stop before the dry hiss so body stays sweet, not harsh')
     .replace(/\bAduk cangkir pelan dan sajikan sebagai cangkir tebal tanpa air tambahan\b/gi, 'Stir the cup gently and serve as a heavy cup without extra water')
     .replace(/\bStop before the dry hiss agar konsentrat tidak menjadi kasar\b/gi, 'Stop before the dry hiss so the concentrate does not turn harsh')

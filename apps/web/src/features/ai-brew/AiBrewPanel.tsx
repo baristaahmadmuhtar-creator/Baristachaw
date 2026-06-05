@@ -2996,6 +2996,25 @@ function formatPlanSwitchPresetLabel(plan: BrewPlan, language: string) {
   );
 }
 
+function formatAeroPressResultStyleLabel(plan: BrewPlan, copy: CopySet) {
+  if (plan.methodFamily !== 'aeropress') return '';
+  switch (plan.recipeStyle) {
+    case 'inverted':
+      return copy.aeropressStyleInverted;
+    case 'bypass':
+      return copy.aeropressStyleBypass;
+    case 'no_bypass':
+      return copy.aeropressStyleNoBypass;
+    case 'bright_clean':
+      return copy.aeropressStyleBrightClean;
+    case 'sweet_body':
+      return copy.aeropressStyleSweetBody;
+    case 'standard':
+    default:
+      return copy.aeropressStyleStandard;
+  }
+}
+
 function formatSwitchPresetWhy(preset: SwitchPublicPreset | undefined, language: string, fallback: string) {
   if (!preset) return fallback;
   if (isIndonesianAiBrewLanguage(language)) return preset.whyId || localizeAiBrewDynamicText(preset.why || fallback, language);
@@ -3041,6 +3060,10 @@ function translateWorkflowGuideTextToEnglish(value: string) {
 
   text = text
     .replace(/\bTuang air ke ruang seduh dan basahi bubuk kopi merata\b/gi, 'Pour water into the chamber and wet the coffee evenly')
+    .replace(/\bIsi awal ([0-9.,]+ ml) selama 20-25 detik untuk membasahi bubuk tanpa mengejar volume penuh\. Target ([0-9.,]+ ml)\b/gi, 'Add an initial $1 over 20-25 seconds to wet the grounds without rushing the full volume. Target $2')
+    .replace(/\bFase ini hanya memberi waktu bubuk basah merata sebelum air utama masuk\b/gi, 'This stage gives the grounds time to wet evenly before the main water charge')
+    .replace(/\bLanjutkan isi air utama ([0-9.,]+ ml) sampai target ([0-9.,]+ ml)\. Tuang rendah dan stabil, jangan buru-buru menumpuk air di awal\b/gi, 'Continue the main water charge with $1 until the $2 target. Pour low and steady; do not rush the full water load at the start')
+    .replace(/\bDua tahap pengisian menjaga ruang seduh lebih tenang dan memberi waktu bubuk menerima air sebelum agitasi\b/gi, 'Two-stage charging keeps the chamber calmer and gives the grounds time to take water before agitation')
     .replace(/\bPra-basah ([0-9.,]+ ml) selama 20 detik untuk membasahi dan menyusutkan bubuk kopi\. Target ([0-9.,]+ ml)\b/gi, 'Pre-wet with $1 for 20 seconds to wet and shrink the coffee grounds. Target $2')
     .replace(/\bPra-basah\b/gi, 'Pre-wet')
     .replace(/\bFase ini khusus mencegah luapan pada AeroPress tegak bervolume tinggi\b/gi, 'This phase prevents overflow in high-volume upright AeroPress brewing')
@@ -5555,6 +5578,25 @@ function PlanResultDialog({
     ...summaryHighlightItems,
     completionTimeItem,
   ];
+  const aeropressStyleMetric: AiBrewCoreMetricItem | null = plan.methodFamily === 'aeropress'
+    ? {
+      id: 'style',
+      label: id ? 'Gaya' : 'Style',
+      value: formatAeroPressResultStyleLabel(plan, copy),
+      detail: id ? 'Gaya AeroPress aktif.' : 'Active AeroPress style.',
+    }
+    : null;
+  const detailHighlightItemsWithCompletion = aeropressStyleMetric
+    ? (() => {
+      const tempIndex = summaryHighlightItemsWithCompletion.findIndex((item) => item.id === 'temp');
+      if (tempIndex < 0) return [...summaryHighlightItemsWithCompletion, aeropressStyleMetric];
+      return [
+        ...summaryHighlightItemsWithCompletion.slice(0, tempIndex + 1),
+        aeropressStyleMetric,
+        ...summaryHighlightItemsWithCompletion.slice(tempIndex + 1),
+      ];
+    })()
+    : summaryHighlightItemsWithCompletion;
   const bloomStepCount = workflowGuideSteps.filter((step) => (
     step.actionType === 'bloom' || /bloom/i.test(step.label)
   )).length;
@@ -5658,6 +5700,7 @@ function PlanResultDialog({
     : (id
       ? 'Seduhan selesai. Cicipi saat hangat, lalu catat satu koreksi untuk brew berikutnya.'
       : 'Brew complete. Taste while warm, then note one correction for the next brew.');
+  const showAeroPressCompactCue = plan.methodFamily !== 'aeropress';
   const localizedProcessLabel = plan.process || copy.notSpecified;
   const localizedVarietyLabel = plan.variety || copy.notSpecified;
   const localizedRoastLabel = localizeAiBrewRoastLabel(plan.roastLevel, language);
@@ -6017,9 +6060,11 @@ function PlanResultDialog({
             <span className="block truncate font-semibold text-primary">{compactGrindHeadlineForMetric(localizedGrindHeadline)}</span>
           </span>
         </div>
-        <p className="rounded-2xl border panel-divider-subtle bg-surface-alpha/50 px-4 py-3 text-sm leading-6 text-secondary">
-          {liteStepCue}
-        </p>
+        {showAeroPressCompactCue && (
+          <p className="rounded-2xl border panel-divider-subtle bg-surface-alpha/50 px-4 py-3 text-sm leading-6 text-secondary">
+            {liteStepCue}
+          </p>
+        )}
       </div>
 
       <div className="mt-5 flex items-center justify-center gap-3">
@@ -6452,8 +6497,8 @@ function PlanResultDialog({
                 data-testid="ai-brew-result-detail-panel"
               >
               <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2.5 sm:grid-cols-[repeat(2,minmax(0,1fr))] xl:grid-cols-[repeat(3,minmax(0,1fr))]">
-                {summaryHighlightItemsWithCompletion.map((item) => (
-                  <div key={`details-${item.id}`} className={resultMetricCardClass}>
+                {detailHighlightItemsWithCompletion.map((item) => (
+                  <div key={`details-${item.id}`} className={resultMetricCardClass} data-testid={`ai-brew-result-${item.id}-metric`}>
                     <p className="text-[11px] uppercase tracking-widest text-secondary">{item.label}</p>
                     <p className="mt-1 text-base font-semibold text-primary sm:text-lg tabular-nums">{item.value}</p>
                     {item.detail && (
@@ -7233,9 +7278,11 @@ function PlanResultDialog({
                           ))}
                         </div>
                       )}
-                      <p className="mt-3 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">
-                        {flowCurrentCompactCue}
-                      </p>
+                      {showAeroPressCompactCue && (
+                        <p className="mt-3 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">
+                          {flowCurrentCompactCue}
+                        </p>
+                      )}
                       {guideDensity === 'pro' && flowCurrentMetrics.detail.length > 0 && (
                         <details open={!isQuickResult && guideDensity === 'pro'} className="group mt-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2">
                           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold text-primary">

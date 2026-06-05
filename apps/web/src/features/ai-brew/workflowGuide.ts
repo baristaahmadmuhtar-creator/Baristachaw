@@ -715,6 +715,28 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
   const steepEnd = style === 'inverted' && flip ? flip.startSeconds : pressStart;
   const chargeTarget = finalCharge?.targetVolumeMl || charge?.targetVolumeMl || plan.hotWaterMl;
   const hasCapacityPreWet = volumeSteps.some((step) => step.id === 'pre_wet');
+  const stagedLargeCharge = !hasCapacityPreWet
+    && style !== 'bypass'
+    && volumeSteps.length === 1
+    && chargeTarget >= 190
+    && pressStart >= 80;
+  const stagedInitialTargetMl = stagedLargeCharge
+    ? Math.min(95, Math.max(75, Math.round(chargeTarget * 0.45)))
+    : 0;
+  const stagedMainChargeStartSeconds = stagedLargeCharge
+    ? Math.min(
+      Math.max(35, Math.round(pressStart * 0.35)),
+      Math.max(35, pressStart - 45),
+    )
+    : 0;
+  const stagedFinalChargeStartSeconds = stagedLargeCharge ? stagedMainChargeStartSeconds : (charge?.startSeconds || 0);
+  const stirStartSeconds = stagedLargeCharge
+    ? Math.min(Math.max(10, pressStart - 35), stagedMainChargeStartSeconds + 15)
+    : Math.min(Math.max(10, charge?.startSeconds || 0), Math.max(10, pressStart - 45));
+  const steepStartSeconds = Math.max(
+    stirStartSeconds + 5,
+    Math.max(15, Math.min(pressStart - 30, Math.round(pressStart * 0.48))),
+  );
   const bypassWaterMl = style === 'bypass' && plan.totalWaterMl > plan.hotWaterMl
     ? Math.round(plan.totalWaterMl - plan.hotWaterMl)
     : 0;
@@ -730,7 +752,42 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
   ];
 
   if (volumeSteps.length > 0) {
-    volumeSteps.forEach((step, index) => {
+    if (stagedLargeCharge && charge) {
+      const remainingMl = Math.max(0, Math.round(chargeTarget - stagedInitialTargetMl));
+      guide.push(operationalStep({
+        id: 'guide_aeropress_initial_charge',
+        label: 'Isi awal',
+        actionType: 'charge',
+        startSeconds: charge.startSeconds || 0,
+        endSeconds: Math.min(stagedMainChargeStartSeconds, Math.max(20, (charge.startSeconds || 0) + 25)),
+        pourVolumeMl: stagedInitialTargetMl,
+        targetVolumeMl: stagedInitialTargetMl,
+        primaryText: `Isi awal ${formatMl(stagedInitialTargetMl)} selama 20-25 detik untuk membasahi bubuk tanpa mengejar volume penuh. Target ${formatMl(stagedInitialTargetMl)}.`,
+        secondaryText: 'Fase ini hanya memberi waktu bubuk basah merata sebelum air utama masuk.',
+        techniqueChips: [
+          chip('charge', 'Isi awal', formatMl(stagedInitialTargetMl)),
+          chip('saturation', 'Bertahap', '20-25 detik'),
+        ],
+        sourceStepIds: [charge.id],
+      }));
+      guide.push(operationalStep({
+        id: 'guide_aeropress_main_charge',
+        label: 'Isi air utama',
+        actionType: 'charge',
+        startSeconds: stagedMainChargeStartSeconds,
+        endSeconds: Math.max(stagedMainChargeStartSeconds + 18, stirStartSeconds),
+        pourVolumeMl: remainingMl,
+        targetVolumeMl: chargeTarget,
+        primaryText: `Lanjutkan isi air utama ${formatMl(remainingMl)} sampai target ${formatMl(chargeTarget)}. Tuang rendah dan stabil, jangan buru-buru menumpuk air di awal.`,
+        secondaryText: 'Dua tahap pengisian menjaga ruang seduh lebih tenang dan memberi waktu bubuk menerima air sebelum agitasi.',
+        techniqueChips: [
+          chip('charge', 'Isi utama', formatMl(remainingMl)),
+          chip('charge', 'Target', formatMl(chargeTarget)),
+        ],
+        sourceStepIds: [charge.id],
+      }));
+    } else {
+      volumeSteps.forEach((step, index) => {
       const amount = step.pourVolumeMl || step.targetVolumeMl || chargeTarget;
       const isCapacityPreWet = hasCapacityPreWet && step.id === 'pre_wet';
       const isMainCharge = hasCapacityPreWet && step.id === 'charge';
@@ -753,7 +810,8 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
           ...techniqueChipsFromStep(step),
         ],
       }));
-    });
+      });
+    }
   } else {
     guide.push(operationalStep({
       id: 'guide_aeropress_charge',
@@ -772,7 +830,7 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       id: 'guide_aeropress_stir',
       label: 'Aduk ringan',
       actionType: 'stir',
-      startSeconds: Math.min(Math.max(10, charge?.startSeconds || 0), Math.max(10, pressStart - 45)),
+      startSeconds: stirStartSeconds,
       targetVolumeMl: chargeTarget,
       primaryText: styleCopy.stir,
       techniqueChips: [chip('stir', 'Aduk', styleCopy.stirChip)],
@@ -782,7 +840,7 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       id: 'guide_aeropress_steep',
       label: 'Rendam',
       actionType: 'steep',
-      startSeconds: Math.max(15, Math.min(pressStart - 35, Math.round(pressStart * 0.45))),
+      startSeconds: steepStartSeconds,
       endSeconds: steepEnd,
       targetVolumeMl: chargeTarget,
       primaryText: `${styleCopy.steep} Target waktu ${formatTime(steepEnd)}.`,

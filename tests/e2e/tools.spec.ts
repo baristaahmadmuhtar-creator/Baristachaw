@@ -887,12 +887,20 @@ test('ai brew AeroPress styles render bilingual guides and regenerate without st
     await expect(result).toContainText(`QA AeroPress ${language} ${entry.style}`);
     await result.getByTestId('ai-brew-result-tab-flow').click({ force: true });
     await expect(result.getByTestId('ai-brew-guide-density-basic')).toHaveAttribute('aria-pressed', 'true');
+    const basicGuidePanel = result.getByTestId('ai-brew-result-guide-panel');
+    await expect(basicGuidePanel).toBeVisible();
+    const basicGuideText = ((await basicGuidePanel.textContent()) || '').replace(/\s+/g, ' ');
+    expect(basicGuideText).not.toMatch(/Basahi ruang seduh merata dan jaga rendaman tetap ringkas|Wet the chamber evenly and keep the steep compact/i);
     await result.getByTestId('ai-brew-guide-density-pro').click();
     await expect(result.getByTestId('ai-brew-guide-density-pro')).toHaveAttribute('aria-pressed', 'true');
     const guidePanel = result.getByTestId('ai-brew-result-guide-panel');
     await expect(guidePanel).toBeVisible();
     const visibleGuideText = ((await guidePanel.textContent()) || '').replace(/\s+/g, ' ');
     const plan = await readStoredAiBrewPlan(page);
+    await result.getByTestId('ai-brew-result-tab-details').click({ force: true });
+    const detailPanel = result.getByTestId('ai-brew-result-detail-panel');
+    await expect(detailPanel).toBeVisible();
+    await expect(detailPanel.getByTestId('ai-brew-result-style-metric')).toContainText(language === 'id' ? /Gaya/i : /Style/i);
     const guideText = (plan.workflowGuideSteps || [])
       .map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''} ${(step.detailBullets || []).join(' ')}`)
       .join(' ');

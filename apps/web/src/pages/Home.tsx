@@ -30,6 +30,7 @@ import {
   BookOpen as AppBookOpenIcon,
   Camera as AppCameraIcon,
   Coffee as AppCoffeeIcon,
+  Gauge as AppGaugeIcon,
   Sparkles as AppSparklesIcon,
 } from "../components/icons";
 import { normalizeAgentProfileMemory, resolveAgentProfileNamespace, type AgentProfileMemory } from "@baristachaw/shared";
@@ -965,7 +966,7 @@ export function Home() {
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5 max-w-xl md:max-w-3xl lg:max-w-6xl mx-auto items-stretch w-full"
       >
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }} className="md:col-span-2 lg:col-span-3">
-          <Link to="/chat" onClick={(event) => handleFeatureNavigation(event, chatFeatureFlag)} aria-disabled={chatFeatureFlag?.status === 'disabled'} className="block h-full">
+          <Link to="/chat" onClick={(event) => handleFeatureNavigation(event, chatFeatureFlag)} aria-disabled={chatFeatureFlag?.status === 'disabled'} className="block h-full" data-testid="home-primary-action-card">
             <div className={`glass-card-interactive min-h-[9.75rem] lg:min-h-[10.75rem] p-6 lg:p-7 relative overflow-hidden group ${featureCardStateClass(chatFeatureFlag)}`}>
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className={`flex h-full items-center gap-5 lg:gap-6 relative z-10 ${isRtl ? 'flex-row-reverse' : ''}`}>
@@ -983,22 +984,22 @@ export function Home() {
         </motion.div>
 
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }}>
-          <Link to="/scanner" onClick={(event) => handleFeatureNavigation(event, scannerFeatureFlag)} aria-disabled={scannerFeatureFlag?.status === 'disabled'} className="block h-full">
-            <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'} ${featureCardStateClass(scannerFeatureFlag)}`}>
-              <AppCameraIcon size={56} variant="tile" tone="amber" className="group-hover:scale-110 transition-transform duration-300 ease-out" />
+          <Link to="/tools?tab=grind-size" onClick={(event) => handleFeatureNavigation(event, toolsFeatureFlag)} aria-disabled={toolsFeatureFlag?.status === 'disabled'} className="block h-full" data-testid="home-primary-action-card">
+            <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'} ${featureCardStateClass(toolsFeatureFlag)}`}>
+              <AppGaugeIcon size={56} variant="tile" tone="green" className="group-hover:scale-110 transition-transform duration-300 ease-out" />
               <div className="w-full">
                 <div className={`flex flex-wrap items-center justify-center gap-2 ${isRtl ? 'lg:justify-end' : 'lg:justify-start'}`}>
-                  <h3 className="font-semibold text-lg">{t.homeScannerTitle}</h3>
-                  <FeatureStatusBadge flag={scannerFeatureFlag} t={t} />
+                  <h3 className="font-semibold text-lg">{t.homeGrindTitle}</h3>
+                  <FeatureStatusBadge flag={toolsFeatureFlag} t={t} />
                 </div>
-                <p className="text-sm text-secondary mt-1">{t.homeScannerSubtitle}</p>
+                <p className="text-sm text-secondary mt-1">{t.homeGrindSubtitle}</p>
               </div>
             </div>
           </Link>
         </motion.div>
 
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }}>
-          <Link to="/tools?tab=ai-brew" onClick={(event) => handleFeatureNavigation(event, aiBrewFeatureFlag)} aria-disabled={aiBrewFeatureFlag?.status === 'disabled'} className="block h-full">
+          <Link to="/tools?tab=ai-brew" onClick={(event) => handleFeatureNavigation(event, aiBrewFeatureFlag)} aria-disabled={aiBrewFeatureFlag?.status === 'disabled'} className="block h-full" data-testid="home-primary-action-card">
             <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'} ${featureCardStateClass(aiBrewFeatureFlag)}`}>
               <AppSparklesIcon size={56} variant="tile" tone="blue" className="group-hover:scale-110 transition-transform duration-300 ease-out" />
               <div className="w-full">
@@ -1013,7 +1014,7 @@ export function Home() {
         </motion.div>
 
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }}>
-          <Link to="/tools" onClick={(event) => handleFeatureNavigation(event, toolsFeatureFlag)} aria-disabled={toolsFeatureFlag?.status === 'disabled'} className="block h-full">
+          <Link to="/tools" onClick={(event) => handleFeatureNavigation(event, toolsFeatureFlag)} aria-disabled={toolsFeatureFlag?.status === 'disabled'} className="block h-full" data-testid="home-primary-action-card">
             <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'} ${featureCardStateClass(toolsFeatureFlag)}`}>
               <AppCoffeeIcon size={56} variant="tile" tone="amber" className="group-hover:scale-110 transition-transform duration-300 ease-out" />
               <div className="w-full">
@@ -1027,8 +1028,23 @@ export function Home() {
           </Link>
         </motion.div>
 
+        <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }}>
+          <Link to="/scanner" onClick={(event) => handleFeatureNavigation(event, scannerFeatureFlag)} aria-disabled={scannerFeatureFlag?.status === 'disabled'} className="block h-full" data-testid="home-primary-action-card">
+            <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'} ${featureCardStateClass(scannerFeatureFlag)}`}>
+              <AppCameraIcon size={56} variant="tile" tone="amber" className="group-hover:scale-110 transition-transform duration-300 ease-out" />
+              <div className="w-full">
+                <div className={`flex flex-wrap items-center justify-center gap-2 ${isRtl ? 'lg:justify-end' : 'lg:justify-start'}`}>
+                  <h3 className="font-semibold text-lg">{t.homeScannerTitle}</h3>
+                  <FeatureStatusBadge flag={scannerFeatureFlag} t={t} />
+                </div>
+                <p className="text-sm text-secondary mt-1">{t.homeScannerSubtitle}</p>
+              </div>
+            </div>
+          </Link>
+        </motion.div>
+
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }} className="md:col-span-2 lg:col-span-3">
-          <Link to="/collection" onClick={(event) => handleFeatureNavigation(event, collectionFeatureFlag)} aria-disabled={collectionFeatureFlag?.status === 'disabled'} className="block h-full">
+          <Link to="/collection" onClick={(event) => handleFeatureNavigation(event, collectionFeatureFlag)} aria-disabled={collectionFeatureFlag?.status === 'disabled'} className="block h-full" data-testid="home-primary-action-card">
             <div className={`glass-card-interactive min-h-[9rem] lg:min-h-[9.75rem] p-6 lg:p-7 flex items-center gap-5 group ${isRtl ? 'flex-row-reverse' : ''} ${featureCardStateClass(collectionFeatureFlag)}`}>
               <AppBookOpenIcon size={56} variant="tile" tone="green" className="shrink-0 group-hover:scale-110 transition-transform duration-300 ease-out" />
               <div className={`min-w-0 ${isRtl ? 'text-right' : 'text-left'}`}>

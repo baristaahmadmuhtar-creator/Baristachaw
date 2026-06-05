@@ -50,6 +50,25 @@ test('mobile main routes render', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /Barista Tools|Alat Barista/i })).toBeVisible();
 });
 
+test('home quick actions place Grind below Baristachaw and Vision Scan below Barista Tools', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?language=id', { waitUntil: 'domcontentloaded' });
+
+  const cardLinks = page.getByTestId('home-primary-action-card');
+  await expect(cardLinks).toHaveCount(6);
+  const hrefs = await cardLinks.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('href')));
+
+  expect(hrefs).toEqual([
+    '/chat',
+    '/tools?tab=grind-size',
+    '/tools?tab=ai-brew',
+    '/tools',
+    '/scanner',
+    '/collection',
+  ]);
+  await expect(page.getByRole('link', { name: /Ukuran Giling|Grind Size/i })).toBeVisible();
+});
+
 test('keyboard-open contracts reduce page bottom padding and keeps bottom filler disabled', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/tools');

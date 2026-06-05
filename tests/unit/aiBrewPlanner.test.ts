@@ -5328,6 +5328,49 @@ test('AeroPress production styles keep ratio, bypass split, water label, and use
   assert.match(collectUserFacingRecipeText(exact), /1:13\.0|Final ratio 1:13\.0|rasio akhir 1:13\.0/i);
 });
 
+test('AeroPress 200 ml plus recipes pace the chamber charge instead of rushing full water at the first cue', () => {
+  const catalog = buildProductionAiBrewCatalogForTests();
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'hot',
+    dripperId: 'aeropress',
+    grinderId: '1zpresso-k-ultra',
+    aeropressStyle: 'standard',
+    targetProfileId: 'more_sweetness',
+    coffeeName: 'Buku Hambela Ethiopia',
+    process: 'washed',
+    variety: 'ethiopian landrace',
+    roastLevel: 'medium_light',
+    doseG: '15',
+    targetWaterMl: '205',
+    waterMode: 'manual',
+    waterTdsPpm: '130',
+    waterHardnessPpm: '62.9',
+    waterAlkalinityPpm: '60.7',
+  }, catalog);
+
+  assert.equal(plan.methodFamily, 'aeropress');
+  assert.equal(plan.recipeStyle, 'standard');
+  assert.equal(plan.totalWaterMl, 205);
+  assertRatioInvariant(plan);
+
+  const chargeGuide = (plan.workflowGuideSteps || []).filter((step) => step.actionType === 'charge' && (step.pourVolumeMl || 0) > 0);
+  assert.ok(chargeGuide.length >= 2, '205 ml AeroPress should use at least two charge checkpoints');
+  assert.ok(
+    chargeGuide.every((step) => !(step.startSeconds <= 15 && (step.targetVolumeMl || 0) >= plan.hotWaterMl - 1)),
+    'full 205 ml target must not be demanded in the first 15 seconds',
+  );
+  assert.ok(
+    chargeGuide.some((step) => step.startSeconds >= 30 && (step.targetVolumeMl || 0) >= plan.hotWaterMl - 1),
+    'final chamber target should land after the first wetting window',
+  );
+
+  const text = collectUserFacingRecipeText(plan);
+  assert.match(text, /bertahap|dua tahap|two-stage|main charge|Isi air utama|tahap/i);
+  assert.doesNotMatch(text, /\b(drawdown|final pour|pour map|flat bed|V60|bloom)\b/i);
+  assert.equal(validateBrewPlanOutput(plan).allowed, true);
+});
+
 test('AI Brew direct manualPresetId applies AeroPress preset defaults before planning', () => {
   const catalog = buildProductionAiBrewCatalogForTests();
   const base = createDefaultAiBrewFormState(catalog);

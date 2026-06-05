@@ -119,6 +119,10 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
         return 'Dilute After Filtering';
       case 'isi air':
         return 'Charge Water';
+      case 'isi awal':
+        return 'Initial Charge';
+      case 'isi air utama':
+        return 'Main Charge';
       case 'aduk':
         return 'Stir';
       case 'aduk ringan':

@@ -1,37 +1,41 @@
 # BaristaChaw MVP Final Certification Report
 
-Date/time: 2026-06-05 11:09:45 +08:00
+Date/time: 2026-06-05 13:01:21 +08:00
 
 ## Definition Of Release Trust
 
-For this pass, release trust means required local software gates passed, critical AI Brew flows were tested, production public smoke passed, known blockers are documented, and no physical sensory result is fabricated. It does not mean every coffee will taste perfect, no dial-in is needed, Android Play Store submission is complete, or real brew cupping has been completed.
+For this pass, release trust means required local software gates passed, critical AI Brew flows were tested, production public smoke passed, GitHub Release Gate completed successfully, known blockers are documented, and no physical sensory result is fabricated. It does not mean every coffee will taste perfect, no dial-in is needed, Android Play Store submission is complete, or real brew cupping has been completed.
 
 ## Repository And Deployment
 
 | Item | Status |
 | --- | --- |
-| Certified software commit SHA | `cd8c714f6e4fb964ffbb0aa9e1adf15da04df92c` |
+| Certified software commit SHA | `dae496b9c64e3c3780b4ca5082090283db49a7b0` |
 | Branch | `main` |
-| Remote `origin/main` before this documentation update | `cd8c714f6e4fb964ffbb0aa9e1adf15da04df92c` |
-| Working tree before report updates | Clean, then docs updated by this certification pass |
 | Production URL | `https://baristaclaw.vercel.app` |
-| Vercel deployment | `dpl_7aBv8QSEsWUWxRwzveBnNDaHees9`, status Ready |
-| Vercel deployment URL | `https://baristaclaw-fqy0tqy3h-alphas-projects-9d57a19f.vercel.app` |
-| Vercel deployment commit | Deployed manually from local HEAD `cd8c714f6e4fb964ffbb0aa9e1adf15da04df92c`; commit metadata was not separately exposed by `vercel inspect` |
-| GitHub workflow | `.github/workflows/release-gate.yml` exists for push, PR, and manual final gate |
-| GitHub CI status | Unverified: GitHub status/workflow APIs returned no runs/statuses for the commit during this pass |
-| Auth smoke status | Blocked: `QA_AUTH_EMAIL` and `QA_AUTH_PASSWORD` were not set as secure environment variables |
+| Vercel deployment | `dpl_FYoW8NbRSocSDVTeJZjwHUCfnpKv`, status Ready |
+| Vercel deployment URL | `https://baristaclaw-ava2hsaaf-alphas-projects-9d57a19f.vercel.app` |
+| GitHub workflow | `.github/workflows/release-gate.yml` |
+| GitHub CI status | Pass: Release Gate run `26995681134`, job `Lint, Unit, Build, AI Brew E2E` completed `success` |
+| Strict auth smoke status | Blocked: `QA_AUTH_EMAIL` and `QA_AUTH_PASSWORD` were not set as secure environment variables |
+| Physical sensory validation | Pending human brew test |
+
+## CI Root Cause And Fix
+
+Recent Release Gate failures were not caused by AI Brew recipe logic. The repeated 45-minute failures were caused by the workflow spending the full job timeout in Playwright browser installation. After switching the release gate to system Chrome, the next failure exposed a second CI-only dependency issue: Playwright video capture still expected bundled `ffmpeg`. The final fix keeps system Chrome for CI and disables video recording only when `PLAYWRIGHT_USE_SYSTEM_CHROME=1`.
+
+Evidence:
+
+- Earlier failed runs were cancelled at about 45 minutes before reaching real release verification.
+- Commit `dae496b9c64e3c3780b4ca5082090283db49a7b0` reached `Run release verification`.
+- GitHub job steps for run `26995681134` completed successfully through `Run release verification`.
 
 ## Local Test Results
 
 | Command | Result |
 | --- | --- |
-| `git status --short` | Pass: clean at start of pass |
-| `git branch --show-current` | `main` |
-| `git log -1 --oneline` | `cd8c714f Harden AI Brew production release gates` |
-| `git diff --stat` | Pass: no code diff at start of pass |
 | `git diff --check` | Pass |
-| `npm run catalog:audit` | Pass; catalog risks classified but no publish blocker |
+| `npm run catalog:audit` | Pass |
 | `npm run test:ai-brew` | Pass, 329 passed, 4 skipped |
 | `npm run test:ai-brew:switch` | Pass, 10/10 |
 | `npm run test:ai-brew:matrix` | Pass, 9/9 |
@@ -43,7 +47,9 @@ For this pass, release trust means required local software gates passed, critica
 | `npm run test:e2e:mobile` | Pass, 26/26 |
 | `npm run test:a11y` | Pass, 9/9 |
 | `npm run smoke:local` | Pass, 21/21 after starting a temporary local server |
-| `npm run release:verify` | Pass |
+| `npm run release:verify` | Pass locally and in GitHub Release Gate |
+| `npm run lint:root` | Pass after CI system-Chrome patch |
+| `PLAYWRIGHT_USE_SYSTEM_CHROME=1 npx playwright test tests/e2e/mobile.spec.ts --project="Mobile Chrome" -g "mobile main routes render"` | Pass, 1/1 |
 
 ## Production Smoke Results
 
@@ -76,7 +82,7 @@ The following scenarios are covered by deterministic planner tests, rendered-out
 
 No local tested user-facing recipe rendered with wrong ratio math, broken timing, wrong method vocabulary, unsafe Switch chamber load, MUGEN treated as normal Switch, placeholder strings, developer-facing copy, or the incorrect hard-water label for GH around 60 / KH around 60.
 
-## Language And Mobile Status
+## Language, Mobile, And Android Status
 
 | Area | Result |
 | --- | --- |
@@ -86,6 +92,7 @@ No local tested user-facing recipe rendered with wrong ratio math, broken timing
 | Mobile AI Brew flow | Pass in Mobile Chrome and Mobile Safari E2E |
 | Android web-parity session loading risk | Covered by mobile shell tests and mobile E2E; no current critical local blocker found |
 | Accessibility | Pass for serious/critical route checks |
+| Android Play Store readiness | Not certified; no signed AAB/internal test/Data Safety/store listing proof in this pass |
 
 ## Security And Credential Handling
 
@@ -115,15 +122,15 @@ No aroma, flavor, score, or taste pass/fail has been fabricated.
 
 ## Remaining Risks
 
-1. GitHub CI is unverified because no workflow run/status was visible for the pushed commit through the available GitHub status APIs.
-2. Strict authenticated production smoke is blocked until `QA_AUTH_EMAIL` and `QA_AUTH_PASSWORD` are set as secure environment variables.
-3. Live authenticated AI Brew production scenario audit was not run for the same credential-env reason.
-4. Physical sensory validation is pending human brewing and tasting.
-5. Android Play Store readiness is not certified without signed AAB/internal test/Data Safety/store listing proof.
-6. Build still reports non-blocking chunk-size/import warnings for AI Brew code splitting.
+1. Strict authenticated production smoke is blocked until `QA_AUTH_EMAIL` and `QA_AUTH_PASSWORD` are set as secure environment variables.
+2. Live authenticated AI Brew production scenario audit was not run for the same credential-env reason.
+3. Physical sensory validation is pending human brewing and tasting.
+4. Android Play Store readiness is not certified without signed AAB/internal test/Data Safety/store listing proof.
+5. Build still reports non-blocking chunk-size/import warnings for AI Brew code splitting.
+6. This report update is documentation-only; if committed after the certified software commit, the latest repository SHA will include this report but does not change the certified AI Brew runtime logic.
 
 ## Final Verdict
 
-MVP READY LOCALLY / REMOTE CI REQUIRED
+PRODUCTION SOFTWARE READY / SENSORY VALIDATION PENDING
 
-The software gates and public production smoke are strong, and the current production deployment is Ready. The release cannot honestly be certified as full production-ready under the requested rules until GitHub CI is visibly green and strict authenticated production smoke runs with secure environment credentials.
+The software release gate is green, production public smoke passes, and the AI Brew critical planner gates are covered. Full production certification remains limited by missing secure authenticated smoke credentials and pending real human sensory brew validation.

@@ -9,6 +9,7 @@ import {
   createDefaultAiBrewFormState,
   supportsAiBrewIcedMode,
 } from '../../apps/web/src/features/ai-brew/planner.ts';
+import { localizeAiBrewDynamicText } from '../../apps/web/src/features/ai-brew/localization.ts';
 import {
   AI_BREW_WORKFLOW_TUTORIAL_METHODS,
   resolveWorkflowTutorialDetail,
@@ -57,7 +58,8 @@ const METHOD_ACTIONS: Record<AiBrewMethodFamily, WorkflowGuideActionType[]> = {
   batch_brew: ['setup', 'dose', 'monitor_flow', 'mix', 'serve'],
 };
 
-const ENGLISH_LEAKS = /\b(tuang|seduh|sajikan|katup|ruang|bubuk|air panas|jangan|aduk|tetesan|bilas)\b/i;
+const ENGLISH_LEAKS = /\b(tuang|seduh|sajikan|katup|ruang|bubuk|air panas|jangan|aduk|rendam|tekan|endapkan|tetesan|bilas|gilingan|suhu|rasa|catatan|koleksi|panduan|keyakinan)\b|air turun/i;
+const BROKEN_USER_COPY = /\$(?:\d+|\{)|\b(?:undefined|null|NaN|\[object Object\]|ActionAction|Action\s+Action|Pressgentle|Stophiss)\b|pour air|stir\s+\d+(?:-\d+)?\s+times\s+saja|Tekan [^.!?]*seconds|Seduh [^.!?]*brew/i;
 const CRITICAL_INDONESIAN_LEAKS = /\b(rinse|preheat|kettle|serve|drawdown|pour path|press slowly|release|dose evenly)\b/i;
 const CORRECTION_LOOP = /kalau asam|kalau pahit|jika asam|jika pahit|if sour|if bitter|correction|koreksi rasa|next cup|dial-in/i;
 const AEROPRESS_STYLE_CASES = [
@@ -315,7 +317,7 @@ test('AI Brew entry cards expose Basic/Advanced while keeping guide density Lite
   assert.match(source, /guideDensitySimple:\s*'Lite'/);
   assert.match(source, /guideDensityPro:\s*'Pro'/);
   assert.match(source, /guideDensitySimpleHint:\s*'Timer and current step stay in view\.'/);
-  assert.match(source, /guideDensityProHint:\s*'Full guide with practical barista detail\.'/);
+  assert.match(source, /guideDensityProHint:\s*'Full guide with practical barista checkpoints\.'/);
 
   assert.match(source, /guideDensitySimple:\s*'Lite'/);
   assert.match(source, /guideDensityPro:\s*'Pro'/);
@@ -394,6 +396,22 @@ test('every visible AI Brew dripper resolves tutorial detail for each generated 
       const guideSteps = buildWorkflowAwareGuideSteps(plan);
       assert.ok(guideSteps.length >= 3, `${dripper.name} ${brewMode} should generate a real workflow guide`);
 
+      const toEnglish = (value: string) => localizeAiBrewDynamicText(value, 'en');
+      const guideText = guideSteps
+        .flatMap((step) => [
+          toEnglish(step.label),
+          toEnglish(step.note),
+          toEnglish(step.hybridInstruction || ''),
+          toEnglish(step.primaryText),
+          toEnglish(step.secondaryText || ''),
+          ...step.warnings.map(toEnglish),
+          ...step.techniqueChips.flatMap((chip) => [toEnglish(chip.label), toEnglish(chip.value)]),
+        ])
+        .filter(Boolean)
+        .join('\n');
+      assert.doesNotMatch(guideText, BROKEN_USER_COPY, `${dripper.name}/${brewMode} guide has broken user copy: ${guideText}`);
+      assert.doesNotMatch(guideText, ENGLISH_LEAKS, `${dripper.name}/${brewMode} guide leaks Indonesian: ${guideText}`);
+
       for (const step of guideSteps) {
         const en = resolveWorkflowTutorialDetail({
           methodFamily: plan.methodFamily,
@@ -413,6 +431,8 @@ test('every visible AI Brew dripper resolves tutorial detail for each generated 
         });
         assert.ok(en.length > 20 && en.length <= 220, `${dripper.name}/${brewMode}/${step.actionType} EN tutorial should be one compact point`);
         assert.ok(id.length > 20 && id.length <= 240, `${dripper.name}/${brewMode}/${step.actionType} ID tutorial should be one compact point`);
+        assert.doesNotMatch(en, ENGLISH_LEAKS, `${dripper.name}/${brewMode}/${step.actionType} EN leaks Indonesian: ${en}`);
+        assert.doesNotMatch(en, BROKEN_USER_COPY, `${dripper.name}/${brewMode}/${step.actionType} EN has broken copy: ${en}`);
         assert.doesNotMatch(`${en} ${id}`, CORRECTION_LOOP, `${dripper.name}/${brewMode}/${step.actionType} should not be taste correction`);
       }
     }

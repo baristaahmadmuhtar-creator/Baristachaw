@@ -245,6 +245,10 @@ const COPY = {
     manualPresetShow: 'Show presets',
     manualPresetHide: 'Hide presets',
     manualPresetSelected: 'Selected',
+    manualPresetOfficial: 'Official reference',
+    manualPresetCurated: 'Curated reference',
+    manualPresetCommunity: 'Community reference',
+    manualPresetInternal: 'Internal synthesis',
     methodOptionTitle: 'Method setup',
     origamiFilterTitle: 'Origami filter',
     origamiFilterAuto: 'Auto',
@@ -402,7 +406,7 @@ const COPY = {
     varietyOptionalNote: 'Variety is optional. No automatic variety modifier will be applied.',
     profileTitle: 'Target Profile',
     modeHot: 'Hot Brew',
-    modeIced: 'Ice Brew',
+    modeIced: 'Iced brew',
     modeCold: 'Cold Brew',
     modeEspresso: 'Espresso',
     coffeeName: 'Coffee / origin',
@@ -494,7 +498,7 @@ const COPY = {
     totalWater: 'Total Water',
     finalRatio: 'Final Ratio',
     hotConcentrate: 'Hot Concentrate',
-    iceSetupTitle: 'Ice brew setup',
+    iceSetupTitle: 'Iced brew setup',
     iceSetupDetail: 'Put ice in the server first, brew only to the hot-water target, let drawdown finish, then stir 5-8 seconds until the melt is even.',
     cupOutput: 'Estimated Cup Output',
     hotWater: 'Hot Water',
@@ -611,7 +615,7 @@ const COPY = {
     guideDensitySimple: 'Lite',
     guideDensityPro: 'Pro',
     guideDensitySimpleHint: 'Timer and current step stay in view.',
-    guideDensityProHint: 'Full guide with practical barista detail.',
+    guideDensityProHint: 'Full guide with practical barista checkpoints.',
     switchSectionTitle: 'Switch method',
     switchSectionSummary: 'Choose Hot/Iced first, then leave Auto or pick the Switch method you want.',
     switchTeachingTitle: 'How Switch can brew',
@@ -726,20 +730,20 @@ const COPY = {
     openProcessPicker: 'Choose process',
     openVarietyPicker: 'Choose variety',
     openDripperPicker: 'Choose brewer',
-    icedUnavailable: 'Ice mode is not available for this brewer yet. Standard mode will be used.',
-    icedUnavailableInline: 'Ice mode is intentionally locked for this brewer so BaristaChaw does not invent a fake iced recipe. Use hot mode for this method, or choose V60, Kalita, Chemex, April, Origami, Kono, Melitta, or Clever for Japanese-style ice brew.',
+    icedUnavailable: 'Iced mode is not available for this brewer yet. Hot mode will be used.',
+    icedUnavailableInline: 'Iced mode is intentionally locked for this brewer so BaristaChaw does not invent a fake iced recipe. Use hot mode for this method, or choose V60, Kalita, Chemex, April, Origami, Kono, Melitta, or Clever for Japanese-style iced brew.',
     openGrinderPicker: 'Choose grinder',
     showProvenance: 'Show provenance',
     hideProvenance: 'Hide provenance',
     sourceBadge: 'Source',
     popularityBadge: 'Popularity',
     generationStageLabel: 'Stage',
-    planTab: 'Plan',
-    flowTab: 'Brew Guide',
-    coachTab: 'Coach',
-    detailTab: 'Details',
-    flowTitle: 'Guided brew',
-    flowDescription: 'Stay on the active step. The timer keeps the brew moving with less guesswork.',
+    planTab: 'Summary',
+    flowTab: 'Brew',
+    coachTab: 'AI',
+    detailTab: 'Detail',
+    flowTitle: 'Brew guide',
+    flowDescription: 'Stay with the active step. The timer keeps the brew moving without rushing the cup.',
     flowReady: 'Ready to brew',
     flowRunning: 'Timer is running',
     flowPaused: 'Timer paused',
@@ -858,6 +862,10 @@ const COPY = {
     manualPresetShow: 'Tampilkan preset',
     manualPresetHide: 'Sembunyikan preset',
     manualPresetSelected: 'Terpilih',
+    manualPresetOfficial: 'Referensi resmi',
+    manualPresetCurated: 'Referensi kurasi',
+    manualPresetCommunity: 'Referensi komunitas',
+    manualPresetInternal: 'Sintesis internal',
     methodOptionTitle: 'Setelan metode',
     origamiFilterTitle: 'Filter Origami',
     origamiFilterAuto: 'Auto',
@@ -2488,6 +2496,36 @@ function formatVerification(copy: CopySet, verification: VerificationLevel) {
     default:
       return copy.verifiedDataset;
   }
+}
+
+function formatManualPresetVerification(copy: CopySet, verification: ManualBrewPreset['verificationLevel']) {
+  switch (verification) {
+    case 'official_reference':
+      return copy.manualPresetOfficial;
+    case 'curated_reference':
+      return copy.manualPresetCurated;
+    case 'community_reference':
+      return copy.manualPresetCommunity;
+    case 'internal_synthesis':
+    default:
+      return copy.manualPresetInternal;
+  }
+}
+
+function localizeManualPresetDisplayText(text: string | undefined, language?: string) {
+  if (!text) return '';
+  if (!isIndonesianAiBrewLanguage(language)) return text;
+  const dynamic = localizeAiBrewDynamicText(text, language);
+  return dynamic
+    .replace(/^Inspired by Tetsu Kasuya 2026 10x Pour$/i, 'Terinspirasi dari Tetsu Kasuya 2026 10x Pour')
+    .replace(
+      /^Reported 2026 Tetsu Kasuya 10x pour style: 20g coffee, 300g water, ten 30g pours, very coarse grind, high temperature, and body-focused finish\. Hario Neo is not in the AI Brew catalog yet, so V60 is used as the compatible fallback\.$/i,
+      'Gaya Tetsu Kasuya 2026 10x pour yang dilaporkan: 20g kopi, 300g air, sepuluh tuangan 30g, gilingan sangat kasar, suhu tinggi, dan finish body-forward. Hario Neo belum tersedia di katalog AI Brew, jadi V60 dipakai sebagai fallback kompatibel.',
+    )
+    .replace(/^Inspired by /i, 'Terinspirasi dari ')
+    .replace(/\bStyle\b/g, 'Gaya')
+    .replace(/\bFocus\b/g, 'Fokus')
+    .replace(/\bFast Brew\b/g, 'Seduh Cepat');
 }
 
 function formatReviewStatus(copy: CopySet, status?: BrewPlan['processReviewStatus']) {
@@ -4365,7 +4403,7 @@ function renderAiBrewSequenceStepCard(
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-medium text-primary">
                 <span>
-                  {isIndonesianAiBrewLanguage(language) ? 'Detail tambahan' : 'Extra detail'}
+                  {isIndonesianAiBrewLanguage(language) ? 'Detail tambahan' : 'Additional details'}
                 </span>
                 <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
               </summary>
@@ -6165,7 +6203,7 @@ function PlanResultDialog({
                     </span>
                     {plan.manualPresetLabel ? (
                       <span className={`${resultChipClass} border-blue-500/18 bg-blue-500/10 text-blue-700 dark:text-blue-300`} data-testid="ai-brew-result-manual-preset-chip">
-                        {plan.manualPresetLabel}
+                        {localizeManualPresetDisplayText(plan.manualPresetLabel, language)}
                       </span>
                     ) : null}
                     {plan.targetProfileAutoSuggested && (
@@ -6190,7 +6228,7 @@ function PlanResultDialog({
                   <h3 className="break-words text-lg font-semibold tracking-tight text-primary sm:text-xl">{buildLocalizedPlanRecipeName(plan, language)}</h3>
                   {plan.manualPresetSummary ? (
                     <p className="mt-1 text-xs leading-5 text-secondary" data-testid="ai-brew-result-manual-preset-summary">
-                      {plan.manualPresetSummary}
+                      {localizeManualPresetDisplayText(plan.manualPresetSummary, language)}
                     </p>
                   ) : null}
                   <p id={descriptionId} className="sr-only">
@@ -6529,8 +6567,8 @@ function PlanResultDialog({
                       </div>
                       <p className="mt-1 text-xs leading-5 text-secondary">
                         {id
-                          ? 'Rationale ini berasal dari angka planner deterministik, bukan karangan AI.'
-                          : 'This rationale comes from deterministic planner numbers, not AI-invented copy.'}
+                          ? 'Resep ini dihitung dari dosis, rasio, metode, profil bean, roast, baseline grinder, dan kondisi air. Pakai sebagai titik awal, lalu koreksi dari rasa di cup.'
+                          : 'This recipe is calculated from the dose, ratio, brew method, bean profile, roast level, grinder baseline, and water condition. Use it as a starting point, then adjust from the cup.'}
                       </p>
                     </div>
                     <span className="rounded-full border border-blue-500/18 bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
@@ -7403,7 +7441,7 @@ function PlanResultDialog({
                             data-testid={`ai-brew-flow-step-detail-${index + 1}`}
                           >
                             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-medium text-primary">
-                              <span>{id ? 'Detail tambahan' : 'Extra detail'}</span>
+                              <span>{id ? 'Detail tambahan' : 'Additional details'}</span>
                               <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
                             </summary>
                             <ul className="mt-2.5 space-y-2.5 text-sm leading-6 text-secondary">
@@ -11296,7 +11334,7 @@ export function AiBrewPanel() {
             </p>
             {selectedManualPreset ? (
               <p className="mt-2 text-xs font-semibold text-blue-600 dark:text-blue-300" data-testid="ai-brew-selected-manual-preset">
-                {copy.manualPresetSelected}: {selectedManualPreset.safeLabel}
+                {copy.manualPresetSelected}: {localizeManualPresetDisplayText(selectedManualPreset.safeLabel, language)}
               </p>
             ) : null}
           </div>
@@ -11362,6 +11400,7 @@ export function AiBrewPanel() {
             <div className="mt-3 grid max-h-[18rem] gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
               {filteredManualBrewPresets.map((preset: ManualBrewPreset) => {
                 const active = formState.manualPresetId === preset.id;
+                const verificationLabel = formatManualPresetVerification(copy, preset.verificationLevel);
                 return (
                   <button
                     key={preset.id}
@@ -11375,13 +11414,18 @@ export function AiBrewPanel() {
                     aria-pressed={active}
                     data-testid={`ai-brew-manual-preset-${preset.id}`}
                   >
-                    <span className="block text-sm font-semibold text-primary">{preset.safeLabel}</span>
-                    <span className="mt-1 line-clamp-2 block text-xs leading-5 text-secondary">{preset.visibleSummary}</span>
-                    {preset.fallbackReason ? (
-                      <span className="mt-1 inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300">
-                        {copy.manualPresetFallback}
+                    <span className="block text-sm font-semibold text-primary">{localizeManualPresetDisplayText(preset.safeLabel, language)}</span>
+                    <span className="mt-1 line-clamp-2 block text-xs leading-5 text-secondary">{localizeManualPresetDisplayText(preset.visibleSummary, language)}</span>
+                    <span className="mt-2 flex flex-wrap gap-1.5">
+                      <span className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
+                        {verificationLabel}
                       </span>
-                    ) : null}
+                      {preset.fallbackReason ? (
+                        <span className="inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                          {copy.manualPresetFallback}
+                        </span>
+                      ) : null}
+                    </span>
                   </button>
                 );
               })}

@@ -1306,7 +1306,8 @@
       "sourceAttribution": "2025 World AeroPress Champion Nemo Pop reference, adapted as a safe planner prefill.",
       "verificationLevel": "official_reference",
       "sourceUrls": [
-        "https://aeropress.com/blogs/w-a-c-aeropress-recipes/1st-nemo-pop-australia-2025"
+        "https://aeropress.com/blogs/w-a-c-aeropress-recipes/1st-nemo-pop-australia-2025",
+        "https://worldaeropresschampionship.com/pages/recipes"
       ],
       "supportedDripperIds": ["aeropress"],
       "targetDefaults": {
@@ -1335,6 +1336,122 @@
         "Bypass water belongs in the cup or carafe, not in the chamber.",
         "This is an adapted starting point from a competition recipe; present it as calibration guidance, not a promise of competition results.",
         "If there is no Flow Control Cap, keep the chamber stable and expect more pre-drip than the official reference."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "inspired-wac-2025-jan-ahrend",
+      "safeLabel": "Inspired by Jan Ahrend WAC 2025",
+      "category": "competition_inspired",
+      "sourceAttribution": "2025 World AeroPress Championship second-place Jan Ahrend reference, adapted as a safe planner prefill.",
+      "verificationLevel": "official_reference",
+      "sourceUrls": [
+        "https://worldaeropresschampionship.com/pages/recipes"
+      ],
+      "supportedDripperIds": ["aeropress"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "floral_transparent",
+        "doseG": 18,
+        "targetWaterMl": 152,
+        "targetTempC": 88,
+        "targetRatio": 8.4,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 60,
+        "waterHardnessPpm": 28,
+        "waterAlkalinityPpm": 18,
+        "aeropressStyle": "bypass"
+      },
+      "techniquePattern": "aeropress_clean",
+      "visibleSummary": "WAC 2025 Jan Ahrend style: inverted AeroPress, 100 g brew water, controlled swirl, press by output target, then dilute to 152 g.",
+      "internalTips": [
+        "Use 18g coffee, inverted setup, two rinsed paper filters, and low-mineral water around 88C.",
+        "Brew with 100g water in the chamber, stir gently, cap, flip around 1:30, and press by output instead of forcing a dry finish.",
+        "Dilute the concentrate to 152g final beverage weight and let it cool before tasting."
+      ],
+      "guardrails": [
+        "This preset is an adapted competition reference; do not promise competition results.",
+        "Bypass/dilution water belongs after pressing, not inside the AeroPress chamber.",
+        "Stop by beverage output and taste clarity; do not press hard through a dry hiss."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "inspired-wac-2025-dharun-vyas",
+      "safeLabel": "Inspired by Dharun Vyas WAC 2025",
+      "category": "competition_inspired",
+      "sourceAttribution": "2025 World AeroPress Championship third-place Dharun Vyas reference, adapted as a safe planner prefill.",
+      "verificationLevel": "official_reference",
+      "sourceUrls": [
+        "https://worldaeropresschampionship.com/pages/recipes"
+      ],
+      "supportedDripperIds": ["aeropress"],
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "fruit_forward",
+        "doseG": 16,
+        "targetWaterMl": 220,
+        "targetTempC": 88,
+        "targetRatio": 13.8,
+        "pourCount": "3",
+        "pourStyle": "gentle",
+        "waterTdsPpm": 87,
+        "waterHardnessPpm": 42,
+        "waterAlkalinityPpm": 28,
+        "aeropressStyle": "inverted"
+      },
+      "techniquePattern": "aeropress_clean",
+      "visibleSummary": "WAC 2025 Dharun Vyas style: inverted AeroPress, 65 g wetting pour, center-heavy fill to 208 g, one-minute consistent plunge, and 12 g dilution.",
+      "internalTips": [
+        "Use 16g coffee in the AeroPress with an inverted setup and Flow Control style cap when available.",
+        "Wet with about 65g first, then fill to 208g before capping and flipping.",
+        "Keep the plunge consistent for about one minute, then add 12g room-temperature dilution water after pressing."
+      ],
+      "guardrails": [
+        "The 12g dilution is added after pressing; do not overload the chamber.",
+        "This is a competition-style starting point and needs dial-in for grinder, paper, and bean density.",
+        "Keep the inverted chamber stable and avoid aggressive swirling if the seal feels unsafe."
+      ],
+      "catalogVersion": "2026.06.0-ai-brew-manual-presets"
+    },
+    {
+      "id": "inspired-tetsu-kasuya-2026-ten-pour",
+      "safeLabel": "Inspired by Tetsu Kasuya 2026 10x Pour",
+      "category": "competition_inspired",
+      "sourceAttribution": "Reported 2026 Tetsu Kasuya 10-pour multi-pour method, adapted from secondary public recipe coverage as a cautious planner prefill.",
+      "verificationLevel": "curated_reference",
+      "sourceUrls": [
+        "https://roastaroma.com/blog/tetsu-kasuyas-new-multi-pour-method-2026-the-10-pour-super-coarse-v60-recipe"
+      ],
+      "supportedDripperIds": ["hario-v60"],
+      "originalBrewerId": "hario-neo",
+      "fallbackDripperId": "hario-v60",
+      "fallbackReason": "Hario Neo is not currently in the AI Brew catalog; V60 is used as the safe compatible fallback.",
+      "targetDefaults": {
+        "brewMode": "hot",
+        "targetProfileId": "more_body",
+        "doseG": 20,
+        "targetWaterMl": 300,
+        "targetTempC": 96,
+        "targetRatio": 15,
+        "pourCount": "5",
+        "pourStyle": "pulse",
+        "waterTdsPpm": 90,
+        "waterHardnessPpm": 50,
+        "waterAlkalinityPpm": 35
+      },
+      "techniquePattern": "ten_pour_multi",
+      "visibleSummary": "Reported 2026 Tetsu Kasuya 10x pour style: 20g coffee, 300g water, ten 30g pours, very coarse grind, high temperature, and body-focused finish. Hario Neo is not in the AI Brew catalog yet, so V60 is used as the compatible fallback.",
+      "internalTips": [
+        "Use ten 30g pours: first pour at 0:00, then every 15s after a 30s bloom pause until 300g total.",
+        "Start very coarse and keep the water hot; the method chases sweetness and body more than sharp acidity.",
+        "Expect a hands-on brew near 3:30 and avoid using this preset for dark roasts without lowering temperature."
+      ],
+      "guardrails": [
+        "This is curated from secondary public coverage, not an official primary-source recipe page.",
+        "Do not present it as an official Tetsu or competition recipe.",
+        "Skip or lower temperature for dark roasts, high-buffer water, or cups that taste bitter and dry."
       ],
       "catalogVersion": "2026.06.0-ai-brew-manual-presets"
     },

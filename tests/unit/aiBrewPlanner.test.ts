@@ -5385,6 +5385,22 @@ test('AI Brew direct manualPresetId applies AeroPress preset defaults before pla
       recipeStyle: 'bypass',
     },
     {
+      presetId: 'inspired-wac-2025-jan-ahrend',
+      label: /Jan Ahrend|WAC 2025/i,
+      totalWaterMl: 152,
+      hotWaterMl: 100,
+      waterTempC: 88,
+      recipeStyle: 'bypass',
+    },
+    {
+      presetId: 'inspired-wac-2025-dharun-vyas',
+      label: /Dharun Vyas|WAC 2025/i,
+      totalWaterMl: 220,
+      hotWaterMl: 208,
+      waterTempC: 88,
+      recipeStyle: 'inverted',
+    },
+    {
       presetId: 'inspired-aeropress-cold-brew-express',
       label: /Cold Brew Express/i,
       totalWaterMl: 100,
@@ -5408,8 +5424,33 @@ test('AI Brew direct manualPresetId applies AeroPress preset defaults before pla
     assert.equal(plan.totalWaterMl, entry.totalWaterMl);
     assert.equal(plan.hotWaterMl, entry.hotWaterMl);
     assert.equal(plan.waterTempC, entry.waterTempC);
+    assert.ok(Math.abs(plan.recommendedRatio - (plan.totalWaterMl / plan.doseG)) <= 0.051);
     assert.equal(plan.workflowValidation?.passed, true);
   }
+});
+
+test('AI Brew direct manualPresetId applies Tetsu 2026 ten-pour preset as guarded V60 fallback', () => {
+  const catalog = buildProductionAiBrewCatalogForTests();
+  const base = createDefaultAiBrewFormState(catalog);
+  const plan = buildAiBrewPlan({
+    ...base,
+    manualPresetId: 'inspired-tetsu-kasuya-2026-ten-pour',
+  }, catalog);
+
+  const pours = plan.steps.filter((step) => (step.pourVolumeMl || 0) > 0);
+  assert.equal(plan.manualPresetId, 'inspired-tetsu-kasuya-2026-ten-pour');
+  assert.match(plan.manualPresetLabel || '', /Tetsu Kasuya 2026 10x Pour/i);
+  assert.equal(plan.methodFamily, 'v60');
+  assert.equal(plan.dripper.id, 'hario-v60');
+  assert.equal(plan.doseG, 20);
+  assert.equal(plan.totalWaterMl, 300);
+  assert.equal(plan.waterTempC, 96);
+  assert.equal(plan.recommendedRatio, 15);
+  assert.equal(pours.length, 10);
+  assert.deepEqual(pours.map((step) => step.pourVolumeMl), Array.from({ length: 10 }, () => 30));
+  assert.ok(plan.totalTimeSeconds >= 210);
+  assert.match([plan.manualPresetSummary, ...plan.notes, ...plan.warnings].join('\n'), /Reported 2026|secondary public|Hario Neo|V60/i);
+  assert.equal(plan.workflowValidation?.passed, true);
 });
 
 test('AeroPress light roast service temperatures do not keep stale low-temperature warnings', () => {

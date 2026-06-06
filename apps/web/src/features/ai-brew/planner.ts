@@ -630,6 +630,12 @@ function resolveManualPresetPourPattern(
         shares: normalizePourShares([0.25, 0.4, 0.35]),
         note: 'Manual preset technique: temperature-decline inspired finish; use early extraction pressure, then calmer late water.',
       };
+    case 'ten_pour_multi':
+      return {
+        starts: [0, 30, 45, 60, 75, 90, 105, 120, 135, 150].map((seconds) => seconds + icedOffset),
+        shares: normalizePourShares(Array.from({ length: 10 }, () => 0.1)),
+        note: 'Manual preset technique: reported 2026 Tetsu Kasuya multi-pour cadence with ten small V60 pours, very coarse grind, high temperature, and a slower body-focused finish.',
+      };
     case 'chemex_clean':
       return {
         starts: [0, 50 + icedOffset, 100 + icedOffset, 150 + icedOffset],
@@ -676,9 +682,28 @@ function resolveManualPresetMinimumTimeSeconds(
   if (!preset || brewMode !== 'hot') return 0;
   if (preset.techniquePattern === 'generic_fast') return 120;
   if (preset.techniquePattern === 'two_pour') return 130;
+  if (preset.techniquePattern === 'ten_pour_multi') return 210;
   if (preset.techniquePattern === 'chemex_clean' || methodFamily === 'chemex') return 235;
   if (preset.techniquePattern === 'flat_bottom_fast_four') return 145;
   return 0;
+}
+
+function buildManualPresetAdaptationNote(
+  preset: ManualBrewPreset | undefined,
+  doseG: number,
+  totalWaterMl: number,
+  waterTempC: number,
+) {
+  if (!preset) return undefined;
+  const defaults = preset.targetDefaults;
+  const ratio = defaults.targetRatio || defaults.targetWaterMl / defaults.doseG;
+  const defaultWaterForDose = roundBaristaVolumeMl(doseG * ratio, 'v60');
+  const adapted = Math.abs(doseG - defaults.doseG) >= 0.1
+    || Math.abs(totalWaterMl - defaults.targetWaterMl) >= 1
+    || Math.abs(totalWaterMl - defaultWaterForDose) >= 1
+    || Math.abs(waterTempC - defaults.targetTempC) >= 0.5;
+  if (!adapted) return undefined;
+  return 'Manual brew preset adapted from the selected dose, water target, or temperature. The planner kept the preset direction but recalculated ratio, timing, and method guardrails from the current inputs.';
 }
 
 function resolveMinimumIcedManualPourOverTimeSeconds(profile: DeviceBrewProfile, methodFamily: AiBrewMethodFamily, brewMode: 'hot' | 'iced') {
@@ -1134,6 +1159,17 @@ function resolveManualPresetScalingRatio(preset: ManualBrewPreset) {
   return preset.targetDefaults.targetWaterMl / preset.targetDefaults.doseG;
 }
 
+function roundManualPresetWaterMl(
+  value: number,
+  methodFamily: AiBrewMethodFamily,
+  preset: ManualBrewPreset | null | undefined,
+) {
+  if (preset && methodFamily === 'aeropress') {
+    return Math.max(0, Math.round(value));
+  }
+  return roundBaristaVolumeMl(value, methodFamily);
+}
+
 export function resolveManualPresetScaledWaterMl(
   preset: ManualBrewPreset | null | undefined,
   nextDoseG: number,
@@ -1151,20 +1187,22 @@ export function resolveManualPresetScaledWaterMl(
   const previousDose = typeof previousDoseG === 'number' && Number.isFinite(previousDoseG)
     ? previousDoseG
     : preset.targetDefaults.doseG;
-  const expectedPreviousWater = roundBaristaVolumeMl(calcWaterFromDoseRatio(previousDose, ratio), methodFamily);
-  const presetDefaultWater = roundBaristaVolumeMl(preset.targetDefaults.targetWaterMl, methodFamily);
+  const expectedPreviousWater = roundManualPresetWaterMl(calcWaterFromDoseRatio(previousDose, ratio), methodFamily, preset);
+  const presetDefaultWater = roundManualPresetWaterMl(preset.targetDefaults.targetWaterMl, methodFamily, preset);
   const followsPresetWater = Math.abs(currentTargetWater - presetDefaultWater) <= 0.51
     || Math.abs(currentTargetWater - expectedPreviousWater) <= 0.51;
   if (!followsPresetWater) return null;
 
-  const nextWater = roundBaristaVolumeMl(calcWaterFromDoseRatio(nextDoseG, ratio), methodFamily);
+  const nextWater = Math.abs(nextDoseG - preset.targetDefaults.doseG) <= 0.01
+    ? roundManualPresetWaterMl(preset.targetDefaults.targetWaterMl, methodFamily, preset)
+    : roundManualPresetWaterMl(calcWaterFromDoseRatio(nextDoseG, ratio), methodFamily, preset);
   if (!Number.isFinite(nextWater) || nextWater <= 0) return null;
 
   const hardLimits = TARGET_WATER_METHOD_LIMITS[methodFamily];
   const clampedWater = hardLimits
     ? clamp(nextWater, hardLimits.min, hardLimits.max)
     : nextWater;
-  const roundedClampedWater = roundBaristaVolumeMl(clampedWater, methodFamily);
+  const roundedClampedWater = roundManualPresetWaterMl(clampedWater, methodFamily, preset);
   return hardLimits
     ? clamp(roundedClampedWater, hardLimits.min, hardLimits.max)
     : roundedClampedWater;
@@ -1178,12 +1216,17 @@ function resolveManualPresetBrewWaterOverrideMl(
   brewMode: AiBrewMode,
 ) {
   if (!preset || brewMode !== 'hot' || methodFamily !== 'aeropress') return null;
-  if (preset.id !== 'inspired-wac-championship-style') return null;
+  const officialSplit = {
+    'inspired-wac-championship-style': { doseG: 18, brewWaterMl: 100 },
+    'inspired-wac-2025-jan-ahrend': { doseG: 18, brewWaterMl: 100 },
+    'inspired-wac-2025-dharun-vyas': { doseG: 16, brewWaterMl: 208 },
+  }[preset.id];
+  if (!officialSplit) return null;
 
-  const officialDoseG = 18;
-  const officialBrewWaterMl = 100;
+  const officialDoseG = officialSplit.doseG;
+  const officialBrewWaterMl = officialSplit.brewWaterMl;
   const brewWaterRatio = officialBrewWaterMl / officialDoseG;
-  const scaledBrewWaterMl = roundBaristaVolumeMl(calcWaterFromDoseRatio(nextDoseG, brewWaterRatio), methodFamily);
+  const scaledBrewWaterMl = Math.round(calcWaterFromDoseRatio(nextDoseG, brewWaterRatio));
   if (!Number.isFinite(scaledBrewWaterMl) || scaledBrewWaterMl <= 0) return null;
 
   return clamp(
@@ -5950,7 +5993,11 @@ function buildAdaptiveStepShares(profile: DeviceBrewProfile, context: AdaptiveSh
   if (context.methodFamily === 'hario_switch') {
     return base;
   }
-  if (context.manualTechniquePattern === 'equal_five_pour' || context.manualTechniquePattern === 'four_six') {
+  if (
+    context.manualTechniquePattern === 'equal_five_pour'
+    || context.manualTechniquePattern === 'four_six'
+    || context.manualTechniquePattern === 'ten_pour_multi'
+  ) {
     return base;
   }
   const intent = resolveContextTargetIntent(context);
@@ -7234,7 +7281,9 @@ function buildSteps(
     const maxPourVolumeMl = bloomCeilingMl !== null && !isLastPourStep
       ? Math.min(unconstrainedMaxPourVolumeMl, bloomCeilingMl)
       : unconstrainedMaxPourVolumeMl;
-    const bloomFloorMl = isFirstPourStep && supportsAiBrewPourControls(adaptiveShareContext.methodFamily)
+    const bloomFloorMl = isFirstPourStep
+      && supportsAiBrewPourControls(adaptiveShareContext.methodFamily)
+      && adaptiveShareContext.manualTechniquePattern !== 'ten_pour_multi'
       ? roundBaristaVolumeMl(
         adaptiveShareContext.doseG * (adaptiveShareContext.pourBehavior?.bloomMultiplier || 2),
         adaptiveShareContext.methodFamily,
@@ -8147,7 +8196,7 @@ function finalizePlanCore(
     ratioUpperBound,
   ), 2);
   let totalWaterMl = targetWaterOverrideMl !== null
-    ? roundBaristaVolumeMl(targetWaterOverrideMl, methodFamily)
+    ? roundManualPresetWaterMl(targetWaterOverrideMl, methodFamily, manualPreset)
     : roundBaristaVolumeMl(calcWaterFromDoseRatio(doseG, targetRatioOverride ?? calibratedRecommendedRatio), methodFamily);
   let recommendedRatio = targetWaterOverrideMl !== null
     ? roundTo(totalWaterMl / doseG, 2)
@@ -8251,7 +8300,7 @@ function finalizePlanCore(
     ), 2);
 
     totalWaterMl = targetWaterOverrideMl !== null
-      ? roundBaristaVolumeMl(targetWaterOverrideMl, methodFamily)
+      ? roundManualPresetWaterMl(targetWaterOverrideMl, methodFamily, manualPreset)
       : roundBaristaVolumeMl(calcWaterFromDoseRatio(doseG, targetRatioOverride ?? calibratedRecommendedRatio), methodFamily);
 
     recommendedRatio = targetWaterOverrideMl !== null
@@ -8838,12 +8887,19 @@ function finalizePlanCore(
     filteredBaseGuardrailWarnings,
   );
   const isDerivedTemplateProfile = deviceSelection.mode === 'derived_template';
+  const manualPresetAdaptationNote = buildManualPresetAdaptationNote(
+    manualPreset,
+    doseG,
+    totalWaterMl,
+    waterTempC,
+  );
 
   const notes = normalizeNoteList(
     [
       targetProfile.description,
       controlledDeviceProfile.note,
       manualPreset ? `Manual brew preset selected: ${manualPreset.safeLabel}. ${manualPreset.visibleSummary}` : undefined,
+      manualPresetAdaptationNote,
       manualPreset?.fallbackReason,
       kalitaSelection?.why ? kalitaSelection.why : undefined,
       cleverSelection?.why ? cleverSelection.why : undefined,

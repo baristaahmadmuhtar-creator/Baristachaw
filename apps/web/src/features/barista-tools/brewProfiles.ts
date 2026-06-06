@@ -67,7 +67,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
   },
   {
     id: 'v60_japanese_iced',
-    label: 'V60 Ice Brew',
+    label: 'V60 Iced Brew',
     category: 'filter',
     recommendedRatios: [14, 14.5, 15, 15.5, 16],
     ratioDefault: 15,
@@ -99,7 +99,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
   },
   {
     id: 'chemex_iced',
-    label: 'Chemex Ice Brew',
+    label: 'Chemex Iced Brew',
     category: 'filter',
     recommendedRatios: [14.5, 15, 15.5, 16, 16.5],
     ratioDefault: 15.4,
@@ -131,7 +131,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
   },
   {
     id: 'kalita_wave_iced',
-    label: 'Kalita Wave Ice Brew',
+    label: 'Kalita Wave Iced Brew',
     category: 'filter',
     recommendedRatios: [14.5, 15, 15.5, 16, 16.5],
     ratioDefault: 15.2,
@@ -163,7 +163,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
   },
   {
     id: 'melitta_iced',
-    label: 'Melitta Ice Brew',
+    label: 'Melitta Iced Brew',
     category: 'filter',
     recommendedRatios: [14, 14.5, 15, 15.5, 16],
     ratioDefault: 14.9,
@@ -223,7 +223,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
   },
   {
     id: 'clever_dripper_iced',
-    label: 'Clever Dripper Ice Brew',
+    label: 'Clever Dripper Iced Brew',
     category: 'filter',
     recommendedRatios: [14, 14.5, 15, 15.5, 16],
     ratioDefault: 15,
@@ -255,7 +255,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
   },
   {
     id: 'origami_iced',
-    label: 'Origami Ice Brew',
+    label: 'Origami Iced Brew',
     category: 'filter',
     recommendedRatios: [14, 14.5, 15, 15.5, 16],
     ratioDefault: 15.1,
@@ -287,7 +287,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
   },
   {
     id: 'april_iced',
-    label: 'April Ice Brew',
+    label: 'April Iced Brew',
     category: 'filter',
     recommendedRatios: [15.5, 16, 16.5, 17, 17.5],
     ratioDefault: 16.2,
@@ -319,7 +319,7 @@ const RAW_BREW_METHOD_PROFILES: BrewMethodProfile[] = [
   },
   {
     id: 'kono_iced',
-    label: 'Kono Ice Brew',
+    label: 'Kono Iced Brew',
     category: 'filter',
     recommendedRatios: [14, 14.5, 15, 15.5, 16],
     ratioDefault: 15,

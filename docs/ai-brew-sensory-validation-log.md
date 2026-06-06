@@ -13,6 +13,31 @@ This document is the manual brew validation log for AI Brew release certificatio
 - If a recipe is unsafe, unrealistic, or method-wrong, mark `recipe unsafe / unrealistic`.
 - If the cup is close but needs dial-in, record one correction only.
 
+## Preset-Specific Validation Fields
+
+Use these fields whenever the recipe came from a Brew Preset. Leave sensory results as `Pending` until a human tester brews and tastes the coffee.
+
+| Field | Entry |
+| --- | --- |
+| Preset ID | Pending |
+| Preset label | Pending |
+| Source confidence | Pending: official_reference / curated_reference / community_reference / internal_synthesis |
+| Source URL checked | Pending |
+| Adapted from preset | Pending: yes / no |
+| Bean | Pending |
+| Process | Pending |
+| Variety | Pending |
+| Roast date | Pending |
+| Grinder | Pending |
+| Water TDS | Pending |
+| GH | Pending |
+| KH | Pending |
+| Generated recipe | Pending |
+| Actual finish | Pending |
+| Taste notes | Pending: sour / bitter / thin / dry / muddy / sweet / clean |
+| Correction attempt | Pending |
+| Human notes | Pending |
+
 ## Required Method Logs
 
 ### 1. V60

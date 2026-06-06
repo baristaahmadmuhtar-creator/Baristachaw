@@ -66,10 +66,10 @@ test('AI Brew manual brew preset catalog is safe, unique, and source-backed', as
   const catalog = await loadCatalogForTest();
   const presets = catalog.manualBrewPresets || [];
 
-  assert.equal(presets.length, 37, 'Production should ship 37 brew presets after expanded method coverage');
+  assert.equal(presets.length, 40, 'Production should ship 40 brew presets after expanded 2025/2026 source-backed coverage');
   assert.equal(new Set(presets.map((preset) => preset.id)).size, presets.length, 'Preset ids should be unique');
   assert.equal(new Set(presets.map((preset) => preset.safeLabel)).size, presets.length, 'Preset safe labels should be unique');
-  assert.equal(presets.filter((preset) => preset.category === 'competition_inspired').length, 11);
+  assert.equal(presets.filter((preset) => preset.category === 'competition_inspired').length, 14);
   assert.equal(presets.filter((preset) => preset.category === 'global_classic').length, 21);
   assert.equal(presets.filter((preset) => preset.category === 'taste_target').length, 5);
 
@@ -157,6 +157,71 @@ test('AI Brew AeroPress presets follow latest official WAC and Express Cold Brew
   assert.match([coldPlan.manualPresetSummary, ...coldPlan.notes, ...coldPlan.warnings].join('\n'), /cold|2-minute|fine/i);
 });
 
+test('AI Brew 2025 WAC runner-up and 2026 multi-pour presets stay source-scoped and guarded', async () => {
+  const catalog = await loadCatalogForTest();
+  const presets = catalog.manualBrewPresets || [];
+  const jan = presets.find((preset) => preset.id === 'inspired-wac-2025-jan-ahrend');
+  const dharun = presets.find((preset) => preset.id === 'inspired-wac-2025-dharun-vyas');
+  const tetsuTen = presets.find((preset) => preset.id === 'inspired-tetsu-kasuya-2026-ten-pour');
+
+  assert.ok(jan, 'Jan Ahrend WAC 2025 preset should exist');
+  assert.equal(jan.verificationLevel, 'official_reference');
+  assert.equal(jan.targetDefaults.doseG, 18);
+  assert.equal(jan.targetDefaults.targetWaterMl, 152);
+  assert.equal(jan.targetDefaults.targetTempC, 88);
+  assert.equal(jan.targetDefaults.aeropressStyle, 'bypass');
+  assert.ok(jan.sourceUrls.some((url) => /worldaeropresschampionship/.test(url)));
+
+  const janPlan = applyPreset(catalog, jan.id);
+  assert.equal(janPlan.manualPresetId, jan.id);
+  assert.equal(janPlan.doseG, 18);
+  assert.equal(janPlan.totalWaterMl, 152);
+  assert.equal(Number((janPlan.totalWaterMl / janPlan.doseG).toFixed(1)), 8.4);
+  assert.deepEqual(positivePours(janPlan).map((step) => step.pourVolumeMl), [100]);
+  assert.match([janPlan.manualPresetSummary, ...janPlan.notes, ...janPlan.warnings].join('\n'), /152|dilute|bypass|output/i);
+
+  assert.ok(dharun, 'Dharun Vyas WAC 2025 preset should exist');
+  assert.equal(dharun.verificationLevel, 'official_reference');
+  assert.equal(dharun.targetDefaults.doseG, 16);
+  assert.equal(dharun.targetDefaults.targetWaterMl, 220);
+  assert.equal(dharun.targetDefaults.targetTempC, 88);
+  assert.equal(dharun.targetDefaults.aeropressStyle, 'inverted');
+  assert.ok(dharun.sourceUrls.some((url) => /worldaeropresschampionship/.test(url)));
+
+  const dharunPlan = applyPreset(catalog, dharun.id);
+  assert.equal(dharunPlan.manualPresetId, dharun.id);
+  assert.equal(dharunPlan.doseG, 16);
+  assert.equal(dharunPlan.totalWaterMl, 220);
+  assert.equal(Number((dharunPlan.totalWaterMl / dharunPlan.doseG).toFixed(1)), 13.8);
+  assert.deepEqual(positivePours(dharunPlan).map((step) => step.pourVolumeMl), [208]);
+  assert.match([dharunPlan.manualPresetSummary, ...dharunPlan.notes, ...dharunPlan.warnings].join('\n'), /12\s*(g|ml).*dilution|bypass split|consistent plunge/i);
+
+  assert.ok(tetsuTen, 'Tetsu Kasuya 2026 10x pour preset should exist');
+  assert.equal(tetsuTen.verificationLevel, 'curated_reference');
+  assert.notEqual(tetsuTen.verificationLevel, 'official_reference');
+  assert.match(tetsuTen.safeLabel, /2026 10x Pour/i);
+  assert.match(tetsuTen.visibleSummary, /10x pour|ten 30g pours/i);
+  assert.match(tetsuTen.visibleSummary, /Hario Neo.*V60.*compatible fallback/i);
+  assert.equal(tetsuTen.targetDefaults.doseG, 20);
+  assert.equal(tetsuTen.targetDefaults.targetWaterMl, 300);
+  assert.equal(tetsuTen.targetDefaults.targetTempC, 96);
+  assert.equal(tetsuTen.techniquePattern, 'ten_pour_multi');
+  assert.ok(tetsuTen.sourceUrls.some((url) => /roastaroma/.test(url)));
+  assert.match(JSON.stringify(tetsuTen), /secondary public coverage|not an official/i);
+
+  const tetsuPlan = applyPreset(catalog, tetsuTen.id);
+  const tetsuPours = positivePours(tetsuPlan);
+  assert.equal(tetsuPlan.manualPresetId, tetsuTen.id);
+  assert.equal(tetsuPlan.dripper.id, 'hario-v60');
+  assert.equal(tetsuPlan.doseG, 20);
+  assert.equal(tetsuPlan.totalWaterMl, 300);
+  assert.equal(Number((tetsuPlan.totalWaterMl / tetsuPlan.doseG).toFixed(1)), 15);
+  assert.equal(tetsuPours.length, 10, 'Tetsu 2026 10x pour should create ten positive pours');
+  assert.deepEqual(tetsuPours.map((step) => step.pourVolumeMl), Array.from({ length: 10 }, () => 30));
+  assert.ok(tetsuPlan.totalTimeSeconds >= 210, 'Tetsu 10-pour should keep a realistic slow finish window');
+  assert.match([tetsuPlan.manualPresetSummary, ...tetsuPlan.notes, ...tetsuPlan.warnings].join('\n'), /reported 2026|curated|secondary|10x pour|ten 30g pours|very coarse|Hario Neo.*V60/i);
+});
+
 test('AI Brew manual brew presets prefill form state without generating automatically', async () => {
   const catalog = await loadCatalogForTest();
   const base = createDefaultAiBrewFormState(catalog);
@@ -230,6 +295,7 @@ test('AI Brew quick mode preserves manual preset ratio and temperature when dose
   assert.equal(quickPlan.recommendedRatio, 15);
   assert.equal(quickPlan.waterTempC, 92);
   assert.equal(positivePours(quickPlan).length, 5);
+  assert.match(quickPlan.notes.join('\n'), /Manual brew preset adapted from the selected dose/i);
 });
 
 test('AI Brew manual brew presets are compact and user-toggleable in the builder UI', () => {
@@ -299,11 +365,29 @@ test('AI Brew every brew preset generates a guarded recipe for source-backed rea
       assert.ok(plan.manualPresetSummary, `${preset.id} should expose only a short public summary`);
       assert.ok(plan.workflowGuideSteps?.length, `${preset.id} should create public guide steps`);
       assertPresetPlanEnvelope(plan);
+      const userFacingText = [
+        plan.summary,
+        plan.manualPresetSummary,
+        ...plan.notes,
+        ...plan.warnings,
+        ...plan.steps.map((step) => [step.label, step.instruction, step.note].filter(Boolean).join(' ')),
+        ...(plan.workflowGuideSteps || []).map((step) => [step.label, step.primaryText, step.secondaryText].filter(Boolean).join(' ')),
+      ].join('\n');
+      assert.ok(
+        Math.abs(plan.recommendedRatio - (plan.totalWaterMl / plan.doseG)) <= 0.051,
+        `${preset.id} ratio should match actual total water/dose math at ${doseG} g`,
+      );
       assert.doesNotMatch(
-        [plan.summary, plan.manualPresetSummary, ...plan.notes, ...plan.warnings].join('\n'),
-        /\b100%\b|perfect extraction|guaranteed flavor|world official recipe/i,
+        userFacingText,
+        /\b100%\b|perfect extraction|guaranteed flavor|world official recipe|\b(?:undefined|NaN)\b|\$1 seconds|ActionAction|Action Action/i,
         `${preset.id} should not leak unsafe claims`,
       );
+      if (plan.methodFamily === 'aeropress') {
+        assert.doesNotMatch(userFacingText, /\bdrawdown\b|flat bed|final pour|V60/i, `${preset.id} should not leak pour-over language into AeroPress`);
+      }
+      if (plan.methodFamily === 'french_press') {
+        assert.doesNotMatch(userFacingText, /\bdrawdown\b|\bbloom\b|pour map|flat bed|center-to-mid/i, `${preset.id} should not leak pour-over language into French Press`);
+      }
     }
   });
 });

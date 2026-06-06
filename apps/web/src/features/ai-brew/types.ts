@@ -17,6 +17,7 @@ export type ManualBrewTechniquePattern =
   | 'front_loaded_four'
   | 'continuous_high_extraction'
   | 'temperature_decline_finish'
+  | 'ten_pour_multi'
   | 'chemex_clean'
   | 'aeropress_clean'
   | 'generic_fast';

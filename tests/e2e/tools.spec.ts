@@ -8,7 +8,7 @@ import type { BrewPlan } from '../../apps/web/src/features/ai-brew/types';
 
 const LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
 const AI_BREW_SEQUENCE_HEADING = /Brew Guide|Brew Sequence|Panduan Seduh|Urutan Seduh/i;
-const AI_BREW_SAVED_COLLECTION = /Recipe saved to Collection\.|Recipe tersimpan ke Collection\./i;
+const AI_BREW_SAVED_COLLECTION = /Recipe saved to Collection\.|Recipe tersimpan ke (?:Collection|koleksi)\.|Resep tersimpan ke (?:Collection|koleksi)\./i;
 const AI_BREW_CLOSE_OUTPUT = /Close planned output|Tutup output plan|Tutup hasil/i;
 const AI_BREW_EXACT_PROFILE = /Exact profile|Profil exact/i;
 
@@ -1467,6 +1467,93 @@ test('ai brew manual preset applies source-backed defaults and generates a valid
   expect(plan.dripper.id).toBe('orea-v3-v4');
   expect(plan.workflowValidation?.passed).toBe(true);
   expect((plan.workflowGuideSteps || []).length).toBeGreaterThan(3);
+  await result.getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
+  await result.getByTestId('ai-brew-save').click();
+  await expect(page.getByText(AI_BREW_SAVED_COLLECTION)).toBeVisible();
+});
+
+test('ai brew Brew Presets preserve source-backed ratios, localized confidence, guides, and saved plan metadata', async ({ page }) => {
+  await openAiBrewQuickMode(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Brew Presets Tetsu 2026');
+  await page.getByTestId('ai-brew-manual-preset-toggle').click();
+  await expect(page.getByTestId('ai-brew-manual-preset-list')).toBeVisible();
+  await setVisibleInputValue(page, 'ai-brew-manual-preset-search', '2026');
+  const tetsuPreset = page.getByTestId('ai-brew-manual-preset-inspired-tetsu-kasuya-2026-ten-pour');
+  await expect(tetsuPreset).toContainText(/Curated reference/i);
+  await expect(tetsuPreset).toContainText(/10x Pour/i);
+  await tetsuPreset.click();
+  await expect(page.getByTestId('ai-brew-selected-manual-preset')).toContainText(/Tetsu Kasuya 2026 10x Pour/i);
+  await page.getByTestId('ai-brew-generate').click();
+
+  let result = page.getByTestId('ai-brew-result');
+  await expect(result).toContainText('QA Brew Presets Tetsu 2026');
+  await expect(result.getByTestId('ai-brew-result-manual-preset-chip')).toContainText(/Tetsu Kasuya 2026 10x Pour/i);
+  await result.getByTestId('ai-brew-result-tab-flow').click();
+  const tetsuPlan = await readStoredAiBrewPlan(page);
+  const tetsuGuide = (tetsuPlan.workflowGuideSteps || [])
+    .map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''}`)
+    .join(' ');
+  expect(tetsuPlan.manualPresetId).toBe('inspired-tetsu-kasuya-2026-ten-pour');
+  expect(tetsuPlan.dripper.id).toBe('hario-v60');
+  expect(tetsuPlan.doseG).toBe(20);
+  expect(tetsuPlan.totalWaterMl).toBe(300);
+  expect(tetsuPlan.workflowValidation?.passed).toBe(true);
+  expect([tetsuPlan.manualPresetLabel, tetsuPlan.manualPresetSummary, ...tetsuPlan.notes, ...tetsuPlan.warnings].join(' ')).toMatch(
+    /10x pour|ten 30g pours|Hario Neo.*V60/i,
+  );
+  expect(tetsuPlan.steps.filter((step) => (step.pourVolumeMl || 0) > 0).map((step) => step.pourVolumeMl)).toEqual(
+    Array.from({ length: 10 }, () => 30),
+  );
+  await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(tetsuPlan.finalBeverageRatio)}`);
+  expect(tetsuGuide).toMatch(/30\s*(g|ml)/i);
+  expect(tetsuGuide).not.toMatch(/\$(?:\d+|\{)|\b(?:undefined|null|NaN)\b|ActionAction|Pressgentle|Stophiss/i);
+
+  await result.getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
+  await result.getByTestId('ai-brew-save').click();
+  await expect(page.getByText(AI_BREW_SAVED_COLLECTION)).toBeVisible();
+
+  await page.evaluate(() => {
+    localStorage.setItem('BARISTA_LANGUAGE', 'id');
+    localStorage.setItem('BARISTA_LANGUAGE_ID_DEFAULT_MIGRATED', '1');
+  });
+  await page.goto('/tools?tab=ai-brew&language=id', { waitUntil: 'domcontentloaded' });
+  await clearClientState(page);
+  await page.evaluate(() => {
+    localStorage.setItem('BARISTA_LANGUAGE', 'id');
+    localStorage.setItem('BARISTA_LANGUAGE_ID_DEFAULT_MIGRATED', '1');
+  });
+  await page.goto('/tools?tab=ai-brew&language=id', { waitUntil: 'domcontentloaded' });
+  await openAiBrewQuickMode(page);
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Brew Presets Jan Ahrend');
+  await page.getByTestId('ai-brew-manual-preset-toggle').click();
+  await expect(page.getByTestId('ai-brew-manual-preset-list')).toBeVisible();
+  await setVisibleInputValue(page, 'ai-brew-manual-preset-search', 'Jan Ahrend');
+  const janPreset = page.getByTestId('ai-brew-manual-preset-inspired-wac-2025-jan-ahrend');
+  await expect(janPreset).toContainText(/Referensi resmi/i);
+  await janPreset.click();
+  await expect(page.getByTestId('ai-brew-selected-manual-preset')).toContainText(/Jan Ahrend/i);
+  await page.getByTestId('ai-brew-generate').click();
+
+  result = page.getByTestId('ai-brew-result');
+  await expect(result).toContainText('QA Brew Presets Jan Ahrend');
+  await result.getByTestId('ai-brew-result-tab-flow').click();
+  const janPlan = await readStoredAiBrewPlan(page);
+  const janGuide = (janPlan.workflowGuideSteps || [])
+    .map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''}`)
+    .join(' ');
+  expect(janPlan.manualPresetId).toBe('inspired-wac-2025-jan-ahrend');
+  expect(janPlan.methodFamily).toBe('aeropress');
+  expect(janPlan.doseG).toBe(18);
+  expect(janPlan.totalWaterMl).toBe(152);
+  expect(janPlan.hotWaterMl).toBe(100);
+  expect(janPlan.workflowValidation?.passed).toBe(true);
+  await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(janPlan.finalBeverageRatio)}`);
+  expect(janGuide).toMatch(/100\s*(g|ml)/i);
+  expect(janGuide).toMatch(/52\s*(g|ml).*bypass|bypass.*52\s*(g|ml)/i);
+  expect(janGuide).not.toMatch(/drawdown|flat bed|final pour|V60|\$(?:\d+|\{)|\b(?:undefined|null|NaN)\b/i);
+  await result.getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
+  await result.getByTestId('ai-brew-save').click();
+  await expect(page.getByText(AI_BREW_SAVED_COLLECTION)).toBeVisible();
 });
 
 test('ai brew grinder picker shows Feima 600N platform aliases without losing the canonical entry', async ({ page }) => {

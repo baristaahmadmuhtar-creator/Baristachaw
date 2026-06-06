@@ -76,7 +76,7 @@ test('AI Brew Brew Guide has Lite and Pro modes with Lite as the safe default', 
   assert.match(SOURCE, /guideDensitySimple: 'Lite'/);
   assert.match(SOURCE, /guideDensityPro: 'Pro'/);
   assert.match(SOURCE, /guideDensitySimpleHint: 'Timer and current step stay in view\.'/);
-  assert.match(SOURCE, /guideDensityProHint: 'Full guide with practical barista detail\.'/);
+  assert.match(SOURCE, /guideDensityProHint: 'Full guide with practical barista checkpoints\.'/);
   assert.match(SOURCE, /data-testid="ai-brew-lite-guide-panel"/);
   assert.match(SOURCE, /data-testid="ai-brew-lite-progress-ring"/);
   assert.match(SOURCE, /ai-brew-lite-progress-ring/);
@@ -96,6 +96,28 @@ test('AI Brew Brew Guide has Lite and Pro modes with Lite as the safe default', 
   assert.doesNotMatch(SOURCE, /Pakai timbangan asli/);
   assert.doesNotMatch(SOURCE, /Use your real scale/);
   assert.match(SOURCE, /setGuideDensity\('basic'\)/);
+});
+
+test('AI Brew English production copy avoids Indonesian leakage and developer phrasing', () => {
+  const enCopyStart = SOURCE.indexOf('  en: {');
+  const enCopyEnd = SOURCE.indexOf('  id: {', enCopyStart);
+  const enCopy = SOURCE.slice(enCopyStart, enCopyEnd);
+
+  assert.match(enCopy, /modeIced: 'Iced brew'/);
+  assert.match(enCopy, /iceSetupTitle: 'Iced brew setup'/);
+  assert.match(enCopy, /planTab: 'Summary'/);
+  assert.match(enCopy, /flowTab: 'Brew'/);
+  assert.match(enCopy, /coachTab: 'AI'/);
+  assert.match(enCopy, /detailTab: 'Detail'/);
+  assert.match(enCopy, /flowTitle: 'Brew guide'/);
+  assert.match(SOURCE, /Additional details/);
+  assert.match(SOURCE, /This recipe is calculated from the dose, ratio, brew method, bean profile, roast level, grinder baseline, and water condition/);
+
+  assert.doesNotMatch(enCopy, /\bIce Brew\b|Extra detail|This rationale comes from deterministic planner numbers|AI-invented copy/i);
+  assert.doesNotMatch(
+    enCopy,
+    /\b(?:Seduh|Tuang|Aduk|Rendam|Tekan|Sajikan|gilingan|suhu|rasa|catatan|koleksi|panduan|keyakinan)\b|air turun/i,
+  );
 });
 
 test('AI Brew Pro keeps advanced AI tools collapsed and no AI auto-run', () => {

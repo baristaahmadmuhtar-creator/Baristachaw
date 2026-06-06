@@ -4202,7 +4202,7 @@ test('AI Brew coach guard preserves deterministic grind, water, brewer, and reci
   });
   assert.match(troubleshoot.markdown, /Mulai dari perubahan terkecil dulu/i);
   assert.match(troubleshoot.markdown, expectedGrindPattern);
-  assert.match(troubleshoot.markdown, /Jangan ubah rasio\/dosis|grind kecil.*pouring\/agitation.*suhu kecil/is);
+  assert.match(troubleshoot.markdown, /Jangan ubah rasio(?:\/| atau )dosis|koreksi kecil pada gilingan.*pola tuang atau agitasi.*suhu/is);
   assert.equal(troubleshoot.risk, 'high');
 
   const fallback = troubleshoot.risk === 'high'
@@ -7344,7 +7344,7 @@ test('AI Brew experience layer exposes bean-safe reasoning, confidence labels, a
 
   const priorities = resolveAiBrewActionPriorities(plan, 'id').join(' ');
   assert.match(priorities, /angka utama|output utama/i);
-  assert.match(priorities, /flow time|air turun|drawdown/i);
+  assert.match(priorities, /flow time|air turun|drawdown|melihat aliran/i);
   assert.match(priorities, /grind|giling|halus|kasar/i);
   assert.match(priorities, /satu variabel/i);
 });
@@ -10783,6 +10783,32 @@ test('Indonesian critical AI Brew trust copy stays localized and honest', () => 
   ].map((item) => localizeAiBrewStepLabel(item, 'id')).join(' ');
   assert.match(localizedStepLabels, /Buka katup di atas es|Air turun|Berhenti sebelum hiss|Tekan|Bilas|Aduk|Tuang pisah/i);
   assert.doesNotMatch(localizedStepLabels, localizedLeakPattern);
+});
+
+test('Indonesian AI Brew dynamic result copy reads natural and blocks mixed English fragments', () => {
+  const rawSamples = [
+    'Risk bean / caution (medium)',
+    'Brew ratio 1:13.7 balances More sweetness with Fully Washed process and medium roast solubility.',
+    '88C is selected from roast, process, water minerals, and target extraction style.',
+    '01:50 press keeps contact time aligned with AeroPress and More sweetness.',
+    'Finishing after main taste time.',
+    'Direct demineral use is a low-confidence filter experiment; expect a clean cup with light body or hollow risk unless remineralized.',
+    'AI numeric optimizer accepted inside guardrails (confidence 85%).',
+    'Manual preset adapted to selected dose and water.',
+    'Exact device profile unavailable; family fallback was used.',
+    'Grinder setting is estimated or fallback; calibrate by drawdown and taste.',
+    'Brew the plan as a strong starting point; adjust only one variable after tasting.',
+    'Using cone family fallback profile.',
+    'Volvic brand water profile is active for this brew plan.',
+    'Extraction complete. Next step is finishing.',
+  ];
+  const localized = rawSamples.map((item) => localizeAiBrewDynamicText(item, 'id')).join(' ');
+
+  assert.match(localized, /Perlu dicek|rasio seduh|proses washed|kelarutan roast|dipilih dari roast|waktu kontak|AeroPress|rasa manis|waktu rasa utama|eksperimen filter|diremineralisasi|batas pengaman|Preset manual disesuaikan|profil alat presisi|perkiraan|titik awal|profil keluarga|merek Volvic|tahap penyelesaian/i);
+  assert.doesNotMatch(
+    localized,
+    /\b(Risk bean|caution|Brew ratio|balances|More sweetness|Fully Washed|roast solubility|is selected from|target extraction style|press keeps|aligned with|Finishing after|main taste time|Direct demineral use|low-confidence filter experiment|expect a clean cup|hollow risk|unless remineralized|AI numeric optimizer accepted inside guardrails|Manual preset adapted|selected dose and water|Exact device profile unavailable|family fallback|Grinder setting is estimated|Brew the plan|strong starting point|brand water profile|Next step is finishing)\b/i,
+  );
 });
 
 test('water chemistry extremes push AI Brew in opposite extraction directions', () => {

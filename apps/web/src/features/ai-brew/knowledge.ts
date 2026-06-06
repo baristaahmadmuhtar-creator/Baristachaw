@@ -588,12 +588,12 @@ function isKnowledgeSeedSafeForMethod(seed: AiBrewKnowledgeSeed, methodFamily?: 
 
 function buildUniversalKnowledgeNotes(input: AiBrewKnowledgeInput) {
   const beanSafety = hasBeanSpecificInput(input)
-    ? 'Knowledge v2 - Universal bean safety: semua bean berbeda karena roast, umur, density, solubility, process, storage, dan grinder calibration; mulai dari baseline aman lalu validasi dengan taste feedback.'
-    : 'Knowledge v2 - Universal bean safety: jika identitas bean belum lengkap, AI Brew harus memakai baseline konservatif dan tidak mengklaim hasil rasa pasti.';
+    ? 'Knowledge v2 - Universal bean safety: setiap bean berbeda karena roast, umur, densitas, kelarutan, proses, penyimpanan, dan kalibrasi grinder; mulai dari acuan aman lalu validasi melalui evaluasi rasa.'
+    : 'Knowledge v2 - Universal bean safety: jika identitas bean belum lengkap, AI Brew harus memakai acuan konservatif dan tidak mengklaim hasil rasa pasti.';
 
   return [
     beanSafety,
-    'Knowledge v2 - Universal dial-in: kunci dose, ratio, water, method, dan timing dulu; ubah satu variabel per ronde agar user dan barista tahu penyebab perubahan rasa.',
+    'Knowledge v2 - Universal dial-in: kunci dosis, rasio, air, metode, dan waktu terlebih dahulu; ubah satu variabel per ronde agar penyebab perubahan rasa mudah diketahui.',
     buildUniversalMethodSafetyNote(input.methodFamily),
   ];
 }

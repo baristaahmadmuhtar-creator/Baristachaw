@@ -2526,13 +2526,13 @@ export function deriveBeanTaxonomySignal(params: {
     hasAnyRiskTag(params.processEntry, ['drying-only']) ? 'Drying-only cue is treated as context, not a primary recipe driver.' : undefined,
   ]);
   const warnings = normalizeNoteList([
-    !hasProcess && !hasVariety ? 'Data beans belum lengkap; AI Brew memakai baseline aman.' : undefined,
-    hasProcess && !hasCatalogProcess && !params.customProcessDetection ? 'Process manual belum cocok ke katalog; gunakan feedback rasa untuk koreksi.' : undefined,
+    !hasProcess && !hasVariety ? 'Data beans belum lengkap; AI Brew memakai acuan aman.' : undefined,
+    hasProcess && !hasCatalogProcess && !params.customProcessDetection ? 'Proses yang dimasukkan belum cocok dengan katalog; gunakan evaluasi rasa untuk koreksi.' : undefined,
     hasVariety && !hasCatalogVariety ? 'Varietas manual belum cocok ke katalog; keyakinan tetap konservatif.' : undefined,
-    hasAnyRiskTag(params.processEntry, ['decaf-sensitive']) ? 'Decaf bisa lebih sensitif; gunakan baseline aman dan koreksi dari rasa.' : undefined,
-    hasAnyRiskTag(params.processEntry, ['experimental', 'ferment-risk', 'high-ferment', 'taste-feedback-required']) ? 'Proses ini sangat bergantung pada kontrol produser; butuh feedback rasa.' : undefined,
-    hasAnyRiskTag(params.processEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa']) || hasAnyRiskTag(params.varietyEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa', 'unusual-species']) ? 'Robusta/canephora/non-arabica cenderung lebih body-heavy dan mudah pahit jika ekstraksi terlalu agresif.' : undefined,
-    risky ? 'Bean atau proses berisiko tinggi; pakai baseline konservatif dan ubah satu variabel dulu.' : undefined,
+    hasAnyRiskTag(params.processEntry, ['decaf-sensitive']) ? 'Kopi decaf bisa lebih sensitif; gunakan acuan aman dan koreksi dari rasa.' : undefined,
+    hasAnyRiskTag(params.processEntry, ['experimental', 'ferment-risk', 'high-ferment', 'taste-feedback-required']) ? 'Proses ini sangat bergantung pada kontrol produser; evaluasi rasa tetap diperlukan.' : undefined,
+    hasAnyRiskTag(params.processEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa']) || hasAnyRiskTag(params.varietyEntry, ['non-arabica', 'canephora', 'liberica', 'excelsa', 'unusual-species']) ? 'Robusta, canephora, dan spesies non-arabika cenderung memiliki body lebih tebal dan mudah pahit jika ekstraksi terlalu agresif.' : undefined,
+    risky ? 'Bean atau proses memiliki risiko tinggi; gunakan acuan konservatif dan ubah satu variabel saja.' : undefined,
   ]);
 
   if (!hasProcess && !hasVariety) {

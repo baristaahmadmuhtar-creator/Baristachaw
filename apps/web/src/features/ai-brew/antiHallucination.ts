@@ -210,7 +210,7 @@ export function formatSafeBrewCaveat(plan: BrewPlan, language?: string): string 
   }
   if (isUnknownValue(plan.process)) {
     caveats.push(id
-      ? 'Data proses belum dikunci; resep memakai baseline roast level dan target profil.'
+      ? 'Data proses belum lengkap; resep memakai acuan tingkat sangrai dan profil target.'
       : 'Process data is not locked; the recipe uses roast level and target profile as the baseline.');
   }
   if (isLowTrustWater(plan)) {

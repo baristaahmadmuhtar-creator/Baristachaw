@@ -858,7 +858,7 @@ const COPY = {
     manualPresetTaste: 'Target rasa',
     manualPresetSearch: 'Cari preset',
     manualPresetClear: 'Hapus preset',
-    manualPresetFallback: 'Fallback',
+    manualPresetFallback: 'Pengganti',
     manualPresetShow: 'Tampilkan preset',
     manualPresetHide: 'Sembunyikan preset',
     manualPresetSelected: 'Terpilih',
@@ -963,7 +963,7 @@ const COPY = {
     konoStyleCompetitionPulse: 'Kono tetes lambat berisi',
     konoStyleJapaneseIcedKono: 'Kono Meimon Es',
     konoStyleHighDoseSlowExtraction: 'Kono Agitasi Manis',
-    precisionControlTitle: 'Target advanced',
+    precisionControlTitle: 'Target lanjutan',
     precisionControlHint: 'Opsional. Filter manual paling aman di sekitar 1:13-1:17; Auto memilih default dari alat, sangrai, dan target.',
     targetRatio: 'Rasio target',
     targetRatioPlaceholder: 'Auto',
@@ -1402,7 +1402,7 @@ const COPY = {
     marketSingapore: 'Singapura',
     marketBrunei: 'Brunei',
     marketMalaysia: 'Malaysia',
-    noWaterSourceLinks: 'Belum ada link sumber tersimpan untuk brand ini.',
+    noWaterSourceLinks: 'Belum ada tautan sumber tersimpan untuk brand ini.',
     pickerSkipProcess: 'Lewati proses',
     pickerSelectProcess: 'Pilih proses {label}',
     pickerSelectCustomProcess: 'Pilih proses kustom',
@@ -1674,7 +1674,7 @@ function getPlanTimeHelperCopy(plan: BrewPlan, language: string) {
       : 'Stirring ice does not add extraction; it only evens out the hot concentrate and melt.';
   }
   return id
-    ? 'Ekstraksi adalah waktu yang paling memengaruhi rasa. Langkah aduk/sajikan hanya finishing.'
+    ? 'Waktu ekstraksi paling memengaruhi rasa. Langkah mengaduk dan menyajikan hanya tahap penyelesaian.'
     : 'Extraction is the time that most affects taste. Stir/serve steps are only finishing.';
 }
 
@@ -2520,7 +2520,7 @@ function localizeManualPresetDisplayText(text: string | undefined, language?: st
     .replace(/^Inspired by Tetsu Kasuya 2026 10x Pour$/i, 'Terinspirasi dari Tetsu Kasuya 2026 10x Pour')
     .replace(
       /^Reported 2026 Tetsu Kasuya 10x pour style: 20g coffee, 300g water, ten 30g pours, very coarse grind, high temperature, and body-focused finish\. Hario Neo is not in the AI Brew catalog yet, so V60 is used as the compatible fallback\.$/i,
-      'Gaya Tetsu Kasuya 2026 10x pour yang dilaporkan: 20g kopi, 300g air, sepuluh tuangan 30g, gilingan sangat kasar, suhu tinggi, dan finish body-forward. Hario Neo belum tersedia di katalog AI Brew, jadi V60 dipakai sebagai fallback kompatibel.',
+      'Gaya Tetsu Kasuya 2026 10x pour yang dilaporkan: 20g kopi, 300g air, sepuluh tuangan 30g, gilingan sangat kasar, suhu tinggi, dan akhir seduhan yang lebih ber-body. Hario Neo belum tersedia di katalog AI Brew, jadi V60 dipakai sebagai pengganti yang kompatibel.',
     )
     .replace(/^Inspired by /i, 'Terinspirasi dari ')
     .replace(/\bStyle\b/g, 'Gaya')
@@ -4439,7 +4439,7 @@ function getAiBrewFriendlyErrorMessage(
     || normalized.includes('strict online ai')
   ) {
     return id
-      ? 'Server AI sedang penuh. Resep belum dibuat agar hasil tidak memakai fallback lokal. Coba ulang sebentar lagi atau aktifkan AI Brew Fallback di Admin.'
+      ? 'Layanan AI sedang penuh. Resep belum dibuat agar hasil tidak memakai rencana lokal cadangan. Coba ulang sebentar lagi atau aktifkan jalur cadangan AI Brew di Admin.'
       : 'AI servers are busy. The brew was not generated so it does not use local fallback. Try again shortly or re-enable AI Brew Fallback in Admin.';
   }
   if (normalized.includes('offline') || normalized.includes('network') || normalized.includes('fetch')) {
@@ -4474,7 +4474,7 @@ function getAiBrewFriendlyErrorMessage(
     || normalized.includes('500')
   ) {
     return id
-      ? 'Server AI sedang penuh. Coba ulang sebentar lagi.'
+      ? 'Layanan AI sedang penuh. Coba ulang sebentar lagi.'
       : 'AI servers are busy right now. Please try again shortly.';
   }
 
@@ -5283,11 +5283,11 @@ function buildTargetProfileEffectText(targetProfileId: string, language: string)
         : 'Target effect: slightly longer ratio, lower temperature, faster time, slightly coarser grind, shorter bloom, minimal agitation.';
     case 'floral_transparent':
       return id
-        ? 'Efek target: suhu lebih rendah, tuangan rendah, agitasi minimal, air turun lebih cepat untuk menjaga floral dan clarity.'
+        ? 'Efek target: suhu lebih rendah, posisi tuang rendah, agitasi minimal, dan air turun lebih cepat untuk menjaga karakter floral serta kejernihan.'
         : 'Target effect: lower heat, low pour height, minimal agitation, faster drawdown to protect florals and clarity.';
     case 'more_sweetness':
       return id
-        ? 'Efek target: tuangan tengah lebih penuh, bloom 45 detik, agitasi rendah, akhir seduhan ringan agar sweetness tetap bersih.'
+        ? 'Efek target: tuangan tengah lebih penuh, blooming 45 detik, agitasi rendah, dan akhir seduhan ringan agar sweetness tetap bersih.'
         : 'Target effect: fuller middle pour, 45 sec bloom, low agitation, lighter finish so sweetness stays clean.';
     case 'fruit_forward':
       return id
@@ -5609,7 +5609,7 @@ function PlanResultDialog({
     label: completionTimeLabel,
     value: formatGuideTime(guideEndSeconds),
     detail: guideEndSeconds > extractionSeconds
-      ? (id ? 'Finishing setelah waktu utama.' : 'Finishing after the main brew time.')
+      ? (id ? 'Selesai setelah waktu utama.' : 'Finishing after the main brew time.')
       : (id ? 'Sama dengan waktu utama.' : 'Same as the main brew time.'),
   };
   const summaryHighlightItemsWithCompletion = [
@@ -5731,7 +5731,7 @@ function PlanResultDialog({
   const liteStepAction = flowCurrentStep
     ? buildAiBrewStepPrimaryCue(flowCurrentStep, language, plan)
     : (id
-      ? 'Ekstraksi utama selesai. Lanjutkan finishing tanpa menghitungnya sebagai brew time.'
+      ? 'Ekstraksi utama selesai. Lanjutkan tahap penyelesaian tanpa menghitungnya sebagai waktu seduh utama.'
       : 'Main extraction is complete. Finish the brew without counting it as brew time.');
   const liteStepCue = flowCurrentStep
     ? flowCurrentCompactCue
@@ -5757,19 +5757,19 @@ function PlanResultDialog({
   const drawdownHighSeconds = tasteTimeRange[1];
   const waterRealityNote = plan.waterClassification === 'demineral_direct_experiment'
     ? id
-      ? 'Pemakaian langsung air demineral adalah eksperimen filter ber-confidence rendah; cup bisa clean tetapi body ringan/hollow jika belum diremineralisasi.'
+      ? 'Pemakaian langsung air demineral adalah eksperimen filter dengan keyakinan rendah; hasilnya mungkin clean, tetapi body bisa ringan atau terasa kosong jika belum diremineralisasi.'
       : 'Direct demineral use is a low-confidence filter experiment; expect a clean cup with light body or hollow risk unless remineralized.'
     : plan.waterClassification === 'low_mineral_clarity'
       ? id
-        ? 'Air low-mineral bisa clean untuk filter, tetapi body bisa tipis dan acidity terasa lebih tajam.'
+        ? 'Air mineral rendah bisa memberi hasil yang clean pada seduhan filter, tetapi body dapat terasa tipis dan acidity lebih tajam.'
         : 'Low-mineral water can work for clean filter cups, but body may be thin and acidity can feel sharper.'
       : plan.waterClassification === 'alkaline_caution' || plan.waterClassification === 'high_buffer'
         ? id
-          ? 'Air alkalin/buffer tinggi bisa meredam acidity dan floral; pakai sebagai starting point dengan cek rasa.'
+          ? 'Air dengan alkalinitas atau buffer tinggi bisa meredam acidity dan karakter floral; gunakan sebagai titik awal, lalu cek dari rasa.'
           : 'Alkaline or high-buffer water can mute acidity and florals; use it as a starting point and verify by taste.'
         : plan.waterMineralDerivation === 'estimated_from_community_profile'
           ? id
-            ? 'Autofill ini berasal dari profil komunitas kopi, jadi confidence dibatasi dan tetap perlu cek rasa.'
+            ? 'Isi otomatis ini berasal dari profil komunitas kopi, jadi keyakinannya dibatasi dan tetap perlu cek rasa.'
             : 'This autofill uses coffee-community profile evidence, so confidence is capped and taste verification still matters.'
           : '';
   const summaryWhyRecipeItems = [
@@ -5789,7 +5789,7 @@ function PlanResultDialog({
       label: id ? 'Air + grinder' : 'Water + grinder',
       value: `${plan.waterBrandLabel || copy.waterSelectedManual} - ${localizedGrindHeadline}`,
       detail: id
-        ? `Air memakai TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder ditampilkan sebagai ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} agar tidak overclaim.${waterRealityNote ? ` ${waterRealityNote}` : ''}`
+        ? `Air memakai TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; acuan grinder ditampilkan sebagai ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} agar tidak memberi kesan terlalu pasti.${waterRealityNote ? ` ${waterRealityNote}` : ''}`
         : `Water uses TDS ${plan.waterMinerals.tdsPpm}, GH ${plan.waterMinerals.hardnessPpm}, KH ${plan.waterMinerals.alkalinityPpm}; grinder is labelled ${formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)} so the plan does not overclaim precision.${waterRealityNote ? ` ${waterRealityNote}` : ''}`,
     },
     {
@@ -6148,7 +6148,7 @@ function PlanResultDialog({
           {flowNextStep
             ? buildAiBrewNextStepCue(flowNextStep, flowStepRemainingSeconds, language)
             : (id
-              ? 'Seduh selesai. Finishing tetap boleh dilakukan, tapi bukan brew time utama.'
+              ? 'Seduhan selesai. Tahap penyelesaian tetap boleh dilakukan, tetapi tidak dihitung sebagai waktu seduh utama.'
               : 'The brew is complete. Finishing can continue, but it is not the main brew time.')}
         </p>
       </div>
@@ -6543,7 +6543,7 @@ function PlanResultDialog({
                       <p className="mt-1 text-xs text-secondary">{item.detail}</p>
                     )}
                     {item.id === 'extraction' && postExtractionSeconds > 0 && (
-                      <p className="mt-1 text-xs text-secondary">{id ? 'Finishing setelah waktu rasa utama.' : 'Finishing happens after the main taste time.'}</p>
+                      <p className="mt-1 text-xs text-secondary">{id ? 'Tahap penyelesaian dilakukan setelah waktu rasa utama.' : 'Finishing happens after the main taste time.'}</p>
                     )}
                     {item.id === 'grind' && localizedGrindBandLabel !== localizedGrindHeadline && (
                       <p className="mt-1 text-xs text-secondary">{localizedGrindBandLabel}</p>
@@ -6567,7 +6567,7 @@ function PlanResultDialog({
                       </div>
                       <p className="mt-1 text-xs leading-5 text-secondary">
                         {id
-                          ? 'Resep ini dihitung dari dosis, rasio, metode, profil bean, roast, baseline grinder, dan kondisi air. Pakai sebagai titik awal, lalu koreksi dari rasa di cup.'
+                          ? 'Resep ini dihitung dari dosis, rasio, metode, profil bean, roast, acuan grinder, dan kondisi air. Gunakan sebagai titik awal, lalu koreksi dari rasa di cup.'
                           : 'This recipe is calculated from the dose, ratio, brew method, bean profile, roast level, grinder baseline, and water condition. Use it as a starting point, then adjust from the cup.'}
                       </p>
                     </div>
@@ -8183,7 +8183,7 @@ function buildWaterTargetFitHint(
     return {
       tone: 'caution' as const,
       text: isIndonesianAiBrewLanguage(language)
-        ? 'Air ini aman dipakai, tapi alkalinity tinggi bisa membuat finish terasa lebih datar. Jaga agitasi tetap halus dan jangan buru-buru menaikkan suhu.'
+        ? 'Air ini aman dipakai, tetapi alkalinitas tinggi bisa membuat rasa akhir lebih datar. Jaga agitasi tetap halus dan jangan buru-buru menaikkan suhu.'
         : 'This water is usable, but high alkalinity can flatten the finish. Keep agitation calm before raising temperature.',
     };
   }

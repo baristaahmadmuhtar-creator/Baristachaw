@@ -1,6 +1,9 @@
 ﻿import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import type { Language } from '../../apps/web/src/types.ts';
 import { LANGUAGE_META, getTranslations } from '../../apps/web/src/constants.ts';
 
@@ -78,5 +81,15 @@ test('non-English locales keep critical chat/tool copy localized', () => {
       }
     }
   }
+});
+
+test('Indonesian guest auth errors never expose the English API fallback', () => {
+  const translations = getTranslations('id');
+  const source = readFileSync(resolve(process.cwd(), 'apps/web/src/context/AuthModalContext.tsx'), 'utf8');
+
+  assert.match(translations.authGuestUnavailable, /mode tamu|sementara|coba lagi/i);
+  assert.doesNotMatch(translations.authGuestUnavailable, /Guest mode is unavailable/i);
+  assert.doesNotMatch(source, /payload\?\.(?:error|message).+Guest mode is unavailable/i);
+  assert.match(source, /throw new Error\(copy\.authGuestUnavailable \|\| copy\.error\)/);
 });
 

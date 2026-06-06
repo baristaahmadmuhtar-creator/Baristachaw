@@ -22,7 +22,7 @@ function hasOnlineAiOptimization(plan: BrewPlan) {
 function grinderStatusLabel(plan: BrewPlan, language: string) {
   const id = isIndonesian(language);
   if (plan.grindCalibrationRequired || plan.grindSettingMode === 'derived_baseline' || plan.grindSettingVerification === 'fallback') {
-    return id ? 'Grinder baseline' : 'Baseline grinder';
+    return id ? 'Acuan grinder' : 'Baseline grinder';
   }
   if (plan.grindSettingVerification === 'official') return id ? 'Grinder resmi' : 'Grinder Official';
   if (plan.grindSettingVerification === 'community_verified' || plan.grindSettingVerification === 'curated') {
@@ -105,7 +105,7 @@ export function resolveAiBrewBeanCharacterInsights(plan: BrewPlan, language: str
 
   if (/\b(sumatra|lintong|mandheling|gayo|lake\s*toba|toba|wet[-\s_]?hulled|giling\s+basah)\b/i.test(text)) {
     insights.push(id
-      ? 'Input mengarah ke kopi berstruktur. Jaga body, sweetness, dan spice; jangan buru-buru menaikkan suhu kalau finish mulai seret.'
+      ? 'Input mengarah ke kopi berstruktur. Jaga body, sweetness, dan karakter rempah; jangan buru-buru menaikkan suhu jika rasa akhir mulai kering.'
       : 'The input points to a structured coffee. Protect body, sweetness, and spice; avoid raising temperature too fast if the finish turns dry.');
   }
 
@@ -117,13 +117,13 @@ export function resolveAiBrewBeanCharacterInsights(plan: BrewPlan, language: str
 
   if (/\b(washed|fully\s+washed|wet\s+process|ethiopia|kenya|panama|gesha|geisha|high\s+altitude|highland)\b/i.test(text)) {
     insights.push(id
-      ? 'Sinyal washed/highland cenderung butuh clarity. Jaga bed rata dan hindari bypass agar acidity tetap bersih.'
+      ? 'Karakter washed atau dataran tinggi cenderung membutuhkan kejernihan. Jaga hamparan kopi tetap rata dan hindari bypass agar acidity terasa bersih.'
       : 'The washed/highland cue tends to need clarity. Keep the bed even and avoid bypass so acidity stays clean.');
   }
 
   if (insights.length === 0) {
     insights.push(id
-      ? 'Karakter bean belum dikunci penuh. AI memakai roast, target rasa, air, dan alat sebagai baseline aman.'
+      ? 'Karakter bean belum diketahui sepenuhnya. AI memakai roast, target rasa, air, dan alat sebagai acuan awal yang aman.'
       : 'Bean character is not fully locked. AI uses roast, taste target, water, and equipment as a safe baseline.');
   }
 
@@ -149,7 +149,7 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
       ? `Ikuti angka utama: ${mainWater}, ${Math.round(plan.waterTempC)}°C, ${timeLabel} sekitar ${formatTimeLabel(tasteTimeSeconds)}.`
       : `Brew the main numbers first: ${mainWater}, ${Math.round(plan.waterTempC)}°C, ${timeLabel} around ${formatTimeLabel(tasteTimeSeconds)}.`,
     id
-      ? 'Pakai setting grinder awal sebagai baseline; ubah satu variabel dulu setelah melihat air turun dan rasa.'
+      ? 'Gunakan setelan awal grinder sebagai acuan; ubah satu variabel saja setelah melihat aliran dan mencicipi hasilnya.'
       : 'Use the starting grinder setting as the baseline; make small corrections only after drawdown and tasting.',
     id
       ? 'Jika asam/tipis: sedikit lebih halus atau pulse ringan. Jika pahit/macet: sedikit lebih kasar atau kurangi agitasi.'
@@ -158,7 +158,7 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
 
   if (plan.waterClassification === 'zero_mineral_ro') {
     priorities.push(id
-      ? 'Bagus sebagai base custom water; jangan dipakai direct tanpa remineralisasi.'
+      ? 'Cocok sebagai dasar untuk meracik air sendiri; jangan dipakai langsung tanpa remineralisasi.'
       : 'Useful as a custom-water base; do not brew directly without remineralization.');
   } else if (plan.waterClassification === 'low_mineral_clarity') {
     priorities.push(id
@@ -166,7 +166,7 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
       : 'Low-mineral water can taste clean, but body may be thin; taste-check before making it the default.');
   } else if (plan.waterClassification === 'demineral_direct_experiment') {
     priorities.push(id
-      ? 'Air demineral direct hanya eksperimen filter; kalau cup kosong, remineralisasi atau blend.'
+      ? 'Air demineral yang dipakai langsung hanya cocok sebagai eksperimen filter; jika hasilnya terasa kosong, remineralisasi atau campur dengan air bermineral.'
       : 'Direct demineral brewing is only a filter experiment; if the cup tastes hollow, remineralize or blend.');
   } else if (plan.waterPresetStatus === 'manual_required' || !plan.waterIsBrewReady) {
     priorities.push(id
@@ -182,19 +182,19 @@ export function resolveAiBrewActionPriorities(plan: BrewPlan, language: string) 
       : 'Water minerals are estimated; verify manually before treating it as brew-ready.');
   } else if (plan.waterMineralDerivation === 'estimated_from_community_profile') {
     priorities.push(id
-      ? 'Profil air memakai bukti komunitas/kopi; cukup untuk starting point, tetap validasi rasa.'
+      ? 'Profil air memakai rujukan komunitas kopi; cukup sebagai titik awal, tetapi tetap perlu divalidasi dari rasa.'
       : 'Water profile uses coffee-community evidence; good for a starting point, still taste-check.');
   }
 
   if (plan.deviceProfileMode !== 'exact') {
     priorities.push(id
-      ? 'Profil alat bukan exact; jadikan ini baseline dan kalibrasi dengan rasa aktual.'
+      ? 'Profil alat belum presisi; gunakan sebagai acuan, lalu kalibrasi dari rasa hasil seduhan.'
       : 'Brewer profile is not exact; use this as a baseline and calibrate with actual taste.');
   }
 
   if (plan.grindCalibrationRequired || plan.grindSettingMode === 'derived_baseline' || plan.grindSettingVerification === 'fallback') {
     priorities.push(id
-      ? 'Baseline awal, bukan setting presisi. Validasi dengan waktu ekstraksi dan rasa.'
+      ? 'Ini acuan awal, bukan setelan presisi. Validasi dengan waktu ekstraksi dan rasa.'
       : 'Estimated starting point, not an exact setting. Validate with drawdown, method time, and taste.');
   } else if (plan.grindSettingVerification === 'dataset_unverified') {
     priorities.push(id
@@ -238,7 +238,7 @@ function localizeGrindReference(text: string, language: string) {
     .replace(/\bIf sour\/thin:/gi, 'Jika asam/tipis:')
     .replace(/\bIf bitter\/dry\/stalled:/gi, 'Jika pahit/kering/macet:')
     .replace(/\bnumbers\b/gi, 'angka')
-    .replace(/\bsteps\b/gi, 'step');
+    .replace(/\bsteps\b/gi, 'langkah');
 }
 
 function methodCorrection(
@@ -255,13 +255,13 @@ function methodCorrection(
       : plan.waterClassification === 'low_mineral_clarity'
         ? (id ? 'Cek air dulu: air rendah mineral bisa membuat body tipis dan acidity lebih tajam.' : 'Check water first: low-mineral water can make body thin and acidity sharper.')
         : plan.waterClassification === 'demineral_direct_experiment'
-          ? (id ? 'Cek air dulu: direct demineral bisa clean tapi hollow; remineralisasi jika perlu.' : 'Check water first: direct demineral can taste clean but hollow; remineralize if needed.')
+          ? (id ? 'Cek air dulu: air demineral yang dipakai langsung bisa terasa clean tetapi kosong; remineralisasi jika perlu.' : 'Check water first: direct demineral can taste clean but hollow; remineralize if needed.')
         : '';
 
   const generic = {
     great: {
       primaryCorrection: id ? `Pertahankan ${grind} dan ulangi aliran yang sama.` : `Keep ${grind} and repeat the same flow.`,
-      backupCorrection: id ? 'Simpan plan ini sebagai baseline untuk bean yang sama.' : 'Save this plan as the baseline for the same bean.',
+      backupCorrection: id ? 'Simpan rencana ini sebagai acuan untuk bean yang sama.' : 'Save this plan as the baseline for the same bean.',
     },
     sour: {
       primaryCorrection: id ? `Coba sedikit lebih halus, sekitar 0.5 step dari ${grind}.` : `Try slightly finer, about 0.5 step from ${grind}.`,
@@ -303,7 +303,7 @@ function methodCorrection(
   if (plan.methodFamily === 'hario_switch') {
     if (rating === 'great') return {
       primaryCorrection: id ? 'Pertahankan gilingan, titik buka katup, dan jalur katup yang sama.' : 'Keep the same grind, release checkpoint, and valve path.',
-      backupCorrection: id ? 'Catat muatan ruang, air turun, air, dan grinder sebagai baseline Switch.' : 'Record chamber load, drawdown, water, and grinder as the Switch baseline.',
+      backupCorrection: id ? 'Catat muatan ruang, waktu air turun, air, dan grinder sebagai acuan Switch.' : 'Record chamber load, drawdown, water, and grinder as the Switch baseline.',
     };
     if (rating === 'sour' || rating === 'thin') return {
       primaryCorrection: id
@@ -331,7 +331,7 @@ function methodCorrection(
     };
     if (rating === 'flat') return {
       primaryCorrection: waterWarning || (id
-        ? 'Buka katup lebih awal atau gunakan Hybrid cerah bersih untuk mengangkat clarity.'
+        ? 'Buka katup lebih awal atau gunakan Hybrid Cerah Bersih untuk meningkatkan kejernihan.'
         : 'Release earlier or use Hybrid Bright Clean to lift clarity.'),
       backupCorrection: id
         ? 'Cek KH/alkalinity dan gunakan mineral manual sebelum mengubah rasio.'

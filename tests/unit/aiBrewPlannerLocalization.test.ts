@@ -85,3 +85,20 @@ test('AI Brew Indonesian dynamic copy polishes avoidable raw English brewing ter
   assert.match(raw, /air turun/);
 });
 
+test('AI Brew Indonesian legacy dripper tutorials do not leak English sentence fragments', () => {
+  const rawTutorials = [
+    'Pour 50% circular and 50% center water. Wet grounds evenly and let bloom for 35 seconds to allow gas escape.',
+    'Swirl the chilled coffee to melt the remaining ice, ensuring a rich, non-watery cold pour-over.',
+    'Wet the trapezoidal coffee bed evenly. Because the wedge bottom is narrow, ensure all dry corners in the bottom fold are wet. Bloom 35 seconds.',
+    'Pour in an oval pattern. Wet all grounds and let bloom for 40 seconds.',
+    'Swirl the chilled coffee to melt the remaining ice, ensuring a rich, non-watery cold trapezoid pour-over.',
+    'Pour rapidly in the center. Stir gently 3 times with a spoon to agitate all grounds. Let bloom for 35 seconds.',
+  ];
+  const localized = rawTutorials.map((item) => localizeAiBrewDynamicText(item, 'id')).join(' ');
+
+  assert.doesNotMatch(localized, /\b(?:and|let|seconds|cold|wedge|stir|grounds)\b/i);
+  assert.doesNotMatch(localized, /\.\s+[a-zà-öø-ÿ]/u);
+  assert.match(localized, /Biarkan blooming 35 detik/);
+  assert.match(localized, /seduhan pour-over dingin/);
+});
+

@@ -178,7 +178,7 @@ function enforceCoachAdjustmentContract(markdown: string, action: CoachAction, l
     output = output.replace(
       /\b(?:ubah|ganti|naikkan|turunkan|increase|decrease|change|raise|lower)\b[^.\n]{0,42}\b(?:rasio|ratio|dosis|dose)\b[^\n.]*/gi,
       id
-        ? 'Jangan ubah rasio/dosis dari plan ini; mulai dari koreksi grind kecil, pouring/agitation, lalu suhu kecil'
+        ? 'Jangan ubah rasio atau dosis dari rencana ini; mulai dari koreksi kecil pada gilingan, pola tuang atau agitasi, lalu suhu'
         : 'Do not change ratio or dose in this plan; start with a small grind move, pour/agitation control, then a small temperature change',
     );
     risk = maxRisk(risk, 'medium');

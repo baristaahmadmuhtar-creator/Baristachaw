@@ -61,6 +61,7 @@ const METHOD_ACTIONS: Record<AiBrewMethodFamily, WorkflowGuideActionType[]> = {
 const ENGLISH_LEAKS = /\b(tuang|seduh|sajikan|katup|ruang|bubuk|air panas|jangan|aduk|rendam|tekan|endapkan|tetesan|bilas|gilingan|suhu|rasa|catatan|koleksi|panduan|keyakinan)\b|air turun/i;
 const BROKEN_USER_COPY = /\$(?:\d+|\{)|\b(?:undefined|null|NaN|\[object Object\]|ActionAction|Action\s+Action|Pressgentle|Stophiss)\b|pour air|stir\s+\d+(?:-\d+)?\s+times\s+saja|Tekan [^.!?]*seconds|Seduh [^.!?]*brew/i;
 const CRITICAL_INDONESIAN_LEAKS = /\b(rinse|preheat|kettle|serve|drawdown|pour path|press slowly|release|dose evenly)\b/i;
+const INDONESIAN_DYNAMIC_RAW_ENGLISH = /\b(Risk bean|Brew ratio|balances|More sweetness|Fully Washed|roast solubility|is selected from|target extraction style|press keeps|aligned with|Finishing after|main taste time|Direct demineral use|low-confidence filter experiment|expect a clean cup|hollow risk|unless remineralized|AI numeric optimizer accepted inside guardrails|Manual preset adapted|fallback kompatibel|finish body-forward)\b/i;
 const CORRECTION_LOOP = /kalau asam|kalau pahit|jika asam|jika pahit|if sour|if bitter|correction|koreksi rasa|next cup|dial-in/i;
 const AEROPRESS_STYLE_CASES = [
   {
@@ -350,6 +351,16 @@ test('Indonesian AI Brew style chip labels use natural operational copy', () => 
   }
 
   assert.match(idCopy, /frenchPressStyleCleanDecant:\s*'Tuang pisah bersih'/);
+  assert.match(idCopy, /manualPresetFallback:\s*'Pengganti'/);
+  assert.doesNotMatch(idCopy, /manualPresetFallback:\s*'Fallback'/);
+  assert.match(source, /precisionControlTitle:\s*'Target lanjutan'/);
+  assert.match(source, /noWaterSourceLinks:\s*'Belum ada tautan sumber tersimpan untuk brand ini\.'/);
+  assert.doesNotMatch(source, /precisionControlTitle:\s*'Target advanced'/);
+  assert.match(source, /akhir seduhan yang lebih ber-body/);
+  assert.doesNotMatch(
+    source,
+    /finish body-forward|fallback kompatibel|Server AI sedang penuh|Finishing setelah waktu rasa utama|ber-confidence rendah|starting point dengan cek rasa|baseline grinder|brew time utama|direct demineral bisa clean tapi hollow/i,
+  );
   assert.match(idCopy, /origamiFilterCone:\s*'Filter kerucut'/);
   assert.match(idCopy, /origamiFilterWave:\s*'Filter berlipat'/);
   assert.match(idCopy, /kalitaWaveStyleTraditionalFlatThree:\s*'Tiga tuang alas datar'/);
@@ -411,6 +422,22 @@ test('every visible AI Brew dripper resolves tutorial detail for each generated 
         .join('\n');
       assert.doesNotMatch(guideText, BROKEN_USER_COPY, `${dripper.name}/${brewMode} guide has broken user copy: ${guideText}`);
       assert.doesNotMatch(guideText, ENGLISH_LEAKS, `${dripper.name}/${brewMode} guide leaks Indonesian: ${guideText}`);
+
+      const toIndonesian = (value: string) => localizeAiBrewDynamicText(value, 'id');
+      const guideTextId = guideSteps
+        .flatMap((step) => [
+          toIndonesian(step.label),
+          toIndonesian(step.note),
+          toIndonesian(step.hybridInstruction || ''),
+          toIndonesian(step.primaryText),
+          toIndonesian(step.secondaryText || ''),
+          ...step.warnings.map(toIndonesian),
+          ...step.techniqueChips.flatMap((chip) => [toIndonesian(chip.label), toIndonesian(chip.value)]),
+        ])
+        .filter(Boolean)
+        .join('\n');
+      assert.doesNotMatch(guideTextId, BROKEN_USER_COPY, `${dripper.name}/${brewMode} ID guide has broken user copy: ${guideTextId}`);
+      assert.doesNotMatch(guideTextId, INDONESIAN_DYNAMIC_RAW_ENGLISH, `${dripper.name}/${brewMode} ID guide leaks raw English result copy: ${guideTextId}`);
 
       for (const step of guideSteps) {
         const en = resolveWorkflowTutorialDetail({

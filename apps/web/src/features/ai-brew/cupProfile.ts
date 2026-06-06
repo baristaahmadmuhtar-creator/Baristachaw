@@ -483,7 +483,7 @@ export function buildExpectedCupProfile(
     aromaIntensity = softenUngroundedBeanPrediction(aromaIntensity);
     reasons.push(
       missingProcessData && missingVarietyData
-        ? 'Proses dan varietas belum lengkap; prediksi rasa memakai baseline target, roast, air, grinder, dan alat.'
+        ? 'Proses dan varietas belum lengkap; prediksi rasa memakai acuan profil target, roast, air, grinder, dan alat.'
         : missingProcessData
           ? 'Proses belum lengkap; prediksi rasa belum membaca karakter proses bean secara spesifik.'
           : 'Varietas belum lengkap; prediksi rasa belum membaca karakter varietas secara spesifik.',
@@ -555,11 +555,11 @@ export function buildExpectedCupProfile(
 
   if (plan.grindSettingVerification === 'fallback' || plan.grindSettingMode === 'derived_baseline' || plan.grindCalibrationRequired) {
     confidence = confidence === 'low' ? 'low' : 'medium';
-    warnings.push('Baseline grinder menurunkan keyakinan; validasi dari waktu ekstraksi dan rasa.');
+    warnings.push('Acuan grinder menurunkan keyakinan; validasi dari waktu ekstraksi dan rasa.');
   }
   if (plan.methodFamily === 'espresso' && (plan.grindSettingVerification === 'fallback' || plan.grindCalibrationRequired)) {
     confidence = 'low';
-    warnings.push('Espresso dengan grinder fallback atau belum terverifikasi hanya boleh dipakai sebagai starting point kalibrasi, bukan prediksi shot yang pasti.');
+    warnings.push('Espresso dengan acuan grinder pengganti atau grinder yang belum terverifikasi hanya boleh dipakai sebagai titik awal kalibrasi, bukan prediksi ekstraksi yang pasti.');
   }
 
   if (plan.processRisk?.variability === 'high') {

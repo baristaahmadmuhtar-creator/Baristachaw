@@ -149,7 +149,7 @@ function buildCompletionWarnings(waterBrand: WaterBrandProfile, language?: strin
   }
   if (waterBrand.classification === 'alkaline_caution') {
     warnings.add(id
-      ? 'Air alkaline bisa meredam acidity; gunakan sebagai baseline hati-hati.'
+      ? 'Air alkalin bisa meredam acidity; gunakan sebagai acuan awal dengan hati-hati.'
       : 'Alkaline water can mute acidity; use this as a cautious baseline.');
   }
   if (waterBrand.classification === 'low_mineral_clarity') {
@@ -159,12 +159,12 @@ function buildCompletionWarnings(waterBrand: WaterBrandProfile, language?: strin
   }
   if (waterBrand.classification === 'demineral_direct_experiment') {
     warnings.add(id
-      ? 'Direct brew dengan air demineral adalah eksperimen; remineralisasi memberi body dan sweetness lebih stabil.'
+      ? 'Menyeduh langsung dengan air demineral masih bersifat eksperimental; remineralisasi membantu menjaga body dan sweetness lebih stabil.'
       : 'Direct brewing with demineral water is experimental; remineralization gives more stable body and sweetness.');
   }
   if (!waterBrand.sourceUrls.length) {
     warnings.add(id
-      ? 'Belum ada URL sumber publik penuh untuk mineral brand ini.'
+      ? 'Belum ada tautan sumber publik yang lengkap untuk mineral merek ini.'
       : 'This brand does not yet have a complete public source URL for minerals.');
   }
 
@@ -191,7 +191,7 @@ export function resolveWaterMineralCompletion(params: {
         : 'This water is too low-mineral to use directly. These values are a remineralization target for brewing, not the original label profile.',
       warnings: [
         id
-          ? 'Pakai air ini sebagai base RO/low-mineral, lalu tambahkan mineral atau gunakan baseline target ini.'
+          ? 'Gunakan air ini sebagai dasar RO atau air mineral rendah, lalu tambahkan mineral sesuai target ini.'
           : 'Use this as an RO/low-mineral base, then add minerals or use this target baseline.',
         ...buildCompletionWarnings(waterBrand, language),
       ],
@@ -209,7 +209,7 @@ export function resolveWaterMineralCompletion(params: {
       mode: isEstimated ? 'classification_baseline' : 'source_backed_manual',
       note: isEstimated
         ? (id
-          ? 'Mineral dilengkapi dari baseline klasifikasi. Ini membantu generate, tetapi tetap perlu verifikasi manual.'
+          ? 'Data mineral dilengkapi dari acuan klasifikasi. Resep tetap bisa dibuat, tetapi hasilnya perlu verifikasi manual.'
           : 'Minerals were completed from a classification baseline. This enables generation, but still needs manual verification.')
         : (id
           ? 'Mineral tersedia di katalog dan dipakai sebagai input manual terkontrol.'
@@ -235,11 +235,11 @@ export function resolveWaterMineralCompletion(params: {
         ? 'Field mineral yang kosong dilengkapi dari klasifikasi air dan field yang sudah tersedia.'
         : 'Missing mineral fields were completed from the water classification and available fields.')
       : (id
-        ? 'Panel mineral brand belum lengkap, jadi dipakai baseline klasifikasi yang konservatif.'
+        ? 'Data mineral merek belum lengkap, jadi digunakan acuan klasifikasi yang konservatif.'
         : 'The brand mineral panel is incomplete, so a conservative classification baseline is used.'),
     warnings: [
       id
-        ? 'Baseline ini bukan klaim resmi brand; verifikasi label/lab saat tersedia.'
+        ? 'Acuan ini bukan klaim resmi merek; verifikasi dari label atau data laboratorium saat tersedia.'
         : 'This baseline is not an official brand claim; verify label/lab data when available.',
       ...buildCompletionWarnings(waterBrand, language),
     ],

@@ -33,14 +33,14 @@ export function resolveWaterAdjustmentAdvice(water: {
   }
   if (water.tdsPpm < 30) {
     if (water.classification === 'low_mineral_clarity') {
-      warnings.push('TDS sangat rendah; cup bisa clean, tetapi body dapat tipis dan acidity lebih tajam.');
-      adjustments.push('Pakai sebagai starting point filter; blend/remineralize jika ingin body lebih penuh atau hasil lebih konsisten.');
+      warnings.push('TDS sangat rendah; hasil seduhan bisa clean, tetapi body dapat tipis dan acidity terasa lebih tajam.');
+      adjustments.push('Gunakan sebagai titik awal untuk seduhan filter; campur dengan air bermineral atau remineralisasi jika ingin body lebih penuh dan hasil lebih konsisten.');
     } else if (water.classification === 'demineral_direct_experiment') {
-      warnings.push('Air demineral bisa dipakai sebagai eksperimen filter, tetapi body sering sangat ringan dan cup bisa hollow.');
-      adjustments.push('Gunakan sebagai starting point low-confidence; kalau cup kosong, remineralize, blend, atau sedikit lebih halus.');
+      warnings.push('Air demineral bisa dipakai sebagai eksperimen filter, tetapi body sering sangat ringan dan hasilnya dapat terasa kosong.');
+      adjustments.push('Gunakan sebagai titik awal dengan keyakinan rendah; jika hasilnya kosong, remineralisasi, campur dengan air bermineral, atau haluskan sedikit gilingan.');
     } else {
-      warnings.push('TDS sangat rendah; air rendah mineral bisa bekerja baik untuk seduhan yang fokus pada clarity.');
-      adjustments.push('Gunakan sebagai starting point; remineralisasi atau blend jika rasa cup kosong/hollow.');
+      warnings.push('TDS sangat rendah; air rendah mineral dapat bekerja baik untuk seduhan yang mengutamakan kejernihan.');
+      adjustments.push('Gunakan sebagai titik awal; remineralisasi atau campur dengan air bermineral jika hasilnya terasa kosong.');
     }
   }
 

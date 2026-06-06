@@ -90,7 +90,7 @@ function buildPourStyleControlCue(plan: BrewPlan, styleHint: string, index: numb
   if (styleHint === 'pulse' || styleHint === 'pulse_light' || styleHint === 'light_pulse') {
     return isIndonesian
       ? first
-        ? 'Pulse ringan: basahi bed merata tanpa agitasi besar.'
+        ? 'Tuangan bertahap ringan: basahi hamparan kopi secara merata tanpa agitasi besar.'
         : 'Pulse ringan: tuang pendek, stabil, dan tunggu slurry turun sedikit.'
       : first
         ? 'Light pulse: wet the bed evenly without heavy agitation.'
@@ -99,7 +99,7 @@ function buildPourStyleControlCue(plan: BrewPlan, styleHint: string, index: numb
   if (styleHint === 'gentle') {
     return isIndonesian
       ? first
-        ? 'Halus: tuang rendah dan lembut agar bed tidak pecah.'
+        ? 'Halus: tuang dari posisi rendah dan lembut agar hamparan kopi tidak pecah.'
         : 'Halus: jaga aliran tipis, pusatkan pour, dan hindari bypass.'
       : first
         ? 'Gentle: pour low and soft so the bed stays intact.'
@@ -110,7 +110,7 @@ function buildPourStyleControlCue(plan: BrewPlan, styleHint: string, index: numb
       ? 'Seimbang: jaga konsentrat panas stabil di atas es terukur.'
       : 'Balanced: keep the hot concentrate stable over measured ice.'
     : isIndonesian
-      ? 'Seimbang: jaga flow stabil dan bed tetap rata.'
+      ? 'Seimbang: jaga aliran tetap stabil dan hamparan kopi tetap rata.'
       : 'Balanced: keep flow steady and the bed even.';
 }
 

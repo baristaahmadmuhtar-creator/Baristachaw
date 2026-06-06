@@ -443,15 +443,15 @@ function warningCopy(params: {
   setting?: GrinderSettingReference;
   deviceProfile?: DeviceBrewProfile;
 }) {
-  if (!params.setting) return 'Belum ada referensi grinder. Pakai range alat sebagai titik awal, lalu koreksi dari rasa.';
+  if (!params.setting) return 'Belum ada referensi grinder. Gunakan rentang alat sebagai titik awal, lalu koreksi berdasarkan rasa.';
   if (params.methodFamily === 'espresso' && params.setting.calibrationRequired) {
-    return 'Espresso sangat sensitif. Ini baseline grinder, bukan jaminan shot; kalibrasi nol, dose, yield, dan waktu shot dulu.';
+    return 'Espresso sangat sensitif. Angka ini hanya acuan awal grinder, bukan jaminan hasil; kalibrasi titik nol, dosis, yield, dan waktu ekstraksi terlebih dahulu.';
   }
   if (params.setting.calibrationRequired) {
-    return 'Range master table ini adalah titik awal terkalibrasi. Validasi di seduhan pertama, lalu koreksi satu variabel dari rasa.';
+    return 'Rentang pada tabel acuan ini adalah titik awal terkalibrasi. Uji pada seduhan pertama, lalu koreksi satu variabel berdasarkan rasa.';
   }
   if (params.deviceProfile?.brewMode === 'iced') {
-    return 'Untuk seduh es, mulai sedikit lebih halus dari hot bila cup terasa tipis, tetapi jangan ubah air panas dan es sekaligus.';
+    return 'Untuk seduh es, mulai sedikit lebih halus daripada seduh panas jika hasilnya terasa tipis, tetapi jangan ubah air panas dan es sekaligus.';
   }
   return undefined;
 }

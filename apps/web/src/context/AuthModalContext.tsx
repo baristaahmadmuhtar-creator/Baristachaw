@@ -637,10 +637,10 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     clearOauthPopupMonitor({ closePopup: true });
     setAuthBusy(true);
     setAuthError(null);
+    const copy = getLocalizedCopy();
 
     if (isOffline) {
       setAuthBusy(false);
-      const copy = getLocalizedCopy();
       setAuthError(copy.authGuestOffline || copy.connectionFailed || copy.error);
       return;
     }
@@ -653,7 +653,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload?.user) {
-        throw new Error(String(payload?.error || payload?.message || 'Guest mode is unavailable.'));
+        throw new Error(copy.authGuestUnavailable || copy.error);
       }
       const nextUser = payload.user as AuthUser;
       setUser(nextUser);
@@ -663,7 +663,6 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
       setAuthError(null);
       setIsOpen(false);
     } catch (error) {
-      const copy = getLocalizedCopy();
       const message = error instanceof Error ? error.message : (copy.authGuestUnavailable || copy.error);
       setAuthError(message);
       setIsOpen(true);

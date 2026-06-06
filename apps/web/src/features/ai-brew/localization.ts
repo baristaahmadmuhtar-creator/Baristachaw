@@ -1789,12 +1789,12 @@ export function localizeAiBrewSummary(plan: Pick<
     ? `rasio final 1:${formatBaristaRatio(plan.finalBeverageRatio)} dan konsentrat panas 1:${formatBaristaRatio(plan.hotExtractionRatio)}`
     : `1:${formatBaristaRatio(plan.recommendedRatio)}`;
   const modeLabel = plan.methodFamily === 'cold_brew'
-    ? 'Plan seduh dingin'
+    ? 'Rencana seduh dingin'
     : plan.methodFamily === 'espresso'
-      ? 'Plan espresso'
+      ? 'Rencana espresso'
       : plan.brewMode === 'iced'
-        ? 'Plan seduh es'
-        : 'Plan seduh panas';
+        ? 'Rencana seduh es'
+        : 'Rencana seduh panas';
   return `${modeLabel} untuk ${coffeeName} dengan ${plan.dripper.name}, disetel untuk profil ${target} pada ${ratioText}, ${formatBaristaTemperature(plan.waterTempC)}°C, ${indonesianTimeLabel} sekitar ${formatAiBrewTimeForLanguage(tasteTimeSeconds, language)}.`;
 }
 

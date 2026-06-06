@@ -70,6 +70,8 @@ test('AI Brew localized summaries use clean temperature text and no encoding art
 
   assert.match(idSummary, /93°C|93 C/);
   assert.match(enSummary, /93°C|93 C/);
+  assert.match(idSummary, /^Rencana\b/);
+  assert.doesNotMatch(idSummary, /\bPlan\b/);
   assert.doesNotMatch(`${idSummary} ${enSummary}`, /\u00c2|\u00c3|â€|�/);
   assert.doesNotMatch(idSummary, /\b(hot drawdown finish|extraction time|this coffee)\b/i);
   assert.doesNotMatch(enSummary, /\b(seduh|air turun|kopi ini)\b/i);

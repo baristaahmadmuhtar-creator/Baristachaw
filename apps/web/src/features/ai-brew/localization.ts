@@ -95,6 +95,10 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
         return 'Main Pour';
       case 'tuang tengah':
         return 'Center Pour';
+      case 'tuang tahap tengah':
+        return 'Middle Pour';
+      case 'tuang penutup':
+        return 'Finishing Pour';
       case 'tuang kedua':
         return 'Second Pour';
       case 'tuang ketiga':
@@ -105,6 +109,8 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
         return 'Finish to Hot-Water Target';
       case 'bilas, panaskan, set katup':
         return 'Rinse, Preheat, Set Valve';
+      case 'bilas dan panaskan':
+        return 'Rinse and Preheat';
       case 'panaskan alat':
         return 'Preheat Brewer';
       case 'basahi merata':
@@ -127,6 +133,10 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
         return 'Stir';
       case 'aduk ringan':
         return 'Light Stir';
+      case 'aduk batch':
+        return 'Mix Batch';
+      case 'air naik':
+        return 'Water Rise';
       case 'aduk / putar':
         return 'Stir or Swirl';
       case 'rendam':
@@ -138,14 +148,52 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
       case 'berhenti sebelum hiss':
       case 'berhenti sebelum desis':
         return 'Stop Before Hiss';
+      case 'berhenti sebelum sputter':
+        return 'Stop Before Sputtering';
+      case 'berhenti di target hasil':
+        return 'Stop at Target Yield';
+      case 'balikkan aman':
+        return 'Safe Flip';
+      case 'bypass terukur':
+        return 'Measured Bypass';
       case 'buka katup':
+        return 'Release';
+      case 'alirkan keluar':
         return 'Release';
       case 'buka katup di atas es':
         return 'Release Over Ice';
       case 'air turun':
         return 'Drawdown';
+      case 'air turun selesai':
+        return 'Drawdown Finish';
       case 'panaskan':
         return 'Heat';
+      case 'panaskan air':
+        return 'Heat Water';
+      case 'panas sedang':
+        return 'Medium Heat';
+      case 'isi boiler':
+        return 'Fill Boiler';
+      case 'ratakan basket':
+        return 'Level Basket';
+      case 'prep basket':
+        return 'Prepare Basket';
+      case 'pantau aliran':
+        return 'Monitor Flow';
+      case 'distribusi dan tamp':
+        return 'Distribute and Tamp';
+      case 'mulai ekstraksi':
+        return 'Start Extraction';
+      case 'kontak atas':
+        return 'Upper-Chamber Contact';
+      case 'masukkan kopi dan aduk':
+        return 'Add Coffee and Stir';
+      case 'matikan panas dan air turun':
+        return 'Remove Heat and Draw Down';
+      case 'siklus mesin':
+        return 'Machine Brew Cycle';
+      case 'dose per liter':
+        return 'Dose per Liter';
       case 'mulai seduh':
         return 'Start Brew';
       case 'ekstraksi':
@@ -158,6 +206,10 @@ export function localizeAiBrewStepLabel(label: string, language?: string) {
         return 'Dilute';
       case 'endapkan':
         return 'Settle';
+      case 'bersihkan permukaan':
+        return 'Skim Surface';
+      case 'apungkan penekan':
+        return 'Float Plunger';
       case 'saring':
         return 'Filter';
       case 'berhenti':
@@ -559,6 +611,7 @@ function polishIndonesianBaristaCopy(text: string) {
     .replace(/\bspray head\b/gi, 'kepala semprot')
     .replace(/\bshower head\b/gi, 'kepala semprot')
     .replace(/\bwater spray\b/gi, 'semprotan air')
+    .replace(/\bflutes?\b/gi, 'lekukan')
     .replace(/\bmesh\b/gi, 'saringan')
     .replace(/\bcap\b/gi, 'tutup')
     .replace(/\bcup\b/gi, 'cangkir')
@@ -567,6 +620,7 @@ function polishIndonesianBaristaCopy(text: string) {
     .replace(/\bBuka Katup\b/g, 'buka katup')
     .replace(/\b(?:dan|lalu|kemudian) Aduk\b/g, (value) => value.replace('Aduk', 'aduk'))
     .replace(/\bbefore saji\b/gi, 'sebelum disajikan')
+    .replace(/\b([\p{L}]{2,})\s+\1\b/giu, '$1')
     .replace(/\s+([.,;:])/g, '$1')
     .replace(/\s+/g, ' ')
     .trim();
@@ -574,6 +628,43 @@ function polishIndonesianBaristaCopy(text: string) {
 
 function translateAiBrewWorkflowTextToEnglish(text: string) {
   return String(text || '')
+    .replace(
+      /^Bilas filter berlipat, panaskan alat, lalu ratakan hamparan kopi datar\.$/i,
+      'Rinse the wave filter, preheat the brewer, then level the coffee bed.',
+    )
+    .replace(
+      /^Pakai tiga pulsa rendah dari tengah agar permukaan tetap rata\.$/i,
+      'Use three gentle center pulses to keep the coffee bed level.',
+    )
+    .replace(
+      /^Jaga pulsa seragam; alat alas datar bekerja paling stabil saat permukaan tidak bergelombang\.$/i,
+      'Keep each pulse even; a flat-bottom brewer is most stable when the coffee bed stays level.',
+    )
+    .replace(
+      /^Biarkan air turun tanpa mengguncang alat\.$/i,
+      'Let the brew draw down without shaking the brewer.',
+    )
+    .replace(
+      /^Sajikan setelah aliran selesai bersih\.$/i,
+      'Serve after the flow finishes cleanly.',
+    )
+    .replace(/^alas datar 3 pulsa$/i, 'flat-bottom, three pulses')
+    .replace(
+      /^Acuan grinder menurunkan keyakinan; validasi dari waktu ekstraksi dan rasa\.$/i,
+      'The grinder reference has lower confidence; validate it against brew time and taste.',
+    )
+    .replace(
+      /^Setelan grinder masih estimasi\/fallback; kalibrasi dari waktu ekstraksi dan rasa\.$/i,
+      'The grinder setting is still an estimate; calibrate it against brew time and taste.',
+    )
+    .replace(
+      /^Setelan grinder memakai baseline metode; kalibrasi titik nol dan rasa sebelum dianggap presisi\.$/i,
+      'The grinder setting uses a method baseline; calibrate the zero point and taste before treating it as precise.',
+    )
+    .replace(
+      /^Espresso dengan acuan grinder pengganti atau grinder yang belum terverifikasi hanya boleh dipakai sebagai titik awal kalibrasi, bukan prediksi ekstraksi yang pasti\.$/i,
+      'For espresso, a fallback or unverified grinder reference is only a calibration starting point, not a guaranteed extraction prediction.',
+    )
     .replace(/\bBilas filter Chemex tebal\b/gi, 'Rinse the thick Chemex filter')
     .replace(/\bBilas filter berlipat\b/gi, 'Rinse the wave filter')
     .replace(/\bBilas filter Melitta\b/gi, 'Rinse the Melitta filter')
@@ -587,6 +678,7 @@ function translateAiBrewWorkflowTextToEnglish(text: string) {
     .replace(/\bPilih filter berlipat Origami\b/gi, 'Choose the Origami wave filter')
     .replace(/\bfilter berlipat\b/gi, 'wave filter')
     .replace(/\bfilter kerucut\b/gi, 'cone filter')
+    .replace(/\balas datar\b/gi, 'flat-bottom')
     .replace(/\bkertas V60\b/gi, 'V60 paper')
     .replace(/\bwadah saji\b/gi, 'serving vessel')
     .replace(/\bhamparan kopi\b/gi, 'coffee bed')
@@ -598,6 +690,8 @@ function translateAiBrewWorkflowTextToEnglish(text: string) {
     .replace(/\bfase rendam\b/gi, 'steep phase')
     .replace(/\bair turun selesai\b/gi, 'drawdown finish')
     .replace(/\bair turun\b/gi, 'drawdown')
+    .replace(/\bwaktu kontak\b/gi, 'contact time')
+    .replace(/\baliran keluar\b/gi, 'outflow')
     .replace(/\btuang tahap tengah\b/gi, 'middle pour')
     .replace(/\btuang penutup\b/gi, 'finishing pour')
     .replace(/\btuang akhir\b/gi, 'final pour')
@@ -648,6 +742,7 @@ function translateAiBrewWorkflowTextToEnglish(text: string) {
     .replace(/\bpanaskan alat\b/gi, 'preheat the brewer')
     .replace(/\bratakan\b/gi, 'level')
     .replace(/\bsiapkan\b/gi, 'set up')
+    .replace(/\bsiap\b/gi, 'ready')
     .replace(/\bmasukkan\b/gi, 'add')
     .replace(/\bgunakan\b/gi, 'use')
     .replace(/\bjaga\b/gi, 'keep')
@@ -703,6 +798,16 @@ function translateAiBrewWorkflowTextToEnglish(text: string) {
     .replace(/\bdetik\b/gi, 'seconds')
     .replace(/\bpulsa\b/gi, 'pulses')
     .replace(/\baliran\b/gi, 'flow')
+    .replace(/\bkeluar\b/gi, 'out')
+    .replace(/\bwaktu\b/gi, 'time')
+    .replace(/\bkontak\b/gi, 'contact')
+    .replace(/\btiga\b/gi, 'three')
+    .replace(/\bempat\b/gi, 'four')
+    .replace(/\bseragam\b/gi, 'even')
+    .replace(/\bbekerja\b/gi, 'works')
+    .replace(/\bpaling\b/gi, 'most')
+    .replace(/\bbergelombang\b/gi, 'uneven')
+    .replace(/\bmengguncang\b/gi, 'shaking')
     .replace(/\bjalur\b/gi, 'path')
     .replace(/\btinggi\b/gi, 'high')
     .replace(/\btertutup\b/gi, 'closed')
@@ -1542,7 +1647,7 @@ export function localizeAiBrewDynamicText(text: string, language?: string) {
     .replace(/High water line\. Avoid pouring too high on the trapezoid side ribs; water will bypass the bed entirely through the paper seams\./gi, 'Garis air tinggi. Hindari menuang terlalu tinggi pada rusuk sisi trapezoid; air akan membypass bed sepenuhnya melalui jahitan kertas.')
     .replace(/Iced Melitta Brew leverages the restricted bottom flow of the trapezoid wedge to extract a highly concentrated, rich coffee yield directly over ice\./gi, 'Iced Melitta Brew memanfaatkan aliran bawah yang terbatas dari wedge trapezoid untuk mengekstrak hasil seduh kopi yang sangat pekat langsung di atas es.')
     .replace(/Dense Classic Extraction utilizes a fine grind and extended contact time inside the trapezoid dripper to extract heavy sweet compounds, reminiscent of classic dark-chocolate roasts\./gi, 'Dense Classic Extraction menggunakan gilingan halus dan waktu kontak yang lama di dalam dripper trapezoid untuk mengekstrak senyawa manis yang tebal, mengingatkan pada sangrai cokelat gelap klasik.')
-    .replace(/Dry sputtering\. If the drawdown takes too long \(over 4 minutes\), the coffee will turn dry and astringent\. Coarsen grind slightly on next attempt\./gi, 'Semburan kering. Jika air turun memakan waktu terlalu lama (lebih dari 4 menit), kopi akan terasa kering dan sepat. Giling sedikit lebih kasar pada seduhan berikutnya.')
+    .replace(/Stalled drawdown\. If the brew runs beyond 4 minutes, the cup may turn dry and astringent\. Grind slightly coarser on the next brew\./gi, 'Air turun tersendat. Jika seduhan melewati 4 menit, hasilnya bisa terasa kering dan sepat. Gunakan gilingan sedikit lebih kasar pada seduhan berikutnya.')
     .replace(/Wet the trapezoidal coffee bed evenly\. Because the wedge bottom is narrow, ensure all dry corners in the bottom fold are wet\. Bloom 35 seconds\./gi, 'Basahi hamparan kopi berbentuk trapezoid secara merata. Karena bagian dasarnya sempit, pastikan tidak ada sudut kering di lipatan bawah. Biarkan blooming 35 detik.')
     .replace(/Pour slowly in a long oval spiral \(matching the wedge geometry\) until the dripper is filled\. Let it drain continuously\./gi, 'Tuang perlahan dalam spiral oval panjang (sesuai geometri wedge) sampai dripper penuh. Biarkan mengalir terus-menerus.')
     .replace(/Allow water to drip through the 1 or 2 small holes at the bottom\. The trapezoid shape provides stable, classic extraction\./gi, 'Biarkan air menetes melalui 1 atau 2 lubang kecil di bagian bawah. Bentuk trapezoid menghasilkan ekstraksi klasik yang stabil.')

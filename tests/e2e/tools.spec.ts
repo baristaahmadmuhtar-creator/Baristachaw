@@ -179,6 +179,26 @@ function formatAiBrewGuideValue(totalSeconds: number) {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
+function expectCleanAiBrewVisibleCopy(text: string, language: 'en' | 'id', context: string) {
+  expect(text, `${context} contains broken placeholders`).not.toMatch(
+    /\$(?:\d+|\{)|\b(?:undefined|null|NaN|ActionAction|Action\s+Action|Pressgentle|Stophiss)\b/iu,
+  );
+  for (const line of text.split(/\r?\n/u)) {
+    expect(line, `${context} contains duplicated words`).not.toMatch(/\b([\p{L}]{2,})[ \t]+\1\b/iu);
+  }
+  expect(text, `${context} contains broken encoding`).not.toMatch(/[\u00c2\u00c3\uFFFD]|â€|Â°/u);
+
+  if (language === 'en') {
+    expect(text, `${context} leaks Indonesian into English`).not.toMatch(
+      /\b(Tuang|Seduh|Sajikan|Katup|Bubuk|Jangan|Aduk|Rendam|Tekan|Endapkan|Bilas|Gilingan|Suhu|Rasa|Panduan|Keyakinan|Acuan|Validasi|Waktu|Ekstraksi|Setelan|Kalibrasi|mantap|agar|basah|adukan|pekat|perlahan|seluruh|langsung|alas|pulsa|datar|tanpa|mengguncang|setelah|selesai|konsisten|tambahan|permukaan|cangkir|empat|cepat|terukur|siap|keluar|kontak|tiga|seragam|bekerja|paling|bergelombang)\b|air turun/i,
+    );
+  } else {
+    expect(text, `${context} leaks English UI copy into Indonesian`).not.toMatch(
+      /\b(Starting grind|Total Water|Final Ratio|Temperature|Brew Guide|Additional details|Edit inputs|Guide complete|The grinder setting|The grinder reference|For espresso)\b/i,
+    );
+  }
+}
+
 test('tools tabs expose accessible tab semantics and keyboard navigation', async ({ page }) => {
   const aiTab = page.getByRole('tab', { name: 'Brew', exact: true });
   const timerTab = page.getByRole('tab', { name: 'Timer' });
@@ -1196,7 +1216,7 @@ test('ai brew non-AeroPress style guides render method-specific copy through the
 });
 
 test('ai brew all non-AeroPress selectable styles generate fresh validated plans through the UI', async ({ page }) => {
-  test.setTimeout(700_000);
+  test.setTimeout(1_500_000);
   type UiStyleFamilyCase = {
     label: string;
     query: string;
@@ -1370,6 +1390,24 @@ test('ai brew all non-AeroPress selectable styles generate fresh validated plans
 
       const result = page.getByTestId('ai-brew-result');
       await expect(result).toContainText(`QA All Styles ${family.label}`);
+      const summaryText = await result.innerText();
+      expectCleanAiBrewVisibleCopy(summaryText, 'en', `${family.label}/${style}/summary`);
+      expect(summaryText).not.toMatch(family.forbidden);
+
+      await result.getByTestId('ai-brew-result-tab-flow').click({ force: true });
+      const brewLiteText = await result.innerText();
+      expectCleanAiBrewVisibleCopy(brewLiteText, 'en', `${family.label}/${style}/brew-lite`);
+      expect(brewLiteText).not.toMatch(family.forbidden);
+      await result.getByTestId('ai-brew-guide-density-pro').click();
+      const brewProText = await result.innerText();
+      expectCleanAiBrewVisibleCopy(brewProText, 'en', `${family.label}/${style}/brew-pro`);
+      expect(brewProText).not.toMatch(family.forbidden);
+
+      await result.getByTestId('ai-brew-result-tab-details').click({ force: true });
+      const detailsText = await result.innerText();
+      expectCleanAiBrewVisibleCopy(detailsText, 'en', `${family.label}/${style}/details`);
+      expect(detailsText).not.toMatch(family.forbidden);
+
       const plan = await readStoredAiBrewPlan(page);
       const storedText = (plan.workflowGuideSteps || [])
         .map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''}`)

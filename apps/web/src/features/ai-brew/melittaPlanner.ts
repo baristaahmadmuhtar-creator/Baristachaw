@@ -251,7 +251,7 @@ export function resolveMelittaPlanSelection(params: {
         },
       ];
       why = 'Dense Classic Extraction utilizes a fine grind and extended contact time inside the trapezoid dripper to extract heavy sweet compounds, reminiscent of classic dark-chocolate roasts.';
-      watch = 'Dry sputtering. If the drawdown takes too long (over 4 minutes), the coffee will turn dry and astringent. Coarsen grind slightly on next attempt.';
+      watch = 'Stalled drawdown. If the brew runs beyond 4 minutes, the cup may turn dry and astringent. Grind slightly coarser on the next brew.';
       break;
   }
 

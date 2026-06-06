@@ -4485,10 +4485,39 @@ test('P0 output guard blocks stale ratios, timing contradictions, placeholders, 
   }).allowed, false);
   assert.equal(validateBrewPlanOutput({
     ...aero,
+    summary: `${aero.summary} Ratakan hamparan kopi kopi sebelum menyeduh.`,
+  }).allowed, false);
+  assert.equal(validateBrewPlanOutput({
+    ...aero,
+    coffeeName: 'Ethiopia Wush Wush Natural',
+    summary: 'Hot brew plan for Ethiopia Wush Wush Natural on AeroPress.',
+  }).allowed, true);
+  assert.equal(validateBrewPlanOutput({
+    ...aero,
     workflowGuideSteps: (aero.workflowGuideSteps || []).map((step, index) => index === 0
       ? { ...step, primaryText: `${step.primaryText} drawdown bed final pour.` }
       : step),
   }).allowed, false);
+});
+
+test('AI Brew extraction rationale does not duplicate process labels that already include process', () => {
+  const productionCatalog = buildProductionAiBrewCatalogForTests();
+  const plan = buildAiBrewPlan({
+    ...createDefaultAiBrewFormState(productionCatalog),
+    coffeeName: 'Dry Process QA',
+    process: 'dry_process',
+    variety: 'bourbon',
+    roastLevel: 'medium',
+    dripperId: findProductionDripperId(productionCatalog, /April Brewer/i),
+    grinderId: '1zpresso-k-ultra',
+    waterMode: 'manual',
+    waterTdsPpm: '95',
+    waterHardnessPpm: '55',
+    waterAlkalinityPpm: '40',
+  }, productionCatalog);
+
+  assert.doesNotMatch(plan.extractionRationale.ratio, /\bprocess process\b/i);
+  assert.equal(validateBrewPlanOutput(plan).allowed, true);
 });
 
 test('P0 rendered output snapshots stay method-specific, ratio-correct, and user-safe', () => {

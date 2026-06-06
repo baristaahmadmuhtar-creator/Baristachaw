@@ -71,7 +71,7 @@ const PAPER_FILTER_ICED: Partial<Record<WorkflowTutorialPhase, WorkflowTutorialC
 const WORKFLOW_TUTORIALS: Record<AiBrewMethodFamily, WorkflowTutorialProfile> = {
   v60: {
     setup: {
-      en: 'Rinse the paper, warm the brewer and server, then level the dry bed before the first pour.',
+      en: 'Rinse the paper filter, preheat the brewer and server, tare the scale, then level the dry bed before the first pour.',
       id: 'Bilas filter, panaskan brewer dan server, lalu ratakan bed kering sebelum tuangan pertama.',
     },
     entry: {
@@ -517,7 +517,10 @@ function normalizeWorkflowTutorialCopy(value: string, language: WorkflowTutorial
   for (const [pattern, replacement] of replacements) {
     text = text.replace(pattern, replacement);
   }
-  return text.replace(/\s+/g, ' ').trim();
+  return text
+    .replace(/\b([\p{L}]{2,})\s+\1\b/giu, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function resolveWorkflowTutorialPhase(actionType: WorkflowGuideActionType): WorkflowTutorialPhase {
@@ -1063,7 +1066,7 @@ const KALITA_WAVE_STYLE_TUTORIALS: Record<
       id: 'Bloom panas ke atas bed kering; biarkan gas keluar dengan cepat di dalam cangkir wave kecil.',
     },
     main: {
-      en: 'Pour hot water in concentric center pulses, keeping extraction pekat directly onto ice.',
+      en: 'Pour hot water in concentric center pulses, keeping the extraction concentrated directly over ice.',
       id: 'Tuang air panas dalam pulsa konsentris tengah, menjaga ekstraksi pekat langsung ke atas es.',
     },
     release: {

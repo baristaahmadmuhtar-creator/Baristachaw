@@ -2878,6 +2878,63 @@ function localizeWorkflowChipLabel(chip: WorkflowGuideTechniqueChip, language: s
 function localizeWorkflowChipValue(value: string, language: string) {
   if (!isIndonesianAiBrewLanguage(language)) {
     return value
+      .replace(/Chemex tiga tuang/g, 'Chemex three-pour')
+      .replace(/alas datar 3 pulsa/g, 'flat-bottom three-pulse')
+      .replace(/April dua tuang/g, 'April two-pour')
+      .replace(/April es/g, 'iced April')
+      .replace(/April kontinu/g, 'continuous April')
+      .replace(/April standar/g, 'standard April')
+      .replace(/Chemex es/g, 'iced Chemex')
+      .replace(/Chemex kontinu/g, 'continuous Chemex')
+      .replace(/Clever es/g, 'iced Clever')
+      .replace(/hybrid dua tahap/g, 'two-stage hybrid')
+      .replace(/hybrid kompetisi/g, 'competition hybrid')
+      .replace(/immersion klasik/g, 'classic immersion')
+      .replace(/infusi aromatik/g, 'aromatic infusion')
+      .replace(/Kono es/g, 'iced Kono')
+      .replace(/Kono standar/g, 'standard Kono')
+      .replace(/Melitta es/g, 'iced Melitta')
+      .replace(/Melitta klasik/g, 'classic Melitta')
+      .replace(/Melitta satu tuang/g, 'Melitta one-pour')
+      .replace(/Melitta tiga tuang/g, 'Melitta three-pour')
+      .replace(/moka es/g, 'iced moka')
+      .replace(/Origami es/g, 'iced Origami')
+      .replace(/Origami kerucut/g, 'Origami cone')
+      .replace(/sangrai ringan/g, 'light roast')
+      .replace(/stovetop tradisional/g, 'traditional stovetop')
+      .replace(/vacuum tradisional/g, 'traditional vacuum')
+      .replace(/wave es/g, 'iced wave')
+      .replace(/air awal panas/g, 'hot-water start')
+      .replace(/air dulu/g, 'water first')
+      .replace(/basah awal/g, 'pre-wet')
+      .replace(/batch besar/g, 'large batch')
+      .replace(/body cepat/g, 'fast body')
+      .replace(/dosis tinggi/g, 'high dose')
+      .replace(/dua tahap/g, 'two-stage')
+      .replace(/hasil tinggi/g, 'high yield')
+      .replace(/konsentrat tinggi/g, 'strong concentrate')
+      .replace(/kontinu lambat/g, 'slow continuous')
+      .replace(/satu tuang/g, 'one-pour')
+      .replace(/kontrol suhu (?:rendah|low)/g, 'low-temperature control')
+      .replace(/suhu rendah/g, 'low temperature')
+      .replace(/suhu ruang/g, 'room temperature')
+      .replace(/tetes dingin/g, 'cold drip')
+      .replace(/tiga agitasi/g, 'triple agitation')
+      .replace(/termos/g, 'thermal carafe')
+      .replace(/\btiga tuang\b/g, 'three-pour')
+      .replace(/garis aman/g, 'safety line')
+      .replace(/sebelum sputter/g, 'before sputtering')
+      .replace(/di hasil/g, 'at target yield')
+      .replace(/tamp rata/g, 'level tamp')
+      .replace(/set sebelum seduh/g, 'set before brewing')
+      .replace(/balikkan mantap/g, 'controlled flip')
+      .replace(/aliran mesin/g, 'machine flow')
+      .replace(/sebelum servis/g, 'before serving')
+      .replace(/setelah tersaring/g, 'after filtering')
+      .replace(/singkat/g, 'brief')
+      .replace(/alami/g, 'naturally')
+      .replace(/penuh/g, 'full')
+      .replace(/stabil/g, 'stable')
       .replace(/filter \+ tutup dibilas/g, 'filter and cap rinsed')
       .replace(/setelah tekan saja/g, 'after pressing only')
       .replace(/sebelum desis/g, 'before the hiss')
@@ -2897,6 +2954,14 @@ function localizeWorkflowChipValue(value: string, language: string) {
       .replace(/gilingan kasar rata/g, 'even coarse grind')
       .replace(/hentikan ekstraksi/g, 'stop extraction')
       .replace(/setelah filtrasi/g, 'after filtration')
+      .replace(/tradisional/g, 'traditional')
+      .replace(/tertutup klasik/g, 'classic closed')
+      .replace(/alas datar/g, 'flat-bottom')
+      .replace(/4 pulsa cepat/g, 'four fast pulses')
+      .replace(/pulsa/g, 'pulses')
+      .replace(/dua saringan/g, 'double filter')
+      .replace(/konsentrat body/g, 'body concentrate')
+      .replace(/immersion manis/g, 'sweet immersion')
       .replace(/bersih/g, 'clean')
       .replace(/pelan/g, 'gentle')
       .replace(/tengah-ke-tengah-luar/g, 'center-to-mid')
@@ -3064,6 +3129,43 @@ function translateWorkflowGuideTextToEnglish(value: string) {
   if (!text) return text;
 
   const exactMap: Array<[RegExp, string]> = [
+    [/^Bilas filter berlipat, panaskan alat, lalu ratakan hamparan kopi datar\.$/i, 'Rinse the wave filter, preheat the brewer, then level the coffee bed.'],
+    [/^Bilas filter berlipat, panaskan alat, dan siapkan empat pulsa cepat yang terukur\.$/i, 'Rinse the wave filter, preheat the brewer, and prepare four measured fast pulses.'],
+    [/^Biarkan air turun tanpa mengguncang alat\.$/i, 'Let the brew draw down without shaking the brewer.'],
+    [/^Biarkan fase turun selesai tanpa tambahan air\.$/i, 'Let the drawdown finish without adding more water.'],
+    [/^Sajikan setelah aliran selesai bersih\.$/i, 'Serve after the flow finishes cleanly.'],
+    [/^Aduk cangkir pelan sebelum evaluasi\.$/i, 'Stir the cup gently before tasting.'],
+    [/^Panaskan French Press dan wadah saji, lalu gunakan gilingan kasar yang merata\.$/i, 'Preheat the French Press and serving vessel, then use an even coarse grind.'],
+    [/^Tuang air panas dengan mantap agar semua bubuk basah tanpa perlu adukan berat\.( Target .+)?$/i, 'Pour hot water steadily so all grounds are wet without aggressive stirring.$1'],
+    [/^Rendam tenang; biarkan kerak kopi terbentuk utuh pada awal seduh sebagai penahan panas alami\.$/i, 'Steep undisturbed; let the crust form early to retain heat naturally.'],
+    [/^Pecah kerak perlahan, bersihkan busa kasar bila perlu, lalu beri waktu partikel halus mengendap\.$/i, 'Break the crust gently, skim coarse foam if needed, then allow the fines to settle.'],
+    [/^Tekan penekan perlahan hanya untuk menahan bubuk, lalu tuang pisah segera agar ekstraksi berhenti\.$/i, 'Lower the plunger gently only to hold the grounds back, then decant immediately to stop extraction.'],
+    [/^Panaskan French Press dan wadah saji terpisah, lalu gunakan gilingan kasar sampai medium-kasar\.$/i, 'Preheat the French Press and a separate serving vessel, then use a coarse to medium-coarse grind.'],
+    [/^Tuang air panas cepat dan merata agar semua bubuk basah tanpa membuat rendaman terlalu keruh\.( Target .+)?$/i, 'Pour hot water quickly and evenly so all grounds are wet without making the slurry muddy.$1'],
+    [/^Rendam 4 menit, lalu jaga alat tetap diam agar partikel halus mulai turun\.$/i, 'Steep for 4 minutes, then leave the brewer still so fines begin to settle.'],
+    [/^Pecah kerak perlahan, bersihkan busa kasar, lalu diamkan 5-8 menit agar sedimen mengendap\.$/i, 'Break the crust gently, skim coarse foam, then wait 5-8 minutes for sediment to settle.'],
+    [/^Posisikan penekan tepat di bawah permukaan cairan tanpa menekan ke dasar, lalu tuang pisah sangat perlahan\.$/i, 'Hold the plunger just below the liquid surface without pressing to the bottom, then decant very slowly.'],
+    [/^Bilas filter kertas bila dipakai bersama saringan metal, pasang rapi pada penekan, lalu gunakan gilingan sedang sampai medium-kasar\.$/i, 'Rinse the paper filter when pairing it with the metal screen, fit it securely to the plunger, then use a medium to medium-coarse grind.'],
+    [/^Isi air dengan aliran mantap sampai semua bubuk basah merata\.( Target .+)?$/i, 'Charge water with a steady flow until all grounds are evenly wet.$1'],
+    [/^Rendam singkat dan jaga permukaan tetap tenang; filter tambahan bekerja lebih baik saat campuran tidak terlalu berdebu\.$/i, 'Keep the steep concise and the surface calm; the extra filter works better when fines stay controlled.'],
+    [/^Pasang penekan berfilter metal dan kertas secara tegak lurus, lalu tekan sangat lambat 45-60 detik agar tidak robek atau tersumbat\.$/i, 'Keep the metal-and-paper plunger level, then press very slowly for 45-60 seconds to prevent tearing or clogging.'],
+    [/^Tuang bersih ke wadah saji\. Kertas membantu mengurangi sedimen dan menahan lebih banyak lipid kopi dibanding saringan metal saja\.$/i, 'Decant cleanly into the serving vessel. Paper reduces sediment and retains more coffee lipids than the metal screen alone.'],
+    [/^Panaskan French Press dan siapkan dosis tinggi dengan ruang aduk aman\.$/i, 'Preheat the French Press and leave enough headroom to stir the larger dose safely.'],
+    [/^Isi air panas dengan mantap agar dosis besar basah penuh sejak awal\.( Target .+)?$/i, 'Charge hot water steadily so the larger dose is fully wet from the start.$1'],
+    [/^Rendam 6-7 menit agar konsentrat punya body, manis, dan tekstur untuk susu atau es\.$/i, 'Steep for 6-7 minutes to build a sweet, textured concentrate for milk or ice.'],
+    [/^Aduk permukaan perlahan bila ada bagian kering, lalu biarkan partikel halus turun sebelum ditekan\.$/i, 'Stir the surface gently only if dry pockets remain, then let fines settle before pressing.'],
+    [/^Tekan penekan perlahan sampai resistansi terasa, jangan dipaksa\. Tuang pisah sebagai konsentrat, lalu dilusi dengan air atau susu sesuai kebutuhan\.$/i, 'Press gently until resistance is felt; do not force it. Decant as a concentrate, then dilute with water or milk as needed.'],
+    [/^Panaskan French Press dan gunakan air sedikit lebih rendah untuk menjaga rasa manis tetap lembut\.$/i, 'Preheat the French Press and use slightly cooler water to keep the sweetness soft.'],
+    [/^Tuang air lembut dan merata, lalu aduk perlahan dua kali saja\.( Target .+)?$/i, 'Pour gently and evenly, then stir slowly only twice.$1'],
+    [/^Rendam tenang sekitar 5 menit; kontak stabil memberi rasa manis tanpa agitasi akhir yang kasar\.$/i, 'Steep calmly for about 5 minutes; stable contact builds sweetness without harsh late agitation.'],
+    [/^Aduk permukaan secara sangat perlahan, lalu biarkan partikel kopi mengendap alami selama 1-2 menit\.$/i, 'Stir the surface very gently, then let the coffee particles settle naturally for 1-2 minutes.'],
+    [/^Tekan plunger sangat perlahan selama 30 detik dengan tekanan minimal\. Tuang pisah segera ke cangkir saji\.$/i, 'Press the plunger very slowly for 30 seconds with minimal force. Decant immediately into the serving cup.'],
+    [/^Basahi awal 30 detik untuk pelepasan CO2, lalu tuang sisa air secara cepat\.$/i, 'Use a 30-second initial wetting stage to release CO2, then add the remaining water promptly.'],
+    [/^Pastikan semua bubuk basah sebelum fase rendam\.$/i, 'Make sure all grounds are wet before the steep.'],
+    [/^Posisikan plunger tepat di bawah permukaan cairan kopi\. JANGAN ditekan ke dasar agar partikel halus dasar tidak keruh\.$/i, 'Hold the plunger just below the coffee surface. Do not press to the bottom, which would disturb settled fines.'],
+    [/^Tekan penekan berfilter metal dan kertas secara tegak lurus dan sangat lambat \(45-60 detik\) agar hasil tetap bersih\.$/i, 'Keep the metal-and-paper plunger level and press very slowly for 45-60 seconds to keep the cup clean.'],
+    [/^Tekan penekan perlahan sampai resistansi terasa; jangan paksa ke dasar karena fines bisa membuat rasa pahit dan kering\.$/i, 'Press gently until resistance is felt; do not force the plunger to the bottom because fines can make the cup bitter and dry.'],
+    [/^Tekan penekan perlahan; jangan memeras hamparan kopi\.$/i, 'Press the plunger gently; do not compress the coffee bed.'],
     [/^Bilas filter tebal, panaskan kaca, dan pastikan jalur udara terbuka\.$/i, 'Rinse the thick paper filter, preheat the glass, and keep the air path open.'],
     [/^Bilas dan panaskan alat, ratakan bed, lalu siapkan pulse rendah\.$/i, 'Rinse and preheat the brewer, level the bed, then prepare gentle pulses.'],
     [/^Bilas filter, panaskan brewer\/server, buang air bilas, lalu tara timbangan\.$/i, 'Rinse the filter, preheat the brewer/server, discard rinse water, then tare the scale.'],
@@ -3093,7 +3195,7 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     [/^Jaga tekanan stabil sampai desis selesai\.$/i, 'Keep steady pressure and stop before the dry hiss.'],
   ];
   for (const [pattern, replacement] of exactMap) {
-    if (pattern.test(text)) return replacement;
+    if (pattern.test(text)) return text.replace(pattern, replacement);
   }
 
   text = text
@@ -3421,7 +3523,7 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\s+/g, ' ')
     .trim();
 
-  return text;
+  return localizeAiBrewDynamicText(text, 'en');
 }
 
 function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string, plan?: BrewPlan) {
@@ -3429,9 +3531,15 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
   const target = formatRoundedMl(step.targetVolumeMl);
   const pour = formatRoundedMl(step.pourVolumeMl);
   if (plan?.methodFamily && step.primaryText?.trim()) {
-    return id
-      ? localizeAiBrewDynamicText(step.primaryText, language)
-      : translateWorkflowGuideTextToEnglish(step.primaryText);
+    if (id) return localizeAiBrewDynamicText(step.primaryText, language);
+    return resolveWorkflowTutorialDetail({
+      methodFamily: plan.methodFamily,
+      actionType: step.actionType,
+      brewMode: plan.brewMode,
+      language: 'en',
+      hasWarning: step.warnings.length > 0,
+      recipeStyle: plan.recipeStyle,
+    });
   }
   switch (step.actionType) {
     case 'rinse_preheat':
@@ -3544,12 +3652,27 @@ function formatAiBrewStepBadge(step: AiBrewDisplayStep, language: string) {
   const id = isIndonesianAiBrewLanguage(language);
   if (isWorkflowGuideStep(step) && step.isOperationalOnly && step.pourVolumeMl <= 0) {
     switch (step.actionType) {
+      case 'rinse_preheat':
+      case 'setup':
+        return id ? 'Siapkan' : 'Setup';
+      case 'charge':
+        return id ? 'Isi air' : 'Charge';
+      case 'bloom':
+        return 'Bloom';
+      case 'pour':
+        return id ? 'Tuang' : 'Pour';
       case 'stir':
         return id ? 'Aduk' : 'Stir';
       case 'steep':
         return id ? 'Rendam' : 'Steep';
+      case 'settle':
+        return id ? 'Endapkan' : 'Settle';
       case 'press':
         return id ? 'Tekan' : 'Press';
+      case 'release':
+        return id ? 'Buka katup' : 'Release';
+      case 'drawdown':
+        return id ? 'Air turun' : 'Drawdown';
       case 'heat':
         return id ? 'Panas' : 'Heat';
       case 'monitor_flow':
@@ -3564,6 +3687,8 @@ function formatAiBrewStepBadge(step: AiBrewDisplayStep, language: string) {
         return id ? 'Dilusi' : 'Dilute';
       case 'mix':
         return id ? 'Aduk' : 'Mix';
+      case 'serve':
+        return id ? 'Sajikan' : 'Serve';
       default:
         return id ? 'Aksi' : 'Action';
     }
@@ -4178,6 +4303,11 @@ function buildAiBrewStepDetailPoints(
 
   const points = buildAiBrewDeterministicStepDetailPoints(plan, step, index, language, hiddenReferences);
 
+  // Workflow steps already use the method-aware tutorial database in English.
+  // Do not fall back to partially translated source copy when that tutorial is
+  // already visible, because the fallback can reintroduce mixed-language text.
+  if (isWorkflowGuideStep(step) && !isIndonesianAiBrewLanguage(language)) return points.slice(0, 1);
+
   if (points.length > 0 || !detailText || isAiBrewDetailCovered(detailText, fallbackNote)) return points.slice(0, 1);
 
   detailText
@@ -4335,6 +4465,7 @@ function renderAiBrewStepMetricChips(
           className={chipClassName}
         >
           <span className="mr-1 font-medium text-tertiary">{item.label}</span>
+          {' '}
           <span className="font-semibold text-primary">{item.value}</span>
         </span>
       ))}
@@ -5274,43 +5405,92 @@ type TargetProfileCompareRow = {
   sameRecipe: boolean;
 };
 
-function buildTargetProfileEffectText(targetProfileId: string, language: string) {
+function buildTargetProfileEffectText(plan: BrewPlan, language: string) {
   const id = isIndonesianAiBrewLanguage(language);
-  switch (targetProfileId) {
+  const targetEffect = (() => {
+    switch (plan.targetProfileId) {
     case 'more_acidity':
       return id
-        ? 'Efek target: rasio sedikit lebih panjang, suhu lebih rendah, waktu lebih cepat, grind sedikit lebih kasar, bloom singkat, agitasi minimal.'
-        : 'Target effect: slightly longer ratio, lower temperature, faster time, slightly coarser grind, shorter bloom, minimal agitation.';
+          ? 'Efek target: jaga acidity tetap cerah dan jelas tanpa membuat rasa tipis atau kosong.'
+          : 'Target effect: preserve bright, articulate acidity without making the cup thin or hollow.';
     case 'floral_transparent':
       return id
-        ? 'Efek target: suhu lebih rendah, posisi tuang rendah, agitasi minimal, dan air turun lebih cepat untuk menjaga karakter floral serta kejernihan.'
-        : 'Target effect: lower heat, low pour height, minimal agitation, faster drawdown to protect florals and clarity.';
+          ? 'Efek target: pertahankan aroma floral dan kejernihan dengan panas serta agitasi yang terkendali.'
+          : 'Target effect: protect floral aromatics and clarity with restrained heat and agitation.';
     case 'more_sweetness':
       return id
-        ? 'Efek target: tuangan tengah lebih penuh, blooming 45 detik, agitasi rendah, dan akhir seduhan ringan agar sweetness tetap bersih.'
-        : 'Target effect: fuller middle pour, 45 sec bloom, low agitation, lighter finish so sweetness stays clean.';
+          ? 'Efek target: bangun sweetness yang matang dan seimbang tanpa mendorong pahit atau rasa kering.'
+          : 'Target effect: build rounded, even sweetness without pushing bitterness or dryness.';
     case 'fruit_forward':
       return id
-        ? 'Efek target: aroma dijaga, tuangan tengah penuh, suhu konservatif, dan proses aromatik tidak dibuat terlalu agresif.'
-        : 'Target effect: preserve aroma, fuller middle pour, conservative temperature, avoid over-agitating aromatic processes.';
+          ? 'Efek target: tonjolkan karakter buah dan aroma sambil menjaga ferment notes tetap rapi.'
+          : 'Target effect: lift fruit character and aroma while keeping ferment notes controlled.';
     case 'more_body':
       return id
-        ? 'Efek target: bloom lebih penuh, kontak lebih lama, grind cenderung lebih halus, air turun lebih lambat, tuangan tetap rendah.'
-        : 'Target effect: fuller bloom, longer contact, generally finer grind, slower drawdown.';
+          ? 'Efek target: tambah body melalui rasio dan waktu kontak yang terkontrol tanpa membuat cup keruh.'
+          : 'Target effect: build body through controlled ratio and contact time without making the cup muddy.';
     case 'dense_comforting':
       return id
-        ? 'Efek target: body lebih padat, bloom 2.3x, kontak terkontrol, tuangan rendah, lindungi pahit pada akhir seduhan.'
-        : 'Target effect: denser body, 2.3x bloom, controlled contact, protect bitterness in the finish.';
+          ? 'Efek target: hasilkan cup yang padat dan nyaman, dengan batas jelas terhadap pahit serta rasa kering.'
+          : 'Target effect: create a dense, comforting cup while holding bitterness and dryness in check.';
     case 'soft_round':
       return id
-        ? 'Efek target: bloom 2.1-2.2x, akhir seduhan lembut, sweetness/body naik tanpa membuat cup keruh.'
-        : 'Target effect: 2.1-2.2x bloom, gentle finish, more sweetness/body without making the cup muddy.';
+          ? 'Efek target: bentuk rasa lembut dan bulat dengan sweetness serta body yang tidak berat.'
+          : 'Target effect: shape a soft, rounded cup with sweetness and body that do not feel heavy.';
     case 'balance_clean':
     default:
       return id
-      ? 'Efek target: titik awal bersih, bloom 2x, pulse seimbang, agitasi rendah, air turun normal.'
-        : 'Target effect: clean baseline, 2x bloom, balanced pulses, low agitation, normal drawdown.';
-  }
+          ? 'Efek target: gunakan titik awal yang bersih dan seimbang agar koreksi berikutnya mudah dibaca.'
+          : 'Target effect: use a clean, balanced baseline so the next adjustment is easy to read.';
+    }
+  })();
+
+  const methodTechnique = (() => {
+    switch (plan.methodFamily) {
+      case 'french_press':
+        return id
+          ? 'Untuk French Press, kendalikan adukan awal, waktu rendam, pengendapan, tekanan pelan, dan tuang pisah segera.'
+          : 'For French Press, control the initial stir, steep, settling time, gentle press, and immediate decant.';
+      case 'aeropress':
+        return id
+          ? 'Untuk AeroPress, kendalikan isi air, adukan, waktu rendam, tekanan pelan, dan hentikan sebelum udara dipaksa melewati kopi.'
+          : 'For AeroPress, control the water charge, stir, steep, and gentle press, then stop before forcing air through the coffee.';
+      case 'clever_dripper':
+        return id
+          ? 'Untuk Clever Dripper, kendalikan urutan air dan kopi, waktu rendam, agitasi, lalu pelepasan ke wadah saji.'
+          : 'For Clever Dripper, control the water-and-coffee order, immersion time, agitation, and release onto the server.';
+      case 'hario_switch':
+        return id
+          ? 'Untuk Hario Switch atau MUGEN, kendalikan beban ruang seduh, kontak saat katup tertutup, pelepasan, dan fase akhir saat katup terbuka.'
+          : 'For Hario Switch or MUGEN, control chamber load, closed-valve contact, release, and the open-valve finish.';
+      case 'espresso':
+        return id
+          ? 'Untuk espresso, kendalikan persiapan puck, rasio dose-yield, aliran, channeling, dan titik henti shot.'
+          : 'For espresso, control puck preparation, dose-to-yield ratio, flow, channeling, and the shot stop point.';
+      case 'moka_pot':
+        return id
+          ? 'Untuk Moka Pot, kendalikan panas, laju aliran, dan hentikan seduhan sebelum semburan kasar.'
+          : 'For Moka Pot, control heat and flow, then stop the brew before harsh sputtering.';
+      case 'cold_brew':
+        return id
+          ? 'Untuk cold brew, kendalikan suhu air dingin atau suhu ruang, waktu kontak atau laju tetes, lalu saring tanpa logika seduh panas.'
+          : 'For cold brew, control cold or room-temperature water, contact time or drip rate, then filter without hot-brew technique.';
+      case 'batch_brew':
+        return id
+          ? 'Untuk batch brew, kendalikan pembasahan awal, distribusi aliran mesin, waktu siklus, lalu aduk batch sebelum disajikan.'
+          : 'For batch brew, control pre-wet, machine flow distribution, cycle time, then mix the batch before serving.';
+      case 'siphon':
+        return id
+          ? 'Untuk siphon, kendalikan panas, agitasi, waktu rendam, lalu fase air turun setelah sumber panas dilepas.'
+          : 'For siphon, control heat, agitation, immersion time, and the drawdown after removing the heat source.';
+      default:
+        return id
+          ? 'Untuk pour-over, kendalikan blooming, pola tuang, agitasi, dan waktu air turun sesuai bentuk dripper.'
+          : 'For pour-over, control the bloom, pour pattern, agitation, and drawdown for the dripper geometry.';
+    }
+  })();
+
+  return `${targetEffect} ${methodTechnique}`;
 }
 
 function formatTargetProfileFinalComputed(plan: BrewPlan, language: string) {
@@ -5320,6 +5500,129 @@ function formatTargetProfileFinalComputed(plan: BrewPlan, language: string) {
     : `1:${formatBrewRatio(plan.finalBeverageRatio)}`;
   const extractionLabel = id ? 'ekstraksi' : 'extraction';
   return `${ratio} / ${formatRoundedTemperature(plan.waterTempC)} / ${extractionLabel} ${formatGuideTime(getPlanExtractionSeconds(plan))}`;
+}
+
+function buildMethodFinishWindowCopy(plan: BrewPlan, language: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  switch (plan.methodFamily) {
+    case 'french_press':
+      return {
+        label: id ? 'Jendela tuang pisah' : 'Decant window',
+        detail: id
+          ? 'Jika terlalu cepat dan tipis, tambah sedikit waktu rendam. Jika terlambat atau berat, kasarkan gilingan atau tuang pisah lebih awal.'
+          : 'If it finishes early and thin, extend the steep slightly. If it runs late or heavy, grind coarser or decant sooner.',
+      };
+    case 'aeropress':
+      return {
+        label: id ? 'Akhir tekanan' : 'Press finish',
+        detail: id
+          ? 'Jika tipis, tambah sedikit waktu rendam. Jika pahit atau kering, pendekkan rendam atau tekan lebih lembut.'
+          : 'If the cup is thin, extend the steep slightly. If it is bitter or dry, shorten the steep or press more gently.',
+      };
+    case 'espresso':
+      return {
+        label: id ? 'Jendela shot' : 'Shot window',
+        detail: id
+          ? 'Shot terlalu cepat: haluskan sedikit. Shot terlalu lambat: kasarkan sedikit dan cek distribusi puck.'
+          : 'Shot too fast: grind slightly finer. Shot too slow: grind slightly coarser and check puck distribution.',
+      };
+    case 'moka_pot':
+      return {
+        label: id ? 'Jendela aliran' : 'Flow window',
+        detail: id
+          ? 'Aliran terlalu cepat: kecilkan panas. Aliran tersendat: kasarkan sedikit dan cek basket tanpa tamp.'
+          : 'If flow races, lower the heat. If it stalls, grind slightly coarser and check that the basket is not tamped.',
+      };
+    case 'cold_brew':
+      return {
+        label: id ? 'Jendela ekstraksi dingin' : 'Cold extraction window',
+        detail: id
+          ? 'Jika tipis, tambah waktu kontak. Jika pahit atau keruh, pendekkan kontak atau kasarkan gilingan.'
+          : 'If it is thin, extend contact time. If it is bitter or muddy, shorten contact or grind coarser.',
+      };
+    case 'batch_brew':
+      return {
+        label: id ? 'Akhir siklus seduh' : 'Brew-cycle finish',
+        detail: id
+          ? 'Siklus terlalu cepat: haluskan sedikit. Siklus terlalu lambat: kasarkan dan cek distribusi pancuran.'
+          : 'If the cycle is too fast, grind slightly finer. If it is too slow, grind coarser and check spray distribution.',
+      };
+    case 'clever_dripper':
+      return {
+        label: id ? 'Akhir pelepasan' : 'Release finish',
+        detail: id
+          ? 'Pelepasan terlalu cepat: haluskan sedikit. Terlalu lambat: kasarkan atau kurangi agitasi.'
+          : 'If release is too fast, grind slightly finer. If it is too slow, grind coarser or reduce agitation.',
+      };
+    case 'hario_switch':
+      return {
+        label: id ? 'Akhir pelepasan' : 'Release finish',
+        detail: id
+          ? 'Pelepasan terlalu cepat: haluskan sedikit. Terlalu lambat: kasarkan atau kurangi agitasi sebelum katup dibuka.'
+          : 'If release is too fast, grind slightly finer. If it is too slow, grind coarser or reduce agitation before opening the valve.',
+      };
+    case 'siphon':
+      return {
+        label: id ? 'Akhir air turun' : 'Drawdown finish',
+        detail: id
+          ? 'Air turun terlalu cepat: haluskan sedikit. Terlalu lambat: kasarkan dan cek posisi filter.'
+          : 'If drawdown is too fast, grind slightly finer. If it is too slow, grind coarser and check filter placement.',
+      };
+    default:
+      return {
+        label: id ? 'Air turun ideal' : 'Ideal drawdown',
+        detail: id ? 'Finis lebih cepat: haluskan. Finis lebih lama: kasarkan.' : 'Faster finish: grind finer. Slower finish: grind coarser.',
+      };
+  }
+}
+
+function buildExtractionWorkflowLabel(plan: BrewPlan, language: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  switch (plan.methodFamily) {
+    case 'french_press':
+      return id ? 'Alur rendam' : 'Immersion workflow';
+    case 'aeropress':
+      return id ? 'Alur tekan' : 'Press workflow';
+    case 'clever_dripper':
+      return id ? 'Rendam & pelepasan' : 'Immersion & release';
+    case 'hario_switch':
+      return id ? 'Alur katup' : 'Valve workflow';
+    case 'espresso':
+      return id ? 'Alur shot' : 'Shot workflow';
+    case 'moka_pot':
+      return id ? 'Panas & aliran' : 'Heat & flow';
+    case 'cold_brew':
+      return id ? 'Ekstraksi dingin' : 'Cold extraction';
+    case 'batch_brew':
+      return id ? 'Siklus seduh' : 'Brew cycle';
+    case 'siphon':
+      return id ? 'Alur siphon' : 'Siphon workflow';
+    default:
+      return id ? 'Peta tuang' : 'Pour map';
+  }
+}
+
+function buildGrindCalibrationNote(methodFamily: BrewPlan['methodFamily'] | undefined, language: string) {
+  const id = isIndonesianAiBrewLanguage(language);
+  const base = id
+    ? 'Setelan grinder bergantung pada titik nol burr, kalibrasi, sangrai, dan dosis.'
+    : 'Grinder settings depend on burr zero point, calibration, roast, and dose.';
+  switch (methodFamily) {
+    case 'french_press':
+      return `${base} ${id ? 'Mulai dari sini, lalu koreksi dari waktu rendam, kejernihan tuang pisah, dan rasa.' : 'Start here, then adjust by steep time, decant clarity, and taste.'}`;
+    case 'aeropress':
+      return `${base} ${id ? 'Mulai dari sini, lalu koreksi dari waktu rendam, tekanan, dan rasa.' : 'Start here, then adjust by steep time, press resistance, and taste.'}`;
+    case 'espresso':
+      return `${base} ${id ? 'Mulai dari sini, lalu koreksi dari waktu shot, yield, aliran, dan rasa.' : 'Start here, then adjust by shot time, yield, flow, and taste.'}`;
+    case 'moka_pot':
+      return `${base} ${id ? 'Mulai dari sini, lalu koreksi dari laju aliran, kontrol panas, dan rasa.' : 'Start here, then adjust by flow rate, heat control, and taste.'}`;
+    case 'cold_brew':
+      return `${base} ${id ? 'Mulai dari sini, lalu koreksi dari waktu kontak atau laju tetes, filtrasi, dan rasa.' : 'Start here, then adjust by contact time or drip rate, filtration, and taste.'}`;
+    case 'batch_brew':
+      return `${base} ${id ? 'Mulai dari sini, lalu koreksi dari waktu siklus, distribusi pancuran, dan rasa.' : 'Start here, then adjust by cycle time, spray distribution, and taste.'}`;
+    default:
+      return `${base} ${id ? 'Mulai dari sini, lalu koreksi dari waktu selesai dan rasa.' : 'Start here, then adjust by finish time and taste.'}`;
+  }
 }
 
 function buildTargetProfileCompareReason(plan: BrewPlan, balancePlan: BrewPlan | undefined, language: string) {
@@ -5349,9 +5652,27 @@ function buildTargetProfileCompareReason(plan: BrewPlan, balancePlan: BrewPlan |
     (targetId === 'more_sweetness' || targetId === 'fruit_forward')
     && plan.grindBias === 'coarser'
   ) {
+    const methodControl = (() => {
+      switch (plan.methodFamily) {
+        case 'french_press':
+          return id ? 'waktu rendam dan tuang pisah yang lembut' : 'stable steeping and a gentle decant';
+        case 'aeropress':
+          return id ? 'waktu rendam dan tekanan yang terkendali' : 'controlled steeping and pressing';
+        case 'espresso':
+          return id ? 'yield dan aliran shot yang terkendali' : 'controlled shot yield and flow';
+        case 'moka_pot':
+          return id ? 'panas dan laju aliran yang terkendali' : 'controlled heat and flow';
+        case 'cold_brew':
+          return id ? 'waktu kontak dingin dan filtrasi' : 'cold contact time and filtration';
+        case 'batch_brew':
+          return id ? 'distribusi pancuran dan waktu siklus' : 'spray distribution and cycle time';
+        default:
+          return id ? 'tuangan tengah dan kontrol agitasi' : 'middle-pour and agitation control';
+      }
+    })();
     return id
-      ? 'Hasil final memakai gilingan lebih kasar karena risiko proses/aliran lebih tinggi; rasa manis dijaga lewat tuangan tengah dan kontrol agitasi.'
-      : 'Computed final uses a coarser grind because process/flow risk is higher; sweetness is protected through middle pour and agitation control.';
+      ? `Hasil final memakai gilingan lebih kasar karena risiko proses/aliran lebih tinggi; rasa manis dijaga lewat ${methodControl}.`
+      : `Computed final uses a coarser grind because process or flow risk is higher; sweetness is protected through ${methodControl}.`;
   }
   return base;
 }
@@ -5372,7 +5693,7 @@ function buildTargetProfileCompareRows(targetComparePlans: BrewPlan[] | undefine
     return {
       id: group.map((item) => item.targetProfileId).join('__'),
       label: uniqueLabels.join(' / '),
-      effect: buildTargetProfileEffectText(representative.targetProfileId, language),
+      effect: buildTargetProfileEffectText(representative, language),
       finalComputed: formatTargetProfileFinalComputed(representative, language),
       why: buildTargetProfileCompareReason(representative, balancePlan, language),
       active: group.some((item) => item.targetProfileId === currentPlan.targetProfileId),
@@ -5584,6 +5905,7 @@ function PlanResultDialog({
   const aiEngineOnline = planUsesOnlineAi(plan);
   const planHeaderWater = formatPlanHeaderWater(plan, language);
   const localizedWaterStyle = localizeAiBrewWaterStyle(plan.waterMinerals.styleLabel, language);
+  const englishWaterStyle = localizedWaterStyle.replace(/\s+water$/i, '');
   const localizedGrindRecommendation = formatGrindTextForDisplay(plan.grindRecommendation, language);
   const localizedGrindHeadline = formatGrindHeadlineForDisplay(plan.grindRecommendation || plan.grindSettingReference, language);
   const localizedGrindBandLabel = formatGrindTextForDisplay(plan.grindBandLabel, language);
@@ -5641,7 +5963,7 @@ function PlanResultDialog({
   const pourStepCount = workflowGuideSteps.filter((step) => (step.pourVolumeMl || 0) > 0).length;
   const mainPourCount = Math.max(0, pourStepCount - bloomStepCount);
   const compactFlowSnapshotItems = [
-    { label: 'Bloom', value: bloomStepCount > 0 ? `${bloomStepCount}x` : '-' },
+    ...(bloomStepCount > 0 ? [{ label: 'Bloom', value: `${bloomStepCount}x` }] : []),
     { label: id ? 'Tuang' : 'Pours', value: mainPourCount > 0 ? `${mainPourCount}x` : '-' },
     { label: id ? 'Langkah' : 'Steps', value: String(workflowGuideSteps.length) },
     { label: extractionTimeLabel, value: formatGuideTime(extractionSeconds) },
@@ -5733,6 +6055,9 @@ function PlanResultDialog({
     : (id
       ? 'Ekstraksi utama selesai. Lanjutkan tahap penyelesaian tanpa menghitungnya sebagai waktu seduh utama.'
       : 'Main extraction is complete. Finish the brew without counting it as brew time.');
+  const liteStepTargetCue = flowCurrentStep
+    ? buildAiBrewStepTargetCue(flowCurrentStep, language, plan)
+    : '';
   const liteStepCue = flowCurrentStep
     ? flowCurrentCompactCue
     : (id
@@ -5749,7 +6074,7 @@ function PlanResultDialog({
       ? `${localizedRoastLabel}, proses ${localizedProcessLabel}, varietas ${localizedVarietyLabel}, dan ${localizedWaterStyle} dibaca bersama supaya prediksi rasa tetap berbasis data input.`
       : `${localizedRoastLabel} dibaca bersama air, grinder, dan alat. Proses/varietas belum lengkap, jadi prediksi rasa dijaga sebagai titik awal dan perlu cek rasa pertama.`
     : hasSpecificProcess && hasSpecificVariety
-      ? `${localizedRoastLabel} roast, ${localizedProcessLabel} process, ${localizedVarietyLabel} variety, and ${localizedWaterStyle} water are read together so the cup prediction stays grounded in input data.`
+      ? `${localizedRoastLabel} roast, ${localizedProcessLabel} process, ${localizedVarietyLabel} variety, and ${englishWaterStyle} water are read together so the cup prediction stays grounded in input data.`
       : `${localizedRoastLabel} roast is read with water, grinder, and brewer data. Process/variety are incomplete, so the cup prediction stays baseline and needs first-brew feedback.`;
   const waterToleranceMl = Math.max(5, Math.round(plan.totalWaterMl * 0.02));
   const hotWaterToleranceMl = Math.max(4, Math.round(plan.hotWaterMl * 0.02));
@@ -5777,8 +6102,8 @@ function PlanResultDialog({
       label: id ? 'Target rasa' : 'Taste target',
       value: localizedTargetProfileLabel,
       detail: id
-        ? `${buildTargetProfileEffectText(plan.targetProfileId, language)}${plan.targetProfileSuggestionReason ? ` ${localizeAiBrewDynamicText(plan.targetProfileSuggestionReason, language)}` : ''}`
-        : `${buildTargetProfileEffectText(plan.targetProfileId, language)}${plan.targetProfileSuggestionReason ? ` ${plan.targetProfileSuggestionReason}` : ''}`,
+        ? `${buildTargetProfileEffectText(plan, language)}${plan.targetProfileSuggestionReason ? ` ${localizeAiBrewDynamicText(plan.targetProfileSuggestionReason, language)}` : ''}`
+        : `${buildTargetProfileEffectText(plan, language)}${plan.targetProfileSuggestionReason ? ` ${plan.targetProfileSuggestionReason}` : ''}`,
     },
     {
       label: id ? 'Keseimbangan ekstraksi' : 'Extraction balance',
@@ -5807,6 +6132,7 @@ function PlanResultDialog({
     },
   ];
   const targetProfileCompareRows = buildTargetProfileCompareRows(targetComparePlans, plan, language);
+  const finishWindowCopy = buildMethodFinishWindowCopy(plan, language);
   const precisionToleranceItems = [
     {
       label: id ? 'Suhu' : 'Temperature',
@@ -5814,9 +6140,9 @@ function PlanResultDialog({
       detail: id ? 'Di luar rentang ini, kejernihan dan risiko pahit mulai bergeser.' : 'Outside this range, clarity and bitterness start to move.',
     },
     {
-      label: id ? 'Air turun ideal' : 'Ideal drawdown',
+      label: finishWindowCopy.label,
       value: `${formatGuideTime(drawdownLowSeconds)}-${formatGuideTime(drawdownHighSeconds)}`,
-      detail: id ? 'Finis lebih cepat: haluskan. Finis lebih lama: kasarkan.' : 'Faster finish: grind finer. Slower finish: grind coarser.',
+      detail: finishWindowCopy.detail,
     },
     {
       label: id ? 'Koreksi gilingan' : 'Grind adjustment',
@@ -5850,8 +6176,8 @@ function PlanResultDialog({
       label: copy.dripper,
       value: plan.dripper.name,
       detail: id
-        ? `Profil alat ${formatDeviceProfileMode(copy, plan.deviceProfileMode)}; aliran disesuaikan dengan keluarga metode ${plan.methodFamily}.`
-        : `Device profile is ${formatDeviceProfileMode(copy, plan.deviceProfileMode)}; flow is matched to ${plan.methodFamily}.`,
+        ? `Profil alat ${formatDeviceProfileMode(copy, plan.deviceProfileMode)}; model aliran mengikuti alur ${plan.dripper.name}.`
+        : `Device profile is ${formatDeviceProfileMode(copy, plan.deviceProfileMode)}; the flow model follows the ${plan.dripper.name} workflow.`,
     },
     {
       label: copy.grinder,
@@ -5893,7 +6219,7 @@ function PlanResultDialog({
     { label: id ? 'Suhu' : 'Temperature', value: extractionRationale.temperature },
     { label: id ? 'Waktu ekstraksi' : 'Extraction time', value: extractionRationale.time },
     { label: id ? 'Gilingan' : 'Grind', value: extractionRationale.grind },
-    { label: id ? 'Peta tuang' : 'Pour map', value: extractionRationale.pour },
+    { label: buildExtractionWorkflowLabel(plan, language), value: extractionRationale.pour },
     ...(extractionRationale.iceSplit ? [{ label: id ? 'Split es' : 'Ice split', value: extractionRationale.iceSplit }] : []),
   ];
   const resultHeaderClass = 'relative min-w-0 max-w-full overflow-hidden rounded-[1.5rem] border panel-divider-subtle panel-soft px-4 pb-4 pt-5 lg:px-5';
@@ -6084,6 +6410,11 @@ function PlanResultDialog({
         <p className="text-lg font-semibold leading-7 text-primary">
           {liteStepAction}
         </p>
+        {liteStepTargetCue && (
+          <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+            {liteStepTargetCue}
+          </p>
+        )}
         <div className="grid grid-cols-3 gap-1.5 text-[11px]">
           <span className="min-w-0 rounded-xl border panel-divider-subtle bg-[var(--bg-base)]/74 px-2 py-2 text-center text-secondary">
             <span className="block text-[10px] uppercase tracking-widest text-tertiary">{copy.finalRatio}</span>
@@ -7112,7 +7443,7 @@ function PlanResultDialog({
                           <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grindSource}</p>
                           <p className="mt-1 font-medium text-primary">{localizedGrindSettingReference}</p>
                           <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} - {formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)}</p>
-                          <p className="mt-2 text-xs">{copy.grindCalibrationNote}</p>
+                          <p className="mt-2 text-xs">{buildGrindCalibrationNote(plan.methodFamily, language)}</p>
                         </div>
                         <div className="rounded-xl bg-surface-alpha px-3 py-3">
                           <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.confidenceNotes}</p>
@@ -7610,7 +7941,7 @@ function PlanResultDialog({
                       <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.grindSource}</p>
                       <p className="mt-1 font-medium text-primary">{localizedGrindSettingReference}</p>
                       <p className="mt-1 text-xs">{formatGrindSettingMode(copy, plan.grindSettingMode)} - {formatGrinderReferenceLabel(copy, plan.grindSettingVerification, plan.grindSettingMode, plan.grindCalibrationRequired)}</p>
-                      <p className="mt-2 text-xs">{copy.grindCalibrationNote}</p>
+                      <p className="mt-2 text-xs">{buildGrindCalibrationNote(plan.methodFamily, language)}</p>
                     </div>
                     <div className="rounded-xl bg-surface-alpha px-3 py-3">
                       <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.confidenceNotes}</p>
@@ -12506,7 +12837,7 @@ export function AiBrewPanel() {
                     <div className="rounded-xl bg-surface-alpha px-3 py-3 text-sm text-secondary">
                       <p className="font-semibold text-primary">{selectedGrinder?.name || copy.notSpecified}</p>
                       <p className="mt-1">{selectedGrinder?.verificationLevel ? formatGrinderReferenceLabel(copy, selectedGrinder.verificationLevel) : copy.grindCuratedReference}</p>
-                      <p className="mt-2 text-xs">{copy.grindCalibrationNote}</p>
+                      <p className="mt-2 text-xs">{buildGrindCalibrationNote(selectedDripper?.methodFamily, language)}</p>
                     </div>
                   </ProBuilderAccordion>
 

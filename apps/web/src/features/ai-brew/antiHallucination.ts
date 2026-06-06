@@ -23,7 +23,6 @@ const OFFICIAL_GRINDER_CLAIM_PATTERN = /\b(?:official grinder|official grind|ver
 const EXACT_BREWER_CLAIM_PATTERN = /\b(?:profil exact|exact profile|profil siap)\b/gi;
 const PLACEHOLDER_OR_BROKEN_COPY_PATTERN = /\$(?:\d+|\{)|\b(?:undefined|null|NaN|\[object Object\]|ActionAction|Action\s+Action|Pressgentle|Stophiss|Programbloom|Valveset|Press35-45 seconds|Press \$1 seconds|Stophiss finished)\b|target-profile extraction pressure|deterministic planner numbers, not AI-invented copy|flow matched to french_press/i;
 const BROKEN_MIXED_LANGUAGE_PATTERN = /\b(?:Valveset sebelum seduh|Programbloom then immersion|Serve setelah aliran finish cleanly|Level coffee bed datar|Let partikel coffee|Stir 2-3 times saja|stir\s+\d+(?:-\d+)?\s+times\s+saja|pour\s+air\s+\w+|dua\s+times|serve\s+setelah)\b/i;
-
 function normalized(value?: string) {
   return String(value || '').trim().toLowerCase();
 }
@@ -74,7 +73,7 @@ function canonicalFinishSeconds(plan: BrewPlan) {
   return Math.max(0, Math.round(plan.extractionEndSeconds ?? plan.totalTimeSeconds));
 }
 
-function collectUserFacingRecipeText(plan: BrewPlan) {
+function collectUserFacingRecipeTextParts(plan: BrewPlan) {
   return [
     plan.summary,
     plan.grindRecommendation,
@@ -87,16 +86,27 @@ function collectUserFacingRecipeText(plan: BrewPlan) {
     ...(plan.extractionRationale?.warnings || []),
     ...plan.notes,
     ...plan.warnings,
-    ...plan.steps.map((step) => `${step.label} ${step.note} ${step.hybridInstruction || ''}`),
-    ...(plan.workflowGuideSteps || []).map((step) => [
+    ...plan.steps.flatMap((step) => [step.label, step.note, step.hybridInstruction || '']),
+    ...(plan.workflowGuideSteps || []).flatMap((step) => [
       step.label,
       step.primaryText,
       step.secondaryText || '',
-      ...step.techniqueChips.map((chip) => `${chip.label} ${chip.value}`),
+      ...step.techniqueChips.flatMap((chip) => [chip.label, chip.value]),
       ...step.warnings,
-    ].join(' ')),
+    ]),
     ...(plan.aiNotes ? Object.values(plan.aiNotes).filter(Boolean) : []),
-  ].filter(Boolean).join('\n');
+  ].filter((value): value is string => Boolean(value));
+}
+
+function collectUserFacingRecipeText(plan: BrewPlan) {
+  return collectUserFacingRecipeTextParts(plan).join('\n');
+}
+
+function hasUnintentionalDuplicateWord(value: string) {
+  for (const match of value.matchAll(/\b([\p{L}]{2,})\s+\1\b/giu)) {
+    return true;
+  }
+  return false;
 }
 
 function validateBrewPlanRatioInvariants(plan: BrewPlan) {
@@ -162,8 +172,19 @@ function formatSafeBrewTime(totalSeconds: number) {
 
 export function validateUserFacingRecipeText(plan: BrewPlan): BrewGuardResult {
   const reasons: string[] = [];
+  const textParts = collectUserFacingRecipeTextParts(plan);
   const text = collectUserFacingRecipeText(plan);
-  if (PLACEHOLDER_OR_BROKEN_COPY_PATTERN.test(text) || BROKEN_MIXED_LANGUAGE_PATTERN.test(text)) {
+  const summaryWithoutCoffeeName = plan.coffeeName
+    ? plan.summary.split(plan.coffeeName).join('')
+    : plan.summary;
+  const duplicateCheckParts = textParts.map((part) => (
+    part === plan.summary ? summaryWithoutCoffeeName : part
+  ));
+  if (
+    PLACEHOLDER_OR_BROKEN_COPY_PATTERN.test(text)
+    || BROKEN_MIXED_LANGUAGE_PATTERN.test(text)
+    || duplicateCheckParts.some(hasUnintentionalDuplicateWord)
+  ) {
     reasons.push('user-facing text contains placeholder, broken concatenation, or developer copy');
   }
   if (

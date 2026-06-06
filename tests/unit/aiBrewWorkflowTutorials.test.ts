@@ -58,8 +58,10 @@ const METHOD_ACTIONS: Record<AiBrewMethodFamily, WorkflowGuideActionType[]> = {
   batch_brew: ['setup', 'dose', 'monitor_flow', 'mix', 'serve'],
 };
 
-const ENGLISH_LEAKS = /\b(tuang|seduh|sajikan|katup|ruang|bubuk|air panas|jangan|aduk|rendam|tekan|endapkan|tetesan|bilas|gilingan|suhu|rasa|catatan|koleksi|panduan|keyakinan)\b|air turun/i;
+const ENGLISH_LEAKS = /\b(tuang|seduh|sajikan|katup|ruang|bubuk|air panas|jangan|aduk|rendam|tekan|endapkan|tetesan|bilas|gilingan|suhu|rasa|catatan|koleksi|panduan|keyakinan|mantap|agar|basah|adukan|pekat|perlahan|seluruh|langsung|alas|pulsa|datar|tanpa|mengguncang|setelah|selesai|konsisten|waktu|tambahan|permukaan|cangkir|empat|cepat|terukur|siap|keluar|kontak|tiga|seragam|bekerja|paling|bergelombang)\b|air turun/i;
 const BROKEN_USER_COPY = /\$(?:\d+|\{)|\b(?:undefined|null|NaN|\[object Object\]|ActionAction|Action\s+Action|Pressgentle|Stophiss)\b|pour air|stir\s+\d+(?:-\d+)?\s+times\s+saja|Tekan [^.!?]*seconds|Seduh [^.!?]*brew/i;
+const DUPLICATED_USER_COPY = /\b([\p{L}]{2,})\s+\1\b/iu;
+const ENCODING_ARTIFACTS = /[\u00c2\u00c3\uFFFD]|â€|Â°/u;
 const CRITICAL_INDONESIAN_LEAKS = /\b(rinse|preheat|kettle|serve|drawdown|pour path|press slowly|release|dose evenly)\b/i;
 const INDONESIAN_DYNAMIC_RAW_ENGLISH = /\b(Risk bean|Brew ratio|balances|More sweetness|Fully Washed|roast solubility|is selected from|target extraction style|press keeps|aligned with|Finishing after|main taste time|Direct demineral use|low-confidence filter experiment|expect a clean cup|hollow risk|unless remineralized|AI numeric optimizer accepted inside guardrails|Manual preset adapted|fallback kompatibel|finish body-forward)\b/i;
 const CORRECTION_LOOP = /kalau asam|kalau pahit|jika asam|jika pahit|if sour|if bitter|correction|koreksi rasa|next cup|dial-in/i;
@@ -291,6 +293,10 @@ test('every selectable AI Brew style resolves bilingual tutorials without raw la
         assert.doesNotMatch(en, ENGLISH_LEAKS, `${styleFamily.methodFamily}/${recipeStyle}/${actionType} EN leaks Indonesian: ${en}`);
         assert.doesNotMatch(id, CRITICAL_INDONESIAN_LEAKS, `${styleFamily.methodFamily}/${recipeStyle}/${actionType} ID leaks critical English: ${id}`);
         assert.doesNotMatch(id, STYLE_TUTORIAL_RAW_ID_LEAK, `${styleFamily.methodFamily}/${recipeStyle}/${actionType} ID keeps avoidable raw English: ${id}`);
+        assert.doesNotMatch(en, DUPLICATED_USER_COPY, `${styleFamily.methodFamily}/${recipeStyle}/${actionType} EN repeats user-facing copy: ${en}`);
+        assert.doesNotMatch(id, DUPLICATED_USER_COPY, `${styleFamily.methodFamily}/${recipeStyle}/${actionType} ID repeats user-facing copy: ${id}`);
+        assert.doesNotMatch(`${en} ${id}`, ENCODING_ARTIFACTS, `${styleFamily.methodFamily}/${recipeStyle}/${actionType} contains broken encoding`);
+        assert.doesNotMatch(`${en} ${id}`, BROKEN_USER_COPY, `${styleFamily.methodFamily}/${recipeStyle}/${actionType} contains broken user copy`);
         assert.doesNotMatch(`${en} ${id}`, CORRECTION_LOOP, `${styleFamily.methodFamily}/${recipeStyle}/${actionType} should not be taste correction`);
         if (actionType !== 'bloom' && STYLE_TUTORIAL_METHOD_LEAKS[styleFamily.methodFamily]) {
           assert.doesNotMatch(`${en} ${id}`, STYLE_TUTORIAL_METHOD_LEAKS[styleFamily.methodFamily]!, `${styleFamily.methodFamily}/${recipeStyle}/${actionType} leaks wrong-method language: ${en} ${id}`);

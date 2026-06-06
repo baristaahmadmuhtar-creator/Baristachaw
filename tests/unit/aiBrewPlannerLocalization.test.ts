@@ -2,15 +2,19 @@
 import assert from 'node:assert/strict';
 
 import {
+  buildAiBrewPlan,
   buildPlanRecipeDescription,
   buildPlanRecipeIngredients,
   buildPlanRecipeName,
   buildPlanRecipeSteps,
+  createDefaultAiBrewFormState,
 } from '../../apps/web/src/features/ai-brew/planner.ts';
 import {
   localizeAiBrewDynamicText,
+  localizeAiBrewStepLabel,
   localizeAiBrewSummary,
 } from '../../apps/web/src/features/ai-brew/localization.ts';
+import { buildProductionAiBrewCatalogForStress } from '../helpers/aiBrewStressMatrix.ts';
 
 const mockPlan: any = {
   coffeeName: '',
@@ -71,6 +75,63 @@ test('AI Brew localized summaries use clean temperature text and no encoding art
   assert.doesNotMatch(enSummary, /\b(seduh|air turun|kopi ini)\b/i);
 });
 
+test('AI Brew English dynamic copy translates complete Indonesian grinder warnings', () => {
+  const cases = [
+    [
+      'Acuan grinder menurunkan keyakinan; validasi dari waktu ekstraksi dan rasa.',
+      'The grinder reference has lower confidence; validate it against brew time and taste.',
+    ],
+    [
+      'Setelan grinder masih estimasi/fallback; kalibrasi dari waktu ekstraksi dan rasa.',
+      'The grinder setting is still an estimate; calibrate it against brew time and taste.',
+    ],
+    [
+      'Setelan grinder memakai baseline metode; kalibrasi titik nol dan rasa sebelum dianggap presisi.',
+      'The grinder setting uses a method baseline; calibrate the zero point and taste before treating it as precise.',
+    ],
+    [
+      'Espresso dengan acuan grinder pengganti atau grinder yang belum terverifikasi hanya boleh dipakai sebagai titik awal kalibrasi, bukan prediksi ekstraksi yang pasti.',
+      'For espresso, a fallback or unverified grinder reference is only a calibration starting point, not a guaranteed extraction prediction.',
+    ],
+  ] as const;
+
+  for (const [source, expected] of cases) {
+    const localized = localizeAiBrewDynamicText(source, 'en');
+    assert.equal(localized, expected);
+    assert.doesNotMatch(localized, /\b(acuan|menurunkan|keyakinan|validasi|waktu|ekstraksi|rasa|setelan|masih|kalibrasi|belum|hanya|dipakai)\b/i);
+  }
+});
+
+test('AI Brew English workflow labels cover every method-specific operational phase', () => {
+  const labels = [
+    'Aduk batch',
+    'Air naik',
+    'Balikkan aman',
+    'Berhenti di target hasil',
+    'Berhenti sebelum sputter',
+    'Bypass terukur',
+    'Distribusi dan tamp',
+    'Dose per liter',
+    'Isi boiler',
+    'Kontak atas',
+    'Masukkan kopi dan aduk',
+    'Matikan panas dan air turun',
+    'Mulai ekstraksi',
+    'Panas sedang',
+    'Panaskan air',
+    'Pantau aliran',
+    'Prep basket',
+    'Ratakan basket',
+    'Siklus mesin',
+  ];
+  const localized = labels.map((label) => localizeAiBrewStepLabel(label, 'en')).join(' ');
+
+  assert.doesNotMatch(
+    localized,
+    /\b(aduk|air naik|balikkan|berhenti|hasil|sebelum|bypass terukur|distribusi|isi|kontak|masukkan|matikan|mulai|panas|panaskan|pantau|ratakan|siklus|mesin)\b/i,
+  );
+});
+
 test('AI Brew Indonesian dynamic copy polishes avoidable raw English brewing terms', () => {
   const raw = [
     'Put measured ice in the server, wet the coffee bed, and keep the slurry calm during drawdown.',
@@ -83,6 +144,19 @@ test('AI Brew Indonesian dynamic copy polishes avoidable raw English brewing ter
   assert.match(raw, /hamparan kopi|hamparan flat-bottom/);
   assert.match(raw, /campuran kopi/);
   assert.match(raw, /air turun/);
+});
+
+test('AI Brew Indonesian dynamic copy remains idempotent and never repeats translated nouns', () => {
+  const localized = [
+    'Ratakan bed kopi sebelum tuangan pertama.',
+    'Pastikan flutes lekukan Origami terpasang rapi.',
+    'Saring dengan mesh saringan sebelum filter kertas.',
+  ].map((item) => localizeAiBrewDynamicText(item, 'id')).join(' ');
+
+  assert.doesNotMatch(localized, /\b([\p{L}]{2,})\s+\1\b/iu);
+  assert.match(localized, /Ratakan hamparan kopi sebelum tuangan pertama\./);
+  assert.match(localized, /lekukan Origami/);
+  assert.match(localized, /saringan sebelum filter kertas/);
 });
 
 test('AI Brew Indonesian legacy dripper tutorials do not leak English sentence fragments', () => {
@@ -100,5 +174,88 @@ test('AI Brew Indonesian legacy dripper tutorials do not leak English sentence f
   assert.doesNotMatch(localized, /\.\s+[a-zà-öø-ÿ]/u);
   assert.match(localized, /Biarkan blooming 35 detik/);
   assert.match(localized, /seduhan pour-over dingin/);
+});
+
+test('AI Brew visible result copy stays clean in English and Indonesian across every method family', () => {
+  const catalog = buildProductionAiBrewCatalogForStress();
+  const methodFamilies = [
+    'v60',
+    'chemex',
+    'kalita_wave',
+    'origami',
+    'april',
+    'melitta',
+    'kono',
+    'hario_switch',
+    'clever_dripper',
+    'aeropress',
+    'french_press',
+    'espresso',
+    'moka_pot',
+    'siphon',
+    'cold_brew',
+    'batch_brew',
+  ] as const;
+  const firstVisibleGrinder = catalog.grinders.find((grinder) => !grinder.hidden);
+  assert.ok(firstVisibleGrinder, 'a visible grinder is required for bilingual result coverage');
+
+  for (const methodFamily of methodFamilies) {
+    const dripper = catalog.drippers.find((item) => (
+      !item.hidden
+      && !item.deprecated
+      && item.methodFamily === methodFamily
+    ));
+    assert.ok(dripper, `${methodFamily} requires a visible brewer`);
+
+    const plan = buildAiBrewPlan({
+      ...createDefaultAiBrewFormState(catalog),
+      coffeeName: 'QA Natural Catuai',
+      dripperId: dripper.id,
+      grinderId: firstVisibleGrinder.id,
+      process: 'natural',
+      variety: 'red catuai',
+      roastLevel: 'medium_light',
+      waterMode: 'manual',
+      waterTdsPpm: '130',
+      waterHardnessPpm: '62.9',
+      waterAlkalinityPpm: '60.7',
+    }, catalog);
+
+    const visibleSourceText = [
+      plan.summary,
+      plan.grindRecommendation,
+      plan.grindBandLabel,
+      plan.grindSettingReference,
+      ...plan.warnings,
+      ...plan.confidenceNotes,
+      ...plan.guardrails.errors,
+      ...plan.guardrails.warnings,
+      ...(plan.extractionRationale?.warnings || []),
+      ...(plan.extractionRationale?.items || []).flatMap((item) => [item.label, item.value, item.detail]),
+      ...(plan.expectedCupProfile?.warnings || []),
+      ...(plan.expectedCupProfile?.reasons || []),
+      ...(plan.beanCoverage?.warnings || []),
+      ...(plan.beanCoverage?.reasons || []),
+    ].filter((value): value is string => typeof value === 'string');
+
+    for (const language of ['en', 'id'] as const) {
+      const localized = [
+        localizeAiBrewSummary(plan, language),
+        ...visibleSourceText.map((value) => localizeAiBrewDynamicText(value, language)),
+      ].join(' ');
+
+      assert.doesNotMatch(localized, /\b([\p{L}]{2,})\s+\1\b/iu, `${methodFamily}/${language} repeats user-facing words`);
+      assert.doesNotMatch(localized, /[\u00c2\u00c3\uFFFD]|â€|Â°/u, `${methodFamily}/${language} contains broken encoding`);
+      assert.doesNotMatch(localized, /\$(?:\d+|\{)|\b(?:undefined|null|NaN|ActionAction|Pressgentle|Stophiss)\b/i);
+
+      if (language === 'en') {
+        assert.doesNotMatch(
+          localized,
+          /\b(tuang|seduh|sajikan|katup|bubuk|jangan|aduk|rendam|tekan|endapkan|bilas|gilingan|suhu|rasa|panduan|keyakinan|acuan|validasi|waktu|ekstraksi|setelan|kalibrasi)\b|air turun/i,
+          `${methodFamily}/en leaks Indonesian`,
+        );
+      }
+    }
+  }
 });
 

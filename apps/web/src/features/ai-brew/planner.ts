@@ -4643,12 +4643,15 @@ function buildExtractionRationale(params: {
     ? `${params.hotWaterMl} ml hot water into ${params.iceMl} g ice`
     : params.hotWaterMl < params.totalWaterMl
       ? `${params.hotWaterMl} ml brew water plus ${Math.max(0, params.totalWaterMl - params.hotWaterMl)} ml bypass`
-    : `${params.totalWaterMl} ml water`;
+      : `${params.totalWaterMl} ml water`;
+  const processContext = /\bprocess$/i.test(params.processLabel.trim())
+    ? params.processLabel
+    : `${params.processLabel} process`;
 
   return {
     ratio: params.iceMl > 0
       ? `Final ratio 1:${formatBaristaRatio(params.finalBeverageRatio)} keeps iced strength after dilution; hot concentrate 1:${formatBaristaRatio(params.hotExtractionRatio)} extracts with ${hotOrTotalWater}.`
-      : `Brew ratio 1:${formatBaristaRatio(params.finalBeverageRatio)} balances ${params.targetProfileLabel} with ${params.processLabel} process and ${params.input.roastLevel} roast solubility.`,
+      : `Brew ratio 1:${formatBaristaRatio(params.finalBeverageRatio)} balances ${params.targetProfileLabel} with ${processContext} and ${params.input.roastLevel} roast solubility.`,
     temperature: `${formatBaristaTemperature(params.waterTempC)}C is selected from roast, process, water minerals, and target extraction style.`,
     time: `${formatTime(params.totalTimeSeconds)} service window keeps contact time aligned with ${params.methodFamily.replace(/_/g, ' ')} flow and ${params.targetProfileLabel}.`,
     grind: `${params.grindBias === 'finer' ? 'Finer' : params.grindBias === 'coarser' ? 'Coarser' : 'Neutral'} grind bias: ${params.grindRecommendation}`,

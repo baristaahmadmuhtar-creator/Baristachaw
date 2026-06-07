@@ -56,6 +56,7 @@
         "test:ai-brew:1m": "node scripts/ai-brew-stress-gate.mjs --mode=1m",
         "test:ai-brew:real-world-1000": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs scripts/ai-brew-real-world-1000.mjs",
         "test:ai-brew:real-world-10000": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs scripts/ai-brew-real-world-1000.mjs --scenarios=10000",
+        "test:ai-brew:aeropress-bypass": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs --test --test-isolation=none tests/unit/aiBrewAeroPressBypassMatrix.test.ts && node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs scripts/ai-brew-aeropress-bypass-audit.mjs",
         "test:ai-brew:filter-real-world-20000": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs scripts/ai-brew-real-world-1000.mjs --profile=filter-source-backed --scenarios=20000",
         "test:ai-brew:guardrails": "node --experimental-strip-types --import ./tests/unit/register-sandbox-loader.mjs --test --test-isolation=none tests/unit/aiBrewGuardrailClassification.test.ts tests/unit/aiBrewFilterRealWorld20000Script.test.ts",
         "test:ai-brew:report": "node scripts/ai-brew-stress-gate.mjs --mode=report",

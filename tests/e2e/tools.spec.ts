@@ -917,6 +917,7 @@ test('ai brew AeroPress styles render bilingual guides and regenerate without st
     { language: 'id', style: 'no_bypass' },
     { language: 'en', style: 'standard' },
     { language: 'en', style: 'inverted' },
+    { language: 'en', style: 'bypass' },
     { language: 'en', style: 'bright_clean' },
     { language: 'en', style: 'sweet_body' },
   ];

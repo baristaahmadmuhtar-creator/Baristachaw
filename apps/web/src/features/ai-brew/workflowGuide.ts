@@ -246,7 +246,7 @@ function resolveAeroPressGuideStyle(plan: BrewPlan): AeroPressGuideStyle {
   }
 }
 
-function buildAeroPressStyleGuideCopy(style: AeroPressGuideStyle) {
+function buildAeroPressStyleGuideCopy(style: AeroPressGuideStyle, targetProfileId?: string) {
   switch (style) {
     case 'inverted':
       return {
@@ -263,6 +263,83 @@ function buildAeroPressStyleGuideCopy(style: AeroPressGuideStyle) {
         stopChip: 'sebelum desis',
       };
     case 'bypass':
+      if (targetProfileId === 'more_acidity') {
+        return {
+          setup: 'Siapkan AeroPress tegak, bilas filter dan tutup, lalu pisahkan air bypass untuk setelah tekan saja.',
+          charge: 'Isi air seduh untuk konsentrat bersih; air bypass tetap terpisah dan tidak melewati lapisan kopi.',
+          stir: 'Aduk 2-3 kali saja agar acidity tetap jernih, lalu hentikan agitasi.',
+          steep: 'Rendam singkat; kontak cukup untuk konsentrat cerah tanpa membuat hasil terasa hollow.',
+          flip: '',
+          press: 'Tekan ringan 20-30 detik dan berhenti sebelum desis.',
+          stop: 'Berhenti sebelum desis kering agar acidity tidak berubah kasar.',
+          serve: 'Tambahkan air bypass terukur setelah tekan saja, aduk cangkir sampai rata, lalu sajikan.',
+          stirChip: '2-3x',
+          pressChip: '20-30 detik',
+          stopChip: 'sebelum desis',
+        };
+      }
+      if (targetProfileId === 'floral_transparent') {
+        return {
+          setup: 'Siapkan AeroPress tegak, bilas filter dan tutup, lalu pisahkan air bypass untuk menjaga hasil tetap ringan dan transparan.',
+          charge: 'Isi air seduh sebagai konsentrat floral; air bypass tidak melewati lapisan kopi.',
+          stir: 'Aduk 2 kali saja dengan gerakan ringan, lalu biarkan kontak berjalan tenang.',
+          steep: 'Rendam singkat; tujuan utamanya clarity, bukan body berat.',
+          flip: '',
+          press: 'Tekan sangat ringan 20-30 detik dan berhenti sebelum desis.',
+          stop: 'Berhenti sebelum desis kering supaya akhir rasa tetap bersih.',
+          serve: 'Tambahkan air bypass terukur setelah tekan saja, aduk cangkir sampai rata, lalu sajikan.',
+          stirChip: '2x',
+          pressChip: '20-30 detik',
+          stopChip: 'sebelum desis',
+        };
+      }
+      if (targetProfileId === 'more_body' || targetProfileId === 'dense_comforting') {
+        return {
+          setup: 'Siapkan AeroPress tegak, bilas filter dan tutup, lalu ukur air bypass kecil agar body tidak terlalu encer.',
+          charge: 'Isi air seduh untuk konsentrat padat; air bypass tetap di cangkir setelah tekan saja.',
+          stir: targetProfileId === 'dense_comforting'
+            ? 'Aduk 4 kali untuk membangun tekstur, lalu hentikan agitasi sebelum fines naik berlebihan.'
+            : 'Aduk 4 kali dengan stabil agar body terbentuk tanpa membuat hasil muddy.',
+          steep: 'Rendam sedikit lebih panjang agar konsentrat punya struktur sebelum diencerkan ringan.',
+          flip: '',
+          press: 'Tekan pelan 25-35 detik dan berhenti sebelum desis kering.',
+          stop: 'Berhenti sebelum desis kering; tekanan berlebih bisa membawa fines dan rasa pahit.',
+          serve: 'Tambahkan air bypass terukur setelah tekan saja, aduk cangkir sampai rata, lalu sajikan.',
+          stirChip: '4x',
+          pressChip: '25-35 detik',
+          stopChip: 'sebelum desis',
+        };
+      }
+      if (targetProfileId === 'fruit_forward') {
+        return {
+          setup: 'Siapkan AeroPress tegak, bilas filter dan tutup, lalu pisahkan air bypass untuk menjaga aroma buah tetap hidup.',
+          charge: 'Isi air seduh untuk konsentrat aromatik; air bypass tidak melewati lapisan kopi.',
+          stir: 'Aduk 2-3 kali dengan ringan, lalu biarkan rendaman tenang.',
+          steep: 'Rendam singkat-menengah; jangan mengejar body sampai aroma natural terasa winey.',
+          flip: '',
+          press: 'Tekan stabil 20-30 detik dan berhenti sebelum desis.',
+          stop: 'Berhenti sebelum desis kering agar ferment notes tidak terasa kasar.',
+          serve: 'Tambahkan air bypass terukur setelah tekan saja, aduk cangkir sampai rata, lalu sajikan.',
+          stirChip: '2-3x',
+          pressChip: '20-30 detik',
+          stopChip: 'sebelum desis',
+        };
+      }
+      if (targetProfileId === 'more_sweetness') {
+        return {
+          setup: 'Siapkan AeroPress tegak, bilas filter dan tutup, lalu pisahkan air bypass dalam porsi kecil-menengah.',
+          charge: 'Isi air seduh untuk konsentrat manis; air bypass tidak melewati lapisan kopi.',
+          stir: 'Aduk 3-4 kali agar ekstraksi tengah terbentuk, lalu hentikan agitasi.',
+          steep: 'Rendam cukup untuk membangun sweetness tanpa menekan hasil sampai kering.',
+          flip: '',
+          press: 'Tekan stabil 20-30 detik dan berhenti sebelum desis.',
+          stop: 'Berhenti sebelum desis kering supaya rasa manis tidak berubah pahit.',
+          serve: 'Tambahkan air bypass terukur setelah tekan saja, aduk cangkir sampai rata, lalu sajikan.',
+          stirChip: '3-4x',
+          pressChip: '20-30 detik',
+          stopChip: 'sebelum desis',
+        };
+      }
       return {
         setup: 'Siapkan AeroPress tegak, bilas filter dan tutup, lalu pisahkan air bypass untuk setelah tekan saja.',
         charge: 'Tuang air konsentrat ke ruang seduh dan basahi bubuk merata; air bypass tidak melewati lapisan kopi.',
@@ -704,7 +781,7 @@ function buildPouroverGuide(plan: BrewPlan): WorkflowGuideStep[] {
 
 function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
   const style = resolveAeroPressGuideStyle(plan);
-  const styleCopy = buildAeroPressStyleGuideCopy(style);
+  const styleCopy = buildAeroPressStyleGuideCopy(style, plan.targetProfileId);
   const volumeSteps = plan.steps.filter((step) => step.pourVolumeMl > 0);
   const charge = volumeSteps[0] || firstVolumeStep(plan);
   const finalCharge = volumeSteps.length > 0 ? volumeSteps[volumeSteps.length - 1] : charge;
@@ -903,13 +980,7 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
     const bypassPrimaryText = bypassWaterMl > 0
       ? `Seduh ${formatMl(plan.hotWaterMl)} air konsentrat di ruang seduh, lalu tambahkan ${formatMl(bypassWaterMl)} air bypass terukur di cangkir setelah tekan saja. Aduk sampai rata, lalu sajikan.`
       : styleCopy.serve;
-    guide.push(serve ? sourceStep('dilute', serve, {
-      label: 'Bypass terukur',
-      targetVolumeMl: plan.totalWaterMl,
-      primaryText: bypassPrimaryText,
-      secondaryText: 'Air bypass adalah bagian resep setelah tekan, bukan air tambahan di luar rencana.',
-      techniqueChips: [chip('dilution', 'Bypass', 'setelah tekan saja')],
-    }) : operationalStep({
+    guide.push(operationalStep({
       id: 'guide_aeropress_bypass_dilute',
       label: 'Bypass terukur',
       actionType: 'dilute',
@@ -918,6 +989,7 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       primaryText: bypassPrimaryText,
       secondaryText: 'Air bypass adalah bagian resep setelah tekan, bukan air tambahan di luar rencana.',
       techniqueChips: [chip('dilution', 'Bypass', 'setelah tekan saja')],
+      sourceStepIds: serve ? [serve.id] : [],
     }));
   }
 

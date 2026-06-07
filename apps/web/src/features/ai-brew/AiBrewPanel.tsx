@@ -1895,6 +1895,10 @@ function buildAiBrewCoreMetricItems(
 ): AiBrewCoreMetricItem[] {
   const id = isIndonesianAiBrewLanguage(language);
   const bloomMetric = buildBloomMetricItem(plan, language);
+  const isAeroPressMeasuredBypass = plan.methodFamily === 'aeropress'
+    && plan.recipeStyle === 'bypass'
+    && plan.hotWaterMl < plan.totalWaterMl;
+  const bypassWaterMl = Math.max(0, Math.round(plan.totalWaterMl - plan.hotWaterMl));
   return [
     {
       id: 'dose',
@@ -1907,8 +1911,24 @@ function buildAiBrewCoreMetricItems(
       value: formatRoundedMl(plan.totalWaterMl),
       detail: plan.iceMl > 0
         ? `${id ? 'Panas' : 'Hot'} ${formatRoundedMl(plan.hotWaterMl)} + ${id ? 'es' : 'ice'} ${formatRoundedGrams(plan.iceMl)}`
+        : isAeroPressMeasuredBypass
+          ? `${id ? 'Air seduh' : 'Brew water'} ${formatRoundedMl(plan.hotWaterMl)} + ${id ? 'bypass' : 'bypass'} ${formatRoundedMl(bypassWaterMl)}`
         : '',
     },
+    ...(isAeroPressMeasuredBypass ? [
+      {
+        id: 'brew-water',
+        label: id ? 'Air seduh' : 'Brew water',
+        value: formatRoundedMl(plan.hotWaterMl),
+        detail: `${id ? 'Konsentrat' : 'Concentrate'} 1:${formatBrewRatio(plan.hotExtractionRatio)}`,
+      },
+      {
+        id: 'bypass-water',
+        label: id ? 'Air bypass' : 'Bypass water',
+        value: formatRoundedMl(bypassWaterMl),
+        detail: id ? 'Tambahkan setelah tekan.' : 'Add after pressing.',
+      },
+    ] : []),
     {
       id: 'ratio',
       label: copy.finalRatio,
@@ -3246,11 +3266,32 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\bBalikkan ke atas cangkir dalam satu gerakan mantap, tanpa mengguncang bubur kopi\b/gi, 'Flip onto the cup in one confident motion without shaking the coffee slurry')
     .replace(/\bAduk cangkir pelan, lalu sajikan hasil rendaman penuh selagi aroma masih hidup\b/gi, 'Stir the cup gently, then serve the full-immersion brew while aromatics are fresh')
     .replace(/\bSiapkan AeroPress tegak, bilas filter dan tutup, lalu pisahkan air bypass untuk setelah tekan saja\b/gi, 'Set up the AeroPress upright, rinse the filter and cap, then keep bypass water separate until after pressing only')
+    .replace(/\bSiapkan AeroPress tegak, bilas filter dan tutup, lalu pisahkan air bypass untuk menjaga hasil tetap ringan dan transparan\b/gi, 'Set up the AeroPress upright, rinse the filter and cap, then keep bypass water separate to keep the cup light and transparent')
+    .replace(/\bSiapkan AeroPress tegak, bilas filter dan tutup, lalu ukur air bypass kecil agar body tidak terlalu encer\b/gi, 'Set up the AeroPress upright, rinse the filter and cap, then measure a small bypass so body does not thin out')
+    .replace(/\bSiapkan AeroPress tegak, bilas filter dan tutup, lalu pisahkan air bypass untuk menjaga aroma buah tetap hidup\b/gi, 'Set up the AeroPress upright, rinse the filter and cap, then keep bypass water separate to preserve fruit aromatics')
+    .replace(/\bSiapkan AeroPress tegak, bilas filter dan tutup, lalu pisahkan air bypass dalam porsi kecil-menengah\b/gi, 'Set up the AeroPress upright, rinse the filter and cap, then keep a small-to-medium bypass portion separate')
+    .replace(/\bIsi air seduh untuk konsentrat bersih; air bypass tetap terpisah dan tidak melewati lapisan kopi\b/gi, 'Charge brew water for a clean concentrate; bypass water stays separate and does not pass through the coffee layer')
+    .replace(/\bIsi air seduh sebagai konsentrat floral; air bypass tidak melewati lapisan kopi\b/gi, 'Charge brew water as a floral concentrate; bypass water does not pass through the coffee layer')
+    .replace(/\bIsi air seduh untuk konsentrat padat; air bypass tetap di cangkir setelah tekan saja\b/gi, 'Charge brew water for a dense concentrate; bypass water belongs in the cup after pressing only')
+    .replace(/\bIsi air seduh untuk konsentrat aromatik; air bypass tidak melewati lapisan kopi\b/gi, 'Charge brew water for an aromatic concentrate; bypass water does not pass through the coffee layer')
+    .replace(/\bIsi air seduh untuk konsentrat manis; air bypass tidak melewati lapisan kopi\b/gi, 'Charge brew water for a sweet concentrate; bypass water does not pass through the coffee layer')
     .replace(/\bTuang air konsentrat ke ruang seduh dan basahi bubuk merata; air bypass tidak melewati lapisan kopi\b/gi, 'Pour concentrate water into the chamber and wet the coffee evenly; bypass water does not pass through the coffee layer')
+    .replace(/\bAduk 2-3 kali saja agar acidity tetap jernih, lalu hentikan agitasi\b/gi, 'Stir only 2-3 times to keep acidity clear, then stop agitation')
+    .replace(/\bAduk 2 kali saja dengan gerakan ringan, lalu hentikan agitasi\b/gi, 'Stir only twice with a light motion, then stop agitation')
+    .replace(/\bAduk 2-3 kali dengan ringan, lalu biarkan rendaman tenang\b/gi, 'Stir lightly 2-3 times, then let the immersion settle')
+    .replace(/\bAduk 3-4 kali untuk membangun rasa manis tanpa membuat konsentrat kasar\b/gi, 'Stir 3-4 times to build sweetness without making the concentrate harsh')
+    .replace(/\bAduk 4 kali untuk membangun konsentrat kuat, lalu biarkan bubur kopi tenang\b/gi, 'Stir 4 times to build a strong concentrate, then let the coffee slurry settle')
+    .replace(/\bRendam singkat; kontak cukup untuk konsentrat cerah tanpa membuat hasil terasa hollow\b/gi, 'Steep briefly; keep enough contact for a bright concentrate without making the cup feel hollow')
+    .replace(/\bRendam singkat; tujuan utamanya clarity, bukan body berat\b/gi, 'Steep briefly; the goal is clarity, not heavy body')
+    .replace(/\bRendam singkat-menengah untuk menjaga aroma buah tanpa over-ferment\b/gi, 'Use a short-to-medium steep to preserve fruit aromatics without pushing ferment notes')
+    .replace(/\bRendam cukup untuk konsentrat manis; bypass lebih rendah dari gaya acidity\/floral\b/gi, 'Steep long enough for a sweet concentrate; bypass is lower than the acidity or floral styles')
+    .replace(/\bRendam sedikit lebih panjang; bypass kecil menjaga hasil tetap padat\b/gi, 'Steep slightly longer; the small bypass keeps the cup dense')
     .replace(/\bAduk 3 kali untuk ekstraksi awal, lalu biarkan bubur kopi tenang singkat\b/gi, 'Stir 3 times for early extraction, then let the coffee slurry rest briefly')
     .replace(/\bRendam singkat sebagai konsentrat; jaga kontak padat tanpa agitasi tambahan\b/gi, 'Steep briefly as a concentrate; keep dense contact without extra agitation')
     .replace(/\bTekan konsentrat 20-30 detik dan berhenti sebelum desis\b/gi, 'Press the concentrate for 20-30 seconds and stop before the hiss')
     .replace(/\bSeduh ([0-9.,]+ ml) air konsentrat di ruang seduh, lalu tambahkan ([0-9.,]+ ml) air bypass terukur di cangkir setelah tekan saja\. Aduk sampai rata, lalu sajikan\b/gi, 'Brew $1 concentrate water in the chamber, then add $2 measured bypass water in the cup after pressing only. Stir evenly, then serve')
+    .replace(/\bAir bypass adalah bagian resep setelah tekan, bukan air tambahan di luar rencana\b/gi, 'Bypass water is part of the recipe after pressing, not extra water outside the plan')
+    .replace(/\bSajikan setelah konsentrat dan bypass menyatu\b/gi, 'Serve after the concentrate and bypass are fully mixed')
     .replace(/\bBerhenti sebelum desis kering agar konsentrat tidak menjadi kasar\b/gi, 'Stop before the dry hiss so the concentrate does not turn harsh')
     .replace(/\bTambahkan air bypass terukur setelah tekan saja, aduk cangkir sampai rata, lalu sajikan\b/gi, 'Add measured bypass water after pressing only, stir the cup evenly, then serve')
     .replace(/\bSiapkan AeroPress tegak, bilas filter dan tutup, lalu pastikan semua air resep memang masuk ruang seduh\b/gi, 'Set up the AeroPress upright, rinse the filter and cap, then confirm all recipe water goes into the chamber')
@@ -6055,7 +6096,18 @@ function PlanResultDialog({
     0,
     Math.round(flowCurrentStep?.targetVolumeMl || (plan.brewMode === 'iced' ? plan.hotWaterMl : plan.totalWaterMl)),
   );
-  const liteWaterTotalMl = Math.max(1, Math.round(plan.brewMode === 'iced' ? plan.hotWaterMl : plan.totalWaterMl));
+  const isAeroPressMeasuredBypassLite = plan.methodFamily === 'aeropress'
+    && plan.recipeStyle === 'bypass'
+    && plan.hotWaterMl < plan.totalWaterMl;
+  const isAeroPressBypassDilutionStep = isAeroPressMeasuredBypassLite
+    && Boolean(flowCurrentStep && (flowCurrentStep.actionType === 'dilute' || /bypass|dilute|encer/i.test(flowCurrentStep.label)));
+  const liteWaterTotalMl = Math.max(1, Math.round(
+    plan.brewMode === 'iced'
+      ? plan.hotWaterMl
+      : isAeroPressMeasuredBypassLite && !isAeroPressBypassDilutionStep
+        ? plan.hotWaterMl
+        : plan.totalWaterMl,
+  ));
   const liteWaterTargetLabel = `${formatRoundedMl(liteWaterTargetMl)} / ${formatRoundedMl(liteWaterTotalMl)}`;
   const liteStepTitle = flowCurrentStep
     ? localizeAiBrewStepLabel(flowCurrentStep.label, language)

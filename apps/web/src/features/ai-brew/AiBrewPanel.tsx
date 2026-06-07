@@ -75,7 +75,9 @@ import {
   localizeAiBrewTargetProfile,
   localizeAiBrewWaterClassificationLabel,
   localizeAiBrewWaterStyle,
+  validateLocalizedAiBrewCopy,
 } from './localization.ts';
+import { getManualPresetDisplayCopy } from './manualPresetLocalization.ts';
 import { resolveWorkflowTutorialDetail } from './workflowTutorials.ts';
 import {
   AI_BREW_GENERATION_STAGES,
@@ -2061,7 +2063,7 @@ function createHybridAiSequenceProgress(
 
 function withLanguageLock(promptBody: string, language: string) {
   if (/^id(?:-|$)/i.test(language)) {
-    return `${promptBody}\n\nKunci bahasa: jawab sepenuhnya dalam Bahasa Indonesia. Jangan gunakan bahasa lain untuk judul, bullet, label, catatan, maupun fallback. Nama alat, nama brand, istilah umum seperti blooming, bypass, drawdown, dan satuan tetap boleh dipertahankan. Gunakan "wadah saji" untuk server, "hamparan kopi" untuk bed, "campuran kopi" untuk slurry, "air turun" untuk drawdown, dan "buka katup" untuk release. Pertahankan struktur heading, bullet, dan angka secara konsisten.`;
+    return `${promptBody}\n\nKunci bahasa: jawab sepenuhnya dalam Bahasa Indonesia yang natural, ringkas, dan lazim dipakai barista Indonesia. Jangan gunakan bahasa lain untuk judul, bullet, label, catatan, maupun teks pengganti. Nama alat, brand, varietas, origin, serta istilah kopi yang umum seperti blooming dan bypass boleh dipertahankan. Gunakan "wadah saji" untuk server, "hamparan kopi" untuk bed, "campuran kopi" untuk slurry, "cerat" untuk spout, "tabung bawah" untuk lower bowl, "air turun" untuk drawdown, dan "buka katup" untuk release. Tulis ukuran giling sebagai "sedang cenderung kasar", "sedang cenderung halus", atau bentuk Indonesia lain yang sesuai. Jangan memakai fragmen seperti medium-coarse, fine-medium, cue, fallback, exact, feedback, flow rate, atau contact time. Pertahankan struktur heading, bullet, dan angka secara konsisten.`;
   }
   if (/^ar(?:-|$)/i.test(language)) {
     return `${promptBody}\n\nقفل اللغة: أجب بالكامل باللغة العربية. لا تستخدم أي لغة أخرى في العناوين أو النقاط أو التسميات أو الملاحظات أو النصوص الاحتياطية. حافظ على بنية العناوين والنقاط والأرقام كما هي.`;
@@ -2148,6 +2150,7 @@ function hasAiBrewLanguageLeak(markdown: string, language: string) {
     /\b(Starting grind|Correction range|If sour\/thin|If bitter\/dry\/stalled|Estimated cup output|Brew time|Hot water|Ice in server)\b/i,
     /\b(Additional details|Brew Guide|Expected cup|Confidence|Safety|Release|Drawdown|Blocked|Unknown fallback|Known high|Partial medium|Manual Required|High Buffer|Zero Mineral|Taste feedback required)\b/i,
     /\b(Answer|Analysis|Recommendation|Trade-off|What to watch)\b/i,
+    /\b(spout|bowl|bleached|medium-coarse|medium-fine|fine-medium|fine-coarse|cue|fallback|exact|feedback|flow rate|contact time)\b/i,
   ].some((pattern) => pattern.test(markdown));
 }
 
@@ -2512,20 +2515,20 @@ function formatManualPresetVerification(copy: CopySet, verification: ManualBrewP
   }
 }
 
-function localizeManualPresetDisplayText(text: string | undefined, language?: string) {
+function localizeValidatedAiBrewText(
+  text: string | undefined,
+  language: string,
+  methodFamily?: AiBrewMethodFamily,
+  surface = 'detail',
+) {
   if (!text) return '';
-  if (!isIndonesianAiBrewLanguage(language)) return text;
-  const dynamic = localizeAiBrewDynamicText(text, language);
-  return dynamic
-    .replace(/^Inspired by Tetsu Kasuya 2026 10x Pour$/i, 'Terinspirasi dari Tetsu Kasuya 2026 10x Pour')
-    .replace(
-      /^Reported 2026 Tetsu Kasuya 10x pour style: 20g coffee, 300g water, ten 30g pours, very coarse grind, high temperature, and body-focused finish\. Hario Neo is not in the AI Brew catalog yet, so V60 is used as the compatible fallback\.$/i,
-      'Gaya Tetsu Kasuya 2026 10x pour yang dilaporkan: 20g kopi, 300g air, sepuluh tuangan 30g, gilingan sangat kasar, suhu tinggi, dan akhir seduhan yang lebih ber-body. Hario Neo belum tersedia di katalog AI Brew, jadi V60 dipakai sebagai pengganti yang kompatibel.',
-    )
-    .replace(/^Inspired by /i, 'Terinspirasi dari ')
-    .replace(/\bStyle\b/g, 'Gaya')
-    .replace(/\bFocus\b/g, 'Fokus')
-    .replace(/\bFast Brew\b/g, 'Seduh Cepat');
+  const localized = localizeAiBrewDynamicText(text, language);
+  return validateLocalizedAiBrewCopy({
+    text: localized,
+    language,
+    methodFamily,
+    surface,
+  }).safeText;
 }
 
 function formatReviewStatus(copy: CopySet, status?: BrewPlan['processReviewStatus']) {
@@ -5708,6 +5711,7 @@ function PlanResultDialog({
   copy,
   resultMode,
   plan,
+  manualPreset,
   targetComparePlans,
   currentPreset,
   aiCoachDisabled,
@@ -5738,6 +5742,7 @@ function PlanResultDialog({
   copy: CopySet;
   resultMode: FormMode;
   plan: BrewPlan | null;
+  manualPreset?: ManualBrewPreset | null;
   targetComparePlans?: BrewPlan[];
   currentPreset?: BrewPreset;
   aiCoachDisabled: boolean;
@@ -5892,6 +5897,9 @@ function PlanResultDialog({
   const switchSafetyStatus = plan.switchStepValidation?.status || plan.switchCompatibility?.status;
   const switchSafetyMessage = plan.switchStepValidation?.message || plan.switchCompatibility?.message;
   const localizedTargetProfileLabel = localizeAiBrewTargetProfile(plan.targetProfileId, plan.targetProfileLabel, language);
+  const manualPresetDisplayCopy = manualPreset
+    ? getManualPresetDisplayCopy(manualPreset, language)
+    : null;
   const localizedSwitchPresetLabel = plan.methodFamily === 'hario_switch'
     ? formatPlanSwitchPresetLabel(plan, language)
     : '';
@@ -5980,8 +5988,8 @@ function PlanResultDialog({
     ? formatAiBrewConfidenceLabel(expectedCup.confidence, language)
     : '';
   const localizedWarnings = [
-    ...plan.guardrails.errors.map((item) => localizeAiBrewDynamicText(item, language)),
-    ...plan.warnings.map((item) => localizeAiBrewDynamicText(item, language)),
+    ...plan.guardrails.errors.map((item) => localizeValidatedAiBrewText(item, language, plan.methodFamily, 'warning')),
+    ...plan.warnings.map((item) => localizeValidatedAiBrewText(item, language, plan.methodFamily, 'warning')),
   ];
   const timedWorkflowGuideSteps = workflowGuideSteps.filter((step) => (
     step.startSeconds < timerTargetSeconds || !isAiBrewPostExtractionDisplayStep(step)
@@ -6534,7 +6542,7 @@ function PlanResultDialog({
                     </span>
                     {plan.manualPresetLabel ? (
                       <span className={`${resultChipClass} border-blue-500/18 bg-blue-500/10 text-blue-700 dark:text-blue-300`} data-testid="ai-brew-result-manual-preset-chip">
-                        {localizeManualPresetDisplayText(plan.manualPresetLabel, language)}
+                        {manualPresetDisplayCopy?.label || localizeValidatedAiBrewText(plan.manualPresetLabel, language, plan.methodFamily, 'preset_label')}
                       </span>
                     ) : null}
                     {plan.targetProfileAutoSuggested && (
@@ -6559,7 +6567,7 @@ function PlanResultDialog({
                   <h3 className="break-words text-lg font-semibold tracking-tight text-primary sm:text-xl">{buildLocalizedPlanRecipeName(plan, language)}</h3>
                   {plan.manualPresetSummary ? (
                     <p className="mt-1 text-xs leading-5 text-secondary" data-testid="ai-brew-result-manual-preset-summary">
-                      {localizeManualPresetDisplayText(plan.manualPresetSummary, language)}
+                      {manualPresetDisplayCopy?.summary || localizeValidatedAiBrewText(plan.manualPresetSummary, language, plan.methodFamily, 'preset_summary')}
                     </p>
                   ) : null}
                   <p id={descriptionId} className="sr-only">
@@ -6631,15 +6639,15 @@ function PlanResultDialog({
                           {plan.beanCoverage && (
                             <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-[12px] leading-5 text-secondary" data-testid="ai-brew-bean-coverage-detail">
                               <p className="font-semibold text-primary">{copy.beanCoverageTitle}: {localizedBeanCoverageConfidence}</p>
-                              <p className="mt-1">{localizeAiBrewDynamicText(plan.beanCoverage.warnings[0] || plan.beanCoverage.reasons[0] || copy.beanCoverageFallback, language)}</p>
-                              <p className="mt-1">{localizeAiBrewDynamicText(plan.beanCoverage.nextAction || copy.beanCoverageTasteLoop, language)}</p>
+                              <p className="mt-1">{localizeValidatedAiBrewText(plan.beanCoverage.warnings[0] || plan.beanCoverage.reasons[0] || copy.beanCoverageFallback, language, plan.methodFamily, 'warning')}</p>
+                              <p className="mt-1">{localizeValidatedAiBrewText(plan.beanCoverage.nextAction || copy.beanCoverageTasteLoop, language, plan.methodFamily, 'detail')}</p>
                             </div>
                           )}
                           {(expectedCup?.warnings[0] || expectedCup?.reasons[0]) && (
                             <div className="rounded-xl bg-[var(--bg-base)] px-3 py-2 text-[12px] leading-5 text-secondary">
                               <p className="font-semibold text-primary">{copy.expectedCupTitle}</p>
                               <p className="mt-1">
-                                {localizeAiBrewDynamicText((expectedCup?.warnings[0] || expectedCup?.reasons[0]) ?? '', language)}
+                                {localizeValidatedAiBrewText((expectedCup?.warnings[0] || expectedCup?.reasons[0]) ?? '', language, plan.methodFamily, 'warning')}
                               </p>
                             </div>
                           )}
@@ -6910,20 +6918,20 @@ function PlanResultDialog({
                     {extractionRationaleItems.map((item) => (
                       <div key={item.label} className="min-w-0 rounded-2xl border panel-divider-subtle bg-[var(--bg-base)]/60 px-4 py-3 hover:bg-[var(--bg-base)]/80 transition-colors">
                         <p className="text-[10px] font-semibold uppercase tracking-widest text-secondary">{item.label}</p>
-                        <p className="mt-1 text-xs leading-5 text-primary tabular-nums">{localizeAiBrewDynamicText(item.value, language)}</p>
+                        <p className="mt-1 text-xs leading-5 text-primary tabular-nums">{localizeValidatedAiBrewText(item.value, language, plan.methodFamily, 'detail')}</p>
                       </div>
                     ))}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]" data-testid="ai-brew-bean-data-precision-signals">
                     {beanDataPrecisionSignals.map((signal) => (
                       <span key={signal} className="rounded-full border panel-divider-subtle bg-[var(--bg-base)]/40 px-2.5 py-1 font-medium text-secondary">
-                        {localizeAiBrewDynamicText(signal, language)}
+                        {localizeValidatedAiBrewText(signal, language, plan.methodFamily, 'detail')}
                       </span>
                     ))}
                   </div>
                   {extractionRationale.warnings.length > 0 && (
                     <div className="mt-3 rounded-xl border border-amber-500/18 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-700 dark:text-amber-200">
-                      {localizeAiBrewDynamicText(extractionRationale.warnings[0], language)}
+                      {localizeValidatedAiBrewText(extractionRationale.warnings[0], language, plan.methodFamily, 'warning')}
                     </div>
                   )}
                 </section>
@@ -7449,7 +7457,7 @@ function PlanResultDialog({
                           <p className="text-xs font-semibold uppercase tracking-widest text-secondary">{copy.confidenceNotes}</p>
                           <ul className="mt-2 space-y-2">
                             {plan.confidenceNotes.slice(0, 3).map((note) => (
-                              <li key={note}>{localizeAiBrewDynamicText(note, language)}</li>
+                              <li key={note}>{localizeValidatedAiBrewText(note, language, plan.methodFamily, 'detail')}</li>
                             ))}
                           </ul>
                         </div>
@@ -8973,6 +8981,9 @@ export function AiBrewPanel() {
     if (!formState.manualPresetId) return null;
     return manualBrewPresets.find((item) => item.id === formState.manualPresetId) || null;
   }, [formState.manualPresetId, manualBrewPresets]);
+  const selectedManualPresetDisplayCopy = useMemo(() => (
+    selectedManualPreset ? getManualPresetDisplayCopy(selectedManualPreset, language) : null
+  ), [language, selectedManualPreset]);
 
   const filteredManualBrewPresets = useMemo(() => {
     const query = manualPresetSearch.trim().toLowerCase();
@@ -11665,7 +11676,7 @@ export function AiBrewPanel() {
             </p>
             {selectedManualPreset ? (
               <p className="mt-2 text-xs font-semibold text-blue-600 dark:text-blue-300" data-testid="ai-brew-selected-manual-preset">
-                {copy.manualPresetSelected}: {localizeManualPresetDisplayText(selectedManualPreset.safeLabel, language)}
+                {copy.manualPresetSelected}: {selectedManualPresetDisplayCopy?.label}
               </p>
             ) : null}
           </div>
@@ -11732,6 +11743,7 @@ export function AiBrewPanel() {
               {filteredManualBrewPresets.map((preset: ManualBrewPreset) => {
                 const active = formState.manualPresetId === preset.id;
                 const verificationLabel = formatManualPresetVerification(copy, preset.verificationLevel);
+                const presetDisplayCopy = getManualPresetDisplayCopy(preset, language);
                 return (
                   <button
                     key={preset.id}
@@ -11745,8 +11757,8 @@ export function AiBrewPanel() {
                     aria-pressed={active}
                     data-testid={`ai-brew-manual-preset-${preset.id}`}
                   >
-                    <span className="block text-sm font-semibold text-primary">{localizeManualPresetDisplayText(preset.safeLabel, language)}</span>
-                    <span className="mt-1 line-clamp-2 block text-xs leading-5 text-secondary">{localizeManualPresetDisplayText(preset.visibleSummary, language)}</span>
+                    <span className="block text-sm font-semibold text-primary">{presetDisplayCopy.label}</span>
+                    <span className="mt-1 line-clamp-2 block text-xs leading-5 text-secondary">{presetDisplayCopy.summary}</span>
                     <span className="mt-2 flex flex-wrap gap-1.5">
                       <span className="inline-flex rounded-full bg-blue-500/10 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
                         {verificationLabel}
@@ -13501,6 +13513,7 @@ export function AiBrewPanel() {
         copy={copy}
         resultMode={resultMode}
         plan={plan}
+        manualPreset={manualBrewPresets.find((preset) => preset.id === plan?.manualPresetId) || null}
         targetComparePlans={targetComparePlans}
         currentPreset={currentPreset}
         aiCoachDisabled={aiCoachDisabled}

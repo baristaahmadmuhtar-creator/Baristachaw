@@ -194,7 +194,7 @@ function expectCleanAiBrewVisibleCopy(text: string, language: 'en' | 'id', conte
     );
   } else {
     expect(text, `${context} leaks English UI copy into Indonesian`).not.toMatch(
-      /\b(Starting grind|Total Water|Final Ratio|Temperature|Brew Guide|Additional details|Edit inputs|Guide complete|The grinder setting|The grinder reference|For espresso)\b/i,
+      /\b(Starting grind|Total Water|Final Ratio|Temperature|Brew Guide|Additional details|Edit inputs|Guide complete|The grinder setting|The grinder reference|For espresso|spout|bowl|bleached|medium-coarse|medium-fine|fine-medium|fine-coarse|flow rate|contact time)\b/i,
     );
   }
 }
@@ -755,6 +755,69 @@ test('ai brew guide renders workflow-specific phases for non-pour-over methods',
       .map((step) => `${step.label} ${step.primaryText} ${step.secondaryText} ${(step.detailBullets || []).join(' ')}`)
       .join(' ');
     expect(guideText).toMatch(entry.expected);
+    await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
+  }
+});
+
+test('ai brew Indonesian result surfaces stay natural across every method family', async ({ page }) => {
+  test.setTimeout(720_000);
+  const cases = [
+    ['v60', 'hario-v60', 'v60'],
+    ['chemex', 'chemex', 'chemex'],
+    ['kalita wave', 'kalita-wave-155-185', 'kalita_wave'],
+    ['origami', 'origami-dripper-s-m', 'origami'],
+    ['april', 'april-brewer', 'april'],
+    ['melitta', 'melitta', 'melitta'],
+    ['kono', 'kono-meimon', 'kono'],
+    ['switch 03', 'hario-switch-03', 'hario_switch'],
+    ['clever', 'clever-dripper', 'clever_dripper'],
+    ['aeropress', 'aeropress', 'aeropress'],
+    ['french press', 'french-press', 'french_press'],
+    ['espresso', 'espresso-machine', 'espresso'],
+    ['moka', 'bialetti-moka-pot', 'moka_pot'],
+    ['siphon', 'hario-siphon', 'siphon'],
+    ['cold brew', 'toddy-cold-brew', 'cold_brew'],
+    ['batch', 'batch-brewer', 'batch_brew'],
+  ] as const;
+
+  await page.evaluate(() => {
+    localStorage.setItem('BARISTA_LANGUAGE', 'id');
+    localStorage.setItem('BARISTA_LANGUAGE_ID_DEFAULT_MIGRATED', '1');
+  });
+  await page.goto('/tools?tab=ai-brew&language=id', { waitUntil: 'domcontentloaded' });
+
+  for (const [query, optionId, expectedFamily] of cases) {
+    await openAiBrewQuickMode(page);
+    await setVisibleInputValue(page, 'ai-brew-coffee-name', `QA Indonesia ${expectedFamily}`);
+    await page.getByTestId('ai-brew-dripper-picker').click();
+    await page.getByTestId('ai-brew-picker-search-dripper').fill(query);
+    const methodOption = page.getByTestId(`ai-brew-picker-option-dripper-${optionId}`);
+    if (expectedFamily === 'espresso') {
+      await expect(methodOption).toBeDisabled();
+      expectCleanAiBrewVisibleCopy(await methodOption.innerText(), 'id', 'espresso/disabled-picker');
+      await page.getByRole('button', { name: 'Tutup picker', exact: true }).click();
+      const closeQuick = page.getByTestId('ai-brew-close-quick');
+      if (await closeQuick.count()) await closeQuick.click();
+      continue;
+    }
+    await methodOption.click();
+    await selectAiBrewWaterBrand(page, 'aqua', 'aqua-id');
+    await page.getByTestId('ai-brew-generate').click();
+
+    const result = page.getByTestId('ai-brew-result');
+    await expect(result).toContainText(`QA Indonesia ${expectedFamily}`);
+    expectCleanAiBrewVisibleCopy(await result.innerText(), 'id', `${expectedFamily}/summary`);
+
+    await result.getByTestId('ai-brew-result-tab-flow').click({ force: true });
+    expectCleanAiBrewVisibleCopy(await result.innerText(), 'id', `${expectedFamily}/brew-lite`);
+    await result.getByTestId('ai-brew-guide-density-pro').click();
+    expectCleanAiBrewVisibleCopy(await result.innerText(), 'id', `${expectedFamily}/brew-pro`);
+
+    await result.getByTestId('ai-brew-result-tab-details').click({ force: true });
+    expectCleanAiBrewVisibleCopy(await result.innerText(), 'id', `${expectedFamily}/details`);
+    const plan = await readStoredAiBrewPlan(page);
+    expect(plan.methodFamily).toBe(expectedFamily);
+    expect(plan.workflowValidation?.passed).toBe(true);
     await page.getByRole('button', { name: AI_BREW_CLOSE_OUTPUT }).click();
   }
 });

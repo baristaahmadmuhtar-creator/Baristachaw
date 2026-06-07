@@ -1,6 +1,43 @@
 # AI Brew QA Checklist
 
-Date: 2026-06-04
+Date: 2026-06-07
+
+## Final Indonesian Production Gate
+
+- [x] 1,636 resolved tutorial combinations scanned for Indonesian naturalness,
+  duplicate words, placeholders, and method vocabulary.
+- [x] All 40 manual brew presets have centralized Indonesian display copy.
+- [x] Indonesian preset labels, summaries, attribution, fallback notes, and
+  guardrails do not depend on ad hoc UI replacements.
+- [x] `spout`, `bowl`, `medium-coarse`, `fine-medium`, and `bleached paper`
+  are normalized into natural Indonesian where they appear in user-facing
+  output.
+- [x] Optional dynamic copy is validated before render and receives a
+  same-locale safe fallback when invalid.
+- [x] English regression checks remain active.
+- [x] Browser coverage includes every method family plus high-risk styles and
+  manual presets.
+
+Fresh local evidence from 2026-06-07:
+
+- `npm run test:i18n`: 48 pass, 0 fail.
+- `npm run test:ai-brew`: 348 pass, 4 skip, 0 fail.
+- `npm run test:ai-brew:matrix`: passed.
+- `npm run test:ai-brew:real-world-10000`: 10,000 pass, 0 fail.
+- `npm run test:grind-size:matrix`: 9 pass, 0 fail.
+- Focused Playwright AI Brew and preset checks: passed.
+- Playwright all non-AeroPress selectable styles: passed.
+- Playwright Indonesian result surfaces across every method family: passed.
+- `npm run test:e2e:mobile`: 28 pass, 0 fail.
+- `npm run test:a11y`: 9 pass, 0 fail.
+- `npm run build`: passed; existing Vite size/import warnings remain
+  non-blocking.
+- `npm run release:verify`: passed, including lint/typecheck, unit, build,
+  56 Chromium AI Brew E2E checks, and mobile AI Brew smoke.
+
+GitHub Release Gate CI, production deployment, and production smoke are
+recorded separately after the new commit is pushed. Physical sensory
+validation remains `PENDING HUMAN BREW TEST`.
 
 ## Language Checklist
 

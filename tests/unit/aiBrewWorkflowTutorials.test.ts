@@ -103,6 +103,8 @@ const AEROPRESS_POUROVER_LEAK = /\b(bloom|final pour|spiral|drawdown|center-to-m
 const AEROPRESS_BYPASS_COMMAND = /\b(Add the measured bypass water|measured bypass water after pressing|Tambahkan air bypass terukur|air bypass terukur hanya setelah tekan)\b/i;
 const STYLE_TUTORIAL_RAW_ID_LEAK =
   /\b(paper|bed|dripper|server|drawdown|carafe|load|sec|slurry|flutes|rib|flat-bottom|wave|cone|puck|chamber|hiss|dry pocket|spray head|room temp|pre-wet)\b/i;
+const AVOIDABLE_INDONESIAN_TUTORIAL_TERMS =
+  /\b(spout|bowl|bleached|medium-coarse|medium-fine|fine-medium|fine-coarse|spray head|cue|fallback|exact|feedback|flow rate|contact time)\b|\b(?:gilingan|kopi)\s+(?:medium|coarse|fine)\b/i;
 const STYLE_TUTORIAL_METHOD_LEAKS: Partial<Record<AiBrewMethodFamily, RegExp>> = {
   french_press: /\b(bloom|final pour|tuang akhir|drawdown bed|center-to-mid|filter wall)\b/i,
   clever_dripper: /\b(final pour|tuang akhir|center-to-mid|v60)\b/i,
@@ -313,6 +315,85 @@ test('every selectable AI Brew style resolves bilingual tutorials without raw la
   }
 });
 
+test('all AI Brew style tutorials use natural Indonesian barista language across hot and iced paths', () => {
+  let evaluatedOutputs = 0;
+
+  for (const styleFamily of ALL_STYLE_TUTORIAL_CASES) {
+    for (const recipeStyle of styleFamily.styles) {
+      for (const actionType of styleFamily.actions) {
+        for (const brewMode of ['hot', 'iced'] as const) {
+          for (const language of ['en', 'id'] as const) {
+            const text = resolveWorkflowTutorialDetail({
+              methodFamily: styleFamily.methodFamily,
+              recipeStyle,
+              actionType,
+              brewMode,
+              language,
+            });
+            evaluatedOutputs += 1;
+
+            assert.doesNotMatch(
+              text,
+              BROKEN_USER_COPY,
+              `${styleFamily.methodFamily}/${recipeStyle}/${actionType}/${brewMode}/${language} contains broken copy: ${text}`,
+            );
+            if (language === 'id') {
+              assert.doesNotMatch(
+                text,
+                AVOIDABLE_INDONESIAN_TUTORIAL_TERMS,
+                `${styleFamily.methodFamily}/${recipeStyle}/${actionType}/${brewMode} keeps avoidable English: ${text}`,
+              );
+              assert.doesNotMatch(
+                text,
+                /\b([\p{L}]{2,})\s+\1\b/iu,
+                `${styleFamily.methodFamily}/${recipeStyle}/${actionType}/${brewMode} repeats an Indonesian word: ${text}`,
+              );
+            } else {
+              assert.doesNotMatch(
+                text,
+                ENGLISH_LEAKS,
+                `${styleFamily.methodFamily}/${recipeStyle}/${actionType}/${brewMode} leaks Indonesian into English: ${text}`,
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+
+  assert.ok(evaluatedOutputs >= 954, `Expected at least 954 localized tutorial outputs, received ${evaluatedOutputs}`);
+});
+
+test('high-risk Indonesian tutorial phrases are localized with method-aware barista wording', () => {
+  const cases = [
+    {
+      input: { methodFamily: 'chemex', recipeStyle: 'traditional_three_pour', actionType: 'setup', brewMode: 'hot' },
+      expected: /cerat|gilingan sedang cenderung kasar/i,
+    },
+    {
+      input: { methodFamily: 'origami', recipeStyle: 'iced_origami', actionType: 'setup', brewMode: 'iced' },
+      expected: /gilingan halus cenderung sedang|gilingan sedang cenderung halus/i,
+    },
+    {
+      input: { methodFamily: 'siphon', recipeStyle: 'traditional_vacuum_siphon', actionType: 'setup', brewMode: 'hot' },
+      expected: /tabung bawah|wadah bawah/i,
+    },
+    {
+      input: { methodFamily: 'batch_brew', recipeStyle: 'bright_light_roast_batch', actionType: 'setup', brewMode: 'hot' },
+      expected: /filter kertas putih/i,
+    },
+  ] as const;
+
+  for (const item of cases) {
+    const text = resolveWorkflowTutorialDetail({
+      ...item.input,
+      language: 'id',
+    });
+    assert.match(text, item.expected, JSON.stringify(item.input));
+    assert.doesNotMatch(text, AVOIDABLE_INDONESIAN_TUTORIAL_TERMS, JSON.stringify(item.input));
+  }
+});
+
 test('AI Brew entry cards expose Basic/Advanced while keeping guide density Lite/Pro', () => {
   const source = readFileSync(resolve(process.cwd(), 'apps/web/src/features/ai-brew/AiBrewPanel.tsx'), 'utf8');
 
@@ -334,6 +415,7 @@ test('AI Brew entry cards expose Basic/Advanced while keeping guide density Lite
 
 test('Indonesian AI Brew style chip labels use natural operational copy', () => {
   const source = readFileSync(resolve(process.cwd(), 'apps/web/src/features/ai-brew/AiBrewPanel.tsx'), 'utf8');
+  const presetLocalizationSource = readFileSync(resolve(process.cwd(), 'apps/web/src/features/ai-brew/manualPresetLocalization.ts'), 'utf8');
   const idCopyStart = source.indexOf('  id: {');
   const idCopyEnd = source.indexOf('    precisionControlTitle:', idCopyStart);
   assert.ok(idCopyStart > 0 && idCopyEnd > idCopyStart, 'Indonesian AI Brew copy block should be discoverable');
@@ -362,7 +444,7 @@ test('Indonesian AI Brew style chip labels use natural operational copy', () => 
   assert.match(source, /precisionControlTitle:\s*'Target lanjutan'/);
   assert.match(source, /noWaterSourceLinks:\s*'Belum ada tautan sumber tersimpan untuk brand ini\.'/);
   assert.doesNotMatch(source, /precisionControlTitle:\s*'Target advanced'/);
-  assert.match(source, /akhir seduhan yang lebih ber-body/);
+  assert.match(presetLocalizationSource, /akhir seduhan bersih|body tebal/);
   assert.doesNotMatch(
     source,
     /finish body-forward|fallback kompatibel|Server AI sedang penuh|Finishing setelah waktu rasa utama|ber-confidence rendah|starting point dengan cek rasa|baseline grinder|brew time utama|direct demineral bisa clean tapi hollow/i,

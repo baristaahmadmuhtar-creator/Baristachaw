@@ -10,6 +10,7 @@ import {
   createQuickAiBrewFormState,
 } from '../../apps/web/src/features/ai-brew/planner.ts';
 import { buildAiAssistPrompt } from '../../apps/web/src/features/ai-brew/prompts.ts';
+import { getManualPresetDisplayCopy } from '../../apps/web/src/features/ai-brew/manualPresetLocalization.ts';
 import type { AiBrewCatalog, AiBrewFormState, BrewPlan } from '../../apps/web/src/features/ai-brew/types.ts';
 
 const ROOT = process.cwd();
@@ -95,6 +96,46 @@ test('AI Brew manual brew preset catalog is safe, unique, and source-backed', as
       assert.match(preset.fallbackReason || '', /fallback|not currently in catalog|safe/i);
     }
     assert.doesNotMatch(JSON.stringify(preset), /\b100%\b|perfect result|guaranteed/i);
+  }
+});
+
+test('all 40 manual brew presets expose complete Indonesian display copy without changing English source copy', async () => {
+  const catalog = await loadCatalogForTest();
+  const presets = catalog.manualBrewPresets || [];
+  const avoidableEnglishSentence =
+    /\b(inspired by|adapted as|adapted to|style for|reference|fallback|not currently|supported equipment|keep|use|do not|should|source-backed|guardrail)\b/i;
+  const brokenCopy =
+    /\$(?:\d+|\{)|\b(?:undefined|null|NaN|ActionAction|Action\s+Action|Pressgentle|Stophiss)\b|[\u00c2\u00c3\uFFFD]/u;
+
+  assert.equal(presets.length, 40);
+  for (const preset of presets) {
+    const en = getManualPresetDisplayCopy(preset, 'en');
+    const id = getManualPresetDisplayCopy(preset, 'id');
+
+    assert.equal(en.label, preset.safeLabel, `${preset.id} English label must remain source-authored`);
+    assert.equal(en.summary, preset.visibleSummary, `${preset.id} English summary must remain source-authored`);
+    assert.equal(en.sourceAttribution, preset.sourceAttribution);
+    assert.equal(en.fallbackReason, preset.fallbackReason || '');
+    assert.deepEqual(en.guardrails, preset.guardrails);
+
+    const idBodyFields = [
+      id.summary,
+      id.sourceAttribution,
+      id.fallbackReason,
+      ...id.guardrails,
+    ].filter(Boolean);
+    assert.ok(id.label.length > 3, `${preset.id} Indonesian label is required`);
+    assert.ok(id.summary.length > 20, `${preset.id} Indonesian summary is required`);
+    assert.ok(id.sourceAttribution.length > 10, `${preset.id} Indonesian source attribution is required`);
+    assert.equal(id.guardrails.length, preset.guardrails.length, `${preset.id} must localize every guardrail`);
+
+    assert.doesNotMatch(id.label, /^Inspired by\b|\bStyle$/i, `${preset.id} label must use Indonesian structure`);
+    assert.doesNotMatch(id.label, brokenCopy, `${preset.id} contains a broken localized label`);
+    for (const text of idBodyFields) {
+      assert.doesNotMatch(text, avoidableEnglishSentence, `${preset.id} leaks an English sentence fragment: ${text}`);
+      assert.doesNotMatch(text, brokenCopy, `${preset.id} contains broken localized copy: ${text}`);
+      assert.doesNotMatch(text, /\b([\p{L}]{2,})\s+\1\b/iu, `${preset.id} repeats a localized word: ${text}`);
+    }
   }
 });
 

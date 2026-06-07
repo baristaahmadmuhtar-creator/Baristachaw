@@ -1,4 +1,4 @@
-import type { BrewPlan } from './types';
+import type { AiBrewMethodFamily, BrewPlan } from './types';
 
 export function isIndonesianAiBrewLanguage(language?: string) {
   return /^id(?:-|$)/i.test((language || '').trim());
@@ -482,6 +482,48 @@ function localizeCriticalUiTerms(text: string) {
 
 function polishIndonesianBaristaCopy(text: string) {
   return text
+    .replace(/\bsedang[-\s]?coarse\b/gi, 'sedang cenderung kasar')
+    .replace(/\bsedang[-\s]?fine\b/gi, 'sedang cenderung halus')
+    .replace(/\bfine[-\s]?sedang\b/gi, 'halus cenderung sedang')
+    .replace(/\bhalus[-\s]?medium\b/gi, 'halus cenderung sedang')
+    .replace(/\bmedium[-\s]?coarse\b/gi, 'sedang cenderung kasar')
+    .replace(/\bmedium[-\s]?fine\b/gi, 'sedang cenderung halus')
+    .replace(/\bfine[-\s]?medium\b/gi, 'halus cenderung sedang')
+    .replace(/\bfine[-\s]?coarse\b/gi, 'halus cenderung kasar')
+    .replace(/\bsedang cenderung kasar gilingan\b/gi, 'gilingan sedang cenderung kasar')
+    .replace(/\bsedang cenderung halus gilingan\b/gi, 'gilingan sedang cenderung halus')
+    .replace(/\bhalus cenderung sedang gilingan\b/gi, 'gilingan halus cenderung sedang')
+    .replace(/\bhalus cenderung kasar gilingan\b/gi, 'gilingan halus cenderung kasar')
+    .replace(/\bsedang gilingan\b/gi, 'gilingan sedang')
+    .replace(/\bkasar gilingan\b/gi, 'gilingan kasar')
+    .replace(/\bhalus gilingan\b/gi, 'gilingan halus')
+    .replace(/\bgilingan medium\b/gi, 'gilingan sedang')
+    .replace(/\bgilingan coarse\b/gi, 'gilingan kasar')
+    .replace(/\bgilingan fine\b/gi, 'gilingan halus')
+    .replace(/\bbleached paper filter\b/gi, 'filter kertas putih')
+    .replace(/\bbleached paper\b/gi, 'filter kertas putih')
+    .replace(/\bbleached filter\b/gi, 'filter kertas putih')
+    .replace(/\bupper bowl\b/gi, 'tabung atas')
+    .replace(/\blower bowl\b/gi, 'tabung bawah')
+    .replace(/\bbase bowl\b/gi, 'wadah bawah')
+    .replace(/\bbottom bowl\b/gi, 'tabung bawah')
+    .replace(/\bbowl bawah\b/gi, 'tabung bawah')
+    .replace(/\bbowl dasar\b/gi, 'wadah bawah')
+    .replace(/\bbowl\b/gi, 'wadah')
+    .replace(/\bspout\b/gi, 'cerat')
+    .replace(/\bUse a sedang gilingan for the next cangkir\./gi, 'Gunakan gilingan sedang untuk cangkir berikutnya.')
+    .replace(/\bMuatan filter kertas putih in the\b/gi, 'Pasang filter kertas putih pada')
+    .replace(/\bGunakan presisi laju tuang petunjuk\b/gi, 'Gunakan petunjuk laju tuang yang presisi')
+    .replace(/\bAlign the triple fold with the\b/gi, 'Sejajarkan sisi tiga lipatan dengan')
+    .replace(/\band use a\b/gi, 'lalu gunakan')
+    .replace(/\bSet the\b/gi, 'Pasang')
+    .replace(/\bover the\b/gi, 'di atas')
+    .replace(/\bwith a\b/gi, 'dengan')
+    .replace(/\bLoad bleached paper in the\b/gi, 'Pasang filter kertas putih pada')
+    .replace(/\bUse the\b/gi, 'Gunakan')
+    .replace(/\band collect\b/gi, 'lalu catat')
+    .replace(/\bafter the\b/gi, 'setelah')
+    .replace(/\bin the\b/gi, 'pada')
     .replace(/\bPut measured ice in the\b/gi, 'Masukkan es terukur ke')
     .replace(/\bPut ice in the\b/gi, 'Masukkan es ke')
     .replace(/\bwet the\b/gi, 'basahi')
@@ -513,6 +555,7 @@ function polishIndonesianBaristaCopy(text: string) {
     .replace(/\btiming plan\b/gi, 'jadwal rencana')
     .replace(/\bworkflow\b/gi, 'alur')
     .replace(/\bstop cue\b/gi, 'tanda berhenti')
+    .replace(/\bcue\b/gi, 'petunjuk')
     .replace(/\bshot\b/gi, 'ekstraksi espresso')
     .replace(/\byield\b/gi, 'hasil ekstraksi')
     .replace(/\bdose\b/gi, 'dosis')
@@ -616,6 +659,16 @@ function polishIndonesianBaristaCopy(text: string) {
     .replace(/\bcap\b/gi, 'tutup')
     .replace(/\bcup\b/gi, 'cangkir')
     .replace(/\biced\b/gi, 'es')
+    .replace(/\bsedang cenderung kasar gilingan\b/gi, 'gilingan sedang cenderung kasar')
+    .replace(/\bsedang cenderung halus gilingan\b/gi, 'gilingan sedang cenderung halus')
+    .replace(/\bhalus cenderung sedang gilingan\b/gi, 'gilingan halus cenderung sedang')
+    .replace(/\bhalus cenderung kasar gilingan\b/gi, 'gilingan halus cenderung kasar')
+    .replace(/\bsedang gilingan\b/gi, 'gilingan sedang')
+    .replace(/\bkasar gilingan\b/gi, 'gilingan kasar')
+    .replace(/\bhalus gilingan\b/gi, 'gilingan halus')
+    .replace(/\bUse a gilingan sedang for the next cangkir\./gi, 'Gunakan gilingan sedang untuk cangkir berikutnya.')
+    .replace(/\bMuatan filter kertas putih pada\b/gi, 'Pasang filter kertas putih pada')
+    .replace(/\bGunakan presisi laju tuang petunjuk\b/gi, 'Gunakan petunjuk laju tuang yang presisi')
     .replace(/\bAir Turun\b/g, 'air turun')
     .replace(/\bBuka Katup\b/g, 'buka katup')
     .replace(/\b(?:dan|lalu|kemudian) Aduk\b/g, (value) => value.replace('Aduk', 'aduk'))
@@ -624,6 +677,67 @@ function polishIndonesianBaristaCopy(text: string) {
     .replace(/\s+([.,;:])/g, '$1')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+export interface LocalizedAiBrewCopyValidationInput {
+  text: string;
+  language?: string;
+  methodFamily?: AiBrewMethodFamily;
+  surface?: string;
+}
+
+export interface LocalizedAiBrewCopyValidationResult {
+  valid: boolean;
+  reasons: string[];
+  safeText: string;
+}
+
+const BROKEN_LOCALIZED_COPY =
+  /\$(?:\d+|\{)|\b(?:undefined|null|NaN|\[object Object\]|ActionAction|Action\s+Action|Pressgentle|Stophiss|Programbloom|Valveset)\b|[\u00c2\u00c3\uFFFD]/iu;
+const INDONESIAN_COPY_ENGLISH_LEAK =
+  /\b(spout|bowl|bleached|medium-coarse|medium-fine|fine-medium|fine-coarse|starting grind|total water|final ratio|temperature|brew guide|additional details|edit inputs|guide complete|community\/profile autofill|low-mineral clarity water)\b/i;
+const ENGLISH_COPY_INDONESIAN_LEAK =
+  /\b(seduh|tuang|aduk|rendam|tekan|sajikan|gilingan|suhu|rasa|catatan|koleksi|panduan|keyakinan|endapkan|katup|bubuk)\b|air turun/i;
+const LOCALIZED_COPY_DUPLICATE = /\b([\p{L}]{2,})\s+\1\b/iu;
+
+const METHOD_COPY_LEAKS: Partial<Record<AiBrewMethodFamily, RegExp>> = {
+  aeropress: /\b(drawdown|final pour|flat bed|filter wall|center-to-mid|air turun|tuang akhir)\b/i,
+  french_press: /\b(drawdown|bloom pour|final pour|flat bed|filter wall|center-to-mid|air turun|tuang akhir)\b/i,
+  espresso: /\b(bloom|kettle pour|filter wall|tuang spiral|air turun)\b/i,
+  moka_pot: /\b(bloom|pour pulses|drawdown bed|tuang bertahap|air turun)\b/i,
+  cold_brew: /\b(hot bloom|kettle temperature|hot pour|bloom panas|tuang panas|air turun)\b/i,
+  batch_brew: /\b(center-to-mid|manual spiral|tuang spiral manual)\b/i,
+};
+
+export function validateLocalizedAiBrewCopy({
+  text,
+  language,
+  methodFamily,
+  surface,
+}: LocalizedAiBrewCopyValidationInput): LocalizedAiBrewCopyValidationResult {
+  const normalized = String(text || '').replace(/\s+/g, ' ').trim();
+  const Indonesian = isIndonesianAiBrewLanguage(language);
+  const reasons: string[] = [];
+
+  if (!normalized) reasons.push('empty');
+  if (BROKEN_LOCALIZED_COPY.test(normalized)) reasons.push('broken_placeholder');
+  if (LOCALIZED_COPY_DUPLICATE.test(normalized)) reasons.push('duplicated_word');
+  if (Indonesian && INDONESIAN_COPY_ENGLISH_LEAK.test(normalized)) reasons.push('english_leak');
+  if (!Indonesian && ENGLISH_COPY_INDONESIAN_LEAK.test(normalized)) reasons.push('indonesian_leak');
+  if (methodFamily && METHOD_COPY_LEAKS[methodFamily]?.test(normalized)) reasons.push('wrong_method_vocabulary');
+
+  const valid = reasons.length === 0;
+  const safeText = valid
+    ? normalized
+    : Indonesian
+      ? surface === 'warning'
+        ? 'Detail ini disesuaikan agar bahasa dan batas pengaman seduh tetap konsisten.'
+        : 'Detail ini disederhanakan agar panduan seduh tetap jelas dan konsisten.'
+      : surface === 'warning'
+        ? 'This detail was adjusted to keep the language and brew guardrails consistent.'
+        : 'This detail was simplified to keep the brew guide clear and consistent.';
+
+  return { valid, reasons, safeText };
 }
 
 function translateAiBrewWorkflowTextToEnglish(text: string) {

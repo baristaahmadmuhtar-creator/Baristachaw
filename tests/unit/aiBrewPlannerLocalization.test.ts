@@ -13,6 +13,7 @@ import {
   localizeAiBrewDynamicText,
   localizeAiBrewStepLabel,
   localizeAiBrewSummary,
+  validateLocalizedAiBrewCopy,
 } from '../../apps/web/src/features/ai-brew/localization.ts';
 import { buildProductionAiBrewCatalogForStress } from '../helpers/aiBrewStressMatrix.ts';
 
@@ -159,6 +160,72 @@ test('AI Brew Indonesian dynamic copy remains idempotent and never repeats trans
   assert.match(localized, /Ratakan hamparan kopi sebelum tuangan pertama\./);
   assert.match(localized, /lekukan Origami/);
   assert.match(localized, /saringan sebelum filter kertas/);
+});
+
+test('AI Brew Indonesian copy normalizes avoidable equipment and grind terms idempotently', () => {
+  const source = [
+    'Align the triple fold with the spout and use a medium-coarse grind.',
+    'Set the upper bowl over the lower bowl with a fine-medium grind.',
+    'Load bleached paper in the spray head brewer.',
+    'Use the exact flow rate cue and collect feedback after the contact time.',
+    'Use a medium grind for the next cup.',
+  ].join(' ');
+  const once = localizeAiBrewDynamicText(source, 'id');
+  const twice = localizeAiBrewDynamicText(once, 'id');
+
+  assert.equal(twice, once);
+  assert.match(once, /cerat/);
+  assert.match(once, /tabung bawah|wadah bawah/);
+  assert.match(once, /sedang cenderung kasar/);
+  assert.match(once, /halus cenderung sedang|sedang cenderung halus/);
+  assert.match(once, /filter kertas putih/);
+  assert.match(once, /laju aliran|laju tuang/);
+  assert.match(once, /petunjuk/);
+  assert.match(once, /evaluasi rasa/);
+  assert.match(once, /waktu kontak/);
+  assert.match(once, /gilingan sedang/);
+  assert.doesNotMatch(
+    once,
+    /\b(spout|bowl|bleached|medium-coarse|fine-medium|cue|feedback|flow rate|contact time)\b|\bgilingan medium\b/i,
+  );
+});
+
+test('localized AI Brew copy validator rejects leakage, placeholders, duplication, and wrong-method terms', () => {
+  const safeId = validateLocalizedAiBrewCopy({
+    text: 'Tuang perlahan hingga seluruh bubuk basah merata.',
+    language: 'id',
+    methodFamily: 'v60',
+    surface: 'tutorial',
+  });
+  assert.equal(safeId.valid, true);
+
+  const brokenId = validateLocalizedAiBrewCopy({
+    text: 'Stir dua times saja lalu tunggu undefined.',
+    language: 'id',
+    methodFamily: 'aeropress',
+    surface: 'guide',
+  });
+  assert.equal(brokenId.valid, false);
+  assert.match(brokenId.safeText, /disederhanakan|disesuaikan/i);
+  assert.doesNotMatch(brokenId.safeText, /\b(stir|undefined)\b/i);
+
+  const brokenEn = validateLocalizedAiBrewCopy({
+    text: 'Aduk perlahan, then press $1 seconds.',
+    language: 'en',
+    methodFamily: 'aeropress',
+    surface: 'guide',
+  });
+  assert.equal(brokenEn.valid, false);
+  assert.match(brokenEn.safeText, /adjusted|simplified/i);
+  assert.doesNotMatch(brokenEn.safeText, /\b(aduk|\$1)\b/i);
+
+  const wrongMethod = validateLocalizedAiBrewCopy({
+    text: 'Biarkan drawdown selesai sebelum French Press disajikan.',
+    language: 'id',
+    methodFamily: 'french_press',
+    surface: 'tutorial',
+  });
+  assert.equal(wrongMethod.valid, false);
 });
 
 test('AI Brew Indonesian legacy dripper tutorials do not leak English sentence fragments', () => {

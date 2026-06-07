@@ -1,6 +1,63 @@
 # AI Brew Language Audit
 
-Date: 2026-06-04
+Date: 2026-06-07
+
+## Final Indonesian Production Pass
+
+The final pass audited resolved Indonesian and English output rather than judging
+the canonical source templates alone.
+
+- Reviewed 1,636 localized tutorial outputs across all supported method
+  families, styles, actions, and hot/iced modes.
+- Centralized Indonesian display copy for all 40 manual brew presets through
+  `getManualPresetDisplayCopy`, including labels, summaries, source
+  attribution, compatible-device fallback notes, and guardrails.
+- Added `validateLocalizedAiBrewCopy` to reject placeholders, encoding damage,
+  repeated words, locale leakage, and method-inappropriate vocabulary before
+  optional user-facing text is rendered.
+- Normalized avoidable terms such as `spout`, `bowl`, `medium-coarse`,
+  `fine-medium`, and `bleached paper` into natural Indonesian barista copy.
+- Kept brand names, method names, and established coffee terms unchanged where
+  translation would make the copy less natural.
+- Strengthened the Indonesian AI prompt lock and kept the deterministic
+  fallback in the selected locale.
+- Preserved English output and added regression scans so Indonesian cleanup
+  cannot leak into English mode.
+
+Files added or materially updated in this final pass:
+
+- `apps/web/src/features/ai-brew/manualPresetLocalization.ts`
+- `apps/web/src/features/ai-brew/localization.ts`
+- `apps/web/src/features/ai-brew/workflowTutorials.ts`
+- `apps/web/src/features/ai-brew/AiBrewPanel.tsx`
+- `tests/unit/aiBrewManualBrewPresets.test.ts`
+- `tests/unit/aiBrewPlannerLocalization.test.ts`
+- `tests/unit/aiBrewWorkflowTutorials.test.ts`
+- `tests/e2e/tools.spec.ts`
+- `package.json`
+
+Final-pass verification completed before release:
+
+- `npm run test:i18n` - 48 pass, 0 fail.
+- `npm run test:ai-brew` - 348 pass, 4 skip, 0 fail.
+- `npm run test:ai-brew:matrix` - all matrix gates passed.
+- `npm run test:ai-brew:real-world-10000` - 10,000 scenarios passed,
+  0 failed.
+- `npm run test:grind-size:matrix` - 9 pass, 0 fail.
+- Focused browser coverage for workflow phases, AeroPress, non-AeroPress
+  styles, manual presets, and all selectable non-AeroPress styles passed.
+- Indonesian browser result coverage across every method family - 1 pass,
+  0 fail.
+- `npm run test:e2e:mobile` - 28 pass, 0 fail.
+- `npm run test:a11y` - 9 pass, 0 fail.
+- `npm run build` - passed with existing non-blocking Vite chunk warnings.
+- `npm run release:verify` - passed, including lint/typecheck, unit tests,
+  production build, 56 Chromium AI Brew E2E checks, and the mobile AI Brew
+  smoke gate.
+
+The software checks do not replace physical sensory validation. Recipe output
+remains a production-checked starting point that may require dial-in for the
+specific coffee, grinder, water, and equipment.
 
 ## Scope
 

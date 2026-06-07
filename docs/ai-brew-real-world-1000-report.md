@@ -1,12 +1,26 @@
 # AI Brew Real-World 1000 Report
 
-Latest SHA: eaa616f7e89dd1afd9892c0c39b960a13a328184
-Local branch: main
-Origin main: eaa616f7e89dd1afd9892c0c39b960a13a328184
-Local status: dirty (local validation changes present)
-Date: 2026-06-07T15:36:58.731Z
-Scenario count: 1000
+Regenerated metadata: 2026-06-07T20:07:18.783Z
+Local SHA: 6ebc863d7545bfd5c01fb556bebc3dd017d1342f
+Remote main SHA: 6ebc863d7545bfd5c01fb556bebc3dd017d1342f
+Branch: main
+Working tree status at generation: M apps/web/src/features/ai-brew/localization.ts
+ M apps/web/src/features/ai-brew/planner.ts
+ M apps/web/src/features/ai-brew/workflowGuide.ts
+ M docs/ai-brew-aeropress-bypass-report.md
+ M docs/ai-brew-real-world-1000-report.md
+ M docs/ai-brew-real-world-10000-report.md
+ M package.json
+?? docs/ai-brew-method-style-coverage-report.md
+?? docs/ai-brew-method-style-final-verdict.md
+?? docs/ai-brew-method-style-inventory.md
+?? docs/ai-brew-method-style-ui-ux-report.md
+?? scripts/ai-brew-method-style-audit.mjs
+?? tests/unit/aiBrewMethodStyleCoverage.test.ts
 
+This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
+
+---
 ## Honesty Boundary
 This is a curated real-world software/barista reasoning gate. It did not physically brew coffee and it must not be used as sensory certainty. AI Brew creates strong starting recipes and dial-in guidance; physical real brew validation is still required.
 

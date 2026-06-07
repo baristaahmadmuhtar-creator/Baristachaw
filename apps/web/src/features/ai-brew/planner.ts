@@ -7759,7 +7759,7 @@ function resolveAeroPressBypassTarget(targetProfileId?: string): AeroPressProduc
         tempRangeC: [88, 90],
         bypassRangePercent: [25, 40],
         stirCount: '2-3x',
-        targetNote: 'AeroPress bypass fruit-forward target: protect aromatics with medium-low agitation and keep natural/fermented coffees from becoming winey.',
+        targetNote: 'AeroPress bypass fruit-forward target: protect aromatics with medium-low agitation; for natural or fermented coffees, avoid pushing the cup into a heavy ferment edge.',
       };
     case 'more_body':
       return {

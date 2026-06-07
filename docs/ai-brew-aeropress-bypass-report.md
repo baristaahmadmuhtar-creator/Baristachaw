@@ -1,8 +1,8 @@
 # AI Brew AeroPress Bypass Report
 
-Generated: 2026-06-07T15:31:03.133Z
+Generated: 2026-06-07T18:50:08.522Z
 Branch: main
-SHA: eaa616f7e89dd1afd9892c0c39b960a13a328184
+SHA: 6ebc863d7545bfd5c01fb556bebc3dd017d1342f
 
 ## Scope
 
@@ -14,7 +14,7 @@ AeroPress measured bypass software audit across 12 real-world bean archetypes, 5
 - Passed: 480
 - Failed: 0
 - Average score: 100
-- Artifact directory: `artifacts/ai-brew-audit/aeropress-bypass/eaa616f7e89d`
+- Artifact directory: `artifacts/ai-brew-audit/aeropress-bypass/6ebc863d7545`
 
 ## Production Rules Verified
 

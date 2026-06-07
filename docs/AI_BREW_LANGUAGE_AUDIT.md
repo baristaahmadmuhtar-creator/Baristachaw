@@ -23,6 +23,11 @@ the canonical source templates alone.
   fallback in the selected locale.
 - Preserved English output and added regression scans so Indonesian cleanup
   cannot leak into English mode.
+- Production browser smoke exposed four metadata paths that bypassed the
+  localization helper: bean-confidence summary, `Fully Washed`, roast phrasing,
+  and the Volvic-like water style label. These paths now use centralized
+  locale-aware helpers, and the browser leak assertion rejects those raw
+  English fragments in Indonesian mode.
 
 Files added or materially updated in this final pass:
 
@@ -38,7 +43,7 @@ Files added or materially updated in this final pass:
 
 Final-pass verification completed before release:
 
-- `npm run test:i18n` - 48 pass, 0 fail.
+- `npm run test:i18n` - 49 pass, 0 fail.
 - `npm run test:ai-brew` - 348 pass, 4 skip, 0 fail.
 - `npm run test:ai-brew:matrix` - all matrix gates passed.
 - `npm run test:ai-brew:real-world-10000` - 10,000 scenarios passed,

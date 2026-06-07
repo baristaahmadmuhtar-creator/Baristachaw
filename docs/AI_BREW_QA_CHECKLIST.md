@@ -17,10 +17,12 @@ Date: 2026-06-07
 - [x] English regression checks remain active.
 - [x] Browser coverage includes every method family plus high-risk styles and
   manual presets.
+- [x] Bean-confidence, process, roast phrasing, and numeric water-style
+  metadata are localized before rendering in Indonesian mode.
 
 Fresh local evidence from 2026-06-07:
 
-- `npm run test:i18n`: 48 pass, 0 fail.
+- `npm run test:i18n`: 49 pass, 0 fail.
 - `npm run test:ai-brew`: 348 pass, 4 skip, 0 fail.
 - `npm run test:ai-brew:matrix`: passed.
 - `npm run test:ai-brew:real-world-10000`: 10,000 pass, 0 fail.

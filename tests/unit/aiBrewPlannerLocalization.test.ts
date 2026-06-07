@@ -10,9 +10,12 @@ import {
   createDefaultAiBrewFormState,
 } from '../../apps/web/src/features/ai-brew/planner.ts';
 import {
+  localizeAiBrewBeanPrecisionSummary,
   localizeAiBrewDynamicText,
+  localizeAiBrewProcessLabel,
   localizeAiBrewStepLabel,
   localizeAiBrewSummary,
+  localizeAiBrewWaterStyle,
   validateLocalizedAiBrewCopy,
 } from '../../apps/web/src/features/ai-brew/localization.ts';
 import { buildProductionAiBrewCatalogForStress } from '../helpers/aiBrewStressMatrix.ts';
@@ -76,6 +79,28 @@ test('AI Brew localized summaries use clean temperature text and no encoding art
   assert.doesNotMatch(`${idSummary} ${enSummary}`, /\u00c2|\u00c3|â€|�/);
   assert.doesNotMatch(idSummary, /\b(hot drawdown finish|extraction time|this coffee)\b/i);
   assert.doesNotMatch(enSummary, /\b(seduh|air turun|kopi ini)\b/i);
+});
+
+test('AI Brew Indonesian result metadata localizes bean confidence, process, and Volvic-like water', () => {
+  assert.equal(
+    localizeAiBrewBeanPrecisionSummary('Risk bean / caution (medium)', 'id'),
+    'Perlu dicek (keyakinan sedang)',
+  );
+  assert.equal(localizeAiBrewProcessLabel('Fully Washed', 'id'), 'washed');
+  assert.equal(
+    localizeAiBrewWaterStyle('Moderate mineral / upper-buffered water', 'id'),
+    'Air bermineral sedang dengan buffer agak tinggi',
+  );
+
+  assert.equal(
+    localizeAiBrewBeanPrecisionSummary('Risk bean / caution (medium)', 'en'),
+    'Risk bean / caution (medium)',
+  );
+  assert.equal(localizeAiBrewProcessLabel('Fully Washed', 'en'), 'Fully Washed');
+  assert.equal(
+    localizeAiBrewWaterStyle('Moderate mineral / upper-buffered water', 'en'),
+    'Moderate mineral / upper-buffered water',
+  );
 });
 
 test('AI Brew English dynamic copy translates complete Indonesian grinder warnings', () => {

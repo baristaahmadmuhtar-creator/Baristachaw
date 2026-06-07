@@ -86,6 +86,55 @@ export function localizeAiBrewRoastLabel(roastLevel: string, language?: string) 
   }
 }
 
+export function localizeAiBrewProcessLabel(process: string, language?: string) {
+  if (!isIndonesianAiBrewLanguage(language)) return process;
+
+  const normalized = process.trim();
+  switch (normalized.toLowerCase()) {
+    case 'fully washed':
+    case 'washed':
+      return 'washed';
+    case 'natural':
+      return 'natural';
+    case 'honey':
+      return 'honey';
+    case 'anaerobic':
+      return 'anaerobic';
+    case 'wet hulled':
+    case 'wet-hulled':
+      return 'giling basah';
+    case 'experimental':
+      return 'eksperimental';
+    default:
+      return polishIndonesianBaristaCopy(normalized);
+  }
+}
+
+export function localizeAiBrewBeanPrecisionSummary(summary: string, language?: string) {
+  if (!isIndonesianAiBrewLanguage(language)) return summary;
+
+  const normalized = summary.trim();
+  const confidenceMatch = normalized.match(/\((high|medium|low)\)$/i);
+  const confidence = confidenceMatch
+    ? ({
+      high: 'tinggi',
+      medium: 'sedang',
+      low: 'rendah',
+    } as const)[confidenceMatch[1].toLowerCase() as 'high' | 'medium' | 'low']
+    : '';
+  const confidenceSuffix = confidence ? ` (keyakinan ${confidence})` : '';
+
+  if (/^risk bean\s*\/\s*caution/i.test(normalized)) return `Perlu dicek${confidenceSuffix}`;
+  if (/^known high/i.test(normalized)) return `Data kopi lengkap${confidenceSuffix}`;
+  if (/^partial medium/i.test(normalized)) return `Data kopi sebagian${confidenceSuffix}`;
+  if (/^unknown fallback/i.test(normalized)) return `Data kopi belum lengkap${confidenceSuffix}`;
+  if (/^unsupported unsafe/i.test(normalized)) return `Kombinasi tidak aman${confidenceSuffix}`;
+
+  return polishIndonesianBaristaCopy(normalized)
+    .replace(/\bbean precision\b/gi, 'akurasi data kopi')
+    .replace(/\bbean\b/gi, 'kopi');
+}
+
 export function localizeAiBrewStepLabel(label: string, language?: string) {
   const normalized = label.trim().toLowerCase();
 
@@ -337,6 +386,7 @@ export function localizeAiBrewWaterStyle(styleLabel: string, language?: string) 
     case 'balanced mineral input':
       return 'Mineral air seimbang';
     case 'soft / low buffer water':
+    case 'soft / low-buffer water':
       return 'Air lunak / buffer rendah';
     case 'hard / buffered water':
       return 'Air keras / buffer tinggi';
@@ -344,6 +394,26 @@ export function localizeAiBrewWaterStyle(styleLabel: string, language?: string) 
       return 'Air TDS rendah';
     case 'high-tds water':
       return 'Air TDS tinggi';
+    case 'zero-mineral / ro base water':
+      return 'Air dasar tanpa mineral / RO';
+    case 'demineralized direct-use experiment':
+      return 'Eksperimen air demineral langsung';
+    case 'low-mineral clarity water':
+      return 'Air mineral rendah untuk kejernihan';
+    case 'low-mineral water':
+      return 'Air bermineral rendah';
+    case 'moderate mineral / upper-buffered water':
+      return 'Air bermineral sedang dengan buffer agak tinggi';
+    case 'moderate mineral water':
+      return 'Air bermineral sedang';
+    case 'hard mineral / high-buffer water':
+      return 'Air bermineral tinggi dengan buffer tinggi';
+    case 'hard mineral water':
+      return 'Air bermineral tinggi';
+    case 'high-buffer water':
+      return 'Air dengan buffer tinggi';
+    case 'alkaline caution water':
+      return 'Air alkalin, perlu hati-hati';
     default:
       return styleLabel;
   }

@@ -67,7 +67,9 @@ import {
 } from './switchPlanner.ts';
 import {
   isIndonesianAiBrewLanguage,
+  localizeAiBrewBeanPrecisionSummary,
   localizeAiBrewDynamicText,
+  localizeAiBrewProcessLabel,
   localizeAiBrewRoastLabel,
   localizeAiBrewStageLabel,
   localizeAiBrewStepLabel,
@@ -6072,14 +6074,16 @@ function PlanResultDialog({
       ? 'Seduhan selesai. Cicipi saat hangat, lalu catat satu koreksi untuk brew berikutnya.'
       : 'Brew complete. Taste while warm, then note one correction for the next brew.');
   const showAeroPressCompactCue = plan.methodFamily !== 'aeropress';
-  const localizedProcessLabel = plan.process || copy.notSpecified;
+  const localizedProcessLabel = plan.process
+    ? localizeAiBrewProcessLabel(plan.process, language)
+    : copy.notSpecified;
   const localizedVarietyLabel = plan.variety || copy.notSpecified;
   const localizedRoastLabel = localizeAiBrewRoastLabel(plan.roastLevel, language);
   const hasSpecificProcess = Boolean(plan.process?.trim());
   const hasSpecificVariety = Boolean(plan.variety?.trim());
   const beanPredictionContextDetail = id
     ? hasSpecificProcess && hasSpecificVariety
-      ? `${localizedRoastLabel}, proses ${localizedProcessLabel}, varietas ${localizedVarietyLabel}, dan ${localizedWaterStyle} dibaca bersama supaya prediksi rasa tetap berbasis data input.`
+      ? `Roast ${localizedRoastLabel.toLowerCase()}, proses ${localizedProcessLabel}, varietas ${localizedVarietyLabel}, dan ${localizedWaterStyle.toLowerCase()} dibaca bersama supaya prediksi rasa tetap berbasis data input.`
       : `${localizedRoastLabel} dibaca bersama air, grinder, dan alat. Proses/varietas belum lengkap, jadi prediksi rasa dijaga sebagai titik awal dan perlu cek rasa pertama.`
     : hasSpecificProcess && hasSpecificVariety
       ? `${localizedRoastLabel} roast, ${localizedProcessLabel} process, ${localizedVarietyLabel} variety, and ${englishWaterStyle} water are read together so the cup prediction stays grounded in input data.`
@@ -6219,6 +6223,10 @@ function PlanResultDialog({
     },
     warnings: localizedWarnings,
   };
+  const localizedBeanPrecisionSummary = localizeAiBrewBeanPrecisionSummary(
+    extractionRationale.beanPrecision.summary,
+    language,
+  );
   const beanDataPrecisionSignals = extractionRationale.beanPrecision.signals
     .filter(Boolean)
     .slice(0, 6);
@@ -6595,7 +6603,7 @@ function PlanResultDialog({
                         className="rounded-full border border-blue-500/18 bg-blue-500/10 px-2 py-1 font-semibold text-blue-700 dark:text-blue-300"
                         data-testid="ai-brew-bean-data-precision"
                       >
-                        {id ? 'Akurasi Data Bean' : 'Bean Data Accuracy'}: {extractionRationale.beanPrecision.summary}
+                        {id ? 'Akurasi data kopi' : 'Bean Data Accuracy'}: {localizedBeanPrecisionSummary}
                       </span>
                       {expectedCup && (
                         <span className="rounded-full bg-surface-alpha px-2 py-1 font-semibold text-primary">
@@ -6911,7 +6919,7 @@ function PlanResultDialog({
                       </p>
                     </div>
                     <span className="rounded-full border border-blue-500/18 bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300">
-                      {extractionRationale.beanPrecision.summary}
+                      {localizedBeanPrecisionSummary}
                     </span>
                   </div>
                   <div className="grid gap-2.5 sm:grid-cols-2">

@@ -194,7 +194,7 @@ function expectCleanAiBrewVisibleCopy(text: string, language: 'en' | 'id', conte
     );
   } else {
     expect(text, `${context} leaks English UI copy into Indonesian`).not.toMatch(
-      /\b(Starting grind|Total Water|Final Ratio|Temperature|Brew Guide|Additional details|Edit inputs|Guide complete|The grinder setting|The grinder reference|For espresso|spout|bowl|bleached|medium-coarse|medium-fine|fine-medium|fine-coarse|flow rate|contact time)\b/i,
+      /\b(Starting grind|Total Water|Final Ratio|Temperature|Brew Guide|Additional details|Edit inputs|Guide complete|The grinder setting|The grinder reference|For espresso|Bean Data Accuracy|Risk bean|Fully Washed|Moderate mineral|upper-buffered water|spout|bowl|bleached|medium-coarse|medium-fine|fine-medium|fine-coarse|flow rate|contact time)\b/i,
     );
   }
 }

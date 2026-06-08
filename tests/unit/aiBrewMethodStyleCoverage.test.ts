@@ -69,4 +69,12 @@ test('AI Brew method-style audit covers real methods, styles, guides, language, 
   for (const filename of ['summary.json', 'cases.json', 'failures.json', 'warnings.md', 'guide-snapshots.md']) {
     assert.ok(fs.existsSync(path.join(artifactDir, filename)), `${filename} must be written`);
   }
+  assert.equal(summary.tutorialMismatchCount, 0, 'method-style matrix must have zero tutorial/action mismatches');
+  const cases = JSON.parse(fs.readFileSync(path.join(artifactDir, 'cases.json'), 'utf8'));
+  assert.ok(cases.length >= summary.caseCount, 'cases artifact must include each generated case');
+  for (const caseRecord of cases.slice(0, 40)) {
+    assert.ok(caseRecord.tutorialActionCount >= caseRecord.workflowStepCount, `${caseRecord.id} must audit each generated workflow tutorial action`);
+    assert.equal(caseRecord.tutorialMismatchReasons.length, 0, `${caseRecord.id} must have no tutorial/action mismatch`);
+    assert.match(caseRecord.tutorialSnapshot, /[A-Za-z]/, `${caseRecord.id} must include tutorial snapshot text`);
+  }
 });

@@ -13,6 +13,7 @@ import {
   localizeAiBrewDynamicText,
   localizeAiBrewStepLabel,
 } from '../apps/web/src/features/ai-brew/localization.ts';
+import { resolveWorkflowTutorialDetail } from '../apps/web/src/features/ai-brew/workflowTutorials.ts';
 
 const ROOT = process.cwd();
 
@@ -540,7 +541,25 @@ function buildForm(catalog, option, targetProfileId, index) {
   return { form, bean, water, grinder, roastLevel, brewMode };
 }
 
-function collectText(plan, guide, language) {
+function resolveGuideTutorials(plan, guide) {
+  return (guide || []).map((step) => {
+    const context = {
+      methodFamily: plan.methodFamily,
+      recipeStyle: plan.recipeStyle,
+      actionType: step.actionType,
+      brewMode: plan.brewMode,
+      hasWarning: (step.warnings || []).length > 0,
+    };
+    return {
+      actionType: step.actionType,
+      label: step.label,
+      en: resolveWorkflowTutorialDetail({ ...context, language: 'en' }),
+      id: resolveWorkflowTutorialDetail({ ...context, language: 'id' }),
+    };
+  });
+}
+
+function collectText(plan, guide, language, tutorialEntries = []) {
   const parts = [
     plan.summary,
     plan.grindRecommendation,
@@ -563,6 +582,7 @@ function collectText(plan, guide, language) {
       ...(step.techniqueChips || []).flatMap((chip) => [chip.label, chip.value]),
       ...(step.warnings || []),
     ]),
+    ...tutorialEntries.map((entry) => language === 'id' ? entry.id : entry.en),
     plan.manualPresetLabel,
     plan.manualPresetSummary,
     plan.targetProfileLabel,
@@ -571,7 +591,7 @@ function collectText(plan, guide, language) {
   return parts.map((part) => localizeAiBrewDynamicText(String(part), language)).join('\n');
 }
 
-function collectRawText(plan, guide) {
+function collectRawText(plan, guide, tutorialEntries = []) {
   return [
     plan.summary,
     plan.grindRecommendation,
@@ -594,7 +614,59 @@ function collectRawText(plan, guide) {
       ...(step.techniqueChips || []).flatMap((chip) => [chip.label, chip.value]),
       ...(step.warnings || []),
     ]),
+    ...tutorialEntries.flatMap((entry) => [entry.en, entry.id]),
   ].filter(Boolean).join('\n');
+}
+
+function validateTutorialSync(plan, tutorialEntries) {
+  const reasons = [];
+  for (const entry of tutorialEntries) {
+    const combined = `${entry.en} ${entry.id}`;
+    if (!entry.en || entry.en.length < 20 || entry.en.length > 220) {
+      reasons.push(`${entry.actionType} English tutorial length invalid`);
+    }
+    if (!entry.id || entry.id.length < 20 || entry.id.length > 240) {
+      reasons.push(`${entry.actionType} Indonesian tutorial length invalid`);
+    }
+    if (BROKEN_COPY_PATTERN.test(combined)) {
+      reasons.push(`${entry.actionType} tutorial has broken copy`);
+    }
+
+    if (plan.methodFamily === 'aeropress') {
+      if (entry.actionType === 'stir') {
+        if (!/\b(stir|swirl|stroke|strokes)\b/i.test(entry.en)) {
+          reasons.push('AeroPress stir tutorial missing stir cue');
+        }
+        if (/\b(add water|concentrate water|recipe water|bypass water)\b/i.test(entry.en)) {
+          reasons.push('AeroPress stir tutorial reuses charge copy');
+        }
+      }
+      if (entry.actionType === 'stop') {
+        if (!/\b(stop|hiss|pressure|pressing)\b/i.test(entry.en)) {
+          reasons.push('AeroPress stop tutorial missing stop cue');
+        }
+        if (/\b(add .*bypass|measured bypass|serve|swirl the cup|mix the cup)\b/i.test(entry.en)) {
+          reasons.push('AeroPress stop tutorial reuses dilute/serve copy');
+        }
+      }
+      if (entry.actionType === 'dilute') {
+        if (plan.recipeStyle !== 'bypass') reasons.push(`AeroPress non-bypass style generated dilute tutorial (${plan.recipeStyle})`);
+        if (!/\b(bypass|after pressing|mix)\b/i.test(entry.en)) {
+          reasons.push('AeroPress bypass dilute tutorial missing post-press bypass cue');
+        }
+      }
+      if (entry.actionType === 'wait') {
+        if (plan.recipeStyle !== 'inverted') reasons.push(`AeroPress non-inverted style generated wait tutorial (${plan.recipeStyle})`);
+        if (!/\b(flip|inverted|cap)\b/i.test(entry.en)) {
+          reasons.push('AeroPress wait tutorial missing safe flip cue');
+        }
+      }
+      if (entry.actionType === 'serve' && plan.recipeStyle !== 'bypass' && /\b(add .*bypass|measured bypass)\b/i.test(entry.en)) {
+        reasons.push('AeroPress non-bypass serve tutorial adds bypass');
+      }
+    }
+  }
+  return reasons;
 }
 
 function ratioMismatch(plan) {
@@ -605,7 +677,7 @@ function ratioMismatch(plan) {
     || Math.abs(plan.hotExtractionRatio - expectedHot) > 0.06;
 }
 
-function validateCase({ plan, option, guide, textId, textEn, rawText }) {
+function validateCase({ plan, option, guide, textId, textEn, rawText, tutorialMismatchReasons }) {
   const failures = [];
   const warnings = [];
   const uiWarnings = [];
@@ -669,6 +741,7 @@ function validateCase({ plan, option, guide, textId, textEn, rawText }) {
   }
   if (HIGH_RISK_METHODS.has(plan.methodFamily) && guide.length < 5) warnings.push('high-risk method guide should be more explicit');
   if (plan.workflowValidation && !plan.workflowValidation.passed) failures.push(`workflow validation failed: ${plan.workflowValidation.blockingErrors?.join(', ') || 'unknown'}`);
+  if (tutorialMismatchReasons.length > 0) failures.push(`tutorial/action mismatch: ${tutorialMismatchReasons.join(', ')}`);
   if (new Set(plan.warnings).size < plan.warnings.length) uiWarnings.push('duplicate warnings should be deduped in UI');
   if (rawText.length > 12000) uiWarnings.push('guide/detail text may be too dense for mobile');
 
@@ -705,6 +778,9 @@ function generateCases(catalog, styleOptions, targetProfiles) {
             languageLeakId: false,
             languageLeakEn: false,
             methodVocabularyLeak: false,
+            tutorialActionCount: 0,
+            tutorialMismatchReasons: ['case crashed before tutorial sync audit'],
+            tutorialSnapshot: '',
             hasLiteGuide: false,
             hasProGuide: false,
             hasUiSummary: false,
@@ -715,10 +791,12 @@ function generateCases(catalog, styleOptions, targetProfiles) {
           continue;
         }
         const guide = plan.workflowGuideSteps?.length ? plan.workflowGuideSteps : buildWorkflowAwareGuideSteps(plan);
-        const textId = collectText(plan, guide, 'id');
-        const textEn = collectText(plan, guide, 'en');
-        const rawText = collectRawText(plan, guide);
-        const validation = validateCase({ plan, option, guide, textId, textEn, rawText });
+        const tutorialEntries = resolveGuideTutorials(plan, guide);
+        const tutorialMismatchReasons = validateTutorialSync(plan, tutorialEntries);
+        const textId = collectText(plan, guide, 'id', tutorialEntries);
+        const textEn = collectText(plan, guide, 'en', tutorialEntries);
+        const rawText = collectRawText(plan, guide, tutorialEntries);
+        const validation = validateCase({ plan, option, guide, textId, textEn, rawText, tutorialMismatchReasons });
         const failureCount = validation.failures.length;
         const warningCount = validation.warnings.length + validation.uiWarnings.length;
         const score = Math.max(0, 100 - failureCount * 30 - warningCount * 4);
@@ -748,6 +826,8 @@ function generateCases(catalog, styleOptions, targetProfiles) {
           temperatureC: plan.waterTempC,
           finishSeconds: plan.extractionEndSeconds ?? plan.totalTimeSeconds,
           workflowStepCount: guide.length,
+          tutorialActionCount: tutorialEntries.length,
+          tutorialMismatchReasons,
           hasLiteGuide: guide.length > 0,
           hasProGuide: rawText.length > 200,
           hasUiSummary: Boolean(plan.summary && plan.doseG && plan.totalWaterMl && plan.finalBeverageRatio),
@@ -760,6 +840,7 @@ function generateCases(catalog, styleOptions, targetProfiles) {
           score,
           passed: validation.failures.length === 0,
           guideSnapshot: guide.slice(0, 8).map((step) => `${formatAiBrewTime(step.startSeconds)} ${step.label}: ${step.primaryText || step.note || ''}`).join(' | '),
+          tutorialSnapshot: tutorialEntries.slice(0, 8).map((entry) => `${entry.actionType}: ${entry.en}`).join(' | '),
         };
         cases.push(caseRecord);
         if (!caseRecord.passed) failures.push(caseRecord);
@@ -1087,6 +1168,7 @@ const methodCount = new Set(styleOptionsAll.map((item) => item.family)).size;
 const styleCount = styleOptionsAll.length;
 const languageLeakCount = cases.filter((item) => item.languageLeakId || item.languageLeakEn).length;
 const methodLeakCount = cases.filter((item) => item.methodVocabularyLeak).length;
+const tutorialMismatchCount = cases.reduce((sum, item) => sum + (item.tutorialMismatchReasons || []).length, 0);
 const uiWarningCount = cases.reduce((sum, item) => sum + (item.uiWarnings || []).length, 0);
 const warningCount = warnings.length + cases.reduce((sum, item) => sum + (item.warningReasons || []).length, 0);
 const averageScore = Number((cases.reduce((sum, item) => sum + item.score, 0) / cases.length).toFixed(1));
@@ -1116,6 +1198,7 @@ const summary = {
   uiCheckedCount: cases.filter((item) => item.hasUiSummary).length,
   languageLeakCount,
   methodLeakCount,
+  tutorialMismatchCount,
   uiWarningCount,
   verdict,
   honestyBoundary: 'This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.',

@@ -588,6 +588,17 @@ function resolveWorkflowTutorialPhase(actionType: WorkflowGuideActionType): Work
   }
 }
 
+function resolveProfileTutorialCopy(
+  profile: WorkflowTutorialProfile,
+  context: WorkflowTutorialContext,
+  phase: WorkflowTutorialPhase,
+) {
+  return profile.actions?.[context.actionType]
+    || (context.brewMode === 'iced' ? profile.iced?.[phase] : undefined)
+    || profile[phase]
+    || profile.main;
+}
+
 const FRENCH_PRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   auto: {
     setup: {
@@ -723,7 +734,7 @@ const FRENCH_PRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase,
   },
 };
 
-const AEROPRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
+const AEROPRESS_STYLE_TUTORIALS: Record<string, WorkflowTutorialProfile> = {
   standard: {
     setup: {
       en: 'Rinse the paper filter, lock the cap, place the chamber upright on the cup, and tare before dosing.',
@@ -744,6 +755,24 @@ const AEROPRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
     finish: {
       en: 'Swirl the cup once so the short immersion tastes even.',
       id: 'Putar cangkir sekali agar hasil rendaman singkat terasa rata.',
+    },
+    actions: {
+      stir: {
+        en: 'Stir three calm strokes or use one light swirl, then stop agitation before the steep.',
+        id: 'Aduk tiga gerakan tenang atau putar ringan sekali, lalu hentikan agitasi sebelum rendaman.',
+      },
+      steep: {
+        en: 'Seal with the plunger and let the short upright steep finish without extra movement.',
+        id: 'Segel dengan penekan dan biarkan rendaman singkat tegak selesai tanpa gerakan tambahan.',
+      },
+      stop: {
+        en: 'Stop before the dry hiss and lift the AeroPress away so the final pressure does not roughen the cup.',
+        id: 'Berhenti sebelum desis kering dan angkat AeroPress agar tekanan akhir tidak membuat cangkir kasar.',
+      },
+      serve: {
+        en: 'Swirl the cup once and serve the short immersion while it tastes even.',
+        id: 'Putar cangkir sekali lalu sajikan hasil rendaman singkat saat rasanya sudah rata.',
+      },
     },
   },
   inverted: {
@@ -767,6 +796,28 @@ const AEROPRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
       en: 'Serve the full-immersion cup while the sweet aromatics are still fresh.',
       id: 'Sajikan hasil rendaman penuh selagi aroma manisnya masih segar.',
     },
+    actions: {
+      stir: {
+        en: 'Stir four times, fasten the cap, and keep the inverted brewer steady before the flip.',
+        id: 'Aduk empat kali, pasang tutup, dan jaga alat terbalik tetap stabil sebelum dibalik.',
+      },
+      steep: {
+        en: 'Steep calmly in the inverted chamber until the planned flip time.',
+        id: 'Rendam tenang dalam posisi terbalik sampai waktu balik yang direncanakan.',
+      },
+      wait: {
+        en: 'Flip onto the cup in one steady motion while holding the cap and chamber together.',
+        id: 'Balikkan ke atas cangkir dalam satu gerakan stabil sambil menahan tutup dan ruang seduh.',
+      },
+      stop: {
+        en: 'Stop before the dry hiss, then remove the brewer without shaking the spent coffee.',
+        id: 'Berhenti sebelum desis kering, lalu angkat alat tanpa mengguncang ampas kopi.',
+      },
+      serve: {
+        en: 'Serve the full-immersion cup after the flip and press are complete.',
+        id: 'Sajikan hasil rendaman penuh setelah fase balik dan tekan selesai.',
+      },
+    },
   },
   bypass: {
     setup: {
@@ -788,6 +839,28 @@ const AEROPRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
     finish: {
       en: 'Add the measured bypass water after pressing only, mix the cup, then serve.',
       id: 'Tambahkan air bypass terukur hanya setelah tekan, aduk cangkir, lalu sajikan.',
+    },
+    actions: {
+      stir: {
+        en: 'Stir the concentrate lightly 2-3 strokes, then leave the coffee calm until pressing.',
+        id: 'Aduk konsentrat ringan 2-3 kali, lalu biarkan kopi tenang sampai ditekan.',
+      },
+      steep: {
+        en: 'Steep the concentrate briefly so it stays clear before the press.',
+        id: 'Rendam konsentrat secara singkat agar tetap jernih sebelum ditekan.',
+      },
+      stop: {
+        en: 'Stop before the dry hiss; this ends the press before any bypass water is added.',
+        id: 'Berhenti sebelum desis kering; ini mengakhiri fase tekan sebelum air bypass ditambahkan.',
+      },
+      dilute: {
+        en: 'Add the measured bypass water after pressing only, mix the cup evenly, then serve.',
+        id: 'Tambahkan air bypass terukur hanya setelah tekan, aduk cangkir sampai rata, lalu sajikan.',
+      },
+      serve: {
+        en: 'Serve after the concentrate and measured bypass water are fully mixed.',
+        id: 'Sajikan setelah konsentrat dan air bypass terukur tercampur rata.',
+      },
     },
   },
   no_bypass: {
@@ -811,6 +884,24 @@ const AEROPRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
       en: 'Serve without extra water so the cup reflects the full chamber extraction.',
       id: 'Sajikan tanpa air tambahan agar cangkir mencerminkan ekstraksi penuh dari ruang seduh.',
     },
+    actions: {
+      stir: {
+        en: 'Stir three gentle strokes, seal, and let the coffee settle before the longer steep.',
+        id: 'Aduk tiga gerakan lembut, segel, lalu biarkan kopi tenang sebelum rendaman lebih panjang.',
+      },
+      steep: {
+        en: 'Steep longer so the single full-water volume extracts evenly before pressing.',
+        id: 'Rendam lebih lama agar satu volume air penuh mengekstrak merata sebelum ditekan.',
+      },
+      stop: {
+        en: 'Stop before the dry hiss so the full chamber extraction stays clean without added water.',
+        id: 'Berhenti sebelum desis kering agar ekstraksi penuh tetap bersih tanpa air tambahan.',
+      },
+      serve: {
+        en: 'Serve without extra water after the full chamber press is complete.',
+        id: 'Sajikan tanpa air tambahan setelah tekanan ruang seduh penuh selesai.',
+      },
+    },
   },
   bright_clean: {
     setup: {
@@ -833,6 +924,24 @@ const AEROPRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
       en: 'Swirl once and serve a clean, bright cup without extra water.',
       id: 'Putar sekali lalu sajikan cangkir bersih dan cerah tanpa air tambahan.',
     },
+    actions: {
+      stir: {
+        en: 'Stir only 2-3 light strokes, then stop agitation to protect clarity.',
+        id: 'Aduk ringan 2-3 kali saja, lalu hentikan agitasi untuk menjaga kejernihan.',
+      },
+      steep: {
+        en: 'Keep the steep short and calm so clarity stays ahead of body.',
+        id: 'Jaga rendaman singkat dan tenang agar kejernihan tetap lebih dominan dari body.',
+      },
+      stop: {
+        en: 'Stop at the first dry hiss cue before late pressure clouds the finish.',
+        id: 'Berhenti pada cue desis kering pertama sebelum tekanan akhir mengeruhkan hasil.',
+      },
+      serve: {
+        en: 'Swirl once and serve the clean AeroPress cup without extra water.',
+        id: 'Putar sekali lalu sajikan cangkir AeroPress jernih tanpa air tambahan.',
+      },
+    },
   },
   sweet_body: {
     setup: {
@@ -854,6 +963,24 @@ const AEROPRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
     finish: {
       en: 'Mix the cup gently and serve a dense, sweet AeroPress without extra water.',
       id: 'Aduk cangkir pelan dan sajikan AeroPress tebal-manis tanpa air tambahan.',
+    },
+    actions: {
+      stir: {
+        en: 'Stir five full strokes to build sweetness and body, then let the coffee settle before pressing.',
+        id: 'Aduk penuh lima kali untuk membangun manis dan tekstur, lalu biarkan kopi tenang sebelum ditekan.',
+      },
+      steep: {
+        en: 'Steep longer so sweetness and body build before the slow press.',
+        id: 'Rendam lebih lama agar manis dan tekstur terbentuk sebelum tekanan pelan.',
+      },
+      stop: {
+        en: 'Stop near the hiss before extra pressure makes the finish dry, gritty, or bitter.',
+        id: 'Berhenti mendekati desis sebelum tekanan tambahan membuat akhir rasa kering, berpasir, atau pahit.',
+      },
+      serve: {
+        en: 'Mix the cup gently and serve the dense, sweet AeroPress without extra water.',
+        id: 'Aduk cangkir pelan lalu sajikan AeroPress tebal-manis tanpa air tambahan.',
+      },
     },
   },
 };
@@ -2277,10 +2404,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'traditional_stovetop' : context.recipeStyle;
     const styleProfile = MOKA_POT_STYLE_TUTORIALS[styleKey as any];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 
@@ -2288,10 +2413,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'classic_toddy_immersion' : context.recipeStyle;
     const styleProfile = COLD_BREW_STYLE_TUTORIALS[styleKey as any];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 
@@ -2299,10 +2422,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'sca_gold_cup' : context.recipeStyle;
     const styleProfile = BATCH_BREW_STYLE_TUTORIALS[styleKey as any];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 
@@ -2310,10 +2431,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'traditional_vacuum_siphon' : context.recipeStyle;
     const styleProfile = SIPHON_STYLE_TUTORIALS[styleKey as any];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 
@@ -2321,10 +2440,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'cone_dripper_style' : context.recipeStyle;
     const styleProfile = ORIGAMI_STYLE_TUTORIALS[styleKey as any];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 
@@ -2332,10 +2449,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'april_flat_bottom_standard' : context.recipeStyle;
     const styleProfile = APRIL_STYLE_TUTORIALS[styleKey as any];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 
@@ -2343,10 +2458,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'traditional_melitta_one_pour' : context.recipeStyle;
     const styleProfile = MELITTA_STYLE_TUTORIALS[styleKey as any];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 
@@ -2354,10 +2467,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'kono_meimon_traditional' : context.recipeStyle;
     const styleProfile = KONO_STYLE_TUTORIALS[styleKey as any];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 
@@ -2365,10 +2476,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'classic_closed' : context.recipeStyle;
     const styleProfile = CLEVER_DRIPPER_STYLE_TUTORIALS[styleKey as any];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 
@@ -2376,10 +2485,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'traditional_three_pour' : context.recipeStyle;
     const styleProfile = CHEMEX_STYLE_TUTORIALS[styleKey as any];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 
@@ -2387,10 +2494,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'traditional_flat_three' : context.recipeStyle;
     const styleProfile = KALITA_WAVE_STYLE_TUTORIALS[styleKey as any];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 
@@ -2398,10 +2503,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'auto' : context.recipeStyle;
     const styleProfile = FRENCH_PRESS_STYLE_TUTORIALS[styleKey];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 
@@ -2409,10 +2512,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'standard' : context.recipeStyle;
     const styleProfile = AEROPRESS_STYLE_TUTORIALS[styleKey];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 
@@ -2420,10 +2521,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleKey = context.recipeStyle === 'auto' ? 'hybrid_balanced' : context.recipeStyle;
     const styleProfile = SWITCH_STYLE_TUTORIALS[styleKey];
     if (styleProfile) {
-      const copy = styleProfile[phase];
-      if (copy) {
-        return normalizeWorkflowTutorialCopy(copy[language], language);
-      }
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      return normalizeWorkflowTutorialCopy(copy[language], language);
     }
   }
 

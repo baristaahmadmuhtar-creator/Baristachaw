@@ -15,6 +15,8 @@ import {
   resolveWorkflowTutorialDetail,
 } from '../../apps/web/src/features/ai-brew/workflowTutorials.ts';
 import type {
+  AiBrewFormState,
+  AiBrewCatalog,
   AiBrewMethodFamily,
   WorkflowGuideActionType,
 } from '../../apps/web/src/features/ai-brew/types.ts';
@@ -134,6 +136,123 @@ const ALL_STYLE_TUTORIAL_CASES: Array<{
   { methodFamily: 'aeropress', styles: AEROPRESS_STYLE_CASES.map((item) => item.style), actions: AEROPRESS_ACTIONS },
   { methodFamily: 'hario_switch', styles: ['hybrid_balanced', 'hybrid_bright_clean', 'immersion_sweet', 'immersion_heavy_body', 'v60_mode', 'iced_hybrid', 'mugen_everyday_hybrid'], actions: METHOD_ACTIONS.hario_switch },
 ];
+
+const GENERATED_STYLE_MATRIX: Array<{
+  methodFamily: AiBrewMethodFamily;
+  field: keyof AiBrewFormState;
+  styles: readonly string[];
+  targetWaterMl?: string;
+  doseG?: string;
+}> = [
+  { methodFamily: 'v60', field: 'virtualStyle', styles: ['classic_bloom_pulse', 'continuous_low_agitation', 'four_six_inspired', 'high_extraction_light_roast', 'sweet_body', 'floral_clarity', 'japanese_iced'] },
+  { methodFamily: 'hario_switch', field: 'switchPresetId', styles: ['immersion_sweet', 'immersion_heavy_body', 'hybrid_balanced', 'hybrid_bright_clean', 'v60_mode', 'iced_hybrid', 'mugen_everyday_hybrid'] },
+  { methodFamily: 'chemex', field: 'chemexStyle', styles: ['auto', 'traditional_three_pour', 'competition_multi_pulse', 'continuous_center_pour', 'iced_chemex', 'high_dose_heavy_body'] },
+  { methodFamily: 'kalita_wave', field: 'kalitaWaveStyle', styles: ['auto', 'traditional_flat_three', 'competition_fast_four', 'continuous_slow_stream', 'iced_wave', 'high_dose_concentrate'] },
+  { methodFamily: 'origami', field: 'origamiStyle', styles: ['auto', 'cone_dripper_style', 'wave_dripper_style', 'mugen_one_pour', 'iced_origami', 'competition_hybrid_flow'] },
+  { methodFamily: 'april', field: 'aprilStyle', styles: ['auto', 'april_flat_bottom_standard', 'april_continuous_slow', 'competition_two_pour', 'iced_april_style', 'high_body_heavy_dose'] },
+  { methodFamily: 'melitta', field: 'melittaStyle', styles: ['auto', 'traditional_melitta_one_pour', 'aromaboy_style', 'three_pour_melitta', 'iced_melitta_brew', 'dense_classic_extraction'] },
+  { methodFamily: 'kono', field: 'konoStyle', styles: ['auto', 'kono_meimon_traditional', 'kono_dripper_standard', 'kono_slow_drip_body', 'iced_kono_meimon', 'kono_agitation_sweet'] },
+  { methodFamily: 'clever_dripper', field: 'cleverDripperStyle', styles: ['auto', 'classic_closed', 'reverse_water_first', 'double_stage_hybrid', 'iced_clever', 'high_dose_concentrate'] },
+  { methodFamily: 'aeropress', field: 'aeropressStyle', styles: ['auto', 'standard', 'inverted', 'bypass', 'no_bypass', 'bright_clean', 'sweet_body'], targetWaterMl: '210' },
+  { methodFamily: 'french_press', field: 'frenchPressStyle', styles: ['auto', 'traditional', 'clean_decant', 'double_filter', 'heavy_concentrate', 'sweet_immersion'] },
+  { methodFamily: 'espresso', field: 'virtualStyle', styles: ['standard_dial_in', 'bright_modern', 'soft_round', 'milk_base', 'ristretto_safe', 'lungo_safe'], targetWaterMl: '36', doseG: '18' },
+  { methodFamily: 'moka_pot', field: 'mokaPotStyle', styles: ['auto', 'traditional_stovetop', 'preheated_boiler', 'low_temp_controlled', 'iced_moka_concentrate', 'high_yield_robust'], targetWaterMl: '95' },
+  { methodFamily: 'cold_brew', field: 'coldBrewStyle', styles: ['auto', 'classic_toddy_immersion', 'cold_drip_tower', 'double_extraction_concentrate', 'accelerated_room_temp', 'japanese_slow_drip'], targetWaterMl: '300', doseG: '30' },
+  { methodFamily: 'batch_brew', field: 'batchBrewStyle', styles: ['auto', 'sca_gold_cup', 'heavy_batch_catering', 'bright_light_roast_batch', 'pre_wet_hybrid_batch', 'high_extraction_thermos'], targetWaterMl: '480', doseG: '30' },
+  { methodFamily: 'siphon', field: 'siphonStyle', styles: ['auto', 'traditional_vacuum_siphon', 'competition_triple_agitation', 'low_temp_delicate', 'high_body_fast_drawdown', 'spirit_infusion_style'] },
+];
+
+const GENERATED_STYLE_DRIPPER_ID: Record<AiBrewMethodFamily, string> = {
+  v60: 'hario-v60',
+  chemex: 'chemex',
+  kalita_wave: 'kalita-wave-155-185',
+  origami: 'origami-dripper-s-m',
+  april: 'april-brewer',
+  melitta: 'melitta',
+  kono: 'kono-meimon',
+  hario_switch: 'hario-switch-02',
+  clever_dripper: 'clever-dripper',
+  aeropress: 'aeropress',
+  french_press: 'french-press',
+  espresso: 'espresso-machine',
+  moka_pot: 'bialetti-moka-pot',
+  siphon: 'hario-siphon',
+  cold_brew: 'toddy-cold-brew',
+  batch_brew: 'batch-brewer',
+};
+
+function chooseGeneratedStyleGrinder(catalog: AiBrewCatalog, methodFamily: AiBrewMethodFamily) {
+  const pattern = methodFamily === 'espresso'
+    ? /encore esp|df64|niche/i
+    : /k-ultra|comandante|kingrinder k6/i;
+  return catalog.grinders.find((grinder) => pattern.test(`${grinder.name} ${grinder.searchText}`)) || catalog.grinders[0];
+}
+
+function buildGeneratedStylePlan(catalog: AiBrewCatalog, styleFamily: typeof GENERATED_STYLE_MATRIX[number], recipeStyle: string) {
+  const dripperId = GENERATED_STYLE_DRIPPER_ID[styleFamily.methodFamily];
+  const dripper = catalog.drippers.find((item) => item.id === dripperId)
+    || catalog.drippers.find((item) => item.methodFamily === styleFamily.methodFamily);
+  assert.ok(dripper, `${styleFamily.methodFamily} dripper must exist`);
+  const grinder = chooseGeneratedStyleGrinder(catalog, styleFamily.methodFamily);
+  const form: AiBrewFormState = {
+    ...createDefaultAiBrewFormState(catalog),
+    coffeeName: `Generated tutorial sync ${styleFamily.methodFamily} ${recipeStyle}`,
+    process: styleFamily.methodFamily === 'espresso' ? 'washed' : 'natural',
+    variety: styleFamily.methodFamily === 'espresso' ? 'bourbon' : 'gesha',
+    roastLevel: styleFamily.methodFamily === 'espresso' ? 'medium_dark' : 'medium_light',
+    dripperId: dripper.id,
+    grinderId: grinder.id,
+    brewMode: recipeStyle.includes('iced') || recipeStyle.includes('japanese') ? 'iced' : 'hot',
+    doseG: styleFamily.doseG || '15',
+    targetWaterMl: styleFamily.targetWaterMl || '230',
+    targetProfileId: styleFamily.methodFamily === 'aeropress' && recipeStyle === 'bypass' ? 'fruit_forward' : 'balance_clean',
+    waterMode: 'manual',
+    waterBrandId: '',
+    waterTdsPpm: '90',
+    waterHardnessPpm: '45',
+    waterAlkalinityPpm: '35',
+  };
+  (form as unknown as Record<string, string>)[styleFamily.field] = recipeStyle;
+  if (styleFamily.methodFamily === 'hario_switch') form.switchPresetId = recipeStyle as AiBrewFormState['switchPresetId'];
+  return buildAiBrewPlan(form, catalog);
+}
+
+function assertTutorialActionMatchesGeneratedStep(params: {
+  methodFamily: AiBrewMethodFamily;
+  recipeStyle?: string;
+  actionType: WorkflowGuideActionType;
+  brewMode: 'hot' | 'iced';
+  text: string;
+}) {
+  const { methodFamily, recipeStyle, actionType, text } = params;
+  assert.ok(text.length > 20 && text.length <= 220, `${methodFamily}/${recipeStyle}/${actionType} tutorial should be compact: ${text}`);
+  assert.doesNotMatch(text, BROKEN_USER_COPY, `${methodFamily}/${recipeStyle}/${actionType} contains broken copy: ${text}`);
+  assert.doesNotMatch(text, ENCODING_ARTIFACTS, `${methodFamily}/${recipeStyle}/${actionType} contains broken encoding: ${text}`);
+  assert.doesNotMatch(text, CORRECTION_LOOP, `${methodFamily}/${recipeStyle}/${actionType} should not be taste correction: ${text}`);
+
+  if (methodFamily === 'aeropress') {
+    if (actionType === 'stir') {
+      assert.match(text, /\b(stir|swirl|stroke|strokes)\b/i, `${recipeStyle}/stir must discuss stirring, not charging: ${text}`);
+      assert.doesNotMatch(text, /\b(add water|concentrate water|recipe water|bypass water)\b/i, `${recipeStyle}/stir must not reuse charge copy: ${text}`);
+    }
+    if (actionType === 'stop') {
+      assert.match(text, /\b(stop|hiss|pressure|pressing)\b/i, `${recipeStyle}/stop must discuss stopping pressure: ${text}`);
+      assert.doesNotMatch(text, /\b(add .*bypass|measured bypass|serve|swirl the cup|mix the cup)\b/i, `${recipeStyle}/stop must not reuse dilute/serve copy: ${text}`);
+    }
+    if (actionType === 'dilute') {
+      assert.equal(recipeStyle, 'bypass', `only bypass style should generate dilute, got ${recipeStyle}`);
+      assert.match(text, /\b(bypass|after pressing|mix)\b/i, `bypass/dilute must discuss post-press bypass: ${text}`);
+    }
+    if (actionType === 'wait') {
+      assert.equal(recipeStyle, 'inverted', `only inverted AeroPress should generate wait, got ${recipeStyle}`);
+      assert.match(text, /\b(flip|inverted|cap)\b/i, `inverted/wait must discuss safe flip: ${text}`);
+    }
+    if (actionType === 'serve') {
+      assert.match(text, /\b(serve|cup|swirl|mix|aromatics)\b/i, `${recipeStyle}/serve must discuss serving: ${text}`);
+      if (recipeStyle !== 'bypass') assert.doesNotMatch(text, /\b(add .*bypass|measured bypass)\b/i, `${recipeStyle}/serve must not add bypass: ${text}`);
+    }
+  }
+}
 
 test('workflow tutorial database covers every AI Brew method family', () => {
   assert.deepEqual([...AI_BREW_WORKFLOW_TUTORIAL_METHODS].sort(), [...REQUIRED_METHODS].sort());
@@ -266,6 +385,59 @@ test('AeroPress style tutorials are bilingual, style-specific, and free from lea
   }
 });
 
+test('AeroPress generated guide actions resolve matching tutorial details', () => {
+  const catalog = buildProductionAiBrewCatalogForStress();
+  for (const styleCase of AEROPRESS_STYLE_CASES) {
+    const plan = buildGeneratedStylePlan(
+      catalog,
+      GENERATED_STYLE_MATRIX.find((item) => item.methodFamily === 'aeropress')!,
+      styleCase.style,
+    );
+    const guideSteps = buildWorkflowAwareGuideSteps(plan);
+    const generatedActions = new Set(guideSteps.map((step) => step.actionType));
+
+    assert.ok(generatedActions.has('stir'), `${styleCase.style} should generate a stir action`);
+    assert.ok(generatedActions.has('stop'), `${styleCase.style} should generate a stop action`);
+    if (styleCase.style === 'bypass') assert.ok(generatedActions.has('dilute'), 'bypass should generate post-press dilute action');
+    else assert.equal(generatedActions.has('dilute'), false, `${styleCase.style} must not generate dilute`);
+    if (styleCase.style === 'inverted') assert.ok(generatedActions.has('wait'), 'inverted should generate safe flip wait action');
+    else assert.equal(generatedActions.has('wait'), false, `${styleCase.style} must not generate wait`);
+
+    for (const step of guideSteps) {
+      const en = resolveWorkflowTutorialDetail({
+        methodFamily: plan.methodFamily,
+        recipeStyle: plan.recipeStyle,
+        actionType: step.actionType,
+        brewMode: plan.brewMode,
+        language: 'en',
+        hasWarning: step.warnings.length > 0,
+      });
+      const id = resolveWorkflowTutorialDetail({
+        methodFamily: plan.methodFamily,
+        recipeStyle: plan.recipeStyle,
+        actionType: step.actionType,
+        brewMode: plan.brewMode,
+        language: 'id',
+        hasWarning: step.warnings.length > 0,
+      });
+
+      assertTutorialActionMatchesGeneratedStep({
+        methodFamily: plan.methodFamily,
+        recipeStyle: plan.recipeStyle,
+        actionType: step.actionType,
+        brewMode: plan.brewMode,
+        text: en,
+      });
+      assert.doesNotMatch(id, BROKEN_USER_COPY, `${styleCase.style}/${step.actionType} ID has broken copy: ${id}`);
+      if (step.actionType === 'stir') assert.match(id, /\b(aduk|putar)\b/i, `${styleCase.style}/stir ID must discuss stirring: ${id}`);
+      if (step.actionType === 'stop') {
+        assert.match(id, /\b(berhenti|desis|tekan|tekanan)\b/i, `${styleCase.style}/stop ID must discuss stopping pressure: ${id}`);
+        assert.doesNotMatch(id, /bypass terukur|sajikan|aduk cangkir/i, `${styleCase.style}/stop ID must not reuse dilute/serve copy: ${id}`);
+      }
+    }
+  }
+});
+
 test('every selectable AI Brew style resolves bilingual tutorials without raw language or method leakage', () => {
   for (const styleFamily of ALL_STYLE_TUTORIAL_CASES) {
     const fingerprints = new Map<string, string>();
@@ -313,6 +485,60 @@ test('every selectable AI Brew style resolves bilingual tutorials without raw la
       fingerprints.set(fingerprint, recipeStyle);
     }
   }
+});
+
+test('generated method-style guides resolve action-synchronized tutorials for every style', () => {
+  const catalog = buildProductionAiBrewCatalogForStress();
+  let checkedSteps = 0;
+
+  for (const styleFamily of GENERATED_STYLE_MATRIX) {
+    for (const recipeStyle of styleFamily.styles) {
+      const plan = buildGeneratedStylePlan(catalog, styleFamily, recipeStyle);
+      const guideSteps = buildWorkflowAwareGuideSteps(plan);
+      assert.ok(guideSteps.length >= 3, `${styleFamily.methodFamily}/${recipeStyle} should generate workflow guide steps`);
+
+      for (const step of guideSteps) {
+        const en = resolveWorkflowTutorialDetail({
+          methodFamily: plan.methodFamily,
+          recipeStyle: plan.recipeStyle,
+          actionType: step.actionType,
+          brewMode: plan.brewMode,
+          language: 'en',
+          hasWarning: step.warnings.length > 0,
+        });
+        const id = resolveWorkflowTutorialDetail({
+          methodFamily: plan.methodFamily,
+          recipeStyle: plan.recipeStyle,
+          actionType: step.actionType,
+          brewMode: plan.brewMode,
+          language: 'id',
+          hasWarning: step.warnings.length > 0,
+        });
+        checkedSteps += 1;
+
+        assertTutorialActionMatchesGeneratedStep({
+          methodFamily: plan.methodFamily,
+          recipeStyle: plan.recipeStyle,
+          actionType: step.actionType,
+          brewMode: plan.brewMode,
+          text: en,
+        });
+        assert.ok(id.length > 20 && id.length <= 240, `${styleFamily.methodFamily}/${recipeStyle}/${step.actionType} ID should be compact: ${id}`);
+        assert.doesNotMatch(id, BROKEN_USER_COPY, `${styleFamily.methodFamily}/${recipeStyle}/${step.actionType} ID has broken copy: ${id}`);
+        assert.doesNotMatch(id, ENCODING_ARTIFACTS, `${styleFamily.methodFamily}/${recipeStyle}/${step.actionType} ID has broken encoding: ${id}`);
+        assert.doesNotMatch(`${en} ${id}`, CORRECTION_LOOP, `${styleFamily.methodFamily}/${recipeStyle}/${step.actionType} should not be taste correction`);
+        if (step.actionType !== 'bloom' && STYLE_TUTORIAL_METHOD_LEAKS[styleFamily.methodFamily]) {
+          assert.doesNotMatch(
+            `${en} ${id}`,
+            STYLE_TUTORIAL_METHOD_LEAKS[styleFamily.methodFamily]!,
+            `${styleFamily.methodFamily}/${recipeStyle}/${step.actionType} leaks wrong-method language: ${en} ${id}`,
+          );
+        }
+      }
+    }
+  }
+
+  assert.ok(checkedSteps >= 520, `expected broad generated style/action coverage, received ${checkedSteps}`);
 });
 
 test('all AI Brew style tutorials use natural Indonesian barista language across hot and iced paths', () => {
@@ -411,6 +637,21 @@ test('AI Brew entry cards expose Basic/Advanced while keeping guide density Lite
   assert.match(source, /guideDensityPro:\s*'Pro'/);
   assert.match(source, /guideDensitySimpleHint:\s*'Timer dan langkah aktif tetap di atas\.'/);
   assert.match(source, /guideDensityProHint:\s*'Panduan lengkap dengan detail teknik barista\.'/);
+});
+
+test('workflow step action text uses generated guide primary text as the English source of truth', () => {
+  const source = readFileSync(resolve(process.cwd(), 'apps/web/src/features/ai-brew/AiBrewPanel.tsx'), 'utf8');
+  const functionStart = source.indexOf('function buildWorkflowGuideActionText');
+  const functionEnd = source.indexOf('function resolveModeLabel', functionStart);
+  assert.ok(functionStart > 0 && functionEnd > functionStart, 'buildWorkflowGuideActionText should be discoverable');
+  const functionBody = source.slice(functionStart, functionEnd);
+  const primaryTextFastPathStart = functionBody.indexOf('if (plan?.methodFamily && step.primaryText?.trim())');
+  const primaryTextFastPathEnd = functionBody.indexOf('switch (step.actionType)', primaryTextFastPathStart);
+  assert.ok(primaryTextFastPathStart > 0 && primaryTextFastPathEnd > primaryTextFastPathStart, 'primary text fast path should be discoverable');
+  const primaryTextFastPath = functionBody.slice(primaryTextFastPathStart, primaryTextFastPathEnd);
+
+  assert.match(primaryTextFastPath, /return translateWorkflowGuideTextToEnglish\(step\.primaryText\)/);
+  assert.doesNotMatch(primaryTextFastPath, /resolveWorkflowTutorialDetail/);
 });
 
 test('Indonesian AI Brew style chip labels use natural operational copy', () => {

@@ -3578,14 +3578,7 @@ function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string,
   const pour = formatRoundedMl(step.pourVolumeMl);
   if (plan?.methodFamily && step.primaryText?.trim()) {
     if (id) return localizeAiBrewDynamicText(step.primaryText, language);
-    return resolveWorkflowTutorialDetail({
-      methodFamily: plan.methodFamily,
-      actionType: step.actionType,
-      brewMode: plan.brewMode,
-      language: 'en',
-      hasWarning: step.warnings.length > 0,
-      recipeStyle: plan.recipeStyle,
-    });
+    return translateWorkflowGuideTextToEnglish(step.primaryText);
   }
   switch (step.actionType) {
     case 'rinse_preheat':

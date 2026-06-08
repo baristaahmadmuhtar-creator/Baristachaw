@@ -8673,7 +8673,7 @@ function finalizePlanCore(
   const aeropressStyleGrindBias: GrindBias = methodFamily === 'aeropress'
     ? aeropressProductionStyle === 'bright_clean'
       ? 'coarser'
-      : (aeropressProductionStyle === 'sweet_body' || aeropressProductionStyle === 'dense_comforting' || aeropressProductionStyle === 'no_bypass')
+      : (targetProfile.id === 'sweet_body' || targetProfile.id === 'dense_comforting' || aeropressProductionStyle === 'no_bypass')
         ? 'finer'
         : 'same'
     : 'same';
@@ -8835,7 +8835,7 @@ function finalizePlanCore(
         || waterProfile.minerals.alkalinityPpm >= 55
         ? [targetProfile.id === 'floral_transparent' ? 'AeroPress water cue: high-buffer water will heavily mute delicate floral notes; consider a softer water or use a tighter ratio to punch through.' : 'AeroPress water cue: upper-buffered alkalinity can soften acidity and floral clarity; keep agitation controlled and avoid pushing temperature higher than needed.']
         : [],
-      (waterProfile.classification === 'low_buffer_clean' || waterProfile.minerals.tdsPpm <= 40) && input.brewMode === 'iced' && aeropressProductionStyle === 'bypass'
+      (waterProfile.classification === 'soft_low_buffer' || waterProfile.minerals.tdsPpm <= 40) && input.brewMode === 'iced' && aeropressProductionStyle === 'bypass'
         ? ['AeroPress water cue: very soft/low-mineral water combined with iced bypass can lead to a thin cup. You may need to tighten the ratio or grind slightly finer.']
         : [],
       /natural|anaerobic|ferment|carbonic|mosto|thermal|coferment/.test(processCueForAeroPress)

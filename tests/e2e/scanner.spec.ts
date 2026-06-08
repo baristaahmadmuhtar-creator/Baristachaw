@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { qaLogin, qaLogout } from '../fixtures/auth';
 import { buildQaUser } from '../fixtures/test-data';
 import { mockAiApis } from '../helpers/network';
-import { expectFirstRunAuthGate } from '../helpers/authGate';
+import { expectAccountModal } from '../helpers/authGate';
 
 const isLive = String(process.env.LIVE_E2E || '').trim() === '1';
 const tinyPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
@@ -22,8 +22,18 @@ test.afterEach(async ({ page }) => {
   await qaLogout(page.request);
 });
 
-test('shows sign in gate while unauthenticated', async ({ page }) => {
-  await expectFirstRunAuthGate(page);
+test('keeps scanner browseable and asks for an account only when analysis starts unauthenticated', async ({ page }) => {
+  await expect(page.getByRole('heading', { name: /Vision Scan|Pemindai Visual/i })).toBeVisible({ timeout: 30_000 });
+
+  const fileInput = page.locator('input[type="file"]').first();
+  await fileInput.setInputFiles({
+    name: 'qa_e2e.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(tinyPngBase64, 'base64'),
+  });
+
+  await page.getByRole('button', { name: analyzeImageButton }).click();
+  await expectAccountModal(page);
 });
 
 test('shows upgrade gate for free users before scan runs', async ({ page }) => {

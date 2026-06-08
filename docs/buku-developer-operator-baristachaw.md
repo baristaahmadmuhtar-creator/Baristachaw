@@ -10,7 +10,7 @@ Estimasi baca aktif: 60 sampai 90 menit. Baca aktif berarti tidak hanya membaca 
 2. Ringkasan produk dan target kualitas
 3. Peta arsitektur repo
 4. Alur runtime web, PWA, dan mobile parity
-5. Auth, sesi, guest mode, dan keamanan request
+5. Auth, sesi, browse-only preview, dan keamanan request
 6. AI Chat, AI Search, attachment, scanner, dan speech
 7. AI Brew dari input sampai panduan seduh
 8. Data, Supabase, RLS, dan katalog
@@ -39,7 +39,7 @@ Aturan penting saat bekerja di repo:
 
 - Jangan commit secret.
 - Jangan menaruh `SUPABASE_SERVICE_ROLE_KEY` di variable publik seperti `VITE_*` atau `EXPO_PUBLIC_*`.
-- Jangan mematikan guest mode tanpa keputusan produk yang jelas.
+- Jangan membuka aksi fitur tanpa auth gate; browse-only preview hanya untuk melihat app.
 - Jangan mengubah logic AI Brew hanya berdasarkan tampilan UI; cek planner, validator, test, dan handoff ke tool lain.
 - Jangan deploy production tanpa minimal `npm run check` dan smoke yang relevan.
 - Untuk perubahan admin/billing/auth, tambahkan atau jalankan test yang menyentuh behavior server.
@@ -61,7 +61,7 @@ Target kualitas produk:
 - Bisa dipakai user awam tanpa memahami istilah teknis.
 - Bisa dipakai barista serius tanpa merasa recipe terlalu asal.
 - Bisa berjalan nyaman di web desktop, mobile web, PWA Android, Safari iOS, dan mobile parity app.
-- Guest mode tetap tersedia untuk trust, app review, dan first-run experience.
+- Browse-only preview tetap tersedia untuk trust, app review, dan first-run experience.
 - Paid plan bisa ditampilkan dengan friendly, tidak memaksa, tetapi jelas bahwa API dan operasional butuh dukungan plan berbayar.
 - Admin bisa mengontrol user, plan, billing, maintenance, audit, dan katalog dengan minimum mental effort.
 - Data dan secret production tidak bocor.
@@ -84,14 +84,14 @@ Istilah kunci:
 - Admin console: route `/admin` di web.
 - AI Brew: fitur recipe seduh berbasis planner deterministik plus narasi AI yang divalidasi.
 - Plan/entitlement: status langganan dan kuota fitur.
-- Guest mode: sesi tanpa login yang tetap bisa mencoba aplikasi dengan batasan tertentu.
+- Browse-only preview: user tanpa login bisa melihat app, tetapi aksi fitur dan mutasi tetap meminta login.
 
 Target MVP production-ready di BaristaChaw bukan berarti semua mimpi fitur selesai. Artinya jalur utama bekerja, failure state jelas, rahasia aman, admin punya kontrol, dan release bisa dipantau. MVP production-ready harus jujur: jika payment provider belum live, UI boleh menampilkan checkout link atau manual invoice, tetapi admin dan user tidak boleh dibuat bingung.
 
 Latihan 5 menit:
 
 - Buka production app.
-- Masuk sebagai guest.
+- Masuk sebagai browse-only user tanpa login.
 - Cari fitur Home, Chat, Tools, Collection, dan Scanner.
 - Buka `/admin` setelah login akun admin.
 - Catat satu risiko produk dan satu risiko teknis yang Anda lihat.
@@ -124,10 +124,10 @@ docs/                  runbook dan buku operasional
 - `Scanner.tsx`: pemindaian visual/OCR/video, prompt scanner, permission handling.
 - `BaristaTools.tsx`: AI Brew, Timer, Ratio, Todo.
 - `Collection.tsx`: koleksi catatan, folder, item, search/filter.
-- `AuthScreen.tsx`: masuk/daftar/guest flow.
+- `AuthScreen.tsx`: masuk/daftar/browse-only setup flow.
 - `AdminManagement.tsx`: admin console.
 
-`apps/mobile` adalah Expo app. Di dalamnya ada native screens seperti `HomeScreen`, `ChatScreen`, `ScannerScreen`, `ToolsScreen`, `CollectionScreen`, dan `WebParityScreen`. Mobile parity tidak boleh dianggap proyek terpisah yang bebas berbeda. Ia harus mempertahankan contract produk: auth, guest, language, chat, scanner, collection, tools, telemetry, dan fallback.
+`apps/mobile` adalah Expo app. Di dalamnya ada native screens seperti `HomeScreen`, `ChatScreen`, `ScannerScreen`, `ToolsScreen`, `CollectionScreen`, dan `WebParityScreen`. Mobile parity tidak boleh dianggap proyek terpisah yang bebas berbeda. Ia harus mempertahankan contract produk: auth, browse-only preview, language, chat, scanner, collection, tools, telemetry, dan fallback.
 
 `server-api` adalah lapisan server. Beberapa endpoint penting:
 
@@ -198,7 +198,7 @@ Runtime web dimulai dari `apps/web/src/main.tsx`, masuk ke `App.tsx`, lalu membu
 
 - Route lazy loading untuk mengurangi bundle awal.
 - Auth gate untuk route entry: `/`, `/scanner`, `/tools`, `/coffee`, `/collection`, `/chat`.
-- Guest mode melalui auth screen.
+- Browse-only preview melalui auth screen/setup surface.
 - Desktop sidebar dan bottom nav.
 - Maintenance banner.
 - Offline banner.
@@ -217,7 +217,7 @@ Mobile parity app memakai Expo. Tujuannya bukan menulis ulang semua logic web, t
 
 Kontrak parity:
 
-- Login/guest harus tersedia.
+- Login dan browse-only preview harus tersedia.
 - Bahasa harus konsisten.
 - Chat mode harus normal/fast/deep.
 - Scanner harus bisa mengambil kamera/library/file.
@@ -235,14 +235,14 @@ Latihan 5 menit:
 - Cari file native yang mendukung fitur itu.
 - Tulis risiko jika web mengubah contract response API tetapi mobile tidak ikut diuji.
 
-## 5. Auth, Sesi, Guest Mode, dan Keamanan Request
+## 5. Auth, Sesi, Browse-only Preview, dan Keamanan Request
 
 BaristaChaw punya beberapa jalur masuk:
 
 - Google OAuth.
 - Facebook OAuth jika provider siap.
 - Email/password melalui Supabase.
-- Guest mode.
+- Browse-only preview.
 - Mobile auth grant untuk native shell.
 
 Auth web dikendalikan oleh context dan endpoint:
@@ -261,17 +261,17 @@ Prinsip keamanan auth:
 - Request write harus melewati origin guard.
 - CORS tidak boleh reflect origin sembarangan.
 - Admin access tidak bergantung pada UI nav; server tetap harus mengecek allowlist.
-- Guest session harus jelas sebagai guest dan tidak diperlakukan seperti user paid.
+- Browse-only user harus jelas belum login dan tidak diperlakukan seperti user paid.
 - Error login harus generik untuk credential salah, tetapi cukup jelas untuk user.
 
-Guest mode penting untuk produk:
+Browse-only preview penting untuk produk:
 
 - User bisa mencoba tanpa membuat akun.
 - App review lebih mudah karena reviewer bisa masuk.
 - Trust meningkat karena user tidak dipaksa login.
 - Paid gating bisa muncul ketika user mencoba fitur yang butuh biaya.
 
-Namun guest mode juga harus dibatasi:
+Namun browse-only preview juga harus dibatasi:
 
 - Tidak boleh mendapat akses API mahal tanpa aturan.
 - Tidak boleh membuka admin.
@@ -340,7 +340,7 @@ Speech generation dan audio playback harus tidak membuat UI stuck. Di web ada he
 
 Paid gating:
 
-`server-api/account/aiAccess.ts` menentukan apakah user boleh memakai fitur AI tertentu. Guest atau free bisa diarahkan ke plan minimal ketika mencoba fitur mahal. Ini bukan hanya UX; ini biaya operasional.
+`server-api/account/aiAccess.ts` menentukan apakah user boleh memakai fitur AI tertentu. Browse-only user diarahkan login, sementara free user bisa diarahkan ke plan minimal ketika mencoba fitur mahal. Ini bukan hanya UX; ini biaya operasional.
 
 Latihan 10 menit:
 
@@ -625,7 +625,7 @@ Plan growth surface harus:
 - Tidak memaksa user.
 - Memberi CTA yang jelas.
 - Menangani provider belum siap.
-- Menjelaskan batas free/guest saat user mencoba fitur mahal.
+- Menjelaskan batas browse-only/free saat user mencoba fitur mahal.
 
 Lifecycle billing:
 
@@ -868,7 +868,7 @@ Setiap deploy:
 - Deploy production.
 - Smoke production.
 - Buka web mobile dan desktop.
-- Cek login, guest, admin nav, AI Chat, AI Brew, scanner, plan CTA.
+- Cek login, browse-only preview, admin nav, AI Chat, AI Brew, scanner, plan CTA.
 
 Incident categories:
 
@@ -960,7 +960,7 @@ Sebelum menganggap perubahan production-ready:
 - Mobile parity impact dicek.
 - Bahasa Indonesia dicek.
 - Dark/light mode tidak rusak.
-- Guest mode tidak hilang.
+- Browse-only preview tidak hilang.
 - Admin impact dicek.
 - Billing/plan impact dicek.
 - Error state manusiawi.
@@ -1002,7 +1002,7 @@ npx playwright test tests/e2e/auth-onboarding.spec.ts
 
 Penutup:
 
-BaristaChaw siap berkembang jika setiap perubahan diperlakukan sebagai bagian dari sistem utuh. Developer tidak cukup hanya membuat tombol terlihat bagus. Operator tidak cukup hanya punya dashboard. AI tidak cukup hanya menjawab panjang. Semua harus menyatu: user mudah masuk, guest tetap bisa mencoba, AI membantu dengan aman, barista mendapat angka yang masuk akal, admin punya kontrol, billing punya lifecycle, data terlindungi, dan release bisa diverifikasi.
+BaristaChaw siap berkembang jika setiap perubahan diperlakukan sebagai bagian dari sistem utuh. Developer tidak cukup hanya membuat tombol terlihat bagus. Operator tidak cukup hanya punya dashboard. AI tidak cukup hanya menjawab panjang. Semua harus menyatu: user mudah masuk, browse-only preview tetap nyaman, AI membantu dengan aman, barista mendapat angka yang masuk akal, admin punya kontrol, billing punya lifecycle, data terlindungi, dan release bisa diverifikasi.
 
 ## Lampiran A: Feature Ownership Map
 
@@ -1014,7 +1014,7 @@ Auth dan sesi:
 - Owner API: `server-api/auth/*`.
 - Owner mobile: `apps/mobile/src/screens/MobileAuthGate.tsx`, `apps/mobile/src/services/authFlow.ts`, `apps/mobile/src/services/authStore.ts`.
 - Test utama: `tests/unit/auth*`, `tests/e2e/auth-*`, `tests/unit/mobileAuth*`.
-- Risiko utama: user terkunci, callback salah, cookie tidak aman, guest mode hilang, mobile deep link rusak.
+- Risiko utama: user terkunci, callback salah, cookie tidak aman, browse-only preview hilang, mobile deep link rusak.
 
 AI Chat dan AI API:
 
@@ -1260,7 +1260,7 @@ Menit 10-20:
 
 - Buka `App.tsx`.
 - Ikuti route Home, Chat, Scanner, Tools, Collection, Admin.
-- Pahami auth gate dan guest mode.
+- Pahami auth gate dan browse-only preview.
 
 Menit 20-30:
 
@@ -1288,7 +1288,7 @@ Menit 50-60:
 
 Jika developer bisa menjawab 5 pertanyaan ini, onboarding awal berhasil:
 
-1. Apa bedanya guest, free, dan paid user?
+1. Apa bedanya browse-only, free, dan paid user?
 2. Di mana API memeriksa origin?
 3. Mengapa AI Brew planner deterministik penting?
 4. Mengapa admin mutation harus audit?
@@ -1470,7 +1470,7 @@ Menit 0-5: Secret.
 
 Menit 5-10: Auth.
 
-- Guest session signed.
+- Guest session signed tetap ada hanya untuk kompatibilitas backend.
 - Email login error aman.
 - OAuth callback redirect aman.
 - Logout clear cookie.
@@ -1559,7 +1559,7 @@ Antrean request data katalog. Jangan langsung publish item tanpa review jika sum
 Saat bingung memilih solusi, gunakan prioritas ini:
 
 1. Jangan bocorkan data atau secret.
-2. Jangan matikan guest mode tanpa keputusan produk.
+2. Jangan buka aksi browse-only tanpa keputusan produk.
 3. Jangan membuat admin kehilangan kontrol.
 4. Jangan membuat user membayar tanpa status jelas.
 5. Jangan membuat AI Brew terlihat presisi palsu.
@@ -1638,7 +1638,7 @@ Review mobile parity:
 - Apakah perubahan web memengaruhi mobile copy?
 - Apakah API response dipakai mobile?
 - Apakah route/deep link berubah?
-- Apakah guest mode masih ada?
+- Apakah browse-only preview masih ada?
 - Apakah PWA dan native punya icon/status yang konsisten?
 
 ## Lampiran N: Roadmap Teknis yang Sehat
@@ -1647,7 +1647,7 @@ Roadmap bukan daftar mimpi fitur. Roadmap teknis harus mengurangi risiko dan mem
 
 Fase 1: Stabilitas MVP.
 
-- Auth guest, Google, email stabil.
+- Auth browse-only gate, Google, email stabil.
 - AI Chat dan AI Brew tidak crash.
 - Admin bisa membaca user/plan/audit.
 - Billing checkout masih boleh manual/link.

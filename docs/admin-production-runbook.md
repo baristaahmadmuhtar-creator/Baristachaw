@@ -88,4 +88,4 @@ Minimum setup order:
 2. Set `ADMIN_EMAILS` to the owner/support emails.
 3. Create products using the plan product ids in `/admin` Plans: `baristachaw_starter_monthly`, `baristachaw_pro_monthly`, `baristachaw_team_monthly`.
 4. Add provider env values, then set `BILLING_LIVE_MODE=true` only after test purchases sync correctly.
-5. Keep `Free` and guest mode enabled for app review and first-run trust.
+5. Keep `Free` and browse-only preview enabled for app review and first-run trust.

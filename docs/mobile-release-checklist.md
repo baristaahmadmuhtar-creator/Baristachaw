@@ -15,7 +15,7 @@
 - [ ] `EXPO_PUBLIC_APP_SCHEME=baristachaw`.
 - [ ] `EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS=10000`.
 - [ ] `EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED=false` for production parity. Enable native fallback only in non-store debug builds.
-- [ ] `EXPO_PUBLIC_ENABLE_GUEST_MODE=true`.
+- [ ] `EXPO_PUBLIC_ENABLE_GUEST_MODE=false`; production uses browse-only preview and gates feature actions behind sign-in.
 - [ ] `EXPO_PUBLIC_ENABLE_APPLE_SIGNIN=true` for iOS store builds once Apple provider is configured. Android must not show the Apple button.
 - [ ] `EXPO_PUBLIC_SENTRY_DSN` set (or intentionally empty for local-only).
 - [ ] `EXPO_PUBLIC_RELEASE` set for environment labeling.
@@ -37,7 +37,7 @@
 - [ ] Expo Go launch via `npm run mobile:start` works for current SDK target.
 - [ ] Google sign in opens browser and returns to app.
 - [ ] Apple entry shows maintenance state when `EXPO_PUBLIC_ENABLE_APPLE_SIGNIN=false`.
-- [ ] Guest mode shows useful content without login.
+- [ ] Browse-only preview shows useful content without login.
 - [ ] Session persists after relaunch and expires correctly.
 - [ ] Logout clears local session.
 - [ ] Home search works and save-to-collection works.

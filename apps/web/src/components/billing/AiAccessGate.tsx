@@ -265,7 +265,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
 
   const ensureAiAccess = useCallback((source: string) => {
     if (!isAuthenticated || isGuest) {
-      openGate('login', source);
+      openAuthModal({ source: source as any });
       return false;
     }
 
@@ -280,7 +280,7 @@ export function useAiAccessGate(feature: AiPaidFeature): {
     }
 
     return true;
-  }, [effectivePlanCode, isAuthenticated, isGuest, loading, openGate, snapshot, tokenPlanCode]);
+  }, [effectivePlanCode, isAuthenticated, isGuest, loading, openAuthModal, openGate, snapshot, tokenPlanCode]);
 
   const title = state?.mode === 'login'
     ? formatText(t.aiGateLoginTitle, { feature: featureLabel })

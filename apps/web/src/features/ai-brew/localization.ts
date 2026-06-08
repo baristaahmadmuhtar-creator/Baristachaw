@@ -937,7 +937,7 @@ function translateAiBrewWorkflowTextToEnglish(text: string) {
     .replace(/Biarkan air turun penuh sebelum disajikan/i, 'Let the water draw down completely before serving.')
     .replace(/Aduk hasil seduh pelan agar konsentrat merata/i, 'Gently stir the brew so the concentrate mixes evenly.')
     .replace(/dosis tinggi/i, 'high dose')
-    .replace(/Acuan grinder menurunkan keyakinan; validasi dari waktu ekstraksi dan rasa/i, 'The grinder reference has lower confidence; validate it against brew time and taste.')
+    .replace(/Acuan grinder menurunkan keyakinan; validasi dari waktu ekstraksi dan rasa\.?/i, 'The grinder reference has lower confidence; validate it against brew time and taste.')
     .replace(/Setelan grinder masih estimasi\/fallback; kalibrasi dari waktu ekstraksi dan rasa/i, 'The grinder setting is still an estimate; calibrate it against brew time and taste.')
     .replace(/Setelan grinder memakai baseline metode; kalibrasi titik nol dan rasa sebelum dianggap presisi/i, 'The grinder setting uses a method baseline; calibrate the zero point and taste before treating it as precise.')
     .replace(/Espresso dengan acuan grinder pengganti atau grinder yang belum terverifikasi hanya boleh dipakai sebagai titik awal kalibrasi, bukan prediksi ekstraksi yang pasti/i, 'For espresso, a fallback or unverified grinder reference is only a calibration starting point, not a guaranteed extraction prediction.')
@@ -1237,6 +1237,7 @@ function translateAiBrewWorkflowTextToEnglish(text: string) {
     .replace(/\bberhenti\b/gi, 'stop')
     .replace(/\bin atas\b/gi, 'over')
     .replace(/\s+([.,;:])/g, '$1')
+    .replace(/\.{2,}/g, '.')
     .replace(/\s+/g, ' ')
     .trim();
 }

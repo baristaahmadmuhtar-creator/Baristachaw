@@ -69,7 +69,6 @@ import {
 } from '../utils/chatAttachments';
 import { resolveAudioPlaybackUrl } from '../utils/chatAudio';
 import { subscribeMediaQueryChange } from '../utils/mediaQuery';
-import { GoogleMark } from '../components/icons';
 import {
   ArrowUp as AppArrowUpIcon,
   Camera as AppCameraIcon,
@@ -1507,7 +1506,7 @@ export function Chat() {
   const desktopShellOffset = isDesktop
     ? 'var(--desktop-chat-shell-offset, var(--desktop-rail-current-width, var(--desktop-rail-width-expanded)))'
     : '0px';
-  const interactionDisabled = loading || authChecking || authBusy || !isAuthenticated;
+  const interactionDisabled = loading || authChecking || authBusy;
   const deepRequestInFlight = loading && activeRequestMode === 'deep';
   const deepThinkingPhases = DEEP_THINKING_PHASE_KEYS.map((key) => t[key] || key);
   const deepPhaseLabel = deepThinkingPhases[Math.min(deepThinkingPhaseIndex, deepThinkingPhases.length - 1)];
@@ -1691,28 +1690,15 @@ export function Chat() {
         )}
 
         {!authChecking && !isAuthenticated && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center py-8">
-            <div className="glass-card p-6 max-w-md w-full text-center">
-              <h2 className="text-lg font-semibold mb-2">{t.signInRequired}</h2>
-              <p className="text-secondary text-sm mb-4">{t.chatProtectedBody}</p>
-              {!isOnline && (
-                <p className="text-xs text-amber-600 dark:text-amber-400 mb-3">{t.chatOfflineSignin}</p>
-              )}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center py-4">
+            <div className="panel-soft flex max-w-md items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left text-sm">
+              <p className="min-w-0 text-secondary">{t.chatProtectedBody}</p>
               <button
                 onClick={handleChatLogin}
                 disabled={authBusy}
-                className="w-full glass-button-primary py-3.5 flex items-center justify-center gap-2 text-sm"
+                className="glass-button shrink-0 px-3 py-2 text-xs font-semibold"
               >
-                {authBusy ? (
-                  <><Loader2 size={16} className="animate-spin" /> {t.opening}</>
-                ) : (
-                  <>
-                    <span className="grid h-6 w-6 place-items-center rounded-full bg-white">
-                      <GoogleMark className="h-4 w-4" />
-                    </span>
-                    {t.continueWithGoogle}
-                  </>
-                )}
+                {authBusy ? t.opening : t.signIn}
               </button>
             </div>
           </motion.div>

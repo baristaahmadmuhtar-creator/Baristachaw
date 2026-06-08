@@ -119,20 +119,6 @@ function readNativeShellSession(): NativeShellSession | null {
   return session;
 }
 
-function consumeGuestModeRequest(): boolean {
-  if (typeof window === 'undefined') return false;
-  try {
-    const url = new URL(window.location.href);
-    const requested = url.searchParams.get('guest_mode') === '1';
-    if (!requested) return false;
-    url.searchParams.delete('guest_mode');
-    window.history.replaceState(window.history.state, document.title, `${url.pathname}${url.search}${url.hash}`);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 function isGuestUser(user: AuthUser | null): boolean {
   return Boolean(user?.isGuest || user?.provider === 'guest' || user?.id?.startsWith('guest_'));
 }
@@ -164,7 +150,6 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   const oauthPopupRef = useRef<Window | null>(null);
   const oauthPopupMonitorRef = useRef<number | null>(null);
   const oauthResultHandledRef = useRef(false);
-  const guestBootstrapHandledRef = useRef(false);
   const { isOffline } = useNetworkStatus();
 
   const getLocalizedCopy = useCallback(() => {
@@ -670,13 +655,6 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
       setAuthBusy(false);
     }
   }, [clearOauthPopupMonitor, getLocalizedCopy, isOffline]);
-
-  useEffect(() => {
-    if (guestBootstrapHandledRef.current || authChecking || user) return;
-    if (!consumeGuestModeRequest()) return;
-    guestBootstrapHandledRef.current = true;
-    void continueAsGuest();
-  }, [authChecking, continueAsGuest, user]);
 
   const logout = useCallback(async () => {
     oauthResultHandledRef.current = true;

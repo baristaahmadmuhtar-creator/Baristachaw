@@ -67,6 +67,7 @@ const TODO_STORAGE_KEY = 'BARISTA_TOOLS_TODO_V1';
 const LEGACY_RATIO_STORAGE_KEY_V4 = 'BARISTA_TOOLS_RATIO_V4';
 const TIMER_PRESETS = [120, 150, 180, 240];
 const TAB_QUERY_KEY = 'tab';
+const PANEL_QUERY_KEY = 'panel';
 const TOOLS_TAB_ORDER: ToolsTab[] = ['ai_brew', 'timer', 'ratio', 'todo'];
 const ROAST_LEVEL_OPTIONS: RoastLevel[] = ['light', 'medium_light', 'medium', 'medium_dark', 'dark'];
 
@@ -78,11 +79,21 @@ const AiBrewPanel = lazy(() =>
 function parseToolsTab(value: string | null): ToolsTab {
   if (value === 'timer' || value === 'ratio' || value === 'todo') return value;
   if (value === 'ai-brew' || value === 'ai_brew') return 'ai_brew';
+  if (value === 'grind-size' || value === 'grind_size') return 'ratio';
   return 'ai_brew';
 }
 
 function serializeToolsTab(value: ToolsTab): string {
   return value === 'ai_brew' ? 'ai-brew' : value;
+}
+
+function parseCalculatorPanel(value: string | null): CalculatorPanel {
+  if (value === 'grind-size' || value === 'grind_size') return 'grind_size';
+  return 'ratio';
+}
+
+function serializeCalculatorPanel(value: CalculatorPanel): string {
+  return value === 'grind_size' ? 'grind-size' : 'ratio';
 }
 
 const formatClock = (totalSeconds: number) => {
@@ -94,7 +105,8 @@ const formatClock = (totalSeconds: number) => {
 export function BaristaTools() {
   const { t } = useGlobalState();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<ToolsTab>(() => parseToolsTab(searchParams.get(TAB_QUERY_KEY)));
+  const initialTabParam = searchParams.get(TAB_QUERY_KEY);
+  const [activeTab, setActiveTab] = useState<ToolsTab>(() => parseToolsTab(initialTabParam));
   const tabRefs = useRef<Record<ToolsTab, HTMLButtonElement | null>>({
     ai_brew: null,
     timer: null,
@@ -122,7 +134,11 @@ export function BaristaTools() {
 
   // Ratio calculator
   const [ratioState, setRatioState] = useState<RatioSettingsState>(loadRatioSettingsFromStorage);
-  const [calculatorPanel, setCalculatorPanel] = useState<CalculatorPanel>('ratio');
+  const [calculatorPanel, setCalculatorPanel] = useState<CalculatorPanel>(() => (
+    searchParams.get(TAB_QUERY_KEY) === 'grind-size'
+      ? 'grind_size'
+      : parseCalculatorPanel(searchParams.get(PANEL_QUERY_KEY))
+  ));
   const [lastEditedField, setLastEditedField] = useState<LastEditedField>('dose');
   const [importedAiBrewIcedSplit, setImportedAiBrewIcedSplit] = useState<ImportedAiBrewIcedSplit | null>(null);
 
@@ -329,12 +345,28 @@ export function BaristaTools() {
   useEffect(() => {
     const requestedTab = parseToolsTab(searchParams.get(TAB_QUERY_KEY));
     setActiveTab((prev) => (prev === requestedTab ? prev : requestedTab));
+    const requestedPanel = searchParams.get(TAB_QUERY_KEY) === 'grind-size'
+      ? 'grind_size'
+      : parseCalculatorPanel(searchParams.get(PANEL_QUERY_KEY));
+    if (requestedTab === 'ratio') {
+      setCalculatorPanel((prev) => (prev === requestedPanel ? prev : requestedPanel));
+    }
   }, [searchParams]);
 
   const selectTab = (nextTab: ToolsTab) => {
     setActiveTab(nextTab);
     const nextParams = new URLSearchParams(searchParams);
     nextParams.set(TAB_QUERY_KEY, serializeToolsTab(nextTab));
+    if (nextTab !== 'ratio') nextParams.delete(PANEL_QUERY_KEY);
+    setSearchParams(nextParams, { replace: true });
+  };
+
+  const selectCalculatorPanel = (panel: CalculatorPanel) => {
+    setActiveTab('ratio');
+    setCalculatorPanel(panel);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set(TAB_QUERY_KEY, 'ratio');
+    nextParams.set(PANEL_QUERY_KEY, serializeCalculatorPanel(panel));
     setSearchParams(nextParams, { replace: true });
   };
 
@@ -837,10 +869,10 @@ export function BaristaTools() {
           )}
 
           <div className="grid grid-cols-2 gap-2 w-full">
-            <button type="button" onClick={() => setCalculatorPanel('ratio')} className={calculatorPillClass('ratio')}>
+            <button type="button" onClick={() => selectCalculatorPanel('ratio')} className={calculatorPillClass('ratio')}>
               {t.toolsModeBasic}
             </button>
-            <button type="button" onClick={() => setCalculatorPanel('grind_size')} className={calculatorPillClass('grind_size')}>
+            <button type="button" onClick={() => selectCalculatorPanel('grind_size')} className={calculatorPillClass('grind_size')}>
               {t.toolsModeAdvanced}
             </button>
           </div>

@@ -14,7 +14,6 @@ import { getLanguageLocale, getLanguageMeta } from "../constants";
 import { buildScannerPrompt } from "../features/scanner/buildScannerPrompt";
 import {
   Camera as AppCameraIcon,
-  GoogleMark,
   Sparkles as AppSparklesIcon,
   Wand2 as AppWand2Icon,
 } from "../components/icons";
@@ -130,7 +129,6 @@ export function Scanner() {
   const {
     isAuthenticated,
     authChecking,
-    authBusy,
     authError,
     clearAuthError,
     openAuthModal,
@@ -289,6 +287,10 @@ export function Scanner() {
 
   const handleSaveToCollection = async () => {
     if (savedToCollection) return;
+    if (!isAuthenticated) {
+      openAuthModal({ source: "scanner" });
+      return;
+    }
     if (isLatteMode) {
       if (!generatedImage) return;
       const title = t.scannerLatteAfter || "AI Latte Art Result";
@@ -428,38 +430,14 @@ export function Scanner() {
           </button>
         </div>
 
-        {authChecking ? (
-          <div className="glass-card flex-1 flex flex-col items-center justify-center gap-3 text-center min-h-[220px]">
-            <Loader2 size={24} className="animate-spin text-secondary" />
-            <p className="text-secondary text-sm">{t.scannerCheckingSession}</p>
+        {authChecking && (
+          <div className="mb-4 mx-auto flex w-fit items-center gap-2 rounded-full border border-border bg-surface-alpha px-3 py-2 text-xs font-medium text-secondary">
+            <Loader2 size={14} className="animate-spin" />
+            <span>{t.scannerCheckingSession}</span>
           </div>
-        ) : !isAuthenticated ? (
-          <div className="glass-card flex-1 flex flex-col items-center justify-center gap-4 text-center min-h-[220px]">
-            <h2 className="text-xl font-semibold">{t.signInRequired}</h2>
-            <p className="text-secondary text-sm max-w-sm">{t.scannerProtectedBody}</p>
-            {isOffline && (
-              <p className="text-xs text-amber-600 dark:text-amber-400">{t.scannerOfflineSignin}</p>
-            )}
-            <button
-              onClick={() => openAuthModal({ source: "scanner" })}
-              disabled={authBusy}
-              className="glass-button-primary px-5 py-3.5 text-sm font-medium flex items-center gap-2"
-            >
-              {authBusy ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" /> {t.opening}
-                </>
-              ) : (
-                <>
-                  <span className="grid h-6 w-6 place-items-center rounded-full bg-white">
-                    <GoogleMark className="h-4 w-4" />
-                  </span>
-                  {t.continueWithGoogle}
-                </>
-              )}
-            </button>
-          </div>
-        ) : !file ? (
+        )}
+
+        {!file ? (
           <div
             onClick={openPrimaryPicker}
             className="focus-soft glass-card flex-1 flex flex-col items-center justify-center gap-4 cursor-pointer border-dashed border-2 border-glass hover:border-blue-500/50 transition-colors group min-h-[200px]"

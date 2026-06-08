@@ -3,7 +3,6 @@ import { qaLogin, qaLogout } from '../fixtures/auth';
 import { buildQaUser } from '../fixtures/test-data';
 import { mockAiApis } from '../helpers/network';
 import { clearClientState } from '../helpers/cleanup';
-import { continueAsGuestFromAuthGate } from '../helpers/authGate';
 import type { BrewPlan } from '../../apps/web/src/features/ai-brew/types';
 
 const LAST_PLAN_STORAGE_KEY = 'BARISTACHAW_AI_BREW_LAST_PLAN_V5';
@@ -1606,6 +1605,7 @@ test('ai brew Brew Presets preserve source-backed ratios, localized confidence, 
   expect(tetsuPlan.steps.filter((step) => (step.pourVolumeMl || 0) > 0).map((step) => step.pourVolumeMl)).toEqual(
     Array.from({ length: 10 }, () => 30),
   );
+  await result.getByTestId('ai-brew-result-tab-plan').click();
   await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(tetsuPlan.finalBeverageRatio)}`);
   expect(tetsuGuide).toMatch(/30\s*(g|ml)/i);
   expect(tetsuGuide).not.toMatch(/\$(?:\d+|\{)|\b(?:undefined|null|NaN)\b|ActionAction|Pressgentle|Stophiss/i);
@@ -1649,6 +1649,7 @@ test('ai brew Brew Presets preserve source-backed ratios, localized confidence, 
   expect(janPlan.totalWaterMl).toBe(152);
   expect(janPlan.hotWaterMl).toBe(100);
   expect(janPlan.workflowValidation?.passed).toBe(true);
+  await result.getByTestId('ai-brew-result-tab-plan').click();
   await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(janPlan.finalBeverageRatio)}`);
   expect(janGuide).toMatch(/100\s*(g|ml)/i);
   expect(janGuide).toMatch(/52\s*(g|ml).*bypass|bypass.*52\s*(g|ml)/i);
@@ -1868,8 +1869,11 @@ test('ai brew generates a hot brew plan and saves it to collection', async ({ pa
   await expect(result.getByTestId('ai-brew-sequence-section')).toHaveCount(0);
   await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
   const hotPlan = await readStoredAiBrewPlan(page);
-  await expect(result.getByTestId('ai-brew-flow-current-card')).toContainText(`1:${formatAiBrewDisplayRatio(hotPlan.finalBeverageRatio)}`);
-  await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/Tuangan berikutnya|Next pour/i);
+  await result.getByTestId('ai-brew-result-tab-plan').click();
+  await expect(result).toContainText(`1:${formatAiBrewDisplayRatio(hotPlan.finalBeverageRatio)}`);
+  await result.getByTestId('ai-brew-result-tab-flow').click();
+  await expect(result.getByTestId('ai-brew-flow-agitation-metric')).toContainText(/Agitation|Agitasi/i);
+  await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/Berikutnya|Next/i);
   await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/Sisa total|Total left/i);
 
   await result.getByTestId('ai-brew-result-secondary-actions').locator('summary').click();
@@ -2166,14 +2170,15 @@ test('ai brew quick and pro iced modes show final ratio and hot concentrate spli
       await expect(result.getByTestId('ai-brew-iced-calibration')).toHaveCount(0);
       await expect(result.getByTestId('ai-brew-sequence-section')).toHaveCount(0);
       await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
-      await expect(result.getByTestId('ai-brew-flow-current-card')).toContainText(`1:${formatAiBrewDisplayRatio(plan.finalBeverageRatio)}`);
-      await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/Tuangan berikutnya|Next pour/i);
+      await expect(result.getByTestId('ai-brew-flow-agitation-metric')).toContainText(/Agitation|Agitasi/i);
+      await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/Berikutnya|Next/i);
       await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/Sisa total|Total left/i);
       await expect(result.getByTestId('ai-brew-guide-density-basic')).toHaveAttribute('aria-pressed', 'true');
       await expect(result.getByTestId('ai-brew-flow-current-card')).toContainText(firstHotTargetText);
     } else {
       await result.getByTestId('ai-brew-result-tab-details').click();
-      await expect(result.getByTestId('ai-brew-bean-data-precision')).toContainText(/Bean Data (Precision|Accuracy)|Presisi Data Bean|Akurasi Data Bean/i);
+      await expect(result.getByTestId('ai-brew-prediction-status-card')).toBeVisible();
+      await expect(result.getByTestId('ai-brew-bean-data-precision')).toContainText(/Bean data|Data kopi|Unknown bean|fallback|low|rendah/i);
       await expect(result.getByTestId('ai-brew-why-this-extraction')).toContainText(/Why This Extraction|Kenapa Ekstraksi Ini/i);
       await expect(result.getByTestId('ai-brew-bean-data-precision-signals')).toContainText(/process|proses|roast|water|TDS/i);
       await expect(result.getByTestId('ai-brew-iced-calibration')).toContainText(/Final ratio|Rasio Final/i);
@@ -2237,18 +2242,17 @@ test('ai brew result keeps timer and ratio handoff actions hidden for MVP', asyn
   await expect(page.getByTestId('ai-brew-result-action-ratio')).toHaveCount(0);
 });
 
-test('guest users are gated before opening ai brew builders', async ({ page }) => {
+test('browse-only users are asked to sign in before opening ai brew builders', async ({ page }) => {
   await qaLogout(page.request);
   await page.goto('/tools');
   await clearClientState(page);
   await page.goto('/tools', { waitUntil: 'domcontentloaded' });
-  await continueAsGuestFromAuthGate(page);
 
   await page.getByTestId('ai-brew-open-quick').click();
 
-  const dialog = page.getByTestId('ai-access-gate-modal');
+  const dialog = page.getByRole('dialog', { name: /Start with your account|Mulai dengan akun/i });
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText(/Sign in to use AI Brew|Masuk untuk memakai Seduh AI/i);
+  await expect(dialog).toContainText(/AI Brew|Seduh AI/i);
   await expect(page.getByTestId('ai-brew-builder-quick')).toHaveCount(0);
 });
 

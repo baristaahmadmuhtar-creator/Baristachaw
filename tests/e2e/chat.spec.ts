@@ -3,7 +3,7 @@ import { qaLogin, qaLogout } from '../fixtures/auth';
 import { buildQaUser } from '../fixtures/test-data';
 import { mockAiApis } from '../helpers/network';
 import { clearClientState } from '../helpers/cleanup';
-import { expectFirstRunAuthGate } from '../helpers/authGate';
+import { expectAccountModal } from '../helpers/authGate';
 
 const isLive = String(process.env.LIVE_E2E || '').trim() === '1';
 const flashModeLabel = /Flash mode - fast concise responses|Mode Kilat - respons cepat dan ringkas/i;
@@ -66,8 +66,14 @@ test.afterEach(async ({ page }) => {
   await qaLogout(page.request);
 });
 
-test('shows sign in gate when not authenticated', async ({ page }) => {
-  await expectFirstRunAuthGate(page);
+test('keeps chat browseable and asks for an account only when sending unauthenticated', async ({ page }) => {
+  await expect(page.getByRole('heading', { name: 'Baristachaw' })).toBeVisible({ timeout: 30_000 });
+  const input = page.getByPlaceholder(chatInputPlaceholder);
+  await expect(input).toBeEnabled({ timeout: 30_000 });
+  await input.fill('qa_e2e preview chat');
+  await page.getByLabel(sendMessageLabel).click();
+
+  await expectAccountModal(page);
 });
 
 test('shows upgrade gate for free users before AI chat runs', async ({ page }) => {

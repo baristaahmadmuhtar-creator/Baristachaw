@@ -60,7 +60,7 @@ test('home quick actions place Grind below Baristachaw and Vision Scan below Bar
 
   expect(hrefs).toEqual([
     '/chat',
-    '/tools?tab=grind-size',
+    '/tools?tab=ratio&panel=grind-size',
     '/tools?tab=ai-brew',
     '/tools',
     '/scanner',
@@ -296,7 +296,7 @@ test('mobile ai brew result workspace keeps primary actions inside the viewport'
   await expect(result.getByTestId('ai-brew-sequence-section')).toHaveCount(0);
   await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
   await expect(result.getByTestId('ai-brew-flow-current-card')).toBeVisible();
-  await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/(Tuangan berikutnya|Next pour)/);
+  await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/(Berikutnya|Next)/);
   await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/(Sisa total|Total left)/);
   const liteRingBox = await result.getByTestId('ai-brew-lite-progress-ring').boundingBox();
   const liteStatusBox = await result.getByTestId('ai-brew-flow-remaining-status').boundingBox();
@@ -436,7 +436,7 @@ test('mobile ai brew loading stays centered and keeps bottom nav hidden through 
   await expect(page.getByTestId('mobile-bottom-nav')).toBeHidden();
   await page.getByTestId('ai-brew-result-tab-flow').click();
   await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
-  await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/(Tuangan berikutnya|Next pour)/);
+  await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/(Berikutnya|Next)/);
 });
 
 test('mobile ai brew builder keeps the action footer docked to the modal bottom', async ({ page }) => {

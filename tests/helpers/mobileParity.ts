@@ -8,7 +8,6 @@ export function mobileParityPath(
     platform?: NativeShellPlatform;
     language?: 'id' | 'en';
     hostSafeBottom?: number;
-    guestMode?: boolean;
   } = {},
 ) {
   const platform = options.platform || 'ios';
@@ -22,7 +21,6 @@ export function mobileParityPath(
   params.set('host_safe_bottom', hostSafeBottom);
   params.set('theme', 'system');
   params.set('language', language);
-  if (options.guestMode) params.set('guest_mode', '1');
   return `${path}?${params.toString()}`;
 }
 

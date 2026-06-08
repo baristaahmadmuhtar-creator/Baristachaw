@@ -1,153 +1,65 @@
 # Baristachaw
 
-Production-focused AI assistant for barista workflows (chat, fast/deep modes, attachments, voice note, scanner).
+Baristachaw is an AI coffee companion for planning better brews, checking coffee setup decisions, and keeping barista workflows simple on web, PWA, and mobile.
 
-## Repo Structure
+[Open Web App](https://baristaclaw.vercel.app) | [Download Android APK](https://github.com/baristaahmadmuhtar-creator/Baristachaw/releases/latest/download/baristachaw-android.apk) | [Download Android ZIP](https://github.com/baristaahmadmuhtar-creator/Baristachaw/releases/latest/download/baristachaw-android.zip) | [All Releases](https://github.com/baristaahmadmuhtar-creator/Baristachaw/releases)
 
-```text
-apps/
-  web/                 Vite web + PWA app
-  mobile/              Expo native app
-packages/
-  shared/              shared types, parity labels, cross-app helpers
-  design-tokens/       shared color, spacing, radius, typography tokens
-api/                   serverless handlers used by web/server
-server.ts              local Express + Vite dev/prod entry
-```
+## What It Does
 
-## Requirements
+- **AI Brew** creates practical brew plans for pour-over, AeroPress, Switch, immersion, espresso, moka, cold brew, and more.
+- **Method-aware styles** keep each brewer's workflow specific, including style, agitation, water split, bypass, press, valve, wait, and serve cues.
+- **Grind Size Advisor** gives a method-aware starting point and adjusts direction from brew time, taste, roast, grinder, and target cup.
+- **Coffee Chat** answers barista questions with fast, normal, and deep modes for quick fixes or structured decisions.
+- **Scanner** helps inspect coffee labels, brew notes, and related media with account-gated analysis.
+- **Collection** keeps recipes, brew plans, notes, and saved ideas organized for repeat use.
+- **PWA and mobile parity** let users browse the app first, then sign in when they use protected actions.
 
-- Node.js 20+
-- npm
-- Vercel CLI (for deploy workflow)
+## AI Brew
 
-## Local Setup
+AI Brew is built for actionable starting recipes, not vague coffee advice. It summarizes the recipe, shows brewer style when relevant, highlights hot-water and ice/bypass splits, keeps final ratio visible, and guides the next live step with concise action labels.
 
-1. Install dependencies:
-   `npm install`
-2. Copy `.env.example` to `.env.local` and fill required values.
-3. Start local app:
-   `npm run dev`
-4. Start only the web workspace if needed:
-   `npm run dev:web`
+The planner is designed to keep method language accurate end to end:
 
-## Mobile (Expo + iOS)
+- AeroPress plans use setup, stir, steep, press, bypass, and serve language.
+- Hario Switch and Clever style plans use valve, steep, release, and drain language.
+- Pour-over plans preserve measured pour targets and agitation guidance.
+- Iced plans separate hot extraction from final beverage dilution.
 
-- Start mobile in Expo Go mode:
-  `npm run mobile:start`
-- Start mobile dev-client mode:
-  `npm run mobile:start:dev-client`
-- Run iOS build from workspace:
-  `npm run mobile:ios`
-- Mobile lint:
-  `npm run mobile:lint`
-- Mobile setup and release docs:
-  - `docs/mobile-ios-runbook.md`
-  - `docs/mobile-release-checklist.md`
-  - `docs/mobile-parity-matrix.md`
+## Tools
 
-## Quality Gates
+Baristachaw includes daily brewing tools for:
 
-- Type-check:
-  `npm run lint`
-- Build:
-  `npm run build`
-- Combined check:
-  `npm run check`
-- Install browser engines for E2E:
-  `npm run test:e2e:install`
+- brew ratio and yield checks;
+- grinder starting points;
+- timer and workflow helpers;
+- tasks and brew preparation;
+- water and coffee input support for AI Brew.
 
-## UI/E2E Gates
+The Grinder card opens directly to the grind-size panel so users can move from home to a practical grind recommendation without extra navigation.
 
-- Cross-browser desktop E2E:
-  `npm run test:e2e`
-- Mobile emulation E2E:
-  `npm run test:e2e:mobile`
-- Accessibility gate (axe):
-  `npm run test:a11y`
-- Performance gate (Lighthouse):
-  `npm run test:perf`
-- Full local gate:
-  `npm run test:gate:local`
-- Full production gate (uses `BASE_URL`, `PROD_SMOKE_BEARER_TOKEN`):
-  `npm run test:prod:gate`
+## Access Model
 
-## Smoke Tests
+Users can browse pages before creating an account. Real actions, saved data, AI generation, scanner analysis, chat sending, and collection mutations ask the user to sign in first. This keeps the first impression lightweight while protecting account data and paid AI capacity.
 
-- Local smoke (expects app reachable on `http://localhost:3000` by default):
-  `npm run smoke:local`
-- Production smoke (default target `https://baristaclaw.vercel.app`):
-  `npm run smoke:prod`
-- Override target:
-  `BASE_URL=https://your-url.vercel.app npm run smoke:prod`
-- Authenticated production smoke (required for fast/normal/deep verification):
-  `PROD_SMOKE_BEARER_TOKEN=<jwt> npm run smoke:prod`
-- For full `15` samples on both `/api/ai` fast+deep without user rate-limit collision, provide two JWTs:
-  `PROD_SMOKE_BEARER_TOKEN=<jwt_user_a>,<jwt_user_b> npm run smoke:prod`
-- Override SLA/sample defaults:
-  `PROD_SMOKE_SAMPLES=15 PROD_SMOKE_P95_FAST_MS=2000 PROD_SMOKE_P95_NORMAL_MS=4000 PROD_SMOKE_P95_DEEP_MS=8000 PROD_SMOKE_AI_DELAY_MS=2200 npm run smoke:prod`
+## Android Download
 
-Notes:
-- `fast` and `normal` are hard-gated by latency P95.
-- `deep` is quality-first: production smoke validates deep structure/integrity and language adherence, while latency is informational.
+Android builds are distributed through GitHub Releases:
 
-### Deep Health Check
+- latest APK: <https://github.com/baristaahmadmuhtar-creator/Baristachaw/releases/latest/download/baristachaw-android.apk>
+- latest ZIP: <https://github.com/baristaahmadmuhtar-creator/Baristachaw/releases/latest/download/baristachaw-android.zip>
+- release history: <https://github.com/baristaahmadmuhtar-creator/Baristachaw/releases>
 
-- `/api/health?deep=1` requires `x-health-token` header matching `HEALTHCHECK_TOKEN`.
-- Example:
-  `curl -H "x-health-token: <token>" "https://your-app.vercel.app/api/health?deep=1"`
+The APK is intended for Android users who want the latest MVP mobile shell. The mobile app uses the production Baristachaw web experience for parity across Android, iOS PWA, and desktop web.
 
-## Release Verification
+## Safety And Quality
 
-- Local release gate:
-  `npm run release:verify`
-- Include production smoke too:
-  `RUN_PROD_SMOKE=1 npm run release:verify`
+Baristachaw keeps coffee recommendations practical and confidence-aware:
 
-## Environment Notes
+- water and grinder data are labeled conservatively when source confidence is limited;
+- AI Brew keeps deterministic recipe values protected from unsafe AI claims;
+- guest-style backend compatibility is kept behind the product experience, while the UI uses browse-only preview;
+- release verification covers lint, build, unit, mobile parity, accessibility, smoke tests, and AI Brew E2E.
 
-- `GEMINI_API_KEY` and other provider keys support multiple keys separated by commas.
-- Do not wrap key values with quotes.
-- Use `ALLOWED_ORIGINS` to explicitly control API CORS origins.
-- Production gate envs:
-  - `PROD_SMOKE_BEARER_TOKEN` (required by `npm run test:prod:gate`)
-  - `PROD_SMOKE_SAMPLES` (default `15`)
-  - `PROD_SMOKE_P95_FAST_MS` (default `2000`)
-  - `PROD_SMOKE_P95_NORMAL_MS` (default `4000`)
-  - `PROD_SMOKE_P95_DEEP_MS` (default `8000`, advisory only)
-  - `PROD_SMOKE_AI_DELAY_MS` (default `2200`, protects against API burst rate limit)
-- AI response orchestration feature flags:
-  - `AI_LANGUAGE_ALIGNMENT_ENABLED=1`
-  - `AI_EXPECTATION_PROFILE_ENABLED=1`
-  - `AI_DEEP_QUALITY_GATE_ENABLED=1`
-  - `AI_AMBIGUITY_ASK_FIRST_ENABLED=1`
-- Never log or commit real secrets.
-- Test auth bypass endpoints are disabled by default. To enable for QA pipelines:
-  - `ENABLE_TEST_AUTH_ENDPOINT=1`
-  - `TEST_AUTH_TOKEN=<secret>`
-  - in production also set `ALLOW_TEST_ENDPOINTS_IN_PROD=1` and `QA_ALLOWED_ORIGINS=https://your-qa-runner-origin` (not recommended)
+## For Developers
 
-## Deploy (Vercel)
-
-1. Login:
-   `vercel login`
-2. Link project (if needed):
-   `vercel link`
-3. Verify env values:
-   `vercel env ls`
-4. Deploy preview:
-   `vercel`
-5. Deploy production:
-   `vercel --prod --yes`
-
-## Language/Expectation Contract
-
-- API contract extension (`/api/chat`, `/api/ai`) supports optional:
-  - `responseProfile`: `language`, `verbosity`, `format`, `tone`, `ambiguityPolicy`
-  - `clientContext`: `platform`, `appLanguage`, `acceptLanguage`
-- If omitted, server remains backward compatible and applies default mode behavior.
-- Runtime policy:
-  - AI follows user message language (not billing amount).
-  - AI follows user expectation in the prompt (short/detail/format/tone).
-  - For high ambiguity with `ask_first`, AI asks 1-2 clarifying questions first.
-  - `deep` enforces quality/integrity checks and one repair pass when needed.
+Contributor setup and local commands live in [docs/developer-local-setup.md](docs/developer-local-setup.md). The public README is kept product-focused so GitHub visitors can understand the app and download the Android release quickly.

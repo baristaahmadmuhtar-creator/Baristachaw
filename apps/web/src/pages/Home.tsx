@@ -839,7 +839,7 @@ export function Home() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={accountBlocked ? t.homeSearchBlockedPlaceholder : isAuthenticated && !isGuest ? t.homeSearchPlaceholderAuth : t.homeSearchPlaceholderGuest}
-            disabled={!isAuthenticated || accountBlocked || loading}
+            disabled={accountBlocked || loading}
             aria-label={t.homeAskTitle}
             enterKeyHint="search"
             autoComplete="off"
@@ -984,7 +984,7 @@ export function Home() {
         </motion.div>
 
         <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] } } }}>
-          <Link to="/tools?tab=grind-size" onClick={(event) => handleFeatureNavigation(event, toolsFeatureFlag)} aria-disabled={toolsFeatureFlag?.status === 'disabled'} className="block h-full" data-testid="home-primary-action-card">
+          <Link to="/tools?tab=ratio&panel=grind-size" onClick={(event) => handleFeatureNavigation(event, toolsFeatureFlag)} aria-disabled={toolsFeatureFlag?.status === 'disabled'} className="block h-full" data-testid="home-primary-action-card">
             <div className={`glass-card-interactive min-h-[12rem] lg:min-h-[13rem] p-6 flex flex-col items-center justify-center text-center gap-3 lg:justify-between group ${isRtl ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'} ${featureCardStateClass(toolsFeatureFlag)}`}>
               <AppGaugeIcon size={56} variant="tile" tone="green" className="group-hover:scale-110 transition-transform duration-300 ease-out" />
               <div className="w-full">

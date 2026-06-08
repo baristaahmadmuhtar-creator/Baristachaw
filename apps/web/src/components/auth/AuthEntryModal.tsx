@@ -6,9 +6,11 @@ import { getLanguageDirection } from '../../constants';
 import { modalExitTransition, modalSpringTransition, overlayFadeTransition } from '../../utils/motionPresets';
 import { EmailPasswordAuthForm } from './EmailPasswordAuthForm';
 import { AuthProgressMark } from './AuthProgressMark';
-import { AlertCircle, FacebookMark, GoogleMark, ShieldCheck, Sparkles, UserRound, WalletCards, X } from '../icons';
+import { AlertCircle, FacebookMark, GoogleMark, ShieldCheck, Sparkles, WalletCards, X } from '../icons';
 
 function resolveSourceLabel(source: string, t: Record<string, string>) {
+  if (/^ai_brew(?:_|$)/i.test(source)) return t.authSourceAiBrew;
+  if (/^chat(?:_|$)/i.test(source)) return t.authSourceChat;
   const sourceLabelMap: Record<string, string> = {
     home_search: t.authSourceHomeSearch,
     ai_brew: t.authSourceAiBrew,
@@ -22,7 +24,7 @@ function resolveSourceLabel(source: string, t: Record<string, string>) {
   return sourceLabelMap[source] || sourceLabelMap.general;
 }
 
-type AuthModalAction = 'google' | 'facebook' | 'guest';
+type AuthModalAction = 'google' | 'facebook';
 
 export function AuthEntryModal() {
   const { t, language } = useGlobalState();
@@ -36,7 +38,6 @@ export function AuthEntryModal() {
     clearAuthError,
     startGoogleAuth,
     startFacebookAuth,
-    continueAsGuest,
   } = useAuthModal();
   const direction = getLanguageDirection(language);
   const isRtl = direction === 'rtl';
@@ -50,9 +51,8 @@ export function AuthEntryModal() {
   const isAuthActionPending = activeAction !== null || authBusy;
   const isGoogleBusy = activeAction === 'google';
   const isFacebookBusy = activeAction === 'facebook';
-  const isGuestBusy = activeAction === 'guest';
   const benefits = [
-    { icon: UserRound, label: t.authModalBenefitGuest },
+    { icon: Sparkles, label: t.authModalBenefitGuest },
     { icon: ShieldCheck, label: t.authModalBenefitSync },
     { icon: WalletCards, label: t.authModalBenefitUpgrade },
   ];
@@ -218,28 +218,6 @@ export function AuthEntryModal() {
                 </div>
 
                 <EmailPasswordAuthForm compact initialMode={source === 'registration' ? 'signUp' : 'signIn'} />
-
-                <div className="flex items-center gap-3 py-1">
-                  <span className="h-px flex-1 bg-[var(--glass-border)]" />
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-secondary">{t.authGuestDivider}</span>
-                  <span className="h-px flex-1 bg-[var(--glass-border)]" />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => void startAuthAction('guest', continueAsGuest)}
-                  disabled={isAuthActionPending || isOffline}
-                  className="motion-pressable w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3 text-sm font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55"
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    {isGuestBusy ? (
-                      <AuthProgressMark />
-                    ) : (
-                      <UserRound size={17} variant="glyph" tone="ice" />
-                    )}
-                    {isGuestBusy ? t.authGuestStarting : t.continueAsGuest}
-                  </span>
-                </button>
 
                 <div className="grid gap-2 sm:grid-cols-3">
                   {benefits.map(({ icon: Icon, label }) => (

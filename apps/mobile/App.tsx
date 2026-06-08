@@ -211,7 +211,6 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
   const [passwordRecoveryActive, setPasswordRecoveryActive] = useState(false);
   const [passwordRecoveryEmail, setPasswordRecoveryEmail] = useState<string | undefined>(undefined);
   const [session, setSession] = useState<AuthSession | null>(null);
-  const [guestParityRequested, setGuestParityRequested] = useState(false);
 
   const accessToken = session?.accessToken || null;
   const apiClient = useMemo(() => new ApiClient({ getAccessToken: () => accessToken }), [accessToken]);
@@ -223,7 +222,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
         previousExpired: 'Sesi sebelumnya berakhir. Masuk lagi untuk melanjutkan.',
         storedReset: 'Data login tersimpan direset. Silakan masuk lagi.',
         bootstrapFailed: 'Gagal menyiapkan login. Coba muat ulang aplikasi.',
-        sessionCheckSlow: 'Koneksi lambat saat memeriksa sesi. Lanjut sebagai tamu atau masuk lagi.',
+        sessionCheckSlow: 'Koneksi lambat saat memeriksa sesi. Lanjut melihat aplikasi atau masuk lagi.',
         offlineSignIn: 'Tidak ada koneksi internet. Sambungkan lagi untuk masuk.',
         offlineRecovery: 'Tidak ada koneksi internet. Sambungkan lagi untuk memulihkan akun.',
         loginCompleteFailed: 'Gagal menyelesaikan login.',
@@ -248,7 +247,7 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       previousExpired: 'Your previous session expired. Sign in again to continue.',
       storedReset: 'Stored sign-in data was reset. Please sign in again.',
       bootstrapFailed: 'Could not prepare sign-in. Reload the app and try again.',
-      sessionCheckSlow: 'Session check is slow. Continue as guest or sign in again.',
+      sessionCheckSlow: 'Session check is slow. Continue browsing or sign in again.',
       offlineSignIn: 'No internet connection. Reconnect to sign in.',
       offlineRecovery: 'No internet connection. Reconnect to recover your account.',
       loginCompleteFailed: 'Could not complete sign-in.',
@@ -665,40 +664,12 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
     void clearNativeSession('web_auth_expired', parityShellCopy.sessionExpired);
   }, [clearNativeSession, parityShellCopy.sessionExpired]);
 
-  const handleContinueGuestParity = useCallback(() => {
-    setAuthError(null);
-    setGuestParityRequested(true);
-    trackEvent('auth_guest_started', { surface: 'web_parity_gate', runtimePolicy: mobileEnv.runtimePolicy });
-  }, []);
-
   if (booting) {
     return (
       <View style={[styles.bootingPage, { backgroundColor: systemPalette.bgBase }]}>
         <ActivityIndicator size="large" color={systemPalette.accent} />
         <Text style={[styles.bootingText, { color: systemPalette.textSecondary }]}>{parityShellCopy.preparing}</Text>
       </View>
-    );
-  }
-
-  if (!session && !guestParityRequested) {
-    return (
-      <MobileAuthGate
-        authBusyProvider={authBusyProvider}
-        authError={authError}
-        isOnline={isOnline}
-        supabaseAuthEnabled={isSupabaseAuthConfigured}
-        enableAppleSignIn={mobileEnv.enableAppleSignIn}
-        guestModeEnabled={mobileEnv.enableGuestMode}
-        passwordRecoveryActive={passwordRecoveryActive}
-        recoveryEmail={passwordRecoveryEmail}
-        onLoginGoogle={handleGoogleLogin}
-        onLoginFacebook={handleFacebookLogin}
-        onEmailAuth={handleEmailAuth}
-        onPasswordReset={handlePasswordReset}
-        onPasswordUpdate={handlePasswordUpdate}
-        onLoginApple={handleAppleLogin}
-        onContinueGuest={handleContinueGuestParity}
-      />
     );
   }
 
@@ -709,7 +680,6 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
       onParityFailure={onParityFailure}
       onNativeLogout={handleNativeLogout}
       onNativeAuthExpired={handleNativeAuthExpired}
-      guestModeRequested={guestParityRequested && !session}
     />
   );
 }
@@ -786,8 +756,8 @@ function NativeApp({ onBootReady }: NativeAppProps) {
     };
   }, [localeState.language]);
   const sessionCheckSlowCopy = localeState.language === 'id'
-    ? 'Koneksi lambat saat memeriksa sesi. Lanjut sebagai tamu atau masuk lagi.'
-    : 'Session check is slow. Continue as guest or sign in again.';
+    ? 'Koneksi lambat saat memeriksa sesi. Anda tetap bisa melihat aplikasi, atau masuk lagi.'
+    : 'Session check is slow. You can keep browsing or sign in again.';
 
   useEffect(() => {
     authBusyProviderRef.current = authBusyProvider;

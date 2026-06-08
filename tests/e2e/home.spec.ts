@@ -3,7 +3,6 @@ import { qaLogin, qaLogout } from '../fixtures/auth';
 import { buildQaUser } from '../fixtures/test-data';
 import { mockAiApis } from '../helpers/network';
 import { clearClientState } from '../helpers/cleanup';
-import { continueAsGuestFromAuthGate, expectFirstRunAuthGate } from '../helpers/authGate';
 
 const isLive = String(process.env.LIVE_E2E || '').trim() === '1';
 
@@ -37,15 +36,14 @@ test.afterEach(async ({ page }) => {
   await qaLogout(page.request);
 });
 
-test('shows first-run auth gate and keeps guest entry available', async ({ page }) => {
-  await expectFirstRunAuthGate(page);
-  await continueAsGuestFromAuthGate(page);
+test('public home is browse-only and protected search opens account modal', async ({ page }) => {
+  await expect(page.getByRole('heading', { name: /Baristachaw|Apa yang ingin Anda lakukan hari ini/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Lanjutkan sebagai tamu|Continue as guest/i })).toHaveCount(0);
   const search = page.getByPlaceholder(/Masuk untuk memakai pencarian AI|Sign in to use AI search/i);
-  await expect(search).toBeEnabled({ timeout: 30_000 });
-  await search.fill('qa_e2e guest search');
+  await expect(search).toBeEnabled();
+  await search.fill('qa_e2e browse-only search');
   await search.press('Enter');
-  await expect(page.getByTestId('ai-access-gate-modal')).toBeVisible();
-  await expect(page.getByRole('heading', { name: /Masuk untuk memakai Pencarian AI|Sign in to use AI Search/i })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: /Start with your account|Mulai dengan akun/i })).toBeVisible();
 });
 
 test('supports authenticated search, copy, save, and theme toggle', async ({ page, context, browserName }) => {
@@ -111,8 +109,7 @@ test('shows paid plan choices and upgrades free users when AI search is attempte
   await expect(page.getByRole('heading', { name: /Pencarian AI dibuka mulai paket Starter|AI Search starts on Starter/i })).toBeVisible();
 });
 
-test('language switch updates guest search placeholder copy', async ({ page }) => {
-  await continueAsGuestFromAuthGate(page);
+test('language switch updates browse-only search placeholder copy', async ({ page }) => {
   const menuButton = page.getByRole('button', { name: /Open language menu|Buka menu bahasa/i }).first();
   await expect(menuButton).toBeVisible();
   await menuButton.click();
@@ -125,7 +122,6 @@ test('language switch updates guest search placeholder copy', async ({ page }) =
 });
 
 test('arabic language option is fully visible in language menu', async ({ page }) => {
-  await continueAsGuestFromAuthGate(page);
   const menuButton = page.getByRole('button', { name: /Open language menu|Buka menu bahasa/i }).first();
   await expect(menuButton).toBeVisible();
   await menuButton.click();
@@ -138,8 +134,7 @@ test('arabic language option is fully visible in language menu', async ({ page }
   await expect(nativeLabel).not.toHaveClass(/truncate/);
 });
 
-test('language switch updates guest search placeholder copy for arabic', async ({ page }) => {
-  await continueAsGuestFromAuthGate(page);
+test('language switch updates browse-only search placeholder copy for arabic', async ({ page }) => {
   const menuButton = page.getByRole('button', { name: /Open language menu|Buka menu bahasa/i }).first();
   await expect(menuButton).toBeVisible();
   await menuButton.click();
@@ -154,7 +149,6 @@ test('language switch updates guest search placeholder copy for arabic', async (
 });
 
 test('navigates to all primary routes from home cards', async ({ page }) => {
-  await continueAsGuestFromAuthGate(page);
   const homeContent = page.locator('.page-container').first();
 
   await clickHomeCard(page, homeContent.locator('a[href="/chat"]').first());

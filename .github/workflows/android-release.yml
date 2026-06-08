@@ -1,0 +1,129 @@
+name: Android Release Download
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag, for example android-v1.0.0
+        required: true
+        type: string
+      prerelease:
+        description: Mark the GitHub release as prerelease
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  android-apk:
+    name: Build and publish Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    env:
+      CI: "1"
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify Android release config
+        run: |
+          test -n "$EXPO_TOKEN"
+          npm run mobile:lint
+          npm run mobile:test
+
+      - name: Build Android MVP APK
+        working-directory: apps/mobile
+        run: npx eas build --platform android --profile mvp_android --non-interactive --wait --json > eas-build.json
+
+      - name: Download APK from EAS
+        shell: bash
+        working-directory: apps/mobile
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const https = require('https');
+          const http = require('http');
+          const { URL } = require('url');
+          const builds = JSON.parse(fs.readFileSync('eas-build.json', 'utf8'));
+          const build = Array.isArray(builds) ? builds[0] : builds;
+          const url = build?.artifacts?.buildUrl;
+          if (!url) {
+            throw new Error('EAS build output did not include artifacts.buildUrl');
+          }
+          fs.mkdirSync('../../artifacts/android-release', { recursive: true });
+
+          function download(sourceUrl, targetPath, redirects = 0) {
+            if (redirects > 5) throw new Error('Too many redirects while downloading APK');
+            const parsed = new URL(sourceUrl);
+            const client = parsed.protocol === 'http:' ? http : https;
+
+            return new Promise((resolve, reject) => {
+              const request = client.get(parsed, (response) => {
+                const status = response.statusCode || 0;
+                const location = response.headers.location;
+                if ([301, 302, 303, 307, 308].includes(status) && location) {
+                  response.resume();
+                  resolve(download(new URL(location, parsed).toString(), targetPath, redirects + 1));
+                  return;
+                }
+                if (status >= 400) {
+                  response.resume();
+                  reject(new Error(`Failed to download APK: HTTP ${status}`));
+                  return;
+                }
+
+                const file = fs.createWriteStream(targetPath);
+                response.pipe(file);
+                file.on('finish', () => file.close(resolve));
+                file.on('error', reject);
+              });
+              request.on('error', reject);
+            });
+          }
+
+          download(url, '../../artifacts/android-release/baristachaw-android.apk').catch((error) => {
+            fs.unlink('../../artifacts/android-release/baristachaw-android.apk', () => {});
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Package APK ZIP and checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd artifacts/android-release
+          sha256sum baristachaw-android.apk > baristachaw-android.apk.sha256
+          cat > README.txt <<'EOF'
+          Baristachaw Android APK
+
+          Install baristachaw-android.apk on Android. The APK is the latest MVP mobile shell for the production Baristachaw app.
+          Verify the file with baristachaw-android.apk.sha256 when needed.
+          EOF
+          zip -9 baristachaw-android.zip baristachaw-android.apk baristachaw-android.apk.sha256 README.txt
+
+      - name: Create or update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: Baristachaw Android ${{ inputs.tag }}
+          prerelease: ${{ inputs.prerelease }}
+          generate_release_notes: true
+          files: |
+            artifacts/android-release/baristachaw-android.apk
+            artifacts/android-release/baristachaw-android.apk.sha256
+            artifacts/android-release/baristachaw-android.zip

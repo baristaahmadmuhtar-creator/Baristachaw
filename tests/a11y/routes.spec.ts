@@ -47,24 +47,26 @@ test('a11y /tools?tab=ai-brew with picker open has no serious/critical violation
   ).toEqual([]);
 });
 
-test('a11y /tools?tab=ai-brew with result workspace open has no serious/critical violations', async ({ page }) => {
-  await mockAiApis(page);
-  await page.goto('/tools?tab=ai-brew');
-  await page.getByTestId('ai-brew-open-quick').click();
-  await page.getByTestId('ai-brew-coffee-name').fill('A11y Result Brew');
-  await page.getByTestId('ai-brew-water-picker').click();
-  await page.getByTestId('ai-brew-picker-search-water_brand').fill('aqua');
-  await page.getByTestId('ai-brew-picker-option-water_brand-aqua-id').click();
-  await page.getByTestId('ai-brew-generate').click();
-  await expect(page.getByTestId('ai-brew-result')).toBeVisible();
+for (const theme of ['light', 'dark'] as const) {
+  test(`a11y /tools?tab=ai-brew result workspace in ${theme} mode has no serious/critical violations`, async ({ page }) => {
+    await mockAiApis(page);
+    await page.goto(`/tools?tab=ai-brew&theme=${theme}`);
+    await page.getByTestId('ai-brew-open-quick').click();
+    await page.getByTestId('ai-brew-coffee-name').fill(`A11y Result Brew ${theme}`);
+    await page.getByTestId('ai-brew-water-picker').click();
+    await page.getByTestId('ai-brew-picker-search-water_brand').fill('aqua');
+    await page.getByTestId('ai-brew-picker-option-water_brand-aqua-id').click();
+    await page.getByTestId('ai-brew-generate').click();
+    await expect(page.getByTestId('ai-brew-result')).toBeVisible();
 
-  const results = await new AxeBuilder({ page }).analyze();
-  const severe = results.violations.filter((v) =>
-    v.impact === 'critical' || v.impact === 'serious'
-  );
+    const results = await new AxeBuilder({ page }).analyze();
+    const severe = results.violations.filter((v) =>
+      v.impact === 'critical' || v.impact === 'serious'
+    );
 
-  expect(
-    severe,
-    severe.map((v) => `${v.id}: ${v.help}`).join('\n')
-  ).toEqual([]);
-});
+    expect(
+      severe,
+      severe.map((v) => `${v.id}: ${v.help}`).join('\n')
+    ).toEqual([]);
+  });
+}

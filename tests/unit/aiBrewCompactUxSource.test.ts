@@ -173,10 +173,40 @@ test('AI Brew exposes explicit mobile time semantics instead of one misleading t
   assert.doesNotMatch(SOURCE, /guideEndLabel/);
   assert.match(SOURCE, /flowStepRemaining/);
   assert.match(SOURCE, /flowTotalRemaining/);
-  assert.match(SOURCE, /flowNextPour/);
+  assert.match(SOURCE, /flowNextActionValue/);
   assert.match(SOURCE, /data-testid="ai-brew-flow-remaining-status"/);
   assert.match(SOURCE, /data-testid="ai-brew-flow-timer-panel"/);
   assert.match(SOURCE, /data-testid="ai-brew-flow-current-card"/);
+});
+
+test('AI Brew result summary promotes style and highlights split water', () => {
+  assert.match(SOURCE, /function buildMethodStyleMetricItem/);
+  assert.match(SOURCE, /function insertMetricAfter/);
+  assert.match(SOURCE, /const methodStyleMetric = buildMethodStyleMetricItem/);
+  assert.match(SOURCE, /summaryHighlightItemsWithCompletion = insertMetricAfter/);
+  assert.match(SOURCE, /detailHighlightItemsWithCompletion = insertMetricAfter/);
+  assert.match(SOURCE, /highlight:\s*plan\.iceMl > 0 \|\| isAeroPressMeasuredBypass \? 'water_split' : undefined/);
+  assert.match(SOURCE, /data-testid=\{item\.highlight === 'water_split' \? 'ai-brew-water-split-highlight' : undefined\}/);
+  assert.match(SOURCE, /border-sky-500\/30 bg-sky-500\/\[0\.10\]/);
+});
+
+test('AI Brew live flow uses action-aware next labels and agitation instead of final ratio in compact chips', () => {
+  assert.match(SOURCE, /flowNextPour: 'Next'/);
+  assert.match(SOURCE, /flowNextPour: 'Berikutnya'/);
+  assert.match(SOURCE, /function formatFlowNextActionValue/);
+  assert.match(SOURCE, /const flowNextActionValue = flowNextStep/);
+  assert.doesNotMatch(SOURCE, /const flowNextPourValue = flowNextStep/);
+  assert.match(SOURCE, /function buildCurrentStepAgitationMetric/);
+  assert.match(SOURCE, /const flowCurrentAgitationMetric = buildCurrentStepAgitationMetric/);
+  assert.match(SOURCE, /data-testid="ai-brew-flow-agitation-metric"/);
+  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-flow-agitation-metric"[\s\S]{0,220}\{copy\.finalRatio\}/);
+});
+
+test('AI Brew prediction confidence area stays compact and scan-friendly', () => {
+  assert.match(SOURCE, /data-testid="ai-brew-prediction-status-card"/);
+  assert.match(SOURCE, /data-testid="ai-brew-prediction-detail-toggle"/);
+  assert.match(SOURCE, /aria-controls="ai-brew-prediction-detail-body"/);
+  assert.doesNotMatch(SOURCE, /Detail prediksi & keyakinan/);
 });
 
 test('AI Brew public timing copy and timer handoff use extraction time, not guide finish time', () => {
@@ -234,7 +264,7 @@ test('AI Brew pickers keep catalog metadata out of user-facing choice rows', () 
 test('AI Brew quick Seduh tab stays timer-first without duplicate process list', () => {
   assert.match(SOURCE, /!isQuickResult && \(/);
   assert.match(SOURCE, /data-testid="ai-brew-sequence-section"/);
-  assert.match(SOURCE, /flowNextPourValue/);
+  assert.match(SOURCE, /flowNextActionValue/);
   assert.match(SOURCE, /copy\.flowNextPour/);
 });
 

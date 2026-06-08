@@ -10,7 +10,7 @@ test('mobile web parity URL carries preferred language into the web app', () => 
 
   assert.match(source, /url\.searchParams\.set\('language', language\)/);
   assert.match(source, /language=\$\{languageParam\}/);
-  assert.match(source, /buildWebParityUrl\(mobileEnv\.webAppUrl, shellPlatform, hostSafeBottom, guestModeRequested, language\)/);
+  assert.match(source, /buildWebParityUrl\(mobileEnv\.webAppUrl, shellPlatform, hostSafeBottom, language\)/);
 });
 
 test('web global language bootstrap accepts parity language query params', () => {

@@ -34,7 +34,7 @@ const REQUIRED_MATRIX_AREAS = [
   'Language switch',
   'Auth login',
   'Auth logout',
-  'Guest mode',
+  'Browse-only preview',
   'Saved data restore',
   'Offline / poor network',
   'Error boundary',
@@ -79,7 +79,7 @@ test('production EAS mobile profile is locked to web parity shell without native
   assert.equal(production?.env?.EXPO_PUBLIC_WEB_APP_URL, 'https://baristaclaw.vercel.app');
   assert.equal(production?.env?.EXPO_PUBLIC_MOBILE_UI_MODE, 'web_parity');
   assert.equal(production?.env?.EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED, 'false');
-  assert.equal(production?.env?.EXPO_PUBLIC_ENABLE_GUEST_MODE, 'true');
+  assert.equal(production?.env?.EXPO_PUBLIC_ENABLE_GUEST_MODE, 'false');
   assert.equal(production?.android?.buildType, 'app-bundle');
   assert.equal(production?.android?.autoIncrement, 'versionCode');
   assert.equal(production?.ios?.autoIncrement, 'buildNumber');
@@ -124,7 +124,7 @@ test('mobile telemetry does not attach email or display name to crash user scope
   assert.doesNotMatch(appSource, /setTelemetryUser\(\s*session\?\.user[\s\S]*username:/);
 });
 
-test('WebParityScreen sends native shell parity params, language, safe area, guest mode, and auth bridge', () => {
+test('WebParityScreen sends native shell parity params, language, safe area, browse-only preview, and auth bridge', () => {
   const source = read('apps/mobile/src/screens/WebParityScreen.tsx');
 
   for (const required of [
@@ -133,7 +133,7 @@ test('WebParityScreen sends native shell parity params, language, safe area, gue
     "url.searchParams.set('native_shell', platform)",
     "url.searchParams.set('host_safe_bottom', String(safeBottom))",
     "url.searchParams.set('language', language)",
-    "url.searchParams.set('guest_mode', '1')",
+    "document.documentElement.setAttribute('data-native-auth-bridge', ${nativeAuthPayload ? \"'active'\" : \"'browse-only'\"})",
     "parsed.origin === window.location.origin",
     "parsed.pathname.indexOf('/api/') === 0",
     "headers.set('Authorization', 'Bearer ' + nativeSession.accessToken)",
@@ -147,6 +147,8 @@ test('WebParityScreen sends native shell parity params, language, safe area, gue
   ]) {
     assert.match(source, new RegExp(escapeRegex(required)), `missing WebView parity contract: ${required}`);
   }
+
+  assert.doesNotMatch(source, /guest_mode/);
 
   assert.match(source, /case 'id':\s*return \{\s*loading: 'Membuka Baristachaw\.\.\.'/s);
   assert.match(source, /default:\s*return \{\s*loading: 'Opening Baristachaw\.\.\.'/s);

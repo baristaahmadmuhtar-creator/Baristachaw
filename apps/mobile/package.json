@@ -8,7 +8,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "doctor": "npx expo-doctor",
+    "doctor": "npx -y expo-doctor",
     "eas:build:ios-internal": "npx eas build --platform ios --profile ios_internal",
     "eas:build:android-mvp": "npx eas build --platform android --profile mvp_android",
     "eas:build:android-preview": "npx eas build --platform android --profile preview",

@@ -56,7 +56,7 @@ function buildNativeShellBootstrap(platform: 'ios' | 'android', authSession?: Au
       window.__BARISTACHAW_NATIVE_SESSION__ = ${JSON.stringify(nativeAuthPayload)};
       window.__BARISTACHAW_NATIVE_THEME__ = 'system';
       document.documentElement.setAttribute('data-native-${platform}-shell', '');
-      document.documentElement.setAttribute('data-native-auth-bridge', ${nativeAuthPayload ? "'active'" : "'guest'"});
+      document.documentElement.setAttribute('data-native-auth-bridge', ${nativeAuthPayload ? "'active'" : "'browse-only'"});
       try {
         var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         var bg = prefersDark ? '#000000' : '#F2F2F7';
@@ -116,7 +116,7 @@ function buildNativeShellBootstrap(platform: 'ios' | 'android', authSession?: Au
   `;
 }
 
-function buildWebParityUrl(baseUrl: string, platform: 'ios' | 'android', hostSafeBottom: number, guestModeRequested: boolean, language: string) {
+function buildWebParityUrl(baseUrl: string, platform: 'ios' | 'android', hostSafeBottom: number, language: string) {
   const safeBottom = Math.max(0, Math.min(48, Math.round(hostSafeBottom)));
   const languageParam = encodeURIComponent(language);
   try {
@@ -127,12 +127,10 @@ function buildWebParityUrl(baseUrl: string, platform: 'ios' | 'android', hostSaf
     url.searchParams.set('host_safe_bottom', String(safeBottom));
     url.searchParams.set('theme', 'system');
     url.searchParams.set('language', language);
-    if (guestModeRequested) url.searchParams.set('guest_mode', '1');
     return url.toString();
   } catch {
     const divider = baseUrl.includes('?') ? '&' : '?';
-    const guestParam = guestModeRequested ? '&guest_mode=1' : '';
-    return `${baseUrl}${divider}runtime=web_parity&ui_profile=native_shell&native_shell=${platform}&host_safe_bottom=${safeBottom}&theme=system&language=${languageParam}${guestParam}`;
+    return `${baseUrl}${divider}runtime=web_parity&ui_profile=native_shell&native_shell=${platform}&host_safe_bottom=${safeBottom}&theme=system&language=${languageParam}`;
   }
 }
 
@@ -163,7 +161,6 @@ type WebParityScreenProps = {
   onParityFailure?: (reason: 'error' | 'http_error' | 'load_error') => void;
   onNativeLogout?: () => void;
   onNativeAuthExpired?: () => void;
-  guestModeRequested?: boolean;
 };
 
 export function WebParityScreen({
@@ -172,7 +169,6 @@ export function WebParityScreen({
   onParityFailure,
   onNativeLogout,
   onNativeAuthExpired,
-  guestModeRequested = false,
 }: WebParityScreenProps) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
@@ -187,8 +183,8 @@ export function WebParityScreen({
     [authSession, shellPlatform],
   );
   const parityUrl = useMemo(
-    () => buildWebParityUrl(mobileEnv.webAppUrl, shellPlatform, hostSafeBottom, guestModeRequested, language),
-    [guestModeRequested, hostSafeBottom, language, shellPlatform],
+    () => buildWebParityUrl(mobileEnv.webAppUrl, shellPlatform, hostSafeBottom, language),
+    [hostSafeBottom, language, shellPlatform],
   );
   const appOrigin = useMemo(() => {
     try {

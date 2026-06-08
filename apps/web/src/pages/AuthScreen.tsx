@@ -12,7 +12,6 @@ import {
   CheckCircle,
   FacebookMark,
   GoogleMark,
-  UserRound,
 } from '../components/icons';
 
 interface AuthScreenProps {
@@ -20,11 +19,12 @@ interface AuthScreenProps {
   onLogin: () => void;
 }
 
-type AuthScreenAction = 'google' | 'facebook' | 'guest';
+type AuthScreenAction = 'google' | 'facebook';
+const BARISTACHAW_ONBOARDING_SEEN = 'BARISTACHAW_ONBOARDING_SEEN';
 
 export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
-  const { t } = useGlobalState();
-  const { isAuthenticated, authBusy, authError, isOffline, startGoogleAuth, startFacebookAuth, continueAsGuest } = useAuthModal();
+  const { t, language, setLanguage } = useGlobalState();
+  const { isAuthenticated, authBusy, authError, isOffline, startGoogleAuth, startFacebookAuth } = useAuthModal();
   const [success, setSuccess] = useState('');
   const [activeAction, setActiveAction] = useState<AuthScreenAction | null>(null);
   const authBusyRef = useRef(authBusy);
@@ -35,7 +35,6 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
   const isAuthActionPending = activeAction !== null || authBusy;
   const isGoogleBusy = activeAction === 'google';
   const isFacebookBusy = activeAction === 'facebook';
-  const isGuestBusy = activeAction === 'guest';
 
   const startAuthAction = async (action: AuthScreenAction, handler: () => Promise<void>) => {
     if (isAuthActionPending) return;
@@ -77,6 +76,15 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
       // Non-blocking browser-only notice.
     }
   }, [t.authEmailConfirmedBody]);
+
+  const enterBrowseOnlyPreview = () => {
+    try {
+      window.localStorage.setItem(BARISTACHAW_ONBOARDING_SEEN, '1');
+    } catch {
+      // Preview mode is still allowed if localStorage is unavailable.
+    }
+    onLogin();
+  };
 
   return (
     <div
@@ -138,7 +146,30 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
               )}
             </AnimatePresence>
 
-            <div className="auth-card-surface rounded-[2rem] p-4 sm:p-6">
+            <div className="auth-card-surface rounded-2xl p-4 sm:p-5">
+              <div className="mb-4 rounded-xl border border-glass bg-[var(--bg-base)]/72 p-2.5" data-testid="auth-language-step">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-secondary">{t.authRouteLanguageTitle}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    ['en', 'English'],
+                    ['id', 'Indonesia'],
+                  ] as const).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setLanguage(value)}
+                      className={`min-h-10 rounded-xl border px-3 text-sm font-semibold transition-colors ${
+                        language === value
+                          ? 'border-blue-500/25 bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.20)]'
+                          : 'panel-divider-subtle bg-surface-alpha text-primary hover:border-blue-500/20'
+                      }`}
+                      aria-pressed={language === value}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {isOffline ? (
                 <div className="mb-4 rounded-2xl border border-amber-500/25 bg-amber-500/12 px-4 py-3 text-sm font-medium text-amber-700 dark:text-amber-300">
                   {t.authModalOffline}
@@ -192,19 +223,14 @@ export function AuthScreen({ intent = 'signIn', onLogin }: AuthScreenProps) {
 
               <EmailPasswordAuthForm initialMode={intent} />
 
-              <div className="my-5 flex items-center gap-3">
-                <span className="h-px flex-1 bg-[var(--glass-border)]" />
-                <span className="text-xs font-semibold uppercase tracking-[0.16em] text-secondary">{t.authGuestDivider}</span>
-                <span className="h-px flex-1 bg-[var(--glass-border)]" />
-              </div>
-
               <button
-                onClick={() => void startAuthAction('guest', continueAsGuest)}
+                type="button"
+                onClick={enterBrowseOnlyPreview}
                 disabled={isAuthActionPending}
-                className="flex w-full items-center justify-center gap-3 rounded-2xl border border-glass bg-surface-alpha px-5 py-3.5 text-base font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55 focus-soft"
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border panel-divider-subtle bg-surface-alpha px-4 py-2.5 text-sm font-semibold text-primary transition-all hover:bg-[var(--bg-elevated)] disabled:cursor-not-allowed disabled:opacity-55 focus-soft"
               >
-                {isGuestBusy ? <AuthProgressMark /> : <UserRound size={20} variant="glyph" tone="ice" />}
-                {isGuestBusy ? t.authGuestStarting : t.continueAsGuest}
+                {t.authRouteExploreCta}
+                <ArrowRight size={15} variant="glyph" tone="blue" />
               </button>
 
               <Link

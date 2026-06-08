@@ -139,7 +139,7 @@ Elemen yang biasanya terlihat:
 
 Status ruang kerja membantu Anda memahami:
 
-- Apakah Anda guest, free, atau paid user.
+- Apakah Anda browse-only, free, atau paid user.
 - Apakah payment aktif.
 - Apakah ada maintenance.
 - Apakah fitur tertentu sedang dibatasi.
@@ -174,7 +174,7 @@ Fitur AI memakai API dan biaya operasional. Karena itu BaristaChaw punya plan. T
 
 Jenis plan umum:
 
-- Guest: mencoba tanpa akun.
+- Browse-only: melihat aplikasi tanpa akun, lalu login saat memakai aksi fitur.
 - Free: akun gratis dengan kuota dasar.
 - Starter: plan minimal untuk user rutin.
 - Pro: plan untuk workflow harian dan fitur intensif.
@@ -208,12 +208,12 @@ Kapan free cukup:
 
 Jika fitur meminta upgrade:
 
-BaristaChaw akan mencoba menjelaskan kenapa. Contoh: guest mencoba fitur AI mahal, maka aplikasi bisa meminta login dan plan minimal. Ini wajar karena fitur tersebut memakai biaya server/API.
+BaristaChaw akan mencoba menjelaskan kenapa. Contoh: user browse-only mencoba fitur AI mahal, maka aplikasi bisa meminta login dan plan minimal. Ini wajar karena fitur tersebut memakai biaya server/API.
 
 Sikap terbaik:
 
 - Jangan merasa harus upgrade di awal.
-- Gunakan free/guest untuk memahami value.
+- Gunakan browse-only/free untuk memahami value.
 - Jika aplikasi membantu kerja harian, pilih plan yang paling murah dulu.
 - Untuk kedai, evaluasi apakah Team lebih efisien daripada akun pribadi.
 
@@ -380,7 +380,7 @@ Contoh workflow:
 
 Jika scanner meminta upgrade:
 
-Scanner visual memakai biaya AI lebih tinggi daripada teks. Jika Anda guest/free dan sering memakai scanner, aplikasi bisa meminta login atau plan minimal.
+Scanner visual memakai biaya AI lebih tinggi daripada teks. Jika Anda browse-only/free dan sering memakai scanner, aplikasi bisa meminta login atau plan minimal.
 
 Latihan 10 menit:
 
@@ -765,7 +765,7 @@ Latihan 10 menit:
 - Buka di mobile browser.
 - Add to Home Screen.
 - Buka PWA.
-- Login atau guest.
+- Login atau browse dulu.
 - Buka Tools > AI Brew.
 - Pastikan input nyaman.
 
@@ -877,7 +877,7 @@ Latihan 10 menit:
 
 Hari 1: Kenal aplikasi.
 
-- Coba guest mode.
+- Coba browse-only preview.
 - Buka semua tab.
 - Pakai Chat sekali.
 - Pakai AI Brew sekali.
@@ -1014,7 +1014,7 @@ Alur 60 menit:
 
 Menit 0-5:
 
-- Masuk sebagai guest atau Google.
+- Masuk dengan Google/email atau lihat aplikasi dulu.
 - Buka Tools > AI Brew.
 - Pilih mode cepat.
 
@@ -1306,7 +1306,7 @@ Gunakan ini jika Anda ingin benar-benar memahami BaristaChaw dalam satu sesi.
 
 Menit 0-5: Masuk.
 
-- Pilih Google/email/guest.
+- Pilih Google/email atau lihat aplikasi dulu.
 - Lihat status plan.
 - Buka Home.
 
@@ -1367,7 +1367,7 @@ Apakah pembulatan merusak akurasi?
 
 Tidak secara praktis. Logic internal tetap menjaga batas recipe, sedangkan tampilan dibuat lebih manusiawi.
 
-Kenapa guest/free diminta upgrade saat memakai AI?
+Kenapa browse-only/free diminta login atau upgrade saat memakai AI?
 
 AI memakai biaya server/API. Fitur mahal seperti scanner atau deep AI bisa membutuhkan plan agar aplikasi tetap berjalan.
 
@@ -1678,7 +1678,7 @@ Kesalahan 8: Mengabaikan air.
 
 Air sangat memengaruhi rasa. Jika semua recipe terasa aneh, jangan hanya menyalahkan grinder atau kopi.
 
-Kesalahan 9: Tidak memahami batas free/guest.
+Kesalahan 9: Tidak memahami batas browse-only/free.
 
 Fitur AI punya biaya. Jika diminta login atau upgrade, itu bagian dari batas penggunaan, bukan error.
 

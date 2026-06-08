@@ -57,7 +57,7 @@ test('AI Brew V60 iced native shell keeps protected recipe values and Indonesian
   await expect(result).not.toContainText(/Katup|Buka katup/i);
   await page.getByTestId('ai-brew-result-tab-flow').click();
   await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
-  await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/Tuangan berikutnya|Sisa total/i);
+  await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/Berikutnya|Sisa total/i);
   await expectNoCriticalIndonesianEnglishLeak(page, 'V60 iced AI Brew result');
 
   const storedPlan = await page.evaluate(() => {
@@ -94,7 +94,7 @@ test('AI Brew Hario Switch iced native shell keeps valve safety and timer semant
   await expect(result).toContainText(/Katup|Buka katup|Muatan ruang|Air turun/i);
   await page.getByTestId('ai-brew-result-tab-flow').click();
   await expect(result.getByTestId('ai-brew-flow-timer-panel')).toBeVisible();
-  await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/Tuangan berikutnya|Sisa total/i);
+  await expect(result.getByTestId('ai-brew-flow-remaining-status')).toContainText(/Berikutnya|Sisa total/i);
 
   const storedPlan = await page.evaluate(() => {
     const raw = localStorage.getItem('BARISTACHAW_AI_BREW_LAST_PLAN_V5');

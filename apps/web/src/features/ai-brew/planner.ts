@@ -4879,7 +4879,7 @@ function deriveMethodFamilyAdjustment(params: {
         adjustment.tempDeltaC = -0.2;
         adjustment.brewTimeDeltaSec = -5;
         adjustment.grindBias = 'finer';
-        adjustment.notes.push('AeroPress bypass style brews a concentrate first, then dilutes after pressing instead of forcing all water through the puck.');
+        adjustment.notes.push('Bypass style: brew concentrate then dilute.');
       } else {
         adjustment.ratioDelta = -0.05;
         adjustment.tempDeltaC = -1;
@@ -8293,7 +8293,7 @@ function finalizePlanCore(
     precisionOverrideNotes.push(
       manualPresetScaledWaterMl !== null
         ? `Manual preset water scaled for ${roundTo(doseG, 1)} g dose: ${totalWaterMl} ml at 1:${formatBaristaRatio(recommendedRatio)}.`
-        : `Precision target water active: ${totalWaterMl} ml; ratio recalculated from ${roundTo(doseG, 1)} g dose to 1:${formatBaristaRatio(recommendedRatio)}.`,
+        : `Target air: ${totalWaterMl} ml; ratio recalculated from ${roundTo(doseG, 1)} g dose to 1:${formatBaristaRatio(recommendedRatio)}.`,
     );
   } else if (targetRatioOverride !== null) {
     precisionOverrideNotes.push(
@@ -8496,16 +8496,16 @@ function finalizePlanCore(
   const hotExtractionRatio = roundTo(hotWaterMl / doseG, 2);
   if (manualPresetBypassWaterMl > 0) {
     precisionOverrideNotes.push(
-      `AeroPress bypass split active: brew ${hotWaterMl} ml through the chamber, then add ${manualPresetBypassWaterMl} ml bypass water in the cup after pressing. Final ratio 1:${formatBaristaRatio(finalBeverageRatio)}, concentrate ratio 1:${formatBaristaRatio(hotExtractionRatio)}.`,
+      `Bypass split: brew ${hotWaterMl} ml through the chamber, then add ${manualPresetBypassWaterMl} ml bypass water in the cup after pressing. Final ratio 1:${formatBaristaRatio(finalBeverageRatio)}, concentrate ratio 1:${formatBaristaRatio(hotExtractionRatio)}.`,
     );
     if (aeropressProductionTarget?.targetNote) {
       precisionOverrideNotes.push(aeropressProductionTarget.targetNote);
     }
     precisionOverrideNotes.push(
-      'AeroPress bypass correction loop: if thin, reduce bypass 10-15 ml, extend steep 5-10 seconds, or grind slightly finer; if bitter or dry, grind coarser, lower temperature 1-2C, reduce stirring, and stop pressing earlier.',
+      'Koreksi: if thin, reduce bypass 10-15 ml, extend steep 5-10 seconds, or grind slightly finer; if bitter or dry, grind coarser, lower temperature 1-2C, reduce stirring, and stop pressing earlier.',
     );
     precisionOverrideNotes.push(
-      'AeroPress bypass correction loop: if flat, reduce bypass or use lower-buffer water; if muddy or heavy, reduce stirring, press gentler, stop before the hiss, and grind slightly coarser.',
+      'Koreksi: if flat, reduce bypass or use lower-buffer water; if muddy or heavy, reduce stirring, press gentler, stop before the hiss, and grind slightly coarser.',
     );
   }
 
@@ -8670,6 +8670,14 @@ function finalizePlanCore(
   const hotWaterSharePercent = hotSplitPercent;
   const iceSharePercent = iceSplitPercent;
 
+  const aeropressStyleGrindBias: GrindBias = methodFamily === 'aeropress'
+    ? aeropressProductionStyle === 'bright_clean'
+      ? 'coarser'
+      : (aeropressProductionStyle === 'sweet_body' || aeropressProductionStyle === 'dense_comforting' || aeropressProductionStyle === 'no_bypass')
+        ? 'finer'
+        : 'same'
+    : 'same';
+
   const grindBias = combineBias(
     roastAdjustedTargets.suggestedGrindBias,
     targetProfile.grindBias,
@@ -8687,6 +8695,7 @@ function finalizePlanCore(
     doseAdjustment.grindBias,
     serviceDoseTargetAdjustment.grindBias,
     flavorAlignment.grindBias,
+    aeropressStyleGrindBias,
   );
   const grindDetails = buildGrindRecommendation(grinder, grinderSetting, grindBias, input.roastLevel, input.brewMode);
   const steps = buildSteps(controlledDeviceProfile, hotWaterMl, totalTimeSeconds, {
@@ -8824,7 +8833,10 @@ function finalizePlanCore(
       waterProfile.classification === 'moderate_upper_buffered'
         || waterProfile.classification === 'high_buffer'
         || waterProfile.minerals.alkalinityPpm >= 55
-        ? ['AeroPress water cue: upper-buffered alkalinity can soften acidity and floral clarity; keep agitation controlled and avoid pushing temperature higher than needed.']
+        ? [targetProfile.id === 'floral_transparent' ? 'AeroPress water cue: high-buffer water will heavily mute delicate floral notes; consider a softer water or use a tighter ratio to punch through.' : 'AeroPress water cue: upper-buffered alkalinity can soften acidity and floral clarity; keep agitation controlled and avoid pushing temperature higher than needed.']
+        : [],
+      (waterProfile.classification === 'low_buffer_clean' || waterProfile.minerals.tdsPpm <= 40) && input.brewMode === 'iced' && aeropressProductionStyle === 'bypass'
+        ? ['AeroPress water cue: very soft/low-mineral water combined with iced bypass can lead to a thin cup. You may need to tighten the ratio or grind slightly finer.']
         : [],
       /natural|anaerobic|ferment|carbonic|mosto|thermal|coferment/.test(processCueForAeroPress)
         ? ['AeroPress process cue: natural or ferment-leaning beans can show winey/ferment notes if agitation and contact run too high; adjust one variable after tasting.']
@@ -9784,7 +9796,7 @@ export function applyAiBrewOptimizationPatch(
   const firstPourStep = positivePourSteps[0];
   const lastPourStep = positivePourSteps[positivePourSteps.length - 1];
   const notes = normalizeNoteList(
-    plan.notes,
+    plan.notes.slice(0, 15),
     optimizationReason ? [`AI optimizer: ${optimizationReason}`] : ['AI optimizer adjusted the deterministic brew envelope within guardrails.'],
     grindGuidance ? [`AI grind guidance: ${grindGuidance}`] : [],
   );

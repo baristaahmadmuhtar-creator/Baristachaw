@@ -1,22 +1,23 @@
 # AI Brew Method + Style Inventory
 
-Generated: 2026-06-08T05:41:28.820Z
-Local SHA: 9eff039a9b67ccf51894160faddafb22a1250b42
-Remote main SHA: 9eff039a9b67ccf51894160faddafb22a1250b42
+Generated: 2026-06-08T07:58:58.252Z
+Local SHA: f7f7462798d5cf64098f2d7446bcebc300d10216
+Remote main SHA: f7f7462798d5cf64098f2d7446bcebc300d10216
 Branch: main
-Working tree status at generation: M apps/web/src/features/ai-brew/aeropressCalibration.ts
+Working tree status at generation: M apps/web/public/data/ai-brew/grinder-settings.v2026-06.json
+ M apps/web/src/features/ai-brew/aeropressCalibration.ts
+ M apps/web/src/features/ai-brew/knowledge.ts
  M apps/web/src/features/ai-brew/planner.ts
+ M apps/web/src/features/ai-brew/workflowGuide.ts
  M docs/ai-brew-method-style-coverage-report.md
  M docs/ai-brew-method-style-final-verdict.md
  M docs/ai-brew-method-style-inventory.md
  M docs/ai-brew-method-style-ui-ux-report.md
  M docs/ai-brew-real-world-1000-report.md
- M tests/e2e/tools.spec.ts
- M tests/unit/aiBrewPlanner.test.ts
-?? apply-narrative-upgrade.cjs
-?? check-broken.cjs
-?? patch-localization.cjs
-Artifact directory: `artifacts/ai-brew-audit/method-styles/9eff039a9b67`
+ M scripts/ai-brew-method-style-audit.mjs
+?? patch.cjs
+?? test_length.mjs
+Artifact directory: `artifacts/ai-brew-audit/method-styles/f7f7462798d5`
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 
@@ -25,7 +26,7 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 ### aeropress
 
 - Classification: STRONG
-- Average score: 99.6
+- Average score: 100
 - Visible methods: AeroPress (aeropress)
 - Styles/gaya: Auto (auto); Standard (standard); Inverted (inverted); Measured bypass (bypass); No bypass (no_bypass); Bright clean (bright_clean); Sweet body (sweet_body)
 - Manual presets: 6

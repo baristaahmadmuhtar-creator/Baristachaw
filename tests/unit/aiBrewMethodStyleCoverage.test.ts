@@ -70,6 +70,7 @@ test('AI Brew method-style audit covers real methods, styles, guides, language, 
     assert.ok(fs.existsSync(path.join(artifactDir, filename)), `${filename} must be written`);
   }
   assert.equal(summary.tutorialMismatchCount, 0, 'method-style matrix must have zero tutorial/action mismatches');
+  assert.equal(summary.aeropressTargetRoastMismatchCount, 0, 'AeroPress target/roast tutorial sync must have zero mismatches');
   const cases = JSON.parse(fs.readFileSync(path.join(artifactDir, 'cases.json'), 'utf8'));
   assert.ok(cases.length >= summary.caseCount, 'cases artifact must include each generated case');
   for (const caseRecord of cases.slice(0, 40)) {

@@ -1,4 +1,12 @@
 import type {
+  RoastLevel,
+} from '../barista-tools/types.ts';
+import {
+  isResolvedAeroPressStyle,
+  resolveAeroPressAutoStyle,
+  resolveAeroPressProductionTarget,
+} from './aeropressCalibration.ts';
+import type {
   AiBrewMethodFamily,
   WorkflowGuideActionType,
   KalitaWaveRecipeStyle,
@@ -32,6 +40,8 @@ export interface WorkflowTutorialContext {
   language?: string;
   hasWarning?: boolean;
   recipeStyle?: string;
+  targetProfileId?: string;
+  roastLevel?: RoastLevel;
 }
 
 export const AI_BREW_WORKFLOW_TUTORIAL_METHODS = [
@@ -597,6 +607,107 @@ function resolveProfileTutorialCopy(
     || (context.brewMode === 'iced' ? profile.iced?.[phase] : undefined)
     || profile[phase]
     || profile.main;
+}
+
+function formatAeroPressStirCountEn(value: string) {
+  return value.replace(/x$/i, ' times');
+}
+
+function formatAeroPressStirCountId(value: string) {
+  return value.replace(/x$/i, ' kali');
+}
+
+function resolveAeroPressShortTargetCue(targetProfileId?: string) {
+  switch (targetProfileId) {
+    case 'more_acidity':
+      return { en: 'keep acidity bright', id: 'menjaga keasaman tetap cerah' };
+    case 'floral_transparent':
+      return { en: 'protect floral clarity', id: 'menjaga floral dan kejernihan' };
+    case 'fruit_forward':
+      return { en: 'protect fruit aromatics', id: 'menjaga aroma buah' };
+    case 'more_sweetness':
+      return { en: 'build sweetness', id: 'membangun rasa manis' };
+    case 'soft_round':
+      return { en: 'keep sweetness round', id: 'menjaga manis tetap bulat' };
+    case 'more_body':
+      return { en: 'build body and texture', id: 'membangun body dan tekstur' };
+    case 'dense_comforting':
+      return { en: 'build dense body', id: 'membangun body padat' };
+    case 'balance_clean':
+    default:
+      return { en: 'keep balance clean', id: 'menjaga seimbang dan bersih' };
+  }
+}
+
+function resolveAeroPressShortRoastCue(roastLevel?: RoastLevel) {
+  switch (roastLevel) {
+    case 'light':
+    case 'medium_light':
+      return { en: 'light roast needs enough heat', id: 'roast terang perlu suhu cukup' };
+    case 'medium_dark':
+      return { en: 'medium-dark roast needs lower heat', id: 'roast medium-dark perlu suhu rendah' };
+    case 'dark':
+      return { en: 'dark roast needs lower heat and gentle pressure', id: 'roast gelap perlu suhu rendah dan tekanan lembut' };
+    case 'medium':
+    default:
+      return { en: 'medium roast baseline', id: 'roast medium baseline' };
+  }
+}
+
+function resolveContextualAeroPressTutorialCopy(
+  context: WorkflowTutorialContext,
+  fallback: WorkflowTutorialCopy,
+): WorkflowTutorialCopy {
+  if (!context.targetProfileId && !context.roastLevel) return fallback;
+  const style = isResolvedAeroPressStyle(context.recipeStyle)
+    ? context.recipeStyle
+    : resolveAeroPressAutoStyle(context.targetProfileId);
+  const calibration = resolveAeroPressProductionTarget(style, context.targetProfileId, context.roastLevel);
+  const stirEn = formatAeroPressStirCountEn(calibration.stirCount);
+  const stirId = formatAeroPressStirCountId(calibration.stirCount);
+  const targetCue = resolveAeroPressShortTargetCue(context.targetProfileId);
+  const roastCue = resolveAeroPressShortRoastCue(context.roastLevel);
+  switch (context.actionType) {
+    case 'stir':
+      return {
+        en: `Stir ${stirEn} to ${targetCue.en}; avoid extra agitation.`,
+        id: `Aduk ${stirId} untuk ${targetCue.id}; hindari agitasi tambahan.`,
+      };
+    case 'steep':
+      return {
+        en: `Hold the steep to ${targetCue.en}.`,
+        id: `Tahan rendaman untuk ${targetCue.id}.`,
+      };
+    case 'wait':
+      return {
+        en: `Flip the inverted AeroPress safely after the steep; ${roastCue.en}.`,
+        id: `Balikkan AeroPress terbalik dengan aman setelah rendaman; ${roastCue.id}.`,
+      };
+    case 'press':
+      return {
+        en: `Press with gentle pressure to ${targetCue.en}; ${roastCue.en}.`,
+        id: `Tekan lembut untuk ${targetCue.id}; ${roastCue.id}.`,
+      };
+    case 'stop':
+      return {
+        en: `Stop before the dry hiss; ${roastCue.en}.`,
+        id: `Berhenti sebelum desis kering; ${roastCue.id}.`,
+      };
+    case 'dilute':
+      return {
+        en: 'Add measured bypass only after pressing.',
+        id: 'Tambahkan bypass terukur hanya setelah tekan.',
+      };
+    case 'serve':
+      return {
+        en: 'Mix the cup, then serve.',
+        id: 'Aduk cangkir, lalu sajikan.',
+      };
+    case 'rinse_preheat':
+    case 'charge':
+    default:
+      return fallback;
+  }
 }
 
 const FRENCH_PRESS_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
@@ -2513,7 +2624,8 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext) 
     const styleProfile = AEROPRESS_STYLE_TUTORIALS[styleKey];
     if (styleProfile) {
       const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
-      return normalizeWorkflowTutorialCopy(copy[language], language);
+      const contextualCopy = resolveContextualAeroPressTutorialCopy(context, copy);
+      return normalizeWorkflowTutorialCopy(contextualCopy[language], language);
     }
   }
 

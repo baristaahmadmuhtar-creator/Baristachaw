@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { validateBrewPlanOutput } from '../../apps/web/src/features/ai-brew/antiHallucination.ts';
 import { loadAiBrewCatalog } from '../../apps/web/src/features/ai-brew/catalog.ts';
 import {
   buildAiBrewPlan,
@@ -74,6 +75,17 @@ const BEAN_ARCHETYPES = [
 ] as const;
 
 const ROAST_LEVELS: RoastLevel[] = ['light', 'medium_light', 'medium', 'medium_dark', 'dark'];
+const AEROPRESS_STYLE_MATRIX = ['auto', 'standard', 'inverted', 'bypass', 'no_bypass', 'bright_clean', 'sweet_body'] as const;
+const AEROPRESS_TARGET_PROFILE_IDS = [
+  'balance_clean',
+  'more_sweetness',
+  'more_acidity',
+  'fruit_forward',
+  'floral_transparent',
+  'more_body',
+  'soft_round',
+  'dense_comforting',
+] as const;
 
 function findIdByName(catalog: AiBrewCatalog, kind: 'processes' | 'varieties', text: string) {
   const normalized = text.toLowerCase();
@@ -185,6 +197,152 @@ function assertBypassPlan(plan: BrewPlan, targetProfileId: string) {
   assert.doesNotMatch(safetyText, /\b(drawdown|final pour|flat bed|filter wall|center-to-mid|V60|bloom pour)\b/i);
   assert.doesNotMatch(safetyText, /\$1 seconds|\$|\bundefined\b|\bNaN\b|ActionAction|Action Action|Pressgentle|Stophiss|stir dua times|pour air/i);
 }
+
+function buildAeroPressStylePlan(catalog: AiBrewCatalog, params: {
+  style: typeof AEROPRESS_STYLE_MATRIX[number];
+  targetProfileId: typeof AEROPRESS_TARGET_PROFILE_IDS[number];
+  roastLevel: RoastLevel;
+}) {
+  const dripper = catalog.drippers.find((item) => item.id === 'aeropress')
+    || catalog.drippers.find((item) => /aeropress/i.test(item.name));
+  const grinder = catalog.grinders.find((item) => /k-ultra/i.test(`${item.name} ${item.id}`))
+    || catalog.grinders[0];
+  assert.ok(dripper, 'AeroPress dripper should exist');
+  assert.ok(grinder, 'At least one grinder should exist');
+
+  const form: AiBrewFormState = {
+    ...createDefaultAiBrewFormState(catalog),
+    brewMode: 'hot',
+    coffeeName: `AeroPress ${params.style} ${params.targetProfileId} ${params.roastLevel}`,
+    process: params.targetProfileId === 'fruit_forward' ? 'natural' : 'washed',
+    variety: params.targetProfileId === 'floral_transparent' ? 'gesha' : 'bourbon',
+    roastLevel: params.roastLevel,
+    dripperId: dripper.id,
+    grinderId: grinder.id,
+    targetProfileId: params.targetProfileId,
+    doseG: '15',
+    targetWaterMl: '',
+    targetRatio: '',
+    targetTempC: '',
+    aeropressStyle: params.style,
+    waterMode: 'manual',
+    waterCustomized: true,
+    waterTdsPpm: '90',
+    waterHardnessPpm: '45',
+    waterAlkalinityPpm: '35',
+    waterNotes: 'balanced low-buffer filter water',
+  };
+  return buildAiBrewPlan(form, catalog);
+}
+
+function collectAeroPressGuideText(plan: BrewPlan) {
+  const idText = collectPlanText(plan, 'id');
+  const enText = collectPlanText(plan, 'en');
+  return `${idText}\n${enText}`;
+}
+
+function assertRoastAwareAeroPressTemperature(plan: BrewPlan, roastLevel: RoastLevel) {
+  const brightStyle = plan.recipeStyle === 'bright_clean';
+  if (roastLevel === 'light' || roastLevel === 'medium_light') {
+    assert.ok(
+      plan.waterTempC >= (brightStyle ? 91 : 90),
+      `${plan.recipeStyle}/${plan.targetProfileId}/${roastLevel} should keep light-roast AeroPress hot enough, got ${plan.waterTempC}C`,
+    );
+  }
+  if (roastLevel === 'medium_dark') {
+    assert.ok(
+      plan.waterTempC <= (brightStyle ? 90 : 89),
+      `${plan.recipeStyle}/${plan.targetProfileId}/${roastLevel} should lower temperature for medium-dark roast, got ${plan.waterTempC}C`,
+    );
+  }
+  if (roastLevel === 'dark') {
+    assert.ok(
+      plan.waterTempC <= (brightStyle ? 89 : 88),
+      `${plan.recipeStyle}/${plan.targetProfileId}/${roastLevel} should protect dark roast with lower temperature, got ${plan.waterTempC}C`,
+    );
+  }
+}
+
+function assertAeroPressTargetCue(plan: BrewPlan, targetProfileId: string) {
+  const text = collectAeroPressGuideText(plan);
+  if (targetProfileId === 'more_acidity') {
+    assert.match(text, /acidity|keasaman|cerah|bright/i, `${plan.recipeStyle}/${targetProfileId} should expose bright acidity cues`);
+    assert.match(text, /2-3x|2-3 kali|2-3 times/i, `${plan.recipeStyle}/${targetProfileId} should keep stir count light`);
+  }
+  if (targetProfileId === 'floral_transparent') {
+    assert.match(text, /floral|transparan|transparent|clarity|kejernihan/i, `${plan.recipeStyle}/${targetProfileId} should expose floral clarity cues`);
+    assert.match(text, /2x|2 kali|2 times|2-3x|2-3 kali|2-3 times/i, `${plan.recipeStyle}/${targetProfileId} should use very low agitation`);
+  }
+  if (targetProfileId === 'fruit_forward') {
+    assert.match(text, /fruit|buah|aroma|aromatics/i, `${plan.recipeStyle}/${targetProfileId} should protect fruit aromatics`);
+  }
+  if (targetProfileId === 'more_sweetness' || targetProfileId === 'soft_round') {
+    assert.match(text, /sweet|manis|round|bulat|lembut/i, `${plan.recipeStyle}/${targetProfileId} should expose sweetness/roundness cues`);
+  }
+  if (targetProfileId === 'more_body' || targetProfileId === 'dense_comforting') {
+    assert.match(text, /body|tekstur|dense|padat|comfort|berisi/i, `${plan.recipeStyle}/${targetProfileId} should expose body cues`);
+    assert.match(text, /4x|4 kali|4 times|5x|5 kali|5 times|25-35/i, `${plan.recipeStyle}/${targetProfileId} should use stronger body handling`);
+  }
+  assert.doesNotMatch(text, /\b(drawdown|final pour|flat bed|filter wall|center-to-mid|V60|bloom pour)\b/i);
+  assert.doesNotMatch(text, /\$1 seconds|\$|\bundefined\b|\bNaN\b|ActionAction|Action Action|Pressgentle|Stophiss|stir dua times|pour air/i);
+}
+
+test('AeroPress every style is target-aware, roast-aware, and copy-safe', async () => {
+  const catalog = await loadCatalogForTest();
+  let cases = 0;
+
+  for (const style of AEROPRESS_STYLE_MATRIX) {
+    for (const roastLevel of ROAST_LEVELS) {
+      const balance = buildAeroPressStylePlan(catalog, { style, roastLevel, targetProfileId: 'balance_clean' });
+      assertRoastAwareAeroPressTemperature(balance, roastLevel);
+      assertAeroPressTargetCue(balance, 'balance_clean');
+
+      for (const targetProfileId of AEROPRESS_TARGET_PROFILE_IDS) {
+        const plan = targetProfileId === 'balance_clean'
+          ? balance
+          : buildAeroPressStylePlan(catalog, { style, roastLevel, targetProfileId });
+
+        assert.equal(plan.methodFamily, 'aeropress');
+        assert.equal(plan.roastLevel, roastLevel);
+        assertRoastAwareAeroPressTemperature(plan, roastLevel);
+        assertAeroPressTargetCue(plan, targetProfileId);
+        assert.equal(validateBrewPlanOutput(plan).allowed, true, `${style}/${targetProfileId}/${roastLevel} output guard`);
+
+        if (plan.recipeStyle === 'bypass') {
+          assert.ok(plan.totalWaterMl > plan.hotWaterMl, `${style}/${targetProfileId}/${roastLevel} bypass must split chamber and bypass water`);
+          assert.ok(plan.hotWaterMl <= 240, `${style}/${targetProfileId}/${roastLevel} bypass chamber must stay <= 240 ml`);
+        } else {
+          assert.equal(plan.totalWaterMl, plan.hotWaterMl, `${style}/${targetProfileId}/${roastLevel} non-bypass must not add bypass`);
+          assert.ok(plan.totalWaterMl <= (plan.recipeStyle === 'inverted' ? 220 : 240), `${style}/${targetProfileId}/${roastLevel} chamber cap`);
+        }
+
+        if (targetProfileId === 'more_acidity') {
+          assert.ok(plan.finalBeverageRatio >= balance.finalBeverageRatio + 0.25, `${style}/${roastLevel} acidity ratio should open vs balance`);
+          assert.ok(plan.totalTimeSeconds <= balance.totalTimeSeconds - 5, `${style}/${roastLevel} acidity should finish faster than balance`);
+        }
+        if (targetProfileId === 'floral_transparent') {
+          assert.ok(plan.finalBeverageRatio >= balance.finalBeverageRatio + 0.35, `${style}/${roastLevel} floral ratio should open vs balance`);
+          assert.ok(plan.totalTimeSeconds <= balance.totalTimeSeconds - 10, `${style}/${roastLevel} floral should finish faster than balance`);
+        }
+        if (targetProfileId === 'more_body') {
+          assert.ok(plan.finalBeverageRatio <= balance.finalBeverageRatio - 0.25, `${style}/${roastLevel} body ratio should tighten vs balance`);
+          assert.ok(plan.totalTimeSeconds >= balance.totalTimeSeconds + 10, `${style}/${roastLevel} body should finish slower than balance`);
+        }
+        if (targetProfileId === 'dense_comforting') {
+          assert.ok(plan.finalBeverageRatio <= balance.finalBeverageRatio - 0.35, `${style}/${roastLevel} dense ratio should tighten vs balance`);
+          assert.ok(plan.totalTimeSeconds >= balance.totalTimeSeconds + 15, `${style}/${roastLevel} dense should finish slower than balance`);
+        }
+        if (targetProfileId === 'more_sweetness' || targetProfileId === 'soft_round') {
+          assert.ok(plan.finalBeverageRatio <= balance.finalBeverageRatio, `${style}/${roastLevel} ${targetProfileId} should not run thinner than balance`);
+          assert.ok(plan.totalTimeSeconds >= balance.totalTimeSeconds, `${style}/${roastLevel} ${targetProfileId} should not run faster than balance`);
+        }
+        cases += 1;
+      }
+    }
+  }
+
+  assert.equal(cases, AEROPRESS_STYLE_MATRIX.length * AEROPRESS_TARGET_PROFILE_IDS.length * ROAST_LEVELS.length);
+});
 
 test('AeroPress measured bypass matrix is target-aware, realistic, and leak-free', async () => {
   const catalog = await loadCatalogForTest();

@@ -411,6 +411,8 @@ test('AeroPress generated guide actions resolve matching tutorial details', () =
         brewMode: plan.brewMode,
         language: 'en',
         hasWarning: step.warnings.length > 0,
+        targetProfileId: plan.targetProfileId,
+        roastLevel: plan.roastLevel,
       });
       const id = resolveWorkflowTutorialDetail({
         methodFamily: plan.methodFamily,
@@ -419,6 +421,8 @@ test('AeroPress generated guide actions resolve matching tutorial details', () =
         brewMode: plan.brewMode,
         language: 'id',
         hasWarning: step.warnings.length > 0,
+        targetProfileId: plan.targetProfileId,
+        roastLevel: plan.roastLevel,
       });
 
       assertTutorialActionMatchesGeneratedStep({
@@ -436,6 +440,41 @@ test('AeroPress generated guide actions resolve matching tutorial details', () =
       }
     }
   }
+});
+
+test('AeroPress tutorial detail uses target and roast context when provided', () => {
+  const brightFloralLight = resolveWorkflowTutorialDetail({
+    methodFamily: 'aeropress',
+    recipeStyle: 'bright_clean',
+    actionType: 'stir',
+    brewMode: 'hot',
+    language: 'en',
+    targetProfileId: 'floral_transparent',
+    roastLevel: 'light',
+  } as any);
+  const denseDarkBody = resolveWorkflowTutorialDetail({
+    methodFamily: 'aeropress',
+    recipeStyle: 'sweet_body',
+    actionType: 'press',
+    brewMode: 'hot',
+    language: 'en',
+    targetProfileId: 'dense_comforting',
+    roastLevel: 'dark',
+  } as any);
+  const denseDarkBodyId = resolveWorkflowTutorialDetail({
+    methodFamily: 'aeropress',
+    recipeStyle: 'sweet_body',
+    actionType: 'press',
+    brewMode: 'hot',
+    language: 'id',
+    targetProfileId: 'dense_comforting',
+    roastLevel: 'dark',
+  } as any);
+
+  assert.match(brightFloralLight, /\b(floral|transparent|clarity|light roast)\b/i);
+  assert.match(denseDarkBody, /\b(dense|body|dark roast|gentle pressure)\b/i);
+  assert.match(denseDarkBodyId, /\b(dark|gelap|body|padat|tekanan)\b/i);
+  assert.notEqual(brightFloralLight, denseDarkBody);
 });
 
 test('every selectable AI Brew style resolves bilingual tutorials without raw language or method leakage', () => {
@@ -505,6 +544,8 @@ test('generated method-style guides resolve action-synchronized tutorials for ev
           brewMode: plan.brewMode,
           language: 'en',
           hasWarning: step.warnings.length > 0,
+          targetProfileId: plan.targetProfileId,
+          roastLevel: plan.roastLevel,
         });
         const id = resolveWorkflowTutorialDetail({
           methodFamily: plan.methodFamily,
@@ -513,6 +554,8 @@ test('generated method-style guides resolve action-synchronized tutorials for ev
           brewMode: plan.brewMode,
           language: 'id',
           hasWarning: step.warnings.length > 0,
+          targetProfileId: plan.targetProfileId,
+          roastLevel: plan.roastLevel,
         });
         checkedSteps += 1;
 
@@ -776,6 +819,8 @@ test('every visible AI Brew dripper resolves tutorial detail for each generated 
           brewMode: plan.brewMode,
           language: 'en',
           hasWarning: step.warnings.length > 0,
+          targetProfileId: plan.targetProfileId,
+          roastLevel: plan.roastLevel,
         });
         const id = resolveWorkflowTutorialDetail({
           methodFamily: plan.methodFamily,
@@ -784,6 +829,8 @@ test('every visible AI Brew dripper resolves tutorial detail for each generated 
           brewMode: plan.brewMode,
           language: 'id',
           hasWarning: step.warnings.length > 0,
+          targetProfileId: plan.targetProfileId,
+          roastLevel: plan.roastLevel,
         });
         assert.ok(en.length > 20 && en.length <= 220, `${dripper.name}/${brewMode}/${step.actionType} EN tutorial should be one compact point`);
         assert.ok(id.length > 20 && id.length <= 240, `${dripper.name}/${brewMode}/${step.actionType} ID tutorial should be one compact point`);

@@ -549,6 +549,8 @@ function resolveGuideTutorials(plan, guide) {
       actionType: step.actionType,
       brewMode: plan.brewMode,
       hasWarning: (step.warnings || []).length > 0,
+      targetProfileId: plan.targetProfileId,
+      roastLevel: plan.roastLevel,
     };
     return {
       actionType: step.actionType,
@@ -620,6 +622,30 @@ function collectRawText(plan, guide, tutorialEntries = []) {
 
 function validateTutorialSync(plan, tutorialEntries) {
   const reasons = [];
+  if (plan.methodFamily === 'aeropress') {
+    const tutorialText = tutorialEntries.map((entry) => `${entry.en} ${entry.id}`).join(' ');
+    if (plan.targetProfileId === 'more_acidity' && !/\b(acidity|keasaman|bright|cerah)\b/i.test(tutorialText)) {
+      reasons.push('AeroPress target/roast mismatch: acidity cue missing');
+    }
+    if (plan.targetProfileId === 'floral_transparent' && !/\b(floral|transparent|transparan|clarity|kejernihan)\b/i.test(tutorialText)) {
+      reasons.push('AeroPress target/roast mismatch: floral clarity cue missing');
+    }
+    if (plan.targetProfileId === 'fruit_forward' && !/\b(fruit|buah|aroma|aromatics)\b/i.test(tutorialText)) {
+      reasons.push('AeroPress target/roast mismatch: fruit-forward cue missing');
+    }
+    if ((plan.targetProfileId === 'more_sweetness' || plan.targetProfileId === 'soft_round') && !/\b(sweet|manis|round|bulat|lembut)\b/i.test(tutorialText)) {
+      reasons.push('AeroPress target/roast mismatch: sweetness/round cue missing');
+    }
+    if ((plan.targetProfileId === 'more_body' || plan.targetProfileId === 'dense_comforting') && !/\b(body|tekstur|dense|padat|comfort)\b/i.test(tutorialText)) {
+      reasons.push('AeroPress target/roast mismatch: body/dense cue missing');
+    }
+    if ((plan.roastLevel === 'light' || plan.roastLevel === 'medium_light') && !/\b(light roast|roast terang|enough heat|suhu cukup)\b/i.test(tutorialText)) {
+      reasons.push('AeroPress target/roast mismatch: light roast cue missing');
+    }
+    if ((plan.roastLevel === 'medium_dark' || plan.roastLevel === 'dark') && !/\b(dark roast|medium-dark|roast gelap|suhu lebih rendah|lower heat|gentlest pressure)\b/i.test(tutorialText)) {
+      reasons.push('AeroPress target/roast mismatch: darker roast cue missing');
+    }
+  }
   for (const entry of tutorialEntries) {
     const combined = `${entry.en} ${entry.id}`;
     if (!entry.en || entry.en.length < 20 || entry.en.length > 220) {
@@ -1169,6 +1195,12 @@ const styleCount = styleOptionsAll.length;
 const languageLeakCount = cases.filter((item) => item.languageLeakId || item.languageLeakEn).length;
 const methodLeakCount = cases.filter((item) => item.methodVocabularyLeak).length;
 const tutorialMismatchCount = cases.reduce((sum, item) => sum + (item.tutorialMismatchReasons || []).length, 0);
+const aeropressTargetRoastMismatchCount = cases.reduce(
+  (sum, item) => sum + (item.methodFamily === 'aeropress'
+    ? (item.tutorialMismatchReasons || []).filter((reason) => /target\/roast mismatch/i.test(reason)).length
+    : 0),
+  0,
+);
 const uiWarningCount = cases.reduce((sum, item) => sum + (item.uiWarnings || []).length, 0);
 const warningCount = warnings.length + cases.reduce((sum, item) => sum + (item.warningReasons || []).length, 0);
 const averageScore = Number((cases.reduce((sum, item) => sum + item.score, 0) / cases.length).toFixed(1));
@@ -1199,6 +1231,7 @@ const summary = {
   languageLeakCount,
   methodLeakCount,
   tutorialMismatchCount,
+  aeropressTargetRoastMismatchCount,
   uiWarningCount,
   verdict,
   honestyBoundary: 'This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.',

@@ -5320,8 +5320,8 @@ test('AeroPress production styles keep ratio, bypass split, water label, and use
     { style: 'standard', targetProfileId: 'balance_clean', finalRatio: [13, 14], hotRatio: [13, 14], time: [110, 150], text: /20-30 detik|berhenti sebelum desis|stop before/i },
     { style: 'inverted', targetProfileId: 'more_sweetness', finalRatio: [13, 14], hotRatio: [13, 14], time: [125, 165], text: /terbalik|Balikkan|20-30 detik|berhenti sebelum desis/i },
     { style: 'bypass', targetProfileId: 'floral_transparent', finalRatio: [14.7, 15.3], hotRatio: [8, 10], time: [90, 125], text: /air bypass|setelah tekan saja|transparan|floral|concentrate ratio/i },
-    { style: 'no_bypass', targetProfileId: 'dense_comforting', finalRatio: [13.8, 14.2], hotRatio: [13.8, 14.2], time: [140, 180], text: /seluruh air resep|25-35 detik|berhenti sebelum desis/i },
-    { style: 'bright_clean', targetProfileId: 'more_acidity', finalRatio: [14, 15], hotRatio: [14, 15], time: [90, 130], text: /Aduk 2-3 kali|20-30 detik|berhenti sebelum desis/i },
+    { style: 'no_bypass', targetProfileId: 'dense_comforting', finalRatio: [13.2, 13.6], hotRatio: [13.2, 13.6], time: [165, 205], text: /seluruh air resep|25-35 detik|berhenti sebelum desis/i },
+    { style: 'bright_clean', targetProfileId: 'more_acidity', finalRatio: [14, 15], hotRatio: [14, 15], time: [75, 115], text: /Aduk 2-3 kali|20-30 detik|berhenti sebelum desis/i },
     { style: 'sweet_body', targetProfileId: 'more_body', finalRatio: [12, 13], hotRatio: [12, 13], time: [150, 195], text: /Aduk 5 kali|25-35 detik|mendekati desis|fines|pahit/i },
   ];
 

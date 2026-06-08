@@ -17,6 +17,11 @@ import {
   findWaterBrand,
 } from './catalog.ts';
 import {
+  resolveAeroPressAutoStyle,
+  resolveAeroPressProductionTarget,
+  resolveEffectiveAeroPressStyle,
+} from './aeropressCalibration.ts';
+import {
   formatAiBrewTime,
   formatAiBrewTimeForLanguage,
   isIndonesianAiBrewLanguage,
@@ -7694,152 +7699,6 @@ type DeviceProfileSelectionOptions = {
   targetProfileId?: string;
 };
 
-type ResolvedAeroPressStyle = Exclude<AeroPressRecipeStyle, 'auto'>;
-
-type AeroPressProductionTarget = {
-  finalRatio: number;
-  concentrateRatio: number | null;
-  finishRangeSeconds: [number, number];
-  tempRangeC: [number, number];
-  bypassRangePercent?: [number, number];
-  stirCount?: string;
-  targetNote?: string;
-};
-
-function isResolvedAeroPressStyle(value?: string): value is ResolvedAeroPressStyle {
-  return ['standard', 'inverted', 'bypass', 'no_bypass', 'bright_clean', 'sweet_body'].includes(String(value));
-}
-
-function resolveAeroPressAutoStyle(targetProfileId?: string): ResolvedAeroPressStyle {
-  if (targetProfileId === 'more_acidity' || targetProfileId === 'floral_transparent' || targetProfileId === 'fruit_forward') {
-    return 'bright_clean';
-  }
-  if (targetProfileId === 'more_body' || targetProfileId === 'dense_comforting') {
-    return 'sweet_body';
-  }
-  return 'standard';
-}
-
-function resolveEffectiveAeroPressStyle(
-  profile: Pick<DeviceBrewProfile, 'recipeStyle'>,
-  targetProfileId?: string,
-): ResolvedAeroPressStyle {
-  return isResolvedAeroPressStyle(profile.recipeStyle)
-    ? profile.recipeStyle
-    : resolveAeroPressAutoStyle(targetProfileId);
-}
-
-function resolveAeroPressBypassTarget(targetProfileId?: string): AeroPressProductionTarget {
-  switch (targetProfileId) {
-    case 'more_acidity':
-      return {
-        finalRatio: 14,
-        concentrateRatio: 9,
-        finishRangeSeconds: [95, 125],
-        tempRangeC: [88, 90],
-        bypassRangePercent: [30, 45],
-        stirCount: '2-3x',
-        targetNote: 'AeroPress bypass acidity target: keep contact short, bypass measured after pressing, and correct thin cups by reducing bypass before adding agitation.',
-      };
-    case 'floral_transparent':
-      return {
-        finalRatio: 15,
-        concentrateRatio: 8.5,
-        finishRangeSeconds: [90, 125],
-        tempRangeC: [88, 90],
-        bypassRangePercent: [35, 50],
-        stirCount: '2x',
-        targetNote: 'AeroPress bypass floral target: use the highest bypass share with low agitation so floral clarity is not flattened by a heavy chamber extraction.',
-      };
-    case 'fruit_forward':
-      return {
-        finalRatio: 13.5,
-        concentrateRatio: 9,
-        finishRangeSeconds: [105, 140],
-        tempRangeC: [88, 90],
-        bypassRangePercent: [25, 40],
-        stirCount: '2-3x',
-        targetNote: 'AeroPress bypass fruit-forward target: protect aromatics with medium-low agitation; for natural or fermented coffees, avoid pushing the cup into a heavy ferment edge.',
-      };
-    case 'more_body':
-      return {
-        finalRatio: 12.5,
-        concentrateRatio: 10,
-        finishRangeSeconds: [140, 180],
-        tempRangeC: [88, 90],
-        bypassRangePercent: [10, 25],
-        stirCount: '4x',
-        targetNote: 'AeroPress bypass body target: keep bypass low; if the cup still feels too light, no-bypass or sweet-body style may fit better.',
-      };
-    case 'soft_round':
-      return {
-        finalRatio: 12.8,
-        concentrateRatio: 9.2,
-        finishRangeSeconds: [120, 150],
-        tempRangeC: [88, 90],
-        bypassRangePercent: [20, 35],
-        stirCount: '3x',
-        targetNote: 'AeroPress bypass soft-round target: keep bypass moderate, press gently, and lower temperature for darker roasts.',
-      };
-    case 'dense_comforting':
-      return {
-        finalRatio: 12,
-        concentrateRatio: 10,
-        finishRangeSeconds: [145, 185],
-        tempRangeC: [88, 90],
-        bypassRangePercent: [10, 20],
-        stirCount: '4x',
-        targetNote: 'AeroPress bypass dense target: keep bypass very low because measured dilution can reduce dense body.',
-      };
-    case 'more_sweetness':
-      return {
-        finalRatio: 12.8,
-        concentrateRatio: 9.2,
-        finishRangeSeconds: [125, 160],
-        tempRangeC: [88, 90],
-        bypassRangePercent: [20, 35],
-        stirCount: '3-4x',
-        targetNote: 'AeroPress bypass sweetness target: use less bypass than acidity or floral styles and give the concentrate enough contact to build sweetness.',
-      };
-    case 'balance_clean':
-    default:
-      return {
-        finalRatio: 13,
-        concentrateRatio: 9,
-        finishRangeSeconds: [115, 150],
-        tempRangeC: [88, 90],
-        bypassRangePercent: [25, 40],
-        stirCount: '3x',
-        targetNote: 'AeroPress bypass balance target: brew a clean concentrate, then add measured bypass after pressing to land strength without overworking the coffee bed.',
-      };
-  }
-}
-
-function resolveAeroPressProductionTarget(
-  style: ResolvedAeroPressStyle,
-  targetProfileId?: string,
-): AeroPressProductionTarget {
-  switch (style) {
-    case 'inverted':
-      return { finalRatio: 13.5, concentrateRatio: null, finishRangeSeconds: [125, 165], tempRangeC: [88, 90] };
-    case 'bypass':
-      return resolveAeroPressBypassTarget(targetProfileId);
-    case 'no_bypass':
-      return { finalRatio: 14, concentrateRatio: null, finishRangeSeconds: [140, 180], tempRangeC: [88, 90] };
-    case 'bright_clean':
-      return { finalRatio: 14.5, concentrateRatio: null, finishRangeSeconds: [90, 130], tempRangeC: [90, 92] };
-    case 'sweet_body':
-      return { finalRatio: 12.5, concentrateRatio: null, finishRangeSeconds: [150, 195], tempRangeC: [88, 90] };
-    case 'standard':
-    default:
-      return { finalRatio: 13.5, concentrateRatio: null, finishRangeSeconds: [110, 150], tempRangeC: [88, 90] };
-  }
-}
-
-function isLightAeroPressRoast(roastLevel: RoastLevel) {
-  return roastLevel === 'light' || roastLevel === 'medium_light';
-}
-
 function profileIdForMode(baseId: string, brewMode: 'hot' | 'iced') {
   return brewMode === 'iced' ? baseId.replace(/_hot$/, '_iced') : baseId;
 }
@@ -8407,7 +8266,7 @@ function finalizePlanCore(
     ? resolveEffectiveAeroPressStyle(effectiveDeviceProfile, targetProfile.id)
     : null;
   const aeropressProductionTarget = aeropressProductionStyle
-    ? resolveAeroPressProductionTarget(aeropressProductionStyle, targetProfile.id)
+    ? resolveAeroPressProductionTarget(aeropressProductionStyle, targetProfile.id, input.roastLevel)
     : null;
   if (
     methodFamily === 'aeropress'
@@ -8686,13 +8545,7 @@ function finalizePlanCore(
     && input.brewMode === 'hot'
   ) {
     const [styleMinTempC, styleMaxTempC] = aeropressProductionTarget.tempRangeC;
-    const roastAwareMinTempC = isLightAeroPressRoast(input.roastLevel)
-      ? Math.max(styleMinTempC, aeropressProductionStyle === 'bright_clean' ? 91 : 90)
-      : styleMinTempC;
-    const roastAwareMaxTempC = isLightAeroPressRoast(input.roastLevel)
-      ? Math.max(styleMaxTempC, aeropressProductionStyle === 'bright_clean' ? 92 : 91)
-      : styleMaxTempC;
-    waterTempC = roundTo(clamp(waterTempC, roastAwareMinTempC, roastAwareMaxTempC), 1);
+    waterTempC = roundTo(clamp(waterTempC, styleMinTempC, styleMaxTempC), 1);
   }
   if (targetTempOverrideC !== null) {
     precisionOverrideNotes.push(

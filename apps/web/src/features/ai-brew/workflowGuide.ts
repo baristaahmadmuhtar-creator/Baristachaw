@@ -11,6 +11,8 @@ import type {
   WorkflowGuideTechniqueChip,
   WorkflowGuideChipKey,
 } from './types.ts';
+import { resolveAeroPressProductionTarget } from './aeropressCalibration.ts';
+import type { ResolvedAeroPressStyle } from './aeropressCalibration.ts';
 
 const POUROVER_FAMILIES = new Set<AiBrewMethodFamily>([
   'v60',
@@ -231,7 +233,7 @@ function findKind(plan: BrewPlan, kind: BrewPlanStep['kind']) {
   return plan.steps.find((step) => (step.kind || 'pour') === kind);
 }
 
-type AeroPressGuideStyle = 'standard' | 'inverted' | 'bypass' | 'no_bypass' | 'bright_clean' | 'sweet_body';
+type AeroPressGuideStyle = ResolvedAeroPressStyle;
 
 function resolveAeroPressGuideStyle(plan: BrewPlan): AeroPressGuideStyle {
   switch (plan.recipeStyle) {
@@ -246,7 +248,38 @@ function resolveAeroPressGuideStyle(plan: BrewPlan): AeroPressGuideStyle {
   }
 }
 
-function buildAeroPressStyleGuideCopy(style: AeroPressGuideStyle, targetProfileId?: string) {
+function formatAeroPressStirCountId(value: string) {
+  return value.replace(/x$/i, ' kali');
+}
+
+function decorateAeroPressStyleGuideCopy(
+  style: AeroPressGuideStyle,
+  targetProfileId: string | undefined,
+  roastLevel: BrewPlan['roastLevel'],
+  copy: ReturnType<typeof buildAeroPressStyleGuideCopyBase>,
+) {
+  const calibration = resolveAeroPressProductionTarget(style, targetProfileId, roastLevel);
+  if (style === 'bypass') {
+    return {
+      ...copy,
+      stirChip: calibration.stirCount,
+    };
+  }
+  const roastSentence = `Roast ${roastLevel}: ${calibration.roastCue.id}.`;
+  const targetKey = targetProfileId || 'balance_clean';
+  const targetStir = targetKey === 'balance_clean'
+    ? copy.stir
+    : `Aduk ${formatAeroPressStirCountId(calibration.stirCount)} sesuai target rasa, lalu hentikan agitasi. ${calibration.targetCue.id}.`;
+  return {
+    ...copy,
+    stir: targetStir,
+    steep: `${copy.steep} ${calibration.targetCue.id}.`,
+    press: `${copy.press} ${roastSentence}`,
+    stirChip: calibration.stirCount,
+  };
+}
+
+function buildAeroPressStyleGuideCopyBase(style: AeroPressGuideStyle, targetProfileId?: string) {
   switch (style) {
     case 'inverted':
       return {
@@ -410,6 +443,19 @@ function buildAeroPressStyleGuideCopy(style: AeroPressGuideStyle, targetProfileI
         stopChip: 'sebelum desis',
       };
   }
+}
+
+function buildAeroPressStyleGuideCopy(
+  style: AeroPressGuideStyle,
+  targetProfileId: string | undefined,
+  roastLevel: BrewPlan['roastLevel'],
+) {
+  return decorateAeroPressStyleGuideCopy(
+    style,
+    targetProfileId,
+    roastLevel,
+    buildAeroPressStyleGuideCopyBase(style, targetProfileId),
+  );
 }
 
 function stepsSorted(steps: WorkflowGuideStep[]) {
@@ -781,7 +827,7 @@ function buildPouroverGuide(plan: BrewPlan): WorkflowGuideStep[] {
 
 function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
   const style = resolveAeroPressGuideStyle(plan);
-  const styleCopy = buildAeroPressStyleGuideCopy(style, plan.targetProfileId);
+  const styleCopy = buildAeroPressStyleGuideCopy(style, plan.targetProfileId, plan.roastLevel);
   const volumeSteps = plan.steps.filter((step) => step.pourVolumeMl > 0);
   const charge = volumeSteps[0] || firstVolumeStep(plan);
   const finalCharge = volumeSteps.length > 0 ? volumeSteps[volumeSteps.length - 1] : charge;

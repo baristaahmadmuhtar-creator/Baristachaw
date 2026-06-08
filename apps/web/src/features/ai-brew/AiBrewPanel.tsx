@@ -3224,6 +3224,39 @@ function translateWorkflowGuideTextToEnglish(value: string) {
   }
 
   text = text
+    .replace(/\bAduk ([0-9-]+) kali sesuai target rasa, lalu hentikan agitasi\b/gi, 'Stir $1 times for the taste target, then stop agitation')
+    .replace(/\bTarget rasa: target seimbang menjaga kontak merata, manis bersih, dan akhir rasa terkendali\b/gi, 'Taste target: balance keeps even contact, clean sweetness, and a controlled finish')
+    .replace(/\bTarget rasa: target manis membangun ekstraksi tengah tanpa memaksa akhir rasa menjadi kering\b/gi, 'Taste target: sweetness builds the middle extraction without forcing a dry finish')
+    .replace(/\bTarget rasa: target keasaman menjaga cangkir tetap cerah dengan kontak lebih singkat dan agitasi ringan\b/gi, 'Taste target: acidity keeps the cup bright with shorter contact and light agitation')
+    .replace(/\bTarget rasa: target buah menjaga aroma tetap hidup dengan agitasi rendah-sedang\b/gi, 'Taste target: fruit-forward keeps aromatics lively with medium-low agitation')
+    .replace(/\bTarget rasa: target floral transparan menjaga kejernihan dengan agitasi praktis paling rendah\b/gi, 'Taste target: floral transparency protects clarity with the lowest practical agitation')
+    .replace(/\bTarget rasa: target body membangun tekstur dengan kontak lebih dalam dan tekanan lebih pelan\b/gi, 'Taste target: body builds texture with deeper contact and a slower press')
+    .replace(/\bTarget rasa: target bulat lembut menjaga manis tetap halus dan tekanan tetap mulus\b/gi, 'Taste target: soft round keeps sweetness gentle and pressure smooth')
+    .replace(/\bTarget rasa: target padat nyaman membangun body kompak sambil menjaga risiko pahit\b/gi, 'Taste target: dense comfort builds compact body while guarding bitterness')
+    .replace(/\btarget seimbang menjaga kontak merata, manis bersih, dan akhir rasa terkendali\b/gi, 'the balance target keeps even contact, clean sweetness, and a controlled finish')
+    .replace(/\btarget manis membangun ekstraksi tengah tanpa memaksa akhir rasa menjadi kering\b/gi, 'the sweetness target builds the middle extraction without forcing a dry finish')
+    .replace(/\btarget keasaman menjaga cangkir tetap cerah dengan kontak lebih singkat dan agitasi ringan\b/gi, 'the acidity target keeps the cup bright with shorter contact and light agitation')
+    .replace(/\btarget buah menjaga aroma tetap hidup dengan agitasi rendah-sedang\b/gi, 'the fruit-forward target protects aromatics with medium-low agitation')
+    .replace(/\btarget floral transparan menjaga kejernihan dengan agitasi praktis paling rendah\b/gi, 'the floral transparent target protects clarity with the lowest practical agitation')
+    .replace(/\btarget body membangun tekstur dengan kontak lebih dalam dan tekanan lebih pelan\b/gi, 'the body target builds texture with deeper contact and a slower press')
+    .replace(/\btarget bulat lembut menjaga manis tetap halus dan tekanan tetap mulus\b/gi, 'the soft round target keeps sweetness gentle and pressure smooth')
+    .replace(/\btarget padat nyaman membangun body kompak sambil menjaga risiko pahit\b/gi, 'the dense comforting target builds compact body while guarding bitterness')
+    .replace(/\bRoast (light|medium_light): roast terang butuh suhu cukup dan tekanan tertahan\b/gi, '$1 roast: use enough heat and restrained pressure')
+    .replace(/\bRoast medium: roast medium tetap dekat baseline\b(?!;)/gi, 'Medium roast: stay near baseline')
+    .replace(/\bRoast medium_dark: roast medium-dark butuh suhu rendah dan agitasi lembut\b/gi, 'Medium-dark roast: use lower heat and gentle agitation')
+    .replace(/\bRoast dark: roast gelap butuh suhu rendah dan tekanan paling lembut\b/gi, 'Dark roast: use lower heat and the gentlest pressure')
+    .replace(/\broast terang butuh suhu cukup dan tekanan tertahan\b/gi, 'light roast needs enough heat and restrained pressure')
+    .replace(/\broast medium tetap dekat baseline\b(?!;)/gi, 'medium roast stays near baseline')
+    .replace(/\broast medium-dark butuh suhu rendah dan agitasi lembut\b/gi, 'medium-dark roast needs lower heat and gentle agitation')
+    .replace(/\broast gelap butuh suhu rendah dan tekanan paling lembut\b/gi, 'dark roast needs lower heat and the gentlest pressure')
+    .replace(/\bRoast (light|medium_light): roast terang butuh suhu cukup, pembasahan cepat, dan tekanan tertahan agar manis terbuka tanpa kasar\b/gi, '$1 roast: use enough heat, fast wetting, and restrained pressure so sweetness opens without roughness')
+    .replace(/\bRoast medium: roast medium tetap dekat baseline; koreksi dari rasa sebelum mengubah lebih dari satu variabel\b/gi, 'Medium roast: stay near the baseline; adjust from taste before changing more than one variable')
+    .replace(/\bRoast medium_dark: roast medium-dark butuh suhu lebih rendah, agitasi lebih lembut, dan stop lebih awal sebelum kering\b/gi, 'Medium-dark roast: use lower heat, gentler agitation, and an earlier stop before dryness')
+    .replace(/\bRoast dark: roast gelap butuh tekanan paling lembut dan suhu lebih rendah agar pahit serta ampas halus terkendali\b/gi, 'Dark roast: use the gentlest pressure and lower heat so bitterness and grit stay controlled')
+    .replace(/\broast terang butuh suhu cukup, pembasahan cepat, dan tekanan tertahan agar manis terbuka tanpa kasar\b/gi, 'light roast needs enough heat, fast wetting, and restrained pressure so sweetness opens without roughness')
+    .replace(/\broast medium tetap dekat baseline; koreksi dari rasa sebelum mengubah lebih dari satu variabel\b/gi, 'medium roast stays near the baseline; adjust from taste before changing more than one variable')
+    .replace(/\broast medium-dark butuh suhu lebih rendah, agitasi lebih lembut, dan stop lebih awal sebelum kering\b/gi, 'medium-dark roast needs lower heat, gentler agitation, and an earlier stop before dryness')
+    .replace(/\broast gelap butuh tekanan paling lembut dan suhu lebih rendah agar pahit serta ampas halus terkendali\b/gi, 'dark roast needs the gentlest pressure and lower heat so bitterness and grit stay controlled')
     .replace(/\bTuang air ke ruang seduh dan basahi bubuk kopi merata\b/gi, 'Pour water into the chamber and wet the coffee evenly')
     .replace(/\bIsi awal ([0-9.,]+ ml) selama 20-25 detik untuk membasahi bubuk tanpa mengejar volume penuh\. Target ([0-9.,]+ ml)\b/gi, 'Add an initial $1 over 20-25 seconds to wet the grounds without rushing the full volume. Target $2')
     .replace(/\bFase ini hanya memberi waktu bubuk basah merata sebelum air utama masuk\b/gi, 'This stage gives the grounds time to wet evenly before the main water charge')
@@ -4302,6 +4335,8 @@ function buildAiBrewDeterministicStepDetailPoints(
     language,
     hasWarning: workflowWarnings.length > 0,
     recipeStyle: plan.recipeStyle,
+    targetProfileId: plan.targetProfileId,
+    roastLevel: plan.roastLevel,
   }));
 
   if (workflowWarnings.length > 0) {

@@ -310,24 +310,36 @@ export function resolveAeroPressProductionTarget(
   style: ResolvedAeroPressStyle,
   targetProfileId?: string,
   roastLevel?: RoastLevel,
+  brewMode: 'hot' | 'iced' = 'hot',
 ): AeroPressProductionTarget {
   const target = resolveTargetCalibration(targetProfileId);
   const base = style === 'bypass'
     ? BYPASS_TARGETS[targetProfileId || 'balance_clean'] || BYPASS_TARGETS.balance_clean
     : STYLE_BASE[style];
   const targetNote = base.targetNote || target.note;
-  const stirCount = resolveStyleTargetStirCount(
+  let stirCount = resolveStyleTargetStirCount(
     style,
     targetProfileId,
     style === 'bypass' ? base.stirCount : target.stirCount,
   );
-  const ratio = style === 'bypass' ? base.finalRatio : base.finalRatio + target.ratioDelta;
+  if (brewMode === 'iced') {
+    stirCount = stirCount === '0x' ? '2x' : stirCount === '2x' ? '4x' : '5x';
+  }
+  let ratio = style === 'bypass' ? base.finalRatio : base.finalRatio + target.ratioDelta;
+  if (brewMode === 'iced' && style !== 'bypass') {
+    ratio -= 1.0; // Iced mode requires a tighter extraction base ratio
+  }
   const finishRangeSeconds: [number, number] = style === 'bypass'
     ? base.finishRangeSeconds
-    : [
-      Math.max(75, base.finishRangeSeconds[0] + target.timeDeltaSec),
-      Math.max(85, base.finishRangeSeconds[1] + target.timeDeltaSec),
-    ];
+    : brewMode === 'iced'
+      ? [
+        Math.max(60, base.finishRangeSeconds[0] + target.timeDeltaSec - 20),
+        Math.max(70, base.finishRangeSeconds[1] + target.timeDeltaSec - 20),
+      ]
+      : [
+        Math.max(75, base.finishRangeSeconds[0] + target.timeDeltaSec),
+        Math.max(85, base.finishRangeSeconds[1] + target.timeDeltaSec),
+      ];
   if (style !== 'bypass') {
     if (targetProfileId === 'more_acidity') {
       finishRangeSeconds[1] = Math.max(finishRangeSeconds[0], Math.min(finishRangeSeconds[1], base.finishRangeSeconds[0] - 5));
@@ -345,9 +357,11 @@ export function resolveAeroPressProductionTarget(
     ...base,
     finalRatio: Number(ratio.toFixed(2)),
     finishRangeSeconds,
-    tempRangeC: applyRoastTemperatureRange(base.tempRangeC, style, roastLevel),
+    tempRangeC: brewMode === 'iced'
+      ? [Math.min(98, base.tempRangeC[0] + 2), Math.min(98, base.tempRangeC[1] + 2)]
+      : applyRoastTemperatureRange(base.tempRangeC, style, roastLevel),
     stirCount,
-    targetNote: `${targetNote} Roast guard: ${resolveAeroPressRoastCue(roastLevel).en}.`,
+    targetNote: `${targetNote} Roast guard: ${resolveAeroPressRoastCue(roastLevel).en}.${brewMode === 'iced' ? ' Iced mode tightens ratio and adds agitation.' : ''}`,
     targetCue: {
       en: target.en,
       id: target.id,

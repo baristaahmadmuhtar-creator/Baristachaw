@@ -1626,7 +1626,7 @@ test('ai brew Brew Presets preserve source-backed ratios, localized confidence, 
   });
   await page.goto('/tools?tab=ai-brew&language=id', { waitUntil: 'domcontentloaded' });
   await openAiBrewQuickMode(page);
-  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Brew Presets Jan Ahrend');
+  await setVisibleInputValue(page, 'ai-brew-coffee-name', 'QA Coffee Presets Jan Ahrend');
   await page.getByTestId('ai-brew-manual-preset-toggle').click();
   await expect(page.getByTestId('ai-brew-manual-preset-list')).toBeVisible();
   await setVisibleInputValue(page, 'ai-brew-manual-preset-search', 'Jan Ahrend');
@@ -1637,7 +1637,7 @@ test('ai brew Brew Presets preserve source-backed ratios, localized confidence, 
   await page.getByTestId('ai-brew-generate').click();
 
   result = page.getByTestId('ai-brew-result');
-  await expect(result).toContainText('QA Brew Presets Jan Ahrend');
+  await expect(result).toContainText('QA Coffee Presets Jan Ahrend');
   await result.getByTestId('ai-brew-result-tab-flow').click();
   const janPlan = await readStoredAiBrewPlan(page);
   const janGuide = (janPlan.workflowGuideSteps || [])

@@ -223,6 +223,7 @@ const ICED_METHOD_FAMILIES = new Set<AiBrewMethodFamily>([
   'chemex',
   'clever_dripper',
   'hario_switch',
+  'aeropress',
 ]);
 
 const ICED_MANUAL_POUR_OVER_FAMILIES = new Set<AiBrewMethodFamily>([
@@ -4275,6 +4276,10 @@ function resolveIcedFinalRatioRange(params: {
     min = 13.7;
     max = 14.5;
     label = noBypassOrLowBypass ? 'seduhan es low-bypass' : 'seduhan es immersion';
+  } else if (params.methodFamily === 'aeropress') {
+    min = 12.5;
+    max = 13.8;
+    label = 'seduhan es AeroPress';
   } else if (flatBottom || params.methodFamily === 'melitta') {
     min = 14.2;
     max = 15.0;
@@ -7541,6 +7546,9 @@ function buildServiceExecutionNote(params: {
   waterTempC: number;
 }) {
   if (params.brewMode === 'iced') {
+    if (params.methodFamily === 'aeropress') {
+      return `AeroPress iced is locked: brew ${params.hotWaterMl} ml hot concentrate over ${params.iceMl} g ice (${params.hotSplitPercent}%:${params.iceSplitPercent}%). Total input is ${params.totalWaterMl} ml, not final cup output. Final ratio is 1:${formatBaristaRatio(params.finalBeverageRatio)}; hot concentrate extracts at 1:${formatBaristaRatio(params.hotExtractionRatio)}. Press steadily to hold back ice dilution, then stir the chilled server so service is not confused with another brew step.`;
+    }
     return `Japanese-style iced is locked: brew ${params.hotWaterMl} ml hot concentrate over ${params.iceMl} g ice (${params.hotSplitPercent}%:${params.iceSplitPercent}%). Total input is ${params.totalWaterMl} ml, not final cup output. Final ratio is 1:${formatBaristaRatio(params.finalBeverageRatio)}; hot concentrate extracts at 1:${formatBaristaRatio(params.hotExtractionRatio)}. Keep pours compact to hold sweetness and clarity, then stir the chilled server after drawdown so service is not confused with another brew step.`;
   }
   if (params.methodFamily === 'aeropress' && params.hotWaterMl < params.totalWaterMl) {
@@ -7733,7 +7741,7 @@ function resolveAeroPressProfileId(
   options?: DeviceProfileSelectionOptions,
 ) {
   const haystack = `${dripper.id} ${dripper.name}`.toLowerCase();
-  if (!haystack.includes('aeropress') || brewMode !== 'hot') return undefined;
+  if (!haystack.includes('aeropress')) return undefined;
   const explicitStyle = options?.aeropressStyle && options.aeropressStyle !== 'auto'
     ? options.aeropressStyle
     : undefined;
@@ -7780,13 +7788,13 @@ export function resolveDeviceProfileSelection(
 
   const exact =
     (requestedDefaultId
-      ? catalog.deviceProfiles.find((item) => item.id === requestedDefaultId && item.brewMode === brewMode)
+      ? catalog.deviceProfiles.find((item) => item.id === requestedDefaultId && (item.brewMode === brewMode || (dripper.methodFamily === 'aeropress' && brewMode === 'iced')))
       : undefined)
-    || catalog.deviceProfiles.find((item) => item.exactMatch && item.brewMode === brewMode && item.dripperIds.includes(dripper.id));
+    || catalog.deviceProfiles.find((item) => item.exactMatch && (item.brewMode === brewMode || (dripper.methodFamily === 'aeropress' && brewMode === 'iced')) && item.dripperIds.includes(dripper.id));
 
   if (exact) {
     return {
-      profile: exact,
+      profile: dripper.methodFamily === 'aeropress' && brewMode === 'iced' ? { ...exact, brewMode: 'iced' as const } : exact,
       mode: 'exact' as const,
       fallbackUsed: false,
     };
@@ -8266,7 +8274,7 @@ function finalizePlanCore(
     ? resolveEffectiveAeroPressStyle(effectiveDeviceProfile, targetProfile.id)
     : null;
   const aeropressProductionTarget = aeropressProductionStyle
-    ? resolveAeroPressProductionTarget(aeropressProductionStyle, targetProfile.id, input.roastLevel)
+    ? resolveAeroPressProductionTarget(aeropressProductionStyle, targetProfile.id, input.roastLevel, input.brewMode)
     : null;
   if (
     methodFamily === 'aeropress'
@@ -8349,7 +8357,12 @@ function finalizePlanCore(
     if (style === 'inverted') {
       if (totalWaterMl > 220) {
         totalWaterMl = 220;
-        hotWaterMl = 220;
+        if (input.brewMode === 'iced') {
+          const minHot = Math.ceil(doseG * (ICED_HOT_EXTRACTION_RATIO_BOUNDS[methodFamily]?.min || 8.8));
+          hotWaterMl = clampRoundedToIncrement(totalWaterMl * hotWaterShare, Math.max(1, minHot), 220, resolveBaristaVolumeIncrementMl(methodFamily));
+        } else {
+          hotWaterMl = 220;
+        }
         recommendedRatio = roundTo(totalWaterMl / doseG, 2);
         precisionOverrideNotes.push(
           `AeroPress Inverted capacity limit active: chamber recipe water capped at 220 ml for safety.`
@@ -8374,7 +8387,12 @@ function finalizePlanCore(
     } else {
       if (totalWaterMl > 240) {
         totalWaterMl = 240;
-        hotWaterMl = 240;
+        if (input.brewMode === 'iced') {
+          const minHot = Math.ceil(doseG * (ICED_HOT_EXTRACTION_RATIO_BOUNDS[methodFamily]?.min || 8.8));
+          hotWaterMl = clampRoundedToIncrement(totalWaterMl * hotWaterShare, Math.max(1, minHot), 240, resolveBaristaVolumeIncrementMl(methodFamily));
+        } else {
+          hotWaterMl = 240;
+        }
         recommendedRatio = roundTo(totalWaterMl / doseG, 2);
         precisionOverrideNotes.push(
           `AeroPress chamber capacity limit active: recipe water capped at 240 ml to prevent overflow.`

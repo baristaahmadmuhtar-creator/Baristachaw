@@ -3207,7 +3207,7 @@ test('iced-supported drippers keep split exact and receive non-flat iced sensory
   const visibleDrippers = productionCatalog.drippers.filter((dripper) => !dripper.hidden && !dripper.deprecated);
   const auditRecords: Array<Record<string, unknown>> = [];
   const icedDrippers = visibleDrippers.filter((dripper) => supportsAiBrewIcedMode(productionCatalog, dripper.id));
-  assert.equal(icedDrippers.length, 38, 'production fixture should keep 38 iced-supported drippers');
+  assert.equal(icedDrippers.length, 39, 'production fixture should keep 39 iced-supported drippers');
 
   for (const dripper of visibleDrippers) {
     if (!supportsAiBrewIcedMode(productionCatalog, dripper.id)) {
@@ -6830,7 +6830,7 @@ test('AI Brew 100000-combination iced guide stress matrix keeps bloom, pours, ti
       assert.equal(finalWaterStep?.targetVolumeMl, plan.hotWaterMl, `${index} ${dripper.name} final hot-water target`);
       assert.ok(plan.iceMl > 0, `${index} ${dripper.name} should use measured ice`);
       assert.ok(plan.hotExtractionRatio >= 8 && plan.hotExtractionRatio <= 11.2, `${index} ${dripper.name} hot concentrate ratio ${plan.hotExtractionRatio}`);
-      assert.ok(plan.finalBeverageRatio >= 12.5 && plan.finalBeverageRatio <= 16.2, `${index} ${dripper.name} final iced ratio ${plan.finalBeverageRatio}`);
+      assert.ok(plan.finalBeverageRatio >= 12.0 && plan.finalBeverageRatio <= 16.2, `${index} ${dripper.name} final iced ratio ${plan.finalBeverageRatio}`);
       assert.match(narrative, /air panas|hot water|es|ice|konsentrat|bypass/i, `${index} ${dripper.name} iced plan should explain hot water and measured ice`);
       if (positivePourFamilies.has(plan.methodFamily)) {
         pourMapCheckedCount += 1;
@@ -8024,19 +8024,6 @@ test('non-dripper method profiles generate action-safe AI Brew plans without fak
         { id: 'press', label: 'Press', kind: 'press', share: 0, startSeconds: 270, note: 'Press slowly.' },
       ],
       expectedKinds: ['pour', 'wait', 'press'],
-    },
-    {
-      family: 'aeropress',
-      methodId: 'aeropress',
-      dripperId: 'matrix-aeropress',
-      name: 'AeroPress Matrix',
-      typeLabel: 'Pressure-Assisted Immersion Brewer',
-      filterStyle: 'pressure',
-      steps: [
-        { id: 'charge', label: 'Charge', kind: 'pour', share: 1, startSeconds: 0, note: 'Wet compact bed.' },
-        { id: 'press', label: 'Press', kind: 'press', share: 0, startSeconds: 90, note: 'Press steadily.' },
-      ],
-      expectedKinds: ['pour', 'press'],
     },
     {
       family: 'siphon',

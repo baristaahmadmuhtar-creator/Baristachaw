@@ -35,7 +35,12 @@ test('AI Brew production gate documentation is complete and honest', () => {
 
 test('package exposes explicit AI Brew matrix and stress gate scripts', () => {
   const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')) as { scripts?: Record<string, string> };
-  for (const script of ['test:ai-brew:matrix', 'test:ai-brew:stress', 'test:ai-brew:deep', 'test:ai-brew:report']) {
+  for (const script of ['test:ai-brew:matrix', 'test:ai-brew:stress', 'test:ai-brew:deep', 'test:ai-brew:report', 'test:ai-brew:aeropress-stress']) {
     assert.ok(pkg.scripts?.[script], `missing package script ${script}`);
   }
+  assert.match(
+    pkg.scripts?.['test:ai-brew:aeropress-stress'] || '',
+    /scripts\/ai-brew-aeropress-style-stress\.mjs/,
+    'AeroPress stress gate should run the dedicated style stress script',
+  );
 });

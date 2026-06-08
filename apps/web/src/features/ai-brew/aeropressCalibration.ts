@@ -97,15 +97,15 @@ const TARGET_CALIBRATION: Record<string, AeroPressTargetCalibration> = {
   },
   more_acidity: {
     ratioDelta: 0.5,
-    timeDeltaSec: -15,
+    timeDeltaSec: -20,
     stirCount: '2-3x',
     en: 'acidity target keeps the cup bright with shorter contact and light agitation',
     id: 'target keasaman menjaga cangkir tetap cerah dengan kontak lebih singkat dan agitasi ringan',
     note: 'AeroPress acidity target: keep contact shorter, agitation lighter, and do not chase body with extra pressure.',
   },
   fruit_forward: {
-    ratioDelta: 0.3,
-    timeDeltaSec: -5,
+    ratioDelta: 0.6,
+    timeDeltaSec: -15,
     stirCount: '2-3x',
     en: 'fruit-forward target protects aromatics with medium-low agitation',
     id: 'target buah menjaga aroma tetap hidup dengan agitasi rendah-sedang',
@@ -113,7 +113,7 @@ const TARGET_CALIBRATION: Record<string, AeroPressTargetCalibration> = {
   },
   floral_transparent: {
     ratioDelta: 0.7,
-    timeDeltaSec: -20,
+    timeDeltaSec: -30,
     stirCount: '2x',
     en: 'floral transparent target protects clarity with the lowest practical agitation',
     id: 'target floral transparan menjaga kejernihan dengan agitasi praktis paling rendah',
@@ -121,7 +121,7 @@ const TARGET_CALIBRATION: Record<string, AeroPressTargetCalibration> = {
   },
   more_body: {
     ratioDelta: -0.6,
-    timeDeltaSec: 20,
+    timeDeltaSec: 30,
     stirCount: '4x',
     en: 'body target builds texture with deeper contact and a slower press',
     id: 'target body membangun tekstur dengan kontak lebih dalam dan tekanan lebih pelan',
@@ -137,7 +137,7 @@ const TARGET_CALIBRATION: Record<string, AeroPressTargetCalibration> = {
   },
   dense_comforting: {
     ratioDelta: -0.7,
-    timeDeltaSec: 25,
+    timeDeltaSec: 30,
     stirCount: '4x',
     en: 'dense comforting target builds a compact body while guarding bitterness',
     id: 'target padat nyaman membangun body kompak sambil menjaga risiko pahit',
@@ -167,7 +167,7 @@ const BYPASS_TARGETS: Record<string, AeroPressBaseTarget> = {
   fruit_forward: {
     finalRatio: 13.5,
     concentrateRatio: 9,
-    finishRangeSeconds: [105, 140],
+    finishRangeSeconds: [105, 115],
     tempRangeC: [88, 90],
     bypassRangePercent: [25, 40],
     stirCount: '2-3x',
@@ -328,6 +328,19 @@ export function resolveAeroPressProductionTarget(
       Math.max(75, base.finishRangeSeconds[0] + target.timeDeltaSec),
       Math.max(85, base.finishRangeSeconds[1] + target.timeDeltaSec),
     ];
+  if (style !== 'bypass') {
+    if (targetProfileId === 'more_acidity') {
+      finishRangeSeconds[1] = Math.max(finishRangeSeconds[0], Math.min(finishRangeSeconds[1], base.finishRangeSeconds[0] - 5));
+    } else if (targetProfileId === 'floral_transparent') {
+      finishRangeSeconds[1] = Math.max(finishRangeSeconds[0], Math.min(finishRangeSeconds[1], base.finishRangeSeconds[0] - 10));
+    } else if (targetProfileId === 'fruit_forward') {
+      finishRangeSeconds[1] = Math.max(finishRangeSeconds[0], Math.min(finishRangeSeconds[1], base.finishRangeSeconds[0]));
+    } else if (targetProfileId === 'more_body') {
+      finishRangeSeconds[0] = Math.min(finishRangeSeconds[1], Math.max(finishRangeSeconds[0], base.finishRangeSeconds[0] + 30));
+    } else if (targetProfileId === 'dense_comforting') {
+      finishRangeSeconds[0] = Math.min(finishRangeSeconds[1], Math.max(finishRangeSeconds[0], base.finishRangeSeconds[0] + 35));
+    }
+  }
   return {
     ...base,
     finalRatio: Number(ratio.toFixed(2)),

@@ -421,6 +421,29 @@ function buildAeroPressStyleGuideCopyBase(style: AeroPressGuideStyle, targetProf
           stopChip: 'sebelum desis',
         };
       }
+      if (targetProfileId === 'soft_round') {
+        return {
+          setup: 'Siapkan AeroPress tegak dan pisahkan air bypass.',
+          setupSecondary: 'Siapkan tegak, bilas, pisahkan air bypass setelah tekan.',
+          charge: 'Tuang air konsentrat.',
+          chargeSecondary: 'Tuang air konsentrat ke ruang seduh dan basahi bubuk merata; bypass tidak lewat kopi.',
+          stir: 'Aduk 3 kali.',
+          stirSecondary: 'Aduk 3 kali lembut untuk ekstraksi awal.',
+          steep: 'Rendam cukup.',
+          steepSecondary: 'Rendam cukup sebagai konsentrat; jaga kontak agar hasil terasa bulat tanpa agitasi berlebih.',
+          flip: '',
+          flipSecondary: '',
+          press: 'Tekan konsentrat 20-30 detik.',
+          pressSecondary: 'Tekan konsentrat 20-30 detik dan berhenti sebelum desis.',
+          stop: 'Stop sebelum desis.',
+          stopSecondary: 'Berhenti sebelum desis agar konsentrat tetap lembut dan tidak kasar.',
+          serve: 'Tambah bypass lalu sajikan.',
+          serveSecondary: 'Tambah bypass, aduk rata, sajikan.',
+          stirChip: '3x',
+          pressChip: '20-30 detik',
+          stopChip: 'sebelum desis',
+        };
+      }
       return {
         setup: 'Siapkan AeroPress tegak dan pisahkan air bypass.',
         setupSecondary: 'Siapkan tegak, bilas, pisahkan air bypass setelah tekan.',
@@ -958,6 +981,7 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       actionType: 'rinse_preheat',
       startSeconds: 0,
       primaryText: styleCopy.setup,
+      secondaryText: styleCopy.setupSecondary,
       techniqueChips: [chip('basket_prep', 'Persiapan', 'filter + tutup dibilas')],
     }),
   ];
@@ -1044,6 +1068,7 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       startSeconds: stirStartSeconds,
       targetVolumeMl: chargeTarget,
       primaryText: styleCopy.stir,
+      secondaryText: styleCopy.stirSecondary,
       techniqueChips: [chip('stir', 'Aduk', styleCopy.stirChip)],
       sourceStepIds: charge ? [charge.id] : [],
     }),
@@ -1055,6 +1080,7 @@ function buildAeroPressGuide(plan: BrewPlan): WorkflowGuideStep[] {
       endSeconds: steepEnd,
       targetVolumeMl: chargeTarget,
       primaryText: `${styleCopy.steep} Target waktu ${formatTime(steepEnd)}.`,
+      secondaryText: styleCopy.steepSecondary,
       techniqueChips: [chip('steep', 'Rendam', formatTime(Math.max(10, steepEnd)))],
     }),
   );

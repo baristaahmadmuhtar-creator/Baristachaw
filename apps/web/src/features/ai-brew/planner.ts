@@ -8293,7 +8293,7 @@ function finalizePlanCore(
     precisionOverrideNotes.push(
       manualPresetScaledWaterMl !== null
         ? `Manual preset water scaled for ${roundTo(doseG, 1)} g dose: ${totalWaterMl} ml at 1:${formatBaristaRatio(recommendedRatio)}.`
-        : `Target air: ${totalWaterMl} ml; ratio recalculated from ${roundTo(doseG, 1)} g dose to 1:${formatBaristaRatio(recommendedRatio)}.`,
+        : `Precision target water active: ${totalWaterMl} ml; ratio recalculated from ${roundTo(doseG, 1)} g dose to 1:${formatBaristaRatio(recommendedRatio)}.`,
     );
   } else if (targetRatioOverride !== null) {
     precisionOverrideNotes.push(
@@ -8670,14 +8670,6 @@ function finalizePlanCore(
   const hotWaterSharePercent = hotSplitPercent;
   const iceSharePercent = iceSplitPercent;
 
-  const aeropressStyleGrindBias: GrindBias = methodFamily === 'aeropress'
-    ? aeropressProductionStyle === 'bright_clean'
-      ? 'coarser'
-      : (targetProfile.id === 'sweet_body' || targetProfile.id === 'dense_comforting' || aeropressProductionStyle === 'no_bypass')
-        ? 'finer'
-        : 'same'
-    : 'same';
-
   const grindBias = combineBias(
     roastAdjustedTargets.suggestedGrindBias,
     targetProfile.grindBias,
@@ -8695,7 +8687,6 @@ function finalizePlanCore(
     doseAdjustment.grindBias,
     serviceDoseTargetAdjustment.grindBias,
     flavorAlignment.grindBias,
-    aeropressStyleGrindBias,
   );
   const grindDetails = buildGrindRecommendation(grinder, grinderSetting, grindBias, input.roastLevel, input.brewMode);
   const steps = buildSteps(controlledDeviceProfile, hotWaterMl, totalTimeSeconds, {

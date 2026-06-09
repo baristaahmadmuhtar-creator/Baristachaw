@@ -126,7 +126,7 @@ async function handleStart(req: VercelRequest, res: VercelResponse, requestId: s
   if (!enforceMobileAuthRateLimit(req, res, '/api/auth/mobile/start')) return;
 
   try {
-    const config = resolveMobileOAuthConfig();
+    const config = resolveMobileOAuthConfig('/api/auth/mobile/callback');
     const scheme = resolveMobileAppScheme();
     const state = `mobile.${jwt.sign(
       {
@@ -441,6 +441,90 @@ async function handleSupabaseExchange(req: VercelRequest, res: VercelResponse, r
   }
 }
 
+async function handleSupabaseCallback(req: VercelRequest, res: VercelResponse, requestId: string) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ ok: false, requestId, error: 'Method not allowed' });
+  }
+  if (!enforceMobileAuthRateLimit(req, res, '/api/auth/mobile/supabase/callback')) return;
+
+  try {
+    const scheme = resolveMobileAppScheme();
+    const androidPackage = resolveMobileAndroidPackage();
+
+    return sendHtml(
+      res,
+      200,
+      `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Baristachaw Sign In</title>
+  </head>
+  <body style="font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif; padding: 24px; color: #111;">
+    <h2>Sign-in complete</h2>
+    <p>Returning to the app…</p>
+    <p>If you are not redirected automatically, <a id="deep-link-anchor" href="#">open Baristachaw</a>.</p>
+    <p style="margin-top: 8px; font-size: 14px; opacity: .72;">Android fallback: <a id="intent-link-anchor" href="#">open installed app</a>.</p>
+    <script>
+      (function () {
+        var scheme = ${JSON.stringify(scheme)};
+        var androidPackage = ${JSON.stringify(androidPackage)};
+        
+        var searchParams = new URLSearchParams(window.location.search);
+        var hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+        if (hash) {
+          var hashParams = new URLSearchParams(hash);
+          hashParams.forEach(function(value, key) {
+            if (!searchParams.has(key)) searchParams.set(key, value);
+          });
+        }
+        
+        var queryStr = searchParams.toString();
+        var deepLink = scheme + '://auth?' + queryStr;
+        var intentUrl = 'intent://auth?' + queryStr + '#Intent;scheme=' + scheme + ';package=' + androidPackage + ';end';
+        
+        document.getElementById('deep-link-anchor').href = deepLink;
+        document.getElementById('intent-link-anchor').href = intentUrl;
+        
+        var launch = function (url) {
+          try {
+            window.location.replace(url);
+          } catch (error) {
+            window.location.href = url;
+          }
+        };
+        
+        launch(deepLink);
+        window.setTimeout(function () {
+          var ua = navigator.userAgent || '';
+          if (/Android/i.test(ua)) {
+            launch(intentUrl);
+          }
+        }, 700);
+      })();
+    </script>
+  </body>
+</html>`
+    );
+  } catch (error) {
+    const details = sanitizeErrorDetails(error, 240);
+    const safeDetails = escapeHtml(details);
+    return sendHtml(
+      res,
+      500,
+      `<!doctype html>
+<html>
+  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Baristachaw Sign In Failed</title></head>
+  <body style="font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif; padding: 24px; color: #111;">
+    <h2>Sign-in failed</h2>
+    <p>${safeDetails}</p>
+  </body>
+</html>`
+    );
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const requestId = createRequestId(req);
   applyMobileCors(req, res);
@@ -456,6 +540,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (routeKey === 'start') return handleStart(req, res, requestId);
   if (routeKey === 'callback') return handleCallback(req, res, requestId);
+  if (routeKey === 'supabase/callback') return handleSupabaseCallback(req, res, requestId);
   if (routeKey === 'exchange') return handleExchange(req, res, requestId);
   if (routeKey === 'apple/exchange') return handleAppleExchange(req, res, requestId);
   if (routeKey === 'supabase/exchange') return handleSupabaseExchange(req, res, requestId);

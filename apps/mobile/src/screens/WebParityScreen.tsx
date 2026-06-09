@@ -8,6 +8,7 @@ import { usePreferredMobileLanguage } from '../hooks/usePreferredMobileLanguage'
 import { uiTokens } from '../theme/tokens';
 import type { AuthSession } from '../types';
 import { getMobileLocalization } from '../utils/localization';
+import { AppLoadingScreen } from '../components/AppLoadingScreen';
 
 const EXTERNAL_AUTH_HOSTS = new Set([
   'accounts.google.com',
@@ -359,8 +360,12 @@ export function WebParityScreen({
 
       {loading && !didReportReady.current ? (
         <View pointerEvents="none" style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={theme.accent} />
-          <Text style={[styles.loadingText, direction === 'rtl' ? styles.textRight : null]}>{copy.loading}</Text>
+          <AppLoadingScreen
+            text={copy.loading}
+            backgroundColor={theme.overlay}
+            textColor={theme.textSecondary}
+            accentColor={theme.accent}
+          />
         </View>
       ) : null}
 

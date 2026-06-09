@@ -17,6 +17,7 @@ import { ToolsScreen } from './src/screens/ToolsScreen';
 import { WebParityScreen } from './src/screens/WebParityScreen';
 import { MobileAuthGate } from './src/screens/MobileAuthGate';
 import { OfflineBanner } from './src/components/OfflineBanner';
+import { AppLoadingScreen } from './src/components/AppLoadingScreen';
 import { usePreferredMobileLanguage } from './src/hooks/usePreferredMobileLanguage';
 import { useNetworkStatus } from './src/hooks/useNetworkStatus';
 import { ApiClient, ApiError } from './src/services/apiClient';
@@ -666,10 +667,12 @@ function WebParityShell({ onBootReady, onParityReady, onParityFailure }: WebPari
 
   if (booting) {
     return (
-      <View style={[styles.bootingPage, { backgroundColor: systemPalette.bgBase }]}>
-        <ActivityIndicator size="large" color={systemPalette.accent} />
-        <Text style={[styles.bootingText, { color: systemPalette.textSecondary }]}>{parityShellCopy.preparing}</Text>
-      </View>
+      <AppLoadingScreen
+        text={parityShellCopy.preparing}
+        backgroundColor={systemPalette.bgBase}
+        textColor={systemPalette.textSecondary}
+        accentColor={systemPalette.accent}
+      />
     );
   }
 
@@ -1143,12 +1146,12 @@ function NativeApp({ onBootReady }: NativeAppProps) {
 
   if (booting) {
     return (
-      <View style={[styles.bootingPage, { backgroundColor: navTheme.colors.background }]}>
-        <ActivityIndicator size="large" color={navTheme.colors.primary} />
-        <Text style={[styles.bootingText, { color: colorScheme === 'dark' ? '#EBEBF5' : '#3C3C43' }]}>
-          {shellCopy.preparing}
-        </Text>
-      </View>
+      <AppLoadingScreen
+        text={shellCopy.preparing}
+        backgroundColor={navTheme.colors.background}
+        textColor={colorScheme === 'dark' ? '#EBEBF5' : '#3C3C43'}
+        accentColor={navTheme.colors.primary}
+      />
     );
   }
 

@@ -26,6 +26,7 @@ export type MobileAuthCopy = {
   facebookOpening: string;
   facebookContinue: string;
   guestContinue: string;
+  cancelLogin: string;
   showPassword: string;
   hidePassword: string;
   tabSignIn: string;
@@ -105,6 +106,7 @@ const EN_AUTH_COPY: MobileAuthCopy = {
   facebookOpening: 'Opening Facebook...',
   facebookContinue: 'Continue with Facebook',
   guestContinue: 'Continue as guest',
+  cancelLogin: 'Cancel login',
   showPassword: 'Show',
   hidePassword: 'Hide',
   tabSignIn: 'Sign in',
@@ -173,6 +175,7 @@ const AUTH_COPY: Record<Language, MobileAuthCopy> = {
     facebookOpening: 'Membuka Facebook...',
     facebookContinue: 'Lanjutkan dengan Facebook',
     guestContinue: 'Lanjutkan sebagai tamu',
+    cancelLogin: 'Batal masuk',
     showPassword: 'Tampilkan',
     hidePassword: 'Sembunyikan',
     tabSignIn: 'Masuk',
@@ -215,6 +218,7 @@ const AUTH_COPY: Record<Language, MobileAuthCopy> = {
     unavailableSignUpTitle: 'إنشاء حساب Baristachaw',
     googleContinue: 'المتابعة باستخدام Google',
     guestContinue: 'المتابعة كضيف',
+    cancelLogin: 'إلغاء تسجيل الدخول',
     tabSignIn: 'دخول',
     tabSignUp: 'تسجيل',
     tabReset: 'استعادة',
@@ -235,6 +239,7 @@ const AUTH_COPY: Record<Language, MobileAuthCopy> = {
     unavailableSignUpTitle: '注册 Baristachaw',
     googleContinue: '使用 Google 继续',
     guestContinue: '以访客继续',
+    cancelLogin: '取消登录',
     tabSignIn: '登录',
     tabSignUp: '注册',
     tabReset: '恢复',
@@ -253,6 +258,7 @@ const AUTH_COPY: Record<Language, MobileAuthCopy> = {
     unavailableSignUpTitle: 'Baristachaw に登録',
     googleContinue: 'Googleで続行',
     guestContinue: 'ゲストとして続行',
+    cancelLogin: 'ログインキャンセル',
     tabSignIn: 'ログイン',
     tabSignUp: '登録',
     tabReset: '復旧',
@@ -271,6 +277,7 @@ const AUTH_COPY: Record<Language, MobileAuthCopy> = {
     unavailableSignUpTitle: 'Baristachaw 가입',
     googleContinue: 'Google로 계속',
     guestContinue: '게스트로 계속',
+    cancelLogin: '로그인 취소',
     tabSignIn: '로그인',
     tabSignUp: '가입',
     tabReset: '복구',
@@ -289,6 +296,7 @@ const AUTH_COPY: Record<Language, MobileAuthCopy> = {
     unavailableSignUpTitle: 'สมัคร Baristachaw',
     googleContinue: 'ดำเนินการต่อด้วย Google',
     guestContinue: 'ดำเนินการต่อแบบผู้เยี่ยมชม',
+    cancelLogin: 'ยกเลิกการเข้าสู่ระบบ',
     tabSignIn: 'เข้าสู่ระบบ',
     tabSignUp: 'สมัคร',
     tabReset: 'กู้คืน',
@@ -307,6 +315,7 @@ const AUTH_COPY: Record<Language, MobileAuthCopy> = {
     unavailableSignUpTitle: 'Đăng ký Baristachaw',
     googleContinue: 'Tiếp tục với Google',
     guestContinue: 'Tiếp tục với khách',
+    cancelLogin: 'Hủy đăng nhập',
     tabSignIn: 'Đăng nhập',
     tabSignUp: 'Đăng ký',
     tabReset: 'Khôi phục',
@@ -329,6 +338,7 @@ const AUTH_COPY: Record<Language, MobileAuthCopy> = {
     displayNameRequired: 'Nama paparan wajib diisi.',
     googleContinue: 'Teruskan dengan Google',
     guestContinue: 'Teruskan sebagai tetamu',
+    cancelLogin: 'Batal log masuk',
     showPassword: 'Tunjuk',
     hidePassword: 'Sembunyi',
     tabSignIn: 'Log masuk',

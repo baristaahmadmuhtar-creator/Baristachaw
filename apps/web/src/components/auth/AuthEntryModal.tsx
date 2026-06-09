@@ -176,6 +176,16 @@ export function AuthEntryModal() {
               )}
 
               <div className="mt-5 flex flex-col gap-2">
+                <EmailPasswordAuthForm compact initialMode={source === 'registration' ? 'signUp' : 'signIn'} />
+
+                <div className="flex items-center gap-3 py-1">
+                  <span className="h-px flex-1 bg-[var(--glass-border)]" />
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-secondary">
+                    {language === 'id' ? 'atau masuk dengan' : 'or continue with'}
+                  </span>
+                  <span className="h-px flex-1 bg-[var(--glass-border)]" />
+                </div>
+
                 <button
                   ref={googleButtonRef}
                   type="button"
@@ -211,25 +221,14 @@ export function AuthEntryModal() {
                   </span>
                 </button>
 
-                <div className="flex items-center gap-3 py-1">
-                  <span className="h-px flex-1 bg-[var(--glass-border)]" />
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-secondary">{t.authUseEmailDivider}</span>
-                  <span className="h-px flex-1 bg-[var(--glass-border)]" />
-                </div>
-
-                <EmailPasswordAuthForm compact initialMode={source === 'registration' ? 'signUp' : 'signIn'} />
-
-                <div className="grid gap-2 sm:grid-cols-3">
-                  {benefits.map(({ icon: Icon, label }) => (
-                    <div
-                      key={label}
-                      className={`flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-glass bg-[var(--bg-base)]/60 px-3 py-2 text-center text-xs font-semibold text-secondary ${isRtl ? 'flex-row-reverse' : ''}`}
-                    >
-                      <Icon size={16} className="shrink-0" variant="glyph" tone="blue" />
-                      <span>{label}</span>
-                    </div>
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  onClick={closeAuthModal}
+                  disabled={isAuthActionPending}
+                  className="mt-2 w-full rounded-2xl border border-glass bg-surface-alpha px-4 py-3 text-sm font-semibold text-secondary hover:text-primary transition-all disabled:opacity-55 text-center hover:bg-[var(--bg-elevated)]"
+                >
+                  {t.cancel || 'Batal'}
+                </button>
 
                 <div className={`rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-secondary ${isRtl ? 'text-right' : ''}`}>
                   <span className={`flex items-start gap-2 ${isRtl ? 'flex-row-reverse' : ''}`}>

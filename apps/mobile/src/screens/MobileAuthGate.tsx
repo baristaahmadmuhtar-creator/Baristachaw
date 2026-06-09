@@ -671,6 +671,36 @@ export function MobileAuthGate({
     );
   };
 
+  const renderDivider = () => {
+    if (activeMode === 'newPassword' || !supabaseAuthEnabled) return null;
+    const dividerText = preferredLanguage === 'id' ? 'atau masuk dengan' : 'or continue with';
+    return (
+      <View style={styles.authDivider}>
+        <View style={styles.authDividerLine} />
+        <Text style={styles.authDividerText}>{dividerText}</Text>
+        <View style={styles.authDividerLine} />
+      </View>
+    );
+  };
+
+  const renderCancelButton = () => {
+    if (!onContinueGuest || activeMode === 'newPassword') return null;
+    return (
+      <Pressable
+        accessibilityRole="button"
+        disabled={busy}
+        onPress={onContinueGuest}
+        style={({ pressed }) => [
+          styles.cancelButton,
+          busy ? styles.disabled : null,
+          pressed && !busy ? styles.pressed : null,
+        ]}
+      >
+        <Text style={styles.cancelButtonText}>{authCopy.cancelLogin || 'Batal'}</Text>
+      </Pressable>
+    );
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -705,6 +735,12 @@ export function MobileAuthGate({
           {!isOnline ? renderNotice(authCopy.offlineNotice, 'warning', 'cloud-offline-outline') : null}
 
           <View style={styles.card}>
+            {renderModeTabs()}
+            {renderEmailForm()}
+            {renderAuthRouteSwitch()}
+
+            {renderDivider()}
+
             {activeMode !== 'newPassword' ? renderGoogleButton() : null}
             {activeMode !== 'newPassword' ? renderFacebookButton() : null}
 
@@ -728,10 +764,8 @@ export function MobileAuthGate({
               </Pressable>
             ) : null}
 
-            {renderModeTabs()}
-            {renderEmailForm()}
             {renderGuestButton()}
-            {renderAuthRouteSwitch()}
+            {renderCancelButton()}
           </View>
         </View>
       </ScrollView>
@@ -1054,6 +1088,38 @@ function createStyles(theme: WebParityAuthTheme) {
       fontFamily: uiTokens.fontFamily.semibold,
       fontSize: 15,
       lineHeight: 20,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    authDivider: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      paddingVertical: 10,
+    },
+    authDividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: theme.panelBorderSoft,
+    },
+    authDividerText: {
+      color: theme.textTertiary,
+      fontFamily: uiTokens.fontFamily.medium,
+      fontSize: 12,
+      lineHeight: 16,
+    },
+    cancelButton: {
+      minHeight: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 10,
+      marginTop: 4,
+    },
+    cancelButtonText: {
+      color: '#3B82F6',
+      fontFamily: uiTokens.fontFamily.semibold,
+      fontSize: 14,
+      lineHeight: 19,
       fontWeight: '700',
       textAlign: 'center',
     },

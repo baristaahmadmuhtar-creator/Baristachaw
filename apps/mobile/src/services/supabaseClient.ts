@@ -95,7 +95,7 @@ let supabaseClient: SupabaseClient | null = null;
 let appStateSubscriptionStarted = false;
 
 export function getSupabaseRedirectUri(): string {
-  return `${mobileEnv.appScheme}://auth`;
+  return `${mobileEnv.apiBaseUrl}/api/auth/mobile/supabase/callback`;
 }
 
 export function getSupabaseClient(): SupabaseClient {

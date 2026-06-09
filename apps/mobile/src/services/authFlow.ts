@@ -226,7 +226,7 @@ export async function startGoogleSupabaseOAuth(apiClient: ApiClient): Promise<Au
       throw new Error('Login Google belum siap. Coba ulang beberapa saat lagi.');
     }
 
-    const authResult = await WebBrowser.openAuthSessionAsync(data.url, redirectTo, {
+    const authResult = await WebBrowser.openAuthSessionAsync(data.url, `${mobileEnv.appScheme}://auth`, {
       createTask: false,
       showTitle: false,
     });
@@ -260,7 +260,7 @@ export async function startFacebookSupabaseOAuth(apiClient: ApiClient): Promise<
       throw new Error('Login Facebook belum siap. Coba ulang beberapa saat lagi.');
     }
 
-    const authResult = await WebBrowser.openAuthSessionAsync(data.url, redirectTo, {
+    const authResult = await WebBrowser.openAuthSessionAsync(data.url, `${mobileEnv.appScheme}://auth`, {
       createTask: false,
       showTitle: false,
     });

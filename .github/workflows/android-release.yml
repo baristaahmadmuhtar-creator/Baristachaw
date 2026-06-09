@@ -45,9 +45,13 @@ jobs:
           npm run mobile:lint
           npm run mobile:test
 
+      - name: Setup EAS CLI
+        run: npm install -g eas-cli
+
       - name: Build Android MVP APK
         working-directory: apps/mobile
-        run: npx eas build --platform android --profile mvp_android --non-interactive --wait --json > eas-build.json
+        run: eas build --platform android --profile mvp_android --non-interactive --wait --json > eas-build.json
+
 
       - name: Download APK from EAS
         shell: bash

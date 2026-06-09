@@ -29,7 +29,7 @@
       }
     },
     "mvp_android": {
-      "credentialsSource": "local",
+      "credentialsSource": "remote",
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",
@@ -68,7 +68,7 @@
       }
     },
     "production": {
-      "credentialsSource": "local",
+      "credentialsSource": "remote",
       "distribution": "store",
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",

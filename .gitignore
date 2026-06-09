@@ -28,6 +28,8 @@ apps/mobile/ios/
 apps/mobile/android/
 apps/mobile/keystores/
 apps/mobile/credentials.json
+eas-build.json
+
 
 # Test and report artifacts
 artifacts/

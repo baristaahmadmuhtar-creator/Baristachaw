@@ -5860,10 +5860,10 @@
       "brewMethodId": "french_press",
       "filterStyle": "immersion",
       "ratioDelta": 0,
-      "tempDeltaC": -0.2,
+      "tempDeltaC": 0,
       "brewTimeDeltaSec": 20,
-      "grindBias": "coarser",
-      "note": "French Press is full immersion: charge water, steep, settle, press gently, and decant cleanly.",
+      "grindBias": "medium_coarse",
+      "note": "Traditional French Press perfected: precise charge, 4-minute steep, slow press to ensure full body extraction without over-agitating the fines. Master-level consistency.",
       "steps": [
         {
           "id": "charge",
@@ -5871,31 +5871,31 @@
           "kind": "pour",
           "share": 1,
           "startSeconds": 0,
-          "note": "Add all water evenly and saturate every dry pocket."
+          "note": "Pour all water aggressively in 15 seconds to ensure complete uniform saturation. Ensure the crust rises evenly."
         },
         {
           "id": "steep",
           "label": "Steep",
           "kind": "wait",
           "share": 0,
-          "startSeconds": 240,
-          "note": "Steep quietly without repeated stirring."
+          "startSeconds": 15,
+          "note": "Steep for exactly 4 minutes. Maintain thermal stability; do not disturb the vessel."
         },
         {
-          "id": "settle",
-          "label": "Settle",
+          "id": "stir_settle",
+          "label": "Stir & Settle",
           "kind": "wait",
           "share": 0,
-          "startSeconds": 300,
-          "note": "Break crust gently if needed, then let fines settle."
+          "startSeconds": 255,
+          "note": "Stir the crust gently 3 times. Allow 30 seconds for the bulk of the grounds to sink to the bottom."
         },
         {
           "id": "decant",
-          "label": "Decant",
+          "label": "Press & Decant",
           "kind": "serve",
           "share": 0,
-          "startSeconds": 330,
-          "note": "Decant off the grounds so extraction stops cleanly."
+          "startSeconds": 285,
+          "note": "Plunge with only the weight of your hand (approx 15-20 seconds). Decant immediately to halt extraction."
         }
       ],
       "sourceUrls": [
@@ -5924,50 +5924,50 @@
       "brewMethodId": "french_press",
       "filterStyle": "immersion",
       "ratioDelta": 0.2,
-      "tempDeltaC": 0.0,
-      "brewTimeDeltaSec": 240,
-      "grindBias": "medium_coarse",
-      "note": "James Hoffmann method: long steep, skim foam, surface-only mesh to avoid fines migration.",
+      "tempDeltaC": 1,
+      "brewTimeDeltaSec": 300,
+      "grindBias": "medium",
+      "note": "Master-level Clean Decant (Hoffmann logic): Use slightly hotter water and medium grind. 4-min steep, precision skim to remove bitter oils, followed by a 5-8 minute undisturbed rest.",
       "steps": [
         {
           "id": "charge",
           "label": "Charge",
           "kind": "pour",
-          "share": 1.0,
+          "share": 1,
           "startSeconds": 0,
-          "note": "Pour boiling water swiftly to saturate all coffee grounds."
+          "note": "Pour boiling or near-boiling water rapidly to agitate and thoroughly saturate the medium grind bed."
         },
         {
           "id": "steep",
           "label": "Steep",
           "kind": "wait",
-          "share": 0.0,
-          "startSeconds": 240,
-          "note": "Allow the crust to form undisturbed for 4 minutes."
+          "share": 0,
+          "startSeconds": 20,
+          "note": "Do not touch the brewer. Allow the crust to form undisturbed for exactly 4 minutes."
         },
         {
           "id": "break_skim",
           "label": "Break & Skim",
           "kind": "wait",
-          "share": 0.0,
-          "startSeconds": 300,
-          "note": "Stir the crust gently, skim the surface foam and floating oils."
+          "share": 0,
+          "startSeconds": 260,
+          "note": "Stir the crust strictly 3-4 times. Skim off all surface foam and floating pale particles with two spoons."
         },
         {
           "id": "settle",
           "label": "Settle",
           "kind": "wait",
-          "share": 0.0,
-          "startSeconds": 540,
-          "note": "Let the coffee sit quietly for 4 minutes so all fines completely settle to the bottom."
+          "share": 0,
+          "startSeconds": 290,
+          "note": "Patience phase: Let the coffee sit completely undisturbed for 5 to 8 minutes so micro-fines drop to the bottom."
         },
         {
           "id": "decant",
           "label": "Decant",
           "kind": "serve",
-          "share": 0.0,
-          "startSeconds": 570,
-          "note": "Fit plunger and lower it just to touch the liquid surface; pour out extremely gently without plunging to the bottom."
+          "share": 0,
+          "startSeconds": 590,
+          "note": "Place plunger just below the surface to act purely as a strainer. Pour the liquid out with extreme gentleness. Never plunge."
         }
       ],
       "sourceUrls": [
@@ -5995,43 +5995,43 @@
       "methodFamily": "french_press",
       "brewMethodId": "french_press",
       "filterStyle": "immersion",
-      "ratioDelta": 0.0,
-      "tempDeltaC": 0.0,
+      "ratioDelta": 0,
+      "tempDeltaC": 0,
       "brewTimeDeltaSec": 0,
       "grindBias": "medium",
-      "note": "Double mesh or paper filter insert to trap all fines, allowing a finer grind profile.",
+      "note": "Master-level Double Filter: Utilizing a secondary paper or extra-fine mesh layer to trap all micro-fines, unlocking a sweeter, cleaner cup with a finer grind.",
       "steps": [
         {
           "id": "charge",
           "label": "Charge",
           "kind": "pour",
-          "share": 1.0,
+          "share": 1,
           "startSeconds": 0,
-          "note": "Pour water in circular motions to saturate the medium-ground bed."
+          "note": "Pour water briskly in concentric circles to ensure the finer bed is completely saturated without dry pockets."
         },
         {
           "id": "steep",
           "label": "Steep",
           "kind": "wait",
-          "share": 0.0,
-          "startSeconds": 240,
-          "note": "Steep cleanly while the double filter elements are pre-wet and prepared."
+          "share": 0,
+          "startSeconds": 15,
+          "note": "Steep for precisely 4 minutes. In the meantime, ensure your double filter layers are rinsed with hot water."
         },
         {
           "id": "settle",
           "label": "Settle",
           "kind": "wait",
-          "share": 0.0,
-          "startSeconds": 280,
-          "note": "Give a light swirl to settle the grounds before placing the plunger."
+          "share": 0,
+          "startSeconds": 255,
+          "note": "Gently swirl the entire press exactly once to knock floating grounds down. Wait 30 seconds."
         },
         {
           "id": "decant",
           "label": "Plunge & Serve",
           "kind": "serve",
-          "share": 0.0,
-          "startSeconds": 310,
-          "note": "Press down slowly over 30 seconds through the double filter; serve cleanly."
+          "share": 0,
+          "startSeconds": 285,
+          "note": "Press the plunger down extremely slowly (take 30-45 seconds). The double resistance requires patience. Serve immediately."
         }
       ],
       "sourceUrls": [
@@ -6060,42 +6060,42 @@
       "brewMethodId": "french_press",
       "filterStyle": "immersion",
       "ratioDelta": -5.5,
-      "tempDeltaC": 1.0,
+      "tempDeltaC": 1,
       "brewTimeDeltaSec": -120,
       "grindBias": "medium_fine",
-      "note": "High-dose 1:8 ratio concentrate, heavy agitation, short steep for maximum mouthfeel and bypass dilutability.",
+      "note": "Master-level Heavy Concentrate: High-dose 1:8 ratio, heavy agitation, short intensive steep. Extracts intense body and rich syrupy texture suitable for bypass dilution or milk.",
       "steps": [
         {
           "id": "charge",
           "label": "Charge",
           "kind": "pour",
-          "share": 1.0,
+          "share": 1,
           "startSeconds": 0,
-          "note": "Pour water rapidly over the heavy dose to wet the fine grounds."
+          "note": "Pour water very aggressively over the heavy dose to instantly wet all fine grounds. Target maximum initial turbulence."
         },
         {
           "id": "agitate",
           "label": "Agitate",
           "kind": "wait",
-          "share": 0.0,
-          "startSeconds": 45,
-          "note": "Stir vigorously 5-6 times to maximize early extraction strength."
+          "share": 0,
+          "startSeconds": 20,
+          "note": "Stir vigorously with a back-and-forth motion 8-10 times to drive intense early extraction. Wait."
         },
         {
           "id": "steep",
           "label": "Steep",
           "kind": "wait",
-          "share": 0.0,
-          "startSeconds": 180,
-          "note": "Let the thick immersion concentrate develop body and richness."
+          "share": 0,
+          "startSeconds": 150,
+          "note": "Let the thick immersion concentrate steep. The heavy dose needs less time to hit the target concentration."
         },
         {
           "id": "decant",
           "label": "Press & Serve",
           "kind": "serve",
-          "share": 0.0,
-          "startSeconds": 210,
-          "note": "Press firmly to the absolute bottom of the puck, serve as concentrate or bypass."
+          "share": 0,
+          "startSeconds": 180,
+          "note": "Press firmly through the heavy puck. Pour out the syrupy concentrate immediately to avoid harsh bitterness."
         }
       ],
       "sourceUrls": [
@@ -6124,42 +6124,42 @@
       "brewMethodId": "french_press",
       "filterStyle": "immersion",
       "ratioDelta": -0.5,
-      "tempDeltaC": -1.0,
-      "brewTimeDeltaSec": 60,
+      "tempDeltaC": -2,
+      "brewTimeDeltaSec": 120,
       "grindBias": "medium_coarse",
-      "note": "Gently agitated, moderate temperature, slightly longer steep to maximize sweet caramel solubility.",
+      "note": "Master-level Sweet Immersion: Lower temperature, exceptionally gentle pour, and an extended 6-minute steep to hyper-extract sweet caramel and floral notes while leaving astringent tannins behind.",
       "steps": [
         {
           "id": "charge",
           "label": "Charge",
           "kind": "pour",
-          "share": 1.0,
+          "share": 1,
           "startSeconds": 0,
-          "note": "Pour water gently to promote a round, sweet extraction."
+          "note": "Pour water very gently down the center to let the water level rise without violently churning the bed. Maximize sweetness."
         },
         {
           "id": "stir",
           "label": "Stir",
           "kind": "wait",
-          "share": 0.0,
-          "startSeconds": 60,
-          "note": "Stir gently exactly 2 times to distribute extraction evenly."
+          "share": 0,
+          "startSeconds": 45,
+          "note": "Perform a single, incredibly gentle fold with a spoon to ensure no dry pockets remain. Do not agitate further."
         },
         {
           "id": "steep",
           "label": "Steep",
           "kind": "wait",
-          "share": 0.0,
-          "startSeconds": 300,
-          "note": "Steep quietly to allow sugar compounds to fully dissolve."
+          "share": 0,
+          "startSeconds": 345,
+          "note": "Steep quietly for a full 5 to 6 minutes. The lower temperature prevents over-extraction of bitter compounds during this long contact."
         },
         {
           "id": "decant",
           "label": "Plunge & Decant",
           "kind": "serve",
-          "share": 0.0,
-          "startSeconds": 330,
-          "note": "Plunge extremely slowly over 30 seconds to avoid fines churning, serve immediately."
+          "share": 0,
+          "startSeconds": 360,
+          "note": "Plunge with zero downward pressure, relying only on gravity. Decant immediately into a pre-warmed server."
         }
       ],
       "sourceUrls": [
@@ -6190,7 +6190,7 @@
       "tempDeltaC": -1.5,
       "brewTimeDeltaSec": -15,
       "grindBias": "finer",
-      "note": "AeroPress standard style: upright charge, 3 stirs, short steep, and steady 20-30 second press that stops before the dry hiss for a balanced cup.",
+      "note": "Master-level AeroPress Standard: Upright charge with medium-fine grind. Focuses on rapid saturation, exactly 3 back-and-forth stirs for even extraction, and a perfectly controlled 25-second press. Stopping before the hiss guarantees zero bitterness.",
       "steps": [
         {
           "id": "charge",
@@ -6198,7 +6198,7 @@
           "kind": "pour",
           "share": 1,
           "startSeconds": 0,
-          "note": "Add water quickly, wet all grounds, and start the timer."
+          "note": "Add water aggressively in 10 seconds to wet all grounds evenly and initiate rapid extraction."
         },
         {
           "id": "stir",
@@ -6206,7 +6206,7 @@
           "kind": "wait",
           "share": 0,
           "startSeconds": 15,
-          "note": "Stir 3 times, then stop and let contact settle."
+          "note": "Execute exactly 3 deep, back-and-forth stirs. Insert the plunger immediately at an angle and pull up slightly to create a vacuum seal, stopping any drip-through."
         },
         {
           "id": "steep",
@@ -6214,7 +6214,7 @@
           "kind": "wait",
           "share": 0,
           "startSeconds": 55,
-          "note": "Hold short immersion contact before pressing."
+          "note": "Hold the vacuum seal. Allow the slurry to steep undisturbed to build body."
         },
         {
           "id": "press",
@@ -6222,7 +6222,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 90,
-          "note": "Press steadily for 20-30 seconds and stop before the dry hiss with light, even force."
+          "note": "Press steadily using only forearm weight. Target a 25-second plunge. Stop the moment you hear the dry hiss to avoid extracting astringent tannins."
         }
       ],
       "sourceUrls": [
@@ -6254,7 +6254,7 @@
       "tempDeltaC": -1.2,
       "brewTimeDeltaSec": 0,
       "grindBias": "same",
-      "note": "AeroPress Inverted style: steep, defined stir count, controlled press duration, and stop cue are encoded as operational steps.",
+      "note": "Master-level AeroPress Inverted: Eliminates premature drip-through for complete immersion control. Requires careful thermal management and a precise flip to maintain bed integrity.",
       "steps": [
         {
           "id": "invert_charge",
@@ -6262,7 +6262,7 @@
           "kind": "pour",
           "share": 1,
           "startSeconds": 0,
-          "note": "Assemble inverted safely, add water, and wet all grounds."
+          "note": "Position plunger at the '4' mark. Pour water briskly to saturate the medium-fine bed."
         },
         {
           "id": "stir",
@@ -6270,15 +6270,15 @@
           "kind": "wait",
           "share": 0,
           "startSeconds": 20,
-          "note": "Stir 4 times, attach cap, and prepare to flip securely."
+          "note": "Stir 4 times aggressively to ensure no dry clumps. Rinse the paper filter, attach the cap tightly, and press out excess air."
         },
         {
           "id": "flip",
-          "label": "Flip",
+          "label": "Flip & Settle",
           "kind": "wait",
           "share": 0,
           "startSeconds": 75,
-          "note": "Flip onto the cup/server carefully without shaking the bed."
+          "note": "In one fluid motion, hold the chamber and plunger securely, flip onto a sturdy server, and wait 10 seconds for the grounds to settle."
         },
         {
           "id": "press",
@@ -6286,7 +6286,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 95,
-          "note": "Press 20-30 seconds and stop before the dry hiss while keeping the cup and chamber aligned."
+          "note": "Apply even downward pressure for 30 seconds. The resistance should feel thick but yielding. Stop precisely before the hiss."
         }
       ],
       "sourceUrls": [
@@ -6318,7 +6318,7 @@
       "tempDeltaC": -0.8,
       "brewTimeDeltaSec": -5,
       "grindBias": "finer",
-      "note": "AeroPress Bypass style: steep, defined stir count, controlled press duration, and stop cue are encoded as operational steps.",
+      "note": "Master-level AeroPress Bypass: Designed for extreme clarity. Brews a high-extraction concentrate using a fine grind and lower temperature, followed by clean bypass dilution to open up delicate tea-like florals.",
       "steps": [
         {
           "id": "charge",
@@ -6326,7 +6326,7 @@
           "kind": "pour",
           "share": 1,
           "startSeconds": 0,
-          "note": "Brew a compact concentrate; keep bypass water separate."
+          "note": "Pour brewing water over a fine grind. The tight ratio (1:7) demands immediate and complete saturation."
         },
         {
           "id": "stir",
@@ -6334,7 +6334,7 @@
           "kind": "wait",
           "share": 0,
           "startSeconds": 15,
-          "note": "Stir 3 times and settle briefly."
+          "note": "Stir 3 times to accelerate extraction in the dense slurry. Seal with the plunger."
         },
         {
           "id": "press",
@@ -6342,7 +6342,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 75,
-          "note": "Press 20-30 seconds, stop before hiss, then dilute in the cup."
+          "note": "Press firmly for 20 seconds. The fine grind provides high resistance; maintain steady pressure."
         },
         {
           "id": "serve",
@@ -6350,7 +6350,7 @@
           "kind": "serve",
           "share": 0,
           "startSeconds": 110,
-          "note": "Add bypass water after pressing only; do not push it through the puck."
+          "note": "Add the remaining bypass water directly to the server. Never push bypass water through the spent puck, as it will extract harsh bitterness."
         }
       ],
       "sourceUrls": [
@@ -6382,7 +6382,7 @@
       "tempDeltaC": -0.6,
       "brewTimeDeltaSec": 5,
       "grindBias": "same",
-      "note": "AeroPress No-Bypass style: steep, defined stir count, controlled press duration, and stop cue are encoded as operational steps.",
+      "note": "Master-level AeroPress No-Bypass: Maximizes flavor yield by utilizing the entire chamber volume. Requires a medium-fine grind and a longer, highly controlled press.",
       "steps": [
         {
           "id": "charge",
@@ -6390,7 +6390,7 @@
           "kind": "pour",
           "share": 1,
           "startSeconds": 0,
-          "note": "Use the full brew water in the chamber; no bypass dilution later."
+          "note": "Fill the chamber near the brim (approx 250g). Pouring slowly in circles prevents overflowing."
         },
         {
           "id": "stir",
@@ -6398,7 +6398,7 @@
           "kind": "wait",
           "share": 0,
           "startSeconds": 20,
-          "note": "Stir 3 times, then let the slurry settle."
+          "note": "Stir gently 3 times. Plunge slightly to seal the vacuum and retain the full water volume."
         },
         {
           "id": "steep",
@@ -6406,7 +6406,7 @@
           "kind": "wait",
           "share": 0,
           "startSeconds": 70,
-          "note": "Hold contact so the full water extracts evenly."
+          "note": "Maintain the steep. The larger thermal mass retains heat better, ensuring an even, high-yield extraction."
         },
         {
           "id": "press",
@@ -6414,7 +6414,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 105,
-          "note": "Press 25-35 seconds and stop before the dry hiss for a complete no-bypass cup."
+          "note": "Execute a very slow, 35-second press. The increased water volume requires patience to avoid channeling the puck."
         }
       ],
       "sourceUrls": [
@@ -6446,7 +6446,7 @@
       "tempDeltaC": 0.2,
       "brewTimeDeltaSec": -12,
       "grindBias": "coarser",
-      "note": "AeroPress Bright Clean style: steep, defined stir count, controlled press duration, and stop cue are encoded as operational steps.",
+      "note": "Master-level AeroPress Bright Clean: Targets vibrant acidity and fruit notes. Uses a slightly coarser grind, hotter water, minimal agitation, and a fast press to highlight clarity over body.",
       "steps": [
         {
           "id": "charge",
@@ -6454,7 +6454,7 @@
           "kind": "pour",
           "share": 1,
           "startSeconds": 0,
-          "note": "Add water quickly and keep the bed compact for clarity."
+          "note": "Pour hot water (96C+) quickly in a tight spiral to wet the coarser grind without excessive turbulence."
         },
         {
           "id": "stir",
@@ -6462,7 +6462,7 @@
           "kind": "wait",
           "share": 0,
           "startSeconds": 10,
-          "note": "Stir 2-3 times only, then stop."
+          "note": "Stir strictly 2 times. Any ঐতিagitation will pull heavier, muddy compounds. Seal immediately."
         },
         {
           "id": "press",
@@ -6470,7 +6470,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 65,
-          "note": "Press 20-30 seconds and stop before the hiss for a clean finish."
+          "note": "Press quickly (15-20 seconds). The coarser grind allows fast flow. Stop early, well before the hiss, to preserve the sparkling clean finish."
         }
       ],
       "sourceUrls": [
@@ -6502,7 +6502,7 @@
       "tempDeltaC": -1,
       "brewTimeDeltaSec": 18,
       "grindBias": "finer",
-      "note": "AeroPress Sweet Body style: steep, defined stir count, controlled press duration, and stop cue are encoded as operational steps.",
+      "note": "Master-level AeroPress Sweet Body: Focuses on mouthfeel and caramel sweetness. Utilizes a finer grind, cooler water, and extended steep time to dissolve heavy sugars while leaving sharp acids behind.",
       "steps": [
         {
           "id": "charge",
@@ -6510,7 +6510,7 @@
           "kind": "pour",
           "share": 1,
           "startSeconds": 0,
-          "note": "Add water and fully saturate the compact bed."
+          "note": "Pour cooler water (85-88C) to mitigate over-extraction of bitter tannins from the finer grind."
         },
         {
           "id": "stir",
@@ -6518,7 +6518,7 @@
           "kind": "wait",
           "share": 0,
           "startSeconds": 20,
-          "note": "Stir 5 times to build body, then let the slurry settle."
+          "note": "Stir 5 times aggressively to break up the dense slurry and maximize surface area contact."
         },
         {
           "id": "steep",
@@ -6526,7 +6526,7 @@
           "kind": "wait",
           "share": 0,
           "startSeconds": 90,
-          "note": "Hold a longer sweet-body contact window."
+          "note": "Hold an extended steep. The lower temperature requires time to fully dissolve the heavy, sweet compounds."
         },
         {
           "id": "press",
@@ -6534,7 +6534,7 @@
           "kind": "press",
           "share": 0,
           "startSeconds": 130,
-          "note": "Press 25-35 seconds near the hiss, then stop before the finish turns dry or gritty."
+          "note": "Press very slowly (30-40 seconds) through the fine bed. Stop instantly if you feel the resistance drop, ensuring no gritty fines enter the cup."
         }
       ],
       "sourceUrls": [

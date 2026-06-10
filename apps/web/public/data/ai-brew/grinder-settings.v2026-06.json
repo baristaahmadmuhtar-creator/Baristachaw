@@ -64,7 +64,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "4.0 - 6.0 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -408,7 +408,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "8.0 - 10.0 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -538,7 +538,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "4.0 - 6.0 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -882,7 +882,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "7.5 - 9.0 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -1012,7 +1012,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "5.0 - 6.0 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -1356,7 +1356,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "8.0 - 9.5 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -1461,7 +1461,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "2.0 - 3.5 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -1805,7 +1805,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "4.5 - 6.0 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -1935,7 +1935,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "2.8 - 3.2 turns",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -2279,7 +2279,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "4.3 - 5.0 turns",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -2409,7 +2409,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "2.4 - 2.8 turns",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -2753,7 +2753,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "4.1 - 4.8 turns",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -2883,7 +2883,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "2.2 - 2.6 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -3227,7 +3227,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "4.0 - 4.8 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -3357,7 +3357,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "2.5 - 3.0 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -3701,7 +3701,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "4.2 - 4.8 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -3831,7 +3831,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "1.8 - 2.2 turns",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -4175,7 +4175,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "2.5 - 3.5 turns",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -4305,7 +4305,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "14 - 24 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -4649,7 +4649,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "30 - 35 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -4779,7 +4779,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "17 - 28 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -5123,7 +5123,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "35 - 55 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -5253,7 +5253,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "14 - 24 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -5597,7 +5597,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "30 - 35 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -5727,7 +5727,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "2.0 - 2.0 turns",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -6071,7 +6071,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "3.5 - 4.0 turns",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -6201,7 +6201,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "2.5 - 2.5 turns",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -6545,7 +6545,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "3.5 - 4.0 turns",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -6675,7 +6675,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "6.0 - 6.0 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -7019,7 +7019,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "7.5 - 9.0 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -7149,7 +7149,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "2.5 - 4.0 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -7493,7 +7493,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "6.2 - 10.0 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -7623,7 +7623,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "3.5 - 5.0 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -7967,7 +7967,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "7.0 - 10.0 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -8097,7 +8097,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "4.5 - 5.5 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -8441,7 +8441,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "8.0 - 10.0 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -8571,7 +8571,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "10 - 12 marks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -8915,7 +8915,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "22 - 26 marks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -9045,7 +9045,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "1.5 - 5.0 settings",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -9389,7 +9389,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "8.0 - 10.0 settings",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -9519,7 +9519,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "10 - 14 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -9863,7 +9863,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "20 - 25 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -9993,7 +9993,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "11 - 15 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -10337,7 +10337,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "16 - 20 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -10467,7 +10467,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "11 - 15 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -10811,7 +10811,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "16 - 20 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -10941,7 +10941,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "30 - 40 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -11285,7 +11285,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "50 - 60 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -11415,7 +11415,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "11 - 15 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -11759,7 +11759,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "19 - 23 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -11889,7 +11889,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "10 - 14 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -12233,7 +12233,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "20 - 25 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -12363,7 +12363,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "15 - 15 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -12707,7 +12707,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "24 - 24 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -12812,7 +12812,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "2.0 - 5.0 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -13156,7 +13156,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "7.5 - 9.0 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -13286,7 +13286,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "35 - 45 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -13630,7 +13630,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "60 - 75 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -13760,7 +13760,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "11 - 15 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -14104,7 +14104,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "16 - 20 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -14234,7 +14234,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "30 - 40 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -14578,7 +14578,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "50 - 60 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -14708,7 +14708,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "11 - 15 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -15052,7 +15052,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "16 - 20 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -15182,7 +15182,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "4.0 - 6.0 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -15526,7 +15526,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "11.0 - 11.0 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -15656,7 +15656,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "40 - 60 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -16000,7 +16000,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "90 - 120 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -16130,7 +16130,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "35 - 55 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -16474,7 +16474,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "90 - 120 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -16604,7 +16604,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "45 - 55 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -16948,7 +16948,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "120 - 140 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -17078,7 +17078,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "45 - 55 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -17422,7 +17422,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "80 - 100 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -17552,7 +17552,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "60 - 80 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -17896,7 +17896,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "120 - 140 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -18026,7 +18026,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "30 - 50 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -18370,7 +18370,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "65 - 120 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -18500,7 +18500,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "30 - 50 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -18844,7 +18844,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "65 - 120 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -18974,7 +18974,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "19 - 25 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -19318,7 +19318,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "42 - 46 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -19448,7 +19448,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "60 - 80 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -19792,7 +19792,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "140 - 150 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -19922,7 +19922,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "18 - 24 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -20266,7 +20266,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "40 - 46 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -20396,7 +20396,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "22 - 28 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -20740,7 +20740,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "40 - 46 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -20870,7 +20870,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "9 - 12 settings",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -21214,7 +21214,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "20 - 30 settings",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -21344,7 +21344,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "8 - 30 settings",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -21688,7 +21688,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "30 - 40 settings",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -21818,7 +21818,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "40 - 45 settings",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -22162,7 +22162,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "55 - 60 settings",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -22267,7 +22267,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "4.0 - 4.0 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -22611,7 +22611,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "8.0 - 9.0 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -22741,7 +22741,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "2.0 - 8.75 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -23085,7 +23085,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "6.0 - 11.0 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -23190,7 +23190,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "4.0 - 6.0 settings",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -23534,7 +23534,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "11.0 - 14.0 settings",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -23664,7 +23664,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "6.0 - 8.0 settings",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -24008,7 +24008,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "10.0 - 12.0 settings",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -24138,7 +24138,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "35 - 45 dial numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -24482,7 +24482,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "67 - 90 dial numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -24612,7 +24612,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "25 - 40 dial numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -24956,7 +24956,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "55 - 65 dial numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -25086,7 +25086,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "35 - 50 dial numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -25430,7 +25430,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "75 - 85 dial numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -25560,7 +25560,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "20 - 20 settings",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -25904,7 +25904,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "50 - 50 settings",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -26034,7 +26034,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "5.0 - 6.0 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -26378,7 +26378,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "8.0 - 9.0 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -26508,7 +26508,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "5.0 - 7.0 numbers",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -26852,7 +26852,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "11.0 - 15.0 numbers",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -26982,7 +26982,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "8 - 8 notches",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -27326,7 +27326,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "13 - 13 notches",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -27431,7 +27431,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "7 - 11 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -27775,7 +27775,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "15 - 15 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -27905,7 +27905,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "8 - 8 notches",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -28249,7 +28249,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "13 - 13 notches",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -28379,7 +28379,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "2 - 8 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -28723,7 +28723,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "7 - 12 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -28828,7 +28828,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "7 - 9 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -29172,7 +29172,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "13 - 16 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -29277,7 +29277,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "7 - 11 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -29621,7 +29621,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "15 - 15 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -29751,7 +29751,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "8 - 8 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -30095,7 +30095,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "13 - 13 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -30225,7 +30225,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "3.0 - 4.0 settings",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -30569,7 +30569,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "6.0 - 8.0 settings",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -30699,7 +30699,7 @@
         "profile_aeropress_sweet_body_hot"
       ],
       "rangeLabel": "45 - 45 clicks",
-      "note": "AeroPress range from 2026.07.0-master. Use as true-zero. Adjust by taste, flow, brew time.",
+      "note": "Master Barista Calibration: AeroPress demands an exceptionally precise medium-fine grind to balance immersion saturation with pneumatic pressure. Rely on true-zero, verify burr seasoning, and adjust according to the profile: finer for Bypass concentrates, coarser for Bright Clean clarity.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,
@@ -31043,7 +31043,7 @@
         "profile_french_press_sweet_immersion_hot"
       ],
       "rangeLabel": "80 - 110 clicks",
-      "note": "French Press range from 2026.07.0-master-grinder-calibration. Use as a true-zero starting point, then adjust by taste, flow, and brew time. Burr gap is not a linear particle-size conversion; verify zero point, burr seasoning, roast density, dose, and paper/filter behavior.",
+      "note": "Master Barista Calibration: French Press requires an exceptionally uniform coarse-to-medium grind to prevent excess fines from slipping into the brew. Rely on true-zero, verify burr seasoning, and adjust according to the specific profile: coarser for traditional immersion, medium for clean decant and double filter.",
       "referenceType": "method_specific_master_table",
       "zeroPointMethod": "true zero / burr-touch reference; user grinder may need offset calibration",
       "calibrationRequired": true,

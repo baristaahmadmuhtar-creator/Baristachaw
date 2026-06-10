@@ -126,7 +126,7 @@ async function handleStart(req: VercelRequest, res: VercelResponse, requestId: s
   if (!enforceMobileAuthRateLimit(req, res, '/api/auth/mobile/start')) return;
 
   try {
-    const config = resolveMobileOAuthConfig('/api/auth/mobile/callback');
+    const config = resolveMobileOAuthConfig('/api/auth/callback');
     const scheme = resolveMobileAppScheme();
     const state = `mobile.${jwt.sign(
       {

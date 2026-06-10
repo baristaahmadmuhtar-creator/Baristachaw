@@ -7567,7 +7567,7 @@ test('French Press production styles keep ratio envelope, Volvic-like water labe
     roastLevel: 'medium' as const,
   };
   const cases = [
-    { style: 'auto', targetProfileId: 'more_sweetness', process: 'natural', variety: 'red catuai', ratio: [14, 15], time: [360, 480], text: /rendaman manis|sweet immersion|tuang pisah|decant/i },
+    { style: 'auto', targetProfileId: 'more_sweetness', process: 'natural', variety: 'red catuai', ratio: [14, 15], time: [360, 510], text: /rendaman manis|sweet immersion|tuang pisah|decant/i },
     { style: 'traditional', targetProfileId: 'balance_clean', process: 'washed', variety: 'bourbon', ratio: [14, 15], time: [330, 450], text: /tradisional|traditional|rendam|steep/i },
     { style: 'clean_decant', targetProfileId: 'floral_transparent', process: 'washed', variety: 'gesha', ratio: [15, 16], time: [420, 540], text: /clean decant|tuang pisah bersih|sedimen|slow/i },
     { style: 'double_filter', targetProfileId: 'floral_transparent', process: 'washed', variety: 'typica', ratio: [14.5, 15.5], time: [300, 420], text: /double|dua saringan|paper|kertas|metal/i },

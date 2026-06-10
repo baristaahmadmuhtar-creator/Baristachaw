@@ -1,5 +1,5 @@
 import type { AiBrewEngineMode, AiBrewPromptContext, BrewPlan } from './types';
-import { buildExtractionFinisher } from './extractionFinisher';
+import { buildExtractionFinisher } from './extractionFinisher.ts';
 import { formatAiBrewKnowledgeContext } from './knowledge.ts';
 import { isIndonesianAiBrewLanguage } from './localization.ts';
 

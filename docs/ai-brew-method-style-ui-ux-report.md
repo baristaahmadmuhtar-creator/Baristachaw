@@ -1,23 +1,27 @@
 # AI Brew Method + Style UI/UX Report
 
-Generated: 2026-06-08T07:58:58.252Z
-Local SHA: f7f7462798d5cf64098f2d7446bcebc300d10216
-Remote main SHA: f7f7462798d5cf64098f2d7446bcebc300d10216
+Generated: 2026-06-10T22:47:36.937Z
+Local SHA: 2d07ec62d1cedbc3c444baddffb527bf97f0717e
+Remote main SHA: 2d07ec62d1cedbc3c444baddffb527bf97f0717e
 Branch: main
-Working tree status at generation: M apps/web/public/data/ai-brew/grinder-settings.v2026-06.json
- M apps/web/src/features/ai-brew/aeropressCalibration.ts
- M apps/web/src/features/ai-brew/knowledge.ts
- M apps/web/src/features/ai-brew/planner.ts
- M apps/web/src/features/ai-brew/workflowGuide.ts
+Working tree status at generation: M apps/web/src/features/ai-brew/prompts.ts
+ M apps/web/src/features/ai-brew/workflowTutorials.ts
  M docs/ai-brew-method-style-coverage-report.md
  M docs/ai-brew-method-style-final-verdict.md
  M docs/ai-brew-method-style-inventory.md
  M docs/ai-brew-method-style-ui-ux-report.md
  M docs/ai-brew-real-world-1000-report.md
- M scripts/ai-brew-method-style-audit.mjs
-?? patch.cjs
-?? test_length.mjs
-Artifact directory: `artifacts/ai-brew-audit/method-styles/f7f7462798d5`
+ M tests/fixtures/ai-brew-source-backed-filter-beans.json
+?? audit_output.json
+?? expand_beans.cjs
+?? fix_tutorials.cjs
+?? inject.cjs
+?? scratch_check.cjs
+?? tutorial
+?? updateTutorials_1.cjs
+?? updateTutorials_2.cjs
+?? updateTutorials_3.cjs
+Artifact directory: `artifacts/ai-brew-audit/method-styles/2d07ec62d1ce`
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 
@@ -25,11 +29,33 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 
 - UI result surfaces checked: 1000
 - Guide surfaces checked: 1000
-- UI warning count: 0
+- UI warning count: 23
 
 ## Mobile/Workflow Risks
 
-No high-priority deterministic UI/UX risk found.
+- hario_switch-hybrid_balanced-more_body-75: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-fruit_forward-77: guide/detail text may be too dense for mobile
+- hario_switch-mugen_everyday_hybrid-soft_round-110: guide/detail text may be too dense for mobile
+- chemex-competition_multi_pulse-more_acidity-130: guide/detail text may be too dense for mobile
+- chemex-competition_multi_pulse-fruit_forward-133: guide/detail text may be too dense for mobile
+- chemex-competition_multi_pulse-dense_comforting-135: guide/detail text may be too dense for mobile
+- kalita_wave-competition_fast_four-floral_transparent-180: guide/detail text may be too dense for mobile
+- hario_switch-immersion_heavy_body-floral_transparent-860: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-balance_clean-864: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-more_sweetness-865: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-more_acidity-866: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-more_body-867: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-floral_transparent-868: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-fruit_forward-869: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-soft_round-870: guide/detail text may be too dense for mobile
+- hario_switch-hybrid_balanced-dense_comforting-871: guide/detail text may be too dense for mobile
+- hario_switch-mugen_everyday_hybrid-fruit_forward-901: guide/detail text may be too dense for mobile
+- hario_switch-mugen_everyday_hybrid-soft_round-902: guide/detail text may be too dense for mobile
+- chemex-competition_multi_pulse-balance_clean-920: guide/detail text may be too dense for mobile
+- chemex-competition_multi_pulse-more_acidity-922: guide/detail text may be too dense for mobile
+- chemex-competition_multi_pulse-fruit_forward-925: guide/detail text may be too dense for mobile
+- kalita_wave-competition_fast_four-more_acidity-970: guide/detail text may be too dense for mobile
+- kalita_wave-competition_fast_four-dense_comforting-975: guide/detail text may be too dense for mobile
 
 ## Remaining UI Risk
 

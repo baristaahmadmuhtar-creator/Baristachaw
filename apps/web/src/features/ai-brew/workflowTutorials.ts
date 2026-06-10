@@ -1410,7 +1410,7 @@ const KALITA_WAVE_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, 
       id: 'Pasang filter gelombang dengan teliti. Pastikan lipatan geometris sama sekali tidak tertekan untuk memaksimalkan retensi panas dan aliran bypass tepi.'
     },
     entry: {
-      en: 'Execute a rapid, aggressive bloom pour to force total saturation instantly. Fast extraction demands immediate total contact.',
+      en: 'Execute a rapid bloom pour to force saturation instantly. Fast extraction demands immediate contact.',
       id: 'Lakukan blooming cepat dan agresif untuk saturasi total. Ekstraksi cepat butuh kontak menyeluruh sejak awal.'
     },
     main: {
@@ -1459,7 +1459,7 @@ const KALITA_WAVE_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, 
     },
     main: {
       en: 'Pour short, hot pulses. The flat bottom limits channeling, forcing water heavily through the grounds.',
-      id: 'Tuang air panas dalam pulsa pendek dan pekat. Alas datar mencegah channeling, memaksa setiap tetes membasuh kuat bubuk kopi.'
+      id: 'Tuang air panas dalam pulsa pendek. Alas datar cegah channeling, memaksa air membasuh rata bubuk kopi.'
     },
     release: {
       en: 'Watch the thick hot concentrate melt directly into the ice structure below, flash-chilling instantly to lock in freshness.',
@@ -1680,8 +1680,8 @@ const CHEMEX_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Isi wadah Chemex yang besar dengan es segar berkualitas tinggi. Pastikan lipatan tiga filter menghadap jalur tuang agar udara dingin bisa keluar.'
     },
     entry: {
-      en: 'Bloom the high-dose bed with hot water. The thick filter requires slightly more water to saturate fully without stalling.',
-      id: 'Blooming hamparan dosis tinggi dengan air panas. Filter tebal butuh sedikit lebih banyak air untuk saturasi total tanpa macet.'
+      en: 'Bloom the high-dose bed with hot water. The thick filter requires slightly more water to saturate fully.',
+      id: 'Blooming dengan air panas. Filter tebal butuh air ekstra untuk saturasi total tanpa macet.'
     },
     main: {
       en: 'Pour in sustained pulses. We extract a dense concentrate strong enough to survive ice dilution.',
@@ -1702,11 +1702,11 @@ const CHEMEX_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Siapkan gilingan kasar agar Chemex sanggup menangani dosis masif ini. Bilas kertas dengan banyak air untuk memanaskan bingkai kaca yang tebal.'
     },
     entry: {
-      en: 'Execute a massive bloom. Stirring with a paddle is highly recommended to ensure no dry pockets survive in the deep cone.',
-      id: 'Lakukan blooming masif. Mengaduk dengan dayung sangat disarankan untuk memastikan tidak ada kantong kering di kerucut yang dalam.'
+      en: 'Execute a massive bloom. Stirring with a paddle is highly recommended to ensure no dry pockets survive.',
+      id: 'Lakukan blooming masif. Aduk dengan dayung untuk pastikan tak ada kantong kering di dalam kerucut.'
     },
     main: {
-      en: 'Pour heavily and rhythmically in the center. Avoid washing the high walls, which risks bypassing water around the thick bed.',
+      en: 'Pour rhythmically in the center. Avoid washing high walls to prevent water bypassing the thick bed.',
       id: 'Tuang ritmis di tengah. Hindari dinding tinggi agar air tidak mem-bypass bed yang tebal.'
     },
     release: {

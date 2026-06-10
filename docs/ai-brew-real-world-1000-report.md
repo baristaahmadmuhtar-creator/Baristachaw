@@ -1,85 +1,26 @@
 # AI Brew Real-World 1000 Report
 
-Regenerated metadata: 2026-06-08T07:58:58.252Z
-Local SHA: f7f7462798d5cf64098f2d7446bcebc300d10216
-Remote main SHA: f7f7462798d5cf64098f2d7446bcebc300d10216
+Regenerated metadata: 2026-06-10T22:47:36.937Z
+Local SHA: 2d07ec62d1cedbc3c444baddffb527bf97f0717e
+Remote main SHA: 2d07ec62d1cedbc3c444baddffb527bf97f0717e
 Branch: main
-Working tree status at generation: M apps/web/public/data/ai-brew/grinder-settings.v2026-06.json
- M apps/web/src/features/ai-brew/aeropressCalibration.ts
- M apps/web/src/features/ai-brew/knowledge.ts
- M apps/web/src/features/ai-brew/planner.ts
- M apps/web/src/features/ai-brew/workflowGuide.ts
+Working tree status at generation: M apps/web/src/features/ai-brew/prompts.ts
+ M apps/web/src/features/ai-brew/workflowTutorials.ts
  M docs/ai-brew-method-style-coverage-report.md
  M docs/ai-brew-method-style-final-verdict.md
  M docs/ai-brew-method-style-inventory.md
  M docs/ai-brew-method-style-ui-ux-report.md
  M docs/ai-brew-real-world-1000-report.md
- M scripts/ai-brew-method-style-audit.mjs
-?? patch.cjs
-?? test_length.mjs
-
-This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
-
----
-zation.cjs
-
-This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
-
----
-zation.ts
- M apps/web/src/features/ai-brew/planner.ts
- M apps/web/src/features/ai-brew/workflowGuide.ts
- M docs/ai-brew-method-style-coverage-report.md
- M docs/ai-brew-method-style-final-verdict.md
- M docs/ai-brew-method-style-inventory.md
- M docs/ai-brew-method-style-ui-ux-report.md
- M docs/ai-brew-real-world-1000-report.md
- M tests/e2e/tools.spec.ts
- M tests/unit/aiBrewPlanner.test.ts
-?? check-broken.cjs
-?? patch-localization.cjs
-
-This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
-
----
-zation.ts
- M apps/web/src/features/ai-brew/planner.ts
- M apps/web/src/features/ai-brew/workflowGuide.ts
- M docs/ai-brew-method-style-coverage-report.md
- M docs/ai-brew-method-style-final-verdict.md
- M docs/ai-brew-method-style-inventory.md
- M docs/ai-brew-method-style-ui-ux-report.md
- M docs/ai-brew-real-world-1000-report.md
- M tests/e2e/tools.spec.ts
- M tests/unit/aiBrewPlanner.test.ts
-?? check-broken.cjs
-?? patch-localization.cjs
-
-This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
-
----
-zation.ts
- M apps/web/src/features/ai-brew/planner.ts
- M apps/web/src/features/ai-brew/workflowGuide.ts
- M tests/e2e/tools.spec.ts
- M tests/unit/aiBrewPlanner.test.ts
-
-This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
-
----
-zation.ts
- M apps/web/src/features/ai-brew/planner.ts
- M apps/web/src/features/ai-brew/workflowGuide.ts
- M docs/ai-brew-aeropress-bypass-report.md
- M docs/ai-brew-real-world-1000-report.md
- M docs/ai-brew-real-world-10000-report.md
- M package.json
-?? docs/ai-brew-method-style-coverage-report.md
-?? docs/ai-brew-method-style-final-verdict.md
-?? docs/ai-brew-method-style-inventory.md
-?? docs/ai-brew-method-style-ui-ux-report.md
-?? scripts/ai-brew-method-style-audit.mjs
-?? tests/unit/aiBrewMethodStyleCoverage.test.ts
+ M tests/fixtures/ai-brew-source-backed-filter-beans.json
+?? audit_output.json
+?? expand_beans.cjs
+?? fix_tutorials.cjs
+?? inject.cjs
+?? scratch_check.cjs
+?? tutorial
+?? updateTutorials_1.cjs
+?? updateTutorials_2.cjs
+?? updateTutorials_3.cjs
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 
@@ -338,14 +279,14 @@ No blocking software failure found.
 | 6 | Kenya AA SL28/SL34 Washed style -> more_acidity | Chemex | Comandante C40 MK4 | Low buffer clarity water | 20g, 330ml, 94C, Starting grind: 30 clicks. Correction range: 29 clicks to 32 clicks. If sour/thin: 29 clicks. If bitter/dry/stalled: 32 clicks., 4:15 | 100 | Pass; software recipe safe, real brew validation still required |
 | 7 | Colombia Pink Bourbon Washed style -> more_sweetness | Kalita / flat-bottom | 1Zpresso K-Ultra | Volvic style bottled water | 18g, 280ml, 93.5C, Starting grind: 7.3 numbers. Correction range: 7.1 numbers to 7.5 numbers. If sour/thin: 7.1 numbers. If bitter/dry/stalled: 7.5 numbers., 4:15 | 100 | Pass; software recipe safe, real brew validation still required |
 | 8 | Colombia Thermal Shock Caturra style -> fruit_forward | V60 hot | Comandante C40 MK4 | Third Wave Water / remineralized balanced | 20g, 320ml, 90.9C, Starting grind: 25 clicks. Correction range: 23 clicks to 26 clicks. If sour/thin: 23 clicks. If bitter/dry/stalled: 26 clicks., 2:50 | 99.6 | experimental_process_feedback_risk |
-| 9 | Brazil Natural Yellow Bourbon/Catuai style -> dense_comforting | French Press | Baratza Encore | Volvic style bottled water | 30g, 425ml, 91.3C, Starting grind: 29 setting. Correction range: 28 setting to 31 setting. If sour/thin: 28 setting. If bitter/dry/stalled: 31 setting., 8:05 | 100 | Pass; software recipe safe, real brew validation still required |
+| 9 | Brazil Natural Yellow Bourbon/Catuai style -> dense_comforting | French Press | Baratza Encore | Volvic style bottled water | 30g, 425ml, 90.3C, Starting grind: 29 setting. Correction range: 28 setting to 31 setting. If sour/thin: 28 setting. If bitter/dry/stalled: 31 setting., 8:30 | 100 | Pass; software recipe safe, real brew validation still required |
 | 10 | Sumatra Wet-Hulled style -> more_body | Clever Dripper | Latina Sumba / Sumbawa | Unknown estimated bottled water | 15g, 225ml, 92.4C, Starting grind: setting 13. Correction range: setting 12 to setting 15. If sour/thin: setting 12. If bitter/dry/stalled: setting 15., 4:40 | 97.1 | fallback_grinder_calibration_risk; water_manual_verification_risk |
-| 11 | Costa Rica Honey/Natural style -> more_sweetness | AeroPress | KINGrinder K6 | Third Wave Water / remineralized balanced | 18g, 240ml, 90C, Starting grind: 45 clicks. Correction range: 41 clicks to 49 clicks. If sour/thin: 41 clicks. If bitter/dry/stalled: 49 clicks., 2:10 | 100 | Pass; software recipe safe, real brew validation still required |
+| 11 | Costa Rica Honey/Natural style -> more_sweetness | AeroPress | KINGrinder K6 | Third Wave Water / remineralized balanced | 18g, 240ml, 90C, Starting grind: 45 clicks. Correction range: 41 clicks to 49 clicks. If sour/thin: 41 clicks. If bitter/dry/stalled: 49 clicks., 2:20 | 100 | Pass; software recipe safe, real brew validation still required |
 | 12 | Guatemala Washed Bourbon/Caturra style -> balance_clean | V60 hot | Timemore C3 | Volvic style bottled water | 20g, 320ml, 90.3C, Starting grind: 14 clicks. Correction range: 13 clicks to 16 clicks. If sour/thin: 13 clicks. If bitter/dry/stalled: 16 clicks., 2:45 | 100 | Pass; software recipe safe, real brew validation still required |
 | 13 | Rwanda/Burundi Washed Bourbon style -> more_acidity | Origami | 1Zpresso K-Ultra | Low buffer clarity water | 12g, 195ml, 93C, Starting grind: 6.5 numbers. Correction range: 6.3 numbers to 6.7 numbers. If sour/thin: 6.3 numbers. If bitter/dry/stalled: 6.7 numbers., 2:10 | 100 | Pass; software recipe safe, real brew validation still required |
 | 14 | Yemen Natural Traditional style -> dense_comforting | V60 hot | Comandante C40 MK4 | Unknown estimated bottled water | 15g, 235ml, 90.7C, Starting grind: 24 clicks. Correction range: 22 clicks to 26 clicks. If sour/thin: 22 clicks. If bitter/dry/stalled: 26 clicks., 3:15 | 98.3 | water_manual_verification_risk; experimental_process_feedback_risk |
 | 15 | Colombia Sugarcane Decaf style -> soft_round | V60 hot | Timemore C2 | Volvic style bottled water | 18g, 285ml, 90.9C, Starting grind: 18 clicks. Correction range: 17 clicks to 20 clicks. If sour/thin: 17 clicks. If bitter/dry/stalled: 20 clicks., 2:55 | 100 | Pass; software recipe safe, real brew validation still required |
-| 16 | Specialty Robusta/Canephora style -> more_body | French Press | Baratza Encore | Hard water | 18g, 255ml, 90C, Starting grind: 29 setting. Correction range: 28 setting to 31 setting. If sour/thin: 28 setting. If bitter/dry/stalled: 31 setting., 8:15 | 100 | Pass; software recipe safe, real brew validation still required |
+| 16 | Specialty Robusta/Canephora style -> more_body | French Press | Baratza Encore | Hard water | 18g, 255ml, 90C, Starting grind: 29 setting. Correction range: 28 setting to 31 setting. If sour/thin: 28 setting. If bitter/dry/stalled: 31 setting., 8:30 | 100 | Pass; software recipe safe, real brew validation still required |
 | 17 | Espresso roast blend style -> soft_round | Espresso | Baratza Encore ESP | Espresso-safe water | 18g, 40ml, 91.9C, Starting grind: 6 settings. Correction range: 3 settings to 9 settings. If sour/thin: 3 settings. If bitter/dry/stalled: 9 settings., 0:36 | 100 | Pass; software recipe safe, real brew validation still required |
 | 18 | Espresso roast blend style -> soft_round | Espresso | Timemore C2 | Espresso-safe water | 18g, 40ml, 92.6C, Starting grind: 8 clicks. Correction range: 6 clicks to 9 clicks. If sour/thin: 6 clicks. If bitter/dry/stalled: 9 clicks., 0:36 | 97.5 | espresso_not_recommended_grinder_risk |
 | 19 | Espresso roast blend style -> soft_round | Espresso | Fellow Ode Gen 2 | Espresso-safe water | 18g, 40ml, 92.6C, Starting grind: 3.0 numbers. Correction range: 2.9 numbers to 3.1 numbers. If sour/thin: 2.9 numbers. If bitter/dry/stalled: 3.1 numbers., 0:36 | 97.5 | espresso_not_recommended_grinder_risk |
@@ -366,7 +307,7 @@ No blocking software failure found.
 | 34 | Kenya AA SL28/SL34 Washed style -> balance_clean | Chemex | Comandante C40 MK4 | Volvic style bottled water | 30g, 500ml, 93.5C, Starting grind: 30 clicks. Correction range: 29 clicks to 32 clicks. If sour/thin: 29 clicks. If bitter/dry/stalled: 32 clicks., 4:30 | 100 | Pass; software recipe safe, real brew validation still required |
 | 35 | Ethiopia Yirgacheffe Washed Landrace style -> floral_transparent | V60 hot | 1Zpresso K-Ultra | Low buffer clarity water | 12g, 200ml, 94C, Starting grind: 6.5 numbers. Correction range: 6.3 numbers to 6.7 numbers. If sour/thin: 6.3 numbers. If bitter/dry/stalled: 6.7 numbers., 2:25 | 100 | Pass; software recipe safe, real brew validation still required |
 | 36 | Costa Rica Honey/Natural style -> more_sweetness | AeroPress | KINGrinder K6 | Third Wave Water / remineralized balanced | 20g, 255ml, 90C, Starting grind: 45 clicks. Correction range: 41 clicks to 49 clicks. If sour/thin: 41 clicks. If bitter/dry/stalled: 49 clicks., 2:05 | 100 | Pass; software recipe safe, real brew validation still required |
-| 37 | Brazil Natural Yellow Bourbon/Catuai style -> dense_comforting | French Press | Baratza Encore | Hard water | 30g, 430ml, 90C, Starting grind: 29 setting. Correction range: 28 setting to 31 setting. If sour/thin: 28 setting. If bitter/dry/stalled: 31 setting., 8:00 | 100 | Pass; software recipe safe, real brew validation still required |
+| 37 | Brazil Natural Yellow Bourbon/Catuai style -> dense_comforting | French Press | Baratza Encore | Hard water | 30g, 430ml, 90C, Starting grind: 29 setting. Correction range: 28 setting to 31 setting. If sour/thin: 28 setting. If bitter/dry/stalled: 31 setting., 8:30 | 100 | Pass; software recipe safe, real brew validation still required |
 | 38 | Espresso roast blend style -> soft_round | Espresso | Baratza Encore ESP | Espresso-safe water | 18g, 40ml, 92.6C, Starting grind: 5 settings. Correction range: 2 settings to 8 settings. If sour/thin: 2 settings. If bitter/dry/stalled: 8 settings., 0:36 | 100 | Pass; software recipe safe, real brew validation still required |
 | 39 | Espresso roast blend style -> dense_comforting | Espresso | Baratza Encore ESP | Espresso-safe water | 18g, 40ml, 91.8C, Starting grind: 6 settings. Correction range: 3 settings to 9 settings. If sour/thin: 3 settings. If bitter/dry/stalled: 9 settings., 0:45 | 100 | Pass; software recipe safe, real brew validation still required |
 | 40 | Panama Elida Estate Natural Geisha style -> fruit_forward | V60 iced | 1Zpresso K-Ultra | Third Wave Water / remineralized balanced | 15g, 235ml, 92C, Starting grind: 5.1 numbers. Correction range: 4.9 numbers to 5.3 numbers. If sour/thin: 4.9 numbers. If bitter/dry/stalled: 5.3 numbers., 2:45 | 99.6 | experimental_process_feedback_risk |
@@ -378,7 +319,7 @@ No blocking software failure found.
 | 46 | Colombia Thermal Shock Caturra style -> dense_comforting | Hario Switch 03 hot | 1Zpresso K-Ultra | Third Wave Water / remineralized balanced | 22g, 350ml, 89.6C, Starting grind: 7.7 numbers. Correction range: 7.5 numbers to 7.9 numbers. If sour/thin: 7.5 numbers. If bitter/dry/stalled: 7.9 numbers., 3:15 | 99.6 | experimental_process_feedback_risk |
 | 47 | Indonesia Toraja Washed Typica style -> more_body | Clever Dripper | Latina Sumba / Sumbawa | Aqua bottled water Indonesia style | 18g, 270ml, 92.1C, Starting grind: setting 13. Correction range: setting 11 to setting 14. If sour/thin: setting 11. If bitter/dry/stalled: setting 14., 4:35 | 98.3 | fallback_grinder_calibration_risk |
 | 48 | Indonesia Bali Natural/Kintamani style -> fruit_forward | AeroPress | KINGrinder K6 | Le Minerale bottled water Indonesia style | 20g, 270ml, 88C, Starting grind: 54 clicks. Correction range: 50 clicks to 58 clicks. If sour/thin: 50 clicks. If bitter/dry/stalled: 58 clicks., 1:45 | 99.6 | experimental_process_feedback_risk |
-| 49 | India Monsooned Malabar style -> dense_comforting | French Press | Baratza Encore | Club bottled water Indonesia style | 30g, 425ml, 90.6C, Starting grind: 29 setting. Correction range: 28 setting to 31 setting. If sour/thin: 28 setting. If bitter/dry/stalled: 31 setting., 8:05 | 100 | Pass; software recipe safe, real brew validation still required |
+| 49 | India Monsooned Malabar style -> dense_comforting | French Press | Baratza Encore | Club bottled water Indonesia style | 30g, 425ml, 90C, Starting grind: 29 setting. Correction range: 28 setting to 31 setting. If sour/thin: 28 setting. If bitter/dry/stalled: 31 setting., 8:30 | 100 | Pass; software recipe safe, real brew validation still required |
 | 50 | Liberica / Excelsa specialty style -> more_body | Moka Pot | Baratza Encore ESP | Ades bottled water Indonesia style | 18g, 180ml, 90.2C, Starting grind: 17 settings. Correction range: 14 settings to 19 settings. If sour/thin: 14 settings. If bitter/dry/stalled: 19 settings., 3:45 | 98.7 | moka_stall_bitterness_risk |
 | 51 | Espresso roast blend style -> soft_round | Espresso | DF64 espresso/filter hybrid | Espresso-safe water | 18g, 40ml, 92.6C, Starting grind: espresso range, dial-in required. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias finer., 0:36 | 98.3 | fallback_grinder_calibration_risk |
 | 52 | Ethiopia Yirgacheffe Washed Landrace style -> floral_transparent | V60 hot | 1Zpresso K-Ultra | Amidis demineralized water Indonesia style | 20g, 325ml, 94C, Starting grind: 6.5 numbers. Correction range: 6.3 numbers to 6.7 numbers. If sour/thin: 6.3 numbers. If bitter/dry/stalled: 6.7 numbers., 2:15 | 99.6 | demineral_direct_filter_experiment_risk |

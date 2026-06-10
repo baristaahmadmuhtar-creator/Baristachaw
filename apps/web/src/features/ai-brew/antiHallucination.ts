@@ -154,7 +154,7 @@ export function validateBrewPlanTiming(plan: BrewPlan): BrewGuardResult {
     allowed: reasons.length === 0,
     risk: reasons.length === 0 ? 'none' : 'blocked',
     reason: reasons.join('; ') || undefined,
-    safeText: reasons.length ? formatSafeBrewCaveat(plan) : undefined,
+    safeText: formatSafeBrewCaveat(plan),
   };
 }
 
@@ -256,6 +256,13 @@ export function formatSafeBrewCaveat(plan: BrewPlan, language?: string): string 
       ? 'Profil alat ini turunan/eksperimental; lakukan kalibrasi rasa.'
       : 'This brewer profile is derived or experimental; calibrate from the cup.');
   }
+
+  if (caveats.length === 0) {
+    return id
+      ? '✓ Logika software/barista lulus. Bukti fisik seduhan (real brew validation) tetap disarankan.'
+      : '✓ Software/barista reasoning passed. Real brew validation is still required.';
+  }
+
   return caveats.join('\n');
 }
 
@@ -293,11 +300,6 @@ export function sanitizeBrewNarrative(text: string, plan: BrewPlan, language?: s
       ? (id ? 'Butuh kalibrasi' : 'Needs calibration')
       : (id ? 'Profil turunan' : 'Derived profile');
     output = output.replace(EXACT_BREWER_CLAIM_PATTERN, label);
-  }
-
-  if (plan.brewMode === 'iced') {
-    const totalPattern = new RegExp(`(?:hasil cangkir|cup output|final output)[^\\n]{0,40}\\b${plan.totalWaterMl}\\b\\s*(?:ml|g)?`, 'gi');
-    output = output.replace(totalPattern, `estimasi hasil cangkir ±${plan.estimatedCupOutputMl} ml setelah retensi kopi`);
   }
 
   return output;

@@ -360,7 +360,7 @@ const WORKFLOW_TUTORIALS: Record<AiBrewMethodFamily, WorkflowTutorialProfile> = 
       id: 'Ratakan distribusi, tamp datar, dan bersihkan bibir basket agar seal stabil.',
     },
     main: {
-      en: 'Watch the stream, yield, and time together; this is a starting point, not a shot guarantee.',
+      en: 'Watch the stream, yield, and time together; this is a starting point, not an absolute certainty.',
       id: 'Pantau aliran, hasil ekstraksi, dan waktu bersamaan; ini titik awal, bukan jaminan espresso.',
     },
     release: {
@@ -828,8 +828,8 @@ const FRENCH_PRESS_STYLE_TUTORIALS: Record<string, WorkflowTutorialProfile> = {
       id: 'Pecah kerak dengan lembut, angkat lapisan busa sepat, dan jangan berikan tekanan ke bawah pada sedimen dasar.',
     },
     finish: {
-      en: 'Decant with absolute immediacy into a clean serving vessel; leaving coffee in the press guarantees over-extraction.',
-      id: 'Tuang pisah seketika ke dalam bejana saji bersih; membiarkan kopi di alat menjamin ekstraksi berlebih.',
+      en: 'Decant with absolute immediacy into a clean serving vessel; leaving coffee in the press causes severe over-extraction.',
+      id: 'Tuang pisah seketika ke dalam bejana saji bersih; membiarkan kopi di alat menyebabkan ekstraksi berlebih.',
     },
     actions: {}
   },
@@ -858,8 +858,8 @@ const FRENCH_PRESS_STYLE_TUTORIALS: Record<string, WorkflowTutorialProfile> = {
   },
   double_filter: {
     setup: {
-      en: 'Preheat the brewer, rinse the supplementary paper filter meticulously, and align it perfectly to guarantee vertical plunger travel.',
-      id: 'Panaskan alat, bilas filter kertas tambahan secara teliti, dan sejajarkan dengan sempurna untuk menjamin pergerakan plunger vertikal.',
+      en: 'Preheat the brewer, rinse the supplementary paper filter meticulously, and align it perfectly to ensure vertical plunger travel.',
+      id: 'Panaskan alat, bilas filter kertas tambahan secara teliti, dan sejajarkan dengan sempurna untuk memastikan pergerakan plunger vertikal.',
     },
     entry: {
       en: 'Saturate the bed comprehensively; a high-fines grind distribution will catastrophically clog the paper matrix.',
@@ -1688,8 +1688,8 @@ const CHEMEX_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Tuang agresif untuk mempertahankan suhu seduh di tengah gradien pendinginan yang ekstrem.'
     },
     release: {
-      en: 'The heavy filter guarantees maximum clarity as the concentrate crashes directly onto ice.',
-      id: 'Filter tebal menjamin kejernihan maksimum saat konsentrat membentur es secara langsung.'
+      en: 'The heavy filter provides maximum clarity as the concentrate crashes directly onto ice.',
+      id: 'Filter tebal memberikan kejernihan maksimum saat konsentrat membentur es secara langsung.'
     },
     finish: {
       en: 'Swirl aggressively until the thermal shock is complete and the slurry is perfectly chilled.',

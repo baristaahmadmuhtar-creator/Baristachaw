@@ -1358,7 +1358,8 @@ const KALITA_WAVE_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, 
       id: 'Integrasikan sirup padat ini sepenuhnya sebelum pengenceran atau penyajian langsung.'
     }
   }
-};\n
+};
+
 const CLEVER_DRIPPER_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   classic_closed: {
     setup: {
@@ -1708,7 +1709,8 @@ const ORIGAMI_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Work
       id: 'Homogenisasi dengan hati-hati untuk menyeimbangkan dikotomi intens dari fase ekstraksi hibrida tersebut.'
     }
   }
-};\n
+};
+
 const APRIL_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   april_flat_bottom_standard: {
     setup: {

@@ -1270,52 +1270,95 @@ const KALITA_WAVE_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, 
       id: 'Putar perlahan untuk mengintegrasikan karakteristik body manis yang konsisten dari alas datar.'
     }
   },
-  pulse_heavy: {
+  competition_fast_four: {
     setup: {
-      en: 'Seat the fluted wave filter precisely and level the bed for hydrodynamic balance.',
-      id: 'Pasang filter bergelombang dengan presisi dan ratakan hamparan kopi untuk keseimbangan hidrodinamis.'
+      en: 'Seat the wave filter precisely; ensure the geometric ridges remain uncompressed.',
+      id: 'Pasang filter gelombang secara presisi; pastikan lipatan geometris tetap tidak tertekan.'
     },
     entry: {
-      en: 'Saturate the flat-bottom bed uniformly without flooding lateral zones.',
-      id: 'Saturasi hamparan alas datar secara seragam tanpa membanjiri zona lateral.'
+      en: 'Execute a rapid, aggressive bloom to force total saturation instantly.',
+      id: 'Lakukan blooming agresif dan cepat untuk memaksa saturasi total seketika.'
     },
     main: {
-      en: 'Execute continuous, small micro-pulses; keep the thermal mass high and extraction highly aggressive.',
-      id: 'Lakukan tuangan mikro berulang; jaga massa termal tetap tinggi dan ekstraksi sangat agresif.'
+      en: 'Deliver four rapid concentric pulses; rely on the filter geometry to mitigate bypass velocity.',
+      id: 'Berikan empat tuangan bertahap konsentris yang cepat; andalkan geometri filter untuk meredam kecepatan bypass.'
     },
     release: {
-      en: 'Permit the bed to drain unimpeded through all three ports.',
-      id: 'Biarkan hamparan meniris tanpa hambatan melewati ketiga lubang.'
+      en: 'Expect a highly accelerated drawdown; do not intervene mechanically.',
+      id: 'Antisipasi fase turun yang sangat terakselerasi; jangan mengintervensi secara mekanis.'
     },
     finish: {
-      en: 'Swirl to integrate the consistently sweet flat-bottom body.',
-      id: 'Putar perlahan untuk mengintegrasikan karakteristik body manis yang konsisten dari alas datar.'
+      en: 'Swirl vigorously to homogenize the bright, vibrant, heavily agitated extraction.',
+      id: 'Putar dengan kuat untuk menghomogenkan ekstraksi yang cerah, ceria, dan teragitasi berat.'
     }
   },
-  continuous_center: {
+  continuous_slow_stream: {
     setup: {
-      en: 'Seat the fluted wave filter precisely and level the bed for hydrodynamic balance.',
-      id: 'Pasang filter bergelombang dengan presisi dan ratakan hamparan kopi untuk keseimbangan hidrodinamis.'
+      en: 'Seat the fluted wave filter precisely and strictly level the bed.',
+      id: 'Pasang filter bergelombang dengan presisi dan ratakan hamparan dengan sangat ketat.'
     },
     entry: {
-      en: 'Saturate the flat-bottom bed uniformly without flooding lateral zones.',
-      id: 'Saturasi hamparan alas datar secara seragam tanpa membanjiri zona lateral.'
+      en: 'Saturate uniformly, emphasizing a calm and undisturbed degassing phase.',
+      id: 'Saturasi merata, menekankan fase pelepasan gas yang tenang dan tanpa gangguan.'
     },
     main: {
       en: 'Maintain a strict, slow center pour; allow the flat bottom geometry to passively disperse the water.',
       id: 'Pertahankan tuangan pusat yang sangat lambat; biarkan geometri alas datar menyebarkan air secara pasif.'
     },
     release: {
-      en: 'Permit the bed to drain unimpeded through all three ports.',
-      id: 'Biarkan hamparan meniris tanpa hambatan melewati ketiga lubang.'
+      en: 'Permit the column to recede gently; minimal agitation yields profound sweetness.',
+      id: 'Biarkan kolom air menyusut perlahan; agitasi minimal menghasilkan rasa manis yang mendalam.'
     },
     finish: {
-      en: 'Swirl to integrate the consistently sweet flat-bottom body.',
-      id: 'Putar perlahan untuk mengintegrasikan karakteristik body manis yang konsisten dari alas datar.'
+      en: 'Swirl lightly to integrate the exceptionally sweet, viscous body.',
+      id: 'Putar perlahan untuk mengintegrasikan karakteristik body kental yang sangat manis.'
+    }
+  },
+  iced_wave: {
+    setup: {
+      en: 'Load the server with precision-weighed ice; seat the wave filter and level the bed.',
+      id: 'Isi wadah saji dengan es yang ditimbang presisi; pasang filter gelombang dan ratakan hamparan.'
+    },
+    entry: {
+      en: 'Deploy a highly concentrated hot bloom to shock-extract volatile aromatics.',
+      id: 'Terapkan blooming panas sangat pekat untuk mengekstraksi kejut aromatik volatil.'
+    },
+    main: {
+      en: 'Execute tight concentric pulses, aggressively dissolving dense solids into the concentrate.',
+      id: 'Lakukan tuangan bertahap konsentris rapat, secara agresif melarutkan padatan pekat ke dalam konsentrat.'
+    },
+    release: {
+      en: 'Allow the concentrate to crash directly onto the ice, locking in fragile structural acidity.',
+      id: 'Biarkan konsentrat jatuh langsung ke atas es, mengunci keasaman struktural yang rapuh.'
+    },
+    finish: {
+      en: 'Agitate the carafe until the thermal equilibrium is completely achieved.',
+      id: 'Agitasi teko kaca hingga keseimbangan termal benar-benar tercapai.'
+    }
+  },
+  high_dose_concentrate: {
+    setup: {
+      en: 'Seat the fluted filter, accommodating the large thermal mass of the high dose.',
+      id: 'Pasang filter bergelombang, sesuaikan dengan massa termal besar dari dosis tinggi tersebut.'
+    },
+    entry: {
+      en: 'Saturate the deep bed slowly; allow significant time for comprehensive expansion.',
+      id: 'Saturasi hamparan dalam tersebut secara perlahan; berikan waktu signifikan untuk ekspansi komprehensif.'
+    },
+    main: {
+      en: 'Deliver slow concentric rings, strictly minimizing slurry elevation to prevent bypass over the heavy dose.',
+      id: 'Berikan tuangan melingkar lambat, secara ketat meminimalkan elevasi campuran untuk mencegah bypass di atas dosis berat.'
+    },
+    release: {
+      en: 'Expect a prolonged, viscous drawdown due to bed depth; avoid any mechanical agitation.',
+      id: 'Antisipasi fase turun kental yang panjang karena kedalaman hamparan; hindari agitasi mekanis apa pun.'
+    },
+    finish: {
+      en: 'Integrate the dense syrup completely before dilution or direct service.',
+      id: 'Integrasikan sirup padat ini sepenuhnya sebelum pengenceran atau penyajian langsung.'
     }
   }
-};
-
+};\n
 const CLEVER_DRIPPER_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   classic_closed: {
     setup: {
@@ -1577,7 +1620,7 @@ const ORIGAMI_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Work
       id: 'Aduk wadah saji dengan lembut dan evaluasi kejernihan serta bobot taktil.'
     }
   },
-  flat_bottom_style: {
+  wave_dripper_style: {
     setup: {
       en: 'Seat the wave filter precisely inside the cone, ensuring stable flat-bottom geometry.',
       id: 'Pasang filter gelombang secara presisi di dalam kerucut, pastikan geometri alas datar stabil.'
@@ -1598,9 +1641,74 @@ const ORIGAMI_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Work
       en: 'Mix the server gently and evaluate clarity and tactile weight.',
       id: 'Aduk wadah saji dengan lembut dan evaluasi kejernihan serta bobot taktil.'
     }
+  },
+  mugen_one_pour: {
+    setup: {
+      en: 'Seat the cone filter and establish a central divot to guide the single continuous pour.',
+      id: 'Pasang filter kerucut dan buat cekungan tengah untuk memandu tuangan kontinu tunggal.'
+    },
+    entry: {
+      en: 'Bypass traditional blooming; transition immediately into the controlled single pour.',
+      id: 'Lewati blooming tradisional; transisi seketika menuju tuangan tunggal yang terkontrol.'
+    },
+    main: {
+      en: 'Maintain an incredibly slow, unbroken central column to minimize agitation completely.',
+      id: 'Pertahankan kolom tuangan tengah yang sangat lambat dan tak terputus untuk meminimalkan agitasi sepenuhnya.'
+    },
+    release: {
+      en: 'Permit the entirely undisturbed bed to drain naturally, filtering out astringent compounds.',
+      id: 'Biarkan hamparan yang sama sekali tak terganggu meniris alami, menyaring senyawa sepat.'
+    },
+    finish: {
+      en: 'Swirl once to unite the pristine layers, revealing extreme structural clarity.',
+      id: 'Putar sekali untuk menyatukan lapisan murni, mengungkapkan kejernihan struktural ekstrem.'
+    }
+  },
+  iced_origami: {
+    setup: {
+      en: 'Deposit precision-weighed ice directly into the carafe; prepare the filter for thermal shock.',
+      id: 'Masukkan es yang ditimbang presisi langsung ke dalam teko kaca; siapkan filter untuk kejut termal.'
+    },
+    entry: {
+      en: 'Bloom hot and fast to immediately aggressively extract volatile aromatics.',
+      id: 'Lakukan blooming panas dan cepat untuk segera mengekstraksi agresif aromatik volatil.'
+    },
+    main: {
+      en: 'Utilize high-velocity pulses to force maximum extraction before ice dilution compromises yield.',
+      id: 'Gunakan tuangan kecepatan tinggi untuk memaksa ekstraksi maksimum sebelum pengenceran es mengorbankan hasil.'
+    },
+    release: {
+      en: 'Ensure the concentrate crashes onto the ice structure, instantly locking in crisp acidity.',
+      id: 'Pastikan konsentrat jatuh membentur struktur es, mengunci keasaman renyah secara instan.'
+    },
+    finish: {
+      en: 'Agitate rigorously until complete thermal stabilization is verified.',
+      id: 'Agitasi secara kuat hingga stabilisasi termal total diverifikasi.'
+    }
+  },
+  competition_hybrid_flow: {
+    setup: {
+      en: 'Seat the filter perfectly level; this highly technical flow demands absolute symmetry.',
+      id: 'Pasang filter rata sempurna; aliran sangat teknis ini menuntut simetri mutlak.'
+    },
+    entry: {
+      en: 'Execute a turbulent, high-agitation bloom to aggressively disrupt cellular structures.',
+      id: 'Lakukan blooming turbulen beragitasi tinggi untuk mengacaukan struktur seluler secara agresif.'
+    },
+    main: {
+      en: 'Transition dynamically from rapid concentric agitation to a dead-slow center column finish.',
+      id: 'Transisi secara dinamis dari agitasi konsentris cepat ke penyelesaian kolom tengah yang sangat lambat.'
+    },
+    release: {
+      en: 'Permit the bed to settle completely flat, yielding complex acidity and heavy lingering sweetness.',
+      id: 'Biarkan hamparan mengendap rata sempurna, menghasilkan keasaman kompleks dan rasa manis pekat yang tertinggal.'
+    },
+    finish: {
+      en: 'Homogenize carefully to balance the intense dichotomy of the hybrid extraction phases.',
+      id: 'Homogenisasi dengan hati-hati untuk menyeimbangkan dikotomi intens dari fase ekstraksi hibrida tersebut.'
+    }
   }
-};
-
+};\n
 const APRIL_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   april_flat_bottom_standard: {
     setup: {

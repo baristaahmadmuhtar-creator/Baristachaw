@@ -1676,6 +1676,81 @@ const KONO_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workflo
   }
 };
 
+
+function resolveUniversalShortTargetCue(targetProfileId?: string) {
+  switch (targetProfileId) {
+    case 'more_body':
+      return { en: 'build a heavy, syrupy texture', id: 'membangun tekstur tebal dan berat' };
+    case 'more_sweetness':
+      return { en: 'extract deep, viscous sweetness', id: 'mengekstrak manis yang pekat' };
+    case 'floral_transparent':
+      return { en: 'protect delicate floral clarity', id: 'melindungi kejernihan floral yang lembut' };
+    case 'fruit_forward':
+      return { en: 'elevate vibrant fruit notes', id: 'mengangkat profil buah yang cerah' };
+    case 'more_acidity':
+      return { en: 'preserve bright structural acidity', id: 'mempertahankan keasaman terstruktur yang cerah' };
+    case 'soft_round':
+      return { en: 'create a smooth, rounded mouthfeel', id: 'menciptakan sensasi mulut yang halus dan bulat' };
+    case 'dense_comforting':
+      return { en: 'build a dense, comforting profile', id: 'membangun profil padat yang menenangkan' };
+    case 'balance_clean':
+    default:
+      return { en: 'maintain absolute structural balance', id: 'mempertahankan keseimbangan struktural absolut' };
+  }
+}
+
+function resolveUniversalShortRoastCue(roastLevel?: RoastLevel) {
+  switch (roastLevel) {
+    case 'light':
+    case 'medium_light':
+      return { en: 'push extraction for light roast density', id: 'dorong ekstraksi untuk kepadatan sangrai terang' };
+    case 'medium_dark':
+      return { en: 'manage thermal energy for medium-dark', id: 'kelola energi termal untuk sangrai medium-gelap' };
+    case 'dark':
+      return { en: 'limit agitation to prevent dark roast harshness', id: 'batasi agitasi untuk mencegah kepahitan sangrai gelap' };
+    case 'medium':
+    default:
+      return { en: 'hold steady parameters for medium roast', id: 'tahan parameter stabil untuk sangrai medium' };
+  }
+}
+
+function resolveContextualUniversalTutorialCopy(
+  context: WorkflowTutorialContext,
+  fallback: WorkflowTutorialCopy,
+): WorkflowTutorialCopy {
+  if (!context.targetProfileId && !context.roastLevel) return fallback;
+  
+  const targetCue = resolveUniversalShortTargetCue(context.targetProfileId);
+  const roastCue = resolveUniversalShortRoastCue(context.roastLevel);
+  
+  switch (context.actionType) {
+    case 'stir':
+    case 'pour':
+    case 'bloom':
+    case 'charge':
+      return {
+        en: `${fallback.en} Execute to ${targetCue.en}; ${roastCue.en}.`,
+        id: `${fallback.id} Lakukan untuk ${targetCue.id}; ${roastCue.id}.`,
+      };
+    case 'steep':
+    case 'wait':
+      return {
+        en: `${fallback.en} Monitor carefully to ${targetCue.en}.`,
+        id: `${fallback.id} Pantau saksama untuk ${targetCue.id}.`,
+      };
+    case 'decant':
+    case 'release':
+    case 'drawdown':
+    case 'press':
+      return {
+        en: `${fallback.en} Control the flow to ${targetCue.en}.`,
+        id: `${fallback.id} Kontrol aliran untuk ${targetCue.id}.`,
+      };
+    default:
+      return fallback;
+  }
+}
+
 export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext): string {
   const phase = resolveWorkflowTutorialPhase(context.actionType);
   const language = resolveWorkflowTutorialLanguage(context.language);

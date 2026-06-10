@@ -302,6 +302,11 @@ export function sanitizeBrewNarrative(text: string, plan: BrewPlan, language?: s
     output = output.replace(EXACT_BREWER_CLAIM_PATTERN, label);
   }
 
+  if (plan.brewMode === 'iced') {
+    const totalPattern = new RegExp(`(?:hasil cangkir|cup output|final output)[^\\n]{0,40}\\b${plan.totalWaterMl}\\b\\s*(?:ml|g)?`, 'gi');
+    output = output.replace(totalPattern, `estimasi hasil cangkir ±${plan.estimatedCupOutputMl} ml setelah retensi kopi`);
+  }
+
   return output;
 }
 

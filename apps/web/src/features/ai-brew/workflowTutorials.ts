@@ -1245,7 +1245,9 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Sajikan cangkir yang kompleks secara struktural dengan keasaman awal cerah dan akhiran yang berat dan menenangkan.'
     }
   }
-};\n\nconst KALITA_WAVE_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
+};
+
+const KALITA_WAVE_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   traditional_flat_three: {
     setup: {
       en: 'Seat the fluted wave filter precisely and level the bed for hydrodynamic balance.',
@@ -1312,7 +1314,9 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Putar perlahan untuk mengintegrasikan karakteristik body manis yang konsisten dari alas datar.'
     }
   }
-};\n\nconst CLEVER_DRIPPER_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
+};
+
+const CLEVER_DRIPPER_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   classic_closed: {
     setup: {
       en: 'Confirm the base valve is locked and seat the trapezoid filter securely.',
@@ -1357,7 +1361,9 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Angkat tepat saat fase turun selesai untuk menghindari rasa pahit tahap akhir.'
     }
   }
-};\n\nconst CHEMEX_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
+};
+
+const CHEMEX_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   traditional_three_pour: {
     setup: {
       en: 'Rinse the bonded thick paper rigorously to clear the spout vent.',
@@ -1402,7 +1408,9 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Homogenisasi teko kaca secara perlahan; waktu kontak panjang secara alami menstratifikasi lapisan rasa.'
     }
   }
-};\n\nconst MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
+};
+
+const MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   traditional_stovetop: {
     setup: {
       en: 'Fill boiler precisely below the valve; dose loosely without compression.',
@@ -1447,7 +1455,9 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Homogenisasi profil ekstraksi yang agresif sebelum disajikan.'
     }
   }
-};\n\nconst COLD_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
+};
+
+const COLD_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   classic_toddy_immersion: {
     setup: {
       en: 'Utilize an exceptionally coarse grind and a sanitized, high-volume vessel.',
@@ -1492,7 +1502,9 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Homogenisasi segera; sajikan ekstraksi kilat-dingin yang super bersih dan sangat aromatik.'
     }
   }
-};\n\nconst BATCH_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
+};
+
+const BATCH_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   sca_gold_cup: {
     setup: {
       en: 'Distribute the grounds perfectly level and verify volumetric programming.',
@@ -1515,7 +1527,9 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Aduk teko termal dengan kuat untuk mengintegrasikan fase ekstraksi yang terstratifikasi.'
     }
   }
-};\n\nconst SIPHON_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
+};
+
+const SIPHON_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   traditional_vacuum_siphon: {
     setup: {
       en: 'Secure the tensioned filter assembly and preheat the lower globe.',
@@ -1538,7 +1552,9 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Bongkar dengan hati-hati dan agitasi tabung bawah perlahan sebelum disajikan.'
     }
   }
-};\n\nconst ORIGAMI_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
+};
+
+const ORIGAMI_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   cone_dripper_style: {
     setup: {
       en: 'Seat the conical filter meticulously to align with the vertical ribs.',
@@ -1583,7 +1599,9 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Aduk wadah saji dengan lembut dan evaluasi kejernihan serta bobot taktil.'
     }
   }
-};\n\nconst APRIL_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
+};
+
+const APRIL_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   april_flat_bottom_standard: {
     setup: {
       en: 'Level the bed perfectly; absolute initial symmetry is strictly demanded.',
@@ -1606,7 +1624,9 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Integrasikan seduhan dengan satu putaran; prioritaskan rasa manis struktural.'
     }
   }
-};\n\nconst MELITTA_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
+};
+
+const MELITTA_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   traditional_melitta_one_pour: {
     setup: {
       en: 'Fold the trapezoid seam securely and establish a level bed along the longitudinal axis.',
@@ -1629,7 +1649,9 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Homogenisasi dengan adukan lembut agar ekstraksi berlapis terintegrasi sempurna.'
     }
   }
-};\n\nconst KONO_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
+};
+
+const KONO_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   kono_meimon_traditional: {
     setup: {
       en: 'Seat the filter flush against the upper cone to exploit specific flow restrictions.',
@@ -1652,7 +1674,9 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Putar ringan untuk menangkap rasa manis terfokus khas dari profil Kono.'
     }
   }
-};\n\nexport function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext): string {
+};
+
+export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext): string {
   const phase = resolveWorkflowTutorialPhase(context.actionType);
   const language = resolveWorkflowTutorialLanguage(context.language);
 

@@ -1384,1267 +1384,1245 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
 const KALITA_WAVE_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   traditional_flat_three: {
     setup: {
-      en: 'Seat the fluted wave filter precisely and level the bed for hydrodynamic balance.',
-      id: 'Pasang filter bergelombang dengan presisi dan ratakan hamparan kopi untuk keseimbangan hidrodinamis.'
+      en: 'Seat the fluted wave filter precisely and rinse gently to preheat the dripper without collapsing the structural ridges.',
+      id: 'Pasang filter bergelombang dengan presisi dan bilas perlahan untuk memanaskan dripper tanpa merusak struktur lipatannya.'
     },
     entry: {
-      en: 'Saturate the flat-bottom bed uniformly without flooding lateral zones.',
-      id: 'Saturasi hamparan alas datar secara seragam tanpa membanjiri zona lateral.'
+      en: 'Saturate uniformly. The 3-hole base restricts flow, so wet all grounds without flooding the bypass zones.',
+      id: 'Saturasi seragam. Dasar 3 lubang menahan aliran, pastikan bubuk basah tanpa membanjiri bypass.'
     },
     main: {
-      en: 'Deploy three concentric, low-agitation pulses to maintain a shallow, stable slurry depth.',
-      id: 'Terapkan tiga tuangan bertahap konsentris dan beragitasi rendah untuk menjaga kedalaman campuran kopi stabil dan dangkal.'
+      en: 'Deploy three concentric, low-agitation pulses. This ensures even extraction across the flat bed.',
+      id: 'Terapkan 3 tuang konsentris rendah agitasi. Ini memastikan ekstraksi merata di alas datar.'
     },
     release: {
-      en: 'Permit the bed to drain unimpeded through all three ports.',
-      id: 'Biarkan hamparan meniris tanpa hambatan melewati ketiga lubang.'
+      en: 'Permit the bed to drain unimpeded through all three ports. A flat, tidy bed is the ultimate visual proof of hydrodynamic balance.',
+      id: 'Biarkan seduhan meniris tanpa hambatan melalui ketiga lubang. Hamparan datar dan rapi adalah bukti mutlak dari keseimbangan hidrodinamis.'
     },
     finish: {
-      en: 'Swirl to integrate the consistently sweet flat-bottom body.',
-      id: 'Putar perlahan untuk mengintegrasikan karakteristik body manis yang konsisten dari alas datar.'
+      en: 'Swirl to integrate the consistently sweet flat-bottom body. The Kalita geometry naturally filters out astringency.',
+      id: 'Putar perlahan untuk mengintegrasikan body manis dari ekstraksi alas datar. Geometri Kalita secara alami menyaring rasa sepat.'
     }
   },
   competition_fast_four: {
     setup: {
-      en: 'Seat the wave filter precisely; ensure the geometric ridges remain uncompressed.',
-      id: 'Pasang filter gelombang secara presisi; pastikan lipatan geometris tetap tidak tertekan.'
+      en: 'Seat the wave filter meticulously. Ensure the geometric ridges remain completely uncompressed to maximize lateral thermal retention and bypass flow.',
+      id: 'Pasang filter gelombang dengan teliti. Pastikan lipatan geometris sama sekali tidak tertekan untuk memaksimalkan retensi panas dan aliran bypass tepi.'
     },
     entry: {
-      en: 'Execute a rapid, aggressive bloom to force total saturation instantly.',
-      id: 'Lakukan blooming agresif dan cepat untuk memaksa saturasi total seketika.'
+      en: 'Execute a rapid, aggressive bloom pour to force total saturation instantly. Fast extraction demands immediate total contact.',
+      id: 'Lakukan blooming cepat dan agresif untuk saturasi total. Ekstraksi cepat butuh kontak menyeluruh sejak awal.'
     },
     main: {
-      en: 'Deliver four rapid concentric pulses; rely on the filter geometry to mitigate bypass velocity.',
-      id: 'Berikan empat tuangan bertahap konsentris yang cepat; andalkan geometri filter untuk meredam kecepatan bypass.'
+      en: 'Deliver four rapid, tight concentric pulses. The filter geometry mitigates bypass while we churn the center.',
+      id: 'Tuang 4 pulsa konsentris cepat. Geometri filter meredam bypass saat kita mengaduk kuat area tengah.'
     },
     release: {
-      en: 'Expect a highly accelerated drawdown; do not intervene mechanically.',
-      id: 'Antisipasi fase turun yang sangat terakselerasi; jangan mengintervensi secara mekanis.'
+      en: 'Watch for a hyper-fast drawdown. The high pulse energy keeps fines suspended, preventing choked drainage at the base.',
+      id: 'Perhatikan penurunan air yang sangat cepat. Energi tuangan tinggi menjaga partikel halus tetap melayang, mencegah penyumbatan di dasar.'
     },
     finish: {
-      en: 'Swirl vigorously to homogenize the bright, vibrant, heavily agitated extraction.',
-      id: 'Putar dengan kuat untuk menghomogenkan ekstraksi yang cerah, ceria, dan teragitasi berat.'
+      en: 'Expect a bright, high-clarity cup with soaring acidity and pinpoint flavor separation, driven by the rapid pulsed extraction.',
+      id: 'Hasilkan cangkir cerah berkejernihan tinggi dengan asiditas menjulang dan separasi rasa tajam, didorong oleh ekstraksi pulsa cepat.'
     }
   },
   continuous_slow_stream: {
     setup: {
-      en: 'Seat the fluted wave filter precisely and strictly level the bed.',
-      id: 'Pasang filter bergelombang dengan presisi dan ratakan hamparan dengan sangat ketat.'
+      en: 'Prepare the Wave filter carefully. The upcoming slow flow relies entirely on the paper ridges holding heat and regulating the drip speed.',
+      id: 'Siapkan filter Wave dengan hati-hati. Aliran lambat ini sangat bergantung pada lipatan kertas untuk menahan panas dan mengatur kecepatan tetesan.'
     },
     entry: {
-      en: 'Saturate uniformly, emphasizing a calm and undisturbed degassing phase.',
-      id: 'Saturasi merata, menekankan fase pelepasan gas yang tenang dan tanpa gangguan.'
+      en: 'Wet the bed gently. Do not agitate, let the slurry settle into a compact puck.',
+      id: 'Basahi kopi dengan lembut. Jangan lakukan agitasi, biarkan seduhan memadat jadi lapisan dalam.'
     },
     main: {
-      en: 'Maintain a strict, slow center pour; allow the flat bottom geometry to passively disperse the water.',
-      id: 'Pertahankan tuangan pusat yang sangat lambat; biarkan geometri alas datar menyebarkan air secara pasif.'
+      en: 'Maintain a slow center stream. We utilize the water weight to drive extraction without turbulence.',
+      id: 'Pertahankan aliran lambat di tengah. Kita pakai berat air untuk ekstraksi tanpa turbulensi mekanis.'
     },
     release: {
-      en: 'Permit the column to recede gently; minimal agitation yields profound sweetness.',
-      id: 'Biarkan kolom air menyusut perlahan; agitasi minimal menghasilkan rasa manis yang mendalam.'
+      en: 'Let the final water column sink slowly through the dense coffee bed. The long contact time will extract deep, complex sugars.',
+      id: 'Biarkan sisa air turun perlahan melewati hamparan kopi yang padat. Waktu kontak yang lama akan mengekstrak gula kompleks yang dalam.'
     },
     finish: {
-      en: 'Swirl lightly to integrate the exceptionally sweet, viscous body.',
-      id: 'Putar perlahan untuk mengintegrasikan karakteristik body kental yang sangat manis.'
+      en: 'Serve a remarkably sweet, highly structured cup with a velvety mouthfeel and absolute clarity of roast expression.',
+      id: 'Sajikan hasil seduhan yang luar biasa manis dan terstruktur dengan tekstur lembut serta kejernihan karakter sangrai yang absolut.'
     }
   },
   iced_wave: {
     setup: {
-      en: 'Load the server with precision-weighed ice; seat the wave filter and level the bed.',
-      id: 'Isi wadah saji dengan es yang ditimbang presisi; pasang filter gelombang dan ratakan hamparan.'
+      en: 'Load the carafe with precise ice weight. Seat the wave filter gently; we are building a concentrated, rapid-drain setup.',
+      id: 'Isi wadah dengan takaran es yang presisi. Pasang filter wave; kita sedang menyusun alat untuk konsentrat yang meniris cepat.'
     },
     entry: {
-      en: 'Deploy a highly concentrated hot bloom to shock-extract volatile aromatics.',
-      id: 'Terapkan blooming panas sangat pekat untuk mengekstraksi kejut aromatik volatil.'
+      en: 'Bloom the high-density bed with intense hot water to immediately unlock vibrant, volatile fruit aromatics.',
+      id: 'Blooming hamparan kopi padat dengan air panas intensif untuk seketika melepaskan aroma buah volatil yang cerah.'
     },
     main: {
-      en: 'Execute tight concentric pulses, aggressively dissolving dense solids into the concentrate.',
-      id: 'Lakukan tuangan bertahap konsentris rapat, secara agresif melarutkan padatan pekat ke dalam konsentrat.'
+      en: 'Pour short, hot pulses. The flat bottom limits channeling, forcing water heavily through the grounds.',
+      id: 'Tuang air panas dalam pulsa pendek dan pekat. Alas datar mencegah channeling, memaksa setiap tetes membasuh kuat bubuk kopi.'
     },
     release: {
-      en: 'Allow the concentrate to crash directly onto the ice, locking in fragile structural acidity.',
-      id: 'Biarkan konsentrat jatuh langsung ke atas es, mengunci keasaman struktural yang rapuh.'
+      en: 'Watch the thick hot concentrate melt directly into the ice structure below, flash-chilling instantly to lock in freshness.',
+      id: 'Perhatikan konsentrat panas kental meleleh langsung ke dalam struktur es, melakukan flash-chilling seketika untuk mengunci kesegaran.'
     },
     finish: {
-      en: 'Agitate the carafe until the thermal equilibrium is completely achieved.',
-      id: 'Agitasi teko kaca hingga keseimbangan termal benar-benar tercapai.'
+      en: 'Swirl the carafe vigorously to complete the thermal exchange. Serve an intensely bright, pristine iced brew.',
+      id: 'Putar wadah dengan kuat untuk menyelesaikan pertukaran suhu. Sajikan kopi es yang sangat cerah dan murni.'
     }
   },
   high_dose_concentrate: {
     setup: {
-      en: 'Seat the fluted filter, accommodating the large thermal mass of the high dose.',
-      id: 'Pasang filter bergelombang, sesuaikan dengan massa termal besar dari dosis tinggi tersebut.'
+      en: 'Set the Kalita 185 with a coarse grind. The high mass requires maximum permeability to avoid choking the small exit holes.',
+      id: 'Siapkan Kalita 185 dengan gilingan kasar. Massa kopi tinggi membutuhkan permeabilitas maksimal agar tidak menyumbat lubang pembuangan.'
     },
     entry: {
-      en: 'Saturate the deep bed slowly; allow significant time for comprehensive expansion.',
-      id: 'Saturasi hamparan dalam tersebut secara perlahan; berikan waktu signifikan untuk ekspansi komprehensif.'
+      en: 'Conduct a massive, slow bloom. A large dose traps a lot of gas, so ensure total saturation without overflowing the filter.',
+      id: 'Lakukan blooming lambat yang masif. Dosis besar menyimpan banyak gas, jadi pastikan saturasi total tanpa meluber keluar filter.'
     },
     main: {
-      en: 'Deliver slow concentric rings, strictly minimizing slurry elevation to prevent bypass over the heavy dose.',
-      id: 'Berikan tuangan melingkar lambat, secara ketat meminimalkan elevasi campuran untuk mencegah bypass di atas dosis berat.'
+      en: 'Pour slowly and centrally. Avoid swirling, which drives fines to the bottom and halts drawdown.',
+      id: 'Tuang perlahan di tengah. Hindari putaran yang akan mendorong partikel halus ke dasar.'
     },
     release: {
-      en: 'Expect a prolonged, viscous drawdown due to bed depth; avoid any mechanical agitation.',
-      id: 'Antisipasi fase turun kental yang panjang karena kedalaman hamparan; hindari agitasi mekanis apa pun.'
+      en: 'Patience is paramount. The heavy bed acts as its own restriction valve, creating a dense, syrupy extraction over time.',
+      id: 'Kesabaran adalah kunci. Hamparan tebal berfungsi sebagai katup penahannya sendiri, menciptakan ekstraksi kental dan pekat seiring waktu.'
     },
     finish: {
-      en: 'Integrate the dense syrup completely before dilution or direct service.',
-      id: 'Integrasikan sirup padat ini sepenuhnya sebelum pengenceran atau penyajian langsung.'
+      en: 'Serve an immensely rich, heavy-bodied concentrate. Perfect for milk pairings or dilution with fresh hot water.',
+      id: 'Sajikan konsentrat yang luar biasa kaya dan ber-body tebal. Sangat cocok dicampur susu atau diencerkan dengan air panas segar.'
     }
   }
-};
+};;
 
 const CLEVER_DRIPPER_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   classic_closed: {
     setup: {
-      en: 'Confirm the base valve is locked and seat the trapezoid filter securely.',
-      id: 'Pastikan katup dasar terkunci dan pasang filter trapesium dengan kuat.'
+      en: 'Set the Clever on a flat scale surface with the release valve firmly closed. Rinse the filter to preheat the chamber.',
+      id: 'Letakkan Clever di atas permukaan timbangan datar dengan katup pelepas tertutup rapat. Bilas filter untuk memanaskan ruang seduh.'
     },
     entry: {
-      en: 'Introduce water rapidly, ensuring complete and immediate saturation.',
-      id: 'Masukkan air dengan cepat, pastikan saturasi yang lengkap dan instan.'
+      en: 'Pour all hot water into the coffee bed immediately to trigger a full-contact immersion extraction.',
+      id: 'Tuangkan seluruh air panas ke atas kopi segera untuk memicu ekstraksi imersi kontak penuh.'
     },
     main: {
-      en: 'Maintain a static steep; utilize a single crust-break if structural density is insufficient.',
-      id: 'Pertahankan rendaman statis; gunakan satu kali pemecahan kerak jika kepadatan struktural dirasa kurang.'
+      en: 'Stir gently to ensure total saturation, then cover with the lid to lock in thermal energy and halt evaporation.',
+      id: 'Aduk lembut untuk memastikan saturasi total, lalu tutup untuk mengunci energi termal dan menghentikan penguapan.'
     },
     release: {
-      en: 'Engage the release mechanism on the server; gravity will perform the filtration.',
-      id: 'Aktifkan mekanisme pelepasan pada wadah saji; gravitasi akan melakukan filtrasi.'
+      en: 'At the exact target time, place the Clever seamlessly onto the server to activate the release valve. Do not shake it.',
+      id: 'Pada waktu target yang tepat, letakkan Clever ke atas server untuk mengaktifkan katup. Jangan diguncang.'
     },
     finish: {
-      en: 'Remove precisely upon drawdown completion to avoid late-stage bitterness.',
-      id: 'Angkat tepat saat fase turun selesai untuk menghindari rasa pahit tahap akhir.'
+      en: 'Wait for a complete, undisturbed drawdown. The result is a profoundly sweet, full-bodied cup with zero bypass channeling.',
+      id: 'Tunggu hingga air turun sepenuhnya tanpa gangguan. Hasilnya adalah cangkir ber-body penuh yang sangat manis tanpa kebocoran bypass.'
     }
   },
   reverse_water_first: {
     setup: {
-      en: 'Confirm the base valve is locked and seat the trapezoid filter securely.',
-      id: 'Pastikan katup dasar terkunci dan pasang filter trapesium dengan kuat.'
+      en: 'Place the filter and rinse. Crucially, leave the coffee aside—we are pouring the entire water volume into the empty filter first.',
+      id: 'Pasang filter dan bilas. Sangat penting, sisihkan kopinya—kita akan menuang seluruh air ke dalam filter kosong terlebih dahulu.'
     },
     entry: {
-      en: 'Fill the chamber with water prior to dosing; fold the dry coffee rapidly into the thermal mass.',
-      id: 'Isi ruang seduh dengan air sebelum memasukkan kopi; lipat kopi kering dengan cepat ke dalam massa termal.'
+      en: 'Add coffee grounds gently onto the hot water. Fold them in with no aggressive stirring to prevent migration.',
+      id: 'Tambahkan kopi lembut ke permukaan air. Lipat tanpa adukan agresif untuk mencegah migrasi partikel.'
     },
     main: {
-      en: 'Maintain a static steep; the water-first protocol dramatically reduces drawdown choking.',
-      id: 'Pertahankan rendaman statis; protokol air-lebih-dulu secara drastis mengurangi kemacetan fase turun.'
+      en: 'Cover and steep. The coffee particles will slowly hydrate and sink naturally, extracting gently without ever clogging the bottom filter pores.',
+      id: 'Tutup dan diamkan. Partikel kopi akan terhidrasi dan tenggelam secara alami, terekstraksi lembut tanpa pernah menyumbat pori filter bawah.'
     },
     release: {
-      en: 'Engage the release mechanism on the server; gravity will perform the filtration.',
-      id: 'Aktifkan mekanisme pelepasan pada wadah saji; gravitasi akan melakukan filtrasi.'
+      en: 'Engage the release valve on your decanter. Expect an incredibly fast, frictionless drawdown.',
+      id: 'Aktifkan katup pada wadah server Anda. Harapkan aliran turun yang luar biasa cepat dan tanpa hambatan.'
     },
     finish: {
-      en: 'Remove precisely upon drawdown completion to avoid late-stage bitterness.',
-      id: 'Angkat tepat saat fase turun selesai untuk menghindari rasa pahit tahap akhir.'
+      en: 'This reverse-steep physics yields unprecedented clarity and pristine flavor separation, rivaling the cleanest pour-overs.',
+      id: 'Fisika seduh terbalik ini menghasilkan kejernihan dan separasi rasa yang belum pernah ada, menyaingi pour-over terbersih sekalipun.'
     }
   },
   double_stage_hybrid: {
     setup: {
-      en: 'Pre-wet the filter thoroughly and lock the valve for the initial closed phase.',
-      id: 'Basahi filter secara menyeluruh dan kunci katup untuk fase awal tertutup.'
+      en: 'Prepare the Clever with the valve closed. This advanced hybrid technique combines pour-over flushing with immersion steeping.',
+      id: 'Siapkan Clever dengan katup tertutup. Teknik hibrida lanjutan ini menggabungkan bilasan pour-over dengan perendaman imersi.'
     },
     entry: {
-      en: 'Perform a closed bloom to saturate the bed entirely, maximizing early gas release.',
-      id: 'Lakukan blooming tertutup untuk membasahi hamparan sepenuhnya, memaksimalkan pelepasan gas awal.'
+      en: 'Execute a fast pour with the valve closed to saturate the bed, then place on server to drain bloom.',
+      id: 'Lakukan tuangan cepat dengan katup tertutup untuk saturasi, lalu letakkan di server untuk menguras.'
     },
     main: {
-      en: 'Open the valve mid-brew for an active percolation phase to push higher extraction.',
-      id: 'Buka katup di pertengahan seduhan untuk fase perkolasi aktif guna mendorong ekstraksi yang lebih tinggi.'
+      en: 'Remove from server to shut valve. Pour remaining volume and steep. We flushed gases and now extract sweetness.',
+      id: 'Angkat dari server untuk menutup katup. Tuang sisa volume dan rendam. Kita mengekstrak kemanisan murni.'
     },
     release: {
-      en: 'Allow the hybrid structure to drain freely, combining immersion body with percolation clarity.',
-      id: 'Biarkan struktur hibrida meniris bebas, menggabungkan body rendaman dengan kejernihan perkolasi.'
+      en: 'Trigger the final release. The bed is already pre-extracted, so the secondary drawdown pulls out deep structural body.',
+      id: 'Picu pelepasan akhir. Kopi telah terekstraksi awal, sehingga penirisan kedua ini menarik body struktural yang dalam.'
     },
     finish: {
-      en: 'Swirl the final cup to integrate the complex dual-extraction profile.',
-      id: 'Putar cangkir akhir untuk menyatukan profil ekstraksi ganda yang kompleks.'
+      en: 'Integrate the two distinct extraction stages in the carafe. This yields massive complexity and a dense, layered profile.',
+      id: 'Satukan dua tahap ekstraksi berbeda ini di dalam karafe. Ini menghasilkan kompleksitas masif dan profil berlapis yang padat.'
     }
   },
   iced_clever: {
     setup: {
-      en: 'Load ice directly into the server; lock the dripper valve for the hot concentrate phase.',
-      id: 'Masukkan es langsung ke wadah saji; kunci katup alat seduh untuk fase konsentrat panas.'
+      en: 'Prep the Clever Dripper. Separately, load your serving vessel with hard, large-format ice to receive the flash extraction.',
+      id: 'Siapkan Clever Dripper. Secara terpisah, isi wadah saji Anda dengan es batu besar dan keras untuk menerima ekstraksi kilat.'
     },
     entry: {
-      en: 'Steep the grounds in minimal hot water to create a hyper-dense, rapid extraction environment.',
-      id: 'Rendam bubuk dalam sedikit air panas untuk menciptakan lingkungan ekstraksi cepat yang super padat.'
+      en: 'Pour the hot concentrate volume aggressively. We must extract all soluble aromatics quickly before the short steep finishes.',
+      id: 'Tuang air panas agresif. Ekstrak aromatik cepat sebelum rendaman singkat habis.'
     },
     main: {
-      en: 'Maintain the short hot steep to lock in aromatics before the rapid chill.',
-      id: 'Pertahankan rendaman panas singkat untuk mengunci aromatik sebelum pendinginan cepat.'
+      en: 'Stir vigorously and cover. The high heat and high agitation in a closed environment force a massive extraction yield.',
+      id: 'Aduk kuat dan tutup. Panas dan agitasi tinggi di lingkungan tertutup memaksa hasil ekstraksi (yield) yang masif.'
     },
     release: {
-      en: 'Release the dense concentrate directly over the ice, flashing it to preserve acidity.',
-      id: 'Lepaskan konsentrat padat langsung ke atas es, mengejutkannya untuk mempertahankan keasaman.'
+      en: 'Slam the valve open directly over the ice. The violent thermal shock instantly locks in the bright, volatile acidity.',
+      id: 'Buka katup langsung di atas es. Kejutan termal yang instan akan mengunci asiditas cerah dan volatil seketika.'
     },
     finish: {
-      en: 'Stir vigorously to verify full thermal stabilization of the iced beverage.',
-      id: 'Aduk dengan kuat untuk memverifikasi stabilisasi termal penuh pada minuman dingin.'
+      en: 'Stir the iced vessel until perfectly chilled. The Clever guarantees no messy channeling during this intense concentrate brew.',
+      id: 'Aduk wadah es hingga dingin sempurna. Clever memastikan tidak ada channeling berantakan selama seduhan konsentrat intens ini.'
     }
   },
   high_dose_concentrate: {
     setup: {
-      en: 'Secure the filter for a high-capacity load, ensuring the valve remains securely locked.',
-      id: 'Pasang filter untuk kapasitas besar, pastikan katup tetap terkunci rapat.'
+      en: 'Load a massive coffee dose. Ensure a coarse grind—immersion limits over-extraction, but fine particles will choke the final release.',
+      id: 'Masukkan dosis kopi masif. Pastikan gilingan kasar—imersi membatasi over-ekstraksi, namun partikel halus akan menyumbat pelepasan akhir.'
     },
     entry: {
-      en: 'Saturate the massive dose heavily; agitate immediately to prevent dry pockets.',
-      id: 'Basahi dosis besar secara ekstensif; agitasi seketika untuk mencegah kantung kering.'
+      en: 'Pour the tight water ratio slowly, ensuring every dry pocket is hydrated in the thick, heavy slurry.',
+      id: 'Tuang rasio air ketat dengan lambat, pastikan setiap kantong kering terhidrasi dalam campuran yang kental dan berat.'
     },
     main: {
-      en: 'Execute a prolonged steep time to penetrate the thick crust and maximize total dissolved solids.',
-      id: 'Lakukan waktu rendam yang panjang untuk menembus kerak tebal dan memaksimalkan total padatan terlarut.'
+      en: 'Seal the lid and execute a prolonged steep. We are relying on diffusion to slowly pull heavy sugars and lipids out of the dense bed.',
+      id: 'Tutup rapat dan lakukan perendaman panjang. Kita mengandalkan difusi untuk perlahan menarik gula dan lipid berat dari hamparan padat.'
     },
     release: {
-      en: 'Release the valve; anticipate an extended drawdown due to the extreme bed depth.',
-      id: 'Lepaskan katup; antisipasi fase turun yang lama akibat kedalaman hamparan yang ekstrem.'
+      en: 'Engage the release carefully. Do not swirl or tap the brewer, let the heavy liquor seep through the undisturbed filter.',
+      id: 'Aktifkan pelepasan dengan hati-hati. Jangan memutar atau mengetuk brewer, biarkan cairan berat meresap melewati filter yang tak terganggu.'
     },
     finish: {
-      en: 'Dilute the intense concentrate to strength or serve directly over dense ice blocks.',
-      id: 'Encerkan konsentrat pekat ini sesuai selera atau sajikan langsung di atas balok es padat.'
+      en: 'Enjoy a brutally rich, espresso-like density. Perfect for milk or drinking neat as a heavy sensory experience.',
+      id: 'Nikmati kepadatan yang luar biasa kaya menyerupai espresso. Sempurna untuk susu atau diminum langsung sebagai pengalaman sensorik berat.'
     }
   }
-};
+};;
 
 const CHEMEX_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   traditional_three_pour: {
     setup: {
-      en: 'Rinse the bonded thick paper rigorously to clear the spout vent.',
-      id: 'Bilas kertas tebal secara ketat untuk membersihkan ventilasi cerat.'
+      en: 'Place the thick bonded filter precisely, aligning the triple-fold against the pouring spout. Rinse extensively with hot water to remove paper taste and preheat the heavy glass.',
+      id: 'Pasang filter tebal Chemex dengan presisi, sejajarkan lipatan tiga di cerat. Gunakan gilingan sedang cenderung kasar. Bilas ekstensif untuk memanaskan kaca tebal.'
     },
     entry: {
-      en: 'Execute a patient bloom phase; thorough saturation is critical due to filter density.',
-      id: 'Lakukan fase blooming dengan sabar; saturasi menyeluruh sangat krusial karena kepadatan filter.'
+      en: 'Bloom patiently. Heavy Chemex paper naturally restricts flow, so deep saturation matters more than speed.',
+      id: 'Bloom dengan sabar. Kertas Chemex alami menahan aliran, jadi saturasi total jauh lebih penting dari kecepatan.'
     },
     main: {
-      en: 'Deliver measured pulses, maintaining the water column strictly away from the upper wall.',
-      id: 'Berikan tuangan bertahap yang terukur, jaga kolom air menjauh dari dinding atas.'
+      en: 'Pulse rhythmically. Keep water off the walls; Chemex rewards a calm, centered flow utilizing the deep cone.',
+      id: 'Lakukan tuangan terukur. Jauhkan air dari dinding; Chemex menghargai aliran tengah yang tenang di kerucut dalam.'
     },
     release: {
-      en: 'Respect the extended drawdown window inherent to bonded filters.',
-      id: 'Hargai durasi fase turun yang panjang pada filter kertas tebal.'
+      en: 'Allow the thick filter to do the work. It will strip out all oils and fine insolubles, leaving an intensely clean liquid.',
+      id: 'Biarkan filter tebal bekerja. Filter ini akan menyaring seluruh minyak dan partikel tak larut, menyisakan cairan yang sangat bersih.'
     },
     finish: {
-      en: 'Gently homogenize the carafe; extended contact time naturally stratifies the layers.',
-      id: 'Homogenisasi teko kaca secara perlahan; waktu kontak panjang secara alami menstratifikasi lapisan rasa.'
-    }
-  },
-  continuous_center_pour: {
-    setup: {
-      en: 'Rinse the bonded thick paper rigorously to clear the spout vent.',
-      id: 'Bilas kertas tebal secara ketat untuk membersihkan ventilasi cerat.'
-    },
-    entry: {
-      en: 'Execute a patient bloom phase; thorough saturation is critical due to filter density.',
-      id: 'Lakukan fase blooming dengan sabar; saturasi menyeluruh sangat krusial karena kepadatan filter.'
-    },
-    main: {
-      en: 'Utilize a slow, continuous laminar pour to sustain high thermal mass and push clarity.',
-      id: 'Gunakan tuangan laminar lambat yang kontinu untuk mempertahankan massa termal tinggi dan mendorong kejernihan.'
-    },
-    release: {
-      en: 'Respect the extended drawdown window inherent to bonded filters.',
-      id: 'Hargai durasi fase turun yang panjang pada filter kertas tebal.'
-    },
-    finish: {
-      en: 'Gently homogenize the carafe; extended contact time naturally stratifies the layers.',
-      id: 'Homogenisasi teko kaca secara perlahan; waktu kontak panjang secara alami menstratifikasi lapisan rasa.'
+      en: 'Mix the carafe thoroughly. The Chemex layers flavor and density heavily over time, so integrating the brew is mandatory for balance.',
+      id: 'Aduk karafe secara menyeluruh. Chemex melapiskan rasa dan kepadatan seiring waktu, sehingga integrasi seduhan wajib dilakukan demi keseimbangan.'
     }
   },
   competition_multi_pulse: {
     setup: {
-      en: 'Set the thick bonded filter securely, aligning the multi-layer side precisely with the pouring spout.',
-      id: 'Pasang filter tebal dengan kuat, sejajarkan sisi berlapis tepat dengan ventilasi cerat.'
+      en: 'Set the Chemex filter and rinse aggressively. We need the glass entirely heat-soaked to sustain energy during the multi-pulse sequence.',
+      id: 'Pasang filter Chemex dan bilas agresif. Kita butuh kaca menyerap panas sempurna untuk mempertahankan energi selama urutan multi-pulsa.'
     },
     entry: {
-      en: 'Implement an aggressive, high-turbulence bloom to maximize gas displacement rapidly.',
-      id: 'Terapkan blooming turbulensi tinggi yang agresif untuk memaksimalkan pelepasan gas secara cepat.'
+      en: 'Drive an energetic bloom to rapidly degas the coffee, forcing immediate heat penetration into the core of the slurry.',
+      id: 'Lakukan blooming bertenaga untuk mendegas kopi secara cepat, memaksa penetrasi panas seketika ke inti campuran.'
     },
     main: {
-      en: 'Execute precise, rhythmic multi-pulse pours to maintain a consistent shallow bed and high extraction.',
-      id: 'Lakukan tuangan bertahap yang ritmis dan presisi untuk mempertahankan hamparan dangkal dan ekstraksi tinggi.'
+      en: 'Pulse frequently to maintain high slurry temp and agitation. The thick filter catches suspended fines.',
+      id: 'Tuang sering untuk jaga suhu dan agitasi konstan. Filter tebal menangkap partikel halus yang terangkat.'
     },
     release: {
-      en: 'Allow the structured multi-stage drawdown to filter heavily into a remarkably clean cup.',
-      id: 'Biarkan fase turun bertahap terstruktur menyaring kuat menjadi cangkir yang luar biasa bersih.'
+      en: 'Maintain the pulse rhythm until the target weight. The rapid succession creates a dynamic, high-extraction drawdown.',
+      id: 'Pertahankan ritme pulsa hingga bobot target. Urutan cepat ini menciptakan ekstraksi dinamis yang tinggi selama air meniris.'
     },
     finish: {
-      en: 'Swirl vigorously to unify the complex micro-extractions into a cohesive profile.',
-      id: 'Putar dengan kuat untuk menyatukan ekstraksi mikro yang kompleks menjadi profil yang kohesif.'
+      en: 'Expect extreme flavor separation and a vibrant, tea-like clarity. The intensive agitation is polished perfectly by the heavy paper.',
+      id: 'Harapkan separasi rasa ekstrem dan kejernihan layaknya teh. Agitasi intensif ini dipoles sempurna oleh tebalnya kertas.'
+    }
+  },
+  continuous_center_pour: {
+    setup: {
+      en: 'Seat the Chemex filter and rinse. Prepare for a meditative, unbroken extraction path relying entirely on gravity and bed depth.',
+      id: 'Pasang filter Chemex dan bilas. Bersiaplah untuk jalur ekstraksi yang tenang dan tak terputus, mengandalkan gravitasi dan kedalaman bed.'
+    },
+    entry: {
+      en: 'Saturate the grounds entirely but gently. The goal is to establish a cohesive, unbroken coffee mass.',
+      id: 'Saturasi bubuk sepenuhnya namun lembut. Tujuannya adalah membangun massa kopi yang kohesif dan tak terputus.'
+    },
+    main: {
+      en: 'Maintain a slow center pour. By avoiding edges, we force water down the deepest path.',
+      id: 'Jaga tuangan tengah lambat. Tanpa sentuh tepi, kita memaksa air turun ke kerucut terdalam.'
+    },
+    release: {
+      en: 'Let the tall water column sink slowly. The absence of turbulence prevents fines migration, ensuring the filter never clogs.',
+      id: 'Biarkan kolom air yang tinggi turun perlahan. Ketiadaan turbulensi mencegah migrasi partikel halus, memastikan filter tidak pernah tersumbat.'
+    },
+    finish: {
+      en: 'Swirl to integrate. This method produces the ultimate expression of clean, delicate, and highly articulate coffee.',
+      id: 'Putar untuk menyatukan rasa. Metode ini menghasilkan ekspresi tertinggi dari kopi yang bersih, lembut, dan sangat artikulatif.'
     }
   },
   iced_chemex: {
     setup: {
-      en: 'Pre-weigh large ice cubes into the lower chamber; seat the filter avoiding thermal shock to the glass.',
-      id: 'Timbang presisi es batu besar ke ruang bawah; pasang filter dengan menghindari kejut termal pada kaca.'
+      en: 'Load the massive Chemex basin with fresh, high-quality ice. Ensure the triple-fold paper faces the spout to allow venting over the chilled air.',
+      id: 'Isi wadah Chemex yang besar dengan es segar berkualitas tinggi. Pastikan lipatan tiga filter menghadap jalur tuang agar udara dingin bisa keluar.'
     },
     entry: {
-      en: 'Bloom hot and dense to immediately capture volatile floral and fruit aromatics.',
-      id: 'Lakukan blooming panas dan padat untuk segera menangkap aromatik bunga dan buah yang volatil.'
+      en: 'Bloom the high-dose bed with hot water. The thick filter requires slightly more water to saturate fully without stalling.',
+      id: 'Blooming hamparan dosis tinggi dengan air panas. Filter tebal butuh sedikit lebih banyak air untuk saturasi total tanpa macet.'
     },
     main: {
-      en: 'Pour aggressively to maintain brewing temperature against the extreme cooling gradient.',
-      id: 'Tuang agresif untuk mempertahankan suhu seduh di tengah gradien pendinginan yang ekstrem.'
+      en: 'Pour in sustained pulses. We extract a dense concentrate strong enough to survive ice dilution.',
+      id: 'Tuang pulsa konstan. Kita mengekstrak konsentrat padat yang cukup kuat menahan dilusi es.'
     },
     release: {
-      en: 'The heavy filter provides maximum clarity as the concentrate crashes directly onto ice.',
-      id: 'Filter tebal memberikan kejernihan maksimum saat konsentrat membentur es secara langsung.'
+      en: 'Watch the thick, syrupy concentrate drop directly onto the ice boulders, flash-chilling instantly to lock in aromatics.',
+      id: 'Perhatikan konsentrat kental jatuh langsung ke atas bongkahan es, mendingin seketika untuk mengunci seluruh aroma.'
     },
     finish: {
-      en: 'Swirl aggressively until the thermal shock is complete and the slurry is perfectly chilled.',
-      id: 'Putar agresif hingga kejut termal selesai dan campuran mendingin sempurna.'
+      en: 'Swirl the Chemex aggressively until the exterior fogs over. Serve a pristine, oil-free, incredibly refreshing iced brew.',
+      id: 'Putar Chemex dengan agresif hingga bagian luarnya berembun. Sajikan kopi es yang murni, bebas minyak, dan luar biasa menyegarkan.'
     }
   },
   high_dose_heavy_body: {
     setup: {
-      en: 'Pre-wet extensively to warm the large thermal mass of the heavy-capacity carafe.',
-      id: 'Bilas ekstensif untuk memanaskan massa termal besar dari teko kaca kapasitas tinggi.'
+      en: 'Prepare a coarse grind for the Chemex to handle the immense dose. Rinse the paper heavily to heat the massive glass frame.',
+      id: 'Siapkan gilingan kasar agar Chemex sanggup menangani dosis masif ini. Bilas kertas dengan banyak air untuk memanaskan bingkai kaca yang tebal.'
     },
     entry: {
-      en: 'Saturate the massive dose completely using a controlled, high-volume spiral pour.',
-      id: 'Basahi dosis masif sepenuhnya menggunakan tuangan spiral volume tinggi yang terkontrol.'
+      en: 'Execute a massive bloom. Stirring with a paddle is highly recommended to ensure no dry pockets survive in the deep cone.',
+      id: 'Lakukan blooming masif. Mengaduk dengan dayung sangat disarankan untuk memastikan tidak ada kantong kering di kerucut yang dalam.'
     },
     main: {
-      en: 'Push the extraction with heavy, slow continuous center-to-mid pours to drive body and sweetness.',
-      id: 'Dorong ekstraksi dengan tuangan berat lambat yang kontinu untuk memicu body dan rasa manis.'
+      en: 'Pour heavily and rhythmically in the center. Avoid washing the high walls, which risks bypassing water around the thick bed.',
+      id: 'Tuang ritmis di tengah. Hindari dinding tinggi agar air tidak mem-bypass bed yang tebal.'
     },
     release: {
-      en: 'Monitor the prolonged drawdown carefully; a flat bed ensures no late-stage astringency.',
-      id: 'Pantau fase turun panjang dengan saksama; hamparan rata memastikan ketiadaan rasa sepat akhir.'
+      en: 'Allow for a long, slow, syrupy drawdown. The thick paper and massive dose act as a severe flow restrictor.',
+      id: 'Biarkan proses turun air yang panjang, lambat, dan kental. Kertas tebal dan dosis masif bertindak sebagai penahan aliran yang kuat.'
     },
     finish: {
-      en: 'Integrate the heavy, layered extraction thoroughly before serving into pre-warmed cups.',
-      id: 'Integrasikan ekstraksi pekat berlapis secara menyeluruh sebelum menyajikan ke cangkir hangat.'
+      en: 'Integrate the heavy liquid thoroughly. This brew delivers the maximum possible body and sweetness achievable with paper filtration.',
+      id: 'Integrasikan cairan berat ini secara menyeluruh. Seduhan ini memberikan body dan rasa manis maksimal yang bisa dicapai dengan penyaringan kertas.'
     }
   }
-};
+};;
 
 const MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
-  low_temp_controlled: {
-    setup: {
-      en: 'Maintain a minimal initial water temperature to deliberately slow the pressure curve.',
-      id: 'Pertahankan suhu air awal yang minim untuk sengaja memperlambat kurva tekanan.'
-    },
-    entry: {
-      en: 'Use low thermal energy to stretch the extraction window for maximum sweetness.',
-      id: 'Gunakan energi termal rendah untuk memperpanjang waktu ekstraksi demi rasa manis maksimal.'
-    },
-    main: {
-      en: 'Control the flow so it emerges as a thick, continuous syrupy thread.',
-      id: 'Kendalikan aliran agar muncul sebagai benang sirup tebal yang kontinu.'
-    },
-    release: {
-      en: 'Halt the process before any violent sputtering introduces harsh astringency.',
-      id: 'Hentikan proses sebelum semburan keras memasukkan rasa sepat yang tajam.'
-    },
-    finish: {
-      en: 'Integrate the concentrated extraction smoothly before dividing into warmed cups.',
-      id: 'Integrasikan ekstraksi konsentrat dengan mulus sebelum membaginya ke cangkir hangat.'
-    }
-  },
-  iced_moka_concentrate: {
-    setup: {
-      en: 'Prepare a dense dose for a potent concentrate designed to survive ice dilution.',
-      id: 'Siapkan dosis padat untuk konsentrat kuat yang dirancang bertahan dari pengenceran es.'
-    },
-    entry: {
-      en: 'Extract aggressively to pull heavy origin characteristics rapidly.',
-      id: 'Ekstrak secara agresif untuk menarik karakteristik asal yang pekat dengan cepat.'
-    },
-    main: {
-      en: 'Monitor the dark extrusion; you need maximum body to punch through the chill.',
-      id: 'Pantau ekstrusi gelap; Anda butuh body maksimal untuk menembus suhu dingin.'
-    },
-    release: {
-      en: 'Stop the flow early to capture only the sweetest, most concentrated phase.',
-      id: 'Hentikan aliran lebih awal untuk menangkap hanya fase paling manis dan terkonsentrasi.'
-    },
-    finish: {
-      en: 'Pour the intense shot directly over pristine ice blocks for instant chilling.',
-      id: 'Tuang tegukan intens langsung di atas balok es murni untuk pendinginan instan.'
-    }
-  },
-  high_yield_robust: {
-    setup: {
-      en: 'Pack the basket slightly firmer to increase resistance and drive up contact time.',
-      id: 'Padatkan keranjang sedikit lebih kuat untuk menaikkan resistensi dan waktu kontak.'
-    },
-    entry: {
-      en: 'Apply strong heat to force water through the compacted bed efficiently.',
-      id: 'Berikan panas kuat untuk memaksa air melewati hamparan padat secara efisien.'
-    },
-    main: {
-      en: 'Allow the extraction to push a higher volume, maximizing total dissolved material.',
-      id: 'Biarkan ekstraksi mendorong volume lebih tinggi, memaksimalkan total material terlarut.'
-    },
-    release: {
-      en: 'Cut the heat just as the flow accelerates, capturing the full spectrum of heavy notes.',
-      id: 'Matikan pemanas tepat saat aliran bertambah cepat, menangkap spektrum penuh nada berat.'
-    },
-    finish: {
-      en: 'Stir well; this profile delivers an exceptionally heavy and robust structure.',
-      id: 'Aduk rata; profil ini memberikan struktur yang luar biasa berat dan kokoh.'
-    }
-  },
   traditional_stovetop: {
     setup: {
-      en: 'Fill boiler precisely below the valve; dose loosely without compression.',
-      id: 'Isi boiler persis di bawah katup; masukkan kopi longgar tanpa kompresi.'
+      en: 'Fill the lower boiler with boiling water directly below the safety valve. Drop the coffee into the basket loosely—do not tamp it under any circumstance.',
+      id: 'Isi boiler bawah dengan air mendidih tepat di bawah katup pengaman. Masukkan kopi ke keranjang dengan longgar—jangan pernah memadatkannya.'
     },
     entry: {
-      en: 'Apply moderate thermal energy to build vapor pressure linearly.',
-      id: 'Berikan energi termal moderat untuk membangun tekanan uap secara linear.'
+      en: 'Assemble the hot unit using a towel. Place it on low-to-medium heat. The pre-heated base water provides immediate pressure rather than baking the coffee.',
+      id: 'Rakit alat panas ini menggunakan handuk. Letakkan di atas api kecil-sedang. Air yang sudah mendidih memberi tekanan instan tanpa memanggang kopi.'
     },
     main: {
-      en: 'Monitor the spout; target a steady, honey-like viscous extrusion.',
-      id: 'Pantau cerat alat; targetkan ekstrusi stabil yang kental seperti madu.'
+      en: 'Watch the chimney closely with the lid open. The extraction should emerge as a slow, dark, syrupy ooze. If it spits or surges violently, reduce the heat instantly.',
+      id: 'Awasi corong dengan tutup terbuka. Ekstraksi harus muncul perlahan seperti sirup gelap. Jika menyembur atau melonjak keras, segera kecilkan api.'
     },
     release: {
-      en: 'Quench the boiler rapidly in cold water immediately upon sputtering.',
-      id: 'Dinginkan boiler dengan cepat di air dingin tepat saat muncul semburan gas.'
+      en: 'Listen for the tell-tale gurgling sound. The exact moment the stream turns blond and bubbly, remove the pot completely from the heat.',
+      id: 'Dengarkan suara mendidih yang khas. Tepat saat aliran berubah menjadi pucat dan bergelembung, angkat pot sepenuhnya dari sumber panas.'
     },
     finish: {
-      en: 'Homogenize the aggressive extraction profile before service.',
-      id: 'Homogenisasi profil ekstraksi yang agresif sebelum disajikan.'
+      en: 'Quench the boiler base with a wet towel or cold water stream to halt the extraction instantly. Serve a thick, profoundly rich Italian concentrate.',
+      id: 'Dinginkan dasar boiler dengan handuk basah atau aliran air dingin untuk menghentikan ekstraksi seketika. Sajikan konsentrat Italia yang kental dan luar biasa kaya.'
     }
   },
   preheated_boiler: {
     setup: {
-      en: 'Charge the boiler with pre-boiled water to minimize ground thermal degradation; handle with caution.',
-      id: 'Isi boiler dengan air yang sudah mendidih untuk meminimalkan degradasi termal kopi; tangani dengan hati-hati.'
+      en: 'Preheat the water to exactly 95°C before filling the base. Load the coffee evenly.',
+      id: 'Panaskan air hingga tepat 95°C sebelum mengisi dasar boiler. Isi kopi secara merata.'
     },
     entry: {
-      en: 'Seal the hot chamber and apply low heat; pressure will build almost instantaneously.',
-      id: 'Tutup ruang panas dan gunakan api kecil; tekanan akan terbangun seketika.'
+      en: 'Seal the top chamber tightly. Set to a moderate heat source to drive an accelerated but stable pressure ramp.',
+      id: 'Tutup ruang atas dengan rapat. Gunakan sumber panas sedang untuk mendorong tekanan yang dipercepat namun stabil.'
     },
     main: {
-      en: 'Monitor the spout; target a steady, honey-like viscous extrusion.',
-      id: 'Pantau cerat alat; targetkan ekstrusi stabil yang kental seperti madu.'
+      en: 'Monitor the liquid emerging. It should be thick, rich, and deeply aromatic, free from burnt ash notes.',
+      id: 'Pantau cairan yang keluar. Harus kental, kaya, dan sangat aromatik, bebas dari aroma gosong abu.'
     },
     release: {
-      en: 'Quench the boiler rapidly in cold water immediately upon sputtering.',
-      id: 'Dinginkan boiler dengan cepat di air dingin tepat saat muncul semburan gas.'
+      en: 'Pull off the heat just before the final sputter. The high starting temp ensures total extraction without stalling.',
+      id: 'Angkat dari sumber panas tepat sebelum semburan akhir. Suhu awal tinggi memastikan ekstraksi total tanpa tersendat.'
     },
     finish: {
-      en: 'Homogenize the aggressive extraction profile before service.',
-      id: 'Homogenisasi profil ekstraksi yang agresif sebelum disajikan.'
+      en: 'Halt the brew with cold water on the base. The result is a profoundly sweet, high-clarity espresso alternative.',
+      id: 'Hentikan seduhan dengan air dingin di alasnya. Hasilnya adalah alternatif espresso yang sangat manis dan berkejernihan tinggi.'
+    }
+  },
+  low_temp_controlled: {
+    setup: {
+      en: 'Start with 70°C water in the base. This slower, gentler approach targets a brighter, lighter-bodied extraction.',
+      id: 'Mulai dengan air 70°C di dasar. Pendekatan yang lebih lambat dan lembut ini menargetkan ekstraksi ber-body lebih ringan dan cerah.'
+    },
+    entry: {
+      en: 'Place on very low heat. The prolonged buildup gently hydrates the coffee puck before the heavy pressure forces liquid through.',
+      id: 'Letakkan di atas api sangat kecil. Penumpukan perlahan menghidrasi kopi sebelum tekanan berat memaksa cairan keluar.'
+    },
+    main: {
+      en: 'Expect a very delayed start to the flow. When it appears, it will be thinner but vibrantly bright.',
+      id: 'Harapkan aliran yang sangat tertunda. Saat muncul, ia akan lebih tipis namun cerah memukau.'
+    },
+    release: {
+      en: 'Cut the heat early to prevent the slower brew from bringing out late-stage bitterness.',
+      id: 'Matikan api lebih awal untuk mencegah seduhan lambat ini menarik rasa pahit akhir.'
+    },
+    finish: {
+      en: 'Cool the base. Serve a remarkably delicate and articulate Moka Pot brew that resembles a dense pour-over.',
+      id: 'Dinginkan alas. Sajikan seduhan Moka Pot yang sangat lembut dan artikulatif, menyerupai pour-over padat.'
+    }
+  },
+  iced_moka_concentrate: {
+    setup: {
+      en: 'Load a high dose into the basket. Pack your serving vessel with heavy ice chunks.',
+      id: 'Masukkan dosis tinggi ke keranjang. Isi wadah saji Anda dengan bongkahan es berat.'
+    },
+    entry: {
+      en: 'Brew over medium heat. The intense concentrate will strip all soluble solids quickly.',
+      id: 'Seduh di atas api sedang. Konsentrat intens ini akan menarik seluruh padatan larut dengan cepat.'
+    },
+    main: {
+      en: 'Let the thick dark liquor flow into the top chamber, capturing the heavy crema-like foam.',
+      id: 'Biarkan cairan gelap pekat mengalir ke ruang atas, menangkap busa kental layaknya crema.'
+    },
+    release: {
+      en: 'Pour the hot concentrate aggressively and immediately over the ice bed.',
+      id: 'Tuang konsentrat panas secara agresif dan segera ke atas hamparan es.'
+    },
+    finish: {
+      en: 'Swirl to crash-cool. This locks in the volatile aromatics, yielding a powerful, punchy iced coffee.',
+      id: 'Putar untuk mendinginkan kilat. Ini mengunci aromatik volatil, menghasilkan kopi es yang kuat dan menonjol.'
+    }
+  },
+  high_yield_robust: {
+    setup: {
+      en: 'Pack the basket tightly with a slightly finer grind to drastically increase flow resistance and extraction yield.',
+      id: 'Isi keranjang dengan padat menggunakan gilingan sedikit lebih halus untuk secara drastis meningkatkan hambatan aliran dan hasil ekstraksi.'
+    },
+    entry: {
+      en: 'Utilize high heat. We are deliberately pushing the Moka Pot to its structural pressure limits.',
+      id: 'Gunakan panas tinggi. Kita sengaja mendorong Moka Pot hingga batas tekanan strukturalnya.'
+    },
+    main: {
+      en: 'The flow will struggle, then burst through as a dense, oily, incredibly heavy liquid.',
+      id: 'Aliran akan tertahan, lalu menyembur sebagai cairan yang sangat berat, berminyak, dan padat.'
+    },
+    release: {
+      en: 'Cut the heat the instant the flow accelerates to avoid catastrophic over-extraction.',
+      id: 'Matikan api seketika saat aliran mulai melaju cepat untuk menghindari over-ekstraksi parah.'
+    },
+    finish: {
+      en: 'Quench immediately. The resulting brew is intensely robust, designed to cut through milk or heavy syrups easily.',
+      id: 'Dinginkan seketika. Seduhan ini luar biasa kuat, dirancang untuk menembus susu atau sirup kental dengan mudah.'
     }
   }
-};
+};;;
 
 const COLD_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
-  cold_drip_tower: {
+  classic_toddy_immersion: {
     setup: {
-      en: 'Calibrate the drip valve for an incredibly slow, precise dripping rate.',
-      id: 'Kalibrasi katup tetes untuk tingkat tetesan yang sangat lambat dan presisi.'
+      en: 'Secure the rubber stopper and insert a wet felt filter. Add alternating layers of coarse coffee and cold water to prevent dry pockets.',
+      id: 'Pasang penutup karet dan masukkan filter kain basah. Tambahkan lapisan kopi kasar dan air dingin bergantian untuk mencegah kantong kering.'
     },
     entry: {
-      en: 'Pre-wet the bed slightly to ensure the initial drops channel evenly.',
-      id: 'Basahi hamparan sedikit untuk memastikan tetesan awal tersalurkan merata.'
+      en: 'Ensure total saturation without vigorous stirring, which clogs the thick felt filter.',
+      id: 'Pastikan saturasi total tanpa adukan kuat, yang dapat menyumbat filter kain tebal.'
     },
     main: {
-      en: 'Maintain the slow drip over several hours to build a delicate, wine-like clarity.',
-      id: 'Pertahankan tetesan lambat selama beberapa jam untuk membangun kejernihan layaknya anggur.'
+      en: 'Steep at ambient room temperature or in a refrigerator for 12 to 24 hours. The slow diffusion extracts only the sweetest, lowest-acidity compounds.',
+      id: 'Rendam di suhu ruang atau di lemari es selama 12 hingga 24 jam. Difusi lambat hanya mengekstrak senyawa yang paling manis dan rendah asam.'
     },
     release: {
-      en: 'Adjust the valve periodically if the water head pressure decreases.',
-      id: 'Sesuaikan katup secara berkala jika tekanan atas air menurun.'
+      en: 'Remove the stopper over a glass decanter. Allow gravity to slowly pull the heavy concentrate through the deep coffee bed and felt pad.',
+      id: 'Cabut penutup karet di atas wadah kaca. Biarkan gravitasi perlahan menarik konsentrat kental melewati hamparan kopi dan bantalan kain.'
     },
     finish: {
-      en: 'Swirl the collection vessel to homogenize the layered slow-drip extraction.',
-      id: 'Putar wadah penampung untuk menghomogenisasi ekstraksi tetes lambat yang berlapis.'
+      en: 'The result is a remarkably smooth, chocolate-heavy cold concentrate. Dilute with water or milk to serve.',
+      id: 'Hasilnya adalah konsentrat dingin yang sangat mulus dan dominan cokelat. Encerkan dengan air atau susu untuk disajikan.'
+    }
+  },
+  cold_drip_tower: {
+    setup: {
+      en: 'Assemble the glass tower. Pre-wet the paper filter over the coffee bed to ensure perfectly even water distribution from the upper valve.',
+      id: 'Rakit menara kaca. Basahi filter kertas di atas hamparan kopi untuk memastikan distribusi air yang sampurna dari katup atas.'
+    },
+    entry: {
+      en: 'Set the upper dripper valve to exactly one drop per second. The initial drops must slowly hydrate the entire column of grounds.',
+      id: 'Atur katup penetes atas ke tepat satu tetes per detik. Tetesan awal harus perlahan menghidrasi seluruh kolom bubuk kopi.'
+    },
+    main: {
+      en: 'Monitor the drip rate periodically. Changes in water column pressure will naturally slow the drip, so adjust the valve to maintain the rhythm.',
+      id: 'Pantau laju tetesan secara berkala. Perubahan tekanan kolom air secara alami akan melambatkan tetesan, jadi sesuaikan katup untuk menjaga ritme.'
+    },
+    release: {
+      en: 'Allow the 6-12 hour extraction to finish naturally. The percolative nature extracts vibrant, wine-like clarity unlike standard immersion.',
+      id: 'Biarkan ekstraksi 6-12 jam ini selesai secara alami. Sifat perkolasi ini mengekstrak kejernihan seperti anggur (wine) yang cerah, berbeda dari imersi biasa.'
+    },
+    finish: {
+      en: 'Swirl the final carafe. Serve neat or over ice for a profoundly complex, highly articulate cold brew experience.',
+      id: 'Putar karafe akhir. Sajikan murni atau dengan es untuk pengalaman cold brew yang luar biasa kompleks dan sangat artikulatif.'
     }
   },
   double_extraction_concentrate: {
     setup: {
-      en: 'Prepare a massive dose for a hyper-concentrated dual-stage steep.',
-      id: 'Siapkan dosis masif untuk rendaman dua tahap yang super pekat.'
+      en: 'Prepare a massive dose of coffee. We are aiming for a hyper-concentrated yield, so use a dual-filtration setup if possible.',
+      id: 'Siapkan dosis kopi masif. Kita menargetkan hasil yang super-terkonsentrasi, jadi gunakan pengaturan penyaringan ganda jika memungkinkan.'
     },
     entry: {
-      en: 'Initiate the first immersion phase in an ambient environment for rapid solubility.',
-      id: 'Mulai fase rendaman pertama di lingkungan suhu ruang untuk kelarutan cepat.'
+      en: 'Add a small amount of warm water first to rapidly degas, then immediately shock it with the remaining icy water.',
+      id: 'Tambahkan sedikit air hangat lebih dulu untuk mendegas cepat, lalu kejutkan seketika dengan sisa air sedingin es.'
     },
     main: {
-      en: 'Transfer to a chilled environment for the extended second phase of extraction.',
-      id: 'Pindahkan ke lingkungan dingin untuk fase ekstraksi kedua yang diperpanjang.'
+      en: 'Steep for a full 24 hours. The hybrid hot-bloom cold-steep pulls deep structural lipids alongside bright aromatics.',
+      id: 'Rendam selama 24 jam penuh. Hibrida bloom-panas dan rendam-dingin ini menarik lipid struktural yang dalam bersama aromatik cerah.'
     },
     release: {
-      en: 'Filter the dense sludge carefully to separate the heavy liquid completely.',
-      id: 'Saring lumpur padat dengan hati-hati untuk memisahkan cairan kental sepenuhnya.'
+      en: 'Drain the heavy concentrate. It will be thick, syrupy, and naturally resistant to oxidation.',
+      id: 'Tiriskan konsentrat berat ini. Cairan akan kental, bersirup, dan secara alami tahan terhadap oksidasi.'
     },
     finish: {
-      en: 'Store the intense concentrate; dilute aggressively with chilled water before service.',
-      id: 'Simpan konsentrat pekat; encerkan secara agresif dengan air dingin sebelum disajikan.'
+      en: 'Bottle and refrigerate. This dense liquid is meant to be heavily diluted, providing extreme versatility in iced lattes.',
+      id: 'Botolkan dan simpan di kulkas. Cairan pekat ini dirancang untuk diencerkan secara berat, memberi keserbagunaan ekstrem untuk iced latte.'
     }
   },
   accelerated_room_temp: {
     setup: {
-      en: 'Set up the vessel in a warm ambient space to drastically accelerate the steeping process.',
-      id: 'Siapkan wadah di ruang bersuhu hangat untuk mempercepat proses rendaman secara drastis.'
+      en: 'Use a slightly finer grind and ambient room-temperature water. The higher thermal energy will accelerate diffusion dramatically.',
+      id: 'Gunakan gilingan sedikit lebih halus dan air bersuhu ruang. Energi termal yang lebih tinggi akan mempercepat difusi secara dramatis.'
     },
     entry: {
-      en: 'Mix the dose thoroughly with room temperature water to kickstart oxidation.',
-      id: 'Campur dosis secara menyeluruh dengan air suhu ruang untuk memulai oksidasi.'
+      en: 'Submerge all grounds immediately. Agitate the slurry thoroughly to maximize early surface-area contact.',
+      id: 'Tenggelamkan semua bubuk seketika. Aduk campuran secara menyeluruh untuk memaksimalkan kontak luas permukaan awal.'
     },
     main: {
-      en: 'Allow the elevated temperature to cut the standard immersion time in half.',
-      id: 'Biarkan suhu yang lebih tinggi memotong waktu rendaman standar menjadi setengahnya.'
+      en: 'Steep for only 8 to 12 hours. The warmer temperature extracts rapidly, so pushing past 12 hours risks flat, woody bitterness.',
+      id: 'Rendam hanya 8 hingga 12 jam. Suhu yang lebih hangat mengekstrak dengan cepat, jadi melewati 12 jam berisiko memunculkan rasa kayu yang pahit dan hambar.'
     },
     release: {
-      en: 'Decant early to prevent the warmer environment from extracting woody notes.',
-      id: 'Tuang lebih awal untuk mencegah lingkungan hangat mengekstraksi nada kayu.'
+      en: 'Filter cleanly. The accelerated extraction yields a round, comforting profile that favors nutty and chocolate notes.',
+      id: 'Saring dengan bersih. Ekstraksi yang dipercepat ini menghasilkan profil bulat dan nyaman yang menonjolkan aroma kacang dan cokelat.'
     },
     finish: {
-      en: 'Flash chill the resulting liquid immediately to lock in the bright profile.',
-      id: 'Dinginkan cairan yang dihasilkan secara cepat untuk mengunci profil yang cerah.'
+      en: 'Chill immediately to halt any lingering oxidation. Serve over ice for a robust daily cold brew.',
+      id: 'Dinginkan seketika untuk menghentikan sisa oksidasi. Sajikan dengan es sebagai cold brew harian yang kokoh.'
     }
   },
   japanese_slow_drip: {
     setup: {
-      en: 'Prepare the slow-drip apparatus with a precision-leveled fine grind bed.',
-      id: 'Siapkan alat tetes lambat dengan hamparan gilingan halus yang diratakan presisi.'
+      en: 'Set up an iced V60 or flat-bottom dripper directly over an ice bed. This is not immersion; this is rapid hot extraction over ice.',
+      id: 'Siapkan V60 atau dripper alas datar langsung di atas hamparan es. Ini bukan imersi; ini adalah ekstraksi panas cepat di atas es.'
     },
     entry: {
-      en: 'Begin the drip sequence; the initial drops will heavily saturate the upper crust.',
-      id: 'Mulai urutan tetesan; tetesan awal akan sangat membasahi kerak bagian atas.'
+      en: 'Hydrate aggressively. We must extract all acidity and fruit notes instantly before the rapid drip ends.',
+      id: 'Lakukan hidrasi dengan agresif. Kita harus mengekstrak seluruh asiditas dan aroma buah seketika sebelum aliran cepat berakhir.'
     },
     main: {
-      en: 'Let the steady percolation slowly pull out nuanced, highly aromatic compounds.',
-      id: 'Biarkan perkolasi stabil secara perlahan menarik senyawa aromatik yang sangat bernuansa.'
+      en: 'Pour the hot concentrate seamlessly. Let the hot liquid fall directly onto the ice, flash-chilling on impact.',
+      id: 'Tuang konsentrat panas secara berkesinambungan. Biarkan cairan panas jatuh langsung ke atas es, mendingin kilat saat bertabrakan.'
     },
     release: {
-      en: 'Monitor the drip rate; consistent timing is key to avoiding over-extraction.',
-      id: 'Pantau laju tetesan; pengaturan waktu yang konsisten adalah kunci menghindari ekstraksi berlebih.'
+      en: 'Allow the short, intense brew to finish draining. The total contact time should be under 3 minutes.',
+      id: 'Biarkan seduhan singkat dan intens ini selesai meniris. Total waktu kontak harus di bawah 3 menit.'
     },
     finish: {
-      en: 'Gently mix the final carafe; the result is an exceptionally crisp, clean beverage.',
-      id: 'Campur teko akhir dengan lembut; hasilnya adalah minuman yang luar biasa renyah dan bersih.'
-    }
-  },
-  classic_toddy_immersion: {
-    setup: {
-      en: 'Utilize an exceptionally coarse grind and a sanitized, high-volume vessel.',
-      id: 'Gunakan gilingan yang sangat kasar dan wadah bervolume tinggi yang higienis.'
-    },
-    entry: {
-      en: 'Introduce cold water incrementally; meticulously fold dry pockets beneath the surface.',
-      id: 'Masukkan air dingin secara bertahap; lipat dengan teliti bagian kering ke bawah permukaan.'
-    },
-    main: {
-      en: 'Execute a prolonged, static steep; eliminate mid-cycle mechanical agitation.',
-      id: 'Lakukan rendaman statis yang panjang; hindari sama sekali pengadukan mekanis di pertengahan siklus.'
-    },
-    release: {
-      en: 'Filter the concentrate with extreme delicacy to prevent forcing microscopic fines.',
-      id: 'Saring konsentrat dengan sangat hati-hati untuk mencegah terdorongnya partikel halus mikroskopis.'
-    },
-    finish: {
-      en: 'Dilute the intense concentrate strictly to target TDS and homogenize thoroughly.',
-      id: 'Encerkan konsentrat pekat secara presisi mencapai target TDS dan homogenisasi menyeluruh.'
-    }
-  },
-  japanese_flash_chill: {
-    setup: {
-      en: 'Calculate ice mass precisely and place it directly inside the receiving vessel.',
-      id: 'Hitung massa es secara presisi dan letakkan langsung di dalam wadah penerima.'
-    },
-    entry: {
-      en: 'Execute a standard hot bloom to rapidly extract highly volatile aromatics.',
-      id: 'Lakukan blooming panas standar untuk mengekstrak aromatik yang sangat volatil secara cepat.'
-    },
-    main: {
-      en: 'Brew directly over the ice mass; the immediate thermal shock locks in complex acidity.',
-      id: 'Seduh langsung di atas es; kejutan termal instan mengunci keasaman kompleks.'
-    },
-    release: {
-      en: 'Permit the hot drawdown to completely melt the target ice ratio.',
-      id: 'Biarkan fase turun panas sepenuhnya mencairkan rasio es target.'
-    },
-    finish: {
-      en: 'Homogenize immediately; serve a hyper-clean, intensely aromatic flash-chilled extraction.',
-      id: 'Homogenisasi segera; sajikan ekstraksi kilat-dingin yang super bersih dan sangat aromatik.'
+      en: 'Swirl the carafe. This method locks in extreme volatile aromatics, delivering a crystalline, juicy iced coffee.',
+      id: 'Putar karafe. Metode ini mengunci aromatik volatil ekstrem, memberikan kopi es yang sangat jernih (crystalline) dan berair (juicy).'
     }
   }
-};
+};;
 
 const BATCH_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
-  heavy_batch_catering: {
+  sca_gold_cup: {
     setup: {
-      en: 'Install a heavy-duty commercial filter to support the massive volume load.',
-      id: 'Pasang filter komersial tugas berat untuk menopang beban volume yang masif.'
+      en: 'Seat the massive paper filter carefully against the brew basket walls. Load an even, level bed of precisely ground coffee to guarantee uniform flow geometry.',
+      id: 'Pasang filter kertas besar dengan hati-hati merapat ke dinding keranjang seduh. Ratakan hamparan kopi yang digiling presisi untuk menjamin geometri aliran seragam.'
     },
     entry: {
-      en: 'Ensure the spray head fully covers the large dose for even initial saturation.',
-      id: 'Pastikan kepala semprotan menutupi dosis besar sepenuhnya untuk saturasi awal merata.'
+      en: 'Engage brew cycle. Machine delivers a calibrated spray, ensuring every quadrant is saturated simultaneously.',
+      id: 'Mulai siklus seduh. Mesin memberi dispersi kepala penyemprot terkalibrasi, memastikan tiap kuadran tersaturasi.'
     },
     main: {
-      en: 'The machine will execute a prolonged continuous flow to maintain high temperatures.',
-      id: 'Mesin akan menjalankan aliran kontinu panjang untuk mempertahankan suhu tinggi.'
+      en: 'Let automated pulse-brew manage slurry depth. Cycle optimized to maintain 93°C environment.',
+      id: 'Biarkan seduh-pulsa otomatis mengelola cairan. Siklus dioptimalkan menjaga suhu 93°C tanpa intervensi.'
     },
     release: {
-      en: 'Wait for the final drips; large batches require extra time for complete drainage.',
-      id: 'Tunggu tetesan terakhir; batch besar membutuhkan waktu ekstra untuk penirisan lengkap.'
+      en: 'Wait for the final drawdown phase after the spray head ceases. The flat-bottom basket will drain evenly, avoiding localized channeling.',
+      id: 'Tunggu fase penirisan akhir setelah kepala penyemprot berhenti. Keranjang alas datar akan meniris rata, menghindari channeling terlokalisasi.'
     },
     finish: {
-      en: 'Mix the thermal urn vigorously to prevent flavor stratification in large volumes.',
-      id: 'Aduk teko termal dengan kuat untuk mencegah stratifikasi rasa dalam volume besar.'
+      en: 'Tap the thermal carafe to gently integrate the dense lower layers with the brighter upper layers. Serve a mathematically perfect Gold Cup standard brew.',
+      id: 'Tepuk ringan wadah termal untuk menyatukan lapisan bawah yang pekat dengan lapisan atas yang cerah. Sajikan seduhan standar Gold Cup yang sempurna secara matematis.'
+    }
+  },
+  heavy_batch_catering: {
+    setup: {
+      en: 'Load a massive catering-scale dose. Grind significantly coarser to accommodate the sheer volume and weight of the deep coffee bed.',
+      id: 'Masukkan dosis skala katering yang masif. Giling jauh lebih kasar untuk mengakomodasi volume dan beban hamparan kopi yang sangat dalam.'
+    },
+    entry: {
+      en: 'Initiate the long brew cycle. The initial water volume is vast, creating a prolonged, deep immersion zone within the basket.',
+      id: 'Mulai siklus seduh panjang. Volume air awal sangat besar, menciptakan zona imersi dalam yang berkepanjangan di keranjang.'
+    },
+    main: {
+      en: 'The deep bed acts as a powerful flow restrictor. The machine will pulse slowly, relying on bed depth to force high extraction yields.',
+      id: 'Hamparan dalam berfungsi sebagai penahan aliran yang kuat. Mesin akan memompa perlahan, mengandalkan kedalaman bed untuk memaksa hasil ekstraksi tinggi.'
+    },
+    release: {
+      en: 'Permit a prolonged drawdown. Do not rush or pull the carafe early, as the final liquids contain vital balancing sugars.',
+      id: 'Biarkan penirisan memakan waktu lama. Jangan terburu-buru menarik karafe lebih awal, karena cairan terakhir mengandung gula penyeimbang yang vital.'
+    },
+    finish: {
+      en: 'Stir the heavy urn extensively. This yields an exceptionally dense, chocolate-forward batch designed to maintain structural integrity for hours.',
+      id: 'Aduk tangki besar ini secara ekstensif. Ini menghasilkan batch yang sangat padat dan dominan cokelat, dirancang untuk menjaga integritas struktural berjam-jam.'
     }
   },
   bright_light_roast_batch: {
     setup: {
-      en: 'Use a clean white paper filter to avoid masking delicate high-altitude aromatics.',
-      id: 'Gunakan filter kertas putih bersih untuk menghindari menutupi aromatik dataran tinggi yang halus.'
+      en: 'Prepare the basket with a finer grind to tackle dense light roasts. Ensure the machine is fully pre-heated to deliver maximum thermal energy.',
+      id: 'Siapkan keranjang dengan gilingan lebih halus. Gunakan filter kertas putih. Pastikan mesin sudah dipanaskan penuh untuk panas maksimal.'
     },
     entry: {
-      en: 'Program a distinct initial wetting phase to properly degas the dense light roast.',
-      id: 'Program fase pembasahan awal yang jelas untuk membuang gas dari sangraian ringan yang padat.'
+      en: 'Start cycle. Machine fires high-temperature water to crash through the dense cellular structure.',
+      id: 'Mulai siklus. Mesin seketika menembak air panas untuk mendobrak struktur seluler padat.'
     },
     main: {
-      en: 'Pulse the delivery to maintain an optimal temperature curve for acidic clarity.',
-      id: 'Beri tuangan berdenyut untuk menjaga kurva suhu optimal demi kejernihan asam.'
+      en: 'Spray head pulses rapidly to maintain high temperature and agitation, maximizing extraction.',
+      id: 'Kepala semprot memompa cepat untuk menjaga suhu dan agitasi konstan, memaksimalkan ekstraksi.'
     },
     release: {
-      en: 'Allow the bright, crisp extraction to drain fully without rushing the process.',
-      id: 'Biarkan ekstraksi renyah dan cerah meniris penuh tanpa mempercepat proses.'
+      en: 'Monitor the drawdown. A slightly slower drain is expected and necessary to pull sufficient sweetness to balance the soaring acidity.',
+      id: 'Pantau penurunan air. Aliran yang sedikit lebih lambat adalah wajar dan diperlukan untuk menarik cukup kemanisan guna menyeimbangkan asiditas yang menjulang.'
     },
     finish: {
-      en: 'Serve immediately to capture the fleeting floral and volatile fruit esters.',
-      id: 'Sajikan segera untuk menangkap ester buah volatil dan bunga yang cepat pudar.'
+      en: 'Integrate the carafe completely. Serve a vibrant, tea-like, and highly articulate batch brew that rivals manual brewing.',
+      id: 'Saturasi karafe sepenuhnya. Sajikan batch brew yang cerah, layaknya teh, dan sangat artikulatif yang mampu menyaingi seduhan manual.'
     }
   },
   pre_wet_hybrid_batch: {
     setup: {
-      en: 'Seat the filter and prepare the machine for a heavily customized manual-style profile.',
-      id: 'Pasang filter dan siapkan mesin untuk profil gaya manual yang sangat disesuaikan.'
+      en: 'Manually pre-wet the coffee bed with a stirring paddle before sliding the basket into the machine. This eliminates all dry pockets instantly.',
+      id: 'Basahi manual hamparan kopi sambil diaduk dengan dayung sebelum memasukkan keranjang ke dalam mesin. Ini melenyapkan semua kantong kering seketika.'
     },
     entry: {
-      en: 'The initial heavy wetting phase mimics a manual immersion bloom perfectly.',
-      id: 'Fase pembasahan berat awal meniru blooming rendaman manual dengan sempurna.'
+      en: 'Engage machine cycle. Since coffee is blooming, initial pulses drive extraction rather than hydration.',
+      id: 'Nyalakan mesin. Karena kopi sudah mekar, semprotan awal langsung mendorong ekstraksi, bukan hidrasi.'
     },
     main: {
-      en: 'Intermittent pulses will balance the extended immersion with fresh percolation.',
-      id: 'Tuangan berdenyut sesekali akan menyeimbangkan rendaman panjang dengan perkolasi segar.'
+      en: 'Let the automated sequence take over. The pre-wetting ensures absolute uniformity across the flat bed, drastically increasing extraction efficiency.',
+      id: 'Biarkan urutan otomatis mengambil alih. Pembasahan awal memastikan keseragaman absolut di seluruh alas datar, secara drastis meningkatkan efisiensi ekstraksi.'
     },
     release: {
-      en: 'The hybrid approach yields a slightly extended but highly controlled drainage.',
-      id: 'Pendekatan hibrida ini menghasilkan penirisan yang sedikit lebih lama namun sangat terkendali.'
+      en: 'The drawdown will be smooth and highly predictable, as fine migration was mitigated during the manual blooming phase.',
+      id: 'Penirisan air akan sangat halus dan dapat diprediksi, karena migrasi partikel halus telah dicegah saat fase blooming manual.'
     },
     finish: {
-      en: 'Homogenize the brew; expect a complex cup marrying body with distinct clarity.',
-      id: 'Homogenisasi seduhan; harapkan cangkir kompleks yang memadukan body dengan kejernihan khas.'
+      en: 'Serve an impossibly clean, hyper-efficient extraction with maximum sweetness and zero astringent channeling.',
+      id: 'Sajikan ekstraksi yang luar biasa bersih, super efisien dengan rasa manis maksimal dan tanpa channeling yang sepat.'
     }
   },
   high_extraction_thermos: {
     setup: {
-      en: 'Pre-heat the thermal carafe extensively to maintain the highly extracted profile.',
-      id: 'Panaskan teko termal secara ekstensif untuk mempertahankan profil ekstraksi tinggi.'
+      en: 'Pre-heat the thermal airpot with boiling water for 5 minutes, then empty it. Load the basket with a precision-ground high dose.',
+      id: 'Panaskan airpot termal dengan air mendidih selama 5 menit, lalu kosongkan. Isi keranjang dengan dosis tinggi yang digiling presisi.'
     },
     entry: {
-      en: 'Deliver water rapidly to raise the bed temperature to absolute maximum early on.',
-      id: 'Berikan air dengan cepat untuk menaikkan suhu hamparan ke batas maksimum absolut sejak awal.'
+      en: 'Begin the brew. The heavily insulated environment ensures zero thermal loss, keeping the extraction aggressive and constant.',
+      id: 'Mulai menyeduh. Lingkungan berinsulasi berat memastikan tidak ada kehilangan panas, menjaga ekstraksi tetap agresif dan konstan.'
     },
     main: {
-      en: 'Maintain a high flow rate to force solubility across the deeply packed bed.',
-      id: 'Pertahankan laju aliran tinggi untuk memaksa kelarutan melintasi hamparan yang dikemas dalam.'
+      en: 'Allow the machine to pulse heavily. The sealed thermos below captures every volatile aromatic compound immediately.',
+      id: 'Biarkan mesin menyemprot kuat. Termos tertutup di bawahnya segera menangkap setiap senyawa aromatik volatil.'
     },
     release: {
-      en: 'Let the heavy extraction complete its course into the insulated container.',
-      id: 'Biarkan ekstraksi berat menyelesaikan jalurnya ke dalam wadah berinsulasi.'
+      en: 'Let the basket drain completely. The closed system prevents oxidation and evaporation during the long drain phase.',
+      id: 'Biarkan keranjang meniris sepenuhnya. Sistem tertutup mencegah oksidasi dan penguapan selama fase tiris yang panjang.'
     },
     finish: {
-      en: 'Seal the thermos immediately to lock in the intense, high-yield aromatics.',
-      id: 'Tutup rapat termos segera untuk mengunci aromatik hasil tinggi yang intens.'
-    }
-  },
-  sca_gold_cup: {
-    setup: {
-      en: 'Distribute the grounds perfectly level and verify volumetric programming.',
-      id: 'Distribusikan kopi rata sempurna dan verifikasi program volumetrik.'
-    },
-    entry: {
-      en: 'Engage the cycle; ensure the initial showerhead dispersion provides homogenous pre-wetting.',
-      id: 'Mulai siklus; pastikan dispersi awal pancuran mesin memberikan pembasahan awal homogen.'
-    },
-    main: {
-      en: 'Observe the slurry dynamics; automated rhythm must maintain stable depth.',
-      id: 'Amati dinamika campuran kopi; ritme otomatis harus mempertahankan kedalaman stabil.'
-    },
-    release: {
-      en: 'Wait for the final hydrostatic drawdown to terminate completely.',
-      id: 'Tunggu hingga penirisan hidrostatik akhir berhenti sepenuhnya.'
-    },
-    finish: {
-      en: 'Vigorously mix the thermal carafe to integrate stratified extraction phases.',
-      id: 'Aduk teko termal dengan kuat untuk mengintegrasikan fase ekstraksi yang terstratifikasi.'
+      en: 'Seal the thermos tightly. This brew is engineered to remain perfectly balanced, hot, and sweet for several hours of service.',
+      id: 'Tutup rapat termos. Seduhan ini dirancang untuk tetap seimbang sempurna, panas, dan manis selama beberapa jam penyajian.'
     }
   }
-};
+};;
 
 const SIPHON_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
-  competition_triple_agitation: {
+  traditional_vacuum_siphon: {
     setup: {
-      en: 'Secure the tensioned filter assembly and preheat the lower globe.',
-      id: 'Kunci rakitan filter bertekanan dan panaskan tabung bawah.'
+      en: 'Lock the upper glass chamber tightly into the boiling lower globe. Hook the cloth filter assembly securely to the glass tube.',
+      id: 'Kunci ruang kaca atas rapat-rapat ke wadah bawah yang mendidih. Kaitkan rakitan filter kain dengan kuat ke tabung kaca.'
     },
     entry: {
-      en: 'Introduce the dose and execute the first aggressive agitation to maximize saturation.',
-      id: 'Masukkan dosis dan jalankan agitasi agresif pertama untuk memaksimalkan saturasi.'
+      en: 'As vapor pressure drives water up, reduce heat to a simmer. Add coffee once water level stabilizes.',
+      id: 'Saat tekanan uap mendorong air ke atas, kecilkan api. Masukkan kopi saat batas air sudah stabil.'
     },
     main: {
-      en: 'Perform the second precise agitation mid-steep to actively disrupt thermal layers.',
-      id: 'Lakukan agitasi presisi kedua di pertengahan rendaman untuk mengacaukan lapisan termal secara aktif.'
+      en: 'Fold coffee gently into water with a bamboo paddle to ensure total saturation without disturbing the filter.',
+      id: 'Lipat kopi perlahan ke dalam air dengan dayung bambu untuk saturasi total tanpa mengganggu filter kain.'
     },
     release: {
-      en: 'Cut the heat and perform the final violent stir to create a perfect centrifugal dome.',
-      id: 'Matikan pemanas dan lakukan adukan keras terakhir untuk menciptakan kubah sentrifugal sempurna.'
+      en: 'Kill the heat source completely. The immediate pressure drop creates a powerful vacuum, violently pulling the liquid through the coffee bed.',
+      id: 'Matikan sumber panas sepenuhnya. Penurunan tekanan yang instan menciptakan vakum kuat, menarik cairan secara dahsyat melewati hamparan kopi.'
     },
     finish: {
-      en: 'Watch the rapid vacuum pullback deliver an incredibly structured, competition-level cup.',
-      id: 'Perhatikan tarikan vakum cepat menghasilkan cangkir tingkat kompetisi yang sangat terstruktur.'
+      en: 'Watch the grounds form a perfect dome. Serve an incredibly hot, deeply aromatic cup characterized by its flawless, syrupy clarity.',
+      id: 'Perhatikan ampas kopi membentuk kubah sempurna. Sajikan secangkir kopi sangat panas dan beraroma dalam, ditandai dengan kejernihannya yang kental dan tanpa cela.'
+    }
+  },
+  competition_triple_agitation: {
+    setup: {
+      en: 'Secure the filter meticulously. We are aiming for a hyper-extracted, aggressive profile, so ensure the seal is absolute.',
+      id: 'Pasang filter dengan teliti. Kita menargetkan profil agresif dan ekstraksi super, jadi pastikan segelnya mutlak rapat.'
+    },
+    entry: {
+      en: 'Drop grounds into heated upper chamber. Execute the first violent agitation for massive extraction.',
+      id: 'Jatuhkan kopi ke ruang atas. Seketika lakukan agitasi keras untuk memaksa ekstraksi masif instan.'
+    },
+    main: {
+      en: 'At 30s, execute secondary vortex stir. At 60s, execute final turbulence before removing heat.',
+      id: 'Pada 30d, lakukan adukan pusaran. Pada 60d, lakukan turbulensi terakhir sebelum matikan api.'
+    },
+    release: {
+      en: 'Cut the heat. The triple-agitation forces the fines into suspension, making the vacuum drawdown slower and far more intense.',
+      id: 'Matikan api. Agitasi tiga tahap ini memaksa partikel halus melayang, membuat penarikan vakum lebih lambat dan jauh lebih intens.'
+    },
+    finish: {
+      en: 'This brutal extraction yields a colossal, booming flavor profile with soaring intensity and massive body.',
+      id: 'Ekstraksi brutal ini menghasilkan profil rasa yang kolosal dan meledak, dengan intensitas menjulang serta body yang masif.'
     }
   },
   low_temp_delicate: {
     setup: {
-      en: 'Secure the tensioned filter assembly and preheat the lower globe.',
-      id: 'Kunci rakitan filter bertekanan dan panaskan tabung bawah.'
+      en: 'Maintain the lower globe at a very low simmer. The goal is to keep the upper chamber water at exactly 88°C for a delicate extraction.',
+      id: 'Jaga bola bawah pada api sangat kecil (simmer). Tujuannya adalah menjaga suhu ruang atas tetap di 88°C untuk ekstraksi yang halus.'
     },
     entry: {
-      en: 'Lower the heat source significantly before introducing the coffee for a gentle start.',
-      id: 'Turunkan sumber panas secara signifikan sebelum memasukkan kopi untuk awalan yang lembut.'
+      en: 'Introduce the coffee softly. The lower temperature prevents the immediate extraction of harsh tannins and bitter ash notes.',
+      id: 'Masukkan kopi dengan lembut. Suhu yang lebih rendah mencegah terekstraknya tanin kasar dan rasa gosong abu secara instan.'
     },
     main: {
-      en: 'Maintain barely-simmering water to extract only the most delicate, volatile esters.',
-      id: 'Pertahankan air yang hampir tidak mendidih untuk mengekstraksi hanya ester volatil yang paling halus.'
+      en: 'Do not stir aggressively. Allow diffusion to occur naturally over a slightly extended contact time in the calm upper bath.',
+      id: 'Jangan mengaduk dengan agresif. Biarkan difusi terjadi secara alami pada waktu kontak yang sedikit lebih lama di rendaman atas yang tenang.'
     },
     release: {
-      en: 'Remove the heat and allow a gentle, unforced vacuum descent.',
-      id: 'Singkirkan pemanas dan biarkan penurunan vakum yang lembut dan tanpa paksaan.'
+      en: 'Remove the heat. The slower, gentler vacuum pull protects the fragile floral and fruit esters from physical degradation.',
+      id: 'Singkirkan sumber panas. Tarikan vakum yang lebih lambat dan lembut melindungi ester bunga dan buah yang rapuh dari degradasi fisik.'
     },
     finish: {
-      en: 'Serve the exceptionally tea-like, transparent extraction immediately.',
-      id: 'Sajikan ekstraksi transparan yang luar biasa mirip teh ini segera.'
+      en: 'Serve an elegant, tea-like brew. This approach transforms the typically heavy siphon into an articulate, bright masterpiece.',
+      id: 'Sajikan seduhan elegan layaknya teh. Pendekatan ini mengubah siphon yang biasanya berat menjadi mahakarya yang cerah dan artikulatif.'
     }
   },
   high_body_fast_drawdown: {
     setup: {
-      en: 'Secure the tensioned filter assembly and preheat the lower globe.',
-      id: 'Kunci rakitan filter bertekanan dan panaskan tabung bawah.'
+      en: 'Use a very coarse grind and ensure the cloth filter is tightly strung. We want maximum physical flow rate.',
+      id: 'Gunakan gilingan sangat kasar dan pastikan filter kain terikat kuat. Kita menginginkan laju aliran fisik yang maksimal.'
     },
     entry: {
-      en: 'Drop the dose into rolling water and stir vigorously to force immediate extraction.',
-      id: 'Masukkan dosis ke dalam air bergejolak dan aduk kuat untuk memaksa ekstraksi seketika.'
+      en: 'Add coffee at peak boiling point. We need high heat to compensate for coarse particles.',
+      id: 'Tambahkan kopi di titik didih puncak. Kita butuh panas tinggi kompensasi partikel kasar.'
     },
     main: {
-      en: 'Keep the steep time extremely brief to focus entirely on heavy early-stage compounds.',
-      id: 'Jaga waktu rendaman sangat singkat untuk fokus sepenuhnya pada senyawa tahap awal yang berat.'
+      en: 'Execute one massive, deep stir to wet all grounds, then leave it entirely alone. Avoid suspending any fines.',
+      id: 'Lakukan satu adukan dalam dan masif untuk membasahi semua bubuk, lalu biarkan sepenuhnya. Hindari menerbangkan partikel halus.'
     },
     release: {
-      en: 'Remove heat quickly and apply a cool towel to force a violently rapid vacuum drop.',
-      id: 'Singkirkan panas dengan cepat dan tempelkan handuk dingin untuk memaksa penurunan vakum yang sangat cepat.'
+      en: 'Remove heat quickly. The coarse bed acts as a highly porous filter, allowing the vacuum to slam the liquid into the lower globe instantly.',
+      id: 'Angkat dari api dengan cepat. Bed kasar bertindak sebagai filter berpori tinggi, membiarkan vakum membanting cairan ke bola bawah seketika.'
     },
     finish: {
-      en: 'The resulting cup will possess massive body and an intensely concentrated structure.',
-      id: 'Cangkir yang dihasilkan akan memiliki body masif dan struktur terkonsentrasi yang intens.'
+      en: 'This yields a remarkably clean, heavy-bodied cup with a snappy finish, completely devoid of over-extracted bitterness.',
+      id: 'Ini menghasilkan cangkir ber-body berat yang luar biasa bersih dengan akhir (finish) yang tegas, tanpa sisa pahit over-ekstraksi.'
     }
   },
   spirit_infusion_style: {
     setup: {
-      en: 'Secure the tensioned filter assembly and preheat the lower globe.',
-      id: 'Kunci rakitan filter bertekanan dan panaskan tabung bawah.'
+      en: 'A highly experimental style. Secure the upper chamber, combining coffee and aromatic botanicals or spices in the dry bed.',
+      id: 'Gaya eksperimental tinggi. Pasang ruang atas, gabungkan kopi dengan botanikal aromatik atau rempah di dalam hamparan kering.'
     },
     entry: {
-      en: 'Introduce the dose alongside botanical elements into the rising liquid chamber.',
-      id: 'Masukkan dosis bersama elemen botani ke dalam ruang cairan yang naik.'
+      en: 'Allow the vapor pressure to push the water up, violently mingling with the complex dry ingredients in the heated chamber.',
+      id: 'Biarkan tekanan uap mendorong air naik, bercampur dahsyat dengan komposisi bahan kering yang kompleks di ruang yang panas.'
     },
     main: {
-      en: 'Allow the combined ingredients to steep, blending complex aromatics in the upper globe.',
-      id: 'Biarkan bahan gabungan meresap, memadukan aromatik kompleks di tabung atas.'
+      en: 'Stir rhythmically. The sustained boiling heat forcefully extracts oils from both the coffee and the infused aromatics.',
+      id: 'Aduk berirama. Panas mendidih yang ditahan akan mengekstrak minyak dengan kuat, baik dari kopi maupun rempah yang diinfus.'
     },
     release: {
-      en: 'Cut the heat to pull the infused mixture rapidly through the tight filter.',
-      id: 'Matikan pemanas untuk menarik campuran infus dengan cepat melewati filter ketat.'
+      en: 'Kill the heat to trigger the vacuum drop. The immediate seal traps all volatile, highly evaporative aromatic compounds.',
+      id: 'Matikan api untuk memicu kejatuhan vakum. Segel instan menjebak semua senyawa aromatik volatil yang mudah menguap.'
     },
     finish: {
-      en: 'Swirl the highly aromatic, complex botanical infusion before careful service.',
-      id: 'Putar infus botani yang kompleks dan sangat aromatis sebelum disajikan dengan hati-hati.'
-    }
-  },
-  traditional_vacuum_siphon: {
-    setup: {
-      en: 'Secure the tensioned filter assembly and preheat the lower globe.',
-      id: 'Kunci rakitan filter bertekanan dan panaskan tabung bawah.'
-    },
-    entry: {
-      en: 'Allow water to fully ascend and stabilize before introducing the dose with a brief stir.',
-      id: 'Biarkan air sepenuhnya naik dan stabil sebelum memasukkan dosis dengan adukan singkat.'
-    },
-    main: {
-      en: 'Modulate the thermal source to maintain a tranquil steep; avoid violent boiling.',
-      id: 'Atur sumber panas untuk mempertahankan rendaman tenang; hindari didihan keras.'
-    },
-    release: {
-      en: 'Remove the heat source entirely; atmospheric inversion will draw the liquid cleanly.',
-      id: 'Tarik sumber panas sepenuhnya; inversi atmosfer akan menarik cairan dengan bersih.'
-    },
-    finish: {
-      en: 'Dismantle carefully and agitate the lower globe gently before service.',
-      id: 'Bongkar dengan hati-hati dan agitasi tabung bawah perlahan sebelum disajikan.'
+      en: 'Serve an intensely complex, heavily aromatic sensory experience. This is coffee alchemy at its finest.',
+      id: 'Sajikan pengalaman sensorik yang luar biasa kompleks dan beraroma tajam. Ini adalah alkemi kopi dalam bentuk terbaiknya.'
     }
   }
-};
+};;
 
 const ORIGAMI_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   cone_dripper_style: {
     setup: {
-      en: 'Seat the conical filter meticulously to align with the vertical ribs.',
-      id: 'Pasang filter kerucut secara teliti agar sejajar dengan alur vertikal.'
+      en: 'Set the conical filter into the Origami. Rinse gently to shape it without crushing the delicate paper into the ceramic grooves.',
+      id: 'Pasang filter kerucut ke dalam Origami. Bilas perlahan untuk membentuknya tanpa menghancurkan kertas halus ke dalam celah keramik.'
     },
     entry: {
-      en: 'Execute a comprehensive bloom; the Origami dictates exceptionally fast flow dynamics.',
-      id: 'Lakukan blooming komprehensif; Origami memaksakan dinamika aliran yang sangat cepat.'
+      en: 'Execute a precise bloom. Ensure rapid total saturation before heat escapes through the deep grooves.',
+      id: 'Blooming dengan presisi. Pastikan saturasi cepat sebelum panas lepas lewat celah dalam.'
     },
     main: {
-      en: 'Maintain a highly compact and disciplined pour structure to regulate bypass.',
-      id: 'Pertahankan struktur tuangan yang padat dan disiplin untuk mengatur bypass.'
+      en: 'Pour in tight circles. The fast flow rate demands constant replenishment to maintain temperature.',
+      id: 'Tuang melingkar rapat. Aliran cepat Origami butuh pengisian konstan untuk menjaga suhu.'
     },
     release: {
-      en: 'Allow the vertical flutes to clear the suspension without mechanical agitation.',
-      id: 'Biarkan lekukan vertikal membersihkan suspensi tanpa agitasi mekanis.'
+      en: 'Let the bed drain. The aggressive bypass characteristics of the cone-in-groove setup will yield an extremely fast drawdown.',
+      id: 'Biarkan hamparan meniris. Karakteristik bypass agresif dari pengaturan kerucut-dalam-celah akan menghasilkan penirisan yang sangat cepat.'
     },
     finish: {
-      en: 'Mix the server gently and evaluate clarity and tactile weight.',
-      id: 'Aduk wadah saji dengan lembut dan evaluasi kejernihan serta bobot taktil.'
+      en: 'Serve a vibrantly bright cup. The fast flow highlights delicate acidity and distinct floral notes perfectly.',
+      id: 'Sajikan secangkir kopi yang sangat cerah. Aliran cepat ini menonjolkan asiditas lembut dan karakter bunga yang khas secara sempurna.'
     }
   },
   wave_dripper_style: {
     setup: {
-      en: 'Seat the wave filter precisely inside the cone, ensuring stable flat-bottom geometry.',
-      id: 'Pasang filter gelombang secara presisi di dalam kerucut, pastikan geometri alas datar stabil.'
+      en: 'Drop the flat-bottom wave filter into the Origami. The ceramic ridges naturally support the paper without restricting the lower drain holes.',
+      id: 'Letakkan filter wave alas datar ke dalam Origami. Tonjolan keramik secara alami menopang kertas tanpa membatasi lubang pembuangan bawah.'
     },
     entry: {
-      en: 'Saturate evenly, taking care not to collapse the delicate paper flutes.',
-      id: 'Saturasi merata, berhati-hati agar tidak meruntuhkan lekukan kertas yang rapuh.'
+      en: 'Execute a flat-bottom bloom. Ensure water spreads evenly across the entire surface to hydrate the bed simultaneously.',
+      id: 'Lakukan blooming alas datar. Pastikan air menyebar merata ke seluruh permukaan untuk menghidrasi hamparan secara bersamaan.'
     },
     main: {
-      en: 'Deploy concentric pulses to leverage the hybrid flow rate and build sweetness.',
-      id: 'Gunakan tuangan bertahap konsentris untuk memanfaatkan laju aliran hibrida dan membangun rasa manis.'
+      en: 'Pulse slowly. The wave filter in Origami provides stability for deep, sweet extraction.',
+      id: 'Tuang perlahan. Filter wave Origami memberi stabilitas luar biasa untuk ekstraksi yang manis.'
     },
     release: {
-      en: 'Allow the vertical flutes to clear the suspension without mechanical agitation.',
-      id: 'Biarkan lekukan vertikal membersihkan suspensi tanpa agitasi mekanis.'
+      en: 'Allow a steady drawdown. The geometry prevents the choking often seen in standard wave drippers.',
+      id: 'Biarkan penirisan stabil. Geometrinya mencegah penyumbatan yang sering terjadi pada dripper wave standar.'
     },
     finish: {
-      en: 'Mix the server gently and evaluate clarity and tactile weight.',
-      id: 'Aduk wadah saji dengan lembut dan evaluasi kejernihan serta bobot taktil.'
+      en: 'Swirl and serve. This yields the sweetness of a Kalita with the thermal dynamic profile of an Origami.',
+      id: 'Putar dan sajikan. Ini menghasilkan rasa manis ala Kalita dipadu profil dinamis termal ala Origami.'
     }
   },
   mugen_one_pour: {
     setup: {
-      en: 'Seat the cone filter and establish a central divot to guide the single continuous pour.',
-      id: 'Pasang filter kerucut dan buat cekungan tengah untuk memandu tuangan kontinu tunggal.'
+      en: 'Use a conical filter but grind slightly finer. We are aiming for a continuous, high-contact extraction.',
+      id: 'Gunakan filter kerucut namun giling sedikit lebih halus. Kita menargetkan ekstraksi kontak tinggi yang berkelanjutan.'
     },
     entry: {
-      en: 'Bypass traditional blooming; transition immediately into the controlled single pour.',
-      id: 'Lewati blooming tradisional; transisi seketika menuju tuangan tunggal yang terkontrol.'
+      en: 'Skip the bloom and execute a single massive pour to drown all grounds instantly.',
+      id: 'Lewati blooming dan lakukan satu tuangan masif tak terputus untuk menenggelamkan semua kopi.'
     },
     main: {
-      en: 'Maintain an incredibly slow, unbroken central column to minimize agitation completely.',
-      id: 'Pertahankan kolom tuangan tengah yang sangat lambat dan tak terputus untuk meminimalkan agitasi sepenuhnya.'
+      en: 'Maintain a slow, steady center pour until the entire water weight is added. Do not stop.',
+      id: 'Pertahankan tuangan tengah yang lambat dan stabil hingga seluruh berat air ditambahkan. Jangan berhenti.'
     },
     release: {
-      en: 'Permit the entirely undisturbed bed to drain naturally, filtering out astringent compounds.',
-      id: 'Biarkan hamparan yang sama sekali tak terganggu meniris alami, menyaring senyawa sepat.'
+      en: 'Let gravity take over. The single massive water column will push extraction heavily and consistently.',
+      id: 'Biarkan gravitasi mengambil alih. Kolom air masif tunggal ini akan mendorong ekstraksi dengan berat dan konsisten.'
     },
     finish: {
-      en: 'Swirl once to unite the pristine layers, revealing extreme structural clarity.',
-      id: 'Putar sekali untuk menyatukan lapisan murni, mengungkapkan kejernihan struktural ekstrem.'
+      en: 'Enjoy a deeply structured, heavy-bodied cup that rivals immersion methods for sweetness.',
+      id: 'Nikmati secangkir kopi ber-body berat dengan struktur mendalam yang menyaingi metode imersi dalam hal rasa manis.'
     }
   },
   iced_origami: {
     setup: {
-      en: 'Deposit precision-weighed ice into the carafe; prepare a medium-fine grind for thermal shock.',
-      id: 'Masukkan es yang ditimbang presisi ke dalam wadah; siapkan gilingan halus cenderung sedang untuk kejut termal.'
+      en: 'Prepare your server with precision ice. Seat the wave filter for maximum flow stability during this concentrated brew.',
+      id: 'Siapkan wadah saji Anda dengan es presisi. Pasang filter wave. Gunakan gilingan sedang cenderung halus untuk stabilitas aliran konsentrat.'
     },
     entry: {
-      en: 'Bloom hot and fast to immediately aggressively extract volatile aromatics.',
-      id: 'Lakukan blooming panas dan cepat untuk segera mengekstraksi agresif aromatik volatil.'
+      en: 'Bloom the high-dose bed hot and fast. We need instant extraction before thermal loss occurs.',
+      id: 'Blooming hamparan dosis tinggi panas dan cepat. Kita butuh ekstraksi instan sebelum suhu hilang.'
     },
     main: {
-      en: 'Utilize high-velocity pulses to force maximum extraction before ice dilution compromises yield.',
-      id: 'Gunakan tuangan kecepatan tinggi untuk memaksa ekstraksi maksimum sebelum pengenceran es mengorbankan hasil.'
+      en: 'Pour aggressively to keep the fine particles suspended. The Origami ridges will handle the massive bypass easily.',
+      id: 'Tuang dengan agresif untuk menjaga partikel halus tetap melayang. Tonjolan Origami akan menangani bypass masif dengan mudah.'
     },
     release: {
-      en: 'Ensure the concentrate crashes onto the ice structure, instantly locking in crisp acidity.',
-      id: 'Pastikan konsentrat jatuh membentur struktur es, mengunci keasaman renyah secara instan.'
+      en: 'Watch the rapid drain directly onto the ice, freezing the volatile aromatics into the liquid instantly.',
+      id: 'Saksikan aliran turun yang cepat langsung ke atas es, membekukan aromatik volatil ke dalam cairan seketika.'
     },
     finish: {
-      en: 'Agitate rigorously until complete thermal stabilization is verified.',
-      id: 'Agitasi secara kuat hingga stabilisasi termal total diverifikasi.'
+      en: 'Stir vigorously. The outcome is a hyper-bright, incredibly refreshing iced filter coffee.',
+      id: 'Aduk dengan kuat. Hasilnya adalah es kopi filter yang sangat cerah dan luar biasa menyegarkan.'
     }
   },
   competition_hybrid_flow: {
     setup: {
-      en: 'Seat the filter perfectly level; this highly technical flow demands absolute symmetry.',
-      id: 'Pasang filter rata sempurna; aliran sangat teknis ini menuntut simetri mutlak.'
+      en: 'Seat a conical filter but prepare for a multi-stage thermal profile. Preheat the ceramic body heavily.',
+      id: 'Pasang filter kerucut namun bersiaplah untuk profil termal multi-tahap. Panaskan keramik dengan intensif.'
     },
     entry: {
-      en: 'Execute a turbulent, high-agitation bloom to aggressively disrupt cellular structures.',
-      id: 'Lakukan blooming turbulen beragitasi tinggi untuk mengacaukan struktur seluler secara agresif.'
+      en: 'Execute a massive, violently fast bloom. We are forcing immediate degassing.',
+      id: 'Lakukan blooming yang masif dan luar biasa cepat. Kita memaksa degassing (pelepasan gas) instan.'
     },
     main: {
-      en: 'Transition dynamically from rapid concentric agitation to a dead-slow center column finish.',
-      id: 'Transisi secara dinamis dari agitasi konsentris cepat ke penyelesaian kolom tengah yang sangat lambat.'
+      en: 'Transition to incredibly slow, dripping center pulses. We shift from aggressive hydration to delicate percolation instantly.',
+      id: 'Beralih ke pulsa tengah yang sangat lambat dan menetes. Kita pindah dari hidrasi agresif ke perkolasi halus seketika.'
     },
     release: {
-      en: 'Permit the bed to settle completely flat, yielding complex acidity and heavy lingering sweetness.',
-      id: 'Biarkan hamparan mengendap rata sempurna, menghasilkan keasaman kompleks dan rasa manis pekat yang tertinggal.'
+      en: 'Observe the drawdown. The sudden flow shift traps the fines at the bottom while extracting pure sweetness at the top.',
+      id: 'Amati penirisan. Perubahan aliran mendadak ini menjebak partikel halus di dasar sementara mengekstrak rasa manis murni di atas.'
     },
     finish: {
-      en: 'Homogenize carefully to balance the intense dichotomy of the hybrid extraction phases.',
-      id: 'Homogenisasi dengan hati-hati untuk menyeimbangkan dikotomi intens dari fase ekstraksi hibrida tersebut.'
+      en: 'Serve a championship-level cup possessing both soaring acidity and syrupy body simultaneously.',
+      id: 'Sajikan secangkir kopi level kejuaraan yang memiliki asiditas menjulang sekaligus body sekental sirup.'
     }
   }
-};
+};;
 
 const APRIL_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
-  april_continuous_slow: {
+  april_flat_bottom_standard: {
     setup: {
-      en: 'Ensure the flat-bed paper is perfectly seated to promote strict laminar flow.',
-      id: 'Pastikan kertas alas datar terpasang sempurna untuk mendorong aliran laminar yang ketat.'
+      en: 'Place the April paper precisely. Rinse using minimal water to avoid adhering the filter sides to the steep brewer walls.',
+      id: 'Pasang kertas April dengan presisi. Bilas menggunakan sedikit air agar sisi filter tidak menempel pada dinding brewer yang curam.'
     },
     entry: {
-      en: 'Initiate a gentle, full-saturation bloom to prepare the shallow bed carefully.',
-      id: 'Mulai blooming dengan saturasi penuh yang lembut untuk menyiapkan hamparan dangkal dengan hati-hati.'
+      en: 'Use circular blooming. The April’s unique base restricts flow, meaning the bloom water will pool heavily.',
+      id: 'Gunakan blooming melingkar. Dasar April yang unik membatasi aliran, artinya air blooming akan menggenang tebal.'
     },
     main: {
-      en: 'Execute an incredibly slow, continuous center pour to maintain perfect thermal equilibrium.',
-      id: 'Lakukan tuangan tengah kontinu yang sangat lambat untuk mempertahankan keseimbangan termal sempurna.'
+      en: 'Execute large pours. The wide geometry demands significant slurry volume to extract the entire bed.',
+      id: 'Lakukan tuangan besar terpisah. Geometri lebar menuntut volume seduhan untuk mengekstraksi seluruh hamparan.'
     },
     release: {
-      en: 'Let the steady, unagitated bed drain naturally to ensure absolute clarity.',
-      id: 'Biarkan hamparan stabil tanpa agitasi meniris alami untuk memastikan kejernihan absolut.'
+      en: 'Wait for the slow, controlled drawdown. The restricted base holes dictate the pace, creating a naturally dense extraction.',
+      id: 'Tunggu penirisan lambat yang terkontrol. Lubang dasar yang terbatas mendikte kecepatan, menciptakan ekstraksi yang secara alami padat.'
     },
     finish: {
-      en: 'A final gentle swirl integrates the exceptionally clean, sweet extraction.',
-      id: 'Pusaran lembut terakhir menyatukan ekstraksi yang luar biasa bersih dan manis.'
+      en: 'Swirl perfectly. The April yields an impossibly sweet, highly balanced cup with structural clarity.',
+      id: 'Putar sempurna. April menghasilkan cangkir yang luar biasa manis, sangat seimbang dengan kejernihan struktural.'
+    }
+  },
+  april_continuous_slow: {
+    setup: {
+      en: 'Seat the filter carefully. Use a slightly coarser grind, as the prolonged contact time will extract aggressively.',
+      id: 'Pasang filter dengan hati-hati. Gunakan gilingan sedikit lebih kasar, karena waktu kontak yang lama akan mengekstrak secara agresif.'
+    },
+    entry: {
+      en: 'Bloom with zero agitation. We want the bed to remain structurally undisturbed.',
+      id: 'Lakukan blooming tanpa agitasi (adukan). Kita ingin hamparan kopi secara struktural tidak terganggu.'
+    },
+    main: {
+      en: 'Pour a continuous, remarkably slow stream dead-center. The goal is to build water depth without churning the bed below.',
+      id: 'Tuang aliran lambat secara konstan tepat di tengah. Tujuannya adalah membangun kedalaman air tanpa mengaduk kopi di bawahnya.'
+    },
+    release: {
+      en: 'Let gravity gently pull the high water column through the undisturbed bed. This is percolation in its purest form.',
+      id: 'Biarkan gravitasi menarik lembut kolom air tinggi melewati hamparan yang tak terganggu. Ini adalah perkolasi dalam wujud paling murni.'
+    },
+    finish: {
+      en: 'Expect a tea-like body with monumental sweetness and zero astringency.',
+      id: 'Harapkan body menyerupai teh dengan rasa manis monumental dan tanpa rasa sepat.'
     }
   },
   competition_two_pour: {
     setup: {
-      en: 'Ensure the flat-bed paper is perfectly seated to promote strict laminar flow.',
-      id: 'Pastikan kertas alas datar terpasang sempurna untuk mendorong aliran laminar yang ketat.'
+      en: 'Prepare the filter. This method relies on high energy and extreme precision over exactly two massive pours.',
+      id: 'Siapkan filter. Metode ini mengandalkan energi tinggi dan presisi ekstrem pada tepat dua tuangan masif.'
     },
     entry: {
-      en: 'Execute a heavy, structured bloom pour that does double duty as early extraction.',
-      id: 'Lakukan tuangan blooming terstruktur yang berat untuk sekaligus melakukan ekstraksi awal.'
+      en: 'The first pour is exactly 50% of the water weight. Pour aggressively to create a turbulent, highly active slurry.',
+      id: 'Tuangan pertama tepat 50% dari berat air. Tuang secara agresif untuk menciptakan seduhan yang bergolak dan sangat aktif.'
     },
     main: {
-      en: 'Deliver exactly one massive secondary pour, maintaining a high, consistent water column.',
-      id: 'Berikan tepat satu tuangan sekunder masif, mempertahankan kolom air yang tinggi dan konsisten.'
+      en: 'At precisely the designated time, pour the remaining 50% with equal force. We are shock-extracting the coffee.',
+      id: 'Pada waktu yang ditentukan secara presisi, tuang 50% sisanya dengan tenaga setara. Kita melakukan shock-extraction pada kopi.'
     },
     release: {
-      en: 'The high bypass design allows the large volume to drain rapidly and cleanly.',
-      id: 'Desain bypass tinggi memungkinkan volume besar meniris dengan cepat dan bersih.'
+      en: 'The high volume forces a relatively fast drawdown despite the restricted base.',
+      id: 'Volume tinggi memaksa penirisan relatif cepat meskipun dasar brewer memiliki pembatas.'
     },
     finish: {
-      en: 'Unify the bold layers of the cup, designed for maximum sensory impact.',
-      id: 'Satukan lapisan berani dari cangkir ini, yang dirancang untuk dampak sensorik maksimal.'
+      en: 'Serve an explosively vibrant cup, characterized by massive flavor separation and bright intensity.',
+      id: 'Sajikan secangkir kopi dengan karakter meledak-ledak cerah, ditandai oleh separasi rasa masif dan intensitas terang.'
     }
   },
   iced_april_style: {
     setup: {
-      en: 'Place precisely weighed ice in the vessel; ensure the thin flat filter is seated.',
-      id: 'Tempatkan es yang ditimbang presisi di wadah; pastikan filter datar tipis terpasang.'
+      en: 'Load your server with block ice. Place the April brewer securely on top with a rinsed filter.',
+      id: 'Isi wadah saji Anda dengan es balok. Letakkan brewer April dengan aman di atasnya beserta filter yang sudah dibilas.'
     },
     entry: {
-      en: 'Pour hot and aggressively to pull volatile aromatics instantly before cooling.',
-      id: 'Tuang air panas secara agresif untuk menarik aromatik volatil seketika sebelum mendingin.'
+      en: 'Bloom the high dose with hot water. The flat bed ensures rapid, even hydration despite the heavy dose.',
+      id: 'Blooming dosis tinggi dengan air panas. Alas datar memastikan hidrasi merata dan cepat meski dosisnya berat.'
     },
     main: {
-      en: 'Deliver concentrated pulses to push extraction strength against the ice dilution.',
-      id: 'Berikan tuangan berdenyut konsentrat untuk mendorong kekuatan ekstraksi melawan pengenceran es.'
+      en: 'Execute short, concentrated hot pulses. Keep the slurry deep to maximize thermal retention before it drops onto the ice.',
+      id: 'Lakukan tuangan panas pendek dan pekat. Jaga seduhan tetap dalam untuk memaksimalkan retensi termal sebelum jatuh ke atas es.'
     },
     release: {
-      en: 'The rapid drawdown crashes directly onto the ice, immediately locking in crispness.',
-      id: 'Fase turun cepat langsung membentur es, seketika mengunci kerenyahan.'
+      en: 'Watch the thick hot liquid cascade onto the ice, freezing the complex sugars into the final beverage.',
+      id: 'Perhatikan cairan panas kental mengalir turun ke atas es, membekukan gula kompleks ke dalam minuman akhir.'
     },
     finish: {
-      en: 'Swirl the carafe vigorously until full thermal stability is achieved.',
-      id: 'Putar teko kaca dengan kuat hingga stabilitas termal penuh tercapai.'
+      en: 'Swirl to finish chilling. The resulting iced coffee will be thick, profoundly sweet, and highly refreshing.',
+      id: 'Putar untuk menyelesaikan pendinginan. Es kopi yang dihasilkan akan kental, luar biasa manis, dan sangat menyegarkan.'
     }
   },
   high_body_heavy_dose: {
     setup: {
-      en: 'Ensure the flat-bed paper is perfectly seated to promote strict laminar flow.',
-      id: 'Pastikan kertas alas datar terpasang sempurna untuk mendorong aliran laminar yang ketat.'
+      en: 'Use a larger dose and grind coarser. We are turning the April into a heavy-extraction device.',
+      id: 'Gunakan dosis lebih besar dan giling lebih kasar. Kita mengubah April menjadi alat ekstraksi berat.'
     },
     entry: {
-      en: 'Saturate the heavy dose deliberately; an extended bloom ensures thorough penetration.',
-      id: 'Basahi dosis berat secara sengaja; blooming yang diperpanjang memastikan penetrasi menyeluruh.'
+      en: 'Bloom patiently. A large dose requires significantly more time for water to penetrate the core.',
+      id: 'Lakukan blooming dengan sabar. Dosis besar butuh waktu jauh lebih lama agar air menembus intinya.'
     },
     main: {
-      en: 'Use slow, heavy pulses to deeply agitate the large bed and drive total solubility.',
-      id: 'Gunakan denyut lambat yang berat untuk sangat mengaduk hamparan besar dan memicu kelarutan total.'
+      en: 'Keep the water level low with multiple small pulses. This forces every drop to interact heavily with the dense bed.',
+      id: 'Jaga batas air tetap rendah dengan banyak pulsa kecil. Ini memaksa setiap tetes berinteraksi berat dengan hamparan padat.'
     },
     release: {
-      en: 'Anticipate a longer drainage phase due to the dense, high-capacity crust.',
-      id: 'Antisipasi fase penirisan yang lebih lama karena kerak kapasitas tinggi yang padat.'
+      en: 'Allow a long, syrupy drawdown. The coarse grind prevents choking while the restricted base extends contact time.',
+      id: 'Biarkan penirisan kental yang panjang. Gilingan kasar mencegah mampet, sementara dasar yang membatasi memperpanjang waktu kontak.'
     },
     finish: {
-      en: 'Homogenize the rich, viscous output to reveal a highly textured profile.',
-      id: 'Homogenisasi keluaran yang kaya dan kental untuk mengungkap profil bertekstur tinggi.'
-    }
-  },
-  april_flat_bottom_standard: {
-    setup: {
-      en: 'Level the bed perfectly; absolute initial symmetry is strictly demanded.',
-      id: 'Ratakan hamparan dengan sempurna; simetri awal yang absolut sangat diwajibkan.'
-    },
-    entry: {
-      en: 'Saturate uniformly and enforce an undisturbed initial blooming phase.',
-      id: 'Saturasi secara seragam dan terapkan fase blooming awal tanpa gangguan.'
-    },
-    main: {
-      en: 'Deliver centered, low-agitation pulses to prevent lateral flow displacement.',
-      id: 'Berikan tuangan terpusat beragitasi rendah untuk mencegah pergeseran aliran lateral.'
-    },
-    release: {
-      en: 'Permit the bed to settle completely flat before introducing kinetic actions.',
-      id: 'Biarkan hamparan mengendap sepenuhnya rata sebelum memperkenalkan tindakan kinetik.'
-    },
-    finish: {
-      en: 'Integrate the brew with a single swirl; prioritize structural sweetness.',
-      id: 'Integrasikan seduhan dengan satu putaran; prioritaskan rasa manis struktural.'
+      en: 'Serve a robust, incredibly rich profile designed to showcase heavy body and intense sweetness.',
+      id: 'Sajikan profil tangguh yang luar biasa kaya, dirancang untuk memamerkan body tebal dan rasa manis yang intens.'
     }
   }
-};
+};;
 
 const MELITTA_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
-  aromaboy_style: {
+  traditional_melitta_one_pour: {
     setup: {
-      en: 'Fold the filter seam carefully and seat it tightly into the classic wedge.',
-      id: 'Lipat jahitan filter dengan hati-hati dan pasang rapat ke dalam bentuk baji klasik.'
+      en: 'Fold the seam of the Melitta filter flat. Rinse it carefully to adhere the paper to the steep wedge walls.',
+      id: 'Lipat rata keliman filter Melitta. Bilas dengan hati-hati untuk menempelkan kertas ke dinding kerucut yang curam.'
     },
     entry: {
-      en: 'Deliver a tiny, precise volume of water for a highly restricted bloom phase.',
-      id: 'Berikan volume air kecil yang presisi untuk fase blooming yang sangat terbatas.'
+      en: 'Pour the entire bloom volume. The tiny hole restricts flow, essentially steeping the bloom.',
+      id: 'Tuang volume blooming sepenuhnya. Lubang kecil membatasi aliran sehingga merendam kopi seketika.'
     },
     main: {
-      en: 'Pour in micro-pulses, working carefully within the extremely tight geometrical constraints.',
-      id: 'Tuang dalam denyut mikro, bekerja hati-hati di dalam batasan geometris yang sangat ketat.'
+      en: 'Execute one smooth pour to fill the wedge. The Melitta manages its own flow rate via semi-immersion.',
+      id: 'Tuang dengan mulus untuk memenuhi wedge. Melitta mengatur alirannya sendiri secara semi-imersif.'
     },
     release: {
-      en: 'The single hole design ensures a prolonged, highly immersive drainage.',
-      id: 'Desain lubang tunggal memastikan penirisan yang sangat imersif dan panjang.'
+      en: 'Leave it entirely alone. The small exit hole will govern the drawdown, slowly pulling the heavy extraction through the wedge.',
+      id: 'Biarkan saja sepenuhnya. Lubang keluar kecil akan mengatur penirisan, perlahan menarik ekstraksi berat melewati bentuk kerucut.'
     },
     finish: {
-      en: 'Enjoy the surprisingly concentrated, old-school extraction profile.',
-      id: 'Nikmati profil ekstraksi bergaya klasik yang mengejutkan pekatnya.'
+      en: 'Serve a classic, profoundly dense cup. This vintage method provides incredible body and nostalgic sweetness.',
+      id: 'Sajikan secangkir kopi klasik yang luar biasa padat. Metode lawas ini memberi body yang luar biasa dan rasa manis nostalgia.'
+    }
+  },
+  aromaboy_style: {
+    setup: {
+      en: 'Use a fine grind for this micro-dose. The wedge geometry becomes heavily concentrated at small volumes.',
+      id: 'Gunakan gilingan halus untuk dosis mikro ini. Geometri kerucut menjadi sangat terkonsentrasi pada volume kecil.'
+    },
+    entry: {
+      en: 'Bloom with extreme precision. Every drop counts in a low-volume brew.',
+      id: 'Lakukan blooming dengan presisi ekstrem. Setiap tetes berarti dalam seduhan volume kecil ini.'
+    },
+    main: {
+      en: 'Pour in tight, tiny pulses. Do not wash the filter walls, keep the water strictly engaged with the central coffee mass.',
+      id: 'Tuang dalam pulsa ketat dan kecil. Jangan membilas dinding filter, jaga air hanya berinteraksi dengan massa kopi tengah.'
+    },
+    release: {
+      en: 'Watch the rapid drain. The small bed size forces a quick drawdown despite the restricted hole.',
+      id: 'Perhatikan turunnya air secara cepat. Ukuran bed yang kecil memaksa penirisan kilat meskipun lubangnya terbatas.'
+    },
+    finish: {
+      en: 'Serve a punchy, highly concentrated micro-batch that resembles espresso-like intensity.',
+      id: 'Sajikan batch mikro yang tajam dan sangat terkonsentrasi menyerupai intensitas espresso.'
     }
   },
   three_pour_melitta: {
     setup: {
-      en: 'Fold the filter seam carefully and seat it tightly into the classic wedge.',
-      id: 'Lipat jahitan filter dengan hati-hati dan pasang rapat ke dalam bentuk baji klasik.'
+      en: 'Seat the filter and rinse. This method breaks the traditional single pour into three distinct thermal stages.',
+      id: 'Pasang filter dan bilas. Metode ini memecah tuangan tunggal tradisional menjadi tiga tahap termal berbeda.'
     },
     entry: {
-      en: 'Perform a standard bloom to thoroughly degas the deep wedge-shaped bed.',
-      id: 'Lakukan blooming standar untuk membuang gas secara menyeluruh pada hamparan baji dalam.'
+      en: 'Bloom the coffee. Stirring the bloom is recommended to ensure the wedge base has zero dry pockets.',
+      id: 'Lakukan blooming. Mengaduk saat blooming sangat disarankan untuk memastikan dasar kerucut bebas dari kantong kering.'
     },
     main: {
-      en: 'Divide the remaining volume into two structured pulses to maintain bed temperature.',
-      id: 'Bagi sisa volume menjadi dua denyut terstruktur untuk menjaga suhu hamparan.'
+      en: 'Pour first phase to 50%, let it drop slightly, then pour the rest to create mild agitation.',
+      id: 'Tuang pertama hingga 50%, biarkan turun sedikit lalu tuang sisanya untuk menciptakan agitasi ringan.'
     },
     release: {
-      en: 'Allow each pulse to nearly drain before the next, leveraging the slow flow rate.',
-      id: 'Biarkan setiap denyut hampir meniris sebelum tuangan berikutnya, memanfaatkan laju aliran lambat.'
+      en: 'Allow the final syrupy drawdown. The three pulses have extracted higher complexity than a continuous pour.',
+      id: 'Biarkan penirisan kental terakhir terjadi. Tiga pulsa ini telah mengekstrak kompleksitas lebih tinggi daripada tuangan menerus.'
     },
     finish: {
-      en: 'Swirl the carafe to integrate the evenly extracted layers of flavor.',
-      id: 'Putar teko kaca untuk menyatukan lapisan rasa yang terekstraksi merata.'
+      en: 'Integrate the carafe. Expect a balanced, highly structured profile with more acidity than standard Melitta brews.',
+      id: 'Satukan isi karafe. Harapkan profil seimbang dan sangat terstruktur dengan asiditas lebih tinggi dari seduhan Melitta standar.'
     }
   },
   iced_melitta_brew: {
     setup: {
-      en: 'Load ice cubes into the server beneath the restrictive wedge dripper.',
-      id: 'Masukkan es batu ke dalam wadah saji di bawah alat seduh baji yang restriktif.'
+      en: 'Load a massive ice base into the server. The wedge shape will produce a hyper-concentrated hot liquid.',
+      id: 'Masukkan dasar es batu yang masif ke dalam server. Bentuk kerucut akan menghasilkan cairan panas yang super-terkonsentrasi.'
     },
     entry: {
-      en: 'Bloom with minimal hot water to create a hyper-concentrated initial slurry.',
-      id: 'Lakukan blooming dengan sedikit air panas untuk menciptakan campuran awal yang sangat pekat.'
+      en: 'Bloom quickly and hotly. We need to rip the fruit acids out of the coffee before the steep phase begins.',
+      id: 'Blooming dengan cepat dan panas. Kita perlu menarik keluar asiditas buah dari kopi sebelum fase rendam dimulai.'
     },
     main: {
-      en: 'Execute heavy, focused pours to maximize extraction yield rapidly.',
-      id: 'Lakukan tuangan berat terpusat untuk memaksimalkan hasil ekstraksi secara cepat.'
+      en: 'Execute one slow continuous pour. The single hole bottlenecks the hot liquid, steeping it heavily.',
+      id: 'Tuang lambat menerus. Lubang tunggal menahan cairan panas, merendamnya dengan berat.'
     },
     release: {
-      en: 'The slow drip forces an extended steep, delivering dense concentrate onto the ice.',
-      id: 'Tetesan lambat memaksa rendaman panjang, memberikan konsentrat padat ke atas es.'
+      en: 'The heavy, dark concentrate will slowly drip onto the ice, instantly cooling into a syrupy iced beverage.',
+      id: 'Konsentrat tebal dan gelap akan menetes perlahan ke atas es, seketika mendingin menjadi minuman es yang kental.'
     },
     finish: {
-      en: 'Mix vigorously to chill the intense extraction and stop thermal degradation.',
-      id: 'Aduk kuat untuk mendinginkan ekstraksi pekat dan menghentikan degradasi termal.'
+      en: 'Swirl to melt the remaining ice. Serve a bold, uncompromising iced coffee.',
+      id: 'Putar untuk mencairkan sisa es. Sajikan kopi es yang berani dan tanpa kompromi.'
     }
   },
   dense_classic_extraction: {
     setup: {
-      en: 'Fold the filter seam carefully and seat it tightly into the classic wedge.',
-      id: 'Lipat jahitan filter dengan hati-hati dan pasang rapat ke dalam bentuk baji klasik.'
+      en: 'Grind finer than normal and dose high. We are purposely slowing the Melitta to an absolute crawl.',
+      id: 'Giling lebih halus dari biasanya dan gunakan dosis tinggi. Kita sengaja melambatkan Melitta hingga bergerak sangat pelan.'
     },
     entry: {
-      en: 'Saturate the grounds heavily, allowing the wedge shape to trap the early heat.',
-      id: 'Basahi bubuk kopi dengan berat, biarkan bentuk baji memerangkap panas awal.'
+      en: 'Bloom gently. Do not agitate, as the fine particles will easily choke the single exit hole entirely.',
+      id: 'Blooming dengan lembut. Jangan aduk, karena partikel halus akan dengan mudah menyumbat lubang keluar sepenuhnya.'
     },
     main: {
-      en: 'Use a single, massive continuous pour to submerge the bed entirely.',
-      id: 'Gunakan tuangan kontinu tunggal yang masif untuk merendam hamparan sepenuhnya.'
+      en: 'Pour carefully to keep the water line low. We are executing a high-density percolation.',
+      id: 'Tuang hati-hati untuk menjaga batas air rendah. Kita sedang melakukan perkolasi kepadatan tinggi.'
     },
     release: {
-      en: 'The restricted exit creates a near-immersion environment for a thick body.',
-      id: 'Jalan keluar yang sempit menciptakan lingkungan semi-rendaman untuk body tebal.'
+      en: 'Patience is required. The drawdown will take several minutes, acting like a slow-drip immersion.',
+      id: 'Dibutuhkan kesabaran. Penirisan akan memakan waktu beberapa menit, bertindak layaknya imersi tetes-lambat.'
     },
     finish: {
-      en: 'Swirl the heavy, syrupy brew; it embodies the traditional, robust diner profile.',
-      id: 'Putar seduhan sirup yang berat; ini mewujudkan profil klasik yang kuat.'
-    }
-  },
-  traditional_melitta_one_pour: {
-    setup: {
-      en: 'Fold the trapezoid seam securely and establish a level bed along the longitudinal axis.',
-      id: 'Lipat pelipit trapesium dengan kuat dan buat hamparan sejajar sumbu longitudinal.'
-    },
-    entry: {
-      en: 'Initiate the bloom from the central fault line outward.',
-      id: 'Mulai blooming dari garis patahan tengah ke arah luar.'
-    },
-    main: {
-      en: 'Concentrate a single continuous pour tightly along the central axis.',
-      id: 'Pusatkan satu tuangan kontinu secara ketat di sepanjang sumbu tengah.'
-    },
-    release: {
-      en: 'Allow the trapezoidal mass to drain purely by gravity.',
-      id: 'Biarkan massa trapesium meniris murni karena gravitasi.'
-    },
-    finish: {
-      en: 'Homogenize with a gentle mix to ensure layered extraction integrates perfectly.',
-      id: 'Homogenisasi dengan adukan lembut agar ekstraksi berlapis terintegrasi sempurna.'
+      en: 'Serve a coffee of monumental thickness. This is an old-world profile focused purely on roast and body.',
+      id: 'Sajikan kopi dengan ketebalan monumental. Ini adalah profil dunia-lama yang terfokus murni pada karakter sangrai dan body.'
     }
   }
-};
+};;
 
 const KONO_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
-  kono_dripper_standard: {
+  kono_meimon_traditional: {
     setup: {
-      en: 'Ensure the filter perfectly adheres to the smooth upper walls for airtight sealing.',
-      id: 'Pastikan filter melekat sempurna pada dinding atas yang halus untuk segel kedap udara.'
+      en: 'Place the conical filter into the Kono. Ensure it adheres perfectly; the Kono’s lower ribs rely on an airtight seal at the top to control flow.',
+      id: 'Pasang filter kerucut ke dalam Kono. Pastikan menempel sempurna; rusuk bawah Kono mengandalkan segel kedap udara di atas untuk mengatur aliran.'
     },
     entry: {
-      en: 'Carefully introduce water drop by drop to initiate a highly controlled bloom.',
-      id: 'Masukkan air tetes demi tetes dengan hati-hati untuk memulai blooming yang sangat terkendali.'
+      en: 'Do not pour rapidly. Kono requires an ultra-slow bloom to hydrate the center.',
+      id: 'Jangan tuang cepat. Kono mensyaratkan blooming lambat untuk menghidrasi tengah.'
     },
     main: {
-      en: 'Pour exclusively in the center circle; the ribbed lower half dictates the extraction flow.',
-      id: 'Tuang eksklusif di lingkaran tengah; paruh bawah bergaris mendikte aliran ekstraksi.'
+      en: 'Maintain a very slow center pour. Water must permeate outward, extracting via capillary action.',
+      id: 'Pertahankan tuangan tengah lambat. Air harus merembes keluar, mengekstrak via aksi kapiler.'
     },
     release: {
-      en: 'The unique geometry creates a siphon effect, accelerating the final drawdown.',
-      id: 'Geometri unik menciptakan efek sifon, mempercepat fase turun akhir.'
+      en: 'Once the target volume is reached, let it drain. The airtight upper seal slows the drawdown dramatically, enhancing sweetness.',
+      id: 'Setelah volume target tercapai, biarkan meniris. Segel kedap udara di atas melambatkan penirisan secara dramatis, meningkatkan rasa manis.'
     },
     finish: {
-      en: 'Integrate the cup; expect a remarkably syrupy texture with distinct sweetness.',
-      id: 'Integrasikan cangkir; harapkan tekstur yang sangat menyerupai sirup dengan rasa manis yang jelas.'
+      en: 'Serve an astonishingly dense, syrupy cup. The Kono Meimon method produces unmatched body in pour-over brewing.',
+      id: 'Sajikan cangkir yang luar biasa kental dan bersirup. Metode Kono Meimon menghasilkan body yang tak tertandingi dalam seduhan pour-over.'
+    }
+  },
+  kono_dripper_standard: {
+    setup: {
+      en: 'Seat the filter and rinse lightly. We are utilizing the Kono as a hybrid dripper, balancing its restrictive flow with modern pouring.',
+      id: 'Pasang filter dan bilas ringan. Kita menggunakan Kono sebagai dripper hibrida, menyeimbangkan aliran terbatasnya dengan tuangan modern.'
+    },
+    entry: {
+      en: 'Execute a standard circular bloom. Ensure total wetness without flooding the restricted lower section.',
+      id: 'Lakukan blooming melingkar standar. Pastikan kebasahan total tanpa membanjiri bagian bawah yang terbatas.'
+    },
+    main: {
+      en: 'Pour in slow calculated pulses. Do not wash the filter edges to maintain the upper wall vacuum effect.',
+      id: 'Tuang dalam pulsa lambat terhitung. Jangan bilas tepi filter untuk mempertahankan efek vakum dinding atas.'
+    },
+    release: {
+      en: 'Watch the steady, controlled drawdown. The short lower ribs channel the heavy liquid cleanly into the server.',
+      id: 'Amati penirisan stabil yang terkontrol. Rusuk bawah yang pendek menyalurkan cairan berat ini dengan bersih ke dalam server.'
+    },
+    finish: {
+      en: 'Expect a highly balanced, structurally sound cup with pronounced sweetness and rounded acidity.',
+      id: 'Harapkan cangkir yang sangat seimbang dan solid secara struktural dengan rasa manis menonjol dan asiditas membulat.'
     }
   },
   kono_slow_drip_body: {
     setup: {
-      en: 'Ensure the filter perfectly adheres to the smooth upper walls for airtight sealing.',
-      id: 'Pastikan filter melekat sempurna pada dinding atas yang halus untuk segel kedap udara.'
+      en: 'Prepare for absolute patience. The filter must seal tightly against the upper walls to block all bypass airflow.',
+      id: 'Bersiaplah untuk kesabaran mutlak. Filter harus menyegel ketat dinding atas untuk memblokir seluruh aliran udara bypass.'
     },
     entry: {
-      en: 'Use extreme precision to deliver minute drops, avoiding any structural disruption.',
-      id: 'Gunakan presisi ekstrem untuk memberikan tetesan kecil, menghindari gangguan struktural.'
+      en: 'Drip water onto the grounds drop by drop until hydrated. This can take over a minute.',
+      id: 'Teteskan air ke bubuk kopi tetes demi tetes hingga massa terhidrasi. Ini bisa memakan waktu semenit.'
     },
     main: {
-      en: 'Maintain a painstaking drop-by-drop routine until the bed is fully immersed.',
-      id: 'Pertahankan rutinitas tetes demi tetes yang teliti hingga hamparan terendam penuh.'
+      en: 'Keep water level brutally low. The extraction is forced through the dense core via osmotic pressure.',
+      id: 'Jaga batas air sangat rendah. Ekstraksi dipaksa melalui inti kopi padat via tekanan osmotik.'
     },
     release: {
-      en: 'Allow the hyper-concentrated slurry to drain slowly through the lower ribs.',
-      id: 'Biarkan campuran super pekat meniris lambat melewati garis-garis bawah.'
+      en: 'The drawdown is an agonizingly slow seep. Do not agitate or tap the brewer.',
+      id: 'Penirisannya adalah rembesan yang sangat lambat. Jangan mengaduk atau mengetuk brewer.'
     },
     finish: {
-      en: 'Swirl to blend the massive body and intense sweetness typical of slow-drip Kono.',
-      id: 'Putar untuk memadukan body masif dan rasa manis intens khas tetes lambat Kono.'
+      en: 'Serve an essence-like concentrate. This legendary technique produces coffee that feels like liquid velvet on the palate.',
+      id: 'Sajikan konsentrat layaknya esens. Teknik legendaris ini menghasilkan kopi yang terasa seperti beludru cair di lidah.'
     }
   },
   iced_kono_meimon: {
     setup: {
-      en: 'Pack the carafe with precise ice blocks under the tightly sealed dripper.',
-      id: 'Penuhi teko kaca dengan balok es presisi di bawah alat seduh yang tersegel rapat.'
+      en: 'Load ice into the server. The Kono’s inherently slow flow rate is ideal for building a powerful iced concentrate.',
+      id: 'Isi server dengan es. Kecepatan aliran Kono yang secara alami lambat sangat ideal untuk membangun konsentrat es yang kuat.'
     },
     entry: {
-      en: 'Execute a fast, hot bloom to rapidly capture volatile aromatics.',
-      id: 'Lakukan blooming panas yang cepat untuk menangkap aromatik volatil dengan pesat.'
+      en: 'Bloom hot and center-focused. We need to instantly strip out the bright volatile aromatics from the dense grounds.',
+      id: 'Blooming panas dan berpusat di tengah. Kita harus seketika menarik aromatik volatil cerah dari bubuk kopi padat ini.'
     },
     main: {
-      en: 'Transition to a heavier center pour, forcing rapid extraction before chilling.',
-      id: 'Beralih ke tuangan tengah yang lebih berat, memaksa ekstraksi cepat sebelum pendinginan.'
+      en: 'Pour very slowly in the center. The lack of bypass ensures the hot water pulls maximum soluble mass before hitting the ice.',
+      id: 'Tuang sangat lambat di tengah. Ketiadaan bypass memastikan air panas menarik massa terlarut maksimal sebelum menyentuh es.'
     },
     release: {
-      en: 'The accelerated siphon finish drops the concentrate swiftly onto the ice.',
-      id: 'Fase akhir sifon yang dipercepat menjatuhkan konsentrat dengan cepat ke atas es.'
+      en: 'The thick, syrupy hot liquid will slowly drip and flash-chill over the ice blocks.',
+      id: 'Cairan panas kental dan bersirup akan menetes pelan dan mendingin kilat di atas blok es.'
     },
     finish: {
-      en: 'Agitate immediately to lock in the bright, syrupy iced profile.',
-      id: 'Agitasi segera untuk mengunci profil es yang cerah dan seperti sirup.'
+      en: 'Swirl to finish chilling. Serve a profound, heavy-bodied iced coffee with zero watery dilution.',
+      id: 'Putar untuk merampungkan pendinginan. Sajikan kopi es ber-body berat yang mendalam tanpa jejak encer sama sekali.'
     }
   },
   kono_agitation_sweet: {
     setup: {
-      en: 'Ensure the filter perfectly adheres to the smooth upper walls for airtight sealing.',
-      id: 'Pastikan filter melekat sempurna pada dinding atas yang halus untuk segel kedap udara.'
+      en: 'Seat the filter but do not force an aggressive seal. We are using a coarser grind to allow some dynamic flow.',
+      id: 'Pasang filter namun jangan memaksa segel yang agresif. Kita menggunakan gilingan lebih kasar untuk membiarkan aliran dinamis.'
     },
     entry: {
-      en: 'Break the standard rules: use a turbulent bloom to aggressively release gases.',
-      id: 'Patahkan aturan standar: gunakan blooming turbulen untuk melepaskan gas secara agresif.'
+      en: 'Execute a fast, highly turbulent bloom. Immediately disrupt the typically calm Kono bed to unlock deep sweetness.',
+      id: 'Lakukan blooming cepat bersuhu tinggi. Segera ganggu hamparan Kono yang biasanya tenang ini untuk membuka kemanisan mendalam.'
     },
     main: {
-      en: 'Employ high-agitation pulses, driving up extraction yield and sweet compounds.',
-      id: 'Terapkan tuangan berdenyut agitasi tinggi, memacu hasil ekstraksi dan senyawa manis.'
+      en: 'Pour in aggressive concentric circles. The short ribs at the bottom will prevent choking despite the heavy agitation.',
+      id: 'Tuang dalam lingkaran konsentris agresif. Rusuk pendek di dasar akan mencegah penyumbatan meskipun ada agitasi berat.'
     },
     release: {
-      en: 'The dense, agitated bed will draw down slower, maximizing contact time.',
-      id: 'Hamparan padat yang teragitasi akan meniris lebih lambat, memaksimalkan waktu kontak.'
+      en: 'Expect a surprisingly fast drawdown for a Kono. The suspended fines will settle only at the very end.',
+      id: 'Harapkan penirisan yang mengejutkan cepat untuk ukuran Kono. Partikel halus yang melayang baru akan mengendap di tahap paling akhir.'
     },
     finish: {
-      en: 'Homogenize thoroughly to balance the highly pushed, sweet extraction.',
-      id: 'Homogenisasi secara menyeluruh untuk menyeimbangkan ekstraksi manis yang didorong kuat.'
-    }
-  },
-  kono_meimon_traditional: {
-    setup: {
-      en: 'Seat the filter flush against the upper cone to exploit specific flow restrictions.',
-      id: 'Pasang filter rata pada kerucut atas untuk memanfaatkan pembatasan aliran spesifik.'
-    },
-    entry: {
-      en: 'Execute a concentrated central bloom to saturate the lower apex.',
-      id: 'Lakukan blooming terpusat yang pekat untuk menyaturasi apeks bawah.'
-    },
-    main: {
-      en: 'Maintain the pour radius tightly near the center to sustain slurry respiration.',
-      id: 'Pertahankan radius tuangan ketat di dekat pusat untuk mempertahankan respirasi campuran.'
-    },
-    release: {
-      en: 'Permit a clean drawdown; late-stage turbulence introduces severe astringency.',
-      id: 'Izinkan fase turun yang bersih; turbulensi tahap akhir memicu rasa sepat parah.'
-    },
-    finish: {
-      en: 'Swirl lightly to capture the focused sweetness characteristic of the Kono profile.',
-      id: 'Putar ringan untuk menangkap rasa manis terfokus khas dari profil Kono.'
+      en: 'Serve a radically different Kono profile: bright, highly separated, and vibrant, rather than simply heavy.',
+      id: 'Sajikan profil Kono yang sama sekali berbeda: cerah, terpisah sangat baik, dan hidup, bukan sekadar berat.'
     }
   }
-};
+};;
 
 
 function resolveUniversalShortTargetCue(targetProfileId?: string) {

@@ -1,27 +1,26 @@
 # AI Brew Method + Style Coverage Report
 
-Generated: 2026-06-10T22:47:36.937Z
-Local SHA: 2d07ec62d1cedbc3c444baddffb527bf97f0717e
-Remote main SHA: 2d07ec62d1cedbc3c444baddffb527bf97f0717e
+Generated: 2026-06-11T01:03:43.853Z
+Local SHA: bbc56407b3299abb7b4b352e321554d8cc1e3fb7
+Remote main SHA: bbc56407b3299abb7b4b352e321554d8cc1e3fb7
 Branch: main
-Working tree status at generation: M apps/web/src/features/ai-brew/prompts.ts
+Working tree status at generation: M apps/web/src/features/ai-brew/antiHallucination.ts
+ M apps/web/src/features/ai-brew/chemexPlanner.ts
+ M apps/web/src/features/ai-brew/cleverPlanner.ts
+ M apps/web/src/features/ai-brew/kalitaPlanner.ts
+ M apps/web/src/features/ai-brew/planner.ts
  M apps/web/src/features/ai-brew/workflowTutorials.ts
  M docs/ai-brew-method-style-coverage-report.md
  M docs/ai-brew-method-style-final-verdict.md
  M docs/ai-brew-method-style-inventory.md
  M docs/ai-brew-method-style-ui-ux-report.md
  M docs/ai-brew-real-world-1000-report.md
- M tests/fixtures/ai-brew-source-backed-filter-beans.json
-?? audit_output.json
-?? expand_beans.cjs
-?? fix_tutorials.cjs
-?? inject.cjs
-?? scratch_check.cjs
-?? tutorial
-?? updateTutorials_1.cjs
-?? updateTutorials_2.cjs
-?? updateTutorials_3.cjs
-Artifact directory: `artifacts/ai-brew-audit/method-styles/2d07ec62d1ce`
+ M tests/unit/aiBrewPlanner.test.ts
+?? harden-brewers.cjs
+?? run-kalita-body-test.ts
+?? run-kalita-test.ts
+?? test-script.ts
+Artifact directory: `artifacts/ai-brew-audit/method-styles/bbc56407b329`
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 
@@ -32,50 +31,35 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Scenarios: 1000
 - Passed: 1000
 - Failed: 0
-- Warnings: 23
-- Average score: 99.9
+- Warnings: 116
+- Average score: 99.5
 - Final verdict: AI BREW METHOD STYLE COVERAGE STRONG / REAL BREW VALIDATION REQUIRED
 
 ## Method Scores
 
 | Method | Cases | Avg | Min | Classification |
 | --- | ---: | ---: | ---: | --- |
-| aeropress | 56 | 100 | 100 | STRONG |
-| april | 48 | 100 | 100 | STRONG |
-| batch_brew | 48 | 100 | 100 | STRONG |
-| chemex | 96 | 99.8 | 96 | STRONG |
-| clever_dripper | 48 | 100 | 100 | STRONG |
-| cold_brew | 48 | 100 | 100 | STRONG |
-| espresso | 48 | 100 | 100 | STRONG |
-| french_press | 48 | 100 | 100 | STRONG |
-| hario_switch | 112 | 99.5 | 96 | STRONG |
-| kalita_wave | 96 | 99.9 | 96 | STRONG |
-| kono | 48 | 100 | 100 | STRONG |
-| melitta | 48 | 100 | 100 | STRONG |
-| moka_pot | 48 | 100 | 100 | STRONG |
-| origami | 48 | 100 | 100 | STRONG |
-| siphon | 48 | 100 | 100 | STRONG |
-| v60 | 112 | 100 | 100 | STRONG |
+| chemex | 1000 | 99.5 | 96 | STRONG |
 
 ## Lowest Scoring Cases
 
-- hario_switch-hybrid_balanced-more_body-75: 96 (guide/detail text may be too dense for mobile)
-- hario_switch-hybrid_balanced-fruit_forward-77: 96 (guide/detail text may be too dense for mobile)
-- hario_switch-mugen_everyday_hybrid-soft_round-110: 96 (guide/detail text may be too dense for mobile)
-- chemex-competition_multi_pulse-more_acidity-130: 96 (guide/detail text may be too dense for mobile)
-- chemex-competition_multi_pulse-fruit_forward-133: 96 (guide/detail text may be too dense for mobile)
-- chemex-competition_multi_pulse-dense_comforting-135: 96 (guide/detail text may be too dense for mobile)
-- kalita_wave-competition_fast_four-floral_transparent-180: 96 (guide/detail text may be too dense for mobile)
-- hario_switch-immersion_heavy_body-floral_transparent-860: 96 (guide/detail text may be too dense for mobile)
-- hario_switch-hybrid_balanced-balance_clean-864: 96 (guide/detail text may be too dense for mobile)
-- hario_switch-hybrid_balanced-more_sweetness-865: 96 (guide/detail text may be too dense for mobile)
-- hario_switch-hybrid_balanced-more_acidity-866: 96 (guide/detail text may be too dense for mobile)
-- hario_switch-hybrid_balanced-more_body-867: 96 (guide/detail text may be too dense for mobile)
-- hario_switch-hybrid_balanced-floral_transparent-868: 96 (guide/detail text may be too dense for mobile)
-- hario_switch-hybrid_balanced-fruit_forward-869: 96 (guide/detail text may be too dense for mobile)
-- hario_switch-hybrid_balanced-soft_round-870: 96 (guide/detail text may be too dense for mobile)
-- hario_switch-hybrid_balanced-dense_comforting-871: 96 (guide/detail text may be too dense for mobile)
-- hario_switch-mugen_everyday_hybrid-fruit_forward-901: 96 (guide/detail text may be too dense for mobile)
-- hario_switch-mugen_everyday_hybrid-soft_round-902: 96 (guide/detail text may be too dense for mobile)
-- chemex-competition_multi_pulse-balance_clean-920: 96 (guide/detail text may be too dense for mobile)
-- chemex-competition_multi_pulse-more_acidity-922: 96 (guide/detail text may be too dense for mobile)
+- chemex-auto-more_sweetness-1: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-balance_clean-16: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-more_acidity-18: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-floral_transparent-20: 96 (guide/detail text may be too dense for mobile)
+- chemex-auto-fruit_forward-53: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-fruit_forward-69: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-soft_round-70: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-more_body-115: 96 (guide/detail text may be too dense for mobile)
+- chemex-auto-fruit_forward-149: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-fruit_forward-165: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-more_acidity-210: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-floral_transparent-212: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-dense_comforting-215: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-floral_transparent-260: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-more_sweetness-305: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-soft_round-310: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-more_body-355: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-balance_clean-400: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-fruit_forward-405: 96 (guide/detail text may be too dense for mobile)
+- chemex-competition_multi_pulse-dense_comforting-455: 96 (guide/detail text may be too dense for mobile)

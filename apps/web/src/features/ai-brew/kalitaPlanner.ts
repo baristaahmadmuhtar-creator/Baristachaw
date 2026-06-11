@@ -44,6 +44,15 @@ export function resolveKalitaPlanSelection(params: {
       activeStyle = 'iced_wave';
     } else if (doseG >= 24) {
       activeStyle = 'high_dose_concentrate';
+    } else if (targetId === 'more_sweetness') {
+      activeStyle = 'continuous_slow_stream';
+    } else if (targetId === 'more_acidity' || targetId === 'floral_transparent') {
+      activeStyle = 'competition_fast_four';
+    } else if (targetId === 'more_body' || targetId === 'dense_comforting') {
+      activeStyle = 'high_dose_concentrate';
+    } else if (targetId === 'fruit_forward') {
+      const isNatural = input.process === 'natural' || /natural|dry/i.test(`${input.process} ${input.customProcess}`);
+      activeStyle = isNatural ? 'traditional_flat_three' : 'competition_fast_four';
     } else {
       activeStyle = 'traditional_flat_three';
     }
@@ -60,9 +69,9 @@ export function resolveKalitaPlanSelection(params: {
 
   switch (activeStyle) {
     case 'traditional_flat_three':
-      adjustedProfile.ratioDelta = 0.0;
-      adjustedProfile.tempDeltaC = 0.0;
-      adjustedProfile.brewTimeDeltaSec = (targetId === 'more_sweetness'
+      adjustedProfile.ratioDelta = (profile.ratioDelta || 0) + 0.0;
+      adjustedProfile.tempDeltaC = (profile.tempDeltaC || 0) + 0.0;
+      adjustedProfile.brewTimeDeltaSec = (profile.brewTimeDeltaSec || 0) + (targetId === 'more_sweetness'
         ? -25
         : targetId === 'more_acidity' || targetId === 'floral_transparent'
           ? -35
@@ -93,7 +102,7 @@ export function resolveKalitaPlanSelection(params: {
           kind: 'pour',
           share: 0.35,
           startSeconds: 85,
-          note: 'Top up evenly without a wide spiral or last-second swirl.',
+          note: 'Top up evenly keeping the pour centered; do not swirl the flat bed.',
         },
         {
           id: 'drawdown',
@@ -105,12 +114,15 @@ export function resolveKalitaPlanSelection(params: {
         },
       ];
       why = 'Traditional Flat Three-Pour uses three distinct, calm pours to keep a flat bed and a consistent, clean extraction. Ideal for balanced sweetness.';
-      watch = 'Watch for side-channeling. Do not pour too close to the filter paper ridges to preserve the wave bypass effect.';
+      watch = doseG >= 24
+        ? 'Watch for side-channeling and potential clogging from fines at this high dose. Do not pour too close to the filter paper ridges.'
+        : 'Watch for side-channeling. Do not pour too close to the filter paper ridges to preserve the wave bypass effect.';
       break;
 
     case 'competition_fast_four':
-      adjustedProfile.ratioDelta = 0.2;
-      adjustedProfile.tempDeltaC = 1.0;
+      adjustedProfile.ratioDelta = (profile.ratioDelta || 0) - 1.5;
+      adjustedProfile.tempDeltaC = (profile.tempDeltaC || 0) + 1.0;
+      adjustedProfile.brewTimeDeltaSec = (profile.brewTimeDeltaSec || 0) - 15 + largeWaveTimeDeltaSec;
       adjustedProfile.grindBias = 'finer';
       adjustedProfile.steps = [
         {
@@ -119,7 +131,7 @@ export function resolveKalitaPlanSelection(params: {
           kind: 'pour',
           share: 0.15,
           startSeconds: 0,
-          note: 'Pour aggressively in center circles to wet all grounds quickly.',
+          note: 'Pour aggressively in the center to wet all grounds quickly.',
         },
         {
           id: 'pulse_2',
@@ -127,7 +139,7 @@ export function resolveKalitaPlanSelection(params: {
           kind: 'pour',
           share: 0.30,
           startSeconds: 30,
-          note: 'Pour with high flow rate in tight center concentric circles to agitate deeply.',
+          note: 'Pour with high flow rate in a tight center zone to agitate deeply.',
         },
         {
           id: 'pulse_3',
@@ -135,7 +147,7 @@ export function resolveKalitaPlanSelection(params: {
           kind: 'pour',
           share: 0.30,
           startSeconds: 60,
-          note: 'Pour with high flow rate in tight center concentric circles, creating high extraction velocity.',
+          note: 'Pour with high flow rate in a tight center zone, creating high extraction velocity.',
         },
         {
           id: 'pulse_4',
@@ -143,7 +155,7 @@ export function resolveKalitaPlanSelection(params: {
           kind: 'pour',
           share: 0.25,
           startSeconds: 90,
-          note: 'Final rapid concentric pulse, keeping the water level low to drain quickly.',
+          note: 'Final rapid center pulse, keeping the water level low to drain quickly.',
         },
         {
           id: 'drawdown',
@@ -154,13 +166,16 @@ export function resolveKalitaPlanSelection(params: {
           note: 'Let it drain rapidly; the bed must settle perfectly flat.',
         },
       ];
-      why = 'Competition Fast Four-Pour utilizes four fast concentric pulses to maximize water-coffee agitation, bringing out high acidity and bright clarity.';
-      watch = 'Slurry level control is critical. Do not let the water level rise too high, or the fast drawdown will become muddy.';
+      why = 'Competition Fast Four-Pour utilizes four fast center pulses to maximize water-coffee agitation, bringing out high acidity and bright clarity.';
+      watch = doseG >= 24
+        ? 'Slurry level control is critical. Watch for clogging from fines at this dose. Do not let the water level rise too high.'
+        : 'Slurry level control is critical. Do not let the water level rise too high, or the fast drawdown will become muddy.';
       break;
 
     case 'continuous_slow_stream':
-      adjustedProfile.ratioDelta = -0.3;
-      adjustedProfile.tempDeltaC = -1.5;
+      adjustedProfile.ratioDelta = (profile.ratioDelta || 0) - 0.3;
+      adjustedProfile.tempDeltaC = (profile.tempDeltaC || 0) - 1.5;
+      adjustedProfile.brewTimeDeltaSec = (profile.brewTimeDeltaSec || 0) + 15 + largeWaveTimeDeltaSec;
       adjustedProfile.grindBias = 'coarser';
       adjustedProfile.steps = [
         {
@@ -175,9 +190,17 @@ export function resolveKalitaPlanSelection(params: {
           id: 'continuous_slow_pour',
           label: 'Continuous Slow Pour',
           kind: 'pour',
-          share: 0.85,
+          share: 0.60,
           startSeconds: 35,
           note: 'Maintain an extremely low, slow, continuous centered flow. Keep a constant water column.',
+        },
+        {
+          id: 'continuous_slow_pour_2',
+          label: 'Final Slow Pour',
+          kind: 'pour',
+          share: 0.25,
+          startSeconds: 105,
+          note: 'Continue the gentle center stream until target weight is reached without agitation.',
         },
         {
           id: 'drawdown',
@@ -185,7 +208,7 @@ export function resolveKalitaPlanSelection(params: {
           kind: 'drawdown',
           share: 0,
           startSeconds: 175,
-          note: 'Stop pouring and let the level column drain slowly for heavy body and high sweetness.',
+          note: 'Stop pouring and let the flat bed drain slowly for heavy body and high sweetness.',
         },
       ];
       why = 'Continuous Slow Stream keeps a constant water column using a gentle, slow centered flow, yielding an exceptionally sweet cup with a velvety body.';
@@ -193,8 +216,9 @@ export function resolveKalitaPlanSelection(params: {
       break;
 
     case 'iced_wave':
-      adjustedProfile.ratioDelta = -0.65; // High concentration split
-      adjustedProfile.tempDeltaC = 1.5;
+      adjustedProfile.ratioDelta = (profile.ratioDelta || 0) - 0.65;
+      adjustedProfile.tempDeltaC = (profile.tempDeltaC || 0) + 1.5;
+      adjustedProfile.brewTimeDeltaSec = (profile.brewTimeDeltaSec || 0) - 10 + largeWaveTimeDeltaSec;
       adjustedProfile.grindBias = 'finer';
       adjustedProfile.steps = [
         {
@@ -203,23 +227,23 @@ export function resolveKalitaPlanSelection(params: {
           kind: 'pour',
           share: 0.20,
           startSeconds: 0,
-          note: 'Bloom hot onto the dry bed; let gassing complete quickly.',
+          note: 'Bloom hot onto the flat bed; let gassing complete quickly.',
         },
         {
-          id: 'concentric_pour_1',
-          label: 'Concentric Pour 1',
+          id: 'center_pour_1',
+          label: 'Center Pour 1',
           kind: 'pour',
           share: 0.40,
           startSeconds: 30,
-          note: 'Pour hot water in quick center circles, keeping slurry low and extraction concentrated.',
+          note: 'Pour hot water in quick center pulses, keeping slurry low and extraction concentrated.',
         },
         {
-          id: 'concentric_pour_2',
-          label: 'Concentric Pour 2',
+          id: 'center_pour_2',
+          label: 'Center Pour 2',
           kind: 'pour',
           share: 0.40,
           startSeconds: 70,
-          note: 'Final concentric hot pour, draining rapidly directly onto the ice bed.',
+          note: 'Final centered hot pour, draining rapidly directly onto the ice bed.',
         },
         {
           id: 'drawdown',
@@ -230,13 +254,17 @@ export function resolveKalitaPlanSelection(params: {
           note: 'Let the final drops drain and swirl the server to melt the remaining ice completely.',
         },
       ];
+      adjustedProfile.note = 'Iced Kalita Wave (High Concentrate). Exact Kalita Wave iced profile active: separate hot brew water and ice exactly as stated. Do not merge ice into total water without explanation.';
       why = 'Iced Wave uses a concentrated hot extraction poured directly over pre-weighed ice, preserving bright, volatile fruit acids and clean sweetness.';
-      watch = 'Drip path control. Ensure the hot concentrate drips directly onto the ice core for immediate thermal locking and aroma preservation.';
+      watch = doseG >= 24
+        ? 'Keep the bloom compact. Clogging from fines is a major risk with high-dose concentrates. Do not over-agitate.'
+        : 'Keep the bloom compact. Over-agitation here will pull astringency into the concentrate. Ensure it drips directly onto the ice core for immediate thermal locking and aroma preservation.';
       break;
 
     case 'high_dose_concentrate':
-      adjustedProfile.ratioDelta = -2.5; // Intense tight ratio
-      adjustedProfile.tempDeltaC = -1.0;
+      adjustedProfile.ratioDelta = (profile.ratioDelta || 0) - 2.5; // Intense tight ratio
+      adjustedProfile.tempDeltaC = (profile.tempDeltaC || 0) - 1.0;
+      adjustedProfile.brewTimeDeltaSec = (profile.brewTimeDeltaSec || 0) + 20 + largeWaveTimeDeltaSec;
       adjustedProfile.grindBias = 'coarser';
       adjustedProfile.steps = [
         {
@@ -253,7 +281,7 @@ export function resolveKalitaPlanSelection(params: {
           kind: 'pour',
           share: 0.40,
           startSeconds: 40,
-          note: 'Pour in slow center concentric rings, keeping the slurry level low to avoid bypass.',
+          note: 'Pour in a slow center zone, keeping the slurry level low to avoid bypass.',
         },
         {
           id: 'concentrate_pour_2',
@@ -261,7 +289,7 @@ export function resolveKalitaPlanSelection(params: {
           kind: 'pour',
           share: 0.40,
           startSeconds: 90,
-          note: 'Final slow concentric pour to wash the bed; avoid agitating the filter paper walls.',
+          note: 'Final slow centered pour to wash the flat bed; avoid agitating the filter paper walls.',
         },
         {
           id: 'drawdown',
@@ -272,8 +300,31 @@ export function resolveKalitaPlanSelection(params: {
           note: 'Let the thick, rich concentrate finish draining. Serve neat or dilute with fresh water.',
         },
       ];
+      adjustedProfile.note = 'Warning: High dose risks filter clog and over-extraction. Keep grind coarse and avoid swirling.';
       why = 'High-Dose Concentrate extracts a rich, heavy coffee essence using a large coffee dose and a tight water ratio. Offers deep sweetness and huge mouthfeel.';
       watch = 'Prevent clogging. A coarser grind and zero circular agitation are required to stop the large coffee bed from stalling at the bottom holes.';
+      break;
+  }
+
+  // Roast Logic Adjustments
+  switch (input.roastLevel) {
+    case 'light':
+      adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) + 1.5;
+      if (adjustedProfile.grindBias === 'same') adjustedProfile.grindBias = 'finer';
+      break;
+    case 'medium_light':
+      // Default baseline
+      break;
+    case 'medium':
+      // Sweetness/body stabil (suhu netral)
+      break;
+    case 'medium_dark':
+      adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) - 1.5;
+      if (adjustedProfile.grindBias === 'same' || adjustedProfile.grindBias === 'finer') adjustedProfile.grindBias = 'coarser';
+      break;
+    case 'dark':
+      adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) - 3.0;
+      adjustedProfile.grindBias = 'coarser';
       break;
   }
 

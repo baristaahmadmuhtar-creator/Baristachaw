@@ -32,6 +32,7 @@ export function resolveChemexPlanSelection(params: {
   doseG: number;
 }): ChemexPlanSelection {
   const { input, profile, doseG } = params;
+  const targetId = params.targetProfile?.id || '';
   const style = input.chemexStyle || 'auto';
   
   // Resolve active style
@@ -39,8 +40,14 @@ export function resolveChemexPlanSelection(params: {
   if (style === 'auto') {
     if (input.brewMode === 'iced') {
       activeStyle = 'iced_chemex';
-    } else if (doseG >= 24) {
+    } else if (targetId === 'more_body' || targetId === 'dense_comforting' || doseG >= 24) {
       activeStyle = 'high_dose_heavy_body';
+    } else if (targetId === 'more_sweetness' || targetId === 'fruit_forward') {
+      activeStyle = 'competition_multi_pulse';
+    } else if (targetId === 'more_acidity' || targetId === 'floral_transparent') {
+      activeStyle = 'continuous_center_pour';
+    } else if (targetId === 'soft_round' || targetId === 'balance_clean') {
+      activeStyle = 'traditional_three_pour';
     } else {
       activeStyle = 'traditional_three_pour';
     }
@@ -270,8 +277,29 @@ export function resolveChemexPlanSelection(params: {
           note: 'Allow a slow, heavy drawdown to finish. Yields maximum body.',
         },
       ];
-      why = 'High-Dose Heavy-Body extracts a deep, syrupy mouthfeel by combining a large coffee dose, a coarse grind, and slow centered pulses.';
-      watch = 'Spout bypass. Do not pour too close to the three-fold filter spout to keep bypass water from diluting the syrupy body.';
+      why = 'High-Dose Heavy-Body extracts a deep, syrupy mouthfeel by combining a large coffee dose, a coarse grind, and slow centered pulses. Note: clarity will decrease compared to standard Chemex styles due to filter saturation from the heavy bed.';
+      watch = 'Clog risk and long drawdown. The thick paper combined with a heavy dose creates severe flow restriction. Do not pour near the three-fold spout to keep bypass water from diluting the syrupy body. Expect drawdown 30-60 seconds longer than standard Chemex.';
+      break;
+  }
+
+  // Roast Logic Adjustments
+  switch (input.roastLevel) {
+    case 'light':
+      adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) + 1.5;
+      if (adjustedProfile.grindBias === 'same') adjustedProfile.grindBias = 'finer';
+      break;
+    case 'medium_light':
+      // Default baseline
+      break;
+    case 'medium':
+      break;
+    case 'medium_dark':
+      adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) - 1.5;
+      if (adjustedProfile.grindBias === 'same' || adjustedProfile.grindBias === 'finer') adjustedProfile.grindBias = 'coarser';
+      break;
+    case 'dark':
+      adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) - 3.0;
+      adjustedProfile.grindBias = 'coarser';
       break;
   }
 

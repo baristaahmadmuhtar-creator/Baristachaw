@@ -104,47 +104,47 @@ const WORKFLOW_TUTORIALS: Record<AiBrewMethodFamily, WorkflowTutorialProfile> = 
   },
   chemex: {
     setup: {
-      en: 'Rinse the thick paper thoroughly and keep the spout vent open so flow can breathe.',
-      id: 'Bilas paper tebal sampai bersih dan pastikan jalur spout terbuka agar aliran tidak tertahan.',
+      en: 'Place the thick bonded filter with the three-layer side facing the pouring spout. Rinse thoroughly to remove paper smell and preheat the heavy glass carafe. Discard rinse water, then tare the scale.',
+      id: 'Pasang filter tebal dengan sisi tiga lipatan menghadap cerat. Bilas sampai bau kertas hilang dan kaca tebal terpanaskan. Buang air bilasan, lalu tare timbangan.',
     },
     entry: {
-      en: 'Bloom patiently; Chemex paper slows flow, so full wetting matters more than speed.',
-      id: 'Bloom dengan sabar; paper Chemex menahan aliran, jadi pembasahan merata lebih penting dari cepat.',
+      en: 'Bloom patiently; the thick Chemex paper slows flow naturally, so deep saturation matters more than speed. Keep water centered.',
+      id: 'Bloom dengan sabar; kertas tebal Chemex alami menahan aliran, jadi saturasi dalam lebih penting dari kecepatan. Jaga air di tengah.',
     },
     main: {
-      en: 'Use measured pulses and keep water off the wall; Chemex rewards calm, patient flow.',
-      id: 'Gunakan pulse terukur dan hindari dinding filter; Chemex lebih enak dengan aliran tenang.',
+      en: 'Pour center-to-mid in measured pulses; keep water off the thick paper walls and ensure the spout air channel stays clear.',
+      id: 'Tuang tengah-ke-tengah luar dalam pulse terukur; jauhkan air dari dinding kertas tebal dan pastikan jalur udara cerat tetap terbuka.',
     },
     release: {
-      en: 'Allow the longer drawdown window; intervene only if the surface stalls completely.',
-      id: 'Beri ruang fase turun lebih panjang; intervensi hanya bila permukaan benar-benar macet.',
+      en: 'Allow the longer drawdown window. Chemex thick filter resistance extends draining; intervene only if the surface stalls completely.',
+      id: 'Beri ruang fase turun lebih panjang. Resistansi filter tebal Chemex memperpanjang penirisan; intervensi hanya bila permukaan benar-benar macet.',
     },
     finish: {
-      en: 'Mix the carafe gently before pouring because Chemex layers the brew by time.',
-      id: 'Aduk karafe perlahan sebelum menuang karena Chemex bisa membentuk lapisan rasa.',
+      en: 'Remove the filter before the last bitter drips. Swirl the carafe gently to integrate layered extraction before serving.',
+      id: 'Angkat filter sebelum tetesan pahit terakhir. Putar karafe perlahan untuk menyatukan lapisan ekstraksi sebelum disajikan.',
     },
     iced: PAPER_FILTER_ICED,
   },
   kalita_wave: {
     setup: {
-      en: 'Seat the wave filter neatly and level the bed so all three holes share the flow.',
-      id: 'Pasang filter wave dengan rapi dan ratakan bed agar tiga lubang berbagi aliran.',
+      en: 'Seat the wave filter without crushing the ridges. Rinse gently from the center to preheat the brewer and server. Level the coffee bed.',
+      id: 'Pasang wave filter tanpa merusak lipatan. Bilas ringan dari tengah untuk preheat brewer dan server. Ratakan coffee bed.',
     },
     entry: {
       en: 'Bloom evenly without flooding one side; flat-bottom brewers need a level start.',
-      id: 'Bloom merata tanpa membanjiri satu sisi; flat-bottom butuh awal yang rata.',
+      id: 'Bloom merata ke seluruh permukaan kopi. Flat-bottom butuh awal yang rata.',
     },
     main: {
-      en: 'Use short centered pulses and keep the slurry level, not deep on one side.',
-      id: 'Gunakan pulse pendek dari tengah dan jaga slurry rata, bukan menumpuk di satu sisi.',
+      en: 'Use low pulses from the center to center-out. Keep the slurry level consistent.',
+      id: 'Pulse rendah dari tengah ke tengah-luar. Jaga slurry tetap rata.',
     },
     release: {
-      en: 'Let the flat bed drain cleanly; do not shake fines into the holes.',
-      id: 'Biarkan bed rata turun bersih; jangan mengguncang fines ke lubang bawah.',
+      en: 'Let the flat bed drain cleanly; do not shake fines into the three exit holes.',
+      id: 'Biarkan bed turun rata dan bersih; jangan shake fines ke tiga lubang pembuangan.',
     },
     finish: {
-      en: 'Serve after a light mix so the sweet flat-bottom body is even.',
-      id: 'Sajikan setelah aduk ringan agar body manis flat-bottom terasa rata.',
+      en: 'Give the server a gentle swirl to mix the flat-bed profile.',
+      id: 'Finish: swirl server ringan untuk mencampur ekstraksi flat-bed.',
     },
     iced: PAPER_FILTER_ICED,
   },
@@ -1384,112 +1384,112 @@ const SWITCH_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
 const KALITA_WAVE_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   traditional_flat_three: {
     setup: {
-      en: 'Seat the fluted wave filter precisely and rinse gently to preheat the dripper without collapsing the structural ridges.',
-      id: 'Pasang filter bergelombang dengan presisi dan bilas perlahan untuk memanaskan dripper tanpa merusak struktur lipatannya.'
+      en: 'Seat the wave filter without crushing the ridges. Rinse gently from the center to preheat brewer and server. Level the coffee bed.',
+      id: 'Pasang wave filter tanpa merusak lipatan. Bilas ringan dari tengah untuk preheat brewer dan server. Ratakan coffee bed.'
     },
     entry: {
-      en: 'Saturate uniformly. The 3-hole base restricts flow, so wet all grounds without flooding the bypass zones.',
-      id: 'Saturasi seragam. Dasar 3 lubang menahan aliran, pastikan bubuk basah tanpa membanjiri bypass.'
+      en: 'Bloom evenly to saturate the bed. The 3-hole base restricts flow, so avoid flooding.',
+      id: 'Bloom merata. Dasar 3 lubang menahan aliran, pastikan bubuk basah tanpa membanjiri.'
     },
     main: {
-      en: 'Deploy three concentric, low-agitation pulses. This ensures even extraction across the flat bed.',
-      id: 'Terapkan 3 tuang konsentris rendah agitasi. Ini memastikan ekstraksi merata di alas datar.'
+      en: 'Apply three low-agitation pulses from the center to center-out. Keep the slurry level consistent.',
+      id: 'Terapkan 3 tuang pulse rendah dari tengah ke tengah-luar. Jaga slurry tetap rata.'
     },
     release: {
-      en: 'Permit the bed to drain unimpeded through all three ports. A flat, tidy bed is the ultimate visual proof of hydrodynamic balance.',
-      id: 'Biarkan seduhan meniris tanpa hambatan melalui ketiga lubang. Hamparan datar dan rapi adalah bukti mutlak dari keseimbangan hidrodinamis.'
+      en: 'Let the bed drain clean and flat. Do not shake fines into the three exit holes.',
+      id: 'Biarkan seduhan meniris rata. Jangan shake fines ke tiga lubang.'
     },
     finish: {
-      en: 'Swirl to integrate the consistently sweet flat-bottom body. The Kalita geometry naturally filters out astringency.',
-      id: 'Putar perlahan untuk mengintegrasikan body manis dari ekstraksi alas datar. Geometri Kalita secara alami menyaring rasa sepat.'
+      en: 'Finish: gentle swirl on the server to integrate the flat-bottom extraction.',
+      id: 'Finish: swirl server ringan untuk mengintegrasikan ekstraksi flat-bed.'
     }
   },
   competition_fast_four: {
     setup: {
-      en: 'Seat the wave filter meticulously. Ensure the geometric ridges remain completely uncompressed to maximize lateral thermal retention and bypass flow.',
-      id: 'Pasang filter gelombang dengan teliti. Pastikan lipatan geometris sama sekali tidak tertekan untuk memaksimalkan retensi panas dan aliran bypass tepi.'
+      en: 'Seat the wave filter without crushing the ridges. Level the coffee bed meticulously.',
+      id: 'Pasang wave filter tanpa merusak lipatan. Ratakan coffee bed dengan teliti.'
     },
     entry: {
-      en: 'Execute a rapid bloom pour to force saturation instantly. Fast extraction demands immediate contact.',
-      id: 'Lakukan blooming cepat dan agresif untuk saturasi total. Ekstraksi cepat butuh kontak menyeluruh sejak awal.'
+      en: 'Execute a rapid, even bloom. Fast extraction demands immediate contact.',
+      id: 'Lakukan bloom merata yang cepat. Ekstraksi cepat butuh kontak menyeluruh sejak awal.'
     },
     main: {
-      en: 'Deliver four rapid, tight concentric pulses. The filter geometry mitigates bypass while we churn the center.',
-      id: 'Tuang 4 pulsa konsentris cepat. Geometri filter meredam bypass saat kita mengaduk kuat area tengah.'
+      en: 'Deliver four rapid, tight concentric pulses from center to center-out. Keep the slurry level consistent.',
+      id: 'Tuang 4 pulsa cepat dari tengah ke tengah-luar. Jaga slurry tetap rata.'
     },
     release: {
-      en: 'Watch for a hyper-fast drawdown. The high pulse energy keeps fines suspended, preventing choked drainage at the base.',
-      id: 'Perhatikan penurunan air yang sangat cepat. Energi tuangan tinggi menjaga partikel halus tetap melayang, mencegah penyumbatan di dasar.'
+      en: 'Watch for a hyper-fast drawdown. Do not shake fines into the three exit holes.',
+      id: 'Perhatikan penurunan air cepat. Jangan shake fines ke tiga lubang.'
     },
     finish: {
-      en: 'Expect a bright, high-clarity cup with soaring acidity and pinpoint flavor separation, driven by the rapid pulsed extraction.',
-      id: 'Hasilkan cangkir cerah berkejernihan tinggi dengan asiditas menjulang dan separasi rasa tajam, didorong oleh ekstraksi pulsa cepat.'
+      en: 'Finish: gentle swirl on the server. Expect bright acidity driven by rapid pulses.',
+      id: 'Finish: swirl server ringan. Harapkan asiditas cerah dari ekstraksi cepat.'
     }
   },
   continuous_slow_stream: {
     setup: {
-      en: 'Prepare the Wave filter carefully. The upcoming slow flow relies entirely on the paper ridges holding heat and regulating the drip speed.',
-      id: 'Siapkan filter Wave dengan hati-hati. Aliran lambat ini sangat bergantung pada lipatan kertas untuk menahan panas dan mengatur kecepatan tetesan.'
+      en: 'Seat the wave filter without crushing the ridges. Level the coffee bed carefully.',
+      id: 'Pasang wave filter tanpa merusak lipatan. Ratakan coffee bed dengan hati-hati.'
     },
     entry: {
-      en: 'Wet the bed gently. Do not agitate, let the slurry settle into a compact puck.',
-      id: 'Basahi kopi dengan lembut. Jangan lakukan agitasi, biarkan seduhan memadat jadi lapisan dalam.'
+      en: 'Bloom evenly. Do not agitate, let the slurry settle into a compact puck.',
+      id: 'Bloom merata. Jangan agitasi, biarkan seduhan memadat perlahan.'
     },
     main: {
-      en: 'Maintain a slow center stream. We utilize the water weight to drive extraction without turbulence.',
-      id: 'Pertahankan aliran lambat di tengah. Kita pakai berat air untuk ekstraksi tanpa turbulensi mekanis.'
+      en: 'Maintain a continuous low pulse from the center. We utilize the water weight without turbulence.',
+      id: 'Pertahankan aliran pulse rendah dari tengah. Kita pakai berat air untuk ekstraksi stabil.'
     },
     release: {
-      en: 'Let the final water column sink slowly through the dense coffee bed. The long contact time will extract deep, complex sugars.',
-      id: 'Biarkan sisa air turun perlahan melewati hamparan kopi yang padat. Waktu kontak yang lama akan mengekstrak gula kompleks yang dalam.'
+      en: 'Let the water sink slowly through the flat bed. Do not shake fines into the three exit holes.',
+      id: 'Biarkan air turun perlahan melewati flat bed. Jangan shake fines ke tiga lubang.'
     },
     finish: {
-      en: 'Serve a remarkably sweet, highly structured cup with a velvety mouthfeel and absolute clarity of roast expression.',
-      id: 'Sajikan hasil seduhan yang luar biasa manis dan terstruktur dengan tekstur lembut serta kejernihan karakter sangrai yang absolut.'
+      en: 'Finish: gentle swirl on the server for a highly structured, sweet cup.',
+      id: 'Finish: swirl server ringan untuk cangkir yang manis dan terstruktur.'
     }
   },
   iced_wave: {
     setup: {
-      en: 'Load the carafe with precise ice weight. Seat the wave filter gently; we are building a concentrated, rapid-drain setup.',
-      id: 'Isi wadah dengan takaran es yang presisi. Pasang filter wave; kita sedang menyusun alat untuk konsentrat yang meniris cepat.'
+      en: 'Seat the wave filter without crushing the ridges. Load ice and level the coffee bed.',
+      id: 'Pasang wave filter tanpa merusak lipatan. Siapkan es dan ratakan coffee bed.'
     },
     entry: {
-      en: 'Bloom the high-density bed with intense hot water to immediately unlock vibrant, volatile fruit aromatics.',
-      id: 'Blooming hamparan kopi padat dengan air panas intensif untuk seketika melepaskan aroma buah volatil yang cerah.'
+      en: 'Bloom evenly with hot water to unlock fruit aromatics immediately.',
+      id: 'Bloom merata dengan air panas untuk melepas aroma buah seketika.'
     },
     main: {
-      en: 'Pour short, hot pulses. The flat bottom limits channeling, forcing water heavily through the grounds.',
-      id: 'Tuang air panas dalam pulsa pendek. Alas datar cegah channeling, memaksa air membasuh rata bubuk kopi.'
+      en: 'Pour short, low pulses from center to center-out. Keep the slurry level low and consistent.',
+      id: 'Tuang pulse rendah dari tengah ke tengah-luar. Jaga slurry tetap rata dan rendah.'
     },
     release: {
-      en: 'Watch the thick hot concentrate melt directly into the ice structure below, flash-chilling instantly to lock in freshness.',
-      id: 'Perhatikan konsentrat panas kental meleleh langsung ke dalam struktur es, melakukan flash-chilling seketika untuk mengunci kesegaran.'
+      en: 'Watch the hot concentrate melt directly into the ice structure. Do not shake fines into the three exit holes.',
+      id: 'Perhatikan konsentrat panas meleleh langsung ke es. Jangan shake fines ke tiga lubang.'
     },
     finish: {
-      en: 'Swirl the carafe vigorously to complete the thermal exchange. Serve an intensely bright, pristine iced brew.',
-      id: 'Putar wadah dengan kuat untuk menyelesaikan pertukaran suhu. Sajikan kopi es yang sangat cerah dan murni.'
+      en: 'Finish: gentle swirl on the server to complete thermal exchange.',
+      id: 'Finish: swirl server ringan untuk menyelesaikan pertukaran suhu.'
     }
   },
   high_dose_concentrate: {
     setup: {
-      en: 'Set the Kalita 185 with a coarse grind. The high mass requires maximum permeability to avoid choking the small exit holes.',
-      id: 'Siapkan Kalita 185 dengan gilingan kasar. Massa kopi tinggi membutuhkan permeabilitas maksimal agar tidak menyumbat lubang pembuangan.'
+      en: 'Seat the wave filter without crushing the ridges. Set a coarse grind and level the thick coffee bed.',
+      id: 'Pasang wave filter tanpa merusak lipatan. Pakai gilingan kasar dan ratakan coffee bed yang tebal.'
     },
     entry: {
-      en: 'Conduct a massive, slow bloom. A large dose traps a lot of gas, so ensure total saturation without overflowing the filter.',
-      id: 'Lakukan blooming lambat yang masif. Dosis besar menyimpan banyak gas, jadi pastikan saturasi total tanpa meluber keluar filter.'
+      en: 'Conduct a massive, even bloom. Ensure total saturation without overflowing.',
+      id: 'Lakukan bloom merata yang masif. Pastikan saturasi total tanpa meluber.'
     },
     main: {
-      en: 'Pour slowly and centrally. Avoid swirling, which drives fines to the bottom and halts drawdown.',
-      id: 'Tuang perlahan di tengah. Hindari putaran yang akan mendorong partikel halus ke dasar.'
+      en: 'Pour slowly from the center. Avoid swirling to prevent fines from migrating.',
+      id: 'Tuang perlahan dari tengah. Hindari putaran agar fines tidak turun.'
     },
     release: {
-      en: 'Patience is paramount. The heavy bed acts as its own restriction valve, creating a dense, syrupy extraction over time.',
-      id: 'Kesabaran adalah kunci. Hamparan tebal berfungsi sebagai katup penahannya sendiri, menciptakan ekstraksi kental dan pekat seiring waktu.'
+      en: 'Patience is paramount. Do not shake fines into the three exit holes, it will clog.',
+      id: 'Kesabaran adalah kunci. Jangan shake fines ke tiga lubang karena akan menyumbat (clog).'
     },
     finish: {
-      en: 'Serve an immensely rich, heavy-bodied concentrate. Perfect for milk pairings or dilution with fresh hot water.',
-      id: 'Sajikan konsentrat yang luar biasa kaya dan ber-body tebal. Sangat cocok dicampur susu atau diencerkan dengan air panas segar.'
+      en: 'Finish: gentle swirl on the server. Serve a rich, heavy-bodied concentrate.',
+      id: 'Finish: swirl server ringan. Sajikan konsentrat kaya rasa dan tebal.'
     }
   }
 };;

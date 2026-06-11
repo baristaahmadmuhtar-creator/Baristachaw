@@ -209,6 +209,24 @@ export function validateUserFacingRecipeText(plan: BrewPlan): BrewGuardResult {
   if (plan.methodFamily === 'cold_brew' && /\b(hot bloom|kettle temperature|hot pour)\b/i.test(text)) {
     reasons.push('Cold Brew text contains hot brew workflow vocabulary');
   }
+  if (plan.methodFamily === 'kalita_wave' && /\b(cone|spiral|kerucut|v60)\b/i.test(text)) {
+    reasons.push('Kalita Wave text contains cone/spiral V60 workflow vocabulary');
+  }
+  if (plan.methodFamily === 'kalita_wave' && plan.doseG >= 24 && !/\b(clog|fines|menyumbat|tersumbat)\b/i.test(text)) {
+    reasons.push('High dose Kalita Wave text is missing clog/fines warning');
+  }
+  if (plan.methodFamily === 'chemex' && /\b(v60 timing|small dripper|quick drawdown|thin paper|single layer filter)\b/i.test(text)) {
+    reasons.push('Chemex text contains non-Chemex vocabulary (V60 timing, thin paper, quick drawdown)');
+  }
+  if (plan.methodFamily === 'chemex' && !/\b(thick paper|thick filter|bonded paper|filter resistance|kertas tebal|filter tebal)\b/i.test(text)) {
+    reasons.push('Chemex text is missing thick paper/filter resistance reference');
+  }
+  if (plan.methodFamily === 'chemex' && plan.brewMode === 'iced' && !/\b(ice|es|hot water.*ice|air panas.*es|concentrate|konsentrat)\b/i.test(text)) {
+    reasons.push('Iced Chemex text is missing ice/hot water split reference');
+  }
+  if (plan.methodFamily === 'chemex' && plan.doseG >= 24 && !/\b(clog|stall|slow drawdown|long drawdown|heavy bed|thick bed|tersumbat|macet|lambat|tebal)\b/i.test(text)) {
+    reasons.push('High dose Chemex text is missing clog/stall/slow drawdown warning');
+  }
   return {
     allowed: reasons.length === 0,
     risk: reasons.length === 0 ? 'none' : 'blocked',
@@ -255,6 +273,16 @@ export function formatSafeBrewCaveat(plan: BrewPlan, language?: string): string 
     caveats.push(id
       ? 'Profil alat ini turunan/eksperimental; lakukan kalibrasi rasa.'
       : 'This brewer profile is derived or experimental; calibrate from the cup.');
+  }
+
+  if (
+    plan.targetProfileId === 'floral_transparent' &&
+    plan.formState.roastLevel === 'light' &&
+    (isUnknownValue(plan.formState.variety) || isUnknownValue(plan.formState.coffeeName) || isUnknownValue(plan.formState.process))
+  ) {
+    caveats.push(id
+      ? 'Target floral pada light roast butuh data bean valid (origin/varietas). Keakuratan floral mungkin menurun tanpa data sumber.'
+      : 'Floral target on light roast requires valid bean data (origin/variety). Floral accuracy may drop without source data.');
   }
 
   if (caveats.length === 0) {
@@ -392,6 +420,9 @@ export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
   }
   if (plan.methodFamily === 'cold_brew' && /hot bloom|kettle temperature|hot pour/i.test(narrative)) {
     reasons.push('Cold Brew narrative contains hot workflow wording');
+  }
+  if (plan.methodFamily === 'chemex' && /\b(v60 timing|small dripper|quick drawdown|thin paper)\b/i.test(narrative)) {
+    reasons.push('Chemex narrative contains non-Chemex vocabulary');
   }
 
   const blocked = reasons.some((reason) => /not finite|must equal|must be lower|conflicting|workflow guide failed|workflow wording|ratio mismatch|canonical|placeholder|developer copy|mislabeled|vocabulary|starts before/.test(reason));

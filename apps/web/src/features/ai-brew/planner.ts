@@ -6412,16 +6412,16 @@ function buildMethodFamilyStepInstruction(params: {
         const kalitaStyle = context.kalitaWaveStyle || 'auto';
         if (kalitaStyle === 'competition_fast_four') {
           if (phase === 'bloom') {
-            quickNote = 'Pour aggressively in center circles to wet all grounds quickly.';
-            detail = 'Deliver hot water in rapid concentric rings at the core; push hydration rapidly without letting water bypass the fluted edges.';
+            quickNote = 'Pour aggressively in the center to wet all grounds quickly.';
+            detail = 'Deliver hot water rapidly at the core; push hydration rapidly to the edges while maintaining a flat bed.';
           } else if (phase === 'early_middle') {
-            quickNote = 'Pour with high flow rate in tight center concentric circles to agitate deeply.';
-            detail = 'Increase flow rate to promote intense early agitation; keep the slurry level low to maximize velocity and clarity.';
+            quickNote = 'Pour with high flow rate in a tight center zone to agitate deeply.';
+            detail = 'Increase flow rate to promote intense early agitation; keep the slurry level low to maximize velocity and clarity while maintaining a flat bed.';
           } else if (phase === 'late_middle') {
-            quickNote = 'Pour with high flow rate in tight center concentric circles, creating high extraction velocity.';
-            detail = 'Deliver the third quick pulse, focusing the stream entirely inside the central zone to accelerate the drawdown.';
+            quickNote = 'Pour with high flow rate in a tight center zone, creating high extraction velocity.';
+            detail = 'Deliver the third quick pulse, focusing the stream entirely inside the central zone to accelerate the drawdown without disturbing the flat bed.';
           } else {
-            quickNote = 'Final rapid concentric pulse, keeping the water level low to drain quickly.';
+            quickNote = 'Final rapid center pulse, keeping the water level low to drain quickly.';
             detail = 'Complete the final short pulse cleanly; let the coffee drain rapidly and completely to produce a vibrant, crisp cup.';
           }
         } else if (kalitaStyle === 'continuous_slow_stream') {
@@ -6430,10 +6430,10 @@ function buildMethodFamilyStepInstruction(params: {
             detail = 'Wet the dry coffee bed with a very gentle, low-altitude stream to avoid disturbing the flat bed.';
           } else if (phase === 'early_middle') {
             quickNote = 'Maintain an extremely low, slow, continuous centered flow.';
-            detail = 'Establish a tiny, continuous centered stream (1.5-2.0 ml/sec). Keep the kettle height low to avoid introducing heavy turbulence.';
+            detail = 'Establish a tiny, continuous centered stream (1.5-2.0 ml/sec). Keep the kettle height low to avoid introducing heavy turbulence and to keep the bed level.';
           } else if (phase === 'late_middle') {
             quickNote = 'Keep a constant water column and steady centered stream.';
-            detail = 'Maintain the slow continuous pour without interruption, allowing the water column to extract evenly with minimal agitation.';
+            detail = 'Maintain the slow continuous pour without interruption, allowing the water column to extract evenly with minimal agitation while maintaining a flat bed.';
           } else {
             quickNote = 'Stop pouring and let the level column drain slowly.';
             detail = 'Gracefully cut the pour; allow the high-density slurry to drain slowly, extracting deep sweetness and velvety body.';
@@ -6443,11 +6443,11 @@ function buildMethodFamilyStepInstruction(params: {
             quickNote = 'Bloom hot onto the dry bed; let gassing complete quickly.';
             detail = 'Saturate the small flat bed edge-to-edge; let the gas escape rapidly so the high-density extraction starts clean.';
           } else if (phase === 'early_middle') {
-            quickNote = 'Pour hot water in quick center circles, keeping slurry low and extraction concentrated.';
-            detail = 'Apply a tight, rapid center pour to build solubility; the concentrate will drip directly onto the ice bed below.';
+            quickNote = 'Pour hot water in quick center pulses, keeping slurry low and extraction concentrated.';
+            detail = 'Apply a tight, rapid center pour to build solubility while keeping the bed level; the concentrate will drip directly onto the ice bed below.';
           } else if (phase === 'late_middle') {
-            quickNote = 'Final concentric hot pour, draining rapidly directly onto the ice bed.';
-            detail = 'Top up with the remaining hot target water cleanly, ensuring high thermal locking as it drips onto the ice.';
+            quickNote = 'Final center hot pour, draining rapidly directly onto the ice bed.';
+            detail = 'Top up with the remaining hot target water cleanly, ensuring high thermal locking as it drips onto the ice and keeping the bed level.';
           } else {
             quickNote = 'Let the final drops drain and swirl the server to melt ice completely.';
             detail = 'Allow the concentrated draw to complete, then swirl the server to blend the hot extract and ice into a chilled balance.';
@@ -6455,13 +6455,13 @@ function buildMethodFamilyStepInstruction(params: {
         } else if (kalitaStyle === 'high_dose_concentrate') {
           if (phase === 'bloom') {
             quickNote = 'Wet the thick bed slowly; let gas release from the high dose.';
-            detail = 'Pour slowly and concentric; high dose coffee packs tightly, so ensure complete water saturation before pulsing.';
+            detail = 'Pour slowly and into the center; high dose coffee packs tightly, so ensure complete water saturation before pulsing while keeping the bed level.';
           } else if (phase === 'early_middle') {
-            quickNote = 'Pour in slow center concentric rings, keeping the slurry level low to avoid bypass.';
-            detail = 'Deliver slow, heavy pulses near the center to wash the deep bed, keeping the water level low to prevent edge bypass.';
+            quickNote = 'Pour in slow center pulses, keeping the slurry level low to avoid bypass.';
+            detail = 'Deliver slow, heavy pulses near the center to wash the deep bed, keeping the water level low to prevent edge bypass and maintain a flat bed.';
           } else if (phase === 'late_middle') {
-            quickNote = 'Final slow concentric pour to wash the bed; avoid fluted wall agitation.';
-            detail = 'Finish the hot water target with slow concentric circles; do not wash down fluted walls to protect clarity.';
+            quickNote = 'Final slow center pour to wash the bed; avoid fluted wall agitation.';
+            detail = 'Finish the hot water target with a slow centered pour; do not wash down fluted walls to protect clarity, ensuring a flat bed.';
           } else {
             quickNote = 'Let the thick, rich concentrate finish draining.';
             detail = 'Allow the syrupy concentrate to drain completely; serve neat or dilute with hot water as a clean bypass.';
@@ -6472,7 +6472,7 @@ function buildMethodFamilyStepInstruction(params: {
             quickNote = 'Wet the flat bed edge to edge, then let it settle level before building the cup.';
             detail = 'Make sure the Kalita bed is fully saturated edge to edge, then let the slurry settle level before the next pulse.';
           } else if (phase === 'early_middle') {
-            quickNote = 'Keep the flat bed level with even pulses from center to edge.';
+            quickNote = 'Keep the flat bed level with even pulses from the center.';
             detail = 'Use even pulses that cover the flat bed without flooding one side; the goal is a level slurry, not a dramatic spiral.';
           } else if (phase === 'late_middle') {
             quickNote = 'Protect the later middle with flat, even contact across the bed.';
@@ -6550,13 +6550,13 @@ function buildMethodFamilyStepInstruction(params: {
             quickNote = 'Aggressive tight center bloom to wake up acids quickly.';
             detail = 'Pour rapidly in the center; avoid bypass on the thick walls to trigger highly vibrant acid extraction.';
           } else if (phase === 'early_middle') {
-            quickNote = 'Deliver second rapid concentric pulse to keep water columns high.';
-            detail = 'Increase kettle flow velocity; keep water moving in centered spirals to prevent fine clogging.';
+            quickNote = 'Deliver second rapid pulse in the center to keep water columns high.';
+            detail = 'Increase kettle flow velocity; keep water moving in centered streams to prevent fine clogging.';
           } else if (phase === 'late_middle') {
             quickNote = 'Perform third and fourth rapid center pulses; keep velocity high.';
             detail = 'Maintain high water column height to force clean extraction through thick wood-fiber.';
           } else {
-            quickNote = 'Final fast concentric pulse; let it drain into a level bed.';
+            quickNote = 'Final fast center pulse; let it drain into a level bed.';
             detail = 'Finish the target water quickly and let the drawdown snap clean. The high-velocity stream gives bright cup clarity.';
           }
         } else if (chemexStyle === 'continuous_center_pour') {
@@ -6576,10 +6576,10 @@ function buildMethodFamilyStepInstruction(params: {
         } else if (chemexStyle === 'iced_chemex') {
           if (phase === 'bloom') {
             quickNote = 'Saturate grounds slowly; server must be preloaded with ice.';
-            detail = 'Pour concentric hot water over dry grounds; ensure the elegant Chemex glass is loaded with ice below.';
+            detail = 'Pour hot water over dry grounds in the center; ensure the elegant Chemex glass is loaded with ice below.';
           } else if (phase === 'early_middle') {
-            quickNote = 'Pour hot concentrate in concentric circles; keep water off the thick paper.';
-            detail = 'Deliver the second hot pour cleanly, avoiding the high paper walls to keep solubility high.';
+            quickNote = 'Pour hot concentrate in the center; keep water off the thick paper.';
+            detail = 'Deliver the second hot pour cleanly, avoiding the high paper walls to keep solubility high while maintaining a flat bed.';
           } else if (phase === 'late_middle') {
             quickNote = 'Final slow center pour; drippings lock aromatics instantly.';
             detail = 'Pour the remaining hot water through the center; the hot concentrate drips directly over ice to lock acids.';

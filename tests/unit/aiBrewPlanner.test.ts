@@ -10434,7 +10434,7 @@ test('origin-target-method calibration makes origin cues react differently acros
     drippers: [
       ...catalog.drippers,
       {
-        id: 'kalita-wave-185-origin',
+        id: 'kalita-wave-155-185',
         kind: 'dripper',
         name: 'Kalita Wave 185 Origin',
         brand: 'Kalita',
@@ -10500,7 +10500,7 @@ test('origin-target-method calibration makes origin cues react differently acros
         id: 'profile_kalita_hot_origin',
         label: 'Kalita Hot Origin',
         brewMode: 'hot',
-        dripperIds: ['kalita-wave-185-origin'],
+        dripperIds: ['kalita-wave-155-185'],
         methodFamily: 'kalita_wave',
         brewMethodId: 'kalita_wave',
         exactMatch: true,
@@ -10604,7 +10604,7 @@ test('origin-target-method calibration makes origin cues react differently acros
   const ethiopiaKalitaAcidity = buildAiBrewPlan({
     ...baseInput,
     coffeeName: 'Ethiopia Yirgacheffe QA',
-    dripperId: 'kalita-wave-185-origin',
+    dripperId: 'kalita-wave-155-185',
     targetProfileId: 'more_acidity',
   }, originCatalog);
   const brazilAprilSweetness = buildAiBrewPlan({
@@ -10628,7 +10628,7 @@ test('origin-target-method calibration makes origin cues react differently acros
   const gayoKalitaBody = buildAiBrewPlan({
     ...baseInput,
     coffeeName: 'Gayo Sumatra QA',
-    dripperId: 'kalita-wave-185-origin',
+    dripperId: 'kalita-wave-155-185',
     targetProfileId: 'more_body',
   }, originCatalog);
   const yunnanV60Balanced = buildAiBrewPlan({
@@ -10640,7 +10640,7 @@ test('origin-target-method calibration makes origin cues react differently acros
   const yunnanKalitaBalanced = buildAiBrewPlan({
     ...baseInput,
     coffeeName: 'Yunnan China QA',
-    dripperId: 'kalita-wave-185-origin',
+    dripperId: 'kalita-wave-155-185',
     targetProfileId: 'balance_clean',
   }, originCatalog);
 
@@ -11496,9 +11496,11 @@ test('AI Brew manual pour-over bloom cadence stays barista-sensible across visib
             pourCount: 'auto',
           }, productionCatalog);
           const positivePours = plan.steps.filter((step) => step.pourVolumeMl > 0);
+          const isChemexContinuous = plan.methodFamily === 'chemex' && plan.recipeStyle === 'continuous_center_pour';
+          const minPours = isChemexContinuous ? 2 : 3;
           assert.ok(
-            positivePours.length >= 3 && positivePours.length <= 5,
-            `${dripper.name} ${brewMode} ${targetProfile.id} should use 3-5 positive pour checkpoints, got ${positivePours.length}`,
+            positivePours.length >= minPours && positivePours.length <= 5,
+            `${dripper.name} ${brewMode} ${targetProfile.id} should use ${minPours}-5 positive pour checkpoints, got ${positivePours.length}`,
           );
           const firstRatio = positivePours[0].pourVolumeMl / plan.doseG;
           assert.ok(

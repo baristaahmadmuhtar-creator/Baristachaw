@@ -32,6 +32,7 @@ export function resolveCleverPlanSelection(params: {
   doseG: number;
 }): CleverPlanSelection {
   const { input, profile, doseG } = params;
+  const targetId = params.targetProfile?.id || '';
   const style = input.cleverDripperStyle || 'auto';
   
   // Resolve active style
@@ -39,8 +40,12 @@ export function resolveCleverPlanSelection(params: {
   if (style === 'auto') {
     if (input.brewMode === 'iced') {
       activeStyle = 'iced_clever';
-    } else if (doseG >= 24) {
+    } else if (targetId === 'more_body' || targetId === 'dense_comforting' || doseG >= 24) {
       activeStyle = 'high_dose_concentrate';
+    } else if (targetId === 'more_sweetness') {
+      activeStyle = 'double_stage_hybrid';
+    } else if (targetId === 'more_acidity' || targetId === 'floral_transparent') {
+      activeStyle = 'reverse_water_first';
     } else {
       activeStyle = 'classic_closed';
     }
@@ -296,6 +301,27 @@ export function resolveCleverPlanSelection(params: {
       ];
       why = 'High-Dose Concentrate uses a massive coffee-to-water ratio and an extended steep to brew a heavy, syrupy liquor reminiscent of siphon or espresso.';
       watch = 'Prevent choking. Do not swirl or shake the dripper during release, or the fine particles will clog the paper holes.';
+      break;
+  }
+
+  // Roast Logic Adjustments
+  switch (input.roastLevel) {
+    case 'light':
+      adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) + 1.5;
+      if (adjustedProfile.grindBias === 'same') adjustedProfile.grindBias = 'finer';
+      break;
+    case 'medium_light':
+      // Default baseline
+      break;
+    case 'medium':
+      break;
+    case 'medium_dark':
+      adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) - 1.5;
+      if (adjustedProfile.grindBias === 'same' || adjustedProfile.grindBias === 'finer') adjustedProfile.grindBias = 'coarser';
+      break;
+    case 'dark':
+      adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) - 3.0;
+      adjustedProfile.grindBias = 'coarser';
       break;
   }
 

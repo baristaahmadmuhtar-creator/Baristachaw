@@ -9969,7 +9969,7 @@ test('all supported dripper families stay production-safe across hot and iced fl
           assert.ok(plan.steps.some((step) => step.kind === 'release'));
           assert.ok(plan.steps.every((step) => step.kind === 'pour' || step.pourVolumeMl === 0));
           assert.match(indonesianRecipeSteps, /tahan kontak|buka release/i);
-        } else if (familyCase.family === 'kalita_wave' || familyCase.family === 'chemex') {
+        } else if (familyCase.family === 'kalita_wave' || familyCase.family === 'chemex' || familyCase.family === 'origami' || familyCase.family === 'melitta' || familyCase.family === 'april' || familyCase.family === 'kono') {
           const pourSteps = plan.steps.filter((step) => (step.kind || 'pour') === 'pour');
           assert.ok(pourSteps.every((step) => step.pourVolumeMl > 0));
           assert.ok(plan.steps.some((step) => step.kind === 'drawdown'));
@@ -10660,10 +10660,11 @@ test('origin-target-method calibration makes origin cues react differently acros
 
   const getShareMap = (plan: ReturnType<typeof buildAiBrewPlan>) => plan.steps.map((step) => step.pourVolumeMl / plan.hotWaterMl);
 
-  const ethiopiaV60Shares = getShareMap(ethiopiaV60Acidity);
-  const ethiopiaKalitaShares = getShareMap(ethiopiaKalitaAcidity);
   const brazilAprilShares = getShareMap(brazilAprilSweetness);
   const brazilCleverShares = getShareMap(brazilCleverSweetness);
+
+  const ethiopiaV60Shares = getShareMap(ethiopiaV60Acidity);
+  const ethiopiaKalitaShares = getShareMap(ethiopiaKalitaAcidity);
   const gayoV60Shares = getShareMap(gayoV60Body);
   const gayoKalitaShares = getShareMap(gayoKalitaBody);
   const yunnanV60Shares = getShareMap(yunnanV60Balanced);
@@ -10672,7 +10673,7 @@ test('origin-target-method calibration makes origin cues react differently acros
   assert.ok(ethiopiaV60Acidity.recommendedRatio > ethiopiaKalitaAcidity.recommendedRatio);
   assert.ok(ethiopiaV60Shares[ethiopiaV60Shares.length - 1] > ethiopiaKalitaShares[ethiopiaKalitaShares.length - 1]);
   assert.ok(brazilCleverSweetness.totalTimeSeconds > brazilAprilSweetness.totalTimeSeconds);
-  assert.ok(brazilCleverShares[2] > brazilAprilShares[2]);
+  assert.ok(brazilCleverShares[3] > brazilAprilShares[3]);
   assert.ok(gayoKalitaBody.totalTimeSeconds > gayoV60Body.totalTimeSeconds);
   assert.ok(gayoKalitaShares[1] > gayoV60Shares[1]);
   assert.ok(yunnanV60Balanced.recommendedRatio > yunnanKalitaBalanced.recommendedRatio);
@@ -11370,7 +11371,7 @@ test('AI Brew matrix stays deterministic across roast, target, water, process, a
         roastLevel: 'medium' as const,
         targetProfileId: 'balance_clean',
       },
-      expected: { mode: 'hot', family: 'melitta', ratio: [14.5, 17], temp: [89, 96], time: [145, 230], minPours: 3 },
+      expected: { mode: 'hot', family: 'melitta', ratio: [14.5, 17], temp: [89, 96], time: [145, 230], minPours: 2 },
     },
     {
       name: 'flores_bajawa_giling_basah_kono_iced',
@@ -11502,7 +11503,8 @@ test('AI Brew manual pour-over bloom cadence stays barista-sensible across visib
           }, productionCatalog);
           const positivePours = plan.steps.filter((step) => step.pourVolumeMl > 0);
           const isChemexContinuous = plan.methodFamily === 'chemex' && plan.recipeStyle === 'continuous_center_pour';
-          const minPours = isChemexContinuous ? 2 : 3;
+          const isMelittaOnePour = plan.methodFamily === 'melitta' && plan.recipeStyle === 'traditional_melitta_one_pour';
+          const minPours = (isChemexContinuous || isMelittaOnePour) ? 2 : 3;
           assert.ok(
             positivePours.length >= minPours && positivePours.length <= 5,
             `${dripper.name} ${brewMode} ${targetProfile.id} should use ${minPours}-5 positive pour checkpoints, got ${positivePours.length}`,

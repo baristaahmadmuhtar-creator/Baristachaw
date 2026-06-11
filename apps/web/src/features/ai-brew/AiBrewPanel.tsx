@@ -1903,15 +1903,19 @@ const AI_BREW_STYLE_COPY_KEYS: Partial<Record<AiBrewMethodFamily, Record<string,
   },
   siphon: {
     auto: 'siphonStyleAuto',
-    classic: 'siphonStyleClassic',
-    clean: 'siphonStyleClean',
-    rich: 'siphonStyleRich',
+    traditional_vacuum_siphon: 'siphonStyleTraditionalClean',
+    competition_triple_agitation: 'siphonStyleCompetitionFastStir',
+    spirit_infusion_style: 'siphonStyleDoubleStageAgitation',
+    low_temp_delicate: 'siphonStyleLowTemperatureDelicate',
+    high_body_fast_drawdown: 'siphonStyleHighDoseIntense',
   },
   origami: {
     auto: 'origamiStyleAuto',
-    cone: 'origamiStyleCone',
-    wave: 'origamiStyleWave',
-    iced: 'origamiStyleIced',
+    cone_dripper_style: 'origamiStyleConeSweetnessClarity',
+    wave_dripper_style: 'origamiStyleWaveHighExtraction',
+    mugen_one_pour: 'origamiStyleCompetitionMultiPour',
+    iced_origami: 'origamiStyleJapaneseIcedOrigami',
+    competition_hybrid_flow: 'origamiStyleHighDoseHeavyBody',
   },
   april: {
     auto: 'aprilStyleAuto',
@@ -4847,6 +4851,7 @@ function buildAiBrewDeterministicStepDetailPoints(
     recipeStyle: plan.recipeStyle,
     targetProfileId: plan.targetProfileId,
     roastLevel: plan.roastLevel,
+    origamiFilterStyle: plan.origamiFilterStyle,
   }));
 
   if (workflowWarnings.length > 0) {
@@ -12886,6 +12891,203 @@ export function AiBrewPanel() {
               {isIndonesianAiBrewLanguage(language) 
                 ? 'kapasitas mesin mempengaruhi keyakinan cangkir (machine capability affects confidence).' 
                 : 'machine capability affects confidence.'}
+            </div>
+          </div>
+        ) : null}
+        {selectedDripper.methodFamily === 'siphon' ? (
+          <div className="mt-2.5 rounded-[0.9rem] border border-blue-500/20 bg-blue-500/5 p-3 text-xs" data-testid="ai-brew-siphon-identity-card">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Penyeduh vakum siphon' : 'Vacuum siphon brewer'}
+              </span>
+              <div className="flex gap-1">
+                <span className="rounded bg-orange-500/10 px-1.5 py-0.5 text-[10px] text-orange-500 font-semibold">
+                  Hot primary
+                </span>
+                <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] text-blue-500 font-semibold">
+                  {isIndonesianAiBrewLanguage(language) ? 'Sajian es dengan flash-chilled saja (jangan masukkan es ke bowl bawah)' : 'Flash-chilled serving only (no ice in lower bowl)'}
+                </span>
+              </div>
+            </div>
+            <div className="mb-2">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Cocok untuk: ' : 'Best for: '}
+              </span>
+              <span className="text-secondary">
+                {isIndonesianAiBrewLanguage(language) ? 'aromatik, bersih, teatrikal' : 'aromatic, clean, theatrical'}
+              </span>
+            </div>
+            <div className="rounded-[0.6rem] bg-amber-500/10 p-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+              <span className="font-bold">
+                {isIndonesianAiBrewLanguage(language) ? 'Peringatan: ' : 'Warning: '}
+              </span>
+              {isIndonesianAiBrewLanguage(language) 
+                ? 'keamanan panas/kaca.' 
+                : 'heat/glass safety.'}
+            </div>
+          </div>
+        ) : null}
+        {selectedDripper.methodFamily === 'origami' ? (
+          <div className="mt-2.5 rounded-[0.9rem] border border-blue-500/20 bg-blue-500/5 p-3 text-xs" data-testid="ai-brew-origami-identity-card">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Folded cone dripper (Origami)' : 'Folded cone dripper'}
+              </span>
+              <div className="flex gap-1">
+                <span className="rounded bg-orange-500/10 px-1.5 py-0.5 text-[10px] text-orange-500 font-semibold">
+                  Hot + iced
+                </span>
+                <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] text-blue-500 font-semibold">
+                  {isIndonesianAiBrewLanguage(language) ? 'Filter: kerucut / wave / auto' : 'Filter switch: cone / wave / auto'}
+                </span>
+              </div>
+            </div>
+            <div className="mb-2">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Cocok untuk: ' : 'Best for: '}
+              </span>
+              <span className="text-secondary">
+                {isIndonesianAiBrewLanguage(language) ? 'kejelasan rasa dan body yang fleksibel' : 'flexible clarity/body'}
+              </span>
+            </div>
+            <div className="rounded-[0.6rem] bg-amber-500/10 p-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+              <span className="font-bold">
+                {isIndonesianAiBrewLanguage(language) ? 'Peringatan: ' : 'Warning: '}
+              </span>
+              {isIndonesianAiBrewLanguage(language) 
+                ? 'kestabilan holder dan kedudukan filter.' 
+                : 'holder stability and filter seating.'}
+            </div>
+          </div>
+        ) : null}
+        {selectedDripper.methodFamily === 'april' ? (
+          <div className="mt-2.5 rounded-[0.9rem] border border-blue-500/20 bg-blue-500/5 p-3 text-xs" data-testid="ai-brew-april-identity-card">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Penyeduh flat-bottom khusus (April)' : 'Flat-bottom specialty brewer'}
+              </span>
+              <span className="rounded bg-orange-500/10 px-1.5 py-0.5 text-[10px] text-orange-500 font-semibold">
+                Hot + iced
+              </span>
+            </div>
+            <div className="mb-2">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Cocok untuk: ' : 'Best for: '}
+              </span>
+              <span className="text-secondary">
+                {isIndonesianAiBrewLanguage(language) ? 'manis, bulat, seimbang' : 'sweet, round, balanced'}
+              </span>
+            </div>
+            <div className="mb-2">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Kertas: ' : 'Paper: '}
+              </span>
+              <span className="text-secondary">
+                {isIndonesianAiBrewLanguage(language) ? 'Filter kertas April' : 'April paper filter'}
+              </span>
+            </div>
+            {(() => {
+              const name = (selectedDripper.name || '').toLowerCase();
+              let note = '';
+              if (name.includes('ceramic') || name.includes('keramik')) {
+                note = isIndonesianAiBrewLanguage(language)
+                  ? 'Catatan material: Keramik menahan panas lebih lama, menghasilkan ekstraksi lebih manis dan seimbang.'
+                  : 'Material note: Ceramic retains heat longer, producing a sweeter and more balanced extraction.';
+              } else if (name.includes('plastic') || name.includes('plastik')) {
+                note = isIndonesianAiBrewLanguage(language)
+                  ? 'Catatan material: Plastik memiliki retensi suhu tinggi yang sangat stabil untuk aliran yang konsisten.'
+                  : 'Material note: Plastic offers highly stable thermal retention for a consistent flow profile.';
+              } else if (name.includes('glass') || name.includes('kaca')) {
+                note = isIndonesianAiBrewLanguage(language)
+                  ? 'Catatan material: Kaca memberikan estetika bersih dengan profil aliran sedang.'
+                  : 'Material note: Glass provides clean aesthetics with a moderate flow profile.';
+              } else if (name.includes('hybrid') || name.includes('hibrida')) {
+                note = isIndonesianAiBrewLanguage(language)
+                  ? 'Catatan material: Kombinasi material hybrid menyeimbangkan retensi panas dan kecepatan aliran.'
+                  : 'Material note: Hybrid material combination balances heat retention and flow rate.';
+              }
+              if (!note) return null;
+              return (
+                <div className="mt-2 text-[11px] leading-relaxed text-secondary italic">
+                  {note}
+                </div>
+              );
+            })()}
+          </div>
+        ) : null}
+        {selectedDripper.methodFamily === 'melitta' ? (
+          <div className="mt-2.5 rounded-[0.9rem] border border-blue-500/20 bg-blue-500/5 p-3 text-xs" data-testid="ai-brew-melitta-identity-card">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Trapezoid classic (Melitta)' : 'Trapezoid classic'}
+              </span>
+              <div className="flex gap-1">
+                <span className="rounded bg-orange-500/10 px-1.5 py-0.5 text-[10px] text-orange-500 font-semibold">
+                  {isIndonesianAiBrewLanguage(language) ? 'Panas + es manual didukung' : 'Hot + manual iced supported'}
+                </span>
+              </div>
+            </div>
+            <div className="mb-2">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Cocok untuk: ' : 'Best for: '}
+              </span>
+              <span className="text-secondary">
+                {isIndonesianAiBrewLanguage(language) ? 'lembut, klasik, mudah' : 'mellow, classic, easy'}
+              </span>
+            </div>
+            <div className="mb-2">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Selektor: ' : 'Selector: '}
+              </span>
+              <span className="text-secondary">
+                {isIndonesianAiBrewLanguage(language) ? 'Selektor manual 1x2 / otomatis Aromaboy' : 'Manual 1x2 / Aromaboy automatic selector'}
+              </span>
+            </div>
+            <div className="rounded-[0.6rem] bg-amber-500/10 p-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+              <span className="font-bold">
+                {isIndonesianAiBrewLanguage(language) ? 'Peringatan: ' : 'Warning: '}
+              </span>
+              {isIndonesianAiBrewLanguage(language) 
+                ? 'Aromaboy menggunakan aliran terkontrol mesin (tidak menggunakan tuangan manual/pulse).' 
+                : 'Aromaboy has machine-controlled flow (no manual pour/pulse steps).'}
+            </div>
+          </div>
+        ) : null}
+        {selectedDripper.methodFamily === 'kono' ? (
+          <div className="mt-2.5 rounded-[0.9rem] border border-blue-500/20 bg-blue-500/5 p-3 text-xs" data-testid="ai-brew-kono-identity-card">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Kono Meimon cone' : 'Kono Meimon cone'}
+              </span>
+              <div className="flex gap-1">
+                <span className="rounded bg-orange-500/10 px-1.5 py-0.5 text-[10px] text-orange-500 font-semibold">
+                  {isIndonesianAiBrewLanguage(language) ? 'Panas + es flash brew' : 'Hot + iced flash brew'}
+                </span>
+              </div>
+            </div>
+            <div className="mb-2">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Cocok untuk: ' : 'Best for: '}
+              </span>
+              <span className="text-secondary">
+                {isIndonesianAiBrewLanguage(language) ? 'manis, lembut, terfokus' : 'sweet, mellow, focused'}
+              </span>
+            </div>
+            <div className="mb-2">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Karakter: ' : 'Character: '}
+              </span>
+              <span className="text-secondary">
+                {isIndonesianAiBrewLanguage(language) ? 'Kemanisan inti tengah (center-core sweetness)' : 'Center-core sweetness'}
+              </span>
+            </div>
+            <div className="rounded-[0.6rem] bg-amber-500/10 p-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+              <span className="font-bold">
+                {isIndonesianAiBrewLanguage(language) ? 'Peringatan: ' : 'Warning: '}
+              </span>
+              {isIndonesianAiBrewLanguage(language) 
+                ? 'bukan V60 spiral generik. Fokuskan air di pusat untuk mengendalikan bypass dinding atas yang halus.' 
+                : 'not generic V60 spiral. Keep water focused in the center core to manage smooth upper wall bypass.'}
             </div>
           </div>
         ) : null}

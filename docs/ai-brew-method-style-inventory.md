@@ -1,15 +1,19 @@
 # AI Brew Method + Style Inventory
 
-Generated: 2026-06-11T07:07:50.207Z
-Local SHA: 7ae12a3ecca754df5b2fbe9da73ac5fcc028cc46
-Remote main SHA: e49ae05ebf5c0943a7ba416102e3780cef56ae3e
+Generated: 2026-06-11T13:40:30.680Z
+Local SHA: 83c3935a87d291c0db2acb450e803210da124ad3
+Remote main SHA: 83c3935a87d291c0db2acb450e803210da124ad3
 Branch: main
-Working tree status at generation: M apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json
- M apps/web/src/features/ai-brew/AiBrewPanel.tsx
+Working tree status at generation: M apps/web/src/features/ai-brew/AiBrewPanel.tsx
  M apps/web/src/features/ai-brew/antiHallucination.ts
- M apps/web/src/features/ai-brew/batchPlanner.ts
+ M apps/web/src/features/ai-brew/aprilPlanner.ts
+ M apps/web/src/features/ai-brew/konoPlanner.ts
+ M apps/web/src/features/ai-brew/melittaPlanner.ts
+ M apps/web/src/features/ai-brew/origamiPlanner.ts
  M apps/web/src/features/ai-brew/planner.ts
+ M apps/web/src/features/ai-brew/siphonPlanner.ts
  M apps/web/src/features/ai-brew/types.ts
+ M apps/web/src/features/ai-brew/workflowGuide.ts
  M apps/web/src/features/ai-brew/workflowTutorials.ts
  M docs/ai-brew-method-style-coverage-report.md
  M docs/ai-brew-method-style-final-verdict.md
@@ -17,7 +21,9 @@ Working tree status at generation: M apps/web/public/data/ai-brew/device-brew-pr
  M docs/ai-brew-method-style-ui-ux-report.md
  M docs/ai-brew-real-world-1000-report.md
  M tests/unit/aiBrewPlanner.test.ts
-Artifact directory: `artifacts/ai-brew-audit/method-styles/7ae12a3ecca7`
+?? C/
+?? scratch/
+Artifact directory: `artifacts/ai-brew-audit/method-styles/83c3935a87d2`
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 
@@ -59,8 +65,8 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 
 ### batch_brew
 
-- Classification: STRONG
-- Average score: 100
+- Classification: MISSING GUIDE
+- Average score: 0
 - Visible methods: Batch Brewer (batch-brewer)
 - Styles/gaya: Auto (auto); SCA Gold Cup (sca_gold_cup); Heavy batch catering (heavy_batch_catering); Bright light-roast batch (bright_light_roast_batch); Pre-wet hybrid batch (pre_wet_hybrid_batch); High extraction thermos (high_extraction_thermos)
 - Manual presets: 0
@@ -69,8 +75,8 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: covered
-- Water/grinder/bean/roast awareness: covered in matrix
+- Target-rasa mapping: weak
+- Water/grinder/bean/roast awareness: missing
 - Language/i18n: covered
 - Weak styles: none
 
@@ -195,8 +201,8 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 
 ### kono
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 99.9
 - Visible methods: Kono Meimon (kono-meimon)
 - Styles/gaya: Auto (auto); Kono Meimon traditional (kono_meimon_traditional); Kono dripper standard (kono_dripper_standard); Kono slow-drip body (kono_slow_drip_body); Iced Kono Meimon (iced_kono_meimon); Kono agitation sweet (kono_agitation_sweet)
 - Manual presets: 0
@@ -205,8 +211,8 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 

@@ -30,18 +30,32 @@ export function resolveMelittaPlanSelection(params: {
   processEntry?: ProcessCatalogEntry;
   doseG: number;
 }): MelittaPlanSelection {
-  const { input, profile, doseG } = params;
+  const { input, dripper, profile, doseG } = params;
+  const targetId = params.targetProfile?.id || '';
   const style = input.melittaStyle || 'auto';
-  if (style === 'auto') {
-    return {
-      style: 'auto',
-      adjustedProfile: profile,
-      why: 'Melitta Auto style utilizes the default catalog extraction profile to deliver a highly balanced cup.',
-      watch: 'Ensure proper water distribution and level bed for even extraction.',
-    };
-  }
+  const isAromaboy = dripper.id.toLowerCase().includes('aromaboy') || dripper.name.toLowerCase().includes('aromaboy');
 
-  const activeStyle = style;
+  let activeStyle = style;
+  if (style === 'auto') {
+    if (isAromaboy) {
+      activeStyle = 'aromaboy_style';
+    } else if (input.brewMode === 'iced') {
+      activeStyle = 'iced_melitta_brew';
+    } else if (targetId === 'more_body' || targetId === 'dense_comforting') {
+      activeStyle = 'dense_classic_extraction';
+    } else if (targetId === 'more_sweetness' || targetId === 'fruit_forward' || targetId === 'more_acidity') {
+      activeStyle = 'three_pour_melitta';
+    } else if (targetId === 'balance_clean' || targetId === 'soft_round' || targetId === 'floral_transparent') {
+      activeStyle = 'traditional_melitta_one_pour';
+    } else {
+      // Fallback based on roast
+      if (input.roastLevel === 'light') {
+        activeStyle = 'three_pour_melitta';
+      } else {
+        activeStyle = 'traditional_melitta_one_pour';
+      }
+    }
+  }
 
   const adjustedProfile: DeviceBrewProfile = {
     ...profile,
@@ -63,15 +77,15 @@ export function resolveMelittaPlanSelection(params: {
           kind: 'pour',
           share: 0.15,
           startSeconds: 0,
-          note: 'Wet the trapezoidal coffee bed evenly. Because the wedge bottom is narrow, ensure all dry corners in the bottom fold are wet. Bloom 35 seconds.',
+          note: 'Bloom by pouring water from the center line outward. Wet the trapezoid bed evenly. Let bloom for 35 seconds.',
         },
         {
           id: 'one_fill',
-          label: 'Continuous Wedge Fill',
+          label: 'Continuous Center Fill',
           kind: 'pour',
           share: 0.85,
           startSeconds: 35,
-          note: 'Pour slowly in a long oval spiral (matching the wedge geometry) until the dripper is filled. Let it drain continuously.',
+          note: 'Pour slowly and compactly along the center line. Do not pour too close to the edges. Let the trapezoid geometry manage the flow rate.',
         },
         {
           id: 'slow_drain',
@@ -79,11 +93,11 @@ export function resolveMelittaPlanSelection(params: {
           kind: 'drawdown',
           share: 0,
           startSeconds: 120,
-          note: 'Allow water to drip through the 1 or 2 small holes at the bottom. The trapezoid shape provides stable, classic extraction.',
+          note: 'Allow water to drip through the bottom holes. The trapezoid shape provides stable, classic extraction. Mix the server.',
         },
       ];
-      why = 'Traditional Melitta One-Pour relies on the restricted bottom hole flow rate and trapezoid wedge geometry to extract coffee evenly with minimal manual pouring effort.';
-      watch = 'Check bottom hole blockage. Old coffee residues inside the tiny bottom hole will restrict drainage, making drawdown extremely slow and bitter. Clean thoroughly.';
+      why = 'Traditional Melitta One-Pour uses classic trapezoid wedge geometry and center pouring to yield a balanced cup with rounded sweetness.';
+      watch = 'Check exit holes. Coffee residues can restrict drainage. Avoid high edge pouring to prevent water bypassing the bed through filter seams.';
       break;
 
     case 'aromaboy_style':
@@ -92,40 +106,24 @@ export function resolveMelittaPlanSelection(params: {
       adjustedProfile.grindBias = 'finer';
       adjustedProfile.steps = [
         {
-          id: 'bloom',
-          label: 'Micro Bloom',
+          id: 'machine_cycle',
+          label: 'Start Machine Cycle',
           kind: 'pour',
-          share: 0.2,
+          share: 1.0,
           startSeconds: 0,
-          note: 'For small doses (8-10g), bloom gently with a tiny splash of water. Let sit for 30 seconds.',
-        },
-        {
-          id: 'micro_pour_1',
-          label: 'Micro Oval Pour 1',
-          kind: 'pour',
-          share: 0.4,
-          startSeconds: 30,
-          note: 'Pour in a small, tight oval circle in the center. The narrow wedge bed extracts solids efficiently.',
-        },
-        {
-          id: 'micro_pour_2',
-          label: 'Micro Oval Pour 2',
-          kind: 'pour',
-          share: 0.4,
-          startSeconds: 65,
-          note: 'Execute a final gentle oval pulse. Let the small column drain rapidly.',
+          note: 'Start the machine. The water reservoir heats up and drips water automatically over the coffee bed. Let the automated machine-controlled flow run.',
         },
         {
           id: 'micro_drain',
-          label: 'Aromaboy Finish',
-          kind: 'drawdown',
+          label: 'Aromaboy Finish & Mix',
+          kind: 'serve',
           share: 0,
           startSeconds: 100,
-          note: 'Let the small volume drain completely. Classic, cozy, and highly aromatic micro-brew.',
+          note: 'Wait for the automated cycle to finish. Once brewing is complete, mix the brewed coffee in the server to integrate the extraction.',
         },
       ];
-      why = 'Aromaboy Style is custom-calibrated for tiny specialty coffee doses (8-12g), using micro oval pulses to keep the shallow bed hot and avoid under-extraction.';
-      watch = 'Bed depth. Small doses create a very thin bed. Keep your pour flow extremely narrow to avoid piercing the paper filter.';
+      why = 'Aromaboy Style uses automatic small-batch workflow, relying on the machine-controlled flow cycle to deliver a simple daily brew.';
+      watch = 'Aromaboy has machine-controlled flow. Do not use manual pulse-pours or try to agitate during the cycle.';
       break;
 
     case 'three_pour_melitta':
@@ -135,27 +133,27 @@ export function resolveMelittaPlanSelection(params: {
       adjustedProfile.steps = [
         {
           id: 'bloom',
-          label: 'Wedge Bloom',
+          label: 'Center Line Bloom',
           kind: 'pour',
           share: 0.15,
           startSeconds: 0,
-          note: 'Pour in an oval pattern. Wet all grounds and let bloom for 40 seconds.',
+          note: 'Bloom from the center line outward. Ensure all corners in the narrow trapezoid bed are wet. Let bloom for 40 seconds.',
         },
         {
           id: 'pour_2',
-          label: 'Oval Pour 2',
+          label: 'Center Pulse 2',
           kind: 'pour',
           share: 0.45,
           startSeconds: 40,
-          note: 'Pour in slow oval circles. Keep water level medium. The flat wedge walls help to extract rich, sweet chocolate notes.',
+          note: 'Pour compact pulses along the center line. Keep water off the edges to protect sweetness. Let it drain slightly.',
         },
         {
           id: 'pour_3',
-          label: 'Oval Pour 3',
+          label: 'Center Pulse 3',
           kind: 'pour',
           share: 0.4,
           startSeconds: 90,
-          note: 'Pour the final portion in an oval concentric pattern. Settle the coffee bed level and let it drain.',
+          note: 'Pour the final portion in a tight line along the center. Settle the bed level and let it drain.',
         },
         {
           id: 'drawdown',
@@ -163,53 +161,106 @@ export function resolveMelittaPlanSelection(params: {
           kind: 'drawdown',
           share: 0,
           startSeconds: 150,
-          note: 'Trapezoidal wedge extraction filters out bitter tannins, delivering a smooth, comforting classic coffee.',
+          note: 'Let the trapezoid bed drain completely without scraping the paper. Mix the server thoroughly.',
         },
       ];
-      why = 'Three Pour Melitta splits water volume into three slow oval pulses to extend contact time, maximizing sweet chocolate oils and balancing rustic body.';
-      watch = 'High water line. Avoid pouring too high on the trapezoid side ribs; water will bypass the bed entirely through the paper seams.';
+      why = 'Three Pour Melitta splits water volume into three center-line pulses to prolong contact, extracting high sweetness and fruit-forward flavor.';
+      watch = 'High water level. Avoid edge pouring to prevent water bypassing the coffee bed entirely through the trapezoid seams.';
       break;
 
     case 'iced_melitta_brew':
       adjustedProfile.ratioDelta = -2.0;
       adjustedProfile.tempDeltaC = 2.0;
       adjustedProfile.grindBias = 'finer';
-      adjustedProfile.steps = [
-        {
-          id: 'ice_setup',
-          label: 'Wedge Ice Setup',
-          kind: 'pour',
-          share: 0.2,
-          startSeconds: 0,
-          note: 'Place 120g of clean ice in the server. Pour boiling water over grounds in an oval shape. Let bloom for 30 seconds.',
-        },
-        {
-          id: 'ice_pour_1',
-          label: 'Oval Concentrated Pour 1',
-          kind: 'pour',
-          share: 0.5,
-          startSeconds: 30,
-          note: 'Pour in rapid oval circles to extract deep sugars. Keep grind finer to resist flow and increase dissolved solids.',
-        },
-        {
-          id: 'ice_pour_2',
-          label: 'Oval Concentrated Pour 2',
-          kind: 'pour',
-          share: 0.3,
-          startSeconds: 65,
-          note: 'Pour the final portion in the center. The dense wedge concentrate drips directly over ice to chill instantly.',
-        },
-        {
-          id: 'chill_finish',
-          label: 'Trapezoid Iced Finish',
-          kind: 'drawdown',
-          share: 0,
-          startSeconds: 110,
-          note: 'Swirl the chilled coffee to melt the remaining ice, ensuring a rich, non-watery cold trapezoid pour-over.',
-        },
-      ];
-      why = 'Iced Melitta Brew leverages the restricted bottom flow of the trapezoid wedge to extract a highly concentrated, rich coffee yield directly over ice.';
-      watch = 'Ice volume. Ensure you weigh the ice accurately; excessive ice will dilute the concentrate, resulting in a thin, watery mouthfeel.';
+      if (doseG >= 24) {
+        adjustedProfile.steps = [
+          {
+            id: 'bloom',
+            label: 'Concentrated Bloom',
+            kind: 'pour',
+            share: 0.15,
+            startSeconds: 0,
+            note: 'Bloom from the center line outward with hot water. Keep the extraction concentrated directly over ice. Let bloom for 30 seconds.',
+          },
+          {
+            id: 'ice_pour_1',
+            label: 'Center line Pulse 1',
+            kind: 'pour',
+            share: 0.25,
+            startSeconds: 30,
+            note: 'Pour hot water in compact center-line pulses. Keep water off the edges.',
+          },
+          {
+            id: 'ice_pour_2',
+            label: 'Center line Pulse 2',
+            kind: 'pour',
+            share: 0.20,
+            startSeconds: 55,
+            note: 'Pour hot water along the center line to prevent bypass through trapezoid seams.',
+          },
+          {
+            id: 'ice_pour_3',
+            label: 'Center line Pulse 3',
+            kind: 'pour',
+            share: 0.20,
+            startSeconds: 80,
+            note: 'Pour hot water in compact center-line pulses to keep the narrow bed saturated.',
+          },
+          {
+            id: 'ice_pour_4',
+            label: 'Center Finish',
+            kind: 'pour',
+            share: 0.20,
+            startSeconds: 105,
+            note: 'Pour the final hot water portion along the center line. The concentrate drips directly over ice to chill instantly.',
+          },
+          {
+            id: 'chill_finish',
+            label: 'Trapezoid Iced Finish',
+            kind: 'drawdown',
+            share: 0,
+            startSeconds: 140,
+            note: 'Swirl the server to melt the remaining ice, ensuring a rich, non-watery cold trapezoid pour-over.',
+          },
+        ];
+      } else {
+        adjustedProfile.steps = [
+          {
+            id: 'bloom',
+            label: 'Concentrated Bloom',
+            kind: 'pour',
+            share: 0.2,
+            startSeconds: 0,
+            note: 'Bloom from the center line outward with hot water. Keep the extraction concentrated directly over ice. Let bloom for 30 seconds.',
+          },
+          {
+            id: 'ice_pour_1',
+            label: 'Center line Pulse',
+            kind: 'pour',
+            share: 0.5,
+            startSeconds: 30,
+            note: 'Pour hot water in compact center-line pulses. Keep water off the edges. The narrow bed extracts high solids.',
+          },
+          {
+            id: 'ice_pour_2',
+            label: 'Center Finish',
+            kind: 'pour',
+            share: 0.3,
+            startSeconds: 65,
+            note: 'Pour the final hot water portion along the center line. The concentrate drips directly over ice to chill instantly.',
+          },
+          {
+            id: 'chill_finish',
+            label: 'Trapezoid Iced Finish',
+            kind: 'drawdown',
+            share: 0,
+            startSeconds: 110,
+            note: 'Swirl the server to melt the remaining ice, ensuring a rich, non-watery cold trapezoid pour-over.',
+          },
+        ];
+      }
+      why = 'Iced Melitta Brew extracts a concentrated hot yield along the center line of the trapezoid wedge directly over ice.';
+      watch = 'Hot water and ice split. Verify that the hot water volume is correctly split from the ice to prevent a watery brew.';
       break;
 
     case 'dense_classic_extraction':
@@ -223,19 +274,19 @@ export function resolveMelittaPlanSelection(params: {
           kind: 'pour',
           share: 0.15,
           startSeconds: 0,
-          note: 'Pour a tight center oval. Let bloom for 45 seconds. The fine grind requires extra time to degas properly.',
+          note: 'Bloom from the center line outward with a slow center pour. Let bloom for 45 seconds. Do not stir to avoid clogging.',
         },
         {
           id: 'slow_oval_pulse_1',
-          label: 'Slow Oval Pulse 1',
+          label: 'Slow Center Pulse 1',
           kind: 'pour',
           share: 0.45,
           startSeconds: 45,
-          note: 'Pour in extremely slow concentric ovals. The fine grind restricts flow, causing water to build contact time.',
+          note: 'Pour slowly along the center line. Warning: Bitterness and narrow bed over-extraction risk. Keep pulses tight.',
         },
         {
           id: 'slow_oval_pulse_2',
-          label: 'Slow Oval Pulse 2',
+          label: 'Slow Center Pulse 2',
           kind: 'pour',
           share: 0.4,
           startSeconds: 100,
@@ -247,12 +298,40 @@ export function resolveMelittaPlanSelection(params: {
           kind: 'drawdown',
           share: 0,
           startSeconds: 175,
-          note: 'Allow dripper to drain fully. The long extraction window captures rich bitter-chocolate and heavy sweet notes.',
+          note: 'Allow dripper to drain fully. Warning: Bitterness and astringency may occur if flow stalls completely. Mix the server.',
         },
       ];
-      why = 'Dense Classic Extraction utilizes a fine grind and extended contact time inside the trapezoid dripper to extract heavy sweet compounds, reminiscent of classic dark-chocolate roasts.';
-      watch = 'Stalled drawdown. If the brew runs beyond 4 minutes, the cup may turn dry and astringent. Grind slightly coarser on the next brew.';
+      why = 'Dense Classic Extraction uses a fine grind and extended contact time to extract a deep body and dense chocolatey sweetness.';
+      watch = 'Bitterness and over-extraction. The narrow trapezoid bed has higher risk of over-extraction. Grind slightly coarser if bitterness is too high.';
       break;
+  }
+
+  // Apply Roast Level adjustments
+  if (input.roastLevel === 'light') {
+    adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) + 1.5;
+    const lightRoastNote = 'Light roast: higher temperature applied to help extraction in the trapezoid bed.';
+    why = why ? `${lightRoastNote} ${why}` : lightRoastNote;
+  } else if (input.roastLevel === 'medium_dark') {
+    adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) - 1.0;
+    const medDarkNote = 'Medium-dark roast: lower temperature applied to reduce bitter compounds extraction.';
+    why = why ? `${medDarkNote} ${why}` : medDarkNote;
+  } else if (input.roastLevel === 'dark') {
+    adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) - 2.0;
+    adjustedProfile.grindBias = 'coarser';
+    const darkRoastNote = 'Dark roast: lower temperature and short contact time applied to avoid extracting rustic bitterness.';
+    watch = watch ? `${darkRoastNote} ${watch}` : darkRoastNote;
+  }
+
+  // Aromaboy iced server safety warning
+  if (isAromaboy && input.brewMode === 'iced') {
+    const safetyWarn = 'Aromaboy Iced warning: Ensure your glass server is safe for direct icing; automatic flow could cause thermal shock if safety is not verified.';
+    watch = watch ? `${safetyWarn} ${watch}` : safetyWarn;
+  }
+
+  // Floral target suitability warning
+  if (targetId === 'floral_transparent') {
+    const suitabilityWarn = 'Warning: Melitta trapezoid brewer has lower suitability/fit for delicate floral profiles than V60 or Origami cone drippers.';
+    watch = watch ? `${suitabilityWarn} ${watch}` : suitabilityWarn;
   }
 
   adjustedProfile.recipeStyle = activeStyle as DeviceBrewProfile['recipeStyle'];

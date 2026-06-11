@@ -738,11 +738,11 @@ function buildPouroverStyleGuideCopy(plan: BrewPlan): MethodStyleGuideCopy {
       chip: 'Melitta satu tuang',
     },
     aromaboy_style: {
-      setup: 'Bilas filter kecil, panaskan alat, dan gunakan dosis ringan yang merata.',
-      charge: 'Tuang pendek dan hati-hati agar alat kecil tidak meluap.',
-      main: 'Jaga kontak singkat dan bersih untuk seduhan kecil harian.',
-      release: 'Biarkan air turun penuh sebelum diangkat.',
-      finish: 'Sajikan langsung selagi hangat.',
+      setup: 'Pasang filter sesuai kapasitas Aromaboy, lipat keliman, dan masukkan dosis kopi.',
+      charge: 'Isi reservoir air mesin Aromaboy dengan air sesuai resep.',
+      main: 'Nyalakan mesin dan biarkan siklus aliran otomatis berjalan.',
+      release: 'Tunggu siklus otomatis selesai dan biarkan penirisan otomatis selesai.',
+      finish: 'Aduk hasil seduhan di wadah saji setelah siklus mesin selesai.',
       chip: 'Aromaboy',
     },
     three_pour_melitta: {

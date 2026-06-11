@@ -1,15 +1,19 @@
 # AI Brew Method + Style Final Verdict
 
-Generated: 2026-06-11T07:07:50.207Z
-Local SHA: 7ae12a3ecca754df5b2fbe9da73ac5fcc028cc46
-Remote main SHA: e49ae05ebf5c0943a7ba416102e3780cef56ae3e
+Generated: 2026-06-11T13:40:30.680Z
+Local SHA: 83c3935a87d291c0db2acb450e803210da124ad3
+Remote main SHA: 83c3935a87d291c0db2acb450e803210da124ad3
 Branch: main
-Working tree status at generation: M apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json
- M apps/web/src/features/ai-brew/AiBrewPanel.tsx
+Working tree status at generation: M apps/web/src/features/ai-brew/AiBrewPanel.tsx
  M apps/web/src/features/ai-brew/antiHallucination.ts
- M apps/web/src/features/ai-brew/batchPlanner.ts
+ M apps/web/src/features/ai-brew/aprilPlanner.ts
+ M apps/web/src/features/ai-brew/konoPlanner.ts
+ M apps/web/src/features/ai-brew/melittaPlanner.ts
+ M apps/web/src/features/ai-brew/origamiPlanner.ts
  M apps/web/src/features/ai-brew/planner.ts
+ M apps/web/src/features/ai-brew/siphonPlanner.ts
  M apps/web/src/features/ai-brew/types.ts
+ M apps/web/src/features/ai-brew/workflowGuide.ts
  M apps/web/src/features/ai-brew/workflowTutorials.ts
  M docs/ai-brew-method-style-coverage-report.md
  M docs/ai-brew-method-style-final-verdict.md
@@ -17,7 +21,9 @@ Working tree status at generation: M apps/web/public/data/ai-brew/device-brew-pr
  M docs/ai-brew-method-style-ui-ux-report.md
  M docs/ai-brew-real-world-1000-report.md
  M tests/unit/aiBrewPlanner.test.ts
-Artifact directory: `artifacts/ai-brew-audit/method-styles/7ae12a3ecca7`
+?? C/
+?? scratch/
+Artifact directory: `artifacts/ai-brew-audit/method-styles/83c3935a87d2`
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 
@@ -30,7 +36,7 @@ AI BREW METHOD STYLE COVERAGE STRONG / REAL BREW VALIDATION REQUIRED
 - Hard failures: 0
 - Language leakage hard failures: 0
 - Method vocabulary hard failures: 0
-- Average score: 100
+- Average score: 99.9
 - CI status for latest remote main before this audit: CI LATEST UNVERIFIED
 
 ## Blockers

@@ -1,15 +1,19 @@
 # AI Brew Method + Style Coverage Report
 
-Generated: 2026-06-11T07:07:50.207Z
-Local SHA: 7ae12a3ecca754df5b2fbe9da73ac5fcc028cc46
-Remote main SHA: e49ae05ebf5c0943a7ba416102e3780cef56ae3e
+Generated: 2026-06-11T13:40:30.680Z
+Local SHA: 83c3935a87d291c0db2acb450e803210da124ad3
+Remote main SHA: 83c3935a87d291c0db2acb450e803210da124ad3
 Branch: main
-Working tree status at generation: M apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json
- M apps/web/src/features/ai-brew/AiBrewPanel.tsx
+Working tree status at generation: M apps/web/src/features/ai-brew/AiBrewPanel.tsx
  M apps/web/src/features/ai-brew/antiHallucination.ts
- M apps/web/src/features/ai-brew/batchPlanner.ts
+ M apps/web/src/features/ai-brew/aprilPlanner.ts
+ M apps/web/src/features/ai-brew/konoPlanner.ts
+ M apps/web/src/features/ai-brew/melittaPlanner.ts
+ M apps/web/src/features/ai-brew/origamiPlanner.ts
  M apps/web/src/features/ai-brew/planner.ts
+ M apps/web/src/features/ai-brew/siphonPlanner.ts
  M apps/web/src/features/ai-brew/types.ts
+ M apps/web/src/features/ai-brew/workflowGuide.ts
  M apps/web/src/features/ai-brew/workflowTutorials.ts
  M docs/ai-brew-method-style-coverage-report.md
  M docs/ai-brew-method-style-final-verdict.md
@@ -17,7 +21,9 @@ Working tree status at generation: M apps/web/public/data/ai-brew/device-brew-pr
  M docs/ai-brew-method-style-ui-ux-report.md
  M docs/ai-brew-real-world-1000-report.md
  M tests/unit/aiBrewPlanner.test.ts
-Artifact directory: `artifacts/ai-brew-audit/method-styles/7ae12a3ecca7`
+?? C/
+?? scratch/
+Artifact directory: `artifacts/ai-brew-audit/method-styles/83c3935a87d2`
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 
@@ -28,35 +34,35 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Scenarios: 1000
 - Passed: 1000
 - Failed: 0
-- Warnings: 0
-- Average score: 100
+- Warnings: 22
+- Average score: 99.9
 - Final verdict: AI BREW METHOD STYLE COVERAGE STRONG / REAL BREW VALIDATION REQUIRED
 
 ## Method Scores
 
 | Method | Cases | Avg | Min | Classification |
 | --- | ---: | ---: | ---: | --- |
-| batch_brew | 1000 | 100 | 100 | STRONG |
+| kono | 1000 | 99.9 | 96 | STRONG |
 
 ## Lowest Scoring Cases
 
-- batch_brew-auto-balance_clean-0: 100 (no finding)
-- batch_brew-auto-more_sweetness-1: 100 (no finding)
-- batch_brew-auto-more_acidity-2: 100 (no finding)
-- batch_brew-auto-more_body-3: 100 (no finding)
-- batch_brew-auto-floral_transparent-4: 100 (no finding)
-- batch_brew-auto-fruit_forward-5: 100 (no finding)
-- batch_brew-auto-soft_round-6: 100 (no finding)
-- batch_brew-auto-dense_comforting-7: 100 (no finding)
-- batch_brew-sca_gold_cup-balance_clean-8: 100 (no finding)
-- batch_brew-sca_gold_cup-more_sweetness-9: 100 (no finding)
-- batch_brew-sca_gold_cup-more_acidity-10: 100 (no finding)
-- batch_brew-sca_gold_cup-more_body-11: 100 (no finding)
-- batch_brew-sca_gold_cup-floral_transparent-12: 100 (no finding)
-- batch_brew-sca_gold_cup-fruit_forward-13: 100 (no finding)
-- batch_brew-sca_gold_cup-soft_round-14: 100 (no finding)
-- batch_brew-sca_gold_cup-dense_comforting-15: 100 (no finding)
-- batch_brew-heavy_batch_catering-balance_clean-16: 100 (no finding)
-- batch_brew-heavy_batch_catering-more_sweetness-17: 100 (no finding)
-- batch_brew-heavy_batch_catering-more_acidity-18: 100 (no finding)
-- batch_brew-heavy_batch_catering-more_body-19: 100 (no finding)
+- kono-kono_meimon_traditional-soft_round-110: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_meimon_traditional-dense_comforting-495: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_meimon_traditional-floral_transparent-540: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_meimon_traditional-soft_round-590: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_slow_drip_body-fruit_forward-605: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_meimon_traditional-more_body-635: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_slow_drip_body-more_acidity-650: 96 (guide/detail text may be too dense for mobile)
+- kono-iced_kono_meimon-fruit_forward-661: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_meimon_traditional-balance_clean-680: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_meimon_traditional-fruit_forward-685: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_slow_drip_body-floral_transparent-700: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_meimon_traditional-more_acidity-730: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_slow_drip_body-more_sweetness-745: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_slow_drip_body-soft_round-750: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_dripper_standard-soft_round-790: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_slow_drip_body-more_body-795: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_meimon_traditional-soft_round-830: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_slow_drip_body-fruit_forward-845: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_meimon_traditional-fruit_forward-925: 96 (guide/detail text may be too dense for mobile)
+- kono-kono_slow_drip_body-floral_transparent-940: 96 (guide/detail text may be too dense for mobile)

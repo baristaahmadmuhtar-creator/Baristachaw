@@ -1306,6 +1306,7 @@ export interface BrewPlan {
   batchBrewStyle?: BatchBrewRecipeStyle;
   siphonStyle?: SiphonRecipeStyle;
   origamiStyle?: OrigamiRecipeStyle;
+  origamiFilterStyle?: OrigamiFilterStyle;
   aprilStyle?: AprilRecipeStyle;
   melittaStyle?: MelittaRecipeStyle;
   konoStyle?: KonoRecipeStyle;

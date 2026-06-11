@@ -4690,9 +4690,11 @@ function buildExtractionRationale(params: {
         ? `French Press workflow charges ${params.hotWaterMl} ml, then controls steep, settle, gentle press, and full decant checkpoints.`
         : params.methodFamily === 'hario_switch'
           ? `Switch workflow uses valve state, chamber load, release, and drawdown checkpoints from ${firstPour?.pourVolumeMl || 0} ml to final target ${lastPour?.targetVolumeMl || params.hotWaterMl} ml.`
-          : positivePours.length > 0
-            ? `Pour map uses ${positivePours.length} checkpoints from ${firstPour?.pourVolumeMl || 0} ml to final target ${lastPour?.targetVolumeMl || params.hotWaterMl} ml with ${techniqueSignals.join(', ') || 'controlled flow'} technique.`
-            : `Workflow map uses ${params.steps.length} checkpoints with controlled contact and no extra water outside the deterministic plan.`,
+          : params.methodFamily === 'siphon'
+            ? `Siphon workflow charges ${params.hotWaterMl} ml in the lower bowl, then controls vapor rise, agitation, steeping, and vacuum drawdown.`
+            : positivePours.length > 0
+              ? `Pour map uses ${positivePours.length} checkpoints from ${firstPour?.pourVolumeMl || 0} ml to final target ${lastPour?.targetVolumeMl || params.hotWaterMl} ml with ${techniqueSignals.join(', ') || 'controlled flow'} technique.`
+              : `Workflow map uses ${params.steps.length} checkpoints with controlled contact and no extra water outside the deterministic plan.`,
     iceSplit: params.iceMl > 0
       ? `Iced split uses ${params.hotWaterSharePercent}% hot water and ${params.iceSharePercent}% ice: ${params.hotWaterMl} ml hot concentrate over ${params.iceMl} g measured ice.`
       : undefined,
@@ -4770,7 +4772,7 @@ function deriveMethodFamilyAdjustment(params: {
       adjustment.tempDeltaC = 0.2;
       adjustment.brewTimeDeltaSec = 8;
       adjustment.grindBias = 'finer';
-      adjustment.notes.push('Kono family leans toward sweeter center extraction with longer contact stability through the middle phase.');
+      adjustment.notes.push('Kono family leans toward sweeter center extraction with stable contact time to establish a sweet core through centered and slightly deeper pours.');
       break;
     case 'kalita_wave':
       adjustment.sequenceSignature = 'flatbed_mid';
@@ -9142,7 +9144,7 @@ function finalizePlanCore(
     customVariety: input.customVariety.trim(),
     pourStyle: input.pourStyle,
     pourCount: input.pourCount,
-    origamiFilterStyle: input.origamiFilterStyle,
+    origamiFilterStyle: origamiSelection?.resolvedFilterStyle || input.origamiFilterStyle,
     aeropressStyle: input.aeropressStyle,
     frenchPressStyle: input.frenchPressStyle,
     kalitaWaveStyle: input.kalitaWaveStyle,

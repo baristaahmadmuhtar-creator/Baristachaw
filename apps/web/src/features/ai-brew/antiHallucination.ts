@@ -27,6 +27,30 @@ function normalized(value?: string) {
   return String(value || '').trim().toLowerCase();
 }
 
+function escapeRegExp(val: string): string {
+  return val.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function stripMetadataNames(text: string, plan: BrewPlan): string {
+  let cleaned = text;
+  const terms = [
+    plan.dripper.name,
+    plan.dripper.brand,
+    plan.coffeeName,
+  ].filter((t): t is string => Boolean(t) && typeof t === 'string' && t.trim().length > 0);
+
+  for (const term of terms) {
+    cleaned = cleaned.replace(new RegExp(escapeRegExp(term), 'gi'), '');
+    const words = term.split(/\s+/);
+    for (const word of words) {
+      if (word.length >= 3) {
+        cleaned = cleaned.replace(new RegExp(`\\b${escapeRegExp(word)}\\b`, 'gi'), '');
+      }
+    }
+  }
+  return cleaned;
+}
+
 function isUnknownValue(value?: string) {
   const n = normalized(value);
   return !n || n === 'not specified' || n === 'none' || n === '-' || n === 'unknown' || n === 'tidak dipilih';
@@ -170,10 +194,15 @@ function formatSafeBrewTime(totalSeconds: number) {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
+function stripGrinderCalibrationNotes(text: string): string {
+  return text.split('\n').filter((line) => !/grinder-calibration/i.test(line)).join('\n');
+}
+
 export function validateUserFacingRecipeText(plan: BrewPlan): BrewGuardResult {
   const reasons: string[] = [];
   const textParts = collectUserFacingRecipeTextParts(plan);
-  const text = collectUserFacingRecipeText(plan);
+  const rawText = stripGrinderCalibrationNotes(collectUserFacingRecipeText(plan));
+  const text = stripMetadataNames(rawText, plan);
   const summaryWithoutCoffeeName = plan.coffeeName
     ? plan.summary.split(plan.coffeeName).join('')
     : plan.summary;
@@ -255,6 +284,77 @@ export function validateUserFacingRecipeText(plan: BrewPlan): BrewGuardResult {
   if (plan.methodFamily === 'chemex' && plan.doseG >= 24 && !/\b(clog|stall|slow drawdown|long drawdown|heavy bed|thick bed|tersumbat|macet|lambat|tebal)\b/i.test(text)) {
     reasons.push('High dose Chemex text is missing clog/stall/slow drawdown warning');
   }
+  if (plan.methodFamily === 'origami') {
+    if (plan.origamiFilterStyle === 'cone') {
+      if (!/\b(cone|conical|kerucut)\b/i.test(text)) {
+        reasons.push('Cone filter Origami recipe must mention cone/conical filter');
+      }
+    } else if (plan.origamiFilterStyle === 'wave') {
+      if (!/\b(wave|flat-bottom|flat|gelombang|datar)\b/i.test(text)) {
+        reasons.push('Wave filter Origami recipe must mention wave/flat-bottom filter');
+      }
+    }
+    if (plan.recipeStyle === 'mugen_one_pour' && plan.origamiFilterStyle === 'wave') {
+      reasons.push('Mugen one-pour style is incompatible with wave filter style');
+    }
+    if (!/\b(holder|collar|dudukan|stabil)\b/i.test(text)) {
+      reasons.push('Origami recipe is missing holder/collar stability warning');
+    }
+    if (!/\b(seat|seating|flat|ridges|keramik|rata|lipatan)\b/i.test(text)) {
+      reasons.push('Origami recipe is missing filter seating instructions');
+    }
+    if (/\b(v60 dripper|v60 brewer|v60 method|v60 device|seduh dengan v60|alat v60|v60 alat|saringan v60)\b/i.test(text)) {
+      reasons.push('Origami text contains V60 dripper/brewer references');
+    }
+    if (plan.brewMode === 'iced' && !/\b(ice|es|hot water.*ice|air panas.*es|concentrate|konsentrat)\b/i.test(text)) {
+      reasons.push('Iced Origami text is missing ice/hot water split reference');
+    }
+  }
+  if (plan.methodFamily === 'april') {
+    if (/\b(kalita|wave|generic kalita|kalita copy|wave copy)\b/i.test(text)) {
+      reasons.push('April text contains generic Kalita vocabulary');
+    }
+    if (!/\b(flat-bed|flat bed|alas datar|rata)\b/i.test(text)) {
+      reasons.push('April text is missing flat-bed reference');
+    }
+    if (!/\b(low agitation|low-agitation|agitasi rendah|tanpa aduk berlebih)\b/i.test(text)) {
+      reasons.push('April text is missing low agitation reference');
+    }
+    if (plan.brewMode === 'iced' && !/\b(ice|es|hot water.*ice|air panas.*es|concentrate|konsentrat)\b/i.test(text)) {
+      reasons.push('Iced April text is missing ice/hot water split reference');
+    }
+    if (plan.recipeStyle === 'high_body_heavy_dose' && !/\b(clog|slow flow|slow drawdown|slow drain|tersumbat|lambat|mampet)\b/i.test(text)) {
+      reasons.push('High body April text is missing clog/slow flow warning');
+    }
+  }
+  if (plan.methodFamily === 'melitta') {
+    if (plan.recipeStyle === 'aromaboy_style' && /\b(pulse|pulse-pour|manual pour|manual pulse|kettle pour|oval pour)\b/i.test(text)) {
+      reasons.push('Aromaboy style text contains manual pour-over vocabulary');
+    }
+    if (plan.recipeStyle !== 'aromaboy_style' && !/\b(trapezoid|trapezoidal|wedge|seam|fold|lipat|keliman|lipatan)\b/i.test(text)) {
+      reasons.push('Manual Melitta text is missing trapezoid/filter seam reference');
+    }
+    if (plan.brewMode === 'iced' && !/\b(ice|es|hot water.*ice|air panas.*es|concentrate|konsentrat)\b/i.test(text)) {
+      reasons.push('Iced Melitta text is missing ice/hot water split reference');
+    }
+    if (plan.recipeStyle === 'dense_classic_extraction' && !/\b(bitter|bitterness|pahit|sepat|astringent)\b/i.test(text)) {
+      reasons.push('Dense Melitta text is missing bitterness warning');
+    }
+  }
+  if (plan.methodFamily === 'kono') {
+    if (/\b(v60 timing|spiral pour|wall wash|generic v60)\b/i.test(text)) {
+      reasons.push('Kono text contains generic V60 vocabulary');
+    }
+    if (!/\b(center pour|center-core|core sweetness|tengah|pusat)\b/i.test(text)) {
+      reasons.push('Kono text is missing center pour/core sweetness reference');
+    }
+    if (plan.brewMode === 'iced' && !/\b(ice|es|hot water.*ice|air panas.*es|concentrate|konsentrat)\b/i.test(text)) {
+      reasons.push('Iced Kono text is missing ice/hot water split reference');
+    }
+    if (plan.recipeStyle === 'kono_slow_drip_body' && !/\b(over-extraction|over-extract|ekstraksi berlebih|pahit|bitter)\b/i.test(text)) {
+      reasons.push('Slow body Kono text is missing over-extraction warning');
+    }
+  }
   if (plan.methodFamily === 'clever_dripper' && /\b(v60 timing|pulse pour|generic pour-over|spiral pour|wall pouring|pulse pour to final drawdown)\b/i.test(text)) {
     reasons.push('Clever Dripper text contains generic pour-over/V60 vocabulary');
   }
@@ -285,6 +385,23 @@ export function validateUserFacingRecipeText(plan: BrewPlan): BrewGuardResult {
     }
     if (plan.brewMode === 'iced' && !/\b(server safety|thermal shock|carafe safety|aman|pecah|shock)\b/i.test(text)) {
       reasons.push('Iced batch is missing server safety warning');
+    }
+  }
+  if (plan.methodFamily === 'siphon') {
+    if (/\b(v60 timing|flat bed|pour map|gooseneck|bloom pour|center-to-mid|pulse pour|pulse-pour|generic pour-over|spiral pour|wall pouring)\b/i.test(text)) {
+      reasons.push('Siphon text contains non-Siphon pour-over/V60 vocabulary');
+    }
+    if (/\b(?:ice|iced|es)\b.*\b(lower|bottom|bawah|bulb|globe)\b/i.test(text)) {
+      reasons.push('Siphon text suggests adding ice to the lower bowl');
+    }
+    if (!/\b(heat|panas|api)\b/i.test(text) || !/\b(rise|naik)\b/i.test(text) || !/\b(heat off|remove heat|cut heat|matikan panas|matikan api|off)\b/i.test(text) || !/\b(drawdown|turun)\b/i.test(text)) {
+      reasons.push('Siphon text is missing core siphon steps (heat, rise, heat off, drawdown)');
+    }
+    if (!/\b(safety|warning|caution|hazard|pecah|shock|retak|bahaya|aman|perhatian)\b/i.test(text)) {
+      reasons.push('Siphon text is missing safety warnings');
+    }
+    if (plan.recipeStyle === 'spirit_infusion_style') {
+      reasons.push('Spirit infusion style is blocked due to safety/legality concerns (spirit_infusion_style)');
     }
   }
   return {
@@ -441,17 +558,18 @@ export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
     }
   }
 
-  const narrative = [
+  let narrative = stripGrinderCalibrationNotes([
     plan.summary,
     ...plan.notes,
     ...plan.warnings,
     ...(plan.workflowGuideSteps || []).map((step) => `${step.label} ${step.primaryText} ${step.secondaryText || ''}`),
     ...(plan.aiNotes ? Object.values(plan.aiNotes).filter(Boolean) : []),
-  ].join('\n');
+  ].join('\n'));
   const sanitized = sanitizeBrewNarrative(narrative, plan);
   if (sanitized !== narrative && /geisha|gesha|official grind|profil exact|ready[-\s]?brew/i.test(narrative)) {
     reasons.push('stored narrative contains unsafe factual claims');
   }
+  narrative = stripMetadataNames(narrative, plan);
 
   const timingValidation = validateBrewPlanTiming(plan);
   if (!timingValidation.allowed && timingValidation.reason) reasons.push(timingValidation.reason);
@@ -504,14 +622,63 @@ export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
   if (plan.methodFamily === 'chemex' && /\b(v60 timing|small dripper|quick drawdown|thin paper)\b/i.test(narrative)) {
     reasons.push('Chemex narrative contains non-Chemex vocabulary');
   }
+  if (plan.methodFamily === 'origami') {
+    if (plan.origamiFilterStyle === 'cone') {
+      if (!/\b(cone|conical|kerucut)\b/i.test(narrative)) {
+        reasons.push('Cone filter Origami recipe must mention cone/conical filter');
+      }
+    } else if (plan.origamiFilterStyle === 'wave') {
+      if (!/\b(wave|flat-bottom|flat|gelombang|datar)\b/i.test(narrative)) {
+        reasons.push('Wave filter Origami recipe must mention wave/flat-bottom filter');
+      }
+    }
+    if (plan.recipeStyle === 'mugen_one_pour' && plan.origamiFilterStyle === 'wave') {
+      reasons.push('Mugen one-pour style is incompatible with wave filter style');
+    }
+    if (/\b(v60 dripper|v60 brewer|v60 method|v60 device|seduh dengan v60|alat v60|v60 alat|saringan v60)\b/i.test(narrative)) {
+      reasons.push('Origami narrative contains V60 dripper/brewer references');
+    }
+    if (!/\b(holder|collar|dudukan|stabil)\b/i.test(narrative)) {
+      reasons.push('Origami narrative is missing holder/collar stability warning');
+    }
+    if (!/\b(seat|seating|flat|ridges|keramik|rata|lipatan)\b/i.test(narrative)) {
+      reasons.push('Origami narrative is missing filter seating instructions');
+    }
+  }
+  if (plan.methodFamily === 'april') {
+    if (/\b(kalita|wave|generic kalita|kalita copy|wave copy)\b/i.test(narrative)) {
+      reasons.push('April narrative contains generic Kalita vocabulary');
+    }
+  }
+  if (plan.methodFamily === 'melitta') {
+    if (plan.recipeStyle === 'aromaboy_style' && /\b(pulse|pulse-pour|manual pour|manual pulse|kettle pour|oval pour)\b/i.test(narrative)) {
+      reasons.push('Aromaboy narrative contains manual pour-over vocabulary');
+    }
+  }
+  if (plan.methodFamily === 'kono') {
+    if (/\b(v60 timing|spiral pour|wall wash|generic v60)\b/i.test(narrative)) {
+      reasons.push('Kono narrative contains generic V60 vocabulary');
+    }
+  }
   if (plan.methodFamily === 'clever_dripper' && /\b(v60 timing|pulse pour|generic pour-over|pulse-pour|generic clever)\b/i.test(narrative)) {
     reasons.push('Clever Dripper narrative contains non-Clever generic pour-over vocabulary');
   }
   if (plan.methodFamily === 'batch_brew' && /\b(manual pour|manual pulse|pulse-pour|pulse pour|gooseneck|kettle|teko ceret|ceret|manual bloom|spiral)\b/i.test(narrative)) {
     reasons.push('Batch Brewer narrative contains manual pour-over vocabulary');
   }
+  if (plan.methodFamily === 'siphon') {
+    if (/\b(v60 timing|flat bed|pour map|gooseneck|bloom pour|center-to-mid|pulse pour|pulse-pour|generic pour-over|spiral pour|wall pouring)\b/i.test(narrative)) {
+      reasons.push('Siphon narrative contains non-Siphon pour-over/V60 vocabulary');
+    }
+    if (/\b(?:ice|iced|es)\b.*\b(lower|bottom|bawah|bulb|globe)\b/i.test(narrative)) {
+      reasons.push('Siphon narrative suggests adding ice to the lower bowl');
+    }
+    if (plan.recipeStyle === 'spirit_infusion_style') {
+      reasons.push('Spirit infusion style is blocked due to safety/legality concerns (spirit_infusion_style)');
+    }
+  }
 
-  const blocked = reasons.some((reason) => /not finite|must equal|must be lower|conflicting|workflow guide failed|workflow wording|ratio mismatch|canonical|placeholder|developer copy|mislabeled|vocabulary|starts before/.test(reason));
+  const blocked = reasons.some((reason) => /not finite|must equal|must be lower|conflicting|workflow guide failed|workflow wording|ratio mismatch|canonical|placeholder|developer copy|mislabeled|vocabulary|starts before|spirit_infusion_style|spirit infusion|incompatible|Origami/i.test(reason));
   return {
     allowed: !blocked,
     risk: reasons.length === 0 ? 'none' : blocked ? 'blocked' : 'medium',

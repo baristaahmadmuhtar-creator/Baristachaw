@@ -12,6 +12,7 @@ import type {
   KalitaWaveRecipeStyle,
   CleverDripperRecipeStyle,
   ChemexRecipeStyle,
+  OrigamiFilterStyle,
 } from './types.ts';
 
 type WorkflowTutorialCopy = {
@@ -42,6 +43,7 @@ export interface WorkflowTutorialContext {
   recipeStyle?: string;
   targetProfileId?: string;
   roastLevel?: RoastLevel;
+  origamiFilterStyle?: OrigamiFilterStyle;
 }
 
 export const AI_BREW_WORKFLOW_TUTORIAL_METHODS = [
@@ -408,8 +410,8 @@ const WORKFLOW_TUTORIALS: Record<AiBrewMethodFamily, WorkflowTutorialProfile> = 
       id: 'Kunci filter, panaskan merata, dan pastikan stand stabil sebelum air naik.',
     },
     entry: {
-      en: 'Let water rise fully before adding coffee, then wet the bed with a brief stir.',
-      id: 'Biarkan air naik penuh sebelum kopi masuk, lalu basahi bed dengan adukan singkat.',
+      en: 'Let water rise fully before adding coffee, then wet all grounds with a brief stir.',
+      id: 'Biarkan air naik penuh sebelum kopi masuk, lalu basahi seluruh bubuk dengan adukan singkat.',
     },
     main: {
       en: 'Hold steady heat; siphon clarity depends on stable contact, not boiling hard.',
@@ -2065,7 +2067,7 @@ const BATCH_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, W
       id: 'Tutup termos dengan rapat dan pantau waktu simpan agar rasa tetap seimbang selama layanan.'
     }
   }
-};;
+};
 
 const SIPHON_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   traditional_vacuum_siphon: {
@@ -2082,12 +2084,12 @@ const SIPHON_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Lipat kopi perlahan ke dalam air dengan dayung bambu untuk saturasi total tanpa mengganggu filter kain.'
     },
     release: {
-      en: 'Kill the heat source completely. The immediate pressure drop creates a powerful vacuum, violently pulling the liquid through the coffee bed.',
-      id: 'Matikan sumber panas sepenuhnya. Penurunan tekanan yang instan menciptakan vakum kuat, menarik cairan secara dahsyat melewati hamparan kopi.'
+      en: 'Kill the heat source completely. The immediate pressure drop creates a powerful vacuum, pulling the liquid through the slurry.',
+      id: 'Matikan sumber panas sepenuhnya. Penurunan tekanan menciptakan vakum kuat, menarik cairan melewati campuran kopi.'
     },
     finish: {
       en: 'Watch the grounds rise into a dome, then remove the heat and serve once the brew settles.',
-      id: 'Perhatikan ampas kopi membentuk kubah, lalu hentikan pemanasan dan sajikan setelah seduhan stabil.'
+      id: 'Ampas membentuk kubah; matikan pemanas, lepas ruang atas hati-hati, sajikan seduhan saat bowl bawah terisi.'
     }
   },
   competition_triple_agitation: {
@@ -2118,8 +2120,8 @@ const SIPHON_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Jaga bola bawah pada api sangat kecil (simmer). Tujuannya adalah menjaga suhu ruang atas tetap di 88°C untuk ekstraksi yang halus.'
     },
     entry: {
-      en: 'Introduce the coffee softly. The lower temperature prevents the immediate extraction of harsh tannins and bitter ash notes.',
-      id: 'Masukkan kopi dengan lembut. Suhu yang lebih rendah mencegah terekstraknya tanin kasar dan rasa gosong abu secara instan.'
+      en: 'Introduce coffee softly. Lower temperature prevents immediate extraction of harsh tannins.',
+      id: 'Masukkan kopi dengan lembut. Suhu yang lebih rendah mencegah ekstraksi tanin kasar.'
     },
     main: {
       en: 'Avoid vigorous stirring and allow diffusion during the slightly longer contact time.',
@@ -2148,8 +2150,8 @@ const SIPHON_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
       id: 'Aduk sekali dari dasar untuk membasahi seluruh kopi, lalu biarkan seduhan tanpa gangguan.'
     },
     release: {
-      en: 'Remove heat quickly. The coarse bed acts as a highly porous filter, allowing the vacuum to slam the liquid into the lower globe instantly.',
-      id: 'Angkat dari api dengan cepat. Bed kasar bertindak sebagai filter berpori tinggi, membiarkan vakum membanting cairan ke bola bawah seketika.'
+      en: 'Remove heat quickly. The coarse grounds act as a highly porous filter, allowing the vacuum to slam the liquid into the lower globe instantly.',
+      id: 'Angkat dari api dengan cepat. Ampas kasar bertindak sebagai filter berpori tinggi, membiarkan vakum membanting cairan ke bola bawah seketika.'
     },
     finish: {
       en: 'This yields a remarkably clean, heavy-bodied cup with a snappy finish, completely devoid of over-extracted bitterness.',
@@ -2158,8 +2160,8 @@ const SIPHON_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
   },
   spirit_infusion_style: {
     setup: {
-      en: 'A highly experimental style. Secure the upper chamber, combining coffee and aromatic botanicals or spices in the dry bed.',
-      id: 'Gaya eksperimental tinggi. Pasang ruang atas, gabungkan kopi dengan botanikal aromatik atau rempah di dalam hamparan kering.'
+      en: 'A highly experimental style. Secure the upper chamber, combining coffee and aromatic botanicals or spices.',
+      id: 'Gaya eksperimental tinggi. Pasang ruang atas, gabungkan kopi dengan botanikal aromatik atau rempah.'
     },
     entry: {
       en: 'Allow the vapor pressure to push the water up, violently mingling with the complex dry ingredients in the heated chamber.',
@@ -2304,8 +2306,8 @@ const APRIL_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workfl
       id: 'Gunakan blooming melingkar. Dasar April yang unik membatasi aliran, artinya air blooming akan menggenang tebal.'
     },
     main: {
-      en: 'Execute large pours. The wide geometry demands significant slurry volume to extract the entire bed.',
-      id: 'Lakukan tuangan besar terpisah. Geometri lebar menuntut volume seduhan untuk mengekstraksi seluruh hamparan.'
+      en: 'Pour in large pulses; the wide geometry requires volume to extract the bed.',
+      id: 'Tuang secara bertahap; geometri lebar butuh volume untuk mengekstrak kopi.'
     },
     release: {
       en: 'Wait for the slow, controlled drawdown. The restricted base holes dictate the pace, creating a naturally dense extraction.',
@@ -2326,12 +2328,12 @@ const APRIL_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workfl
       id: 'Lakukan blooming tanpa agitasi (adukan). Kita ingin hamparan kopi secara struktural tidak terganggu.'
     },
     main: {
-      en: 'Pour a continuous, remarkably slow stream dead-center. The goal is to build water depth without churning the bed below.',
-      id: 'Tuang aliran lambat secara konstan tepat di tengah. Tujuannya adalah membangun kedalaman air tanpa mengaduk kopi di bawahnya.'
+      en: 'Pour a continuous, slow stream dead-center to build water depth without churning.',
+      id: 'Tuang aliran lambat secara konstan di tengah untuk membangun air tanpa mengaduk.'
     },
     release: {
-      en: 'Let gravity gently pull the high water column through the undisturbed bed. This is percolation in its purest form.',
-      id: 'Biarkan gravitasi menarik lembut kolom air tinggi melewati hamparan yang tak terganggu. Ini adalah perkolasi dalam wujud paling murni.'
+      en: 'Let gravity pull the water column through the undisturbed bed.',
+      id: 'Biarkan gravitasi menarik air melewati hamparan kopi yang tenang.'
     },
     finish: {
       en: 'This method targets a tea-like body, clear sweetness, and low astringency.',
@@ -2348,8 +2350,8 @@ const APRIL_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workfl
       id: 'Tuangan pertama adalah 50% dari berat air. Gunakan aliran stabil untuk menciptakan turbulensi terkontrol.'
     },
     main: {
-      en: 'At precisely the designated time, pour the remaining 50% with equal force. We are shock-extracting the coffee.',
-      id: 'Pada waktu yang ditentukan secara presisi, tuang 50% sisanya dengan tenaga setara. Kita melakukan shock-extraction pada kopi.'
+      en: 'Pour the remaining 50% water with equal force at the designated time.',
+      id: 'Tuang 50% sisa air dengan tenaga setara pada waktu yang ditentukan.'
     },
     release: {
       en: 'The high volume forces a relatively fast drawdown despite the restricted base.',
@@ -2370,8 +2372,8 @@ const APRIL_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workfl
       id: 'Blooming dosis tinggi dengan air panas. Alas datar memastikan hidrasi merata dan cepat meski dosisnya berat.'
     },
     main: {
-      en: 'Execute short, concentrated hot pulses. Keep the slurry deep to maximize thermal retention before it drops onto the ice.',
-      id: 'Lakukan tuangan panas pendek dan pekat. Jaga seduhan tetap dalam untuk memaksimalkan retensi termal sebelum jatuh ke atas es.'
+      en: 'Execute short, concentrated hot pulses to keep the slurry deep over the ice.',
+      id: 'Lakukan tuangan panas pendek dan pekat agar campuran kopi tetap dalam di atas es.'
     },
     release: {
       en: 'Watch the thick hot liquid cascade onto the ice, freezing the complex sugars into the final beverage.',
@@ -2392,12 +2394,12 @@ const APRIL_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workfl
       id: 'Lakukan blooming dengan sabar. Dosis besar butuh waktu jauh lebih lama agar air menembus intinya.'
     },
     main: {
-      en: 'Keep the water level low with multiple small pulses. This forces every drop to interact heavily with the dense bed.',
-      id: 'Jaga ketinggian air tetap rendah dengan pulsa kecil agar kontak dengan hamparan kopi tetap terkendali.'
+      en: 'Keep the water level low with multiple small pulses to maximize bed contact.',
+      id: 'Jaga ketinggian air tetap rendah dengan tuangan kecil untuk memaksimalkan kontak.'
     },
     release: {
-      en: 'Allow a long, syrupy drawdown. The coarse grind prevents choking while the restricted base extends contact time.',
-      id: 'Biarkan penirisan kental yang panjang. Gilingan kasar mencegah mampet, sementara dasar yang membatasi memperpanjang waktu kontak.'
+      en: 'Allow a long, syrupy drawdown; coarse grind prevents clogging.',
+      id: 'Biarkan penirisan kental yang panjang; gilingan kasar mencegah mampet.'
     },
     finish: {
       en: 'Serve a robust profile with heavy body and pronounced sweetness.',
@@ -2431,24 +2433,24 @@ const MELITTA_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Work
   },
   aromaboy_style: {
     setup: {
-      en: 'Use a fine grind for this micro-dose. The wedge geometry becomes heavily concentrated at small volumes.',
-      id: 'Gunakan gilingan halus untuk dosis mikro ini. Geometri kerucut menjadi sangat terkonsentrasi pada volume kecil.'
+      en: 'Seat the filter paper according to the Aromaboy capacity. Fold the seam and place it in the basket. Add the coffee dose.',
+      id: 'Pasang filter kertas sesuai kapasitas Aromaboy. Lipat keliman dan tempatkan di keranjang. Masukkan dosis kopi.'
     },
     entry: {
-      en: 'Measure the bloom carefully because this is a low-volume brew.',
-      id: 'Lakukan blooming secara terukur karena volume seduhan ini kecil.'
+      en: 'Fill the water reservoir of the Aromaboy machine with the measured recipe water volume.',
+      id: 'Isi reservoir air mesin Aromaboy dengan volume air yang sudah diukur sesuai resep.'
     },
     main: {
-      en: 'Pour in tight, tiny pulses. Do not wash the filter walls, keep the water strictly engaged with the central coffee mass.',
-      id: 'Tuang dalam pulsa ketat dan kecil. Jangan membilas dinding filter, jaga air hanya berinteraksi dengan massa kopi tengah.'
+      en: 'Start the machine. The water reservoir heats up and drips water automatically over the coffee bed. Let the automated machine-controlled flow run.',
+      id: 'Nyalakan mesin. Wadah air memanas dan meneteskan air secara otomatis ke atas kopi. Biarkan aliran otomatis mesin berjalan.'
     },
     release: {
-      en: 'Watch the rapid drain. The small bed size forces a quick drawdown despite the restricted hole.',
-      id: 'Pantau aliran karena hamparan kopi yang kecil dapat meniris cepat meskipun bukaan dasar terbatas.'
+      en: 'Wait for the automated cycle to finish. The restricted base governs the automatic drawdown.',
+      id: 'Tunggu siklus otomatis selesai. Lubang dasar yang terbatas mendikte penirisan otomatis.'
     },
     finish: {
-      en: 'Serve a punchy, highly concentrated micro-batch that resembles espresso-like intensity.',
-      id: 'Sajikan batch mikro yang tajam dan sangat terkonsentrasi menyerupai intensitas espresso.'
+      en: 'Wait for the automated cycle to finish. Once brewing is complete, mix the brewed coffee in the server to integrate the extraction.',
+      id: 'Tunggu siklus otomatis selesai. Setelah selesai menyeduh, aduk kopi di wadah saji untuk menyatukan ekstraksi.'
     }
   },
   three_pour_melitta: {
@@ -2596,8 +2598,8 @@ const KONO_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workflo
       id: 'Blooming panas dan berpusat di tengah. Kita harus seketika menarik aromatik volatil cerah dari bubuk kopi padat ini.'
     },
     main: {
-      en: 'Pour very slowly in the center. The lack of bypass ensures the hot water pulls maximum soluble mass before hitting the ice.',
-      id: 'Tuang sangat lambat di tengah. Ketiadaan bypass memastikan air panas menarik massa terlarut maksimal sebelum menyentuh es.'
+      en: 'Pour slowly in the center. Zero bypass ensures the hot water pulls maximum solubles before hitting the ice.',
+      id: 'Tuang lambat di tengah. Ketiadaan bypass memastikan air panas menarik komponen larut sebelum menyentuh es.'
     },
     release: {
       en: 'The thick, syrupy hot liquid will slowly drip and flash-chill over the ice blocks.',
@@ -2614,8 +2616,8 @@ const KONO_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workflo
       id: 'Pasang filter tanpa menekannya terlalu rapat ke dinding. Gunakan gilingan lebih kasar untuk menjaga aliran.'
     },
     entry: {
-      en: 'Execute a fast, highly turbulent bloom. Immediately disrupt the typically calm Kono bed to unlock deep sweetness.',
-      id: 'Lakukan blooming cepat bersuhu tinggi. Segera ganggu hamparan Kono yang biasanya tenang ini untuk membuka kemanisan mendalam.'
+      en: 'Execute a fast, turbulent bloom. Immediately disrupt the typically calm Kono bed to unlock deep sweetness.',
+      id: 'Lakukan blooming cepat dan turbulen. Segera ganggu hamparan Kono yang tenang untuk membuka kemanisan mendalam.'
     },
     main: {
       en: 'Pour in controlled concentric circles and monitor flow through the short lower ribs.',
@@ -2674,6 +2676,7 @@ function resolveContextualUniversalTutorialCopy(
   context: WorkflowTutorialContext,
   fallback: WorkflowTutorialCopy,
 ): WorkflowTutorialCopy {
+  if (context.methodFamily === 'batch_brew' || context.recipeStyle === 'aromaboy_style') return fallback;
   if (!context.targetProfileId && !context.roastLevel) return fallback;
   
   const targetCue = resolveUniversalShortTargetCue(context.targetProfileId);
@@ -2707,6 +2710,40 @@ function resolveContextualUniversalTutorialCopy(
   }
 }
 
+function resolveContextualOrigamiTutorialCopy(
+  context: WorkflowTutorialContext,
+  fallback: WorkflowTutorialCopy,
+): WorkflowTutorialCopy {
+  if (context.methodFamily !== 'origami') return fallback;
+  const filterStyle = context.origamiFilterStyle || 'cone';
+
+  let en = fallback.en;
+  let id = fallback.id;
+
+  if (filterStyle === 'cone') {
+    // Replace wave filter vocabulary with cone filter vocabulary
+    en = en
+      .replace(/\bflat-bottom wave filter\b/gi, 'conical filter')
+      .replace(/\bwave filter\b/gi, 'conical filter')
+      .replace(/\bwave\b/gi, 'cone');
+    id = id
+      .replace(/\bfilter wave alas datar\b/gi, 'filter kerucut')
+      .replace(/\bfilter wave\b/gi, 'filter kerucut')
+      .replace(/\bwave\b/gi, 'kerucut');
+  } else if (filterStyle === 'wave') {
+    // Replace cone filter vocabulary with wave filter vocabulary
+    en = en
+      .replace(/\bconical filter\b/gi, 'flat-bottom wave filter')
+      .replace(/\bcone filter\b/gi, 'flat-bottom wave filter')
+      .replace(/\bcone\b/gi, 'wave');
+    id = id
+      .replace(/\bfilter kerucut\b/gi, 'filter wave alas datar')
+      .replace(/\bkerucut\b/gi, 'wave');
+  }
+
+  return { en, id };
+}
+
 export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext): string {
   const phase = resolveWorkflowTutorialPhase(context.actionType);
   const language = resolveWorkflowTutorialLanguage(context.language);
@@ -2731,12 +2768,20 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext):
     }
   }
 
+  if (context.methodFamily === 'origami' && context.recipeStyle) {
+    const styleProfile = ORIGAMI_STYLE_TUTORIALS[context.recipeStyle];
+    if (styleProfile) {
+      const copy = resolveProfileTutorialCopy(styleProfile, context, phase);
+      const contextualCopy = resolveContextualOrigamiTutorialCopy(context, copy);
+      return normalizeWorkflowTutorialCopy(contextualCopy[language], language);
+    }
+  }
+
   let profile = WORKFLOW_TUTORIALS[context.methodFamily] || WORKFLOW_TUTORIALS.v60;
   if (context.methodFamily === 'moka_pot' && context.recipeStyle) profile = MOKA_POT_STYLE_TUTORIALS[context.recipeStyle as any] || profile;
   if (context.methodFamily === 'cold_brew' && context.recipeStyle) profile = COLD_BREW_STYLE_TUTORIALS[context.recipeStyle as any] || profile;
   if (context.methodFamily === 'batch_brew' && context.recipeStyle) profile = BATCH_BREW_STYLE_TUTORIALS[context.recipeStyle as any] || profile;
   if (context.methodFamily === 'siphon' && context.recipeStyle) profile = SIPHON_STYLE_TUTORIALS[context.recipeStyle as any] || profile;
-  if (context.methodFamily === 'origami' && context.recipeStyle) profile = ORIGAMI_STYLE_TUTORIALS[context.recipeStyle as any] || profile;
   if (context.methodFamily === 'april' && context.recipeStyle) profile = APRIL_STYLE_TUTORIALS[context.recipeStyle as any] || profile;
   if (context.methodFamily === 'melitta' && context.recipeStyle) profile = MELITTA_STYLE_TUTORIALS[context.recipeStyle as any] || profile;
   if (context.methodFamily === 'kono' && context.recipeStyle) profile = KONO_STYLE_TUTORIALS[context.recipeStyle as any] || profile;
@@ -2746,7 +2791,10 @@ export function resolveWorkflowTutorialDetail(context: WorkflowTutorialContext):
   if (context.methodFamily === 'hario_switch' && context.recipeStyle) profile = SWITCH_STYLE_TUTORIALS[context.recipeStyle as any] || profile;
 
   const copy = resolveProfileTutorialCopy(profile, context, phase);
-  const contextualCopy = resolveContextualUniversalTutorialCopy(context, copy);
+  let contextualCopy = resolveContextualUniversalTutorialCopy(context, copy);
+  if (context.methodFamily === 'origami') {
+    contextualCopy = resolveContextualOrigamiTutorialCopy(context, contextualCopy);
+  }
   
   return normalizeWorkflowTutorialCopy(contextualCopy[language], language);
 }

@@ -1031,6 +1031,7 @@ export interface BrewPlanStep {
   id: string;
   label: string;
   kind?: BrewTemplateStepKind;
+  share?: number;
   startSeconds: number;
   targetVolumeMl: number;
   pourVolumeMl: number;

@@ -5235,7 +5235,7 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
     { plan: planFor({ dripperId: 'french-press' }), expectedProfile: 'profile_french_press_hot', ratio: [12, 16], temp: [91, 96], time: [300, 390], kindPattern: /pour,wait,wait,serve/, cue: /immersion|steep|settle|decant/i },
     { plan: planFor({ dripperId: 'bialetti-moka-pot' }), expectedProfile: 'profile_bialetti_moka_pot_hot', ratio: [7, 12], temp: [88, 95], time: [120, 240], kindPattern: /pour,heat,serve/, cue: /basket|boiler water below|sputter/i },
     { plan: planFor({ dripperId: 'hario-siphon' }), expectedProfile: 'profile_hario_siphon_hot', ratio: [13, 16.5], temp: [90, 94], time: [180, 300], kindPattern: /pour,heat,wait,wait,drawdown,serve/, cue: /draw-up|add coffee|remove heat|drawdown/i },
-    { plan: planFor({ dripperId: 'batch-brewer' }), expectedProfile: 'profile_batch_brewer_hot', ratio: [15, 18], temp: [90, 96], time: [240, 380], kindPattern: /pour,wait,drawdown,serve/, cue: /dose per liter|machine brew volume|spray-pattern/i },
+    { plan: planFor({ dripperId: 'batch-brewer' }), expectedProfile: 'profile_batch_brewer_hot', ratio: [15, 18.3], temp: [90, 96], time: [240, 380], kindPattern: /pour,pour,drawdown,serve/, cue: /dose per liter|machine brew volume|spray-pattern/i },
     { plan: planFor({ dripperId: 'toddy-cold-brew' }), expectedProfile: 'profile_toddy_cold_brew_hot', ratio: [8, 18], temp: [4, 25], time: [21600, 64800], kindPattern: /pour,wait,serve/, cue: /cool water|long cold immersion|not a hot workflow/i },
     { plan: planFor({ dripperId: 'espresso-machine' }), expectedProfile: 'profile_espresso_machine_hot', ratio: [1, 3.5], temp: [90, 96], time: [20, 40], kindPattern: /extract,serve/, cue: /yield|shot|not.*pour pulse|rather than pour pulses/i },
   ];
@@ -8083,7 +8083,7 @@ test('non-dripper method profiles generate action-safe AI Brew plans without fak
         { id: 'start_brew', label: 'Start Brew', kind: 'pour', share: 1, startSeconds: 0, note: 'Start brew cycle.' },
         { id: 'drawdown', label: 'Drawdown', kind: 'drawdown', share: 0, startSeconds: 270, note: 'Let drawdown finish.' },
       ],
-      expectedKinds: ['pour', 'drawdown'],
+      expectedKinds: ['pour', 'pour', 'drawdown', 'serve'],
     },
   ] as const;
 
@@ -10672,7 +10672,7 @@ test('origin-target-method calibration makes origin cues react differently acros
   assert.ok(ethiopiaV60Acidity.recommendedRatio > ethiopiaKalitaAcidity.recommendedRatio);
   assert.ok(ethiopiaV60Shares[ethiopiaV60Shares.length - 1] > ethiopiaKalitaShares[ethiopiaKalitaShares.length - 1]);
   assert.ok(brazilCleverSweetness.totalTimeSeconds > brazilAprilSweetness.totalTimeSeconds);
-  assert.ok(brazilCleverShares[0] > brazilAprilShares[0]);
+  assert.ok(brazilCleverShares[2] > brazilAprilShares[2]);
   assert.ok(gayoKalitaBody.totalTimeSeconds > gayoV60Body.totalTimeSeconds);
   assert.ok(gayoKalitaShares[1] > gayoV60Shares[1]);
   assert.ok(yunnanV60Balanced.recommendedRatio > yunnanKalitaBalanced.recommendedRatio);

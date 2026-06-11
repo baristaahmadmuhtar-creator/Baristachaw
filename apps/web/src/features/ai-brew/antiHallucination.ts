@@ -267,6 +267,26 @@ export function validateUserFacingRecipeText(plan: BrewPlan): BrewGuardResult {
   if (plan.methodFamily === 'clever_dripper' && plan.doseG >= 24 && !/\b(muddy|slow drain|slow release|over-extract|lumpur|tersumbat|lambat|ekstraksi berlebih)\b/i.test(text)) {
     reasons.push('High dose Clever text is missing muddy/slow-drain/over-extraction warning');
   }
+  if (plan.methodFamily === 'batch_brew') {
+    if (/\b(manual pour|manual pulse|pulse-pour|pulse pour|gooseneck|kettle|teko ceret|ceret|manual bloom|spiral)\b/i.test(text)) {
+      reasons.push('Batch Brewer text contains manual pour-over vocabulary (manual pour, kettle, gooseneck, spiral)');
+    }
+    if (!/\b(basket|keranjang)\b/i.test(text)) {
+      reasons.push('Batch Brewer text is missing basket reference');
+    }
+    if (!/\b(machine cycle|siklus mesin)\b/i.test(text)) {
+      reasons.push('Batch Brewer text is missing machine cycle reference');
+    }
+    if (!/\b(carafe mix|carafe|aduk.*carafe|mix.*carafe|airpot|teko)\b/i.test(text)) {
+      reasons.push('Batch Brewer text is missing carafe mix reference');
+    }
+    if (plan.recipeStyle === 'pre_wet_hybrid_batch' && !/\b(machine specs|fitur|pre-wet|bloom|spesifikasi)\b/i.test(text)) {
+      reasons.push('Pre-wet hybrid batch is missing machine capability warning');
+    }
+    if (plan.brewMode === 'iced' && !/\b(server safety|thermal shock|carafe safety|aman|pecah|shock)\b/i.test(text)) {
+      reasons.push('Iced batch is missing server safety warning');
+    }
+  }
   return {
     allowed: reasons.length === 0,
     risk: reasons.length === 0 ? 'none' : 'blocked',
@@ -486,6 +506,9 @@ export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
   }
   if (plan.methodFamily === 'clever_dripper' && /\b(v60 timing|pulse pour|generic pour-over|pulse-pour|generic clever)\b/i.test(narrative)) {
     reasons.push('Clever Dripper narrative contains non-Clever generic pour-over vocabulary');
+  }
+  if (plan.methodFamily === 'batch_brew' && /\b(manual pour|manual pulse|pulse-pour|pulse pour|gooseneck|kettle|teko ceret|ceret|manual bloom|spiral)\b/i.test(narrative)) {
+    reasons.push('Batch Brewer narrative contains manual pour-over vocabulary');
   }
 
   const blocked = reasons.some((reason) => /not finite|must equal|must be lower|conflicting|workflow guide failed|workflow wording|ratio mismatch|canonical|placeholder|developer copy|mislabeled|vocabulary|starts before/.test(reason));

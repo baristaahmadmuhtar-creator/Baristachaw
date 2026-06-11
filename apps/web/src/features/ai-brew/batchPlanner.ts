@@ -30,160 +30,183 @@ export function resolveBatchPlanSelection(params: {
   processEntry?: ProcessCatalogEntry;
   doseG: number;
 }): BatchPlanSelection {
-  const { input, profile, doseG } = params;
+  const { input, dripper, profile, doseG } = params;
+  const targetId = params.targetProfile?.id || '';
   const style = input.batchBrewStyle || 'auto';
-  if (style === 'auto') {
-    return {
-      style: 'auto',
-      adjustedProfile: profile,
-      why: 'Batch Brewer Auto style utilizes the default catalog extraction profile to deliver a highly balanced cup.',
-      watch: 'Ensure proper water distribution and level bed for even extraction.',
-    };
-  }
 
-  const activeStyle = style;
+  // Resolve active style
+  let activeStyle: BatchBrewRecipeStyle = style;
+  if (style === 'auto') {
+    if (targetId === 'more_body' || targetId === 'dense_comforting') {
+      activeStyle = 'heavy_batch_catering';
+    } else if (targetId === 'more_sweetness' || targetId === 'soft_round') {
+      activeStyle = 'high_extraction_thermos';
+    } else if (targetId === 'more_acidity' || targetId === 'fruit_forward' || targetId === 'floral_transparent') {
+      activeStyle = 'bright_light_roast_batch';
+    } else if (input.roastLevel === 'light') {
+      activeStyle = 'bright_light_roast_batch';
+    } else {
+      activeStyle = 'sca_gold_cup';
+    }
+  }
 
   const adjustedProfile: DeviceBrewProfile = {
     ...profile,
     steps: [],
   };
 
+  const targetWarnings: string[] = [];
+  if (targetId === 'floral_transparent') {
+    targetWarnings.push('Warning: Floral notes have lower clarity and extraction confidence in a batch brewer.');
+  } else if (targetId === 'more_acidity' || targetId === 'fruit_forward') {
+    targetWarnings.push('Warning: Batch brewing mutes bright fruit acidity compared to manual cone drippers.');
+  }
+
+  // Pre-wet hybrid batch capability check
+  const isPreWetCapable = dripper.id.toLowerCase().includes('precision') || 
+                          dripper.name.toLowerCase().includes('precision') || 
+                          (dripper.expertDescription && dripper.expertDescription.toLowerCase().includes('pre-wet')) ||
+                          (dripper.description && dripper.description.toLowerCase().includes('pre-wet'));
+
+  const isIced = input.brewMode === 'iced';
+  const serverSafetyWarning = isIced ? 'Server safety warning: Ensure your carafe/server is safe for direct icing (thermal shock hazard).' : '';
+
   let why = '';
   let watch = '';
 
   switch (activeStyle) {
     case 'sca_gold_cup':
-      adjustedProfile.ratioDelta = 0.0;
+      // 55 g/L default guideline ratio (which corresponds to 18.18 ratio).
+      // Since default ratioDefault is 16.5, ratioDelta of 1.68 achieves 18.18.
+      adjustedProfile.ratioDelta = 1.68;
       adjustedProfile.tempDeltaC = 0.0;
       adjustedProfile.grindBias = 'same';
       adjustedProfile.steps = [
         {
-          id: 'filter_wash',
-          label: 'Preheat & Rinse',
+          id: 'prep_basket',
+          label: 'Dose & Prep Basket',
           kind: 'pour',
           share: 0,
           startSeconds: 0,
-          note: 'Rinse the large basket paper filter with hot water to remove raw paper taste. Pre-warm the glass/thermal carafe, then discard rinse water.',
+          note: 'Pilih filter sesuai basket. Timbang coffee sesuai batch size. Bilas filter jika memungkinkan, lalu ratakan bed di keranjang basket.',
         },
         {
-          id: 'machine_bloom',
-          label: 'Machine Bloom',
+          id: 'start_cycle',
+          label: 'Siklus Mesin',
           kind: 'pour',
-          share: 0.15,
-          startSeconds: 10,
-          note: 'Turn on brewer. The shower head executes the first spray cycle to wet the wide bed. Let bloom for 45 seconds.',
+          share: 1.0,
+          startSeconds: 15,
+          note: isIced
+            ? `Isi reservoir sesuai volume. Start cycle. Spray head menyebarkan air panas ke keranjang basket langsung di atas es. ${serverSafetyWarning}`
+            : 'Isi reservoir sesuai volume. Start cycle. Pancuran spray head menyebarkan air panas merata ke keranjang basket.',
         },
         {
-          id: 'continuous_spray',
-          label: 'Main Shower Phase',
-          kind: 'pour',
-          share: 0.85,
-          startSeconds: 55,
-          note: 'Brewer runs the continuous spray program. The flat-bottom basket maintains a stable, level water column over grounds.',
-        },
-        {
-          id: 'basket_drain',
-          label: 'Basket Drawdown',
+          id: 'drawdown',
+          label: 'Air Turun',
           kind: 'drawdown',
           share: 0,
           startSeconds: 240,
-          note: 'Allow the basket to drain completely. Swirl the carafe to integrate the stratified brew layers before serving.',
+          note: 'Jangan remove basket sebelum cycle selesai. Biarkan air turun selesai alami.',
+        },
+        {
+          id: 'carafe_mix',
+          label: 'Aduk Batch',
+          kind: 'serve',
+          share: 0,
+          startSeconds: 300,
+          note: 'Setelah selesai, mix carafe/airpot agar larutan rata. Holding quality warning: sajikan segera untuk kesegaran optimal.',
         },
       ];
-      why = 'SCA Gold Cup utilizes standard flat-bottom geometry and controlled machine cycles to achieve a perfectly balanced 18-22% extraction yield.';
-      watch = 'Check shower head alignment. Ensure the spray head is clean and level so water is distributed evenly across the wide bed.';
+      why = 'SCA Gold Cup utilizes standard basket filtration and calibrated spray cycles to deliver a balanced cafe standard.';
+      watch = 'Align the spray head evenly. Always mix the carafe after the cycle completes to distribute the stratified extraction.';
       break;
 
     case 'heavy_batch_catering':
-      adjustedProfile.ratioDelta = 0.5; // Slightly higher ratio to avoid over-extraction
-      adjustedProfile.tempDeltaC = -1.0; // Avoid bitterness in large batches
+      adjustedProfile.ratioDelta = -1.5; // Stronger ratio (e.g. 15.0)
+      adjustedProfile.tempDeltaC = -1.0;
       adjustedProfile.grindBias = 'coarser';
       adjustedProfile.steps = [
         {
-          id: 'large_bed_setup',
-          label: 'Large Bed Setup',
+          id: 'catering_prep',
+          label: 'Prep Large Basket',
           kind: 'pour',
           share: 0,
           startSeconds: 0,
-          note: 'Rinse the heavy paper filter thoroughly. Shake the grounds in the basket to make the bed perfectly level. Do not dome in the center.',
+          note: 'Pilih filter tebal sesuai basket. Timbang dosis katering besar, ratakan bed di keranjang basket (jangan menggunung).',
         },
         {
-          id: 'pre_wet_manually',
-          label: 'Manual Initial wetting',
+          id: 'heavy_cycle',
+          label: 'Siklus Mesin',
           kind: 'pour',
-          share: 0.1,
+          share: 1.0,
           startSeconds: 15,
-          note: 'Optional: Manually pour 100-200ml hot water on the bed to guarantee all dry spots are saturated before machine starts.',
+          note: isIced
+            ? `Isi reservoir sesuai volume. Start cycle. Pancuran spray head menyebarkan air volume tinggi langsung di atas es. Monitor basket agar tidak meluap. ${serverSafetyWarning}`
+            : 'Isi reservoir sesuai volume. Start cycle. Pancuran spray head menyebarkan air volume tinggi. Monitor basket agar tidak meluap.',
         },
         {
-          id: 'main_heavy_flow',
-          label: 'Main Heavy Flow',
-          kind: 'pour',
-          share: 0.9,
-          startSeconds: 60,
-          note: 'Execute machine brew program. Water volume is high; monitor the basket to ensure it does not overflow.',
-        },
-        {
-          id: 'slow_drain',
-          label: 'Slow Large Drawdown',
+          id: 'heavy_drawdown',
+          label: 'Air Turun',
           kind: 'drawdown',
           share: 0,
           startSeconds: 360,
-          note: 'Let the massive coffee bed drain slowly. Keep the thermal carafe lid sealed tight to preserve hot steam.',
+          note: 'Jangan remove basket sebelum cycle selesai. Biarkan bed tebal meniris perlahan.',
+        },
+        {
+          id: 'catering_mix',
+          label: 'Aduk Batch',
+          kind: 'serve',
+          share: 0,
+          startSeconds: 420,
+          note: 'Setelah selesai, mix carafe/airpot secara ekstensif. Holding quality warning: rasa akan terdegradasi seiring waktu penyimpanan.',
         },
       ];
-      why = 'Heavy Batch Catering adjusts the grind coarser and utilizes a slightly lower brewing temperature to prevent bitter over-extraction inside the thick coffee bed.';
-      watch = 'Basket overflow. Fine grinds in large quantities can clog the basket exit hole. Keep grind coarse and watch the basket level.';
+      why = 'Heavy Batch Catering adjusts the grind coarser and lowers temperature slightly to prevent over-extraction in high-volume catering brews.';
+      watch = 'Basket overflow risk. Keep grounds level and monitor flow rate. Holding warning: large catering batches experience lower clarity and faster flavor degradation.';
       break;
 
     case 'bright_light_roast_batch':
-      adjustedProfile.ratioDelta = -0.5;
-      adjustedProfile.tempDeltaC = 2.0; // Higher temp for light roast extraction
+      adjustedProfile.ratioDelta = 0.0;
+      adjustedProfile.tempDeltaC = 2.0;
       adjustedProfile.grindBias = 'finer';
       adjustedProfile.steps = [
         {
-          id: 'rinse_spout',
-          label: 'High Temp Rinse',
+          id: 'light_prep',
+          label: 'Prep Light Basket',
           kind: 'pour',
           share: 0,
           startSeconds: 0,
-          note: 'Rinse with boiling water to maximize initial machine temperature. Dose light-roast coffee ground finer.',
+          note: 'Pilih filter sesuai basket, bilas filter. Timbang kopi sangrai ringan (light roast), ratakan bed di keranjang basket.',
         },
         {
-          id: 'pulsed_shower_1',
-          label: 'Shower Pulse 1',
+          id: 'light_cycle',
+          label: 'Siklus Mesin',
           kind: 'pour',
-          share: 0.2,
-          startSeconds: 10,
-          note: 'First pulse cycle wets the bed. Higher temperature water breaks down hard organic compounds in light roast.',
+          share: 1.0,
+          startSeconds: 15,
+          note: isIced
+            ? `Isi reservoir. Start cycle. Air suhu tinggi disemprotkan lewat spray head langsung di atas es. ${serverSafetyWarning}`
+            : 'Isi reservoir. Start cycle. Air suhu tinggi disemprotkan lewat spray head untuk mendobrak selular kopi yang padat.',
         },
         {
-          id: 'pulsed_shower_2',
-          label: 'Shower Pulse 2 & 3',
-          kind: 'pour',
-          share: 0.5,
-          startSeconds: 70,
-          note: 'Machine runs secondary spray pulses. The intermittent pause cycles allow water to extract complex fruit acids.',
-        },
-        {
-          id: 'pulsed_shower_3',
-          label: 'Final Shower Pulse',
-          kind: 'pour',
-          share: 0.3,
-          startSeconds: 150,
-          note: 'Execute the final spray rinse. The high water column agitates the dense, hard light roast grounds.',
-        },
-        {
-          id: 'fast_drawdown',
-          label: 'Rapid Drawdown',
+          id: 'light_drawdown',
+          label: 'Air Turun',
           kind: 'drawdown',
           share: 0,
           startSeconds: 220,
-          note: 'Drains quickly due to low soluble silt, resulting in high acidity and bright clarity.',
+          note: 'Jangan remove basket sebelum cycle selesai. Aliran cepat karena sedikit soluble silt, menghasilkan asiditas cerah.',
+        },
+        {
+          id: 'light_mix',
+          label: 'Aduk Batch',
+          kind: 'serve',
+          share: 0,
+          startSeconds: 280,
+          note: 'Setelah selesai, mix carafe/airpot. Sajikan segera untuk menjaga aroma buah yang kompleks.',
         },
       ];
-      why = 'Bright Light Roast Batch optimizes temperature and introduces pulsed spray patterns to force high extraction yields from hard, high-density light-roast beans.';
-      watch = 'Acidity balance. If the cup tastes sour or under-extracted, check the machine\'s actual heating element; weak heating will ruin light roasts.';
+      why = 'Bright Light-Roast Batch uses higher temperature and finer medium-fine grind to force extraction from high-density light-roast beans.';
+      watch = 'Flow rate bypass. Monitor the extraction; weak machine heating elements will fail to extract bright acids and cause sourness.';
       break;
 
     case 'pre_wet_hybrid_batch':
@@ -192,85 +215,143 @@ export function resolveBatchPlanSelection(params: {
       adjustedProfile.grindBias = 'finer';
       adjustedProfile.steps = [
         {
-          id: 'hybrid_rinse',
-          label: 'Hot Basket Rinse',
+          id: 'hybrid_prep',
+          label: 'Prep & Pre-wet Basket',
           kind: 'pour',
           share: 0,
           startSeconds: 0,
-          note: 'Wet the basket filter. Pre-warm the decanter. Put coffee in and flatten the bed.',
+          note: 'Pilih filter sesuai basket, bilas filter. Timbang kopi, ratakan bed di basket.',
         },
         {
-          id: 'manual_bloom_pour',
-          label: 'Manual Bloom Pour',
+          id: 'machine_pre_wet',
+          label: 'Siklus Mesin Bloom',
           kind: 'pour',
-          share: 0.2,
+          share: 0.25,
           startSeconds: 15,
-          note: 'Manually pour hot water from a kettle over the bed, stirring gently with a spoon. Let bloom for 60 seconds with machine OFF.',
+          note: 'Mesin menjalankan siklus pre-wet / bloom otomatis. Biarkan hamparan kopi mekar selama 45-60 detik. Warning: Pastikan mesin memiliki fitur pre-wet / bloom; tidak semua batch brewer bisa bloom.',
         },
         {
-          id: 'start_machine',
-          label: 'Activate Machine Shower',
+          id: 'machine_main',
+          label: 'Siklus Mesin Utama',
           kind: 'pour',
-          share: 0.8,
+          share: 0.75,
           startSeconds: 75,
-          note: 'Turn the machine ON. The shower head continues the brew over a pre-wetted, fully degassed coffee bed.',
+          note: isIced
+            ? `Siklus shower utama mesin berlanjut langsung di atas es. Jangan buka tutup keranjang basket. ${serverSafetyWarning}`
+            : 'Siklus shower utama mesin berlanjut di atas hamparan kopi yang sudah basah merata.',
         },
         {
-          id: 'final_draw',
-          label: 'Drawdown Finish',
+          id: 'hybrid_drawdown',
+          label: 'Air Turun',
           kind: 'drawdown',
           share: 0,
           startSeconds: 260,
-          note: 'Let the coffee drip through completely. Excellent hybrid extraction with no dry clumps.',
+          note: 'Jangan remove basket sebelum cycle selesai. Biarkan air turun selesai alami.',
+        },
+        {
+          id: 'hybrid_mix',
+          label: 'Aduk Batch',
+          kind: 'serve',
+          share: 0,
+          startSeconds: 320,
+          note: 'Setelah selesai, mix carafe/airpot. Nikmati ekstraksi rata tanpa dry pockets.',
         },
       ];
-      why = 'Pre-wet Hybrid Batch combines the precision of manual blooming with the convenience of automated shower percolation, eliminating dry pockets completely.';
-      watch = 'Timing. Ensure the manual bloom starts exactly when the grounds are dry, and turn on the machine immediately after the 60-second bloom.';
+      why = 'Pre-wet Hybrid Batch leverages programmable pre-wetting or machine bloom cycles to fully saturate grounds before percolation starts.';
+      watch = 'Machine capability check required. Warning: Ensure your machine has pre-wet capability; do not claim all batch brewers can bloom. Timing is automatically controlled.';
       break;
 
     case 'high_extraction_thermos':
-      adjustedProfile.ratioDelta = -0.8; // Stronger ratio
+      adjustedProfile.ratioDelta = -0.8;
       adjustedProfile.tempDeltaC = 1.0;
       adjustedProfile.grindBias = 'finer';
       adjustedProfile.steps = [
         {
-          id: 'thermos_rinse',
-          label: 'Preheat Thermos',
+          id: 'thermos_prep',
+          label: 'Preheat Thermos & Prep',
           kind: 'pour',
           share: 0,
           startSeconds: 0,
-          note: 'Fill the thermal thermos with hot water for 3 minutes, then empty it. This prevents the metal body from stealing coffee temperature.',
+          note: 'Panaskan wadah thermos/airpot dengan air panas selama 3-5 menit, lalu kosongkan. Pilih filter, ratakan bed di basket.',
         },
         {
-          id: 'dense_bloom',
-          label: 'Concentrated Bloom',
+          id: 'thermos_cycle',
+          label: 'Siklus Mesin',
           kind: 'pour',
-          share: 0.15,
-          startSeconds: 10,
-          note: 'Shower spray starts. The fine grind restricts flow slightly to build extra dissolved solids.',
+          share: 1.0,
+          startSeconds: 15,
+          note: isIced
+            ? `Isi reservoir. Start cycle. Air disemprotkan lewat spray head langsung ke dalam thermos berisi es. ${serverSafetyWarning}`
+            : 'Isi reservoir. Start cycle. Semprotan spray head langsung menuju ke dalam airpot termos yang sudah dipanaskan.',
         },
         {
-          id: 'dense_shower',
-          label: 'Shower Percolation',
-          kind: 'pour',
-          share: 0.85,
-          startSeconds: 55,
-          note: 'Brewer runs spray program directly into the thermal thermos. Keep the thermos basket seal aligned.',
-        },
-        {
-          id: 'clean_finish',
-          label: 'Seal Thermos',
+          id: 'thermos_drawdown',
+          label: 'Air Turun',
           kind: 'drawdown',
           share: 0,
-          startSeconds: 230,
-          note: 'Remove the brew basket immediately once flow stops, and seal the thermos lid tight to lock in volatiles.',
+          startSeconds: 240,
+          note: 'Jangan remove basket sebelum cycle selesai. Biarkan air meniris seluruhnya.',
+        },
+        {
+          id: 'thermos_mix',
+          label: 'Aduk & Tutup Termos',
+          kind: 'serve',
+          share: 0,
+          startSeconds: 300,
+          note: 'Setelah selesai, mix airpot/termos, lalu segera pasang tutup rapat agar panas dan aromatik terjaga. Warning: Thermos holding time affects quality.',
         },
       ];
-      why = 'High Extraction Thermos creates a denser, stronger extraction profile designed to preserve structural intensity and sweet aroma over several hours of thermos storage.';
-      watch = 'Stale aroma. If left with open lids, volatile aromatic compounds escape instantly. Seal the thermos immediately when the drawdown ends.';
+      why = 'High Extraction Thermos designs a tighter ratio and pre-heats the airpot to preserve high extraction sweetness over long holding times.';
+      watch = 'Thermos holding decay. While the insulated thermos keeps coffee hot, holding it for over 1.5 hours will degrade delicate acidity and sweetness. Seal immediately.';
       break;
   }
 
+  // Apply Roast Level Logic
+  if (input.roastLevel === 'light') {
+    adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) + 1.5;
+    if (adjustedProfile.grindBias === 'same') {
+      adjustedProfile.grindBias = 'finer'; // Medium-fine sesuai basket
+    }
+    const lightRoastNote = 'Light roast: optimal extraction requires high temperature and medium-fine grind size.';
+    why = why ? `${lightRoastNote} ${why}` : lightRoastNote;
+  } else if (input.roastLevel === 'medium_dark') {
+    adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) - 1.0;
+    const medDarkNote = 'Medium-dark roast: lower temperature applied to reduce bitter extraction push.';
+    why = why ? `${medDarkNote} ${why}` : medDarkNote;
+  } else if (input.roastLevel === 'dark') {
+    adjustedProfile.tempDeltaC = (adjustedProfile.tempDeltaC || 0) - 2.5;
+    adjustedProfile.grindBias = 'coarser';
+    adjustedProfile.ratioDelta = (adjustedProfile.ratioDelta || 0) + 0.5; // less extraction push
+    const darkRoastNote = 'Dark roast warning: avoid high extraction to reduce bitterness; coarser grind and lower temperature used.';
+    watch = watch ? `${darkRoastNote} ${watch}` : darkRoastNote;
+  }
+
+  // Pre-wet Hybrid capability warning
+  if (activeStyle === 'pre_wet_hybrid_batch' && !isPreWetCapable) {
+    const preWetWarning = 'Warning: Your batch brewer model may not support automated pre-wet/bloom capability. Check machine specs before selecting this style.';
+    watch = watch ? `${preWetWarning} ${watch}` : preWetWarning;
+  }
+
+  // Iced server safety warning
+  if (isIced) {
+    const icedSafety = 'Server safety warning: Verify that your carafe/server is safe for brewing directly over ice to prevent thermal shock breakage.';
+    watch = watch ? `${icedSafety} ${watch}` : icedSafety;
+  }
+
+  // Missing bean taxonomy warning
+  const isUnknownVariety = !input.variety || input.variety === 'custom' || input.variety === 'unknown';
+  const isUnknownProcess = !input.process || input.process === 'custom' || input.process === 'unknown';
+  if (isUnknownVariety || isUnknownProcess) {
+    const missingWarning = 'Missing exact bean variety or process reduces profile alignment accuracy. Confidence: low.';
+    why = why ? `${missingWarning} ${why}` : missingWarning;
+  }
+
+  if (targetWarnings.length > 0) {
+    const joined = targetWarnings.join(' ');
+    watch = watch ? `${joined} ${watch}` : joined;
+  }
+
+  adjustedProfile.label = `Batch Brew - ${activeStyle.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`;
   adjustedProfile.recipeStyle = activeStyle as DeviceBrewProfile['recipeStyle'];
 
   return {

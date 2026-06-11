@@ -1,12 +1,26 @@
 # AI Brew Real-World 1000 Report
 
-Latest SHA: e49ae05ebf5c0943a7ba416102e3780cef56ae3e
-Local branch: main
-Origin main: e49ae05ebf5c0943a7ba416102e3780cef56ae3e
-Local status: dirty (local validation changes present)
-Date: 2026-06-11T05:40:37.598Z
-Scenario count: 1000
+Regenerated metadata: 2026-06-11T07:07:50.207Z
+Local SHA: 7ae12a3ecca754df5b2fbe9da73ac5fcc028cc46
+Remote main SHA: e49ae05ebf5c0943a7ba416102e3780cef56ae3e
+Branch: main
+Working tree status at generation: M apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json
+ M apps/web/src/features/ai-brew/AiBrewPanel.tsx
+ M apps/web/src/features/ai-brew/antiHallucination.ts
+ M apps/web/src/features/ai-brew/batchPlanner.ts
+ M apps/web/src/features/ai-brew/planner.ts
+ M apps/web/src/features/ai-brew/types.ts
+ M apps/web/src/features/ai-brew/workflowTutorials.ts
+ M docs/ai-brew-method-style-coverage-report.md
+ M docs/ai-brew-method-style-final-verdict.md
+ M docs/ai-brew-method-style-inventory.md
+ M docs/ai-brew-method-style-ui-ux-report.md
+ M docs/ai-brew-real-world-1000-report.md
+ M tests/unit/aiBrewPlanner.test.ts
 
+This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
+
+---
 ## Honesty Boundary
 This is a curated real-world software/barista reasoning gate. It did not physically brew coffee and it must not be used as sensory certainty. AI Brew creates strong starting recipes and dial-in guidance; physical real brew validation is still required.
 This is a source-backed software scenario gate built from real roastery/community coffee seeds and deterministic combinations. It is not 20,000 unique physical coffee lots and not 20,000 physical brews.

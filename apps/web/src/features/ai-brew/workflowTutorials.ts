@@ -1983,8 +1983,8 @@ const BATCH_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, W
       id: 'Masukkan dosis skala katering dan gunakan gilingan lebih kasar untuk menyesuaikan hamparan kopi yang lebih dalam.'
     },
     entry: {
-      en: 'Initiate the long brew cycle. The initial water volume is vast, creating a prolonged, deep immersion zone within the basket.',
-      id: 'Mulai siklus seduh panjang. Volume air awal sangat besar, menciptakan zona imersi dalam yang berkepanjangan di keranjang.'
+      en: 'Start the cycle. The initial water volume is vast, creating a deep immersion zone within the basket.',
+      id: 'Mulai siklus. Volume air awal besar, menciptakan zona imersi yang dalam di keranjang.'
     },
     main: {
       en: 'The deep bed acts as a powerful flow restrictor. The machine will pulse slowly, relying on bed depth to force high extraction yields.',

@@ -6756,7 +6756,7 @@
       "tempDeltaC": 0.2,
       "brewTimeDeltaSec": 10,
       "grindBias": "same",
-      "note": "Batch brewer profile uses dose per liter, machine brew volume, seated filter, and spray-pattern consistency instead of manual pour pulses.",
+      "note": "Batch brewer profile uses dose per liter, machine brew volume, seated filter, and spray-pattern consistency instead of manual extraction pulses.",
       "steps": [
         {
           "id": "start_brew",
@@ -6772,7 +6772,7 @@
           "kind": "wait",
           "share": 0,
           "startSeconds": 120,
-          "note": "Let the machine spray pattern extract evenly; do not manual-pulse the bed."
+          "note": "Let the machine spray pattern extract evenly without manual intervention."
         },
         {
           "id": "drawdown",

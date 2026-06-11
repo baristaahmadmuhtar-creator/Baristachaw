@@ -1895,9 +1895,11 @@ const AI_BREW_STYLE_COPY_KEYS: Partial<Record<AiBrewMethodFamily, Record<string,
   },
   batch_brew: {
     auto: 'batchBrewStyleAuto',
-    classic: 'batchBrewStyleClassic',
-    pulse: 'batchBrewStylePulse',
-    bypass: 'batchBrewStyleBypass',
+    sca_gold_cup: 'batchBrewStyleStandardSpecialty',
+    heavy_batch_catering: 'batchBrewStyleHighYieldCommercial',
+    bright_light_roast_batch: 'batchBrewStyleSingleCupGoldCup',
+    pre_wet_hybrid_batch: 'batchBrewStyleIcedBatchBrew',
+    high_extraction_thermos: 'batchBrewStylePreInfusionSweetness',
   },
   siphon: {
     auto: 'siphonStyleAuto',
@@ -12851,6 +12853,39 @@ export function AiBrewPanel() {
               {isIndonesianAiBrewLanguage(language) 
                 ? 'long steep, dilution required.' 
                 : 'long steep, dilution required.'}
+            </div>
+          </div>
+        ) : null}
+        {selectedDripper.methodFamily === 'batch_brew' ? (
+          <div className="mt-2.5 rounded-[0.9rem] border border-blue-500/20 bg-blue-500/5 p-3 text-xs" data-testid="ai-brew-batch-brewer-identity-card">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Automatic batch brewer' : 'Automatic batch brewer'}
+              </span>
+              <div className="flex gap-1">
+                <span className="rounded bg-orange-500/10 px-1.5 py-0.5 text-[10px] text-orange-500 font-semibold">
+                  {isIndonesianAiBrewLanguage(language) ? 'Hot primary' : 'Hot primary'}
+                </span>
+                <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] text-blue-500 font-semibold">
+                  {isIndonesianAiBrewLanguage(language) ? 'Iced only if safe server + machine workflow known' : 'Iced only if safe server + machine workflow known'}
+                </span>
+              </div>
+            </div>
+            <div className="mb-2">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Cocok untuk: ' : 'Best for: '}
+              </span>
+              <span className="text-secondary">
+                {isIndonesianAiBrewLanguage(language) ? 'cafe consistency, repeatable volume' : 'cafe consistency, repeatable volume'}
+              </span>
+            </div>
+            <div className="rounded-[0.6rem] bg-amber-500/10 p-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+              <span className="font-bold">
+                {isIndonesianAiBrewLanguage(language) ? 'Peringatan: ' : 'Warning: '}
+              </span>
+              {isIndonesianAiBrewLanguage(language) 
+                ? 'kapasitas mesin mempengaruhi keyakinan cangkir (machine capability affects confidence).' 
+                : 'machine capability affects confidence.'}
             </div>
           </div>
         ) : null}

@@ -1545,12 +1545,24 @@ function buildBeanCoverageState(params: {
     || params.waterBrand?.classification === 'alkaline_caution'
     || params.waterMineralDerivation === 'estimated_from_community_profile'
     || params.waterMineralDerivation === 'estimated_from_classification';
+
+  const isBatchBrew = params.methodFamily === 'batch_brew';
+  const isUnknownMachineTempFlow = isBatchBrew && !(
+    params.input.dripperId.toLowerCase().includes('precision') ||
+    params.input.dripperId.toLowerCase().includes('moccamaster')
+  );
+
   const riskyReference = !exactBrewer
     || !grinderKnown
     || params.grindSettingMode === 'derived_baseline'
     || params.grindCalibrationRequired
     || !waterKnown
-    || params.switchValidation?.status === 'caution';
+    || params.switchValidation?.status === 'caution'
+    || isUnknownMachineTempFlow;
+
+  if (isUnknownMachineTempFlow) {
+    warnings.push('Unknown machine temperature and flow rate characteristics. Expected cup confidence capped at medium.');
+  }
 
   if (!hasBeanDetail) warnings.push('Data beans tidak lengkap; AI Brew memakai baseline aman.');
   if (params.processRisk?.variability === 'high') warnings.push('Process high-variability: validate with taste feedback before increasing extraction.');
@@ -3841,7 +3853,7 @@ function resolveMethodTargetBehaviorPatch(
       }
       break;
     case 'batch_brew':
-      patch.notes.push('Batch brewer target behavior: tune spray distribution, bed level, dose-per-liter, and batch mixing rather than manual pour cues.');
+      patch.notes.push('Batch brewer target behavior: tune spray distribution, bed level, dose-per-liter, and batch mixing rather than manual extraction cues.');
       break;
     case 'cold_brew':
       if (isAcidity) patch.brewTimeDeltaSec -= brewMode === 'hot' ? 1800 : 0;
@@ -6156,7 +6168,26 @@ function buildAdaptiveStepShares(profile: DeviceBrewProfile, context: AdaptiveSh
   const minShare = count >= 5 ? 0.08 : 0.1;
   const maxShare = 0.62;
   const shifted = base.map((share, index) => share + deltas[index]);
-  return rebalanceSharesWithinBounds(shifted, minShare, maxShare);
+
+  const activeIndices: number[] = [];
+  for (let i = 0; i < profile.steps.length; i += 1) {
+    if ((profile.steps[i].share ?? 0) > 0) {
+      activeIndices.push(i);
+    }
+  }
+
+  if (activeIndices.length === 0) {
+    return Array.from({ length: count }, () => 0);
+  }
+
+  const activeShifted = activeIndices.map((idx) => shifted[idx]);
+  const rebalancedActive = rebalanceSharesWithinBounds(activeShifted, minShare, maxShare);
+
+  const finalShares = Array.from({ length: count }, () => 0);
+  for (let k = 0; k < activeIndices.length; k += 1) {
+    finalShares[activeIndices[k]] = rebalancedActive[k];
+  }
+  return finalShares;
 }
 
 type AdaptiveStepPhase = 'bloom' | 'early_middle' | 'late_middle' | 'finish';
@@ -7384,6 +7415,7 @@ function buildSteps(
       id: step.id,
       label: step.label,
       kind,
+      share: step.share,
       startSeconds: adaptedStartSeconds[index] ?? step.startSeconds,
       pourVolumeMl,
       targetVolumeMl: runningTotal,
@@ -9149,6 +9181,7 @@ function finalizePlanCore(
     steps: steps.map((step) => ({
       kind: step.kind,
       actionType: 'actionType' in step ? step.actionType : undefined,
+      share: step.share,
       label: step.label,
       startSeconds: step.startSeconds,
       targetVolumeMl: step.targetVolumeMl,
@@ -9623,7 +9656,9 @@ function rebuildOptimizedSteps(
   const volumeIndexes = plan.steps
     .map((step, index) => {
       const kind = step.kind || 'pour';
-      return kind === 'pour' || kind === 'extract' || step.pourVolumeMl > 0 ? index : -1;
+      const isCandidate = kind === 'pour' || kind === 'extract' || step.pourVolumeMl > 0;
+      const hasNoShare = step.share !== undefined && step.share <= 0;
+      return isCandidate && !hasNoShare ? index : -1;
     })
     .filter((index) => index >= 0);
   const pourIndexes = volumeIndexes.length > 0 ? volumeIndexes : plan.steps.map((_, index) => index);
@@ -10357,6 +10392,17 @@ function buildPlanRecipeStepAction(step: BrewPlan['steps'][number], locale?: str
     return id
       ? `pisahkan dan sajikan; target tetap ${step.targetVolumeMl} ml`
       : `separate and serve; target stays ${step.targetVolumeMl} ml`;
+  }
+  if (kind === 'pour' && (step.pourVolumeMl ?? 0) <= 0) {
+    const isPrep = /prep|dose|siap|timbang/i.test(`${step.id} ${step.label}`);
+    if (isPrep) {
+      return id
+        ? `siapkan dosis dan filter; target tetap ${step.targetVolumeMl} ml`
+        : `prep dose and filter; target stays ${step.targetVolumeMl} ml`;
+    }
+    return id
+      ? `siapkan peralatan; target tetap ${step.targetVolumeMl} ml`
+      : `prepare equipment; target stays ${step.targetVolumeMl} ml`;
   }
   if (plan?.brewMode === 'iced' && step.pourVolumeMl > 0) {
     return id

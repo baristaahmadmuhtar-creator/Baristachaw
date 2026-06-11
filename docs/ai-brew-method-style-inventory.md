@@ -1,30 +1,23 @@
 # AI Brew Method + Style Inventory
 
-Generated: 2026-06-11T05:39:30.408Z
-Local SHA: e49ae05ebf5c0943a7ba416102e3780cef56ae3e
+Generated: 2026-06-11T07:07:50.207Z
+Local SHA: 7ae12a3ecca754df5b2fbe9da73ac5fcc028cc46
 Remote main SHA: e49ae05ebf5c0943a7ba416102e3780cef56ae3e
 Branch: main
-Working tree status at generation: M apps/web/public/data/ai-brew/drippers.v2026-03.json
- M apps/web/public/data/ai-brew/market-signals.v2026-06.json
+Working tree status at generation: M apps/web/public/data/ai-brew/device-brew-profiles.v2026-06.json
  M apps/web/src/features/ai-brew/AiBrewPanel.tsx
  M apps/web/src/features/ai-brew/antiHallucination.ts
- M apps/web/src/features/ai-brew/catalog.ts
- M apps/web/src/features/ai-brew/coldBrewPlanner.ts
- M apps/web/src/features/ai-brew/localization.ts
- M apps/web/src/features/ai-brew/mokaPlanner.ts
+ M apps/web/src/features/ai-brew/batchPlanner.ts
  M apps/web/src/features/ai-brew/planner.ts
+ M apps/web/src/features/ai-brew/types.ts
  M apps/web/src/features/ai-brew/workflowTutorials.ts
  M docs/ai-brew-method-style-coverage-report.md
  M docs/ai-brew-method-style-final-verdict.md
  M docs/ai-brew-method-style-inventory.md
  M docs/ai-brew-method-style-ui-ux-report.md
  M docs/ai-brew-real-world-1000-report.md
- M scripts/ai-brew-method-style-audit.mjs
- M tests/unit/aiBrewAnnotationRegression.test.ts
- M tests/unit/aiBrewCatalogData.test.ts
  M tests/unit/aiBrewPlanner.test.ts
- M tests/unit/aiBrewWorkflowTutorials.test.ts
-Artifact directory: `artifacts/ai-brew-audit/method-styles/e49ae05ebf5c`
+Artifact directory: `artifacts/ai-brew-audit/method-styles/7ae12a3ecca7`
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 
@@ -66,8 +59,8 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 
 ### batch_brew
 
-- Classification: MISSING GUIDE
-- Average score: 0
+- Classification: STRONG
+- Average score: 100
 - Visible methods: Batch Brewer (batch-brewer)
 - Styles/gaya: Auto (auto); SCA Gold Cup (sca_gold_cup); Heavy batch catering (heavy_batch_catering); Bright light-roast batch (bright_light_roast_batch); Pre-wet hybrid batch (pre_wet_hybrid_batch); High extraction thermos (high_extraction_thermos)
 - Manual presets: 0
@@ -76,8 +69,8 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: weak
-- Water/grinder/bean/roast awareness: missing
+- Target-rasa mapping: covered
+- Water/grinder/bean/roast awareness: covered in matrix
 - Language/i18n: covered
 - Weak styles: none
 
@@ -117,8 +110,8 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 
 ### cold_brew
 
-- Classification: STRONG
-- Average score: 100
+- Classification: MISSING GUIDE
+- Average score: 0
 - Visible methods: Toddy Cold Brew (toddy-cold-brew); Cold Drip Tower (cold-drip-tower)
 - Styles/gaya: Auto (auto); Classic Toddy immersion (classic_toddy_immersion); Cold drip tower (cold_drip_tower); Double extraction concentrate (double_extraction_concentrate); Accelerated room temp (accelerated_room_temp); Japanese slow drip (japanese_slow_drip)
 - Manual presets: 1
@@ -127,8 +120,8 @@ This is software/barista-reasoned validation, not physical sensory proof. Real b
 - Lite guide: covered
 - Pro guide: covered
 - Result card: covered
-- Target-rasa mapping: covered
-- Water/grinder/bean/roast awareness: covered in matrix
+- Target-rasa mapping: weak
+- Water/grinder/bean/roast awareness: missing
 - Language/i18n: covered
 - Weak styles: none
 

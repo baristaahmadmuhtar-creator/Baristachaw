@@ -1,23 +1,15 @@
 # AI Brew Method + Style UI/UX Report
 
-Generated: 2026-06-11T02:51:40.213Z
-Local SHA: b7dd7920efe40ce19de0fed50f402ed8b1c701ee
-Remote main SHA: b7dd7920efe40ce19de0fed50f402ed8b1c701ee
+Generated: 2026-06-11T03:13:20.543Z
+Local SHA: 20007524520df7ce82ded161b7b1a8239fdfe14e
+Remote main SHA: 20007524520df7ce82ded161b7b1a8239fdfe14e
 Branch: main
-Working tree status at generation: M apps/web/src/features/ai-brew/antiHallucination.ts
- M apps/web/src/features/ai-brew/cleverPlanner.ts
- M apps/web/src/features/ai-brew/workflowTutorials.ts
- M docs/ai-brew-method-style-coverage-report.md
- M docs/ai-brew-method-style-final-verdict.md
- M docs/ai-brew-method-style-inventory.md
- M docs/ai-brew-method-style-ui-ux-report.md
- M docs/ai-brew-real-world-1000-report.md
- M tests/unit/aiBrewPlanner.test.ts
+Working tree status at generation: M apps/web/public/data/ai-brew/market-signals.v2026-06.json
 ?? harden-brewers.cjs
 ?? run-kalita-body-test.ts
 ?? run-kalita-test.ts
 ?? test-script.ts
-Artifact directory: `artifacts/ai-brew-audit/method-styles/b7dd7920efe4`
+Artifact directory: `artifacts/ai-brew-audit/method-styles/20007524520d`
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 

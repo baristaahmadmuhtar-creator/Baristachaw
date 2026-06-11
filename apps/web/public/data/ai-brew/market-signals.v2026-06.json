@@ -241,7 +241,7 @@
     {
       "id": "clever-dripper",
       "kind": "dripper",
-      "description": "Mass-market immersion dripper with strong cafe and home adoption.",
+      "description": "Immersion + valve release. Hot + Iced immersion. Best for: easy, full, clean. Setup warning: valve opens only on server/cup.",
       "defaultProfileId": "profile_clever_dripper_hot",
       "source": "clever-curation",
       "sourceUrls": [

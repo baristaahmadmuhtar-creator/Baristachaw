@@ -5147,7 +5147,7 @@ test('AI Brew production golden recipes keep non-V60 device workflows distinct',
   assert.equal(positivePourCount(pulsar), 1);
   assert.ok(pulsar.steps.some((step) => step.kind === 'wait' || step.kind === 'release'));
 
-  const clever = planFor({ dripperId: 'clever-dripper' });
+  const clever = planFor({ dripperId: 'clever-dripper', cleverDripperStyle: 'classic_closed' });
   const switchPlan = planFor({ dripperId: 'hario-switch-03' });
   assert.equal(clever.deviceProfileId, 'profile_clever_dripper_hot');
   assert.deepEqual(clever.steps.map((step) => step.kind), ['pour', 'wait', 'release', 'serve']);

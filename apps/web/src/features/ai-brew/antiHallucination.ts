@@ -227,6 +227,18 @@ export function validateUserFacingRecipeText(plan: BrewPlan): BrewGuardResult {
   if (plan.methodFamily === 'chemex' && plan.doseG >= 24 && !/\b(clog|stall|slow drawdown|long drawdown|heavy bed|thick bed|tersumbat|macet|lambat|tebal)\b/i.test(text)) {
     reasons.push('High dose Chemex text is missing clog/stall/slow drawdown warning');
   }
+  if (plan.methodFamily === 'clever_dripper' && /\b(v60 timing|pulse pour|generic pour-over|spiral pour|wall pouring|pulse pour to final drawdown)\b/i.test(text)) {
+    reasons.push('Clever Dripper text contains generic pour-over/V60 vocabulary');
+  }
+  if (plan.methodFamily === 'clever_dripper' && !/\b(valve|release|drain|immersion|katup|lepas|tiris|rendam)\b/i.test(text)) {
+    reasons.push('Clever Dripper text is missing valve/release/drain/immersion reference');
+  }
+  if (plan.methodFamily === 'clever_dripper' && plan.brewMode === 'iced' && !/\b(ice|es|hot water.*ice|air panas.*es|concentrate|konsentrat)\b/i.test(text)) {
+    reasons.push('Iced Clever text is missing ice/hot water split reference');
+  }
+  if (plan.methodFamily === 'clever_dripper' && plan.doseG >= 24 && !/\b(muddy|slow drain|slow release|over-extract|lumpur|tersumbat|lambat|ekstraksi berlebih)\b/i.test(text)) {
+    reasons.push('High dose Clever text is missing muddy/slow-drain/over-extraction warning');
+  }
   return {
     allowed: reasons.length === 0,
     risk: reasons.length === 0 ? 'none' : 'blocked',
@@ -423,6 +435,9 @@ export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
   }
   if (plan.methodFamily === 'chemex' && /\b(v60 timing|small dripper|quick drawdown|thin paper)\b/i.test(narrative)) {
     reasons.push('Chemex narrative contains non-Chemex vocabulary');
+  }
+  if (plan.methodFamily === 'clever_dripper' && /\b(v60 timing|pulse pour|generic pour-over|pulse-pour|generic clever)\b/i.test(narrative)) {
+    reasons.push('Clever Dripper narrative contains non-Clever generic pour-over vocabulary');
   }
 
   const blocked = reasons.some((reason) => /not finite|must equal|must be lower|conflicting|workflow guide failed|workflow wording|ratio mismatch|canonical|placeholder|developer copy|mislabeled|vocabulary|starts before/.test(reason));

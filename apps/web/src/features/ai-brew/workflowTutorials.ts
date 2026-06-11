@@ -274,29 +274,37 @@ const WORKFLOW_TUTORIALS: Record<AiBrewMethodFamily, WorkflowTutorialProfile> = 
   },
   clever_dripper: {
     setup: {
-      en: 'Rinse the paper, close the base on a flat surface, and level the coffee bed.',
-      id: 'Bilas paper, tutup dasar di permukaan rata, lalu ratakan bed kopi.',
+      en: 'Place the rinsed filter in the Clever Dripper, ensure the release valve is fully closed on a flat table, then add coffee.',
+      id: 'Pasang filter yang sudah dibilas ke Clever Dripper, pastikan katup pelepas tertutup rapat di atas meja, lalu masukkan kopi.',
     },
     entry: {
-      en: 'Add water cleanly and saturate all grounds before the steep begins.',
-      id: 'Masukkan air dengan bersih dan basahi semua bubuk sebelum rendaman dimulai.',
+      en: 'Pour hot water closed to start immersion; ensure all coffee grounds are fully saturated with minimal agitation.',
+      id: 'Tuang air panas saat katup tertutup untuk memulai imersi; pastikan semua bubuk kopi basah merata dengan agitasi minimal.',
     },
     main: {
-      en: 'Let the steep do the work; extra movement is not needed once the slurry is even.',
-      id: 'Biarkan rendaman bekerja; gerakan tambahan tidak perlu setelah slurry rata.',
+      en: 'Close the lid to lock in heat. Let the immersion steep do the work quietly without repeated stirring.',
+      id: 'Tutup rapat untuk menjaga suhu. Biarkan perendaman imersi bekerja dengan tenang tanpa perlu sering diaduk.',
     },
     release: {
-      en: 'Set the Clever on the server and let release separate coffee from grounds.',
-      id: 'Letakkan Clever di server dan biarkan fase turun memisahkan kopi dari bubuk.',
+      en: 'Place the Clever over the server to engage the release valve. Let the extraction drain cleanly through the paper filter.',
+      id: 'Letakkan Clever di atas wadah saji untuk mengaktifkan katup pelepas. Biarkan ekstraksi meniris bersih melewati filter kertas.',
     },
     finish: {
-      en: 'Remove the brewer, mix the server once, and serve cleanly.',
-      id: 'Angkat brewer, aduk server sekali, lalu sajikan bersih.',
+      en: 'Remove the dripper once the release is complete. Swirl the server gently to integrate the extraction before serving.',
+      id: 'Angkat dripper setelah penirisan selesai. Putar server secara perlahan untuk menyatukan hasil ekstraksi sebelum disajikan.',
     },
     iced: {
       setup: {
-        en: 'Put ice in the server and keep the steep water separate from the final beverage volume.',
-        id: 'Masukkan es ke server dan pisahkan air rendam dari volume akhir minuman.',
+        en: 'Pre-load the server with clean ice. Keep all ice completely separate from the hot water in the closed dripper chamber during steep.',
+        id: 'Isi wadah saji dengan es batu terlebih dahulu. Jaga es tetap terpisah sepenuhnya dari air panas di dalam dripper selama perendaman.',
+      },
+      main: {
+        en: 'Cover and steep the hot concentrate, then place on the server to release directly over the ice.',
+        id: 'Tutup dan rendam konsentrat panas, lalu letakkan di server untuk mengalirkan kopi langsung di atas es.',
+      },
+      finish: {
+        en: 'Swirl the server to integrate the iced concentrate and melt the ice cubes evenly before serving.',
+        id: 'Putar server untuk menyatukan konsentrat dingin dan melarutkan es batu secara merata sebelum disajikan.',
       },
     },
   },

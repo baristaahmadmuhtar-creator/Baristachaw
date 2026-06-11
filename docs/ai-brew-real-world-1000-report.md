@@ -1,10 +1,10 @@
 # AI Brew Real-World 1000 Report
 
-Latest SHA: bbc56407b3299abb7b4b352e321554d8cc1e3fb7
+Latest SHA: b7dd7920efe40ce19de0fed50f402ed8b1c701ee
 Local branch: main
-Origin main: bbc56407b3299abb7b4b352e321554d8cc1e3fb7
+Origin main: b7dd7920efe40ce19de0fed50f402ed8b1c701ee
 Local status: dirty (local validation changes present)
-Date: 2026-06-11T01:09:10.913Z
+Date: 2026-06-11T02:53:11.724Z
 Scenario count: 1000
 
 ## Honesty Boundary
@@ -100,8 +100,8 @@ This is not physical brew proof or verified current-lot sensory data.
 - dense_comforting: 117
 
 ## Score Summary
-Passed: 980/1000
-Failures: 20
+Passed: 1000/1000
+Failures: 0
 Warnings: 1869
 Average score: 98.7
 Score distribution: min 93.3; p10 97.1; p50 98.7; p90 100; max 100
@@ -127,7 +127,7 @@ Source-backed seed lots: 28
 | pourFlowLogic | 99.8 | 92 |
 | bloomLogic | 99.7 | 92 |
 | expectedCupHonesty | 98.9 | 84 |
-| warningQuality | 96.7 | 70 |
+| warningQuality | 97.2 | 84 |
 | mobileCopyQuality | 100 | 100 |
 | overclaimRisk | 94.8 | 76 |
 
@@ -146,26 +146,7 @@ Source-backed seed lots: 28
 - source-backed-00679: Common Grounds Toraja Sulotco / Cold Brew / Latina Sumba / Sumbawa / Espresso-safe water; score 94.5; fallback_grinder_calibration_risk: Feima 600N / Murane B600BN / Latina 600N / Flying Eagle 600N / Fomac / Kova 600N needs calibration; settings are starting points, not exact burr-zero truth.; dark_floral_target_risk: Dark roast limits floral/acidity ceiling; the target is possible only as a softer expectation.; cold_brew_floral_expectation_risk: Cold brew can be sweet and clean, but sparkling hot-brew florals/acidity should be a lower expectation.; real_brew_validation_pending: Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.
 
 ## Top Failures
-- source-backed-00193: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00194: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00295: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00364: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00397: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00398: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00499: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00500: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00533: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00602: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00635: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00703: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00704: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00737: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00738: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00839: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00840: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00873: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00874: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00942: anti_hallucination_guard: Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
+No blocking software failure found.
 
 ## Top Warnings
 - source-backed-00001: Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.
@@ -205,10 +186,10 @@ Source-backed seed lots: 28
 ## Top Method-Risk Categories
 - cold_brew: avg 98; min 93.3; warnings 138; failures 0
 - french_press: avg 98.2; min 94.1; warnings 127; failures 0
-- kalita_wave: avg 98.4; min 95.8; warnings 103; failures 20
 - v60: avg 98.5; min 95.8; warnings 238; failures 0
 - clever_dripper: avg 98.7; min 95.8; warnings 109; failures 0
 - hario_switch: avg 98.8; min 94.5; warnings 538; failures 0
+- kalita_wave: avg 98.8; min 95.8; warnings 103; failures 0
 - aeropress: avg 98.8; min 95.8; warnings 107; failures 0
 - origami: avg 98.9; min 94.5; warnings 102; failures 0
 - melitta: avg 98.9; min 97.1; warnings 104; failures 0
@@ -251,26 +232,7 @@ Source-backed seed lots: 28
 - source-backed-00240: Basic Barista Pink Bourbon Washed Colombia with V60 hot scored 95.8; review warnings/copy before physical validation.
 
 ## What Outputs Were Wrong
-- source-backed-00193: Galon isi ulang / depot water Indonesia style needs manual TDS/GH/KH verification before high confidence.; Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00194: Galon isi ulang / depot water Indonesia style needs manual TDS/GH/KH verification before high confidence.; Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00295: Unknown manual grinder needs calibration; settings are starting points, not exact burr-zero truth.; Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00364: Super O2 low-mineral water Indonesia style is not brew-ready without minerals.; Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00397: Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00398: Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00499: Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00500: Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00533: Unknown electric grinder needs calibration; settings are starting points, not exact burr-zero truth.; Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00602: Feima 600N / Murane B600BN / Latina 600N / Flying Eagle 600N / Fomac / Kova 600N needs calibration; settings are starting points, not exact burr-zero truth.; Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00635: DF64 espresso/filter hybrid needs calibration; settings are starting points, not exact burr-zero truth.; Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00703: Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00704: Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00737: Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00738: Cleo low-mineral water Indonesia style can work for clean filter cups, but body can be thin and acidity sharper.; Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00839: Unknown manual grinder needs calibration; settings are starting points, not exact burr-zero truth.; zero-mineral RO / distilled water is not brew-ready without minerals.; Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00840: Unknown manual grinder needs calibration; settings are starting points, not exact burr-zero truth.; zero-mineral RO / distilled water is not brew-ready without minerals.; Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
-- source-backed-00873: Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00874: Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary
-- source-backed-00942: DF64 espresso/filter hybrid needs calibration; settings are starting points, not exact burr-zero truth.; Cleo low-mineral water Indonesia style can work for clean filter cups, but body can be thin and acidity sharper.; Source-backed software validation is not physical brewing; confirm with real brew logs before making taste-certainty claims.; Kalita Wave text contains cone/spiral V60 workflow vocabulary; low-trust water narrative claims ready-brew status
+- No blocking wrong output was found in this software gate.
 
 ## Required Example Cases
 | # | Scenario | Method | Grinder | Water | Output | Score | Finding |
@@ -297,8 +259,8 @@ Source-backed seed lots: 28
 | 20 | Subtext Coffee Roasters Guatemala Todos Santos Washed Caturra & Bourbon -> more_sweetness | Kono | DF64 espresso/filter hybrid | Third Wave Water / remineralized balanced | 20g, 305ml, 93.6C, Starting grind: filter range, dial-in required. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias finer., 4:15 | 98.3 | fallback_grinder_calibration_risk; real_brew_validation_pending |
 | 21 | Staccato Roasters Brazil Yellow Bourbon Natural -> more_sweetness | Melitta | DF64 espresso/filter hybrid | Third Wave Water / remineralized balanced | 12g, 170ml, 92.5C, Starting grind: filter range, dial-in required. If sour/thin: slightly finer. If bitter/dry/stalled: slightly coarser. Bias finer., 3:00 | 98.3 | fallback_grinder_calibration_risk; real_brew_validation_pending |
 | 22 | Indian Coffee Beans Monsooned Malabar reference -> more_sweetness | Melitta | KINGrinder K6 | Third Wave Water / remineralized balanced | 15g, 230ml, 91.4C, Starting grind: 85 clicks. Correction range: 82 clicks to 88 clicks. If sour/thin: 82 clicks. If bitter/dry/stalled: 88 clicks., 3:30 | 100 | real_brew_validation_pending |
-| 23 | Rabbit Hole Roasters Wadi Mahyad Yemeni Natural Community Lot -> more_sweetness | Kalita / flat-bottom | KINGrinder K6 | Low buffer clarity water | 18g, 275ml, 91.8C, Starting grind: 86 clicks. Correction range: 83 clicks to 89 clicks. If sour/thin: 83 clicks. If bitter/dry/stalled: 89 clicks., 5:00 | 100 | real_brew_validation_pending |
-| 24 | Sandalj Vietnam Washed Kontum 18 -> more_sweetness | Kalita / flat-bottom | KINGrinder K6 | Low buffer clarity water | 20g, 310ml, 90.7C, Starting grind: 90 clicks. Correction range: 87 clicks to 93 clicks. If sour/thin: 87 clicks. If bitter/dry/stalled: 93 clicks., 4:45 | 100 | real_brew_validation_pending |
+| 23 | Rabbit Hole Roasters Wadi Mahyad Yemeni Natural Community Lot -> more_sweetness | Kalita / flat-bottom | KINGrinder K6 | Low buffer clarity water | 18g, 285ml, 93C, Starting grind: 84 clicks. Correction range: 81 clicks to 87 clicks. If sour/thin: 81 clicks. If bitter/dry/stalled: 87 clicks., 4:20 | 100 | real_brew_validation_pending |
+| 24 | Sandalj Vietnam Washed Kontum 18 -> more_sweetness | Kalita / flat-bottom | KINGrinder K6 | Low buffer clarity water | 20g, 320ml, 92.2C, Starting grind: 90 clicks. Correction range: 87 clicks to 93 clicks. If sour/thin: 87 clicks. If bitter/dry/stalled: 93 clicks., 4:05 | 100 | real_brew_validation_pending |
 | 25 | TheBeanGeek Thailand Doi Chang Washed -> more_sweetness | April / Orea / B75 style flat-bottom | KINGrinder K6 | Low buffer clarity water | 12g, 190ml, 91.8C, Starting grind: 88 clicks. Correction range: 85 clicks to 91 clicks. If sour/thin: 85 clicks. If bitter/dry/stalled: 91 clicks., 2:55 | 100 | real_brew_validation_pending |
 | 26 | Surfbean Coffee Roaster Laos Bolaven Washed -> more_sweetness | April / Orea / B75 style flat-bottom | KINGrinder K6 | Low buffer clarity water | 15g, 220ml, 91.3C, Starting grind: 72 clicks. Correction range: 69 clicks to 75 clicks. If sour/thin: 69 clicks. If bitter/dry/stalled: 75 clicks., 2:50 | 100 | real_brew_validation_pending |
 | 27 | Frontside Coffee Roasters Decaf Colombia Huila Sugar Cane -> more_acidity | Clever Dripper | KINGrinder K6 | Low buffer clarity water | 18g, 275ml, 93.9C, Starting grind: 91 clicks. Correction range: 87 clicks to 95 clicks. If sour/thin: 87 clicks. If bitter/dry/stalled: 95 clicks., 3:20 | 100 | real_brew_validation_pending |
@@ -332,7 +294,7 @@ Source-backed seed lots: 28
 | 55 | Frontside Coffee Roasters Decaf Colombia Huila Sugar Cane -> floral_transparent | Melitta | Baratza Encore | zero-mineral RO / distilled water | 18g, 290ml, 89C, Starting grind: 17 settings. Correction range: 16 settings to 19 settings. If sour/thin: 16 settings. If bitter/dry/stalled: 19 settings., 2:20 | 98.7 | zero_mineral_remineralize_risk; real_brew_validation_pending |
 
 ## Recommended Fixes
-- Patch only the failure buckets listed above. Do not change recipe math unless the failure proves a numeric envelope bug.
+- No planner recipe-math patch is justified by this run. Prioritize physical brew validation, field feedback capture, grinder calibration logs, and continued copy QA.
 
 ## Patch Summary
 - Added this deterministic real-world 1,000-scenario gate and artifact/report generator.
@@ -343,7 +305,7 @@ Source-backed seed lots: 28
 - No AI Brew recipe math is changed by this report generator.
 
 ## Retest Results
-- Real-world 1000 gate verdict: AI BREW NOT READY.
+- Real-world 1000 gate verdict: AI BREW REAL-WORLD SCENARIO STRONG / REAL BREW VALIDATION REQUIRED.
 
 ## Remaining Real-World Limits
 - No physical brew logs, refractometer readings, grinder zero-point logs, roast-date measurements, or sensory panel notes are included.
@@ -352,4 +314,4 @@ Source-backed seed lots: 28
 - Water label data can be incomplete; manual GH/KH/TDS checks remain the best validation path.
 
 ## Final Verdict
-AI BREW NOT READY
+AI BREW REAL-WORLD SCENARIO STRONG / REAL BREW VALIDATION REQUIRED

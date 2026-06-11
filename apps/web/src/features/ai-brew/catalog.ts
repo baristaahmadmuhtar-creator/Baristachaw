@@ -272,7 +272,7 @@ export function inferDripperMethodFamily(name: string, typeLabel: string): AiBre
   if (haystack.includes('aeropress')) return 'aeropress';
   if (haystack.includes('siphon') || haystack.includes('syphon') || haystack.includes('vacuum')) return 'siphon';
   if (haystack.includes('moka') || haystack.includes('stovetop')) return 'moka_pot';
-  if (haystack.includes('cold brew')) return 'cold_brew';
+  if (haystack.includes('cold brew') || haystack.includes('cold drip') || haystack.includes('toddy')) return 'cold_brew';
   if (haystack.includes('batch brewer') || haystack.includes('batch brew') || haystack.includes('automatic brewer')) return 'batch_brew';
   if (haystack.includes('chemex')) return 'chemex';
   if (haystack.includes('switch')) return 'hario_switch';

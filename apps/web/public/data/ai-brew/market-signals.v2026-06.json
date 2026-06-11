@@ -255,6 +255,22 @@
       "confidence": "high"
     },
     {
+      "id": "bialetti-moka-pot",
+      "kind": "dripper",
+      "description": "Stovetop pressure brewer. Hot primary. Iced serving/concentrate. Best for: strong, concentrated, moka body. Warning: no tamp, no true espresso claim.",
+      "defaultProfileId": "profile_bialetti_moka_pot_hot",
+      "source": "moka-curation",
+      "sourceUrls": [
+        "https://www.bialetti.com/"
+      ],
+      "verificationLevel": "curated",
+      "verifiedAt": "2026-03-09",
+      "popularityTier": "widely_used",
+      "marketSegment": "mass_market",
+      "releaseStatus": "established",
+      "confidence": "high"
+    },
+    {
       "id": "comandante-c40-mk4",
       "kind": "grinder",
       "description": "Specialty benchmark manual grinder. High grind uniformity with exceptionally low fines. Extremely safe for high-agitation and high-temperature brewing methods. Yields excellent clarity and brightness without the risk of early filter clogging or bitterness.",

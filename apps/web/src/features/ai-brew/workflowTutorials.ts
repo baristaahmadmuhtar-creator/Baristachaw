@@ -1731,19 +1731,19 @@ const CHEMEX_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Workf
 const MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   traditional_stovetop: {
     setup: {
-      en: 'Fill the lower boiler with boiling water directly below the safety valve. Drop the coffee into the basket loosely—do not tamp it under any circumstance.',
-      id: 'Isi boiler bawah dengan air mendidih tepat di bawah katup pengaman. Masukkan kopi ke keranjang dengan longgar—jangan pernah memadatkannya.'
+      en: 'Fill the lower boiler with room-temperature water directly below the safety valve. Drop the coffee into the basket loosely—do not tamp it under any circumstance.',
+      id: 'Isi boiler bawah dengan air suhu ruang tepat di bawah katup pengaman. Masukkan kopi ke keranjang dengan longgar—jangan pernah memadatkannya.'
     },
     entry: {
-      en: 'Assemble the hot unit using a towel. Place it on low-to-medium heat. The pre-heated base water provides immediate pressure rather than baking the coffee.',
-      id: 'Rakit alat panas ini menggunakan handuk. Letakkan di atas api kecil-sedang. Air yang sudah mendidih memberi tekanan instan tanpa memanggang kopi.'
+      en: 'Assemble the unit securely. Place it on low-to-medium heat. The room-temperature water will slowly build steam pressure to drive a gentle extraction.',
+      id: 'Rakit alat ini dengan rapat. Letakkan di atas api kecil-sedang. Air suhu ruang akan perlahan membentuk tekanan uap untuk mendorong ekstraksi lembut.'
     },
     main: {
       en: 'Watch the chimney closely with the lid open. The extraction should emerge as a slow, dark, syrupy ooze. If it spits or surges violently, reduce the heat instantly.',
       id: 'Awasi corong dengan tutup terbuka. Ekstraksi harus muncul perlahan seperti sirup gelap. Jika menyembur atau melonjak keras, segera kecilkan api.'
     },
     release: {
-      en: 'Listen for the tell-tale gurgling sound. The exact moment the stream turns blond and bubbly, remove the pot completely from the heat.',
+      en: 'Listen for the gurgling sound. The exact moment the stream turns blond and bubbly, remove the pot completely from the heat.',
       id: 'Dengarkan suara mendidih yang khas. Tepat saat aliran berubah menjadi pucat dan bergelembung, angkat pot sepenuhnya dari sumber panas.'
     },
     finish: {
@@ -1753,12 +1753,12 @@ const MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wor
   },
   preheated_boiler: {
     setup: {
-      en: 'Preheat the water to exactly 95°C before filling the base. Load the coffee evenly.',
-      id: 'Panaskan air hingga tepat 95°C sebelum mengisi dasar boiler. Isi kopi secara merata.'
+      en: 'Preheat the water before filling the base below the safety valve. Load the coffee evenly—do not tamp.',
+      id: 'Panaskan air sebelum mengisi dasar boiler di bawah katup pengaman. Isi kopi secara merata—jangan di-tamp.'
     },
     entry: {
-      en: 'Seal the top chamber tightly. Set to a moderate heat source to drive an accelerated but stable pressure ramp.',
-      id: 'Tutup ruang atas dengan rapat. Gunakan sumber panas sedang untuk mendorong tekanan yang dipercepat namun stabil.'
+      en: 'Seal the top chamber tightly using silicone mitts or a towel. Set to a moderate heat source to drive an accelerated but stable pressure ramp.',
+      id: 'Tutup ruang atas dengan rapat menggunakan sarung tangan silikon atau handuk. Gunakan sumber panas sedang untuk mendorong tekanan yang dipercepat namun stabil.'
     },
     main: {
       en: 'Monitor the liquid emerging. It should be thick, rich, and deeply aromatic, free from burnt ash notes.',
@@ -1775,8 +1775,8 @@ const MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wor
   },
   low_temp_controlled: {
     setup: {
-      en: 'Start with 70°C water in the base. This slower, gentler approach targets a brighter, lighter-bodied extraction.',
-      id: 'Mulai dengan air 70°C di dasar. Pendekatan yang lebih lambat dan lembut ini menargetkan ekstraksi ber-body lebih ringan dan cerah.'
+      en: 'Start with 70°C water in the base below the safety valve. Load the coffee loosely—do not tamp.',
+      id: 'Mulai dengan air 70°C di dasar di bawah katup pengaman. Masukkan kopi secara longgar—jangan di-tamp.'
     },
     entry: {
       en: 'Place on very low heat. The prolonged buildup gently hydrates the coffee puck before the heavy pressure forces liquid through.',
@@ -1797,8 +1797,8 @@ const MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wor
   },
   iced_moka_concentrate: {
     setup: {
-      en: 'Load a high dose into the basket. Pack your serving vessel with heavy ice chunks.',
-      id: 'Masukkan dosis tinggi ke keranjang. Isi wadah saji Anda dengan bongkahan es berat.'
+      en: 'Load coffee loosely into the basket—do not tamp. Pack your serving vessel with heavy ice chunks. Note: this is an iced serving/concentrate, not a normal iced brew.',
+      id: 'Masukkan kopi secara longgar ke keranjang—jangan di-tamp. Isi wadah saji Anda dengan bongkahan es berat. Catatan: ini adalah penyajian es/konsentrat, bukan seduhan es biasa.'
     },
     entry: {
       en: 'Brew over medium heat. The intense concentrate will strip all soluble solids quickly.',
@@ -1819,8 +1819,8 @@ const MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wor
   },
   high_yield_robust: {
     setup: {
-      en: 'Pack the basket tightly with a slightly finer grind to drastically increase flow resistance and extraction yield.',
-      id: 'Isi keranjang dengan padat menggunakan gilingan sedikit lebih halus untuk secara drastis meningkatkan hambatan aliran dan hasil ekstraksi.'
+      en: 'Fill the boiler to below the safety valve. Fill the basket fully with a slightly finer grind—do not tamp. High resistance increases extraction yield.',
+      id: 'Isi boiler di bawah katup pengaman. Isi keranjang penuh dengan gilingan sedikit lebih halus—jangan di-tamp. Hambatan tinggi meningkatkan hasil ekstraksi.'
     },
     entry: {
       en: 'Utilize high heat. We are deliberately pushing the Moka Pot to its structural pressure limits.',
@@ -1844,24 +1844,24 @@ const MOKA_POT_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wor
 const COLD_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   classic_toddy_immersion: {
     setup: {
-      en: 'Secure the rubber stopper and insert a wet felt filter. Add alternating layers of coarse coffee and cold water to prevent dry pockets.',
-      id: 'Pasang penutup karet dan masukkan filter kain basah. Tambahkan lapisan kopi kasar dan air dingin bergantian untuk mencegah kantong kering.'
+      en: 'Secure the rubber stopper and insert the reusable felt filter. Add alternating layers of coarse coffee and cold water to prevent dry pockets.',
+      id: 'Pasang stopper karet dan filter felt wadah Toddy. Tambahkan lapisan kopi giling coarse (kasar) dan air dingin bertahap agar tidak ada dry pocket.'
     },
     entry: {
-      en: 'Ensure total saturation without vigorous stirring, which clogs the thick felt filter.',
-      id: 'Pastikan saturasi total tanpa adukan kuat, yang dapat menyumbat filter kain tebal.'
+      en: 'Pour water slowly to submerge all grounds. Do not aggressively or repeatedly stir to avoid clogging the filter.',
+      id: 'Tuang air secara perlahan agar kopi basah. Jangan lakukan adukan agresif berulang agar filter felt tidak tersumbat.'
     },
     main: {
-      en: 'Steep at ambient room temperature or in a refrigerator for 12 to 24 hours. The slow diffusion extracts only the sweetest, lowest-acidity compounds.',
-      id: 'Rendam di suhu ruang atau di lemari es selama 12 hingga 24 jam. Difusi lambat hanya mengekstrak senyawa yang paling manis dan rendah asam.'
+      en: 'Steep the mixture at room temperature or in the fridge for 12 to 24 hours. The slow immersion pulls out sweet, low-acid compounds.',
+      id: 'Rendam campuran kopi pada suhu ruang atau lemari es selama 12-24 jam. Imersi dingin ini menarik rasa manis yang sangat rendah asam.'
     },
     release: {
-      en: 'Remove the stopper over a glass decanter. Allow gravity to slowly pull the heavy concentrate through the deep coffee bed and felt pad.',
-      id: 'Cabut penutup karet di atas wadah kaca. Biarkan gravitasi perlahan menarik konsentrat kental melewati hamparan kopi dan bantalan kain.'
+      en: 'Pull the stopper from the bottom over a decanter. Let the heavy concentrate drain slowly and filter gently through the felt pad.',
+      id: 'Cabut stopper karet di atas decanter. Biarkan konsentrat tebal meniris perlahan dan tersaring lembut melalui filter felt.'
     },
     finish: {
-      en: 'The result is a remarkably smooth, chocolate-heavy cold concentrate. Dilute with water or milk to serve.',
-      id: 'Hasilnya adalah konsentrat dingin yang sangat mulus dan dominan cokelat. Encerkan dengan air atau susu untuk disajikan.'
+      en: 'Store concentrate cold. Serve with a dilution ratio of 1 part concentrate to 2 parts water or milk as a starting point. For hot serving, dilute with hot water (no hot brewing).',
+      id: 'Simpan konsentrat di tempat dingin. Sajikan dengan rasio pengenceran (contoh: 1 bagian konsentrat ke 2 bagian air atau susu) sebagai awal. Untuk sajian panas, encerkan dengan air panas (bukan seduh panas).'
     }
   },
   cold_drip_tower: {
@@ -1870,7 +1870,7 @@ const COLD_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
       id: 'Rakit menara kaca. Basahi filter kertas di atas hamparan kopi untuk memastikan distribusi air yang sampurna dari katup atas.'
     },
     entry: {
-      en: 'Set the upper dripper valve to exactly one drop per second. The initial drops must slowly hydrate the entire column of grounds.',
+      en: 'Set upper valve to one drop per second. The initial drops must slowly hydrate the entire column of grounds.',
       id: 'Atur katup penetes atas ke tepat satu tetes per detik. Tetesan awal harus perlahan menghidrasi seluruh kolom bubuk kopi.'
     },
     main: {
@@ -1888,71 +1888,71 @@ const COLD_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, Wo
   },
   double_extraction_concentrate: {
     setup: {
-      en: 'Prepare the larger coffee dose. For this concentrate, use dual filtration when the brewer supports it.',
-      id: 'Siapkan dosis kopi yang lebih besar. Untuk konsentrat ini, gunakan penyaringan ganda jika alat mendukung.'
+      en: 'Secure the Toddy stopper and felt filter. Load coarse coffee and cold water in alternating stages to prevent dry pockets.',
+      id: 'Pasang stopper Toddy dan filter felt. Masukkan kopi coarse (kasar) dan air dingin secara bertahap agar terhindar dari dry pocket.'
     },
     entry: {
-      en: 'Add a small amount of warm water first to rapidly degas, then immediately shock it with the remaining icy water.',
-      id: 'Tambahkan sedikit air hangat lebih dulu untuk mendegas cepat, lalu kejutkan seketika dengan sisa air sedingin es.'
+      en: 'Saturate grounds completely by pouring cold water in stages. Do not stir to keep the drainage flow clear.',
+      id: 'Basahi kopi secara merata dengan air dingin bertahap. Jangan diaduk agresif agar aliran penirisan tetap lancar.'
     },
     main: {
-      en: 'Steep for a full 24 hours. The hybrid hot-bloom cold-steep pulls deep structural lipids alongside bright aromatics.',
-      id: 'Rendam selama 24 jam penuh. Hibrida bloom-panas dan rendam-dingin ini menarik lipid struktural yang dalam bersama aromatik cerah.'
+      en: 'Steep the concentrate for 12 to 24 hours total in a cold environment. Keep it cold and avoid any heated water contact.',
+      id: 'Rendam konsentrat selama 12-24 jam total di dalam suhu dingin. Jaga tetap dingin dan hindari kontak air panas.'
     },
     release: {
-      en: 'Drain the heavy concentrate. It will be thick, syrupy, and naturally resistant to oxidation.',
-      id: 'Tiriskan konsentrat berat ini. Cairan akan kental, bersirup, dan secara alami tahan terhadap oksidasi.'
+      en: 'Pull the stopper plug to let the dense concentrate drain slowly. Filtration should be calm to avoid passing sediment.',
+      id: 'Cabut stopper karet agar konsentrat pekat meniris perlahan. Biarkan penyaringan berjalan tenang tanpa adukan.'
     },
     finish: {
-      en: 'Bottle and refrigerate. Dilute this concentrate to taste before using it in iced milk drinks.',
-      id: 'Botolkan dan simpan di kulkas. Encerkan konsentrat sesuai rasa sebelum digunakan untuk minuman susu dingin.'
+      en: 'Store concentrate cold. Serve diluted (e.g., 1 part concentrate to 2 parts water or milk). For hot serving: mix the concentrate with hot water (not hot brew).',
+      id: 'Simpan konsentrat dalam kondisi dingin. Sajikan terencerkan (contoh: 1 bagian konsentrat ke 2 bagian air atau susu). Untuk sajian panas: campur konsentrat dengan air panas (bukan seduh panas).'
     }
   },
   accelerated_room_temp: {
     setup: {
-      en: 'Use a slightly finer grind and ambient room-temperature water. The higher thermal energy will accelerate diffusion dramatically.',
-      id: 'Gunakan gilingan sedikit lebih halus dan air bersuhu ruang. Energi termal yang lebih tinggi akan mempercepat difusi secara dramatis.'
+      en: 'Secure the Toddy stopper and felt filter. Add coarse coffee and ambient room-temperature water in stages to prevent dry pockets.',
+      id: 'Pasang stopper Toddy dan filter felt. Tambahkan kopi coarse (kasar) dan air suhu ruang secara bertahap agar tidak ada dry pocket.'
     },
     entry: {
-      en: 'Submerge all grounds immediately. Agitate the slurry thoroughly to maximize early surface-area contact.',
-      id: 'Tenggelamkan semua bubuk seketika. Aduk campuran secara menyeluruh untuk memaksimalkan kontak luas permukaan awal.'
+      en: 'Pour water gently to wet all grounds. Perform a very brief stir at the start; do not stir repeatedly.',
+      id: 'Tuang air perlahan agar membasahi seluruh kopi. Lakukan adukan ringan sekali di awal; jangan aduk agresif berulang-ulang.'
     },
     main: {
-      en: 'Steep for only 8 to 12 hours. The warmer temperature extracts rapidly, so pushing past 12 hours risks flat, woody bitterness.',
-      id: 'Rendam hanya 8 hingga 12 jam. Suhu yang lebih hangat mengekstrak dengan cepat, jadi melewati 12 jam berisiko memunculkan rasa kayu yang pahit dan hambar.'
+      en: 'Steep at room temperature (20-24°C) for a shortened window of 12 hours. Note: this is a fast room-temp style, confidence is lower.',
+      id: 'Rendam pada suhu ruang selama 12 jam. Catatan: ini gaya suhu ruang yang cepat, tingkat keyakinan (confidence) lebih rendah.'
     },
     release: {
-      en: 'Filter cleanly. The accelerated extraction yields a round, comforting profile that favors nutty and chocolate notes.',
-      id: 'Saring dengan bersih. Ekstraksi yang dipercepat ini menghasilkan profil bulat dan nyaman yang menonjolkan aroma kacang dan cokelat.'
+      en: 'Pull the stopper to let it drain slowly. Pass the liquid through a paper filter if extra clarity is desired.',
+      id: 'Cabut stopper karet agar meniris perlahan. Alirkan lewat filter kertas tambahan jika ingin kejernihan ekstra.'
     },
     finish: {
-      en: 'Chill immediately to halt any lingering oxidation. Serve over ice for a robust daily cold brew.',
-      id: 'Dinginkan seketika untuk menghentikan sisa oksidasi. Sajikan dengan es sebagai cold brew harian yang kokoh.'
+      en: 'Store concentrate cold. Dilute with water or milk (1 part concentrate to 2 parts water/milk). For hot serving: combine concentrate with hot water (no hot brewing).',
+      id: 'Simpan konsentrat dingin. Encerkan dengan air/susu (contoh: 1 bagian konsentrat ke 2 bagian air/susu). Untuk sajian panas: campur konsentrat dengan air panas (bukan seduh panas).'
     }
   },
   japanese_slow_drip: {
     setup: {
-      en: 'Set up an iced V60 or flat-bottom dripper directly over an ice bed. This is not immersion; this is rapid hot extraction over ice.',
-      id: 'Siapkan V60 atau dripper alas datar langsung di atas hamparan es. Ini bukan imersi; ini adalah ekstraksi panas cepat di atas es.'
+      en: 'Position the paper filter disk carefully on top of the packed coffee bed. Set up the drip valve and top ice-water chamber.',
+      id: 'Posisikan kertas filter bundar dengan hati-hati di atas hamparan kopi. Siapkan katup tetes dan wadah air-es di bagian atas.'
     },
     entry: {
-      en: 'Hydrate the bed promptly and evenly before the rapid drip phase begins.',
-      id: 'Basahi hamparan kopi dengan cepat dan merata sebelum fase tetesan cepat dimulai.'
+      en: 'Moisten the bed slowly with a few initial drops to prevent dry channels inside the column.',
+      id: 'Basahi hamparan kopi perlahan dengan beberapa tetes awal untuk mencegah saluran kering di dalam kolom.'
     },
     main: {
-      en: 'Pour the hot concentrate seamlessly. Let the hot liquid fall directly onto the ice, flash-chilling on impact.',
-      id: 'Tuang konsentrat panas secara berkesinambungan. Biarkan cairan panas jatuh langsung ke atas es, mendingin kilat saat bertabrakan.'
+      en: 'Regulate the drip rate to one drop every two seconds. The slow cold percolation takes several hours to complete.',
+      id: 'Atur laju tetesan menjadi satu tetes setiap dua detik. Perkolasi dingin yang lambat ini membutuhkan waktu beberapa jam.'
     },
     release: {
-      en: 'Allow the short, intense brew to finish draining. The total contact time should be under 3 minutes.',
-      id: 'Biarkan seduhan singkat dan intens ini selesai meniris. Total waktu kontak harus di bawah 3 menit.'
+      en: 'Let the ice water filter completely through the bed. The slow gravity flow maximizes clarity and sweetness.',
+      id: 'Biarkan air es tersaring sepenuhnya melewati hamparan kopi. Aliran gravitasi lambat ini memaksimalkan kejernihan dan rasa manis.'
     },
     finish: {
-      en: 'Swirl the carafe to equalize concentration. This method targets clear aromatics and a fruit-forward iced coffee.',
-      id: 'Putar karafe agar suhu merata. Metode ini menargetkan aroma yang jelas serta kopi es yang jernih dan berkarakter buah.'
+      en: 'Swirl the collection carafe to integrate the extraction, then serve neat or over ice.',
+      id: 'Putar teko penampung untuk menyatukan hasil ekstraksi, lalu sajikan langsung atau dengan es.'
     }
   }
-};;
+};
 
 const BATCH_BREW_STYLE_TUTORIALS: Record<string, Record<WorkflowTutorialPhase, WorkflowTutorialCopy>> = {
   sca_gold_cup: {

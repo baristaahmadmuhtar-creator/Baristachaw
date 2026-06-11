@@ -203,11 +203,39 @@ export function validateUserFacingRecipeText(plan: BrewPlan): BrewGuardResult {
   if (plan.methodFamily === 'espresso' && /\b(bloom|kettle pour|filter wall|add water like manual brew)\b/i.test(text)) {
     reasons.push('Espresso text contains manual brew workflow vocabulary');
   }
-  if (plan.methodFamily === 'moka_pot' && /\b(bloom|pour pulses|drawdown bed|final pour)\b/i.test(text)) {
-    reasons.push('Moka Pot text contains pour-over workflow vocabulary');
+  if (plan.methodFamily === 'moka_pot' && /\b(bloom|pour pulses|drawdown bed|final pour|pulse pour|pulse-pour|drawdown)\b/i.test(text)) {
+    reasons.push('Moka Pot text contains forbidden pour-over/V60 vocabulary (bloom, pulse pour, drawdown bed)');
+  }
+  if (plan.methodFamily === 'moka_pot' && /\b(true espresso|real espresso|espresso asli|espresso sejati)\b/i.test(text)) {
+    reasons.push('Moka Pot text contains false true espresso claim');
+  }
+  if (plan.methodFamily === 'moka_pot' && !/\b(no tamp|jangan di-tamp|tanpa di-tamp|do not tamp|tidak di-tamp|dont tamp)\b/i.test(text)) {
+    reasons.push('Moka Pot text is missing no tamp instruction');
+  }
+  if (plan.methodFamily === 'moka_pot' && !/\b(safety valve|katup pengaman|katup aman|safety-valve)\b/i.test(text)) {
+    reasons.push('Moka Pot text is missing safety valve reference');
+  }
+  if (plan.methodFamily === 'moka_pot' && plan.brewMode === 'iced' && !/\b(iced serving|iced concentrate|konsentrat es|penyajian es)\b/i.test(text)) {
+    reasons.push('Iced Moka text is missing iced serving/concentrate label');
   }
   if (plan.methodFamily === 'cold_brew' && /\b(hot bloom|kettle temperature|hot pour)\b/i.test(text)) {
     reasons.push('Cold Brew text contains hot brew workflow vocabulary');
+  }
+  if (plan.methodFamily === 'cold_brew') {
+    const isToddy = plan.dripper.id === 'toddy-cold-brew' || (plan.dripper.name && plan.dripper.name.toLowerCase().includes('toddy'));
+    if (isToddy) {
+      if (plan.recipeStyle === 'cold_drip_tower' || plan.recipeStyle === 'japanese_slow_drip') {
+        reasons.push('Toddy cannot use drip-style recipes (cold_drip_tower, japanese_slow_drip)');
+      }
+      if (/\b(hot bloom|bloom panas|kettle temperature|kettle temp|suhu teko|suhu ceret)\b/i.test(text)) {
+        reasons.push('Toddy cold brew must not contain hot bloom or kettle temperature');
+      }
+      if (plan.brewMode === 'hot') {
+        if (!/\b(hot serving|serving|dilute|dilution|encerkan|sajian panas|campur|tambah air panas)\b/i.test(text)) {
+          reasons.push('Toddy hot mode must be hot serving/dilution only');
+        }
+      }
+    }
   }
   if (plan.methodFamily === 'kalita_wave' && /\b(cone|spiral|kerucut|v60)\b/i.test(text)) {
     reasons.push('Kalita Wave text contains cone/spiral V60 workflow vocabulary');
@@ -276,7 +304,11 @@ export function formatSafeBrewCaveat(plan: BrewPlan, language?: string): string 
         ? (id ? 'waktu rendam, kejernihan tuang pisah, dan rasa' : 'steep time, clean decanting, and taste')
         : plan.methodFamily === 'espresso'
           ? (id ? 'yield, flow, dan rasa' : 'yield, flow, and taste')
-          : (id ? 'air turun dan rasa' : 'drawdown and taste');
+          : plan.methodFamily === 'cold_brew'
+            ? (id ? 'waktu rendam dan rasa' : 'steep time and taste')
+            : plan.methodFamily === 'moka_pot'
+              ? (id ? 'waktu mengalir dan rasa' : 'flow time and taste')
+              : (id ? 'air turun dan rasa' : 'drawdown and taste');
     caveats.push(id
       ? `Setelan grinder adalah titik awal; kalibrasi dengan ${calibrationCue}.`
       : `The grinder setting is a starting point; calibrate by ${calibrationCue}.`);
@@ -424,14 +456,30 @@ export function validateBrewPlanOutput(plan: BrewPlan): BrewGuardResult {
   if (plan.methodFamily === 'french_press' && /drawdown|pour map|bloom|final pour|flat bed|center-to-mid|hiss/i.test(narrative)) {
     reasons.push('French Press narrative contains pour-over workflow wording');
   }
-  if (plan.methodFamily === 'moka_pot' && /bloom|final pour|center-to-mid|kettle pour/i.test(narrative)) {
-    reasons.push('Moka Pot narrative contains pour-over workflow wording');
+  if (plan.methodFamily === 'moka_pot' && (/bloom|final pour|center-to-mid|kettle pour|pulse pour|pulse-pour|drawdown/i.test(narrative) || /\b(true espresso|real espresso|espresso asli|espresso sejati)\b/i.test(narrative))) {
+    reasons.push('Moka Pot narrative contains pour-over/espresso wording');
   }
   if (plan.methodFamily === 'espresso' && /bloom|kettle|filter wall|final pour|add water/i.test(narrative)) {
     reasons.push('Espresso narrative contains filter-brew workflow wording');
   }
   if (plan.methodFamily === 'cold_brew' && /hot bloom|kettle temperature|hot pour/i.test(narrative)) {
     reasons.push('Cold Brew narrative contains hot workflow wording');
+  }
+  if (plan.methodFamily === 'cold_brew') {
+    const isToddy = plan.dripper.id === 'toddy-cold-brew' || (plan.dripper.name && plan.dripper.name.toLowerCase().includes('toddy'));
+    if (isToddy) {
+      if (plan.recipeStyle === 'cold_drip_tower' || plan.recipeStyle === 'japanese_slow_drip') {
+        reasons.push('Toddy cannot use drip-style recipes');
+      }
+      if (/hot bloom|bloom panas|kettle temperature|kettle temp|suhu teko|suhu ceret/i.test(narrative)) {
+        reasons.push('Toddy cold brew narrative contains hot bloom or kettle temperature');
+      }
+      if (plan.brewMode === 'hot') {
+        if (!/\b(hot serving|serving|dilute|dilution|encerkan|sajian panas|campur|tambah air panas)\b/i.test(narrative)) {
+          reasons.push('Toddy hot mode narrative must be hot serving/dilution only');
+        }
+      }
+    }
   }
   if (plan.methodFamily === 'chemex' && /\b(v60 timing|small dripper|quick drawdown|thin paper)\b/i.test(narrative)) {
     reasons.push('Chemex narrative contains non-Chemex vocabulary');

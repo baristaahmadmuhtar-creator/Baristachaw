@@ -1149,7 +1149,7 @@ const COPY = {
     aiEngineProviderStack: '',
     aiFallbackDisabledByAdmin: 'Asisten AI tersedia melalui aksi yang dipilih pengguna.',
     aiEngineOnlineOptimized: 'AI + rencana tervalidasi',
-    aiEngineLocalValidated: 'Rencana tervalidasi',
+    aiEngineLocalValidated: 'Rencana lokal',
     aiEnginePrecisionPlanner: 'Perencana presisi',
     aiEngineWorkingOnline: 'Asisten AI bekerja...',
     aiEngineWorkingLocal: 'Memvalidasi rencana...',
@@ -3371,6 +3371,7 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     [/Brew (\d+(?:\.\d+)?) ml hot over (\d+(?:\.\d+)?) ml\/g ice \((.+)\)\. Final ratio is 1:(\d+(?:\.\d+)?); hot concentrate extracts at 1:(\d+(?:\.\d+)?)\. Keep pours compact to hold sweetness and clarity, then stir the chilled server after drawdown so service is not confused with another brew step/i, 'Seduh $1 ml air panas di atas $2 ml/g es ($3). Rasio final 1:$4; konsentrat panas terekstraksi di 1:$5. Jaga tuangan tetap rapat, lalu aduk server setelah air turun supaya tahap saji tidak terlihat seperti langkah seduh tambahan.'],
     [/Brew (\d+(?:\.\d+)?) ml hot over (\d+(?:\.\d+)?) ml\/g ice \((.+)\)\. Keep pours compact to hold sweetness and clarity/i, 'Seduh $1 ml air panas di atas $2 ml/g es ($3). Jaga tuangan tetap rapat untuk menjaga manis dan kejernihan.'],
     [/Iced split source: final beverage ratio 1:(\d+(?:\.\d+)?), hot extraction ratio 1:(\d+(?:\.\d+)?), hot\/ice (.+)/i, 'Sumber split seduh es: rasio final 1:$1, rasio ekstraksi 1:$2, panas/es $3.'],
+    [/Iced split source: final beverage ratio 1:(\d+(?:\.\d+)?), cold ratio 1:(\d+(?:\.\d+)?), liquid\/ice (.+)/i, 'Sumber split seduh es: rasio final 1:$1, rasio dingin 1:$2, cair/es $3.'],
     [/Use the full (\d+(?:\.\d+)?) ml as brew water and keep kettle near (\d+(?:\.\d+)?).*C with calm, center-focused pours/i, 'Gunakan penuh $1 ml sebagai air seduh dan jaga kettle di sekitar $2\u00b0C dengan tuangan tenang yang fokus ke tengah.'],
     [/No verified setting yet\. Start near (.+) and bias (.+)/i, 'Belum ada setting terverifikasi. Mulai di sekitar $1 lalu arahkan ke $2.'],
     [/(.+?) target protects acidity and clarity/i, 'Target $1 menjaga keasaman dan kejernihan.'],
@@ -11757,7 +11758,15 @@ export function AiBrewPanel() {
               ` }} />
               <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-secondary">{copy.coldBrewStyleTitle}</p>
               <div className="cold-brew-style-grid">
-                {coldBrewStyleOptions.map((option) => (
+                {coldBrewStyleOptions
+                  .filter((option) => {
+                    const isToddy = selectedDripper?.id === 'toddy-cold-brew' || (selectedDripper?.id && selectedDripper.id.toLowerCase().includes('toddy'));
+                    if (isToddy && (option.value === 'cold_drip_tower' || option.value === 'japanese_slow_drip')) {
+                      return false;
+                    }
+                    return true;
+                  })
+                  .map((option) => (
                   <button
                     key={option.value}
                     type="button"
@@ -12778,6 +12787,72 @@ export function AiBrewPanel() {
           <p className="mt-2 rounded-xl bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-700 dark:text-amber-300" data-testid="ai-brew-iced-unavailable-note">
             {copy.icedUnavailableInline}
           </p>
+        ) : null}
+        {selectedDripper.methodFamily === 'moka_pot' ? (
+          <div className="mt-2.5 rounded-[0.9rem] border border-blue-500/20 bg-blue-500/5 p-3 text-xs" data-testid="ai-brew-moka-pot-identity-card">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Penyeduh tekanan kompor (Stovetop)' : 'Stovetop pressure brewer'}
+              </span>
+              <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] text-blue-500 font-semibold">
+                Hot primary
+              </span>
+            </div>
+            <p className="text-secondary mb-2 leading-relaxed">
+              {isIndonesianAiBrewLanguage(language) 
+                ? 'Iced serving/concentrate didukung (bukan iced brew standar).' 
+                : 'Iced serving/concentrate supported (not standard iced brew).'}
+            </p>
+            <div className="mb-2">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Cocok untuk: ' : 'Best for: '}
+              </span>
+              <span className="text-secondary">
+                {isIndonesianAiBrewLanguage(language) ? 'body moka yang pekat dan kuat' : 'strong, concentrated, moka body'}
+              </span>
+            </div>
+            <div className="rounded-[0.6rem] bg-amber-500/10 p-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+              <span className="font-bold">
+                {isIndonesianAiBrewLanguage(language) ? 'Peringatan: ' : 'Warning: '}
+              </span>
+              {isIndonesianAiBrewLanguage(language) 
+                ? 'jangan di-tamp, tidak ada klaim espresso sejati.' 
+                : 'no tamp, no true espresso claim.'}
+            </div>
+          </div>
+        ) : null}
+        {selectedDripper.methodFamily === 'cold_brew' && (selectedDripper.id === 'toddy-cold-brew' || selectedDripper.id.toLowerCase().includes('toddy')) ? (
+          <div className="mt-2.5 rounded-[0.9rem] border border-blue-500/20 bg-blue-500/5 p-3 text-xs" data-testid="ai-brew-toddy-cold-brew-identity-card">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Konsentrat imersi dingin (Cold immersion concentrate)' : 'Cold immersion concentrate'}
+              </span>
+              <div className="flex gap-1">
+                <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] text-blue-500 font-semibold">
+                  {isIndonesianAiBrewLanguage(language) ? 'Cold primary' : 'Cold primary'}
+                </span>
+                <span className="rounded bg-orange-500/10 px-1.5 py-0.5 text-[10px] text-orange-500 font-semibold">
+                  {isIndonesianAiBrewLanguage(language) ? 'Hot serving by dilution only' : 'Hot serving by dilution only'}
+                </span>
+              </div>
+            </div>
+            <div className="mb-2">
+              <span className="font-semibold text-primary">
+                {isIndonesianAiBrewLanguage(language) ? 'Cocok untuk: ' : 'Best for: '}
+              </span>
+              <span className="text-secondary">
+                {isIndonesianAiBrewLanguage(language) ? 'smooth, low-acid, milk base' : 'smooth, low-acid, milk base'}
+              </span>
+            </div>
+            <div className="rounded-[0.6rem] bg-amber-500/10 p-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+              <span className="font-bold">
+                {isIndonesianAiBrewLanguage(language) ? 'Peringatan: ' : 'Warning: '}
+              </span>
+              {isIndonesianAiBrewLanguage(language) 
+                ? 'long steep, dilution required.' 
+                : 'long steep, dilution required.'}
+            </div>
+          </div>
         ) : null}
         {switchPanel ? <div className="mt-2" data-testid="ai-brew-switch-inline-methods">{switchPanel}</div> : null}
         {!switchPanel && methodOptionPanel ? <div className="mt-2">{methodOptionPanel}</div> : null}

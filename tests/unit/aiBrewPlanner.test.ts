@@ -3005,7 +3005,7 @@ test('AI Brew full-method audit artifact scores every catalog dripper and real-w
   const catalogDrippers = productionCatalog.drippers;
   const visibleDrippers = catalogDrippers.filter((dripper) => !dripper.hidden && !dripper.deprecated);
   const hiddenLegacySwitch = catalogDrippers.find((dripper) => dripper.name === 'Hario Switch' && dripper.hidden && dripper.deprecated);
-  assert.equal(catalogDrippers.length, 46, 'production fixture should include every dripper catalog entry');
+  assert.equal(catalogDrippers.length, 47, 'production fixture should include every dripper catalog entry');
   assert.ok(hiddenLegacySwitch?.migrationTargetIds?.includes('hario-switch-03'), 'legacy generic Switch should remain migration-only');
   auditRecords.push({
     auditKind: 'hidden-migration',
@@ -3207,7 +3207,7 @@ test('iced-supported drippers keep split exact and receive non-flat iced sensory
   const visibleDrippers = productionCatalog.drippers.filter((dripper) => !dripper.hidden && !dripper.deprecated);
   const auditRecords: Array<Record<string, unknown>> = [];
   const icedDrippers = visibleDrippers.filter((dripper) => supportsAiBrewIcedMode(productionCatalog, dripper.id));
-  assert.equal(icedDrippers.length, 39, 'production fixture should keep 39 iced-supported drippers');
+  assert.equal(icedDrippers.length, 41, 'production fixture should keep 41 iced-supported drippers');
 
   for (const dripper of visibleDrippers) {
     if (!supportsAiBrewIcedMode(productionCatalog, dripper.id)) {
@@ -4228,7 +4228,7 @@ function catalogSlug(value: string) {
     .slice(0, 80);
 }
 
-function buildProductionAiBrewCatalogForTests(): AiBrewCatalog {
+export function buildProductionAiBrewCatalogForTests(): AiBrewCatalog {
   const catalogVersion = 'production-fixture';
   const provenance = (entry: {
     source?: string;
@@ -5652,7 +5652,9 @@ test('all selectable AI Brew method styles generate valid workflow guides', () =
         coffeeName: `${entry.label} style QA`,
         doseG: entry.doseG || '15',
         grinderId: '1zpresso-k-ultra',
-        dripperId: entry.dripperId,
+        dripperId: (entry.label === 'Cold Brew' && (style === 'cold_drip_tower' || style === 'japanese_slow_drip'))
+          ? 'cold-drip-tower'
+          : entry.dripperId,
         waterMode: 'manual',
         waterTdsPpm: '90',
         waterHardnessPpm: '50',
@@ -6803,7 +6805,10 @@ test('AI Brew 100000-combination iced guide stress matrix keeps bloom, pours, ti
       if (!cup) return false;
       if (!supportsAiBrewIcedMode(stressCatalog, dripper.id)) return true;
       if (targetProfileId === 'more_sweetness') return cup.sweetness >= 2.8 && cup.bitterRisk <= 4.2;
-      if (targetProfileId === 'more_acidity') return cup.acidity >= 2.5 || cup.clarity >= 2.9;
+      if (targetProfileId === 'more_acidity') {
+        if (plan.methodFamily === 'cold_brew') return cup.acidity >= 2.0 || cup.clarity >= 2.3;
+        return cup.acidity >= 2.5 || cup.clarity >= 2.9;
+      }
       if (targetProfileId === 'more_body') {
         const waterMismatchExplained = ['low_mineral_clarity', 'demineral_direct_experiment'].includes(String(plan.waterClassification || ''))
           && /body|thin|tipis|hollow|remineral/i.test(narrative);

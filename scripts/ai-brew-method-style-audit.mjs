@@ -399,7 +399,6 @@ function findByText(collection, text) {
 function findByPatterns(collection, patterns) {
   return collection.find((item) => patterns.some((pattern) => pattern.test(`${item.id} ${item.name || ''} ${item.label || ''}`)));
 }
-
 function findDripperForFamily(catalog, family, styleId) {
   if (family === 'hario_switch' && styleId === 'mugen_everyday_hybrid') {
     return catalog.drippers.find((item) => item.id === 'mugen-x-switch');
@@ -407,6 +406,9 @@ function findDripperForFamily(catalog, family, styleId) {
   if (family === 'hario_switch' && /immersion_(sweet|heavy_body)/.test(String(styleId))) {
     return catalog.drippers.find((item) => item.id === 'hario-switch-03')
       || catalog.drippers.find((item) => item.id === 'hario-switch');
+  }
+  if (family === 'cold_brew' && (styleId === 'cold_drip_tower' || styleId === 'japanese_slow_drip')) {
+    return catalog.drippers.find((item) => item.id === 'cold-drip-tower');
   }
   const exactPreference = {
     v60: ['hario-v60', 'cafec-flower-dripper'],

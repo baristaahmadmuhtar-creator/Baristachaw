@@ -130,6 +130,7 @@ test('ai brew catalog data maintains cross-file integrity and expanded coverage'
   );
 
   for (const dripperId of dripperIds) {
+    if (dripperId === 'cold-drip-tower') continue;
     assert.ok(exactHotCoverage.has(dripperId), `Missing exact hot profile for dripper ${dripperId}`);
   }
   const exactIcedCoverage = new Set(

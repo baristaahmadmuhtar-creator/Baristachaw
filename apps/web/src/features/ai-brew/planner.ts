@@ -224,6 +224,7 @@ const ICED_METHOD_FAMILIES = new Set<AiBrewMethodFamily>([
   'clever_dripper',
   'hario_switch',
   'aeropress',
+  'cold_brew',
 ]);
 
 const ICED_MANUAL_POUR_OVER_FAMILIES = new Set<AiBrewMethodFamily>([
@@ -1305,6 +1306,7 @@ function methodFamilySupportsIced(methodFamily: AiBrewMethodFamily) {
 export function supportsAiBrewIcedMode(catalog: AiBrewCatalog | undefined, dripperId: string) {
   const dripper = catalog?.drippers.find((item) => item.id === dripperId);
   if (!dripper?.methodFamily) return true;
+  if (dripperId === 'matrix-cold-brew') return false;
   return methodFamilySupportsIced(dripper.methodFamily);
 }
 
@@ -7550,7 +7552,7 @@ function buildServiceExecutionNote(params: {
   iceSplitPercent: number;
   waterTempC: number;
 }) {
-  if (params.brewMode === 'iced') {
+  if (params.brewMode === 'iced' && !['cold_brew', 'espresso', 'moka_pot', 'french_press'].includes(params.methodFamily)) {
     if (params.methodFamily === 'aeropress') {
       return `AeroPress iced is locked: brew ${params.hotWaterMl} ml hot concentrate over ${params.iceMl} g ice (${params.hotSplitPercent}%:${params.iceSplitPercent}%). Total input is ${params.totalWaterMl} ml, not final cup output. Final ratio is 1:${formatBaristaRatio(params.finalBeverageRatio)}; hot concentrate extracts at 1:${formatBaristaRatio(params.hotExtractionRatio)}. Press steadily to hold back ice dilution, then stir the chilled server so service is not confused with another brew step.`;
     }
@@ -7683,6 +7685,12 @@ function deriveBrewPlanTimeSemantics(plan: BrewPlan, guideSteps: WorkflowGuideSt
 }
 
 function findFallbackDeviceProfile(catalog: AiBrewCatalog, methodFamily: AiBrewMethodFamily, brewMode: 'hot' | 'iced') {
+  if (methodFamily === 'cold_brew') {
+    const toddyProfile = catalog.deviceProfiles.find((item) => item.id === 'profile_toddy_cold_brew_hot');
+    if (toddyProfile) {
+      return brewMode === 'iced' ? { ...toddyProfile, exactMatch: false, brewMode: 'iced' as const } : { ...toddyProfile, exactMatch: false };
+    }
+  }
   return catalog.deviceProfiles.find((item) => !item.exactMatch && item.methodFamily === methodFamily && item.brewMode === brewMode);
 }
 
@@ -8495,7 +8503,7 @@ function finalizePlanCore(
     ? roundTo(totalWaterMl - hotWaterMl, 0)
     : 0;
   const finalBeverageRatio = roundTo(totalWaterMl / doseG, 2);
-  if (targetWaterOverrideMl !== null || methodFamily === 'batch_brew' || methodFamily === 'aeropress' || methodFamily === 'french_press') {
+  if (targetWaterOverrideMl !== null || methodFamily === 'batch_brew' || methodFamily === 'aeropress' || methodFamily === 'french_press' || methodFamily === 'cold_brew') {
     recommendedRatio = finalBeverageRatio;
   }
   const hotExtractionRatio = roundTo(hotWaterMl / doseG, 2);
@@ -8981,7 +8989,9 @@ function finalizePlanCore(
       processRisk ? `Process risk: ${processRisk.variability} variability, ${processRisk.recommendationMode}.` : undefined,
       manualPreset ? `Manual brew preset source: ${manualPreset.safeLabel} (${manualPreset.verificationLevel}).` : undefined,
       input.brewMode === 'iced'
-        ? `Iced split source: final beverage ratio 1:${formatBaristaRatio(finalBeverageRatio)}, hot extraction ratio 1:${formatBaristaRatio(hotExtractionRatio)}, hot/ice ${hotSplitPercent}:${iceSplitPercent}.`
+        ? (methodFamily === 'cold_brew'
+            ? `Iced split source: final beverage ratio 1:${formatBaristaRatio(finalBeverageRatio)}, cold ratio 1:${formatBaristaRatio(hotExtractionRatio)}, liquid/ice ${hotSplitPercent}:${iceSplitPercent}.`
+            : `Iced split source: final beverage ratio 1:${formatBaristaRatio(finalBeverageRatio)}, hot extraction ratio 1:${formatBaristaRatio(hotExtractionRatio)}, hot/ice ${hotSplitPercent}:${iceSplitPercent}.`)
         : undefined,
       pourControlNote ? `Pour control source: ${pourControlNote}` : undefined,
     ],

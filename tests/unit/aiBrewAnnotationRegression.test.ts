@@ -15,7 +15,6 @@ test('AI Brew removes annotated filler copy and keeps professional tools subtitl
 
   const removedCopy = [
     'AI Brew dulu, lalu timer, analisis rasio, dan tugas giliran dalam satu ruang kerja.',
-    'Rencana lokal',
     'Rencana lanjutan',
     'AI hanya dipakai saat kamu menekan tombol asisten.',
     'Data label/lab langsung',

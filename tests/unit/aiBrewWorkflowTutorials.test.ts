@@ -157,7 +157,7 @@ const GENERATED_STYLE_MATRIX: Array<{
   { methodFamily: 'french_press', field: 'frenchPressStyle', styles: ['auto', 'traditional', 'clean_decant', 'double_filter', 'heavy_concentrate', 'sweet_immersion'] },
   { methodFamily: 'espresso', field: 'virtualStyle', styles: ['standard_dial_in', 'bright_modern', 'soft_round', 'milk_base', 'ristretto_safe', 'lungo_safe'], targetWaterMl: '36', doseG: '18' },
   { methodFamily: 'moka_pot', field: 'mokaPotStyle', styles: ['auto', 'traditional_stovetop', 'preheated_boiler', 'low_temp_controlled', 'iced_moka_concentrate', 'high_yield_robust'], targetWaterMl: '95' },
-  { methodFamily: 'cold_brew', field: 'coldBrewStyle', styles: ['auto', 'classic_toddy_immersion', 'cold_drip_tower', 'double_extraction_concentrate', 'accelerated_room_temp', 'japanese_slow_drip'], targetWaterMl: '300', doseG: '30' },
+  { methodFamily: 'cold_brew', field: 'coldBrewStyle', styles: ['auto', 'classic_toddy_immersion', 'cold_drip_tower', 'double_extraction_concentrate', 'accelerated_room_temp', 'japanese_slow_drip'], targetWaterMl: '360', doseG: '30' },
   { methodFamily: 'batch_brew', field: 'batchBrewStyle', styles: ['auto', 'sca_gold_cup', 'heavy_batch_catering', 'bright_light_roast_batch', 'pre_wet_hybrid_batch', 'high_extraction_thermos'], targetWaterMl: '480', doseG: '30' },
   { methodFamily: 'siphon', field: 'siphonStyle', styles: ['auto', 'traditional_vacuum_siphon', 'competition_triple_agitation', 'low_temp_delicate', 'high_body_fast_drawdown', 'spirit_infusion_style'] },
 ];

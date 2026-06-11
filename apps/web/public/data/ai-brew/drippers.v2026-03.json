@@ -425,6 +425,21 @@
       "catalogVersion": "2026.05.01-ai-brew-method-expansion"
     },
     {
+      "id": "cold-drip-tower",
+      "name": "Cold Drip Tower",
+      "brand": "Yami / Yama",
+      "type": "Cold Drip Tower",
+      "source": "curated_2026",
+      "sourceUrl": "https://example.com/cold-drip",
+      "verificationLevel": "curated",
+      "popularityTier": "specialty_common",
+      "marketSegment": "specialty_mainstream",
+      "releaseStatus": "established",
+      "confidence": "high",
+      "catalogVersion": "2026.05.01-ai-brew-method-expansion"
+    },
+
+    {
       "id": "batch-brewer",
       "name": "Batch Brewer",
       "brand": "SCA",

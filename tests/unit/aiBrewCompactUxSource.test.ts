@@ -36,7 +36,7 @@ test('AI Brew mobile result has a compact action bar', () => {
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-check-taste-primary"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-action-save"/);
   assert.match(SOURCE, /data-testid="ai-brew-result-action-guide"/);
-  assert.match(SOURCE, /data-testid="ai-brew-result-action-edit"/);
+  assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-action-edit"/);
   assert.doesNotMatch(SOURCE, /data-testid="ai-brew-result-action-check-taste"/);
   assert.match(SOURCE, /setActiveTab\('flow'\)/);
 });
@@ -75,7 +75,7 @@ test('AI Brew generated result uses compact tabs before dense detail', () => {
 test('AI Brew Brew Guide has Lite and Pro modes with Lite as the safe default', () => {
   assert.match(SOURCE, /guideDensitySimple: 'Lite'/);
   assert.match(SOURCE, /guideDensityPro: 'Pro'/);
-  assert.match(SOURCE, /guideDensitySimpleHint: 'Timer and current step stay in view\.'/);
+  assert.match(SOURCE, /guideDensitySimpleHint: ''/);
   assert.match(SOURCE, /guideDensityProHint: 'Full guide with practical barista checkpoints\.'/);
   assert.match(SOURCE, /data-testid="ai-brew-lite-guide-panel"/);
   assert.match(SOURCE, /data-testid="ai-brew-lite-progress-ring"/);
@@ -179,15 +179,15 @@ test('AI Brew exposes explicit mobile time semantics instead of one misleading t
   assert.match(SOURCE, /data-testid="ai-brew-flow-current-card"/);
 });
 
-test('AI Brew result summary promotes style and highlights split water', () => {
+test('AI Brew result summary promotes style while limiting blue emphasis to ice text', () => {
   assert.match(SOURCE, /function buildMethodStyleMetricItem/);
   assert.match(SOURCE, /function insertMetricAfter/);
   assert.match(SOURCE, /const methodStyleMetric = buildMethodStyleMetricItem/);
   assert.match(SOURCE, /summaryHighlightItemsWithCompletion = insertMetricAfter/);
   assert.match(SOURCE, /detailHighlightItemsWithCompletion = insertMetricAfter/);
-  assert.match(SOURCE, /highlight:\s*plan\.iceMl > 0 \|\| isAeroPressMeasuredBypass \? 'water_split' : undefined/);
-  assert.match(SOURCE, /data-testid=\{item\.highlight === 'water_split' \? 'ai-brew-water-split-highlight' : undefined\}/);
-  assert.match(SOURCE, /border-sky-500\/30 bg-sky-500\/\[0\.10\]/);
+  assert.doesNotMatch(SOURCE, /highlight:\s*plan\.iceMl > 0 \|\| isAeroPressMeasuredBypass \? 'water_split' : undefined/);
+  assert.doesNotMatch(SOURCE, /ai-brew-water-split-highlight/);
+  assert.match(SOURCE, /data-testid="ai-brew-ice-accent"/);
 });
 
 test('AI Brew live flow uses action-aware next labels and agitation instead of final ratio in compact chips', () => {

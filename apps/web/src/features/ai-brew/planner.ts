@@ -3098,6 +3098,7 @@ function deriveBaristaTemperatureCalibration(params: {
   }
 
   if (params.brewMode === 'iced' && ICED_MANUAL_POUR_OVER_FAMILIES.has(params.methodFamily)) {
+    calibration.maxTempC = 96;
     if (params.input.targetProfileId === 'more_sweetness' && isLightOrMediumLightRoast(params.input.roastLevel)) {
       calibration.minTempC = 92;
       calibration.maxTempC = 93;
@@ -3150,6 +3151,10 @@ function deriveBaristaTemperatureCalibration(params: {
       calibration.tempDeltaC += 1.1;
       calibration.notes.push('Washed Colombia on April iced gets a little more kettle energy to lift caramel, red-apple, and citrus sweetness.');
       calibration.confidenceNotes.push('Barista temperature calibration active: washed Colombia April iced lift.');
+    }
+    if (calibration.notes.length === 0) {
+      calibration.notes.push('Japanese-iced manual pour-over is capped at 96C so the concentrate extracts efficiently without using unnecessary kettle heat.');
+      calibration.confidenceNotes.push('Barista temperature calibration active: general Japanese-iced temperature cap.');
     }
     return calibration;
   }
@@ -6473,7 +6478,7 @@ function buildMethodFamilyStepInstruction(params: {
             detail = 'Make sure the Kalita bed is fully saturated edge to edge, then let the slurry settle level before the next pulse.';
           } else if (phase === 'early_middle') {
             quickNote = 'Keep the flat bed level with even pulses from the center.';
-            detail = 'Use even pulses that cover the flat bed without flooding one side; the goal is a level slurry, not a dramatic spiral.';
+            detail = 'Use even pulses that cover the flat bed without flooding one side; keep the slurry level and the agitation controlled.';
           } else if (phase === 'late_middle') {
             quickNote = 'Protect the later middle with flat, even contact across the bed.';
             detail = 'Keep the late middle level and even so the Kalita holds body without stalling the final drawdown.';
@@ -6523,7 +6528,7 @@ function buildMethodFamilyStepInstruction(params: {
           detail = 'Do not flood the brewer; a lower, steadier slurry protects flow and keeps the cup clean.';
         } else if (phase === 'late_middle') {
           quickNote = 'Keep the late pulse small so the outlet stays open.';
-          detail = 'A small top-up is safer than a dramatic spiral when the bed is already dense.';
+          detail = 'A small top-up is safer than broad agitation when the bed is already dense.';
         } else {
           quickNote = 'Finish without swirling and watch for a clean stream-to-drip transition.';
           detail = 'Let drawdown complete; if the finish chokes, adjust grind coarser rather than adding agitation.';

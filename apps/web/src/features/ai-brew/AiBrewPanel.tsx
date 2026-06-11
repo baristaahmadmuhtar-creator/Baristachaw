@@ -31,6 +31,7 @@ import { useGlobalState } from '../../context/GlobalState';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useNavbar } from '../../context/NavbarContext';
 import { useAiAccessGate } from '../../components/billing/AiAccessGate';
+import { ConfirmActionDialog } from '../../components/ConfirmActionDialog';
 import { useIOSKeyboardFix } from '../../hooks/useIOSKeyboardFix';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useRuntimeDisplayMode } from '../../hooks/useRuntimeDisplayMode';
@@ -38,6 +39,11 @@ import { modalSpringTransition, modalExitTransition } from '../../utils/motionPr
 import { reportClientError } from '../../services/errorReporting';
 import { brewSequenceResponseDetailed, brewOptimizeResponseDetailed, raceChatResponse, deepThinkingResponseDetailed, fastResponseDetailed } from '../../services/gemini';
 import { createRecipeCollectionItem, saveCollectionItem, saveRecipe } from '../../services/storageService';
+import {
+  applyEquipmentPreferencesToForm,
+  loadEquipmentPreferences,
+  sortEquipmentByPreference,
+} from '../../services/equipmentPreferences';
 import type { Recipe } from '../../types';
 import {
   buildAdjustPrompt,
@@ -81,6 +87,8 @@ import {
 } from './localization.ts';
 import { getManualPresetDisplayCopy } from './manualPresetLocalization.ts';
 import { resolveWorkflowTutorialDetail } from './workflowTutorials.ts';
+import { buildPredictionPrecision } from './predictionPrecision.ts';
+import { resolveManualPresetChange } from './manualPresetChangeGuard.ts';
 import {
   AI_BREW_GENERATION_STAGES,
   buildAiBrewPlan,
@@ -116,6 +124,7 @@ import {
 import {
   deleteBrewPreset,
   findBrewPresetByFingerprint,
+  hasAiBrewFormDraft,
   listBrewPresets,
   listRecentBrewJournalEntries,
   loadAiBrewFormDraft,
@@ -168,27 +177,6 @@ const AI_BREW_COACH_DEEP_TIMEOUT_MS = 8500;
 const AI_BREW_COACH_TRANSLATION_TIMEOUT_MS = 1200;
 const AI_BREW_FEEDBACK_NOTE_MAX_LENGTH = 240;
 const AI_BREW_ASSIST_PROMPT_VERSION = 'assist-v2026-05-06';
-const MANUAL_PRESET_CONTROLLED_FIELDS = new Set<keyof AiBrewFormState>([
-  'brewMode',
-  'dripperId',
-  'targetProfileId',
-  'pourStyle',
-  'pourCount',
-  'origamiFilterStyle',
-  'aeropressStyle',
-  'frenchPressStyle',
-  'kalitaWaveStyle',
-  'cleverDripperStyle',
-  'chemexStyle',
-  'mokaPotStyle',
-  'coldBrewStyle',
-  'batchBrewStyle',
-  'siphonStyle',
-  'origamiStyle',
-  'aprilStyle',
-  'melittaStyle',
-  'konoStyle',
-]);
 const LARGE_CATALOG_PICKER_KINDS = new Set<NonNullable<PickerKind>>(['process', 'variety']);
 const LARGE_CATALOG_INITIAL_LIMIT = 140;
 const LARGE_CATALOG_SEARCH_LIMIT = 96;
@@ -369,7 +357,7 @@ const COPY = {
     beanProfileDescription: 'Optional.',
     beanProfileShow: 'Show bean profile',
     beanProfileHide: 'Hide bean profile',
-    beanProfileNeutral: 'No bean-profile modifier active yet.',
+    beanProfileNeutral: '',
     beanProfileActive: 'Bean profile active',
     altitudeMasl: 'Altitude (masl)',
     beanDensity: 'Bean density (g/ml)',
@@ -442,7 +430,7 @@ const COPY = {
     waterBrandEstimatedNote: 'Estimated values are only a placeholder. Verify manually before brewing.',
     waterBrandAutofilled: 'Minerals loaded from the selected brand profile.',
     waterBrandCustomized: 'Brand minerals were adjusted manually for this brew.',
-    waterDerivationDirect: 'Direct label/lab data',
+    waterDerivationDirect: 'Verified mineral source',
     waterDerivationDerived: 'Derived from Ca/Mg/HCO3',
     waterDerivationCommunity: 'Community coffee profile',
     waterDerivationEstimated: 'Estimated from classification',
@@ -618,7 +606,7 @@ const COPY = {
     feedbackCoachHint: 'Smallest safe correction for the next brew.',
     guideDensitySimple: 'Lite',
     guideDensityPro: 'Pro',
-    guideDensitySimpleHint: 'Timer and current step stay in view.',
+    guideDensitySimpleHint: '',
     guideDensityProHint: 'Full guide with practical barista checkpoints.',
     switchSectionTitle: 'Switch method',
     switchSectionSummary: 'Choose Hot/Iced first, then leave Auto or pick the Switch method you want.',
@@ -697,7 +685,6 @@ const COPY = {
     softRound: 'Soft & Round',
     denseComforting: 'Dense & Comforting',
     openResult: 'Open result workspace',
-    editInputs: 'Edit inputs',
     closeResult: 'Close planned output',
     manualEntry: 'Other / Manual',
     notSpecified: 'Not specified',
@@ -986,7 +973,7 @@ const COPY = {
     beanProfileDescription: 'Opsional.',
     beanProfileShow: 'Tampilkan profil kopi',
     beanProfileHide: 'Sembunyikan profil kopi',
-    beanProfileNeutral: 'Belum ada penyesuaian profil kopi yang aktif.',
+    beanProfileNeutral: '',
     beanProfileActive: 'Profil kopi aktif',
     altitudeMasl: 'Altitude (mdpl)',
     beanDensity: 'Densitas biji (g/ml)',
@@ -1059,7 +1046,7 @@ const COPY = {
     waterBrandEstimatedNote: 'Nilai estimasi hanya placeholder. Verifikasi manual sebelum seduh.',
     waterBrandAutofilled: 'Mineral dimuat dari profil brand terpilih.',
     waterBrandCustomized: 'Mineral brand sudah disesuaikan manual untuk seduhan ini.',
-    waterDerivationDirect: 'Data label/lab langsung',
+    waterDerivationDirect: 'Sumber mineral terverifikasi',
     waterDerivationDerived: 'Turunan dari Ca/Mg/HCO3',
     waterDerivationCommunity: 'Profil komunitas kopi',
     waterDerivationEstimated: 'Estimasi dari klasifikasi',
@@ -1160,13 +1147,13 @@ const COPY = {
     aiEngineStrictReady: 'AI + rencana tervalidasi',
     aiEngineStrictRequired: 'Asisten AI belum tersedia',
     aiEngineProviderStack: '',
-    aiFallbackDisabledByAdmin: 'AI hanya dipakai saat kamu menekan tombol asisten.',
+    aiFallbackDisabledByAdmin: 'Asisten AI tersedia melalui aksi yang dipilih pengguna.',
     aiEngineOnlineOptimized: 'AI + rencana tervalidasi',
-    aiEngineLocalValidated: 'Rencana lokal',
-    aiEnginePrecisionPlanner: 'Rencana lanjutan',
+    aiEngineLocalValidated: 'Rencana tervalidasi',
+    aiEnginePrecisionPlanner: 'Perencana presisi',
     aiEngineWorkingOnline: 'Asisten AI bekerja...',
-    aiEngineWorkingLocal: 'Rencana lokal',
-    aiPrecisionAssistNote: 'AI hanya dipakai saat kamu menekan tombol asisten.',
+    aiEngineWorkingLocal: 'Memvalidasi rencana...',
+    aiPrecisionAssistNote: '',
     aiAssistNotUsed: 'Asisten AI belum dipakai',
     aiAssistActive: 'Asisten AI aktif',
     aiAssistUsedExplanation: 'AI dipakai untuk penjelasan',
@@ -1235,7 +1222,7 @@ const COPY = {
     feedbackCoachHint: 'Koreksi aman paling kecil untuk seduhan berikutnya.',
     guideDensitySimple: 'Lite',
     guideDensityPro: 'Pro',
-    guideDensitySimpleHint: 'Timer dan langkah aktif tetap di atas.',
+    guideDensitySimpleHint: '',
     guideDensityProHint: 'Panduan lengkap dengan detail teknik barista.',
     switchSectionTitle: 'Metode Switch',
     switchSectionSummary: 'Pilih Panas/Es dulu, lalu biarkan Auto atau pilih metode Switch yang kamu mau.',
@@ -1314,7 +1301,6 @@ const COPY = {
     softRound: 'Lembut & Bulat',
     denseComforting: 'Tebal & Nyaman',
     openResult: 'Buka hasil',
-    editInputs: 'Edit input',
     closeResult: 'Tutup hasil',
     manualEntry: 'Lainnya / Manual',
     notSpecified: 'Belum ditentukan',
@@ -1365,7 +1351,7 @@ const COPY = {
     detailTab: 'Detail',
     flowTitle: 'Panduan seduh',
     flowDescription: 'Fokus ke langkah aktif.',
-    flowReady: 'Siap mulai seduh',
+    flowReady: 'Belum dimulai',
     flowRunning: 'Timer sedang berjalan',
     flowPaused: 'Timer dijeda',
     flowFinished: 'Jendela seduh selesai',
@@ -1380,7 +1366,7 @@ const COPY = {
     flowDone: 'Selesai',
     flowNow: 'Sekarang',
     flowUpNext: 'Berikutnya',
-    coachDescription: 'AI opsional. Pakai hanya untuk penjelasan atau koreksi rasa singkat.',
+    coachDescription: '',
     coachCostHint: 'Asisten AI hanya berjalan saat kamu menekan salah satu aksi ini.',
     coachEmpty: 'Pilih satu arahan.',
     coachExplainHint: 'Mengapa rencana ini cocok dengan kopi, air, dan target.',
@@ -2052,7 +2038,6 @@ function buildAiBrewCoreMetricItems(
         : isAeroPressMeasuredBypass
           ? `${id ? 'Air seduh' : 'Brew water'} ${formatRoundedMl(plan.hotWaterMl)} + ${id ? 'bypass' : 'bypass'} ${formatRoundedMl(bypassWaterMl)}`
         : '',
-      highlight: plan.iceMl > 0 || isAeroPressMeasuredBypass ? 'water_split' : undefined,
     },
     ...(isAeroPressMeasuredBypass ? [
       {
@@ -3761,6 +3746,14 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\bSiapkan AeroPress tegak, bilas filter dan tutup, lalu ukur air bypass kecil agar body tidak terlalu encer\b/gi, 'Set up the AeroPress upright, rinse the filter and cap, then measure a small bypass so body does not thin out')
     .replace(/\bSiapkan AeroPress tegak, bilas filter dan tutup, lalu pisahkan air bypass untuk menjaga aroma buah tetap hidup\b/gi, 'Set up the AeroPress upright, rinse the filter and cap, then keep bypass water separate to preserve fruit aromatics')
     .replace(/\bSiapkan AeroPress tegak, bilas filter dan tutup, lalu pisahkan air bypass dalam porsi kecil-menengah\b/gi, 'Set up the AeroPress upright, rinse the filter and cap, then keep a small-to-medium bypass portion separate')
+    .replace(/\bIsi konsentrat bersih\b/gi, 'Add brew water for a clean concentrate')
+    .replace(/\bIsi konsentrat floral\b/gi, 'Add brew water for a floral concentrate')
+    .replace(/\bIsi konsentrat padat\b/gi, 'Add brew water for a dense concentrate')
+    .replace(/\bIsi konsentrat aromatik\b/gi, 'Add brew water for an aromatic concentrate')
+    .replace(/\bIsi konsentrat manis\b/gi, 'Add brew water for a sweet concentrate')
+    .replace(/\bbypass terpisah, tidak melewati kopi\b/gi, 'bypass water stays separate and does not pass through the coffee')
+    .replace(/\bbypass tidak lewat kopi\b/gi, 'bypass water does not pass through the coffee')
+    .replace(/\bbypass di cangkir setelah tekan\b/gi, 'bypass water goes into the cup after pressing')
     .replace(/\bIsi air seduh untuk konsentrat bersih; air bypass tetap terpisah dan tidak melewati lapisan kopi\b/gi, 'Charge brew water for a clean concentrate; bypass water stays separate and does not pass through the coffee layer')
     .replace(/\bIsi air seduh sebagai konsentrat floral; air bypass tidak melewati lapisan kopi\b/gi, 'Charge brew water as a floral concentrate; bypass water does not pass through the coffee layer')
     .replace(/\bIsi air seduh untuk konsentrat padat; air bypass tetap di cangkir setelah tekan saja\b/gi, 'Charge brew water for a dense concentrate; bypass water belongs in the cup after pressing only')
@@ -4112,7 +4105,8 @@ function translateWorkflowGuideTextToEnglish(value: string) {
     .replace(/\s+/g, ' ')
     .trim();
 
-  return localizeAiBrewDynamicText(text, 'en');
+  return localizeAiBrewDynamicText(text, 'en')
+    .replace(/([.!?]\s+)target\b/gi, '$1Target');
 }
 
 function buildWorkflowGuideActionText(step: WorkflowGuideStep, language: string, plan?: BrewPlan) {
@@ -6379,7 +6373,6 @@ function PlanResultDialog({
   isAuthenticated,
   isOffline,
   onClose,
-  onEditInputs,
   onSaveRecipe,
   onToggleFavorite,
   onFeedbackNoteChange,
@@ -6410,7 +6403,6 @@ function PlanResultDialog({
   isAuthenticated: boolean;
   isOffline: boolean;
   onClose: () => void;
-  onEditInputs: () => void;
   onSaveRecipe: () => void;
   onToggleFavorite: () => void;
   onFeedbackNoteChange: (value: string) => void;
@@ -6434,11 +6426,13 @@ function PlanResultDialog({
   });
   const isQuickResult = resultMode === 'quick';
   const [guideDensity, setGuideDensity] = useState<AiBrewGuideDensity>('basic');
+  const [targetCompareExpanded, setTargetCompareExpanded] = useState(true);
 
   useEffect(() => {
     if (!open) return;
     setActiveTab('plan');
     setGuideDensity('basic');
+    setTargetCompareExpanded(true);
     setFlowElapsedSeconds(0);
     setFlowAccumulatedSeconds(0);
     setFlowRunning(false);
@@ -6560,7 +6554,6 @@ function PlanResultDialog({
       : `${formatRoundedGrams(plan.iceMl)} ice in the server + ${formatRoundedMl(plan.hotWaterMl)} hot water through the coffee bed. Stop at the hot target, then stir the server for 5-8 seconds before drinking.`)
     : '';
   const methodBrief = buildPlanMethodBrief(plan, language);
-  const aiEngineOnline = planUsesOnlineAi(plan);
   const planHeaderWater = formatPlanHeaderWater(plan, language);
   const localizedWaterStyle = localizeAiBrewWaterStyle(plan.waterMinerals.styleLabel, language);
   const englishWaterStyle = localizedWaterStyle.replace(/\s+water$/i, '');
@@ -6620,6 +6613,34 @@ function PlanResultDialog({
   const localizedExpectedCupConfidence = expectedCup
     ? formatAiBrewConfidenceLabel(expectedCup.confidence, language)
     : '';
+  const predictionPrecision = buildPredictionPrecision({
+    readinessScores: plan.readinessScores || {
+      recipe: 50,
+      water: 50,
+      grinder: 50,
+      workflow: plan.workflowValidation?.readinessScore || 50,
+      catalog: 50,
+    },
+    beanCoverage: plan.beanCoverage
+      ? {
+        category: plan.beanCoverage.category,
+        confidence: plan.beanCoverage.confidence,
+      }
+      : {
+        category: 'unknown_fallback',
+        confidence: 'low',
+      },
+    expectedCupConfidence: expectedCup?.confidence || 'low',
+    workflowStatus: plan.workflowValidation?.status || 'ready',
+    guardrailErrorCount: plan.guardrails.errors.length,
+  });
+  const predictionPrecisionLabel = predictionPrecision.band === 'high'
+    ? (id ? 'Presisi tinggi' : 'High precision')
+    : predictionPrecision.band === 'strong'
+      ? (id ? 'Presisi kuat' : 'Strong precision')
+      : predictionPrecision.band === 'baseline'
+        ? (id ? 'Titik awal' : 'Baseline')
+        : (id ? 'Perlu diperbaiki' : 'Needs correction');
   const localizedWarnings = [
     ...plan.guardrails.errors.map((item) => localizeValidatedAiBrewText(item, language, plan.methodFamily, 'warning')),
     ...plan.warnings.map((item) => localizeValidatedAiBrewText(item, language, plan.methodFamily, 'warning')),
@@ -6642,13 +6663,6 @@ function PlanResultDialog({
   const flowNextActionValue = flowNextStep
     ? formatFlowNextActionValue(flowNextStep, language)
     : copy.flowFinished;
-  const flowStatusLabel = flowRunning
-    ? copy.flowRunning
-    : flowProgressSeconds >= timerTargetSeconds && timerTargetSeconds > 0
-      ? copy.flowFinished
-      : flowProgressSeconds > 0
-        ? copy.flowPaused
-        : copy.flowReady;
   const flowCurrentCue = flowCurrentStep
     ? (buildAiBrewStepMethodFocusCue(plan, flowCurrentStep, language) || buildAiBrewStepQuickNote(flowCurrentStep, language, plan))
     : displaySummary;
@@ -6702,8 +6716,8 @@ function PlanResultDialog({
   const liteStepAction = flowCurrentStep
     ? buildAiBrewStepPrimaryCue(flowCurrentStep, language, plan)
     : (id
-      ? 'Ekstraksi utama selesai. Lanjutkan tahap penyelesaian tanpa menghitungnya sebagai waktu seduh utama.'
-      : 'Main extraction is complete. Finish the brew without counting it as brew time.');
+      ? 'Ekstraksi utama selesai. Lakukan tahap akhir sesuai panduan; tahap ini tidak termasuk durasi ekstraksi.'
+      : 'Main extraction is complete. Follow the finishing step; it is not included in the extraction duration.');
   const liteStepTargetCue = flowCurrentStep
     ? buildAiBrewStepTargetCue(flowCurrentStep, language, plan)
     : '';
@@ -6713,6 +6727,14 @@ function PlanResultDialog({
       ? 'Seduhan selesai. Cicipi saat hangat, lalu catat satu koreksi untuk brew berikutnya.'
       : 'Brew complete. Taste while warm, then note one correction for the next brew.');
   const showAeroPressCompactCue = plan.methodFamily !== 'aeropress';
+  const aeropressBypassWaterMl = Math.max(0, Math.round(plan.totalWaterMl - plan.hotWaterMl));
+  const aeropressBypassGuideCue = plan.methodFamily === 'aeropress'
+    && plan.recipeStyle === 'bypass'
+    && aeropressBypassWaterMl > 0
+    ? (id
+      ? `Tahap bypass: setelah menekan, tambahkan ${formatRoundedMl(aeropressBypassWaterMl)} air bersih ke konsentrat, lalu aduk perlahan sebelum disajikan. Jangan masukkan air bypass ini ke tabung AeroPress.`
+      : `Bypass step: after pressing, add ${formatRoundedMl(aeropressBypassWaterMl)} clean water to the concentrate, then stir gently before serving. Do not put this bypass water in the AeroPress chamber.`)
+    : '';
   const localizedProcessLabel = plan.process
     ? localizeAiBrewProcessLabel(plan.process, language)
     : copy.notSpecified;
@@ -6911,13 +6933,6 @@ function PlanResultDialog({
     { label: copy.confidenceWorkflow, value: plan.readinessScores.workflow },
     { label: copy.confidenceCatalog, value: plan.readinessScores.catalog },
   ] : [];
-  const beanCoverageTone = plan.beanCoverage?.category === 'known_high'
-    ? 'border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-    : plan.beanCoverage?.category === 'unsupported_unsafe'
-      ? 'border-rose-500/18 bg-rose-500/10 text-rose-700 dark:text-rose-300'
-      : plan.beanCoverage?.category === 'risk_caution'
-        ? 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300'
-        : 'border-blue-500/18 bg-blue-500/10 text-blue-700 dark:text-blue-300';
   const guideDensityToggle = (
     <div className="flex flex-wrap items-center gap-2">
       <div
@@ -6945,9 +6960,6 @@ function PlanResultDialog({
           </button>
         ))}
       </div>
-      <span className="text-xs leading-5 text-secondary">
-        {guideDensity === 'basic' ? copy.guideDensitySimpleHint : copy.guideDensityProHint}
-      </span>
     </div>
   );
 
@@ -7013,9 +7025,6 @@ function PlanResultDialog({
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         {guideDensityToggle}
-        <span className="rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300">
-          {flowStatusLabel}
-        </span>
       </div>
 
       <div className="mt-5 flex justify-center" data-testid="ai-brew-lite-guide-panel">
@@ -7087,6 +7096,14 @@ function PlanResultDialog({
         {showAeroPressCompactCue && (
           <p className="rounded-2xl border panel-divider-subtle bg-surface-alpha/50 px-4 py-3 text-sm leading-6 text-secondary">
             {liteStepCue}
+          </p>
+        )}
+        {aeropressBypassGuideCue && (
+          <p
+            className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.07] px-4 py-3 text-sm leading-6 text-primary"
+            data-testid="ai-brew-aeropress-bypass-guide"
+          >
+            {aeropressBypassGuideCue}
           </p>
         )}
       </div>
@@ -7202,13 +7219,18 @@ function PlanResultDialog({
                         {copy.highVariability}
                       </span>
                     )}
-                    <span className={`${resultChipClass} inline-flex items-center gap-1.5 ${
-                      aiEngineOnline
-                        ? 'border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300'
-                        : 'border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-300'
-                    }`}>
-                      {aiEngineOnline ? <Brain size={12} /> : <Sparkles size={12} />}
-                      {aiEngineOnline ? copy.aiEngineOnlineOptimized : copy.aiEngineLocalValidated}
+                    <span
+                      className={`${resultChipClass} inline-flex items-center gap-1.5 ${
+                        plan.brewMode === 'iced'
+                          ? 'border-sky-500/20 bg-sky-500/10 text-sky-700 dark:text-sky-300'
+                          : 'text-primary'
+                      }`}
+                      data-testid="ai-brew-brew-mode-status"
+                    >
+                      {plan.brewMode === 'iced' ? <Snowflake size={12} /> : <Droplets size={12} />}
+                      {plan.brewMode === 'iced'
+                        ? (id ? 'Seduh es' : 'Iced brew')
+                        : (id ? 'Seduh panas' : 'Hot brew')}
                     </span>
                   </div>
                   <h3 className="break-words text-lg font-semibold tracking-tight text-primary sm:text-xl">{buildLocalizedPlanRecipeName(plan, language)}</h3>
@@ -7233,26 +7255,18 @@ function PlanResultDialog({
                       data-testid="ai-brew-prediction-status-card"
                     >
                       <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                        {plan.beanCoverage && (
-                          <span
-                            className={`rounded-full border px-2 py-1 font-semibold ${beanCoverageTone}`}
-                            data-testid="ai-brew-bean-coverage"
-                            aria-label={`${copy.beanCoverageTitle}: ${localizedBeanCoverageLabel}`}
-                          >
-                            {localizedBeanCoverageLabel}
-                          </span>
-                        )}
                         <span
-                          className="rounded-full border border-blue-500/18 bg-blue-500/10 px-2 py-1 font-semibold text-blue-700 dark:text-blue-300"
-                          data-testid="ai-brew-bean-data-precision"
+                          className={`rounded-full border px-2 py-1 font-semibold ${
+                            predictionPrecision.band === 'high' || predictionPrecision.band === 'strong'
+                              ? 'border-emerald-500/18 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                              : predictionPrecision.band === 'blocked'
+                                ? 'border-rose-500/18 bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                                : 'panel-divider-subtle bg-surface-alpha text-primary'
+                          }`}
+                          data-testid="ai-brew-prediction-precision"
                         >
-                          {id ? 'Data kopi' : 'Bean data'}: {localizedBeanPrecisionSummary}
+                          {predictionPrecisionLabel}: {predictionPrecision.score}/100
                         </span>
-                        {expectedCup && (
-                          <span className="rounded-full border panel-divider-subtle bg-surface-alpha px-2 py-1 font-semibold text-primary">
-                            {id ? 'Rasa' : 'Cup'}: {localizedExpectedCupConfidence}
-                          </span>
-                        )}
                       </div>
 
                       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg bg-surface-alpha px-2.5 py-2">
@@ -7266,9 +7280,6 @@ function PlanResultDialog({
                               : (id ? 'Data keyakinan siap dicek.' : 'Confidence data is ready to review.')}
                           </p>
                         </div>
-                        <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300">
-                          {hasLowConfidenceCoachData ? (id ? 'Perlu hati-hati' : 'Caution') : (id ? 'Stabil' : 'Stable')}
-                        </span>
                       </div>
                     </div>
 
@@ -7345,9 +7356,6 @@ function PlanResultDialog({
                     <ArrowRight size={14} className="shrink-0 text-secondary transition-transform group-open:rotate-90" />
                   </summary>
                   <div className="mt-2 grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 sm:flex sm:flex-wrap sm:items-center">
-                    <button type="button" onClick={onEditInputs} className={resultActionButtonClass} data-testid="ai-brew-edit-inputs">
-                      {copy.editInputs}
-                    </button>
                     <button type="button" onClick={onSaveRecipe} disabled={saving || workflowBlocked} className={`${resultActionButtonClass} disabled:cursor-not-allowed disabled:opacity-55`} data-testid="ai-brew-save" aria-label={copy.ariaSaveToCollection.replace('{name}', buildLocalizedPlanRecipeName(plan, language))}>
                       {saveButtonLabel}
                     </button>
@@ -7450,18 +7458,20 @@ function PlanResultDialog({
                       {summaryHighlightItemsWithCompletion.map((item) => (
                         <span
                           key={item.id}
-                          className={`min-w-0 max-w-full rounded-2xl border px-4 py-4 transition-colors ${
-                            item.highlight === 'water_split'
-                              ? 'border-sky-500/30 bg-sky-500/[0.10] text-sky-800 shadow-[0_10px_24px_rgba(14,165,233,0.10)] hover:bg-sky-500/[0.14] dark:text-sky-200'
-                              : 'panel-divider-subtle bg-surface-alpha/45 text-secondary hover:bg-surface-alpha/75'
-                          }`}
-                          data-testid={item.highlight === 'water_split' ? 'ai-brew-water-split-highlight' : undefined}
+                          className="min-w-0 max-w-full rounded-2xl border panel-divider-subtle bg-surface-alpha/45 px-4 py-4 text-secondary transition-colors hover:bg-surface-alpha/75"
                         >
                           <span className="block text-[10px] font-semibold uppercase tracking-widest text-tertiary">{item.label}</span>
                           <span className="mt-1 block break-words text-xl font-semibold leading-tight text-primary sm:text-2xl tabular-nums">{item.value}</span>
-                          {item.detail && (
-                            <span className={`mt-1.5 block break-words text-[11px] leading-4 ${item.highlight === 'water_split' ? 'text-sky-800 dark:text-sky-100' : 'text-secondary'}`}>{item.detail}</span>
-                          )}
+                          {item.detail && item.id === 'water' && plan.iceMl > 0 ? (
+                            <span className="mt-1.5 block break-words text-[11px] leading-4 text-secondary">
+                              {id ? 'Panas' : 'Hot'} {formatRoundedMl(plan.hotWaterMl)} +{' '}
+                              <span className="font-semibold text-sky-600 dark:text-sky-300" data-testid="ai-brew-ice-accent">
+                                {id ? 'es' : 'ice'} {formatRoundedGrams(plan.iceMl)}
+                              </span>
+                            </span>
+                          ) : item.detail ? (
+                            <span className="mt-1.5 block break-words text-[11px] leading-4 text-secondary">{item.detail}</span>
+                          ) : null}
                         </span>
                       ))}
                     </div>
@@ -7555,16 +7565,21 @@ function PlanResultDialog({
                 {detailHighlightItemsWithCompletion.map((item) => (
                   <div
                     key={`details-${item.id}`}
-                    className={item.highlight === 'water_split'
-                      ? `${resultMetricCardClass} border-sky-500/30 bg-sky-500/[0.10] text-sky-800 dark:text-sky-200`
-                      : resultMetricCardClass}
+                    className={resultMetricCardClass}
                     data-testid={`ai-brew-result-${item.id}-metric`}
                   >
                     <p className="text-[11px] uppercase tracking-widest text-secondary">{item.label}</p>
                     <p className="mt-1 text-base font-semibold text-primary sm:text-lg tabular-nums">{item.value}</p>
-                    {item.detail && (
-                      <p className={`mt-1 text-xs ${item.highlight === 'water_split' ? 'text-sky-800 dark:text-sky-100' : 'text-secondary'}`}>{item.detail}</p>
-                    )}
+                    {item.detail && item.id === 'water' && plan.iceMl > 0 ? (
+                      <p className="mt-1 text-xs text-secondary">
+                        {id ? 'Panas' : 'Hot'} {formatRoundedMl(plan.hotWaterMl)} +{' '}
+                        <span className="font-semibold text-sky-600 dark:text-sky-300">
+                          {id ? 'es' : 'ice'} {formatRoundedGrams(plan.iceMl)}
+                        </span>
+                      </p>
+                    ) : item.detail ? (
+                      <p className="mt-1 text-xs text-secondary">{item.detail}</p>
+                    ) : null}
                     {item.id === 'extraction' && postExtractionSeconds > 0 && (
                       <p className="mt-1 text-xs text-secondary">{id ? 'Tahap penyelesaian dilakukan setelah waktu rasa utama.' : 'Finishing happens after the main taste time.'}</p>
                     )}
@@ -7624,13 +7639,22 @@ function PlanResultDialog({
                   className="rounded-[1.5rem] border panel-divider-subtle bg-surface-alpha/40 p-4 sm:p-5"
                   data-testid="ai-brew-pro-target-compare"
                 >
-                  <div className="mb-3 flex items-center gap-2">
-                    <Target size={15} className="text-emerald-500" />
-                    <h4 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-secondary">
-                      {id ? 'Bandingkan Profil Target' : 'Target Profile Compare'}
-                    </h4>
-                  </div>
-                  <div className="grid gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setTargetCompareExpanded((current) => !current)}
+                    className={`flex min-h-9 w-full items-center justify-between gap-3 text-left ${targetCompareExpanded ? 'mb-3' : ''}`}
+                    data-testid="ai-brew-target-compare-toggle"
+                    aria-expanded={targetCompareExpanded}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Target size={15} className="text-emerald-500" />
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-secondary">
+                        {id ? 'Bandingkan Profil Target' : 'Target Profile Compare'}
+                      </span>
+                    </span>
+                    <ChevronDown size={16} className={`shrink-0 text-secondary transition-transform ${targetCompareExpanded ? 'rotate-180' : ''}`} />
+                  </button>
+                  {targetCompareExpanded ? <div className="grid gap-2.5">
                     {targetProfileCompareRows.map((item) => {
                       return (
                         <div
@@ -7664,7 +7688,7 @@ function PlanResultDialog({
                         </div>
                       );
                     })}
-                  </div>
+                  </div> : null}
                 </section>
               </div>
 
@@ -8111,9 +8135,6 @@ function PlanResultDialog({
                         <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
                           {plan.waterCustomized ? copy.waterBrandCustomized : localizedWaterStyle}
                         </span>
-                        <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
-                          {formatWaterDerivationLabel(copy, plan.waterMineralDerivation)}
-                        </span>
                       </div>
                     </div>
                   </ResultDisclosureSection>
@@ -8240,7 +8261,7 @@ function PlanResultDialog({
                   defaultOpen={false}
                 >
                   <p className="rounded-xl bg-surface-alpha px-3 py-3 text-sm text-secondary">
-                    TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm} · {formatWaterDerivationLabel(copy, plan.waterMineralDerivation)}
+                    TDS {plan.waterMinerals.tdsPpm} - GH {plan.waterMinerals.hardnessPpm} - KH {plan.waterMinerals.alkalinityPpm}
                   </p>
                 </ResultDisclosureSection>
               </div>
@@ -8267,9 +8288,6 @@ function PlanResultDialog({
                           <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.flowTitle}</h4>
                         </div>
                       </div>
-                      <span className="rounded-full border border-blue-500/18 bg-[var(--bg-base)] px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300">
-                        {flowStatusLabel}
-                      </span>
                     </div>
 
                     <div className="mt-4 grid grid-cols-2 gap-2.5">
@@ -8342,6 +8360,14 @@ function PlanResultDialog({
                       {showAeroPressCompactCue && (
                         <p className="mt-3 rounded-xl border border-blue-500/14 bg-blue-500/[0.07] px-3 py-2 text-sm leading-5 text-blue-800 dark:text-blue-200">
                           {flowCurrentCompactCue}
+                        </p>
+                      )}
+                      {aeropressBypassGuideCue && (
+                        <p
+                          className="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.07] px-3 py-2 text-sm leading-5 text-primary"
+                          data-testid="ai-brew-aeropress-bypass-guide"
+                        >
+                          {aeropressBypassGuideCue}
                         </p>
                       )}
                       {guideDensity === 'pro' && flowCurrentMetrics.detail.length > 0 && (
@@ -8506,8 +8532,7 @@ function PlanResultDialog({
                   <Brain size={15} className="text-blue-500" />
                   <h4 className="text-sm font-semibold uppercase tracking-widest text-secondary">{copy.aiCoach}</h4>
                 </div>
-                <p className="text-sm text-secondary">{copy.coachDescription}</p>
-                <div className="mt-3 space-y-1 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2 text-xs leading-5 text-secondary">
+                <div className="space-y-1 rounded-xl border panel-divider-subtle bg-surface-alpha px-3 py-2 text-xs leading-5 text-secondary">
                   <p>{id ? 'Coach mengikuti rencana deterministik. Angka resep tidak diubah oleh AI.' : 'Coach follows the deterministic planner. AI does not change recipe numbers.'}</p>
                   <p>{copy.coachCostHint}</p>
                   {hasLowConfidenceCoachData && (
@@ -8678,9 +8703,6 @@ function PlanResultDialog({
                       <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
                         {plan.waterCustomized ? copy.waterBrandCustomized : localizedWaterStyle}
                       </span>
-                      <span className="rounded-full bg-[var(--bg-base)] px-2 py-1">
-                        {formatWaterDerivationLabel(copy, plan.waterMineralDerivation)}
-                      </span>
                     </div>
                     {plan.waterBrewBlockReason.length > 0 && (
                       <ul className="mt-3 space-y-2 text-xs text-secondary">
@@ -8726,7 +8748,7 @@ function PlanResultDialog({
           style={{ paddingBottom: 'calc(8px + var(--bottom-safe-capped, 0px))' }}
           data-testid="ai-brew-result-action-bar"
         >
-          <div className="grid grid-cols-[repeat(3,minmax(0,1fr))] gap-2" data-testid="ai-brew-result-actions">
+          <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2" data-testid="ai-brew-result-actions">
             <button
               type="button"
               onClick={onSaveRecipe}
@@ -8743,14 +8765,6 @@ function PlanResultDialog({
               data-testid="ai-brew-result-action-guide"
             >
               {id ? 'Seduh' : copy.flowTab}
-            </button>
-            <button
-              type="button"
-              onClick={onEditInputs}
-              className="inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-xl border panel-divider-subtle bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary"
-              data-testid="ai-brew-result-action-edit"
-            >
-              {copy.editInputs}
             </button>
           </div>
         </div>
@@ -9387,6 +9401,7 @@ export function AiBrewPanel() {
     if (isIndonesianAiBrewLanguage(language)) return COPY.id;
     return COPY[language as keyof typeof COPY] || fallbackCopy;
   }, [fallbackCopy, language]);
+  const equipmentPreferences = useMemo(() => loadEquipmentPreferences(), []);
   const hasHydratedRef = useRef(false);
   const aiBrewPanelRef = useRef<HTMLDivElement | null>(null);
   const { keyboardOffset: aiBrewKeyboardOffset } = useIOSKeyboardFix({
@@ -9437,6 +9452,10 @@ export function AiBrewPanel() {
   const [manualPresetSearch, setManualPresetSearch] = useState('');
   const [manualPresetCategory, setManualPresetCategory] = useState<ManualBrewPresetCategory | 'all'>('all');
   const [manualPresetExpanded, setManualPresetExpanded] = useState(false);
+  const [pendingPresetChange, setPendingPresetChange] = useState<{
+    key: keyof AiBrewFormState;
+    value: AiBrewFormState[keyof AiBrewFormState];
+  } | null>(null);
   const generationStartedAtRef = useRef<number | null>(null);
   const aiAssistCacheRef = useRef(new Map<string, { title: string; markdown: string }>());
 
@@ -9525,8 +9544,16 @@ export function AiBrewPanel() {
       restorePlanIntoView(nextCatalog, storedPlan, false);
       setNotice(copy.restoredPlan);
     } else {
-      const draft = loadAiBrewFormDraft(createDefaultAiBrewFormState(nextCatalog));
-      const nextForm = sanitizeAiBrewFormState(draft, nextCatalog);
+      const defaultForm = createDefaultAiBrewFormState(nextCatalog);
+      const draftExists = hasAiBrewFormDraft();
+      const draft = loadAiBrewFormDraft(defaultForm);
+      const preferredForm = draftExists
+        ? draft
+        : applyEquipmentPreferencesToForm(draft, equipmentPreferences, {
+          dripperIds: new Set(nextCatalog.drippers.map((item) => item.id)),
+          grinderIds: new Set(nextCatalog.grinders.map((item) => item.id)),
+        });
+      const nextForm = sanitizeAiBrewFormState(preferredForm, nextCatalog);
       commitFormState(nextForm);
       setShowMineralEditor(nextForm.waterMode === 'manual');
     }
@@ -9733,9 +9760,21 @@ export function AiBrewPanel() {
     if (pickerKind === 'process') return buildProcessPickerOptions(catalog, copy);
     if (pickerKind === 'variety') return buildVarietyPickerOptions(catalog, copy);
     if (pickerKind === 'water_brand') return buildWaterPickerOptions(builderWaterBrands, copy, language);
-    if (pickerKind === 'dripper') return buildEquipmentPickerOptions(catalog.drippers, copy, 'dripper', language);
-    return buildEquipmentPickerOptions(catalog.grinders, copy, 'grinder', language);
-  }, [builderWaterBrands, catalog, copy, language, pickerKind]);
+    if (pickerKind === 'dripper') {
+      return buildEquipmentPickerOptions(
+        sortEquipmentByPreference(catalog.drippers, equipmentPreferences?.preferredDripperId),
+        copy,
+        'dripper',
+        language,
+      );
+    }
+    return buildEquipmentPickerOptions(
+      sortEquipmentByPreference(catalog.grinders, equipmentPreferences?.preferredGrinderId),
+      copy,
+      'grinder',
+      language,
+    );
+  }, [builderWaterBrands, catalog, copy, equipmentPreferences, language, pickerKind]);
 
   const currentPreset = useMemo(() => {
     if (!plan) return undefined;
@@ -9914,7 +9953,11 @@ export function AiBrewPanel() {
     setPresets(nextPresets);
   }
 
-  function updateForm<K extends keyof AiBrewFormState>(key: K, value: AiBrewFormState[K]) {
+  function applyFormChange(
+    key: keyof AiBrewFormState,
+    value: AiBrewFormState[keyof AiBrewFormState],
+    clearPreset = false,
+  ) {
     if (key === 'targetProfileId') {
       targetProfileTouchedRef.current = true;
     }
@@ -9937,8 +9980,17 @@ export function AiBrewPanel() {
           next.targetWaterMl = String(scaledWaterMl);
         }
       }
-      if (key !== 'manualPresetId' && prev.manualPresetId && MANUAL_PRESET_CONTROLLED_FIELDS.has(key)) {
+      if (clearPreset && key !== 'manualPresetId') {
         next.manualPresetId = '';
+      }
+      if (key === 'brewMode') {
+        const nextMode = value === 'iced' ? 'iced' : 'hot';
+        const activeDripper = catalog?.drippers.find((item) => item.id === prev.dripperId);
+        if (nextMode === 'hot' && prev.switchPresetId === 'iced_hybrid') {
+          next.switchPresetId = '';
+        } else if (nextMode === 'iced' && activeDripper?.methodFamily === 'hario_switch') {
+          next.switchPresetId = 'iced_hybrid';
+        }
       }
       if (
         catalog
@@ -9969,6 +10021,19 @@ export function AiBrewPanel() {
       }
       return next;
     });
+  }
+
+  function updateForm<K extends keyof AiBrewFormState>(key: K, value: AiBrewFormState[K]) {
+    const resolution = resolveManualPresetChange({
+      activePresetId: formStateRef.current.manualPresetId,
+      key,
+      value,
+    });
+    if (resolution.kind === 'confirm_exit') {
+      setPendingPresetChange({ key, value });
+      return;
+    }
+    applyFormChange(key, value, resolution.clearPreset);
   }
 
   function applyManualPreset(presetId: string) {
@@ -10696,14 +10761,6 @@ export function AiBrewPanel() {
     setFormError(null);
     setShowBeanProfileEditor(false);
     setShowQuickBeanDetails(false);
-  }
-
-  function handleEditInputs() {
-    setResultOpen(false);
-    clearSaveFeedback();
-    setShowBeanProfileEditor(false);
-    setActiveBuilderModal(preferredBuilderMode);
-    requestViewportMetricsRefresh();
   }
 
   function openPicker(kind: NonNullable<PickerKind>, trigger: HTMLButtonElement) {
@@ -12691,14 +12748,7 @@ export function AiBrewPanel() {
         <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2 rounded-[1rem] bg-[var(--bg-base)] p-1.5">
           <button
             type="button"
-            onClick={() => {
-              commitFormState((prev) => ({
-                ...prev,
-                manualPresetId: prev.manualPresetId ? '' : prev.manualPresetId,
-                brewMode: 'hot',
-                switchPresetId: prev.switchPresetId === 'iced_hybrid' ? '' : prev.switchPresetId,
-              }));
-            }}
+            onClick={() => updateForm('brewMode', 'hot')}
             className={`min-h-[44px] min-w-0 rounded-[0.9rem] px-3 py-2.5 text-sm font-semibold transition-all ${formState.brewMode === 'hot' ? 'bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.24)]' : 'text-secondary hover:text-primary'}`}
             data-testid="ai-brew-builder-mode-hot"
             aria-pressed={formState.brewMode === 'hot'}
@@ -12712,12 +12762,7 @@ export function AiBrewPanel() {
                 setNotice(copy.icedUnavailable);
                 return;
               }
-              commitFormState((prev) => ({
-                ...prev,
-                manualPresetId: prev.manualPresetId ? '' : prev.manualPresetId,
-                brewMode: 'iced',
-                switchPresetId: isSwitchDripper ? 'iced_hybrid' : prev.switchPresetId,
-              }));
+              updateForm('brewMode', 'iced');
             }}
             disabled={!selectedDripperSupportsIced}
             aria-disabled={!selectedDripperSupportsIced}
@@ -12734,13 +12779,6 @@ export function AiBrewPanel() {
             {copy.icedUnavailableInline}
           </p>
         ) : null}
-        <div className="mt-2 rounded-xl bg-[var(--bg-base)] px-3 py-2 text-xs leading-5 text-secondary" data-testid="ai-brew-method-summary">
-          <span className="font-semibold text-primary">{selectedDripper.name}</span>
-          {' - '}
-          {isSwitchDripper
-            ? (isIndonesianAiBrewLanguage(language) ? 'pilih metode di bawah.' : 'choose the method below.')
-            : (isIndonesianAiBrewLanguage(language) ? 'metode otomatis dari profil alat.' : 'method comes from the brewer profile.')}
-        </div>
         {switchPanel ? <div className="mt-2" data-testid="ai-brew-switch-inline-methods">{switchPanel}</div> : null}
         {!switchPanel && methodOptionPanel ? <div className="mt-2">{methodOptionPanel}</div> : null}
       </div>
@@ -12782,26 +12820,9 @@ export function AiBrewPanel() {
                   <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-300">
                     <ModeIcon size={13} />
                     <span>{modeLabel}</span>
-                    <span className="opacity-70">
-                      {aiEngineReadyLabel}
-                    </span>
                   </div>
                   <h3 className="text-base font-semibold tracking-tight text-primary lg:text-xl">{dialogTitle}</h3>
-                  {isPro ? (
-                    <p className="mt-1 text-xs leading-5 text-secondary">{copy.aiPrecisionAssistNote}</p>
-                  ) : null}
                 </div>
-
-                {selectedTargetProfile && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-primary">
-                      {copy.profileTitle}: {translateTargetProfileLabel(copy, selectedTargetProfile.id)}
-                    </span>
-                    <span className="rounded-full bg-[var(--bg-base)] px-3 py-2 text-xs font-semibold text-secondary">
-                      {isIndonesianAiBrewLanguage(language) ? 'Panas/Es dipilih setelah alat seduh.' : 'Hot/Iced is selected after the brewer.'}
-                    </span>
-                  </div>
-                )}
 
               </div>
 
@@ -14191,6 +14212,25 @@ export function AiBrewPanel() {
         />
       )}
 
+      <div data-testid="ai-brew-preset-change-confirm">
+        <ConfirmActionDialog
+          open={pendingPresetChange !== null}
+          title={isIndonesianAiBrewLanguage(language) ? 'Keluar dari preset?' : 'Leave this preset?'}
+          description={isIndonesianAiBrewLanguage(language)
+            ? 'Perubahan ini akan melepas preset aktif dan melanjutkan dengan resep kustom. Input lain tetap dipertahankan.'
+            : 'This change will detach the active preset and continue as a custom recipe. Your other inputs will be kept.'}
+          confirmLabel={isIndonesianAiBrewLanguage(language) ? 'Lanjutkan perubahan' : 'Continue change'}
+          cancelLabel={isIndonesianAiBrewLanguage(language) ? 'Tetap gunakan preset' : 'Keep preset'}
+          destructive={false}
+          onCancel={() => setPendingPresetChange(null)}
+          onConfirm={() => {
+            const pending = pendingPresetChange;
+            setPendingPresetChange(null);
+            if (pending) applyFormChange(pending.key, pending.value, true);
+          }}
+        />
+      </div>
+
       <PlanResultDialog
         open={resultOpen}
         language={language}
@@ -14218,7 +14258,6 @@ export function AiBrewPanel() {
           clearSaveFeedback();
           setResultOpen(false);
         }}
-        onEditInputs={handleEditInputs}
         onSaveRecipe={() => { void handleSaveRecipe(); }}
         onToggleFavorite={() => { void handleToggleFavorite(); }}
         onFeedbackNoteChange={setFeedbackNoteDraft}

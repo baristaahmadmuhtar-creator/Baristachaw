@@ -858,7 +858,7 @@ function buildBitterAdjustment(plan: BrewPlan, easyToExtract: boolean, language?
       case 'chemex': {
         const style = plan.chemexStyle || 'auto';
         if (style === 'competition_multi_pulse') {
-          return 'Move the grind 0.5 step coarser to let water drain faster, and reduce the pour velocity in the center.';
+          return 'Move the grind 0.5 step coarser, reduce center-pour velocity, and keep the late pulses off the thick paper wall.';
         } else if (style === 'continuous_center_pour') {
           return 'Move the grind 0.5 step coarser, and lower your water temperature by -1 C to reduce over-extraction from long contact.';
         } else if (style === 'iced_chemex') {

@@ -84,6 +84,14 @@ export function loadAiBrewFormDraft<T>(fallback: T): T {
   }
 }
 
+export function hasAiBrewFormDraft(): boolean {
+  try {
+    return Boolean(localStorage.getItem(AI_BREW_FORM_STORAGE_KEY));
+  } catch {
+    return false;
+  }
+}
+
 export function saveAiBrewFormDraft<T>(value: T) {
   try {
     localStorage.setItem(AI_BREW_FORM_STORAGE_KEY, JSON.stringify(value));

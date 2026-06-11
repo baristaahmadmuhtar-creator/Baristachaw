@@ -11,6 +11,7 @@ import {
 } from '../../apps/web/src/features/ai-brew/planner.ts';
 import { buildAiAssistPrompt } from '../../apps/web/src/features/ai-brew/prompts.ts';
 import { getManualPresetDisplayCopy } from '../../apps/web/src/features/ai-brew/manualPresetLocalization.ts';
+import { resolveManualPresetChange } from '../../apps/web/src/features/ai-brew/manualPresetChangeGuard.ts';
 import type { AiBrewCatalog, AiBrewFormState, BrewPlan } from '../../apps/web/src/features/ai-brew/types.ts';
 
 const ROOT = process.cwd();
@@ -279,14 +280,23 @@ test('AI Brew manual brew presets prefill form state without generating automati
 });
 
 test('AI Brew manual brew preset remains attached when users edit numeric prefill fields', () => {
-  const panelSource = fs.readFileSync(path.join(ROOT, 'apps/web/src/features/ai-brew/AiBrewPanel.tsx'), 'utf8');
-  const controlledSet = panelSource.match(/const MANUAL_PRESET_CONTROLLED_FIELDS[\s\S]*?\]\);/)?.[0] || '';
-
-  assert.doesNotMatch(controlledSet, /'doseG'/, 'Dose edits should not detach the preset starting point');
-  assert.doesNotMatch(controlledSet, /'targetWaterMl'/, 'Water edits should not detach the preset starting point');
-  assert.doesNotMatch(controlledSet, /'targetTempC'/, 'Temperature edits should not detach the preset starting point');
-  assert.match(controlledSet, /'dripperId'/, 'Brewer changes should still detach incompatible preset identity');
-  assert.match(controlledSet, /'pourCount'/, 'Pour-count changes should detach technique-pattern identity');
+  for (const key of ['doseG', 'targetWaterMl', 'targetTempC'] as const) {
+    assert.deepEqual(resolveManualPresetChange({
+      activePresetId: 'preset-1',
+      key,
+      value: '20',
+    }), { kind: 'apply', clearPreset: false });
+  }
+  for (const [key, value] of [
+    ['dripperId', 'chemex'],
+    ['pourCount', '4'],
+  ] as const) {
+    assert.deepEqual(resolveManualPresetChange({
+      activePresetId: 'preset-1',
+      key,
+      value,
+    }), { kind: 'confirm_exit' });
+  }
 });
 
 test('AI Brew manual brew preset dose edits from 17-20 g keep water scaled inside safe ratio bounds', async () => {

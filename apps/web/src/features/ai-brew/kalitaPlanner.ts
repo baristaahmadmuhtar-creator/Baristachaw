@@ -44,12 +44,8 @@ export function resolveKalitaPlanSelection(params: {
       activeStyle = 'iced_wave';
     } else if (doseG >= 24) {
       activeStyle = 'high_dose_concentrate';
-    } else if (targetId === 'more_sweetness') {
-      activeStyle = 'continuous_slow_stream';
     } else if (targetId === 'more_acidity' || targetId === 'floral_transparent') {
       activeStyle = 'competition_fast_four';
-    } else if (targetId === 'more_body' || targetId === 'dense_comforting') {
-      activeStyle = 'high_dose_concentrate';
     } else if (targetId === 'fruit_forward') {
       const isNatural = input.process === 'natural' || /natural|dry/i.test(`${input.process} ${input.customProcess}`);
       activeStyle = isNatural ? 'traditional_flat_three' : 'competition_fast_four';
@@ -120,7 +116,7 @@ export function resolveKalitaPlanSelection(params: {
       break;
 
     case 'competition_fast_four':
-      adjustedProfile.ratioDelta = (profile.ratioDelta || 0) - 1.5;
+      adjustedProfile.ratioDelta = (profile.ratioDelta || 0) - 1.2;
       adjustedProfile.tempDeltaC = (profile.tempDeltaC || 0) + 1.0;
       adjustedProfile.brewTimeDeltaSec = (profile.brewTimeDeltaSec || 0) - 15 + largeWaveTimeDeltaSec;
       adjustedProfile.grindBias = 'finer';

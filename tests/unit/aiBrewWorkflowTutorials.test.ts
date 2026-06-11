@@ -673,13 +673,22 @@ test('AI Brew entry cards expose Basic/Advanced while keeping guide density Lite
 
   assert.match(source, /guideDensitySimple:\s*'Lite'/);
   assert.match(source, /guideDensityPro:\s*'Pro'/);
-  assert.match(source, /guideDensitySimpleHint:\s*'Timer and current step stay in view\.'/);
+  assert.match(source, /guideDensitySimpleHint:\s*''/);
   assert.match(source, /guideDensityProHint:\s*'Full guide with practical barista checkpoints\.'/);
 
   assert.match(source, /guideDensitySimple:\s*'Lite'/);
   assert.match(source, /guideDensityPro:\s*'Pro'/);
-  assert.match(source, /guideDensitySimpleHint:\s*'Timer dan langkah aktif tetap di atas\.'/);
+  assert.match(source, /guideDensitySimpleHint:\s*''/);
   assert.match(source, /guideDensityProHint:\s*'Panduan lengkap dengan detail teknik barista\.'/);
+});
+
+test('AI Brew tutorials avoid hype and certainty claims in professional copy', () => {
+  const source = readFileSync(resolve(process.cwd(), 'apps/web/src/features/ai-brew/workflowTutorials.ts'), 'utf8');
+  assert.doesNotMatch(
+    source,
+    /\b(?:incredibly|profoundly|impossibly|flawless|brutal|colossal|explosively|hyper-bright|massive bypass|absolute patience)\b/i,
+  );
+  assert.doesNotMatch(source, /\b(?:luar biasa|sempurna secara matematis|brutal|kolosal|meledak-ledak)\b/i);
 });
 
 test('workflow step action text uses generated guide primary text as the English source of truth', () => {

@@ -228,3 +228,43 @@ test('catalog suggestions persist to the configured log file', async () => {
 
   delete process.env.CATALOG_SUGGESTION_LOG_PATH;
 });
+
+test('catalog suggestions use Supabase as durable production storage when configured', async () => {
+  const previousFetch = globalThis.fetch;
+  process.env.SUPABASE_URL = 'https://example.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-test-key';
+  delete process.env.CATALOG_SUGGESTION_LOG_PATH;
+  globalThis.fetch = async (input, init) => {
+    assert.equal(
+      String(input),
+      'https://example.supabase.co/rest/v1/brand_suggestions?select=id,kind,brand,model,region,notes,status,created_at',
+    );
+    assert.equal(init?.method, 'POST');
+    return new Response(JSON.stringify([{
+      id: '00000000-0000-0000-0000-000000000001',
+      kind: 'grinder',
+      brand: 'Unspecified',
+      model: 'Sample Grinder',
+      region: 'Unspecified',
+      notes: 'First-run suggestion',
+      status: 'queued',
+      created_at: '2026-06-11T00:00:00.000Z',
+    }]), { status: 201, headers: { 'Content-Type': 'application/json' } });
+  };
+
+  try {
+    const record = await persistCatalogSuggestion({
+      kind: 'grinder',
+      brand: 'Unspecified',
+      model: 'Sample Grinder',
+      region: 'Unspecified',
+      notes: 'First-run suggestion',
+    });
+    assert.equal(record.durability, 'supabase');
+    assert.equal(record.model, 'Sample Grinder');
+  } finally {
+    globalThis.fetch = previousFetch;
+    delete process.env.SUPABASE_URL;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  }
+});

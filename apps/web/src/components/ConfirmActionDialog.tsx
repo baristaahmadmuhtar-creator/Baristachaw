@@ -11,6 +11,7 @@ type ConfirmActionDialogProps = {
   cancelLabel: string;
   busy?: boolean;
   destructive?: boolean;
+  testId?: string;
   onConfirm: () => void | Promise<void>;
   onCancel: () => void;
 };
@@ -23,6 +24,7 @@ export function ConfirmActionDialog({
   cancelLabel,
   busy = false,
   destructive = true,
+  testId,
   onConfirm,
   onCancel,
 }: ConfirmActionDialogProps) {
@@ -82,6 +84,7 @@ export function ConfirmActionDialog({
               aria-modal="true"
               aria-labelledby={titleId}
               aria-describedby={descriptionId}
+              data-testid={testId}
               className="motion-safe-surface pointer-events-auto w-full max-w-md rounded-[1.4rem] border border-glass bg-[var(--bg-base)]/96 p-4 shadow-[var(--panel-elev-2)] backdrop-blur-xl"
             >
               <div className="flex items-start gap-3">

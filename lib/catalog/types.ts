@@ -140,7 +140,7 @@ export interface CatalogSuggestionRecord {
   notes?: string;
   submitted_at: string;
   status: 'queued';
-  durability: 'file' | 'ephemeral';
+  durability: 'supabase' | 'file' | 'ephemeral';
 }
 
 export interface SearchItem<T> {

@@ -191,7 +191,7 @@ export function WebParityScreen({
     try {
       return new URL(mobileEnv.webAppUrl).origin;
     } catch {
-      return 'https://baristaclaw.vercel.app';
+      return 'https://app.baristachaw.com';
     }
   }, []);
   const webRef = useRef<WebView>(null);

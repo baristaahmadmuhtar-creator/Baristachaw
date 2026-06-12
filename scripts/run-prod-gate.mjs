@@ -6,7 +6,7 @@ import {
 } from './lib/env-check.mjs';
 
 const NPM_BIN = 'npm';
-const BASE_URL = process.env.BASE_URL || 'https://baristaclaw.vercel.app';
+const BASE_URL = process.env.BASE_URL || 'https://app.baristachaw.com';
 
 function run(command, args, env = process.env) {
   return new Promise((resolve, reject) => {

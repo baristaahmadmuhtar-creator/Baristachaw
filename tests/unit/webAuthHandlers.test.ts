@@ -180,7 +180,7 @@ test('auth url can start Facebook OAuth with sanitized state cookies', async () 
       returnTo: '/scanner?mode=label',
     },
     headers: {
-      host: 'baristaclaw.vercel.app',
+      host: 'app.baristachaw.com',
       'x-forwarded-proto': 'https',
     },
     socket: {
@@ -204,7 +204,7 @@ test('auth url can start Facebook OAuth with sanitized state cookies', async () 
   assert.equal(url.hostname, 'www.facebook.com');
   assert.equal(url.searchParams.get('client_id'), 'unit-facebook-client-id');
   assert.equal(url.searchParams.get('scope'), 'public_profile,email');
-  assert.equal(url.searchParams.get('redirect_uri'), 'https://baristaclaw.vercel.app/api/auth/callback');
+  assert.equal(url.searchParams.get('redirect_uri'), 'https://app.baristachaw.com/api/auth/callback');
   const cookies = res.headers.get('set-cookie');
   assert.ok(Array.isArray(cookies));
   if (Array.isArray(cookies)) {
@@ -305,7 +305,7 @@ test('auth callback exchanges Facebook code and stores normalized profile', asyn
       state: 'oauth-state-facebook',
     },
     headers: {
-      host: 'baristaclaw.vercel.app',
+      host: 'app.baristachaw.com',
       'x-forwarded-proto': 'https',
       cookie: `oauth_state=${encodeURIComponent('oauth-state-facebook')}; oauth_provider=facebook; oauth_return_to=${encodeURIComponent('/chat')}`,
     },
@@ -382,7 +382,7 @@ test('auth callback handles signed mobile OAuth state and returns app deep link'
   const originalFetch = globalThis.fetch;
   let tokenRequestBody = '';
 
-  process.env.APP_URL = 'https://baristaclaw.vercel.app';
+  process.env.APP_URL = 'https://app.baristachaw.com';
   process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
   process.env.GOOGLE_CLIENT_ID = 'unit-test-google-client-id';
   process.env.GOOGLE_CLIENT_SECRET = 'unit-test-google-client-secret';
@@ -401,7 +401,7 @@ test('auth callback handles signed mobile OAuth state and returns app deep link'
       state,
     },
     headers: {
-      host: 'baristaclaw.vercel.app',
+      host: 'app.baristachaw.com',
       'x-forwarded-proto': 'https',
     },
     socket: {
@@ -452,7 +452,7 @@ test('auth callback handles signed mobile OAuth state and returns app deep link'
   }
 
   assert.equal(res.statusCode, 200);
-  assert.match(tokenRequestBody, /redirect_uri=https%3A%2F%2Fbaristaclaw\.vercel\.app%2Fapi%2Fauth%2Fcallback/);
+  assert.match(tokenRequestBody, /redirect_uri=https%3A%2F%2Fapp\.baristachaw\.com%2Fapi%2Fauth%2Fcallback/);
   assert.match(res.body, /baristachaw:\/\/auth\?grant=/);
   assert.match(res.body, /intent:\/\/auth\?grant=/);
   assert.match(res.body, /package=com\.baristachaw\.mobile/);

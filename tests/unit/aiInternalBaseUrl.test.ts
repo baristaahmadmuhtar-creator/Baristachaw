@@ -25,11 +25,11 @@ test('resolveInternalBaseUrl falls back to VERCEL_URL when APP_URL is missing', 
   const previousVercelUrl = process.env.VERCEL_URL;
 
   delete process.env.APP_URL;
-  process.env.VERCEL_URL = 'baristaclaw.vercel.app';
+  process.env.VERCEL_URL = 'app.baristachaw.com';
 
   try {
     const result = resolveInternalBaseUrl({ headers: { host: '127.0.0.1:3000' } } as any);
-    assert.equal(result, 'https://baristaclaw.vercel.app');
+    assert.equal(result, 'https://app.baristachaw.com');
   } finally {
     if (previousAppUrl === undefined) delete process.env.APP_URL;
     else process.env.APP_URL = previousAppUrl;

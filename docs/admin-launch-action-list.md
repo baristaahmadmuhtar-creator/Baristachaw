@@ -22,7 +22,7 @@ Jangan kirim nilai secret ke chat. Masukkan langsung ke Vercel, Supabase, EAS, a
 - Supabase production project URL, publishable key, dan service role key.
 - `JWT_SECRET` dan `HEALTHCHECK_TOKEN` random panjang minimal 32 karakter.
 - `GEMINI_API_KEY` untuk AI route production.
-- Domain final production, saat ini default: `https://baristaclaw.vercel.app`.
+- Domain final production, saat ini default: `https://app.baristachaw.com`.
 - Privacy policy URL dan terms URL.
 - Provider pembayaran pilihan untuk MVP: Midtrans/Xendit/Stripe links, atau RevenueCat untuk entitlement mobile.
 - Harga final Starter, Pro, Team untuk Indonesia/Brunei/global.

@@ -37,7 +37,7 @@ test('mobile auth start uses the Google-registered web callback redirect', async
   const originalGoogleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
   const originalMobileScheme = process.env.MOBILE_APP_SCHEME;
 
-  process.env.APP_URL = 'https://baristaclaw.vercel.app';
+  process.env.APP_URL = 'https://app.baristachaw.com';
   process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
   process.env.GOOGLE_CLIENT_ID = 'unit-test-google-client-id';
   process.env.GOOGLE_CLIENT_SECRET = 'unit-test-google-client-secret';
@@ -47,7 +47,7 @@ test('mobile auth start uses the Google-registered web callback redirect', async
     method: 'GET',
     query: { route: ['start'] },
     headers: {
-      host: 'baristaclaw.vercel.app',
+      host: 'app.baristachaw.com',
       'x-forwarded-proto': 'https',
     },
     socket: {
@@ -76,8 +76,8 @@ test('mobile auth start uses the Google-registered web callback redirect', async
   const decodedState = jwt.verify(String(body.state).replace(/^mobile\./, ''), 'unit-test-secret-32-chars-minimum') as { purpose?: string };
 
   assert.equal(res.statusCode, 200);
-  assert.equal(body.redirectUri, 'https://baristaclaw.vercel.app/api/auth/callback');
-  assert.equal(googleUrl.searchParams.get('redirect_uri'), 'https://baristaclaw.vercel.app/api/auth/callback');
+  assert.equal(body.redirectUri, 'https://app.baristachaw.com/api/auth/callback');
+  assert.equal(googleUrl.searchParams.get('redirect_uri'), 'https://app.baristachaw.com/api/auth/callback');
   assert.equal(String(body.state).startsWith('mobile.'), true);
   assert.equal(decodedState.purpose, 'mobile_oauth');
 });
@@ -92,7 +92,7 @@ test('mobile auth callback page includes deep link and android intent fallback',
   const originalFetch = globalThis.fetch;
   let tokenRequestBody = '';
 
-  process.env.APP_URL = 'https://baristaclaw.vercel.app';
+  process.env.APP_URL = 'https://app.baristachaw.com';
   process.env.JWT_SECRET = 'unit-test-secret-32-chars-minimum';
   process.env.GOOGLE_CLIENT_ID = 'unit-test-google-client-id';
   process.env.GOOGLE_CLIENT_SECRET = 'unit-test-google-client-secret';
@@ -129,7 +129,7 @@ test('mobile auth callback page includes deep link and android intent fallback',
       code: 'oauth-code-123',
     },
     headers: {
-      host: 'baristaclaw.vercel.app',
+      host: 'app.baristachaw.com',
       'x-forwarded-proto': 'https',
     },
     socket: {
@@ -157,7 +157,7 @@ test('mobile auth callback page includes deep link and android intent fallback',
   }
 
   assert.equal(res.statusCode, 200);
-  assert.match(tokenRequestBody, /redirect_uri=https%3A%2F%2Fbaristaclaw\.vercel\.app%2Fapi%2Fauth%2Fmobile%2Fcallback/);
+  assert.match(tokenRequestBody, /redirect_uri=https%3A%2F%2Fapp\.baristachaw\.com%2Fapi%2Fauth%2Fmobile%2Fcallback/);
   assert.match(res.body, /baristachaw:\/\/auth\?grant=/);
   assert.match(res.body, /intent:\/\/auth\?grant=/);
   assert.match(res.body, /package=com\.baristachaw\.mobile/);
@@ -203,7 +203,7 @@ test('mobile auth exchanges a verified Supabase session for API JWT', async () =
     query: { route: ['supabase', 'exchange'] },
     body: { accessToken: 'supabase-access-token' },
     headers: {
-      host: 'baristaclaw.vercel.app',
+      host: 'app.baristachaw.com',
       'x-forwarded-proto': 'https',
     },
     socket: {

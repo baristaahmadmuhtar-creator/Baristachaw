@@ -36,7 +36,7 @@ function runCallbackScript(options: {
       closed = true;
     },
     location: {
-      origin: 'https://baristaclaw.vercel.app',
+      origin: 'https://app.baristachaw.com',
       replace(value: string) {
         redirectedTo = value;
       },
@@ -73,7 +73,7 @@ test('auth callback script posts success to opener and closes popup', () => {
     attrs: {
       'data-mode': 'success',
       'data-user': encodeURIComponent(JSON.stringify({ id: 'u_123', name: 'Barista User' })),
-      'data-target-origin': encodeURIComponent('https://baristaclaw.vercel.app'),
+      'data-target-origin': encodeURIComponent('https://app.baristachaw.com'),
       'data-return-to': encodeURIComponent('/chat?welcome=1'),
     },
     opener: {
@@ -86,7 +86,7 @@ test('auth callback script posts success to opener and closes popup', () => {
   assert.equal(result.closed, true);
   assert.equal(result.redirectedTo, '');
   assert.equal(result.posts.length, 1);
-  assert.equal(result.posts[0]?.targetOrigin, 'https://baristaclaw.vercel.app');
+  assert.equal(result.posts[0]?.targetOrigin, 'https://app.baristachaw.com');
   assert.equal((result.posts[0]?.payload as any)?.type, 'OAUTH_AUTH_SUCCESS');
   assert.deepEqual((result.posts[0]?.payload as any)?.user, { id: 'u_123', name: 'Barista User' });
 });

@@ -67,13 +67,13 @@ ingest_runs
 8. Set Site URL:
 
 ```text
-https://baristaclaw.vercel.app
+https://app.baristachaw.com
 ```
 
 9. Tambahkan Redirect URLs:
 
 ```text
-https://baristaclaw.vercel.app/**
+https://app.baristachaw.com/**
 baristachaw://auth
 ```
 
@@ -173,8 +173,8 @@ Masukkan env di Vercel project `baristaclaw`, scope Production. Preview boleh me
 Server wajib:
 
 ```text
-APP_URL=https://baristaclaw.vercel.app
-ALLOWED_ORIGINS=https://baristaclaw.vercel.app
+APP_URL=https://app.baristachaw.com
+ALLOWED_ORIGINS=https://app.baristachaw.com
 JWT_SECRET=<random panjang minimal 32 karakter>
 ADMIN_EMAILS=<email admin dipisah koma>
 GEMINI_API_KEY=<secret>

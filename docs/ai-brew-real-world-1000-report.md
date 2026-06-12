@@ -1,12 +1,51 @@
 # AI Brew Real-World 1000 Report
 
-Latest SHA: 9c5e3156c5c39fd0479029bf54462e714e0e1875
-Local branch: main
-Origin main: 9c5e3156c5c39fd0479029bf54462e714e0e1875
-Local status: dirty (local validation changes present)
-Date: 2026-06-12T12:19:58.593Z
-Scenario count: 1000
+Regenerated metadata: 2026-06-12T14:40:06.885Z
+Local SHA: e3b6de5bdb8112b11c68d91a788f6e52646071f7
+Remote main SHA: e3b6de5bdb8112b11c68d91a788f6e52646071f7
+Branch: main
+Working tree status at generation: M .env.example
+ M README.md
+ M apps/mobile/.env.example
+ M apps/mobile/app.config.ts
+ M apps/mobile/eas.json
+ M apps/mobile/src/config/env.ts
+ M apps/mobile/src/screens/WebParityScreen.tsx
+ M apps/web/package.json
+ M apps/web/public/manifest.json
+ M docs/admin-launch-action-list.md
+ M docs/buku-developer-operator-baristachaw.md
+ M docs/ios-web-wrapper-launch.md
+ M docs/mobile-ios-runbook.md
+ M docs/mobile-supabase-auth.md
+ M docs/production-setup-operator-guide.md
+ M package-lock.json
+ M package.json
+ M scripts/run-prod-gate.mjs
+ M scripts/smoke-prod.mjs
+ M server-api/ai.ts
+ M server-api/chat.ts
+ M tests/e2e/ai-brew-live-v60.spec.ts
+ M tests/unit/aiInternalBaseUrl.test.ts
+ M tests/unit/authEmailHandler.test.ts
+ M tests/unit/authLogoutHandler.test.ts
+ M tests/unit/authShared.test.ts
+ M tests/unit/mobileAuthHandler.test.ts
+ M tests/unit/mobileWebParityGate.test.ts
+ M tests/unit/monitoringErrorHandler.test.ts
+ M tests/unit/webAuthCallbackScript.test.ts
+ M tests/unit/webAuthHandlers.test.ts
+?? apps/landing/
+?? docs/domain-migration-status.md
+?? docs/superpowers/
+?? playwright.landing.config.ts
+?? scratch/
+?? tests/e2e/landing.spec.ts
+?? tests/unit/landingPageContract.test.ts
 
+This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
+
+---
 ## Honesty Boundary
 This is a curated real-world software/barista reasoning gate. It did not physically brew coffee and it must not be used as sensory certainty. AI Brew creates strong starting recipes and dial-in guidance; physical real brew validation is still required.
 This is a source-backed software scenario gate built from real roastery/community coffee seeds and deterministic combinations. It is not 20,000 unique physical coffee lots and not 20,000 physical brews.

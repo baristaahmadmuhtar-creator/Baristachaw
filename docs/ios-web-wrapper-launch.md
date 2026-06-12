@@ -3,7 +3,7 @@
 ## Runtime contract
 
 - The iOS app is an Expo/React Native shell that launches `WebParityScreen` by default.
-- `WebParityScreen` loads `https://baristaclaw.vercel.app?runtime=web_parity&ui_profile=pwa&native_shell=ios`.
+- `WebParityScreen` loads `https://app.baristachaw.com?runtime=web_parity&ui_profile=pwa&native_shell=ios`.
 - The native tab shell is not used unless `EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED=true`.
 - The wrapper hides the native status bar and disables WebView safe-area content inset adjustment.
 - Production EAS builds force `EXPO_PUBLIC_MOBILE_UI_MODE=web_parity`.
@@ -37,7 +37,7 @@ cd apps/mobile
 npx eas build --platform ios --profile production
 ```
 
-- Production web must be live at `https://baristaclaw.vercel.app`.
+- Production web must be live at `https://app.baristachaw.com`.
 - Backend auth, AI, scanner, and collection APIs must be live during App Review.
 - If account features require sign-in, provide App Review with a demo account or fully-featured demo mode.
 
@@ -55,7 +55,7 @@ Pure website wrappers can be scrutinized under Minimum Functionality review. Kee
 Baristachaw is an AI-powered coffee assistant. The iOS app uses a native Expo shell with WKWebView to deliver the same production Baristachaw experience as the web app, including AI chat, Vision Scan, AI Brew planning, brew tools, and collection workflows.
 
 Production backend:
-https://baristaclaw.vercel.app
+https://app.baristachaw.com
 
 If sign-in is required for protected features, use the provided demo account or guest/demo flow. Camera and photo permissions are used for Vision Scan and image attachments. Microphone permission is used for voice note transcription.
 ```

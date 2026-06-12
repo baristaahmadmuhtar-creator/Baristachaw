@@ -7,7 +7,7 @@ import {
   type LiveAuditRecipeCase,
 } from '../helpers/aiBrewLiveAuditMatrix';
 
-const liveBaseUrl = (process.env.LIVE_AI_BREW_BASE_URL || 'https://baristaclaw.vercel.app').replace(/\/$/, '');
+const liveBaseUrl = (process.env.LIVE_AI_BREW_BASE_URL || 'https://app.baristachaw.com').replace(/\/$/, '');
 const liveEmail = process.env.LIVE_AI_BREW_EMAIL?.trim();
 const livePassword = process.env.LIVE_AI_BREW_PASSWORD?.trim();
 const shouldCleanup = String(process.env.LIVE_AI_BREW_CLEANUP || '').trim() === '1';

@@ -280,7 +280,7 @@ Namun browse-only preview juga harus dibatasi:
 
 Origin dan CORS:
 
-Server API memakai helper di `server-api/_shared.ts`. Fungsi seperti `enforceTrustedRequestOrigin`, `getAllowedOrigin`, dan `applyCors` menjaga agar browser write tidak bisa dipanggil dari domain sembarang. `ALLOWED_ORIGINS` production harus berisi `https://baristaclaw.vercel.app`.
+Server API memakai helper di `server-api/_shared.ts`. Fungsi seperti `enforceTrustedRequestOrigin`, `getAllowedOrigin`, dan `applyCors` menjaga agar browser write tidak bisa dipanggil dari domain sembarang. `ALLOWED_ORIGINS` production harus berisi `https://app.baristachaw.com`.
 
 Session expiration:
 
@@ -1362,7 +1362,7 @@ Env server wajib:
 
 `APP_URL`
 
-URL canonical app production. Dipakai untuk callback, internal base URL, dan beberapa link. Production saat ini memakai `https://baristaclaw.vercel.app`.
+URL canonical app production. Dipakai untuk callback, internal base URL, dan beberapa link. Production saat ini memakai `https://app.baristachaw.com`.
 
 `ALLOWED_ORIGINS`
 

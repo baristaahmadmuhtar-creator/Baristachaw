@@ -92,7 +92,7 @@ test('monitoring endpoint records sanitized client errors into audit', async () 
       body: {
         source: 'pwa',
         component: 'unhandled_rejection',
-        url: 'https://baristaclaw.vercel.app/chat?debug=1&token=secretsecretsecretsecretsecretsecret',
+        url: 'https://app.baristachaw.com/chat?debug=1&token=secretsecretsecretsecretsecretsecret',
         message: 'Renderer failed with token secretsecretsecretsecretsecretsecret',
         name: 'TypeError',
         stack: 'TypeError: secretsecretsecretsecretsecretsecret at App',

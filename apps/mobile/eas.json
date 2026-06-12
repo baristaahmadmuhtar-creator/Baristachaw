@@ -14,8 +14,8 @@
     "ios_internal": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",
-        "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_API_BASE_URL": "https://app.baristachaw.com",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://app.baristachaw.com",
         "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
         "EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS": "10000",
@@ -32,8 +32,8 @@
       "credentialsSource": "remote",
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",
-        "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_API_BASE_URL": "https://app.baristachaw.com",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://app.baristachaw.com",
         "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
         "EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS": "10000",
@@ -49,8 +49,8 @@
     "preview": {
       "distribution": "store",
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",
-        "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_API_BASE_URL": "https://app.baristachaw.com",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://app.baristachaw.com",
         "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
         "EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS": "10000",
@@ -71,8 +71,8 @@
       "credentialsSource": "remote",
       "distribution": "store",
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://baristaclaw.vercel.app",
-        "EXPO_PUBLIC_WEB_APP_URL": "https://baristaclaw.vercel.app",
+        "EXPO_PUBLIC_API_BASE_URL": "https://app.baristachaw.com",
+        "EXPO_PUBLIC_WEB_APP_URL": "https://app.baristachaw.com",
         "EXPO_PUBLIC_APP_SCHEME": "baristachaw",
         "EXPO_PUBLIC_MOBILE_UI_MODE": "web_parity",
         "EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS": "10000",

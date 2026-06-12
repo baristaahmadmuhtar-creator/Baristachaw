@@ -36,7 +36,7 @@ Current local compatibility baseline:
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 JWT_SECRET=...
-APP_URL=https://baristaclaw.vercel.app
+APP_URL=https://app.baristachaw.com
 MOBILE_APP_SCHEME=baristachaw
 MOBILE_AUTH_GRANT_TTL_SEC=120
 APPLE_BUNDLE_ID=com.baristachaw.app
@@ -45,7 +45,7 @@ APPLE_BUNDLE_ID=com.baristachaw.app
 ### Mobile (`apps/mobile/.env`)
 
 ```env
-EXPO_PUBLIC_API_BASE_URL=https://baristaclaw.vercel.app
+EXPO_PUBLIC_API_BASE_URL=https://app.baristachaw.com
 EXPO_PUBLIC_APP_SCHEME=baristachaw
 EXPO_PUBLIC_MOBILE_UI_MODE=web_parity
 EXPO_PUBLIC_WEB_PARITY_TIMEOUT_MS=6000

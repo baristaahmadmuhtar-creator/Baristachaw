@@ -1,7 +1,7 @@
 {
     "name": "baristachaw",
     "private": true,
-    "version": "1.0.1",
+    "version": "1.0.2",
     "type": "module",
     "engines": {
         "node": ">=24.0.0",
@@ -15,7 +15,9 @@
         "test": "npm run test:unit && npm run mobile:test",
         "dev": "tsx server.ts",
         "dev:web": "npm run dev --workspace @baristachaw/web",
+        "dev:landing": "npm run dev --workspace @baristachaw/landing",
         "build": "npm run build --workspace @baristachaw/web",
+        "build:landing": "npm run build --workspace @baristachaw/landing",
         "generate:icons": "node scripts/generate-icons.mjs",
         "catalog:bootstrap": "tsx scripts/catalog/bootstrap-phase1.ts",
         "catalog:build": "tsx scripts/catalog/build-phase1.ts",
@@ -27,6 +29,7 @@
         "preview": "npm run preview --workspace @baristachaw/web",
         "start": "tsx server.ts",
         "lint": "npm run lint:root && npm run lint --workspace @baristachaw/design-tokens && npm run lint --workspace @baristachaw/shared && npm run lint --workspace @baristachaw/web",
+        "lint:landing": "npm run lint --workspace @baristachaw/landing",
         "lint:root": "tsc --noEmit -p tsconfig.json",
         "check": "npm run lint && npm run build",
         "smoke:local": "node scripts/smoke-local.mjs",
@@ -39,6 +42,7 @@
         "clean": "rm -rf dist apps/web/dist",
         "test:e2e:install": "playwright install --with-deps chromium firefox webkit",
         "test:e2e": "playwright test tests/e2e --project=chromium --project=firefox --project=webkit",
+        "test:landing": "playwright test tests/e2e/landing.spec.ts --config=playwright.landing.config.ts",
         "test:e2e:mobile": "playwright test tests/e2e/mobile.spec.ts --project=\"Mobile Chrome\" --project=\"Mobile Safari\"",
         "test:e2e:switch": "playwright test tests/e2e/tools.spec.ts --project=chromium -g \"Hario Switch|MUGEN|Switch\"",
         "test:e2e:switch:mobile": "playwright test tests/e2e/mobile.spec.ts --project=\"Mobile Chrome\" --project=\"Mobile Safari\" -g \"ai brew\"",
@@ -130,6 +134,8 @@
             "path-to-regexp": "0.1.13"
         },
         "brace-expansion": "2.0.3",
+        "shell-quote": "1.8.4",
+        "@grpc/grpc-js": "1.14.4",
         "undici": "6.24.0",
         "postcss": "8.5.10"
     },

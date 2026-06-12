@@ -85,7 +85,7 @@ test.beforeEach(() => {
   process.env.JWT_SECRET = 'local-test-jwt-secret-32-chars-minimum';
   process.env.NODE_ENV = 'test';
   delete process.env.VERCEL;
-  process.env.APP_URL = 'https://baristaclaw.vercel.app';
+  process.env.APP_URL = 'https://app.baristachaw.com';
   process.env.SUPABASE_URL = 'https://unit-test.supabase.co';
   process.env.SUPABASE_PUBLISHABLE_KEY = 'publishable-test-key';
 });

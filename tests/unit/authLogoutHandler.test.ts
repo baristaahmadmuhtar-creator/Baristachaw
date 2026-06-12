@@ -94,8 +94,8 @@ test('auth logout handler keeps secure cookie attributes in production', () => {
 
   const req = makeReq({
     headers: {
-      host: 'baristaclaw.vercel.app',
-      origin: 'https://baristaclaw.vercel.app',
+      host: 'app.baristachaw.com',
+      origin: 'https://app.baristachaw.com',
       'x-forwarded-proto': 'https',
     },
   });

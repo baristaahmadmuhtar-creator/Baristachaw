@@ -1316,7 +1316,7 @@ async function callOpenAiCompatibleText(
     Authorization: `Bearer ${key}`,
   };
   if (config.provider === 'OPENROUTER') {
-    headers['HTTP-Referer'] = 'https://baristaclaw.vercel.app';
+    headers['HTTP-Referer'] = process.env.APP_URL || 'https://app.baristachaw.com';
     headers['X-Title'] = 'Baristachaw AI';
   }
 

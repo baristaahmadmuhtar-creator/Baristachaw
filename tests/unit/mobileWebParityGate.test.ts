@@ -77,8 +77,8 @@ test('production EAS mobile profile is locked to web parity shell without native
 
   assert.equal(eas.cli?.appVersionSource, 'remote');
   assert.equal(production?.distribution, 'store');
-  assert.equal(production?.env?.EXPO_PUBLIC_API_BASE_URL, 'https://baristaclaw.vercel.app');
-  assert.equal(production?.env?.EXPO_PUBLIC_WEB_APP_URL, 'https://baristaclaw.vercel.app');
+  assert.equal(production?.env?.EXPO_PUBLIC_API_BASE_URL, 'https://app.baristachaw.com');
+  assert.equal(production?.env?.EXPO_PUBLIC_WEB_APP_URL, 'https://app.baristachaw.com');
   assert.equal(production?.env?.EXPO_PUBLIC_MOBILE_UI_MODE, 'web_parity');
   assert.equal(production?.env?.EXPO_PUBLIC_WEB_PARITY_FALLBACK_ENABLED, 'false');
   assert.equal(production?.env?.EXPO_PUBLIC_ENABLE_GUEST_MODE, 'false');

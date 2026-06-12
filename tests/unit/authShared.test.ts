@@ -208,8 +208,8 @@ test('enforceTrustedRequestOrigin allows same host origin without explicit APP_U
     {
       method: 'POST',
       headers: {
-        host: 'baristaclaw.vercel.app',
-        origin: 'https://baristaclaw.vercel.app',
+        host: 'app.baristachaw.com',
+        origin: 'https://app.baristachaw.com',
         'x-forwarded-proto': 'https',
       },
     } as any,
@@ -222,7 +222,7 @@ test('enforceTrustedRequestOrigin allows same host origin without explicit APP_U
 });
 
 test('enforceTrustedRequestOrigin rejects cross-site browser writes', () => {
-  process.env.APP_URL = 'https://baristaclaw.vercel.app';
+  process.env.APP_URL = 'https://app.baristachaw.com';
   const res = {
     statusCode: 0,
     body: null as any,
@@ -240,7 +240,7 @@ test('enforceTrustedRequestOrigin rejects cross-site browser writes', () => {
     {
       method: 'POST',
       headers: {
-        host: 'baristaclaw.vercel.app',
+        host: 'app.baristachaw.com',
         origin: 'https://evil.example',
         'sec-fetch-site': 'cross-site',
         'x-forwarded-proto': 'https',

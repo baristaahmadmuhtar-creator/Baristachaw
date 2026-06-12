@@ -1,82 +1,48 @@
 # AI Brew Method + Style Inventory
 
-Generated: 2026-06-12T12:18:42.623Z
-Local SHA: 9c5e3156c5c39fd0479029bf54462e714e0e1875
-Remote main SHA: 9c5e3156c5c39fd0479029bf54462e714e0e1875
+Generated: 2026-06-12T14:40:06.885Z
+Local SHA: e3b6de5bdb8112b11c68d91a788f6e52646071f7
+Remote main SHA: e3b6de5bdb8112b11c68d91a788f6e52646071f7
 Branch: main
-Working tree status at generation: M apps/mobile/app.config.ts
- M apps/mobile/package.json
- M apps/web/index.html
- M apps/web/public/data/ai-brew/manual-brew-presets.v2026-06.json
- M apps/web/public/favicon.ico
- M apps/web/public/icons/apple-touch-icon.png
- M apps/web/public/icons/favicon-16x16.png
- M apps/web/public/icons/favicon-32x32.png
- M apps/web/public/icons/icon-1024.png
- M apps/web/public/icons/icon-128.png
- M apps/web/public/icons/icon-144.png
- M apps/web/public/icons/icon-152.png
- M apps/web/public/icons/icon-16.png
- M apps/web/public/icons/icon-167.png
- M apps/web/public/icons/icon-180.png
- M apps/web/public/icons/icon-192-maskable.png
- M apps/web/public/icons/icon-192.png
- M apps/web/public/icons/icon-256.png
- M apps/web/public/icons/icon-32.png
- M apps/web/public/icons/icon-384.png
- M apps/web/public/icons/icon-48.png
- M apps/web/public/icons/icon-512-maskable.png
- M apps/web/public/icons/icon-512.png
- M apps/web/public/icons/icon-72.png
- M apps/web/public/icons/icon-96.png
- M apps/web/public/icons/icon-dark-1024.png
- M apps/web/public/icons/icon-dark-512.png
- M apps/web/public/icons/icon-light-1024.png
- M apps/web/public/icons/icon-light-512.png
- M apps/web/public/icons/icon-maskable-1024.png
- M apps/web/public/icons/icon-maskable-128.png
- M apps/web/public/icons/icon-maskable-144.png
- M apps/web/public/icons/icon-maskable-152.png
- M apps/web/public/icons/icon-maskable-16.png
- M apps/web/public/icons/icon-maskable-167.png
- M apps/web/public/icons/icon-maskable-180.png
- M apps/web/public/icons/icon-maskable-192.png
- M apps/web/public/icons/icon-maskable-256.png
- M apps/web/public/icons/icon-maskable-32.png
- M apps/web/public/icons/icon-maskable-384.png
- M apps/web/public/icons/icon-maskable-48.png
- M apps/web/public/icons/icon-maskable-512.png
- M apps/web/public/icons/icon-maskable-72.png
- M apps/web/public/icons/icon-maskable-96.png
- M apps/web/public/icons/icon-mono-1024.png
- M apps/web/public/icons/icon-mono-512.png
- M apps/web/src/components/onboarding/FirstRunOnboarding.tsx
- M apps/web/src/features/ai-brew/AiBrewPanel.tsx
- M apps/web/src/features/ai-brew/antiHallucination.ts
- M apps/web/src/features/ai-brew/catalog.ts
- M apps/web/src/features/ai-brew/cupProfile.ts
- M apps/web/src/features/ai-brew/storage.ts
- M apps/web/src/features/ai-brew/types.ts
- M apps/web/src/services/db.ts
- M docs/ai-brew-method-style-coverage-report.md
- M docs/ai-brew-method-style-final-verdict.md
- M docs/ai-brew-method-style-inventory.md
- M docs/ai-brew-method-style-ui-ux-report.md
- M docs/ai-brew-real-world-1000-report.md
- M docs/mvp-final-certification-report.md
+Working tree status at generation: M .env.example
+ M README.md
+ M apps/mobile/.env.example
+ M apps/mobile/app.config.ts
+ M apps/mobile/eas.json
+ M apps/mobile/src/config/env.ts
+ M apps/mobile/src/screens/WebParityScreen.tsx
+ M apps/web/package.json
+ M apps/web/public/manifest.json
+ M docs/admin-launch-action-list.md
+ M docs/buku-developer-operator-baristachaw.md
+ M docs/ios-web-wrapper-launch.md
+ M docs/mobile-ios-runbook.md
+ M docs/mobile-supabase-auth.md
+ M docs/production-setup-operator-guide.md
  M package-lock.json
  M package.json
- M tests/e2e/mobile.spec.ts
- M tests/e2e/onboarding.spec.ts
- M tests/e2e/tools.spec.ts
- M tests/unit/aiBrewAnnotationRegression.test.ts
- M tests/unit/aiBrewManualBrewPresets.test.ts
-?? apps/web/src/features/ai-brew/realBrewLogs.ts
+ M scripts/run-prod-gate.mjs
+ M scripts/smoke-prod.mjs
+ M server-api/ai.ts
+ M server-api/chat.ts
+ M tests/e2e/ai-brew-live-v60.spec.ts
+ M tests/unit/aiInternalBaseUrl.test.ts
+ M tests/unit/authEmailHandler.test.ts
+ M tests/unit/authLogoutHandler.test.ts
+ M tests/unit/authShared.test.ts
+ M tests/unit/mobileAuthHandler.test.ts
+ M tests/unit/mobileWebParityGate.test.ts
+ M tests/unit/monitoringErrorHandler.test.ts
+ M tests/unit/webAuthCallbackScript.test.ts
+ M tests/unit/webAuthHandlers.test.ts
+?? apps/landing/
+?? docs/domain-migration-status.md
+?? docs/superpowers/
+?? playwright.landing.config.ts
 ?? scratch/
-?? scripts/ai-brew-99-readiness-score.mjs
-?? tests/unit/aiBrewPlanIntegrity.test.ts
-?? tests/unit/aiBrewRealBrewLogs.test.ts
-Artifact directory: `artifacts/ai-brew-audit/method-styles/9c5e3156c5c3`
+?? tests/e2e/landing.spec.ts
+?? tests/unit/landingPageContract.test.ts
+Artifact directory: `artifacts/ai-brew-audit/method-styles/e3b6de5bdb81`
 
 This is software/barista-reasoned validation, not physical sensory proof. Real brew validation is still required.
 

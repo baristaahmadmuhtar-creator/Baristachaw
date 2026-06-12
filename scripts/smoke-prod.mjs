@@ -1,6 +1,6 @@
 import { runSmoke } from './smoke-runner.mjs';
 
-const baseUrl = process.env.BASE_URL || 'https://baristaclaw.vercel.app';
+const baseUrl = process.env.BASE_URL || 'https://app.baristachaw.com';
 const deepHealthToken = process.env.HEALTHCHECK_TOKEN || '';
 const bearerToken = process.env.PROD_SMOKE_BEARER_TOKEN || process.env.SMOKE_BEARER_TOKEN || '';
 const email = process.env.PROD_SMOKE_EMAIL || process.env.SMOKE_EMAIL || '';

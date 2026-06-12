@@ -1,7 +1,7 @@
 import type { ExpoConfig, ConfigContext } from 'expo/config';
 
-const DEFAULT_API_BASE_URL = 'https://baristaclaw.vercel.app';
-const DEFAULT_WEB_APP_URL = 'https://baristaclaw.vercel.app';
+const DEFAULT_API_BASE_URL = 'https://app.baristachaw.com';
+const DEFAULT_WEB_APP_URL = 'https://app.baristachaw.com';
 const DEFAULT_SCHEME = 'baristachaw';
 const LEGACY_SCHEME = 'baristaclaw';
 const DEFAULT_BUNDLE_ID = 'com.baristachaw.app';
@@ -67,7 +67,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: 'Baristachaw',
     slug: 'baristaclaw-mobile',
-    version: '1.0.1',
+    version: '1.0.2',
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'automatic',
@@ -101,7 +101,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     android: {
       package: DEFAULT_ANDROID_PACKAGE,
-      versionCode: 2,
+      versionCode: 3,
       newArchEnabled: false,
       allowBackup: false,
       blockedPermissions: ANDROID_BLOCKED_STORE_PERMISSIONS,

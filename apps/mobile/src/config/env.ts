@@ -1,5 +1,5 @@
-const DEFAULT_API_BASE_URL = 'https://baristaclaw.vercel.app';
-const DEFAULT_WEB_APP_URL = 'https://baristaclaw.vercel.app';
+const DEFAULT_API_BASE_URL = 'https://app.baristachaw.com';
+const DEFAULT_WEB_APP_URL = 'https://app.baristachaw.com';
 const DEFAULT_APP_SCHEME = 'baristachaw';
 const DEFAULT_RELEASE_CHANNEL = 'mobile-local';
 // MVP mobile ships web parity as the primary Android UI. Native screens remain

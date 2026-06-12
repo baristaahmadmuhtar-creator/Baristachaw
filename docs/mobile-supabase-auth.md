@@ -32,7 +32,7 @@ baristachaw://auth
 5. Keep the hosted app URL as an additional redirect URL if web auth still uses it:
 
 ```text
-https://baristaclaw.vercel.app/**
+https://app.baristachaw.com/**
 ```
 
 6. Configure the Google provider with the OAuth client credentials created for the Supabase project callback URL.
@@ -45,7 +45,7 @@ Set these in `apps/mobile/.env` or the EAS build environment:
 ```text
 EXPO_PUBLIC_MOBILE_UI_MODE=web_parity
 EXPO_PUBLIC_APP_SCHEME=baristachaw
-EXPO_PUBLIC_API_BASE_URL=https://baristaclaw.vercel.app
+EXPO_PUBLIC_API_BASE_URL=https://app.baristachaw.com
 EXPO_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY
 ```

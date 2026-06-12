@@ -2,8 +2,8 @@
   "name": "BaristaChaw",
   "short_name": "BaristaChaw",
   "description": "AI-powered barista assistant for coffee scanning, brew planning, and barista workflows.",
-  "start_url": "/",
-  "id": "/",
+  "start_url": "/?runtime=web_parity",
+  "id": "https://app.baristachaw.com/",
   "scope": "/",
   "display_override": [
     "standalone",
